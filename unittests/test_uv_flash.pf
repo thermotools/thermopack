@@ -182,7 +182,11 @@ contains
          2.0000020970294629E-004, 4.9999914831572482E-003, &
          3.9999797132597992E-002]
     phase = TWOPH
+    beta = 0.9993
+    betaL = 1 - beta
     call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
+    print *,T, p, beta, betaL, phase
+    stop
     @assertTrue(T > 0)
     @assertTrue(p > 0)
     @assertTrue(beta > 0)
@@ -200,7 +204,7 @@ contains
     continueOnError = .true.
 
     call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
-         "CO2,N2,O2,A2,NO,SO2,CO,NH3", 9)
+         "CO2,N2,O2,AR,NO,SO2,CO,NH3", 9)
 
     T = 301.11445826574317
     p = 6959674.8851478873
@@ -235,7 +239,7 @@ contains
     continueOnError = .true.
 
     call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
-         "CO2,N2,O2,A2,NO,SO2,CO,NH3", 9)
+         "CO2,N2,O2,AR,NO,SO2,CO,NH3", 9)
 
     T = 186.06816554198198
     p = 107354.89337141129

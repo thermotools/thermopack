@@ -56,7 +56,7 @@ module saftvrmie_parameters
   type(saftvrmie_data), parameter :: Miecx5 = saftvrmie_data(eosSAFT_VR_MIE,"C3", &
        1.6845, 3.9056E-10, 239.89, 6, 13.006, 0.0, 0.0, 0.0, no_assoc, 0, 1)
   ! Unpublished (as of 08/2018) parameters from G. Jackon's group
-  type(saftvrmie_data), parameter :: Miecx6 = saftvrmie_data(eosSAFT_VR_MIE,"A2", &
+  type(saftvrmie_data), parameter :: Miecx6 = saftvrmie_data(eosSAFT_VR_MIE,"AR", &
        1.000, 3.41E-10, 118.7, 6, 12.26, 6.6335E-26, 0.0, 0.0, no_assoc, 0,1)
 
 
@@ -214,7 +214,7 @@ module saftvrmie_parameters
        1, 3.0E-10, 30.0, 6, 12, 0.0, &
        0.0, 0.0, no_assoc, 0, 1)
   !-----------------------------------------------------------
-  type(saftvrmie_data), parameter :: Miecx67 = saftvrmie_data(eosLJsplined,"A2", &
+  type(saftvrmie_data), parameter :: Miecx67 = saftvrmie_data(eosLJsplined,"AR", &
        1, 3.42E-10, 124.0, 6, 12, 6.64e-26, &
        0.0, 0.0, no_assoc, 0, 1)
   !-----------------------------------------------------------

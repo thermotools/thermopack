@@ -18,7 +18,7 @@ contains
     continueOnError = .true.
 
     call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
-         "CO2,N2,O2,A2,CO,H2S,H2,C1", 9)
+         "CO2,N2,O2,AR,CO,H2S,H2,C1", 9)
 
     z = (/0.98199899999065965, 6.0000000025901721E-003,&
          1.0000000003932113E-006, 5.0000000019329808E-004,&

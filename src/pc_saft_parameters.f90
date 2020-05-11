@@ -96,7 +96,7 @@ module pc_saft_parameters
        1.72897e+00 ,2.76102e-10 ,8.37215e+01 ,9.25650e+03 ,1.71605e-01, assoc_scheme_3B,3)
 
   ! [1]
-  type(pc_saft_data), parameter :: PCcx23 = pc_saft_data(eosPC_SAFT,"A2", &
+  type(pc_saft_data), parameter :: PCcx23 = pc_saft_data(eosPC_SAFT,"AR", &
        0.9285, 3.4784E-10, 122.23, 0.0, 0.0, no_assoc,1)
 
   type(pc_saft_data), parameter :: PCcx24 = pc_saft_data(eosPC_SAFT, "NC11", &
@@ -179,7 +179,7 @@ module pc_saft_parameters
   type(pc_saft_data), parameter :: PCcx53 = pc_saft_data(eosPC_SAFT,"HEX1OL", &
        3.5146, 3.6735E-10, 262.32, 2538.9*Rgas, 0.005747, assoc_scheme_2B,2)
 
-  type(pc_saft_data), parameter :: PCcx54 = pc_saft_data(eosPeTS,"A2", &
+  type(pc_saft_data), parameter :: PCcx54 = pc_saft_data(eosPeTS,"AR", &
        1.000, 3.42E-10, 136.0, 0.0, 0.0, no_assoc,1)
 
   integer, parameter :: nPCmodels = 54

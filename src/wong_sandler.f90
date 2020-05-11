@@ -43,11 +43,11 @@ module wong_sandler
        GeneralTProp(1,1,0, (/1.0, 0.0, 0.0, 0.0/))
 
   type(inter_ws_datadb), parameter :: TEstDB = &
-       inter_ws_datadb("PR","CO2","A2", EmptyTProp, EmptyTProp, &
+       inter_ws_datadb("PR","CO2","AR", EmptyTProp, EmptyTProp, &
        EmptyTProp, EmptyTProp)
 
   type(inter_ws_datadb), dimension(max_ws_datab), parameter :: data_ws_datadb = (/ &
-       inter_ws_datadb("PR","CO2","A2", EmptyTProp, EmptyTProp, &
+       inter_ws_datadb("PR","CO2","AR", EmptyTProp, EmptyTProp, &
        EmptyTProp, EmptyTProp),                            &
        inter_ws_datadb("PR","CO2","N2", EmptyTProp, EmptyTProp, &
        EmptyTProp, EmptyTProp) /)

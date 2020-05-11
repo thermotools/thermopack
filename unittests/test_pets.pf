@@ -187,7 +187,7 @@ contains
     logical, target :: t_verbose
 
     call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PeTS',mixing='Classic',ncomp=1,&
-         comp_string="A2",nphases=2,saft_setno=(/1/))
+         comp_string="AR",nphases=2,saft_setno=(/1/))
     !call pets_set_pure_params(1,(/1.0,1.0/))
     T=100; rho=3e4
     x = (/1.0/)

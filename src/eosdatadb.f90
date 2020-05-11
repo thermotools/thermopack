@@ -58,7 +58,7 @@
          kijdatadb("srk","classic", 1,"CO2","NC5",  0.15), &
          kijdatadb("srk","classic", 1,"CO2","H2S",  0.1), &
          kijdatadb("srk","classic", 1,"CO2","N2", -0.051), &
-         kijdatadb("srk","classic", 1,"CO2","A2",  0.088), &
+         kijdatadb("srk","classic", 1,"CO2","AR",  0.088), &
          kijdatadb("srk","classic", 1,"CO2","SO2",  0.071), &
          kijdatadb("srk","classic", 1,"CO2","H2",  0.009), &
          kijdatadb("srk","classic", 1,"H2S","NC4",  0.06), &
@@ -288,7 +288,7 @@
          kijdatadb("gdsrk","classic", 1,"CO2","O2",  0.116), &
          kijdatadb("gdsrk","classic", 1,"CO2","H2S",  0.106), &
          kijdatadb("gdsrk","classic", 1,"CO2","N2", -0.014), &
-         kijdatadb("gdsrk","classic", 1,"CO2","A2",  0.18), &
+         kijdatadb("gdsrk","classic", 1,"CO2","AR",  0.18), &
          kijdatadb("gdsrk","classic", 1,"CO2","SO2",  0.048), &
          kijdatadb("gdsrk","classic", 1,"H2S","NC4",  0.06), &
          kijdatadb("gdsrk","classic", 1,"H2S","NC4",  0.06), &
@@ -348,7 +348,7 @@
          kijdatadb("pr","classic", 1,"CO2","NC5",  0.15), &
          kijdatadb("pr","classic", 1,"CO2","H2S",  0.099), &
          kijdatadb("pr","classic", 1,"CO2","N2", -0.036), &
-         kijdatadb("pr","classic", 1,"CO2","A2",  0.086), &
+         kijdatadb("pr","classic", 1,"CO2","AR",  0.086), &
          kijdatadb("pr","classic", 1,"CO2","SO2",  0.072), &
          kijdatadb("pr","classic", 1,"CO2","H2",  0.104), &
          kijdatadb("pr","classic", 1,"CO2","CO", -0.066), &
@@ -800,7 +800,7 @@
          kijdatadb("rk","classic", 1,"CO2","NC5",  0.15), &
          kijdatadb("rk","classic", 1,"CO2","H2S",  0.1), &
          kijdatadb("rk","classic", 1,"CO2","N2", -0.051), &
-         kijdatadb("rk","classic", 1,"CO2","A2",  0.088), &
+         kijdatadb("rk","classic", 1,"CO2","AR",  0.088), &
          kijdatadb("rk","classic", 1,"CO2","SO2",  0.071), &
          kijdatadb("rk","classic", 1,"CO2","H2",  0.009), &
          kijdatadb("rk","classic", 1,"H2S","NC4",  0.06), &
@@ -919,7 +919,7 @@
          kijdatadb("csp-srk","classic",1,"CO2", "NC5",    0.15), &
          kijdatadb("csp-srk","classic",1,"CO2", "H2S",    0.099), &
          kijdatadb("csp-srk","classic",1,"CO2", "N2",     -0.042), &
-         kijdatadb("csp-srk","classic",1,"CO2", "A2",     0.0940), &
+         kijdatadb("csp-srk","classic",1,"CO2", "AR",     0.0940), &
          kijdatadb("csp-srk","classic",1,"CO2", "SO2",    0.0800), &
          kijdatadb("csp-srk","classic",1,"CO2", "H2",     0.1080), &
          kijdatadb("csp-srk","classic",1,"H2S", "NC4",    0.06), &
@@ -1043,7 +1043,7 @@
          kijdatadb("csp-pr","classic",1,"CO2", "NC5",    0.15), &
          kijdatadb("csp-pr","classic",1,"CO2", "H2S",    0.1020), &
          kijdatadb("csp-pr","classic",1,"CO2", "N2",     -0.0360), &
-         kijdatadb("csp-pr","classic",1,"CO2", "A2",     0.0880), &
+         kijdatadb("csp-pr","classic",1,"CO2", "AR",     0.0880), &
          kijdatadb("csp-pr","classic",1,"CO2", "SO2",    0.075), &
          kijdatadb("csp-pr","classic",1,"CO2", "H2",    0.1210), &
          kijdatadb("csp-pr","classic",1,"CO2", "CO",     -0.0590), &
@@ -1218,7 +1218,7 @@
          kijdatadb("lk","classic", 1,"H2O","CO2",  0.920), &
          kijdatadb("lk","classic", 1,"H2O","NH3",  1.152), &
          kijdatadb("lk","classic", 1,"H2O","MEOH", 0.979), &
-         kijdatadb("lk","classic", 1,"CO2","A2", 0.992), & ! Mazzoccoli et. al. 2013, dx.doi.org/10.3303/CET1332311
+         kijdatadb("lk","classic", 1,"CO2","AR", 0.992), & ! Mazzoccoli et. al. 2013, dx.doi.org/10.3303/CET1332311
          kijdatadb("lk","classic", 1,"CO2","O2", 1.032) & ! Visually tuned 1.032
         /)
 
@@ -1342,7 +1342,7 @@
          alphaTWUdatadb("PR","N2", 2, (/0.1240,0.8897,2.0138/)),  &
          alphaTWUdatadb("PR","H2", 2, (/1.5147,-3.7959,-0.1377/)),  &
          alphaTWUdatadb("PR","CO2", 2, (/0.1783,0.8590,2.4107/)),  &
-         alphaTWUdatadb("PR","A2", 2, (/0.1228,0.9045,1.8539/)),  &
+         alphaTWUdatadb("PR","AR", 2, (/0.1228,0.9045,1.8539/)),  &
          alphaTWUdatadb("PR","He", 2, (/0.0063,1.2175,1.0909/)),  &
          alphaTWUdatadb("PR","Ne", 2, (/0.1887,0.9470,1.4698/)),  &
          alphaTWUdatadb("PR","D2", 2, (/0.1486,0.9968,1.0587/)),  &
@@ -1360,7 +1360,7 @@
          alphaTWUdatadb("SRK","N2", 2, (/0.1902,0.8900,2.0106/)),  &
          alphaTWUdatadb("SRK","H2", 2, (/0.9444,3.0087,0.1762/)),  &
          alphaTWUdatadb("SRK","CO2", 2, (/0.2807,0.8685,2.2778/)),  &
-         alphaTWUdatadb("SRK","A2", 2, (/0.2023,0.9086,1.8129/)),  &
+         alphaTWUdatadb("SRK","AR", 2, (/0.2023,0.9086,1.8129/)),  &
          alphaTWUdatadb("SRK","He", 2, (/-0.0466,1.2473,0.5401/)),  &
          alphaTWUdatadb("SRK","Ne", 2, (/0.3275,0.9699,1.2893/)),  &
          alphaTWUdatadb("SRK","D2", 2, (/0.2150,0.9921,1.1079/)),  &
@@ -1381,8 +1381,8 @@
 
     type (alphaMCdatadb),dimension (maxalphaMCparam), parameter :: alphaMCdb = (/ &
          alphaMCDatadb("PR","CO2", 1, (/0.704606, -0.314862, 1.89083/) ), &
-         alphaMCDatadb("PR","A2",  1, (/0.397483, -0.282393, 0.796288/) ),  &
-         !CO2, A2:Heidermann, Khalil Aiche J. 26 (1980) 769-779
+         alphaMCDatadb("PR","AR",  1, (/0.397483, -0.282393, 0.796288/) ),  &
+         !CO2, AR:Heidermann, Khalil Aiche J. 26 (1980) 769-779
          alphaMCDatadb("PR","CO", 1, (/0.7050, -0.3185, 1.9012/) ), &
          !O. Chiavone-Filho, P.G. Amaral http://dx.doi.org/10.1021/ie001134o   
          !Ind. Eng. Chem. Res., 2001, 40 (26), pp 6240–6244
