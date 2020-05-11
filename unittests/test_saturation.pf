@@ -1,0 +1,32 @@
+module test_saturation
+  use eoslibinit, only: init_thermo
+  use parameters, only: continueOnError
+  use saturation, only: safe_bubP, safe_dewP
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_safe_bubp_dewp()
+    ! Assert that safe_bubP and safe_dewP work for CO2 and TPlib
+    real :: p, T, p2
+    real, dimension(1) :: x, y
+
+    continueOnError = .true.
+    call init_thermo('thermopack', 'PR', 'vdW', 'Classic', 1,&
+         "CO2", 2)
+
+    T = 304.15259145734092
+    x = [1.0]
+    y = [1.0]
+
+    P = safe_bubP(T,X,Y)
+    P2 = safe_dewP(T,X,Y)
+
+    @assertEqual(p, p2, 1e-8)
+
+  end subroutine test_safe_bubp_dewp
+
+end module test_saturation

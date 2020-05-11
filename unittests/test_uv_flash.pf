@@ -1,0 +1,266 @@
+module test_uv_flash
+  use eoslibinit, only: init_thermo
+  use parameters, only: continueOnError, LIQPH, VAPPH, SINGLEPH, TWOPH
+  use uv_solver
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_twoPhaseUVflash_1c()
+    ! Test UV flash for single component, single-phase CO2
+    use thermo_utils, only: guessPhase
+    use eos, only: enthalpy, specificVolume
+    use tp_solver, only: twoPhaseTPflash
+    integer, parameter :: n = 10
+    real, dimension(2) :: z, x, y
+    real :: p, T, betaL, beta, pmin, pmax, Tmin, Tmax
+    real :: vol_gas, vol_liq, e_gas, e_liq, u, v
+    real :: p2, T2, h_gas, h_liq
+    integer :: phase, i, j
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
+         "CO2,C1", 3)
+
+    z = [1.0, 0.0]
+    x = z
+    y = z
+
+    pmin = 41e5
+    pmax = 42e5
+    Tmin = 270
+    Tmax = 293
+
+    beta = 0.5
+
+    do i=1, n
+      p = pmin + (pmax - pmin)*i/real(n)
+      do j=1, n
+        T = Tmin + (Tmax - Tmin)*i/real(n)
+        call twoPhaseTPflash(T, p, z, beta, betaL, phase, x, y)
+        if(phase == SINGLEPH) then
+          phase = guessPhase(T, p, z)
+          if(phase == LIQPH) then
+            betaL = 1.0
+            beta = 0.0
+          else
+            betaL = 0.0
+            beta = 1.0
+          end if
+        end if
+        x = z
+        y = z
+        if(beta > 0.0) then
+          call specificVolume(T, p, x, VAPPH, vol_gas)
+          call enthalpy(T, p, x, VAPPH, h_gas)
+          e_gas = h_gas - vol_gas*p
+        else
+          vol_gas = 1.0
+          e_liq = 1.0
+        end if
+        if(betaL > 0.0) then
+          call specificVolume(T, p, y, LIQPH, vol_liq)
+          call enthalpy(T, p, x, LIQPH, h_liq)
+          e_liq = h_liq - vol_liq*p
+        else
+          vol_liq = 1.0
+          e_liq = 1.0
+        end if
+        u = (e_gas*beta/vol_gas + e_liq*betaL/vol_liq)&
+             /(beta/vol_gas + betaL/vol_liq)
+        v = 1/(beta/vol_gas + betaL/vol_liq)
+        T2 = Tmin
+        p2 = pmin
+        call twoPhaseUVflash(T2, p2, z, beta, betaL, x, y, u, v, phase)
+        @assertEqual(T2, T, 1e-06)
+        @assertEqual(p2, p, 2e-00)
+      end do
+    end do
+
+  end subroutine test_twoPhaseUVflash_1c
+
+!  @Test
+  subroutine test_twoPhaseUVflash_1c_2p()
+    ! Test UV flash for single component, two-phase CO2
+    use thermo_utils, only: guessPhase
+    use eos, only: enthalpy, specificVolume
+    use saturation, only: safe_bubT, safe_dewT
+    integer, parameter :: n = 10
+    real, dimension(2) :: z, x, y
+    real :: p, T, betaL, beta, pmin, pmax
+    real :: vol_gas, vol_liq, e_gas, e_liq, u, v
+    real :: p2, T2, h_gas, h_liq
+    integer :: phase, i, j
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
+         "CO2,C1", 3)
+
+    z = [1.0, 0.0]
+    x = z
+    y = z
+
+    pmin = 40e5
+    pmax = 60e5
+
+    beta = 0.5
+
+    do i=1, n
+      p = pmin + (pmax - pmin)*i/real(n)
+      T = safe_bubT(p, x, y)
+      T2 = safe_dewT(p, x, y)
+      @assertEqual(T, T2)
+      do j=1, n
+        beta = (j - 1)/(real(n) - 1)
+        betaL = 1.0 - beta
+        x = z
+        y = z
+        if(beta == 1.0) then
+          phase = VAPPH
+        else if(beta == 0.0) then
+          phase = LIQPH
+        else
+          phase = TWOPH
+        end if
+        if(beta > 0.0) then
+          call specificVolume(T, p, x, VAPPH, vol_gas)
+          call enthalpy(T, p, x, VAPPH, h_gas)
+          e_gas = h_gas - vol_gas*p
+        else
+          vol_gas = 1.0
+          e_liq = 1.0
+        end if
+        if(betaL > 0.0) then
+          call specificVolume(T, p, y, LIQPH, vol_liq)
+          call enthalpy(T, p, x, LIQPH, h_liq)
+          e_liq = h_liq - vol_liq*p
+        else
+          vol_liq = 1.0
+          e_liq = 1.0
+        end if
+        u = (e_gas*beta/vol_gas + e_liq*betaL/vol_liq)&
+             /(beta/vol_gas + betaL/vol_liq)
+        v = 1/(beta/vol_gas + betaL/vol_liq)
+        p2 = p
+        T2 = T
+        call twoPhaseUVflash(T2, p2, z, beta, betaL, x, y, u, v, phase)
+        @assertEqual(T2, T, 1e-06)
+        @assertEqual(p2, p, 2e-00)
+      end do
+    end do
+
+  end subroutine test_twoPhaseUVflash_1c_2p
+
+  @Test
+  subroutine test_twoPhaseUVflash_5c()
+    ! Test UV flash a five-component mixture
+    real, dimension(5) :: z, x, y
+    real :: p, T, betaL, beta, u, v
+    integer :: phase
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
+         "CO2,N2,H2S,C2,C1", 6)
+
+    T = 298.09621346011721
+    p = 7062289.7496999148
+    u = 3112.9195760054172
+    v = 1.4877859376553640E-004
+    Z = [0.94980650312939319, 4.9991460192386570E-003, &
+         2.0000656425762893E-004, 4.9997302858171425E-003, &
+         3.9994614001293179E-002]
+    X = [0.96836959433093128, 2.5678850738597592E-003, &
+         2.1885744434522620E-004, 4.2248845281834656E-003, &
+         2.4618778622680162E-002]
+    Y = [0.94980024558716880, 4.9999655873730602E-003, &
+         2.0000020970294629E-004, 4.9999914831572482E-003, &
+         3.9999797132597992E-002]
+    phase = TWOPH
+    call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
+    @assertTrue(T > 0)
+    @assertTrue(p > 0)
+    @assertTrue(beta > 0)
+    @assertTrue(betaL > 0)
+
+  end subroutine test_twoPhaseUVflash_5c
+
+!  @Test
+  subroutine test_twoPhaseUVflash_8c()
+    ! Test UV flash an eight-component mixture
+    real, dimension(8) :: z, x, y
+    real :: p, T, betaL, beta, u, v
+    integer :: phase
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+         "CO2,N2,O2,A2,NO,SO2,CO,NH3", 9)
+
+    T = 301.11445826574317
+    p = 6959674.8851478873
+    u = -60596.205411162817
+    v = 7.8778590866182693E-005
+    Z = [0.99762853361327786, 2.0004016774166022E-003, &
+         2.0003621287594336E-004, 1.0001773313404883E-004, &
+         5.0009755259543689E-005, 9.9992472659844790E-006, &
+         1.0001819065509530E-005, 9.9994170464982804E-007]
+    X = [0, 0, 0, 0, 0, 0, 0, 0]
+    Y = [0.99762853361327786, 2.0004016774166022E-003, &
+         2.0003621287594336E-004, 1.0001773313404883E-004, &
+         5.0009755259543689E-005, 9.9992472659844790E-006, &
+         1.0001819065509530E-005, 9.9994170464982804E-007]
+    phase = 1
+
+    call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
+    @assertTrue(T > 0)
+    @assertTrue(p > 0)
+    @assertTrue(beta > 0)
+    @assertTrue(betaL > 0)
+
+  end subroutine test_twoPhaseUVflash_8c
+
+  @Test
+  subroutine test_twoPhaseUVflash_8c_2()
+    ! Test UV flash an eight-component mixture
+    real, dimension(8) :: z, x, y
+    real :: p, T, betaL, beta, u, v
+    integer :: phase
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+         "CO2,N2,O2,A2,NO,SO2,CO,NH3", 9)
+
+    T = 186.06816554198198
+    p = 107354.89337141129
+    u = 3823.6215920056407
+    v = 1.3878641749508112E-002
+    Z = [0.99762899999999999, 2.0000000000000009E-003, &
+         1.9999999999999977E-004, 1.0000000000000017E-004, &
+         5.0000000000000016E-005, 9.9999999999999568E-006, &
+         9.9999999999999991E-006, 9.9999999999999890E-007]
+    X = [0.99996084086622306, 6.0508463075920465E-006, &
+         8.9925928630949146E-007, 4.5504621128435183E-007, &
+         9.4295704505556075E-007, 2.8067687254711240E-005, &
+         4.6567777469236284E-008, 2.6967698944130798E-006]
+    Y = [0.99647398318340197, 2.9876509316376482E-003, &
+         2.9861938138767401E-004, 1.4930700773747938E-004, &
+         7.4299132246234418E-005, 1.0506403252015498E-006, &
+         1.4930174166864019E-005, 1.5954909688218150E-007]
+    phase = 2
+
+    call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
+    @assertTrue(T > 0)
+    @assertTrue(p > 0)
+    @assertTrue(beta > 0)
+    @assertTrue(betaL > 0)
+
+  end subroutine test_twoPhaseUVflash_8c_2
+
+end module test_uv_flash

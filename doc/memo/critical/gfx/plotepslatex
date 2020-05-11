@@ -1,0 +1,38 @@
+#!/bin/zsh
+
+# Zsh magic: we check how long it was since this script was run, and then only
+# replot those gnuplot files which were modified in the meantime.
+
+now=`date +%s`
+if [[ -a .plotepslatex.modtime ]]; then
+  lasttime=`cat .plotepslatex.modtime`
+  (( timepassed = $now-$lasttime ))
+else
+  timepassed=360000000
+fi
+echo $now > .plotepslatex.modtime
+
+if [[ $1 == "-f" ]]; then
+  timepassed=360000000
+fi
+
+files=`ls -1 **/*(.ms-$timepassed) | grep ".gp"`
+if [[ $files == "" ]]; then
+  echo "No gnuplot files have changed."
+  echo "You can run this script with -f to force replotting all."
+else
+  files=($=files)
+fi
+
+for file in $files; do
+  filename=`basename $file .gp`
+  #echo $filename
+  gnuplot $file
+  epspdf $filename.eps
+  cp mal.tex $filename-mal.tex
+  sed -i "s!placeholder!$filename!" $filename-mal.tex
+  pdflatex $filename-mal.tex 
+  pdfcrop $filename-mal.pdf $filename.pdf
+	#mv $filename.pdf ../../
+  rm $filename.eps $filename.tex $filename-mal.tex $filename-mal.pdf	$filename-mal.aux $filename-mal.log $filename.log
+done

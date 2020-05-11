@@ -1,0 +1,89 @@
+module test_state_func
+  use pfunit_mod
+  implicit none
+
+contains
+
+  @Test
+  subroutine testSVDerivativesTwoPhase
+    use eoslibinit,      only: init_thermo
+    use state_functions, only: getSVDerivativesTwoPhase
+    use tp_solver,       only: twophasetpflash
+    use sv_solver,       only: twophasesvflash
+    use eos,             only: twoPhaseEntropy,twoPhaseSpecificVolume
+    use utilities,       only: linspace
+    implicit none
+    integer, parameter      :: ncomps = 3, nphases = 2
+    integer, parameter      :: nt = 35, np = 35
+    integer                 :: iphase0,ip,it,iphase1,nskips,nskipv
+    real, dimension(ncomps) :: x,y,z
+    real, dimension(nt)     :: t
+    real, dimension(np)     :: p
+    real                    :: betav,betal,dv,ds
+    real                    :: t0,p0,t1,p1,s0,s1,v0,v1
+    real                    :: dsdt_v,dsdp_v,dvdp_s,dvdt_s
+    real                    :: dsdt_v_num,dsdp_v_num,dvdp_s_num,dvdt_s_num
+
+    call init_thermo("Thermopack","pr","classic","classic",ncomps, &
+         "CO2,N2,O2",nphases)
+
+    z(1) = 0.90
+    z(2) = 0.05
+    z(3) = 0.05
+    z = z/sum(z)
+    dv = 1e-8
+    ds = 1e-3
+
+    call linspace(150.0,450.0,nt,t)
+    call linspace(0.1e5,10e6,np,p)
+
+    nskips = 0
+    nskipv = 0
+    do ip = 1, np
+      do it = 1, nt
+        t0 = t(it)
+        p0 = p(ip)
+        call twophasetpflash(t0,p0,z,betav,betal,iphase0,x,y)
+        call getSVDerivativesTwoPhase(t0,p0,z,betav,betal,x,y,iphase0,dsdp_v,dsdt_v,dvdp_s,dvdt_s)
+        s0 = twoPhaseEntropy(t0,p0,z,x,y,betav,iphase0,betal)
+        v0 = twoPhaseSpecificVolume(t0,p0,z,x,y,betav,iphase0,betal)
+
+        ! Perturb s at constant v
+        s1 = s0 + ds
+        iphase1 = iphase0
+        call twophasesvflash(t1,p1,z,betav,betal,x,y,s1,v0,iphase1)
+        dsdt_v_num = ds/(t1 - t0)
+        dsdp_v_num = ds/(p1 - p0)
+        if (iphase1 == iphase0) then
+          @AssertTrue(abs((dsdp_v - dsdp_v_num)/dsdp_v) < 1e-2)
+          @AssertTrue(abs((dsdt_v - dsdt_v_num)/dsdt_v) < 1e-2)
+        else
+          nskips = nskips + 1
+        end if
+
+        ! Perturb v at constant s
+        v1 = v0 + dv
+        iphase1 = iphase0
+        call twophasesvflash(t1,p1,z,betav,betal,x,y,s0,v1,iphase1)
+        dvdt_s_num = dv/(t1 - t0)
+        dvdp_s_num = dv/(p1 - p0)
+        if (iphase1 == iphase0) then
+          @AssertTrue(abs((dvdp_s - dvdp_s_num)/dvdp_s) < 1e-2)
+          @AssertTrue(abs((dvdt_s - dvdt_s_num)/dvdt_s) < 1e-2)
+        else
+          nskipv = nskipv + 1
+        end if
+      end do
+    end do
+
+    ! Make sure that we did not skip more than 5% of the cases
+    @AssertTrue(nskipv < 0.05*np*nt)
+    @AssertTrue(nskips < 0.05*np*nt)
+
+  end subroutine testSVDerivativesTwoPhase
+
+end module test_state_func
+
+! Local Variables:
+! mode: f90
+! End:

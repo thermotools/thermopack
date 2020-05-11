@@ -1,0 +1,334 @@
+\documentclass[english]{article}
+% NOTE: You must pass either norsk or english as an option!
+\usepackage[utf8]{inputenc}
+
+% \usepackage{textcomp}
+% \usepackage{listings}
+% \usepackage{babel}
+% \usepackage{natbib}
+\usepackage{amsmath}
+% \usepackage{pslatex}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+% \usepackage{lastpage}
+% \usepackage{listings}
+% \usepackage{tikz}
+% \usetikzlibrary{decorations.pathmorphing}
+% \usepackage{pgfplots}
+% \usepackage{cleveref}
+% \usepackage{pgf,pgfarrows,pgfnodes}
+
+% \usepackage[final]{pdfpages}
+
+% \usepackage[altbullet,expert]{lucidabr}
+
+% \usepackage{ifthen}
+% \usepackage{nomencl}
+% \usepackage{parskip}
+% \usepackage{psfrag}
+\usepackage{booktabs}
+%\usepackage{todonotes}
+\usepackage{siunitx,mhchem,todonotes}
+% \usepackage{pifont}
+%\usepackage{subfigure} %,caption
+\usepackage{subcaption,caption}
+% \usepackage{microtype}% for pdflatex; medisin mot overfull \vbox
+
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}% for å slippe å taste inn disse $
+\newcolumntype{L}{>{$}l<{$}}% for å slippe å taste inn disse $
+%
+\newcommand*{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand*{\uunit}[1]{\ensuremath{\mathrm{#1}}}
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+% høy tekst-indeks/superscript/apex
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{vap}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\cubic}{\text{cb}}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to~}}
+\newcommand{\dd}[1]{\mathrm{d}{#1}}
+\newcommand{\resid}{\text{res}}
+
+\title{Modifying the cubic ecuation of state by a Pèneloux volume shift}
+\author{Morten Hammer}
+\graphicspath{{gfx/}}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+Based on the article by P{\'e}neloux et al.\cite{Peneloux1982}, the
+modification on the chemical potentials are investigated.
+
+The volume shift introduced by P{\'e}neloux et al.,
+\begin{equation}
+  c = \frac{1}{n}\underset{i}{\sum}c_i n_i,
+\label{eq:volumeshift}
+\end{equation}
+where $c_i$ is a component constant representing the component volume
+shift.
+
+In order to preserve the consistency of the cubic EoS, the same
+correction is done on all phases. The effect of the shift for low
+pressure gas is small, because here the specific volume is large. 
+
+\section{Cubic equations of state}
+The general cubic equation of state has the form
+\begin{equation}
+  P = \frac{RT}{v_\cubic -b_\cubic} - 
+  \frac{\alpha a}{(v_\cubic-m_1 b_\cubic)(v_\cubic-m_2 b_\cubic)},
+\label{eq:gencubic}
+\end{equation}
+where $m_1$ and $m_2$ are dimensionless constants defining the SRK, PR
+and Van der Waals equation of state, $v=V/n~(\SI{}{\meter^3\per\mol})$
+is the specific volume. The parameters $a~(\SI{}{\meter^3\joule\per
+  \mol^2})$ and $b~(\SI{}{\meter^3\per\mol})$ typically depend on the
+composition and the dimensionless quantity $\alpha$ is a function of
+temperature.
+
+\section{Cubic equations of state with volume shift}
+The actual volume $v$ will be the cubic volume, $v_\cubic$, shifted by $c$,
+\begin{equation}
+  v = v_\cubic - c.
+\label{eq:actvolume}
+\end{equation}
+In the same manner the co-volume paramater is shifted,
+\begin{equation}
+  b = b_\cubic - c.
+\label{eq:covolume}
+\end{equation}
+That is, the actual eos to be solved is
+\begin{align}
+  P =& \frac{RT}{v - b} -
+  \frac{\alpha a}{(v + c - m_1 (b + c))(v + c - m_2 (b + c))}\\
+  = & \frac{RT}{v -b} - \frac{\alpha a}{\left( m_1-m_2 \right)(b + c)}
+  \left(\frac{1}{v + c - m_1 (b + c)} - \frac{1}{v + c - m_2 (b +
+      c)}\right)
+\label{eq:cubicshifted}
+\end{align}
+There is no need to solve the shifted cubic eos, because
+\begin{enumerate}
+\item Given volume, the volume can be shifted before evaluating the
+  cubic eos.
+\item Given pressure, the resulting volume can be shifted.
+\end{enumerate}
+But the corrections for all the thermodynamic potentials and
+properties must be known.
+
+The fugacity coefficient is given by Pèneloux et al.,
+\begin{equation}
+  \ln \varphi_i = \ln \varphi_{\cubic,i} - \frac{c_i P}{R T}.
+\label{eq:fugcoeff}
+\end{equation}
+
+\section{Required differentials}
+Need to know how the Gibbs free energy, entropy, enthalpy,  and
+internal energy is affected.
+
+The residual Gibbs free energy, from definition and Equation
+\eqref{eq:fugcoeff},
+\begin{align}
+  G^\resid =& R T \underset{i}{\sum}n_i \ln \varphi_i\\
+  =& G^\resid_\cubic - nPc.
+\label{eq:G}
+\end{align}
+
+The potentials only differ due to the shift in $Z$ due to the volume shift. 
+The residual entropy, 
+\begin{equation}
+  S^\resid = -\pone{G^\resid}{T}{P,\vektor{n}} = S^\resid_\cubic .
+\label{eq:S}
+\end{equation}
+is unchanged. 
+
+The residual enthalpy,
+\begin{equation}
+  H^\resid = G^\resid + T S^\resid = H^\resid_\cubic -  nPc.
+\label{eq:H}
+\end{equation}
+is affected in the same manner as the Gibbs free energy.
+
+Internal energy,
+\begin{equation}
+  U^\resid = H^\resid - P V^\resid = U^\resid_\cubic.
+\label{eq:U}
+\end{equation}
+is not affected.
+
+The compressibillity factor become,
+\begin{equation}
+  Z = \frac{PV}{nRT} = Z_\cubic - \frac{nPc}{nRT}.
+\label{eq:Z}
+\end{equation}
+
+The $nPc$ shift in enthalpy and Gibbs free energy must be
+differentiated.
+\begin{align}
+  \pone{nPc}{T}{P,\vektor{n}} &= 0,\\ 
+  \pone{nPc}{P}{T,\vektor{n}} &= nc,\\
+  \pone{nPc}{n_i}{P,T,n_j} &= P c_i .
+\label{eq:nPcdiff}
+\end{align}
+As it is seen these are straight forward.
+
+Fugacity coefficient differentials:
+\begin{align}
+  \ln \varphi_{i,j} & = \ln \varphi_{\cubic,i,j},\\
+  \ln \varphi_{iT} &= \ln \varphi_{\cubic,iT} + \frac{c_i P}{R T^2},\\
+  \ln \varphi_{iP} &= \ln \varphi_{\cubic,iP} - \frac{c_i}{R T}.
+\label{eq:fugdiff}
+\end{align}
+
+Volume differentials:
+\begin{align}
+  v_{i} & = v_{\cubic,i} - c_i.
+\label{eq:voldiff}
+\end{align}
+The compressibillity factor differentials:
+\begin{align}
+  Z_{T} &= Z_{\cubic,T} + \frac{Pc}{RT^2},\\
+  Z_{P} &= Z_{\cubic,P} - \frac{c}{RT},\\
+  Z_{i} &= Z_{\cubic,i} - \frac{Pc_i}{nRT} + \frac{Pc}{nRT}.
+\label{eq:Zdiff}
+\end{align}
+\section{Calculating the $c$}
+The $c$ for the SRK EOS is calculated from the following equation:
+\begin{equation}
+  c_i = 0.40768\frac{R T_{c_i}}{P_{c_i}}\left(0.29441- Z_{\text{RA}}\right)
+\label{eq:ci}
+\end{equation}
+
+$Z_{\text{RA}}$ are tabulated in TPlib. Reid et al. \cite{Reid1987}
+also correlate $Z_{\text{RA}}$ as follows:
+\begin{equation}
+  Z_{\text{RA}} = 0.29056 - 0.08775 \omega
+\label{eq:zra}
+\end{equation}
+
+Jhaveri and Youngren \cite{Jhaveri1988} have developed different paramaters for the PR EOS:
+\begin{equation}
+  c_i^{\text{PR}} = 0.50033\frac{R T_{c_i}}{P_{c_i}}\left(0.25969- Z_{\text{RA}}\right)
+\label{eq:ci_PR}
+\end{equation}
+\clearpage
+\bibliographystyle{plain}
+\bibliography{../thermopack}
+
+\end{document}

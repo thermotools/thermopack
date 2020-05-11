@@ -1,0 +1,70 @@
+module test_tp_flash
+  use eoslibinit, only: init_thermo
+  use parameters, only: continueOnError
+  use tp_solver
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_tp_flash_point()
+    ! Test a single point in TP space
+    real, dimension(8) :: z, x, y
+    real :: p, T, betaL, beta
+    integer :: phase
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+         "CO2,N2,O2,A2,CO,H2S,H2,C1", 9)
+
+    z = (/0.98199899999065965, 6.0000000025901721E-003,&
+         1.0000000003932113E-006, 5.0000000019329808E-004,&
+         4.0000000015823992E-004, 9.9999999995230694E-005,&
+         1.0000000006101501E-002, 1.0000000003014362E-003 /)
+
+    T = 302.46137724669268
+    p = 7705980.6837845352
+
+    beta = 0.5
+
+    call twoPhaseTPflash(t, p, z, beta, betaL, phase, x, y)
+    @assertTrue(phase /= -1)
+
+    T = 302.46161994265759
+    p = 7706002.2603671746
+    z = (/0.98199899997992279, 6.0000000055675665E-003,&
+         1.0000000008460226E-006, 5.0000000041550564E-004,&
+         4.0000000034013847E-004, 9.9999999989748805E-005,&
+         1.0000000013115396E-002, 1.0000000006479682E-003/)
+
+    call twoPhaseTPflash(t, p, z, beta, betaL, phase, x, y)
+    @assertTrue(phase /= -1)
+
+  end subroutine test_tp_flash_point
+
+  @Test
+  subroutine test_rr_solve()
+    ! Test rr_solve for difficult input values
+    real, dimension(5) :: z, x, y, K
+    real :: betaL, beta
+    logical :: sloppy, solution
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
+         "CO2,N2,H2S,C2,C1", 6)
+
+    z = [0.95051094482832965, 4.8941962130007507E-003, &
+         2.0045957217850629E-004, 4.9778689343013254E-003, &
+         3.9416530452189916E-002]
+    K = [1.0000002129226517, 1.0000046877665441, 0.99999733022458492, &
+         0.99999793138813087, 1.0000029412761160]
+    sloppy = .false.
+    solution = .false.
+    solution = rr_solve(5,z,K,beta,x,y,sloppy,betaL)
+    @assertTrue(solution)
+
+  end subroutine test_rr_solve
+
+end module test_tp_flash

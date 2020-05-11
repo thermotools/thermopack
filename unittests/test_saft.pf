@@ -1,0 +1,1333 @@
+module test_saft
+  use eoslibinit, only: init_thermo, cleanup_eos
+  use pfunit_mod
+  use saft_interface
+  use saft_association
+  use tpvar, only: comp, nce, cbeos
+  use parameters, only: LIQPH, VAPPH
+  use pc_saft_nonassoc
+  implicit none
+  save
+
+contains
+
+  subroutine init(pc_saft_flag,one_comp)
+    logical, optional, intent(in) :: pc_saft_flag
+    logical, optional, intent(in) :: one_comp
+    character(len=20) :: cmps, eos
+    integer :: nc
+
+    if (present(one_comp)) then
+       nc = 1
+       cmps = "H2O"
+    else
+      nc = 2
+      cmps = "H2O,ETOH"
+    end if
+    eos='CPA-SRK'
+    if (present(pc_saft_flag)) then
+      if (pc_saft_flag) then
+        eos='PC-SAFT'
+      end if
+    end if
+    !print *, eos, cmps
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos=eos,&
+         mixing='Classic',ncomp=nc,comp_string=cmps,nphases=2)
+
+  end subroutine init
+
+
+
+
+
+  @Test
+  subroutine test_Helmholtz_Derivatives
+    use tpcubic, only: cbCalcPressure
+    implicit none
+    real :: T, V, n(2), P
+    real :: Tpert, Vpert,npert(2)
+    ! Variables for testing the association contributions to reduced, residual Helmholtz energy.
+    real :: F,F_T,F_V,F_TT,F_TV,F_VV
+    real :: F_n(2),F_Tn(2),F_Vn(2)
+    real :: F_nn(2,2)
+    real :: Fpert,Fpert2
+    real :: Fpert_T, Fpert_V
+    real :: Fpert_n(2)
+    ! Variables for testing the total reduced, residual Helmholtz energy.
+    real :: FF,FF_T,FF_V,FF_TT,FF_TV,FF_VV
+    real :: FF_n(2),FF_Tn(2),FF_Vn(2)
+    real :: FF_nn(2,2)
+    real :: FFpert
+    real :: FFpert_T, FFpert_V
+    real :: FFpert_n(2)
+    !
+    real, allocatable, dimension(:) :: X_k, X_k_pert
+    real :: eps
+    real :: sumn
+    real :: param(4), parampert(4)
+    call init()
+
+    if (numAssocSites > 0) then
+
+       T = 300
+       V = 0.05
+       n = (/2.0,2.0/)
+       eps = 1e-5
+       param(1) = T
+       param(2) = V
+       param(3:) = n
+       sumn = sum(n)
+       parampert = param
+
+       allocate(X_k(numAssocSites))
+       allocate(X_k_pert(numAssocSites))
+
+       call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+       X_k = 0.25
+       call solve_for_X_k(nce,param,X_k)
+       call calcFder_assoc(nce,X_k,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+
+       ! Test F_T.
+       Tpert = T*(1+eps)
+       parampert(1) = Tpert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=Tpert,V=V,n=n,F=Fpert)
+       @assertTrue(abs( (Fpert-F)/(T*eps) - F_T)<(1e-4*abs(F_T) + 1e-12))
+
+       ! Test F_TT.
+       parampert = param
+       Tpert = T*(1-eps)
+       parampert(1)=Tpert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k_pert,Tpert,V,n,Fpert2)
+       @assertTrue(abs((Fpert+Fpert2-2*F)/(T*eps)**2-F_TT)<(5e-4*abs(F_TT)+1e-12))
+
+       ! Test F_V.
+       Vpert = V*(1+eps)
+       parampert = param
+       parampert(2) = Vpert
+
+       X_k_pert = 0.25 ! Any other initial guess totally fails! WHY?!
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k_pert,T,Vpert,n,Fpert)
+       @assertTrue(abs( (Fpert-F)/(V*eps) - F_V)<(2e-4*abs(F_V) + 1e-12))
+
+       ! Test F_VV.
+       Vpert = V*(1-eps)
+       parampert = param
+       parampert(2) = Vpert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k_pert,T,Vpert,n,Fpert2)
+       @assertTrue(abs((Fpert+Fpert2-2*F)/(V*eps)**2-F_VV)<2e-4*(abs(F_VV)+1e-12))
+
+       ! Test F_TV.
+       Vpert = V*(1+eps)
+       parampert = param
+       parampert(2) = Vpert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=Vpert,n=n,F=Fpert,F_T=Fpert_T)
+       @assertTrue(abs( (Fpert_T-F_T)/(V*eps) - F_TV)<(1e-4*abs(F_TV) + 1e-12))
+
+       ! Test F_n(1).
+       npert(1) = n(1)*(1+eps)
+       npert(2) = n(2)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert)
+       @assertTrue(abs( (Fpert-F)/(n(1)*eps) - F_n(1))<(1e-4*abs(F_n(1)) + 1e-12))
+
+       ! Test F_n(2)
+       npert(1) = n(1)
+       npert(2) = n(2)*(1+eps)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert)
+       @assertTrue(abs( (Fpert-F)/(n(2)*eps) - F_n(2))<(1e-4*abs(F_n(2)) + 1e-12))
+
+       ! Test F_Tn(1).
+       npert(1) = n(1)*(1+eps)
+       npert(2) = n(2)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert,F_T=Fpert_T)
+       @assertTrue(abs( (Fpert_T-F_T)/(n(1)*eps) - F_Tn(1))<(1e-5*abs(F_Tn(1)) + 1e-12))
+
+       ! Test F_Tn(2).
+       npert(1) = n(1)
+       npert(2) = n(2)*(1+eps)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert,F_T=Fpert_T)
+       @assertTrue(abs( (Fpert_T-F_T)/(n(2)*eps) - F_Tn(2))<(1e-5*abs(F_Tn(2)) + 1e-12))
+
+       ! Test F_Vn; derivative with respect to first component.
+       npert(1) = n(1)*(1+eps)
+       npert(2) = n(2)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert,F_V=Fpert_V)
+       @assertTrue(abs( (Fpert_V-F_V)/(n(1)*eps) - F_Vn(1))<(1e-5*abs(F_Vn(1)) + 1e-12))
+
+       ! Test F_Vn; derivative with respect to second component.
+       npert(1) = n(1)
+       npert(2) = n(2)*(1+eps)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert,F_V=Fpert_V)
+       @assertTrue(abs( (Fpert_V-F_V)/(n(2)*eps) - F_Vn(2))<(1e-5*abs(F_Vn(2)) + 1e-12))
+
+       ! Test F_nn; derivative with respect to components (1,1) and (1,2).
+       npert(1) = n(1)*(1+eps)
+       npert(2) = n(2)
+       parampert = param
+       parampert(3:) = npert
+       X_k_pert = 0.25
+       call solve_for_X_k(nce,parampert,X_k_pert)
+       call calcFder_assoc(nce,X_k=X_k_pert,T=T,V=V,n=npert,F=Fpert,F_n=Fpert_n)
+       @assertTrue(abs( (Fpert_n(1)-F_n(1))/(n(1)*eps) - F_nn(1,1))<(1e-5*abs(F_nn(1,1)) + 1e-12))
+       @assertTrue(abs( (Fpert_n(2)-F_n(2))/(n(1)*eps) - F_nn(1,2))<(1e-5*abs(F_nn(1,2)) + 1e-12))
+
+       deallocate(X_k)
+       deallocate(X_k_pert)
+
+    end if
+
+    !******************************* TOTAL REDUCED, RESIDUAL HELMHOLTZ ENERGY **********************************
+
+    T = 300
+    V = 0.05
+    n = (/2.0,2.0/)
+    eps = 1e-5
+    sumn = sum(n)
+
+    call calcSaftFder_res(nce,comp,cbeos(1),T,V,n,FF,FF_T,FF_V,FF_n,FF_TT,FF_TV,FF_VV,FF_Tn,FF_Vn,FF_nn)
+
+    ! Test FF_Tn.
+    Tpert = T*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_n=FFpert_n)
+    @assertTrue(norm2((FFpert_n-FF_n)/(T*eps) - FF_Tn ) < (1e-4*norm2(FF_Tn) + 1e-12 ) )
+
+
+    ! Test FF_T.
+    Tpert = T*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F=FFpert)
+    @assertTrue(abs( (FFpert-FF)/(T*eps) - FF_T)<(1e-4*abs(FF_T) + 2e-12))
+
+    ! Test FF_TT
+    Tpert = T*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_T=FFpert_T)
+    @assertTrue(abs( (FFpert-FF)/(T*eps) - FF_T)<(1e-4*abs(FF_T) + 1e-12))
+
+    ! Test FF_TV.
+    Tpert = T*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_V=FFpert_V)
+
+    ! Test FF_V.
+    Vpert = V*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F=FFpert)
+    @assertTrue(abs( (FFpert-FF)/(V*eps) - FF_V)<(1e-4*abs(FF_V) + 1e-12))
+
+    ! Test FF_VV.
+    Vpert = V*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F_V=FFpert_V)
+    @assertTrue(abs( (FFpert_V-FF_V)/(V*eps) - FF_VV)<(5e-4*abs(FF_VV) + 1e-12))
+
+    ! Test FF_n(1).
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call calcSaftFder_res(nce,comp,cbeos(1),T,V,npert,F=FFpert)
+    @assertTrue(abs( (FFpert-FF)/(n(1)*eps) - FF_n(1))<(1e-4*abs(FF_n(1)) + 1e-12))
+
+    ! Test FF_n(2).
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),T,V,npert,F=FFpert)
+    @assertTrue(abs( (FFpert-FF)/(n(2)*eps) - FF_n(2))<(1e-4*abs(FF_n(2)) + 1e-12))
+
+    ! Test FF_Vn.
+    Vpert = V*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F_n=FFpert_n)
+    @assertTrue(norm2((FFpert_n-FF_n)/(V*eps) - FF_Vn ) < (1e-4*norm2(FF_Vn) + 1e-12 ) )
+
+
+    ! Test F_nn(1,1) and F_nn(1,2)
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call calcSaftFder_res(nce,comp,cbeos(1),T=T,V=V,n=npert,F_n=FFpert_n)
+    @assertTrue(norm2((FFpert_n-FF_n)/(n(1)*eps) - FF_nn(1,:)) < (1e-4*norm2(FF_nn(1,:)) + 1e-12 ))
+
+    ! Test F_nn(2,1) and F_nn(2,2)
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call calcSaftFder_res(nce,comp,cbeos(1),T=T,V=V,n=npert,F_n=FFpert_n)
+    @assertTrue(norm2((FFpert_n-FF_n)/(n(2)*eps) - FF_nn(2,:)) < (1e-4*norm2(FF_nn(2,:)) + 1e-12 ))
+
+    call cleanup_eos()
+  end subroutine test_Helmholtz_Derivatives
+
+
+  @Test
+  subroutine test_Delta
+    implicit none
+    real :: T, V, n(2)
+    real :: Tpert, Vpert,npert(2)
+    real, allocatable, dimension(:,:)     :: Delta,Delta_T,Delta_V,Delta_TT,Delta_TV,Delta_VV
+    real, allocatable, dimension(:,:,:)   :: Delta_n,Delta_Tn,Delta_Vn
+    real, allocatable, dimension(:,:,:,:) :: Delta_nn
+    real, allocatable, dimension(:,:)     :: Deltapert,Deltapert2
+    real, allocatable, dimension(:,:)     :: Deltapert_T, Deltapert_V
+    real, allocatable, dimension(:,:,:)   :: Deltapert_n
+    real :: eps
+    real :: sumn
+    integer :: k,l
+
+    call init()
+
+    allocate(Delta(numAssocSites,numAssocSites))
+    allocate(Delta_T(numAssocSites,numAssocSites))
+    allocate(Delta_TT(numAssocSites,numAssocSites))
+    allocate(Delta_TV(numAssocSites,numAssocSites))
+    allocate(Delta_VV(numAssocSites,numAssocSites))
+    allocate(Delta_V(numAssocSites,numAssocSites))
+    allocate(Delta_n(numAssocSites,numAssocSites,nce))
+    allocate(Delta_Tn(numAssocSites,numAssocSites,nce))
+    allocate(Delta_Vn(numAssocSites,numAssocSites,nce))
+    allocate(Delta_nn(numAssocSites,numAssocSites,nce,nce))
+
+    allocate(Deltapert(numAssocSites,numAssocSites))
+    allocate(Deltapert2(numAssocSites,numAssocSites))
+    allocate(Deltapert_T(numAssocSites,numAssocSites))
+    allocate(Deltapert_V(numAssocSites,numAssocSites))
+    allocate(Deltapert_n(numAssocSites,numAssocSites,nce))
+
+    T = 300
+    V = 0.02
+    n = (/1.7,2.3/)
+
+    eps = 5e-6
+    sumn = sum(n)
+
+    call Delta_kl(nce,T,V,n,Delta,Delta_T,Delta_V,Delta_n,Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
+    !print *, "Delta", Delta(1,:)
+    !print *, "Delta", Delta(2,:)
+    !print *, "Delta", Delta(3,:)
+    !print *, "Delta", Delta(4,:)
+    !print *, "Delta", Delta(5,:)
+    !print *, "Delta", Delta(6,:)
+    ! Test Delta_V.
+    Vpert = V*(1+eps)
+    call Delta_kl(nce,T,Vpert,n,Deltapert)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+
+          @assertTrue(abs( (Deltapert(k,l)-Delta(k,l))/(V*eps) - Delta_V(k,l))<(1e-4*abs(Delta_V(k,l)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_T.
+    Tpert = T*(1+eps)
+    call Delta_kl(nce,Tpert,V,n,Deltapert)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(((Deltapert(k,l)-Delta(k,l))/(T*eps) - Delta_T(k,l))<(1e-4*abs(Delta_T(k,l)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_TT.
+    Tpert = T*(1+eps)
+    call Delta_kl(nce,Tpert,V,n,Deltapert,Delta_T=Deltapert_T)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs((Deltapert_T(k,l)-Delta_T(k,l))/(T*eps)-Delta_TT(k,l))<(1e-4*abs(Delta_TT(k,l))+1e-12))
+       end do
+    end do
+
+    ! Test Delta_VV.
+    Vpert = V*(1+eps)
+    call Delta_kl(nce,T,Vpert,n,Deltapert,Delta_V=Deltapert_V)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs((Deltapert_V(k,l) - Delta_V(k,l))/(V*eps) - Delta_VV(k,l))<5e-5*(abs(Delta_VV(k,l))+1e-12))
+       end do
+    end do
+
+    ! Test Delta_TV.
+    Vpert = V*(1+eps)
+    call Delta_kl(nce,T=T,V=Vpert,n=n,Delta=Deltapert,Delta_T=Deltapert_T)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_T(k,l)-Delta_T(k,l))/(V*eps) - Delta_TV(k,l))<(1e-4*abs(Delta_TV(k,l)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_n; derivative with respect to first component.
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert(k,l)-Delta(k,l))/(n(1)*eps) - Delta_n(k,l,1))<(1e-4*abs(Delta_n(k,l,1)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_n; derivative with respect to second component.
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert(k,l)-Delta(k,l))/(n(2)*eps) - Delta_n(k,l,2))<(1e-4*abs(Delta_n(k,l,2)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_Tn; derivative with respect to first component.
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_T=Deltapert_T)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_T(k,l)-Delta_T(k,l))/(n(1)*eps) - Delta_Tn(k,l,1))<(1e-5*abs(Delta_Tn(k,l,1)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_Tn; derivative with respect to second component.
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_T=Deltapert_T)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_T(k,l)-Delta_T(k,l))/(n(2)*eps) - Delta_Tn(k,l,2))<(1e-5*abs(Delta_Tn(k,l,2)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_Vn; derivative with respect to first component.
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_V=Deltapert_V)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_V(k,l)-Delta_V(k,l))/(n(1)*eps) - Delta_Vn(k,l,1))<(1e-5*abs(Delta_Vn(k,l,1)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_Vn; derivative with respect to second component.
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_V=Deltapert_V)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          !print *, (Deltapert_V(k,l)-Delta_V(k,l))/(n(2)*eps), Delta_Vn(k,l,2)
+          @assertTrue(abs( (Deltapert_V(k,l)-Delta_V(k,l))/(n(2)*eps) - Delta_Vn(k,l,2))<(1e-5*abs(Delta_Vn(k,l,2)) + 1e-12))
+       end do
+    end do
+
+
+    ! Test Delta_nn; derivative with respect to components (1,1) and (1,2).
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_n=Deltapert_n)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          !print *, (Deltapert_n(k,l,1)-Delta_n(k,l,1))/(n(1)*eps), Delta_nn(k,l,1,1)
+          @assertTrue(abs( (Deltapert_n(k,l,1)-Delta_n(k,l,1))/(n(1)*eps) - Delta_nn(k,l,1,1))<(1e-5*abs(Delta_nn(k,l,1,1)) + 1e-12))
+       end do
+    end do
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          !print *, k,l, (Deltapert_n(k,l,2)-Delta_n(k,l,2))/(n(1)*eps), Delta_nn(k,l,1,2)
+          @assertTrue(abs( (Deltapert_n(k,l,2)-Delta_n(k,l,2))/(n(1)*eps) - Delta_nn(k,l,1,2))<(1e-5*abs(Delta_nn(k,l,1,2)) + 1e-12))
+       end do
+    end do
+
+    ! Test Delta_nn; derivative with respect to components (1,2) and (2,2).
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call Delta_kl(nce,T=T,V=V,n=npert,Delta=Deltapert,Delta_n=Deltapert_n)
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_n(k,l,1)-Delta_n(k,l,1))/(n(2)*eps) - Delta_nn(k,l,1,2))<(1e-5*abs(Delta_nn(k,l,1,2)) + 1e-12))
+       end do
+    end do
+    do k=1,numAssocSites
+       do l=1,numAssocSites
+          @assertTrue(abs( (Deltapert_n(k,l,2)-Delta_n(k,l,2))/(n(2)*eps) - Delta_nn(k,l,2,2))<(1e-5*abs(Delta_nn(k,l,2,2)) + 1e-12))
+       end do
+    end do
+
+    deallocate(Delta)
+    deallocate(Delta_T)
+    deallocate(Delta_TT)
+    deallocate(Delta_TV)
+    deallocate(Delta_VV)
+    deallocate(Delta_V)
+    deallocate(Delta_n)
+    deallocate(Delta_Tn)
+    deallocate(Delta_Vn)
+    deallocate(Delta_nn)
+    deallocate(Deltapert)
+    deallocate(Deltapert2)
+    deallocate(Deltapert_T)
+    deallocate(Deltapert_V)
+    deallocate(Deltapert_n)
+
+    call cleanup_eos()
+  end subroutine test_Delta
+
+
+  @Test
+  subroutine test_Q_derivatives
+    implicit none
+    real :: T, V, n(2)
+    real :: Tpert,Vpert,npert(2)
+    real, allocatable, dimension(:)     :: X_k,X_k_pert,Q_X,Q_X_pert,Q_XT,Q_XV
+    real, allocatable, dimension(:)     :: Q_XXX,Q_XTV,Q_XTT,Q_XVV
+    real, allocatable, dimension(:,:)   :: Q_XTn,Q_XVn
+    real, allocatable, dimension(:,:)   :: Q_Xn,Q_XX,Q_XXT,Q_XXV
+    real, allocatable, dimension(:,:,:) :: Q_XXn,Q_Xnn
+    real, allocatable, dimension(:,:)   :: Q_XX_pert, Q_Xn_pert
+    real, allocatable, dimension(:)     :: Q_XT_pert,Q_XV_pert
+    real :: Q,Qpert,Qpert2
+    real :: Q_T,Q_T_pert,Q_V,Q_V_pert,Q_n(2),Q_n_pert(2)
+    real :: Q_TT,Q_TV,Q_Tn(2),Q_VV,Q_Vn(2),Q_nn(2,2)
+    real :: eps
+    real :: param(4)
+    integer :: k,l,i,j
+
+    call init()
+
+    ! Allocate memory.
+    allocate(X_k(numAssocSites))
+    allocate(X_k_pert(numAssocSites))
+    allocate(Q_X(numAssocSites))
+    allocate(Q_X_pert(numAssocSites))
+    allocate(Q_XT(numAssocSites))
+    allocate(Q_XV(numAssocSites))
+    allocate(Q_Xn(numAssocSites,nce))
+    allocate(Q_XX(numAssocSites,numAssocSites))
+    allocate(Q_XXX(numAssocSites),Q_XTV(numAssocSites))
+    allocate(Q_XTT(numAssocSites),Q_XVV(numAssocSites))
+    allocate(Q_XTn(numAssocSites,nce))
+    allocate(Q_XVn(numAssocSites,nce))
+    allocate(Q_XXT(numAssocSites,numAssocSites))
+    allocate(Q_XXV(numAssocSites,numAssocSites))
+    allocate(Q_XXn(numAssocSites,numAssocSites,nce))
+    allocate(Q_Xnn(numAssocSites,nce,nce))
+
+    allocate(Q_XX_pert(numAssocSites,numAssocSites))
+    allocate(Q_XT_pert(numAssocSites),Q_XV_pert(numAssocSites))
+    allocate(Q_Xn_pert(numAssocSites,nce))
+
+    ! Assign parameters.
+    T = 300
+    V = 0.05
+    n = (/0.7,0.4/)*10
+    eps = 1e-5
+    param(1) = T
+    param(2) = V
+    param(3:) = n
+
+    ! Compute and update the global b parameters.
+
+    X_k = 0.5
+    X_k(1) = 0.4
+    !X_k(3) = 0.6
+
+
+    call Q_derivatives_knowing_X(nce,T,V,n,X_k,Q,Q_T,Q_V,Q_n,Q_X,Q_XT,&
+         Q_XV,Q_Xn,Q_XX,Q_TT,Q_TV,Q_Tn,Q_VV,Q_Vn,Q_nn,Q_XXX,Q_XXT,&
+         Q_XXV,Q_XXn,Q_XTT,Q_XVV,Q_XTV,Q_XTn,Q_XVn,Q_Xnn,.false.)
+
+    ! Test Q_X(1).
+    X_k_pert = X_k
+    X_k_pert(1) = X_k(1)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,V,n,X_k_pert,Qpert)
+    @assertTrue(abs( (Qpert-Q)/(X_k(1)*eps) - Q_X(1) )<1e-4*abs( Q_X(1) ))
+
+    ! Test Q_XX(1,1).
+    X_k_pert = X_k
+    X_k_pert(1) = X_k(1)*(1-eps)
+    call Q_derivatives_knowing_X(nce,T,V,n,X_k_pert,Qpert2)
+    @assertTrue(abs( (Qpert+Qpert2-2*Q)/(X_k(1)*eps)**2 - Q_XX(1,1) )<1e-4*abs( Q_XX(1,1) ))
+
+    ! Test Q_XX(1,2).
+    X_k_pert = X_k
+    X_k_pert(2) = X_k(2)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,V,n,X_k_pert,Q_X=Q_X_pert)
+    @assertTrue(abs( (Q_X_pert(1)-Q_X(1))/(X_k(2)*eps) - Q_XX(1,2)) < 1e-4*abs(Q_XX(1,2))+1e-12)
+
+    ! Test Q_T.
+    Tpert = T*(1+eps)
+    call Q_derivatives_knowing_X(nce,Tpert,V,n,X_k,Qpert)
+    @assertTrue(abs( (Qpert-Q)/(T*eps) -  Q_T) < 1e-4*abs( Q_T) + 1e-12)
+
+    ! Test Q_TT.
+    call Q_derivatives_knowing_X(nce,Tpert,V,n,X_k,Q_T=Q_T_pert)
+    @assertTrue(abs( (Q_T_pert-Q_t)/(T*eps) -  Q_TT) < 1e-4*abs( Q_TT) + 1e-12)
+
+    ! Test Q_V.
+    Vpert = V*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,Vpert,n,X_k,Qpert)
+    @assertTrue(abs( (Qpert-Q)/(V*eps) -  Q_V) < 1e-4*abs( Q_V) + 1e-12)
+
+    ! Test Q_VV.
+    Vpert = V*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,Vpert,n,X_k,Q_V=Q_V_pert)
+    @assertTrue(abs( (Q_V_pert - Q_V)/(V*eps) - Q_VV ) < 1e-3*abs( Q_VV) + 1e-8)
+
+    ! Test Q_TV.
+    Vpert = V*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,Vpert,n,X_k,Q_T=Q_T_pert)
+    @assertTrue(abs( (Q_T_pert-Q_T)/(V*eps) -  Q_TV) < 1e-4*abs( Q_TV) + 1e-12)
+
+    ! Test Q_n(1).
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call Q_derivatives_knowing_X(nce,T,V,npert,X_k,Qpert)
+    @assertTrue(abs( (Qpert-Q)/(n(1)*eps) -  Q_n(1)) < 1e-4*abs( Q_n(1)) + 1e-12)
+
+    ! Test Q_n(2).
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,V,npert,X_k,Qpert)
+    @assertTrue(abs( (Qpert-Q)/(n(2)*eps) -  Q_n(2)) < 1e-4*abs( Q_n(2)) + 1e-10)
+
+    ! Test Q_Tn(1).
+    Tpert = T*(1+eps)
+    call Q_derivatives_knowing_X(nce,Tpert,V,n,X_k,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(T*eps) -  Q_Tn(1)) < 1e-4*abs( Q_Tn(1)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(T*eps) -  Q_Tn(2)) < 1e-4*abs( Q_Tn(2)) + 1e-12)
+
+    ! Test Q_Vn(1).
+    Vpert = V*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,Vpert,n,X_k,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(V*eps) -  Q_Vn(1)) < 1e-4*abs( Q_Vn(1)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(V*eps) -  Q_Vn(2)) < 1e-4*abs( Q_Vn(2)) + 1e-12)
+
+    ! Test Q_nn(1,1) and Q_nn(2,1).
+    npert = n
+    npert(1) = n(1)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,V,npert,X_k,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(n(1)*eps) -  Q_nn(1,1)) < 1e-4*abs( Q_nn(1,1)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(n(1)*eps) -  Q_nn(2,1)) < 1e-4*abs( Q_nn(2,1)) + 1e-12)
+
+    ! Test Q_nn(1,2) and Q_nn(2,2).
+    npert = n
+    npert(2) = n(2)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T,V,npert,X_k,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(n(2)*eps) -  Q_nn(1,2)) < 1e-4*abs( Q_nn(1,2)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(n(2)*eps) -  Q_nn(2,2)) < 1e-4*abs( Q_nn(2,2)) + 1e-12)
+
+    ! Test Q_XT(1).
+    X_k_pert = X_k
+    X_k_pert(1) = X_k(1)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=T,V=V,n=n,X_k=X_k_pert,Q_T=Q_T_pert)
+    @assertTrue(abs( (Q_T_pert-Q_T)/(X_k(1)*eps) -  Q_XT(1)) < 1e-4*abs( Q_XT(1)) + 1e-12)
+
+    ! Test Q_XV(1).
+    X_k_pert = X_k
+    X_k_pert(1) = X_k(1)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=T,V=V,n=n,X_k=X_k_pert,Q_V=Q_V_pert)
+    @assertTrue(abs( (Q_V_pert-Q_V)/(X_k(1)*eps) -  Q_XV(1)) < 1e-4*abs( Q_XV(1)) + 1e-12)
+
+    ! Test Q_Xn(1,1) and Q_Xn(1,2).
+    X_k_pert = X_k
+    X_k_pert(1) = X_k(1)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=T,V=V,n=n,X_k=X_k_pert,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(X_k(1)*eps) -  Q_Xn(1,1)) < 1e-4*abs( Q_Xn(1,1)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(X_k(1)*eps) -  Q_Xn(1,2)) < 1e-4*abs( Q_Xn(1,2)) + 1e-12)
+
+    ! Test Q_Xn(2,1) and Q_Xn(2,2).
+    X_k_pert = X_k
+    X_k_pert(2) = X_k(2)*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=T,V=V,n=n,X_k=X_k_pert,Q_n=Q_n_pert)
+    @assertTrue(abs( (Q_n_pert(1)-Q_n(1))/(X_k(2)*eps) -  Q_Xn(2,1)) < 1e-4*abs( Q_Xn(2,1)) + 1e-12)
+    @assertTrue(abs( (Q_n_pert(2)-Q_n(2))/(X_k(2)*eps) -  Q_Xn(2,2)) < 1e-4*abs( Q_Xn(2,2)) + 1e-12)
+
+    ! Test Q_XXX
+    do k=1,numAssocSites
+      X_k_pert = X_k
+      X_k_pert(k) = X_k(k)*(1+eps)
+      call Q_derivatives_knowing_X(nce,T=T,V=V,n=n,X_k=X_k_pert,&
+           Q_XX=Q_XX_pert,X_calculated=.false.)
+      @assertEqual((Q_XX_pert(k,k)-Q_XX(k,k))/(X_k(k)*eps), Q_XXX(k), 10.0*eps*abs(Q_XXX(k)))
+      @assertEqual(sum((Q_XX_pert-Q_XX)/(X_k(k)*eps))-Q_XXX(k), 0.0, 10.0*eps*abs(Q_XXX(k)))
+    enddo
+
+    ! Test Q_XXT,Q_XTT,Q_XTV
+    Tpert = T*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=Tpert,V=V,n=n,X_k=X_k,&
+         Q_XT=Q_XT_pert,Q_XV=Q_XV_pert,Q_XX=Q_XX_pert,&
+         X_calculated=.false.)
+    do k=1,numAssocSites
+      do l=1,numAssocSites
+        @assertEqual(Q_XXT(k,l)-(Q_XX_pert(k,l)-Q_XX(k,l))/(T*eps),0.0,10.0*eps*abs(Q_XXT(k,l)))
+      enddo
+      @assertEqual(Q_XTT(k)-(Q_XT_pert(k)-Q_XT(k))/(T*eps),0.0,10.0*eps*abs(Q_XTT(k)))
+      @assertEqual(Q_XTV(k)-(Q_XV_pert(k)-Q_XV(k))/(T*eps),0.0,10.0*eps*abs(Q_XTV(k)))
+    enddo
+
+    ! Test Q_XXV,Q_XVV,Q_XTV
+    Vpert = V*(1+eps)
+    call Q_derivatives_knowing_X(nce,T=T,V=Vpert,n=n,X_k=X_k,&
+         Q_XT=Q_XT_pert,Q_XV=Q_XV_pert,Q_XX=Q_XX_pert,&
+         X_calculated=.false.)
+    do k=1,numAssocSites
+      do l=1,numAssocSites
+        @assertEqual(Q_XXV(k,l)-(Q_XX_pert(k,l)-Q_XX(k,l))/(V*eps),0.0,10.0*eps*abs(Q_XXV(k,l)))
+      enddo
+      @assertEqual(Q_XVV(k)-(Q_XV_pert(k)-Q_XV(k))/(V*eps),0.0,10.0*eps*abs(Q_XVV(k)))
+      @assertEqual(Q_XTV(k)-(Q_XT_pert(k)-Q_XT(k))/(V*eps),0.0,10.0*eps*abs(Q_XTV(k)))
+    enddo
+
+    ! Q_XTn,Q_XVn,Q_Xnn,Q_XXn
+    do i=1,nce
+      npert = n
+      npert(i) = n(i)*(1+eps)
+      call Q_derivatives_knowing_X(nce,T=T,V=V,n=npert,X_k=X_k,&
+         Q_XT=Q_XT_pert,Q_XV=Q_XV_pert,Q_XX=Q_XX_pert,Q_Xn=Q_Xn_pert,&
+         X_calculated=.false.)
+
+      do k=1,numAssocSites
+        @assertEqual(Q_XTn(k,i)-(Q_XT_pert(k)-Q_XT(k))/(n(i)*eps),0.0,10.0*eps*abs(Q_XTn(k,i)))
+        @assertEqual(Q_XVn(k,i)-(Q_XV_pert(k)-Q_XV(k))/(n(i)*eps),0.0,10.0*eps*abs(Q_XVn(k,i)))
+      enddo
+
+      do k=1,numAssocSites
+        do l=1,numAssocSites
+          @assertEqual(Q_XXn(k,l,i)-(Q_XX_pert(k,l)-Q_XX(k,l))/(n(i)*eps),0.0,10.0*eps*abs(Q_XXn(k,l,i)))
+        enddo
+        do j=1,nce
+          @assertEqual(Q_Xnn(k,j,i)-(Q_Xn_pert(k,j)-Q_Xn(k,j))/(n(i)*eps),0.0,10.0*eps*abs(Q_Xnn(k,j,i)))
+        enddo
+      enddo
+    enddo
+
+    ! Deallocate memory.
+    deallocate(X_k)
+    deallocate(X_k_pert)
+    deallocate(Q_X)
+    deallocate(Q_X_pert)
+    deallocate(Q_XT)
+    deallocate(Q_XV)
+    deallocate(Q_Xn)
+    deallocate(Q_XXX)
+    deallocate(Q_XTT)
+    deallocate(Q_XTn)
+    deallocate(Q_XVn)
+    deallocate(Q_XXT)
+    deallocate(Q_XXV)
+    deallocate(Q_XXn)
+    deallocate(Q_Xnn)
+    deallocate(Q_XX_pert)
+    deallocate(Q_XT_pert,Q_XV_pert)
+    deallocate(Q_Xn_pert)
+
+
+    call cleanup_eos()
+  end subroutine test_Q_derivatives
+
+
+  @Test
+  subroutine test_X_derivatives
+    use tpvar, only: nce
+    implicit none
+    real :: T,Tpert,V,Vpert,n(2),npert(2),sumn
+    real :: param(4),parampert(4)
+    real, allocatable, dimension(:) :: X,Xpert,X_T,X_V
+    real, allocatable, dimension(:) :: X_T_pert,X_V_pert
+    real, allocatable, dimension(:,:) :: X_n,X_n_pert
+    real, allocatable, dimension(:) :: X_TT,X_TV,X_VV
+    real, allocatable, dimension(:,:) :: X_Tn,X_Vn
+    real, allocatable, dimension(:,:,:) :: X_nn
+    real :: eps
+    integer :: k,i,j
+
+    call init()
+
+    allocate(X(numAssocSites))
+    allocate(Xpert(numAssocSites))
+    allocate(X_T(numAssocSites))
+    allocate(X_V(numAssocSites))
+    allocate(X_n(numAssocSites,nce))
+    allocate(X_T_pert(numAssocSites))
+    allocate(X_V_pert(numAssocSites))
+    allocate(X_n_pert(numAssocSites,nce))
+    allocate(X_TT(numAssocSites))
+    allocate(X_VV(numAssocSites))
+    allocate(X_TV(numAssocSites))
+    allocate(X_Tn(numAssocSites,nce))
+    allocate(X_Vn(numAssocSites,nce))
+    allocate(X_nn(numAssocSites,nce,nce))
+
+    T = 300
+    V = 0.1
+    n = (/0.8,0.9/)
+    eps = 1e-5
+    sumn = sum(n)
+
+    param(1)  = T
+    param(2)  = V
+    param(3:) = n
+
+
+    X = 0.2
+    call solve_for_X_k(nc=nce,param=param,X_k=X)
+    call X_derivatives_knowing_X (nce,T,V,n,X,X_T,X_V,X_n,&
+         X_TT=X_TT,X_TV=X_TV,X_VV=X_VV,X_Tn=X_Tn,X_Vn=X_Vn,X_nn=X_nn)
+
+    ! Test X_T.
+    parampert = param
+    Tpert = T*(1+eps)
+    parampert(1) = Tpert
+    Xpert = 0.2
+    call solve_for_X_k(nce,parampert,Xpert)
+    call X_derivatives_knowing_X (nce,T=Tpert,V=V,n=n,X=Xpert,&
+         X_T=X_T_pert,X_V=X_V_pert)
+    do k=1,numAssocSites
+      @assertTrue(abs( (Xpert(k)-X(k))/(T*eps) - X_T(k))<(1e-4*abs(X_T(k)) + 1e-12))
+      @assertEqual(X_TT(K)-(X_T_pert(k)-X_T(k))/(T*eps),0.0,10.0*eps*abs(X_TT(k)))
+      @assertEqual(X_TV(K)-(X_V_pert(k)-X_V(k))/(T*eps),0.0,10.0*eps*abs(X_TV(k)))
+    end do
+
+    ! Test X_V.
+    parampert = param
+    Vpert = V*(1+eps)
+    parampert(2) = Vpert
+    Xpert = 0.2
+    call solve_for_X_k(nce,parampert,Xpert)
+    call X_derivatives_knowing_X(nce,T=T,V=Vpert,n=n,X=Xpert,&
+         X_T=X_T_pert,X_V=X_V_pert)
+    do k=1,numAssocSites
+      @assertTrue(abs( (Xpert(k)-X(k))/(V*eps) - X_V(k))<(1e-4*abs(X_V(k)) + 1e-12))
+      @assertEqual(X_VV(k)-(X_V_pert(k)-X_V(k))/(V*eps),0.0,10.0*eps*abs(X_VV(k)))
+      @assertEqual(X_TV(k)-(X_T_pert(k)-X_T(k))/(V*eps),0.0,10.0*eps*abs(X_TV(k)))
+    end do
+
+    ! Test X_n(:,1).
+    eps = 1e-4
+    parampert = param
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    parampert(3:) = npert
+    Xpert = 0.2
+    call solve_for_X_k(nce,parampert,Xpert)
+    call X_derivatives_knowing_X(nce,T=T,V=V,n=npert,X=Xpert,&
+         X_T=X_T_pert,X_V=X_V_pert,X_n=X_n_pert)
+    do k=1,numAssocSites
+      @assertTrue(abs( (Xpert(k)-X(k))/(n(1)*eps) - X_n(k,1))<(1e-4*abs(X_n(k,1)) + 1e-12))
+    end do
+
+    ! Test X_n(:,2).
+    parampert = param
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    parampert(3:) = npert
+    Xpert = 0.2
+    call solve_for_X_k(nce,parampert,Xpert)
+    do k=1,numAssocSites
+       @assertTrue(abs( (Xpert(k)-X(k))/(n(2)*eps) - X_n(k,2))<(1e-4*abs(X_n(k,2)) + 1e-12))
+    end do
+
+    ! Test X_Tn, X_Vn and X_nn.
+    eps = 1e-4
+    do i=1,nce
+      parampert = param
+      npert = n
+      npert(i) = n(i)*(1+eps)
+      parampert(3:) = npert
+      Xpert = 0.2
+      call solve_for_X_k(nce,parampert,Xpert)
+      call X_derivatives_knowing_X(nce,T=T,V=V,n=npert,X=Xpert,&
+           X_T=X_T_pert,X_V=X_V_pert,X_n=X_n_pert)
+      do k=1,numAssocSites
+        @assertEqual(X_Tn(k,i)-(X_T_pert(k)-X_T(k))/(n(i)*eps),0.0,10.0*eps*abs(X_Tn(k,i)))
+        @assertEqual(X_Vn(k,i)-(X_V_pert(k)-X_V(k))/(n(i)*eps),0.0,10.0*eps*abs(X_Vn(k,i)))
+        do j=1,nce
+          @assertEqual(X_nn(k,j,i)-(X_n_pert(k,j)-X_n(k,j))/(n(i)*eps),0.0,10.0*eps*abs(X_nn(k,j,i)))
+        enddo
+      end do
+    enddo
+
+    ! Deallocate memory.
+    deallocate(X)
+    deallocate(Xpert)
+    deallocate(X_T)
+    deallocate(X_V)
+    deallocate(X_n)
+    deallocate(X_T_pert)
+    deallocate(X_V_pert)
+    deallocate(X_n_pert)
+    deallocate(X_TT)
+    deallocate(X_VV)
+    deallocate(X_TV)
+    deallocate(X_Tn)
+    deallocate(X_Vn)
+    deallocate(X_nn)
+
+    call cleanup_eos()
+  end subroutine test_X_derivatives
+
+  @Test
+  subroutine test_volume_solver
+    implicit none
+    real :: T,P_spec,n(2),V_vap,V_liq
+    integer :: phase
+    real, allocatable, dimension(:) :: X_k,Xnew
+    real, allocatable :: dXdV(:)
+    real :: P
+    !
+    call init()
+
+    allocate(X_k(numAssocSites))
+    allocate(Xnew(numAssocSites))
+    allocate(dXdV(numAssocSites))
+
+    T = 360
+    n = (/1.1,0.6/)
+    P_spec = 100000
+
+    phase = VAPPH
+    call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V_vap)
+    call saft_total_pressure(nce,comp,cbeos(1),T,V_vap,n,P)
+    @assertTrue(abs(P-P_spec) < 1e-6*P_spec)
+
+    phase = LIQPH
+    call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V_liq)
+    call saft_total_pressure(nce,comp,cbeos(1),T,V_liq,n,P)
+    @assertTrue(abs(P-P_spec) < 1e-6*P_spec)
+
+    @assertTrue(V_vap >= V_liq)
+
+    deallocate(X_k)
+    deallocate(Xnew)
+    deallocate(dXdV)
+    call cleanup_eos()
+  end subroutine test_volume_solver
+
+
+  @Test
+  subroutine test_zFac
+    use single_phase
+    implicit none
+    real :: T,n(2),V
+    real :: Tpert, Vpert, Ppert, npert(2), Zpert
+    integer :: phase
+    real :: sumn
+    real :: P
+    real :: Z,dZdT,dZdP,dZdn(2)
+    real :: F,F_T,F_V,F_n(2),F_TT,F_TV,F_VV,F_Tn(2),F_Vn(2),F_nn(2,2)
+    real :: dPdT, dPdV, dPdn(2)
+    real :: eps
+    logical :: verbose
+    verbose = .false.
+
+    call init()
+
+    T = 300
+    V = 0.4
+    n = (/7.08,9.009/)
+    sumn = sum(n)
+    eps = 1e-6
+    phase = VAPPH
+
+    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+    if (verbose) then
+       !************* Start by testing the expressions for dPdT, dPdV, dPdn ***************
+       call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P,dPdV,dPdT)
+
+       call calcSaftFder_res(nce,comp,cbeos(1),T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+       dPdT = P/T - Rgas*T*F_TV
+       dPdV = -Rgas*T*(F_VV + sumn/V**2)
+       dPdn = Rgas*T*(-F_Vn + 1/V)
+
+       Tpert = T*(1+eps)
+       call saft_total_pressure(nce,comp,cbeos(1),Tpert,V,n,Ppert)
+       print *,"dPdT num", (Ppert-P)/(T*eps)
+       print *,"dPdT    ", dPdT
+
+       Vpert = V*(1+eps)
+       call saft_total_pressure(nce,comp,cbeos(1),T,Vpert,n,Ppert)
+       print *,"dPdV num", (Ppert-P)/(V*eps)
+       print *,"dPdV    ", dPdV
+
+       npert(1) = n(1)*(1+eps)
+       npert(2) = n(2)
+       call saft_total_pressure(nce,comp,cbeos(1),T,V,npert,Ppert)
+       print *,"dPdn(1) num", (Ppert-P)/(n(1)*eps)
+       print *,"dPdn(1)    ", dPdn(1)
+
+       npert(1) = n(1)
+       npert(2) = n(2)*(1+eps)
+       call saft_total_pressure(nce,comp,cbeos(1),T,V,npert,Ppert)
+       print *,"dPdn(2) num", (Ppert-P)/(n(2)*eps)
+       print *,"dPdn(2)    ", dPdn(2)
+    end if
+
+    call saft_zfac(nce,comp,cbeos(1),phase,T,P,n,Z,dZdT,dZdP,dZdn)
+    @assertTrue(abs(Z-P*V/(sumn*Rgas*T)) < 1e-7)
+
+    Tpert = (1+eps)*T
+    call saft_zfac(nce,comp,cbeos(1),phase,Tpert,P,n,Zpert)
+    if (verbose) then
+       print *,"dZdT num", (Zpert-Z)/(T*eps)
+       print *,"dZdT    ", dZdT
+    end if
+    @assertTrue(abs((Zpert-Z)/(T*eps)-dZdT) < (1e-5*abs(dZdT) + 1e-12))
+
+    Ppert = (1+eps)*P
+    call saft_zfac(nce,comp,cbeos(1),phase,T,Ppert,n,Zpert)
+    if (verbose) then
+       print *,"dZdP num", (Zpert-Z)/(P*eps)
+       print *,"dZdP    ", dZdP
+    end if
+    @assertTrue(abs((Zpert-Z)/(P*eps)-dZdP) < (1e-5*abs(dZdP) + 1e-12))
+
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call saft_zfac(nce,comp,cbeos(1),phase,T,P,npert,Zpert)
+    if (verbose) then
+       print *,"dZdn(1) num", (Zpert-Z)/(n(1)*eps)
+       print *,"dZdn(1)    ", dZdn(1)
+    end if
+    @assertTrue(abs((Zpert-Z)/(n(1)*eps)-dZdn(1)) < (1e-5*abs(dZdn(1)) + 1e-12))
+
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call saft_zfac(nce,comp,cbeos(1),phase,T,P,npert,Zpert)
+    if (verbose) then
+       print *,"dZdn(2) num", (Zpert-Z)/(n(2)*eps)
+       print *,"dZdn(2)    ", dZdn(2)
+    end if
+    @assertTrue(abs((Zpert-Z)/(n(2)*eps)-dZdn(2)) < (1e-5*abs(dZdn(2)) + 1e-12))
+
+    call cleanup_eos()
+  end subroutine test_zFac
+
+  @Test
+  subroutine test_Sres
+    use single_phase
+    implicit none
+    real :: T,n(2),V
+    real :: Tpert, Ppert, npert(2), Spert
+    integer :: phase
+    real :: sumn
+    real :: P
+    real :: S,dSdT,dSdP,dSdn(2)
+    real :: eps
+    logical :: verbose
+    verbose = .false.
+
+    call init()
+
+    T = 300
+    V = 0.43
+    n = (/9.0,9.0/)
+    sumn = sum(n)
+    eps = 1e-6
+    phase = LIQPH
+
+    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,n,S,dSdT,dSdP,dSdn)
+    Tpert = (1+eps)*T
+    call saft_ResidEntropy(nce,comp,cbeos(1),phase,Tpert,P,n,Spert)
+    if (verbose) then
+       print *,"dSdT num", (Spert-S)/(T*eps)
+       print *,"dSdT    ", dSdT
+    end if
+    @assertTrue(abs((Spert-S)/(T*eps)-dSdT) < (5e-5*abs(dSdT) + 1e-12))
+
+    Ppert = (1+eps)*P
+    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,Ppert,n,Spert)
+    if (verbose) then
+       print *,"dSdP num", (Spert-S)/(P*eps)
+       print *,"dSdP    ", dSdP
+    end if
+    @assertTrue(abs((Spert-S)/(P*eps)-dSdP) < (1e-5*abs(dSdP) + 1e-12))
+
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,npert,Spert)
+    if (verbose) then
+       print *,"dSdn(1) num", (Spert-S)/(n(1)*eps)
+       print *,"dSdn(1)    ", dSdn(1)
+    end if
+    @assertTrue(abs((Spert-S)/(n(1)*eps)-dSdn(1)) < (5e-5*abs(dSdn(1)) + 1e-12))
+
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,npert,Spert)
+    if (verbose) then
+       print *,"dSdn(2) num", (Spert-S)/(n(2)*eps)
+       print *,"dSdn(2)    ", dSdn(2)
+       print *, Spert-S
+    end if
+    @assertTrue(abs((Spert-S)/(n(2)*eps)-dSdn(2)) < (1e-4*abs(dSdn(2)) + 1e-12))
+    call cleanup_eos()
+  end subroutine test_Sres
+
+  @Test
+  subroutine test_Gres
+    use single_phase
+    implicit none
+    real :: T,n(2),V
+    real :: Tpert, Ppert, npert(2), Gpert
+    integer :: phase
+    real :: sumn
+    real :: P
+    real :: G,dGdT,dGdP,dGdn(2)
+    real :: eps
+    logical :: verbose
+    verbose = .false.
+
+    call init()
+
+    T = 300
+    V = 0.43
+    n = (/7.08,9.009/)
+    sumn = sum(n)
+    eps = 1e-7
+    phase = LIQPH
+
+    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,n,G,dGdT,dGdP,dGdn)
+
+    Tpert = (1+eps)*T
+    call saft_ResidGibbs(nce,comp,cbeos(1),phase,Tpert,P,n,Gpert)
+    if (verbose) then
+       print *,"dGdT num", (Gpert-G)/(T*eps)
+       print *,"dGdT    ", dGdT
+    end if
+    @assertTrue(abs((Gpert-G)/(T*eps)-dGdT) < (5e-5*abs(dGdT) + 1e-12))
+
+    Ppert = (1+eps)*P
+    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,Ppert,n,Gpert)
+    if (verbose) then
+       print *,"dGdP num", (Gpert-G)/(P*eps)
+       print *,"dGdP    ", dGdP
+    end if
+    @assertTrue(abs((Gpert-G)/(P*eps)-dGdP) < (5e-5*abs(dGdP) + 1e-12))
+
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,npert,Gpert)
+    if (verbose) then
+       print *,"dGdn(1) num", (Gpert-G)/(n(1)*eps)
+       print *,"dGdn(1)    ", dGdn(1)
+    end if
+    @assertTrue(abs((Gpert-G)/(n(1)*eps)-dGdn(1)) < (1e-5*abs(dGdn(1)) + 1e-12))
+
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,npert,Gpert)
+    if (verbose) then
+       print *,"dGdn(2) num", (Gpert-G)/(n(2)*eps)
+       print *,"dGdn(2)    ", dGdn(2)
+    end if
+    @assertTrue(abs((Gpert-G)/(n(2)*eps)-dGdn(2)) < (1e-5*abs(dGdn(2)) + 1e-12))
+
+    call cleanup_eos()
+  end subroutine test_Gres
+
+  @Test
+  subroutine test_Hres
+    use single_phase
+    implicit none
+    real :: T,n(2),V
+    real :: Tpert, Ppert, npert(2), Hpert
+    integer :: phase
+    real :: sumn
+    real :: P
+    real :: H,dHdT,dHdP,dHdn(2)
+    real :: eps
+    logical :: verbose
+    verbose = .false.
+
+    call init()
+
+    T = 300
+    V = 0.43
+    n = (/7.08,9.009/)
+    sumn = sum(n)
+    eps = 1e-6
+    phase = LIQPH
+
+    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,n,H,dHdT,dHdP,dHdn)
+
+    Tpert = (1+eps)*T
+    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,Tpert,P,n,Hpert)
+    if (verbose) then
+       print *,"dHdT num", (Hpert-H)/(T*eps)
+       print *,"dHdT    ", dHdT
+    end if
+    @assertTrue(abs((Hpert-H)/(T*eps)-dHdT) < (1e-5*abs(dHdT) + 1e-12))
+
+    Ppert = (1+eps)*P
+    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,Ppert,n,Hpert)
+    if (verbose) then
+       print *,"dHdP num", (Hpert-H)/(P*eps)
+       print *,"dHdP    ", dHdP
+    end if
+    @assertTrue(abs((Hpert-H)/(P*eps)-dHdP) < (2e-5*abs(dHdP) + 1e-12))
+
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,npert,Hpert)
+    if (verbose) then
+       print *,"dHdn(1) num", (Hpert-H)/(n(1)*eps)
+       print *,"dHdn(1)    ", dHdn(1)
+    end if
+    @assertTrue(abs((Hpert-H)/(n(1)*eps)-dHdn(1)) < (1e-5*abs(dHdn(1)) + 1e-12))
+
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,npert,Hpert)
+    if (verbose) then
+       print *,"dHdn(2) num", (Hpert-H)/(n(2)*eps)
+       print *,"dHdn(2)    ", dHdn(2)
+    end if
+    @assertTrue(abs((Hpert-H)/(n(2)*eps)-dHdn(2)) < (1e-5*abs(dHdn(2)) + 1e-12))
+
+    call cleanup_eos()
+  end subroutine test_Hres
+
+  @Test
+  subroutine test_lnphi
+    use single_phase
+    implicit none
+    real :: T,n(2),V
+    real :: Tpert, Ppert, npert(2), LNPHIpert(2)
+    integer :: phase
+    real :: sumn
+    real :: P
+    real :: LNPHI(2),dLNPHIdT(2),dLNPHIdP(2),dLNPHIdn(2,2)
+    real :: eps
+    logical :: verbose
+    verbose = .false.
+
+    call init()
+
+    T = 360
+    V = 0.43
+    n = (/70.0,9.0/)/16
+    sumn = sum(n)
+    eps = 1e-6
+    phase = liqph
+
+    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+
+    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,n,lnphi,dlnphidT,dlnphidP,dlnphidn)
+
+    Tpert = (1+eps)*T
+    call saft_lnphi(nce,comp,cbeos(1),phase,Tpert,P,n,LNPHIpert)
+    if (verbose) then
+       print *,"dLNPHIdT num", (LNPHIpert-LNPHI)/(T*eps)
+       print *,"dLNPHIdT    ", dLNPHIdT
+    end if
+    @assertTrue(norm2((LNPHIpert-LNPHI)/(T*eps)-dLNPHIdT) < (1e-5*norm2(dLNPHIdT) + 1e-12))
+
+    Ppert = (1+eps)*P
+    call saft_lnphi(nce,comp,cbeos(1),phase,T,Ppert,n,LNPHIpert)
+    if (verbose) then
+       print *,"dLNPHIdP num", (LNPHIpert-LNPHI)/(P*eps)
+       print *,"dLNPHIdP    ", dLNPHIdP
+    end if
+    @assertTrue(norm2((LNPHIpert-LNPHI)/(P*eps)-dLNPHIdP) < (5e-5*norm2(dLNPHIdP) + 1e-12))
+
+    npert(1) = n(1)*(1+eps)
+    npert(2) = n(2)
+    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,npert,LNPHIpert)
+    if (verbose) then
+       print *,"dLNPHIdn(:,1) num", (LNPHIpert-LNPHI)/(n(1)*eps)
+       print *,"dLNPHIdn(:,1)    ", dLNPHIdn(:,1)
+    end if
+    @assertTrue(norm2((LNPHIpert-LNPHI)/(n(1)*eps)-dLNPHIdn(:,1)) < (1e-5*norm2(dLNPHIdn(:,1)) + 1e-12))
+
+    npert(1) = n(1)
+    npert(2) = n(2)*(1+eps)
+    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,npert,LNPHIpert)
+    if (verbose) then
+       print *,"dLNPHIdn(:,2) num", (LNPHIpert-LNPHI)/(n(2)*eps)
+       print *,"dLNPHIdn(:,2)    ", dLNPHIdn(:,2)
+    end if
+    @assertTrue(norm2((LNPHIpert-LNPHI)/(n(2)*eps)-dLNPHIdn(:,2)) < (1e-5*norm2(dLNPHIdn(:,2)) + 1e-12))
+
+    call cleanup_eos()
+  end subroutine test_lnphi
+
+
+
+  ! @Test
+  ! subroutine other_tests
+  !   use tpvar, only: nce, comp, cbeos
+  !   use saft_interface
+  !   use tpcbmix
+  !   use parameters, only: LIQPH, VAPPH
+  !   use tpconst, only: Rgas
+  !   use cbhelm
+  !   use tpcubic, only: cbCalcDerivatives, cbCalcPressure, cbCalcZfac, cbCalcDerivatives_svol
+  !   use eosTV, only: pressure
+  !   use tpsingle, only: TP_CalcPressure
+  !   implicit none
+  !   real :: T, V, n(1), x(1), P, P_spec
+  !   real :: sumn
+  !   integer :: phase
+  !   real :: temp
+  !   real :: param(2+1)
+  !   real :: zFactor
+  !   reAL :: p_v, p_t
+  !   print *, "*********************************************SAFT EQUATION*********************************************"
+  !   call init(pc_saft_flag = .true.,one_comp = .true.)
+
+  !   T = 273.15+4
+  !   P_spec = 101325
+  !   P = P_spec
+  !   n = (/1.0/)
+  !   phase = LIQPH
+  !   sumn = sum(n)
+  !   x = n/sumn
+
+  !   call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V)
+  !   print *, "Volume [m^3]", V
+  !   print *, "LIQUID AT TEMPERATURE AND PRESSURE SAFT", T, P_spec
+  !   print *, "Molar volume of mixture at STP for SAFT [m^3]:", 18.01528E-3/V
+  !   P = pressure(t,V,x,dpdv=P_V)
+  !   print *, P, p_v
+
+  !   call cleanup_eos()
+  !   print *, "*********************************************PURE CUBIC EQUATION*********************************************"
+
+  !   call init_thermo(eosLibrary='THERMOPACK',alpha='TWU',eos='PR',mixing='vdW',ncomp=2,comp_string="H2O,C1",nphases=2)
+  !   call cbCalcZfac(nce,comp,cbeos(1),T,P=P_spec,z=x,iphase=phase,zfac=zFactor,gflag_opt=1)
+  !   V = zFactor*Rgas*T/P_spec
+  !   print *, V
+  !   print *, "LIQUID AT TEMPERATURE AND PRESSURE", T, P_spec
+  !   print *, "Molar volume of mixture at STP for PR [m^3]:", 18.01528E-3/V
+  !   call TP_CalcPressure(nce,comp,cbeos(1),T,v*1000,x,p,p_v,p_t)
+  !   print *, P
+
+  !   call cleanup_eos()
+  ! end subroutine other_tests
+
+end module test_saft

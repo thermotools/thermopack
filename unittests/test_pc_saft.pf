@@ -1,0 +1,582 @@
+module test_pc_saft
+  use pfunit_mod
+  use tpvar
+  use pc_saft_nonassoc
+  use eoslibinit, only: init_thermo, cleanup_eos
+  use nonlinear_solvers, only: approximate_jacobian_2nd
+  use saft_interface
+  use parameters
+  implicit none
+  public
+
+contains
+
+  subroutine test_1st_der_twoD(rout,rho,T,x,dim,verbose)
+    external :: rout
+    real, intent(in) :: rho,T,x(2)
+    integer, intent(in) :: dim
+    logical, intent(in), optional :: verbose
+    ! Locals
+    real :: v2d(dim,dim)
+    real :: v2d_r(dim,dim),v2d_t(dim,dim),v2d_x(dim,dim,2)
+    real :: v2d_rr(dim,dim),v2d_rt(dim,dim),v2d_rx(dim,dim,2)
+    real :: v2d_tt(dim,dim),v2d_Tx(dim,dim,2),v2d_xx(dim,dim,2,2)
+    real :: pluspert_v2d(dim,dim),minuspert_v2d(dim,dim)
+    real :: minuspert_v2d_r(dim,dim),minuspert_v2d_t(dim,dim),minuspert_v2d_x(dim,dim,2)
+    real :: pluspert_v2d_r(dim,dim),pluspert_v2d_t(dim,dim),pluspert_v2d_x(dim,dim,2)
+
+    real :: eps,rhoeps,Teps,xeps(2)
+
+    eps = 5e-6
+
+    call rout(rho,T,x,v2d,v2d_r,v2d_t,v2d_x,v2d_rr,v2d_rt,v2d_rx,v2d_tt,v2d_tx,v2d_xx)
+    if (present(verbose)) then
+      print *, "v2d"
+      print *, v2d
+    end if
+
+    !Test rho-derivatives
+    rhoeps = rho*eps
+    call rout(rho+rhoeps,T,x,pluspert_v2d,pluspert_v2d_r,pluspert_v2d_t,pluspert_v2d_x)
+    call rout(rho-rhoeps,T,x,minuspert_v2d,minuspert_v2d_r,minuspert_v2d_t,minuspert_v2d_x)
+    call rout(rho,T,x,v2d,v2d_r,v2d_t,v2d_x,v2d_rr,v2d_rt,v2d_rx,v2d_tt,v2d_tx,v2d_xx)
+    if (present(verbose)) then
+      print *, "v2d_r"
+      print *, (pluspert_v2d-minuspert_v2d)/(2*rhoeps)
+      print *, v2d_r
+      print *, "v2d_rr"
+      print *, (pluspert_v2d_r-minuspert_v2d_r)/(2*rhoeps)
+      print *, v2d_rr
+      print *, "v2d_rt"
+      print *, (pluspert_v2d_t-minuspert_v2d_t)/(2*rhoeps)
+      print *, v2d_rt
+      print *, "v2d_rx"
+      print *, (pluspert_v2d_x-minuspert_v2d_x)/(2*rhoeps)
+      print *, v2d_rx
+    end if
+
+    @assertTrue(norm2(v2d_rx - (pluspert_v2d_x-minuspert_v2d_x)/(2*rhoeps)) < (1e-7*norm2(v2d_rx)+1e-15))
+    @assertTrue(norm2(v2d_rt - (pluspert_v2d_t-minuspert_v2d_t)/(2*rhoeps)) < (1e-7*norm2(v2d_rt)+1e-15))
+    @assertTrue(norm2(v2d_rr - (pluspert_v2d_r-minuspert_v2d_r)/(2*rhoeps)) < (1e-7*norm2(v2d_rr)+1e-15))
+    @assertTrue(norm2(v2d_r - (pluspert_v2d-minuspert_v2d)/(2*rhoeps)) < (1e-7*norm2(v2d_r)+1e-15))
+
+    !Test T-derivatives
+    Teps = T*eps
+    call rout(rho,T+Teps,x,pluspert_v2d,pluspert_v2d_r,pluspert_v2d_t,pluspert_v2d_x)
+    call rout(rho,T-Teps,x,minuspert_v2d,minuspert_v2d_r,minuspert_v2d_t,minuspert_v2d_x)
+
+    call rout(rho,T,x,v2d,v2d_r,v2d_t,v2d_x,v2d_rr,v2d_rt,v2d_rx,v2d_tt,v2d_tx,v2d_xx)
+    if (present(verbose)) then
+      print *, "v2d_t"
+      print *, (pluspert_v2d-minuspert_v2d)/(2*Teps)
+      print *, v2d_t
+
+      print *, "v2d_tt"
+      print *, (pluspert_v2d_t-minuspert_v2d_t)/(2*Teps)
+      print *, v2d_tt
+
+      print *, "v2d_tx"
+      print *, (pluspert_v2d_x-minuspert_v2d_x)/(2*Teps)
+      print *, v2d_tx
+    end if
+    @assertTrue(norm2(v2d_tx - (pluspert_v2d_x-minuspert_v2d_x)/(2*Teps)) < (1e-7*norm2(v2d_tx)+1e-15))
+    @assertTrue(norm2(v2d_tt - (pluspert_v2d_t-minuspert_v2d_t)/(2*Teps)) < (1e-7*norm2(v2d_tt)+1e-15))
+    @assertTrue(norm2(v2d_t - (pluspert_v2d-minuspert_v2d)/(2*Teps)) < (1e-7*norm2(v2d_t)+1e-15))
+
+    !Test x(1)-derivatives
+    xeps = 0.0
+    xeps(1) = x(1)*eps
+    call rout(rho,T,x+xeps,pluspert_v2d,pluspert_v2d_r,pluspert_v2d_t,pluspert_v2d_x)
+    call rout(rho,T,x-xeps,minuspert_v2d,minuspert_v2d_r,minuspert_v2d_t,minuspert_v2d_x)
+
+    call rout(rho,T,x,v2d,v2d_r,v2d_t,v2d_x,v2d_rr,v2d_rt,v2d_rx,v2d_tt,v2d_tx,v2d_xx)
+    if (present(verbose)) then
+      print *, "v2d_x(:,:,1)"
+      print *, (pluspert_v2d-minuspert_v2d)/(2*xeps(1))
+      print *, v2d_x(:,:,1)
+
+      print *, "v2d_xx(:,:,:,1)"
+      print *, (pluspert_v2d_x-minuspert_v2d_x)/(2*xeps(1))
+      print *, v2d_xx(:,:,:,1)
+    end if
+    @assertTrue(norm2(v2d_xx(:,:,:,1) - (pluspert_v2d_x-minuspert_v2d_x)/(2*xeps(1))) < (1e-7*norm2(v2d_xx(:,:,:,1))+1e-15))
+    @assertTrue(norm2(v2d_x(:,:,1) - (pluspert_v2d-minuspert_v2d)/(2*xeps(1))) < (1e-7*norm2(v2d_x(:,:,1))+1e-15))
+
+  end subroutine test_1st_der_twoD
+
+  subroutine test_1st_der_dim(rout,rho,T,x,dim,verbose)
+    use tpvar, only: nce
+    interface
+      subroutine rout(rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
+        import nce
+        real, intent(in)    :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
+        real, intent(out)   :: z(0:3)        !< [m^(i-3)]
+        real, intent(out), optional :: z_rho(0:3), z_T(0:3), z_n(0:3,nce)
+        real, intent(out), optional :: z_rhorho(0:3), z_rhoT(0:3), z_rhon(0:3,nce)
+        real, intent(out), optional :: z_TT(0:3), z_Tn(0:3,nce), z_nn(0:3,nce,nce)
+      END SUBROUTINE Rout
+    end interface
+    real, intent(in) :: rho,T,x(2)
+    integer, intent(in) :: dim
+    logical, intent(in), optional :: verbose
+    ! Locals
+    real :: v(dim)
+    real :: v_r(dim),v_t(dim),v_x(dim,2)
+    real :: v_rr(dim),v_rt(dim),v_rx(dim,2)
+    real :: v_tt(dim),v_Tx(dim,2),v_xx(dim,2,2)
+    real :: pluspert_v(dim),minuspert_v(dim)
+    real :: minuspert_v_r(dim),minuspert_v_t(dim),minuspert_v_x(dim,2)
+    real :: pluspert_v_r(dim),pluspert_v_t(dim),pluspert_v_x(dim,2)
+
+    real :: eps,rhoeps,Teps,xeps(2)
+
+    eps = 5e-6
+
+    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    if (present(verbose)) then
+      print *, "v"
+      print *, v
+    end if
+
+    !Test rho-derivatives
+    rhoeps = rho*eps
+    call rout(rho+rhoeps,T,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(rho-rhoeps,T,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+
+    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    if (present(verbose)) then
+      print *, "v_r"
+      print *, (pluspert_v-minuspert_v)/(2*rhoeps)
+      print *, v_r
+
+      print *, "v_rr"
+      print *, (pluspert_v_r-minuspert_v_r)/(2*rhoeps)
+      print *, v_rr
+
+      print *, "v_rt"
+      print *, (pluspert_v_t-minuspert_v_t)/(2*rhoeps)
+      print *, v_rt
+
+      print *, "v_rx"
+      print *, (pluspert_v_x-minuspert_v_x)/(2*rhoeps)
+      print *, v_rx
+    end if
+    @assertTrue(norm2(v_rx - (pluspert_v_x-minuspert_v_x)/(2*rhoeps)) < (1e-7*norm2(v_rx)+1e-15))
+    @assertTrue(norm2(v_rt - (pluspert_v_t-minuspert_v_t)/(2*rhoeps)) < (1e-7*norm2(v_rt)+1e-15))
+    @assertTrue(norm2(v_rr - (pluspert_v_r-minuspert_v_r)/(2*rhoeps)) < (1e-7*norm2(v_rr)+1e-15))
+    @assertTrue(norm2(v_r - (pluspert_v-minuspert_v)/(2*rhoeps)) < (1e-7*norm2(v_r)+1e-15))
+
+    !Test T-derivatives
+    Teps = T*eps
+    call rout(rho,T+Teps,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(rho,T-Teps,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+
+    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    if (present(verbose)) then
+      print *, "v_t"
+      print *, (pluspert_v-minuspert_v)/(2*Teps)
+      print *, v_t
+
+      print *, "v_tt"
+      print *, (pluspert_v_t-minuspert_v_t)/(2*Teps)
+      print *, v_tt
+
+      print *, "v_tx"
+      print *, (pluspert_v_x-minuspert_v_x)/(2*Teps)
+      print *, v_tx
+    end if
+    @assertTrue(norm2(v_tx - (pluspert_v_x-minuspert_v_x)/(2*Teps)) < (1e-7*norm2(v_tx)+1e-15))
+    @assertTrue(norm2(v_tt - (pluspert_v_t-minuspert_v_t)/(2*Teps)) < (1e-7*norm2(v_tt)+1e-15))
+    @assertTrue(norm2(v_t - (pluspert_v-minuspert_v)/(2*Teps)) < (1e-7*norm2(v_t)+1e-15))
+
+    !Test x(1)-derivatives
+    xeps = 0.0
+    xeps(1) = x(1)*eps
+    call rout(rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+
+    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    if (present(verbose)) then
+      print *, "v_x(:,1)"
+      print *, (pluspert_v-minuspert_v)/(2*xeps(1))
+      print *, v_x(:,1)
+
+      print *, "v_xx(:,:,1)"
+      print *, (pluspert_v_x-minuspert_v_x)/(2*xeps(1))
+      print *, v_xx(:,:,1)
+    end if
+    @assertTrue(norm2(v_xx(:,:,1) - (pluspert_v_x-minuspert_v_x)/(2*xeps(1))) < (1e-7*norm2(v_xx(:,:,1))+1e-15))
+    @assertTrue(norm2(v_x(:,1) - (pluspert_v-minuspert_v)/(2*xeps(1))) < (1e-7*norm2(v_x(:,1))+1e-15))
+
+    !Test x(2)-derivatives
+    xeps = 0.0
+    xeps(2) = x(2)*eps
+    call rout(rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+    if (present(verbose)) then
+      print *, "v_x(2)"
+      print *, (pluspert_v-minuspert_v)/(2*xeps(2))
+      print *, v_x(:,2)
+
+      print *, "v_xx(:,:,2)"
+      print *, (pluspert_v_x-minuspert_v_x)/(2*xeps(2))
+      print *, v_xx(:,:,2)
+    end if
+
+  end subroutine test_1st_der_dim
+
+  subroutine test_1st_der_opt(rout,rho,T,x,verbose)
+    use tpvar, only: nce
+    interface
+      subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+        import nce
+        real, intent(in) :: rho, T, n(nce)
+        real, intent(out), optional :: e
+        real, intent(out), optional :: e_rho, e_T, e_n(nce)
+        real, intent(out), optional :: e_rhorho, e_rhoT, e_rhon(nce)
+        real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
+      END SUBROUTINE Rout
+    end interface
+    !
+    real, intent(in) :: rho,T,x(2)
+    logical, intent(in), optional :: verbose
+    !
+    call test_1st_der(rout_nonopt,rho,T,x,verbose)
+  contains
+    subroutine rout_nonopt(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+      real, intent(in) :: rho, T, n(nce)
+      real, intent(out) :: e
+      real, intent(out), optional :: e_rho, e_T, e_n(nce)
+      real, intent(out), optional :: e_rhorho, e_rhoT, e_rhon(nce)
+      real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
+      call rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,&
+           e_TT,e_Tn,e_nn)
+    end subroutine rout_nonopt
+  end subroutine test_1st_der_opt
+
+  subroutine test_1st_der(rout,rho,T,x,verbose)
+    use tpvar, only: nce
+    interface
+      subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+        import nce
+        real, intent(in) :: rho, T, n(nce)
+        real, intent(out) :: e
+        real, intent(out), optional :: e_rho, e_T, e_n(nce)
+        real, intent(out), optional :: e_rhorho, e_rhoT, e_rhon(nce)
+        real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
+      END SUBROUTINE Rout
+    end interface
+    real, intent(in) :: rho,T,x(2)
+    logical, intent(in), optional :: verbose
+    ! Locals
+    real :: s
+    real :: s_r,s_t,s_x(2)
+    real :: s_rr,s_rt,s_rx(2),s_tt,s_tx(2),s_xx(2,2)
+    real :: pluspert_s,minuspert_s
+    real :: pluspert_s_r,pluspert_s_t,pluspert_s_x(2)
+    real :: minuspert_s_r,minuspert_s_t,minuspert_s_x(2)
+
+    real :: eps,rhoeps,Teps,xeps(2)
+
+    eps = 5e-6
+
+    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    if (present(verbose)) then
+      print *, "s"
+      print *, s
+    end if
+
+    !Test rho-derivatives
+    rhoeps = rho*eps
+    call rout(rho+rhoeps,T,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(rho-rhoeps,T,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+
+    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    if (present(verbose)) then
+      print *, "s_r"
+      print *, (pluspert_s-minuspert_s)/(2*rhoeps)
+      print *, s_r
+
+      print *, "s_rr"
+      print *, (pluspert_s_r-minuspert_s_r)/(2*rhoeps)
+      print *, s_rr
+
+      print *, "s_rt"
+      print *, (pluspert_s_t-minuspert_s_t)/(2*rhoeps)
+      print *, s_rt
+
+      print *, "s_rx"
+      print *, (pluspert_s_x-minuspert_s_x)/(2*rhoeps)
+      print *, s_rx
+    end if
+    @assertTrue(norm2(s_rx - (pluspert_s_x-minuspert_s_x)/(2*rhoeps)) < (1e-7*norm2(s_rx)+1e-15))
+    @assertTrue(abs(s_rt - (pluspert_s_t-minuspert_s_t)/(2*rhoeps)) < (1e-7*abs(s_rt))+1e-15)
+    @assertTrue(abs(s_rr - (pluspert_s_r-minuspert_s_r)/(2*rhoeps)) < (1e-7*abs(s_rr))+1e-15)
+    @assertTrue(abs(s_r - (pluspert_s-minuspert_s)/(2*rhoeps)) < (1e-7*abs(s_r))+1e-15)
+
+    !Test T-derivatives
+    Teps = T*eps
+    call rout(rho,T+Teps,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(rho,T-Teps,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+
+    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    if (present(verbose)) then
+      print *, "s_t"
+      print *, (pluspert_s-minuspert_s)/(2*Teps)
+      print *, s_t
+
+      print *, "s_tt"
+      print *, (pluspert_s_t-minuspert_s_t)/(2*Teps)
+      print *, s_tt
+
+      print *, "s_tx"
+      print *, (pluspert_s_x-minuspert_s_x)/(2*Teps)
+      print *, s_tx
+    end if
+    @assertTrue(norm2(s_tx - (pluspert_s_x-minuspert_s_x)/(2*Teps)) < (1e-7*norm2(s_tx)+1e-15))
+    @assertTrue(abs(s_tt - (pluspert_s_t-minuspert_s_t)/(2*Teps)) < (1e-7*abs(s_tt))+1e-15)
+    @assertEqual(0.0, abs(s_t - (pluspert_s-minuspert_s)/(2*Teps)),(5e-7*abs(s_t))+1e-15)
+
+    !Test x(1)-derivatives
+    xeps = 0.0
+    xeps(1) = x(1)*eps
+    call rout(rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+
+    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    if (present(verbose)) then
+      print *, "s_x(1)"
+      print *, (pluspert_s-minuspert_s)/(2*xeps(1))
+      print *, s_x(1)
+
+      print *, "s_xx(:,1)"
+      print *, (pluspert_s_x-minuspert_s_x)/(2*xeps(1))
+      print *, s_xx(:,1)
+    end if
+    @assertTrue(norm2(s_xx(:,1) - (pluspert_s_x-minuspert_s_x)/(2*xeps(1))) < (1e-7*norm2(s_xx(:,1))+1e-15))
+    @assertEqual(0.0, abs(s_x(1) - (pluspert_s-minuspert_s)/(2*xeps(1))), (5e-7*abs(s_x(1)))+1e-15)
+
+    !Test x(2)-derivatives
+    xeps = 0.0
+    xeps(2) = x(2)*eps
+    call rout(rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    if (present(verbose)) then
+      print *, "s_x(2)"
+      print *, (pluspert_s-minuspert_s)/(2*xeps(2))
+      print *, s_x(2)
+
+      print *, "s_xx(:,2)"
+      print *, (pluspert_s_x-minuspert_s_x)/(2*xeps(2))
+      print *, s_xx(:,2)
+    end if
+
+  end subroutine test_1st_der
+
+  ! Assumes 'routine' is a subroutine on the form
+  !   routine(n,s,s_n,s_nn)
+  subroutine test_n_der (n,rout)
+    external :: rout
+    real, intent(in) :: n(2)
+    ! Locals
+    real :: s(0:6)
+    real :: s_n(0:6,2)
+    real :: s_nn(0:6,2,2),stemp(0:6,2,2)
+    real :: pluspert_s(0:6),minuspert_s(0:6)
+    real :: pluspert_s_n(0:6,2), minuspert_s_n(0:6,2)
+    real :: eps,neps(2)
+
+    print *, n
+    call rout(n,s,s_n,s_nn)
+
+    eps = 1e-5
+    neps = 0.0
+    neps(1) = n(1)*eps
+    call rout(n+neps,pluspert_s,pluspert_s_n,stemp)
+    call rout(n-neps,minuspert_s,minuspert_s_n,stemp)
+
+    print *, "s_n(:,1)"
+    print *, (pluspert_s-minuspert_s)/(2*neps(1))
+    print *, s_n(:,1)
+
+    print *, "s_nn(:,:,1)"
+    print *, (pluspert_s_n-minuspert_s_n)/(2*neps(1))
+    print *, s_nn(:,:,1)
+
+    neps = 0.0
+    neps(2) = n(2)*eps
+    call rout(n+neps,pluspert_s,pluspert_s_n,stemp)
+    call rout(n-neps,minuspert_s,minuspert_s_n,stemp)
+
+    print *, "s_n(:,2)"
+    print *, (pluspert_s-minuspert_s)/(2*neps(2))
+    print *, s_n(:,2)
+
+    print *, "s_nn(:,:,2)"
+    print *, (pluspert_s_n-minuspert_s_n)/(2*neps(2))
+    print *, s_nn(:,:,2)
+
+  end subroutine test_n_der
+
+  ! Assumes rout is a subroutine on the form
+  ! rout(T,n,s,s_T,s_n,s_TT,s_Tn,s_nn)
+  subroutine test_Tn_der (T,n,rout)
+    external :: rout
+    real, intent(in) :: T,n(2)
+    ! Locals
+    real :: s
+    real :: s_t,s_n(2)
+    real :: s_tt,s_tn(2),s_nn(2,2)
+    real :: pluspert_s,minuspert_s
+    real :: pluspert_s_t,pluspert_s_n(2)
+    real :: minuspert_s_t,minuspert_s_n(2)
+    real :: s_TT_dummy,s_Tn_dummy(2),s_nn_dummy(2,2)
+    real :: eps,Teps,neps(2)
+
+    call rout(T,n,s,s_T,s_n,s_TT,s_Tn,s_nn)
+
+    eps = 1e-5
+
+    Teps = T*eps
+    call rout(T+Teps,n,pluspert_s,pluspert_s_t,pluspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+    call rout(T-Teps,n,minuspert_s,minuspert_s_t,minuspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+
+    call rout(T,n,s,s_t,s_n,s_tt,s_tn,s_nn)
+    print *, "s_t"
+    print *, (pluspert_s-minuspert_s)/(2*Teps)
+    print *, s_t
+
+    print *, "s_tt"
+    print *, (pluspert_s_t-minuspert_s_t)/(2*Teps)
+    print *, s_tt
+
+    print *, "s_tn"
+    print *, (pluspert_s_n-minuspert_s_n)/(2*Teps)
+    print *, s_tn
+
+    neps = 0.0
+    neps(1) = n(1)*eps
+    call rout(T,n+neps,pluspert_s,pluspert_s_t,pluspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+    call rout(T,n-neps,minuspert_s,minuspert_s_t,minuspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+
+    print *, "s_n(1)"
+    print *, (pluspert_s-minuspert_s)/(2*neps(1))
+    print *, s_n(1)
+
+    print *, "s_nn(:,1)"
+    print *, (pluspert_s_n-minuspert_s_n)/(2*neps(1))
+    print *, s_nn(:,1)
+
+    neps = 0.0
+    neps(2) = n(2)*eps
+    call rout(T,n+neps,pluspert_s,pluspert_s_t,pluspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+    call rout(T,n-neps,minuspert_s,minuspert_s_t,minuspert_s_n,s_TT_dummy,s_Tn_dummy,s_nn_dummy)
+
+    print *, "s_n(2)"
+    print *, (pluspert_s-minuspert_s)/(2*neps(2))
+    print *, s_n(2)
+
+    print *, "s_nn(:,2)"
+    print *, (pluspert_s_n-minuspert_s_n)/(2*neps(2))
+    print *, s_nn(:,2)
+
+  end subroutine test_Tn_der
+
+  @Test
+  subroutine test_der
+    real :: rho,T,x(2)
+
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',mixing='Classic',ncomp=2,&
+         comp_string="C1,H2O",nphases=2,saft_setno=(/1,1/))
+    rho = 4/5e-2
+    T = 300
+    x = (/2.0,1.2/)
+
+
+    call pc_saft_set_kij_asym(1,2,0.01)
+    call pc_saft_set_kij_asym(2,1,-0.04)
+
+
+    ! Verbose routines. Uncomment for thorough testing.
+    ! call test_n_der(x,a_i)
+    ! call test_Tn_der(T,x,m2e1s3_mean)
+    ! call test_Tn_der(T,x,m2e2s3_mean)
+
+    call test_1st_der(eta,rho,T,x)
+    call test_1st_der_dim(zeta,rho,T,x,dim=4)
+    call test_1st_der(C_1,rho,T,x)
+    call test_1st_der(I_1,rho,T,x)
+    call test_1st_der(I_2,rho,T,x)
+    call test_1st_der(g_ij_spc_saft,rho,T,x)
+    call test_1st_der(alpha_spc_saft_hs,rho,T,x)
+    call test_1st_der_opt(alpha_disp,rho,T,x)
+    call test_1st_der_opt(alpha_spc_saft_hc,rho,T,x)
+    call test_1st_der_opt(alpha_PC,rho,T,x)
+    call test_1st_der_opt(F_PC_SAFT_TVn,rho=T,T=sum(x)/rho,x=x)
+
+    call cleanup_eos()
+  end subroutine test_der
+
+  @Test
+  subroutine test_pure_density_accuracy
+    real :: V, P, x(1)
+    real :: rhoLiq, rhoVap
+    integer :: nc
+
+    nc = 1
+    x = (/1.0/)
+
+    ! Should estimate the liquid and vapor density of propane to within 5 %.
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',ncomp=1,comp_string="C3",nphases=2,saft_setno=(/1/))
+    P = 101325.0
+
+    call saft_master_volume_solver(nc,comp,cbeos(1),T=298.0,P_spec=P,n=x,phase=LIQPH,V=V)
+    rhoLiq = (3*12+8*1.01)*1e-3/V
+    @assertEqual(rhoLiq, 493.0, 493.0*0.05)
+    call saft_master_volume_solver(nc,comp,cbeos(1),T=273.0,P_spec=P,n=x,phase=VAPPH,V=V)
+    rhoVap = (3*12+8*1.01)*1e-3/V
+    @assertEqual(rhoVap, 2.0098, 2.0098*0.05)
+    call cleanup_eos()
+
+    ! Should estimate the liquid and vapor density of water to within 10 %.
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',ncomp=1,comp_string="H2O",nphases=2,saft_setno=(/1/))
+    P = 101325.0
+
+    call saft_master_volume_solver(nc,comp,cbeos(1),T=277.0,P_spec=P,n=x,phase=LIQPH,V=V)
+    rhoLiq = 18.02*1e-3/V
+    @assertEqual(rhoLiq, 1000.0, 1000.0*0.1)
+    call saft_master_volume_solver(nc,comp,cbeos(1),T=298.0,P_spec=P,n=x,phase=VAPPH,V=V)
+    rhoVap = 18.02*1e-3/V
+    @assertEqual(rhoVap, 0.804, 0.804*0.1)
+
+    call cleanup_eos()
+  end subroutine test_pure_density_accuracy
+
+  @Test
+  subroutine test_mixture_density_accuracy
+    real :: V, T, P, x(3)
+    real :: rhoVap
+    integer :: nc
+
+    nc = 3
+    x = (/0.78,0.21,0.01/)
+    T = 273.15
+    P = 1e5
+
+    ! Should estimate density of air at STP to within 1 %.
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',ncomp=nc,comp_string="N2,O2,A2",nphases=2,saft_setno=(/1,1,1/))
+
+
+    call saft_master_volume_solver(nc,comp,cbeos(1),T=T,P_spec=P,n=x,phase=VAPPH,V=V)
+    rhoVap = (28.9645)*1e-3/V
+    @assertEqual(1.2754, rhoVap, 1.2754*0.01)
+
+
+    call cleanup_eos()
+  end subroutine test_mixture_density_accuracy
+
+end module test_pc_saft

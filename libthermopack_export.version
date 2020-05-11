@@ -1,0 +1,48 @@
+libthermopack {
+          # explicitly list symbols to be exported
+  global: thermopack_init_c;
+  	  thermopack_init_;
+  	  thermopack_init_liq_vap_discr_;
+	  thermopack_cleanup_;
+	  thermopack_tpflash_;
+	  thermopack_mf_tpflash_;
+	  thermopack_fugacity_;
+	  thermopack_bubble_pressure_;
+	  thermopack_phase_envelope_;
+	  thermopack_density_;
+	  thermopack_pressure_;
+	  thermopack_specific_volume_;
+	  thermopack_internal_energy_;
+	  thermopack_uvflash_;
+	  thermopack_hpflash_;
+	  thermopack_spflash_;
+	  thermopack_mp_spflash_;
+	  thermopack_bubt_;
+	  thermopack_bubp_;
+	  thermopack_dewt_;
+	  thermopack_dewp_;
+	  thermopack_zfac_;
+	  thermopack_twophase_specific_volume_;
+	  thermopack_enthalpy_;
+	  thermopack_twophase_enthalpy_;
+	  thermopack_entropy_;
+	  thermopack_twophase_entropy_;
+	  thermopack_pseudo_;
+	  thermopack_wilsonk_;
+	  thermopack_wilsonkdiff_;
+	  thermopack_getcriticalparam_;
+	  thermopack_single_idealgibbs_;
+	  thermopack_single_idealentropy_;
+	  thermopack_single_idealenthalpy_;
+	  thermopack_residual_gibbs_;
+	  thermopack_moleweight_;
+	  thermopack_compmoleweight_;
+	  thermopack_twophase_sound_velocity_;
+	  thermopack_cp_;
+	  thermopack_cv_;
+	  themopack_exp_adiabatic_;
+	  thermopack_cp_ideal_;
+	  thermopack_twophase_dhdt_;
+
+  local: *;      # hide everything else
+};

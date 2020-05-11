@@ -1,0 +1,11 @@
+[reports]
+output-format=colorized
+
+[messages control]
+disable=
+  redefined-builtin,
+  invalid-name,
+  attribute-defined-outside-init
+
+[typecheck]
+ignored-modules=pytp.tp

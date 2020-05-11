@@ -1,0 +1,627 @@
+module test_eosTV
+  use eoslibinit, only: init_thermo, silent_init
+  use eosTV, only: internal_energy, free_energy, pressure
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_tv_1c()
+    ! Test TV routines for single component, single-phase CO2
+    !
+    ! GL, 2015-01-28
+    integer, parameter :: n = 40
+    real :: t, v
+    real :: p, dpdt, dpdv, dpdt_num, dpdv_num
+    real :: u, dudt, dudv, dudt_num, dudv_num
+    real :: y, dydt, dydv, dydt_num, dydv_num
+    real :: vmin, vmax, Tmin, Tmax
+    real, dimension(1) :: x
+    real :: s
+    real :: s_alt, Gam, zeta, Cp, c2, dudv_alt, p_alt
+    real :: teps, veps, y_tp, y_tm, y_vp, y_vm, u_tp, u_tm, u_vp, u_vm,&
+         p_tp, p_tm, p_vp, p_vm
+    integer :: i, j
+    real :: tol = 1e-6
+
+    call init_thermo('Thermopack', 'SRK', 'vdW', 'Classic', 1,&
+         "CO2", 1)
+    x = [1.0]
+
+    Tmin = 200 ! K
+    Tmax = 400
+    vmin = 1e-5 ! m3/mol
+    vmax = 1e-2
+
+    do i=1,n
+      do j=1,n
+        t = Tmin+i*(Tmax-Tmin)/n  ! K
+        v = vmin+j*(vmax-vmin)/n  ! m3/mol
+
+        p = pressure(t, v, x, dpdv=dpdv, dpdt=dpdt)
+        call internal_energy(t, v, x, u, dudt=dudt, dudv=dudv)
+        call free_energy(t, v, x, y, dydt=dydt, dydv=dydv)
+
+        ! print *,
+        ! print *, 'T    =', T
+        ! print *, 'v    =', v
+        ! print *, 'p    =', p
+        ! print *, 'dpdt =', dpdt
+        ! print *, 'dpdv =', dpdv
+        ! print *, 'u    =', u
+        ! print *, 'dudt =', dudt
+        ! print *, 'dudv =', dudv
+        ! print *, 'y    =', y
+        ! print *, 'dydt =', dydt
+        ! print *, 'dydv =', dydv
+
+        s = (u-y)/T
+        s_alt = -dydt  ! Alt. entropy [J/molK]
+        p_alt = -dydv  ! Alt. pressure [Pa]
+        Gam = v*dpdt/dudt  ! Gruneisen coeff. [-]
+        zeta = 1.-(dpdt*dpdt*T)/(dpdv*dudt)  ! Ratio Cp/Cv [-]
+        Cp = dudt*zeta  ! Heat capacity [J/molK]
+        c2 = - dpdv*zeta*v**2  ! Squared sound velocity [m2/s2 kg/mol]
+        dudv_alt = - p + (Gam*Cp*T)/(v*zeta)  ! [Pa]
+
+        ! print *,
+        ! print *, 'Computed quantities'
+
+        ! print *, 's        =', s
+        ! print *, 's_alt    =', s_alt
+        ! print *, 'p_alt    =', p_alt
+        ! print *, 'Gam      =', Gam
+        ! print *, 'zeta     =', zeta
+        ! print *, 'Cp       =', Cp
+        ! print *, 'c2       =', c2
+        ! print *, 'dudv_alt =', dudv_alt
+
+        ! print *,
+        ! print *, "Check thermodynamic consistency"
+
+        ! print *, 's - s_alt =', s-s_alt
+        ! print *, 'p - p_alt =', p-p_alt
+        ! print *, 'dudv-dudv_alt =', dudv-dudv_alt
+
+        ! print *,
+        ! print *, 'Numerical derivatives'
+        teps = 1e-6
+        veps = 1e-9
+        call free_energy(t+teps, v, x, y_tp)
+        call free_energy(t-teps, v, x, y_tm)
+        call free_energy(t, v+veps, x, y_vp)
+        call free_energy(t, v-veps, x, y_vm)
+        call internal_energy(t, v+veps, x, u_vp)
+        call internal_energy(t, v-veps, x, u_vm)
+        call internal_energy(t+teps, v, x, u_tp)
+        call internal_energy(t-teps, v, x, u_tm)
+        p_tp = pressure(t+teps, v, x)
+        p_tm = pressure(t-teps, v, x)
+        p_vp = pressure(t, v+veps, x)
+        p_vm = pressure(t, v-veps, x)
+
+        dpdt_num = (p_tp-p_tm)/(2*teps)
+        dpdv_num = (p_vp-p_vm)/(2*veps)
+        dudt_num = (u_tp-u_tm)/(2*teps)
+        dudv_num = (u_vp-u_vm)/(2*veps)
+        dydt_num = (y_tp-y_tm)/(2*teps)
+        dydv_num = (y_vp-y_vm)/(2*veps)
+
+        ! print *, 'dpdt_num = ', dpdt_num
+        ! print *, 'dpdv_num = ', dpdv_num
+        ! print *, 'dudt_num = ', dudt_num
+        ! print *, 'dudv_num = ', dudv_num
+        ! print *, 'dydt_num = ', dydt_num
+        ! print *, 'dydv_num = ', dydv_num
+
+        ! print *,
+        ! print *, 'Differences'
+        ! print *, 'dpdt-dpdt_num = ', (dpdt-dpdt_num)/dpdt
+        ! print *, 'dpdv-dpdv_num = ', (dpdv-dpdv_num)/dpdv
+        ! print *, 'dudt-dudt_num = ', (dudt-dudt_num)/dudt
+        ! print *, 'dudv-dudv_num = ', (dudv-dudv_num)/dudv
+        ! print *, 'dydt-dydt_num = ', (dydt-dydt_num)/dydt
+        ! print *, 'dydt-dydv_num = ', (dydv-dydv_num)/dydv
+
+        @assertTrue( abs((dpdt-dpdt_num)/dpdt) < tol )
+        @assertTrue( abs((dpdv-dpdv_num)/dpdv) < tol )
+        @assertTrue( abs((dudt-dudt_num)/dudt) < tol )
+        @assertTrue( abs((dudv-dudv_num)/dudv) < tol )
+        @assertTrue( abs((dydt-dydt_num)/dydt) < tol )
+        @assertTrue( abs((dydv-dydv_num)/dydv) < tol )
+
+        @assertTrue( abs((s-s_alt)/s) < tol )
+        @assertTrue( abs((p-p_alt)/p) < tol )
+        @assertTrue( abs((dudv-dudv_alt)/dudv) < tol )
+      enddo
+    enddo
+
+  end subroutine test_tv_1c
+
+  @Test
+  subroutine test_fres_tv_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.9,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,N2,C1"
+
+    call test_fres_tv_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_fres_tv_SRK
+
+  @Test
+  subroutine test_fres_tv_CSP_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.9,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,N2,C1"
+
+    call test_fres_tv_model(ncomp,"CSP-SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_fres_tv_CSP_SRK
+
+  @Test
+  subroutine test_fres_tv_PRHV()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.9,0.15,0.15]
+    P0 = 5.0e6
+    T0 = 300.0
+    components = "CO2,H2O,MEG"
+
+    call test_fres_tv_model(ncomp,"PR",trim(components),T0,P0,n0,"HV1")
+
+  end subroutine test_fres_tv_PRHV
+
+  @Test
+  subroutine test_fres_tv_CPA_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 2
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0(1:ncomp) = [0.1,0.9]
+    P0 = 5.0e6
+    T0 = 300.0
+    components = "CO2,H2O"
+    call test_fres_tv_model(ncomp,"CPA-SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_fres_tv_CPA_SRK
+
+  @Test
+  subroutine test_fres_tv_PCSAFT()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 2
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0(1:ncomp) = [0.1,0.9]
+    P0 = 5.0e6
+    T0 = 300.0
+    components = "CO2,H2O"
+    call test_fres_tv_model(ncomp,"PC-SAFT",trim(components),T0,P0,n0)
+
+  end subroutine test_fres_tv_PCSAFT
+
+  ! @Test
+  ! subroutine test_fres_tv_EOSCG()
+  !   ! Test residual reduced Helmholtz function differentials
+  !   ! MH, 2017-02
+  !   real :: T0, P0
+  !   integer, parameter :: ncomp = 3
+  !   real, dimension(ncomp) :: n0
+  !   character(len=20) :: components
+
+  !   n0 = [0.9,0.15,0.15]
+  !   P0 = 1.0e6
+  !   T0 = 230.0
+  !   components = "CO2,N2,C1"
+
+  !   call test_fres_tv_model(ncomp,"EOSCG",trim(components),T0,P0,n0)
+
+  ! end subroutine test_fres_tv_EOSCG
+
+  subroutine test_fres_tv_model(ncomp,model,components,T0,P0,n0,mixing)
+    ! Test residual reduced Helmholtz function differentials
+    !
+    ! MH, 2017-02
+    use eos, only: specificvolume
+    use eosTV, only: Fres
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: n0
+    ! Locals
+    real, parameter :: eps = 1.0e-5
+    real :: t, v, dt, dv, v0, sumn
+    real :: F,F_T,F_V,F_n(ncomp),F_TT,F_TV,F_VV,F_Tn(ncomp)
+    real :: F_Vn(ncomp),F_nn(ncomp,ncomp),F_VVV
+    real :: F2,F2_T,F2_V,F2_n(ncomp),F2_VV
+    real, dimension(ncomp) :: n, dn, x
+    integer :: i, j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical :: isCubic
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+    if ( str_eq(model, "SRK").OR. &
+         str_eq(model, "PR") ) then
+      isCubic = .true.
+    else
+      isCubic = .false.
+    endif
+    sumn = sum(n0)
+    x = n0/sumn
+    ! Test model
+    silent_init = .true.
+
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), 'Classic', ncomp,&
+         trim(components), 1)
+    call specificvolume(T0,p0,x,LIQPH,v0)
+
+    ! Get volume
+    v0 = v0*sumn
+    dv = v0*eps
+    dt = t0*eps
+    dn = n0*eps
+
+    t = t0
+    v = v0
+    n = n0
+    if (isCubic) then
+      call Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
+    else
+      call Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    endif
+    ! Temperature differentials
+    t = t0 + dt
+    n = n0
+    v = v0
+    call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
+    @assertEqual(F_T,(F2-F)/dt,10.0*eps*abs(F_T))
+    @assertEqual(F_TT,(F2_T-F_T)/dt,10.0*eps*abs(F_TT))
+    @assertEqual(F_TV,(F2_V-F_V)/dt,10.0*eps*abs(F_TV))
+    do i=1,ncomp
+      @assertEqual(F_Tn(i),(F2_n(i)-F_n(i))/dt,10.0*eps*abs(F_Tn(i)))
+    enddo
+    ! Volume differentials
+    t = t0
+    n = n0
+    v = v0 + dv
+    call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n,F_VV=F2_VV)
+    @assertEqual(F_V,(F2-F)/dv,16.0*eps*abs(F_V))
+    @assertEqual(F_VV,(F2_V-F_V)/dv,15.0*eps*abs(F_VV))
+    if (isCubic) then
+      @assertEqual(F_VVV,(F2_VV-F_VV)/dv,10.0*eps*abs(F_VVV))
+    endif
+    @assertEqual(F_TV,(F2_T-F_T)/dv,10.0*eps*abs(F_TV))
+    do i=1,ncomp
+      @assertEqual(F_Vn(i),(F2_n(i)-F_n(i))/dv,100.0*eps*abs(F_Vn(i)))
+    enddo
+
+    ! Mole number differentials
+    t = t0
+    v = v0
+    do j=1,ncomp
+      n = n0
+      n(j) = n0(j) + dn(j)
+      call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
+      @assertEqual(F_n(j),(F2-F)/dn(j),50.0*eps*abs(F_n(j)))
+      @assertEqual(F_Vn(j),(F2_V-F_V)/dn(j),100.0*eps*abs(F_Vn(j)))
+      @assertEqual(F_Tn(j),(F2_T-F_T)/dn(j),10.0*eps*abs(F_Tn(j)))
+      do i=1,ncomp
+        @assertEqual(F_nn(i,j),(F2_n(i)-F_n(i))/dn(j),20.0*eps*abs(F_nn(i,j)))
+      enddo
+    enddo
+
+  end subroutine test_fres_tv_model
+
+  @Test
+  subroutine test_pressure_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.9,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,N2,C1"
+
+    call test_pressure_TV_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_pressure_SRK
+
+  subroutine test_pressure_TV_model(ncomp,model,components,T0,P0,n0,mixing)
+    ! Test entropy function
+    !
+    ! MH, 2017-02
+    use eosTV, only: pressure
+    use eos, only: specificvolume
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: n0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, v, dt, dv, sumn, v0
+    real :: p,p2,dpdt,dpdv,dpdn(ncomp)
+    real, dimension(ncomp) :: n, dn, x
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .true.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    sumn = sum(n0)
+    x = n0/sumn
+
+    ! Get volume
+    call specificvolume(T0,p0,x,LIQPH,v0)
+    v0 = v0*sumn
+    dv = v0*eps
+    dt = t0*eps
+    dn = n0*eps
+
+    t = t0
+    v = v0
+    n = n0
+    p = pressure(t,v,n,dpdv,dpdt,dpdn=dpdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = n0
+    v = v0
+    p2 = pressure(t,v,n)
+    @assertEqual(dpdt,(p2-p)/dt,10.0*eps*abs(dpdt))
+
+    ! Volume differentials
+    t = t0
+    n = n0
+    v = v0 + dv
+    p2 = pressure(t,v,n)
+    @assertEqual(dpdv,(p2-p)/dv,10.0*eps*abs(dpdv))
+
+    ! ! Mole number differentials
+    t = t0
+    v = v0
+    do j=1,ncomp
+      n = n0
+      n(j) = n0(j) + dn(j)
+      p2 = pressure(t,v,n)
+      @assertEqual(dpdn(j),(p2-p)/dn(j),10.0*eps*abs(dpdn(j)))
+    enddo
+
+  end subroutine test_pressure_TV_model
+
+  subroutine test_chemical_potential_tv()
+    use eostv, only: chemical_potential, free_energy
+    implicit none
+    real :: t, v, z(2), mu(2), dn, n(2), tmax, tmin, vmax, vmin
+    real :: f1, f2, mu_num, v1, v2, error, dt, mu1(2), mu2(2)
+    real :: dmudv(2), dmudt(2), dmudz(2,2), dmudt_num, dv, dmudv_num
+    real :: dmudz_num
+    integer :: it, iv, nt, nv
+    !
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2, &
+         "CO2,N2", 1)
+    !
+    tmin = 200 ! K
+    tmax = 400 ! K
+    vmin = 5e-5 ! m3/mol
+    vmax = 1e-2 ! m3/mol
+    nt = 3
+    nv = 3
+    !
+    n(1) = 0.7
+    n(2) = 1.0 - n(1)
+    dn = 1e-5
+    dt = 1e-2
+    !
+    do it = 1, nt
+      do iv = 1, nv
+        t = tmin + (it - 1)*(tmax - tmin)/(nt - 1) 
+        v = vmin + (iv - 1)*(vmax - vmin)/(nv - 1)
+        !
+        ! Test chemical potential
+        ! =======================
+        !
+        z = n
+        call chemical_potential(t, v, z, mu=mu)  
+        !
+        ! Compute numerical derivative of Helmholtz free energy for
+        ! component 1
+        n(1) = n(1) - 0.5*dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v1 = v/sum(n)
+        call free_energy(t, v1, z, f1)
+        f1 = f1*sum(n)
+        n(1) = n(1) + dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v2 = v/sum(n)
+        call free_energy(t, v2, z, f2)
+        f2 = f2*sum(n)
+        mu_num = (f2 - f1)/dn
+        n(1) = n(1) - 0.5*dn
+        !
+        ! Compare numerical derivative with chemical potential
+        error = abs((mu(1) - mu_num)/mu(1))
+        !write (*,*) error
+        @assertTrue(error < 1e-9)
+        !
+        ! Compute numerical derivative of Helmholtz free energy for
+        ! component 2
+        n(2) = n(2) - 0.5*dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v1 = v/sum(n)
+        call free_energy(t, v1, z, f1)
+        f1 = f1*sum(n)
+        n(2) = n(2) + dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v2 = v/sum(n)
+        call free_energy(t, v2, z, f2)
+        f2 = f2*sum(n)
+        mu_num = (f2 - f1)/dn
+        n(2) = n(2) - 0.5*dn
+        !
+        ! Compare numerical derivative with chemical potential
+        error = abs((mu(2) - mu_num)/mu(2))
+        !write (*,*) error
+        @assertTrue(error < 1e-9)
+        !
+        !
+        z = n/sum(n)
+        call chemical_potential(t, v, z, mu=mu, dmudv=dmudv, dmudt=dmudt, &
+             dmudz=dmudz)
+        !
+        ! Test derivatives of chemical potential w.r.t. temperature
+        ! =========================================================
+        !
+        call chemical_potential(t - 0.5*dt, v, z, mu=mu1)
+        call chemical_potential(t + 0.5*dt, v, z, mu=mu2)
+        dmudt_num = (mu2(1) - mu1(1))/dt
+        error = abs((dmudt(1) - dmudt_num)/dmudt(1))
+        !write (*,*) error
+        @assertTrue(error < 1e-9)
+        dmudt_num = (mu2(2) - mu1(2))/dt
+        error = abs((dmudt(2) - dmudt_num)/dmudt(2))
+        !write (*,*) error
+        @assertTrue(error < 1e-9)
+        !
+        ! Test derivatives of chemical potential w.r.t. volume
+        ! ====================================================
+        !
+        dv = 1e-5*v
+        call chemical_potential(t, v - 0.5*dv, z, mu=mu1)
+        call chemical_potential(t, v + 0.5*dv, z, mu=mu2)
+        dmudv_num = (mu2(1) - mu1(1))/dv
+        error = abs((dmudv(1) - dmudv_num)/dmudv(1))
+        !write (*,*) error
+        @assertTrue(error < 1e-9)
+        dmudv_num = (mu2(2) - mu1(2))/dv
+        error = abs((dmudv(2) - dmudv_num)/dmudv(2))
+        !write (*,*) t,v,error
+        @assertTrue(error < 1e-9)
+        !
+        ! Test derivatives of chemical potential w.r.t. mole numbers
+        ! ==========================================================
+        !
+        ! Perturb component 1
+        n(1) = n(1) - 0.5*dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v1 = v/sum(n)
+        call chemical_potential(t, v1, z, mu=mu1)
+        n(1) = n(1) + dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v2 = v/sum(n)
+        call chemical_potential(t, v2, z, mu=mu2)
+        n(1) = n(1) - 0.5*dn
+        !
+        dmudz_num = (mu2(1) - mu1(1))/dn
+        error = abs((dmudz(1, 1) - dmudz_num)/dmudz(1, 1))
+        !write (*,*) error
+        @assertTrue(error < 1e-7)
+        !
+        dmudz_num = (mu2(2) - mu1(2))/dn
+        error = abs((dmudz(1, 2) - dmudz_num)/dmudz(1, 2))
+        !write (*,*) error
+        @assertTrue(error < 1e-7)
+        !
+        ! Perturb component 2
+        n(2) = n(2) - 0.5*dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v1 = v/sum(n)
+        call chemical_potential(t, v1, z, mu=mu1)
+        n(2) = n(2) + dn
+        z(1) = n(1)/sum(n)
+        z(2) = n(2)/sum(n)
+        v2 = v/sum(n)
+        call chemical_potential(t, v2, z, mu=mu2)
+        n(2) = n(2) - 0.5*dn
+        !
+        dmudz_num = (mu2(1) - mu1(1))/dn
+        error = abs((dmudz(2, 1) - dmudz_num)/dmudz(2, 1))
+        !write (*,*) error
+        @assertTrue(error < 1e-7)
+        !
+        dmudz_num = (mu2(2) - mu1(2))/dn
+        error = abs((dmudz(2, 2) - dmudz_num)/dmudz(2, 2))
+        !write (*,*) error
+        @assertTrue(error < 1e-7)
+        !
+      end do
+    end do
+    !
+  end subroutine test_chemical_potential_tv
+
+end module test_eosTV
+! Local Variables:
+! mode: f90
+! End:

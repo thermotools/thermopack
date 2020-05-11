@@ -1,0 +1,82 @@
+module test_trend
+  use eoslibinit, only: init_thermo
+  use eos, only: residualGibbs, enthalpy, entropy, idealGibbsSingle
+  use tpconst, only: getRgas
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_trend_potentials()
+    ! Test ideal and residual potentials
+    !
+    ! MH, 2015-11-25
+    integer, parameter :: ncomp = 2
+    real :: t, p, x(ncomp), g, gr, gid(ncomp), h, s, gmix, gidmix, Rgas
+    integer :: i
+    real, parameter :: tol = 1e-3
+
+    call init_thermo('TREND', 'EOSCG', 'vdW', 'Classic', ncomp,&
+         "CO2,H2O", 2)
+    x = [0.5,0.5]
+    t = 300.0
+    p = 1.0e6
+    call residualGibbs(t,p,x,2,gr)
+    call enthalpy(t,p,x,2,h)
+    call entropy(t,p,x,2,s)
+    g = h - t*s
+    do i=1,ncomp
+      call idealGibbsSingle(t,p,i,gid(i))
+    enddo
+    Rgas = getRgas(x)
+    gidmix = Rgas*T*sum(x*log(x))
+    gmix = gr + sum(x*gid) + gidmix
+
+    @assertTrue( abs((g-gmix)/g) < tol)
+  end subroutine test_trend_potentials
+
+  @Test
+  subroutine test_trend_free_energy()
+    use eosTV, only: free_energy
+    use eos, only: specificvolume
+    use parameters, only: LIQPH
+    ! Test Helmholtz free energy functions from TREND
+    !
+    ! MH, 2017-02
+    integer, parameter :: ncomp = 2
+    real :: t,v,x(ncomp),A,A_T,A_V,A2,A_TT,A_VV,A_TV,A2_V,A2_T
+    real :: t0,dt,v0,dv,p
+    real, parameter :: tol = 1e-6, eps = 1.0e-7
+
+    call init_thermo('TREND', 'EOSCG', 'vdW', 'Classic', ncomp,&
+         "CO2,H2O", 2)
+    x = [0.8,0.2]
+    t0 = 250.0
+    p = 1.0e6
+    call specificvolume(t0,p,x,LIQPH,v0)
+    dv = v0*eps
+    dt = t0*eps
+
+    t = t0
+    v = v0
+    call free_energy(t,v,x,A,A_T,A_V,A_TT,A_VV,A_TV)
+
+    t = t0
+    v = v0 + dv
+    call free_energy(t,v,x,A2,A2_T,A2_V)
+    @assertTrue( abs(((A2-A)/dv-A_V)/A_V) < 100.0*tol)
+    @assertTrue( abs(((A2_V-A_V)/dv-A_VV)/A_VV) < tol)
+    @assertTrue( abs(((A2_T-A_T)/dv-A_TV)/A_TV) < tol)
+
+    t = t0 + dt
+    v = v0
+    call free_energy(t,v,x,A2,A2_T,A2_V)
+    @assertTrue( abs(((A2-A)/dt-A_T)/A_T) < tol)
+    @assertTrue( abs(((A2_T-A_T)/dt-A_TT)/A_TT) < tol)
+    @assertTrue( abs(((A2_V-A_V)/dt-A_TV)/A_TV) < tol)
+
+  end subroutine test_trend_free_energy
+
+end module test_trend

@@ -1,0 +1,103 @@
+module test_critical
+  use eoslibinit, only: init_thermo
+  use critical, only: calcCritical, calcCriticalTV
+  use parameters, only: VAPPH
+  use eosTV, only: pressure
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_critical_point_co2n2()
+    ! Test a single critical point
+    real, dimension(2) :: z
+    real :: p, T, v, tol
+    integer :: ierr
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
+         "CO2,N2", 2)
+
+    z = [0.8, &
+         0.2]
+
+    T = 280.0
+    p = 1.0e7
+
+    call calcCritical(t,p,Z,VAPPH,ierr)
+    @assertTrue(ierr == 0)
+    @assertEqual(287.66087195742074, T, 1e-06)
+    @assertEqual(104.09812884531468e5, p, 1e-01)
+
+    T = -1.0
+    v = -1.0
+    tol = 1.0e-7
+    call calcCriticalTV(t,v,Z,ierr,tol)
+    @assertTrue(ierr == 0)
+    p = pressure(T,v,Z)
+    @assertEqual(8.62006E-005, v, 1e-10)
+    @assertEqual(287.66087, T, 5e-06)
+    @assertEqual(104.09813e5, p, 1.0)
+
+  end subroutine test_critical_point_co2n2
+
+  @Test
+  subroutine test_critical_point_mix()
+    ! Test a single critical point
+    real, dimension(5) :: z
+    real :: p, T, v, tol
+    integer :: ierr
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
+         "CO2,H2,N2,O2,C1", 2)
+
+    z = [0.9103,&
+         0.0115,&
+         0.0400,&
+         0.0187,&
+         0.0195]
+
+    T = 295.0
+    p = 80.0e5
+
+    call calcCritical(t,p,Z,VAPPH,ierr)
+    @assertTrue(ierr == 0)
+    @assertEqual(298.06410414442928, T, 1e-06)
+    @assertEqual(86.085396202597171e5 , p, 1e-01)
+
+    T = -1.0
+    v = -1.0
+    tol = 1.0e-7
+    call calcCriticalTV(t,v,Z,ierr,tol)
+    @assertTrue(ierr == 0)
+    p = pressure(T,v,Z)
+    @assertEqual(9.7353991443E-005, v, 1e-10)
+    @assertEqual(298.064104, T, 5e-06)
+    @assertEqual(8608539.7, p, 1.0)
+
+  end subroutine test_critical_point_mix
+
+  @Test
+  subroutine test_critical_point_co2()
+    ! Test a single critical point
+    real, dimension(1) :: zs
+    real :: p, T, v, tol
+    integer :: ierr
+
+    call init_thermo('Thermopack', 'PC-SAFT', 'vdW', 'Classic', 1,&
+         "CO2", 2,saft_setno=(/1/))
+    zs = 1.0
+    T = -1.0
+    v = -1.0
+    tol = 1.0e-7
+    call calcCriticalTV(t,v,zs,ierr,tol)
+    @assertTrue(ierr == 0)
+    p = pressure(T,v,zs)
+    @assertEqual(0.9976419E-04, v, 1e-10)
+    @assertEqual(310.2768, T, 1e-06)
+    @assertEqual(8063916.3, p, 1.0)
+
+  end subroutine test_critical_point_co2
+
+end module test_critical

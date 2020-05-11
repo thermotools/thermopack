@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{502F1FC1-D952-4CC0-A7B4-8CA68A9AE092}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(OutDir)/libnum;$(OutDir)/trend;$(OutDir)/thermopack" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF" StringLengthArgPassing="strLenArgsAfterAll" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir)\;$(OutDir)\thermopack;$(OutDir)\libnum\;..\..\lapack\lib\$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib libnum.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="if not exist ..\bin mkdir ..\bin"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="copy $(OutDir)\$(TargetName)$(TargetExt) ..\bin\debug_intel_windows.exe"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(OutDir)/libnum;$(OutDir)/trend;$(OutDir)/thermopack" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF" StringLengthArgPassing="strLenArgsAfterAll" ExternalNameUnderscore="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir)\;$(OutDir)\thermopack;$(OutDir)\libnum\;..\..\lapack\lib\$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib libnum.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="if not exist ..\bin mkdir ..\bin"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="copy $(OutDir)\$(TargetName)$(TargetExt) ..\bin\release_intel_windows.exe"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath="..\src\init.f90"/>
+		<File RelativePath="..\src\io.f90"/>
+		<File RelativePath="..\src\main.f90"/>
+		<File RelativePath="..\src\model_var.f90"/>
+		<File RelativePath="..\src\run.f90"/>
+		<File RelativePath="..\src\userinp.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>

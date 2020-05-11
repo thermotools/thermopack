@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{438EA9FE-716E-4464-B6F9-757704715B80}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" OutputDirectory="$(ConfigurationName)\trend" IntermediateDirectory="$(ConfigurationName)\trend" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|Win32" OutputDirectory="$(ConfigurationName)\trend" IntermediateDirectory="$(ConfigurationName)\trend" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl;f95">
+		<File RelativePath="..\..\trend\src\ancillary_equations_mix.f95"/>
+		<File RelativePath="..\..\trend\src\association.f95"/>
+		<File RelativePath="..\..\trend\src\costald.f95"/>
+		<File RelativePath="..\..\trend\src\cubic_eos.f95"/>
+		<File RelativePath="..\..\trend\src\dryice.f95"/>
+		<File RelativePath="..\..\trend\src\ecs.f95"/>
+		<File RelativePath="..\..\trend\src\flash.f95"/>
+		<File RelativePath="..\..\trend\src\flash_pure.f95"/>
+		<File RelativePath="..\..\trend\src\fluids.f95"/>
+		<File RelativePath="..\..\trend\src\fniderivs.f95"/>
+		<File RelativePath="..\..\trend\src\fnrderivs.f95"/>
+		<File RelativePath="..\..\trend\src\hard_sphere.f95"/>
+		<File RelativePath="..\..\trend\src\hdrt_chem_pot.f95"/>
+		<File RelativePath="..\..\trend\src\hdrt_params.f95"/>
+		<File RelativePath="..\..\trend\src\hdrt_properties_modules.f95"/>
+		<File RelativePath="..\..\trend\src\interface.f95"/>
+		<File RelativePath="..\..\trend\src\interface_routines.f95"/>
+		<File RelativePath="..\..\trend\src\interface_support.f95"/>
+		<File RelativePath="..\..\trend\src\modules.f95"/>
+		<File RelativePath="..\..\trend\src\phaseDet_mix.f95"/>
+		<File RelativePath="..\..\trend\src\phaseDet_pure.f95"/>
+		<File RelativePath="..\..\trend\src\PhaseDet_sol.f95"/>
+		<File RelativePath="..\..\trend\src\PhaseDet_sol_pure.f95"/>
+		<File RelativePath="..\..\trend\src\phasenv.f95"/>
+		<File RelativePath="..\..\trend\src\phasenv_pure.f95"/>
+		<File RelativePath="..\..\trend\src\prop_from_deriv_mix.f95"/>
+		<File RelativePath="..\..\trend\src\pTflash_2C_3P.f95"/>
+		<File RelativePath="..\..\trend\src\PTFlash_Solids_new.f95"/>
+		<File RelativePath="..\..\trend\src\reduced_parameters_calc.f95"/>
+		<File RelativePath="..\..\trend\src\regula_falsi.f95"/>
+		<File RelativePath="..\..\trend\src\rhomix_pT.f95"/>
+		<File RelativePath="..\..\trend\src\setup.f95"/>
+		<File RelativePath="..\..\trend\src\sub_file_input.f95"/>
+		<File RelativePath="..\..\trend\src\transport.f95"/>
+		<File RelativePath="..\..\trend\src\uncty.f95"/>
+		<File RelativePath="..\..\trend\src\vle_derivs.f95"/>
+		<File RelativePath="..\..\trend\src\waterice.f95"/></Filter></Files>
+	<Globals/></VisualStudioProject>

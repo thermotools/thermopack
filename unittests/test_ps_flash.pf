@@ -1,0 +1,42 @@
+module test_ps_flash
+  use eoslibinit, only: init_thermo
+  use parameters, only: continueOnError
+  use ps_solver
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_sp_flash_point()
+    ! Test a single point in SP space
+    real, dimension(3) :: z, x, y
+    real :: p, T, betaL, beta, s
+    integer :: phase
+
+    continueOnError = .true.
+
+    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 3,&
+         "CO2,N2,C1", 2)
+
+    z = [0.90736542122980968, &
+         1.4849189137009274E-002, &
+         7.7785389633180976E-002]
+
+    beta = 0.10184677255542349
+    T = 765.76961312016749
+    p = 1314285.7142857143
+    s = 17.938785794291899
+
+    x = [0.96444366527976932, 3.1433123915157110E-003, &
+         3.2413022328714854E-002]
+    y = [0.40401113886958240, 0.11807947042365562, 0.47790939070676197]
+    phase = 0
+
+    call twoPhasePSflash(t,p,Z,beta,betaL,X,Y,s,phase)
+    @assertTrue(phase /= -1)
+
+  end subroutine test_sp_flash_point
+
+end module test_ps_flash

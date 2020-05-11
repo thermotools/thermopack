@@ -1,0 +1,475 @@
+module test_saftvrmie
+  use eoslibinit, only: init_thermo, cleanup_eos
+  use pfunit_mod
+  use saft_interface
+  use saftvrmie_interface
+  use saftvrmie_containers
+  use saftvrmie_dispersion
+  use saftvrmie_chain
+  use saftvrmie_hardsphere
+  use saftvrmie_options
+  use tpvar, only: comp, nce, cbeos
+  use parameters, only: LIQPH, VAPPH
+  use tpconst, only: Rgas
+  use critical, only: calcCritical, calcCriticalTV
+  use eostv, only: pressure, secondvirialcoeffmatrix
+  use quadratures, only: GAUSS_10
+  implicit none
+  save
+
+contains
+
+  @Test
+  subroutine test_pure_critical()
+    !> Compare critical points to values from Lafitte 2013.
+    character(len=5) :: compstr
+    integer :: nc, ierr
+    real :: T, P, z(1), v
+    real :: Tc, Pc
+    real :: tol = 1e-10
+
+    nc = 1
+    z(1) = 1.0
+
+    compstr = "C1"
+    Tc = 195.3
+    Pc = 5.15e6
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    T=-1; v=-1 ! initial values
+    call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
+    P = pressure(t,v,z)
+    @assertTrue(ierr==0)
+    ! print *, "comp ", compstr
+    ! print *, "ref Tc, Pc", Tc, Pc
+    ! print *, "mod Tc, Pc", T, P
+    @assertEqual(T,Tc,0.005*Tc)
+    @assertEqual(P,Pc,0.005*Pc)
+
+    compstr = "C2"
+    Tc = 311.38
+    Pc = 5.49e6
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    T=-1; v=-1 ! initial values
+    call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
+    P = pressure(t,v,z)
+    @assertTrue(ierr==0)
+    ! print *, "comp ", compstr
+    ! print *, "ref Tc, Pc", Tc, Pc
+    ! print *, "mod Tc, Pc", T, P
+    @assertEqual(T,Tc,0.005*Tc)
+    @assertEqual(P,Pc,0.005*Pc)
+
+    compstr = "C3"
+    Tc = 376.20
+    Pc = 4.77e6
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    T=-1; v=-1 ! initial values
+    call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
+    P = pressure(t,v,z)
+    @assertTrue(ierr==0)
+    ! print *, "comp ", compstr
+    ! print *, "ref Tc, Pc", Tc, Pc
+    ! print *, "mod Tc, Pc", T, P
+    @assertEqual(T,Tc,0.005*Tc)
+    @assertEqual(P,Pc,0.005*Pc)
+
+    compstr = "NC10"
+    Tc = 626.37
+    Pc = 2.31e6
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    T=-1; v=-1 ! initial values
+    call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
+    P = pressure(t,v,z)
+    @assertTrue(ierr==0)
+    ! print *, "comp ", compstr
+    ! print *, "ref Tc, Pc", Tc, Pc
+    ! print *, "mod Tc, Pc", T, P
+    @assertEqual(T,Tc,0.005*Tc)
+    @assertEqual(P,Pc,0.005*Pc)
+
+    compstr = "CO2"
+    Tc = 307.00
+    Pc = 7.86e6
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    T=-1; v=-1 ! initial values
+    call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
+    P = pressure(t,v,z)
+    @assertTrue(ierr==0)
+    ! print *, "comp ", compstr
+    ! print *, "ref Tc, Pc", Tc, Pc
+    ! print *, "mod Tc, Pc", T, P
+    @assertEqual(T,Tc,0.005*Tc)
+    @assertEqual(P,Pc,0.005*Pc)
+
+  end subroutine test_pure_critical
+
+  !@Test
+  subroutine test_pseudo_consistency()
+    !> Test that a pure component has the same helmholtz contribution as the
+    !> cross contributions a_12 for a binary mixture with the same
+    !> cross-interaction potential as the interaction for the pure component.
+    character(len=20) :: compstr
+    integer :: nc
+    real :: T, v, n(2), n1(1)
+    real :: m(2), sigma(2,2), eps(2,2), lambda_a(2,2), lambda_r(2,2)
+    real :: Bmat1(1,1), Bmat2(2,2)
+    real :: kij, gammaij
+
+    real :: a1,a1_T,a1_V,a1_TT,a1_VV,a1_TV
+    real, dimension(2) :: a1_n,a1_Tn,a1_Vn
+    real, dimension(2,2) :: a1_nn
+
+    real :: a2,a2_T,a2_V,a2_TT,a2_VV,a2_TV
+    real, dimension(2) :: a2_n,a2_Tn,a2_Vn
+    real, dimension(2,2) :: a2_nn
+
+    real :: a3,a3_T,a3_V,a3_TT,a3_VV,a3_TV
+    real, dimension(2) :: a3_n,a3_Tn,a3_Vn
+    real, dimension(2,2) :: a3_nn
+
+    real :: ahs,ahs_T,ahs_V,ahs_TT,ahs_VV,ahs_TV
+    real, dimension(2) :: ahs_n,ahs_Tn,ahs_Vn
+    real, dimension(2,2) :: ahs_nn
+
+    real :: ach,ach_T,ach_V,ach_TT,ach_VV,ach_TV
+    real, dimension(2) :: ach_n,ach_Tn,ach_Vn
+    real, dimension(2,2) :: ach_nn
+
+
+    real :: pa1,pa1_T,pa1_V,pa1_TT,pa1_VV,pa1_TV
+    real, dimension(1) :: pa1_n,pa1_Tn,pa1_Vn
+    real, dimension(1,1) :: pa1_nn
+
+    real :: pa2,pa2_T,pa2_V,pa2_TT,pa2_VV,pa2_TV
+    real, dimension(1) :: pa2_n,pa2_Tn,pa2_Vn
+    real, dimension(1,1) :: pa2_nn
+
+    real :: pa3,pa3_T,pa3_V,pa3_TT,pa3_VV,pa3_TV
+    real, dimension(1) :: pa3_n,pa3_Tn,pa3_Vn
+    real, dimension(1,1) :: pa3_nn
+
+    real :: pahs,pahs_T,pahs_V,pahs_TT,pahs_VV,pahs_TV
+    real, dimension(1) :: pahs_n,pahs_Tn,pahs_Vn
+    real, dimension(1,1) :: pahs_nn
+
+    real :: pach,pach_T,pach_V,pach_TT,pach_VV,pach_TV
+    real, dimension(1) :: pach_n,pach_Tn,pach_Vn
+    real, dimension(1,1) :: pach_nn
+
+
+    T = 15.0
+    kij = 0.5
+    gammaij = -0.8
+
+    !print *, "*** REAL MIXTURE ***"
+    nc = 2
+    compstr = "H2,HE"
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call set_saftvrmie_eps_kij(1,2,kij)
+    call set_saftvrmie_lr_gammaij(1,2,gammaij)
+    m = saftvrmie_param%ms
+    sigma = saftvrmie_param%sigma_ij
+    eps = saftvrmie_param%eps_divk_ij
+    lambda_a = saftvrmie_param%lambda_a_ij
+    lambda_r = saftvrmie_param%lambda_r_ij
+    !call secondvirialcoeffmatrix(T, Bmat2)
+
+    !V = 1E10
+    !V = N_AVOGADRO/(3.057487E24)
+    V = 2E-5
+    n(1) = 0.6
+    n(2) = 1 - n(1)
+    call preCalcSAFTVRMie(nc,T,V,n,3,saftvrmie_var(1))
+
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),&
+         ahs,a_T=ahs_T,a_V=ahs_V,a_n=ahs_n,&
+         a_TT=ahs_TT,a_VV=ahs_VV,a_TV=ahs_TV,a_Tn=ahs_Tn,a_Vn=ahs_Vn,a_nn=ahs_nn)
+
+    call calcA1(nc,T,V,n,saftvrmie_var(1),&
+         a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn)
+
+    call calcA2(nc,T,V,n,saftvrmie_var(1),&
+         a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
+
+    call calcA3(nc,T,V,n,saftvrmie_var(1),&
+         a3,a3_T,a3_V,a3_n,a3_TT,a3_VV,a3_TV,a3_Tn,a3_Vn,a3_nn)
+
+    call calcAchain(nc,T,V,n,saftvrmie_var(1),&
+         ach,ach_T=ach_T,ach_V=ach_V,ach_n=ach_n,ach_TT=ach_TT,&
+         ach_VV=ach_VV,ach_TV=ach_TV,ach_Tn=ach_Tn,ach_Vn=ach_Vn,ach_nn=ach_nn,&
+         returnF=.false.)
+
+    print *, "comps ", comp(1)%ident, comp(2)%ident
+    print *, "m        ", m
+    print *, "sigma    ", saftvrmie_param%sigma_ij
+    print *, "eps      ", saftvrmie_param%eps_divk_ij
+    print *, "lambda_a ", saftvrmie_param%lambda_a_ij
+    print *, "lambda_r ", saftvrmie_param%lambda_r_ij
+    print *, "kij, gammaij ", kij, gammaij
+    print *, "T, V, n ", T, V, n
+    print *, "d_bh    ", saftvrmie_var(1)%dhs%d
+    print *, "ahs     ", ahs
+    print *, "a1ij%am ", saftvrmie_var(1)%a1ij%am
+    print *, "a2ij%am ", saftvrmie_var(1)%a2ij%am
+    print *, "a3ij%am ", saftvrmie_var(1)%a3ij%am
+    print *, "ach     ", ach
+
+    print *, "ahs ", ahs
+    print *, "a1  ", a1
+    print *, "a2  ", a2
+    print *, "a3  ", a3
+    print *, "ach ", ach
+    stop
+    print *, "*** PSEUDO-COMPONENT ***"
+    nc = 1
+    compstr = "H2"
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call set_saftvrmie_pure_fluid_param(ic=1,m=1.0,sigma=sigma(1,2),&
+         eps_depth_divk=eps(1,2),lambda_a=lambda_a(1,2),lambda_r=lambda_r(1,2))
+    call secondvirialcoeffmatrix(T, Bmat1)
+
+    n1(1) = 1.0
+    call preCalcSAFTVRMie(nc,T,V,n1,3,saftvrmie_var(1))
+
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n1,saftvrmie_var(1),&
+         pahs,a_T=pahs_T,a_V=pahs_V,a_n=pahs_n,&
+         a_TT=pahs_TT,a_VV=pahs_VV,a_TV=pahs_TV,a_Tn=pahs_Tn,a_Vn=pahs_Vn,a_nn=pahs_nn)
+
+    call calcA1(nc,T,V,n1,saftvrmie_var(1),&
+         pa1,pa1_T,pa1_V,pa1_n,pa1_TT,pa1_VV,pa1_TV,pa1_Tn,pa1_Vn,pa1_nn)
+
+    call calcA2(nc,T,V,n1,saftvrmie_var(1),&
+         pa2,pa2_T,pa2_V,pa2_n,pa2_TT,pa2_VV,pa2_TV,pa2_Tn,pa2_Vn,pa2_nn)
+
+    call calcA3(nc,T,V,n1,saftvrmie_var(1),&
+         pa3,pa3_T,pa3_V,pa3_n,pa3_TT,pa3_VV,pa3_TV,pa3_Tn,pa3_Vn,pa3_nn)
+
+    call calcAchain(nc,T,V,n1,saftvrmie_var(1),&
+         pach,ach_T=pach_T,ach_V=pach_V,ach_n=pach_n,ach_TT=pach_TT,&
+         ach_VV=pach_VV,ach_TV=pach_TV,ach_Tn=pach_Tn,ach_Vn=pach_Vn,ach_nn=pach_nn,&
+         returnF=.false.)
+
+    print *, "comps ", comp(1)%ident
+    print *, "T, V, n", T, V, n1
+    print *, "d_bh   ", saftvrmie_var(1)%dhs%d
+    print *, "ahs    ", pahs
+    print *, "a1     ", pa1
+    print *, "a2     ", pa2
+    print *, "a3     ", pa3
+    print *, "ach    ", pach
+
+
+    print *, "*** VIRIAL COEFFICIENTS THAT SHOULD BE EQUAL ***"
+    print *, "Bmat_12    ", Bmat2(1,2)
+    print *, "Bmat pseudo", Bmat1
+  end subroutine test_pseudo_consistency
+
+  @Test
+  subroutine test_helmholtzterms_C2_NC10()
+    !> Test the values for the terms in the equation; these values have been
+    !> shown to be consistent an independent MATLAB implementation.
+    character(len=20) :: compstr
+    integer :: nc
+    real :: T, v, n(2)
+    real :: m(2), sigma(2,2), eps(2,2), lambda_a(2,2), lambda_r(2,2)
+    real :: kij, gammaij
+
+    real :: a1,a1_T,a1_V,a1_TT,a1_VV,a1_TV
+    real, dimension(2) :: a1_n,a1_Tn,a1_Vn
+    real, dimension(2,2) :: a1_nn
+
+    real :: a2,a2_T,a2_V,a2_TT,a2_VV,a2_TV
+    real, dimension(2) :: a2_n,a2_Tn,a2_Vn
+    real, dimension(2,2) :: a2_nn
+
+    real :: a3,a3_T,a3_V,a3_TT,a3_VV,a3_TV
+    real, dimension(2) :: a3_n,a3_Tn,a3_Vn
+    real, dimension(2,2) :: a3_nn
+
+    real :: ahs,ahs_T,ahs_V,ahs_TT,ahs_VV,ahs_TV
+    real, dimension(2) :: ahs_n,ahs_Tn,ahs_Vn
+    real, dimension(2,2) :: ahs_nn
+
+    real :: ach,ach_T,ach_V,ach_TT,ach_VV,ach_TV
+    real, dimension(2) :: ach_n,ach_Tn,ach_Vn
+    real, dimension(2,2) :: ach_nn
+
+    T = 444.15
+    kij = 0.7
+    gammaij = 0.4
+
+    !print *, "*** REAL MIXTURE ***"
+    nc = 2
+    compstr = "C2,NC10"
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+
+    ! Set flags to make the eos correspond to Lafittes SAFT-VR Mie implementation
+    quantum_correction = 0
+    quantum_correction_hs = 0
+    quantum_correction_spec = 0
+    quantum_correct_A2 = .False.
+    use_epsrule_Lafitte = .True.
+    exact_binary_dhs=.False.
+    exact_crosspot_eff=.False.
+
+    ! Set Lafitte integration of HS diameter
+    hs_diam_quadrature = GAUSS_10
+    only_integrate_active_hs_area = .false.
+
+
+    call set_saftvrmie_eps_kij(1,2,kij)
+    call set_saftvrmie_lr_gammaij(1,2,gammaij)
+    m = saftvrmie_param%ms
+    sigma = saftvrmie_param%sigma_ij
+    eps = saftvrmie_param%eps_divk_ij
+    lambda_a = saftvrmie_param%lambda_a_ij
+    lambda_r = saftvrmie_param%lambda_r_ij
+
+    V = 1.0/(1e4)
+    n(1) = 0.6
+    n(2) = 1 - n(1)
+    call preCalcSAFTVRMie(nc,T,V,n,3,saftvrmie_var(1))
+
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),&
+         ahs,a_T=ahs_T,a_V=ahs_V,a_n=ahs_n,&
+         a_TT=ahs_TT,a_VV=ahs_VV,a_TV=ahs_TV,a_Tn=ahs_Tn,a_Vn=ahs_Vn,a_nn=ahs_nn)
+
+    call calcA1(nc,T,V,n,saftvrmie_var(1),&
+         a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn)
+
+    call calcA2(nc,T,V,n,saftvrmie_var(1),&
+         a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
+
+    call calcA3(nc,T,V,n,saftvrmie_var(1),&
+         a3,a3_T,a3_V,a3_n,a3_TT,a3_VV,a3_TV,a3_Tn,a3_Vn,a3_nn)
+
+    call calcAchain(nc,T,V,n,saftvrmie_var(1),&
+         ach,ach_T=ach_T,ach_V=ach_V,ach_n=ach_n,ach_TT=ach_TT,&
+         ach_VV=ach_VV,ach_TV=ach_TV,ach_Tn=ach_Tn,ach_Vn=ach_Vn,ach_nn=ach_nn,&
+         returnF=.false.)
+
+    ! print *, "comps ", comp(1)%ident, comp(2)%ident
+    ! print *, "m        ", m
+    ! print *, "sigma    ", saftvrmie_param%sigma_ij
+    ! print *, "eps      ", saftvrmie_param%eps_divk_ij
+    ! print *, "lambda_a ", saftvrmie_param%lambda_a_ij
+    ! print *, "lambda_r ", saftvrmie_param%lambda_r_ij
+    ! print *, "kij, gammaij ", kij, gammaij
+    ! print *, "T, V, n ", T, V, n
+    ! print *, "d_bh    ", saftvrmie_var(1)%dhs%d
+    ! print *, "ahs     ", ahs
+    ! print *, "a1ij%am ", saftvrmie_var(1)%a1ij%am
+    ! print *, "a2ij%am ", saftvrmie_var(1)%a2ij%am
+    ! print *, "a3ij%am ", saftvrmie_var(1)%a3ij%am
+    ! print *, "ach     ", ach
+
+    ! print *, "ahs ", ahs
+    ! print *, "a1  ", a1
+    ! print *, "a2  ", a2
+    ! print *, "a3  ", a3
+    ! print *, "ach ", ach
+
+
+    @assertEqual(saftvrmie_var(1)%dhs%d(1,1), 3.5599871084897326E-010, 1e-15)
+    @assertEqual(saftvrmie_var(1)%dhs%d(1,2), 4.0245754465724003E-010, 1e-15)
+    @assertEqual(saftvrmie_var(1)%dhs%d(1,2), saftvrmie_var(1)%dhs%d(2,1), 1e-20)
+    @assertEqual(saftvrmie_var(1)%dhs%d(2,2), 4.4891637846550675E-010, 1e-15)
+
+    @assertEqual(ahs, 4.1302831271753284, 1e-5)
+
+    @assertEqual(saftvrmie_var(1)%a1ij%am(1,1), -785.20347312673493, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a1ij%am(1,2), -514.43505583355773, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a1ij%am(1,2), saftvrmie_var(1)%a1ij%am(2,1), 1e-5)
+    @assertEqual(saftvrmie_var(1)%a1ij%am(2,2),-2571.9741088975175, 1e-5)
+    @assertEqual(a1, -1257.9397538111239, 1e-5)
+
+    @assertEqual(saftvrmie_var(1)%a2ij%am(1,1), -7188.0455508358191, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a2ij%am(1,2), -1771.9706106413332, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a2ij%am(1,2), saftvrmie_var(1)%a2ij%am(2,1), 1e-5)
+    @assertEqual(saftvrmie_var(1)%a2ij%am(2,2),  -49152.855593839347, 1e-5)
+    @assertEqual(a2, -18749.989508687075, 1e-5)
+
+    @assertEqual(saftvrmie_var(1)%a3ij%am(1,1), -17.727286086539227, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a3ij%am(1,2), -1.2522159051182933, 1e-5)
+    @assertEqual(saftvrmie_var(1)%a3ij%am(1,2), saftvrmie_var(1)%a3ij%am(2,1), 1e-5)
+    @assertEqual(saftvrmie_var(1)%a3ij%am(2,2), -121.41319990375690, 1e-5)
+    @assertEqual(a3, -44.789019294686113, 1e-5)
+
+    @assertEqual(ach, -0.98440900757555994, 1e-8)
+
+  end subroutine test_helmholtzterms_C2_NC10
+
+  @Test
+  subroutine test_consistency()
+    use eosTV, only: thermoTV, Fres
+    use eos, only: specificvolume
+    !> Test thermodynamic consistency of SAFT-VR Mie models
+    character(len=20) :: compstr
+    integer, parameter :: nc = 4
+    real :: T, P, n(nc), V, z(nc), n2(nc), lnf(nc), lnf2(nc), F, F2
+    real, parameter :: tol1 = 5e-12, tol2 = 5e-8
+    integer :: index, i, j, ph, m
+    real :: factor
+    ! Test variables
+    real :: gi,phiP,phiT
+    real, dimension(nc) :: gd,phi,phinumP,phinumT
+    real, dimension(nc*nc) :: phinumX
+    real, dimension((nc*nc-nc)/2) :: phisym
+
+    n = (/0.1,0.2,0.3,0.4/)*1.3333
+
+    compstr = "He,Ne,H2,C1"
+    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',&
+         mixing='Classic',ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+
+    t = 30.0
+    p = 1.0e6
+    z = n/sum(n)
+    do m=1,3
+      call saftvrmieaij_model_options(m)
+      do ph=1,2
+        call consistency(t,p,n,ph,gi,phiP,phiT,gd,phi,phisym,phinumP,phinumT,phinumX)
+        @assertEqual(gi,0.0,tol1)
+        @assertEqual(phiP,0.0,tol1)
+        @assertEqual(phiT,0.0,tol1)
+        index = 0
+        do i=1,nc
+          @assertEqual(gd(i),0.0,tol1)
+          @assertEqual(phi(i),0.0,tol2)
+          @assertEqual(phinumP(i),0.0,tol2)
+          @assertEqual(phinumT(i),0.0,tol2)
+          do j=1,nc
+            @assertEqual(phinumX((i-1)*nc+j),0.0,2*tol2)
+          enddo
+          do j=i+1,nc
+            index = index + 1
+            @assertEqual(phisym(index),0.0,tol1)
+          enddo
+        enddo
+        ! Test NVT functons
+        call specificvolume(t,p,z,ph,v)
+        call thermoTV(t,v,z,lnf)
+        call Fres(t,1000*v,z,F)
+        factor = 1.2345
+        n2 = z*factor
+        v = v*factor
+        call Fres(t,1000*v,n2,F2)
+        @assertEqual(F*factor-F2,0.0,0.1*tol1)
+        call thermoTV(t,v,n2,lnf2)
+        do i=1,nc
+          @assertEqual(lnf(i)-lnf2(i),0.0,0.1*tol1)
+        enddo
+      enddo
+    enddo
+
+  end subroutine test_consistency
+
+end module test_saftvrmie

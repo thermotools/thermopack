@@ -1,0 +1,1032 @@
+module test_meos
+  !> \author Ailo Aasen 2016
+  !> This module tests multiparameter EoS as follows.
+  !> 1. Analytical derivatives are checked against numerical derivatives,for alphaIdeal(delta,tau), alphaRes(delta,tau), alphaRes(T,v), alpha(T,v). Will detect if derivative formulas are correct.
+  !> 2. Computed property values are checked against numbers given in papers. Will detect if the numerical coefficients are correct.
+  !> 3. Saturation properties are compared against numbers given in papers. Will detect if the density solver is correct.
+  use pfunit_mod
+  use tpconst
+  use parameters
+  use multiparameter_base
+  use multiparameter_c3
+  use multiparameter_para_h2
+  use multiparameter_ortho_h2
+  use multiparameter_r134a
+  use multiparameter_normal_h2
+  use eoslibinit
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_alphaIdeal()
+    type(meos_c3) :: m_c3
+    type(meos_para_h2) :: m_para_h2
+    type(meos_ortho_h2) :: m_ortho_h2
+    type(meos_r134a) :: m_r134a
+    type(meos_normal_h2) :: m_normal_h2
+    real :: alp0(0:2,0:2)
+    real :: alp0_dtau(0:2,0:2), alp0_ddelta(0:2,0:2)
+    real :: delta, tau, dtau, ddelta
+    real :: releps = 1e-7
+    delta = 0.64358347277641903
+    tau = 0.12199259869222255
+
+    dtau = tau*releps
+    ddelta = delta*releps
+
+    call m_c3%init()
+    call m_c3%alpha0derivs_taudelta(delta,tau,alp0)
+    call m_c3%alpha0derivs_taudelta(delta,tau+dtau,alp0_dtau)
+    call m_c3%alpha0derivs_taudelta(delta+ddelta,tau,alp0_ddelta)
+    @assertEqual((alp0_ddelta(0,0)-alp0(0,0))/ddelta, alp0(1,0)/delta, 1e-6*abs(alp0(1,0))/delta)
+    @assertEqual((alp0_dtau(0,0)-alp0(0,0))/dtau, alp0(0,1)/tau, 1e-6*abs(alp0(0,1))/tau)
+    @assertEqual((alp0_dtau(0,1)/(tau+dtau)-alp0(0,1)/tau)/dtau, alp0(0,2)/tau**2, 1e-6*abs(alp0(0,2))/tau**2)
+    @assertEqual((alp0_ddelta(1,0)/(delta+ddelta)-alp0(1,0)/delta)/ddelta, alp0(2,0)/delta**2, 1e-6*abs(alp0(2,0))/delta**2)
+
+    call m_para_h2%init()
+    call m_para_h2%alpha0derivs_taudelta(delta,tau,alp0)
+    call m_para_h2%alpha0derivs_taudelta(delta,tau+dtau,alp0_dtau)
+    call m_para_h2%alpha0derivs_taudelta(delta+ddelta,tau,alp0_ddelta)
+    @assertEqual((alp0_ddelta(0,0)-alp0(0,0))/ddelta, alp0(1,0)/delta, 1e-6*abs(alp0(1,0))/delta)
+    @assertEqual((alp0_dtau(0,0)-alp0(0,0))/dtau, alp0(0,1)/tau, 1e-6*abs(alp0(0,1))/tau)
+    @assertEqual((alp0_dtau(0,1)/(tau+dtau)-alp0(0,1)/tau)/dtau, alp0(0,2)/tau**2, 1e-6*abs(alp0(0,2))/tau**2)
+    @assertEqual((alp0_ddelta(1,0)/(delta+ddelta)-alp0(1,0)/delta)/ddelta, alp0(2,0)/delta**2, 1e-6*abs(alp0(2,0))/delta**2)
+
+    call m_ortho_h2%init()
+    call m_ortho_h2%alpha0derivs_taudelta(delta,tau,alp0)
+    call m_ortho_h2%alpha0derivs_taudelta(delta,tau+dtau,alp0_dtau)
+    call m_ortho_h2%alpha0derivs_taudelta(delta+ddelta,tau,alp0_ddelta)
+    @assertEqual((alp0_ddelta(0,0)-alp0(0,0))/ddelta, alp0(1,0)/delta, 1e-6*abs(alp0(1,0))/delta)
+    @assertEqual((alp0_dtau(0,0)-alp0(0,0))/dtau, alp0(0,1)/tau, 1e-6*abs(alp0(0,1))/tau)
+    @assertEqual((alp0_dtau(0,1)/(tau+dtau)-alp0(0,1)/tau)/dtau, alp0(0,2)/tau**2, 1e-6*abs(alp0(0,2))/tau**2)
+    @assertEqual((alp0_ddelta(1,0)/(delta+ddelta)-alp0(1,0)/delta)/ddelta, alp0(2,0)/delta**2, 1e-6*abs(alp0(2,0))/delta**2)
+
+    call m_r134a%init()
+    call m_r134a%alpha0derivs_taudelta(delta,tau,alp0)
+    call m_r134a%alpha0derivs_taudelta(delta,tau+dtau,alp0_dtau)
+    call m_r134a%alpha0derivs_taudelta(delta+ddelta,tau,alp0_ddelta)
+    @assertEqual((alp0_ddelta(0,0)-alp0(0,0))/ddelta, alp0(1,0)/delta, 1e-6*abs(alp0(1,0))/delta)
+    @assertEqual((alp0_dtau(0,0)-alp0(0,0))/dtau, alp0(0,1)/tau, 1e-6*abs(alp0(0,1))/tau)
+    @assertEqual((alp0_dtau(0,1)/(tau+dtau)-alp0(0,1)/tau)/dtau, alp0(0,2)/tau**2, 1e-6*abs(alp0(0,2))/tau**2)
+    @assertEqual((alp0_ddelta(1,0)/(delta+ddelta)-alp0(1,0)/delta)/ddelta, alp0(2,0)/delta**2, 1e-6*abs(alp0(2,0))/delta**2)
+
+    call m_normal_h2%init()
+    call m_normal_h2%alpha0derivs_taudelta(delta,tau,alp0)
+    call m_normal_h2%alpha0derivs_taudelta(delta,tau+dtau,alp0_dtau)
+    call m_normal_h2%alpha0derivs_taudelta(delta+ddelta,tau,alp0_ddelta)
+    @assertEqual((alp0_ddelta(0,0)-alp0(0,0))/ddelta, alp0(1,0)/delta, 1e-6*abs(alp0(1,0))/delta)
+    @assertEqual((alp0_dtau(0,0)-alp0(0,0))/dtau, alp0(0,1)/tau, 1e-6*abs(alp0(0,1))/tau)
+    @assertEqual((alp0_dtau(0,1)/(tau+dtau)-alp0(0,1)/tau)/dtau, alp0(0,2)/tau**2, 1e-6*abs(alp0(0,2))/tau**2)
+    @assertEqual((alp0_ddelta(1,0)/(delta+ddelta)-alp0(1,0)/delta)/ddelta, alp0(2,0)/delta**2, 1e-6*abs(alp0(2,0))/delta**2)
+
+  end subroutine test_alphaIdeal
+
+  @Test
+  subroutine test_alphaRes_deltaTau()
+    type(meos_c3) :: m_c3
+    type(meos_para_h2) :: m_para_h2
+    type(meos_ortho_h2) :: m_ortho_h2
+    type(meos_normal_h2) :: m_normal_h2
+    type(meos_r134a) :: m_r134a
+    real :: alpr(0:2,0:2)
+    real :: alpr_dtau(0:2,0:2), alpr_ddelta(0:2,0:2)
+    real :: delta, tau, dtau, ddelta
+    real :: releps = 1e-7
+    tau = 1.5
+    delta = 0.9
+    dtau = tau*releps
+    ddelta = delta*releps
+
+    call m_c3%init()
+    call m_c3%alphaResderivs_taudelta(delta,tau,alpr)
+    call m_c3%alphaResderivs_taudelta(delta+ddelta,tau,alpr_ddelta)
+    call m_c3%alphaResderivs_taudelta(delta,tau+dtau,alpr_dtau)
+    @assertEqual((alpr_ddelta(0,0)-alpr(0,0))/ddelta, alpr(1,0)/delta, 1e-6*abs(alpr(1,0))/delta)
+    @assertEqual((alpr_dtau(0,0)-alpr(0,0))/dtau, alpr(0,1)/tau, 1e-6*abs(alpr(0,1))/tau)
+    @assertEqual((alpr_dtau(0,1)/(tau+dtau)-alpr(0,1)/tau)/dtau, alpr(0,2)/tau**2, 1e-6*abs(alpr(0,2))/tau**2)
+    @assertEqual((alpr_ddelta(1,0)/(delta+ddelta)-alpr(1,0)/delta)/ddelta, alpr(2,0)/delta**2, 1e-6*abs(alpr(2,0))/delta**2)
+    @assertEqual((alpr_ddelta(0,1)/tau-alpr(0,1)/tau)/ddelta, alpr(1,1)/(delta*tau), 1e-6*abs(alpr(1,1))/(delta*tau))
+
+    call m_para_h2%init()
+    call m_para_h2%alphaResderivs_taudelta(delta,tau,alpr)
+    call m_para_h2%alphaResderivs_taudelta(delta+ddelta,tau,alpr_ddelta)
+    call m_para_h2%alphaResderivs_taudelta(delta,tau+dtau,alpr_dtau)
+    @assertEqual((alpr_ddelta(0,0)-alpr(0,0))/ddelta, alpr(1,0)/delta, 1e-6*abs(alpr(1,0))/delta)
+    @assertEqual((alpr_dtau(0,0)-alpr(0,0))/dtau, alpr(0,1)/tau, 1e-6*abs(alpr(0,1))/tau)
+    @assertEqual((alpr_dtau(0,1)/(tau+dtau)-alpr(0,1)/tau)/dtau, alpr(0,2)/tau**2, 1e-6*abs(alpr(0,2))/tau**2)
+    @assertEqual((alpr_ddelta(1,0)/(delta+ddelta)-alpr(1,0)/delta)/ddelta, alpr(2,0)/delta**2, 1e-6*abs(alpr(2,0))/delta**2)
+    @assertEqual((alpr_ddelta(0,1)/tau-alpr(0,1)/tau)/ddelta, alpr(1,1)/(delta*tau), 1e-6*abs(alpr(1,1))/(delta*tau))
+
+    call m_ortho_h2%init()
+    call m_ortho_h2%alphaResderivs_taudelta(delta,tau,alpr)
+    call m_ortho_h2%alphaResderivs_taudelta(delta+ddelta,tau,alpr_ddelta)
+    call m_ortho_h2%alphaResderivs_taudelta(delta,tau+dtau,alpr_dtau)
+    @assertEqual((alpr_ddelta(0,0)-alpr(0,0))/ddelta, alpr(1,0)/delta, 1e-6*abs(alpr(1,0))/delta)
+    @assertEqual((alpr_dtau(0,0)-alpr(0,0))/dtau, alpr(0,1)/tau, 1e-6*abs(alpr(0,1))/tau)
+    @assertEqual((alpr_dtau(0,1)/(tau+dtau)-alpr(0,1)/tau)/dtau, alpr(0,2)/tau**2, 1e-6*abs(alpr(0,2))/tau**2)
+    @assertEqual((alpr_ddelta(1,0)/(delta+ddelta)-alpr(1,0)/delta)/ddelta, alpr(2,0)/delta**2, 1e-6*abs(alpr(2,0))/delta**2)
+    @assertEqual((alpr_ddelta(0,1)/tau-alpr(0,1)/tau)/ddelta, alpr(1,1)/(delta*tau), 1.5e-6*abs(alpr(1,1))/(delta*tau))
+
+    call m_r134a%init()
+    call m_r134a%alphaResderivs_taudelta(delta,tau,alpr)
+    call m_r134a%alphaResderivs_taudelta(delta+ddelta,tau,alpr_ddelta)
+    call m_r134a%alphaResderivs_taudelta(delta,tau+dtau,alpr_dtau)
+    @assertEqual((alpr_ddelta(0,0)-alpr(0,0))/ddelta, alpr(1,0)/delta, 1e-6*abs(alpr(1,0))/delta)
+    ! The following test fails at 1e-6
+    @assertEqual((alpr_dtau(0,0)-alpr(0,0))/dtau, alpr(0,1)/tau, 4e-6*abs(alpr(0,1))/tau)
+    ! The following test fails at 1e-6
+    @assertEqual((alpr_dtau(0,1)/(tau+dtau)-alpr(0,1)/tau)/dtau, alpr(0,2)/tau**2, 3e-6*abs(alpr(0,2))/tau**2)
+    @assertEqual((alpr_ddelta(1,0)/(delta+ddelta)-alpr(1,0)/delta)/ddelta, alpr(2,0)/delta**2, 1e-6*abs(alpr(2,0))/delta**2)
+    @assertEqual((alpr_ddelta(0,1)/tau-alpr(0,1)/tau)/ddelta, alpr(1,1)/(delta*tau), 1.5e-6*abs(alpr(1,1))/(delta*tau))
+
+    call m_normal_h2%init()
+    call m_normal_h2%alphaResderivs_taudelta(delta,tau,alpr)
+    call m_normal_h2%alphaResderivs_taudelta(delta+ddelta,tau,alpr_ddelta)
+    call m_normal_h2%alphaResderivs_taudelta(delta,tau+dtau,alpr_dtau)
+    @assertEqual((alpr_ddelta(0,0)-alpr(0,0))/ddelta, alpr(1,0)/delta, 1e-6*abs(alpr(1,0))/delta)
+    @assertEqual((alpr_dtau(0,0)-alpr(0,0))/dtau, alpr(0,1)/tau, 1e-6*abs(alpr(0,1))/tau)
+    @assertEqual((alpr_dtau(0,1)/(tau+dtau)-alpr(0,1)/tau)/dtau, alpr(0,2)/tau**2, 1e-6*abs(alpr(0,2))/tau**2)
+    @assertEqual((alpr_ddelta(1,0)/(delta+ddelta)-alpr(1,0)/delta)/ddelta, alpr(2,0)/delta**2, 1e-6*abs(alpr(2,0))/delta**2)
+    @assertEqual((alpr_ddelta(0,1)/tau-alpr(0,1)/tau)/ddelta, alpr(1,1)/(delta*tau), 1.5e-6*abs(alpr(1,1))/(delta*tau))
+
+  end subroutine test_alphaRes_deltaTau
+
+
+  @Test
+  subroutine test_alphaRes_Tv()
+    type(meos_c3) :: m_c3
+    type(meos_para_h2) :: m_para_h2
+    type(meos_ortho_h2) :: m_ortho_h2
+    type(meos_normal_h2) :: m_normal_h2
+    type(meos_r134a) :: m_r134a
+    real :: releps = 1e-8
+    real :: alpr, alpr_T, alpr_v, alpr_TT, alpr_Tv, alpr_vv
+    real :: alpr_dv, alpr_v_dv, alpr_T_dv
+    real :: alpr_dT, alpr_v_dT, alpr_T_dT
+    real :: T, v, dv, dt
+    T = 270.0
+    v = 1e-1
+    dv = v*releps
+    dt = t*releps
+
+    call m_c3%init()
+    call m_c3%alphaResDerivs_Tv(T,v,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+    call m_c3%alphaResDerivs_Tv(T,v+dv,alpr_dv,alpr_t_dv,alpr_v_dv)
+    call m_c3%alphaResDerivs_Tv(T+dt,v,alpr_dt,alpr_t_dt,alpr_v_dt)
+    @assertEqual((alpr_dv-alpr)/dv, alpr_v, 1e-7*abs(alpr_v))
+    @assertEqual((alpr_dT-alpr)/dT, alpr_t, 1e-7*abs(alpr_t))
+    @assertEqual((alpr_v_dt-alpr_v)/dt, alpr_tv, 1e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dv-alpr_t)/dv, alpr_tv, 1e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dt-alpr_t)/dt, alpr_tt, 6e-7*abs(alpr_tt))
+    @assertEqual((alpr_v_dv-alpr_v)/dv, alpr_vv, 1e-7*abs(alpr_vv))
+
+    call m_para_h2%init()
+    call m_para_h2%alphaResDerivs_Tv(T,v,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+    call m_para_h2%alphaResDerivs_Tv(T,v+dv,alpr_dv,alpr_t_dv,alpr_v_dv)
+    call m_para_h2%alphaResDerivs_Tv(T+dt,v,alpr_dt,alpr_t_dt,alpr_v_dt)
+    @assertEqual((alpr_dv-alpr)/dv, alpr_v, 1e-7*abs(alpr_v))
+    @assertEqual((alpr_dT-alpr)/dT, alpr_t, 5e-7*abs(alpr_t))
+    @assertEqual((alpr_v_dt-alpr_v)/dt, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dv-alpr_t)/dv, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dt-alpr_t)/dt, alpr_tt, 5e-7*abs(alpr_tt))
+    @assertEqual((alpr_v_dv-alpr_v)/dv, alpr_vv, 5e-7*abs(alpr_vv))
+
+    call m_ortho_h2%init()
+    call m_ortho_h2%alphaResDerivs_Tv(T,v,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+    call m_ortho_h2%alphaResDerivs_Tv(T,v+dv,alpr_dv,alpr_t_dv,alpr_v_dv)
+    call m_ortho_h2%alphaResDerivs_Tv(T+dt,v,alpr_dt,alpr_t_dt,alpr_v_dt)
+    @assertEqual((alpr_dv-alpr)/dv, alpr_v, 1.5e-7*abs(alpr_v))
+    @assertEqual((alpr_dT-alpr)/dT, alpr_t, 6e-7*abs(alpr_t))
+    @assertEqual((alpr_v_dt-alpr_v)/dt, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dv-alpr_t)/dv, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dt-alpr_t)/dt, alpr_tt, 5e-7*abs(alpr_tt))
+    @assertEqual((alpr_v_dv-alpr_v)/dv, alpr_vv, 5e-7*abs(alpr_vv))
+
+    call m_r134a%init()
+    call m_r134a%alphaResDerivs_Tv(T,v,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+    call m_r134a%alphaResDerivs_Tv(T,v+dv,alpr_dv,alpr_t_dv,alpr_v_dv)
+    call m_r134a%alphaResDerivs_Tv(T+dt,v,alpr_dt,alpr_t_dt,alpr_v_dt)
+    @assertEqual((alpr_dv-alpr)/dv, alpr_v, 1.5e-7*abs(alpr_v))
+    @assertEqual((alpr_dT-alpr)/dT, alpr_t, 6e-7*abs(alpr_t))
+    @assertEqual((alpr_v_dt-alpr_v)/dt, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dv-alpr_t)/dv, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dt-alpr_t)/dt, alpr_tt, 5e-7*abs(alpr_tt))
+    @assertEqual((alpr_v_dv-alpr_v)/dv, alpr_vv, 5e-7*abs(alpr_vv))
+
+    call m_normal_h2%init()
+    call m_normal_h2%alphaResDerivs_Tv(T,v,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+    call m_normal_h2%alphaResDerivs_Tv(T,v+dv,alpr_dv,alpr_t_dv,alpr_v_dv)
+    call m_normal_h2%alphaResDerivs_Tv(T+dt,v,alpr_dt,alpr_t_dt,alpr_v_dt)
+    @assertEqual((alpr_dv-alpr)/dv, alpr_v, 1.5e-7*abs(alpr_v))
+    @assertEqual((alpr_dT-alpr)/dT, alpr_t, 6e-7*abs(alpr_t))
+    @assertEqual((alpr_v_dt-alpr_v)/dt, alpr_tv, 7e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dv-alpr_t)/dv, alpr_tv, 5e-7*abs(alpr_tv))
+    @assertEqual((alpr_t_dt-alpr_t)/dt, alpr_tt, 5e-7*abs(alpr_tt))
+    @assertEqual((alpr_v_dv-alpr_v)/dv, alpr_vv, 5e-7*abs(alpr_vv))
+
+  end subroutine test_alphaRes_Tv
+
+
+  @Test
+  subroutine test_alpha_Tv()
+    type(meos_c3) :: m_c3
+    type(meos_para_h2) :: m_para_h2
+    type(meos_ortho_h2) :: m_ortho_h2
+    type(meos_normal_h2) :: m_normal_h2
+    type(meos_r134a) :: m_r134a
+    real :: releps = 1e-7
+    real :: alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv
+    real :: alp_dv, alp_v_dv, alp_T_dv
+    real :: alp_dv_m, alp_v_dv_m, alp_T_dv_m
+    real :: alp_dT, alp_v_dT, alp_T_dT
+    real :: alp_dT_m, alp_v_dT_m, alp_T_dT_m
+    real :: T, v, dv, dt
+    T = 270.0
+    v = 1e-4
+    dv = v*releps
+    dt = t*releps
+
+    call m_c3%init()
+    call m_c3%alphaDerivs_Tv(T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+    call m_c3%alphaDerivs_Tv(T,v+dv,alp_dv,alp_t_dv,alp_v_dv)
+    call m_c3%alphaDerivs_Tv(T,v-dv,alp_dv_m,alp_t_dv_m,alp_v_dv_m)
+    call m_c3%alphaDerivs_Tv(T+dt,v,alp_dt,alp_t_dt,alp_v_dt)
+    call m_c3%alphaDerivs_Tv(T-dt,v,alp_dt_m,alp_t_dt_m,alp_v_dt_m)
+    @assertEqual((alp_dv-alp_dv_m)/(2*dv), alp_v, releps*abs(alp_v))
+    @assertEqual((alp_dT-alp_dT_m)/(2*dT), alp_t, releps*abs(alp_t))
+    @assertEqual((alp_v_dt-alp_v_dt_m)/(2*dT), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dv-alp_t_dv_m)/(2*dv), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dt-alp_t_dt_m)/(2*dt), alp_tt, releps*abs(alp_tt))
+    @assertEqual((alp_v_dv-alp_v_dv_m)/(2*dv), alp_vv, releps*abs(alp_vv))
+
+    call m_para_h2%init()
+    call m_para_h2%alphaDerivs_Tv(T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+    call m_para_h2%alphaDerivs_Tv(T,v+dv,alp_dv,alp_t_dv,alp_v_dv)
+    call m_para_h2%alphaDerivs_Tv(T,v-dv,alp_dv_m,alp_t_dv_m,alp_v_dv_m)
+    call m_para_h2%alphaDerivs_Tv(T+dt,v,alp_dt,alp_t_dt,alp_v_dt)
+    call m_para_h2%alphaDerivs_Tv(T-dt,v,alp_dt_m,alp_t_dt_m,alp_v_dt_m)
+    @assertEqual((alp_dv-alp_dv_m)/(2*dv), alp_v, releps*abs(alp_v))
+    @assertEqual((alp_dT-alp_dT_m)/(2*dT), alp_t, releps*abs(alp_t))
+    @assertEqual((alp_v_dt-alp_v_dt_m)/(2*dT), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dv-alp_t_dv_m)/(2*dv), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dt-alp_t_dt_m)/(2*dt), alp_tt, releps*abs(alp_tt))
+    @assertEqual((alp_v_dv-alp_v_dv_m)/(2*dv), alp_vv, releps*abs(alp_vv))
+
+    call m_ortho_h2%init()
+    call m_ortho_h2%alphaDerivs_Tv(T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+    call m_ortho_h2%alphaDerivs_Tv(T,v+dv,alp_dv,alp_t_dv,alp_v_dv)
+    call m_ortho_h2%alphaDerivs_Tv(T,v-dv,alp_dv_m,alp_t_dv_m,alp_v_dv_m)
+    call m_ortho_h2%alphaDerivs_Tv(T+dt,v,alp_dt,alp_t_dt,alp_v_dt)
+    call m_ortho_h2%alphaDerivs_Tv(T-dt,v,alp_dt_m,alp_t_dt_m,alp_v_dt_m)
+    @assertEqual((alp_dv-alp_dv_m)/(2*dv), alp_v, releps*abs(alp_v))
+    @assertEqual((alp_dT-alp_dT_m)/(2*dT), alp_t, releps*abs(alp_t))
+    @assertEqual((alp_v_dt-alp_v_dt_m)/(2*dT), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dv-alp_t_dv_m)/(2*dv), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dt-alp_t_dt_m)/(2*dt), alp_tt, releps*abs(alp_tt))
+    @assertEqual((alp_v_dv-alp_v_dv_m)/(2*dv), alp_vv, releps*abs(alp_vv))
+
+    call m_r134a%init()
+    call m_r134a%alphaDerivs_Tv(T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+    call m_r134a%alphaDerivs_Tv(T,v+dv,alp_dv,alp_t_dv,alp_v_dv)
+    call m_r134a%alphaDerivs_Tv(T,v-dv,alp_dv_m,alp_t_dv_m,alp_v_dv_m)
+    call m_r134a%alphaDerivs_Tv(T+dt,v,alp_dt,alp_t_dt,alp_v_dt)
+    call m_r134a%alphaDerivs_Tv(T-dt,v,alp_dt_m,alp_t_dt_m,alp_v_dt_m)
+    @assertEqual((alp_dv-alp_dv_m)/(2*dv), alp_v, releps*abs(alp_v))
+    @assertEqual((alp_dT-alp_dT_m)/(2*dT), alp_t, releps*abs(alp_t))
+    @assertEqual((alp_v_dt-alp_v_dt_m)/(2*dT), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dv-alp_t_dv_m)/(2*dv), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dt-alp_t_dt_m)/(2*dt), alp_tt, releps*abs(alp_tt))
+    @assertEqual((alp_v_dv-alp_v_dv_m)/(2*dv), alp_vv, releps*abs(alp_vv))
+
+    call m_normal_h2%init()
+    call m_normal_h2%alphaDerivs_Tv(T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+    call m_normal_h2%alphaDerivs_Tv(T,v+dv,alp_dv,alp_t_dv,alp_v_dv)
+    call m_normal_h2%alphaDerivs_Tv(T,v-dv,alp_dv_m,alp_t_dv_m,alp_v_dv_m)
+    call m_normal_h2%alphaDerivs_Tv(T+dt,v,alp_dt,alp_t_dt,alp_v_dt)
+    call m_normal_h2%alphaDerivs_Tv(T-dt,v,alp_dt_m,alp_t_dt_m,alp_v_dt_m)
+    @assertEqual((alp_dv-alp_dv_m)/(2*dv), alp_v, releps*abs(alp_v))
+    @assertEqual((alp_dT-alp_dT_m)/(2*dT), alp_t, releps*abs(alp_t))
+    @assertEqual((alp_v_dt-alp_v_dt_m)/(2*dT), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dv-alp_t_dv_m)/(2*dv), alp_tv, releps*abs(alp_tv))
+    @assertEqual((alp_t_dt-alp_t_dt_m)/(2*dt), alp_tt, releps*abs(alp_tt))
+    @assertEqual((alp_v_dv-alp_v_dv_m)/(2*dv), alp_vv, releps*abs(alp_vv))
+
+  end subroutine test_alpha_Tv
+
+  @Test
+  subroutine test_meos_F()
+    type(meos_c3) :: m
+    real, parameter :: releps = 1e-8
+    real :: F, F_T, F_V, F_n(1), F_TT, F_TV, F_VV, F_Tn(1), F_Vn(1), F_nn(1,1)
+    real :: F_dV, F_T_dV, F_V_dV, F_n_dV(1)
+    real :: F_dT, F_T_dT, F_V_dT, F_n_dT(1)
+    real :: F_dn, F_T_dn, F_V_dn, F_n_dn(1)
+    real :: T, V, n(1), dT, dV, dn(1)
+    T = 290.0
+    n = 1.23456
+    V = n(1)*8.314*T/1e6
+    dV = V*releps
+    dT = T*releps
+    dn = n*releps
+
+    call m%init()
+
+    call m%calc_F(T, V,    n, F, F_T, F_V, F_n, F_TT, F_TV, F_Tn, F_VV, F_Vn, F_nn)
+    call m%calc_F(T, V+dV, n, F_dV, F_T_dV, F_V_dV, F_n_dV)
+    call m%calc_F(T+dT, V, n, F_dT, F_T_dT, F_V_dT, F_n_dT)
+    call m%calc_F(T, V, n+dn, F_dn, F_T_dn, F_V_dn, F_n_dn)
+
+    @assertEqual((F_dT-F)/dT, F_T, 1e-7*abs(F_T))
+    @assertEqual((F_dV-F)/dV, F_V, 1e-7*abs(F_V))
+    @assertEqual((F_dn-F)/dn(1), F_n(1), 1e-7*abs(F_n(1)))
+
+    @assertEqual((F_T_dT-F_T)/dT, F_TT, 1e-7*abs(F_TT))
+    @assertEqual((F_T_dV-F_T)/dV, F_TV, 1e-7*abs(F_TV))
+    @assertEqual((F_T_dn-F_T)/dn(1), F_Tn(1), 1e-7*abs(F_Tn(1)))
+
+    @assertEqual((F_V_dT-F_V)/dT, F_TV, 1e-7*abs(F_TV))
+    @assertEqual((F_V_dV-F_V)/dV, F_VV, 1e-7*abs(F_VV))
+    @assertEqual((F_V_dn-F_V)/dn(1), F_Vn(1), 1e-7*abs(F_Vn(1)))
+
+    @assertEqual((F_n_dT(1)-F_n(1))/dT, F_Tn(1), 1e-7*abs(F_Tn(1)))
+    @assertEqual((F_n_dV(1)-F_n(1))/dV, F_Vn(1), 1e-7*abs(F_Vn(1)))
+    @assertEqual((F_n_dn(1)-F_n(1))/dn(1), F_nn(1,1), 1e-7*abs(F_nn(1,1)))
+
+  end subroutine test_meos_F
+
+
+  @Test
+  subroutine test_meos_properties()
+    type(meos_c3) :: m
+    real, parameter :: releps = 1e-7
+    real :: q, q_T, q_p, q_n(1)
+    real :: q_dT, q_dp, q_dn
+    real :: w(1), w_T(1), w_p(1), w_n(1,1)
+    real :: w_dT(1), w_dp(1), w_dn(1)
+
+    real :: T, p, n(1), dt, dp, dn(1)
+    integer :: phase
+    T = 290.0
+    P = 1e5
+    n = 2.0
+    dp = p*releps
+    dt = t*releps
+    dn = n*releps
+    phase = VAPPH
+
+    call m%init()
+
+    ! ! enthalpy
+    ! call m%calc_enthalpy_resid(T,p   ,n,phase, q,    q_t,    q_p,    q_n)
+    ! !print *, " "
+    ! !print *, "H, H_t, H_p, H_n", q,    q_t,    q_p,    q_n
+    ! call m%calc_enthalpy_resid(T+dt,p,n,phase, q_dt)
+    ! call m%calc_enthalpy_resid(T,p+dp,n,phase, q_dp)
+    ! call m%calc_enthalpy_resid(T,p,n+dn,phase, q_dn)
+    ! @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    ! @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    ! @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
+
+    ! residual enthalpy
+    call m%calc_enthalpy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.true.)
+    !print *, "H, H_t, H_p, H_n", q,    q_t,    q_p,    q_n
+    call m%calc_enthalpy(T+dt,p,n,phase, q_dt, residual=.true.)
+    call m%calc_enthalpy(T,p+dp,n,phase, q_dp, residual=.true.)
+    call m%calc_enthalpy(T,p,n+dn,phase, q_dn, residual=.true.)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
+
+    ! full enthalpy
+    call m%calc_enthalpy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.false.)
+    call m%calc_enthalpy(T+dt,p,n,phase, q_dt, residual=.false.)
+    call m%calc_enthalpy(T,p+dp,n,phase, q_dp, residual=.false.)
+    call m%calc_enthalpy(T,p,n+dn,phase, q_dn, residual=.false.)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
+
+    ! residual entropy
+    call m%calc_entropy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.true.)
+    call m%calc_entropy(T+dt,p,n,phase, q_dt, residual=.true.)
+    call m%calc_entropy(T,p+dp,n,phase, q_dp, residual=.true.)
+    call m%calc_entropy(T,p,n+dn,phase, q_dn, residual=.true.)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-7*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-7*abs(q_n(1)))
+
+    ! full entropy
+    call m%calc_entropy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.false.)
+    call m%calc_entropy(T+dt,p,n,phase, q_dt, residual=.false.)
+    call m%calc_entropy(T,p+dp,n,phase, q_dp, residual=.false.)
+    call m%calc_entropy(T,p,n+dn,phase, q_dn, residual=.false.)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
+
+    ! residual gibbs energy
+    call m%calc_resgibbs(T,p   ,n,phase, q,    q_t,    q_p,    q_n)
+    call m%calc_resgibbs(T+dt,p,n,phase, q_dt)
+    call m%calc_resgibbs(T,p+dp,n,phase, q_dp)
+    call m%calc_resgibbs(T,p,n+dn,phase, q_dn)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
+
+    ! zfac
+    call m%calc_zfac(T,p   ,n,phase, q,    q_t,    q_p,    q_n)
+    call m%calc_zfac(T+dt,p,n,phase, q_dt)
+    call m%calc_zfac(T,p+dp,n,phase, q_dp)
+    call m%calc_zfac(T,p,n+dn,phase, q_dn)
+    @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
+    @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
+    @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-10*abs(q_n(1)))
+
+    ! lnphi
+    call m%calc_lnphi(T,p   ,n,phase, w,    w_t,    w_p,    w_n)
+    call m%calc_lnphi(T+dt,p,n,phase, w_dt)
+    call m%calc_lnphi(T,p+dp,n,phase, w_dp)
+    call m%calc_lnphi(T,p,n+dn,phase, w_dn)
+    @assertEqual((w_dT(1)-w(1))/dT, w_t(1),       1e-6*abs(w_t(1)))
+    @assertEqual((w_dp(1)-w(1))/dp, w_p(1),       1e-6*abs(w_p(1)))
+    @assertEqual((w_dn(1)-w(1))/dn(1), w_n(1,1), 1e-6*abs(w_n(1,1)))
+
+
+  end subroutine test_meos_properties
+
+
+  @Test
+  subroutine test_values_C3()
+    ! Ensures that all coefficients are correct
+    type(meos_c3), target :: m
+    real :: T(5), rho(5), P(5), cv(5), cp(5), w(5)
+    real :: pCalc, cvCalc, cpCalc, wCalc
+    real :: alp_v, alpr_v, alpr_deltatau(0:2,0:2)
+    integer :: i
+    real, parameter :: releps = 1e-7
+
+    ! These numbers are provided in the C3 paper for algorithm verification.
+    T = (/200.0, 300.0, 300.0, 400.0, 369.9 /)
+    rho = (/ 14.0, 12.0, 0.4, 5.0, 5.0 /)*1e3
+    P = (/ 2.3795138, 19.053797, 0.84694991, 6.6462840, 4.2519399 /)*1e6
+    cv = (/ 61.078424, 73.972542, 69.021875, 97.017439, 117.71621 /)
+    cp = (/ 93.475362, 108.61529, 85.753997, 271.07044, 753625.0 /)
+    w = (/ 1381.9552, 958.40520, 221.88959, 194.65847, 130.89800/)
+
+    ! Initialize regular variable
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+    do i=1,5
+       ! Test various expressions for pressure
+       call m%mp_pressure(rho(i),T(i),pCalc)
+       call m%alphaDerivs_Tv(T=T(i),v=1/rho(i),alp_v=alp_v)
+       call m%alphaResDerivs_Tv(T=T(i),v=1/rho(i),alpr_v=alpr_v)
+       call m%alphaResDerivs_taudelta(rho(i)/m%rc, m%tc/T(i), alpr=alpr_deltatau)
+       @assertEqual(pCalc, p(i), releps*p(i))
+       @assertEqual(rho(i)*Rgas_meos*T(i)*(1+alpr_deltatau(1,0)), pCalc, releps*abs(pCalc))
+       @assertEqual(-Rgas_meos*T(i)*alp_v, pCalc, releps*abs(pCalc))
+       @assertEqual(Rgas_meos*T(i)*(rho(i) - alpr_v), pCalc, releps*abs(pCalc))
+
+       ! Test cv, cp, speed of sound
+       cvCalc = m%cv(T(i),1/rho(i))
+       cpCalc = m%cp(T(i),1/rho(i))
+       wCalc = m%speed_of_sound(T(i),1/rho(i))
+       @assertEqual(cvCalc, cv(i), releps*cv(i))
+       @assertEqual(cpCalc, cp(i), releps*cp(i))
+       @assertEqual(wCalc, w(i), releps*w(i))
+    end do
+
+  end subroutine test_values_C3
+
+  @Test
+  subroutine test_values_para_h2()
+    ! This test ensures that all coefficients are correct.
+    type(meos_para_h2) :: m
+    integer, parameter :: np = 22
+    integer :: i
+    real :: T(np), P(np)
+    real :: rhoLiq(np), rhoVap(np)
+    real :: cvLiq(np), cvVap(np), cvLiq_mod, cvVap_mod
+    real :: cpLiq(np), cpVap(np), cpLiq_mod, cpVap_mod
+    real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
+    real, parameter :: releps = 2e-4 ! Paper gives numbers with 5 sig figs.
+
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+    T = (/13.8033,14.0,15.0,16.0,17.0,18.0,19.0,20.0,20.271,21.0,22.0,23.0,&
+         24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,32.938/)
+    P = (/7.041,7.884,13.434,21.548,32.886,48.148,68.071,93.414,101.325,124.96,&
+         163.5,209.83,264.78,329.17,403.84,489.65,587.5,698.33,823.19,963.29,1120.3,1285.8/)*1e3
+    rhoLiq = (/ 76.977,76.819,75.996,75.133,74.22,73.252,72.225,71.135,70.828,&
+         69.977,68.743,67.425,66.01,64.485,62.827,61.006,58.98,56.677,53.976,&
+         50.626,45.901,31.323 /) / m%molarMass
+    rhoVap = (/0.12555 ,0.13878 ,0.22240 ,0.33766 ,0.49069 ,0.68800 ,0.9365,&
+         1.2440 ,1.3385 ,1.6188 ,2.0708 ,2.6114 ,3.2546 ,4.0178 ,4.9236,&
+         6.0029,7.2998 ,8.8830 ,10.871,13.508,17.492,31.323 /) / m%molarMass
+    cvLiq = (/5.1313, 5.1576, 5.2616, 5.3343, 5.4003, 5.472, 5.5516, 5.6371,&
+         5.6608, 5.7248, 5.8115, 5.8949, 5.9739, 6.0485, 6.12, 6.1908, 6.266,&
+         6.3541, 6.4715, 6.6543, 7.0097, -1e10/) *1e3*m%molarMass
+    cvVap = (/6.2265, 6.2358, 6.2818, 6.3225, 6.3569, 6.387, 6.4167, 6.4499,&
+         6.4599, 6.4902, 6.5406, 6.6036, 6.6814, 6.7759, 6.8895, 7.0254,&
+         7.1879, 7.384, 7.6246, 7.9291, 8.3364, -1e10 /) *1e3*m%molarMass
+    cpLiq = (/6.9241, 6.9807, 7.299, 7.6586, 8.0621, 8.5133, 9.0145, 9.5688,&
+         9.7288, 10.182, 10.865, 11.635, 12.52, 13.561, 14.827, 16.429,&
+         18.569, 21.653, 26.649, 36.573, 68.189, -1e10/) *1e3*m%molarMass
+    cpVap = (/10.534, 10.559, 10.703, 10.869, 11.063, 11.294, 11.574, 11.92,&
+         12.028, 12.349, 12.884, 13.553, 14.398, 15.48, 16.898, 18.814,&
+         21.525, 25.636, 32.583, 46.818, 92.392, -1e10/) *1e3*m%molarMass
+    sosLiq = (/1263.1, 1256.9, 1231.3, 1210.4, 1190.1, 1168.5, 1144.7, 1118.6,&
+         1111.1, 1090.1, 1059.2, 1025.9, 989.95, 951.23, 909.32, 863.64,&
+         813.34, 757.14, 693.04, 617.45, 522.59, -1e10 /)
+    sosVap = (/305.65, 307.56, 316.84, 325.43, 333.39, 340.72, 347.43, 353.5, &
+         355.04, 358.94, 363.71, 367.83, 371.27, 374.03, 376.1, 377.48,&
+         378.15, 378.08, 377.2, 375.35, 372.03, -1e10 /)
+
+    do i=1,np
+
+      if (abs(T(i)-m%tc)>1e-4*m%tc .or. abs(P(i)-m%pc)>1e-4*m%pc) then
+        cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
+        cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
+        sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
+        @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
+        @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
+        @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
+
+        cvVap_mod = m%cv(T(i),1/rhoVap(i))
+        cpVap_mod = m%cp(T(i),1/rhoVap(i))
+        sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
+        @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
+        @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
+        @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
+      end if
+
+      ! The following tests don't work, as small uncertainties in rho give large
+      ! uncertainties in P. I.e. rhoLiq and rhoVap need more sig figs for these
+      ! to work.
+      !
+      !call m%mp_pressure(rhoLiq(i),T(i),pLiq_mod)
+      !@assertEqual(P(i), pLiq_mod, releps*abs(P(i)))
+      !call m%mp_pressure(rhoVap(i),T(i),pVap_mod)
+      !@assertEqual(P(i), pVap_mod, releps*abs(P(i)))
+
+    end do
+
+  end subroutine test_values_para_h2
+
+
+  @Test
+  subroutine test_values_ortho_h2()
+    ! This test ensures that all coefficients are correct.
+    type(meos_ortho_h2) :: m
+    integer, parameter :: np = 22
+    integer :: i
+    real :: T(np), P(np)
+    real :: rhoLiq(np), rhoVap(np)
+    real :: cvLiq(np), cvVap(np), cvLiq_mod, cvVap_mod
+    real :: cpLiq(np), cpVap(np), cpLiq_mod, cpVap_mod
+    real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
+    real, parameter :: releps = 4e-4 ! Paper gives numbers with 5 sig figs.
+
+    call m%init()
+
+    T = (/14.008, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 20.38, 21.0, 22.0, 23.0,&
+         24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 33.22 /)
+    P = (/7.56, 12.868, 20.7, 31.665, 46.452, 65.786, 90.417, 101.325, &
+         121.12, 158.67, 203.88, 257.55, 320.51, 393.59, 477.65, 573.58, &
+         682.32, 804.89, 942.45, 1096.4, 1269.0, 1309.9 /)*1e3
+    rhoLiq = (/77.01, 76.162, 75.28, 74.36, 73.392, 72.371, 71.291, 70.864,&
+         70.145, 68.927, 67.627, 66.234, 64.736, 63.112, 61.335, 59.366,&
+         57.141, 54.554, 51.39, 47.105, 38.828, 31.136 /) / m%molarMass
+    rhoVap = (/0.13273 , 0.21245 , 0.32328 , 0.47063 , 0.66085 , &
+         0.90072 , 1.1977 , 1.3272 , 1.5602 , 1.9976 , 2.5212 , &
+         3.1444 , 3.8840 , 4.7616 , 5.8064 , 7.0594 , 8.5830 , &
+         10.481, 12.953, 16.504, 23.81, 31.136 /) / m%molarMass
+    cvLiq = (/5.1746, 5.2658, 5.3552, 5.4293, 5.492, 5.5493, 5.605, 5.6262,&
+         5.6609, 5.7177, 5.7751, 5.8333, 5.8924, 5.9532, 6.0172, 6.0875, &
+         6.1698, 6.2748, 6.4265, 6.6917, 7.449, -1e10 /)*1e3*m%molarMass
+    cvVap = (/6.2707, 6.2718, 6.2935, 6.3242, 6.3557, 6.3859, 6.4172, 6.4303,&
+         6.4541, 6.5019, 6.5651, 6.6474, 6.7514, 6.8795, 7.0338, 7.2168, &
+         7.4321, 7.6849, 7.9824, 8.3307, 8.6394, -1e10 /)*1e3*m%molarMass
+    cpLiq = (/7.1448, 7.4245, 7.7667, 8.149, 8.5696, 9.0328, 9.5449, 9.7541, &
+         10.115, 10.754, 11.479, 12.315, 13.3, 14.495, 15.999, 17.992, 20.829,&
+         25.315, 33.767, 56.603, 325.68, -1e10/)*1e3*m%molarMass
+    cpVap = (/10.557, 10.639, 10.775, 10.957, 11.184, 11.465, 11.813, 11.967, &
+         12.248, 12.792, 13.478, 14.346, 15.456, 16.896, 18.814, 21.47, &
+         25.374, 31.669, 43.587, 75.154, 406.9, -1e10/)*1e3*m%molarMass
+    sosLiq = (/1264.7, 1244.4, 1224.9, 1205.4, 1184.6, 1162.0, 1137.1, 1127.0, &
+         1109.8, 1080.0, 1047.5, 1012.3, 973.92, 932.22, 886.71, 836.74, &
+         781.37, 719.08, 647.29, 560.44, 438.23, -1.0e10/)
+    sosVap = (/307.38, 316.98, 325.79, 333.84, 341.26, 348.11, 354.41, 356.66,&
+         360.15, 365.29, 369.78, 373.56, 376.59, 378.82, 380.21, 380.72, &
+         380.33, 378.99, 376.59, 373.03, 370.01, -1.0e10/)
+
+    do i=1,np
+       !print *, i, T(i), P(i)
+       if (abs(T(i)-m%tc)>1e-4*m%tc .or. abs(P(i)-m%pc)>1e-3*m%pc) then
+          cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
+          cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
+          sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
+          !print *, cvLiq(i), cvLiq_mod, abs(cvLiq(i)-cvLiq_mod)/cvLiq(i)
+          !print *, cpLiq(i), cpLiq_mod, abs(cpLiq(i)-cpLiq_mod)/cpLiq(i)
+          !print *, sosLiq(i), sosLiq_mod, abs(sosLiq(i)-sosLiq_mod)/sosLiq(i)
+          @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
+          @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
+          @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
+
+          cvVap_mod = m%cv(T(i),1/rhoVap(i))
+          cpVap_mod = m%cp(T(i),1/rhoVap(i))
+          sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
+          !print *, cvVap(i), cvVap_mod, abs(cvVap(i)-cvVap_mod)/cvVap(i)
+          !print *, cpVap(i), cpVap_mod, abs(cpVap(i)-cpVap_mod)/cpVap(i)
+          !print *, sosVap(i), sosVap_mod, abs(sosVap(i)-sosVap_mod)/sosVap(i)
+          @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
+          @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
+          @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
+
+       end if
+
+       ! The following tests don't work, as small uncertainties in rho give large
+       ! uncertainties in P. I.e. rhoLiq and rhoVap need more sig figs for these
+       ! to work.
+       !
+       !call m%mp_pressure(rhoLiq(i),T(i),pLiq_mod)
+       !@assertEqual(P(i), pLiq_mod, releps*abs(P(i)))
+       !call m%mp_pressure(rhoVap(i),T(i),pVap_mod)
+       !@assertEqual(P(i), pVap_mod, releps*abs(P(i)))
+
+    end do
+
+  end subroutine test_values_ortho_h2
+
+  @Test
+  subroutine test_densitySolver_para_h2()
+    !> Test the density solver using the parahydrogen equation.
+    type(meos_para_h2) :: m
+    integer :: i, phase_found
+    integer, parameter :: np = 22
+    real :: T(np), P(np), rhoLiq(np), rhoVap(np)
+    real :: rhoLiq_mod, rhoVap_mod
+    real :: releps
+
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+    T = (/13.8033,14.0,15.0,16.0,17.0,18.0,19.0,20.0,20.271,21.0,22.0,23.0,&
+         24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,32.938/)
+    P = (/7.041,7.884,13.434,21.548,32.886,48.148,68.071,93.414,101.325,124.96,&
+         163.5,209.83,264.78,329.17,403.84,489.65,587.5,698.33,823.19,963.29,1120.3,1285.8/)*1e3
+    rhoLiq = (/ 76.977,76.819,75.996,75.133,74.22,73.252,72.225,71.135,70.828,&
+         69.977,68.743,67.425,66.01,64.485,62.827,61.006,58.98,56.677,53.976,&
+         50.626,45.901,31.323 /) / m%molarMass
+    rhoVap = (/0.12555 ,0.13878 ,0.22240 ,0.33766 ,0.49069 ,0.68800 ,0.9365,&
+         1.2440 ,1.3385 ,1.6188 ,2.0708 ,2.6114 ,3.2546 ,4.0178 ,4.9236,&
+         6.0029,7.2998 ,8.8830 ,10.871,13.508,17.492,31.323 /) / m%molarMass
+
+    releps = 1e-5
+    do i=1,np-2
+       call m%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
+       !print *, rhoLiq(i), rhoLiq_mod, abs(rhoLiq(i)-rhoLiq_mod)/rhoLiq(i)
+       @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
+    end do
+
+    releps = 1e-4
+    do i=1,np-2
+       call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
+       !print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
+       @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
+    end do
+
+  end subroutine test_densitySolver_para_h2
+
+  @Test
+  subroutine test_densitySolver_ortho_h2()
+    !> Test the density solver using the orthohydrogen equation.
+    type(meos_ortho_h2) :: m
+    integer :: i, phase_found
+    integer, parameter :: np = 22
+    real :: T(np), P(np), rhoLiq(np), rhoVap(np)
+    real :: rhoLiq_mod, rhoVap_mod
+    real :: releps
+
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+    T = (/14.008, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 20.38, 21.0, 22.0, 23.0,&
+         24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 33.22 /)
+    P = (/7.56, 12.868, 20.7, 31.665, 46.452, 65.786, 90.417, 101.325, &
+         121.12, 158.67, 203.88, 257.55, 320.51, 393.59, 477.65, 573.58, &
+         682.32, 804.89, 942.45, 1096.4, 1269.0, 1309.9 /)*1e3
+    rhoLiq = (/77.01, 76.162, 75.28, 74.36, 73.392, 72.371, 71.291, 70.864,&
+         70.145, 68.927, 67.627, 66.234, 64.736, 63.112, 61.335, 59.366,&
+         57.141, 54.554, 51.39, 47.105, 38.828, 31.136 /) / m%molarMass
+    rhoVap = (/0.13273 , 0.21245 , 0.32328 , 0.47063 , 0.66085 , &
+         0.90072 , 1.1977 , 1.3272 , 1.5602 , 1.9976 , 2.5212 , &
+         3.1444 , 3.8840 , 4.7616 , 5.8064 , 7.0594 , 8.5830 , &
+         10.481, 12.953, 16.504, 23.81, 31.136 /) / m%molarMass
+
+    releps = 5.5e-5
+    do i=1,np-2
+       call m%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
+       !print *, rhoLiq(i), rhoLiq_mod, abs(rhoLiq(i)-rhoLiq_mod)/rhoLiq(i)
+       @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
+    end do
+
+    releps = 2e-4
+    do i=1,np-2
+       call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
+       !print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
+       @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
+    end do
+
+  end subroutine test_densitySolver_ortho_h2
+
+  @Test
+  subroutine test_values_normal_h2()
+    use eoslibinit, only:init_thermo
+    use eos, only: enthalpy
+    ! This test ensures that all coefficients are correct.
+    type(meos_normal_h2) :: m
+    integer, parameter :: np = 23
+    integer :: i
+    real :: T(np), P(np)
+    real :: rhoLiq(np), rhoVap(np)
+    real :: cvLiq(np), cvVap(np), cvLiq_mod, cvVap_mod
+    real :: cpLiq(np), cpVap(np), cpLiq_mod, cpVap_mod
+    real :: hLiq(np), hVap(np)
+    real :: hLiq_mod, hLiq_mod_t
+    real :: hVap_mod, hVap_mod_t
+    real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
+    real :: n(1) = (/1.0/)
+    real, parameter :: releps = 4e-4 ! Paper gives numbers with 5 sig figs.
+
+    call init_thermo("thermopack","NIST_MEOS","Classic","Classic",1,"N-H2",2)
+
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+
+    T = (/13.957, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 20.369, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, &
+         27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 33.145 /)
+    P = (/7.358, 7.541, 12.898, 20.755, 31.759, 46.602, 66.006, 90.717, 101.325,&
+         121.5, 159.13, 204.38, 258.07, 321.0, 393.99, 477.89, 573.59, 682.05, &
+         804.32, 941.65, 1095.7, 1269.3, 1296.5 /)*1e3
+    rhoVap = (/0.12985 , 0.13272 , 0.21346 , 0.32506 , 0.47356 , 0.66527, &
+         0.90693 , 1.2059 , 1.3322 , 1.5701 , 2.0090 , 2.5334 , 3.1562 , &
+         3.8938 , 4.7674 , 5.8055 , 7.0489 , 8.5601 , 10.445, 12.909, 16.495, &
+         24.637, 31.262 /) / m%molarMass
+    rhoLiq = (/77.004, 76.969, 76.136, 75.264, 74.345, 73.375, 72.35, 71.265, &
+         70.848, 70.115, 68.893, 67.592, 66.199, 64.701, 63.079, 61.305, 59.339, &
+         57.119, 54.538, 51.381, 47.085, 38.079, 31.262 /) / m%molarMass
+    cvLiq = (/5.1616, 5.1625, 5.2313, 5.3287, 5.4192, 5.4986, 5.57, 5.6369, 5.6609,&
+         5.7015, 5.7649, 5.8276, 5.8898, 5.9521, 6.0155, 6.082, 6.1552, 6.2415,&
+         6.3535, 6.5181, 6.811, 7.6982, -1e10 /)*1e3*m%molarMass
+    cvVap = (/6.2433, 6.2449, 6.2814, 6.314, 6.3427, 6.3701, 6.3996, 6.4343, 6.449,&
+         6.4768, 6.5292, 6.5927, 6.6685, 6.7578, 6.862, 6.9832, 7.1248, 7.2922,&
+         7.4945, 7.7475, 8.0826, 8.5381, -1e10 /)*1e3*m%molarMass
+    cpLiq = (/7.0212, 7.0312, 7.3386, 7.7212, 8.1368, 8.5793, 9.0539, 9.5697, &
+         9.7725, 10.138, 10.771, 11.49, 12.319, 13.298, 14.487, 15.987, 17.977, &
+         20.807, 25.284, 33.759, 57.287, 484.58, -1e10  /)*1e3*m%molarMass
+    cpVap = (/10.564, 10.57, 10.703, 10.86, 11.047, 11.274, 11.551, 11.892, &
+         12.037, 12.312, 12.83, 13.472, 14.273, 15.289, 16.603, 18.357, 20.804,&
+         24.445, 30.425, 42.069, 74.636, 604.72, -1e10 /)*1e3*m%molarMass
+    sosLiq = (/1269.2, 1268.3, 1247.1, 1225.5, 1203.4, 1180.2, 1155.5, 1129.1,&
+         1118.9, 1100.8, 1070.3, 1037.5, 1002.2, 964.22, 923.11, 878.38, 829.3,&
+         774.76, 713.07, 641.21, 552.88, 423.53, -1e10 /)
+    sosVap = (/307.14, 307.56, 316.97, 325.71, 333.81, 341.28, 348.12, 354.31,&
+         356.42, 359.84, 364.7, 368.88, 372.38, 375.2, 377.33, 378.77, 379.55,&
+         379.64, 379.07, 377.8, 375.78, 373.93, -1e10 /)
+
+    hLiq = (/ -53.926, -53.622, -46.388, -38.777, -30.733, -22.224, -13.215, -3.6672, 0.00097,&
+         6.4660, 17.241, 28.724, 40.997, 54.161, 68.346, 83.727, 100.55, 119.20, 140.30,&
+         165.08, 196.73, 255.69, 298.16 /)*1e3*m%molarMass
+
+    hVap = (/ 399.83, 400.22, 409.28, 417.91, 426.05, 433.60, 440.49, 446.64, 448.71,&
+         451.98, 456.43, 459.88, 462.24, 463.37, 463.10, 461.18, 457.30, 450.92, 441.19,&
+         426.41, 402.30, 343.40, 298.16 /)*1e3*m%molarMass
+
+
+    do i=1,np
+       !print *, "i, T, P", i, T(i), P(i)
+       if (T(i)<=31.0) then
+          call m%calc_enthalpy(T(i),P(i),n, LIQPH, hLiq_mod, hLiq_mod_t, residual=.false.)
+
+          cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
+          cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
+          sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
+          call enthalpy(T(i),P(i),n,LIQPH,hLiq_mod,hLiq_mod_t)
+          @assertEqual(hLiq_mod, hLiq(i), releps*abs(hLiq(i))+1e-3)
+          @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
+          @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
+          @assertEqual(hLiq_mod_t, cpLiq(i), releps*abs(cpLiq(i)))
+          @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
+
+          call m%calc_enthalpy(T(i),P(i),n, VAPPH, hVap_mod, hVap_mod_t, residual=.false.)
+          cvVap_mod = m%cv(T(i),1/rhoVap(i))
+          cpVap_mod = m%cp(T(i),1/rhoVap(i))
+          sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
+          @assertEqual(hVap_mod, hVap(i), releps*abs(hVap(i))+1e-3)
+          @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
+          @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
+          @assertEqual(hVap_mod_t, cpVap(i), releps*abs(cpVap(i)))
+          @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
+       end if
+    end do
+
+  end subroutine test_values_normal_h2
+
+
+  @Test
+  subroutine test_values_r134a()
+    ! Ensures that all coefficients are correct
+    type(meos_r134a), target :: m
+    integer, parameter :: np = 9
+    integer :: i
+    real :: T(np), P(np)
+    real :: rhoLiq(np), rhoVap(np)
+    real :: cvLiq(np), cvVap(np), cvLiq_mod, cvVap_mod
+    real :: cpLiq(np), cpVap(np), cpLiq_mod, cpVap_mod
+    real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
+    real, parameter :: releps = 4e-4 ! Paper gives numbers with 5 sig figs.
+
+    ! These numbers are provided in the C3 paper for algorithm verification.
+    call m%init()
+    T = (/170.0, 200.0, 220.0, 240.0, 260.0, 280.0, 300.0, 320.0, 370.0/)
+    P = (/ 0.0004e6, 0.00631e6, 0.02443e6, 0.07248e6, 0.17684e6, 0.37271e6, 0.70282, 1.2166e6, 3.7278e6/)
+    rhoLiq = (/ 1.5907e3, 1510.4, 1455.1, 1397.7, 1337.0, 1271.7, 1199.6, 1116.7, 740.31/)/m%molarMass
+    rhoVap = (/ 0.02862, 0.38977, 1.3850, 3.8367, 8.9051, 18.227, 34.192, 60.714, 293.89/)/m%molarMass
+    cvLiq = (/ 0.7921e3, 0.8015e3, 0.8193e3, 0.8402e3, 0.8631e3, 0.8877e3, 0.9144e3, 0.9443e3, 1.1145e3/)*m%molarMass
+    cvVap = (/ 0.5033e3, 0.5732e3, 0.6203e3, 0.6699e3, 0.7234e3, 0.7809e3, 0.8426e3, 0.9093e3, 1.1690e3/)*m%molarMass
+    cpLiq = (/ 1.1838e3, 1.2057e3, 1.2331e3, 1.2669e3, 1.3081e3, 1.3606e3, 1.4324e3, 1.5426e3, 5.1048e3/)*m%molarMass
+    cpVap = (/ 0.5856e3, 0.6586e3, 0.7109e3, 0.7705e3, 0.8417e3, 0.9296e3, 1.0438e3, 1.2108e3, 6.8621e3/)*m%molarMass
+    sosLiq = (/ 1119.2, 967.6, 869.85, 774.99, 682.14, 590.17, 497.88, 403.99, 127.23/)
+    sosVap = (/ 126.84, 135.98, 141.00, 144.73, 146.75, 146.62, 143.87, 137.85, 99.370/)
+
+    do i=1,np
+       cvVap_mod = m%cv(T(i),1/rhoVap(i))
+       cpVap_mod = m%cp(T(i),1/rhoVap(i))
+       sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
+
+       cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
+       cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
+       sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
+       if (abs(T(i)-m%tc)>5.0 .and. abs(P(i)-m%pc)>1e-3*m%pc) then
+
+          @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
+          @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
+          @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
+
+          @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
+          @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
+          @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
+       else
+          @assertEqual(cvVap_mod, cvVap(i), 10*releps*abs(cvVap(i)))
+          @assertEqual(cpVap_mod, cpVap(i), 10*releps*abs(cpVap(i)))
+          @assertEqual(sosVap_mod, sosVap(i), 10*releps*abs(sosVap(i)))
+
+          @assertEqual(sosLiq_mod, sosLiq(i), 10*releps*abs(sosLiq(i)))
+          @assertEqual(cvLiq_mod, cvLiq(i), 10*releps*abs(cvLiq(i)))
+          @assertEqual(cpLiq_mod, cpLiq(i), 10*releps*abs(cpLiq(i)))
+
+       end if
+    end do
+
+  end subroutine test_values_r134a
+
+  @Test
+  subroutine test_densitySolver_r134a()
+    !> Test the density solver using the parahydrogen equation.
+    type(meos_r134a) :: m_r134a
+    integer :: i, phase_found
+    integer, parameter :: np = 6
+    real :: T(np), P(np), rhoLiq(np), rhoVap(np)
+    real :: rhoLiq_mod, rhoVap_mod
+    real :: releps
+
+    call m_r134a%init()
+    Rgas_meos = m_r134a%Rgas_fit
+
+
+    T = (/170.0, 300.0, 330.0, 350.0, 370.0, 374.21/)
+    P = (/ 0.0004e6, 0.70282e6, 1.5599e6, 2.4610e6, 3.7278e6, 4.0593e6/)
+    rhoLiq = (/ 1.5907e3, 1199.6, 1069.0, 951.31, 740.31, 511.95/)/m_r134a%molarMass
+    rhoVap = (/ 0.02862, 34.192, 80.093, 140.99, 293.89, 511.95/)/m_r134a%molarMass
+
+    releps = 1e-3
+    do i=1,np
+       call m_r134a%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
+       if (abs(T(i) - m_r134a%tc) < 0.5) then
+          @assertEqual(rhoLiq(i), rhoLiq_mod, 200*releps*abs(rhoLiq(i)))
+       elseif (abs(T(i) - m_r134a%tc) < 5.0) then
+          @assertEqual(rhoLiq(i), rhoLiq_mod, 20*releps*abs(rhoLiq(i)))
+       else
+          @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
+       endif
+    end do
+
+
+    releps = 1e-2
+    do i=1,np
+       call m_r134a%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
+       if (abs(T(i) - m_r134a%tc) < 0.5) then
+          @assertEqual(rhoVap(i), rhoVap_mod, 100*releps*abs(rhoVap(i)))
+       elseif (abs(T(i) - m_r134a%tc) < 5.0) then
+          @assertEqual(rhoVap(i), rhoVap_mod, 10*releps*abs(rhoVap(i)))
+       else
+          @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
+       endif
+    end do
+
+  end subroutine test_densitySolver_r134a
+
+  @Test
+  subroutine test_densitySolver_C3()
+    !> Test the density solver for the propane equation.
+    type(meos_c3) :: m
+    integer :: i, phase_found
+    integer, parameter :: np = 59
+    real :: T(np), P(np), rhoLiq(np), rhoVap(np)
+    real :: rhoLiq_mod, rhoVap_mod
+    real :: releps
+    !real :: pcrit, tcrit, rcrit, rcrit_mod
+    !real :: ptestfasit, ptest
+
+    call m%init()
+    Rgas_meos = m%Rgas_fit
+
+    T = (/-1.87625E+02,-1.85000E+02,-1.80000E+02,-1.75000E+02,-1.70000E+02,&
+         -1.65000E+02,-1.60000E+02,-1.55000E+02,-1.50000E+02,-1.45000E+02,&
+         -1.40000E+02,-1.35000E+02,-1.30000E+02,-1.25000E+02,-1.20000E+02,&
+         -1.15000E+02,-1.10000E+02,-1.05000E+02,-1.00000E+02,-9.50000E+01,&
+         -9.00000E+01,-8.50000E+01,-8.00000E+01,-7.50000E+01,-7.00000E+01,&
+         -6.50000E+01,-6.00000E+01,-5.50000E+01,-5.00000E+01,-4.50000E+01,&
+         -4.21140E+01,-4.00000E+01,-3.50000E+01,-3.00000E+01,-2.50000E+01,&
+         -2.00000E+01,-1.50000E+01,-1.00000E+01,-5.00000E+00,0.00000E+00,&
+         5.00000E+00,1.00000E+01,1.50000E+01,2.00000E+01,2.50000E+01,&
+         3.00000E+01,3.50000E+01,4.00000E+01,4.50000E+01,5.00000E+01,&
+         5.50000E+01,6.00000E+01,6.50000E+01,7.00000E+01,7.50000E+01,&
+         8.00000E+01,8.50000E+01,9.00000E+01,9.50000E+01/) + 273.15
+
+    P = (/1.72030E-10,4.85260E-10,2.93860E-09,1.45960E-08,6.12560E-08,&
+         2.22520E-07,7.13680E-07,2.05420E-06,5.37950E-06,1.29650E-05,&
+         2.90400E-05,6.09500E-05,1.20730E-04,2.27080E-04,4.07740E-04,&
+         7.02150E-04,1.16440E-03,1.86610E-03,2.89940E-03,4.37950E-03,&
+         6.44750E-03,9.27160E-03,1.30490E-02,1.80080E-02,2.44040E-02,&
+         3.25270E-02,4.26930E-02,5.52490E-02,7.05690E-02,8.90510E-02,&
+         1.01325E-01,1.11120E-01,1.37230E-01,1.67830E-01,2.03430E-01,&
+         2.44520E-01,2.91620E-01,3.45280E-01,4.06040E-01,4.74460E-01,&
+         5.51120E-01,6.36600E-01,7.31510E-01,8.36460E-01,9.52070E-01,&
+         1.07900E+00,1.21790E+00,1.36940E+00,1.53430E+00,1.71330E+00,&
+         1.90720E+00,2.11680E+00,2.34300E+00,2.58680E+00,2.84930E+00,&
+         3.13190E+00,3.43610E+00,3.76410E+00,4.11950E+00/) *1e6
+
+    rhoLiq = (/7.33130E+02,7.30390E+02,7.25200E+02,7.20050E+02,7.14920E+02,&
+         7.09820E+02,7.04730E+02,6.99670E+02,6.94610E+02,6.89560E+02,&
+         6.84510E+02,6.79460E+02,6.74400E+02,6.69330E+02,6.64260E+02,&
+         6.59160E+02,6.54050E+02,6.48910E+02,6.43740E+02,6.38550E+02,&
+         6.33320E+02,6.28060E+02,6.22760E+02,6.17410E+02,6.12020E+02,&
+         6.06570E+02,6.01080E+02,5.95520E+02,5.89900E+02,5.84200E+02,&
+         5.80880E+02,5.78430E+02,5.72580E+02,5.66640E+02,5.60600E+02,&
+         5.54450E+02,5.48190E+02,5.41800E+02,5.35270E+02,5.28590E+02,&
+         5.21750E+02,5.14730E+02,5.07500E+02,5.00060E+02,4.92360E+02,&
+         4.84390E+02,4.76100E+02,4.67460E+02,4.58400E+02,4.48870E+02,&
+         4.38760E+02,4.27970E+02,4.16340E+02,4.03620E+02,3.89470E+02,&
+         3.73290E+02,3.53960E+02,3.28830E+02,2.86510E+02/) / m%molarMass
+
+    rhoVap = (/1.07000E-08,2.92000E-08,1.67000E-07,7.89000E-07,3.15000E-06,&
+         1.09000E-05,3.35000E-05,9.22000E-05,2.32000E-04,5.37000E-04,&
+         1.16000E-03,2.34000E-03,4.47000E-03,8.13000E-03,1.41300E-02,&
+         2.35700E-02,3.79000E-02,5.89700E-02,8.90400E-02,1.30850E-01,&
+         1.87620E-01,2.63040E-01,3.61320E-01,4.87150E-01,6.45700E-01,&
+         8.42610E-01,1.08400E+00,1.37640E+00,1.72700E+00,2.14300E+00,&
+         2.41610E+00,2.63260E+00,3.20420E+00,3.86690E+00,4.63020E+00,&
+         5.50460E+00,6.50120E+00,7.63210E+00,8.91030E+00,1.03510E+01,&
+         1.19690E+01,1.37830E+01,1.58130E+01,1.80820E+01,2.06180E+01,&
+         2.34510E+01,2.66180E+01,3.01650E+01,3.41460E+01,3.86300E+01,&
+         4.37060E+01,4.94930E+01,5.61520E+01,6.39160E+01,7.31400E+01,&
+         8.44060E+01,9.88180E+01,1.19000E+02,1.56310E+02/) / m%molarMass
+
+    releps = 4e-5 ! The C3 paper gives 5 sig figs for the liquid phase
+    do i=1,np
+       call m%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
+       @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
+    end do
+
+    releps = 3.5e-3 ! The C3 paper gives 3 sig figs for some vapor phase data..
+    do i=1,np
+       call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
+       @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
+       ! print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
+       ! call m%mp_pressure(rhoVap(i), T(i), ptestfasit)
+       ! call m%mp_pressure(rhoVap_mod, T(i), ptest)
+       ! print *, rhoVap(i), ptestfasit
+       ! print *, rhoVap_mod, ptest
+       ! print *, " "
+    end do
+
+  end subroutine test_densitySolver_C3
+
+end module test_meos

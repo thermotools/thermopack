@@ -1,0 +1,500 @@
+module test_eos
+  use eoslibinit, only: init_thermo, silent_init
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_Gibbs_TP_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,N2,C1"
+
+    call test_Gibbs_TP_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_Gibbs_TP_SRK
+
+  subroutine test_Gibbs_TP_model(ncomp,model,components,T0,P0,x0,mixing)
+    ! Test Gibbs free energy function
+    !
+    ! MH, 2017-02
+    use single_phase, only: TP_CalcGibbs
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    use tpvar, only: comp, cbeos
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: x0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, p, dt, dp
+    real :: g,g2,dgdt,dgdp,dgdn(ncomp)
+    real, dimension(ncomp) :: n, dn
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .false.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    dp = p0*eps
+    dt = t0*eps
+    dn = x0*eps
+
+    t = t0
+    p = p0
+    n = x0
+    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g,&
+         dgdt,dgdp,dgdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = x0
+    p = p0
+    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+    @assertEqual(dgdt,(g2-g)/dt,10.0*eps*abs(dgdt))
+
+    ! Pressure differentials
+    t = t0
+    n = x0
+    p = p0 + dp
+    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+    @assertEqual(dgdp,(g2-g)/dp,10.0*eps*abs(dgdp))
+
+    ! Mole number differentials
+    t = t0
+    p = p0
+    do j=1,ncomp
+      n = x0
+      n(j) = x0(j) + dn(j)
+      call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+      @assertEqual(dgdn(j),(g2-g)/dn(j),10.0*eps*abs(dgdn(j)))
+    enddo
+
+  end subroutine test_Gibbs_TP_model
+
+  @Test
+  subroutine test_Entropy_TP_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,N2,C1"
+
+    call test_Entropy_TP_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_Entropy_TP_SRK
+
+  subroutine test_Entropy_TP_model(ncomp,model,components,T0,P0,x0,mixing)
+    ! Test entropy function
+    !
+    ! MH, 2017-02
+    use single_phase, only: TP_CalcEntropy
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    use tpvar, only: comp, cbeos
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: x0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, p, dt, dp
+    real :: s,s2,dsdt,dsdp,dsdn(ncomp)
+    real, dimension(ncomp) :: n, dn
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .true.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    dp = p0*eps
+    dt = t0*eps
+    dn = x0*eps
+
+    t = t0
+    p = p0
+    n = x0
+    s = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,&
+         dsdt,dsdp,dsdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = x0
+    p = p0
+    s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    @assertEqual(dsdt,(s2-s)/dt,10.0*eps*abs(dsdt))
+
+    ! Pressure differentials
+    t = t0
+    n = x0
+    p = p0 + dp
+    s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    @assertEqual(dsdp,(s2-s)/dp,10.0*eps*abs(dsdp))
+
+    ! Mole number differentials
+    t = t0
+    p = p0
+    do j=1,ncomp
+      n = x0
+      n(j) = x0(j) + dn(j)
+      s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+      @assertEqual(dsdn(j),(s2-s)/dn(j),10.0*eps*abs(dsdn(j)))
+    enddo
+
+  end subroutine test_Entropy_TP_model
+
+  @Test
+  subroutine test_Enthalpy_TP_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,H2O,C1"
+
+    call test_Enthalpy_TP_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_Enthalpy_TP_SRK
+
+  subroutine test_Enthalpy_TP_model(ncomp,model,components,T0,P0,x0,mixing)
+    ! Test entropy function
+    !
+    ! MH, 2017-02
+    use single_phase, only: TP_CalcEnthalpy
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    use tpvar, only: comp, cbeos
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: x0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, p, dt, dp
+    real :: h,h2,dhdt,dhdp,dhdn(ncomp)
+    real, dimension(ncomp) :: n, dn
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .true.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    dp = p0*eps
+    dt = t0*eps
+    dn = x0*eps
+
+    t = t0
+    p = p0
+    n = x0
+    h = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,&
+         dhdt,dhdp,dhdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = x0
+    p = p0
+    h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    @assertEqual(dhdt,(h2-h)/dt,10.0*eps*abs(dhdt))
+
+    ! Pressure differentials
+    t = t0
+    n = x0
+    p = p0 + dp
+    h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    @assertEqual(dhdp,(h2-h)/dp,10.0*eps*abs(dhdp))
+
+    ! Mole number differentials
+    t = t0
+    p = p0
+    do j=1,ncomp
+      n = x0
+      n(j) = x0(j) + dn(j)
+      h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+      @assertEqual(dhdn(j),(h2-h)/dn(j),10.0*eps*abs(dhdn(j)))
+    enddo
+
+  end subroutine test_Enthalpy_TP_model
+
+  @Test
+  subroutine test_vol_TP_SRK()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,H2O,C1"
+
+    call test_vol_TP_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_vol_TP_SRK
+
+  subroutine test_vol_TP_model(ncomp,model,components,T0,P0,x0,mixing)
+    ! Test entropy function
+    !
+    ! MH, 2017-02
+    use eos, only: specificvolume
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: x0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, p, dt, dp, sumn, sumn0
+    real :: v,v2,dvdt,dvdp,dvdn(ncomp)
+    real, dimension(ncomp) :: n, dn
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .true.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    dp = p0*eps
+    dt = t0*eps
+    dn = x0*eps
+
+    t = t0
+    p = p0
+    n = x0
+    call specificvolume(T,P,n,LIQPH,v,dvdt,dvdp,dvdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = x0
+    p = p0
+    call specificvolume(T,P,n,LIQPH,v2)
+    @assertEqual(dvdt,(v2-v)/dt,10.0*eps*abs(dvdt))
+
+    ! Pressure differentials
+    t = t0
+    n = x0
+    p = p0 + dp
+    call specificvolume(T,P,n,LIQPH,v2)
+    @assertEqual(dvdp,(v2-v)/dp,10.0*eps*abs(dvdp))
+
+    ! Mole number differentials
+    t = t0
+    p = p0
+    sumn0 = sum(x0)
+    do j=1,ncomp
+      n = x0
+      n(j) = x0(j) + dn(j)
+      sumn = sumn0 + dn(j)
+      call specificvolume(T,P,n,LIQPH,v2)
+      @assertEqual(dvdn(j),(v2*sumn-v*sumn0)/dn(j),10.0*eps*abs(dvdn(j)))
+    enddo
+
+  end subroutine test_vol_TP_model
+
+  @Test
+  subroutine test_zfac_TP_SRK()
+    ! Test compressibillity factor
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,H2O,C1"
+
+    call test_zfac_TP_model(ncomp,"SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_zfac_TP_SRK
+
+  @Test
+  subroutine test_zfac_TP_CPASRK()
+    ! Test compressibillity factor
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 3
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    components = "CO2,H2O,C1"
+
+    call test_zfac_TP_model(ncomp,"CPA-SRK",trim(components),T0,P0,n0)
+
+  end subroutine test_zfac_TP_CPASRK
+
+  subroutine test_zfac_TP_model(ncomp,model,components,T0,P0,x0,mixing)
+    ! Test entropy function
+    !
+    ! MH, 2017-02
+    use eos, only: zfac
+    use parameters, only: LIQPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: components
+    character(len=*), optional, intent(in) :: mixing
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: x0
+    ! Locals
+    real, parameter :: eps = 1.0e-6
+    real :: t, p, dt, dp
+    real :: z,z2,dzdt,dzdp,dzdn(ncomp)
+    real, dimension(ncomp) :: n, dn
+    integer :: j
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    logical, parameter :: residual = .true.
+
+    if (present(mixing)) then
+      mixing_l = mixing
+    else
+      mixing_l = "vdW"
+    endif
+    eoslib = "Thermopack"
+    if ( str_eq(model, "EOSCG") .OR. &
+         str_eq(model, "EOSCG-GERG") .OR. &
+         str_eq(model, "GERG2008") ) then
+      eoslib = "TREND"
+    endif
+
+    ! Test model
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
+         'Classic', ncomp, trim(components), 1)
+
+    dp = p0*eps
+    dt = t0*eps
+    dn = x0*eps
+
+    t = t0
+    p = p0
+    n = x0
+    call zfac(T,P,n,LIQPH,z,dzdt,dzdp,dzdn)
+
+    ! Temperature differentials
+    t = t0 + dt
+    n = x0
+    p = p0
+    call zfac(T,P,n,LIQPH,z2)
+    @assertEqual(dzdt,(z2-z)/dt,20.0*eps*abs(dzdt))
+
+    ! Pressure differentials
+    t = t0
+    n = x0
+    p = p0 + dp
+    call zfac(T,P,n,LIQPH,z2)
+    @assertEqual(dzdp,(z2-z)/dp,10.0*eps*abs(dzdp))
+
+    ! Mole number differentials
+    t = t0
+    p = p0
+    do j=1,ncomp
+      n = x0
+      n(j) = x0(j) + dn(j)
+      call zfac(T,P,n,LIQPH,z2)
+      @assertEqual(dzdn(j),(z2-z)/dn(j),10.0*eps*abs(dzdn(j)))
+    enddo
+
+  end subroutine test_zfac_TP_model
+
+end module test_eos
