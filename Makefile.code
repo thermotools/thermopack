@@ -232,6 +232,20 @@ thermopack:
 	$(MAKE) -f Makefile.code -e trend_$(TARGET)
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).a
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).so
+	$(MAKE) -f Makefile.code -e run
+
+run: 	$(ODIR)/thermopack.o
+	$(LD) $(FFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
+	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
+	@rm -f run_thermopack run_thermopack.exe
+	@if [ $(UNAME) = WindowsNT ]; then \
+	  $(LN_S) $(BDIR)/thermopack_$(TARGET).exe run_thermopack.exe; \
+	else if [ $(OS) = MINGW32 ]; then \
+	  $(LN_S) $(BDIR)/thermopack_$(TARGET).exe run_thermopack.exe; \
+	else \
+	  $(LN_S) $(BDIR)/thermopack_$(TARGET) run_thermopack; \
+	fi \
+	fi
 
 run_unittests:
 	@mkdir -p $(BDIR) $(ODIR)
@@ -634,3 +648,5 @@ $(ODIR)/saftvrmie_testing.o: $(SRC)/saftvrmie_testing.f90 \
 	$(SRC)/saftvrmie_dispersion.f90 $(SRC)/saftvrmie_chain.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object,$(SRC)/saftvrmie_testing.f90)
+$(ODIR)/thermopack.o: $(SRC)/thermopack.f90
+	@$(call make_object,$(SRC)/thermopack.f90)
