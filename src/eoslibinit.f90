@@ -30,7 +30,7 @@ contains
     use parameters, only: clen, liq_vap_discr_method, initCompList, nc, TREND, &
          eosLib, model, THERMOPACK
     use tpselect,   only: SelectComp, SelectEOS
-    use tpvar,      only: comp, cbeos, cbeos_alternative, nce
+    use tpvar,      only: comp, cbeos, cbeos_alternative, nce, ncsym
     use stringmod,  only: str_upcase
     use stringmod,  only: uppercase ! as  Function use to uppercase before string comperison
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
@@ -61,7 +61,6 @@ contains
     character(len=clen) :: message
     integer             :: i, err, ncbeos
     character(len=len_trim(comp_string)) :: comp_string_upper
-    character(len=clen) :: comp_string_el
     character(len=len_trim(eosLibrary)) :: eosLibrary_cpy
     logical             :: isSAFTmodel
     real :: Tci, Pci, oi
@@ -84,8 +83,9 @@ contains
     comp_string_upper=trim(comp_string)
     call str_upcase(comp_string_upper)
     call initCompList(ncomp,comp_string_upper)
+    ncsym = ncomp
     ! Initialize components
-    call SelectComp(trim(comp_string_el),nce,comp)
+    call SelectComp(trim(comp_string_upper),nce,comp)
     ! Set cptype
     if (present(cptype)) then
       do i=1,nc
