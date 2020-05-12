@@ -25,8 +25,7 @@ contains
   !----------------------------------------------------------------------
   subroutine init_thermo(eosLibrary,eos,mixing,alpha,ncomp,comp_string,nphases,&
        liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_setno,alpha_setno,&
-       saft_setno,b_exponent,el_model,perm_model,const_perm,solvation_model,&
-       TrendEosForCp,cptype,silent)
+       saft_setno,b_exponent,TrendEosForCp,cptype,silent)
     use parameters, only: clen, liq_vap_discr_method, initCompList, nc, TREND, &
          eosLib, model, THERMOPACK
     use tpselect,   only: SelectComp, SelectEOS
@@ -50,10 +49,6 @@ contains
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
     integer, optional, intent(in) :: kij_setno, alpha_setno, saft_setno(ncomp) !< Data set numbers
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
-    integer, optional, intent(in) :: el_model !< Ion-Ion interaction model (DEBYE_HUCKEL, MSA)
-    integer, optional, intent(in) :: perm_model !< Permittivity model (MOGENSEN_PERM, MOLLERUP_PERM)
-    real, optional, intent(in) :: const_perm !< Constant relative permittivity
-    integer, optional, intent(in) :: solvation_model !< Solvation model
     character(len=*), optional, intent(in) :: TrendEosForCp !< Option to init trend for ideal gas properties.
     integer, optional, intent(in) :: cptype(ncomp) !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
