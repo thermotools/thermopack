@@ -19,10 +19,6 @@ module parameters
   integer :: nph=3
   !> Number of apparent components:
   integer :: nc=0
-  !> Number of salts or ions, depending on mode
-  integer :: nel=0
-  !> Maximum number of components:
-  integer, parameter :: maxnc=60
   !> Library used to solve EoS
   integer, parameter :: THERMOPACK=1, TREND=2
   integer :: EoSlib=0
@@ -46,29 +42,6 @@ module parameters
   !> Test type
   integer, parameter :: GRID = 1, ENVELOPE_PL = 2, &
        BINARY_PL = 3, BINARY_VLLE_PL = 4, META_LIMIT_PL = 5, SOLIDENVELOPE_PL = 6
-  integer :: testtype
-
-  ! Electrolyte specific paramaters
-  integer :: el_static_model, solvation_model, permittivity_model
-  real :: const_permitivity
-
-  ! Envelope input
-  logical :: criconOnEnv, critOnEnv
-  real :: maxEnvPress, dlnS, initEnvP, initEnvT, betaEnv
-  integer :: maxEnvN
-  character(len=1) :: initEnvSpec
-  character(len=clen) :: envOutFile
-
-  ! Binary xy-plot input
-  real :: maxBinPress, binSpecP, binSpecT, minBinTemp
-  real :: bin_dlns_max, bin_dZmax, minBinPress
-  character(len=3) :: binXYplot
-  character(len=clen) :: binOutFile
-  logical :: singleBinaryDatFile, globalBinaryPlot, globalBinaryAZ
-
-  ! Meta-stable line input
-  real :: metaInitPress, metaMinTemp, meta_dlnv
-  character(len=clen) :: metaOutFile
 
   public :: parseCompVector, compIndex, initCompList
   public :: continueOnError, phaseIntToName

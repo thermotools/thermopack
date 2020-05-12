@@ -224,7 +224,7 @@ contains
        b_exponent)
     use stringmod, only: str_eq
     use parameters, only: EoSLib, nph, THERMOPACK, &
-         complist, nel, nc
+         complist, nc
     use tpselect, only: SelectEOS, deAllocateEosCubic
     use tpvar, only: nce, cbeos, comp
     use tpconst, only: set_constants
@@ -328,7 +328,7 @@ contains
       call SelectEOS(nce,comp,cbeos(i),trim(eosLocal),trim(mixRule),&
            trim(alpha),kij_setno,alpha_setno,b_exponent)
       cbeos(i)%volumeShiftId = volumeShiftId
-      cbeos(i)%isElectrolyteEoS = (nel > 0)
+      cbeos(i)%isElectrolyteEoS = .false.
     enddo
 
     ! SAFT initialization must be done after cbeos initialization.
