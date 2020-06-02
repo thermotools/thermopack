@@ -93,12 +93,12 @@ MODULE tpmbwrdata
        )
 
 
-  ! YOUNGLOVE, B. A. and ELY, J. F.; Thermophysical properties of fluids. 
-  ! II. Methane, ethane, propane, isobutane and normal butane, J. Phys. 
+  ! YOUNGLOVE, B. A. and ELY, J. F.; Thermophysical properties of fluids.
+  ! II. Methane, ethane, propane, isobutane and normal butane, J. Phys.
   ! Chem. Ref. Data, Vol 16, No 4, (1987). - for Pressure in [Pa]
 
   TYPE(mbwr32Data), PARAMETER :: mbwrcx6=mbwr32Data(&
-       5202, "IC4",  1,  1,  7,  33, & 
+       5202, "IC4",  1,  1,  7,  33, &
        (/ 1307.3259720000001, 39278.027419999999, -3185427.3939999999, &
        760882519.20000005, -175391985900.00000, -209.00197549999999, &
        895955.79709999997, -681671013.00000000, -111127104500.00000, &
@@ -110,12 +110,12 @@ MODULE tpmbwrdata
        6423169487.0000000, 3891706.0419999999, -149475573600.00000,&
        -1720.2401729999999, 28941953.750000000, 200.50863290000001,&
        -44483.930050000003, 8028488.4150000000, 6.71158959999999943E-002/)&
-       ) 
+       )
 
   TYPE(mbwr32Data), PARAMETER :: mbwrcx7=mbwr32Data(&
-       5202, "NC4",  1,  1,  7,  33, & 
-                                ! YOUNGLOVE, B. A. and ELY, J. F.; Thermophysical properties of fluids. 
-                                ! II. Methane, ethane, propane, isobutane and normal butane, J. Phys. 
+       5202, "NC4",  1,  1,  7,  33, &
+                                ! YOUNGLOVE, B. A. and ELY, J. F.; Thermophysical properties of fluids.
+                                ! II. Methane, ethane, propane, isobutane and normal butane, J. Phys.
                                 ! Chem. Ref. Data, Vol 16, No 4, (1987). - for Pressure in [Pa]
        (/0.153740104603E+04,    -0.160980034611E+05,   -0.979782459010E+06, &
        0.499660674504E+08,    -0.102115607687E+12,    0.236032147756E+03, &
@@ -128,7 +128,7 @@ MODULE tpmbwrdata
        0.558779925986E+10,   -0.159579054026E+07,   -0.148034214622E+12, &
        -0.245206328201E+05,     0.218305259309E+08,   -0.923990627338E+01, &
        -0.205267776639E+06,     0.387639044820E+07,    0.649847430000E-01/) &
-       ) 
+       )
 
   TYPE(mbwr32Data), PARAMETER :: mbwrcx8=mbwr32Data(&
        5202,"O2",  1,  1,  7,  33, &
@@ -1483,7 +1483,7 @@ CONTAINS
     do while (idx <= nMbwr19Models .and. .not. found)
        if (trim(compid) /= trim(mbwr19Array(idx)%ComId) ) then
           idx = idx + 1
-       else 
+       else
           found = .true.
        endif
     enddo
@@ -1495,7 +1495,7 @@ CONTAINS
 
   ! find the index for the MBWR-32 parameters
   function getMBWR32index(compid) result(idx)
-    implicit none    
+    implicit none
     character(len=*), intent(in) :: compid
     integer :: idx
     logical :: found
@@ -1504,7 +1504,7 @@ CONTAINS
     do while (idx <= nMbwr32Models .and. .not. found)
        if (trim(compid) /= trim(mbwr32Array(idx)%ComId) ) then
           idx = idx + 1
-       else 
+       else
           found = .true.
        endif
     enddo

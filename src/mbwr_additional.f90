@@ -114,7 +114,7 @@ CONTAINS
     real, dimension(0:2) :: poly, expo
     type(NIJLarray) :: c
     real :: gamma
-    real :: pled, eled                                         
+    real :: pled, eled
     real :: rho_1, rho_2, exponential, twoGamma, twoGammaRho
 
     if ((nTderivs .lt. 0 .or. nTderivs .gt. 2) .or. (nRhoDerivs .lt. 0 .or. nRhoDerivs .gt. 2)) then
@@ -192,7 +192,7 @@ CONTAINS
     !input variables
     real, intent(in) :: T !< temperature [K]
     real, intent(in) :: P !< pressure [Pa]
-    real, intent(in) :: nMoles !< moles 
+    real, intent(in) :: nMoles !< moles
     integer, intent(in) :: phase
     type(eosmbwr), intent(in) :: model
     !locals
@@ -221,7 +221,7 @@ CONTAINS
     integer :: phase_found_out
     real :: param(1+model%bplen+model%belen)
     call makeParam(parameters=param,T=T,model=model,nTderivatives=0)
-    
+
     rho_vap = MBWR_density(t=T,p=P,phase_in=2,param=param,model=model,phase_found_out=phase_found_out)
     if (phase_found_out == 1) then !only one density solution
        MBWR_stableDensity = rho_vap
@@ -233,10 +233,10 @@ CONTAINS
     call MBWR_Gres(model=model, T=T, P=P, V=1/rho_liq, nMoles=1.0, Gres=Gres_liq)
     if (Gres_vap < Gres_liq) then
        MBWR_stableDensity = rho_vap
-    else 
+    else
        MBWR_stableDensity = rho_liq
     end if
-  end function MBWR_stableDensity 
+  end function MBWR_stableDensity
 
   subroutine MBWR_Gres(model, T, P, V, nMoles, Gres)!, dgresdt, dgresdp, dgresdn)
     use tpmbwr, only: eosmbwr
@@ -528,7 +528,7 @@ CONTAINS
     DPDV_ = -KRGAS*T*D2FDV2_ - nMoles*KRGAS*T/V**2
     DPDT_ = P/T-KRGAS*T*D2FDTDV_
     DPDn_ = -KRGAS*T*D2FDVDn_ + KRGAS*T/V
-    
+
     DVDT_ = -DPDT_/DPDV_
     DVDn_ = -DPDn_/DPDV_
 
@@ -726,7 +726,7 @@ CONTAINS
     eps5 = abs(DlnphiDn(1,1))
     eps6 = abs(DlnphiDP(1) - (z-1)/P)
     eps7 = abs(nMoles*DlnphiDT(1) + Hres/(KRGAS*T**2))
-    
+
     eps8 = abs(Sres-(Hres-Gres)/T)
     eps9 = abs(DSresDn(1)-(DHresDn(1)-KRGAS*T*lnphi(1))/T)
 
@@ -755,8 +755,8 @@ CONTAINS
     real :: dt, dtr, dv, ddelta_dv, dn, ddelta_dn
     real, dimension(0:2,0:2) :: alphaDerivatives, alphaDerivatives_dtr, alphaDerivatives_ddelta_dv, alphaDerivatives_ddelta_dn
     real, dimension(0:2) :: res
-    real :: eps_dfdt, eps_dfdv, eps_dfdn         
-    real :: eps_d2fdt2, eps_d2fdv2, eps_d2fdn2   
+    real :: eps_dfdt, eps_dfdv, eps_dfdn
+    real :: eps_d2fdt2, eps_d2fdv2, eps_d2fdn2
     real :: eps_d2fdtdv, eps_d2fdtdn, eps_d2fdvdn
 
     ! check the alphar_derivatives subroutine
@@ -774,7 +774,7 @@ CONTAINS
     DalphaDdelta = pres(2)
     D2alphaDdelta2 = pres(3)
     call alphar_deltaCoef(2,Tr,deltaCoef,model) ! opt=2 (first derivative wrt tr)
-    call alphar_deltaDerivatives(pres,2,delta,deltaCoef,model) ! opt=3 (zeroth, first and second 
+    call alphar_deltaDerivatives(pres,2,delta,deltaCoef,model) ! opt=3 (zeroth, first and second
     DalphaDtr = pres(1)
     D2alphaDtrDdelta = pres(2)
     call alphar_deltaCoef(3,Tr,deltaCoef,model)
@@ -831,7 +831,7 @@ CONTAINS
     eps_dfdn = abs( &
          (F(T,V,nMoles+dn,alphaDerivatives_ddelta_dn)-F(T,V,nMoles,alphaDerivatives))/dn &
          -DFDN(T,V,nMoles,alphaDerivatives) &
-         )/abs(DFDN(T,V,nMoles,alphaDerivatives)) 
+         )/abs(DFDN(T,V,nMoles,alphaDerivatives))
 
     eps_d2fdt2 = abs( &
          (DFDT(T+dt,V,nMoles,alphaDerivatives_dtr)-DFDT(T,V,nMoles,alphaDerivatives))/dt &
