@@ -395,17 +395,7 @@ contains
       dhdp_ideal_mix=0.0
       dhdz_ideal_mix=0.0
     else
-      call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt, dhdp, dhdz)
-      h_ideal_mix = h_ideal_mix
-      if(present(dhdt)) then ! Temperature derivative
-        dhdt_ideal_mix=dhdt
-      end if
-      if(present(dhdp)) then ! Pressure derivative
-        dhdp_ideal_mix=dhdp
-      end if
-      if(present(dhdz)) then ! Composition derivative,
-        dhdz_ideal_mix=dhdz
-      end if
+       call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, dhdz_ideal_mix)
     endif
 
     if (cbeos%eosidx == eosLK) then ! Lee-Kesler equations of state
@@ -413,7 +403,7 @@ contains
     else if (cbeos%eosidx == eos_single) then
       call enthalpy_single(nce,comp,cbeos,T,P,ne,phase,residual,&
            enthalpy,dhdt,dhdp,dhdz)
-      return ! Already added ideal contibution
+      return ! Already includes ideal contibution
     else if (cbeos%eosidx == meosNist_mix) then
       call calc_multiparameter_idealmix_enthalpy(nc, cbeos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
@@ -520,17 +510,7 @@ contains
       dsdp_ideal_mix=0.0
       dsdz_ideal_mix=0.0
     else
-      call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt, dsdp, dsdz)
-      S_ideal_mix = S_ideal_mix
-      if(present(dsdt)) then ! Temperature derivative
-        dsdt_ideal_mix=dsdt
-      end if
-      if(present(dsdp)) then ! Pressure derivative
-        dsdp_ideal_mix=dsdp
-      end if
-      if(present(dsdz)) then ! Composition derivative,
-        dsdz_ideal_mix=dsdz
-      end if
+       call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix, dsdz_ideal_mix)
     endif
 
     if (cbeos%eosidx == eosLK) then ! Lee-Kesler equations of state
@@ -1515,15 +1495,8 @@ contains
     else
       vshift = v
       call TV_Sideal_mix(nce, comp, T, vshift, ne, s_ideal_mix, &
-           dsdt_ideal_mix=dsdt, dsdv_ideal_mix=dsdv, &
+           dsdt_ideal_mix=dsdt_ideal_mix, dsdv_ideal_mix=dsdv_ideal_mix, &
            dsdz_ideal_mix=dsdne)
-      s_ideal_mix = s_ideal_mix
-      if(present(dsdt)) then ! Temperature derivative
-        dsdt_ideal_mix=dsdt
-      end if
-      if(present(dsdv)) then ! Pressure derivative
-        dsdv_ideal_mix=dsdv
-      end if
       if(present(dsdn)) then ! Composition derivative,
         call real_to_apparent_diff(dsdne,dsdn,nc)
         dsdn_ideal_mix=dsdn

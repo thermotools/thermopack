@@ -378,17 +378,6 @@ contains
 
     call m%init()
 
-    ! ! enthalpy
-    ! call m%calc_enthalpy_resid(T,p   ,n,phase, q,    q_t,    q_p,    q_n)
-    ! !print *, " "
-    ! !print *, "H, H_t, H_p, H_n", q,    q_t,    q_p,    q_n
-    ! call m%calc_enthalpy_resid(T+dt,p,n,phase, q_dt)
-    ! call m%calc_enthalpy_resid(T,p+dp,n,phase, q_dp)
-    ! call m%calc_enthalpy_resid(T,p,n+dn,phase, q_dn)
-    ! @assertEqual((q_dT-q)/dT, q_t,       1e-6*abs(q_t))
-    ! @assertEqual((q_dp-q)/dp, q_p,       1e-6*abs(q_p))
-    ! @assertEqual((q_dn-q)/dn(1), q_n(1), 1e-6*abs(q_n(1)))
-
     ! residual enthalpy
     call m%calc_enthalpy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.true.)
     !print *, "H, H_t, H_p, H_n", q,    q_t,    q_p,    q_n
