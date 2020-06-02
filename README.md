@@ -52,8 +52,13 @@ A number of colleagues at SINTEF Energy Research have contributed to the develop
 
 ## File System
 >thermopack/: main library
+>
 >thermopack/src/: Main path for Fortran source code
 >
 >thermopack/addon/: Add-on functionality
+>
 >thermopack/addon/pyThermopack/: Python interface
 >
+# For discussion
+1. Should we aim for a generic unittest of F functions, and then simply run it for all model combos?
+2. Should molar mass be given in g/mol or kg/mol (SI)?

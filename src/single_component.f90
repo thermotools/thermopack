@@ -1,10 +1,5 @@
 module single_component
-  !>---------------------------------------------------------------------
-  !! Interface to single component equations of state
-  !!
-  !!
-  !! © SINTEF Energy Research, 2012--2012. All rights reserved.
-  !---------------------------------------------------------------------
+  !> Interface to single-component equations of state
 
   implicit none
   save

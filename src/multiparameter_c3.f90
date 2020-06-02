@@ -1,6 +1,6 @@
 module multiparameter_C3
   !> Propane multiparameter fundamental equation for Helmholtz
-  !> energy. See doi:10.1021/je900217v.
+  !> energy. See Lemmon et al. (2009), doi:10.1021/je900217v.
   use multiparameter_base, only: meos
   implicit none
   save
@@ -11,8 +11,6 @@ module multiparameter_C3
   real, parameter, dimension(1:2) :: a = (/ -4.970583,  4.29352 /)
   real, parameter, dimension(3:6) :: b = (/ 1.062478, 3.344237, 5.363757, 11.762957 /)
   real, parameter, dimension(3:6) :: v = (/ 3.043, 5.874, 9.337, 7.922 /)
-
-!  real, parameter, dimension(3:6) :: bsq = b*b
 
   ! upPol is the upper index for polynomial terms, upExp the same for
   ! single-expontential terms, upExpExp for double-exponential terms.
@@ -68,7 +66,7 @@ module multiparameter_C3
      procedure, private :: alphaResPrefactors => alphaResPrefactors_C3
 
   end type meos_c3
-  
+
 contains
 
   subroutine init_C3 (this)
@@ -104,8 +102,8 @@ contains
     real, dimension(3:6) :: exps !, exps2
     ! Precalculate exponentials
     exps = exp(b*tau)
-!    exps2 = exps/(exps-1)
-!    exps2 = exps2*exps2
+    !    exps2 = exps/(exps-1)
+    !    exps2 = exps2*exps2
 
     alp0 = 0.0
     alp0(0,0) = log(delta) + 3*log(tau) + a(1) + a(2)*tau + dot_product(v, log(1-1/exps))
@@ -113,7 +111,7 @@ contains
     alp0(2,0) = -1.0
     alp0(0,1) = 3 + a(2)*tau + tau*dot_product(v*b, 1/(exps-1))
     alp0(0,2) = -3 - tau*tau*dot_product(v*b**2, exps/(exps-1)**2)
-!    alp0(0,2) = -3 - tau*tau*dot_product(v*bsq, exps2)
+    !    alp0(0,2) = -3 - tau*tau*dot_product(v*bsq, exps2)
 
   end subroutine alpha0Derivs_C3
 
@@ -127,10 +125,10 @@ contains
     ! Internal
 
     if ( tau /= this%tau_cache ) then
-      this%tau_cache = tau
-      this%prefactors_pol_cache = N_pol * tau**t_pol
-      this%prefactors_exp_cache = N_exp * tau**t_exp
-      this%prefactors_expexp_cache = N_expexp * tau**t_expexp
+       this%tau_cache = tau
+       this%prefactors_pol_cache = N_pol * tau**t_pol
+       this%prefactors_exp_cache = N_exp * tau**t_exp
+       this%prefactors_expexp_cache = N_expexp * tau**t_expexp
     end if
 
     prefactors_pol = this%prefactors_pol_cache
@@ -201,11 +199,11 @@ contains
 
     theta = 1-1/tau
     if ( phase == LIQPH ) then
-      deltaSat = 1 + dot_product(N_liqsat,theta**expo_liqsat)
+       deltaSat = 1 + dot_product(N_liqsat,theta**expo_liqsat)
     else if ( phase == VAPPH ) then
-      deltaSat = exp(dot_product(N_vapsat,theta**expo_vapsat))
+       deltaSat = exp(dot_product(N_vapsat,theta**expo_vapsat))
     else
-      call stoperror("satDeltaEstimate_C3: only LIQPH and VAPPH allowed!")
+       call stoperror("satDeltaEstimate_C3: only LIQPH and VAPPH allowed!")
     end if
 
   end function satDeltaEstimate_C3

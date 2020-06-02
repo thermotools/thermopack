@@ -1,12 +1,12 @@
 module multiparameter_para_h2
   !> Parahydrogen multiparameter fundamental equation for Helmholtz energy. See
-  !> doi:10.1063/1.3160306.
+  !> Leachman et al. (2009), doi:10.1063/1.3160306.
   use multiparameter_base, only: meos
   implicit none
   save
   public :: meos_para_h2
   private
-  
+
   ! Parameters for the ideal gas part alpha^0
   real, parameter, dimension(1:2) :: a = (/ -1.4485891134, 1.884521239 /)
   real, parameter, dimension(3:9) :: b = (/  -15.1496751472, -25.0925982148, &
@@ -19,7 +19,7 @@ module multiparameter_para_h2
        -18.6261 ,&
        0.993973 ,&
        0.536078/)
-  
+
   ! upPol is the upper index for polynomial terms, upExp the same for
   ! single-expontential terms, upExpExp for double-exponential terms.
   integer, parameter :: upPol = 7
@@ -102,10 +102,10 @@ module multiparameter_para_h2
      procedure, private :: alphaResPrefactors => alphaResPrefactors_PARA_H2
 
   end type meos_para_h2
-  
+
 contains
 
-  subroutine init_para_h2 (this)
+  subroutine init_PARA_H2 (this)
     class(meos_para_h2) :: this
 
     this%tau_cache = 0.0
@@ -117,7 +117,7 @@ contains
 
     this%maxT = 1000.0 ! (T)
     this%maxP = 2000e6 ! (Pa)
-    
+
     this%tc = 32.938   !< (K)
     this%pc = 1.2858e6 !< (Pa)
     this%rc = 15.538e3 !< (mol/m^3)
@@ -125,12 +125,12 @@ contains
     this%t_triple = 13.8033       !< (K)
     this%p_triple = 7041.0        !< (Pa)
     this%rhoLiq_triple = 38.185e3 !< (mol/m^3)
-    this%rhoVap_triple = 0.12555/this%molarMass  !< (mol/m^3)        
-  end subroutine init_para_h2
+    this%rhoVap_triple = 0.12555/this%molarMass  !< (mol/m^3)
+  end subroutine init_PARA_H2
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  subroutine alpha0Derivs_para_h2(this, delta, tau, alp0)
+  subroutine alpha0Derivs_PARA_H2(this, delta, tau, alp0)
     class(meos_para_h2) :: this
     real, intent(in) :: delta, tau
     real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
@@ -146,7 +146,7 @@ contains
     alp0(0,1) = 1.5 + a(2)*tau + tau*dot_product(v*b, exps/(exps-1))
     alp0(0,2) = -1.5 - tau*tau*dot_product(v*b**2, exps/(exps-1)**2)
 
-  end subroutine alpha0Derivs_para_h2
+  end subroutine alpha0Derivs_PARA_H2
 
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_PARA_H2 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
@@ -157,10 +157,10 @@ contains
     real, intent(out) :: prefactors_expexp(upExp+1:upExpExp)
 
     if ( tau /= this%tau_cache ) then
-      this%tau_cache = tau
-      this%prefactors_pol_cache = N_pol * tau**t_pol
-      this%prefactors_exp_cache = N_exp * tau**t_exp
-      this%prefactors_expexp_cache = N_expexp * tau**t_expexp
+       this%tau_cache = tau
+       this%prefactors_pol_cache = N_pol * tau**t_pol
+       this%prefactors_exp_cache = N_exp * tau**t_exp
+       this%prefactors_expexp_cache = N_expexp * tau**t_expexp
     end if
 
     prefactors_pol = this%prefactors_pol_cache
@@ -220,20 +220,19 @@ contains
 
   end subroutine alphaResDerivs_PARA_H2
 
-  function satDeltaEstimate_para_h2 (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH
+  function satDeltaEstimate_PARA_H2 (this,tau,phase) result(deltaSat)
+    use parameters, only: LIQPH, VAPPH, SINGLEPH
     class(meos_para_h2) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase
     real :: deltaSat
 
-    if ( phase == LIQPH .or. phase == 4) then
-!    if ( phase == LIQPH ) then
-      deltaSat = this%rhoLiq_triple/this%rc
+    if ( phase == LIQPH .or. phase == SINGLEPH) then
+       deltaSat = this%rhoLiq_triple/this%rc
     else if ( phase == VAPPH ) then
-      deltaSat = this%rhoVap_triple/this%rc
+       deltaSat = this%rhoVap_triple/this%rc
     else
-      call stoperror("satDeltaEstimate_para_h2: only LIQPH and VAPPH allowed!")
+       call stoperror("satDeltaEstimate_ortho_h2: only LIQPH,VAPPH,SINGLEPH allowed!")
     end if
 
   end function satDeltaEstimate_PARA_H2

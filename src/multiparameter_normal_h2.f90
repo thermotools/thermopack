@@ -1,6 +1,6 @@
 module multiparameter_normal_h2
-  !> Normalhydrogen multiparameter fundamental equation for Helmholtz energy. See
-  !> doi:10.1063/1.3160306.
+  !> Normal-hydrogen multiparameter fundamental equation for Helmholtz energy.
+  !> See Leachman et al. (2009), doi:10.1063/1.3160306.
   use multiparameter_base, only: meos
   implicit none
   save
@@ -18,8 +18,8 @@ module multiparameter_normal_h2
   real, parameter, dimension(3:7) :: v = (/ 1.616,&
        -0.4117,&
        -0.792,&
-        0.758,&
-        1.217/)
+       0.758,&
+       1.217/)
 
   ! upPol is the upper index for polynomial terms, upExp the same for
   ! single-expontential terms, upExpExp for double-exponential terms.
@@ -98,158 +98,158 @@ module multiparameter_normal_h2
        1.662 /)
 
   type, extends(meos) :: meos_normal_h2
-  private
-  ! Cache the expensive temperature-dependent quantities.
-  real :: tau_cache
-  real :: deltaSatLiq_cache
-  real :: deltaSatVap_cache
-  real :: prefactors_pol_cache(1:upPol)
-  real :: prefactors_exp_cache(upPol+1:upExp)
-  real :: prefactors_expexp_cache(upExp+1:upExpExp)
+     private
+     ! Cache the expensive temperature-dependent quantities.
+     real :: tau_cache
+     real :: deltaSatLiq_cache
+     real :: deltaSatVap_cache
+     real :: prefactors_pol_cache(1:upPol)
+     real :: prefactors_exp_cache(upPol+1:upExp)
+     real :: prefactors_expexp_cache(upExp+1:upExpExp)
+
+   contains
+
+     procedure, public :: alpha0Derivs_taudelta => alpha0Derivs_NORMAL_H2
+     procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_NORMAL_H2
+     procedure, public :: satDeltaEstimate => satDeltaEstimate_NORMAL_H2
+     procedure, public :: init => init_NORMAL_H2
+
+     procedure, private :: alphaResPrefactors => alphaResPrefactors_NORMAL_H2
+
+  end type meos_normal_h2
 
 contains
 
-  procedure, public :: alpha0Derivs_taudelta => alpha0Derivs_NORMAL_H2
-  procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_NORMAL_H2
-  procedure, public :: satDeltaEstimate => satDeltaEstimate_NORMAL_H2
-  procedure, public :: init => init_NORMAL_H2
+  subroutine init_NORMAL_H2 (this)
+    class(meos_normal_h2) :: this
 
-  procedure, private :: alphaResPrefactors => alphaResPrefactors_NORMAL_H2
+    this%compName = "normal_h2"
+    this%tau_cache = 0.0
 
-end type meos_normal_h2
+    this%molarMass = 2.01588e-3 !< (kg/mol) (Not stated in paper. From Coolprop.)
+    this%Rgas_fit = 8.314472 !< (J/(mol*K))
 
-contains
+    this%maxT = 1000.0 ! (T)
+    this%maxP = 2000e6 ! (Pa)
 
-subroutine init_normal_h2 (this)
- class(meos_normal_h2) :: this
+    this%tc = 33.145     !< (K)
+    this%pc = 1.2964e6 !< (Pa)
+    this%rc = 15.508e3  !< (mol/m^3)
 
- this%compName = "normal_h2"
- this%tau_cache = 0.0
+    this%t_triple = 13.957      !< (K)
+    this%p_triple = 7360.0      !< (Pa)
+    this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
+    this%rhoVap_triple = 0.12985/this%molarMass !< (mol/m^3)
 
- this%molarMass = 2.01588e-3 !< (kg/mol) (Not stated in paper. From Coolprop.)
- this%Rgas_fit = 8.314472 !< (J/(mol*K))
+  end subroutine init_NORMAL_H2
 
- this%maxT = 1000.0 ! (T)
- this%maxP = 2000e6 ! (Pa)
+  ! The functional form of the ideal gas function varies among multiparameter EoS,
+  ! which explains why this routine may seem a bit hard-coded.
+  subroutine alpha0Derivs_NORMAL_H2(this, delta, tau, alp0)
+    class(meos_normal_h2) :: this
+    real, intent(in) :: delta, tau
+    real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
+    ! Internals
+    real, dimension(3:7) :: exps
 
- this%tc = 33.145     !< (K)
- this%pc = 1.2964e6 !< (Pa)
- this%rc = 15.508e3  !< (mol/m^3)
+    exps = exp(b*tau)
 
- this%t_triple = 13.957      !< (K)
- this%p_triple = 7360.0      !< (Pa)
- this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
- this%rhoVap_triple = 0.12985/this%molarMass !< (mol/m^3)
+    alp0 = 0.0
+    alp0(0,0) = log(delta) + 1.5*log(tau) + a(1) + a(2)*tau + dot_product(v, log(1-exps))
+    alp0(1,0) = 1.0
+    alp0(2,0) = -1.0
+    alp0(0,1) = 1.5 + a(2)*tau + tau*dot_product(v*b, exps/(exps-1))
+    alp0(0,2) = -1.5 - tau*tau*dot_product(v*b**2, exps/(exps-1)**2)
 
-end subroutine init_normal_h2
+  end subroutine alpha0Derivs_NORMAL_H2
 
-! The functional form of the ideal gas function varies among multiparameter EoS,
-! which explains why this routine may seem a bit hard-coded.
-subroutine alpha0Derivs_normal_h2(this, delta, tau, alp0)
- class(meos_normal_h2) :: this
- real, intent(in) :: delta, tau
- real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
- ! Internals
- real, dimension(3:7) :: exps
+  ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
+  subroutine alphaResPrefactors_NORMAL_H2 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
+    class(meos_normal_h2) :: this
+    real, intent(in) :: tau
+    real, intent(out) :: prefactors_pol(1:upPol)
+    real, intent(out) :: prefactors_exp(upPol+1:upExp)
+    real, intent(out) :: prefactors_expexp(upExp+1:upExpExp)
 
- exps = exp(b*tau)
+    if ( tau /= this%tau_cache ) then
+       this%tau_cache = tau
+       this%prefactors_pol_cache = N_pol * tau**t_pol
+       this%prefactors_exp_cache = N_exp * tau**t_exp
+       this%prefactors_expexp_cache = N_expexp * tau**t_expexp
+    end if
 
- alp0 = 0.0
- alp0(0,0) = log(delta) + 1.5*log(tau) + a(1) + a(2)*tau + dot_product(v, log(1-exps))
- alp0(1,0) = 1.0
- alp0(2,0) = -1.0
- alp0(0,1) = 1.5 + a(2)*tau + tau*dot_product(v*b, exps/(exps-1))
- alp0(0,2) = -1.5 - tau*tau*dot_product(v*b**2, exps/(exps-1)**2)
+    prefactors_pol = this%prefactors_pol_cache
+    prefactors_exp = this%prefactors_exp_cache
+    prefactors_expexp = this%prefactors_expexp_cache
 
-end subroutine alpha0Derivs_normal_h2
-
-! Supplies all prefactors that do not depend on delta. Prefactors are cached.
-subroutine alphaResPrefactors_NORMAL_H2 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
- class(meos_normal_h2) :: this
- real, intent(in) :: tau
- real, intent(out) :: prefactors_pol(1:upPol)
- real, intent(out) :: prefactors_exp(upPol+1:upExp)
- real, intent(out) :: prefactors_expexp(upExp+1:upExpExp)
-
- if ( tau /= this%tau_cache ) then
-   this%tau_cache = tau
-   this%prefactors_pol_cache = N_pol * tau**t_pol
-   this%prefactors_exp_cache = N_exp * tau**t_exp
-   this%prefactors_expexp_cache = N_expexp * tau**t_expexp
- end if
-
- prefactors_pol = this%prefactors_pol_cache
- prefactors_exp = this%prefactors_exp_cache
- prefactors_expexp = this%prefactors_expexp_cache
-
-end subroutine alphaResPrefactors_NORMAL_H2
+  end subroutine alphaResPrefactors_NORMAL_H2
 
 
-subroutine alphaResDerivs_NORMAL_H2 (this, delta, tau, alpr)
- class(meos_normal_h2) :: this
- real, intent(in) :: delta, tau
- real, intent(out) :: alpr(0:2,0:2) !< alpr(i,j) = (d_delta)^i(d_tau)^j alphaRes
- ! Internal
- real :: deltaL(upPol+1:upExp)
- real :: prefactors_pol(1:upPol)
- real :: prefactors_exp(upPol+1:upExp)
- real :: prefactors_expexp(upExp+1:upExpExp)
- real :: polTerms(1:upPol), expTerms(upPol+1:upExp), expExpTerms(upExp+1:upExpExp)
- call this%alphaResPrefactors(tau, prefactors_pol, prefactors_exp, prefactors_expexp)
+  subroutine alphaResDerivs_NORMAL_H2 (this, delta, tau, alpr)
+    class(meos_normal_h2) :: this
+    real, intent(in) :: delta, tau
+    real, intent(out) :: alpr(0:2,0:2) !< alpr(i,j) = (d_delta)^i(d_tau)^j alphaRes
+    ! Internal
+    real :: deltaL(upPol+1:upExp)
+    real :: prefactors_pol(1:upPol)
+    real :: prefactors_exp(upPol+1:upExp)
+    real :: prefactors_expexp(upExp+1:upExpExp)
+    real :: polTerms(1:upPol), expTerms(upPol+1:upExp), expExpTerms(upExp+1:upExpExp)
+    call this%alphaResPrefactors(tau, prefactors_pol, prefactors_exp, prefactors_expexp)
 
- ! Precalculate polynomial terms
- polTerms(1:upPol) = prefactors_pol*delta**d_pol
+    ! Precalculate polynomial terms
+    polTerms(1:upPol) = prefactors_pol*delta**d_pol
 
- ! Precalculate single-exponential terms
- deltaL(upPol+1:upExp) = delta**l_exp
- expTerms(upPol+1:upExp) = prefactors_exp * delta**d_exp * exp(-deltaL)
+    ! Precalculate single-exponential terms
+    deltaL(upPol+1:upExp) = delta**l_exp
+    expTerms(upPol+1:upExp) = prefactors_exp * delta**d_exp * exp(-deltaL)
 
- ! Precalculate double-exponential terms
- expExpTerms(upExp+1:upExpExp) = prefactors_expexp * delta**d_expexp &
-      * exp(-eta_expexp*(delta-eps_expexp)**2 - beta_expexp*(tau-gam_expexp)**2)
+    ! Precalculate double-exponential terms
+    expExpTerms(upExp+1:upExpExp) = prefactors_expexp * delta**d_expexp &
+         * exp(-eta_expexp*(delta-eps_expexp)**2 - beta_expexp*(tau-gam_expexp)**2)
 
- ! alpha
- alpr(0,0) = sum(polTerms) + sum(expTerms) + sum(expExpTerms)
+    ! alpha
+    alpr(0,0) = sum(polTerms) + sum(expTerms) + sum(expExpTerms)
 
- ! delta*alpha_delta
- alpr(1,0) = dot_product(polTerms, d_pol) + dot_product(expTerms, d_exp - l_exp*deltaL) &
-      + dot_product(expExpTerms, d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))
+    ! delta*alpha_delta
+    alpr(1,0) = dot_product(polTerms, d_pol) + dot_product(expTerms, d_exp - l_exp*deltaL) &
+         + dot_product(expExpTerms, d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))
 
- ! delta**2 * alpha_deltadelta
- alpr(2,0) = dot_product(polTerms, d_pol*(d_pol-1)) + &
-      dot_product(expTerms, (d_exp - l_exp*deltaL)*(d_exp-1-l_exp*deltaL) - l_exp*l_exp*deltaL ) + &
-      dot_product(expExpTerms, (d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))**2 - d_expexp - 2*eta_expexp*delta**2 )
+    ! delta**2 * alpha_deltadelta
+    alpr(2,0) = dot_product(polTerms, d_pol*(d_pol-1)) + &
+         dot_product(expTerms, (d_exp - l_exp*deltaL)*(d_exp-1-l_exp*deltaL) - l_exp*l_exp*deltaL ) + &
+         dot_product(expExpTerms, (d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))**2 - d_expexp - 2*eta_expexp*delta**2 )
 
- ! tau*alpha_tau
- alpr(0,1) = dot_product(polTerms, t_pol) + dot_product(expTerms, t_exp) &
-      + dot_product(expExpTerms, t_expexp - 2*beta_expexp*tau*(tau-gam_expexp))
+    ! tau*alpha_tau
+    alpr(0,1) = dot_product(polTerms, t_pol) + dot_product(expTerms, t_exp) &
+         + dot_product(expExpTerms, t_expexp - 2*beta_expexp*tau*(tau-gam_expexp))
 
- ! tau**2 * alpha_tautau
- alpr(0,2) = dot_product(polTerms, t_pol*(t_pol-1)) + dot_product(expTerms, t_exp*(t_exp-1)) &
-      + dot_product(expExpTerms, (t_expexp - 2*beta_expexp*tau*(tau-gam_expexp))**2 - t_expexp - 2*beta_expexp*tau**2 )
+    ! tau**2 * alpha_tautau
+    alpr(0,2) = dot_product(polTerms, t_pol*(t_pol-1)) + dot_product(expTerms, t_exp*(t_exp-1)) &
+         + dot_product(expExpTerms, (t_expexp - 2*beta_expexp*tau*(tau-gam_expexp))**2 - t_expexp - 2*beta_expexp*tau**2 )
 
- ! delta*tau*alpha_deltatau
- alpr(1,1) = dot_product(polTerms, d_pol*t_pol) + dot_product(expTerms, (d_exp - l_exp*deltaL)*t_exp ) &
-      + dot_product(expExpTerms, &
-      (d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))*(t_expexp - 2*beta_expexp*tau*(tau-gam_expexp)))
+    ! delta*tau*alpha_deltatau
+    alpr(1,1) = dot_product(polTerms, d_pol*t_pol) + dot_product(expTerms, (d_exp - l_exp*deltaL)*t_exp ) &
+         + dot_product(expExpTerms, &
+         (d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))*(t_expexp - 2*beta_expexp*tau*(tau-gam_expexp)))
 
-end subroutine alphaResDerivs_NORMAL_H2
+  end subroutine alphaResDerivs_NORMAL_H2
 
-function satDeltaEstimate_normal_h2 (this,tau,phase) result(deltaSat)
- use parameters, only: LIQPH, VAPPH
- class(meos_normal_h2) :: this
- real, intent(in) :: tau
- integer, intent(in) :: phase
- real :: deltaSat
+  function satDeltaEstimate_NORMAL_H2 (this,tau,phase) result(deltaSat)
+    use parameters, only: LIQPH, VAPPH, SINGLEPH
+    class(meos_normal_h2) :: this
+    real, intent(in) :: tau
+    integer, intent(in) :: phase
+    real :: deltaSat
 
- if ( phase == LIQPH .or. phase == 4) then
-   deltaSat = this%rhoLiq_triple/this%rc
- else if ( phase == VAPPH ) then
-   deltaSat = this%rhoVap_triple/this%rc
- else
-   call stoperror("satDeltaEstimate_normal_h2: only LIQPH and VAPPH allowed!")
- end if
+    if ( phase == LIQPH .or. phase == SINGLEPH) then
+       deltaSat = this%rhoLiq_triple/this%rc
+    else if ( phase == VAPPH ) then
+       deltaSat = this%rhoVap_triple/this%rc
+    else
+       call stoperror("satDeltaEstimate_ortho_h2: only LIQPH,VAPPH,SINGLEPH allowed!")
+    end if
 
-end function satDeltaEstimate_NORMAL_H2
+  end function satDeltaEstimate_NORMAL_H2
 
 end module multiparameter_NORMAL_H2

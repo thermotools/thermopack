@@ -1,11 +1,9 @@
-! Everything in this module is in SI units
-!
-! Definitions of adimensional variables:
-! delta = rho/rc
-! tau = tc/T
-! alpha0 = A^{ideal}/(nRT)
-! alphaRes = A^{res}/(nRT)
-! alpha = A/(nRT)
+!> Definitions of adimensional variables:
+!> delta = rho/rho_c
+!> tau = T_c/T
+!> alpha0 = A^{ideal}/(nRT)
+!> alphaRes = A^{res}/(nRT)
+!> alpha = A/(nRT)
 module multiparameter_base
   use numconstants, only: machine_prec
   use parameters, only: LIQPH, VAPPH
@@ -20,7 +18,8 @@ module multiparameter_base
 
   ! When a MEoS is used with Thermopack, Rgas_meos must have the same value as
   ! in Thermopack. When a MEoS is used on its own, one should set
-  ! Rgas_meos=meos%Rgas_fit.
+  ! Rgas_meos=meos%Rgas_fit. This is because different multiparameter EoS use
+  ! slightly different values of the gas constant.
   real :: Rgas_meos = Rgas_default
 
   !> Base class for multiparameter equations of state
@@ -33,7 +32,7 @@ module multiparameter_base
      real, public :: t_triple, p_triple, rhoLiq_triple, rhoVap_triple
      real, public :: molarMass !< (kg/mol)
      real, public :: maxT, maxP !< (K), (Pa)
-     real, public :: Rgas_fit ! Rgas used when fitting the equation (J/(mol*K))
+     real, public :: Rgas_fit ! Rgas used when the equation was fitted (J/(mol*K))
    contains
 
      ! Public methods
@@ -101,7 +100,7 @@ module multiparameter_base
 
 contains
 
-  ! Isochoric heat capacity
+  !> Isochoric heat capacity
   function cv (this,T,v)
     class(meos) :: this !< Calling class
     real, intent(in) :: T,v !< Temperature (K) and molar volume (m^3/mol)
@@ -121,7 +120,7 @@ contains
   end function cv
 
 
-  ! Isobaric heat capacity
+  !> Isobaric heat capacity
   function cp (this,T,v)
     class(meos) :: this !< Calling class
     real, intent(in) :: T,v !< Temperature (K) and molar volume (m^3/mol)
@@ -141,7 +140,7 @@ contains
 
   end function cp
 
-  ! Isobaric heat capacity
+  !> Speed of sound
   function speed_of_sound (this,T,v)
     class(meos) :: this !< Calling class
     real, intent(in) :: T,v !< Temperature (K) and molar volume (m^3/mol)
@@ -200,23 +199,23 @@ contains
     Z = p/(rho*Rgas_meos*T)
 
     if (present(Z_t) .or. present(Z_p)) then
-      call this%alphaResDerivs_Tv(t, v, alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
+       call this%alphaResDerivs_Tv(t, v, alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
 
-      dPdV = -Rgas_meos*T*(alpr_VV + 1/V**2)
+       dPdV = -Rgas_meos*T*(alpr_VV + 1/V**2)
     end if
 
     if (present(Z_t)) then
-      dPdT = P/T - Rgas_meos*T*alpr_TV
-      dVdT = -dPdT/dPdV
-      Z_t = -Z*(1.0/T - dVdT/V)
+       dPdT = P/T - Rgas_meos*T*alpr_TV
+       dVdT = -dPdT/dPdV
+       Z_t = -Z*(1.0/T - dVdT/V)
     end if
 
     if (present(Z_p)) then
-      Z_p = Z*(1.0/P + 1.0/(dPdV*V))
+       Z_p = Z*(1.0/P + 1.0/(dPdV*V))
     end if
 
     if (present(Z_n)) then
-      Z_n = 0.0
+       Z_n = 0.0
     end if
 
   end subroutine calc_zfac
@@ -309,13 +308,13 @@ contains
     if (res_loc) S = S + sumn*Rgas_meos*log(zfac)
 
     if (present(S_t)) then
-      S_t = dVdt*dPdt - sumn*Rgas_Meos*(2*alp_T + T*alp_TT)
-      if (res_loc) S_t = S_t - sumn*Rgas_meos/T
+       S_t = dVdt*dPdt - sumn*Rgas_Meos*(2*alp_T + T*alp_TT)
+       if (res_loc) S_t = S_t - sumn*Rgas_meos/T
     endif
 
     if (present(S_p)) then
-      S_p = -dVdT
-      if (res_loc) S_p = S_p + sumn*Rgas_Meos/P
+       S_p = -dVdT
+       if (res_loc) S_p = S_p + sumn*Rgas_Meos/P
     endif
 
     if (present(S_n)) then
@@ -363,16 +362,16 @@ contains
     if (res_loc) h = h-sumn*Rgas_meos*T
 
     if (present(h_t)) then
-      h_t = T*(dVdT*dPdT - sumn*Rgas_Meos*(2*alp_T + T*alp_TT + 1/T))
-      if (.not. res_loc) h_t = h_t + sumn*Rgas_meos
+       h_t = T*(dVdT*dPdT - sumn*Rgas_Meos*(2*alp_T + T*alp_TT + 1/T))
+       if (.not. res_loc) h_t = h_t + sumn*Rgas_meos
     endif
 
     if (present(h_p)) then
-      h_p = V-T*dVdt
+       h_p = V-T*dVdt
     endif
 
     if (present(h_n)) then
-      h_n(1) = h/sumn
+       h_n(1) = h/sumn
     endif
 
   end subroutine calc_enthalpy
@@ -508,13 +507,13 @@ contains
     tau = this%tc/T
 
     if (present(residual)) then
-      if (residual) then
-        alp0_deltaTau = 0.0
-      else
-        call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
-      end if
+       if (residual) then
+          alp0_deltaTau = 0.0
+       else
+          call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
+       end if
     else
-      call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
+       call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
     end if
     call this%alphaResDerivs_taudelta(delta, tau, alpr_deltaTau)
     alp_deltaTau = alpr_deltaTau + alp0_deltaTau
@@ -586,42 +585,42 @@ contains
 
     ! Newton iteration loop
     do while (.true.)
-      rhoOld = rho
-      pOld = p
-      dpdrhoOld = dpdrho
+       rhoOld = rho
+       pOld = p
+       dpdrhoOld = dpdrho
 
-      rho = rho - (p-p_spec)/dpdrho
-      if (rho<0) then
-        call switchPhase()
-      else
-        call this%mp_pressure(rho, T_spec, p, dpdrho)
-        if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
-             curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
+       rho = rho - (p-p_spec)/dpdrho
+       if (rho<0) then
           call switchPhase()
-          continue
-        end if
-      end if
-      iter = iter+1
-      converged = (abs(p_spec-pOld)<(releps_p*pOld+1e-6) .and. abs(rho-rhoOld)<releps_rho*rhoOld)
-      if ( converged ) then
-        exit
-      else if ( iter == maxiter ) then
-         if (.not. continueOnError) then
-            print *, "iter ", iter
-            print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
-            print *, "rho, rhoOld ", rho, rhoOld
-            print *, "p, pOld ", p, pOld
-            print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
-            print *, "currentPhase", currentPhase
-            print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
-            call stoperror("multiparameter_eos::densitySolver: iter == max_iter.")
-         end if
-      end if
-   end do
+       else
+          call this%mp_pressure(rho, T_spec, p, dpdrho)
+          if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
+               curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
+             call switchPhase()
+             continue
+          end if
+       end if
+       iter = iter+1
+       converged = (abs(p_spec-pOld)<(releps_p*pOld+1e-6) .and. abs(rho-rhoOld)<releps_rho*rhoOld)
+       if ( converged ) then
+          exit
+       else if ( iter == maxiter ) then
+          if (.not. continueOnError) then
+             print *, "iter ", iter
+             print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
+             print *, "rho, rhoOld ", rho, rhoOld
+             print *, "p, pOld ", p, pOld
+             print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
+             print *, "currentPhase", currentPhase
+             print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
+             call stoperror("multiparameter_eos::densitySolver: iter == max_iter.")
+          end if
+       end if
+    end do
 
-   if ( present(phase_found) ) then
-      phase_found = currentPhase
-   end if
+    if ( present(phase_found) ) then
+       phase_found = currentPhase
+    end if
 
   contains
 
@@ -630,42 +629,42 @@ contains
     !> to zero.
     subroutine switchPhase()
       if ( currentPhase == VAPPH ) then
-        currentPhase = LIQPH
+         currentPhase = LIQPH
       else
-        currentPhase = VAPPH
+         currentPhase = VAPPH
       end if
       nPhaseSwitches = nPhaseSwitches + 1
       call initializeSearch()
     end subroutine switchPhase
 
-    ! This routine computes initial rho and dpdrho, as well as setting parameters
-    ! for the stability test (pMin, dpdrhoMin, curvatureSign).
+    !> This routine computes initial rho and dpdrho, as well as setting parameters
+    !> for the stability test (pMin, dpdrhoMin, curvatureSign).
     subroutine initializeSearch ()
       real :: tau
       tau = this%tc/T_spec
       converged = .false.
 
       if ( t_spec > this%tc ) then ! Supercritical fluid. Start at ideal gas density.
-        curvatureSign = 0
-        rho = p_spec/(T_spec*Rgas_meos)
-        call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
+         curvatureSign = 0
+         rho = p_spec/(T_spec*Rgas_meos)
+         call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
 
       else if( currentPhase == VAPPH) then ! Subcritical vapor. Start at ideal gas density.
-        curvatureSign = -1
-        rho = p_spec/(T_spec*Rgas_meos)
-        call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
+         curvatureSign = -1
+         rho = p_spec/(T_spec*Rgas_meos)
+         call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
       else ! Subcritical liquid. Start at saturated liquid density, with five percent margin.
-        curvatureSign = 1
-        rho = (this%rc)*this%satDeltaEstimate(tau=tau, phase=currentPhase) * 1.01 ! changed to 1% Geir S (liquid molar density is in the range 12-15000)
-                                                                                  ! the p-rho-curve is quite vertical so 5% off the estimated liquid
-                                                                                  ! root seem a bit excessive
-        call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
+         curvatureSign = 1
+         rho = (this%rc)*this%satDeltaEstimate(tau=tau, phase=currentPhase) * 1.01 ! changed to 1% Geir S (liquid molar density is in the range 12-15000)
+         ! the p-rho-curve is quite vertical so 5% off the estimated liquid
+         ! root seem a bit excessive
+         call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
 
-        do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
-          rho = 2*rho
-          curvatureSign = 0
-          call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
-        end do
+         do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
+            rho = 2*rho
+            curvatureSign = 0
+            call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
+         end do
       end if
 
       ! Have we switched phases two times? Then we're back at the original phase.
@@ -673,23 +672,23 @@ contains
       ! unphysical. In this case, turn off all robustness measures, and just
       ! try to find a root.
       if ( nPhaseSwitches == 2 ) then
-        if ( t_spec > this%t_triple ) then
-           if (.not. continueOnError) then
-              print *, "T_spec, T_triple", t_spec, this%t_triple
-              call stoperror("multiparameter_eos::densitySolver failed at T < T_triple")
-           end if
-        end if
+         if ( t_spec > this%t_triple ) then
+            if (.not. continueOnError) then
+               print *, "T_spec, T_triple", t_spec, this%t_triple
+               call stoperror("multiparameter_eos::densitySolver failed at T < T_triple")
+            end if
+         end if
 
-        curvatureSign = 0
-        pMin = -1e100
-        dpdrhoMin = -1e100
+         curvatureSign = 0
+         pMin = -1e100
+         dpdrhoMin = -1e100
       end if
 
     end subroutine initializeSearch
 
   end subroutine densitySolver
 
-  !> Pressure and (optionally) its derivatives. SI units all the way.
+  !> Pressure and (optionally) its derivatives.
   subroutine mp_pressure (this, rho, T, p, p_rho, p_T)
     class(meos) :: this
     real, intent(in) :: rho, T
@@ -707,14 +706,12 @@ contains
     p = rho*Rgas_meos*T*(1+alpr(1,0))
 
     if ( present(p_rho) ) then
-      p_rho = Rgas_meos*T*(1 + 2*alpr(1,0) + alpr(2,0))
+       p_rho = Rgas_meos*T*(1 + 2*alpr(1,0) + alpr(2,0))
     end if
 
     if ( present(p_T) ) then
-      p_T = Rgas_meos*rho*(1 + alpr(1,0) - alpr(1,1))
+       p_T = Rgas_meos*rho*(1 + alpr(1,0) - alpr(1,1))
     end if
-
   end subroutine mp_pressure
-
 
 end module multiparameter_base
