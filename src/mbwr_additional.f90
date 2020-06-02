@@ -1,5 +1,5 @@
 MODULE tpmbwr_additional
-  USE tpconst, ONLY: KRGAS ! [KRGAS] = Pa*L/(mol*K)
+  USE tpconst, ONLY: Rgas ! [Rgas] = Pa*m^3/(mol*K)
 CONTAINS
 
   SUBROUTINE alphar_deltaCoef(opt,Tr,deltaCoef,model)
@@ -185,7 +185,7 @@ CONTAINS
     if (nRhoDerivs .ge. 2) deriv(2) = poly(2)*rho_2 + expo(2)*exponential
   end subroutine alphar_derivatives
 
-  !> Outputs volume in litres
+  !> Outputs volume in cubic meters
   real function mbwr_volume(T,P,nMoles,phase,model)
     use tpmbwr, only: eosmbwr, makeParam, MBWR_density
     implicit none
@@ -203,7 +203,6 @@ CONTAINS
     call makeParam(parameters=param,T=T,model=model,nTderivatives=0)
     rho = MBWR_density(t=T,p=P,phase_in=phase,param=param,model=model,phase_found_out=phase_found_out)
 
-    !rho = MBWR_stableDensity(T,P,model)
     mbwr_volume = nMoles/rho
   end function mbwr_volume
 
@@ -259,7 +258,7 @@ CONTAINS
     call alphar_derivatives(res,tr,delta,0,0,model)
     alphaDerivatives(0,0) = res(0)
     F_ = F(T,V,nMoles,alphaDerivatives)
-    Gres = KRGAS*T*F_ + P*V - nMoles*KRGAS*T*(1+log(P*V/(nMoles*KRGAS*T)))
+    Gres = Rgas*T*F_ + P*V - nMoles*Rgas*T*(1+log(P*V/(nMoles*Rgas*T)))
   end subroutine MBWR_Gres
   !***************************************************************
 
@@ -302,20 +301,20 @@ CONTAINS
     D2FDT2_ = D2FDT2(T,V,nMoles,alphaDerivatives)
 
     ! Necessary P-derivatives
-    DPDT_ = P/T-KRGAS*T*D2FDTDV_
-    DPDV_ = -KRGAS*(T*D2FDV2_ - nMoles*T/V**2)
-    DPDn_ = -KRGAS*(T*D2FDVDn_ + T/V)
+    DPDT_ = P/T-Rgas*T*D2FDTDV_
+    DPDV_ = -Rgas*(T*D2FDV2_ - nMoles*T/V**2)
+    DPDn_ = -Rgas*(T*D2FDVDn_ + T/V)
 
     ! Necessary V-derivatives
     DVDT_ = -DPDT_/DPDV_
     DVDn_ = -DPDn_/DPDV_
 
-    z = P*V/(nMoles*KRGAS*T)
+    z = P*V/(nMoles*Rgas*T)
     ! Sres and its derivatives
-    Sres = KRGAS*(- F_ - T*DFDT_ + nMoles*log(z))
-    if (present(dsresdt)) DSresDT = DVDT_*DPDT_ - KRGAS*(2*DFDT_ + T*D2FDT2_ + nMoles/T)
-    if (present(dsresdp)) DSresDP = nMoles*KRGAS/P - DVDT_
-    if (present(dsresdn)) DSresDn = DVDn_*DPDT_ - KRGAS*(DFDn_ + T*D2FDTDn_ + 1 - log(z))
+    Sres = Rgas*(- F_ - T*DFDT_ + nMoles*log(z))
+    if (present(dsresdt)) DSresDT = DVDT_*DPDT_ - Rgas*(2*DFDT_ + T*D2FDT2_ + nMoles/T)
+    if (present(dsresdp)) DSresDP = nMoles*Rgas/P - DVDT_
+    if (present(dsresdn)) DSresDn = DVDn_*DPDT_ - Rgas*(DFDn_ + T*D2FDTDn_ + 1 - log(z))
   end subroutine MBWR_Sres
   !***************************************************************
 
@@ -424,17 +423,17 @@ CONTAINS
     F_v = DFDV(T,V,nMoles,alphaDerivatives)
 
     if (present(p)) then
-      p = KRGAS*T*(nMoles/V-F_v)
+      p = Rgas*T*(nMoles/V-F_v)
     endif
     if (present(dpdv)) then
       F_vv = D2FDV2(T,V,nMoles,alphaDerivatives)
-      dpdv = -KRGAS*T*(nMoles/V**2+F_vv)
+      dpdv = -Rgas*T*(nMoles/V**2+F_vv)
     endif
     if (present(dpdt)) then
       call alphar_derivatives(res,tr,delta,1,1,model)
       alphaDerivatives(1,0:1) = res(0:1)
       F_Tv = D2FDTDV(T,V,nMoles,alphaDerivatives)
-      dpdt = KRGAS*(nMoles/V-F_v) - KRGAS*T*F_Tv
+      dpdt = Rgas*(nMoles/V-F_v) - Rgas*T*F_Tv
     endif
   end subroutine MBWR_press
   !***************************************************************
@@ -479,18 +478,18 @@ CONTAINS
     D2FDT2_ = D2FDT2(T,V,nMoles,alphaDerivatives)
 
     ! Necessary P-derivatives
-    DPDT_ = P/T-KRGAS*T*D2FDTDV_
-    DPDV_ = -KRGAS*T*(D2FDV2_ + nMoles/V**2)
-    DPDn_ = KRGAS*T*(-D2FDVDn_ + 1/V)
+    DPDT_ = P/T-Rgas*T*D2FDTDV_
+    DPDV_ = -Rgas*T*(D2FDV2_ + nMoles/V**2)
+    DPDn_ = Rgas*T*(-D2FDVDn_ + 1/V)
 
     ! Necessary V-derivatives
     DVDT_ = -DPDT_/DPDV_
     DVDn_ = -DPDn_/DPDV_
     ! Hres and its derivatives
-    Hres = -KRGAS*T*T*DFDT_+P*V-nMoles*KRGAS*T
-    if (present(dhresdt)) DHresDT = T*(DVDT_*DPDT_ - KRGAS*(2*DFDT_ + T*D2FDT2_ + nMoles/T))
+    Hres = -Rgas*T*T*DFDT_+P*V-nMoles*Rgas*T
+    if (present(dhresdt)) DHresDT = T*(DVDT_*DPDT_ - Rgas*(2*DFDT_ + T*D2FDT2_ + nMoles/T))
     if (present(dhresdp)) DHresDP = V-T*DVDT_
-    if (present(dhresdn)) DHresDn = T*(DVDn_*DPDT_ - KRGAS*(D2FDTDn_*T + 1))
+    if (present(dhresdn)) DHresDn = T*(DVDn_*DPDT_ - Rgas*(D2FDTDn_*T + 1))
   end subroutine MBWR_Hres
   !***************************************************************
 
@@ -525,15 +524,15 @@ CONTAINS
     D2FDV2_ = D2FDV2(T,V,nMoles,alphaDerivatives)
     D2FDTDV_ = D2FDTDV(T,V,nMoles,alphaDerivatives)
     D2FDVDn_ = D2FDVDn(T,V,nMoles,alphaDerivatives)
-    DPDV_ = -KRGAS*T*D2FDV2_ - nMoles*KRGAS*T/V**2
-    DPDT_ = P/T-KRGAS*T*D2FDTDV_
-    DPDn_ = -KRGAS*T*D2FDVDn_ + KRGAS*T/V
+    DPDV_ = -Rgas*T*D2FDV2_ - nMoles*Rgas*T/V**2
+    DPDT_ = P/T-Rgas*T*D2FDTDV_
+    DPDn_ = -Rgas*T*D2FDVDn_ + Rgas*T/V
 
     DVDT_ = -DPDT_/DPDV_
     DVDn_ = -DPDn_/DPDV_
 
     ! z and its derivatives
-    z = P*V/(nMoles*KRGAS*T)
+    z = P*V/(nMoles*Rgas*T)
     if (present(dzdt)) DzDT = -z*(1/T-DVDT_/V)
     if (present(dzdp)) DzDP = z*(1/P+1/(V*DPDV_))
     if (present(dzdn)) DzDn = -z*(1/nMoles - DVDn_/V)
@@ -575,16 +574,16 @@ CONTAINS
     D2FDTDn_ = D2FDTDn(T,V,nMoles,alphaDerivatives)
 
     ! necessary P-derivatives
-    DPDV_ = -KRGAS*T*D2FDV2_ - nMoles*KRGAS*T/V**2
-    DPDn_ = -KRGAS*T*D2FDVDn_ + KRGAS*T/V
-    DPDT_ = P/T-KRGAS*T*D2FDTDV_
+    DPDV_ = -Rgas*T*D2FDV2_ - nMoles*Rgas*T/V**2
+    DPDn_ = -Rgas*T*D2FDVDn_ + Rgas*T/V
+    DPDT_ = P/T-Rgas*T*D2FDTDV_
     ! necessary V-derivatives
     DVDn_ = -DPDn_/DPDV_
     ! lnphi and its derivatives
-    lnphi = alphaDerivatives(0,0) + delta*alphaDerivatives(0,1) - log(P*V/(nMoles*KRGAS*T))
-    if (present(dlnphidt)) DlnphiDT = D2FDTDn_ + (1 - DVDn_*DPDT_/KRGAS)/T
-    if (present(dlnphidp)) DlnphiDP = DVDn_/(KRGAS*T)-1/P
-    if (present(dlnphidn)) DlnphiDn = D2FDn2_ + 1/nMoles + DPDV_*(DVDn_**2)/(KRGAS*T)
+    lnphi = alphaDerivatives(0,0) + delta*alphaDerivatives(0,1) - log(P*V/(nMoles*Rgas*T))
+    if (present(dlnphidt)) DlnphiDT = D2FDTDn_ + (1 - DVDn_*DPDT_/Rgas)/T
+    if (present(dlnphidp)) DlnphiDP = DVDn_/(Rgas*T)-1/P
+    if (present(dlnphidn)) DlnphiDn = D2FDn2_ + 1/nMoles + DPDV_*(DVDn_**2)/(Rgas*T)
   end subroutine MBWR_lnphi
   !***************************************************************
 
@@ -701,9 +700,9 @@ CONTAINS
     D2FDTDn_ = D2FDTDn(T,V,nMoles,alphaDerivatives)
     D2FDT2_ = D2FDT2(T,V,nMoles,alphaDerivatives)
     ! necessary P-derivatives
-    DPDT_ = P/T-KRGAS*T*D2FDTDV_
-    DPDV_ = -KRGAS*T*D2FDV2_ - nMoles*KRGAS*T/V**2
-    DPDn_ = -KRGAS*T*D2FDVDn_ + KRGAS*T/V
+    DPDT_ = P/T-Rgas*T*D2FDTDV_
+    DPDV_ = -Rgas*T*D2FDV2_ - nMoles*Rgas*T/V**2
+    DPDn_ = -Rgas*T*D2FDVDn_ + Rgas*T/V
     ! necessary V-derivatives
     DVDn_ = -DPDn_/DPDV_
     DVDT_ = -DPDT_/DPDV_
@@ -715,7 +714,7 @@ CONTAINS
     call MBWR_Gres(model,T, P, V, nMoles, Gres)
 
     ! Testing the relation between P and alpha
-    eps1 = abs(P + KRGAS*T*DFDV_ - nMoles*KRGAS*T/V)
+    eps1 = abs(P + Rgas*T*DFDV_ - nMoles*Rgas*T/V)
 
     ! Testing derivatives of F
     eps2 = abs(nMoles*alphaDerivatives(0,0) - V*DFDV_ - nMoles*DFDn_)
@@ -725,10 +724,10 @@ CONTAINS
     ! Testing derivatives of the fugacity coefficients
     eps5 = abs(DlnphiDn(1,1))
     eps6 = abs(DlnphiDP(1) - (z-1)/P)
-    eps7 = abs(nMoles*DlnphiDT(1) + Hres/(KRGAS*T**2))
+    eps7 = abs(nMoles*DlnphiDT(1) + Hres/(Rgas*T**2))
 
     eps8 = abs(Sres-(Hres-Gres)/T)
-    eps9 = abs(DSresDn(1)-(DHresDn(1)-KRGAS*T*lnphi(1))/T)
+    eps9 = abs(DSresDn(1)-(DHresDn(1)-Rgas*T*lnphi(1))/T)
 
    print *, "MODEL CONSISTENCY (these should be zero):"
    print *, eps1

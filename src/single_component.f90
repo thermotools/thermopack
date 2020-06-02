@@ -108,11 +108,6 @@ contains
         if(present(dhdp)) dhdp_id = dhdp + dhdp_id
         if(present(dhdz)) dhdz_id = dhdz + dhdz_id
       endif
-       ! Convert units
-       enthalpy = enthalpy*1.0e-3
-       if (present(dhdt)) dhdt = dhdt * 1.0e-3
-       if (present(dhdp)) dhdp = dhdp * 1.0e-3
-       if (present(dhdz)) dhdz = dhdz * 1.0e-3
      case (meosNist)
       call cbeos%nist(1)%meos%calc_enthalpy(t, p, Z, phase, enthalpy, &
            dhdt, dhdp, dhdz, residual=residual)
@@ -127,10 +122,10 @@ contains
   !! \param Z The overall mole fraction [-]
   !! \param phase The phase, 1=liquid, 2=vapour
   !! \param residual Return only the residual part if .true.
-  !! \param entropy The entropy [J/kmole K]
-  !! \param dsdt Temperature derivative [J/moleK]
-  !! \param dsdp Pressure derivative [J/molePa]
-  !! \param dsdz Composition derivative [J/mole^2]
+  !! \param entropy The entropy [J/mol K]
+  !! \param dsdt Temperature derivative [J/mol K]
+  !! \param dsdp Pressure derivative [J/mol Pa]
+  !! \param dsdz Composition derivative [J/mol^2]
   !!
   !! \author MH
   subroutine entropy_single(nc,comp,cbeos,T,P,Z,phase,residual,&
@@ -172,11 +167,6 @@ contains
         if(present(dsdp)) dsdp_id = dsdp + dsdp_id
         if(present(dsdz)) dsdz_id = dsdz + dsdz_id
       endif
-      ! Convert units
-      entropy = entropy*1.0e-3
-      if (present(dsdt)) dsdt = dsdt * 1.0e-3
-      if (present(dsdp)) dsdp = dsdp * 1.0e-3
-      if (present(dsdz)) dsdz = dsdz * 1.0e-3
     case (meosNist)
       call cbeos%nist(1)%meos%calc_entropy(t, p, Z, phase, entropy, &
            dsdt, dsdp, dsdz, residual=residual)
@@ -193,7 +183,7 @@ contains
   !! \param phase The phase, 1=liquid, 2=vapour
   !! \param dlnfdt Temperature derivative [1/K] (dlog(f)/dT)
   !! \param dlnfdp Pressure derivative [1/Pa]   (dlog(f)/dP)
-  !! \param dlnfdz Composition derivative [1/kmole] (dlog(f)/dNi)
+  !! \param dlnfdz Composition derivative [1/mol] (dlog(f)/dNi)
   !! \param numder Analytical derivatives if true (default false)
   !! \param lnfug The fugacity coefficients [-]
   !!
@@ -256,9 +246,8 @@ contains
     case (meosMbwr19, meosMbwr32)
       v = mbwr_volume (t,p,Z(1),phase,cbeos%mbwr_meos(1))
       call MBWR_Gres(cbeos%mbwr_meos(1), t, p, v, Z(1), gr)
-      gr = gr*1.0e-3
-      if (present(dgrdt)) dgrdt = dgrdt*1.0e-3
-      if (present(dgrdp)) dgrdp = dgrdp*1.0e-3
+      if (present(dgrdt)) call stoperror("dgrdt not implemented in MBWR_Gres")
+      if (present(dgrdp)) call stoperror("dgrdp not implemented in MBWR_Gres")
     case (meosNist)
       call cbeos%nist(1)%meos%calc_resgibbs(t, p, Z, phase, gr, dgrdt, dgrdp)
     end select Choice_EoS
@@ -287,8 +276,7 @@ contains
     !-------- Specific for each equation of state ------------------------
     Choice_EoS: select case (cbeos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
-      call MBWR_press(cbeos%mbwr_meos(1), T, v*1.0e3, sum(n), p, dpdv, dpdt)
-      if (present(dpdv)) dpdv=dpdv*1.0e3
+      call MBWR_press(cbeos%mbwr_meos(1), T, v, sum(n), p, dpdv, dpdt)
     case (meosNist)
       call cbeos%nist(1)%meos%mp_pressure(rho=rho,t=T,p=p,p_rho=dpdv,p_T=dpdt)
       if (present(dpdv)) then
@@ -302,7 +290,7 @@ contains
 
   !> Calculate resudial reduced Helmholtz and differentials
   !!
-  !! \param T - Temprature [K]
+  !! \param T - Temperature [K]
   !! \param v - Specific volume [m3/mol]
   !! \param n - Mole numbers [mol]
   subroutine Fres_single(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
@@ -346,12 +334,9 @@ contains
     !-------- Specific for each equation of state ------------------------
     Choice_EoS: select case (cbeos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
-      call MBWR_Fres(cbeos%mbwr_meos(1), T, V*1.0e3, n(1), F, &
+      call MBWR_Fres(cbeos%mbwr_meos(1), T, V, n(1), F, &
            F_T, F_v, F_TT, F_Tv, F_vv, F_n_p, F_Tn_p, F_vn_p, F_nn_p)
-      if (present(F_V)) F_V = F_V*1.0e3
-      if (present(F_TV)) F_TV = F_TV*1.0e3
-      if (present(F_VV)) F_VV = F_VV*1.0e6
-      if (present(F_Vn)) F_Vn = F_Vn_l*1.0e3
+      if (present(F_Vn)) F_Vn = F_Vn_l
       if (present(F_n)) F_n = F_n_l
       if (present(F_nn)) F_nn = F_nn_l
       if (present(F_Tn)) F_Tn = F_Tn_l

@@ -1,6 +1,6 @@
 !> MBWR module
 module tpmbwr
-  use tpconst, only: KRGAS ! [KRGAS] has units Pa*L/(mol*K) = 1e-3 J/(mol*K)
+  use tpconst, only: Rgas ! [Rgas] has units Pa*m^3/(mol*K) = J/(mol*K)
   use parameters, only: VAPPH, LIQPH
   implicit none
   save
@@ -192,7 +192,7 @@ contains
         pc_mbwr = compdb(compDbIdx)%pc
         tc_mbwr = compdb(compDbIdx)%tc
         model%zc = compdb(compDbIdx)%zc
-        rc_mbwr = pc_mbwr/(KRGAS*model%zc*tc_mbwr)
+        rc_mbwr = pc_mbwr/(Rgas*model%zc*tc_mbwr)
         call MBWR_criticalParameters(tc_mbwr,pc_mbwr,rc_mbwr,model)
       end if
     elseif (nineteenOr32 .eq. 32) then
@@ -206,7 +206,7 @@ contains
         pc_mbwr = compdb(compDbIdx)%pc
         tc_mbwr = compdb(compDbIdx)%tc
         model%zc = compdb(compDbIdx)%zc
-        rc_mbwr = pc_mbwr/(KRGAS*model%zc*tc_mbwr)
+        rc_mbwr = pc_mbwr/(Rgas*model%zc*tc_mbwr)
         call MBWR_criticalParameters(tc_mbwr,pc_mbwr,rc_mbwr,model)
       end if
     end if
@@ -214,7 +214,7 @@ contains
     model%pc = pc_mbwr
     model%tc = tc_mbwr
     model%rc = rc_mbwr
-    model%zc = pc_mbwr/(rc_mbwr*KRGAS*tc_mbwr)
+    model%zc = pc_mbwr/(rc_mbwr*Rgas*tc_mbwr)
 
 
     ! get triple point properties (if they are stored)
@@ -226,9 +226,9 @@ contains
 
 
     ! precalculate some constants in the SRK initial density finder
-    b_SRK = 0.08664*KRGAS*model%tc/model%pc
+    b_SRK = 0.08664*Rgas*model%tc/model%pc
     m_SRK = 0.480+1.547*model%acf-0.176*(model%acf)**2
-    a0_SRK = 0.42747*(KRGAS*model%tc)**2/model%pc
+    a0_SRK = 0.42747*(Rgas*model%tc)**2/model%pc
   end subroutine readDbParameters
 
   ! This function encodes the order of the parameters in the data module tpmbwrdata.
@@ -313,21 +313,6 @@ contains
     if (EqNo .eq. 32) then
       CALL allocNIJL(model%ZCoeff_redrhoInvredT,EqNo)
       DO r=1,EqNo
-        nn = model%PCoeff_rhoT%N(r)
-        ii = model%PCoeff_rhoT%I(r)
-        jj = -model%PCoeff_rhoT%J(r)  ! This algorithm works with inverse reduced temperatures
-        ll = model%PCoeff_rhoT%L(r)
-        CALL NIJLassign(                          &
-             model%ZCoeff_redrhoInvredT,          &
-             r,                                   &
-             nn/KRGAS,                            &
-             ii-1,                                &
-             jj+1,                                &
-             ll)
-      END DO
-    else
-      CALL allocNIJL(model%ZCoeff_redrhoInvredT,EqNo)
-      DO r=1,EqNo
         nn = model%PCoeff_rhoT%N(r)*1.0e3 ! Needed to get the right units
         ii = model%PCoeff_rhoT%I(r)
         jj = -model%PCoeff_rhoT%J(r)  ! This algorithm works with inverse reduced temperatures
@@ -335,7 +320,22 @@ contains
         CALL NIJLassign(                          &
              model%ZCoeff_redrhoInvredT,          &
              r,                                   &
-             nn/KRGAS,                            &
+             nn/Rgas,                            &
+             ii-1,                                &
+             jj+1,                                &
+             ll)
+      END DO
+    else
+      CALL allocNIJL(model%ZCoeff_redrhoInvredT,EqNo)
+      DO r=1,EqNo
+        nn = model%PCoeff_rhoT%N(r)
+        ii = model%PCoeff_rhoT%I(r)
+        jj = -model%PCoeff_rhoT%J(r)  ! This algorithm works with inverse reduced temperatures
+        ll = model%PCoeff_rhoT%L(r)
+        CALL NIJLassign(                          &
+             model%ZCoeff_redrhoInvredT,          &
+             r,                                   &
+             nn/Rgas,                            &
              ii-1,                                &
              jj+1,                                &
              ll)
@@ -544,11 +544,9 @@ contains
   end subroutine computeHelmCoeff
 
 
-  ! Adapted version from the TPlib library.
   !  ********************************************************************
   !  *  Temperature dependent constants and their derivatives for the
-  !  *  MBWR equations. Units T [K] P [Pa] rho [mole/dm**3]
-  !  *  Total number of constants = 33
+  !  *  MBWR equations. Units: T [K] P [Pa] rho [mol/m^3]
   !  * ------------------------------------------------------------------
   !  *
   !  * I  nTderivatives:  Flag for calculation
@@ -556,8 +554,6 @@ contains
   !  *               2 : First derivative of constants w.r.t. temperature
   !  *               3 : Second derivative of constants w.r.t. temperature
   !  * I  T        : Temperature         ( K )
-  !  * O  BP       : Temperature dependent constants in polynomial part
-  !  * O  BE       : Temperature dependent constants in exponential part
   !  ********************************************************************
   subroutine MBWR_coef(nTderivatives,T,rhoCoef,model)
     implicit none
@@ -577,7 +573,7 @@ contains
     if (model%EqNo .eq. 19) then ! MBWR-19. Has been double-checked.
       c = model%PCoeff_rhoT%N
       if (nTderivatives == 1) then
-        rhoCoef(1) =  KRGAS*T ! BP(1)
+        rhoCoef(1) =  Rgas*T ! BP(1)
         rhoCoef(2) =  c(1)*T - c(2) - c(3)/T - c(4)/T2 - c(5)/T3  ! This is correct. See e.g. the phd thesis by Axel Polt (1987).
         rhoCoef(3) =  c(6)*T + c(7) + c(8)/T ! BP(3)
         rhoCoef(4) =  c(9)*T + c(10) ! BP(4)
@@ -586,7 +582,7 @@ contains
         rhoCoef(7) =  (c(14) + c(15)/T + c(16)/T2)/T2 ! BE(1)
         rhoCoef(8) =  (c(17) + c(18)/T + c(19)/T2)/T2 ! BE(2)
       else if (nTderivatives == 2) then ! First derivative wrt temperature
-        rhoCoef(1) =  KRGAS !BP(1)
+        rhoCoef(1) =  Rgas !BP(1)
         rhoCoef(2) =  c(1) + c(3)/T2 + 2.0*c(4)/T3 + 3.0*c(5)/T4 !BP(2)
         rhoCoef(3) =  c(6) - c(8)/T2 !BP(3)
         rhoCoef(4) =  c(9) !BP(4)
@@ -609,7 +605,7 @@ contains
     else if (model%EqNo .eq. 32) then ! MBWR-32
       c = model%PCoeff_rhoT%N
       if (nTderivatives == 1) then
-        rhoCoef(1) = KRGAS*T ! BP(1)
+        rhoCoef(1) = Rgas*T ! BP(1)
         rhoCoef(2) = c(1)*T + c(2)*SQRT(T) + c(3) + c(4)/T + c(5)/T2 ! BP(2)
         rhoCoef(3) = c(6)*T + c(7) + c(8)/T + c(9)/T2 ! BP(3)
         rhoCoef(4) = c(10)*T + c(11) + c(12)/T !    BP(4)
@@ -625,7 +621,7 @@ contains
         rhoCoef(14) = (c(28) + c(29)/T)/T2 !    BE(5)
         rhoCoef(15) = (c(30) + c(31)/T + c(32)/T2)/T2 !    BE(6)
       else if (nTderivatives == 2) then ! First derivative wrt temperature
-        rhoCoef(1) =  KRGAS ! BP(1)
+        rhoCoef(1) =  Rgas ! BP(1)
         rhoCoef(2) =  c(1) + 0.5*c(2)/SQRT(T) - c(4)/T2 - 2.0*c(5)/T3 !    BP(2)
         rhoCoef(3) =  c(6) - c(8)/T2 - 2.0*c(9)/T3 !    BP(3)
         rhoCoef(4) =  c(10) - c(12)/T2 !    BP(4)
@@ -902,7 +898,7 @@ contains
     rho_inout = rho_new
   end subroutine newton_density
 
-  !> Interface to the density solver. Outputs density [mol/L].
+  !> Interface to the density solver. Outputs density [mol/m^3].
   function MBWR_density(t,p,phase_in,param,model,phase_found_out,meta_extrem) result(MBWR_dens)
     use numconstants, only: machine_prec
     implicit none
@@ -915,7 +911,7 @@ contains
     logical, intent(in), optional :: meta_extrem
     ! OUTPUT VARIABLES
     integer, intent(out) :: phase_found_out
-    real :: MBWR_dens
+    real :: MBWR_dens ! [mol/m^3]
     ! LOCAL VARIABLES
     real, parameter :: rho_releps = 5000*machine_prec, p_releps = 1.0e-6
     real :: initialVaporDensity !< A lower bound for vapor density
@@ -987,363 +983,7 @@ contains
     phase_found_out = 1
     rho_init = LiquidDensitySRKGuess(T,p+1e5,model)*InitialLiquidDensityScaleFactor*0.8 ! better success with less scaling and a higher pressure?
     MBWR_dens = barenewton(MBWR_pressure,param,P,rho_init,rho_releps,p_releps)
-
-    ! ! fallback routine 2: the tplib solver
-    if (MBWR_dens < 0) then
-      if (verbose) then
-        print *, "USING FALLBACK DENSITY SOLVER 2"
-      endif
-      MBWR_dens = MBWR_density_tplib(t,p,phase_in,param(2:),model)
-      phase_found_out = phase_in
-    end if
   end function MBWR_density
-
-  !> A reimplementation of the tplib-solver, where SRK is used to find the initial guess.
-  real function MBWR_density_tplib(t,p,phase,rhoCoef,model)
-    implicit none
-    type(eosmbwr), intent(in) :: model
-    real, intent(in) :: T, p
-    integer, intent(in) :: phase
-    real, dimension(*), intent(in) :: rhoCoef
-    real, parameter :: InitialLiquidDensityScaleFactor = 1.4
-    ! the variables peculiar to the tplib routine
-    LOGICAL newiter,newred,GUNDEXT(2)
-    real  d,pres(3),dps,dp,dd,sq,pdiv,sign,ds
-    real  ff,frt,gr(2),d0(2),dr(2),zr(2),tr,dc!,zra,scale
-    integer i,niter,nred,rot,sr(2)
-
-    real MB_Deps, MB_Peps
-    PARAMETER ( MB_Deps = 1.0e-8, MB_Peps = 1.0e-2 )
-
-    integer GUNDER,extrm(2)!,nextrm(2) ! In tplib these are defined in flag_inc.f
-
-    real, dimension(1+model%bplen+model%belen) :: param
-
-    GUNDER = 1   ! ORDINARY SOLUTION
-    !GUNDER = 2   ! ALLOW EXTREMAS ACCORDING TO GUNDERSEN 1980
-    !GUNDER = 3   ! SELECT ROOT GIVING LEAST GIBBS FREE ENERGY
-
-    !initialize param
-    param(1) = model%gamma
-    do i = 2,size(param)
-      param(i) = rhoCoef(i-1)
-    end do
-
-    extrm(phase) = 0
-    DO ROT=1,2
-      GUNDEXT(ROT)=.FALSE.
-    end DO
-
-    ! This replaces line 52 to 95 in the old routine
-    D0(1) = LiquidDensitySRKGuess(t,p,model)*InitialLiquidDensityScaleFactor
-    D0(2) = 2.5e-04
-    D = D0(phase)
-
-    dc = model%rc
-    tr = t/model%tc
-    call MBWR_pressure(D0(1), param, pres(1), pres(2), pres(3))
-    !    CALL MBWR_pressure(pres,3,D0(1),param)
-    dp = p-pres(1)
-
-    ! iteration
-    NEWITER = .true.
-    NITER = 0
-    ROT = 0
-    do while ( NEWITER )
-
-      NITER = NITER + 1
-      !     Save old values
-      DPS = DP
-      DS = D
-
-      !     New iteration step
-      SQ  = (PRES(2)/PRES(3))**2 + 2.0*DP/PRES(3)
-      PDIV = -PRES(2)/PRES(3)
-      SIGN = 1.0
-      IF ( PDIV .GT. 0.0 ) SIGN = -1.0
-      IF ( SQ .LT. 0.0 ) SQ = 0.0
-      DD = PDIV + SIGN*SQRT(SQ)
-      !     Include a step reduction, because the solution algoritme is not
-      !     good enough around the critical point. It sometime take to long
-      !     density steps when the isotherms is almost horisontale.
-      !        *** odjifk ***
-      IF(DD.GT.2.0)THEN
-        DD=2.0
-      ENDIF
-      D = D + DD
-      !     Prepare for step reduction if DP not converging
-      NEWRED = .true.
-      NRED = 0
-      do while ( NEWRED )
-        NRED = NRED + 1
-        call MBWR_pressure(d, param, pres(1), pres(2), pres(3))
-        !CALL MBWR_Pressure( pres,3,d,param )
-
-        DP = P - PRES(1)
-        !     Convergence and not improved solution.
-        !     Numerical unstability in DD
-        if ( ABS(DD) .LE. MB_Deps ) NEWRED = .false.
-        !     Perform step reduction if loop not converging, DP > DPS
-        !     Perform step reduction if loop is overshooting extremal point,
-        !     DP/DD < 0.0. Overstepp in solution if DP/DPS < -1.0. Change
-        !     direction if DP/DPS > 1.0
-        if ( NEWRED ) then
-          if ( ABS(dp) .LE. ABS(dps) ) then
-            !     $              (pres(2) .gt. 0.0d0) ) then
-            NEWRED = .FALSE.
-          else
-            if  ( (1.0d0 - DP/DPS) .LE. MB_Peps ) then
-              DD = DD/2.0
-            else if ( (DP/DPS - 1.0d0) .GE. MB_Peps ) then
-              DD = -DD
-            else
-              NEWRED = .FALSE.
-            endif
-            D = DS + DD
-          endif
-        endif
-        !     Too many step reductions
-        if ( NRED .GT. 20 ) then
-          !ailoa               CALL TP_Error( 4,'MB_SolveMBWR',
-          !ailoa     $              'Maximum number of step reductions' )
-          NEWRED = .false.
-          NEWITER = .false.
-        endif
-        !     Update gradient date after reduction before convergence check
-        call MBWR_pressure(d, param, pres(1), pres(2), pres(3))
-        !CALL MBWR_pressure( pres,3,d,param )
-      end do
-      !ailoa Printout of solution before check
-!!!write(*,*) "printout of solution before check:", d
-
-
-      !     Check for convergence in solution.  dd < ebs
-      !     label 5000 - Normal return from iteration with root
-      !     label 3000 - Try to find root from the other side
-      !
-      if ( ABS(DD) .LE. MB_Deps ) then
-        NEWITER = .false.
-        ROT = ROT + 1
-        DR(ROT) = D
-        !
-        !     Converging with negative density.
-        if ( D .LT. 0.0 ) then
-          !ailoa             IF (TP_PrC .GE. 2) THEN
-          !ailoa                WRITE(TP_log,'(1X,''Density is negative'')')
-          !ailoa             END IF
-!!!print *, "Density is negative"
-          SR(ROT) = -1
-          if ( rot .lt. 2 ) then
-            GOTO 3000
-          else
-            GOTO 5000
-          endif
-        endif
-
-        !     Converging with L-point ( dP/dD = 0.0 ). Set new starting value
-        !     and try from other side if GUNDER = 1 or 3.  Return L-point if
-        !     GUNDER = 2
-        if ( ABS(pres(2)) .LT. MB_Peps ) then
-          !IF (TP_PrC .GE. 3) THEN
-          !WRITE(TP_log,'(1X,''Converging to extremal-point'')')
-          !END IF
-!!!write(*,*) "Converging to extremal point" !ailoa
-          SR(ROT) = 1
-          if ( GUNDER .EQ. 3 ) then
-            gundext(rot)=.TRUE.
-          endif
-          if ( GUNDER .EQ. 2 ) then
-            extrm(phase) = 1
-            GOTO 5000
-          else
-            if ( ROT .lt. 2 ) then
-              GOTO 3000
-            else
-              GOTO 5000
-            endif
-          endif
-        endif
-
-        !     Converging with false solution. Set new starting value and try
-        !     from other side.
-        if ( ABS(DP/P) .GT. MB_Peps ) then
-          !IF (TP_PrC .GE. 3) THEN
-          !   WRITE(TP_log,195)
-          !195             FORMAT(1X,
-          !   $                'Converging with false solution')
-          !END IF
-!!!print *, "converging with false solution"
-          SR(ROT) = 4
-          if ( ROT .lt. 2 ) then
-            GOTO 3000
-          else
-            GOTO 5000
-          endif
-        endif
-
-
-        !     Search for liquid root and found vapour root
-        if ( (phase .eq. 1) .and. (pres(3) .LT. 0.0) ) then
-          !               IF (TP_PrC .GE. 3) THEN
-          !                  WRITE(TP_log,196)
-          ! 196              FORMAT(1X,'Search for liquid root ',
-          !     $                 ' and found vapour root')
-          !               END IF
-!!!print *, "search for liquid root and found vapor root"
-          SR(ROT) = 3
-          if ( (GUNDER .eq. 3) .and. (ROT .lt. 2) ) then
-            GOTO 3000
-          else
-            GOTO 5000
-          endif
-        endif
-
-
-        !     Search for vapour root and found liquid root.
-        IF ( (phase .EQ. 2) .AND. (pres(3) .GT. 0.0) ) THEN
-          !IF (TP_PrC .GE. 3) THEN
-          !WRITE(TP_log,197)
-          ! 197              FORMAT(1X,'Search for vapour root ',
-          !    $                 ' and found liquid root')
-          !               END IF
-!!!print *, "search for vapor root and found liquid root"
-          SR(ROT) = 2
-          if ( (GUNDER .eq. 3) .and. (ROT .eq. 1) ) then
-            GOTO 3000
-          else
-            GOTO 5000
-          endif
-        ENDIF
-
-        !     No special cases. Return from the routine with the result
-        GOTO 5000
-
-        !     Label for new search from the other side
-3000    CONTINUE
-        !            IF (TP_PrC .GE. 3) THEN
-        !               WRITE(TP_log,198)
-        ! 198           FORMAT(1X,
-        !     $             'Starting to look for root from the other side')
-        !            END IF
-!!!print *, "starting to look for root from the other side"
-        NEWITER = .true.
-        if ( phase .EQ. 1 ) then
-          D = D0(2)
-        else
-          D = D0(1)
-        endif
-        call MBWR_pressure(d, param, pres(1), pres(2), pres(3))
-        !CALL MBWR_Pressure( pres,3,d,param )
-
-        DP = P - PRES(1)
-        !            *** ODJIFK ***
-        !            IF(ABS(DP).LT.0.0001)THEN
-        !               DP=0.0001
-        !            ENDIF
-      ENDIF
-      !     End of the convergence checking. Perform new iteration with OK
-      !     values. Maximum number of iterations
-      if ( NITER .GT. 50 ) then
-        !ailoa            CALL TP_Error( 4,'MB_SolveMBWR',
-        !ailoa     $           'Maximum number of iterations' )
-        NEWRED = .false.
-        NEWITER = .false.
-      endif
-    enddo
-
-    !     Return from iteration
-5000 CONTINUE
-    if ( GUNDER .eq. 3 ) then
-      !         IF (TP_PrC .GE. 3) THEN
-      !            WRITE(TP_log,'(1X,''DR(1)='',D15.9,3X,''DR(2)='',D15.9)')
-      !     $           DR(1),DR(2)
-      !         END IF
-      DO i=1,2
-        if ( SR(i) .lt. 0 ) then
-          !               CALL TP_Error( 3,'MB_SolveMBWR',
-          !     $              'Converging with negative solution. GUNDER = 3' )
-          gr(i) = 1.0e+30
-        else
-          zr(i) = pres(1)/KRGAS/t/dr(i)
-          frt = MB_frt( dr(i),rhoCoef,model )
-          ff = frt/KRGAS/t
-          gr(i) = KRGAS * t * ( ff - log(zr(i)) + zr(i) - 1.0)
-        endif
-      end do
-      if ( gr(1) .lt. gr(2) ) then
-        MBWR_density_tplib = DR(1)
-      else
-        MBWR_density_tplib = DR(2)
-      endif
-      !     Gjor helomvending hvis en av punktene er ekstremalverdier, for
-      !     da har man jo bare en rot.
-      if(gundext(1))then
-        !            WRITE(TP_log,'(1X,''Rot en er ekstremalpunkt'')')
-        MBWR_density_tplib=DR(2)
-      endif
-      if(gundext(2))then
-        !            WRITE(TP_log,'(1X,''Rot to er ekstremalpunkt'')')
-        MBWR_density_tplib=DR(1)
-      endif
-      !goto 500
-      !ailoa: 500 is just the printout of the solution
-    endif
-
-
-    MBWR_density_tplib = D
-  end function MBWR_density_tplib
-
-  real function MB_frt( d,rhoCoef,model )
-
-    real, dimension(*), intent(in) :: rhoCoef
-    type(eosmbwr),intent(in) :: model
-    real  d,gamma
-    real, dimension(9) :: bp, be !ailoa
-    integer ::  bplen, belen
-    !  ********************************************************************
-    !  *  Callculate the Michelsen -F*R*T- function from a general MBWR
-    !  *  EOS
-    !  * ------------------------------------------------------------------
-    !  *
-    !  * I   D      : Density
-    !  * I   GAMMA  : Constants in the exponential function
-    !  * I   BP     : Temperature dependent constants in polynomial part
-    !  * I   BE     : Temperature dependent constants in exponential part
-    !  * I   OP     : Size of array BP.
-    !  * I   OE     : Size of array BE.
-    !  * I   MAXPAR : Maximum array size.
-    !  ********************************************************************
-
-    real  POLY,EXPO,DS,EL,TERM
-    integer I
-    gamma = model%gamma
-    POLY = 0.0
-    DS = D*D
-    EL = EXP(-GAMMA*DS)
-
-    if (model%EqNo .eq. 32) then
-      bplen = bplen32; belen = belen32
-      bp(1:bplen) = rhoCoef(2:bplen32)
-      be(1:belen) = rhoCoef(bplen32+1:bplen+belen)
-    elseif (model%EqNo .eq. 19) then
-      bplen = bplen19; belen = belen19
-      bp(1:bplen) = rhoCoef(2:bplen19)
-      be(1:belen) = rhoCoef(bplen19+1:bplen+belen)
-    end if
-
-    do I=2,bplen
-      POLY = POLY + BP(I)*D**(I-1)/(I-1)
-    end do
-
-    TERM = -(BE(1)/(2*GAMMA))*(EL-1.0)
-    EXPO = TERM
-    DO I=2,belen
-      TERM = -(BE(I)/(2*GAMMA))*(EL*D**(2*I-2) -  ((2*I-2)/BE(I-1))*TERM)
-      EXPO = EXPO + TERM
-    end do
-    MB_frt = POLY + EXPO
-
-  end FUNCTION MB_frt
 
   ! Initial value finder for the density solver.
   ! This function operates on subcritical temperatures.
@@ -1356,21 +996,21 @@ contains
     ! the ideal gas equation is a good approximation for supercritical temperatures
     redt = T/model%tc
     if (redt > 1.05) then ! at far supercritical temperatures, the ideal gas equation is accurate enough
-      rho = P/(KRGAS*T)
+      rho = P/(Rgas*T)
       return
     end if
 
     redp = P/model%pc
     if (redt > 0.95 .and. redp > 0.95 .and. redt < 1.01 .and. redp < 1.05) then ! special considerations near the critical point
-      rho = model%rc*1.5 ! this is a particularly challenging region, so scale up the critical density. (It is scaled further in MBWR_density
+      rho = model%rc*1.5 ! this is a particularly challenging region, so scale up the critical density. (It is scaled further in MBWR_density)
       return
     end if
 
     ! For subcritical temperatures, use the SRK equation.
     ! First calculate some characteristic SRK-parameters:
     a = a0_SRK*( 1+m_SRK*(1-sqrt(redt)) )**2
-    bigA = a*p/(KRGAS*T)**2
-    bigB = b_SRK*p/(KRGAS*T)
+    bigA = a*p/(Rgas*T)**2
+    bigB = b_SRK*p/(Rgas*T)
 
     ! Solve SRK for translated compressibility y = z-1/3
     r = (bigA-bigB-bigB**2)-1.e0/3.e0
@@ -1398,7 +1038,7 @@ contains
       y3 = cos((phi+4*PI)/3)
       Y = 2*(theta)**(1.e0/3.e0)*min(y1,y2,y3)
     end if
-    rho = P/(KRGAS*T*(Y+1.e0/3.e0))
+    rho = P/(Rgas*T*(Y+1.e0/3.e0))
 
 666 if ( rho .le. 1.e-14 .or. rho .gt. 1e+6) then
       ! Something went wrong. Use ideal gas equation instead.
@@ -1408,9 +1048,9 @@ contains
         print *, "Breakdown of IVF"
         print *, "T,P :", T, P
         print *, "rho computed to = ",rho
-        print *, "Using ideal gas estimate", P/(KRGAS*T),"instead"
+        print *, "Using ideal gas estimate", P/(Rgas*T),"instead"
       end if
-      rho = P/(KRGAS*T)
+      rho = P/(Rgas*T)
     end if
   end function LiquidDensitySRKGuess
 
@@ -1629,11 +1269,7 @@ contains
       if (T < Tlower) then
         call stoperror("MBWR critical parameters very different than the ones in database")
       end if
-    end do Tloop2
-
-    !print *, "rc low/high:",rc_low,rc_high
-    !print *, "tc low/high:",tc_low,tc_high
-    !print *, "pc low/high:",pc_low,pc_high
+   end do Tloop2
 
     ! Estimate the critical parameters by the average of the lower and upper estimates
     rc = (rc_low+rc_high)/2
