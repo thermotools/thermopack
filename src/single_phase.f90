@@ -396,15 +396,15 @@ contains
       dhdz_ideal_mix=0.0
     else
       call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt, dhdp, dhdz)
-      h_ideal_mix = h_ideal_mix*1.0e-3 ! J/kmol -> J/mol
+      h_ideal_mix = h_ideal_mix
       if(present(dhdt)) then ! Temperature derivative
-        dhdt_ideal_mix=dhdt*1.0e-3 ! J/kmol/K -> J/mol/K
+        dhdt_ideal_mix=dhdt
       end if
       if(present(dhdp)) then ! Pressure derivative
-        dhdp_ideal_mix=dhdp*1.0e-3 ! J/kmol/Pa -> J/mol/Pa
+        dhdp_ideal_mix=dhdp
       end if
       if(present(dhdz)) then ! Composition derivative,
-        dhdz_ideal_mix=dhdz*1.0e-3 ! J/kmol/mol -> J/mol**2
+        dhdz_ideal_mix=dhdz
       end if
     endif
 
@@ -521,15 +521,15 @@ contains
       dsdz_ideal_mix=0.0
     else
       call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt, dsdp, dsdz)
-      S_ideal_mix = S_ideal_mix*1.0e-3 ! J/kmol/K -> J/mol/K
+      S_ideal_mix = S_ideal_mix
       if(present(dsdt)) then ! Temperature derivative
-        dsdt_ideal_mix=dsdt*1.0e-3 ! J/kmol/K^2 -> J/mol/K^2
+        dsdt_ideal_mix=dsdt
       end if
       if(present(dsdp)) then ! Pressure derivative
-        dsdp_ideal_mix=dsdp*1.0e-3 ! J/kmol/K/Pa -> J/mol/K/Pa
+        dsdp_ideal_mix=dsdp
       end if
       if(present(dsdz)) then ! Composition derivative,
-        dsdz_ideal_mix=dsdz*1.0e-3 ! J/kmol/mol/K -> J/mol**2/K
+        dsdz_ideal_mix=dsdz
       end if
     endif
 
@@ -1013,7 +1013,7 @@ contains
     use compdata, only: gendata
     use volume_shift, only: volumeShiftVolume, NOSHIFT
     use ideal, only: Sideal_Vn
-    use tpconst, only: kRgas
+    use tpconst, only: Rgas
     use tpvar, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_differentials
     implicit none
@@ -1055,14 +1055,14 @@ contains
     call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_n=F_n,F_Tn=F_Tn_p,&
          F_Vn=F_Vn_p,F_nn=F_nn_p,recalculate=recalculate)
     ! Ideal contribution
-    vshift = v*1.0e3 ! m3/mol -> m3/kmol
+    vshift = v
     call Sideal_Vn(nce, ne, T, vshift, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
          d2sdndV=Fid_Vn, d2sdn2=Fid_nn)
-    Fid_n = -Fid_n/kRgas
-    Fid_Tn = -Fid_Tn/kRgas
-    Fid_Vn = -Fid_Vn/kRgas
-    Fid_nn = -Fid_nn/kRgas
-    Fid_Vn = Fid_Vn*1.0e3 ! kmol/m3 -> mol/m3
+    Fid_n = -Fid_n/Rgas
+    Fid_Tn = -Fid_Tn/Rgas
+    Fid_Vn = -Fid_Vn/Rgas
+    Fid_nn = -Fid_nn/Rgas
+    Fid_Vn = Fid_Vn
 
     F_n = F_n + Fid_n
     if (present(lnphiT)) then
@@ -1513,20 +1513,20 @@ contains
       dsdv_ideal_mix=0.0
       dsdn_ideal_mix=0.0
     else
-      vshift = v*1.0e3 ! m3/mol -> m3/kmol
+      vshift = v
       call TV_Sideal_mix(nce, comp, T, vshift, ne, s_ideal_mix, &
            dsdt_ideal_mix=dsdt, dsdv_ideal_mix=dsdv, &
            dsdz_ideal_mix=dsdne)
-      s_ideal_mix = s_ideal_mix*1.0e-3 ! J/kmol/K -> J/mol/K
+      s_ideal_mix = s_ideal_mix
       if(present(dsdt)) then ! Temperature derivative
-        dsdt_ideal_mix=dsdt*1.0e-3 ! J/kmol/K^2 -> J/mol/K^2
+        dsdt_ideal_mix=dsdt
       end if
       if(present(dsdv)) then ! Pressure derivative
         dsdv_ideal_mix=dsdv
       end if
       if(present(dsdn)) then ! Composition derivative,
         call real_to_apparent_diff(dsdne,dsdn,nc)
-        dsdn_ideal_mix=dsdn*1.0e-3 ! J/kmol/mol/K -> J/mol**2/K
+        dsdn_ideal_mix=dsdn
       end if
     endif
 

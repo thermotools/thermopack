@@ -1324,7 +1324,7 @@ subroutine thermopack_cp_ideal (i,t,cp_id)
     call stoperror("index out of range")
   end if
 
-  cp_id = cpideal(comp,i,t)*1e-3
+  cp_id = cpideal(comp,i,t)
 
 end subroutine thermopack_cp_ideal
 

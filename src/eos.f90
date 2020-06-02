@@ -813,9 +813,8 @@ contains
     select case (EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      h = Hideal_apparent(comp,j,T) / 1.0e3 ! J/kmol -> J/mol
+      h = Hideal_apparent(comp,j,T)
       call TP_Sideal_apparent(comp, j, T, P, s)
-      s = s*1.0e-3 ! J/kmol/K -> J/mol/K
     case (TREND)
       ! TREND
       h = trend_ideal_enthalpy(T,j)
@@ -860,10 +859,6 @@ contains
     case (THERMOPACK)
       ! Thermopack
       call TP_Sideal_apparent(comp, j, T, P, s, dsdt)
-      s = s*1.0e-3 ! J/kmol/K -> J/mol/K
-      if (present(dsdt)) then
-        dsdt = dsdt*1.0e-3 ! J/kmol/K^2 -> J/mol/K^2
-      end if
     case (TREND)
       ! TREND
       s = trend_ideal_entropy(T,P,j)
@@ -901,10 +896,7 @@ contains
     select case (EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      h = Hideal_apparent(comp,j,T) / 1.0e3 ! J/kmol -> J/mol
-      if (present(dhdt)) then
-        dhdt = Cpideal_apparent(comp,j,T) * 1.0e-3 ! J/kmol/K^2 -> J/mol/K^2
-      end if
+      h = Hideal_apparent(comp,j,T)
     case (TREND)
       ! TREND
       h = trend_ideal_enthalpy(T,j)
