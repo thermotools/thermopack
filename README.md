@@ -1,11 +1,11 @@
 # Thermopack
-Thermopack is a thermodynamics library for multi-component and multi-phase thermodynamcs.
+Thermopack is a thermodynamics library for multi-component and multi-phase thermodynamics.
 
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran compiler](https://gcc.gnu.org/wiki/GFortran) or [Intel Fortran](https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html) and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can be compiled using [Microsoft Visual Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in [thermopack/MSVStudio](https://github.com/SINTEF/thermopack/MSVStudio), assuming that the Intel Fortran compiler is integrated with Microsoft Visual Studio.
 
 ### Initial setup
-The Thermopack source code is downloaded by cloning the library to your local computer. The following commands are dependent on a local installation of [GIT](https://git-scm.com/), gfortran and python3. To compile using intel fortran, use make optim_ifort.
+The Thermopack source code is downloaded by cloning the library to your local computer. The following commands assumes that you have a local installation of [GIT](https://git-scm.com/), gfortran and python3. To compile using intel fortran, use make optim_ifort.
 
 ```bash
 git clone https://github.com/SINTEF/thermopack.git
@@ -24,19 +24,19 @@ xxxxxxx
 
 
 ## Authors and contact persons
-Morten Hammer (Morten.Hammer@sintef.no), Ailo Aasen (Ailo.Aasen@sintef.no), Øivind Wilhemlsen (Oivind.Wilhelmsen@sintef.no)
+Morten Hammer (Morten.Hammer@sintef.no), Ailo Aasen (Ailo.Aasen@sintef.no), Øivind Wilhelmsen (Oivind.Wilhelmsen@sintef.no)
 
-## Licence
-Thermopack is distributed under the [MIT](https://github.com/SINTEF/LICENSE) licence.
+## License
+Thermopack is distributed under the [MIT](https://github.com/SINTEF/LICENSE) license.
 
 ## Acknowledgments
-A number of collegues at SINTEF Energy Research have contributed to the development of thermopack. We greatly acknowledge their contributions.
+A number of colleagues at SINTEF Energy Research have contributed to the development of thermopack. We gratefully acknowledge their contributions.
 
 
 ## File System
 >thermopack/: main library
->neqsim/src/: Main path for Fortran source code
+>thermopack/src/: Main path for Fortran source code
 >
->thermopack/addon/: 
->thermopack/addon/pyThermopack/: 
+>thermopack/addon/: Add-on functionality
+>thermopack/addon/pyThermopack/: Python interface
 >
