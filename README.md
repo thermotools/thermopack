@@ -16,6 +16,23 @@ python3 makescript.py optim
 python3 setup.py install
 ```
 
+### Windows setup
+
+Download and compile lapack and blas libraries (Need cmake and a working compiler)
+Intel Fortran with Visual Studio:
+Fortran/Data/Default Real KIND = 8
+Fortran/External Procedures/Calling Convention = cref
+Fortran/External Procedures/Name Case Interpretation = lowercase
+Fortran/External Procedures/String Length Argument Parsing = mixed_str_len_arg
+Fortran/External Procedures/Append Underscore to External Names = Yes
+Fortran/Floating Point/Floating Point Model = precise
+
+Copy lapack and blas libraries to the paths:
+thermopack\lapack\lib\Debug
+thermopack\lapack\lib\Release
+
+Open thermopack\MSVStudio\thermopack.sln using Visual Studio, and compile the wanted configuration.
+
 ## Running the tests
 The test files are written for pFUnit, a unit testing framework enabling JUnit-like testing of serial and MPI-parallel software written in Fortran. The code needed to run the tests are found at [pFUnit](https://github.com/Goddard-Fortran-Ecosystem/pFUnit), and the tests are located in [thermopack/unittests](https://github.com/SINTEF/unittest).
 
