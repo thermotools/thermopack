@@ -11,7 +11,7 @@ integer function TestPrecision()
   TestPrecision = ilog
 end function TestPrecision
 
-subroutine trend_init_no_char(nc,int_path,npath,int_comps,ncomps,mix)
+subroutine trend_init_no_char(nc,int_path,npath,int_comps,ncomps,mix,Rgas)
   ! MH, 2014-02
   !----------------------------------------------------------------------
   implicit none
@@ -22,10 +22,10 @@ subroutine trend_init_no_char(nc,int_path,npath,int_comps,ncomps,mix)
   integer, intent(in) :: ncomps
   integer, intent(in) :: int_path(npath)
   integer, intent(in) :: int_comps(ncomps)
-  ! Internal
+  real,    intent(in) :: Rgas
 end subroutine trend_init_no_char
 
-subroutine trend_init(nc,path,comps,mix)
+subroutine trend_init(nc,path,comps,mix,Rgas)
   ! MH, 2013-04-04, EA, 2014-02
   !----------------------------------------------------------------------
   implicit none
@@ -34,6 +34,7 @@ subroutine trend_init(nc,path,comps,mix)
   character (12), intent(in)        :: comps(nc)
   character(len=255), intent(inout) :: path
   integer, intent(in)               :: mix
+  real,    intent(in) :: Rgas
 end subroutine trend_init
 
 
@@ -114,10 +115,10 @@ end subroutine trend_init
     real, intent(in) :: rho !< mol/m3 - Density
     real, intent(in) :: t !< K - Temperature
     real, dimension(:), intent(in) :: x !< Compozition
-    real, intent(out) :: s !< J/mol/K - Specific enthalpy
-    real, optional, intent(out) :: dsdt !< J/mol/K2 - Specific enthalpy differential wrpt. temperature
-    real, optional, intent(out) :: dsdp !< J/mol/K2/Pa - Specific enthalpy differential wrpt. pressure
-    real, optional, dimension(:), intent(out) :: dsdx !< J/mol 2/K - Specific enthalpy differential wrpt. mole numbers
+    real, intent(out) :: s !< J/mol/K - Specific entropy
+    real, optional, intent(out) :: dsdt !< J/mol/K2 - Specific entropy differential wrpt. temperature
+    real, optional, intent(out) :: dsdp !< J/mol/K2/Pa - Specific entropy differential wrpt. pressure
+    real, optional, dimension(:), intent(out) :: dsdx !< J/mol 2/K - Specific entropy differential wrpt. mole numbers
     s = 0.0
     dsdt = 0.0
     dsdp = 0.0
@@ -129,14 +130,15 @@ end subroutine trend_init
   !>
   !> \author Ms, 2013-04-08
   !----------------------------------------------------------------------
-  function trend_pressure(x,t,v,dpdv,dpdt) result(p)
+  function trend_pressure(n,t,v,dpdv,dpdt,dpdn) result(p)
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
-    real, intent(in) :: v !< m3/mol - Specific volume
-    real, dimension(:), intent(in) :: x !< Compozition
+    real, intent(in) :: v !< m3 - Specific volume
+    real, dimension(:), intent(in) :: n !< Mol numbers
     real, optional, intent(out) :: dpdt !< Pa/K - Pressure differential wrpt. temperature
-    real, optional, intent(out) :: dpdv !< Pa mol/m3 - Pressure differential wrpt. specific volume
+    real, optional, intent(out) :: dpdv !< Pa/m3 - Pressure differential wrpt. volume
+    real, optional, intent(out) :: dpdn(:) !< Pa/mol - Pressure differential wrpt. mol
     real :: p !< Pa - Pressure
     ! Locals
     p = 0.0
@@ -224,7 +226,7 @@ end subroutine trend_init
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
     real, dimension(:), intent(in) :: x !< Compozition
-    real, intent(in) :: v !< mol/m3 - Specific volume
+    real, intent(in) :: v !< m3/mol - Specific volume
     real, optional, intent(out) :: dvdt !< m3/mol/K - Specific volume differential wrpt. temperature
     real, optional, intent(out) :: dvdp !< m3/mol/Pa - Specific volume differential wrpt. pressure
     real, optional, dimension(:), intent(out) :: dvdx !< m3/mol - Specific volume differential wrpt. mole numbers
@@ -535,7 +537,7 @@ end subroutine trend_init
   subroutine trend_GetReducedRhoT(T, x, RhoRed, TRed)
     implicit none
     real, intent(in) :: T
-    real, intent(in) :: x(30)
+    real, intent(in) :: x(:)
     real, intent(out):: RhoRed
     real, intent(out)::TRed
 
@@ -564,8 +566,8 @@ end subroutine trend_init
     real, intent(in) :: t !< K - Temperature
     real, intent(in) :: v !< m3/mol - Specific volume
     real, dimension(:), intent(in) :: x !< Compozition
-    real, optional, intent(out) :: dydt !< J/(mol K) - Helmholtz differential wrpt. temperature
-    real, optional, intent(out) :: dydv !< J/(m3) - Helmholtz differential wrpt. specific volume
+    real, optional, intent(out) :: dydt !< J/(mol K) - Helmholtz free energy differential wrpt. temperature
+    real, optional, intent(out) :: dydv !< J/m3 - Helmholtz free energy differential wrpt. specific volume
     real, optional, intent(out) :: d2ydt2 !< J/(mol K2) - Helmholtz differential wrpt. temperature
     real, optional, intent(out) :: d2ydv2 !< J/m6 - Helmholtz second differential wrpt. specific volume
     real, optional, intent(out) :: d2ydvdt !< J/(m3 K) - Helmholtz second differential wrpt. specific volume and temperature
@@ -603,8 +605,8 @@ end subroutine trend_init
     real, intent(in) :: t !< K - Temperature
     real, intent(in) :: v !< m3/mol - Specific volume
     real, dimension(:), intent(in) :: x !< Compozition
-    real, optional, intent(out) :: dudt !< J/(mol K) - Pressure differential wrpt. temperature
-    real, optional, intent(out) :: dudv !< J/m3 - Pressure differential wrpt. specific volume
+    real, optional, intent(out) :: dudt !< J/(mol K) - Internal energy differential wrpt. temperature
+    real, optional, intent(out) :: dudv !< J/m3 - Internal energy differential wrpt. specific volume
     real :: u !< J/mol - Internal energy
     ! Locals
     u = 0.0
@@ -657,11 +659,11 @@ end subroutine trend_init
   !! \author Morten Hammer
   !! \date 2015-09
   subroutine trend_CalcFres(T,V,n,F,F_T,F_V,F_n,F_TT,&
-       F_TV,F_VV,F_Tn,F_Vn,F_nn,Rmix)
+         F_TV,F_VV,F_Tn,F_Vn,F_nn)
     implicit none
     real, intent(in) :: T,V,n(:)
     ! Output.
-    real, optional, intent(out) :: F,F_T,F_V,F_n(:),F_TT,F_TV,F_VV,Rmix
+    real, optional, intent(out) :: F,F_T,F_V,F_n(:),F_TT,F_TV,F_VV
     real, optional, intent(out) :: F_Tn(:),F_Vn(:),F_nn(:,:)
     ! Locals
 
@@ -678,9 +680,6 @@ end subroutine trend_init
       F_Vn = 0.0
       F_nn = 0.0
     endif
-    if (present(Rmix)) then
-      Rmix = 0.0
-    endif
   end subroutine trend_CalcFres
 
   !> Calculate reduced ideal Helmholtz and differentials
@@ -692,11 +691,12 @@ end subroutine trend_init
   !!
   !! \author Morten Hammer
   !! \date 2015-09
-  subroutine trend_CalcFid(T,V,n,F,F_T,F_V,F_TT,F_TV,F_VV,Rmix)
+  subroutine trend_CalcFid(T,V,n,F,F_T,F_V,F_TT,F_TV,F_VV,F_n,F_Tn,F_Vn,F_nn)
     implicit none
     real, intent(in) :: T,V,n(:)
     ! Output.
-    real, optional, intent(out) :: F,F_T,F_V,F_TT,F_TV,F_VV,Rmix
+    real, optional, intent(out) :: F,F_T,F_V,F_TT,F_TV,F_VV
+    real, optional, intent(out) :: F_n(:),F_Tn(:),F_Vn(:),F_nn(:,:)
     ! Locals
 
     if (present(F)) F = 0.0
@@ -706,8 +706,17 @@ end subroutine trend_init
     if (present(F_TV)) F_TV = 0.0
     if (present(F_VV)) F_VV = 0.0
 
-    if (present(Rmix)) then
-      Rmix = 0.0
+    if (present(F_n)) then
+      F_n = 0.0
+    endif
+    if (present(F_Tn)) then
+      F_Tn = 0.0
+    endif
+    if (present(F_Vn)) then
+      F_Vn = 0.0
+    endif
+    if (present(F_nn)) then
+      F_nn = 0.0
     endif
   end subroutine trend_CalcFid
 
