@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{438EA9FE-716E-4464-B6F9-757704715B80}">
 	<Platforms>
-		<Platform Name="Win32"/></Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32" OutputDirectory="$(ConfigurationName)\thermopack" IntermediateDirectory="$(ConfigurationName)\thermopack" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(OutDir)/../trend;$(OutDir)/../libnum;../../trend/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF" StringLengthArgPassing="strLenArgsAfterAll" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -13,10 +14,28 @@
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="$(ConfigurationName)\thermopack" IntermediateDirectory="$(ConfigurationName)\thermopack" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(OutDir)/../trend;$(OutDir)/../libnum;../../trend/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCVF" StringLengthArgPassing="strLenArgsAfterAll" ExternalNameUnderscore="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
@@ -29,32 +48,32 @@
 		<File RelativePath="..\src\binaryplot.f90"/>
 		<File RelativePath="..\src\cbAlpha.f90"/>
 		<File RelativePath="..\src\cbhelm.f90"/>
+		<File RelativePath="..\src\cbmix.f90"/>
+		<File RelativePath="..\src\cbselect.f90"/>
 		<File RelativePath="..\src\co2Gibbs.f90"/>
 		<File RelativePath="..\src\compdata.f90"/>
 		<File RelativePath="..\src\compdatadb.f90"/>
-		<File RelativePath="..\src\compname_translation.f90"/>
+		<File RelativePath="..\src\complexmodelinit.f90"/>
 		<File RelativePath="..\src\consistency.f90"/>
 		<File RelativePath="..\src\cpa_parameters.f90"/>
 		<File RelativePath="..\src\critical.f90"/>
-		<File RelativePath="..\src\csp.f90"/>
+		<File RelativePath="..\src\cubic.f90"/>
 		<File RelativePath="..\src\dltrend.f90"/>
-		<File RelativePath="..\src\dtu_thermclc.f"/>
-		<File RelativePath="..\src\envelope_interp.f90"/>
 		<File RelativePath="..\src\eos.f90"/>
 		<File RelativePath="..\src\eosdata.f90"/>
 		<File RelativePath="..\src\eosdatadb.f90"/>
 		<File RelativePath="..\src\eoslibinit.f90"/>
 		<File RelativePath="..\src\eosTV.f90"/>
 		<File RelativePath="..\src\excess_gibbs.f90"/>
+		<File RelativePath="..\src\extcsp.f90"/>
 		<File RelativePath="..\src\external.f90"/>
+		<File RelativePath="..\src\h2oGibbs.f90"/>
 		<File RelativePath="..\src\ideal.f90"/>
-		<File RelativePath="..\src\init.f90"/>
-		<File RelativePath="..\src\io.f90"/>
+		<File RelativePath="..\src\idealh2.f90"/>
 		<File RelativePath="..\src\leekesler.f90"/>
-		<File RelativePath="..\src\main.f90"/>
-		<File RelativePath="..\src\model_var.f90"/>
-		<File RelativePath="..\src\mp_ps_solver.f90"/>
-		<File RelativePath="..\src\mp_tp_solver.f90"/>
+		<File RelativePath="..\src\mbwr.f90"/>
+		<File RelativePath="..\src\mbwr_additional.f90"/>
+		<File RelativePath="..\src\mbwrdata.f90"/>
 		<File RelativePath="..\src\multiparameter_base.f90"/>
 		<File RelativePath="..\src\multiparameter_c3.f90"/>
 		<File RelativePath="..\src\multiparameter_idealmix.f90"/>
@@ -62,46 +81,54 @@
 		<File RelativePath="..\src\multiparameter_ortho_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_para_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_r134a.f90"/>
+		<File RelativePath="..\src\nonlin_optimizer.f90"/>
+		<File RelativePath="..\src\nonlinear_solvers.f90"/>
+		<File RelativePath="..\src\numconstants.f90"/>
 		<File RelativePath="..\src\parameters.f90"/>
 		<File RelativePath="..\src\pc_saft_nonassoc.f90"/>
 		<File RelativePath="..\src\pc_saft_parameters.f90"/>
+		<File RelativePath="..\src\pets.f90"/>
 		<File RelativePath="..\src\ph_solver.f90"/>
-		<File RelativePath="..\src\phase_envelope_xy.f90"/>
 		<File RelativePath="..\src\ps_solver.f90"/>
+		<File RelativePath="..\src\pt_interface.f90"/>
 		<File RelativePath="..\src\puresaturation.f90"/>
-		<File RelativePath="..\src\run.f90"/>
+		<File RelativePath="..\src\quadratures.f90"/>
 		<File RelativePath="..\src\saft_association.f90"/>
 		<File RelativePath="..\src\saft_globals.f90"/>
 		<File RelativePath="..\src\saft_interface.f90"/>
 		<File RelativePath="..\src\saft_rdf.f90"/>
+		<File RelativePath="..\src\saftvrmie_chain.f90"/>
+		<File RelativePath="..\src\saftvrmie_containers.f90"/>
+		<File RelativePath="..\src\saftvrmie_dispersion.f90"/>
+		<File RelativePath="..\src\saftvrmie_hardsphere.f90"/>
+		<File RelativePath="..\src\saftvrmie_interface.f90"/>
+		<File RelativePath="..\src\saftvrmie_options.f90"/>
+		<File RelativePath="..\src\saftvrmie_parameters.f90"/>
+		<File RelativePath="..\src\saftvrmie_testing.f90"/>
+		<File RelativePath="..\src\saftvrmie_utils.f90"/>
 		<File RelativePath="..\src\saturation.f90"/>
+		<File RelativePath="..\src\saturation_curve.f90"/>
 		<File RelativePath="..\src\saturation_point_locators.f90"/>
 		<File RelativePath="..\src\single_component.f90"/>
 		<File RelativePath="..\src\single_phase.f90"/>
+		<File RelativePath="..\src\solid_saturation.f90"/>
 		<File RelativePath="..\src\solideos.f90"/>
 		<File RelativePath="..\src\speed_of_sound.f90"/>
 		<File RelativePath="..\src\stability.f90"/>
 		<File RelativePath="..\src\state_functions.f90"/>
+		<File RelativePath="..\src\stoperror.f90"/>
 		<File RelativePath="..\src\stringmod.f90"/>
 		<File RelativePath="..\src\sv_solver.f90"/>
 		<File RelativePath="..\src\thermo_utils.f90"/>
+		<File RelativePath="..\src\thermopack.f90"/>
+		<File RelativePath="..\src\thermopack_const.f90"/>
+		<File RelativePath="..\src\thermopack_var.f90"/>
 		<File RelativePath="..\src\tp_solver.f90"/>
-		<File RelativePath="..\src\tpcbmix.f90"/>
-		<File RelativePath="..\src\tpconst.f90"/>
-		<File RelativePath="..\src\tpcubic.f90"/>
-		<File RelativePath="..\src\tpidealh2.f90"/>
-		<File RelativePath="..\src\tplib.f90"/>
-		<File RelativePath="..\src\tpmbwr.f90"/>
-		<File RelativePath="..\src\tpmbwr_additional.f90"/>
-		<File RelativePath="..\src\tpmbwrdata.f90"/>
-		<File RelativePath="..\src\tpselect.f90"/>
-		<File RelativePath="..\src\tpvar.f90"/>
 		<File RelativePath="..\src\trend_solver.f90"/>
 		<File RelativePath="..\src\tuning.f90"/>
 		<File RelativePath="..\src\unifac.f90"/>
 		<File RelativePath="..\src\unifacdata.f90"/>
-		<File RelativePath="..\src\userinp.f90"/>
-		<File RelativePath="..\src\utils.f90"/>
+		<File RelativePath="..\src\utilities.f90"/>
 		<File RelativePath="..\src\uv_solver.f90"/>
 		<File RelativePath="..\src\vls.f90"/>
 		<File RelativePath="..\src\volume_shift.f90"/>
