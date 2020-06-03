@@ -312,7 +312,7 @@ contains
     real, dimension(nph,nc), intent(inout) :: XX !< Phase molar compozition [-]
     real, intent(inout) :: t !< Temperature [K]
     real, intent(inout) :: p !< Pressure [Pa]
-    integer, dimension(nph), intent(out) :: phaseVec !< Phase identifiers
+    integer, dimension(nph), intent(in) :: phaseVec !< Phase identifiers
     integer, intent(in) :: nd !< Number of phases
     real, optional, intent(out) :: betaSol
     logical :: isForming
