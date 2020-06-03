@@ -1,0 +1,71 @@
+!> Test that the MBWR equations of state produce roughly the same results as
+!> up-to-date reference equations of state
+!> \author Ailo Aasen
+module test_mbwr
+  use eoslibinit, only: init_thermo
+  use eosTV, only: Fres
+  use pfunit_mod
+  implicit none
+  public
+
+  logical :: VERBOSE = .false.
+
+contains
+
+  @Test
+  subroutine test_MBWR_master()
+    real :: T, V
+    real, dimension(1) :: n = (/3.0/)
+    character(len=20) :: compstr
+
+    T = 300.0
+    V = 1.0
+    compstr = "C3"
+    call test_MBWR_eos(trim(compstr),T,V,n, mbwr_eos="MBWR19", rtol1=2e-2, rtol2=10e-2)
+    call test_MBWR_eos(trim(compstr),T,V,n, mbwr_eos="MBWR32", rtol1=2e-2, rtol2=10e-2)
+
+    compstr = "R134A"
+    call test_MBWR_eos(trim(compstr),T,V,n, mbwr_eos="MBWR32", rtol1=2e-2, rtol2=10e-2)
+  end subroutine test_MBWR_master
+
+
+  subroutine test_MBWR_eos(compstr,T,V,n,mbwr_eos,rtol1,rtol2)
+    character(len=*), intent(in) :: compstr
+    real, intent(in) :: T, V, n(1)
+    character(len=*), intent(in) :: mbwr_eos
+    real, intent(in) :: rtol1 ! tolerance for first-order derivatives
+    real, intent(in) :: rtol2 ! tolerance for second-order derivatives
+    ! Locals
+    real :: F,F_T,F_V,F_n(1),F_TT,F_TV,F_VV,F_Tn(1),F_Vn(1),F_nn(1,1)
+    real :: F19,F19_T,F19_V,F19_n(1),F19_TT,F19_TV,F19_VV,F19_Tn(1),F19_Vn(1),F19_nn(1,1)
+    real :: F32,F32_T,F32_V,F32_n(1),F32_TT,F32_TV,F32_VV,F32_Tn(1),F32_Vn(1),F32_nn(1,1)
+
+    ! Up-to-date accurate reference equation of state
+    call init_thermo("Thermopack", "NIST_MEOS", "Classic", 'Classic', 1, compstr, 1)
+    call Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+
+    ! MBWR19
+    call init_thermo("Thermopack", trim(mbwr_eos), "Classic", 'Classic', 1, compstr, 1)
+    call Fres(T,V,n,F19,F19_T,F19_V,F19_n,F19_TT,F19_TV,F19_VV,F19_Tn,F19_Vn,F19_nn)
+    @assertTrue(abs(F_T-F19_T) < rtol1*abs(F_T))
+    @assertTrue(abs(F_V-F19_V) < rtol1*abs(F_V))
+    @assertTrue(abs(F_n(1)-F19_n(1)) < rtol1*abs(F_n(1)))
+    @assertTrue(abs(F_TT-F19_TT) < rtol2*abs(F_TT))
+    @assertTrue(abs(F_TV-F19_TV) < rtol2*abs(F_TV))
+    @assertTrue(abs(F_VV-F19_VV) < rtol2*abs(F_VV))
+    @assertTrue(abs(F_Tn(1)-F19_Tn(1)) < rtol2*abs(F_Tn(1)))
+    @assertTrue(abs(F_Vn(1)-F19_Vn(1)) < rtol2*abs(F_Vn(1)))
+    @assertTrue(abs(F_nn(1,1)-F19_nn(1,1)) < rtol2*abs(F_nn(1,1)))
+
+    if (VERBOSE) then
+       print *, compstr, " ", mbwr_eos, " F_V, F_VV"
+       print *, "NIST_MEOS", F_V, F_VV
+       print *, "MBWR     ", F19_V, F19_VV
+    end if
+  end subroutine test_MBWR_eos
+
+
+end module test_mbwr
+! Local Variables:
+! mode: f90
+! End:
