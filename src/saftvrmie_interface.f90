@@ -1,9 +1,7 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
+! Interface module for SAFT-VRQ Mie.
 ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !---------------------------------------------------------------------
 
 module saftvrmie_interface
@@ -132,8 +130,8 @@ contains
     call calcZetaX(nc,T,V,n,difflevel,saftvrmie_vc%sigma_eff,saftvrmie_vc%zeta_bar, zetaxbar=.true.)
 
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      ! Calculate diameter for pure-fluid hard-sphere reference
-      call calc_d_pure(nc,n,V,difflevel,saftvrmie_vc%dhs,saftvrmie_vc%d_pure)
+       ! Calculate diameter for pure-fluid hard-sphere reference
+       call calc_d_pure(nc,n,V,difflevel,saftvrmie_vc%dhs,saftvrmie_vc%d_pure)
     endif
 
   end subroutine preCalcSAFTVRMie
@@ -189,200 +187,200 @@ contains
     !$ iTh = omp_get_thread_num() + 1
     if (present(F_TT) .or. present(F_VV) .or. present(F_TV) .or. &
          present(F_Tn) .or. present(F_Vn) .or. present(F_nn)) then
-      ! Precalculate common variables
-      call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(iTh))
-      ! Calculate hard-sphere term
-      if (enable_hs) then
-        call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
-             Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n,&
-             a_TT=Fhs_TT,a_VV=Fhs_VV,a_TV=Fhs_TV,a_Tn=Fhs_Tn,a_Vn=Fhs_Vn,a_nn=Fhs_nn)
-      endif
-      ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-      if (enable_hs_extra) then
-        call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
-             Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n,&
-             a_TT=Fhse_TT,a_VV=Fhse_VV,a_TV=Fhse_TV,a_Tn=Fhse_Tn,a_Vn=Fhse_Vn,a_nn=Fhse_nn)
-      endif
-      ! Calculate first order monomer term
-      if (enable_A1) then
-        call calcA1(nc,T,V,n,saftvrmie_var(iTh),&
-             F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n,a1_TT=F1_TT,a1_VV=F1_VV,&
-             a1_TV=F1_TV,a1_Tn=F1_Tn,a1_Vn=F1_Vn,a1_nn=F1_nn)
-      endif
-      ! Calculate second order monomer term
-      if (enable_A2) then
-        call calcA2(nc,T,V,n,saftvrmie_var(iTh),&
-             F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n,a2_TT=F2_TT,&
-             a2_VV=F2_VV,a2_TV=F2_TV,a2_Tn=F2_Tn,a2_Vn=F2_Vn,a2_nn=F2_nn)
-      end if
-      ! Calculate third order monomer term
-      if (enable_A3) then
-        call calcA3(nc,T,V,n,saftvrmie_var(iTh),&
-             F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n,a3_TT=F3_TT,&
-             a3_VV=F3_VV,a3_TV=F3_TV,a3_Tn=F3_Tn,a3_Vn=F3_Vn,a3_nn=F3_nn)
-      endif
-      ! Calculate chain term
-      if (enable_chain) then
-        call calcAchain(nc,T,V,n,saftvrmie_var(iTh),&
-             Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,ach_TT=Fc_TT,&
-             ach_VV=Fc_VV,ach_TV=Fc_TV,ach_Tn=Fc_Tn,ach_Vn=Fc_Vn,ach_nn=Fc_nn,&
-             returnF=returnF)
-      endif
+       ! Precalculate common variables
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(iTh))
+       ! Calculate hard-sphere term
+       if (enable_hs) then
+          call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
+               Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n,&
+               a_TT=Fhs_TT,a_VV=Fhs_VV,a_TV=Fhs_TV,a_Tn=Fhs_Tn,a_Vn=Fhs_Vn,a_nn=Fhs_nn)
+       endif
+       ! Calculate extraterm to hard-sphere reference for non-additive mixtures
+       if (enable_hs_extra) then
+          call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
+               Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n,&
+               a_TT=Fhse_TT,a_VV=Fhse_VV,a_TV=Fhse_TV,a_Tn=Fhse_Tn,a_Vn=Fhse_Vn,a_nn=Fhse_nn)
+       endif
+       ! Calculate first order monomer term
+       if (enable_A1) then
+          call calcA1(nc,T,V,n,saftvrmie_var(iTh),&
+               F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n,a1_TT=F1_TT,a1_VV=F1_VV,&
+               a1_TV=F1_TV,a1_Tn=F1_Tn,a1_Vn=F1_Vn,a1_nn=F1_nn)
+       endif
+       ! Calculate second order monomer term
+       if (enable_A2) then
+          call calcA2(nc,T,V,n,saftvrmie_var(iTh),&
+               F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n,a2_TT=F2_TT,&
+               a2_VV=F2_VV,a2_TV=F2_TV,a2_Tn=F2_Tn,a2_Vn=F2_Vn,a2_nn=F2_nn)
+       end if
+       ! Calculate third order monomer term
+       if (enable_A3) then
+          call calcA3(nc,T,V,n,saftvrmie_var(iTh),&
+               F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n,a3_TT=F3_TT,&
+               a3_VV=F3_VV,a3_TV=F3_TV,a3_Tn=F3_Tn,a3_Vn=F3_Vn,a3_nn=F3_nn)
+       endif
+       ! Calculate chain term
+       if (enable_chain) then
+          call calcAchain(nc,T,V,n,saftvrmie_var(iTh),&
+               Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,ach_TT=Fc_TT,&
+               ach_VV=Fc_VV,ach_TV=Fc_TV,ach_Tn=Fc_Tn,ach_Vn=Fc_Vn,ach_nn=Fc_nn,&
+               returnF=returnF)
+       endif
     else if (present(F_T) .or. present(F_V) .or. present(F_n)) then
-      ! Precalculate common variables
-      call preCalcSAFTVRMie(nc,T,V,n,1,saftvrmie_var(iTh))
-      ! Calculate hard-sphere term
-      if (enable_hs) then
-        call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
-             Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n)
-      endif
-      ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-      if (enable_hs_extra) then
-        call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
-             Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n)
-      endif
-      ! Calculate first order monomer term
-      if (enable_A1) then
-        call calcA1(nc,T,V,n,saftvrmie_var(iTh),F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n)
-      endif
-      ! Calculate second order monomer term
-      if (enable_A2) then
-        call calcA2(nc,T,V,n,saftvrmie_var(iTh),F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n)
-      end if
-      ! Calculate third order monomer term
-      if (enable_A3) then
-        call calcA3(nc,T,V,n,saftvrmie_var(iTh),&
-             F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n)
-      endif
-      ! Calculate chain term
-      if (enable_chain) then
-        call calcAchain(nc,T,V,n,saftvrmie_var(iTh),Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,&
-             returnF=returnF)
-      endif
+       ! Precalculate common variables
+       call preCalcSAFTVRMie(nc,T,V,n,1,saftvrmie_var(iTh))
+       ! Calculate hard-sphere term
+       if (enable_hs) then
+          call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
+               Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n)
+       endif
+       ! Calculate extraterm to hard-sphere reference for non-additive mixtures
+       if (enable_hs_extra) then
+          call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
+               Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n)
+       endif
+       ! Calculate first order monomer term
+       if (enable_A1) then
+          call calcA1(nc,T,V,n,saftvrmie_var(iTh),F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n)
+       endif
+       ! Calculate second order monomer term
+       if (enable_A2) then
+          call calcA2(nc,T,V,n,saftvrmie_var(iTh),F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n)
+       end if
+       ! Calculate third order monomer term
+       if (enable_A3) then
+          call calcA3(nc,T,V,n,saftvrmie_var(iTh),&
+               F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n)
+       endif
+       ! Calculate chain term
+       if (enable_chain) then
+          call calcAchain(nc,T,V,n,saftvrmie_var(iTh),Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,&
+               returnF=returnF)
+       endif
     else
-      ! Precalculate common variables
-      call preCalcSAFTVRMie(nc,T,V,n,0,saftvrmie_var(iTh))
-      ! Calculate hard-sphere term
-      if (enable_hs) then
-        call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),Fhs)
-      endif
-      ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-      if (enable_hs_extra) then
-        call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
-             Fhse)
-      endif
-      ! Calculate first order monomer term
-      if (enable_A1) then
-        call calcA1(nc,T,V,n,saftvrmie_var(iTh),F1)
-      endif
-      if (enable_A2) then
-        ! Calculate second order monomer term
-        call calcA2(nc,T,V,n,saftvrmie_var(iTh),F2)
-      end if
-      ! Calculate third order monomer term
-      if (enable_A3) then
-        call calcA3(nc,T,V,n,saftvrmie_var(iTh),F3)
-      endif
-      ! Calculate chain term
-      if (enable_chain) then
-        call calcAchain(nc,T,V,n,saftvrmie_var(iTh),Fc,returnF=returnF)
-      endif
+       ! Precalculate common variables
+       call preCalcSAFTVRMie(nc,T,V,n,0,saftvrmie_var(iTh))
+       ! Calculate hard-sphere term
+       if (enable_hs) then
+          call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),Fhs)
+       endif
+       ! Calculate extraterm to hard-sphere reference for non-additive mixtures
+       if (enable_hs_extra) then
+          call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,saftvrmie_var(iTh),&
+               Fhse)
+       endif
+       ! Calculate first order monomer term
+       if (enable_A1) then
+          call calcA1(nc,T,V,n,saftvrmie_var(iTh),F1)
+       endif
+       if (enable_A2) then
+          ! Calculate second order monomer term
+          call calcA2(nc,T,V,n,saftvrmie_var(iTh),F2)
+       end if
+       ! Calculate third order monomer term
+       if (enable_A3) then
+          call calcA3(nc,T,V,n,saftvrmie_var(iTh),F3)
+       endif
+       ! Calculate chain term
+       if (enable_chain) then
+          call calcAchain(nc,T,V,n,saftvrmie_var(iTh),Fc,returnF=returnF)
+       endif
     endif
 
     if (.not. enable_hs) then
-      Fhs = 0.0
-      Fhs_T = 0.0
-      Fhs_V = 0.0
-      Fhs_TT = 0.0
-      Fhs_VV = 0.0
-      Fhs_TV = 0.0
-      Fhs_n = 0.0
-      Fhs_Tn = 0.0
-      Fhs_Vn = 0.0
-      Fhs_nn = 0.0
+       Fhs = 0.0
+       Fhs_T = 0.0
+       Fhs_V = 0.0
+       Fhs_TT = 0.0
+       Fhs_VV = 0.0
+       Fhs_TV = 0.0
+       Fhs_n = 0.0
+       Fhs_Tn = 0.0
+       Fhs_Vn = 0.0
+       Fhs_nn = 0.0
     endif
 
     if (.not. enable_hs_extra) then
-      Fhse = 0.0
-      Fhse_T = 0.0
-      Fhse_V = 0.0
-      Fhse_TT = 0.0
-      Fhse_VV = 0.0
-      Fhse_TV = 0.0
-      Fhse_n = 0.0
-      Fhse_Tn = 0.0
-      Fhse_Vn = 0.0
-      Fhse_nn = 0.0
+       Fhse = 0.0
+       Fhse_T = 0.0
+       Fhse_V = 0.0
+       Fhse_TT = 0.0
+       Fhse_VV = 0.0
+       Fhse_TV = 0.0
+       Fhse_n = 0.0
+       Fhse_Tn = 0.0
+       Fhse_Vn = 0.0
+       Fhse_nn = 0.0
     endif
 
     if (.not. enable_A1) then
-      F1 = 0.0
-      F1_T = 0.0
-      F1_V = 0.0
-      F1_TT = 0.0
-      F1_VV = 0.0
-      F1_TV = 0.0
-      F1_n = 0.0
-      F1_Tn = 0.0
-      F1_Vn = 0.0
-      F1_nn = 0.0
+       F1 = 0.0
+       F1_T = 0.0
+       F1_V = 0.0
+       F1_TT = 0.0
+       F1_VV = 0.0
+       F1_TV = 0.0
+       F1_n = 0.0
+       F1_Tn = 0.0
+       F1_Vn = 0.0
+       F1_nn = 0.0
     endif
 
     if (.not. enable_A2) then
-      F2 = 0.0
-      F2_T = 0.0
-      F2_V = 0.0
-      F2_TT = 0.0
-      F2_VV = 0.0
-      F2_TV = 0.0
-      F2_n = 0.0
-      F2_Tn = 0.0
-      F2_Vn = 0.0
-      F2_nn = 0.0
+       F2 = 0.0
+       F2_T = 0.0
+       F2_V = 0.0
+       F2_TT = 0.0
+       F2_VV = 0.0
+       F2_TV = 0.0
+       F2_n = 0.0
+       F2_Tn = 0.0
+       F2_Vn = 0.0
+       F2_nn = 0.0
     endif
 
     if (.not. enable_A3) then
-      F3 = 0.0
-      F3_T = 0.0
-      F3_V = 0.0
-      F3_TT = 0.0
-      F3_VV = 0.0
-      F3_TV = 0.0
-      F3_n = 0.0
-      F3_Tn = 0.0
-      F3_Vn = 0.0
-      F3_nn = 0.0
+       F3 = 0.0
+       F3_T = 0.0
+       F3_V = 0.0
+       F3_TT = 0.0
+       F3_VV = 0.0
+       F3_TV = 0.0
+       F3_n = 0.0
+       F3_Tn = 0.0
+       F3_Vn = 0.0
+       F3_nn = 0.0
     endif
 
     if (.not. enable_chain) then
-      Fc = 0.0
-      Fc_T = 0.0
-      Fc_V = 0.0
-      Fc_TT = 0.0
-      Fc_VV = 0.0
-      Fc_TV = 0.0
-      Fc_n = 0.0
-      Fc_Tn = 0.0
-      Fc_Vn = 0.0
-      Fc_nn = 0.0
+       Fc = 0.0
+       Fc_T = 0.0
+       Fc_V = 0.0
+       Fc_TT = 0.0
+       Fc_VV = 0.0
+       Fc_TV = 0.0
+       Fc_n = 0.0
+       Fc_Tn = 0.0
+       Fc_Vn = 0.0
+       Fc_nn = 0.0
     endif
 
     if (.not. enable_truncation_correction) then
-      Ftc = 0.0
-      Ftc_T = 0.0
-      Ftc_V = 0.0
-      Ftc_TT = 0.0
-      Ftc_VV = 0.0
-      Ftc_TV = 0.0
-      Ftc_n = 0.0
-      Ftc_Tn = 0.0
-      Ftc_Vn = 0.0
-      Ftc_nn = 0.0
+       Ftc = 0.0
+       Ftc_T = 0.0
+       Ftc_V = 0.0
+       Ftc_TT = 0.0
+       Ftc_VV = 0.0
+       Ftc_TV = 0.0
+       Ftc_n = 0.0
+       Ftc_Tn = 0.0
+       Ftc_Vn = 0.0
+       Ftc_nn = 0.0
     else
-      call calc_delta_Ac(nc,T,V,n,r_cut,saftvrmie_var(iTh),&
-           Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
-           a_VV=Ftc_VV,a_TV=Ftc_TV,a_Tn=Ftc_Tn,a_Vn=Ftc_Vn,&
-           a_nn=Ftc_nn)
+       call calc_delta_Ac(nc,T,V,n,r_cut,saftvrmie_var(iTh),&
+            Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
+            a_VV=Ftc_VV,a_TV=Ftc_TV,a_Tn=Ftc_Tn,a_Vn=Ftc_Vn,&
+            a_nn=Ftc_nn)
     endif
 
     beta(1) = 1.0/T
@@ -392,53 +390,53 @@ contains
     am = Fhs + beta(1)*F1 + beta(2)*F2 + beta(3)*F3
     F = ns*am + Fhse + Fc - Ftc
     if (present(F_T) .or. present(F_Tn)) then
-      am_T = Fhs_T + beta(1)*F1_T + beta(2)*F2_T + beta(3)*F3_T &
-           -(beta(1)*F1 + 2.0*beta(2)*F2 + 3.0*beta(3)*F3)/T
+       am_T = Fhs_T + beta(1)*F1_T + beta(2)*F2_T + beta(3)*F3_T &
+            -(beta(1)*F1 + 2.0*beta(2)*F2 + 3.0*beta(3)*F3)/T
     endif
     if (present(F_T)) then
-      F_T = ns*am_T + Fhse_T + Fc_T - Ftc_T
+       F_T = ns*am_T + Fhse_T + Fc_T - Ftc_T
     endif
     if (present(F_V) .or. present(F_Vn)) then
-      am_V = Fhs_V + beta(1)*F1_V + beta(2)*F2_V + beta(3)*F3_V
+       am_V = Fhs_V + beta(1)*F1_V + beta(2)*F2_V + beta(3)*F3_V
     endif
     if (present(F_V)) then
-      F_V = ns*am_V + Fhse_V + Fc_V - Ftc_V
+       F_V = ns*am_V + Fhse_V + Fc_V - Ftc_V
     endif
     if (present(F_TT)) then
-      F_TT = ns*(Fhs_TT + beta(1)*F1_TT + beta(2)*F2_TT + beta(3)*F3_TT) + Fc_TT - Ftc_TT &
-           +ns*(2.0*beta(1)*F1 + 6.0*beta(2)*F2 + 12.0*beta(3)*F3)/T**2 &
-           -2.0*ns*(beta(1)*F1_T + 2.0*beta(2)*F2_T + 3.0*beta(3)*F3_T)/T&
-           +Fhse_TT
+       F_TT = ns*(Fhs_TT + beta(1)*F1_TT + beta(2)*F2_TT + beta(3)*F3_TT) + Fc_TT - Ftc_TT &
+            +ns*(2.0*beta(1)*F1 + 6.0*beta(2)*F2 + 12.0*beta(3)*F3)/T**2 &
+            -2.0*ns*(beta(1)*F1_T + 2.0*beta(2)*F2_T + 3.0*beta(3)*F3_T)/T&
+            +Fhse_TT
     endif
     if (present(F_VV)) then
-      F_VV = ns*(Fhs_VV + beta(1)*F1_VV + beta(2)*F2_VV + beta(3)*F3_VV) + Fhse_VV + Fc_VV - Ftc_VV
+       F_VV = ns*(Fhs_VV + beta(1)*F1_VV + beta(2)*F2_VV + beta(3)*F3_VV) + Fhse_VV + Fc_VV - Ftc_VV
     endif
     if (present(F_TV)) then
-      F_TV = ns*(Fhs_TV + beta(1)*F1_TV + beta(2)*F2_TV + beta(3)*F3_TV)  + Fhse_TV + Fc_TV - Ftc_TV &
-           -ns*(beta(1)*F1_V + 2.0*beta(2)*F2_V + 3.0*beta(3)*F3_V)/T
+       F_TV = ns*(Fhs_TV + beta(1)*F1_TV + beta(2)*F2_TV + beta(3)*F3_TV)  + Fhse_TV + Fc_TV - Ftc_TV &
+            -ns*(beta(1)*F1_V + 2.0*beta(2)*F2_V + 3.0*beta(3)*F3_V)/T
     endif
     if (present(F_Tn)) then
-      F_Tn = ns*(Fhs_Tn + beta(1)*F1_Tn + beta(2)*F2_Tn + beta(3)*F3_Tn) + Fc_Tn - Ftc_Tn &
-           -ns*(beta(1)*F1_n + 2.0*beta(1)**2*F2_n + 3.0*beta(3)*F3_n)/T &
-           + saftvrmie_param%ms*am_T+ Fhse_Tn
+       F_Tn = ns*(Fhs_Tn + beta(1)*F1_Tn + beta(2)*F2_Tn + beta(3)*F3_Tn) + Fc_Tn - Ftc_Tn &
+            -ns*(beta(1)*F1_n + 2.0*beta(1)**2*F2_n + 3.0*beta(3)*F3_n)/T &
+            + saftvrmie_param%ms*am_T+ Fhse_Tn
     endif
     if (present(F_Vn)) then
-      F_Vn = ns*(Fhs_Vn + beta(1)*F1_Vn + beta(2)*F2_Vn + beta(3)*F3_Vn) + Fhse_Vn + Fc_Vn - Ftc_Vn &
-           + saftvrmie_param%ms*am_V
+       F_Vn = ns*(Fhs_Vn + beta(1)*F1_Vn + beta(2)*F2_Vn + beta(3)*F3_Vn) + Fhse_Vn + Fc_Vn - Ftc_Vn &
+            + saftvrmie_param%ms*am_V
     endif
     if (present(F_n) .or. present(F_nn)) then
-      am_n = Fhs_n + beta(1)*F1_n + beta(2)*F2_n + beta(3)*F3_n
+       am_n = Fhs_n + beta(1)*F1_n + beta(2)*F2_n + beta(3)*F3_n
     endif
     if (present(F_n)) then
-      F_n = ns*am_n + Fc_n - Ftc_n + saftvrmie_param%ms*am + Fhse_n
+       F_n = ns*am_n + Fc_n - Ftc_n + saftvrmie_param%ms*am + Fhse_n
     endif
     if (present(F_nn)) then
-      F_nn = ns*(Fhs_nn + beta(1)*F1_nn + beta(1)**2*F2_nn + beta(1)**3*F3_nn) + Fc_nn - Ftc_nn
-      do l=1,nc
-        F_nn(:,l) = F_nn(:,l) + saftvrmie_param%ms*am_n(l) + saftvrmie_param%ms(l)*am_n
-      enddo
-      ! Add extra term
-      F_nn=F_nn+Fhse_nn
+       F_nn = ns*(Fhs_nn + beta(1)*F1_nn + beta(1)**2*F2_nn + beta(1)**3*F3_nn) + Fc_nn - Ftc_nn
+       do l=1,nc
+          F_nn(:,l) = F_nn(:,l) + saftvrmie_param%ms*am_n(l) + saftvrmie_param%ms(l)*am_n
+       enddo
+       ! Add extra term
+       F_nn=F_nn+Fhse_nn
     endif
 
   end subroutine calcFresSAFTVRMie
@@ -479,19 +477,19 @@ contains
     call preCalcSAFTVRMie(nc,T,V,n,0,saftvrmie_var(1))
     select case(term)
     case(0)
-      ! Calculate hard-sphere term
-      call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),a)
+       ! Calculate hard-sphere term
+       call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),a)
     case(1)
-      ! Calculate first order monomer term
-      call calcA1(nc,T,V,n,saftvrmie_var(1),a)
+       ! Calculate first order monomer term
+       call calcA1(nc,T,V,n,saftvrmie_var(1),a)
     case(2)
-      ! Calculate second order monomer term
-      call calcA2(nc,T,V,n,saftvrmie_var(1),a)
+       ! Calculate second order monomer term
+       call calcA2(nc,T,V,n,saftvrmie_var(1),a)
     case(3)
-      ! Calculate third order monomer term
-      call calcA3(nc,T,V,n,saftvrmie_var(1),a)
+       ! Calculate third order monomer term
+       call calcA3(nc,T,V,n,saftvrmie_var(1),a)
     case default
-      a = 0.0
+       a = 0.0
     end select
   end function calc_saftvrmie_term
 
@@ -510,26 +508,26 @@ contains
     real :: alpha(nc,nc)
     ! Locals
     if (quantum_correction_hs > 0) then
-      ! NB: the order of the function calls below is important
-      !
-      ! Calculate Feynman--Hibbs D parameter
-      call calc_DFeynHibbsij(nc, T, saftvrmie_param%DFeynHibbsParam_ij, &
-           saftvrmie_var(1)%DFeynHibbsij, saftvrmie_var(1)%D2FeynHibbsij)
-      ! Calculate effective sigma
-      call calc_binary_effective_sigma(nc,T,saftvrmie_var(1),saftvrmie_var(1)%sigma_eff%d,&
-           saftvrmie_var(1)%sigma_eff%d_T,saftvrmie_var(1)%sigma_eff%d_TT)
-      ! Calculate effective epsilon divided by k
-      call calc_binary_effective_eps_divk(nc,T,saftvrmie_var(1),saftvrmie_var(1)%eps_divk_eff%d,&
-           saftvrmie_var(1)%eps_divk_eff%d_T,saftvrmie_var(1)%eps_divk_eff%d_TT)
-      ! Calculate hard-sphere diameter
-      call calc_hardsphere_diameter(nc,T,saftvrmie_var(1),saftvrmie_var(1)%sigma_eff%d,&
-         saftvrmie_var(1)%sigma_eff%d_T,saftvrmie_var(1)%sigma_eff%d_TT,saftvrmie_var(1)%dhs%d,&
-         saftvrmie_var(1)%dhs%d_T,saftvrmie_var(1)%dhs%d_TT)
-      ! Calculate dimensionless van der Waals energy
-      call calcAlpha(nc,saftvrmie_var(1)%sigma_eff,saftvrmie_var(1)%eps_divk_eff,&
-           T,saftvrmie_var(1),alpha,saftvrmie_var(1)%alpha%d_T,saftvrmie_var(1)%alpha%d_TT)
+       ! NB: the order of the function calls below is important
+       !
+       ! Calculate Feynman--Hibbs D parameter
+       call calc_DFeynHibbsij(nc, T, saftvrmie_param%DFeynHibbsParam_ij, &
+            saftvrmie_var(1)%DFeynHibbsij, saftvrmie_var(1)%D2FeynHibbsij)
+       ! Calculate effective sigma
+       call calc_binary_effective_sigma(nc,T,saftvrmie_var(1),saftvrmie_var(1)%sigma_eff%d,&
+            saftvrmie_var(1)%sigma_eff%d_T,saftvrmie_var(1)%sigma_eff%d_TT)
+       ! Calculate effective epsilon divided by k
+       call calc_binary_effective_eps_divk(nc,T,saftvrmie_var(1),saftvrmie_var(1)%eps_divk_eff%d,&
+            saftvrmie_var(1)%eps_divk_eff%d_T,saftvrmie_var(1)%eps_divk_eff%d_TT)
+       ! Calculate hard-sphere diameter
+       call calc_hardsphere_diameter(nc,T,saftvrmie_var(1),saftvrmie_var(1)%sigma_eff%d,&
+            saftvrmie_var(1)%sigma_eff%d_T,saftvrmie_var(1)%sigma_eff%d_TT,saftvrmie_var(1)%dhs%d,&
+            saftvrmie_var(1)%dhs%d_T,saftvrmie_var(1)%dhs%d_TT)
+       ! Calculate dimensionless van der Waals energy
+       call calcAlpha(nc,saftvrmie_var(1)%sigma_eff,saftvrmie_var(1)%eps_divk_eff,&
+            T,saftvrmie_var(1),alpha,saftvrmie_var(1)%alpha%d_T,saftvrmie_var(1)%alpha%d_TT)
     else
-      alpha = saftvrmie_param%alpha_ij
+       alpha = saftvrmie_param%alpha_ij
     endif
   end function calc_alpha_saftvrmie
 
@@ -924,7 +922,7 @@ subroutine test_A1ij()
   use saftvrmie_interface
   use saftvrmie_hardsphere
   use saftvrmie_dispersion
-    use tpvar, only: cbeos
+  use tpvar, only: cbeos
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   type(saftvrmie_var_container) :: s_vc
@@ -1401,9 +1399,9 @@ subroutine test_A3()
   real :: a3_a,a3_aa,a3_az,a32_a,a32_aa,a32_az
   call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   if (nc == 2) then
-    n = (/0.2,1.2/)
+     n = (/0.2,1.2/)
   else
-    n = 1.2
+     n = 1.2
   endif
   n0 = n
   V = 1.0e-4
@@ -1470,19 +1468,19 @@ subroutine test_A3()
   ! print *,a1_VTn(1),(a1p_TV - a1_TV)/eps
   !stop
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcA3(nc,T,V,n,saftvrmie_var(1),&
-         a1p,a1p_T,a1p_V,a1p_n,a1p_TT,a1p_VV,a1p_TV,a1p_Tn,a1p_Vn,a1p_nn)
-    print *,a1_n(2),(a1p - a1)/eps
-    print *,a1_Tn(2),(a1p_T - a1_T)/eps
-    print *,a1_Vn(2),(a1p_V - a1_V)/eps
-    print *,a1_nn(2,:),(a1p_n - a1_n)/eps
-    ! print *,a1_VVn(2),(a1p_VV - a1_VV)/eps
-    ! print *,a1_Vnn(2,:),(a1p_Vn - a1_Vn)/eps
-    ! print *,a1_VTn(2),(a1p_TV - a1_TV)/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcA3(nc,T,V,n,saftvrmie_var(1),&
+          a1p,a1p_T,a1p_V,a1p_n,a1p_TT,a1p_VV,a1p_TV,a1p_Tn,a1p_Vn,a1p_nn)
+     print *,a1_n(2),(a1p - a1)/eps
+     print *,a1_Tn(2),(a1p_T - a1_T)/eps
+     print *,a1_Vn(2),(a1p_V - a1_V)/eps
+     print *,a1_nn(2,:),(a1p_n - a1_n)/eps
+     ! print *,a1_VVn(2),(a1p_VV - a1_VV)/eps
+     ! print *,a1_Vnn(2,:),(a1p_Vn - a1_Vn)/eps
+     ! print *,a1_VTn(2),(a1p_TV - a1_TV)/eps
   endif
   print *,"T"
   n = n0
@@ -1524,41 +1522,41 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
   real, dimension(nc,nc,nc) :: g02_nn
 
   if (present(qc)) then
-    quantum_correction=qc
+     quantum_correction=qc
   else
-    quantum_correction=1
+     quantum_correction=1
   endif
   if (present(doInit)) then
-    doInit_L = doInit
+     doInit_L = doInit
   else
-    doInit_L = .true.
+     doInit_L = .true.
   endif
   if (doInit_L) then
-    if (nc == 2) then
-      call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-    else
-      call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-    endif
+     if (nc == 2) then
+        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     else
+        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+     endif
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    if (nc == 2) then
-      n = (/0.2,1.2/)
-    else
-      n = 0.9
-    endif
+     if (nc == 2) then
+        n = (/0.2,1.2/)
+     else
+        n = 0.9
+     endif
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   eps = 1.0e-8
   i = 1
@@ -1613,16 +1611,16 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
   print *,g0_Tn(:,i),(g02_n(:,i) - g0_n(:,i))/(T*eps)
 
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call rdf_at_contact_zeroth_order_TVn(nc,T,V,n,saftvrmie_var(1),&
-         g02,g02_T,g02_V,g02_n,g02_TT,g02_VV,g02_TV,g02_Tn,g02_Vn,g02_nn)
-    print *,g0_n(2,i),(g02(i) - g0(i))/eps
-    print *,g0_Tn(2,i),(g02_T(i) - g0_T(i))/eps
-    print *,g0_Vn(2,i),(g02_V(i) - g0_V(i))/eps
-    print *,g0_nn(2,:,i),(g02_n(:,i) - g0_n(:,i))/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call rdf_at_contact_zeroth_order_TVn(nc,T,V,n,saftvrmie_var(1),&
+          g02,g02_T,g02_V,g02_n,g02_TT,g02_VV,g02_TV,g02_Tn,g02_Vn,g02_nn)
+     print *,g0_n(2,i),(g02(i) - g0(i))/eps
+     print *,g0_Tn(2,i),(g02_T(i) - g0_T(i))/eps
+     print *,g0_Vn(2,i),(g02_V(i) - g0_V(i))/eps
+     print *,g0_nn(2,:,i),(g02_n(:,i) - g0_n(:,i))/eps
   endif
   stop
 end subroutine test_g0
@@ -1656,41 +1654,41 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   type(saftvrmie_zeta) :: pf, pf2
 
   if (present(qc)) then
-    quantum_correction=qc
+     quantum_correction=qc
   else
-    quantum_correction=1
+     quantum_correction=1
   endif
   if (present(doInit)) then
-    doInit_L = doInit
+     doInit_L = doInit
   else
-    doInit_L = .true.
+     doInit_L = .true.
   endif
   if (doInit_L) then
-    if (nc == 2) then
-      call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-    else
-      call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-    endif
+     if (nc == 2) then
+        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     else
+        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+     endif
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    if (nc == 2) then
-      n = (/0.2,1.2/)
-    else
-      n = 0.9
-    endif
+     if (nc == 2) then
+        n = (/0.2,1.2/)
+     else
+        n = 0.9
+     endif
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   eps = 1.0e-5
   i = 1
@@ -1716,56 +1714,56 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   print *,g_ex,(g2_e - g_e)/(eps)
 
   if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-    call allocate_saftvrmie_zeta(nc,pf)
-    call allocate_saftvrmie_zeta(nc,pf2)
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf)
-    call preCalcSAFTVRMie(nc,T,V+V*eps,n,2,saftvrmie_var(1))
-    call calcGX1_prefac_pure_ref(nc,T,V+V*eps,n,saftvrmie_var(1)%d_pure,pf2)
-    print *,"Testing prefactor"
-    print *,"V"
-    print *,pf%zx
-    print *,pf%zx_V,(pf2%zx - pf%zx)/(V*eps)
-    print *,pf%zx_VV,(pf2%zx_V - pf%zx_V)/(V*eps)
-    print *,pf%zx_TV,(pf2%zx_T - pf%zx_T)/(V*eps)
-    print *,pf%zx_Vn,(pf2%zx_n - pf%zx_n)/(V*eps)
+     call allocate_saftvrmie_zeta(nc,pf)
+     call allocate_saftvrmie_zeta(nc,pf2)
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf)
+     call preCalcSAFTVRMie(nc,T,V+V*eps,n,2,saftvrmie_var(1))
+     call calcGX1_prefac_pure_ref(nc,T,V+V*eps,n,saftvrmie_var(1)%d_pure,pf2)
+     print *,"Testing prefactor"
+     print *,"V"
+     print *,pf%zx
+     print *,pf%zx_V,(pf2%zx - pf%zx)/(V*eps)
+     print *,pf%zx_VV,(pf2%zx_V - pf%zx_V)/(V*eps)
+     print *,pf%zx_TV,(pf2%zx_T - pf%zx_T)/(V*eps)
+     print *,pf%zx_Vn,(pf2%zx_n - pf%zx_n)/(V*eps)
 
-    call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,saftvrmie_var(1))
-    call calcGX1_prefac_pure_ref(nc,T+T*eps,V,n,saftvrmie_var(1)%d_pure,pf2)
-    print *,"T"
-    print *,pf%zx_T,(pf2%zx - pf%zx)/(T*eps)
-    print *,pf%zx_TT,(pf2%zx_T - pf%zx_T)/(T*eps)
-    print *,pf%zx_TV,(pf2%zx_V - pf%zx_V)/(T*eps)
-    print *,pf%zx_Tn,(pf2%zx_n - pf%zx_n)/(T*eps)
+     call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,saftvrmie_var(1))
+     call calcGX1_prefac_pure_ref(nc,T+T*eps,V,n,saftvrmie_var(1)%d_pure,pf2)
+     print *,"T"
+     print *,pf%zx_T,(pf2%zx - pf%zx)/(T*eps)
+     print *,pf%zx_TT,(pf2%zx_T - pf%zx_T)/(T*eps)
+     print *,pf%zx_TV,(pf2%zx_V - pf%zx_V)/(T*eps)
+     print *,pf%zx_Tn,(pf2%zx_n - pf%zx_n)/(T*eps)
 
-    n(1) = n(1) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf2)
-    print *,"n1"
-    print *,pf%zx_n(1),(pf2%zx - pf%zx)/(eps)
-    print *,pf%zx_Tn(1),(pf2%zx_T - pf%zx_T)/(eps)
-    print *,pf%zx_Vn(1),(pf2%zx_V - pf%zx_V)/(eps)
-    print *,pf%zx_nn(:,1),(pf2%zx_n - pf%zx_n)/(eps)
+     n(1) = n(1) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf2)
+     print *,"n1"
+     print *,pf%zx_n(1),(pf2%zx - pf%zx)/(eps)
+     print *,pf%zx_Tn(1),(pf2%zx_T - pf%zx_T)/(eps)
+     print *,pf%zx_Vn(1),(pf2%zx_V - pf%zx_V)/(eps)
+     print *,pf%zx_nn(:,1),(pf2%zx_n - pf%zx_n)/(eps)
 
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf2)
-    print *,"n1"
-    print *,pf%zx_n(2),(pf2%zx - pf%zx)/(eps)
-    print *,pf%zx_Tn(2),(pf2%zx_T - pf%zx_T)/(eps)
-    print *,pf%zx_Vn(2),(pf2%zx_V - pf%zx_V)/(eps)
-    print *,pf%zx_nn(:,2),(pf2%zx_n - pf%zx_n)/(eps)
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcGX1_prefac_pure_ref(nc,T,V,n,saftvrmie_var(1)%d_pure,pf2)
+     print *,"n1"
+     print *,pf%zx_n(2),(pf2%zx - pf%zx)/(eps)
+     print *,pf%zx_Tn(2),(pf2%zx_T - pf%zx_T)/(eps)
+     print *,pf%zx_Vn(2),(pf2%zx_V - pf%zx_V)/(eps)
+     print *,pf%zx_nn(:,2),(pf2%zx_n - pf%zx_n)/(eps)
 
-    call cleanup_saftvrmie_zeta(pf)
-    call cleanup_saftvrmie_zeta(pf2)
+     call cleanup_saftvrmie_zeta(pf)
+     call cleanup_saftvrmie_zeta(pf2)
   endif
   n = n0
   call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
   call calcA1(nc,T,V,n,saftvrmie_var(1),&
-           g1(i),a1_T=g1_T(i),a1_V=g1_V(i),a1_n=g1_n(:,i),a1_TT=g1_TT(i),a1_VV=g1_VV(i),&
-           a1_TV=g1_TV(i),a1_Tn=g1_Tn(:,i),a1_Vn=g1_Vn(:,i),a1_nn=g1_nn(:,:,i),&
-           a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
+       g1(i),a1_T=g1_T(i),a1_V=g1_V(i),a1_n=g1_n(:,i),a1_TT=g1_TT(i),a1_VV=g1_VV(i),&
+       a1_TV=g1_TV(i),a1_Tn=g1_Tn(:,i),a1_Vn=g1_Vn(:,i),a1_nn=g1_nn(:,:,i),&
+       a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
   call calcG11_if(nc,T,V,n,i,saftvrmie_var(1),&
        g1(i),g1_T(i),g1_V(i),g1_n(:,i),g1_TT(i),g1_VV(i),g1_TV(i),&
        g1_Tn(:,i),g1_Vn(:,i),g1_nn(:,:,i))
@@ -1804,23 +1802,23 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   print *,g1_nn(1,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   !stop
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcA1(nc,T,V,n,saftvrmie_var(1),&
-         g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
-         a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
-         a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
-    call calcG11_if(nc,T,V,n,i,saftvrmie_var(1),&
-         g12(i),g12_T(i),g12_V(i),g12_n(:,i),g12_TT(i),g12_VV(i),g12_TV(i),&
-         g12_Tn(:,i),g12_Vn(:,i),g12_nn(:,:,i))
-    print *,g1_n(2,i),(g12(i) - g1(i))/eps
-    print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
-    print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
-    print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcA1(nc,T,V,n,saftvrmie_var(1),&
+          g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
+          a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
+          a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
+     call calcG11_if(nc,T,V,n,i,saftvrmie_var(1),&
+          g12(i),g12_T(i),g12_V(i),g12_n(:,i),g12_TT(i),g12_VV(i),g12_TV(i),&
+          g12_Tn(:,i),g12_Vn(:,i),g12_nn(:,:,i))
+     print *,g1_n(2,i),(g12(i) - g1(i))/eps
+     print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
+     print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
+     print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   endif
-  
+
   print *,"T"
   n = n0
   call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,saftvrmie_var(1))
@@ -1879,23 +1877,23 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   print *,g1_nn(1,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   !stop
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcA1(nc,T,V,n,saftvrmie_var(1),&
-         g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
-         a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
-         a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
-    call rdf_at_contact_first_order_TVn(nc,T,V,n,saftvrmie_var(1),&
-         g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
-         g12_Tn,g12_Vn,g12_nn)
-    print *,g1_n(2,i),(g12(i) - g1(i))/eps
-    print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
-    print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
-    print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcA1(nc,T,V,n,saftvrmie_var(1),&
+          g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
+          a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
+          a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
+     call rdf_at_contact_first_order_TVn(nc,T,V,n,saftvrmie_var(1),&
+          g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
+          g12_Tn,g12_Vn,g12_nn)
+     print *,g1_n(2,i),(g12(i) - g1(i))/eps
+     print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
+     print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
+     print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   endif
-  
+
   print *,"T"
   n = n0
   call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,saftvrmie_var(1))
@@ -1942,41 +1940,41 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
   real, dimension(nc) :: g2_VVn,g2_Vn,g2p_Vn
   no_correction = .true.
   if (present(qc)) then
-    quantum_correction=qc
+     quantum_correction=qc
   else
-    quantum_correction=1
+     quantum_correction=1
   endif
   if (present(doInit)) then
-    doInit_L = doInit
+     doInit_L = doInit
   else
-    doInit_L = .true.
+     doInit_L = .true.
   endif
   if (doInit_L) then
-    if (nc == 2) then
-      call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-    else
-      call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-    endif
+     if (nc == 2) then
+        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     else
+        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+     endif
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    if (nc == 2) then
-      n = (/0.2,1.2/)
-    else
-      n = 0.9
-    endif
+     if (nc == 2) then
+        n = (/0.2,1.2/)
+     else
+        n = 0.9
+     endif
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   eps = 1.0e-5
   i = 1
@@ -2047,20 +2045,20 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
   print *,g1_nn(1,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   !stop
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcA2(nc,T,V,n,saftvrmie_var(1),&
-         g12(i),a2_T=g12_T(i),a2_V=g12_V(i),a2_n=g12_n(:,i),a2_TT=g12_TT(i),a2_VV=g12_VV(i),&
-         a2_TV=g12_TV(i),a2_Tn=g12_Tn(:,i),a2_Vn=g12_Vn(:,i),a2_nn=g12_nn(:,:,i))
-    call rdf_at_contact_second_order_TVn(nc,T,V,n,saftvrmie_var(1),no_correction,&
-         g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
-         g12_Tn,g12_Vn,g12_nn)
-    print *,g1_n(2,i),(g12(i) - g1(i))/eps
-    print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
-    print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
-    print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcA2(nc,T,V,n,saftvrmie_var(1),&
+          g12(i),a2_T=g12_T(i),a2_V=g12_V(i),a2_n=g12_n(:,i),a2_TT=g12_TT(i),a2_VV=g12_VV(i),&
+          a2_TV=g12_TV(i),a2_Tn=g12_Tn(:,i),a2_Vn=g12_Vn(:,i),a2_nn=g12_nn(:,:,i))
+     call rdf_at_contact_second_order_TVn(nc,T,V,n,saftvrmie_var(1),no_correction,&
+          g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
+          g12_Tn,g12_Vn,g12_nn)
+     print *,g1_n(2,i),(g12(i) - g1(i))/eps
+     print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
+     print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
+     print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   endif
 
   print *,"T"
@@ -2107,42 +2105,42 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
   real, dimension(nc) :: a1_VVn,a1_VTn
   real, dimension(nc,nc) :: a1_Vnn
 
-    if (present(qc)) then
-    quantum_correction=qc
+  if (present(qc)) then
+     quantum_correction=qc
   else
-    quantum_correction=1
+     quantum_correction=1
   endif
   if (present(doInit)) then
-    doInit_L = doInit
+     doInit_L = doInit
   else
-    doInit_L = .true.
+     doInit_L = .true.
   endif
   if (doInit_L) then
-    if (nc == 2) then
-      call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-    else
-      call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-    endif
+     if (nc == 2) then
+        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     else
+        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+     endif
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    if (nc == 2) then
-      n = (/0.2,1.2/)
-    else
-      n = 0.9
-    endif
+     if (nc == 2) then
+        n = (/0.2,1.2/)
+     else
+        n = 0.9
+     endif
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   eps = 1.0e-4
   i = 1
@@ -2217,24 +2215,24 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
   print *,g1_nn(1,:,i),(g12_n(:,i) - g1_n(:,i))/eps
 
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call calcA1(nc,T,V,n,saftvrmie_var(1),&
-         g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
-         a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
-         a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
-    call calcA2(nc,T,V,n,saftvrmie_var(1),&
-         g12(i),a2_T=g12_T(i),a2_V=g12_V(i),a2_n=g12_n(:,i),a2_TT=g12_TT(i),a2_VV=g12_VV(i),&
-         a2_TV=g12_TV(i),a2_Tn=g12_Tn(:,i),a2_Vn=g12_Vn(:,i),a2_nn=g12_nn(:,:,i))
-    call rdf_at_contact(nc,T,V,n,saftvrmie_var(1),&
-         g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
-         g12_Tn,g12_Vn,g12_nn)
-    print *,g1_n(2,i),(g12(i) - g1(i))/eps
-    print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
-    print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
-    print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+     call calcA1(nc,T,V,n,saftvrmie_var(1),&
+          g12(i),a1_T=g12_T(i),a1_V=g12_V(i),a1_n=g12_n(:,i),a1_TT=g12_TT(i),a1_VV=g12_VV(i),&
+          a1_TV=g12_TV(i),a1_Tn=g12_Tn(:,i),a1_Vn=g12_Vn(:,i),a1_nn=g12_nn(:,:,i),&
+          a1_VVV=a1_VVV,a1_VVT=a1_VVT,a1_VTT=a1_VTT,a1_VVn=a1_VVn,a1_Vnn=a1_Vnn,a1_VTn=a1_VTn)
+     call calcA2(nc,T,V,n,saftvrmie_var(1),&
+          g12(i),a2_T=g12_T(i),a2_V=g12_V(i),a2_n=g12_n(:,i),a2_TT=g12_TT(i),a2_VV=g12_VV(i),&
+          a2_TV=g12_TV(i),a2_Tn=g12_Tn(:,i),a2_Vn=g12_Vn(:,i),a2_nn=g12_nn(:,:,i))
+     call rdf_at_contact(nc,T,V,n,saftvrmie_var(1),&
+          g12,g12_T,g12_V,g12_n,g12_TT,g12_VV,g12_TV,&
+          g12_Tn,g12_Vn,g12_nn)
+     print *,g1_n(2,i),(g12(i) - g1(i))/eps
+     print *,g1_Tn(2,i),(g12_T(i) - g1_T(i))/eps
+     print *,g1_Vn(2,i),(g12_V(i) - g1_V(i))/eps
+     print *,g1_nn(2,:,i),(g12_n(:,i) - g1_n(:,i))/eps
   endif
 
   stop
@@ -2392,33 +2390,33 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   real, dimension(nc,nc,nc) :: g12_nn
   return_F = .true.
   if (present(qc)) then
-    quantum_correction=qc
+     quantum_correction=qc
   else
-    quantum_correction=1
+     quantum_correction=1
   endif
   if (present(doInit)) then
-    doInit_L = doInit
+     doInit_L = doInit
   else
-    doInit_L = .true.
+     doInit_L = .true.
   endif
   if (doInit_L) then
-    call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+     call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    n = (/0.9/)
+     n = (/0.9/)
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   eps = 1.0e-8
   i = 1
@@ -2515,32 +2513,32 @@ subroutine test_fres(Ti,Vi,ni,doInit)
   !enable_chain = .false.
   quantum_correction=0
   if (present(doInit)) then
-    call_init = doInit
+     call_init = doInit
   else
-    call_init = .true.
+     call_init = .true.
   endif
   if (call_init) then
-    call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    if (nc == 2) then
-      n = (/0.2,1.2/)
-    else
-      n = 0.9
-    endif
+     if (nc == 2) then
+        n = (/0.2,1.2/)
+     else
+        n = 0.9
+     endif
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
 
   eps = 1.0e-8
@@ -2568,15 +2566,15 @@ subroutine test_fres(Ti,Vi,ni,doInit)
   print *,F_nn(1,:),(Fp_n - F_n)/eps
   !stop
   if (nc > 1) then
-    print *,"n2"
-    n = n0
-    n(2) = n(2) + eps
-    call calcFresSAFTVRMie(nc,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
-         Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-    print *,F_n(2),(Fp - F)/eps
-    print *,F_Tn(2),(Fp_T - F_T)/eps
-    print *,F_Vn(2),(Fp_V - F_V)/eps
-    print *,F_nn(2,:),(Fp_n - F_n)/eps
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call calcFresSAFTVRMie(nc,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+          Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+     print *,F_n(2),(Fp - F)/eps
+     print *,F_Tn(2),(Fp_T - F_T)/eps
+     print *,F_Vn(2),(Fp_V - F_V)/eps
+     print *,F_nn(2,:),(Fp_n - F_n)/eps
   endif
 
   print *,"T"
@@ -2988,11 +2986,11 @@ subroutine test_hard_sphere_diameter
   call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,saftvrmie_var(1))
   print *,"T"
   do i=1,nc
-    do j=1,nc
-      print *,"i,j,d: ",i,j,d(i,j)
-      print *,d_T(i,j),(saftvrmie_var(1)%dhs%d(i,j)-d(i,j))/(T*eps)
-      print *,d_TT(i,j),(saftvrmie_var(1)%dhs%d_T(i,j)-d_T(i,j))/(T*eps)
-    enddo
+     do j=1,nc
+        print *,"i,j,d: ",i,j,d(i,j)
+        print *,d_T(i,j),(saftvrmie_var(1)%dhs%d(i,j)-d(i,j))/(T*eps)
+        print *,d_TT(i,j),(saftvrmie_var(1)%dhs%d_T(i,j)-d_T(i,j))/(T*eps)
+     enddo
   enddo
   stop
 end subroutine test_hard_sphere_diameter
@@ -3229,13 +3227,13 @@ subroutine test_hard_sphere_Santos
   call calc_hardsphere_virial_Bijk(nc,saftvrmie_var(1)%dhs,B2_ijk,B2_ijk_T, B2_ijk_TT)
   print *,"T"
   do i=1,nc
-    do j=1,nc
-      do k=1,nc
-        print *,"i,j,k,B_ijk: ",i,j,k,B_ijk(i,j,k)
-        print *,"B_T, B_T num:",B_ijk_T(i,j,k),(B2_ijk(i,j,k) - B_ijk(i,j,k))/(T*eps)
-        print *,"B_TT, B_TT num:",B_ijk_TT(i,j,k),(B2_ijk_T(i,j,k) - B_ijk_T(i,j,k))/(T*eps)
-      enddo
-    enddo
+     do j=1,nc
+        do k=1,nc
+           print *,"i,j,k,B_ijk: ",i,j,k,B_ijk(i,j,k)
+           print *,"B_T, B_T num:",B_ijk_T(i,j,k),(B2_ijk(i,j,k) - B_ijk(i,j,k))/(T*eps)
+           print *,"B_TT, B_TT num:",B_ijk_TT(i,j,k),(B2_ijk_T(i,j,k) - B_ijk_T(i,j,k))/(T*eps)
+        enddo
+     enddo
   enddo
 
   print *,"Testing Santos virial B2"
@@ -3387,7 +3385,7 @@ subroutine test_hard_sphere_Santos
   print *,aP1_n(2),(aP1d - aP1)/(eps)
   print *,aP1_Tn(2),(aP1d_T - aP1_T)/(eps)
   print *,aP1_nn(2,:),(aP1d_n - aP1_n)/(eps)
-  
+
   print *,"Testing Santos F22"
   n = n0
   call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
@@ -4130,28 +4128,28 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   logical :: call_init
 
   if (present(doInit)) then
-    call_init = doInit
+     call_init = doInit
   else
-    call_init = .true.
+     call_init = .true.
   endif
   if (call_init) then
-    call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    n = (/1.2/)
+     n = (/1.2/)
   endif
   n0 = n
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
 
   eps = 1.0e-8
@@ -4215,27 +4213,27 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   logical :: call_init
   quantum_correction=0
   if (present(doInit)) then
-    call_init = doInit
+     call_init = doInit
   else
-    call_init = .true.
+     call_init = .true.
   endif
   if (call_init) then
-    call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   endif
   if (present(ni)) then
-    n = ni
+     n = ni
   else
-    n = (/0.2,1.2/)
+     n = (/0.2,1.2/)
   endif
   if (present(Vi)) then
-    V = Vi
+     V = Vi
   else
-    V = 1.0e-4
+     V = 1.0e-4
   endif
   if (present(Ti)) then
-    T = Ti
+     T = Ti
   else
-    T = 5.0
+     T = 5.0
   endif
   !p = pressure(T,v,n)
 
@@ -4343,7 +4341,7 @@ subroutine print_fres(T,V,n)
   print *,"F_Tn",F_Tn
   print *,"F_n ",F_n
   do i=1,nc
-    print *,"F_nn",F_nn(i,:)
+     print *,"F_nn",F_nn(i,:)
   enddo
   print *
 end subroutine print_fres
@@ -4363,28 +4361,28 @@ subroutine print_a2chi(T,V,n)
        F_VV,F_TV,F_Tn,F_Vn,F_nn)
 
   do j=1,2
-    print *,"a2/(1-chi)"
-    print *,"a2 ",saftvrmie_var(1)%a2chij%am(j,j)
-    print *,"a2_T ",saftvrmie_var(1)%a2chij%am_T(j,j)
-    print *,"a2_V ",saftvrmie_var(1)%a2chij%am_V(j,j)
-    print *,"a2_TT ",saftvrmie_var(1)%a2chij%am_TT(j,j)
-    print *,"a2_VV ",saftvrmie_var(1)%a2chij%am_VV(j,j)
-    print *,"a2_TV ",saftvrmie_var(1)%a2chij%am_TV(j,j)
-    print *,"a2_VVV ",saftvrmie_var(1)%a2chij%am_VVV(j,j)
-    print *,"a2_VVT ",saftvrmie_var(1)%a2chij%am_VVT(j,j)
-    print *,"a2_VTT ",saftvrmie_var(1)%a2chij%am_VTT(j,j)
-    print *,"a2_n ",saftvrmie_var(1)%a2chij%am_n(:,j,j)
-    print *,"a2_Tn ",saftvrmie_var(1)%a2chij%am_Tn(:,j,j)
-    print *,"a2_Vn ",saftvrmie_var(1)%a2chij%am_Vn(:,j,j)
-    print *,"a2_VVn ",saftvrmie_var(1)%a2chij%am_VVn(:,j,j)
-    print *,"a2_VTn ",saftvrmie_var(1)%a2chij%am_VTn(:,j,j)
-    do i=1,nc
-      print *,"a2_nn",saftvrmie_var(1)%a2chij%am_nn(i,:,j,j)
-    enddo
-    do i=1,nc
-      print *,"a2_Vnn",saftvrmie_var(1)%a2chij%am_Vnn(i,:,j,j)
-    enddo
-    print *
+     print *,"a2/(1-chi)"
+     print *,"a2 ",saftvrmie_var(1)%a2chij%am(j,j)
+     print *,"a2_T ",saftvrmie_var(1)%a2chij%am_T(j,j)
+     print *,"a2_V ",saftvrmie_var(1)%a2chij%am_V(j,j)
+     print *,"a2_TT ",saftvrmie_var(1)%a2chij%am_TT(j,j)
+     print *,"a2_VV ",saftvrmie_var(1)%a2chij%am_VV(j,j)
+     print *,"a2_TV ",saftvrmie_var(1)%a2chij%am_TV(j,j)
+     print *,"a2_VVV ",saftvrmie_var(1)%a2chij%am_VVV(j,j)
+     print *,"a2_VVT ",saftvrmie_var(1)%a2chij%am_VVT(j,j)
+     print *,"a2_VTT ",saftvrmie_var(1)%a2chij%am_VTT(j,j)
+     print *,"a2_n ",saftvrmie_var(1)%a2chij%am_n(:,j,j)
+     print *,"a2_Tn ",saftvrmie_var(1)%a2chij%am_Tn(:,j,j)
+     print *,"a2_Vn ",saftvrmie_var(1)%a2chij%am_Vn(:,j,j)
+     print *,"a2_VVn ",saftvrmie_var(1)%a2chij%am_VVn(:,j,j)
+     print *,"a2_VTn ",saftvrmie_var(1)%a2chij%am_VTn(:,j,j)
+     do i=1,nc
+        print *,"a2_nn",saftvrmie_var(1)%a2chij%am_nn(i,:,j,j)
+     enddo
+     do i=1,nc
+        print *,"a2_Vnn",saftvrmie_var(1)%a2chij%am_Vnn(i,:,j,j)
+     enddo
+     print *
   enddo
 end subroutine print_a2chi
 
@@ -4481,8 +4479,8 @@ subroutine test_mixKhs(T,V,n)
   call allocate_saftvrmie_zeta(nc,zL2)
   call allocate_saftvrmie_zeta(nc,zK2)
   do j=1,3
-    call allocate_saftvrmie_zeta(nc,M(j))
-    call allocate_saftvrmie_zeta(nc,M2(j))
+     call allocate_saftvrmie_zeta(nc,M(j))
+     call allocate_saftvrmie_zeta(nc,M2(j))
   enddo
   i = 1
   j = 2
@@ -4602,20 +4600,19 @@ subroutine test_mixKhs(T,V,n)
   !print *,"Khs_VTn ",saftvrmie_var(1)%Khs%zx_VTn(:,j,j),(s_vc%Khs%zx_TV(j,j)-saftvrmie_var(1)%Khs%zx_TV(j,j))/(eps*n(j))
 
   if (nc > 1) then
-    print *,"n2"
-    n1 = n
-    j = 2
-    n1(j) = n1(j) + n1(j)*eps
-    call preCalcSAFTVRMie(nc,T,V,n1,2,s_vc)
-    call calcMixKhsTVn(nc,T,V,n1,2,s_vc)
-    print *,"Khs_n ",saftvrmie_var(1)%Khs%zx_n(j),(s_vc%Khs%zx-saftvrmie_var(1)%Khs%zx)/(eps*n(j)),s_vc_pure%Khs%zx_n(j)
-    print *,"Khs_nn ",saftvrmie_var(1)%Khs%zx_nn(:,j),(s_vc%Khs%zx_n-saftvrmie_var(1)%Khs%zx_n)/(eps*n(j)),s_vc_pure%Khs%zx_nn(:,j)
-    print *,"Khs_Tn ",saftvrmie_var(1)%Khs%zx_Tn(j),(s_vc%Khs%zx_T-saftvrmie_var(1)%Khs%zx_T)/(eps*n(j)),s_vc_pure%Khs%zx_Tn(j)
-    print *,"Khs_Vn ",saftvrmie_var(1)%Khs%zx_Vn(j),(s_vc%Khs%zx_V-saftvrmie_var(1)%Khs%zx_V)/(eps*n(j)),s_vc_pure%Khs%zx_Vn(j)
-    !print *,"Khs_VVn",saftvrmie_var(1)%Khs%zx_VVn(:,j,j),(s_vc%Khs%zx_VV(j,j)-saftvrmie_var(1)%Khs%zx_VV(j,j))/(eps*n(j))
-    !print *,"Khs_Vnn ",saftvrmie_var(1)%Khs%zx_Vnn(:,j,j,j),&
-    !     (s_vc%Khs%zx_Vn(:,j,j)-saftvrmie_var(1)%Khs%zx_Vn(:,j,j))/(eps*n(j))
-    !print *,"Khs_VTn ",saftvrmie_var(1)%Khs%zx_VTn(:,j,j),(s_vc%Khs%zx_TV(j,j)-saftvrmie_var(1)%Khs%zx_TV(j,j))/(eps*n(j))
+     print *,"n2"
+     n1 = n
+     j = 2
+     n1(j) = n1(j) + n1(j)*eps
+     call preCalcSAFTVRMie(nc,T,V,n1,2,s_vc)
+     call calcMixKhsTVn(nc,T,V,n1,2,s_vc)
+     print *,"Khs_n ",saftvrmie_var(1)%Khs%zx_n(j),(s_vc%Khs%zx-saftvrmie_var(1)%Khs%zx)/(eps*n(j)),s_vc_pure%Khs%zx_n(j)
+     print *,"Khs_nn ",saftvrmie_var(1)%Khs%zx_nn(:,j),(s_vc%Khs%zx_n-saftvrmie_var(1)%Khs%zx_n)/(eps*n(j)),s_vc_pure%Khs%zx_nn(:,j)
+     print *,"Khs_Tn ",saftvrmie_var(1)%Khs%zx_Tn(j),(s_vc%Khs%zx_T-saftvrmie_var(1)%Khs%zx_T)/(eps*n(j)),s_vc_pure%Khs%zx_Tn(j)
+     print *,"Khs_Vn ",saftvrmie_var(1)%Khs%zx_Vn(j),(s_vc%Khs%zx_V-saftvrmie_var(1)%Khs%zx_V)/(eps*n(j)),s_vc_pure%Khs%zx_Vn(j)
+     !print *,"Khs_VVn",saftvrmie_var(1)%Khs%zx_VVn(:,j,j),(s_vc%Khs%zx_VV(j,j)-saftvrmie_var(1)%Khs%zx_VV(j,j))/(eps*n(j))
+     !print *,"Khs_Vnn ",saftvrmie_var(1)%Khs%zx_Vnn(:,j,j,j),&
+     !     (s_vc%Khs%zx_Vn(:,j,j)-saftvrmie_var(1)%Khs%zx_Vn(:,j,j))/(eps*n(j))
+     !print *,"Khs_VTn ",saftvrmie_var(1)%Khs%zx_VTn(:,j,j),(s_vc%Khs%zx_TV(j,j)-saftvrmie_var(1)%Khs%zx_TV(j,j))/(eps*n(j))
   endif
 end subroutine test_mixKhs
-

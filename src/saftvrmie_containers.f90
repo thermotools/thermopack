@@ -1,9 +1,7 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
+! Module for holding parameters of the SAFT-VR Mie EoS
 ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !---------------------------------------------------------------------
 
 module saftvrmie_containers
@@ -16,171 +14,171 @@ module saftvrmie_containers
 
   !> Container for SAFT-VR Mie static parameters
   type :: saftvrmie_param_container
-    sequence
-    !> Component parameters
-    type(saftvrmie_data), allocatable, dimension(:) :: comp
-    !> Binary interaction parameters for the well depth
-    real, allocatable, dimension(:,:) :: kij
-    !> Binary interaction parameters for the repulsive exponent
-    real, allocatable, dimension(:,:) :: gamma_ij
-    !> Binary interaction parameters for sigma
-    real, allocatable, dimension(:,:) :: lij
-    !> van der Waals-like attractive constant
-    real, allocatable, dimension(:,:) :: alpha_ij
-    !> Function of alpha
-    real, allocatable, dimension(:,:,:) :: f_alpha_ij
-    !> Binary attractive exponent of the Mie potential
-    real, allocatable, dimension(:,:) :: lambda_a_ij
-    !> Binary repulsive exponent of the Mie potential
-    real, allocatable, dimension(:,:) :: lambda_r_ij
-    !> Temperature-independent segment diameter (m)
-    real, allocatable, dimension(:,:) :: sigma_ij
-    !> Binary well depth divided by Boltzmann's k (K)
-    real, allocatable, dimension(:,:) :: eps_divk_ij
-    !> Binary Mie C factor
-    real, allocatable, dimension(:,:) :: Cij
-    !> T-independent part of binary Feynman--Hibbs D parameter
-    real, allocatable, dimension(:,:) :: DFeynHibbsParam_ij
-    !***** Duplicates included for speed and conveniance *****
-    !> Copy of comp(:)%ms for easy looping
-    real, allocatable, dimension(:) :: ms
-    !> Cube of temperature-independent segment diameter (m3)
-    real, allocatable, dimension(:,:) :: sigma_ij_cube
-    !> Parameters in the quantum correction, first order - attractive
-    real, allocatable, dimension(:,:) :: Quantum_const_1a_ij
-    !> Parameters in the quantum correction, first order - repulsive
-    real, allocatable, dimension(:,:) :: Quantum_const_1r_ij
-    !> Parameters in the quantum correction, second order - attractive
-    real, allocatable, dimension(:,:) :: Quantum_const_2a_ij
-    !> Parameters in the quantum correction, second order - repulsive
-    real, allocatable, dimension(:,:) :: Quantum_const_2r_ij
+     sequence
+     !> Component parameters
+     type(saftvrmie_data), allocatable, dimension(:) :: comp
+     !> Binary interaction parameters for the well depth
+     real, allocatable, dimension(:,:) :: kij
+     !> Binary interaction parameters for the repulsive exponent
+     real, allocatable, dimension(:,:) :: gamma_ij
+     !> Binary interaction parameters for sigma
+     real, allocatable, dimension(:,:) :: lij
+     !> van der Waals-like attractive constant
+     real, allocatable, dimension(:,:) :: alpha_ij
+     !> Function of alpha
+     real, allocatable, dimension(:,:,:) :: f_alpha_ij
+     !> Binary attractive exponent of the Mie potential
+     real, allocatable, dimension(:,:) :: lambda_a_ij
+     !> Binary repulsive exponent of the Mie potential
+     real, allocatable, dimension(:,:) :: lambda_r_ij
+     !> Temperature-independent segment diameter (m)
+     real, allocatable, dimension(:,:) :: sigma_ij
+     !> Binary well depth divided by Boltzmann's k (K)
+     real, allocatable, dimension(:,:) :: eps_divk_ij
+     !> Binary Mie C factor
+     real, allocatable, dimension(:,:) :: Cij
+     !> T-independent part of binary Feynman--Hibbs D parameter
+     real, allocatable, dimension(:,:) :: DFeynHibbsParam_ij
+     !***** Duplicates included for speed and conveniance *****
+     !> Copy of comp(:)%ms for easy looping
+     real, allocatable, dimension(:) :: ms
+     !> Cube of temperature-independent segment diameter (m3)
+     real, allocatable, dimension(:,:) :: sigma_ij_cube
+     !> Parameters in the quantum correction, first order - attractive
+     real, allocatable, dimension(:,:) :: Quantum_const_1a_ij
+     !> Parameters in the quantum correction, first order - repulsive
+     real, allocatable, dimension(:,:) :: Quantum_const_1r_ij
+     !> Parameters in the quantum correction, second order - attractive
+     real, allocatable, dimension(:,:) :: Quantum_const_2a_ij
+     !> Parameters in the quantum correction, second order - repulsive
+     real, allocatable, dimension(:,:) :: Quantum_const_2r_ij
   end type saftvrmie_param_container
 
   !> Container for a_ij and differentials
   type :: saftvrmie_aij
-    sequence
-    real, allocatable, dimension(:,:) :: am,am_T,am_V,am_TT,am_VV,am_TV
-    real, allocatable, dimension(:,:) :: am_VVV,am_VVT,am_VTT
-    real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
-    real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
+     sequence
+     real, allocatable, dimension(:,:) :: am,am_T,am_V,am_TT,am_VV,am_TV
+     real, allocatable, dimension(:,:) :: am_VVV,am_VVT,am_VTT
+     real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
+     real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
   end type saftvrmie_aij
 
   !> Container for hard-sphere diameter and differentials
   !> Also used for the Feynman--Hibbs D variable
   type :: saftvrmie_dhs
-    sequence
-    !> Hard sphere diameter
-    real, allocatable, dimension(:,:) :: d
-    !> Temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_T
-    !> Second temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_TT
+     sequence
+     !> Hard sphere diameter
+     real, allocatable, dimension(:,:) :: d
+     !> Temperature differential of hard sphere diameter
+     real, allocatable, dimension(:,:) :: d_T
+     !> Second temperature differential of hard sphere diameter
+     real, allocatable, dimension(:,:) :: d_TT
   end type saftvrmie_dhs
 
   !> Container for zeta and differentials (also used for functions of zeta)
   type :: saftvrmie_zeta
-    sequence
-    !> Hypotetical pure fluid packing fraction
-    real :: zx
-    !> Temperature differential of hypotetical pure fluid packing fraction
-    real :: zx_T
-    !> Second temperature differential of hypotetical pure fluid packing fraction
-    real :: zx_TT
-    !> Volume differential of hypotetical pure fluid packing fraction
-    real :: zx_V
-    !> Second volume differential of hypotetical pure fluid packing fraction
-    real :: zx_VV
-    !> Temperature and volume differential of hypotetical pure fluid packing fraction
-    real :: zx_TV
-    !> Mol number differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:) :: zx_n
-    !> Mol number and volume differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:) :: zx_Vn
-    !> Mol number and temperature differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:) :: zx_Tn
-    !> Second mol number differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:,:) :: zx_nn
-    !> Three time volume differential of hypotetical pure fluid packing fraction
-    real :: zx_VVV
-    !> Temperature and twice volume differential of hypotetical pure fluid packing fraction
-    real :: zx_VVT
-    !> Twice temperature and volume differential of hypotetical pure fluid packing fraction
-    real :: zx_VTT
-    !> Mol number, temperature and volume differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:) :: zx_VTn
-    !> Mol number and twice volume and volume differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:) :: zx_VVn
-    !> Volume and twice mol number and temperature differential of hypotetical pure fluid packing fraction
-    real, allocatable, dimension(:,:) :: zx_Vnn
+     sequence
+     !> Hypotetical pure fluid packing fraction
+     real :: zx
+     !> Temperature differential of hypotetical pure fluid packing fraction
+     real :: zx_T
+     !> Second temperature differential of hypotetical pure fluid packing fraction
+     real :: zx_TT
+     !> Volume differential of hypotetical pure fluid packing fraction
+     real :: zx_V
+     !> Second volume differential of hypotetical pure fluid packing fraction
+     real :: zx_VV
+     !> Temperature and volume differential of hypotetical pure fluid packing fraction
+     real :: zx_TV
+     !> Mol number differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:) :: zx_n
+     !> Mol number and volume differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:) :: zx_Vn
+     !> Mol number and temperature differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:) :: zx_Tn
+     !> Second mol number differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:,:) :: zx_nn
+     !> Three time volume differential of hypotetical pure fluid packing fraction
+     real :: zx_VVV
+     !> Temperature and twice volume differential of hypotetical pure fluid packing fraction
+     real :: zx_VVT
+     !> Twice temperature and volume differential of hypotetical pure fluid packing fraction
+     real :: zx_VTT
+     !> Mol number, temperature and volume differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:) :: zx_VTn
+     !> Mol number and twice volume and volume differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:) :: zx_VVn
+     !> Volume and twice mol number and temperature differential of hypotetical pure fluid packing fraction
+     real, allocatable, dimension(:,:) :: zx_Vnn
   end type saftvrmie_zeta
 
-   !> Container for mu and zeta's (2 and 3). These are moments of the number density (2,3) and mu (1)
+  !> Container for mu and zeta's (2 and 3). These are moments of the number density (2,3) and mu (1)
   type :: saftvrmie_zeta_hs
-    sequence
-    !> Moments of the number density and mu
-    real, dimension(3) :: zet
-    !> Temperature differential of the moments of the number density and mu
-    real, dimension(3) :: zet_T
-    !> Second temperature differential of the moments of the number density and mu
-    real, dimension(3) :: zet_TT
-    !> Volume differential of the moments of the number density and mu
-    real, dimension(3) :: zet_V
-    !> Second volume differential of the moments of the number density and mu
-    real, dimension(3) :: zet_VV
-    !> Temperature and volume differential of the moments of the number density and mu
-    real, dimension(3) :: zet_TV
-    !> Mol number differential of the moments of the number density and mu
-    real, allocatable, dimension(:,:) :: zet_n
-    !> Mol number and volume differential of the moments of the number density and mu
-    real, allocatable, dimension(:,:) :: zet_Vn
-    !> Mol number and temperature differential of the moments of the number density and mu
-    real, allocatable, dimension(:,:) :: zet_Tn
-   end type saftvrmie_zeta_hs
+     sequence
+     !> Moments of the number density and mu
+     real, dimension(3) :: zet
+     !> Temperature differential of the moments of the number density and mu
+     real, dimension(3) :: zet_T
+     !> Second temperature differential of the moments of the number density and mu
+     real, dimension(3) :: zet_TT
+     !> Volume differential of the moments of the number density and mu
+     real, dimension(3) :: zet_V
+     !> Second volume differential of the moments of the number density and mu
+     real, dimension(3) :: zet_VV
+     !> Temperature and volume differential of the moments of the number density and mu
+     real, dimension(3) :: zet_TV
+     !> Mol number differential of the moments of the number density and mu
+     real, allocatable, dimension(:,:) :: zet_n
+     !> Mol number and volume differential of the moments of the number density and mu
+     real, allocatable, dimension(:,:) :: zet_Vn
+     !> Mol number and temperature differential of the moments of the number density and mu
+     real, allocatable, dimension(:,:) :: zet_Tn
+  end type saftvrmie_zeta_hs
 
   !> Container for SAFT-VR Mie common variables
   !! To be claculated only once per state
   type :: saftvrmie_var_container
-    sequence
-    !> Hard sphere diameter
-    type(saftvrmie_dhs) :: dhs
-    !> Effective sigma for the quantum corrected potential
-    type(saftvrmie_dhs) :: sigma_eff
-    !> Effective epsilon for the quantum corrected potential
-    type(saftvrmie_dhs) :: eps_divk_eff
-    !> Feynman--Hibbs D variable
-    type(saftvrmie_dhs) :: DFeynHibbsij
-    !> Feynman--Hibbs D variable squared
-    type(saftvrmie_dhs) :: D2FeynHibbsij
-    !> Dimensionless van der Waals energy
-    type(saftvrmie_dhs) :: alpha
-    !> Moments of the number density for hs-module
-    type(saftvrmie_zeta_hs) :: zeta_hs
-    !> Hypotetical pure fluid packing fraction
-    type(saftvrmie_zeta) :: zeta
-    !> Packing fraction
-    type(saftvrmie_zeta) :: zeta_bar
-    !> Zeta used as prefactor in a3
-    type(saftvrmie_zeta) :: zeta_a3
-    !> Isothermal hard sphere compressibillity factor
-    type(saftvrmie_zeta) :: Khs
-    !> Hard sphere packing fraction
-    type(saftvrmie_zeta) :: eta_hs
-    !> Pure fluid reference HS diameter
-    type(saftvrmie_zeta) :: d_pure
-    !> Rho star
-    type(saftvrmie_zeta) :: rho_star
-    !> A1_ij
-    type(saftvrmie_aij) :: a1ij
-    !> Additive quantum corrections to A1_ij
-    type(saftvrmie_aij) :: a1ijQCorr
-    !> (A2/(1-chi))_ij
-    type(saftvrmie_aij) :: a2chij
-    !> Additive quantum corrections to A2chij
-    type(saftvrmie_aij) :: a2chijQCorr
-    !> A2_ij
-    type(saftvrmie_aij) :: a2ij
-    !> A3_ij
-    type(saftvrmie_aij) :: a3ij
+     sequence
+     !> Hard sphere diameter
+     type(saftvrmie_dhs) :: dhs
+     !> Effective sigma for the quantum corrected potential
+     type(saftvrmie_dhs) :: sigma_eff
+     !> Effective epsilon for the quantum corrected potential
+     type(saftvrmie_dhs) :: eps_divk_eff
+     !> Feynman--Hibbs D variable
+     type(saftvrmie_dhs) :: DFeynHibbsij
+     !> Feynman--Hibbs D variable squared
+     type(saftvrmie_dhs) :: D2FeynHibbsij
+     !> Dimensionless van der Waals energy
+     type(saftvrmie_dhs) :: alpha
+     !> Moments of the number density for hs-module
+     type(saftvrmie_zeta_hs) :: zeta_hs
+     !> Hypotetical pure fluid packing fraction
+     type(saftvrmie_zeta) :: zeta
+     !> Packing fraction
+     type(saftvrmie_zeta) :: zeta_bar
+     !> Zeta used as prefactor in a3
+     type(saftvrmie_zeta) :: zeta_a3
+     !> Isothermal hard sphere compressibillity factor
+     type(saftvrmie_zeta) :: Khs
+     !> Hard sphere packing fraction
+     type(saftvrmie_zeta) :: eta_hs
+     !> Pure fluid reference HS diameter
+     type(saftvrmie_zeta) :: d_pure
+     !> Rho star
+     type(saftvrmie_zeta) :: rho_star
+     !> A1_ij
+     type(saftvrmie_aij) :: a1ij
+     !> Additive quantum corrections to A1_ij
+     type(saftvrmie_aij) :: a1ijQCorr
+     !> (A2/(1-chi))_ij
+     type(saftvrmie_aij) :: a2chij
+     !> Additive quantum corrections to A2chij
+     type(saftvrmie_aij) :: a2chijQCorr
+     !> A2_ij
+     type(saftvrmie_aij) :: a2ij
+     !> A3_ij
+     type(saftvrmie_aij) :: a3ij
   end type saftvrmie_var_container
 
   type(saftvrmie_param_container) :: saftvrmie_param
@@ -216,39 +214,39 @@ contains
     integer, intent(in), optional :: i, j
 
     if (present(i) .and. present(j)) then
-      X%am(i,j) = X%am(i,j) + Y%am(i,j)
-      X%am_T(i,j) = X%am_T(i,j) + Y%am_T(i,j)
-      X%am_V(i,j) = X%am_V(i,j) + Y%am_V(i,j)
-      X%am_TT(i,j) = X%am_TT(i,j) + Y%am_TT(i,j)
-      X%am_VV(i,j) = X%am_VV(i,j) + Y%am_VV(i,j)
-      X%am_TV(i,j) = X%am_TV(i,j) + Y%am_TV(i,j)
-      X%am_VVV(i,j) = X%am_VVV(i,j) + Y%am_VVV(i,j)
-      X%am_VVT(i,j) = X%am_VVT(i,j) + Y%am_VVT(i,j)
-      X%am_VTT(i,j) = X%am_VTT(i,j) + Y%am_VTT(i,j)
-      X%am_n(:,i,j) = X%am_n(:,i,j) + Y%am_n(:,i,j)
-      X%am_Tn(:,i,j) = X%am_Tn(:,i,j) + Y%am_Tn(:,i,j)
-      X%am_Vn(:,i,j) = X%am_Vn(:,i,j) + Y%am_Vn(:,i,j)
-      X%am_VVn(:,i,j) = X%am_VVn(:,i,j) + Y%am_VVn(:,i,j)
-      X%am_VTn(:,i,j) = X%am_VTn(:,i,j) + Y%am_VTn(:,i,j)
-      X%am_nn(:,:,i,j) = X%am_nn(:,:,i,j) + Y%am_nn(:,:,i,j)
-      X%am_Vnn(:,:,i,j) = X%am_Vnn(:,:,i,j) + Y%am_Vnn(:,:,i,j)
+       X%am(i,j) = X%am(i,j) + Y%am(i,j)
+       X%am_T(i,j) = X%am_T(i,j) + Y%am_T(i,j)
+       X%am_V(i,j) = X%am_V(i,j) + Y%am_V(i,j)
+       X%am_TT(i,j) = X%am_TT(i,j) + Y%am_TT(i,j)
+       X%am_VV(i,j) = X%am_VV(i,j) + Y%am_VV(i,j)
+       X%am_TV(i,j) = X%am_TV(i,j) + Y%am_TV(i,j)
+       X%am_VVV(i,j) = X%am_VVV(i,j) + Y%am_VVV(i,j)
+       X%am_VVT(i,j) = X%am_VVT(i,j) + Y%am_VVT(i,j)
+       X%am_VTT(i,j) = X%am_VTT(i,j) + Y%am_VTT(i,j)
+       X%am_n(:,i,j) = X%am_n(:,i,j) + Y%am_n(:,i,j)
+       X%am_Tn(:,i,j) = X%am_Tn(:,i,j) + Y%am_Tn(:,i,j)
+       X%am_Vn(:,i,j) = X%am_Vn(:,i,j) + Y%am_Vn(:,i,j)
+       X%am_VVn(:,i,j) = X%am_VVn(:,i,j) + Y%am_VVn(:,i,j)
+       X%am_VTn(:,i,j) = X%am_VTn(:,i,j) + Y%am_VTn(:,i,j)
+       X%am_nn(:,:,i,j) = X%am_nn(:,:,i,j) + Y%am_nn(:,:,i,j)
+       X%am_Vnn(:,:,i,j) = X%am_Vnn(:,:,i,j) + Y%am_Vnn(:,:,i,j)
     else
-      X%am = X%am + Y%am
-      X%am_T = X%am_T + Y%am_T
-      X%am_V = X%am_V + Y%am_V
-      X%am_TT = X%am_TT + Y%am_TT
-      X%am_VV = X%am_VV + Y%am_VV
-      X%am_TV = X%am_TV + Y%am_TV
-      X%am_VVV = X%am_VVV + Y%am_VVV
-      X%am_VVT = X%am_VVT + Y%am_VVT
-      X%am_VTT = X%am_VTT + Y%am_VTT
-      X%am_n = X%am_n + Y%am_n
-      X%am_Tn = X%am_Tn + Y%am_Tn
-      X%am_Vn = X%am_Vn + Y%am_Vn
-      X%am_VVn = X%am_VVn + Y%am_VVn
-      X%am_VTn = X%am_VTn + Y%am_VTn
-      X%am_nn = X%am_nn + Y%am_nn
-      X%am_Vnn = X%am_Vnn + Y%am_Vnn
+       X%am = X%am + Y%am
+       X%am_T = X%am_T + Y%am_T
+       X%am_V = X%am_V + Y%am_V
+       X%am_TT = X%am_TT + Y%am_TT
+       X%am_VV = X%am_VV + Y%am_VV
+       X%am_TV = X%am_TV + Y%am_TV
+       X%am_VVV = X%am_VVV + Y%am_VVV
+       X%am_VVT = X%am_VVT + Y%am_VVT
+       X%am_VTT = X%am_VTT + Y%am_VTT
+       X%am_n = X%am_n + Y%am_n
+       X%am_Tn = X%am_Tn + Y%am_Tn
+       X%am_Vn = X%am_Vn + Y%am_Vn
+       X%am_VVn = X%am_VVn + Y%am_VVn
+       X%am_VTn = X%am_VTn + Y%am_VTn
+       X%am_nn = X%am_nn + Y%am_nn
+       X%am_Vnn = X%am_Vnn + Y%am_Vnn
     end if
   end subroutine add_second_saftvrmieaij_to_first
 
@@ -267,9 +265,9 @@ contains
     ! Locals
     integer :: setno_local(nc), fh_orders(nc), i, nthreads, err
     if (present(setno)) then
-      setno_local = setno
+       setno_local = setno
     else
-      setno_local = 1
+       setno_local = 1
     endif
 
     nthreads = 1
@@ -277,18 +275,18 @@ contains
     ! Deallocate old memory
     call cleanup_saftvrmie_param_container(saftvrmie_param)
     if (allocated(saftvrmie_var)) then
-      do i=1,nthreads
-        call cleanup_saftvrmie_var_container(saftvrmie_var(i))
-      enddo
-      deallocate(saftvrmie_var,STAT=err);
-      if (err /= 0) call stoperror('Not able to deallocate saftvrmie_var')
+       do i=1,nthreads
+          call cleanup_saftvrmie_var_container(saftvrmie_var(i))
+       enddo
+       deallocate(saftvrmie_var,STAT=err);
+       if (err /= 0) call stoperror('Not able to deallocate saftvrmie_var')
     endif
     ! Allocte new memory
     call allocate_saftvrmie_param_container(nc,saftvrmie_param)
     allocate(saftvrmie_var(nthreads),STAT=err);
     if (err /= 0) call stoperror('Not able to allocate saftvrmie_var')
     do i=1,nthreads
-      call allocate_saftvrmie_var_container(nc,saftvrmie_var(i))
+       call allocate_saftvrmie_var_container(nc,saftvrmie_var(i))
     enddo
     ! Get interaction parameters
     call getMieKij_allComps(nc,comp,eosSAFT_VR_MIE,saftvrmie_param%kij)
@@ -298,7 +296,7 @@ contains
     call getSaftVrMieParams(nc,comp,eosSAFT_VR_MIE,setno_local, saftvrmie_param%comp,fh_orders=fh_orders)
     ! Set the correct Feynman--Hibbs order for the quantum corrections
     do i = 1, nc-1
-      if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
+       if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
     end do
     quantum_correction = fh_orders(1)
     quantum_correction_hs = fh_orders(1)
@@ -352,7 +350,7 @@ contains
     ! Locals
     real :: mass, sigma, eps
     if (Lambda<machine_prec) then
-      call stoperror("set_saftvrmie_pure_fluid_deBoer::instead of setting Lambda=0, turn off FH corrections")
+       call stoperror("set_saftvrmie_pure_fluid_deBoer::instead of setting Lambda=0, turn off FH corrections")
     end if
     eps = (saftvrmie_param%comp(ic)%eps_depth_divk) * kB_const
     sigma = saftvrmie_param%comp(ic)%sigma
@@ -429,18 +427,18 @@ contains
   end subroutine get_saftvrmie_lr_gammaij
 
   function mie_c_factor(lambda_r, lambda_a) result(C)
-   !> Gives the part of the prefactor that depends on the exponent. The full
-   !> prefactor is obtained by multiplying in the well-depth epsilon.
-     implicit none
-     real, intent(in) :: lambda_r !< repulsive exponent
-     real, intent(in) :: lambda_a !< attractive exponent
-     real :: C                    !< part of the prefactor
-     ! locals
-     real :: exponent
+    !> Gives the part of the prefactor that depends on the exponent. The full
+    !> prefactor is obtained by multiplying in the well-depth epsilon.
+    implicit none
+    real, intent(in) :: lambda_r !< repulsive exponent
+    real, intent(in) :: lambda_a !< attractive exponent
+    real :: C                    !< part of the prefactor
+    ! locals
+    real :: exponent
 
-     exponent = lambda_a/(lambda_r-lambda_a)
-     C = lambda_r/(lambda_r-lambda_a) * (lambda_r/lambda_a)**exponent
-   end function mie_c_factor
+    exponent = lambda_a/(lambda_r-lambda_a)
+    C = lambda_r/(lambda_r-lambda_a) * (lambda_r/lambda_a)**exponent
+  end function mie_c_factor
 
   !> Calculate binary Mie parameters
   subroutine calcBinaryMieParmeters(saftvrmie_param,mixing)
@@ -453,37 +451,37 @@ contains
     real :: f_alpha(6)
     nc = size(saftvrmie_param%comp)
     do i=1,nc
-      do j=1,nc
-        saftvrmie_param%lambda_a_ij(i,j) = calcBinaryLambda(saftvrmie_param%comp(i)%lambda_a,&
-             saftvrmie_param%comp(j)%lambda_a,0.0)
-        saftvrmie_param%lambda_r_ij(i,j) = calcBinaryLambda(saftvrmie_param%comp(i)%lambda_r,&
-             saftvrmie_param%comp(j)%lambda_r,saftvrmie_param%gamma_ij(i,j))
-        saftvrmie_param%sigma_ij(i,j) = calcBinarySigma(saftvrmie_param%comp(i)%sigma,&
-             saftvrmie_param%comp(j)%sigma,saftvrmie_param%lij(i,j))
-        saftvrmie_param%sigma_ij_cube(i,j) = saftvrmie_param%sigma_ij(i,j)**3
-        saftvrmie_param%eps_divk_ij(i,j) = calcBinaryEps(&
-             saftvrmie_param%comp(i)%eps_depth_divk,&
-             saftvrmie_param%comp(j)%eps_depth_divk,saftvrmie_param%comp(i)%sigma,&
-             saftvrmie_param%comp(j)%sigma,saftvrmie_param%sigma_ij(i,j),&
-             saftvrmie_param%kij(i,j))
-        saftvrmie_param%alpha_ij(i,j) = calcVdWAlpha(saftvrmie_param%lambda_a_ij(i,j),&
-             saftvrmie_param%lambda_r_ij(i,j))
-        call calcFunAlpha(saftvrmie_param%alpha_ij(i,j), f_alpha)
-        saftvrmie_param%f_alpha_ij(:,i,j) = f_alpha
-        saftvrmie_param%Cij(i,j) = mie_c_factor(saftvrmie_param%lambda_r_ij(i,j), &
-             saftvrmie_param%lambda_a_ij(i,j))
-        saftvrmie_param%DFeynHibbsParam_ij(i,j) = calcBinaryDFeynHibbsParam(saftvrmie_param%comp(i)%mass, &
-             saftvrmie_param%comp(j)%mass)
-        saftvrmie_param%Quantum_const_1a_ij(i,j)=calcBinary_Quantum_const_firstorder(&
-             saftvrmie_param%lambda_a_ij(i,j))
-        saftvrmie_param%Quantum_const_1r_ij(i,j)=calcBinary_Quantum_const_firstorder(&
-             saftvrmie_param%lambda_r_ij(i,j))
-        saftvrmie_param%Quantum_const_2a_ij(i,j)=calcBinary_Quantum_const_secondorder(&
-             saftvrmie_param%lambda_a_ij(i,j))
-        saftvrmie_param%Quantum_const_2r_ij(i,j)=calcBinary_Quantum_const_secondorder(&
-             saftvrmie_param%lambda_r_ij(i,j))
-      enddo
-      saftvrmie_param%ms(i) = saftvrmie_param%comp(i)%m
+       do j=1,nc
+          saftvrmie_param%lambda_a_ij(i,j) = calcBinaryLambda(saftvrmie_param%comp(i)%lambda_a,&
+               saftvrmie_param%comp(j)%lambda_a,0.0)
+          saftvrmie_param%lambda_r_ij(i,j) = calcBinaryLambda(saftvrmie_param%comp(i)%lambda_r,&
+               saftvrmie_param%comp(j)%lambda_r,saftvrmie_param%gamma_ij(i,j))
+          saftvrmie_param%sigma_ij(i,j) = calcBinarySigma(saftvrmie_param%comp(i)%sigma,&
+               saftvrmie_param%comp(j)%sigma,saftvrmie_param%lij(i,j))
+          saftvrmie_param%sigma_ij_cube(i,j) = saftvrmie_param%sigma_ij(i,j)**3
+          saftvrmie_param%eps_divk_ij(i,j) = calcBinaryEps(&
+               saftvrmie_param%comp(i)%eps_depth_divk,&
+               saftvrmie_param%comp(j)%eps_depth_divk,saftvrmie_param%comp(i)%sigma,&
+               saftvrmie_param%comp(j)%sigma,saftvrmie_param%sigma_ij(i,j),&
+               saftvrmie_param%kij(i,j))
+          saftvrmie_param%alpha_ij(i,j) = calcVdWAlpha(saftvrmie_param%lambda_a_ij(i,j),&
+               saftvrmie_param%lambda_r_ij(i,j))
+          call calcFunAlpha(saftvrmie_param%alpha_ij(i,j), f_alpha)
+          saftvrmie_param%f_alpha_ij(:,i,j) = f_alpha
+          saftvrmie_param%Cij(i,j) = mie_c_factor(saftvrmie_param%lambda_r_ij(i,j), &
+               saftvrmie_param%lambda_a_ij(i,j))
+          saftvrmie_param%DFeynHibbsParam_ij(i,j) = calcBinaryDFeynHibbsParam(saftvrmie_param%comp(i)%mass, &
+               saftvrmie_param%comp(j)%mass)
+          saftvrmie_param%Quantum_const_1a_ij(i,j)=calcBinary_Quantum_const_firstorder(&
+               saftvrmie_param%lambda_a_ij(i,j))
+          saftvrmie_param%Quantum_const_1r_ij(i,j)=calcBinary_Quantum_const_firstorder(&
+               saftvrmie_param%lambda_r_ij(i,j))
+          saftvrmie_param%Quantum_const_2a_ij(i,j)=calcBinary_Quantum_const_secondorder(&
+               saftvrmie_param%lambda_a_ij(i,j))
+          saftvrmie_param%Quantum_const_2r_ij(i,j)=calcBinary_Quantum_const_secondorder(&
+               saftvrmie_param%lambda_r_ij(i,j))
+       enddo
+       saftvrmie_param%ms(i) = saftvrmie_param%comp(i)%m
     enddo
   end subroutine calcBinaryMieParmeters
 
@@ -497,13 +495,13 @@ contains
     real :: prefactor
 
     if (quantum_correction_spec==0) then        ! Feynman-Hibbs
-      prefactor=0.5
+       prefactor=0.5
     elseif (quantum_correction_spec==1) then    ! Jaen-Kahn
-      prefactor=9.0/10.0
+       prefactor=9.0/10.0
     else
-      call stoperror("saftvrmie_containers::calcBinary_Quantum_const_secondorder: "//&
-           "Specified undefined spec. for the second order quantum"//&
-           "correction (0: Feynman Hibbs, 1: Jaen-Kahn)")
+       call stoperror("saftvrmie_containers::calcBinary_Quantum_const_secondorder: "//&
+            "Specified undefined spec. for the second order quantum"//&
+            "correction (0: Feynman Hibbs, 1: Jaen-Kahn)")
     end if
 
     Q2 = prefactor*lambda*(lambda-1.0)*(lambda+1.0)*(lambda+2.0)
@@ -533,10 +531,10 @@ contains
     !
     mass_product = mass_i*mass_j
     if (mass_product > 0.0) then
-      reduced_mass = mass_product/(mass_i+mass_j)
-      DParam = (h_const**2)/(96*reduced_mass*kB_const*PI**2)
+       reduced_mass = mass_product/(mass_i+mass_j)
+       DParam = (h_const**2)/(96*reduced_mass*kB_const*PI**2)
     else
-      DParam = 0.0
+       DParam = 0.0
     endif
   end function calcBinaryDFeynHibbsParam
 
@@ -577,9 +575,9 @@ contains
     real :: eps_ij
     !
     if (use_epsrule_Lafitte) then ! standard combining rule of SAFT-VR Mie
-      eps_ij = (1.0-kij)*sqrt(sigma_i**3*sigma_j**3)*sqrt(eps_i*eps_j)/sigma_ij**3
+       eps_ij = (1.0-kij)*sqrt(sigma_i**3*sigma_j**3)*sqrt(eps_i*eps_j)/sigma_ij**3
     else ! geometric mixing rule
-      eps_ij = (1.0-kij)*sqrt(eps_i*eps_j)
+       eps_ij = (1.0-kij)*sqrt(eps_i*eps_j)
     end if
   end function calcBinaryEps
 
@@ -616,38 +614,38 @@ contains
     real :: f_i_num, f_i_denum
     real :: m_a_i,m_aa_i,p_a(6),p_aa_i
     if (present(f_aa) .and. .not. present(f_a)) then
-      call stoperror("calcFunAlpha: f_aa requires f_a")
+       call stoperror("calcFunAlpha: f_aa requires f_a")
     endif
     alpha_n(0) = 1.0
     do i=1,3
-      alpha_n(i) = alpha*alpha_n(i-1)
+       alpha_n(i) = alpha*alpha_n(i-1)
     enddo
     do i=1,6
-      f_i_num = sum(phi(0:3,i)*alpha_n(0:3))
-      f_i_denum = 1.0 + sum(phi(4:6,i)*alpha_n(1:3))
-      f(i) = f_i_num/f_i_denum
-      if (present(f_a)) then
-        m_a_i = 0.0
-        do j=1,3
-          m_a_i = m_a_i + j*phi(j,i)*alpha_n(j-1)
-        enddo
-        p_a(i) = 0.0
-        do j=4,6
-          p_a(i) = p_a(i) + (j-3)*phi(j,i)*alpha_n(j-4)
-        enddo
-        f_a(i) = (m_a_i - f(i)*p_a(i))/f_i_denum
-      endif
-      if (present(f_aa)) then
-        m_aa_i = 0.0
-        do j=2,3
-          m_aa_i = m_aa_i + j*(j-1)*phi(j,i)*alpha_n(j-2)
-        enddo
-        p_aa_i = 0.0
-        do j=5,6
-          p_aa_i = p_aa_i + (j-3)*(j-4)*phi(j,i)*alpha_n(j-5)
-        enddo
-        f_aa(i) = (m_aa_i - 2.0*f_a(i)*p_a(i) - f(i)*p_aa_i)/f_i_denum
-      endif
+       f_i_num = sum(phi(0:3,i)*alpha_n(0:3))
+       f_i_denum = 1.0 + sum(phi(4:6,i)*alpha_n(1:3))
+       f(i) = f_i_num/f_i_denum
+       if (present(f_a)) then
+          m_a_i = 0.0
+          do j=1,3
+             m_a_i = m_a_i + j*phi(j,i)*alpha_n(j-1)
+          enddo
+          p_a(i) = 0.0
+          do j=4,6
+             p_a(i) = p_a(i) + (j-3)*phi(j,i)*alpha_n(j-4)
+          enddo
+          f_a(i) = (m_a_i - f(i)*p_a(i))/f_i_denum
+       endif
+       if (present(f_aa)) then
+          m_aa_i = 0.0
+          do j=2,3
+             m_aa_i = m_aa_i + j*(j-1)*phi(j,i)*alpha_n(j-2)
+          enddo
+          p_aa_i = 0.0
+          do j=5,6
+             p_aa_i = p_aa_i + (j-3)*(j-4)*phi(j,i)*alpha_n(j-5)
+          enddo
+          f_aa(i) = (m_aa_i - 2.0*f_a(i)*p_a(i) - f(i)*p_aa_i)/f_i_denum
+       endif
     enddo
   end subroutine calcFunAlpha
 
@@ -658,112 +656,112 @@ contains
     integer :: ierr
     ! deallocate saftvrmie_pc
     if (allocated(saftvrmie_pc%comp)) then
-      deallocate (saftvrmie_pc%comp, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%comp")
-      endif
+       deallocate (saftvrmie_pc%comp, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%comp")
+       endif
     endif
     if (allocated(saftvrmie_pc%kij)) then
-      deallocate (saftvrmie_pc%kij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%kij")
-      endif
+       deallocate (saftvrmie_pc%kij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%kij")
+       endif
     endif
     if (allocated(saftvrmie_pc%gamma_ij)) then
-      deallocate (saftvrmie_pc%gamma_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%gamma_ij")
-      endif
-   endif
-   if (allocated(saftvrmie_pc%lij)) then
-      deallocate (saftvrmie_pc%lij, STAT=ierr)
-      if (ierr /= 0) then
-         call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lij")
-      endif
-   endif
+       deallocate (saftvrmie_pc%gamma_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%gamma_ij")
+       endif
+    endif
+    if (allocated(saftvrmie_pc%lij)) then
+       deallocate (saftvrmie_pc%lij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lij")
+       endif
+    endif
     if (allocated(saftvrmie_pc%alpha_ij)) then
-      deallocate (saftvrmie_pc%alpha_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%alpha_ij")
-      endif
+       deallocate (saftvrmie_pc%alpha_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%alpha_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%f_alpha_ij)) then
-      deallocate (saftvrmie_pc%f_alpha_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%f_alpha_ij")
-      endif
+       deallocate (saftvrmie_pc%f_alpha_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%f_alpha_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%lambda_a_ij)) then
-      deallocate (saftvrmie_pc%lambda_a_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lambda_a_ij")
-      endif
+       deallocate (saftvrmie_pc%lambda_a_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lambda_a_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%lambda_r_ij)) then
-      deallocate (saftvrmie_pc%lambda_r_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lambda_r_ij")
-      endif
+       deallocate (saftvrmie_pc%lambda_r_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%lambda_r_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%sigma_ij)) then
-      deallocate (saftvrmie_pc%sigma_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%sigma_ij")
-      endif
+       deallocate (saftvrmie_pc%sigma_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%sigma_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%sigma_ij_cube)) then
-      deallocate (saftvrmie_pc%sigma_ij_cube, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%sigma_ij_cube")
-      endif
+       deallocate (saftvrmie_pc%sigma_ij_cube, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%sigma_ij_cube")
+       endif
     endif
     if (allocated(saftvrmie_pc%eps_divk_ij)) then
-      deallocate (saftvrmie_pc%eps_divk_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%eps_divk_ij")
-      endif
+       deallocate (saftvrmie_pc%eps_divk_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%eps_divk_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%Cij)) then
-      deallocate (saftvrmie_pc%Cij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Cij")
-      endif
+       deallocate (saftvrmie_pc%Cij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Cij")
+       endif
     endif
     if (allocated(saftvrmie_pc%DFeynHibbsParam_ij)) then
-      deallocate (saftvrmie_pc%DFeynHibbsParam_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%DFeynHibbsParam_ij")
-      endif
+       deallocate (saftvrmie_pc%DFeynHibbsParam_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%DFeynHibbsParam_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%Quantum_const_1a_ij)) then
-      deallocate (saftvrmie_pc%Quantum_const_1a_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_1a_ij")
-      endif
+       deallocate (saftvrmie_pc%Quantum_const_1a_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_1a_ij")
+       endif
     endif
-   if (allocated(saftvrmie_pc%Quantum_const_1r_ij)) then
-      deallocate (saftvrmie_pc%Quantum_const_1r_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_1r_ij")
-      endif
+    if (allocated(saftvrmie_pc%Quantum_const_1r_ij)) then
+       deallocate (saftvrmie_pc%Quantum_const_1r_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_1r_ij")
+       endif
     endif
-   if (allocated(saftvrmie_pc%Quantum_const_2a_ij)) then
-      deallocate (saftvrmie_pc%Quantum_const_2a_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_2a_ij")
-      endif
+    if (allocated(saftvrmie_pc%Quantum_const_2a_ij)) then
+       deallocate (saftvrmie_pc%Quantum_const_2a_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_2a_ij")
+       endif
     endif
-   if (allocated(saftvrmie_pc%Quantum_const_2r_ij)) then
-      deallocate (saftvrmie_pc%Quantum_const_2r_ij, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_2r_ij")
-      endif
+    if (allocated(saftvrmie_pc%Quantum_const_2r_ij)) then
+       deallocate (saftvrmie_pc%Quantum_const_2r_ij, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%Quantum_const_2r_ij")
+       endif
     endif
     if (allocated(saftvrmie_pc%ms)) then
-      deallocate (saftvrmie_pc%ms, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%ms")
-      endif
+       deallocate (saftvrmie_pc%ms, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%ms")
+       endif
     endif
   end subroutine cleanup_saftvrmie_param_container
 
@@ -799,22 +797,22 @@ contains
     ! Locals
     integer :: ierr
     if (allocated(saftvrmie_d%d)) then
-      deallocate (saftvrmie_d%d, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d")
-      endif
+       deallocate (saftvrmie_d%d, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d")
+       endif
     endif
     if (allocated(saftvrmie_d%d_T)) then
-      deallocate (saftvrmie_d%d_T, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d_T")
-      endif
+       deallocate (saftvrmie_d%d_T, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d_T")
+       endif
     endif
     if (allocated(saftvrmie_d%d_TT)) then
-      deallocate (saftvrmie_d%d_TT, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d_TT")
-      endif
+       deallocate (saftvrmie_d%d_TT, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_d%d_TT")
+       endif
     endif
   end subroutine cleanup_saftvrmie_dhs
 
@@ -824,71 +822,71 @@ contains
     ! Locals
     integer :: ierr
     if (allocated(saftvrmie_z%zx_n)) then
-      deallocate (saftvrmie_z%zx_n, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_n")
-      endif
+       deallocate (saftvrmie_z%zx_n, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_n")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_Vn)) then
-      deallocate (saftvrmie_z%zx_Vn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Vn")
-      endif
+       deallocate (saftvrmie_z%zx_Vn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Vn")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_Tn)) then
-      deallocate (saftvrmie_z%zx_Tn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Tn")
-      endif
+       deallocate (saftvrmie_z%zx_Tn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Tn")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_nn)) then
-      deallocate (saftvrmie_z%zx_nn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_nn")
-      endif
+       deallocate (saftvrmie_z%zx_nn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_nn")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_VTn)) then
-      deallocate (saftvrmie_z%zx_VTn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_VTn")
-      endif
+       deallocate (saftvrmie_z%zx_VTn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_VTn")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_VVn)) then
-      deallocate (saftvrmie_z%zx_VVn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_VVn")
-      endif
+       deallocate (saftvrmie_z%zx_VVn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_VVn")
+       endif
     endif
     if (allocated(saftvrmie_z%zx_Vnn)) then
-      deallocate (saftvrmie_z%zx_Vnn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Vnn")
-      endif
+       deallocate (saftvrmie_z%zx_Vnn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zx_Vnn")
+       endif
     endif
   end subroutine cleanup_saftvrmie_zeta
 
-   !> Free allocated saftvrmie_zeta memory
+  !> Free allocated saftvrmie_zeta memory
   subroutine cleanup_saftvrmie_zeta_hs(saftvrmie_z)
     type(saftvrmie_zeta_hs), intent(inout) :: saftvrmie_z
     ! Locals
     integer :: ierr
     if (allocated(saftvrmie_z%zet_n)) then
-      deallocate (saftvrmie_z%zet_n, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_n")
-      endif
+       deallocate (saftvrmie_z%zet_n, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_n")
+       endif
     endif
     if (allocated(saftvrmie_z%zet_Vn)) then
-      deallocate (saftvrmie_z%zet_Vn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_Vn")
-      endif
+       deallocate (saftvrmie_z%zet_Vn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_Vn")
+       endif
     endif
     if (allocated(saftvrmie_z%zet_Tn)) then
-      deallocate (saftvrmie_z%zet_Tn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_Tn")
-      endif
+       deallocate (saftvrmie_z%zet_Tn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_z%zet_Tn")
+       endif
     endif
   end subroutine cleanup_saftvrmie_zeta_hs
 
@@ -898,100 +896,100 @@ contains
     ! Locals
     integer :: ierr
     if (allocated(saftvrmie_a%am)) then
-      deallocate (saftvrmie_a%am, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am")
-      endif
+       deallocate (saftvrmie_a%am, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am")
+       endif
     endif
     if (allocated(saftvrmie_a%am_T)) then
-      deallocate (saftvrmie_a%am_T, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_T")
-      endif
+       deallocate (saftvrmie_a%am_T, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_T")
+       endif
     endif
     if (allocated(saftvrmie_a%am_V)) then
-      deallocate (saftvrmie_a%am_V, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_V")
-      endif
+       deallocate (saftvrmie_a%am_V, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_V")
+       endif
     endif
     if (allocated(saftvrmie_a%am_TT)) then
-      deallocate (saftvrmie_a%am_TT, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_TT")
-      endif
+       deallocate (saftvrmie_a%am_TT, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_TT")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VV)) then
-      deallocate (saftvrmie_a%am_VV, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VV")
-      endif
+       deallocate (saftvrmie_a%am_VV, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VV")
+       endif
     endif
     if (allocated(saftvrmie_a%am_TV)) then
-      deallocate (saftvrmie_a%am_TV, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_TV")
-      endif
+       deallocate (saftvrmie_a%am_TV, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_TV")
+       endif
     endif
     if (allocated(saftvrmie_a%am_n)) then
-      deallocate (saftvrmie_a%am_n, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_n")
-      endif
+       deallocate (saftvrmie_a%am_n, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_n")
+       endif
     endif
     if (allocated(saftvrmie_a%am_Vn)) then
-      deallocate (saftvrmie_a%am_Vn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Vn")
-      endif
+       deallocate (saftvrmie_a%am_Vn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Vn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_Tn)) then
-      deallocate (saftvrmie_a%am_Tn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Tn")
-      endif
+       deallocate (saftvrmie_a%am_Tn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Tn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_nn)) then
-      deallocate (saftvrmie_a%am_nn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_nn")
-      endif
+       deallocate (saftvrmie_a%am_nn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_nn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VTn)) then
-      deallocate (saftvrmie_a%am_VTn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VTn")
-      endif
+       deallocate (saftvrmie_a%am_VTn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VTn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VVn)) then
-      deallocate (saftvrmie_a%am_VVn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVn")
-      endif
+       deallocate (saftvrmie_a%am_VVn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_Vnn)) then
-      deallocate (saftvrmie_a%am_Vnn, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Vnn")
-      endif
+       deallocate (saftvrmie_a%am_Vnn, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_Vnn")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VVV)) then
-      deallocate (saftvrmie_a%am_VVV, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVV")
-      endif
+       deallocate (saftvrmie_a%am_VVV, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVV")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VVT)) then
-      deallocate (saftvrmie_a%am_VVT, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVT")
-      endif
+       deallocate (saftvrmie_a%am_VVT, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VVT")
+       endif
     endif
     if (allocated(saftvrmie_a%am_VTT)) then
-      deallocate (saftvrmie_a%am_VTT, STAT=ierr)
-      if (ierr /= 0) then
-        call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VTT")
-      endif
+       deallocate (saftvrmie_a%am_VTT, STAT=ierr)
+       if (ierr /= 0) then
+          call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_a%am_VTT")
+       endif
     endif
   end subroutine cleanup_saftvrmie_aij
 
@@ -1004,75 +1002,75 @@ contains
     integer :: ierr
     allocate (saftvrmie_pc%comp(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%comp")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%comp")
     endif
     allocate (saftvrmie_pc%kij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%kij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%kij")
     endif
     allocate (saftvrmie_pc%gamma_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%gamma_ij")
-   endif
-   allocate (saftvrmie_pc%lij(nc,nc), STAT=ierr)
-   if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lij")
-   endif
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%gamma_ij")
+    endif
+    allocate (saftvrmie_pc%lij(nc,nc), STAT=ierr)
+    if (ierr /= 0) then
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lij")
+    endif
     allocate (saftvrmie_pc%alpha_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%alpha_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%alpha_ij")
     endif
     allocate (saftvrmie_pc%f_alpha_ij(6,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%f_alpha_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%f_alpha_ij")
     endif
     allocate (saftvrmie_pc%lambda_a_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lambda_a_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lambda_a_ij")
     endif
     allocate (saftvrmie_pc%lambda_r_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lambda_r_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%lambda_r_ij")
     endif
     allocate (saftvrmie_pc%sigma_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%sigma_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%sigma_ij")
     endif
     allocate (saftvrmie_pc%sigma_ij_cube(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%sigma_ij_cube")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%sigma_ij_cube")
     endif
     allocate (saftvrmie_pc%eps_divk_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%eps_divk_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%eps_divk_ij")
     endif
     allocate (saftvrmie_pc%Cij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Cij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Cij")
     endif
     allocate (saftvrmie_pc%DFeynHibbsParam_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%DFeynHibbsParam_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%DFeynHibbsParam_ij")
     endif
     allocate (saftvrmie_pc%Quantum_const_1a_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_1a_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_1a_ij")
     endif
     allocate (saftvrmie_pc%Quantum_const_1r_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_1r_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_1r_ij")
     endif
- allocate (saftvrmie_pc%Quantum_const_2a_ij(nc,nc), STAT=ierr)
+    allocate (saftvrmie_pc%Quantum_const_2a_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_2a_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_2a_ij")
     endif
     allocate (saftvrmie_pc%Quantum_const_2r_ij(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_2r_ij")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%Quantum_const_2r_ij")
     endif
     allocate (saftvrmie_pc%ms(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%ms")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_pc%ms")
     endif
   end subroutine allocate_saftvrmie_param_container
 
@@ -1113,15 +1111,15 @@ contains
     integer :: ierr
     allocate (saftvrmie_d%d(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d")
     endif
     allocate (saftvrmie_d%d_T(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d_T")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d_T")
     endif
     allocate (saftvrmie_d%d_TT(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d_TT")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_d%d_TT")
     endif
   end subroutine allocate_saftvrmie_dhs
 
@@ -1143,42 +1141,42 @@ contains
     saftvrmie_z%zx_VTT = 0.0
     allocate (saftvrmie_z%zx_n(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_n")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_n")
     endif
     saftvrmie_z%zx_n = 0.0
     allocate (saftvrmie_z%zx_Tn(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Tn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Tn")
     endif
     saftvrmie_z%zx_Tn = 0.0
     allocate (saftvrmie_z%zx_Vn(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Vn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Vn")
     endif
     saftvrmie_z%zx_Vn = 0.0
     allocate (saftvrmie_z%zx_nn(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_nn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_nn")
     endif
     saftvrmie_z%zx_nn = 0.0
     allocate (saftvrmie_z%zx_VVn(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_VVn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_VVn")
     endif
     saftvrmie_z%zx_VVn = 0.0
     allocate (saftvrmie_z%zx_VTn(nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_VTn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_VTn")
     endif
     saftvrmie_z%zx_VTn = 0.0
     allocate (saftvrmie_z%zx_Vnn(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Vnn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zx_Vnn")
     endif
     saftvrmie_z%zx_Vnn = 0.0
   end subroutine allocate_saftvrmie_zeta
 
-   !> Allocated saftvrmie_zeta memory and initialize to zero
+  !> Allocated saftvrmie_zeta memory and initialize to zero
   subroutine allocate_saftvrmie_zeta_hs(nc,saftvrmie_z)
     ! Input
     integer, intent(in) :: nc
@@ -1193,20 +1191,20 @@ contains
     saftvrmie_z%zet_TV = 0.0
     allocate (saftvrmie_z%zet_n(nc,3), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_n")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_n")
     endif
     saftvrmie_z%zet_n = 0.0
     allocate (saftvrmie_z%zet_Tn(nc,3), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_Tn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_Tn")
     endif
     saftvrmie_z%zet_Tn = 0.0
     allocate (saftvrmie_z%zet_Vn(nc,3), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_Vn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie: Not able to allocate saftvrmie_z%zet_Vn")
     endif
     saftvrmie_z%zet_Vn = 0.0
-   end subroutine allocate_saftvrmie_zeta_hs
+  end subroutine allocate_saftvrmie_zeta_hs
 
   !> Allocat saftvrmie_aij memory
   subroutine allocate_saftvrmie_aij(nc,saftvrmie_a)
@@ -1217,67 +1215,67 @@ contains
     integer :: ierr
     allocate (saftvrmie_a%am(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am")
     endif
     allocate (saftvrmie_a%am_T(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_T")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_T")
     endif
     allocate (saftvrmie_a%am_V(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_V")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_V")
     endif
     allocate (saftvrmie_a%am_TT(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_TT")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_TT")
     endif
     allocate (saftvrmie_a%am_VV(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VV")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VV")
     endif
     allocate (saftvrmie_a%am_TV(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_TV")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_TV")
     endif
     allocate (saftvrmie_a%am_n(nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_n")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_n")
     endif
     allocate (saftvrmie_a%am_Vn(nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Vn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Vn")
     endif
     allocate (saftvrmie_a%am_Tn(nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Tn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Tn")
     endif
     allocate (saftvrmie_a%am_nn(nc,nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_nn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_nn")
     endif
     allocate (saftvrmie_a%am_VTn(nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VTn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VTn")
     endif
     allocate (saftvrmie_a%am_VVn(nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVn")
     endif
     allocate (saftvrmie_a%am_Vnn(nc,nc,nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Vnn")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_Vnn")
     endif
     allocate (saftvrmie_a%am_VVV(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVV")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVV")
     endif
     allocate (saftvrmie_a%am_VVT(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVT")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VVT")
     endif
     allocate (saftvrmie_a%am_VTT(nc,nc), STAT=ierr)
     if (ierr /= 0) then
-      call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VTT")
+       call stoperror("saftvrmie_interface::allocate_saftvrmie_aij: Not able to allocate saftvrmie_a%am_VTT")
     endif
   end subroutine allocate_saftvrmie_aij
 
@@ -1315,45 +1313,45 @@ contains
     real :: sigmaMieInv, power
 
     if (present(power_in)) then
-      power = power_in
+       power = power_in
     else
-      power = 1
+       power = 1
     end if
 
     if (power==1) then
-      D = s_vc%DFeynHibbsij%D(i, j)
-      D_T = s_vc%DFeynHibbsij%D_T(i, j)
-      D_TT = s_vc%DFeynHibbsij%D_TT(i, j)
+       D = s_vc%DFeynHibbsij%D(i, j)
+       D_T = s_vc%DFeynHibbsij%D_T(i, j)
+       D_TT = s_vc%DFeynHibbsij%D_TT(i, j)
     else if (power==2) then
-      D = s_vc%D2FeynHibbsij%D(i, j)
-      D_T = s_vc%D2FeynHibbsij%D_T(i, j)
-      D_TT = s_vc%D2FeynHibbsij%D_TT(i, j)
+       D = s_vc%D2FeynHibbsij%D(i, j)
+       D_T = s_vc%D2FeynHibbsij%D_T(i, j)
+       D_TT = s_vc%D2FeynHibbsij%D_TT(i, j)
     else if (power==3) then
-      D = s_vc%D2FeynHibbsij%D(i, j)*s_vc%DFeynHibbsij%D(i, j)
-      D_T = s_vc%D2FeynHibbsij%D_T(i, j)*s_vc%DFeynHibbsij%D(i, j) &
-           + s_vc%D2FeynHibbsij%D(i, j)*s_vc%DFeynHibbsij%D_T(i, j)
-      D_TT = s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%DFeynHibbsij%D(i, j) &
-           + 2*s_vc%D2FeynHibbsij%D_T(i, j)**2 &
-           + s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%DFeynHibbsij%D(i, j)
+       D = s_vc%D2FeynHibbsij%D(i, j)*s_vc%DFeynHibbsij%D(i, j)
+       D_T = s_vc%D2FeynHibbsij%D_T(i, j)*s_vc%DFeynHibbsij%D(i, j) &
+            + s_vc%D2FeynHibbsij%D(i, j)*s_vc%DFeynHibbsij%D_T(i, j)
+       D_TT = s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%DFeynHibbsij%D(i, j) &
+            + 2*s_vc%D2FeynHibbsij%D_T(i, j)**2 &
+            + s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%DFeynHibbsij%D(i, j)
     else if (power==4) then
-      D = s_vc%D2FeynHibbsij%D(i, j)**2
-      D_T = 2*s_vc%D2FeynHibbsij%D_T(i, j)*s_vc%D2FeynHibbsij%D(i, j)
-      D_TT = 2*s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%D2FeynHibbsij%D(i, j) &
-           + 2*s_vc%D2FeynHibbsij%D_T(i, j)**2
+       D = s_vc%D2FeynHibbsij%D(i, j)**2
+       D_T = 2*s_vc%D2FeynHibbsij%D_T(i, j)*s_vc%D2FeynHibbsij%D(i, j)
+       D_TT = 2*s_vc%D2FeynHibbsij%D_TT(i, j)*s_vc%D2FeynHibbsij%D(i, j) &
+            + 2*s_vc%D2FeynHibbsij%D_T(i, j)**2
     else
-      call stoperror("Wrong power")
+       call stoperror("Wrong power")
     end if
 
     if (present(divideBySigmaMie)) then
-      if (divideBySigmaMie) then
-        ! Returns (D/sigma^2)^power, also known as (Dmod/T)^power
-        sigmaMieInv = saftvrmie_param%sigma_ij(i, j)**(-2*power)
-        D = D*sigmaMieInv
-        D_T = D_T*sigmaMieInv
-        D_TT = D_TT*sigmaMieInv
-      end if
+       if (divideBySigmaMie) then
+          ! Returns (D/sigma^2)^power, also known as (Dmod/T)^power
+          sigmaMieInv = saftvrmie_param%sigma_ij(i, j)**(-2*power)
+          D = D*sigmaMieInv
+          D_T = D_T*sigmaMieInv
+          D_TT = D_TT*sigmaMieInv
+       end if
     end if
 
   end subroutine get_DFeynHibbsPower
 
- end module saftvrmie_containers
+end module saftvrmie_containers

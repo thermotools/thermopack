@@ -1,9 +1,7 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
+! Module for choosing submodels used in SAFT-VRQ Mie
 ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !---------------------------------------------------------------------
 
 module saftvrmie_options
@@ -73,41 +71,41 @@ contains
     integer, optional, intent(in) :: hs_reference
     select case(model)
     case(LAFITTE)
-      call set_Lafitte_option()
+       call set_Lafitte_option()
     case(QSAFT_FH1)
-      call set_Lafitte_option()
-      quantum_correction = 1
-      quantum_correction_hs = 1
-      quantum_correction_spec = 0
+       call set_Lafitte_option()
+       quantum_correction = 1
+       quantum_correction_hs = 1
+       quantum_correction_spec = 0
     case(QSAFT_FH2)
-      call set_Lafitte_option()
-      quantum_correction = 2
-      quantum_correction_hs = 2
-      quantum_correction_spec = 0
+       call set_Lafitte_option()
+       quantum_correction = 2
+       quantum_correction_hs = 2
+       quantum_correction_spec = 0
     case default
-      call stoperror("Unknown model options for SAFT-VR Mie")
+       call stoperror("Unknown model options for SAFT-VR Mie")
     end select
     if (present(hs_reference)) then
-      ! Override HS reference
-      select case(hs_reference)
-      case(LAFITTE_HS_REF)
-        ! As already set
-      case(SINGLE_COMP_HS_REF)
-        hardsphere_EoS = HS_EOS_PURE_DIJ
-        zeta_mixing_rule = ZETA_LEONARD
-        exact_binary_dhs = .true.
-      case(ADDITIVE_HS_REF)
-        hardsphere_EoS = HS_EOS_ORIGINAL
-        zeta_mixing_rule = ZETA_LAFITTE
-        exact_binary_dhs = .false.
-        enable_hs_extra = .true.
-      case(NON_ADD_HS_REF)
-        hardsphere_EoS = HS_EOS_SANTOS
-        pure_hs_EoS = PURE_HS_CS
-        exact_binary_dhs = .true.
-      case default
-        call stoperror("Unknown HS model options for SAFT-VR Mie")
-      end select
+       ! Override HS reference
+       select case(hs_reference)
+       case(LAFITTE_HS_REF)
+          ! As already set
+       case(SINGLE_COMP_HS_REF)
+          hardsphere_EoS = HS_EOS_PURE_DIJ
+          zeta_mixing_rule = ZETA_LEONARD
+          exact_binary_dhs = .true.
+       case(ADDITIVE_HS_REF)
+          hardsphere_EoS = HS_EOS_ORIGINAL
+          zeta_mixing_rule = ZETA_LAFITTE
+          exact_binary_dhs = .false.
+          enable_hs_extra = .true.
+       case(NON_ADD_HS_REF)
+          hardsphere_EoS = HS_EOS_SANTOS
+          pure_hs_EoS = PURE_HS_CS
+          exact_binary_dhs = .true.
+       case default
+          call stoperror("Unknown HS model options for SAFT-VR Mie")
+       end select
     endif
   contains
     subroutine set_Lafitte_option()
@@ -157,7 +155,7 @@ contains
     !SINGLE_COMP_HS_REF
     if (  hardsphere_EoS == HS_EOS_PURE_DIJ .and. &
          (zeta_mixing_rule /= ZETA_LEONARD .or. .not. exact_binary_dhs)) then
-      call stoperror("Single component HS reference requires ZETA_LEONARD mixing rules and exact_binary_dhs")
+       call stoperror("Single component HS reference requires ZETA_LEONARD mixing rules and exact_binary_dhs")
     endif
 
   end subroutine check_model_consitency

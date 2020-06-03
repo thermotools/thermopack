@@ -1,9 +1,7 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
+! Module and subroutines for the dispersion part of SAFT-VRQ Mie
 ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !---------------------------------------------------------------------
 
 module saftvrmie_dispersion
@@ -84,31 +82,31 @@ contains
     ! Locals
     real :: d3
     if (.not. already_multiplied) then
-      d3 = d**3
-      a%am(i,j) = a%am(i,j)*d3
-      if (difflevel > 0) then
-        a%am_T(i,j) = a%am_T(i,j)*d3
-        a%am_V(i,j) = a%am_V(i,j)*d3
-        a%am_n(:,i,j) = a%am_n(:,i,j)*d3
-      endif
-      if (difflevel > 1) then
-        a%am_TT(i,j) = a%am_TT(i,j)*d3
-        a%am_VV(i,j) = a%am_VV(i,j)*d3
-        a%am_TV(i,j) = a%am_TV(i,j)*d3
-        a%am_Tn(:,i,j) = a%am_Tn(:,i,j)*d3
-        a%am_Vn(:,i,j) = a%am_Vn(:,i,j)*d3
-        a%am_nn(:,:,i,j) = a%am_nn(:,:,i,j)*d3
-      endif
+       d3 = d**3
+       a%am(i,j) = a%am(i,j)*d3
+       if (difflevel > 0) then
+          a%am_T(i,j) = a%am_T(i,j)*d3
+          a%am_V(i,j) = a%am_V(i,j)*d3
+          a%am_n(:,i,j) = a%am_n(:,i,j)*d3
+       endif
+       if (difflevel > 1) then
+          a%am_TT(i,j) = a%am_TT(i,j)*d3
+          a%am_VV(i,j) = a%am_VV(i,j)*d3
+          a%am_TV(i,j) = a%am_TV(i,j)*d3
+          a%am_Tn(:,i,j) = a%am_Tn(:,i,j)*d3
+          a%am_Vn(:,i,j) = a%am_Vn(:,i,j)*d3
+          a%am_nn(:,:,i,j) = a%am_nn(:,:,i,j)*d3
+       endif
     endif
 
     if (difflevel > 1) then
-      a%am_TT(i,j) = a%am_TT(i,j) + 6.0*a%am_T(i,j)*d_T/d &
-           + 6.0*a%am(i,j)*(d_T/d)**2 + 3.0*a%am(i,j)*d_TT/d
-      a%am_TV(i,j) = a%am_TV(i,j) + 3.0*a%am_V(i,j)*d_T/d
-      a%am_Tn(:,i,j) = a%am_Tn(:,i,j) + 3.0*a%am_n(:,i,j)*d_T/d
+       a%am_TT(i,j) = a%am_TT(i,j) + 6.0*a%am_T(i,j)*d_T/d &
+            + 6.0*a%am(i,j)*(d_T/d)**2 + 3.0*a%am(i,j)*d_TT/d
+       a%am_TV(i,j) = a%am_TV(i,j) + 3.0*a%am_V(i,j)*d_T/d
+       a%am_Tn(:,i,j) = a%am_Tn(:,i,j) + 3.0*a%am_n(:,i,j)*d_T/d
     endif
     if (difflevel > 0) then
-      a%am_T(i,j) = a%am_T(i,j) + 3.0*a%am(i,j)*d_T/d
+       a%am_T(i,j) = a%am_T(i,j) + 3.0*a%am(i,j)*d_T/d
     endif
 
   end subroutine calc_a_d3_product
@@ -139,14 +137,14 @@ contains
     ! For the zeta_x parameter (Lafitte Eq. (A13)), we allow different definitions
     select case(zeta_mixing_rule)
     case(ZETA_LAFITTE)
-      call calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta)
+       call calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta)
     case(ZETA_LINEAR)
        call calcZetaX_linear(nc,T,V,n,difflevel,dhs,zeta)
     case(ZETA_LEONARD)
        call calcZetaX_leonard(nc,T,V,n,difflevel,dhs,zeta)
     case default
-      call stoperror("Wrong mixing rule for packing fraction")
-   end select
+       call stoperror("Wrong mixing rule for packing fraction")
+    end select
   end subroutine calcZetaX
 
   !> Calculate hypotetical pure fluid packing fraction
@@ -170,57 +168,57 @@ contains
     prefactor = pi*N_AVOGADRO/(6.0*V*ns)
     zeta%zx = 0.0
     do i=1,nc
-      zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*&
-           sum(saftvrmie_param%ms*n*dhs%d(:,i)**3)
+       zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*&
+            sum(saftvrmie_param%ms*n*dhs%d(:,i)**3)
     enddo
     zeta%zx = prefactor*zeta%zx
     if (difflevel > 0) then
-      zeta%zx_T = 0.0
-      do i=1,nc
-        zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*&
-             sum(saftvrmie_param%ms*n*dhs%d(:,i)**2*dhs%d_T(:,i))
-      enddo
-      zeta%zx_T = 3.0*prefactor*zeta%zx_T
-      zeta%zx_V = -zeta%zx/V
-      do k=1,nc
-        ! Assuming d_kl = d_lk
-        zeta%zx_n(k) = saftvrmie_param%ms(k)*(&
-             2.0*prefactor*sum(saftvrmie_param%ms*n*dhs%d(:,k)**3) &
-             - zeta%zx/ns)
-      enddo
+       zeta%zx_T = 0.0
+       do i=1,nc
+          zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*&
+               sum(saftvrmie_param%ms*n*dhs%d(:,i)**2*dhs%d_T(:,i))
+       enddo
+       zeta%zx_T = 3.0*prefactor*zeta%zx_T
+       zeta%zx_V = -zeta%zx/V
+       do k=1,nc
+          ! Assuming d_kl = d_lk
+          zeta%zx_n(k) = saftvrmie_param%ms(k)*(&
+               2.0*prefactor*sum(saftvrmie_param%ms*n*dhs%d(:,k)**3) &
+               - zeta%zx/ns)
+       enddo
     endif
     if (difflevel > 1) then
-      zeta%zx_TT = 0.0
-      do i=1,nc
-        zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&
-             6.0*sum(saftvrmie_param%ms*n*dhs%d(:,i)*dhs%d_T(:,i)**2) &
-             + 3.0*sum(saftvrmie_param%ms*n*dhs%d(:,i)**2*dhs%d_TT(:,i)))
-      enddo
-      zeta%zx_VV = 2.0*zeta%zx/V**2
-      zeta%zx_TV = -zeta%zx_T/V
-      zeta%zx_Vn = -zeta%zx_n/V
-      do k=1,nc
-        ! Assuming d_kl = d_lk
-        zeta%zx_Tn(k) = saftvrmie_param%ms(k)*(&
-             6.0*prefactor*sum(saftvrmie_param%ms*n*&
-             dhs%d(:,k)**2*dhs%d_T(:,k)) &
-             - zeta%zx_T/ns)
-      enddo
-      do k=1,nc
-        do l=1,nc
+       zeta%zx_TT = 0.0
+       do i=1,nc
+          zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&
+               6.0*sum(saftvrmie_param%ms*n*dhs%d(:,i)*dhs%d_T(:,i)**2) &
+               + 3.0*sum(saftvrmie_param%ms*n*dhs%d(:,i)**2*dhs%d_TT(:,i)))
+       enddo
+       zeta%zx_VV = 2.0*zeta%zx/V**2
+       zeta%zx_TV = -zeta%zx_T/V
+       zeta%zx_Vn = -zeta%zx_n/V
+       do k=1,nc
           ! Assuming d_kl = d_lk
-          zeta%zx_nn(k,l) = 2.0*prefactor*saftvrmie_param%ms(k)*&
-               saftvrmie_param%ms(l)*dhs%d(k,l)**3&
-               -(saftvrmie_param%ms(k)*zeta%zx_n(l)&
-               +saftvrmie_param%ms(l)*zeta%zx_n(k))/ns
-        enddo
-      enddo
-      zeta%zx_VVV = -6.0*zeta%zx/V**3
-      zeta%zx_VVT = 2.0*zeta%zx_T/V**2
-      zeta%zx_VTn = -zeta%zx_Tn/V
-      zeta%zx_VVn = 2.0*zeta%zx_n/V**2
-      zeta%zx_Vnn = -zeta%zx_nn/V
-      zeta%zx_VTT = -zeta%zx_TT/V
+          zeta%zx_Tn(k) = saftvrmie_param%ms(k)*(&
+               6.0*prefactor*sum(saftvrmie_param%ms*n*&
+               dhs%d(:,k)**2*dhs%d_T(:,k)) &
+               - zeta%zx_T/ns)
+       enddo
+       do k=1,nc
+          do l=1,nc
+             ! Assuming d_kl = d_lk
+             zeta%zx_nn(k,l) = 2.0*prefactor*saftvrmie_param%ms(k)*&
+                  saftvrmie_param%ms(l)*dhs%d(k,l)**3&
+                  -(saftvrmie_param%ms(k)*zeta%zx_n(l)&
+                  +saftvrmie_param%ms(l)*zeta%zx_n(k))/ns
+          enddo
+       enddo
+       zeta%zx_VVV = -6.0*zeta%zx/V**3
+       zeta%zx_VVT = 2.0*zeta%zx_T/V**2
+       zeta%zx_VTn = -zeta%zx_Tn/V
+       zeta%zx_VVn = 2.0*zeta%zx_n/V**2
+       zeta%zx_Vnn = -zeta%zx_nn/V
+       zeta%zx_VTT = -zeta%zx_TT/V
     endif
   end subroutine calcZetaX_vdW
 
@@ -264,42 +262,42 @@ contains
     prefactor = pi*N_AVOGADRO/(6.0*V)
     zeta%zx = 0.0
     do i=1,nc
-      zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**3
+       zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**3
     enddo
     zeta%zx = prefactor*zeta%zx
     if (difflevel > 0) then
-      zeta%zx_T = 0.0
-      do i=1,nc
-        zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**2*dhs%d_T(i,i)
-      enddo
-      zeta%zx_T = 3.0*prefactor*zeta%zx_T
-      zeta%zx_V = -zeta%zx/V
-      do k=1,nc
-        zeta%zx_n(k) = prefactor*saftvrmie_param%ms(k)*dhs%d(k,k)**3
-      enddo
+       zeta%zx_T = 0.0
+       do i=1,nc
+          zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**2*dhs%d_T(i,i)
+       enddo
+       zeta%zx_T = 3.0*prefactor*zeta%zx_T
+       zeta%zx_V = -zeta%zx/V
+       do k=1,nc
+          zeta%zx_n(k) = prefactor*saftvrmie_param%ms(k)*dhs%d(k,k)**3
+       enddo
     endif
     if (difflevel > 1) then
-      zeta%zx_TT = 0.0
-      do i=1,nc
-        zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&
-             6.0*dhs%d(i,i)*dhs%d_T(i,i)**2 &
-             + 3.0*dhs%d(i,i)**2*dhs%d_TT(i,i))
-      enddo
-      zeta%zx_VV = 2.0*zeta%zx/V**2
-      zeta%zx_TV = -zeta%zx_T/V
-      zeta%zx_Vn = -zeta%zx_n/V
-      do k=1,nc
-        zeta%zx_Tn(k) = 3.0*prefactor*saftvrmie_param%ms(k)*&
-             dhs%d(k,k)**2*dhs%d_T(k,k)
-      enddo
-      zeta%zx_nn = 0.0
-      !
-      zeta%zx_VVV = -6.0*zeta%zx/V**3
-      zeta%zx_VVT = 2.0*zeta%zx_T/V**2
-      zeta%zx_VTn = -zeta%zx_Tn/V
-      zeta%zx_VVn = 2.0*zeta%zx_n/V**2
-      zeta%zx_Vnn = -zeta%zx_nn/V
-      zeta%zx_VTT = -zeta%zx_TT/V
+       zeta%zx_TT = 0.0
+       do i=1,nc
+          zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&
+               6.0*dhs%d(i,i)*dhs%d_T(i,i)**2 &
+               + 3.0*dhs%d(i,i)**2*dhs%d_TT(i,i))
+       enddo
+       zeta%zx_VV = 2.0*zeta%zx/V**2
+       zeta%zx_TV = -zeta%zx_T/V
+       zeta%zx_Vn = -zeta%zx_n/V
+       do k=1,nc
+          zeta%zx_Tn(k) = 3.0*prefactor*saftvrmie_param%ms(k)*&
+               dhs%d(k,k)**2*dhs%d_T(k,k)
+       enddo
+       zeta%zx_nn = 0.0
+       !
+       zeta%zx_VVV = -6.0*zeta%zx/V**3
+       zeta%zx_VVT = 2.0*zeta%zx_T/V**2
+       zeta%zx_VTn = -zeta%zx_Tn/V
+       zeta%zx_VVn = 2.0*zeta%zx_n/V**2
+       zeta%zx_Vnn = -zeta%zx_nn/V
+       zeta%zx_VTT = -zeta%zx_TT/V
     endif
   end subroutine calcZetaX_linear
 
@@ -321,23 +319,23 @@ contains
     prefactor = pi*N_AVOGADRO*ns/(6.0*V)
     zeta%zx = prefactor
     if (difflevel > 0) then
-      zeta%zx_T = 0.0
-      zeta%zx_V = -zeta%zx/V
-      zeta%zx_n = saftvrmie_param%ms*prefactor/ns
+       zeta%zx_T = 0.0
+       zeta%zx_V = -zeta%zx/V
+       zeta%zx_n = saftvrmie_param%ms*prefactor/ns
     endif
     if (difflevel > 1) then
-      zeta%zx_TT = 0.0
-      zeta%zx_VV = 2.0*zeta%zx/V**2
-      zeta%zx_TV = 0.0
-      zeta%zx_Vn = -zeta%zx_n/V
-      zeta%zx_Tn = 0.0
-      zeta%zx_nn = 0.0
-      zeta%zx_VVV = -6.0*zeta%zx/V**3
-      zeta%zx_VVT = 0.0
-      zeta%zx_VTn = 0.0
-      zeta%zx_VVn = 2.0*zeta%zx_n/V**2
-      zeta%zx_Vnn = 0.0
-      zeta%zx_VTT = 0.0
+       zeta%zx_TT = 0.0
+       zeta%zx_VV = 2.0*zeta%zx/V**2
+       zeta%zx_TV = 0.0
+       zeta%zx_Vn = -zeta%zx_n/V
+       zeta%zx_Tn = 0.0
+       zeta%zx_nn = 0.0
+       zeta%zx_VVV = -6.0*zeta%zx/V**3
+       zeta%zx_VVT = 0.0
+       zeta%zx_VTn = 0.0
+       zeta%zx_VVn = 2.0*zeta%zx_n/V**2
+       zeta%zx_Vnn = 0.0
+       zeta%zx_VTT = 0.0
     endif
   end subroutine calcZetaPreFactor
 
@@ -385,10 +383,10 @@ contains
     integer :: i
     inv_lam(1) = 1.0
     do i=2,4
-      inv_lam(i) = inv_lam(i-1)/lambda
+       inv_lam(i) = inv_lam(i-1)/lambda
     enddo
     do i=1,4
-      c(i) = sum(lam_coeff(:,i)*inv_lam)
+       c(i) = sum(lam_coeff(:,i)*inv_lam)
     enddo
     ef = eta*(c(1) + eta*(c(2) + eta*(c(3) + eta*c(4))))
     ef_e = c(1) + eta*(2.0*c(2) + eta*(3.0*c(3) + 4.0*eta*c(4)))
@@ -445,9 +443,9 @@ contains
     real :: denum(3:6)
     real :: fac
     if (present(fac_in)) then
-      fac = fac_in
+       fac = fac_in
     else
-      fac = 1.0
+       fac = 1.0
     end if
 
     call calcJLambda(x0,lambda,J,J_x,J_xx)
@@ -491,19 +489,19 @@ contains
     real :: as,as_e,as_ee,as_eee
     call calcA1Sutherland(eta,lambda,eps,as,as_e,as_ee,as_eee)
     if (quantum_correction_hs <= 0 .and. x0 > 1) then
-      ! Calculate integral from d to sigma
-      call calcBtilde(x0,eta,lambda,eps,B,B_e,B_x,B_ee,B_xx,B_ex,B_eee,B_eex,B_exx)
+       ! Calculate integral from d to sigma
+       call calcBtilde(x0,eta,lambda,eps,B,B_e,B_x,B_ee,B_xx,B_ex,B_eee,B_eex,B_exx)
     else
-      ! Calculate integral from d to sigma_eff elsewhere
-      B=0.0
-      B_e=0.0
-      B_x=0.0
-      B_ee=0.0
-      B_xx=0.0
-      B_ex=0.0
-      B_eee=0.0
-      B_eex=0.0
-      B_exx=0.0
+       ! Calculate integral from d to sigma_eff elsewhere
+       B=0.0
+       B_e=0.0
+       B_x=0.0
+       B_ee=0.0
+       B_xx=0.0
+       B_ex=0.0
+       B_eee=0.0
+       B_eex=0.0
+       B_exx=0.0
     endif
     u1 = x0**lambda*(as+B)
     u1_x = lambda*x0**(lambda-1.0)*(as+B) + x0**lambda*B_x
@@ -543,7 +541,7 @@ contains
     real :: afac, rfac
 
     if (quantum_correction<=0) then
-      call stoperror("calcA1QTilde: only for quantum_correction>0")
+       call stoperror("calcA1QTilde: only for quantum_correction>0")
     end if
 
     call calcX0AplusBtilde(x0,eta,lambda_r+2,eps,&
@@ -586,7 +584,7 @@ contains
     real :: afac, rfac
 
     if (quantum_correction<=1) then
-      call stoperror("calcA1QQTilde: need quantum correction >= 2")
+       call stoperror("calcA1QQTilde: need quantum correction >= 2")
     end if
 
     call calcX0AplusBtilde(x0,eta,lambda_r+4,eps,&
@@ -630,30 +628,30 @@ contains
     call calcA1Sutherland(eta,lambda_r,eps,asr,asr_e,asr_ee,asr_eee)
     call calcA1Sutherland(eta,lambda_a,eps,asa,asa_e,asa_ee,asa_eee)
     if (quantum_correction_hs <= 0 .and. x0 > 1) then
-      ! Calculate integral form d to sigma
-      call calcBtilde(x0,eta,lambda_r,eps,Br,Br_e,Br_x,Br_ee,Br_xx,Br_ex,Br_eee,Br_eex,Br_exx)
-      call calcBtilde(x0,eta,lambda_a,eps,Ba,Ba_e,Ba_x,Ba_ee,Ba_xx,Ba_ex,Ba_eee,Ba_eex,Ba_exx)
+       ! Calculate integral form d to sigma
+       call calcBtilde(x0,eta,lambda_r,eps,Br,Br_e,Br_x,Br_ee,Br_xx,Br_ex,Br_eee,Br_eex,Br_exx)
+       call calcBtilde(x0,eta,lambda_a,eps,Ba,Ba_e,Ba_x,Ba_ee,Ba_xx,Ba_ex,Ba_eee,Ba_eex,Ba_exx)
     else
-      ! Calculate integral form d to sigma_eff elsewhere
-      Br=0.0
-      Br_e=0.0
-      Br_x=0.0
-      Br_ee=0.0
-      Br_xx=0.0
-      Br_ex=0.0
-      Br_eee=0.0
-      Br_eex=0.0
-      Br_exx=0.0
-      !
-      Ba=0.0
-      Ba_e=0.0
-      Ba_x=0.0
-      Ba_ee=0.0
-      Ba_xx=0.0
-      Ba_ex=0.0
-      Ba_eee=0.0
-      Ba_eex=0.0
-      Ba_exx=0.0
+       ! Calculate integral form d to sigma_eff elsewhere
+       Br=0.0
+       Br_e=0.0
+       Br_x=0.0
+       Br_ee=0.0
+       Br_xx=0.0
+       Br_ex=0.0
+       Br_eee=0.0
+       Br_eex=0.0
+       Br_exx=0.0
+       !
+       Ba=0.0
+       Ba_e=0.0
+       Ba_x=0.0
+       Ba_ee=0.0
+       Ba_xx=0.0
+       Ba_ex=0.0
+       Ba_eee=0.0
+       Ba_eex=0.0
+       Ba_exx=0.0
     endif
     a1 = C*(x0**lambda_a*(asa+Ba) - x0**lambda_r*(asr+Br))
     a1_x = C*(lambda_a*x0**(lambda_a-1.0)*(asa+Ba) - lambda_r*x0**(lambda_r-1.0)*(asr+Br) &
@@ -700,11 +698,11 @@ contains
     real :: fac_r, fac_a
 
     if ( present(fac_r_in) .and. present(fac_a_in) ) then
-      fac_r = fac_r_in
-      fac_a = fac_a_in
+       fac_r = fac_r_in
+       fac_a = fac_a_in
     else
-      fac_r = 1.0
-      fac_a = 1.0
+       fac_r = 1.0
+       fac_a = 1.0
     end if
 
     call calcIcTildeSingleTerm(x,x_T,x_TT,y,y_T,y_TT,eta,lambda_a,eps,C,&
@@ -746,9 +744,9 @@ contains
     real :: fac
 
     if (present(fac_in)) then
-      fac = fac_in
+       fac = fac_in
     else
-      fac = 1.0
+       fac = 1.0
     end if
     call calcBtilde(y,eta,lambda,eps,Bea,Bea_e,Bea_y,Bea_ee,Bea_yy,Bea_ey,&
          Bea_eee,Bea_eey,Bea_eyy,fac_in=fac)
@@ -807,11 +805,11 @@ contains
     real, dimension(nc,nc) :: a1r_nn,a1r_Vnn
 
     if ( present(fac_r_in) .and. present(fac_a_in) ) then
-      fac_r = -fac_r_in
-      fac_a = fac_a_in
+       fac_r = -fac_r_in
+       fac_a = fac_a_in
     else
-      fac_r = -1.0
-      fac_a = 1.0
+       fac_r = -1.0
+       fac_a = 1.0
     end if
 
     call calcIcTildeSingleTerm_TVn_PureHSRef(nc,x0z,x1z,eta,lambda_a,eps,C,fac_a,&
@@ -884,7 +882,7 @@ contains
     a0_TT = lx0l*x%zx_TT + llx0ll*x%zx_T**2
     a0_Tn = lx0l*x%zx_Tn + llx0ll*x%zx_T*x%zx_n
     do k=1,nc
-      a0_nn(:,k) = lx0l*x%zx_nn(:,k) + llx0ll*x%zx_n(:)*x%zx_n(k)
+       a0_nn(:,k) = lx0l*x%zx_nn(:,k) + llx0ll*x%zx_n(:)*x%zx_n(k)
     enddo
     !
     a0_VVV = 0
@@ -899,12 +897,12 @@ contains
     a0_TV = 0
 
     call calc_a0_a_product(nc,a0,a1,&
-       a0_T,a0_V,a0_n,&
-       a1_T,a1_V,a1_n,&
-       a0_TT,a0_VV,a0_TV,a0_Tn,a0_Vn,a0_nn,&
-       a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-       a0_VVV,a0_VVT,a0_VTT,a0_VVn,a0_Vnn,a0_VTn,&
-       a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+         a0_T,a0_V,a0_n,&
+         a1_T,a1_V,a1_n,&
+         a0_TT,a0_VV,a0_TV,a0_Tn,a0_Vn,a0_nn,&
+         a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+         a0_VVV,a0_VVT,a0_VTT,a0_VVn,a0_Vnn,a0_VTn,&
+         a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
 
   end subroutine calcIcTildeSingleTerm_TVn_PureHSRef
 
@@ -944,24 +942,24 @@ contains
     difflevel = 1
     if (present(a1_VVV) .or. present(a1_VVT) .or. present(a1_VTT) .or. &
          present(a1_VVn) .or. present(a1_Vnn) .or. present(a1_VTn)) then
-      difflevel = 3
+       difflevel = 3
     else if (present(a1_VV) .or. present(a1_TV) .or. present(a1_TT) .or. &
          present(a1_Vn) .or. present(a1_nn) .or. present(a1_Tn)) then
-      difflevel = 2
+       difflevel = 2
     endif
     s = saftvrmie_param%sigma_ij(i,j)
     s_T = 0.0
     s_TT = 0.0
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      d = s_vc%d_pure%zx
-      call allocate_saftvrmie_zeta(nc,x0z)
-      call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
-      x0 = x0z%zx
+       d = s_vc%d_pure%zx
+       call allocate_saftvrmie_zeta(nc,x0z)
+       call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
+       x0 = x0z%zx
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
     endif
     eta = s_vc%zeta%zx
     lambda_a = saftvrmie_param%lambda_a_ij(i,j)
@@ -971,49 +969,49 @@ contains
     call calcA1Tilde(x0,eta,lambda_a,lambda_r,eps,C,&
          a1,a1_e,a1_x,a1_ee,a1_xx,a1_ex,a1_eee,a1_eex,a1_exx)
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
-           a1,a1_e,a1_x,a1_ee,a1_xx,a1_ex,a1_eee,0.0,a1_eex,a1_exx,&
-           a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn,difflevel=difflevel)
+       call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
+            a1,a1_e,a1_x,a1_ee,a1_xx,a1_ex,a1_eee,0.0,a1_eex,a1_exx,&
+            a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn,difflevel=difflevel)
     else
-      call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
-           a1,a1_e,a1_x,a1_ee,a1_xx,a1_ex,a1_eee,a1_eex,a1_exx,&
-           a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn,difflevel=difflevel)
+       call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
+            a1,a1_e,a1_x,a1_ee,a1_xx,a1_ex,a1_eee,a1_eex,a1_exx,&
+            a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn,difflevel=difflevel)
     endif
     if (quantum_correction_hs > 0) then
-      ! Shift integral limits to sigma_eff instead of sigma
-      s = s_vc%sigma_eff%d(i,j)
-      s_T = s_vc%sigma_eff%d_T(i,j)
-      s_TT = s_vc%sigma_eff%d_TT(i,j)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call allocate_saftvrmie_zeta(nc,x1z)
-        call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
-        y = x1z%zx
-      else
-        call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
-      endif
-      if (y > 1) then
-        if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-          call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,C,&
-               a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
-        else
-          call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,C,&
-               a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT)
-          call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
-               a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
-               a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
-        endif
-        call calc_a0_plus_a1(nc,a1Cc,a1,&
-             a1C_T,a1C_V,a1C_n,&
-             a1_T,a1_V,a1_n,&
-             a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-             a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-             a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
-             a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
-      endif
+       ! Shift integral limits to sigma_eff instead of sigma
+       s = s_vc%sigma_eff%d(i,j)
+       s_T = s_vc%sigma_eff%d_T(i,j)
+       s_TT = s_vc%sigma_eff%d_TT(i,j)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call allocate_saftvrmie_zeta(nc,x1z)
+          call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
+          y = x1z%zx
+       else
+          call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
+       endif
+       if (y > 1) then
+          if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+             call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,C,&
+                  a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                  a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
+          else
+             call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,C,&
+                  a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT)
+             call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
+                  a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
+                  a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                  a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
+          endif
+          call calc_a0_plus_a1(nc,a1Cc,a1,&
+               a1C_T,a1C_V,a1C_n,&
+               a1_T,a1_V,a1_n,&
+               a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+               a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
+               a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       endif
     endif
     call cleanup_saftvrmie_zeta(x0z)
     call cleanup_saftvrmie_zeta(x1z)
@@ -1070,10 +1068,10 @@ contains
     difflevel = 1
     if (present(a1_VVV) .or. present(a1_VVT) .or. present(a1_VTT) .or. &
          present(a1_VVn) .or. present(a1_Vnn) .or. present(a1_VTn)) then
-      difflevel = 3
+       difflevel = 3
     else if (present(a1_VV) .or. present(a1_TV) .or. present(a1_TT) .or. &
          present(a1_Vn) .or. present(a1_nn) .or. present(a1_Tn)) then
-      difflevel = 2
+       difflevel = 2
     endif
 
     ! Null out the variables, as we want to successively ADD contributions to them
@@ -1098,15 +1096,15 @@ contains
     s_T = 0.0
     s_TT = 0.0
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      d = s_vc%d_pure%zx
-      call allocate_saftvrmie_zeta(nc,x0z)
-      call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
-      x0 = x0z%zx
+       d = s_vc%d_pure%zx
+       call allocate_saftvrmie_zeta(nc,x0z)
+       call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
+       x0 = x0z%zx
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
     endif
     eta = s_vc%zeta%zx
     lambda_a = saftvrmie_param%lambda_a_ij(i,j)
@@ -1120,52 +1118,52 @@ contains
          Q1_r,Q1_a,a1Q,a1Q_e,a1Q_x,a1Q_ee,a1Q_xx,a1Q_ex,&
          a1Q_eee,a1Q_eex,a1Q_exx)
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
-           a1Q,a1Q_e,a1Q_x,a1Q_ee,a1Q_xx,a1Q_ex,a1Q_eee,0.0,a1Q_eex,a1Q_exx,&
-           a1Q_T,a1Q_V,a1Q_n,a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
-           a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn,difflevel=difflevel)
+       call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
+            a1Q,a1Q_e,a1Q_x,a1Q_ee,a1Q_xx,a1Q_ex,a1Q_eee,0.0,a1Q_eex,a1Q_exx,&
+            a1Q_T,a1Q_V,a1Q_n,a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
+            a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn,difflevel=difflevel)
     else
-      call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
-           a1Q,a1Q_e,a1Q_x,a1Q_ee,a1Q_xx,a1Q_ex,a1Q_eee,a1Q_eex,a1Q_exx,&
-           a1Q_T,a1Q_V,a1Q_n,a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
-           a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn,difflevel=difflevel)
+       call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
+            a1Q,a1Q_e,a1Q_x,a1Q_ee,a1Q_xx,a1Q_ex,a1Q_eee,a1Q_eex,a1Q_exx,&
+            a1Q_T,a1Q_V,a1Q_n,a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
+            a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn,difflevel=difflevel)
     endif
 
     if (quantum_correction_hs > 0) then
-      ! Shift integral limits to sigma_eff instead of sigma
-      s = s_vc%sigma_eff%d(i,j)
-      s_T = s_vc%sigma_eff%d_T(i,j)
-      s_TT = s_vc%sigma_eff%d_TT(i,j)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call allocate_saftvrmie_zeta(nc,x1z)
-        call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
-        y = x1z%zx
-      else
-        call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
-      endif
-      if (y > 1) then
-        if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-          call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a+2,lambda_r+2,eps,C,&
-               a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel,&
-               fac_r_in=Q1_r,fac_a_in=Q1_a)
-        else
-          call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a+2,lambda_r+2,eps,C,&
-               a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
-               fac_r_in=Q1_r,fac_a_in=Q1_a)
-          call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
-               a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
-               a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
-        endif
-        call calc_a0_plus_a1(nc,a1Cc,a1Q,&
-             a1C_T,a1C_V,a1C_n,&
-             a1Q_T,a1Q_V,a1Q_n,&
-             a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-             a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
-             a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
-             a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn)
-      endif
+       ! Shift integral limits to sigma_eff instead of sigma
+       s = s_vc%sigma_eff%d(i,j)
+       s_T = s_vc%sigma_eff%d_T(i,j)
+       s_TT = s_vc%sigma_eff%d_TT(i,j)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call allocate_saftvrmie_zeta(nc,x1z)
+          call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
+          y = x1z%zx
+       else
+          call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
+       endif
+       if (y > 1) then
+          if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+             call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a+2,lambda_r+2,eps,C,&
+                  a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                  a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel,&
+                  fac_r_in=Q1_r,fac_a_in=Q1_a)
+          else
+             call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a+2,lambda_r+2,eps,C,&
+                  a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
+                  fac_r_in=Q1_r,fac_a_in=Q1_a)
+             call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
+                  a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
+                  a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                  a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
+          endif
+          call calc_a0_plus_a1(nc,a1Cc,a1Q,&
+               a1C_T,a1C_V,a1C_n,&
+               a1Q_T,a1Q_V,a1Q_n,&
+               a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+               a1Q_TT,a1Q_VV,a1Q_TV,a1Q_Tn,a1Q_Vn,a1Q_nn,&
+               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
+               a1Q_VVV,a1Q_VVT,a1Q_VTT,a1Q_VVn,a1Q_Vnn,a1Q_VTn)
+       endif
     endif
 
     ! Add a1Q*D to a1
@@ -1180,62 +1178,62 @@ contains
          a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
 
     if (quantum_correction>=2) then
-      ! Add FH correction proportional to (D^2)
-      Q2_r = saftvrmie_param%Quantum_const_2r_ij(i,j)
-      Q2_a = saftvrmie_param%Quantum_const_2a_ij(i,j)
+       ! Add FH correction proportional to (D^2)
+       Q2_r = saftvrmie_param%Quantum_const_2r_ij(i,j)
+       Q2_a = saftvrmie_param%Quantum_const_2a_ij(i,j)
 
-      call calcA1QQTilde(x0,eta,lambda_a,lambda_r,eps,C,&
-           Q2_r,Q2_a,a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,&
-           a1QQ_eee,a1QQ_eex,a1QQ_exx)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
-             a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,a1QQ_eee,0.0,a1QQ_eex,a1QQ_exx,&
-             a1QQ_T,a1QQ_V,a1QQ_n,a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
-             a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,difflevel=difflevel)
-      else
-        call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
-             a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,a1QQ_eee,a1QQ_eex,a1QQ_exx,&
-             a1QQ_T,a1QQ_V,a1QQ_n,a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
-             a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,difflevel=difflevel)
-      endif
+       call calcA1QQTilde(x0,eta,lambda_a,lambda_r,eps,C,&
+            Q2_r,Q2_a,a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,&
+            a1QQ_eee,a1QQ_eex,a1QQ_exx)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
+               a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,a1QQ_eee,0.0,a1QQ_eex,a1QQ_exx,&
+               a1QQ_T,a1QQ_V,a1QQ_n,a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
+               a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,difflevel=difflevel)
+       else
+          call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
+               a1QQ,a1QQ_e,a1QQ_x,a1QQ_ee,a1QQ_xx,a1QQ_ex,a1QQ_eee,a1QQ_eex,a1QQ_exx,&
+               a1QQ_T,a1QQ_V,a1QQ_n,a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
+               a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,difflevel=difflevel)
+       endif
 
-      if (quantum_correction_hs > 0) then
-        ! Shift integral limits to sigma_eff instead of sigma
-        if (y > 1) then
-          if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-            call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a+4,lambda_r+4,eps,C,&
-                 a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-                 a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel,&
-                 fac_r_in=Q2_r,fac_a_in=Q2_a)
-          else
-            call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a+4,lambda_r+4,eps,C,&
-                 a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
-                 fac_r_in=Q2_r,fac_a_in=Q2_a)
-            call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
-                 a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
-                 a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-                 a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
+       if (quantum_correction_hs > 0) then
+          ! Shift integral limits to sigma_eff instead of sigma
+          if (y > 1) then
+             if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+                call calcIcTilde_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a+4,lambda_r+4,eps,C,&
+                     a1Cc,a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                     a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel,&
+                     fac_r_in=Q2_r,fac_a_in=Q2_a)
+             else
+                call calcIcTilde(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a+4,lambda_r+4,eps,C,&
+                     a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
+                     fac_r_in=Q2_r,fac_a_in=Q2_a)
+                call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
+                     a1Cc,a1Cc_e,a1Cc_T,a1Cc_ee,a1Cc_TT,a1Cc_eT,a1Cc_eee,a1Cc_eeT,a1Cc_eTT,&
+                     a1C_T,a1C_V,a1C_n,a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                     a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,difflevel=difflevel)
+             endif
+             call calc_a0_plus_a1(nc,a1Cc,a1QQ,&
+                  a1C_T,a1C_V,a1C_n,&
+                  a1QQ_T,a1QQ_V,a1QQ_n,&
+                  a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
+                  a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
+                  a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
+                  a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn)
           endif
-          call calc_a0_plus_a1(nc,a1Cc,a1QQ,&
-               a1C_T,a1C_V,a1C_n,&
-               a1QQ_T,a1QQ_V,a1QQ_n,&
-               a1C_TT,a1C_VV,a1C_TV,a1C_Tn,a1C_Vn,a1C_nn,&
-               a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
-               a1C_VVV,a1C_VVT,a1C_VTT,a1C_VVn,a1C_Vnn,a1C_VTn,&
-               a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn)
-        endif
-      endif
+       endif
 
-      ! Add a1QQ*D**2 to a1
-      call get_DFeynHibbsPower(i,j,DFH2,DFH2_T,DFH2_TT,s_vc,power_in=2,divideBySigmaMie=.true.)
-      call add_aQ_DFH_product(nc,DFH2,DFH2_T,DFH2_TT,&
-           a1QQ,a1,&
-           a1QQ_T,a1QQ_V,a1QQ_n,&
-           a1_T,a1_V,a1_n,&
-           a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
-           a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       ! Add a1QQ*D**2 to a1
+       call get_DFeynHibbsPower(i,j,DFH2,DFH2_T,DFH2_TT,s_vc,power_in=2,divideBySigmaMie=.true.)
+       call add_aQ_DFH_product(nc,DFH2,DFH2_T,DFH2_TT,&
+            a1QQ,a1,&
+            a1QQ_T,a1QQ_V,a1QQ_n,&
+            a1_T,a1_V,a1_n,&
+            a1QQ_TT,a1QQ_VV,a1QQ_TV,a1QQ_Tn,a1QQ_Vn,a1QQ_nn,&
+            a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1QQ_VVV,a1QQ_VVT,a1QQ_VTT,a1QQ_VVn,a1QQ_Vnn,a1QQ_VTn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
 
     end if
     call cleanup_saftvrmie_zeta(x0z)
@@ -1258,8 +1256,8 @@ contains
     x_T = -(x/d)*d_T
     x_TT = -2.0*x_T*d_T/d - (x/d)*d_TT
     if (quantum_correction_hs > 0) then
-      x_T = x_T + s_T/d
-      x_TT = x_TT + s_TT/d - 2.0*s_T*d_T/d**2
+       x_T = x_T + s_T/d
+       x_TT = x_TT + s_TT/d - 2.0*s_T*d_T/d**2
     endif
   end subroutine calcXDifferentials
 
@@ -1284,15 +1282,15 @@ contains
     x%zx_TT = -2.0*x%zx_T*d_T/d - (x%zx/d)*d_TT
     x%zx_n = -(x%zx/d)*d_pure%zx_n
     do l=1,nc
-      do k=1,nc
-        x%zx_nn(k,l) = (x%zx/d)*(2*d_pure%zx_n(k)*d_pure%zx_n(l)/d - d_pure%zx_nn(k,l))
-      enddo
+       do k=1,nc
+          x%zx_nn(k,l) = (x%zx/d)*(2*d_pure%zx_n(k)*d_pure%zx_n(l)/d - d_pure%zx_nn(k,l))
+       enddo
     enddo
     x%zx_Tn = (x%zx/d)*(2*d_pure%zx_n(:)*d_T/d - d_pure%zx_Tn(:))
     if (quantum_correction_hs > 0 .and. (s_T /= 0 .or. s_TT /= 0)) then
-      x%zx_T = x%zx_T + s_T/d
-      x%zx_TT = x%zx_TT + s_TT/d - 2.0*s_T*d_T/d**2
-      x%zx_Tn = x%zx_Tn - s_T*d_pure%zx_n(:)/d**2
+       x%zx_T = x%zx_T + s_T/d
+       x%zx_TT = x%zx_TT + s_TT/d - 2.0*s_T*d_T/d**2
+       x%zx_Tn = x%zx_Tn - s_T*d_pure%zx_n(:)/d**2
     endif
     x%zx_V = 0
     x%zx_VV = 0
@@ -1336,16 +1334,16 @@ contains
          a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
 
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call calc_a_zeta_product(nc,s_vc%zeta,a1,a1_T,a1_V,a1_n,&
-           a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       call calc_a_zeta_product(nc,s_vc%zeta,a1,a1_T,a1_V,a1_n,&
+            a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
-           a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
+            a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
     endif
   end subroutine calcA1ij
 
@@ -1375,16 +1373,16 @@ contains
          a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
 
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call calc_a_zeta_product(nc,s_vc%zeta,a1,a1_T,a1_V,a1_n,&
-           a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       call calc_a_zeta_product(nc,s_vc%zeta,a1,a1_T,a1_V,a1_n,&
+            a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
-           a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
-           a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
+            a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn,&
+            a1_VVV,a1_VVT,a1_VTT,a1_VVn,a1_Vnn,a1_VTn)
     endif
   end subroutine calcA1ijQuantumCorrection
 
@@ -1424,16 +1422,16 @@ contains
          present(a_Vnn) .or. present(a_VVT))
     ! Input logics
     if (second_order_present) then
-      ! First order differentials required
-      if (.not. first_order_present) then
-        call stoperror("eta_a_product: First order differentials required")
-      endif
+       ! First order differentials required
+       if (.not. first_order_present) then
+          call stoperror("eta_a_product: First order differentials required")
+       endif
     endif
     if (third_order_present) then
-      ! Second order differentials required
-      if (.not. second_order_present) then
-        call stoperror("eta_a_product: First order differentials required")
-      endif
+       ! Second order differentials required
+       if (.not. second_order_present) then
+          call stoperror("eta_a_product: First order differentials required")
+       endif
     endif
 
     ns = sum(saftvrmie_param%ms*n)
@@ -1441,80 +1439,80 @@ contains
     at = a
     a = at*eta
     if (present(a_T)) then
-      at_T = a_T
-      eta_T = 3.0*eta*d_T/d
-      a_T = eta*at_T + eta_T*at
+       at_T = a_T
+       eta_T = 3.0*eta*d_T/d
+       a_T = eta*at_T + eta_T*at
     endif
     if (present(a_TT)) then
-      at_TT = a_TT
-      eta_TT = 6.0*eta*d_T**2/d**2 + 3.0*eta*d_TT/d
-      a_TT = eta*at_TT + 2.0*eta_T*at_T + eta_TT*at
+       at_TT = a_TT
+       eta_TT = 6.0*eta*d_T**2/d**2 + 3.0*eta*d_TT/d
+       a_TT = eta*at_TT + 2.0*eta_T*at_T + eta_TT*at
     endif
     if (present(a_V)) then
-      at_V = a_V
-      eta_V = -eta/V
-      a_V = eta*at_V + eta_V*at
+       at_V = a_V
+       eta_V = -eta/V
+       a_V = eta*at_V + eta_V*at
     endif
     if (present(a_VV)) then
-      at_VV = a_VV
-      eta_VV = 2.0*eta/V**2
-      a_VV = eta*at_VV + 2.0*eta_V*at_V + eta_VV*at
+       at_VV = a_VV
+       eta_VV = 2.0*eta/V**2
+       a_VV = eta*at_VV + 2.0*eta_V*at_V + eta_VV*at
     endif
     if (present(a_TV)) then
-      at_TV = a_TV
-      eta_TV = -eta_T/V
-      a_TV = eta*at_TV + eta_T*at_V + eta_V*at_T + eta_TV*at
+       at_TV = a_TV
+       eta_TV = -eta_T/V
+       a_TV = eta*at_TV + eta_T*at_V + eta_V*at_T + eta_TV*at
     endif
     if (present(a_n)) then
-      at_n = a_n
-      eta_n = eta*saftvrmie_param%ms/ns
-      a_n = eta*at_n + eta_n*at
+       at_n = a_n
+       eta_n = eta*saftvrmie_param%ms/ns
+       a_n = eta*at_n + eta_n*at
     endif
     if (present(a_nn)) then
-      at_nn = a_nn
-      do k=1,nc
-        a_nn(:,k) = eta*at_nn(:,k) + eta_n(k)*at_n + eta_n*at_n(k)
-      enddo
+       at_nn = a_nn
+       do k=1,nc
+          a_nn(:,k) = eta*at_nn(:,k) + eta_n(k)*at_n + eta_n*at_n(k)
+       enddo
     endif
     if (present(a_Tn)) then
-      at_Tn = a_Tn
-      eta_Tn = eta_T*saftvrmie_param%ms/ns
-      a_Tn = eta*at_Tn + eta_T*at_n + eta_n*at_T + eta_Tn*at
+       at_Tn = a_Tn
+       eta_Tn = eta_T*saftvrmie_param%ms/ns
+       a_Tn = eta*at_Tn + eta_T*at_n + eta_n*at_T + eta_Tn*at
     endif
     if (present(a_Vn)) then
-      at_Vn = a_Vn
-      eta_Vn = eta_V*saftvrmie_param%ms/ns
-      a_Vn = eta*a_Vn + eta_V*at_n + eta_n*at_V + eta_Vn*at
+       at_Vn = a_Vn
+       eta_Vn = eta_V*saftvrmie_param%ms/ns
+       a_Vn = eta*a_Vn + eta_V*at_n + eta_n*at_V + eta_Vn*at
     endif
     if (present(a_Vnn)) then
-      do k=1,nc
-        a_Vnn(:,k) = eta_V*at_nn(:,k) + eta*a_Vnn(:,k) + eta_Vn(k)*at_n &
-             + eta_n(k)*at_Vn + eta_Vn*at_n(k) + eta_n*at_Vn(k)
-      enddo
+       do k=1,nc
+          a_Vnn(:,k) = eta_V*at_nn(:,k) + eta*a_Vnn(:,k) + eta_Vn(k)*at_n &
+               + eta_n(k)*at_Vn + eta_Vn*at_n(k) + eta_n*at_Vn(k)
+       enddo
     endif
     if (present(a_VVV)) then
-      eta_VVV = -6.0*eta/V**3
-      a_VVV = eta_VVV*at + 3.0*eta_VV*at_V + 3.0*eta_V*at_VV + eta*a_VVV
+       eta_VVV = -6.0*eta/V**3
+       a_VVV = eta_VVV*at + 3.0*eta_VV*at_V + 3.0*eta_V*at_VV + eta*a_VVV
     endif
     if (present(a_VVT)) then
-      eta_VVT = 2.0*eta_T/V**2
-      a_VVT = eta_VVT*at + 2.0*eta_TV*at_V + eta_VV*at_T &
-           + 2.0*eta_V*at_TV + eta_T*at_VV + eta*a_VVT
+       eta_VVT = 2.0*eta_T/V**2
+       a_VVT = eta_VVT*at + 2.0*eta_TV*at_V + eta_VV*at_T &
+            + 2.0*eta_V*at_TV + eta_T*at_VV + eta*a_VVT
     endif
     if (present(a_VTT)) then
-      eta_VTT = -eta_TT/V
-      a_VTT = eta_VTT*at + 2.0*eta_TV*at_T + eta_TT*at_V &
-           + 2.0*eta_T*at_TV + eta_V*at_TT + eta*a_VTT
+       eta_VTT = -eta_TT/V
+       a_VTT = eta_VTT*at + 2.0*eta_TV*at_T + eta_TT*at_V &
+            + 2.0*eta_T*at_TV + eta_V*at_TT + eta*a_VTT
     endif
     if (present(a_VVn)) then
-      eta_VVn = -2.0*eta_Vn/V
-      a_VVn = eta_VVn*at + 2.0*eta_Vn*at_V + eta_VV*at_n &
-           + 2.0*eta_V*at_Vn + eta_n*at_VV + eta*a_VVn
+       eta_VVn = -2.0*eta_Vn/V
+       a_VVn = eta_VVn*at + 2.0*eta_Vn*at_V + eta_VV*at_n &
+            + 2.0*eta_V*at_Vn + eta_n*at_VV + eta*a_VVn
     endif
     if (present(a_VTn)) then
-      eta_VTn = -eta_Tn/V
-      a_VTn = eta_VTn*at + eta_Vn*at_T + eta_Tn*at_V + eta_TV*at_n &
-           + eta_V*at_Tn + eta_T*at_Vn + eta_n*at_TV + eta*a_VTn
+       eta_VTn = -eta_Tn/V
+       a_VTn = eta_VTn*at + eta_Vn*at_T + eta_Tn*at_V + eta_TV*at_n &
+            + eta_V*at_Tn + eta_T*at_Vn + eta_n*at_TV + eta*a_VTn
     endif
   end subroutine eta_a_product
 
@@ -1542,60 +1540,60 @@ contains
     ns = sum(saftvrmie_param%ms*n)
     ns2 = ns**2
     do i=1,nc
-      do j=1,nc
-        if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
+       do j=1,nc
+          if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
                present(a1_TT) .or. present(a1_VV) .or. present(a1_TV)) then
-          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
-               saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
-               saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
-               saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
-          if (quantum_correction>0) then
-            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
-          end if
-        else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
-          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
-          if (quantum_correction>0) then
-            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
-          end if
-        else
-          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
-          if (quantum_correction>0) then
-            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
-          end if
-        endif
-      enddo
+             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
+                  saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
+                  saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
+                  saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
+             if (quantum_correction>0) then
+                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
+             end if
+          else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
+             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
+             if (quantum_correction>0) then
+                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
+             end if
+          else
+             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
+             if (quantum_correction>0) then
+                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
+             end if
+          endif
+       enddo
     enddo
 
     if (quantum_correction>0) then
-      ! Add the quantum corrections a1ijQCorr to a1ij
-      call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
+       ! Add the quantum corrections a1ijQCorr to a1ij
+       call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
     end if
 
     ! Average over mole fractions
@@ -1627,190 +1625,190 @@ contains
     ns2 = ns**2
     a = 0.0
     do k=1,nc
-      a = a + saftvrmie_param%ms(k)*n(k)*&
-           sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am(:,k))
+       a = a + saftvrmie_param%ms(k)*n(k)*&
+            sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am(:,k))
     enddo
     a = a/ns2
     if (present(a_T)) then
-      a_T = 0.0
-      do k=1,nc
-        a_T = a_T + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_T(:,k))
-      enddo
-      a_T = a_T/ns2
+       a_T = 0.0
+       do k=1,nc
+          a_T = a_T + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_T(:,k))
+       enddo
+       a_T = a_T/ns2
     endif
     if (present(a_TT)) then
-      a_TT = 0.0
-      do k=1,nc
-        a_TT = a_TT + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_TT(:,k))
-      enddo
-      a_TT = a_TT/ns2
+       a_TT = 0.0
+       do k=1,nc
+          a_TT = a_TT + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_TT(:,k))
+       enddo
+       a_TT = a_TT/ns2
     endif
     if (present(a_V)) then
-      a_V = 0.0
-      do k=1,nc
-        a_V = a_V + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_V(:,k))
-      enddo
-      a_V = a_V/ns2
+       a_V = 0.0
+       do k=1,nc
+          a_V = a_V + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_V(:,k))
+       enddo
+       a_V = a_V/ns2
     endif
     if (present(a_VV)) then
-      a_VV = 0.0
-      do k=1,nc
-        a_VV = a_VV + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VV(:,k))
-      enddo
-      a_VV = a_VV/ns2
+       a_VV = 0.0
+       do k=1,nc
+          a_VV = a_VV + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VV(:,k))
+       enddo
+       a_VV = a_VV/ns2
     endif
     if (present(a_TV)) then
-      a_TV = 0.0
-      do k=1,nc
-        a_TV = a_TV + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_TV(:,k))
-      enddo
-      a_TV = a_TV/ns2
+       a_TV = 0.0
+       do k=1,nc
+          a_TV = a_TV + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_TV(:,k))
+       enddo
+       a_TV = a_TV/ns2
     endif
     if (present(a_n)) then
-      a_n = 0.0
-      do k=1,nc
-        do i=1,nc
-          do j=1,nc
-            a_n(k) = a_n(k) + saftvrmie_param%ms(i)*n(i)*&
-                 saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_n(k,i,j)
+       a_n = 0.0
+       do k=1,nc
+          do i=1,nc
+             do j=1,nc
+                a_n(k) = a_n(k) + saftvrmie_param%ms(i)*n(i)*&
+                     saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_n(k,i,j)
+             enddo
           enddo
-        enddo
-        a_n(k) = a_n(k) + saftvrmie_param%ms(k)*(&
-             sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am(:,k)+saftvrmie_a%am(k,:))) &
-             - 2.0*ns*a)
-      enddo
-      a_n = a_n/ns2
+          a_n(k) = a_n(k) + saftvrmie_param%ms(k)*(&
+               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am(:,k)+saftvrmie_a%am(k,:))) &
+               - 2.0*ns*a)
+       enddo
+       a_n = a_n/ns2
     endif
     if (present(a_Tn)) then
-      a_Tn = 0.0
-      do k=1,nc
-        do i=1,nc
-          do j=1,nc
-            a_Tn(k) = a_Tn(k) + saftvrmie_param%ms(i)*n(i)*&
-                 saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Tn(k,i,j)
+       a_Tn = 0.0
+       do k=1,nc
+          do i=1,nc
+             do j=1,nc
+                a_Tn(k) = a_Tn(k) + saftvrmie_param%ms(i)*n(i)*&
+                     saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Tn(k,i,j)
+             enddo
           enddo
-        enddo
-        a_Tn(k) = a_Tn(k) + saftvrmie_param%ms(k)*(&
-             sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_T(:,k) + saftvrmie_a%am_T(k,:))) - 2.0*ns*a_T)
-      enddo
-      a_Tn = a_Tn/ns2
+          a_Tn(k) = a_Tn(k) + saftvrmie_param%ms(k)*(&
+               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_T(:,k) + saftvrmie_a%am_T(k,:))) - 2.0*ns*a_T)
+       enddo
+       a_Tn = a_Tn/ns2
     endif
     if (present(a_Vn)) then
-      a_Vn = 0.0
-      do k=1,nc
-        do i=1,nc
-          do j=1,nc
-            a_Vn(k) = a_Vn(k) + saftvrmie_param%ms(i)*n(i)*&
-                 saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Vn(k,i,j)
+       a_Vn = 0.0
+       do k=1,nc
+          do i=1,nc
+             do j=1,nc
+                a_Vn(k) = a_Vn(k) + saftvrmie_param%ms(i)*n(i)*&
+                     saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Vn(k,i,j)
+             enddo
           enddo
-        enddo
-        a_Vn(k) = a_Vn(k) + saftvrmie_param%ms(k)*(&
-             sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_V(:,k) + saftvrmie_a%am_V(k,:))) &
-             - 2.0*ns*a_V)
-      enddo
-      a_Vn = a_Vn/ns2
+          a_Vn(k) = a_Vn(k) + saftvrmie_param%ms(k)*(&
+               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_V(:,k) + saftvrmie_a%am_V(k,:))) &
+               - 2.0*ns*a_V)
+       enddo
+       a_Vn = a_Vn/ns2
     endif
     if (present(a_VVV)) then
-      a_VVV = 0.0
-      do k=1,nc
-        a_VVV = a_VVV + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VVV(:,k))
-      enddo
-      a_VVV = a_VVV/ns2
+       a_VVV = 0.0
+       do k=1,nc
+          a_VVV = a_VVV + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VVV(:,k))
+       enddo
+       a_VVV = a_VVV/ns2
     endif
     if (present(a_VVT)) then
-      a_VVT = 0.0
-      do k=1,nc
-        a_VVT = a_VVT + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VVT(:,k))
-      enddo
-      a_VVT = a_VVT/ns2
+       a_VVT = 0.0
+       do k=1,nc
+          a_VVT = a_VVT + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VVT(:,k))
+       enddo
+       a_VVT = a_VVT/ns2
     endif
     if (present(a_VTT)) then
-      a_VTT = 0.0
-      do k=1,nc
-        a_VTT = a_VTT + saftvrmie_param%ms(k)*n(k)*&
-             sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VTT(:,k))
-      enddo
-      a_VTT = a_VTT/ns2
+       a_VTT = 0.0
+       do k=1,nc
+          a_VTT = a_VTT + saftvrmie_param%ms(k)*n(k)*&
+               sum(saftvrmie_param%ms(:)*n(:)*saftvrmie_a%am_VTT(:,k))
+       enddo
+       a_VTT = a_VTT/ns2
     endif
     if (present(a_VVn)) then
-      a_VVn = 0.0
-      do k=1,nc
-        do i=1,nc
-          do j=1,nc
-            a_VVn(k) = a_VVn(k) + saftvrmie_param%ms(i)*n(i)*&
-                 saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_VVn(k,i,j)
+       a_VVn = 0.0
+       do k=1,nc
+          do i=1,nc
+             do j=1,nc
+                a_VVn(k) = a_VVn(k) + saftvrmie_param%ms(i)*n(i)*&
+                     saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_VVn(k,i,j)
+             enddo
           enddo
-        enddo
-        a_VVn(k) = a_VVn(k) + saftvrmie_param%ms(k)*(&
-             sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_VV(:,k) + saftvrmie_a%am_VV(k,:)))&
-             - 2.0*ns*a_VV)
-      enddo
-      a_VVn = a_VVn/ns2
+          a_VVn(k) = a_VVn(k) + saftvrmie_param%ms(k)*(&
+               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_VV(:,k) + saftvrmie_a%am_VV(k,:)))&
+               - 2.0*ns*a_VV)
+       enddo
+       a_VVn = a_VVn/ns2
     endif
     if (present(a_VTn)) then
-      a_VTn = 0.0
-      do k=1,nc
-        do i=1,nc
-          do j=1,nc
-            a_VTn(k) = a_VTn(k) + saftvrmie_param%ms(i)*n(i)*&
-                 saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_VTn(k,i,j)
+       a_VTn = 0.0
+       do k=1,nc
+          do i=1,nc
+             do j=1,nc
+                a_VTn(k) = a_VTn(k) + saftvrmie_param%ms(i)*n(i)*&
+                     saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_VTn(k,i,j)
+             enddo
           enddo
-        enddo
-        a_VTn(k) = a_VTn(k) + saftvrmie_param%ms(k)*(&
-             sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_TV(:,k) + saftvrmie_a%am_TV(k,:)))&
-             - 2.0*ns*a_TV)
-      enddo
-      a_VTn = a_VTn/ns2
+          a_VTn(k) = a_VTn(k) + saftvrmie_param%ms(k)*(&
+               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_TV(:,k) + saftvrmie_a%am_TV(k,:)))&
+               - 2.0*ns*a_TV)
+       enddo
+       a_VTn = a_VTn/ns2
     endif
     if (present(a_nn)) then
-      a_nn = 0.0
-      do k=1,nc
-        do l=1,nc
-          do i=1,nc
-            do j=1,nc
-              a_nn(k,l) = a_nn(k,l) + saftvrmie_param%ms(i)*n(i)*&
-                   saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_nn(k,l,i,j)
-            enddo
+       a_nn = 0.0
+       do k=1,nc
+          do l=1,nc
+             do i=1,nc
+                do j=1,nc
+                   a_nn(k,l) = a_nn(k,l) + saftvrmie_param%ms(i)*n(i)*&
+                        saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_nn(k,l,i,j)
+                enddo
+             enddo
+             a_nn(k,l) = a_nn(k,l) + saftvrmie_param%ms(k)*saftvrmie_param%ms(l)*(&
+                  saftvrmie_a%am(k,l) + saftvrmie_a%am(l,k) - 2.0*a) + saftvrmie_param%ms(k)*(&
+                  sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_n(l,k,:) &
+                  + saftvrmie_a%am_n(l,:,k))) - 2.0*ns*a_n(l)) &
+                  + saftvrmie_param%ms(l)*(&
+                  sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_n(k,l,:) &
+                  + saftvrmie_a%am_n(k,:,l))) - 2.0*ns*a_n(k))
           enddo
-          a_nn(k,l) = a_nn(k,l) + saftvrmie_param%ms(k)*saftvrmie_param%ms(l)*(&
-               saftvrmie_a%am(k,l) + saftvrmie_a%am(l,k) - 2.0*a) + saftvrmie_param%ms(k)*(&
-               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_n(l,k,:) &
-               + saftvrmie_a%am_n(l,:,k))) - 2.0*ns*a_n(l)) &
-               + saftvrmie_param%ms(l)*(&
-               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_n(k,l,:) &
-               + saftvrmie_a%am_n(k,:,l))) - 2.0*ns*a_n(k))
-        enddo
-      enddo
-      a_nn = a_nn/ns2
+       enddo
+       a_nn = a_nn/ns2
     endif
     if (present(a_Vnn)) then
-      a_Vnn = 0.0
-      do k=1,nc
-        do l=1,nc
-          do i=1,nc
-            do j=1,nc
-              a_Vnn(k,l) = a_Vnn(k,l) + saftvrmie_param%ms(i)*n(i)*&
-                   saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Vnn(k,l,i,j)
-            enddo
+       a_Vnn = 0.0
+       do k=1,nc
+          do l=1,nc
+             do i=1,nc
+                do j=1,nc
+                   a_Vnn(k,l) = a_Vnn(k,l) + saftvrmie_param%ms(i)*n(i)*&
+                        saftvrmie_param%ms(j)*n(j)*saftvrmie_a%am_Vnn(k,l,i,j)
+                enddo
+             enddo
+             a_Vnn(k,l) = a_Vnn(k,l) + saftvrmie_param%ms(k)*saftvrmie_param%ms(l)*(&
+                  saftvrmie_a%am_V(k,l) + saftvrmie_a%am_V(l,k) - 2.0*a_V) &
+                  + saftvrmie_param%ms(k)*(&
+                  sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_Vn(l,:,k) &
+                  + saftvrmie_a%am_Vn(l,:,k))) - 2.0*ns*a_Vn(l)) &
+                  + saftvrmie_param%ms(l)*(&
+                  sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_Vn(k,:,l) &
+                  + saftvrmie_a%am_Vn(k,:,l))) - 2.0*ns*a_Vn(k))
           enddo
-          a_Vnn(k,l) = a_Vnn(k,l) + saftvrmie_param%ms(k)*saftvrmie_param%ms(l)*(&
-               saftvrmie_a%am_V(k,l) + saftvrmie_a%am_V(l,k) - 2.0*a_V) &
-               + saftvrmie_param%ms(k)*(&
-               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_Vn(l,:,k) &
-               + saftvrmie_a%am_Vn(l,:,k))) - 2.0*ns*a_Vn(l)) &
-               + saftvrmie_param%ms(l)*(&
-               sum(saftvrmie_param%ms(:)*n(:)*(saftvrmie_a%am_Vn(k,:,l) &
-               + saftvrmie_a%am_Vn(k,:,l))) - 2.0*ns*a_Vn(k))
-        enddo
-      enddo
-      a_Vnn = a_Vnn/ns2
+       enddo
+       a_Vnn = a_Vnn/ns2
     endif
   end subroutine calc_double_sum
 
@@ -1838,75 +1836,75 @@ contains
     ! Locals
     integer :: i,j !< Binary of interest
     do i=1,nc
-      do j=1,nc
-        if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
-             present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
-          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a2chij%am(i,j),&
-               saftvrmie_vc%a2chij%am_T(i,j),&
-               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
-               saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
-               saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
-               saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
-          if (quantum_correction>0 .and. quantum_correct_A2) then
-            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a2chijQcorr%am(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
-            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-          end if
-          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a2ij%am(i,j),&
-               saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
-               saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
-               saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
-               saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
-               saftvrmie_vc%a2ij%am_nn(:,:,i,j))
-        else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
-          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a2chij%am(i,j),&
-               saftvrmie_vc%a2chij%am_T(i,j),&
-               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
-          if (quantum_correction>0 .and. quantum_correct_A2) then
-            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a2chijQcorr%am(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
-            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+       do j=1,nc
+          if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
+               present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
+             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a2chij%am(i,j),&
+                  saftvrmie_vc%a2chij%am_T(i,j),&
+                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
+                  saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
+                  saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
+                  saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
+             if (quantum_correction>0 .and. quantum_correct_A2) then
+                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a2chijQcorr%am(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
+                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+             end if
+             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a2ij%am(i,j),&
+                  saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
+                  saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
+                  saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
+                  saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
+                  saftvrmie_vc%a2ij%am_nn(:,:,i,j))
+          else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
+             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a2chij%am(i,j),&
+                  saftvrmie_vc%a2chij%am_T(i,j),&
+                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
+             if (quantum_correction>0 .and. quantum_correct_A2) then
+                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a2chijQcorr%am(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
+                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+             endif
+             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
+                  saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
+          else
+             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+                  saftvrmie_vc%a2chij%am(i,j),&
+                  saftvrmie_vc%a2chij%am_T(i,j),&
+                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
+             if (quantum_correction>0 .and. quantum_correct_A2) then
+                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                     saftvrmie_vc%a2chijQcorr%am(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
+                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+             end if
+             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
           endif
-          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
-               saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
-        else
-          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-               saftvrmie_vc%a2chij%am(i,j),&
-               saftvrmie_vc%a2chij%am_T(i,j),&
-               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
-          if (quantum_correction>0 .and. quantum_correct_A2) then
-            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                 saftvrmie_vc%a2chijQcorr%am(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
-            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-          end if
-          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
-        endif
-      enddo
+       enddo
     enddo
     call calc_double_sum(nc,n,saftvrmie_vc%a2ij,&
          a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
@@ -1937,49 +1935,49 @@ contains
     integer :: k
 
     call calcA2CorrectionVn(nc,V,n,i,j,s_vc%alpha,s_vc%zeta_bar,&
-       c2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
+         c2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
 
     !a2ch*(1+chi)
     a2 = c2*s_vc%a2chij%am(i,j)
     if (present(a2_T)) then
-      c2_T = a2_T
-      a2_T = c2*s_vc%a2chij%am_T(i,j) + c2_T*s_vc%a2chij%am(i,j)
+       c2_T = a2_T
+       a2_T = c2*s_vc%a2chij%am_T(i,j) + c2_T*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_TT)) then
-      a2_TT = c2*s_vc%a2chij%am_TT(i,j) + 2.0*c2_T*s_vc%a2chij%am_T(i,j) &
-           + a2_TT*s_vc%a2chij%am(i,j)
+       a2_TT = c2*s_vc%a2chij%am_TT(i,j) + 2.0*c2_T*s_vc%a2chij%am_T(i,j) &
+            + a2_TT*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_V)) then
-      c2_V = a2_V
-      a2_V = c2*s_vc%a2chij%am_V(i,j) + c2_V*s_vc%a2chij%am(i,j)
+       c2_V = a2_V
+       a2_V = c2*s_vc%a2chij%am_V(i,j) + c2_V*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_VV)) then
-      a2_VV = c2*s_vc%a2chij%am_VV(i,j) + 2.0*c2_V*s_vc%a2chij%am_V(i,j) &
-           + a2_VV*s_vc%a2chij%am(i,j)
+       a2_VV = c2*s_vc%a2chij%am_VV(i,j) + 2.0*c2_V*s_vc%a2chij%am_V(i,j) &
+            + a2_VV*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_TV)) then
-      a2_TV = c2*s_vc%a2chij%am_TV(i,j) + c2_T*s_vc%a2chij%am_V(i,j) &
-           + c2_V*s_vc%a2chij%am_T(i,j) + a2_TV*s_vc%a2chij%am(i,j)
+       a2_TV = c2*s_vc%a2chij%am_TV(i,j) + c2_T*s_vc%a2chij%am_V(i,j) &
+            + c2_V*s_vc%a2chij%am_T(i,j) + a2_TV*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_n)) then
-      c2_n = a2_n
-      a2_n = c2*s_vc%a2chij%am_n(:,i,j) + c2_n*s_vc%a2chij%am(i,j)
+       c2_n = a2_n
+       a2_n = c2*s_vc%a2chij%am_n(:,i,j) + c2_n*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_Tn)) then
-      a2_Tn = c2*s_vc%a2chij%am_Tn(:,i,j) + c2_n*s_vc%a2chij%am_T(i,j) &
-           + c2_T*s_vc%a2chij%am_n(:,i,j) + a2_Tn*s_vc%a2chij%am(i,j)
+       a2_Tn = c2*s_vc%a2chij%am_Tn(:,i,j) + c2_n*s_vc%a2chij%am_T(i,j) &
+            + c2_T*s_vc%a2chij%am_n(:,i,j) + a2_Tn*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_Vn)) then
-      a2_Vn = c2*s_vc%a2chij%am_Vn(:,i,j) + c2_n*s_vc%a2chij%am_V(i,j) &
-           + c2_V*s_vc%a2chij%am_n(:,i,j) + a2_Vn*s_vc%a2chij%am(i,j)
+       a2_Vn = c2*s_vc%a2chij%am_Vn(:,i,j) + c2_n*s_vc%a2chij%am_V(i,j) &
+            + c2_V*s_vc%a2chij%am_n(:,i,j) + a2_Vn*s_vc%a2chij%am(i,j)
     endif
     if (present(a2_nn)) then
-      do k=1,nc
-        a2_nn(:,k) = c2*s_vc%a2chij%am_nn(:,k,i,j) &
-             + c2_n*s_vc%a2chij%am_n(k,i,j) &
-             + c2_n(k)*s_vc%a2chij%am_n(:,i,j) &
-             + a2_nn(:,k)*s_vc%a2chij%am(i,j)
-      enddo
+       do k=1,nc
+          a2_nn(:,k) = c2*s_vc%a2chij%am_nn(:,k,i,j) &
+               + c2_n*s_vc%a2chij%am_n(k,i,j) &
+               + c2_n(k)*s_vc%a2chij%am_n(:,i,j) &
+               + a2_nn(:,k)*s_vc%a2chij%am(i,j)
+       enddo
     endif
   end subroutine calcA2ij
 
@@ -2009,64 +2007,64 @@ contains
          a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
 
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call calc_a_zeta_product(nc,s_vc%zeta,a2,a2_T,a2_V,a2_n,&
-           a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       call calc_a_zeta_product(nc,s_vc%zeta,a2,a2_T,a2_V,a2_n,&
+            a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
-           a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
+            a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     endif
     ! Multiply a22 with 0.5*eps*C²
     prefactor = 0.5*saftvrmie_param%eps_divk_ij(i,j)*saftvrmie_param%Cij(i,j)**2
     a2 = prefactor*a2
     if (present(a2_T)) then
-      a2_T = prefactor*a2_T
+       a2_T = prefactor*a2_T
     endif
     if (present(a2_TT)) then
-      a2_TT = prefactor*a2_TT
+       a2_TT = prefactor*a2_TT
     endif
     if (present(a2_V)) then
-      a2_V = prefactor*a2_V
+       a2_V = prefactor*a2_V
     endif
     if (present(a2_VV)) then
-      a2_VV = prefactor*a2_VV
+       a2_VV = prefactor*a2_VV
     endif
     if (present(a2_VVV)) then
-      a2_VVV = prefactor*a2_VVV
+       a2_VVV = prefactor*a2_VVV
     endif
     if (present(a2_TV)) then
-      a2_TV = prefactor*a2_TV
+       a2_TV = prefactor*a2_TV
     endif
     if (present(a2_VVT)) then
-      a2_VVT = prefactor*a2_VVT
+       a2_VVT = prefactor*a2_VVT
     endif
     if (present(a2_VTT)) then
-      a2_VTT = prefactor*a2_VTT
+       a2_VTT = prefactor*a2_VTT
     endif
     if (present(a2_n)) then
-      a2_n = prefactor*a2_n
+       a2_n = prefactor*a2_n
     endif
     if (present(a2_nn)) then
-      a2_nn = prefactor*a2_nn
+       a2_nn = prefactor*a2_nn
     endif
     if (present(a2_Tn)) then
-      a2_Tn = prefactor*a2_Tn
+       a2_Tn = prefactor*a2_Tn
     endif
     if (present(a2_Vn)) then
-      a2_Vn = prefactor*a2_Vn
+       a2_Vn = prefactor*a2_Vn
     endif
     if (present(a2_VTn)) then
-      a2_VTn = prefactor*a2_VTn
+       a2_VTn = prefactor*a2_VTn
     endif
     if (present(a2_Vnn)) then
-      a2_Vnn = prefactor*a2_Vnn
+       a2_Vnn = prefactor*a2_Vnn
     endif
     if (present(a2_VVn)) then
-      a2_VVn = prefactor*a2_VVn
+       a2_VVn = prefactor*a2_VVn
     endif
 
     ! Multiply 0.5*eps*C²*a22 with Khs
@@ -2103,65 +2101,65 @@ contains
          a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
 
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call calc_a_zeta_product(nc,s_vc%zeta,a2,a2_T,a2_V,a2_n,&
-           a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       call calc_a_zeta_product(nc,s_vc%zeta,a2,a2_T,a2_V,a2_n,&
+            a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
-           a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call eta_a_product(nc,T,V,n,d,d_T,d_TT,&
+            a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     endif
 
     ! Multiply a22 with 0.5*eps*C²
     prefactor = 0.5*saftvrmie_param%eps_divk_ij(i,j)*saftvrmie_param%Cij(i,j)**2
     a2 = prefactor*a2
     if (present(a2_T)) then
-      a2_T = prefactor*a2_T
+       a2_T = prefactor*a2_T
     endif
     if (present(a2_TT)) then
-      a2_TT = prefactor*a2_TT
+       a2_TT = prefactor*a2_TT
     endif
     if (present(a2_V)) then
-      a2_V = prefactor*a2_V
+       a2_V = prefactor*a2_V
     endif
     if (present(a2_VV)) then
-      a2_VV = prefactor*a2_VV
+       a2_VV = prefactor*a2_VV
     endif
     if (present(a2_VVV)) then
-      a2_VVV = prefactor*a2_VVV
+       a2_VVV = prefactor*a2_VVV
     endif
     if (present(a2_TV)) then
-      a2_TV = prefactor*a2_TV
+       a2_TV = prefactor*a2_TV
     endif
     if (present(a2_VVT)) then
-      a2_VVT = prefactor*a2_VVT
+       a2_VVT = prefactor*a2_VVT
     endif
     if (present(a2_VTT)) then
-      a2_VTT = prefactor*a2_VTT
+       a2_VTT = prefactor*a2_VTT
     endif
     if (present(a2_n)) then
-      a2_n = prefactor*a2_n
+       a2_n = prefactor*a2_n
     endif
     if (present(a2_nn)) then
-      a2_nn = prefactor*a2_nn
+       a2_nn = prefactor*a2_nn
     endif
     if (present(a2_Tn)) then
-      a2_Tn = prefactor*a2_Tn
+       a2_Tn = prefactor*a2_Tn
     endif
     if (present(a2_Vn)) then
-      a2_Vn = prefactor*a2_Vn
+       a2_Vn = prefactor*a2_Vn
     endif
     if (present(a2_VTn)) then
-      a2_VTn = prefactor*a2_VTn
+       a2_VTn = prefactor*a2_VTn
     endif
     if (present(a2_Vnn)) then
-      a2_Vnn = prefactor*a2_Vnn
+       a2_Vnn = prefactor*a2_Vnn
     endif
     if (present(a2_VVn)) then
-      a2_VVn = prefactor*a2_VVn
+       a2_VVn = prefactor*a2_VVn
     endif
 
     ! Multiply 0.5*eps*C²*a22 with Khs
@@ -2192,7 +2190,7 @@ contains
     real :: rfac, afac, cfac
 
     if (.not. quantum_correct_A2) then
-      call stoperror("calcA22QTilde_D2: you need to set quantum_correct_A2==.true.")
+       call stoperror("calcA22QTilde_D2: you need to set quantum_correct_A2==.true.")
     end if
 
     call calcX0AplusBtilde(x0,eta,2*lambda_r+2*DFHPower,eps,&
@@ -2203,29 +2201,29 @@ contains
          a1c,a1c_e,a1c_x,a1c_ee,a1c_xx,a1c_ex,a1c_eee,a1c_eex,a1c_exx)
 
     if (DFHPower==1) then
-      rfac = 2*Q1r
-      afac = 2*Q1a
-      cfac = -(rfac+afac)
+       rfac = 2*Q1r
+       afac = 2*Q1a
+       cfac = -(rfac+afac)
     else if (DFHPower==2) then
-      rfac = Q1r*Q1r
-      afac = Q1a*Q1a
-      cfac = -2*Q1r*Q1a
-      if (quantum_correction==2) then
-        ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
-        rfac = rfac + 2*Q2r
-        afac = afac + 2*Q2a
-        cfac = cfac - 2*(Q2r+Q2a)
-      end if
+       rfac = Q1r*Q1r
+       afac = Q1a*Q1a
+       cfac = -2*Q1r*Q1a
+       if (quantum_correction==2) then
+          ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
+          rfac = rfac + 2*Q2r
+          afac = afac + 2*Q2a
+          cfac = cfac - 2*(Q2r+Q2a)
+       end if
     else if (DFHPower==3) then
-      rfac = 2*Q2r*Q1r
-      afac = 2*Q2a*Q1a
-      cfac = -2*(Q2r*Q1a+Q2a*Q1r)
+       rfac = 2*Q2r*Q1r
+       afac = 2*Q2a*Q1a
+       cfac = -2*(Q2r*Q1a+Q2a*Q1r)
     else if (DFHPower==4) then
-      rfac = Q2r*Q2r
-      afac = Q2a*Q2a
-      cfac = -2*Q2r*Q2a
+       rfac = Q2r*Q2r
+       afac = Q2a*Q2a
+       cfac = -2*Q2r*Q2a
     else
-      call stoperror("Wrong DFHPower")
+       call stoperror("Wrong DFHPower")
     end if
 
     a2 = afac*a1a + rfac*a1r + cfac*a1c
@@ -2285,10 +2283,10 @@ contains
     difflevel = 1
     if (present(a2_VVV) .or. present(a2_VVT) .or. present(a2_VTT) .or. &
          present(a2_VVn) .or. present(a2_Vnn) .or. present(a2_VTn)) then
-      difflevel = 3
+       difflevel = 3
     else if (present(a2_VV) .or. present(a2_TV) .or. present(a2_TT) .or. &
          present(a2_Vn) .or. present(a2_nn) .or. present(a2_Tn)) then
-      difflevel = 2
+       difflevel = 2
     endif
 
     a2 = 0.0
@@ -2312,15 +2310,15 @@ contains
     s_T = 0.0
     s_TT = 0.0
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      d = s_vc%d_pure%zx
-      call allocate_saftvrmie_zeta(nc,x0z)
-      call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
-      x0 = x0z%zx
+       d = s_vc%d_pure%zx
+       call allocate_saftvrmie_zeta(nc,x0z)
+       call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
+       x0 = x0z%zx
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
     endif
     eta = s_vc%zeta%zx
     lambda_a = saftvrmie_param%lambda_a_ij(i,j)
@@ -2332,70 +2330,70 @@ contains
     Q2r = saftvrmie_param%Quantum_const_2r_ij(i,j)
 
     if (quantum_correction_hs > 0) then
-      ! Shift integral limits to sigma_eff instead of sigma
-      s = s_vc%sigma_eff%d(i,j)
-      s_T = s_vc%sigma_eff%d_T(i,j)
-      s_TT = s_vc%sigma_eff%d_TT(i,j)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call allocate_saftvrmie_zeta(nc,x1z)
-        call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
-        y = x1z%zx
-      else
-        call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
-      endif
+       ! Shift integral limits to sigma_eff instead of sigma
+       s = s_vc%sigma_eff%d(i,j)
+       s_T = s_vc%sigma_eff%d_T(i,j)
+       s_TT = s_vc%sigma_eff%d_TT(i,j)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call allocate_saftvrmie_zeta(nc,x1z)
+          call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
+          y = x1z%zx
+       else
+          call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
+       endif
     endif
 
     do power_iterator=1,(2*quantum_correction)
-      call calcA22QTilde_DFHPower(x0,eta,lambda_a,lambda_r,eps,Q1r,Q1a,Q2r,Q2a,power_iterator,&
-           a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,a2Q_eex,a2Q_exx)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
-             a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,0.0,a2Q_eex,a2Q_exx,&
-             a2Q_T,a2Q_V,a2Q_n,a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
-             a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,difflevel=difflevel)
-      else
-        call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
-             a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,a2Q_eex,a2Q_exx,&
-             a2Q_T,a2Q_V,a2Q_n,a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
-             a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,difflevel=difflevel)
-      endif
+       call calcA22QTilde_DFHPower(x0,eta,lambda_a,lambda_r,eps,Q1r,Q1a,Q2r,Q2a,power_iterator,&
+            a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,a2Q_eex,a2Q_exx)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
+               a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,0.0,a2Q_eex,a2Q_exx,&
+               a2Q_T,a2Q_V,a2Q_n,a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
+               a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,difflevel=difflevel)
+       else
+          call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
+               a2Q,a2Q_e,a2Q_x,a2Q_ee,a2Q_xx,a2Q_ex,a2Q_eee,a2Q_eex,a2Q_exx,&
+               a2Q_T,a2Q_V,a2Q_n,a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
+               a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,difflevel=difflevel)
+       endif
 
-      if (quantum_correction_hs > 0) then
-        ! Shift integral limits to sigma_eff instead of sigma
-        if (y > 1) then
-          if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-            call calcA22TildeSigmaCorr_Q_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,&
-                 Q1r,Q1a,Q2r,Q2a,power_iterator,&
-                 a2Cc,a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-                 a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
-          else
-            call calcA22TildeSigmaCorrection_Q(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,&
-                 Q1r,Q1a,Q2r,Q2a,power_iterator,&
-                 a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT)
-            call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
-                 a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT,&
-                 a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-                 a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
+       if (quantum_correction_hs > 0) then
+          ! Shift integral limits to sigma_eff instead of sigma
+          if (y > 1) then
+             if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+                call calcA22TildeSigmaCorr_Q_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,&
+                     Q1r,Q1a,Q2r,Q2a,power_iterator,&
+                     a2Cc,a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+                     a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
+             else
+                call calcA22TildeSigmaCorrection_Q(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,&
+                     Q1r,Q1a,Q2r,Q2a,power_iterator,&
+                     a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT)
+                call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
+                     a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT,&
+                     a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+                     a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
+             endif
+             call calc_a0_plus_a1(nc,a2Cc,a2Q,&
+                  a2C_T,a2C_V,a2C_n,&
+                  a2Q_T,a2Q_V,a2Q_n,&
+                  a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+                  a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
+                  a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,&
+                  a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn)
           endif
-          call calc_a0_plus_a1(nc,a2Cc,a2Q,&
-               a2C_T,a2C_V,a2C_n,&
-               a2Q_T,a2Q_V,a2Q_n,&
-               a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-               a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
-               a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,&
-               a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn)
-        endif
-      endif
+       endif
 
-      call get_DFeynHibbsPower(i,j,DFH,DFH_T,DFH_TT,s_vc,power_in=power_iterator,divideBySigmaMie=.true.)
-      call add_aQ_DFH_product(nc,DFH,DFH_T,DFH_TT,&
-           a2Q,a2,&
-           a2Q_T,a2Q_V,a2Q_n,&
-           a2_T,a2_V,a2_n,&
-           a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
-           a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       call get_DFeynHibbsPower(i,j,DFH,DFH_T,DFH_TT,s_vc,power_in=power_iterator,divideBySigmaMie=.true.)
+       call add_aQ_DFH_product(nc,DFH,DFH_T,DFH_TT,&
+            a2Q,a2,&
+            a2Q_T,a2Q_V,a2Q_n,&
+            a2_T,a2_V,a2_n,&
+            a2Q_TT,a2Q_VV,a2Q_TV,a2Q_Tn,a2Q_Vn,a2Q_nn,&
+            a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2Q_VVV,a2Q_VVT,a2Q_VTT,a2Q_VVn,a2Q_Vnn,a2Q_VTn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     end do
     call cleanup_saftvrmie_zeta(x0z)
     call cleanup_saftvrmie_zeta(x1z)
@@ -2430,44 +2428,44 @@ contains
     call calcA1Sutherland(eta,lambda_2a,eps,asa,asa_e,asa_ee,asa_eee)
     call calcA1Sutherland(eta,lambda_ar,eps,asar,asar_e,asar_ee,asar_eee)
     if (quantum_correction_hs <= 0 .and. x0 > 1) then
-      ! Calculate integral form d to sigma
-      call calcBtilde(x0,eta,lambda_2r,eps,Br,Br_e,Br_x,Br_ee,Br_xx,Br_ex,&
-           Br_eee,Br_eex,Br_exx)
-      call calcBtilde(x0,eta,lambda_2a,eps,Ba,Ba_e,Ba_x,Ba_ee,Ba_xx,Ba_ex,&
-           Ba_eee,Ba_eex,Ba_exx)
-      call calcBtilde(x0,eta,lambda_ar,eps,Bar,Bar_e,Bar_x,&
-           Bar_ee,Bar_xx,Bar_ex,Bar_eee,Bar_eex,Bar_exx)
+       ! Calculate integral form d to sigma
+       call calcBtilde(x0,eta,lambda_2r,eps,Br,Br_e,Br_x,Br_ee,Br_xx,Br_ex,&
+            Br_eee,Br_eex,Br_exx)
+       call calcBtilde(x0,eta,lambda_2a,eps,Ba,Ba_e,Ba_x,Ba_ee,Ba_xx,Ba_ex,&
+            Ba_eee,Ba_eex,Ba_exx)
+       call calcBtilde(x0,eta,lambda_ar,eps,Bar,Bar_e,Bar_x,&
+            Bar_ee,Bar_xx,Bar_ex,Bar_eee,Bar_eex,Bar_exx)
     else
-      ! Calculate integral form d to sigma_eff elsewhere
-      Br=0.0
-      Br_e=0.0
-      Br_x=0.0
-      Br_ee=0.0
-      Br_xx=0.0
-      Br_ex=0.0
-      Br_eee=0.0
-      Br_eex=0.0
-      Br_exx=0.0
-      !
-      Ba=0.0
-      Ba_e=0.0
-      Ba_x=0.0
-      Ba_ee=0.0
-      Ba_xx=0.0
-      Ba_ex=0.0
-      Ba_eee=0.0
-      Ba_eex=0.0
-      Ba_exx=0.0
-      !
-      Bar=0.0
-      Bar_e=0.0
-      Bar_x=0.0
-      Bar_ee=0.0
-      Bar_xx=0.0
-      Bar_ex=0.0
-      Bar_eee=0.0
-      Bar_eex=0.0
-      Bar_exx=0.0
+       ! Calculate integral form d to sigma_eff elsewhere
+       Br=0.0
+       Br_e=0.0
+       Br_x=0.0
+       Br_ee=0.0
+       Br_xx=0.0
+       Br_ex=0.0
+       Br_eee=0.0
+       Br_eex=0.0
+       Br_exx=0.0
+       !
+       Ba=0.0
+       Ba_e=0.0
+       Ba_x=0.0
+       Ba_ee=0.0
+       Ba_xx=0.0
+       Ba_ex=0.0
+       Ba_eee=0.0
+       Ba_eex=0.0
+       Ba_exx=0.0
+       !
+       Bar=0.0
+       Bar_e=0.0
+       Bar_x=0.0
+       Bar_ee=0.0
+       Bar_xx=0.0
+       Bar_ex=0.0
+       Bar_eee=0.0
+       Bar_eex=0.0
+       Bar_exx=0.0
     endif
     a2 = x0**(lambda_2a)*(asa+Ba) - 2.0*x0**(lambda_ar)*(asar+Bar) + x0**(lambda_2r)*(asr+Br)
     a2_x = lambda_2a*x0**(lambda_2a-1.0)*(asa+Ba) &
@@ -2597,29 +2595,29 @@ contains
     C = 1.0
 
     if (DFHPower==1) then
-      rfac = 2*Q1r
-      afac = 2*Q1a
-      cfac = -(rfac+afac)
+       rfac = 2*Q1r
+       afac = 2*Q1a
+       cfac = -(rfac+afac)
     else if (DFHPower==2) then
-      rfac = Q1r*Q1r
-      afac = Q1a*Q1a
-      cfac = -2*Q1r*Q1a
-      if (quantum_correction==2) then
-        ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
-        rfac = rfac + 2*Q2r
-        afac = afac + 2*Q2a
-        cfac = cfac - 2*(Q2r+Q2a)
-      end if
+       rfac = Q1r*Q1r
+       afac = Q1a*Q1a
+       cfac = -2*Q1r*Q1a
+       if (quantum_correction==2) then
+          ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
+          rfac = rfac + 2*Q2r
+          afac = afac + 2*Q2a
+          cfac = cfac - 2*(Q2r+Q2a)
+       end if
     else if (DFHPower==3) then
-      rfac = 2*Q2r*Q1r
-      afac = 2*Q2a*Q1a
-      cfac = -2*(Q2r*Q1a+Q2a*Q1r)
+       rfac = 2*Q2r*Q1r
+       afac = 2*Q2a*Q1a
+       cfac = -2*(Q2r*Q1a+Q2a*Q1r)
     else if (DFHPower==4) then
-      rfac = Q2r*Q2r
-      afac = Q2a*Q2a
-      cfac = -2*Q2r*Q2a
+       rfac = Q2r*Q2r
+       afac = Q2a*Q2a
+       cfac = -2*Q2r*Q2a
     else
-      call stoperror("Wrong DFHPower")
+       call stoperror("Wrong DFHPower")
     end if
 
 
@@ -2725,29 +2723,29 @@ contains
     C = 1.0
 
     if (DFHPower==1) then
-      rfac = 2*Q1r
-      afac = 2*Q1a
-      cfac = -(rfac+afac)
+       rfac = 2*Q1r
+       afac = 2*Q1a
+       cfac = -(rfac+afac)
     else if (DFHPower==2) then
-      rfac = Q1r*Q1r
-      afac = Q1a*Q1a
-      cfac = -2*Q1r*Q1a
-      if (quantum_correction==2) then
-        ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
-        rfac = rfac + 2*Q2r
-        afac = afac + 2*Q2a
-        cfac = cfac - 2*(Q2r+Q2a)
-      end if
+       rfac = Q1r*Q1r
+       afac = Q1a*Q1a
+       cfac = -2*Q1r*Q1a
+       if (quantum_correction==2) then
+          ! The extra contributions proportional to D2 if we use the FH2 potential instead of the FH1 potential
+          rfac = rfac + 2*Q2r
+          afac = afac + 2*Q2a
+          cfac = cfac - 2*(Q2r+Q2a)
+       end if
     else if (DFHPower==3) then
-      rfac = 2*Q2r*Q1r
-      afac = 2*Q2a*Q1a
-      cfac = -2*(Q2r*Q1a+Q2a*Q1r)
+       rfac = 2*Q2r*Q1r
+       afac = 2*Q2a*Q1a
+       cfac = -2*(Q2r*Q1a+Q2a*Q1r)
     else if (DFHPower==4) then
-      rfac = Q2r*Q2r
-      afac = Q2a*Q2a
-      cfac = -2*Q2r*Q2a
+       rfac = Q2r*Q2r
+       afac = Q2a*Q2a
+       cfac = -2*Q2r*Q2a
     else
-      call stoperror("Wrong DFHPower")
+       call stoperror("Wrong DFHPower")
     end if
 
     call calcIcTildeSingleTerm(x,x_T,x_TT,y,y_T,y_TT,eta,lambda_2r+2*DFHPower,eps,C,&
@@ -2804,25 +2802,25 @@ contains
     difflevel = 1
     if (present(a2_VVV) .or. present(a2_VVT) .or. present(a2_VTT) .or. &
          present(a2_VVn) .or. present(a2_Vnn) .or. present(a2_VTn)) then
-      difflevel = 3
+       difflevel = 3
     else if (present(a2_VV) .or. present(a2_TV) .or. present(a2_TT) .or. &
          present(a2_Vn) .or. present(a2_nn) .or. present(a2_Tn)) then
-      difflevel = 2
+       difflevel = 2
     endif
 
     s = saftvrmie_param%sigma_ij(i,j)
     s_T = 0.0
     s_TT = 0.0
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      d = s_vc%d_pure%zx
-      call allocate_saftvrmie_zeta(nc,x0z)
-      call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
-      x0 = x0z%zx
+       d = s_vc%d_pure%zx
+       call allocate_saftvrmie_zeta(nc,x0z)
+       call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x0z)
+       x0 = x0z%zx
     else
-      d = s_vc%dhs%d(i,j)
-      d_T = s_vc%dhs%d_T(i,j)
-      d_TT = s_vc%dhs%d_TT(i,j)
-      call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
+       d = s_vc%dhs%d(i,j)
+       d_T = s_vc%dhs%d_T(i,j)
+       d_TT = s_vc%dhs%d_TT(i,j)
+       call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x0,x0_T,x0_TT)
     endif
     eta = s_vc%zeta%zx
     lambda_a = saftvrmie_param%lambda_a_ij(i,j)
@@ -2831,50 +2829,50 @@ contains
     call calcA22Tilde(x0,eta,lambda_a,lambda_r,eps,&
          a2,a2_e,a2_x,a2_ee,a2_xx,a2_ex,a2_eee,a2_eex,a2_exx)
     if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-      call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
-           a2,a2_e,a2_x,a2_ee,a2_xx,a2_ex,a2_eee,0.0,a2_eex,a2_exx,&
-           a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn,difflevel=difflevel)
+       call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
+            a2,a2_e,a2_x,a2_ee,a2_xx,a2_ex,a2_eee,0.0,a2_eex,a2_exx,&
+            a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn,difflevel=difflevel)
     else
-      call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
-           a2,a2_e,a2_x,a2_ee,a2_xx,a2_ex,a2_eee,a2_eex,a2_exx,&
-           a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-           a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn,difflevel=difflevel)
+       call convert_zeta_x_to_TVn(nc,x0,x0_T,x0_TT,s_vc%zeta,&
+            a2,a2_e,a2_x,a2_ee,a2_xx,a2_ex,a2_eee,a2_eex,a2_exx,&
+            a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+            a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn,difflevel=difflevel)
     endif
 
     if (quantum_correction_hs > 0) then
-      ! Shift integral limits to sigma_eff instead of sigma
-      s = s_vc%sigma_eff%d(i,j)
-      s_T = s_vc%sigma_eff%d_T(i,j)
-      s_TT = s_vc%sigma_eff%d_TT(i,j)
-      if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-        call allocate_saftvrmie_zeta(nc,x1z)
-        call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
-        y = x1z%zx
-      else
-        call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
-      endif
-      if (y > 1) then
-        if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
-          call calcA22TildeSigmaCorr_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,&
-               a2Cc,a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-               a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
-        else
-          call calcA22TildeSigmaCorrection(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,&
-               a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT)
-          call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
-               a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT,&
-               a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-               a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
-        endif
-        call calc_a0_plus_a1(nc,a2Cc,a2,&
-             a2C_T,a2C_V,a2C_n,&
-             a2_T,a2_V,a2_n,&
-             a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
-             a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
-             a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,&
-             a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
-      endif
+       ! Shift integral limits to sigma_eff instead of sigma
+       s = s_vc%sigma_eff%d(i,j)
+       s_T = s_vc%sigma_eff%d_T(i,j)
+       s_TT = s_vc%sigma_eff%d_TT(i,j)
+       if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+          call allocate_saftvrmie_zeta(nc,x1z)
+          call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,s_vc%d_pure,x1z)
+          y = x1z%zx
+       else
+          call calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,y,y_T,y_TT)
+       endif
+       if (y > 1) then
+          if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+             call calcA22TildeSigmaCorr_TVn_PureHSRef(nc,x0z,x1z,s_vc%zeta,lambda_a,lambda_r,eps,&
+                  a2Cc,a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+                  a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
+          else
+             call calcA22TildeSigmaCorrection(x0,x0_T,x0_TT,y,y_T,y_TT,eta,lambda_a,lambda_r,eps,&
+                  a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT)
+             call convert_zeta_x_to_TVn(nc,0.0,1.0,0.0,s_vc%zeta,&
+                  a2Cc,a2Cc_e,a2Cc_T,a2Cc_ee,a2Cc_TT,a2Cc_eT,a2Cc_eee,a2Cc_eeT,a2Cc_eTT,&
+                  a2C_T,a2C_V,a2C_n,a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+                  a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,difflevel=difflevel)
+          endif
+          call calc_a0_plus_a1(nc,a2Cc,a2,&
+               a2C_T,a2C_V,a2C_n,&
+               a2_T,a2_V,a2_n,&
+               a2C_TT,a2C_VV,a2C_TV,a2C_Tn,a2C_Vn,a2C_nn,&
+               a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
+               a2C_VVV,a2C_VVT,a2C_VTT,a2C_VVn,a2C_Vnn,a2C_VTn,&
+               a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
+       endif
     endif
     call cleanup_saftvrmie_zeta(x0z)
     call cleanup_saftvrmie_zeta(x1z)
@@ -2918,14 +2916,14 @@ contains
     ! endif
     if ( present(c2_VV) .or. present(c2_Vn) .or. present(c2_nn) .or.&
          present(c2_TT) .or. present(c2_Tn) .or. present(c2_TV)) then
-      call convert_zeta_x_to_TVn(nc,alp,alp_T,alp_TT,zeta_bar,&
-           chi,chi_z,chi_a,chi_zz,chi_aa,chi_az,chi_zzz,chi_zzz,chi_aaz,&
-           a1_T=c2_T,a1_V=c2_V,a1_n=c2_n,a1_TT=c2_TT,a1_VV=c2_VV,a1_TV=c2_TV,&
-           a1_Tn=c2_Tn,a1_Vn=c2_Vn,a1_nn=c2_nn)
+       call convert_zeta_x_to_TVn(nc,alp,alp_T,alp_TT,zeta_bar,&
+            chi,chi_z,chi_a,chi_zz,chi_aa,chi_az,chi_zzz,chi_zzz,chi_aaz,&
+            a1_T=c2_T,a1_V=c2_V,a1_n=c2_n,a1_TT=c2_TT,a1_VV=c2_VV,a1_TV=c2_TV,&
+            a1_Tn=c2_Tn,a1_Vn=c2_Vn,a1_nn=c2_nn)
     else if (present(c2_V) .or. present(c2_n) .or. present(c2_T)) then
-      call convert_zeta_x_to_TVn(nc,alp,alp_T,alp_TT,zeta_bar,&
-           chi,chi_z,chi_a,chi_zz,chi_aa,chi_az,chi_zzz,chi_zzz,chi_aaz,&
-           a1_T=c2_T,a1_V=c2_V,a1_n=c2_n)
+       call convert_zeta_x_to_TVn(nc,alp,alp_T,alp_TT,zeta_bar,&
+            chi,chi_z,chi_a,chi_zz,chi_aa,chi_az,chi_zzz,chi_zzz,chi_aaz,&
+            a1_T=c2_T,a1_V=c2_V,a1_n=c2_n)
     endif
 
   end subroutine calcA2CorrectionVn
@@ -2971,12 +2969,12 @@ contains
          + (Bke*K%zx_n + Ble*L%zx_n + Bee*e%zx_n)*e%zx_T &
          + Bk*K%zx_Tn + Bl*L%zx_Tn + Be*e%zx_Tn
     do i=1,nc
-      do j=1,nc
-        s_vc%Khs%zx_nn(i,j) = (Bkk*K%zx_n(j) + Bkl*L%zx_n(j) + Bke*e%zx_n(j))*K%zx_n(i) &
-             + (Bkl*K%zx_n(j) + Bll*L%zx_n(j) + Ble*e%zx_n(j))*L%zx_n(i) &
-             + (Bke*K%zx_n(j) + Ble*L%zx_n(j) + Bee*e%zx_n(j))*e%zx_n(i) &
-             + Bk*K%zx_nn(i,j) + Bl*L%zx_nn(i,j) + Be*e%zx_nn(i,j)
-      enddo
+       do j=1,nc
+          s_vc%Khs%zx_nn(i,j) = (Bkk*K%zx_n(j) + Bkl*L%zx_n(j) + Bke*e%zx_n(j))*K%zx_n(i) &
+               + (Bkl*K%zx_n(j) + Bll*L%zx_n(j) + Ble*e%zx_n(j))*L%zx_n(i) &
+               + (Bke*K%zx_n(j) + Ble*L%zx_n(j) + Bee*e%zx_n(j))*e%zx_n(i) &
+               + Bk*K%zx_nn(i,j) + Bl*L%zx_nn(i,j) + Be*e%zx_nn(i,j)
+       enddo
     enddo
     call cleanup_saftvrmie_zeta(L)
     call cleanup_saftvrmie_zeta(K)
@@ -3029,26 +3027,26 @@ contains
     ! Locals
     integer :: l, i
     do l=1,3
-      M(l)%zx = 0
-      M(l)%zx_T = 0
-      M(l)%zx_TT = 0
-      M(l)%zx_V = 0
-      M(l)%zx_VV = 0
-      M(l)%zx_TV = 0
-      M(l)%zx_Vn = 0
-      M(l)%zx_nn = 0
-      do i=1,nc
-        M(l)%zx = M(l)%zx + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**l
-        M(l)%zx_T = M(l)%zx_T + l*saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**(l-1)*dhs%d_T(i,i)
-        if (l == 1) then
-          M(l)%zx_TT = M(l)%zx_TT + saftvrmie_param%ms(i)*n(i)*dhs%d_TT(i,i)
-        else
-          M(l)%zx_TT = M(l)%zx_TT + l*saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**(l-2)*&
-               ((l-1)*dhs%d_T(i,i)**2 + dhs%d(i,i)*dhs%d_TT(i,i))
-        endif
-        M(l)%zx_Tn(i) = saftvrmie_param%ms(i)*l*dhs%d(i,i)**(l-1)*dhs%d_T(i,i)
-        M(l)%zx_n(i) = saftvrmie_param%ms(i)*dhs%d(i,i)**l
-      enddo
+       M(l)%zx = 0
+       M(l)%zx_T = 0
+       M(l)%zx_TT = 0
+       M(l)%zx_V = 0
+       M(l)%zx_VV = 0
+       M(l)%zx_TV = 0
+       M(l)%zx_Vn = 0
+       M(l)%zx_nn = 0
+       do i=1,nc
+          M(l)%zx = M(l)%zx + saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**l
+          M(l)%zx_T = M(l)%zx_T + l*saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**(l-1)*dhs%d_T(i,i)
+          if (l == 1) then
+             M(l)%zx_TT = M(l)%zx_TT + saftvrmie_param%ms(i)*n(i)*dhs%d_TT(i,i)
+          else
+             M(l)%zx_TT = M(l)%zx_TT + l*saftvrmie_param%ms(i)*n(i)*dhs%d(i,i)**(l-2)*&
+                  ((l-1)*dhs%d_T(i,i)**2 + dhs%d(i,i)*dhs%d_TT(i,i))
+          endif
+          M(l)%zx_Tn(i) = saftvrmie_param%ms(i)*l*dhs%d(i,i)**(l-1)*dhs%d_T(i,i)
+          M(l)%zx_n(i) = saftvrmie_param%ms(i)*dhs%d(i,i)**l
+       enddo
     enddo
   end subroutine mbar
 
@@ -3065,7 +3063,7 @@ contains
     real :: ns, denum
     ns = sum(saftvrmie_param%ms*n)
     do i=1,3
-      call allocate_saftvrmie_zeta(nc,M(i))
+       call allocate_saftvrmie_zeta(nc,M(i))
     enddo
     call mbar(nc,n,dhs,M)
     denum = M(3)%zx*ns
@@ -3079,12 +3077,12 @@ contains
          M(1)%zx*M(2)%zx_Tn - saftvrmie_param%ms*M(3)%zx_T*K%zx - M(3)%zx_Tn*ns*K%zx - M(3)%zx_T*ns*K%zx_n&
          - saftvrmie_param%ms*M(3)%zx*K%zx_T - M(3)%zx_n*ns*K%zx_T)/denum
     do i=1,nc
-      do j=1,nc
-        K%zx_nn(i,j) = (M(1)%zx_n(i)*M(2)%zx_n(j) + M(1)%zx_n(j)*M(2)%zx_n(i) &
-             - saftvrmie_param%ms(i)*M(3)%zx*K%zx_n(j) - saftvrmie_param%ms(j)*M(3)%zx*K%zx_n(i) &
-             - saftvrmie_param%ms(j)*M(3)%zx_n(i)*K%zx - M(3)%zx_n(i)*ns*K%zx_n(j) - M(3)%zx_n(j)*ns*K%zx_n(i) &
-             - saftvrmie_param%ms(i)*M(3)%zx_n(j)*K%zx - M(3)%zx_n(j)*ns*K%zx_nn(i,j))/denum
-      enddo
+       do j=1,nc
+          K%zx_nn(i,j) = (M(1)%zx_n(i)*M(2)%zx_n(j) + M(1)%zx_n(j)*M(2)%zx_n(i) &
+               - saftvrmie_param%ms(i)*M(3)%zx*K%zx_n(j) - saftvrmie_param%ms(j)*M(3)%zx*K%zx_n(i) &
+               - saftvrmie_param%ms(j)*M(3)%zx_n(i)*K%zx - M(3)%zx_n(i)*ns*K%zx_n(j) - M(3)%zx_n(j)*ns*K%zx_n(i) &
+               - saftvrmie_param%ms(i)*M(3)%zx_n(j)*K%zx - M(3)%zx_n(j)*ns*K%zx_nn(i,j))/denum
+       enddo
     enddo
     !
     K%zx_V = 0
@@ -3105,15 +3103,15 @@ contains
          - 2*ns*M(3)%zx*M(3)%zx_T*L%zx_n - saftvrmie_param%ms*M(3)%zx**2*L%zx_T&
          - 2*ns*M(3)%zx*M(3)%zx_n*L%zx_T)/denum
     do i=1,nc
-      do j=1,nc
-        L%zx_nn(i,j) = (6*M(2)%zx*M(2)%zx_n(j)*M(2)%zx_n(i) + 3*M(2)%zx**2*M(2)%zx_nn(i,j) &
-             - 2*saftvrmie_param%ms(i)*M(3)%zx*M(3)%zx_n(j)*L%zx &
-             - saftvrmie_param%ms(i)*M(3)%zx**2*L%zx_n(j) &
-             - 2*saftvrmie_param%ms(j)*M(3)%zx*M(3)%zx_n(i)*L%zx&
-             - 2*ns*M(3)%zx_n(i)*M(3)%zx_n(j)*L%zx - 2*ns*M(3)%zx*M(3)%zx_n(i)*L%zx_n(j) &
-             - saftvrmie_param%ms(j)*M(3)%zx**2*L%zx_n(i) &
-             - 2*ns*M(3)%zx*M(3)%zx_n(j)*L%zx_n(i))/denum
-      enddo
+       do j=1,nc
+          L%zx_nn(i,j) = (6*M(2)%zx*M(2)%zx_n(j)*M(2)%zx_n(i) + 3*M(2)%zx**2*M(2)%zx_nn(i,j) &
+               - 2*saftvrmie_param%ms(i)*M(3)%zx*M(3)%zx_n(j)*L%zx &
+               - saftvrmie_param%ms(i)*M(3)%zx**2*L%zx_n(j) &
+               - 2*saftvrmie_param%ms(j)*M(3)%zx*M(3)%zx_n(i)*L%zx&
+               - 2*ns*M(3)%zx_n(i)*M(3)%zx_n(j)*L%zx - 2*ns*M(3)%zx*M(3)%zx_n(i)*L%zx_n(j) &
+               - saftvrmie_param%ms(j)*M(3)%zx**2*L%zx_n(i) &
+               - 2*ns*M(3)%zx*M(3)%zx_n(j)*L%zx_n(i))/denum
+       enddo
     enddo
     !
     L%zx_V = 0
@@ -3122,7 +3120,7 @@ contains
     L%zx_Vn = 0
 
     do i=1,3
-      call cleanup_saftvrmie_zeta(M(i))
+       call cleanup_saftvrmie_zeta(M(i))
     enddo
   end subroutine KandL
 
@@ -3142,9 +3140,9 @@ contains
     real :: zeta_2, zeta_3, zeta_4, zeta_7
     real :: f(6), f_a(6), f_aa(6)
     if (quantum_correction_hs > 0) then
-      call calcFunAlpha(alpha, f, f_a, f_aa)
+       call calcFunAlpha(alpha, f, f_a, f_aa)
     else
-      f = f_alpha
+       f = f_alpha
     endif
     zeta_2 = zeta*zeta
     zeta_3 = zeta*zeta_2
@@ -3155,17 +3153,17 @@ contains
     chi_zz = zeta_3*(20.0*f(2) + 56.0*f(3)*zeta_3)
     chi_zzz = zeta_2*(60.0*f(2) + 336.0*f(3)*zeta_3)
     if (quantum_correction_hs > 0) then
-      chi_a = zeta*(f_a(1) + f_a(2)*zeta_4 + f_a(3)*zeta_7)
-      chi_aa = zeta*(f_aa(1) + f_aa(2)*zeta_4 + f_aa(3)*zeta_7)
-      chi_az = f_a(1) + 5.0*f_a(2)*zeta_4 + 8.0*f_a(3)*zeta_7
-      chi_aaz = f_aa(1) + 5.0*f_aa(2)*zeta_4 + 8.0*f_aa(3)*zeta_7
-      chi_azz = zeta_3*(20.0*f_a(2) + 56.0*f_a(3)*zeta_3)
+       chi_a = zeta*(f_a(1) + f_a(2)*zeta_4 + f_a(3)*zeta_7)
+       chi_aa = zeta*(f_aa(1) + f_aa(2)*zeta_4 + f_aa(3)*zeta_7)
+       chi_az = f_a(1) + 5.0*f_a(2)*zeta_4 + 8.0*f_a(3)*zeta_7
+       chi_aaz = f_aa(1) + 5.0*f_aa(2)*zeta_4 + 8.0*f_aa(3)*zeta_7
+       chi_azz = zeta_3*(20.0*f_a(2) + 56.0*f_a(3)*zeta_3)
     else
-      chi_a = 0.0
-      chi_aa = 0.0
-      chi_az = 0.0
-      chi_aaz = 0.0
-      chi_azz = 0.0
+       chi_a = 0.0
+       chi_aa = 0.0
+       chi_az = 0.0
+       chi_aaz = 0.0
+       chi_azz = 0.0
     endif
   end subroutine calcCorrectionFactorA2
 
@@ -3187,16 +3185,16 @@ contains
     !
     select case(Khs_EoS)
     case(KHS_EOS_LAFITTE)
-      call calcKhsTVnCS(nc,T,V,n,difflevel,s_vc)
+       call calcKhsTVnCS(nc,T,V,n,difflevel,s_vc)
     case(KHS_EOS_BMCSL)
-      if (.not. is_numerically_equal(maxval(saftvrmie_param%ms),1.0,1e6*machine_prec)) then
-        call stoperror("KHS_EOS_BMCSL: Not yet implemented for chain molecules (ms>1).")
-      endif
-      call calcMixKhsTVn(nc,T,V,n,difflevel,s_vc)
+       if (.not. is_numerically_equal(maxval(saftvrmie_param%ms),1.0,1e6*machine_prec)) then
+          call stoperror("KHS_EOS_BMCSL: Not yet implemented for chain molecules (ms>1).")
+       endif
+       call calcMixKhsTVn(nc,T,V,n,difflevel,s_vc)
     case(KHS_EOS_SANTOS)
-      call stoperror("KHS_EOS_SANTOS not yet implemented")
+       call stoperror("KHS_EOS_SANTOS not yet implemented")
     case default
-      call stoperror("Wrong KHS EOS.")
+       call stoperror("Wrong KHS EOS.")
     end select
   end subroutine calcKhsTVn
 
@@ -3219,23 +3217,23 @@ contains
     call calcKhs(eta, K, K_e, K_ee, K_eee)
     s_vc%Khs%zx = K
     if (difflevel > 1) then
-      call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
-           K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
-           s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n,s_vc%Khs%zx_TT,&
-           s_vc%Khs%zx_VV,s_vc%Khs%zx_TV,&
-           s_vc%Khs%zx_Tn,s_vc%Khs%zx_Vn,s_vc%Khs%zx_nn,s_vc%Khs%zx_VVV,&
-           s_vc%Khs%zx_VVT,s_vc%Khs%zx_VTT,&
-           s_vc%Khs%zx_VVn,s_vc%Khs%zx_Vnn,s_vc%Khs%zx_VTn)
+       call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
+            K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
+            s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n,s_vc%Khs%zx_TT,&
+            s_vc%Khs%zx_VV,s_vc%Khs%zx_TV,&
+            s_vc%Khs%zx_Tn,s_vc%Khs%zx_Vn,s_vc%Khs%zx_nn,s_vc%Khs%zx_VVV,&
+            s_vc%Khs%zx_VVT,s_vc%Khs%zx_VTT,&
+            s_vc%Khs%zx_VVn,s_vc%Khs%zx_Vnn,s_vc%Khs%zx_VTn)
     else if (difflevel > 0) then
-      call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
-           K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
-           s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n,s_vc%Khs%zx_TT,&
-           s_vc%Khs%zx_VV,s_vc%Khs%zx_TV,&
-           s_vc%Khs%zx_Tn,s_vc%Khs%zx_Vn,s_vc%Khs%zx_nn)
+       call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
+            K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
+            s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n,s_vc%Khs%zx_TT,&
+            s_vc%Khs%zx_VV,s_vc%Khs%zx_TV,&
+            s_vc%Khs%zx_Tn,s_vc%Khs%zx_Vn,s_vc%Khs%zx_nn)
     else
-      call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
-           K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
-           s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n)
+       call convert_zeta_x_to_TVn(nc,1.0,0.0,0.0,s_vc%zeta,&
+            K,K_e,0.0,K_ee,0.0,0.0,K_eee,0.0,0.0,&
+            s_vc%Khs%zx_T,s_vc%Khs%zx_V,s_vc%Khs%zx_n)
     endif
   end subroutine calcKhsTVnCS
 
@@ -3254,7 +3252,7 @@ contains
     integer :: i
     eta_n(1) = eta
     do i=2,10
-      eta_n(i) = eta_n(i-1)*eta
+       eta_n(i) = eta_n(i-1)*eta
     enddo
     one_min_eta = 1.0 - eta
     denum = 1.0 + 4.0*eta + 4.0*eta_n(2) - 4.0*eta_n(3) + eta_n(4)
@@ -3293,66 +3291,66 @@ contains
     real :: eps,eps_T,eps_TT,d,d_T,d_TT
     if ( present(a3_TT) .or. present(a3_VV) .or. present(a3_TV) .or. &
          present(a3_Tn) .or. present(a3_Vn) .or. present(a3_nn)) then
-      difflevel = 2
+       difflevel = 2
     else if (present(a3_T) .or. present(a3_V) .or. present(a3_n)) then
-      difflevel = 1
+       difflevel = 1
     else
-      difflevel = 0
+       difflevel = 0
     endif
     if (a3_model == A3_SIJ_PREFAC) then
-      !> Calculate dummy prefactor
-      call calcZetaPreFactor(nc,T,V,n,difflevel,s_vc%zeta_a3)
+       !> Calculate dummy prefactor
+       call calcZetaPreFactor(nc,T,V,n,difflevel,s_vc%zeta_a3)
     endif
     z = s_vc%zeta_bar%zx
     do i=1,nc
-      do j=1,nc
-        call calcA3zeta(s_vc%eps_divk_eff%d(i,j),z,s_vc%alpha%d(i,j), &
-             saftvrmie_param%f_alpha_ij(:,i,j),s_vc%a3ij%am(i,j),a3_z,a3_zz,&
-             a3_a,a3_aa,a3_az)
-        select case(difflevel)
-        case(2)
-          call convert_zeta_x_to_TVn(nc,s_vc%alpha%d(i,j),s_vc%alpha%d_T(i,j),&
-               s_vc%alpha%d_TT(i,j),s_vc%zeta_bar,&
-               a3,a3_z,a3_a,a3_zz,a3_aa,a3_az,0.0,0.0,0.0,&
-               a1_T=s_vc%a3ij%am_T(i,j),a1_V=s_vc%a3ij%am_V(i,j),a1_n=s_vc%a3ij%am_n(:,i,j),&
-               a1_TT=s_vc%a3ij%am_TT(i,j),a1_VV=s_vc%a3ij%am_VV(i,j),&
-               a1_TV=s_vc%a3ij%am_TV(i,j),a1_Tn=s_vc%a3ij%am_Tn(:,i,j),&
-               a1_Vn=s_vc%a3ij%am_Vn(:,i,j),a1_nn=s_vc%a3ij%am_nn(:,:,i,j))
-        case(1)
-          call convert_zeta_x_to_TVn(nc,s_vc%alpha%d(i,j),s_vc%alpha%d_T(i,j),&
-               s_vc%alpha%d_TT(i,j),s_vc%zeta_bar,&
-               a3,a3_z,a3_a,a3_zz,a3_aa,a3_az,0.0,0.0,0.0,&
-               a1_T=s_vc%a3ij%am_T(i,j),a1_V=s_vc%a3ij%am_V(i,j),a1_n=s_vc%a3ij%am_n(:,i,j))
-        end select
-        if (a3_model == A3_SIJ_PREFAC) then
+       do j=1,nc
+          call calcA3zeta(s_vc%eps_divk_eff%d(i,j),z,s_vc%alpha%d(i,j), &
+               saftvrmie_param%f_alpha_ij(:,i,j),s_vc%a3ij%am(i,j),a3_z,a3_zz,&
+               a3_a,a3_aa,a3_az)
           select case(difflevel)
           case(2)
-            call calc_a_zeta_product(nc,s_vc%zeta_a3,a=s_vc%a3ij%am(i,j),&
-                 a_T=s_vc%a3ij%am_T(i,j),a_V=s_vc%a3ij%am_V(i,j),&
-                 a_n=s_vc%a3ij%am_n(:,i,j),a_TT=s_vc%a3ij%am_TT(i,j),&
-                 a_VV=s_vc%a3ij%am_VV(i,j),a_TV=s_vc%a3ij%am_TV(i,j),&
-                 a_Tn=s_vc%a3ij%am_Tn(:,i,j),a_Vn=s_vc%a3ij%am_Vn(:,i,j),&
-                 a_nn=s_vc%a3ij%am_nn(:,:,i,j))
+             call convert_zeta_x_to_TVn(nc,s_vc%alpha%d(i,j),s_vc%alpha%d_T(i,j),&
+                  s_vc%alpha%d_TT(i,j),s_vc%zeta_bar,&
+                  a3,a3_z,a3_a,a3_zz,a3_aa,a3_az,0.0,0.0,0.0,&
+                  a1_T=s_vc%a3ij%am_T(i,j),a1_V=s_vc%a3ij%am_V(i,j),a1_n=s_vc%a3ij%am_n(:,i,j),&
+                  a1_TT=s_vc%a3ij%am_TT(i,j),a1_VV=s_vc%a3ij%am_VV(i,j),&
+                  a1_TV=s_vc%a3ij%am_TV(i,j),a1_Tn=s_vc%a3ij%am_Tn(:,i,j),&
+                  a1_Vn=s_vc%a3ij%am_Vn(:,i,j),a1_nn=s_vc%a3ij%am_nn(:,:,i,j))
           case(1)
-            call calc_a_zeta_product(nc,s_vc%zeta_a3,a=s_vc%a3ij%am(i,j),&
-                 a_T=s_vc%a3ij%am_T(i,j),a_V=s_vc%a3ij%am_V(i,j),&
-                 a_n=s_vc%a3ij%am_n(:,i,j))
-          case(0)
-            s_vc%a3ij%am(i,j) = s_vc%a3ij%am(i,j)*s_vc%zeta_a3%zx
+             call convert_zeta_x_to_TVn(nc,s_vc%alpha%d(i,j),s_vc%alpha%d_T(i,j),&
+                  s_vc%alpha%d_TT(i,j),s_vc%zeta_bar,&
+                  a3,a3_z,a3_a,a3_zz,a3_aa,a3_az,0.0,0.0,0.0,&
+                  a1_T=s_vc%a3ij%am_T(i,j),a1_V=s_vc%a3ij%am_V(i,j),a1_n=s_vc%a3ij%am_n(:,i,j))
           end select
-          d = s_vc%sigma_eff%d(i,j)
-          d_T = s_vc%sigma_eff%d_T(i,j)
-          d_TT = s_vc%sigma_eff%d_TT(i,j)
-          call calc_a_d3_product(nc,s_vc%a3ij,i,j,d,d_T,d_TT,difflevel,.false.)
-        endif
-        if (quantum_correction_hs > 0) then
-          ! Correct for temperature dependence in eps_div_k
-          eps_TT = s_vc%eps_divk_eff%d_TT(i,j)
-          eps_T = s_vc%eps_divk_eff%d_T(i,j)
-          eps = s_vc%eps_divk_eff%d(i,j)
-          call calc_a_d3_product(nc,s_vc%a3ij,i,j,eps,eps_T,eps_TT,difflevel,.true.)
-        endif
-      enddo
+          if (a3_model == A3_SIJ_PREFAC) then
+             select case(difflevel)
+             case(2)
+                call calc_a_zeta_product(nc,s_vc%zeta_a3,a=s_vc%a3ij%am(i,j),&
+                     a_T=s_vc%a3ij%am_T(i,j),a_V=s_vc%a3ij%am_V(i,j),&
+                     a_n=s_vc%a3ij%am_n(:,i,j),a_TT=s_vc%a3ij%am_TT(i,j),&
+                     a_VV=s_vc%a3ij%am_VV(i,j),a_TV=s_vc%a3ij%am_TV(i,j),&
+                     a_Tn=s_vc%a3ij%am_Tn(:,i,j),a_Vn=s_vc%a3ij%am_Vn(:,i,j),&
+                     a_nn=s_vc%a3ij%am_nn(:,:,i,j))
+             case(1)
+                call calc_a_zeta_product(nc,s_vc%zeta_a3,a=s_vc%a3ij%am(i,j),&
+                     a_T=s_vc%a3ij%am_T(i,j),a_V=s_vc%a3ij%am_V(i,j),&
+                     a_n=s_vc%a3ij%am_n(:,i,j))
+             case(0)
+                s_vc%a3ij%am(i,j) = s_vc%a3ij%am(i,j)*s_vc%zeta_a3%zx
+             end select
+             d = s_vc%sigma_eff%d(i,j)
+             d_T = s_vc%sigma_eff%d_T(i,j)
+             d_TT = s_vc%sigma_eff%d_TT(i,j)
+             call calc_a_d3_product(nc,s_vc%a3ij,i,j,d,d_T,d_TT,difflevel,.false.)
+          endif
+          if (quantum_correction_hs > 0) then
+             ! Correct for temperature dependence in eps_div_k
+             eps_TT = s_vc%eps_divk_eff%d_TT(i,j)
+             eps_T = s_vc%eps_divk_eff%d_T(i,j)
+             eps = s_vc%eps_divk_eff%d(i,j)
+             call calc_a_d3_product(nc,s_vc%a3ij,i,j,eps,eps_T,eps_TT,difflevel,.true.)
+          endif
+       enddo
     enddo
 
     call calc_double_sum(nc,n,s_vc%a3ij,&
@@ -3377,43 +3375,43 @@ contains
     real :: f(6), f_a(6), f_aa(6), exp_exponent
     real :: exp_diff_alpha_zeta,zeta_pre
     if (quantum_correction_hs > 0) then
-      call calcFunAlpha(alpha, f, f_a, f_aa)
+       call calcFunAlpha(alpha, f, f_a, f_aa)
     else
-      f = f_alpha
+       f = f_alpha
     endif
     exponent = f(5)*zeta + f(6)*zeta**2
     exp_diff_zeta = f(5) + 2.0*f(6)*zeta
     exp_exponent = exp(exponent)
     select case(a3_model)
     case(A3_LAFITTE)
-      zeta_pre = zeta
-      a3 = - eps**3*f(4)*zeta*exp_exponent
-      a3_z = a3*(1.0/zeta + exp_diff_zeta)
-      a3_zz = a3*(2.0*f(5)/zeta + 6.0*f(6) + exp_diff_zeta**2)
+       zeta_pre = zeta
+       a3 = - eps**3*f(4)*zeta*exp_exponent
+       a3_z = a3*(1.0/zeta + exp_diff_zeta)
+       a3_zz = a3*(2.0*f(5)/zeta + 6.0*f(6) + exp_diff_zeta**2)
     case(A3_SIJ_PREFAC)
-      zeta_pre = 1.0 ! Handled elsewhere
-      a3 = - eps**3*f(4)*exp_exponent
-      a3_z = a3*exp_diff_zeta
-      a3_zz = a3*(2.0*f(6) + exp_diff_zeta**2)
+       zeta_pre = 1.0 ! Handled elsewhere
+       a3 = - eps**3*f(4)*exp_exponent
+       a3_z = a3*exp_diff_zeta
+       a3_zz = a3*(2.0*f(6) + exp_diff_zeta**2)
     case default
-      call stoperror("Wrong A3 model parameter")
+       call stoperror("Wrong A3 model parameter")
     end select
     if (quantum_correction_hs > 0) then
-      exp_diff_alpha(1) = f_a(5)*zeta + f_a(6)*zeta**2
-      exp_diff_alpha(2) = f_aa(5)*zeta + f_aa(6)*zeta**2
-      exp_diff_alpha_zeta = f_a(5) + 2.0*f_a(6)*zeta
-      a3_a = -eps**3*zeta_pre*exp_exponent*(f_a(4) + f(4)*exp_diff_alpha(1))
-      a3_aa = -eps**3*zeta_pre*exp_exponent*(f_aa(4) + 2.0*f_a(4)*exp_diff_alpha(1) &
-           + f(4)*exp_diff_alpha(1)**2 + f(4)*exp_diff_alpha(2))
-      a3_az = -eps**3*zeta_pre*exp_exponent*(f_a(4)*exp_diff_zeta &
-           + f(4)*exp_diff_zeta*exp_diff_alpha(1) + f(4)*exp_diff_alpha_zeta)
-      if (a3_model == A3_LAFITTE) then
-        a3_az = a3_az + a3_a/zeta
-      endif
+       exp_diff_alpha(1) = f_a(5)*zeta + f_a(6)*zeta**2
+       exp_diff_alpha(2) = f_aa(5)*zeta + f_aa(6)*zeta**2
+       exp_diff_alpha_zeta = f_a(5) + 2.0*f_a(6)*zeta
+       a3_a = -eps**3*zeta_pre*exp_exponent*(f_a(4) + f(4)*exp_diff_alpha(1))
+       a3_aa = -eps**3*zeta_pre*exp_exponent*(f_aa(4) + 2.0*f_a(4)*exp_diff_alpha(1) &
+            + f(4)*exp_diff_alpha(1)**2 + f(4)*exp_diff_alpha(2))
+       a3_az = -eps**3*zeta_pre*exp_exponent*(f_a(4)*exp_diff_zeta &
+            + f(4)*exp_diff_zeta*exp_diff_alpha(1) + f(4)*exp_diff_alpha_zeta)
+       if (a3_model == A3_LAFITTE) then
+          a3_az = a3_az + a3_a/zeta
+       endif
     else
-      a3_a = 0.0
-      a3_aa = 0.0
-      a3_az = 0.0
+       a3_a = 0.0
+       a3_aa = 0.0
+       a3_az = 0.0
     endif
   end subroutine calcA3zeta
 
@@ -3487,32 +3485,32 @@ contains
     ! Locals
     integer :: i,j
     if (present(a_V)) then
-      a_v = a_z*saftvrmie_zb%zx_V
+       a_v = a_z*saftvrmie_zb%zx_V
     endif
     if (present(a_VV)) then
-      a_vv = a_zz*saftvrmie_zb%zx_V**2 + a_z*saftvrmie_zb%zx_VV
+       a_vv = a_zz*saftvrmie_zb%zx_V**2 + a_z*saftvrmie_zb%zx_VV
     endif
     if (present(a_VVV)) then
-      a_vvv = a_zzz*saftvrmie_zb%zx_V**3 + 3.0*a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_VV &
-           + a_z*saftvrmie_zb%zx_VVV
+       a_vvv = a_zzz*saftvrmie_zb%zx_V**3 + 3.0*a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_VV &
+            + a_z*saftvrmie_zb%zx_VVV
     endif
     if (present(a_n)) then
-      a_n = a_z*saftvrmie_zb%zx_n
+       a_n = a_z*saftvrmie_zb%zx_n
     endif
     if (present(a_Vn)) then
-      a_Vn = a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_n + a_z*saftvrmie_zb%zx_Vn
+       a_Vn = a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_n + a_z*saftvrmie_zb%zx_Vn
     endif
     if (present(a_VVn)) then
-      a_VVn =(a_zzz*saftvrmie_zb%zx_V**2 + a_zz*saftvrmie_zb%zx_VV)*saftvrmie_zb%zx_n &
-           + 2.0*a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_Vn + a_z*saftvrmie_zb%zx_VVn
+       a_VVn =(a_zzz*saftvrmie_zb%zx_V**2 + a_zz*saftvrmie_zb%zx_VV)*saftvrmie_zb%zx_n &
+            + 2.0*a_zz*saftvrmie_zb%zx_V*saftvrmie_zb%zx_Vn + a_z*saftvrmie_zb%zx_VVn
     endif
     if (present(a_nn)) then
-      do i=1,nc
-        do j=1,nc
-          a_nn(i,j) = a_zz*saftvrmie_zb%zx_n(i)*saftvrmie_zb%zx_n(j) &
-               + a_z*saftvrmie_zb%zx_nn(i,j)
-        enddo
-      enddo
+       do i=1,nc
+          do j=1,nc
+             a_nn(i,j) = a_zz*saftvrmie_zb%zx_n(i)*saftvrmie_zb%zx_n(j) &
+                  + a_z*saftvrmie_zb%zx_nn(i,j)
+          enddo
+       enddo
     endif
   end subroutine combineZetaXBarDifferentials
 
@@ -3536,90 +3534,90 @@ contains
     real :: Ma,Mr,Q1a,Q1r,Q2a,Q2r
     real :: eps_dk,eps_dk_T,eps_dk_TT,eps_divk_Mie
     if (quantum_correction_hs > 2) then
-      call stoperror("saftvrmie_dispersion::calcAlpha: quantum correction not implemented beyond second order")
+       call stoperror("saftvrmie_dispersion::calcAlpha: quantum correction not implemented beyond second order")
     endif
     if (quantum_correction_hs == 0) then
-      a = saftvrmie_param%alpha_ij
-      if (present(a_T)) then
-        a_T = 0.0
-      endif
-      if (present(a_TT)) then
-        a_TT = 0.0
-      endif
+       a = saftvrmie_param%alpha_ij
+       if (present(a_T)) then
+          a_T = 0.0
+       endif
+       if (present(a_TT)) then
+          a_TT = 0.0
+       endif
     else
-      ! Add Mie contribution
-      do i=1,nc
-        do j=1,nc
-          se = sigma_eff%d(i,j)
-          se_T = sigma_eff%d_T(i,j)
-          se_TT = sigma_eff%d_TT(i,j)
-          lama = saftvrmie_param%lambda_a_ij(i,j)
-          lamr = saftvrmie_param%lambda_r_ij(i,j)
-          sigma_ratio = saftvrmie_param%sigma_ij(i,j)/se
-          sigma_ratio_a = sigma_ratio**(lama)
-          sigma_ratio_r = sigma_ratio**(lamr)
-          sigma_ratio_2 = sigma_ratio**2
-          DmT = s_vc%DFeynHibbsij%D(i,j)/saftvrmie_param%sigma_ij(i,j)**2
-          Ma = sigma_ratio_a/(lama - 3.0)
-          Mr = sigma_ratio_r/(lamr - 3.0)
-          Q1a = saftvrmie_param%Quantum_const_1a_ij(i,j)
-          Q1a = Q1a*sigma_ratio_a*sigma_ratio_2/(lama - 1.0)
-          Q1r = saftvrmie_param%Quantum_const_1r_ij(i,j)
-          Q1r = Q1r*sigma_ratio_r*sigma_ratio_2/(lamr - 1.0)
-          a(i,j) = Ma - Mr + DmT*(Q1a - Q1r)
-          if (present(a_T)) then
-            a_T(i,j) =  - (Ma*lama - Mr*lamr &
-                 + DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0)))*(se_T/se) &
-                 - DmT*(Q1a - Q1r)/T
-          endif
-          if (present(a_TT)) then
-            a_TT(i,j) =  (Ma*lama*(lama + 1.0) - Mr*lamr*(lamr + 1.0) &
-                 + DmT*(Q1a*(lama + 2.0)*(lama + 3.0) &
-                 - Q1r*(lamr + 2.0)*(lamr + 3.0)))*(se_T/se)**2 &
-                 - (Ma*lama - Mr*lamr &
-                 + DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0)))*(se_TT/se) &
-                 + 2.0*DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0))*(se_T/(se*T)) &
-                 + 2.0*DmT*(Q1a - Q1r)/T**2
-          endif
-          if (quantum_correction_hs == 2) then
-            Q2a = saftvrmie_param%Quantum_const_2a_ij(i,j)
-            Q2a = Q2a*sigma_ratio_a*sigma_ratio_2**2/(lama + 1.0)
-            Q2r = saftvrmie_param%Quantum_const_2r_ij(i,j)
-            Q2r = Q2r*sigma_ratio_r*sigma_ratio_2**2/(lamr + 1.0)
-            a(i,j) = a(i,j) + DmT**2*(Q2a - Q2r)
-            if (present(a_T)) then
-              a_T(i,j) = a_T(i,j) - DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_T/se)&
-                   - 2.0*DmT**2*(Q2a - Q2r)/T
-            endif
-            if (present(a_TT)) then
-              a_TT(i,j) = a_TT(i,j) + DmT**2*(Q2a*(lama + 4.0)*(lama + 5.0) &
-                   - Q2r*(lamr + 4.0)*(lamr + 5.0))*(se_T/se)**2 &
-                   + 4.0*DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_T/(se*T)) &
-                   - DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_TT/se) &
-                   + 6.0*DmT**2*(Q2a - Q2r)/T**2
-            endif
-          endif
-          ! Correct for effective epsilon
-          eps_dk = eps_divk_eff%d(i,j)
-          eps_dk_T = eps_divk_eff%d_T(i,j)
-          eps_dk_TT = eps_divk_eff%d_TT(i,j)
-          eps_divk_Mie = saftvrmie_param%eps_divk_ij(i,j)
-          C = saftvrmie_param%Cij(i,j)
-          C = C*eps_divk_Mie/eps_dk
-          if (present(a_TT)) then
-            a_TT(i,j) = C*(a_TT(i,j) - 2.0*a_T(i,j)*eps_dk_T/eps_dk &
-                 + 2.0*a(i,j)*(eps_dk_T/eps_dk)**2 - a(i,j)*(eps_dk_TT/eps_dk))
-          endif
-          if (present(a_T)) then
-            a_T(i,j) = C*(a_T(i,j) - a(i,j)*eps_dk_T/eps_dk)
-          endif
-          a(i,j) = C*a(i,j)
-        enddo
-      enddo
+       ! Add Mie contribution
+       do i=1,nc
+          do j=1,nc
+             se = sigma_eff%d(i,j)
+             se_T = sigma_eff%d_T(i,j)
+             se_TT = sigma_eff%d_TT(i,j)
+             lama = saftvrmie_param%lambda_a_ij(i,j)
+             lamr = saftvrmie_param%lambda_r_ij(i,j)
+             sigma_ratio = saftvrmie_param%sigma_ij(i,j)/se
+             sigma_ratio_a = sigma_ratio**(lama)
+             sigma_ratio_r = sigma_ratio**(lamr)
+             sigma_ratio_2 = sigma_ratio**2
+             DmT = s_vc%DFeynHibbsij%D(i,j)/saftvrmie_param%sigma_ij(i,j)**2
+             Ma = sigma_ratio_a/(lama - 3.0)
+             Mr = sigma_ratio_r/(lamr - 3.0)
+             Q1a = saftvrmie_param%Quantum_const_1a_ij(i,j)
+             Q1a = Q1a*sigma_ratio_a*sigma_ratio_2/(lama - 1.0)
+             Q1r = saftvrmie_param%Quantum_const_1r_ij(i,j)
+             Q1r = Q1r*sigma_ratio_r*sigma_ratio_2/(lamr - 1.0)
+             a(i,j) = Ma - Mr + DmT*(Q1a - Q1r)
+             if (present(a_T)) then
+                a_T(i,j) =  - (Ma*lama - Mr*lamr &
+                     + DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0)))*(se_T/se) &
+                     - DmT*(Q1a - Q1r)/T
+             endif
+             if (present(a_TT)) then
+                a_TT(i,j) =  (Ma*lama*(lama + 1.0) - Mr*lamr*(lamr + 1.0) &
+                     + DmT*(Q1a*(lama + 2.0)*(lama + 3.0) &
+                     - Q1r*(lamr + 2.0)*(lamr + 3.0)))*(se_T/se)**2 &
+                     - (Ma*lama - Mr*lamr &
+                     + DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0)))*(se_TT/se) &
+                     + 2.0*DmT*(Q1a*(lama + 2.0) - Q1r*(lamr + 2.0))*(se_T/(se*T)) &
+                     + 2.0*DmT*(Q1a - Q1r)/T**2
+             endif
+             if (quantum_correction_hs == 2) then
+                Q2a = saftvrmie_param%Quantum_const_2a_ij(i,j)
+                Q2a = Q2a*sigma_ratio_a*sigma_ratio_2**2/(lama + 1.0)
+                Q2r = saftvrmie_param%Quantum_const_2r_ij(i,j)
+                Q2r = Q2r*sigma_ratio_r*sigma_ratio_2**2/(lamr + 1.0)
+                a(i,j) = a(i,j) + DmT**2*(Q2a - Q2r)
+                if (present(a_T)) then
+                   a_T(i,j) = a_T(i,j) - DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_T/se)&
+                        - 2.0*DmT**2*(Q2a - Q2r)/T
+                endif
+                if (present(a_TT)) then
+                   a_TT(i,j) = a_TT(i,j) + DmT**2*(Q2a*(lama + 4.0)*(lama + 5.0) &
+                        - Q2r*(lamr + 4.0)*(lamr + 5.0))*(se_T/se)**2 &
+                        + 4.0*DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_T/(se*T)) &
+                        - DmT**2*(Q2a*(lama + 4.0) - Q2r*(lamr + 4.0))*(se_TT/se) &
+                        + 6.0*DmT**2*(Q2a - Q2r)/T**2
+                endif
+             endif
+             ! Correct for effective epsilon
+             eps_dk = eps_divk_eff%d(i,j)
+             eps_dk_T = eps_divk_eff%d_T(i,j)
+             eps_dk_TT = eps_divk_eff%d_TT(i,j)
+             eps_divk_Mie = saftvrmie_param%eps_divk_ij(i,j)
+             C = saftvrmie_param%Cij(i,j)
+             C = C*eps_divk_Mie/eps_dk
+             if (present(a_TT)) then
+                a_TT(i,j) = C*(a_TT(i,j) - 2.0*a_T(i,j)*eps_dk_T/eps_dk &
+                     + 2.0*a(i,j)*(eps_dk_T/eps_dk)**2 - a(i,j)*(eps_dk_TT/eps_dk))
+             endif
+             if (present(a_T)) then
+                a_T(i,j) = C*(a_T(i,j) - a(i,j)*eps_dk_T/eps_dk)
+             endif
+             a(i,j) = C*a(i,j)
+          enddo
+       enddo
     endif
   end subroutine calcAlpha
 
-  !> Calculate truncation correction for quatum corrected Mie fluid
+  !> Calculate truncation correction for quantum-corrected Mie fluid
   !!
   !! \author Morten Hammer, November 2018
   subroutine calc_delta_Ac(nc,T,V,n,r_c,saftvrmie_vc,&
@@ -3655,70 +3653,70 @@ contains
     lama = saftvrmie_param%lambda_a_ij(i,i)
     L = inv_rc**(lamr-3)/(lamr-3) - inv_rc**(lama-3)/(lama-3)
     if (quantum_correction > 0) then
-      call get_DFeynHibbsPower(i,i,D,D_T,D_TT,saftvrmie_vc,power_in=1,divideBySigmaMie=.false.)
-      Lq1 = (lamr*inv_rc**(lamr-1) - lama*inv_rc**(lama-1))*inv_sigma**2
+       call get_DFeynHibbsPower(i,i,D,D_T,D_TT,saftvrmie_vc,power_in=1,divideBySigmaMie=.false.)
+       Lq1 = (lamr*inv_rc**(lamr-1) - lama*inv_rc**(lama-1))*inv_sigma**2
     else
-      Lq1 = 0.0
-      D = 0.0
-      D_T = 0.0
-      D_TT = 0.0
+       Lq1 = 0.0
+       D = 0.0
+       D_T = 0.0
+       D_TT = 0.0
     endif
     if (quantum_correction > 1) then
-      call get_DFeynHibbsPower(i,i,D2,D2_T,D2_TT,saftvrmie_vc,power_in=2,divideBySigmaMie=.false.)
-      Q2a = saftvrmie_param%Quantum_const_2a_ij(i,i)
-      Q2r = saftvrmie_param%Quantum_const_2r_ij(i,i)
-      Lq2 = (Q2r*inv_rc**(lamr+1)/(lamr+1) &
-           - Q2a*inv_rc**(lama+1)/(lama+1))*inv_sigma**4
+       call get_DFeynHibbsPower(i,i,D2,D2_T,D2_TT,saftvrmie_vc,power_in=2,divideBySigmaMie=.false.)
+       Q2a = saftvrmie_param%Quantum_const_2a_ij(i,i)
+       Q2r = saftvrmie_param%Quantum_const_2r_ij(i,i)
+       Lq2 = (Q2r*inv_rc**(lamr+1)/(lamr+1) &
+            - Q2a*inv_rc**(lama+1)/(lama+1))*inv_sigma**4
     else
-      Lq2 = 0.0
-      D2 = 0.0
-      D2_T = 0.0
-      D2_TT = 0.0
+       Lq2 = 0.0
+       D2 = 0.0
+       D2_T = 0.0
+       D2_TT = 0.0
     endif
     ! Initialize
     a = 0.0
     if (present(a_n)) then
-      a_n = 0.0
+       a_n = 0.0
     endif
     if (present(a_nn)) then
-      a_nn = 0.0
+       a_nn = 0.0
     endif
     if (present(a_V)) then
-      a_V = 0.0
+       a_V = 0.0
     endif
     if (present(a_VV)) then
-      a_VV = 0.0
+       a_VV = 0.0
     endif
     if (present(a_Vn)) then
-      a_Vn = 0.0
+       a_Vn = 0.0
     endif
     if (present(a_T)) then
-      a_T = 0.0
+       a_T = 0.0
     endif
     if (present(a_Tn)) then
-      a_Tn = 0.0
+       a_Tn = 0.0
     endif
     if (present(a_TV)) then
-      a_TV = 0.0
+       a_TV = 0.0
     endif
     if (present(a_TT)) then
-      a_TT = 0.0
+       a_TT = 0.0
     endif
     ! Calculate correction
     call calc_a_correction()
     if (enable_shift_correction) then
-      kF = kF/3.0
-      L = inv_rc**(lamr-3) - inv_rc**(lama-3)
-      if (quantum_correction > 0) then
-        Q1a = saftvrmie_param%Quantum_const_1a_ij(i,i)
-        Q1r = saftvrmie_param%Quantum_const_1r_ij(i,i)
-        Lq1 = (Q1r*inv_rc**(lamr-1) - Q1a*inv_rc**(lama-1))*inv_sigma**2
-      endif
-      if (quantum_correction > 1) then
-        Lq2 = (Q2r*inv_rc**(lamr+1) &
-             - Q2a*inv_rc**(lama+1))*inv_sigma**4
-      endif
-      call calc_a_correction()
+       kF = kF/3.0
+       L = inv_rc**(lamr-3) - inv_rc**(lama-3)
+       if (quantum_correction > 0) then
+          Q1a = saftvrmie_param%Quantum_const_1a_ij(i,i)
+          Q1r = saftvrmie_param%Quantum_const_1r_ij(i,i)
+          Lq1 = (Q1r*inv_rc**(lamr-1) - Q1a*inv_rc**(lama-1))*inv_sigma**2
+       endif
+       if (quantum_correction > 1) then
+          Lq2 = (Q2r*inv_rc**(lamr+1) &
+               - Q2a*inv_rc**(lama+1))*inv_sigma**4
+       endif
+       call calc_a_correction()
     endif
   contains
     subroutine calc_a_correction()
@@ -3726,35 +3724,35 @@ contains
       a_local = kF*(n(i)**2/V)*(1/T)*(L+D*Lq1+D2*Lq2)
       a = a + a_local
       if (present(a_n)) then
-        a_n = a_n + 2.0*a_local/n(i)
+         a_n = a_n + 2.0*a_local/n(i)
       endif
       if (present(a_nn)) then
-        a_nn = a_nn + 2.0*a_local/n(i)**2
+         a_nn = a_nn + 2.0*a_local/n(i)**2
       endif
       if (present(a_V)) then
-        a_V = a_V - a_local/V
+         a_V = a_V - a_local/V
       endif
       if (present(a_VV)) then
-        a_VV = a_VV + 2.0*a_local/V**2
+         a_VV = a_VV + 2.0*a_local/V**2
       endif
       if (present(a_Vn)) then
-        a_Vn = a_Vn - 2.0*a_local/(V*n(i))
+         a_Vn = a_Vn - 2.0*a_local/(V*n(i))
       endif
       if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
-        a_T_l = -a_local/T + kF*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
-        if (present(a_T)) then
-          a_T = a_T + a_T_l
-        endif
+         a_T_l = -a_local/T + kF*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
+         if (present(a_T)) then
+            a_T = a_T + a_T_l
+         endif
       endif
       if (present(a_Tn)) then
-        a_Tn = a_Tn + 2.0*a_T_l/n(i)
+         a_Tn = a_Tn + 2.0*a_T_l/n(i)
       endif
       if (present(a_TV)) then
-        a_TV = a_TV - a_T_l/V
+         a_TV = a_TV - a_T_l/V
       endif
       if (present(a_TT)) then
-        a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kF*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
-             + kF*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
+         a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kF*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
+              + kF*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
       endif
     end subroutine calc_a_correction
   end subroutine calc_delta_Ac

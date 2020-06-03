@@ -1,9 +1,7 @@
-!---------------------------------------------------------------------
-! Module, subroutines and functions for the hard-sphere part of
-! the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE) Equation of State implmented
-! in Thermopack. Implemented by: M. Hammer, A. Aasen and Mr. Wilhelmsen
+!--------------------------------------------------------------------------------
+! Module, subroutines and functions for the hard-sphere part of SAFT-VRQ Mie
+! Implemented by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !
 ! The module contains the following subroutines (S) and functions (F):
 ! -------------------------------------------------------------------------------
@@ -110,40 +108,40 @@ Contains
 
     ! Initialize derivatives
     if (present(a_TT)) then
-      a_TT=0.0
-      g_TT=0.0
+       a_TT=0.0
+       g_TT=0.0
     endif
     if (present(a_T)) then
-      a_T=0.0
-      g_T=0.0
+       a_T=0.0
+       g_T=0.0
     endif
     if (present(a_V)) then
-      a_V=0.0
-      g_V=0.0
+       a_V=0.0
+       g_V=0.0
     endif
     if (present(a_VV)) then
-      a_VV=0.0
-      g_VV=0.0
+       a_VV=0.0
+       g_VV=0.0
     endif
     if (present(a_TV)) then
-      a_TV=0.0
-      g_TV=0.0
+       a_TV=0.0
+       g_TV=0.0
     endif
     if (present(a_Tn)) then
-      a_Tn=0.0
-      g_Tn=0.0
+       a_Tn=0.0
+       g_Tn=0.0
     endif
     if (present(a_Vn)) then
-      a_Vn=0.0
-      g_Vn=0.0
+       a_Vn=0.0
+       g_Vn=0.0
     endif
     if (present(a_n)) then
-      a_n=0.0
-      g_n=0.0
+       a_n=0.0
+       g_n=0.0
     endif
     if (present(a_nn)) then
-      a_nn=0.0
-      g_nn=0.0
+       a_nn=0.0
+       g_nn=0.0
     endif
 
     ! Compute the exact d_ij's according to BH-theory
@@ -161,81 +159,81 @@ Contains
     two_pi_div_V=2.0*pi/V
 
     if (nc>1) then
-      ! We make the sum using appropriate symmetry properties
-      ! of the variables, i.e. a_ij=a_ji. We have multiplied the
-      ! contributions from the double sum with 2.0 to account for that.
-      do j= 1,nc
-        do i= 1,nc
-          ! Compute the pair-correlation function and derivatives:
-           call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
-                g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+       ! We make the sum using appropriate symmetry properties
+       ! of the variables, i.e. a_ij=a_ji. We have multiplied the
+       ! contributions from the double sum with 2.0 to account for that.
+       do j= 1,nc
+          do i= 1,nc
+             ! Compute the pair-correlation function and derivatives:
+             call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
+                  g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
 
-           prefactor=two_pi_div_V*n(i)*n(j)
-           term1=(dhs%d(i,j)**2)
-           term3=(dhs%d(i,j)-dhs_exact%d(i,j))
+             prefactor=two_pi_div_V*n(i)*n(j)
+             term1=(dhs%d(i,j)**2)
+             term3=(dhs%d(i,j)-dhs_exact%d(i,j))
 
-           ! The reduced Helmholtz energy of the extra term A*beta
-           a=a-prefactor*term1*g*term3
+             ! The reduced Helmholtz energy of the extra term A*beta
+             a=a-prefactor*term1*g*term3
 
-           ! First order derivatives
-           if (present(a_T)) then
-             a_T=a_T-prefactor*(2.0*dhs%d(i,j)*dhs%d_T(i,j)*g*term3+ &
-                  term1*g_T*term3+term1*g*(dhs%d_T(i,j)-dhs_exact%d_T(i,j)))
-           endif
-           if (present(a_V)) then
-             a_V=a_V-prefactor*term1*g_V*term3
-           endif
-           if (present(a_n)) then
-             a_n(j)=a_n(j)-2.0*two_pi_div_V*n(i)*term1*term3*g
-             a_n=a_n-prefactor*term1*term3*g_n
-           endif
+             ! First order derivatives
+             if (present(a_T)) then
+                a_T=a_T-prefactor*(2.0*dhs%d(i,j)*dhs%d_T(i,j)*g*term3+ &
+                     term1*g_T*term3+term1*g*(dhs%d_T(i,j)-dhs_exact%d_T(i,j)))
+             endif
+             if (present(a_V)) then
+                a_V=a_V-prefactor*term1*g_V*term3
+             endif
+             if (present(a_n)) then
+                a_n(j)=a_n(j)-2.0*two_pi_div_V*n(i)*term1*term3*g
+                a_n=a_n-prefactor*term1*term3*g_n
+             endif
 
-           ! Second order derivatives
-          if (present(a_Tn)) then
-             a_Tn(j)=a_Tn(j)-2.0*two_pi_div_V*n(i)*(&
-                  2.0*dhs%d(i,j)*dhs%d_T(i,j)*term3*g+ &
-                  term1*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))*g+&
-                  term1*term3*(g_T))
-             a_Tn=a_Tn-prefactor*(2.0*dhs%d(i,j)*dhs%d_T(i,j)*g_n*term3+&
-                  term1*term3*g_Tn+term1*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))*g_n)
-           endif
-           if (present(a_TT)) then
-             a_TT=a_TT-prefactor*(2.0*g*term3*((dhs%d_T(i,j)**2)+dhs%d_TT(i,j)*dhs%d(i,j))+&
-                  4.0*dhs%d(i,j)*dhs%d_T(i,j)*g_T*term3+(dhs%d(i,j)**2)*g_TT*term3+&
-                  4.0*dhs%d(i,j)*dhs%d_T(i,j)*g*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))+&
-                  2.0*(dhs%d(i,j)**2)*g_T*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))+&
-                  (dhs%d(i,j)**2)*g*(dhs%d_TT(i,j)-dhs_exact%d_TT(i,j)))
-           endif
-           if (present(a_TV)) then
-             a_TV=a_TV-prefactor*(2*dhs%d(i,j)*dhs%d_T(i,j)*g_V*term3+ &
-                  term1*g_TV*term3+term1*g_V*(dhs%d_T(i,j)-dhs_exact%d_T(i,j)))
-           endif
-           if (present(a_VV)) then
-             a_VV=a_VV+(2.0*pi/(V**2))*n(i)*n(j)*(term1*g_V*term3+term1*g*term3)&
-                  -prefactor*term1*g_VV*term3
-           endif
-           if (present(a_Vn)) then
-             a_Vn(j)=a_Vn(j)-2.0*two_pi_div_V*n(i)*term1*term3*g_V
-             a_Vn=a_Vn-prefactor*term1*term3*g_Vn
-           endif
-           if (present(a_nn)) then
-             ! NB: These two terms must come first!
-             a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*term1*term3*g
-             a_nn=a_nn-prefactor*term1*term3*g_nn
+             ! Second order derivatives
+             if (present(a_Tn)) then
+                a_Tn(j)=a_Tn(j)-2.0*two_pi_div_V*n(i)*(&
+                     2.0*dhs%d(i,j)*dhs%d_T(i,j)*term3*g+ &
+                     term1*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))*g+&
+                     term1*term3*(g_T))
+                a_Tn=a_Tn-prefactor*(2.0*dhs%d(i,j)*dhs%d_T(i,j)*g_n*term3+&
+                     term1*term3*g_Tn+term1*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))*g_n)
+             endif
+             if (present(a_TT)) then
+                a_TT=a_TT-prefactor*(2.0*g*term3*((dhs%d_T(i,j)**2)+dhs%d_TT(i,j)*dhs%d(i,j))+&
+                     4.0*dhs%d(i,j)*dhs%d_T(i,j)*g_T*term3+(dhs%d(i,j)**2)*g_TT*term3+&
+                     4.0*dhs%d(i,j)*dhs%d_T(i,j)*g*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))+&
+                     2.0*(dhs%d(i,j)**2)*g_T*(dhs%d_T(i,j)-dhs_exact%d_T(i,j))+&
+                     (dhs%d(i,j)**2)*g*(dhs%d_TT(i,j)-dhs_exact%d_TT(i,j)))
+             endif
+             if (present(a_TV)) then
+                a_TV=a_TV-prefactor*(2*dhs%d(i,j)*dhs%d_T(i,j)*g_V*term3+ &
+                     term1*g_TV*term3+term1*g_V*(dhs%d_T(i,j)-dhs_exact%d_T(i,j)))
+             endif
+             if (present(a_VV)) then
+                a_VV=a_VV+(2.0*pi/(V**2))*n(i)*n(j)*(term1*g_V*term3+term1*g*term3)&
+                     -prefactor*term1*g_VV*term3
+             endif
+             if (present(a_Vn)) then
+                a_Vn(j)=a_Vn(j)-2.0*two_pi_div_V*n(i)*term1*term3*g_V
+                a_Vn=a_Vn-prefactor*term1*term3*g_Vn
+             endif
+             if (present(a_nn)) then
+                ! NB: These two terms must come first!
+                a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*term1*term3*g
+                a_nn=a_nn-prefactor*term1*term3*g_nn
 
-             ! Then the single-sum terms (This can probably be written more effectively to
-             ! avoid the sum below. Did not pursue that avenue (OW)
-             do k=1,nc
-               call calc_hardsphere_mixture_gij(nc,T,V,n,i,k,dhs,zeta,g,g_T,g_V,g_n,&
-                    g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-               a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*n(k)*(dhs%d(i,k)**2)*g_n(j)*(dhs%d(i,k)-dhs_exact%d(i,k))
-               call calc_hardsphere_mixture_gij(nc,T,V,n,j,k,dhs,zeta,g,g_T,g_V,g_n,&
-                    g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-               a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*n(k)*(dhs%d(j,k)**2)*g_n(i)*(dhs%d(j,k)-dhs_exact%d(j,k))
-             end do
+                ! Then the single-sum terms (This can probably be written more effectively to
+                ! avoid the sum below. Did not pursue that avenue (OW)
+                do k=1,nc
+                   call calc_hardsphere_mixture_gij(nc,T,V,n,i,k,dhs,zeta,g,g_T,g_V,g_n,&
+                        g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+                   a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*n(k)*(dhs%d(i,k)**2)*g_n(j)*(dhs%d(i,k)-dhs_exact%d(i,k))
+                   call calc_hardsphere_mixture_gij(nc,T,V,n,j,k,dhs,zeta,g,g_T,g_V,g_n,&
+                        g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+                   a_nn(i,j)=a_nn(i,j)-2.0*two_pi_div_V*n(k)*(dhs%d(j,k)**2)*g_n(i)*(dhs%d(j,k)-dhs_exact%d(j,k))
+                end do
 
-           endif
-         end do
+             endif
+          end do
        end do
 
        ! Add additional terms for volume derivatives:
@@ -243,142 +241,142 @@ Contains
        ! derivatives, then we already have the first order
        ! derivatives available.
        if (present(a_V)) then
-         a_V=a_V-a/V
+          a_V=a_V-a/V
        endif
        if (present(a_TV)) then
-         a_TV=a_TV-a_T/V
+          a_TV=a_TV-a_T/V
        endif
        if (present(a_VV)) then
-         a_VV=a_VV-a_V/V+(a/(V**2))
+          a_VV=a_VV-a_V/V+(a/(V**2))
        endif
        if (present(a_Vn)) then
-         a_Vn=a_Vn-a_n/V
+          a_Vn=a_Vn-a_n/V
        endif
-     endif
+    endif
 
-     ! Add the extra double-sum terms to the first order n-derivatives
-     if (present(a_V)) then
+    ! Add the extra double-sum terms to the first order n-derivatives
+    if (present(a_V)) then
        a_n=a_n
-     endif
-     ! Add the extra double-sum terms to the second order n-derivatives
-     if (present(a_V)) then
+    endif
+    ! Add the extra double-sum terms to the second order n-derivatives
+    if (present(a_V)) then
        a_nn=a_nn
-     endif
+    endif
 
-     ! Multiply with Avogadros number to have the right
-     ! dimensions (a=A/RT)
-     a=a*N_AVOGADRO
+    ! Multiply with Avogadros number to have the right
+    ! dimensions (a=A/RT)
+    a=a*N_AVOGADRO
 
-      ! Initialize derivatives
+    ! Initialize derivatives
     if (present(a_TT)) then
-      a_TT=a_TT*N_AVOGADRO
+       a_TT=a_TT*N_AVOGADRO
     endif
     if (present(a_T)) then
-      a_T=a_T*N_AVOGADRO
+       a_T=a_T*N_AVOGADRO
     endif
     if (present(a_V)) then
-      a_V=a_V*N_AVOGADRO
+       a_V=a_V*N_AVOGADRO
     endif
     if (present(a_VV)) then
-      a_VV=a_VV*N_AVOGADRO
+       a_VV=a_VV*N_AVOGADRO
     endif
     if (present(a_TV)) then
-      a_TV=a_TV*N_AVOGADRO
+       a_TV=a_TV*N_AVOGADRO
     endif
     if (present(a_Tn)) then
-      a_Tn=a_Tn*N_AVOGADRO
+       a_Tn=a_Tn*N_AVOGADRO
     endif
     if (present(a_Vn)) then
-      a_Vn=a_Vn*N_AVOGADRO
+       a_Vn=a_Vn*N_AVOGADRO
     endif
     if (present(a_n)) then
-      a_n=a_n*N_AVOGADRO
+       a_n=a_n*N_AVOGADRO
     endif
     if (present(a_nn)) then
-      a_nn=a_nn*N_AVOGADRO
+       a_nn=a_nn*N_AVOGADRO
     endif
-   end subroutine calc_hardsphere_extra_helmholtzenergy
+  end subroutine calc_hardsphere_extra_helmholtzenergy
 
-   subroutine calc_gij_boublik(nc,T,V,n,i,j,s_vc,g,g_T,g_V,g_n,&
-        g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-     !------------------------------------------------------------------------
-     ! Ailo Aasen, March 2019
-     ! Boublik hardsphere rdf.
-     !----------------------------------------------------------------------------
-     integer, intent(in) :: nc      !< number of components
-     real, intent(in) :: T,V,n(nc)  !< temperature [K], volume [m^3], N_i [mol]
-     integer, intent(in) :: i, j
-     type(saftvrmie_var_container), intent(in) :: s_vc
-     real, intent(out) :: g         !< pair radial distribution function [-]
-     real, intent(out), optional :: g_T,g_V,g_n(nc)           !< derivatives
-     real, intent(out), optional :: g_VV,g_TV,g_Vn(nc)        !< derivatives
-     real, intent(out), optional :: g_TT,g_Tn(nc),g_nn(nc,nc) !<derivatives
-     logical :: storage_container_dhs  !< To store the dij flag
-     type(saftvrmie_dhs) :: dhs !< Hard-sphere diameter and differentials
-     type(saftvrmie_dhs) :: dhs_exact    !< Container for the exact dij's
-     type(saftvrmie_zeta_hs) :: zeta               !< Container for zetas
+  subroutine calc_gij_boublik(nc,T,V,n,i,j,s_vc,g,g_T,g_V,g_n,&
+       g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+    !------------------------------------------------------------------------
+    ! Ailo Aasen, March 2019
+    ! Boublik hardsphere rdf.
+    !----------------------------------------------------------------------------
+    integer, intent(in) :: nc      !< number of components
+    real, intent(in) :: T,V,n(nc)  !< temperature [K], volume [m^3], N_i [mol]
+    integer, intent(in) :: i, j
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    real, intent(out) :: g         !< pair radial distribution function [-]
+    real, intent(out), optional :: g_T,g_V,g_n(nc)           !< derivatives
+    real, intent(out), optional :: g_VV,g_TV,g_Vn(nc)        !< derivatives
+    real, intent(out), optional :: g_TT,g_Tn(nc),g_nn(nc,nc) !<derivatives
+    logical :: storage_container_dhs  !< To store the dij flag
+    type(saftvrmie_dhs) :: dhs !< Hard-sphere diameter and differentials
+    type(saftvrmie_dhs) :: dhs_exact    !< Container for the exact dij's
+    type(saftvrmie_zeta_hs) :: zeta               !< Container for zetas
 
-     ! Allocate variable containers to ease notation
-     zeta=s_vc%zeta_hs
-     dhs=s_vc%dhs                            ! Store diameters
-     dhs_exact=s_vc%dhs                      ! Use allocated variables
+    ! Allocate variable containers to ease notation
+    zeta=s_vc%zeta_hs
+    dhs=s_vc%dhs                            ! Store diameters
+    dhs_exact=s_vc%dhs                      ! Use allocated variables
 
-     ! Obtain the zeta variables and its derivatives
-     ! We will in the following map mu_ij into the first index of
-     ! zeta and must therefore set all these contributions to zero
-     call calc_hardsphere_extra_zeta_and_derivatives(nc,T,V,n,&
-          dhs%d,dhs%d_T,dhs%d_TT,zeta%zet,zeta%zet_V,&
-          zeta%zet_VV,zeta%zet_T,zeta%zet_TT,&
-          zeta%zet_n,zeta%zet_Vn,zeta%zet_TV,zeta%zet_Tn)
+    ! Obtain the zeta variables and its derivatives
+    ! We will in the following map mu_ij into the first index of
+    ! zeta and must therefore set all these contributions to zero
+    call calc_hardsphere_extra_zeta_and_derivatives(nc,T,V,n,&
+         dhs%d,dhs%d_T,dhs%d_TT,zeta%zet,zeta%zet_V,&
+         zeta%zet_VV,zeta%zet_T,zeta%zet_TT,&
+         zeta%zet_n,zeta%zet_Vn,zeta%zet_TV,zeta%zet_Tn)
 
-     ! Initialize derivatives
-     if (present(g_TT)) then
-        g_TT=0.0
-     endif
-     if (present(g_T)) then
-        g_T=0.0
-     endif
-     if (present(g_V)) then
-        g_V=0.0
-     endif
-     if (present(g_VV)) then
-        g_VV=0.0
-     endif
-     if (present(g_TV)) then
-        g_TV=0.0
-     endif
-     if (present(g_Tn)) then
-        g_Tn=0.0
-     endif
-     if (present(g_Vn)) then
-        g_Vn=0.0
-     endif
-     if (present(g_n)) then
-        g_n=0.0
-     endif
-     if (present(g_nn)) then
-        g_nn=0.0
-     endif
+    ! Initialize derivatives
+    if (present(g_TT)) then
+       g_TT=0.0
+    endif
+    if (present(g_T)) then
+       g_T=0.0
+    endif
+    if (present(g_V)) then
+       g_V=0.0
+    endif
+    if (present(g_VV)) then
+       g_VV=0.0
+    endif
+    if (present(g_TV)) then
+       g_TV=0.0
+    endif
+    if (present(g_Tn)) then
+       g_Tn=0.0
+    endif
+    if (present(g_Vn)) then
+       g_Vn=0.0
+    endif
+    if (present(g_n)) then
+       g_n=0.0
+    endif
+    if (present(g_nn)) then
+       g_nn=0.0
+    endif
 
-     ! Compute the exact d_ij's according to BH-theory
-     storage_container_dhs=exact_binary_dhs  ! Store logical
-     exact_binary_dhs=.true.                 ! Reset logical
+    ! Compute the exact d_ij's according to BH-theory
+    storage_container_dhs=exact_binary_dhs  ! Store logical
+    exact_binary_dhs=.true.                 ! Reset logical
 
-     ! Calculate exact hard-sphere diameters
-     call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
-          s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
-          dhs_exact%d_T,dhs_exact%d_TT)
+    ! Calculate exact hard-sphere diameters
+    call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
+         s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
+         dhs_exact%d_T,dhs_exact%d_TT)
 
-     exact_binary_dhs=storage_container_dhs  ! Reset logical
+    exact_binary_dhs=storage_container_dhs  ! Reset logical
 
-     ! Compute the pair-correlation function and derivatives:
-     call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
-          g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-   end subroutine calc_gij_boublik
+    ! Compute the pair-correlation function and derivatives:
+    call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
+         g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+  end subroutine calc_gij_boublik
 
 
-   subroutine calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta, &
-        g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+  subroutine calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta, &
+       g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !------------------------------------------------------------------------
     !  2019-01-10, Oivind Wilhelmsen
     ! The pair-correlation function of an additive mixture and derivatives.
@@ -410,45 +408,45 @@ Contains
 
     ! First order T-derivative
     if (present(g_T)) then
-      g_T=0.0
+       g_T=0.0
 
-      ! We map dmu_ij/dT into zeta%zet_T(2)
-      zeta%zet_T(1)=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))/(mu_down**2)
+       ! We map dmu_ij/dT into zeta%zet_T(2)
+       zeta%zet_T(1)=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))/(mu_down**2)
     endif
 
     ! Second order T-derivative
     if (present(g_TT)) then
-      g_TT=0.0
+       g_TT=0.0
 
-      ! We map d2mu_ij/dT2 into zeta%zet_TT(2)
-      mu_TT_up1=2.0*(dhs%d(i,i)+dhs%d(j,j))*dhs%d_T(i,i)*dhs%d_T(j,j)+&
-           ((dhs%d(i,i)**2)*dhs%d_TT(j,j)+(dhs%d(j,j)**2)*dhs%d_TT(i,i))
-      mu_TT_up2=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))*&
-           (dhs%d_T(i,i)+dhs%d_T(j,j))
-      zeta%zet_TT(1)=mu_TT_up1/(mu_down**2)-2.0*mu_TT_up2/(mu_down**3)
+       ! We map d2mu_ij/dT2 into zeta%zet_TT(2)
+       mu_TT_up1=2.0*(dhs%d(i,i)+dhs%d(j,j))*dhs%d_T(i,i)*dhs%d_T(j,j)+&
+            ((dhs%d(i,i)**2)*dhs%d_TT(j,j)+(dhs%d(j,j)**2)*dhs%d_TT(i,i))
+       mu_TT_up2=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))*&
+            (dhs%d_T(i,i)+dhs%d_T(j,j))
+       zeta%zet_TT(1)=mu_TT_up1/(mu_down**2)-2.0*mu_TT_up2/(mu_down**3)
     endif
 
     ! Initialize derivatives
     if (present(g_V)) then
-      g_V=0.0
+       g_V=0.0
     endif
     if (present(g_VV)) then
-      g_VV=0.0
+       g_VV=0.0
     endif
     if (present(g_TV)) then
-      g_TV=0.0
+       g_TV=0.0
     endif
     if (present(g_Tn)) then
-      g_Tn=0.0
+       g_Tn=0.0
     endif
     if (present(g_Vn)) then
-      g_Vn=0.0
+       g_Vn=0.0
     endif
     if (present(g_n)) then
-      g_n=0.0
+       g_n=0.0
     endif
     if (present(g_nn)) then
-      g_nn=0.0
+       g_nn=0.0
     endif
 
     ! Obtain the reduced Helholtz energy and the derivatives with
@@ -456,76 +454,76 @@ Contains
     call calc_hardsphere_dgij_dzeta(zeta,g,dg_dzeta,d2g_dzeta2)
 
     do comp1= 1,nc
-      do comp2= 1,nc
-        do l = 1,3   ! Loop over mu, eta_2 and eta_3
-          ! Start single-sum over l part of the derivatives
-          if (comp2==1) then  ! Compute this only once for each "l"
-            if (comp1==1) then  ! Compute this only once for each "l"
-              if (present(g_T)) then
-                g_T=g_T+dg_dzeta(l)*zeta%zet_T(l)
-              endif
-              if (present(g_V)) then
-                g_V=g_V+dg_dzeta(l)*zeta%zet_V(l)
-              endif
-              if (present(g_VV)) then
-                g_VV=g_VV+dg_dzeta(l)*zeta%zet_VV(l)
-              endif
-              if (present(g_TV)) then
-                g_TV=g_TV+dg_dzeta(l)*zeta%zet_TV(l)
-              endif
-              if (present(g_TT)) then
-                g_TT=g_TT+dg_dzeta(l)*zeta%zet_TT(l)
-            endif
-            end if
+       do comp2= 1,nc
+          do l = 1,3   ! Loop over mu, eta_2 and eta_3
+             ! Start single-sum over l part of the derivatives
+             if (comp2==1) then  ! Compute this only once for each "l"
+                if (comp1==1) then  ! Compute this only once for each "l"
+                   if (present(g_T)) then
+                      g_T=g_T+dg_dzeta(l)*zeta%zet_T(l)
+                   endif
+                   if (present(g_V)) then
+                      g_V=g_V+dg_dzeta(l)*zeta%zet_V(l)
+                   endif
+                   if (present(g_VV)) then
+                      g_VV=g_VV+dg_dzeta(l)*zeta%zet_VV(l)
+                   endif
+                   if (present(g_TV)) then
+                      g_TV=g_TV+dg_dzeta(l)*zeta%zet_TV(l)
+                   endif
+                   if (present(g_TT)) then
+                      g_TT=g_TT+dg_dzeta(l)*zeta%zet_TT(l)
+                   endif
+                end if
 
-            ! The composition first order derivative of g
-            if (present(g_n)) then
-              g_n(comp1)=g_n(comp1)+dg_dzeta(l)*zeta%zet_n(comp1,l)
-            endif
-            if (present(g_Tn)) then
-              g_Tn(comp1)=g_Tn(comp1)+dg_dzeta(l)*zeta%zet_Tn(comp1,l)
-            endif
-            if (present(g_Vn)) then
-              g_Vn(comp1)=g_Vn(comp1)+dg_dzeta(l)*zeta%zet_Vn(comp1,l)
-            endif
-          end if
-
-          ! End single sum over l part of the derivatives
-          ! Start double sum over l and k part of the derivatives
-
-          do k = 1,3
-            if (comp2==1) then ! Compute this only once for each "l" and "k"
-              if (comp1==1) then ! Compute this only once for each "l" and "k"
-                if (present(g_VV)) then
-                  g_VV=g_VV+d2g_dzeta2(l,k)*zeta%zet_V(l)*zeta%zet_V(k)
+                ! The composition first order derivative of g
+                if (present(g_n)) then
+                   g_n(comp1)=g_n(comp1)+dg_dzeta(l)*zeta%zet_n(comp1,l)
                 endif
-                if (present(g_TV)) then
-                  g_TV=g_TV+d2g_dzeta2(l,k)*zeta%zet_T(l)*zeta%zet_V(k)
+                if (present(g_Tn)) then
+                   g_Tn(comp1)=g_Tn(comp1)+dg_dzeta(l)*zeta%zet_Tn(comp1,l)
                 endif
-                if (present(g_TT)) then
-                  g_TT=g_TT+d2g_dzeta2(l,k)*zeta%zet_T(l)*zeta%zet_T(k)
+                if (present(g_Vn)) then
+                   g_Vn(comp1)=g_Vn(comp1)+dg_dzeta(l)*zeta%zet_Vn(comp1,l)
                 endif
-              end if
+             end if
 
-              ! The composition first order derivative of a
-              if (present(g_Tn)) then
-                g_Tn(comp1)=g_Tn(comp1)+d2g_dzeta2(l,k)*&
-                     zeta%zet_T(l)*zeta%zet_n(comp1,k)
-              endif
-              if (present(g_Vn)) then
-                g_Vn(comp1)=g_Vn(comp1)+d2g_dzeta2(l,k)*&
-                     zeta%zet_V(l)*zeta%zet_n(comp1,k)
-              endif
-            end if
+             ! End single sum over l part of the derivatives
+             ! Start double sum over l and k part of the derivatives
 
-            ! Second order mole number derivative
-            if (present(g_nn)) then
-              g_nn(comp1,comp2)=g_nn(comp1,comp2)+d2g_dzeta2(l,k)*&
-                   zeta%zet_n(comp1,l)*zeta%zet_n(comp2,k)
-            endif
+             do k = 1,3
+                if (comp2==1) then ! Compute this only once for each "l" and "k"
+                   if (comp1==1) then ! Compute this only once for each "l" and "k"
+                      if (present(g_VV)) then
+                         g_VV=g_VV+d2g_dzeta2(l,k)*zeta%zet_V(l)*zeta%zet_V(k)
+                      endif
+                      if (present(g_TV)) then
+                         g_TV=g_TV+d2g_dzeta2(l,k)*zeta%zet_T(l)*zeta%zet_V(k)
+                      endif
+                      if (present(g_TT)) then
+                         g_TT=g_TT+d2g_dzeta2(l,k)*zeta%zet_T(l)*zeta%zet_T(k)
+                      endif
+                   end if
+
+                   ! The composition first order derivative of a
+                   if (present(g_Tn)) then
+                      g_Tn(comp1)=g_Tn(comp1)+d2g_dzeta2(l,k)*&
+                           zeta%zet_T(l)*zeta%zet_n(comp1,k)
+                   endif
+                   if (present(g_Vn)) then
+                      g_Vn(comp1)=g_Vn(comp1)+d2g_dzeta2(l,k)*&
+                           zeta%zet_V(l)*zeta%zet_n(comp1,k)
+                   endif
+                end if
+
+                ! Second order mole number derivative
+                if (present(g_nn)) then
+                   g_nn(comp1,comp2)=g_nn(comp1,comp2)+d2g_dzeta2(l,k)*&
+                        zeta%zet_n(comp1,l)*zeta%zet_n(comp2,k)
+                endif
+             end do
           end do
-        end do
-      end do
+       end do
     end do
   end subroutine calc_hardsphere_mixture_gij
 
@@ -641,110 +639,110 @@ Contains
 
     ! Loop over all components and obtain the pure component values
     do j = 1,nc
-      do k = 1,nc
-        !
-        if (.not. exact_binary_dhs .and. k/=j) then
-          cycle
-        end if
+       do k = 1,nc
+          !
+          if (.not. exact_binary_dhs .and. k/=j) then
+             cycle
+          end if
 
-        if (only_integrate_active_hs_area) then
-          ! Solve for exp(-beta*u(r0)) = machine_prec
-          call calc_zero_d_integrand(j,k,T,s_vc,sigma_eff(j,k),r0,r0_T,r0_TT)
-          ! Use 1-exp(-beta*u(r)) = 1 for [0,r0]:
-          d_mat(j,k) = r0
-          d_T_mat(j,k) = r0_T
-          d_TT_mat(j,k) = r0_TT
-        else
-          r0 = 0.0
-          r0_T = 0.0
-          r0_TT = 0.0
-        endif
-        ! Loop quadrature points
-        do i = 1,n_quad
-
-          ! Obtain the position to evaluate r [m] and T-derivs
-          sigmaj_2=0.5*(sigma_eff(j,k) - r0)
-          sigmaj_2_T=0.5*(sigma_eff_T(j,k) - r0_T)
-          sigmaj_2_TT=0.5*(sigma_eff_TT(j,k) - r0_TT)
-
-          r=sigmaj_2*x_vec(i)+sigmaj_2 + r0
-          r_T=sigmaj_2_T*x_vec(i)+sigmaj_2_T + r0_T
-          r_TT=sigmaj_2_TT*x_vec(i)+sigmaj_2_TT + r0_TT
-
-          ! Obtain the interaction potential and T-derivatives
-          call calc_mie_potential_quantumcorrected(j,k,s_vc,&
-               saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
-               saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
-               saftvrmie_param%Cij(j,k),&
-               saftvrmie_param%Quantum_const_1a_ij(j,k),&
-               saftvrmie_param%Quantum_const_1r_ij(j,k),&
-               saftvrmie_param%Quantum_const_2a_ij(j,k),&
-               saftvrmie_param%Quantum_const_2r_ij(j,k),&
-               r,U_divk,U_divk_T,U_divk_TT,U_divk_r,U_divk_Tr,U_divk_rr)
-
-          ! Calculate the hard-sphere diameter through approximating
-          ! the integral through a 10-point Gauss-Legendre quadrature
-
-          ! The prefactor and its Temperature derivatives
-          prefactor=sigmaj_2*w_vec(i)
-          prefactor_T=sigmaj_2_T*w_vec(i)
-          prefactor_TT=sigmaj_2_TT*w_vec(i)
-
-          ! Obtain the hahrd-sphere diameter and T-derivatives
-          minus_exp_term=-1.0*exp(-U_divk/T)
-
-          ! Hard sphere diameter [m]
-          d_mat(j,k)=d_mat(j,k)+prefactor*(1.0+minus_exp_term)
-
-          if (estimate_quadrature_error) then
-            ! Store function evaluations for post-processing error estimate
-            f_vec(i) = sigmaj_2*(1.0+minus_exp_term)
+          if (only_integrate_active_hs_area) then
+             ! Solve for exp(-beta*u(r0)) = machine_prec
+             call calc_zero_d_integrand(j,k,T,s_vc,sigma_eff(j,k),r0,r0_T,r0_TT)
+             ! Use 1-exp(-beta*u(r)) = 1 for [0,r0]:
+             d_mat(j,k) = r0
+             d_T_mat(j,k) = r0_T
+             d_TT_mat(j,k) = r0_TT
+          else
+             r0 = 0.0
+             r0_T = 0.0
+             r0_TT = 0.0
           endif
+          ! Loop quadrature points
+          do i = 1,n_quad
 
-          ! Intermediate variables for the first order T-derivative of d
-          d_T1=prefactor
-          d_T2=minus_exp_term
-          d_T3=(U_divk/(T**2)-U_divk_T/T-U_divk_r*r_T/T)
-          d_T4=prefactor_T
-          d_T5=(1.0+minus_exp_term)
+             ! Obtain the position to evaluate r [m] and T-derivs
+             sigmaj_2=0.5*(sigma_eff(j,k) - r0)
+             sigmaj_2_T=0.5*(sigma_eff_T(j,k) - r0_T)
+             sigmaj_2_TT=0.5*(sigma_eff_TT(j,k) - r0_TT)
 
-          ! The first order T-derivative of the hard-sphere diameter
-          d_T_mat(j,k)=d_T_mat(j,k)+d_T1*d_T2*d_T3+d_T4*d_T5
+             r=sigmaj_2*x_vec(i)+sigmaj_2 + r0
+             r_T=sigmaj_2_T*x_vec(i)+sigmaj_2_T + r0_T
+             r_TT=sigmaj_2_TT*x_vec(i)+sigmaj_2_TT + r0_TT
 
-          ! Intermediate variables for the second order T-derivative of d
-          d_TT1=prefactor_T
-          d_TT2=minus_exp_term*d_T3
-          d_TT3=(U_divk_T/(T**2)+U_divk_r*r_T/(T**2)-2.0*U_divk/(T**3)& ! First term
-               -U_divk_TT/T-U_divk_Tr*r_T/T+U_divk_T/(T**2)&
-               -U_divk_Tr*r_T/T-U_divk_rr*(r_T**2)/T-U_divk_r*r_TT/T+U_divk_r*r_T/(T**2))
-          d_TT4=prefactor_TT
-          d_TT5=d_TT2
+             ! Obtain the interaction potential and T-derivatives
+             call calc_mie_potential_quantumcorrected(j,k,s_vc,&
+                  saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
+                  saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
+                  saftvrmie_param%Cij(j,k),&
+                  saftvrmie_param%Quantum_const_1a_ij(j,k),&
+                  saftvrmie_param%Quantum_const_1r_ij(j,k),&
+                  saftvrmie_param%Quantum_const_2a_ij(j,k),&
+                  saftvrmie_param%Quantum_const_2r_ij(j,k),&
+                  r,U_divk,U_divk_T,U_divk_TT,U_divk_r,U_divk_Tr,U_divk_rr)
 
-          ! The second order TT-derivative of the hard-sphere diameter
-          d_TT_mat(j,k)=d_TT_mat(j,k)+d_TT1*d_T2*d_T3+d_T1*d_TT2*d_T3+&
-               d_T1*d_T2*d_TT3+d_TT4*d_T5+d_T4*d_TT5
-        end do
-        if (estimate_quadrature_error) then
-          quad_error = calc_quadrature_error(f_vec,d_mat(j,k)-r0,hs_diam_quadrature)
-          print *,"Estimated relative quadrature error in hard "//&
-               "sphere diameter calculation: ",quad_error
-        endif
-      end do
+             ! Calculate the hard-sphere diameter through approximating
+             ! the integral through a 10-point Gauss-Legendre quadrature
+
+             ! The prefactor and its Temperature derivatives
+             prefactor=sigmaj_2*w_vec(i)
+             prefactor_T=sigmaj_2_T*w_vec(i)
+             prefactor_TT=sigmaj_2_TT*w_vec(i)
+
+             ! Obtain the hahrd-sphere diameter and T-derivatives
+             minus_exp_term=-1.0*exp(-U_divk/T)
+
+             ! Hard sphere diameter [m]
+             d_mat(j,k)=d_mat(j,k)+prefactor*(1.0+minus_exp_term)
+
+             if (estimate_quadrature_error) then
+                ! Store function evaluations for post-processing error estimate
+                f_vec(i) = sigmaj_2*(1.0+minus_exp_term)
+             endif
+
+             ! Intermediate variables for the first order T-derivative of d
+             d_T1=prefactor
+             d_T2=minus_exp_term
+             d_T3=(U_divk/(T**2)-U_divk_T/T-U_divk_r*r_T/T)
+             d_T4=prefactor_T
+             d_T5=(1.0+minus_exp_term)
+
+             ! The first order T-derivative of the hard-sphere diameter
+             d_T_mat(j,k)=d_T_mat(j,k)+d_T1*d_T2*d_T3+d_T4*d_T5
+
+             ! Intermediate variables for the second order T-derivative of d
+             d_TT1=prefactor_T
+             d_TT2=minus_exp_term*d_T3
+             d_TT3=(U_divk_T/(T**2)+U_divk_r*r_T/(T**2)-2.0*U_divk/(T**3)& ! First term
+                  -U_divk_TT/T-U_divk_Tr*r_T/T+U_divk_T/(T**2)&
+                  -U_divk_Tr*r_T/T-U_divk_rr*(r_T**2)/T-U_divk_r*r_TT/T+U_divk_r*r_T/(T**2))
+             d_TT4=prefactor_TT
+             d_TT5=d_TT2
+
+             ! The second order TT-derivative of the hard-sphere diameter
+             d_TT_mat(j,k)=d_TT_mat(j,k)+d_TT1*d_T2*d_T3+d_T1*d_TT2*d_T3+&
+                  d_T1*d_T2*d_TT3+d_TT4*d_T5+d_T4*d_TT5
+          end do
+          if (estimate_quadrature_error) then
+             quad_error = calc_quadrature_error(f_vec,d_mat(j,k)-r0,hs_diam_quadrature)
+             print *,"Estimated relative quadrature error in hard "//&
+                  "sphere diameter calculation: ",quad_error
+          endif
+       end do
     end do
 
     if (.not. exact_binary_dhs) then
-      ! Loop over all components and obtain the mixture values
-      do i=1,nc
-        do j=i+1,nc
-          d_mat(i,j)=0.5*(d_mat(i,i)+d_mat(j,j))
-          d_T_mat(i,j)=0.5*(d_T_mat(i,i)+d_T_mat(j,j))
-          d_TT_mat(i,j)=0.5*(d_TT_mat(i,i)+d_TT_mat(j,j))
+       ! Loop over all components and obtain the mixture values
+       do i=1,nc
+          do j=i+1,nc
+             d_mat(i,j)=0.5*(d_mat(i,i)+d_mat(j,j))
+             d_T_mat(i,j)=0.5*(d_T_mat(i,i)+d_T_mat(j,j))
+             d_TT_mat(i,j)=0.5*(d_TT_mat(i,i)+d_TT_mat(j,j))
 
-          d_mat(j,i)=d_mat(i,j)
-          d_T_mat(j,i)=d_T_mat(i,j)
-          d_TT_mat(j,i)=d_TT_mat(i,j)
-        end do
-      end do
+             d_mat(j,i)=d_mat(i,j)
+             d_T_mat(j,i)=d_T_mat(i,j)
+             d_TT_mat(j,i)=d_TT_mat(i,j)
+          end do
+       end do
     end if
 
   end subroutine calc_hardsphere_diameter
@@ -788,20 +786,20 @@ Contains
     !stop
     call newton_secondorder_singlevar(zero_integrand,0.7,rsmin,rsmax,solver,rs,param)
     if (solver%exitflag /= 0) then
-      call stoperror("Not able to solve for point where d-integrand becomes zero")
+       call stoperror("Not able to solve for point where d-integrand becomes zero")
     else
-      r0 = rs*sigma_eff
-      call calc_mie_potential_quantumcorrected(j,k,s_vc,&
-           saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
-           saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
-           saftvrmie_param%Cij(j,k),&
-           saftvrmie_param%Quantum_const_1a_ij(j,k),&
-           saftvrmie_param%Quantum_const_1r_ij(j,k),&
-           saftvrmie_param%Quantum_const_2a_ij(j,k),&
-           saftvrmie_param%Quantum_const_2r_ij(j,k),&
-           r0,U_divk,U_divk_T,U_divk_TT,U_divk_r,U_divk_Tr,U_divk_rr)
-      r0_T=-(U_divk_T + log(machine_prec))/U_divk_r
-      r0_TT= -(U_divk_TT+2.0*U_divk_Tr*r0_T+U_divk_rr*r0_T**2)/U_divk_r
+       r0 = rs*sigma_eff
+       call calc_mie_potential_quantumcorrected(j,k,s_vc,&
+            saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
+            saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
+            saftvrmie_param%Cij(j,k),&
+            saftvrmie_param%Quantum_const_1a_ij(j,k),&
+            saftvrmie_param%Quantum_const_1r_ij(j,k),&
+            saftvrmie_param%Quantum_const_2a_ij(j,k),&
+            saftvrmie_param%Quantum_const_2r_ij(j,k),&
+            r0,U_divk,U_divk_T,U_divk_TT,U_divk_r,U_divk_Tr,U_divk_rr)
+       r0_T=-(U_divk_T + log(machine_prec))/U_divk_r
+       r0_TT= -(U_divk_TT+2.0*U_divk_Tr*r0_T+U_divk_rr*r0_T**2)/U_divk_r
     endif
   end subroutine calc_zero_d_integrand
 
@@ -864,98 +862,98 @@ Contains
     real :: U_divk_r, U_divk_Tr, U_divk_rr
 
     if (quantum_correction_hs==0) then ! With no quantum corrections
-      sigma_eff=saftvrmie_param%sigma_ij
-      sigma_eff_T=0.0
-      sigma_eff_TT=0.0
-      return
+       sigma_eff=saftvrmie_param%sigma_ij
+       sigma_eff_T=0.0
+       sigma_eff_TT=0.0
+       return
     else
-      do i=1,nc
-        do j=i,nc
-          if ((.not. exact_crosspot_eff) .and. i/=j) then
-            cycle
-          end if
+       do i=1,nc
+          do j=i,nc
+             if ((.not. exact_crosspot_eff) .and. i/=j) then
+                cycle
+             end if
 
-          ! Obtain the quantum-parameters
-          call get_DFeynHibbsPower(i,j,D,D_T,D_TT,s_vc,power_in=1)
-          call get_DFeynHibbsPower(i,j,D2,D2_T,D2_TT,s_vc,power_in=2)
+             ! Obtain the quantum-parameters
+             call get_DFeynHibbsPower(i,j,D,D_T,D_TT,s_vc,power_in=1)
+             call get_DFeynHibbsPower(i,j,D2,D2_T,D2_TT,s_vc,power_in=2)
 
-          ! Construct the parameter vector
-          param(1)=saftvrmie_param%lambda_r_ij(i,j)
-          param(2)=saftvrmie_param%lambda_a_ij(i,j)
-          param(3)=saftvrmie_param%sigma_ij(i,j)
-          param(4)=mie_c_factor(saftvrmie_param%lambda_r_ij(i,j),&
-               saftvrmie_param%lambda_a_ij(i,j))
-          param(5)=D
-          param(6)=D2
-          param(7)=saftvrmie_param%Quantum_const_1a_ij(i,j)
-          param(8)=saftvrmie_param%Quantum_const_1r_ij(i,j)
-          param(9)=saftvrmie_param%Quantum_const_2a_ij(i,j)
-          param(10)=saftvrmie_param%Quantum_const_2r_ij(i,j)
+             ! Construct the parameter vector
+             param(1)=saftvrmie_param%lambda_r_ij(i,j)
+             param(2)=saftvrmie_param%lambda_a_ij(i,j)
+             param(3)=saftvrmie_param%sigma_ij(i,j)
+             param(4)=mie_c_factor(saftvrmie_param%lambda_r_ij(i,j),&
+                  saftvrmie_param%lambda_a_ij(i,j))
+             param(5)=D
+             param(6)=D2
+             param(7)=saftvrmie_param%Quantum_const_1a_ij(i,j)
+             param(8)=saftvrmie_param%Quantum_const_1r_ij(i,j)
+             param(9)=saftvrmie_param%Quantum_const_2a_ij(i,j)
+             param(10)=saftvrmie_param%Quantum_const_2r_ij(i,j)
 
-          ! Set the limits and the initial condition
-          xmin=0.001
-          xmax=10
-          sigma_scaled=1.0
-          solver%abs_tol = 1e-12
+             ! Set the limits and the initial condition
+             xmin=0.001
+             xmax=10
+             sigma_scaled=1.0
+             solver%abs_tol = 1e-12
 
-          ! NB, the variable we iterate on is u=r/sigma, i.e. a scaled radius
-          ! The interaction potential is scaled with epsilon
-          call nonlinear_solve(solver,sigmaeff_U,sigmaeff_dUdz,sigmaeff_dUdz,limit_dx,&
-               premReturn,setXv,sigma_scaled,xmin,xmax,param)
-          if (solver%exitflag /= 0 .and. verbose) then
-            print *,"Not able to solve for effective sigma"
-            print *,"T = ",T
-            print *,"comp = ",trim(comp(i)%ident)
-            print *,"lambda_r = ",saftvrmie_param%lambda_r_ij(i,j)
-            print *,"lambda_a = ",saftvrmie_param%lambda_a_ij(i,j)
-            print *,"sigma    = ",saftvrmie_param%sigma_ij(i,j)
-            print *,"eps_div_k    = ",saftvrmie_param%eps_divk_ij(i,j)
-            print *,"D    = ",D
-            print *,"D2    = ",D2
-            print *,"Quantum_const_1a    = ",saftvrmie_param%Quantum_const_1a_ij(i,j)
-            print *,"Quantum_const_1r    = ",saftvrmie_param%Quantum_const_1r_ij(i,j)
-            print *,"Quantum_const_2a    = ",saftvrmie_param%Quantum_const_2a_ij(i,j)
-            print *,"Quantum_const_2r    = ",saftvrmie_param%Quantum_const_2r_ij(i,j)
-          endif
+             ! NB, the variable we iterate on is u=r/sigma, i.e. a scaled radius
+             ! The interaction potential is scaled with epsilon
+             call nonlinear_solve(solver,sigmaeff_U,sigmaeff_dUdz,sigmaeff_dUdz,limit_dx,&
+                  premReturn,setXv,sigma_scaled,xmin,xmax,param)
+             if (solver%exitflag /= 0 .and. verbose) then
+                print *,"Not able to solve for effective sigma"
+                print *,"T = ",T
+                print *,"comp = ",trim(comp(i)%ident)
+                print *,"lambda_r = ",saftvrmie_param%lambda_r_ij(i,j)
+                print *,"lambda_a = ",saftvrmie_param%lambda_a_ij(i,j)
+                print *,"sigma    = ",saftvrmie_param%sigma_ij(i,j)
+                print *,"eps_div_k    = ",saftvrmie_param%eps_divk_ij(i,j)
+                print *,"D    = ",D
+                print *,"D2    = ",D2
+                print *,"Quantum_const_1a    = ",saftvrmie_param%Quantum_const_1a_ij(i,j)
+                print *,"Quantum_const_1r    = ",saftvrmie_param%Quantum_const_1r_ij(i,j)
+                print *,"Quantum_const_2a    = ",saftvrmie_param%Quantum_const_2a_ij(i,j)
+                print *,"Quantum_const_2r    = ",saftvrmie_param%Quantum_const_2r_ij(i,j)
+             endif
 
-          sigma_eff(i,j)=sigma_scaled(1)*saftvrmie_param%sigma_ij(i,j)
-          call calc_mie_potential_quantumcorrected(i,j,s_vc,&
-               saftvrmie_param%sigma_ij(i,j),saftvrmie_param%eps_divk_ij(i,j),&
-               saftvrmie_param%lambda_a_ij(i,j),saftvrmie_param%lambda_r_ij(i,j),&
-               saftvrmie_param%Cij(i,j),&
-               saftvrmie_param%Quantum_const_1a_ij(i,j),&
-               saftvrmie_param%Quantum_const_1r_ij(i,j),&
-               saftvrmie_param%Quantum_const_2a_ij(i,j),&
-               saftvrmie_param%Quantum_const_2r_ij(i,j),&
-               sigma_eff(i,j),U_divk,U_divk_T,U_divk_TT, U_divk_r, U_divk_Tr, U_divk_rr)
+             sigma_eff(i,j)=sigma_scaled(1)*saftvrmie_param%sigma_ij(i,j)
+             call calc_mie_potential_quantumcorrected(i,j,s_vc,&
+                  saftvrmie_param%sigma_ij(i,j),saftvrmie_param%eps_divk_ij(i,j),&
+                  saftvrmie_param%lambda_a_ij(i,j),saftvrmie_param%lambda_r_ij(i,j),&
+                  saftvrmie_param%Cij(i,j),&
+                  saftvrmie_param%Quantum_const_1a_ij(i,j),&
+                  saftvrmie_param%Quantum_const_1r_ij(i,j),&
+                  saftvrmie_param%Quantum_const_2a_ij(i,j),&
+                  saftvrmie_param%Quantum_const_2r_ij(i,j),&
+                  sigma_eff(i,j),U_divk,U_divk_T,U_divk_TT, U_divk_r, U_divk_Tr, U_divk_rr)
 
-          ! The temperature deriavtives of sigma have been found through
-          ! implicit derivation of U/epsilon to first and second order in T
-          ! of the equation U(sigma(T),T)=0
-          sigma_eff_T(i,j)=-1.0*U_divk_T/U_divk_r
-          sigma_eff_TT(i,j)=-1.0*(U_divk_TT+&
-               U_divk_rr*(sigma_eff_T(i,j)**2)+&
-               2.0*U_divk_Tr*(sigma_eff_T(i,j)))/U_divk_r
+             ! The temperature deriavtives of sigma have been found through
+             ! implicit derivation of U/epsilon to first and second order in T
+             ! of the equation U(sigma(T),T)=0
+             sigma_eff_T(i,j)=-1.0*U_divk_T/U_divk_r
+             sigma_eff_TT(i,j)=-1.0*(U_divk_TT+&
+                  U_divk_rr*(sigma_eff_T(i,j)**2)+&
+                  2.0*U_divk_Tr*(sigma_eff_T(i,j)))/U_divk_r
 
-          sigma_eff(j,i) = sigma_eff(i,j)
-          sigma_eff_T(j,i) = sigma_eff_T(i,j)
-          sigma_eff_TT(j,i) = sigma_eff_TT(i,j)
-        end do
-      end do
-      if (.not. exact_crosspot_eff) then
-        ! Use simplified combining rule for effective sigma
-        do i=1,nc
-          do j=i+1,nc
-            sigma_eff(i,j) = 0.5*(sigma_eff(i,i) + sigma_eff(j,j))
-            sigma_eff_T(i,j) = 0.5*(sigma_eff_T(i,i) + sigma_eff_T(j,j))
-            sigma_eff_TT(i,j) = 0.5*(sigma_eff_TT(i,i) + sigma_eff_TT(j,j))
-
-            sigma_eff(j,i) = sigma_eff(i,j)
-            sigma_eff_T(j,i) = sigma_eff_T(i,j)
-            sigma_eff_TT(j,i) = sigma_eff_TT(i,j)
+             sigma_eff(j,i) = sigma_eff(i,j)
+             sigma_eff_T(j,i) = sigma_eff_T(i,j)
+             sigma_eff_TT(j,i) = sigma_eff_TT(i,j)
           end do
-        end do
-      end if
+       end do
+       if (.not. exact_crosspot_eff) then
+          ! Use simplified combining rule for effective sigma
+          do i=1,nc
+             do j=i+1,nc
+                sigma_eff(i,j) = 0.5*(sigma_eff(i,i) + sigma_eff(j,j))
+                sigma_eff_T(i,j) = 0.5*(sigma_eff_T(i,i) + sigma_eff_T(j,j))
+                sigma_eff_TT(i,j) = 0.5*(sigma_eff_TT(i,i) + sigma_eff_TT(j,j))
+
+                sigma_eff(j,i) = sigma_eff(i,j)
+                sigma_eff_T(j,i) = sigma_eff_T(i,j)
+                sigma_eff_TT(j,i) = sigma_eff_TT(i,j)
+             end do
+          end do
+       end if
     end if
 
 
@@ -1008,18 +1006,18 @@ Contains
     ! Add the first order quantum correction
     if (quantum_correction_hs>0) then
 
-      r_2=(en_div_r)**2
-      product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
-      U_divk=U_divk+D*product_q1
+       r_2=(en_div_r)**2
+       product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
+       U_divk=U_divk+D*product_q1
 
     end if
 
     ! Add the second order quantum correction
     if (quantum_correction_hs>1) then
 
-      r_4=r_2**2
-      product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
-      U_divk=U_divk+D2*product_q2
+       r_4=r_2**2
+       product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
+       U_divk=U_divk+D2*product_q2
     end if
 
     ! Multiply everything by the prefactor:
@@ -1079,27 +1077,27 @@ Contains
     ! Add the first order quantum correction
     if (quantum_correction_hs>0) then
 
-      r_2=(en_div_r)**2
-      dr_2=-2.0*(en_div_r**3)
+       r_2=(en_div_r)**2
+       dr_2=-2.0*(en_div_r**3)
 
-      ! The modified interaction potential and derivatives
-      dproduct_q1=dr_2*(Q1_n*r_n-Q1_m*r_m)+&
-           r_2*(Q1_n*dr_n-Q1_m*dr_m)
+       ! The modified interaction potential and derivatives
+       dproduct_q1=dr_2*(Q1_n*r_n-Q1_m*r_m)+&
+            r_2*(Q1_n*dr_n-Q1_m*dr_m)
 
-      dU_divk=dU_divk+D*dproduct_q1
+       dU_divk=dU_divk+D*dproduct_q1
 
     end if
 
     ! Add the second order quantum correction
     if (quantum_correction_hs>1) then
 
-      r_4=en_div_r**4
-      dr_4=-4.0*((en_div_r)**5)
+       r_4=en_div_r**4
+       dr_4=-4.0*((en_div_r)**5)
 
-      ! The modified interaction potential and its T-derivatives
-      dproduct_q2=dr_4*(Q2_n*r_n-Q2_m*r_m)+&
-           r_4*(Q2_n*dr_n-Q2_m*dr_m)
-      dU_divk=dU_divk+D2*dproduct_q2
+       ! The modified interaction potential and its T-derivatives
+       dproduct_q2=dr_4*(Q2_n*r_n-Q2_m*r_m)+&
+            r_4*(Q2_n*dr_n-Q2_m*dr_m)
+       dU_divk=dU_divk+D2*dproduct_q2
     end if
 
     ! Multiply everything by the prefactor, NB: This is a scaled derivative:
@@ -1161,118 +1159,118 @@ Contains
     ! Zeroth order contributions (only from the Mie-potential)
     U_divk=r_n-r_m
     if (present(U_divk_T)) then
-      U_divk_T=0.0
+       U_divk_T=0.0
     endif
     if (present(U_divk_TT)) then
-      U_divk_TT=0.0
+       U_divk_TT=0.0
     endif
     if (present(U_divk_r)) then
-      U_divk_r=dr_n-dr_m
+       U_divk_r=dr_n-dr_m
     endif
     if (present(U_divk_rr)) then
-      U_divk_rr=d2r_n-d2r_m
+       U_divk_rr=d2r_n-d2r_m
     endif
     if (present(U_divk_rrr)) then
-      U_divk_rrr=d3r_n-d3r_m
+       U_divk_rrr=d3r_n-d3r_m
     endif
     if (present(U_divk_Tr)) then
-      U_divk_Tr=0.0
+       U_divk_Tr=0.0
     endif
     if (present(U_divk_Trr)) then
-      U_divk_Trr=0.0
+       U_divk_Trr=0.0
     endif
     if (present(U_divk_TTr)) then
-      U_divk_TTr=0.0
+       U_divk_TTr=0.0
     endif
     ! Compute the quantum parameter D and derivatives to a
     ! suitable order decided by the quantum correction flag
     if (quantum_correction_hs==0) then
 
-      D=0.0
-      D_T=0.0
-      D_TT=0.0
-      D2=0.0
-      D2_T=0.0
-      D2_TT=0.0
+       D=0.0
+       D_T=0.0
+       D_TT=0.0
+       D2=0.0
+       D2_T=0.0
+       D2_TT=0.0
 
     elseif ((quantum_correction_hs==1) .or. (quantum_correction_hs==2)) then
-      call get_DFeynHibbsPower(comp1,comp2,D,D_T,D_TT,s_vc,power_in=1)
-      call get_DFeynHibbsPower(comp1,comp2,D2,D2_T,D2_TT,s_vc,power_in=2)
+       call get_DFeynHibbsPower(comp1,comp2,D,D_T,D_TT,s_vc,power_in=1)
+       call get_DFeynHibbsPower(comp1,comp2,D2,D2_T,D2_TT,s_vc,power_in=2)
     else
-      call stoperror("saftvrmie_hardsphere :: calc_mie_potential_quantumcorrected : errornous quantum parameter chosen")
+       call stoperror("saftvrmie_hardsphere :: calc_mie_potential_quantumcorrected : errornous quantum parameter chosen")
     end if
 
     ! Add the first order quantum correction
     if (quantum_correction_hs>0) then
-      en_r2 = en_r**2
-      ! The modified interaction potential and derivatives
-      product_q1=en_r2*(Q1_n*r_n-Q1_m*r_m)
-      product_q1_r= -en_r2*((n+2)*Q1_n*r_n-(m+2)*Q1_m*r_m)*en_r
-      product_q1_rr= en_r2*((n+3)*(n+2)*Q1_n*r_n-(m+3)*(m+2)*Q1_m*r_m)*en_r2
-      product_q1_rrr= -en_r2*((n+4)*(n+3)*(n+2)*Q1_n*r_n-(m+2)*(m+4)*(m+3)*Q1_m*r_m)*en_r*en_r2
-      U_divk=U_divk+D*product_q1
-      if (present(U_divk_T)) then
-        U_divk_T=U_divk_T+D_T*product_q1
-      endif
-      if (present(U_divk_TT)) then
-        U_divk_TT=U_divk_TT+D_TT*product_q1
-      endif
-      if (present(U_divk_r)) then
-        U_divk_r=U_divk_r+D*product_q1_r
-      endif
-      if (present(U_divk_rr)) then
-        U_divk_rr=U_divk_rr+D*product_q1_rr
-      endif
-      if (present(U_divk_rrr)) then
-        U_divk_rrr=U_divk_rrr+D*product_q1_rrr
-      endif
-      if (present(U_divk_Tr)) then
-        U_divk_Tr=U_divk_Tr+D_T*product_q1_r
-      endif
-      if (present(U_divk_Trr)) then
-        U_divk_Trr=U_divk_Trr+D_T*product_q1_rr
-      endif
-      if (present(U_divk_TTr)) then
-        U_divk_TTr=U_divk_TTr+D_TT*product_q1_r
-      endif
+       en_r2 = en_r**2
+       ! The modified interaction potential and derivatives
+       product_q1=en_r2*(Q1_n*r_n-Q1_m*r_m)
+       product_q1_r= -en_r2*((n+2)*Q1_n*r_n-(m+2)*Q1_m*r_m)*en_r
+       product_q1_rr= en_r2*((n+3)*(n+2)*Q1_n*r_n-(m+3)*(m+2)*Q1_m*r_m)*en_r2
+       product_q1_rrr= -en_r2*((n+4)*(n+3)*(n+2)*Q1_n*r_n-(m+2)*(m+4)*(m+3)*Q1_m*r_m)*en_r*en_r2
+       U_divk=U_divk+D*product_q1
+       if (present(U_divk_T)) then
+          U_divk_T=U_divk_T+D_T*product_q1
+       endif
+       if (present(U_divk_TT)) then
+          U_divk_TT=U_divk_TT+D_TT*product_q1
+       endif
+       if (present(U_divk_r)) then
+          U_divk_r=U_divk_r+D*product_q1_r
+       endif
+       if (present(U_divk_rr)) then
+          U_divk_rr=U_divk_rr+D*product_q1_rr
+       endif
+       if (present(U_divk_rrr)) then
+          U_divk_rrr=U_divk_rrr+D*product_q1_rrr
+       endif
+       if (present(U_divk_Tr)) then
+          U_divk_Tr=U_divk_Tr+D_T*product_q1_r
+       endif
+       if (present(U_divk_Trr)) then
+          U_divk_Trr=U_divk_Trr+D_T*product_q1_rr
+       endif
+       if (present(U_divk_TTr)) then
+          U_divk_TTr=U_divk_TTr+D_TT*product_q1_r
+       endif
     end if
 
     ! Add the second order quantum correction
     if (quantum_correction_hs>1) then
 
-      en_r4 = en_r**4
+       en_r4 = en_r**4
 
-      ! The modified interaction potential and its T-derivatives
-      product_q2=en_r4*(Q2_n*r_n-Q2_m*r_m)
-      product_q2_r=-en_r4*((n+4)*Q2_n*r_n-(m+4)*Q2_m*r_m)*en_r
-      product_q2_rr=en_r4*((n+5)*(n+4)*Q2_n*r_n-(m+5)*(m+4)*Q2_m*r_m)*en_r2
-      product_q2_rrr=-en_r4*((n+6)*(n+5)*(n+4)*Q2_n*r_n-(m+6)*(m+5)*(m+4)*Q2_m*r_m)*en_r2*en_r
+       ! The modified interaction potential and its T-derivatives
+       product_q2=en_r4*(Q2_n*r_n-Q2_m*r_m)
+       product_q2_r=-en_r4*((n+4)*Q2_n*r_n-(m+4)*Q2_m*r_m)*en_r
+       product_q2_rr=en_r4*((n+5)*(n+4)*Q2_n*r_n-(m+5)*(m+4)*Q2_m*r_m)*en_r2
+       product_q2_rrr=-en_r4*((n+6)*(n+5)*(n+4)*Q2_n*r_n-(m+6)*(m+5)*(m+4)*Q2_m*r_m)*en_r2*en_r
 
-      U_divk=U_divk+D2*product_q2
-      if (present(U_divk_T)) then
-        U_divk_T=U_divk_T+D2_T*product_q2
-      endif
-      if (present(U_divk_TT)) then
-        U_divk_TT=U_divk_TT+D2_TT*product_q2
-      endif
-      if (present(U_divk_r)) then
-        U_divk_r=U_divk_r+D2*product_q2_r
-      endif
-      if (present(U_divk_rr)) then
-        U_divk_rr=U_divk_rr+D2*product_q2_rr
-      endif
-      if (present(U_divk_rrr)) then
-        U_divk_rrr=U_divk_rrr+D2*product_q2_rrr
-      endif
-      if (present(U_divk_Tr)) then
-        U_divk_Tr=U_divk_Tr+D2_T*product_q2_r
-      endif
-      if (present(U_divk_Trr)) then
-        U_divk_Trr=U_divk_Trr+D2_T*product_q2_rr
-      endif
-      if (present(U_divk_TTr)) then
-        U_divk_TTr=U_divk_TTr+D2_TT*product_q2_r
-      endif
+       U_divk=U_divk+D2*product_q2
+       if (present(U_divk_T)) then
+          U_divk_T=U_divk_T+D2_T*product_q2
+       endif
+       if (present(U_divk_TT)) then
+          U_divk_TT=U_divk_TT+D2_TT*product_q2
+       endif
+       if (present(U_divk_r)) then
+          U_divk_r=U_divk_r+D2*product_q2_r
+       endif
+       if (present(U_divk_rr)) then
+          U_divk_rr=U_divk_rr+D2*product_q2_rr
+       endif
+       if (present(U_divk_rrr)) then
+          U_divk_rrr=U_divk_rrr+D2*product_q2_rrr
+       endif
+       if (present(U_divk_Tr)) then
+          U_divk_Tr=U_divk_Tr+D2_T*product_q2_r
+       endif
+       if (present(U_divk_Trr)) then
+          U_divk_Trr=U_divk_Trr+D2_T*product_q2_rr
+       endif
+       if (present(U_divk_TTr)) then
+          U_divk_TTr=U_divk_TTr+D2_TT*product_q2_r
+       endif
     end if
 
     ! The Mie potential prefactor, divided by kB
@@ -1281,28 +1279,28 @@ Contains
     ! Multiply everything by the appropriate prefactor:
     U_divk=U_divk*Mie_pref
     if (present(U_divk_T)) then
-      U_divk_T=U_divk_T*Mie_pref
+       U_divk_T=U_divk_T*Mie_pref
     endif
     if (present(U_divk_TT)) then
-      U_divk_TT=U_divk_TT*Mie_pref
+       U_divk_TT=U_divk_TT*Mie_pref
     endif
     if (present(U_divk_r)) then
-      U_divk_r=U_divk_r*Mie_pref
+       U_divk_r=U_divk_r*Mie_pref
     endif
     if (present(U_divk_rr)) then
-      U_divk_rr=U_divk_rr*Mie_pref
+       U_divk_rr=U_divk_rr*Mie_pref
     endif
     if (present(U_divk_rrr)) then
-      U_divk_rrr=U_divk_rrr*Mie_pref
+       U_divk_rrr=U_divk_rrr*Mie_pref
     endif
     if (present(U_divk_Tr)) then
-      U_divk_Tr=U_divk_Tr*Mie_pref
+       U_divk_Tr=U_divk_Tr*Mie_pref
     endif
     if (present(U_divk_Trr)) then
-      U_divk_Trr=U_divk_Trr*Mie_pref
+       U_divk_Trr=U_divk_Trr*Mie_pref
     endif
     if (present(U_divk_TTr)) then
-      U_divk_TTr=U_divk_TTr*Mie_pref
+       U_divk_TTr=U_divk_TTr*Mie_pref
     endif
   end subroutine calc_mie_potential_quantumcorrected
 
@@ -1341,34 +1339,34 @@ Contains
 
     do l = 0, 3
 
-      index_l=l+1
+       index_l=l+1
 
-      do i = 1, nc
-        ! The zeta variable and its derivatives:
-        zeta(index_l)=zeta(index_l)+saftvrmie_param%ms(i)*n(i)*d_mat(i,i)**(l)
-        zeta_n(i,index_l)=saftvrmie_param%ms(i)*(d_mat(i,i)**l)
-        zeta_Vn(i,index_l)=-1.0*saftvrmie_param%ms(i)*(d_mat(i,i)**l)/V
+       do i = 1, nc
+          ! The zeta variable and its derivatives:
+          zeta(index_l)=zeta(index_l)+saftvrmie_param%ms(i)*n(i)*d_mat(i,i)**(l)
+          zeta_n(i,index_l)=saftvrmie_param%ms(i)*(d_mat(i,i)**l)
+          zeta_Vn(i,index_l)=-1.0*saftvrmie_param%ms(i)*(d_mat(i,i)**l)/V
 
-        if (l>0) then
+          if (l>0) then
 
-          zeta_T(index_l)=zeta_T(index_l)+&
-               l*saftvrmie_param%ms(i)*n(i)*(d_mat(i,i)**(l-1))*d_T_mat(i,i)
+             zeta_T(index_l)=zeta_T(index_l)+&
+                  l*saftvrmie_param%ms(i)*n(i)*(d_mat(i,i)**(l-1))*d_T_mat(i,i)
 
-          zeta_TT(index_l)=zeta_TT(index_l)+l*saftvrmie_param%ms(i)*n(i)*(d_mat(i,i)**(l-1))*&
-               d_TT_mat(i,i)
+             zeta_TT(index_l)=zeta_TT(index_l)+l*saftvrmie_param%ms(i)*n(i)*(d_mat(i,i)**(l-1))*&
+                  d_TT_mat(i,i)
 
-          zeta_VT(index_l)=zeta_VT(index_l)-(1.0*l/V)*saftvrmie_param%ms(i)*n(i)*&
-               (d_mat(i,i)**(l-1))*d_T_mat(i,i)
+             zeta_VT(index_l)=zeta_VT(index_l)-(1.0*l/V)*saftvrmie_param%ms(i)*n(i)*&
+                  (d_mat(i,i)**(l-1))*d_T_mat(i,i)
 
-          zeta_Tn(i,index_l)=l*saftvrmie_param%ms(i)*(d_mat(i,i)**(l-1))*d_T_mat(i,i)
-        end if
-        if (l>1) then
+             zeta_Tn(i,index_l)=l*saftvrmie_param%ms(i)*(d_mat(i,i)**(l-1))*d_T_mat(i,i)
+          end if
+          if (l>1) then
 
-          zeta_TT(index_l)=zeta_TT(index_l)+l*(l-1)*saftvrmie_param%ms(i)*n(i)*&
-               (d_mat(i,i)**(l-2))*(d_T_mat(i,i)**2)
+             zeta_TT(index_l)=zeta_TT(index_l)+l*(l-1)*saftvrmie_param%ms(i)*n(i)*&
+                  (d_mat(i,i)**(l-2))*(d_T_mat(i,i)**2)
 
-        end if
-      end do
+          end if
+       end do
     end do
 
     ! The prefactor of the expressions
@@ -1418,11 +1416,11 @@ Contains
     zeta_Tn=0.0
 
     do l = 2, 3 ! All indexes that belong to l=1 should be zero
-      do i = 1, nc
-        ! The zeta variable and its derivatives:
-        zeta(l)=zeta(l)+saftvrmie_param%ms(i)*n(i)*d_mat(i,i)**(l)
-        zeta_n(i,l)=saftvrmie_param%ms(i)*(d_mat(i,i)**l)
-        zeta_Vn(i,l)=-1.0*saftvrmie_param%ms(i)*(d_mat(i,i)**l)/V
+       do i = 1, nc
+          ! The zeta variable and its derivatives:
+          zeta(l)=zeta(l)+saftvrmie_param%ms(i)*n(i)*d_mat(i,i)**(l)
+          zeta_n(i,l)=saftvrmie_param%ms(i)*(d_mat(i,i)**l)
+          zeta_Vn(i,l)=-1.0*saftvrmie_param%ms(i)*(d_mat(i,i)**l)/V
 
           zeta_T(l)=zeta_T(l)+&
                l*saftvrmie_param%ms(i)*n(i)*(d_mat(i,i)**(l-1))*d_T_mat(i,i)
@@ -1436,7 +1434,7 @@ Contains
 
           zeta_TT(l)=zeta_TT(l)+l*(l-1)*saftvrmie_param%ms(i)*n(i)*&
                (d_mat(i,i)**(l-2))*(d_T_mat(i,i)**2)
-      end do
+       end do
     end do
 
     ! The prefactor of the expressions
@@ -1552,46 +1550,46 @@ Contains
 
     ! Initialize differentials
     if (present(a_TT)) then
-      a_TT=0.0
+       a_TT=0.0
     endif
     if (present(a_T)) then
-      a_T=0.0
+       a_T=0.0
     endif
     if (present(a_V)) then
-      a_V=0.0
+       a_V=0.0
     endif
     if (present(a_VV)) then
-      a_VV=0.0
+       a_VV=0.0
     endif
     if (present(a_TV)) then
-      a_TV=0.0
+       a_TV=0.0
     endif
     if (present(a_Tn)) then
-      a_Tn=0.0
+       a_Tn=0.0
     endif
     if (present(a_Vn)) then
-      a_Vn=0.0
+       a_Vn=0.0
     endif
     if (present(a_n)) then
-      a_n=0.0
+       a_n=0.0
     endif
     if (present(a_nn)) then
-      a_nn=0.0
+       a_nn=0.0
     endif
 
     select case(hardsphere_EoS)
     case(HS_EOS_ORIGINAL)
-      call calc_hardsphere_helmholtzenergy_original(nc,T,V,n,s_vc%dhs,&
-           a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+       call calc_hardsphere_helmholtzenergy_original(nc,T,V,n,s_vc%dhs,&
+            a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
     case(HS_EOS_SANTOS)
-      call calc_hardsphere_helmholtzenergy_santos(nc,T,V,n,s_vc,&
-           a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
-   case(HS_EOS_PURE_DIJ)
-      if (.not. exact_binary_dhs) then
-         call stoperror("exact_binary_dhs must be true when using HS_EOS_PURE_DIJ")
-      end if
-      call calc_hardsphere_helmholtzenergy_pure(nc,T,V,n,s_vc,&
-           a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+       call calc_hardsphere_helmholtzenergy_santos(nc,T,V,n,s_vc,&
+            a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+    case(HS_EOS_PURE_DIJ)
+       if (.not. exact_binary_dhs) then
+          call stoperror("exact_binary_dhs must be true when using HS_EOS_PURE_DIJ")
+       end if
+       call calc_hardsphere_helmholtzenergy_pure(nc,T,V,n,s_vc,&
+            a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
     end select
 
   end subroutine calc_hardsphere_helmholtzenergy
@@ -1631,77 +1629,77 @@ Contains
     a=alpha
 
     do comp1= 1,nc
-      do comp2= 1,nc
-        do l = 1,4
+       do comp2= 1,nc
+          do l = 1,4
 
-          ! Start single-sum over l part of the derivatives
-          if (comp2==1) then  ! Compute this only once for each "l"
-            if (comp1==1) then  ! Compute this only once for each "l"
-              if (present(a_T)) then
-                a_T=a_T+dalpha_dzeta(l)*zeta_T(l)
-              endif
-              if (present(a_V)) then
-                a_V=a_V+dalpha_dzeta(l)*zeta_V(l)
-              endif
-              if (present(a_VV)) then
-                a_VV=a_VV+dalpha_dzeta(l)*zeta_VV(l)
-              endif
-              if (present(a_TV)) then
-                a_TV=a_TV+dalpha_dzeta(l)*zeta_VT(l)
-              endif
-              if (present(a_TT)) then
-                a_TT=a_TT+dalpha_dzeta(l)*zeta_TT(l)
-              endif
-            end if
+             ! Start single-sum over l part of the derivatives
+             if (comp2==1) then  ! Compute this only once for each "l"
+                if (comp1==1) then  ! Compute this only once for each "l"
+                   if (present(a_T)) then
+                      a_T=a_T+dalpha_dzeta(l)*zeta_T(l)
+                   endif
+                   if (present(a_V)) then
+                      a_V=a_V+dalpha_dzeta(l)*zeta_V(l)
+                   endif
+                   if (present(a_VV)) then
+                      a_VV=a_VV+dalpha_dzeta(l)*zeta_VV(l)
+                   endif
+                   if (present(a_TV)) then
+                      a_TV=a_TV+dalpha_dzeta(l)*zeta_VT(l)
+                   endif
+                   if (present(a_TT)) then
+                      a_TT=a_TT+dalpha_dzeta(l)*zeta_TT(l)
+                   endif
+                end if
 
-            ! The composition first order derivative of a
-            if (present(a_n)) then
-              a_n(comp1)=a_n(comp1)+dalpha_dzeta(l)*zeta_n(comp1,l)
-            endif
-            if (present(a_Tn)) then
-              a_Tn(comp1)=a_Tn(comp1)+dalpha_dzeta(l)*zeta_Tn(comp1,l)
-            endif
-            if (present(a_Vn)) then
-              a_Vn(comp1)=a_Vn(comp1)+dalpha_dzeta(l)*zeta_Vn(comp1,l)
-            endif
-          end if
-
-          ! End single sum over l part of the derivatives
-          ! Start double sum over l and k part of the derivatives
-
-          do k = 1,4
-            if (comp2==1) then ! Compute this only once for each "l" and "k"
-              if (comp1==1) then ! Compute this only once for each "l" and "k"
-                if (present(a_VV)) then
-                  a_VV=a_VV+d2alpha_dzeta2(l,k)*zeta_V(l)*zeta_V(k)
+                ! The composition first order derivative of a
+                if (present(a_n)) then
+                   a_n(comp1)=a_n(comp1)+dalpha_dzeta(l)*zeta_n(comp1,l)
                 endif
-                if (present(a_TV)) then
-                  a_TV=a_TV+d2alpha_dzeta2(l,k)*zeta_T(l)*zeta_V(k)
+                if (present(a_Tn)) then
+                   a_Tn(comp1)=a_Tn(comp1)+dalpha_dzeta(l)*zeta_Tn(comp1,l)
                 endif
-                if (present(a_TT)) then
-                  a_TT=a_TT+d2alpha_dzeta2(l,k)*zeta_T(l)*zeta_T(k)
+                if (present(a_Vn)) then
+                   a_Vn(comp1)=a_Vn(comp1)+dalpha_dzeta(l)*zeta_Vn(comp1,l)
                 endif
-              end if
+             end if
 
-              ! The composition first order derivative of a
-              if (present(a_Tn)) then
-                a_Tn(comp1)=a_Tn(comp1)+d2alpha_dzeta2(l,k)*&
-                     zeta_T(l)*zeta_n(comp1,k)
-              endif
-              if (present(a_Vn)) then
-                a_Vn(comp1)=a_Vn(comp1)+d2alpha_dzeta2(l,k)*&
-                     zeta_V(l)*zeta_n(comp1,k)
-              endif
-            end if
+             ! End single sum over l part of the derivatives
+             ! Start double sum over l and k part of the derivatives
 
-            ! Second order mole number derivative
-            if (present(a_nn)) then
-              a_nn(comp1,comp2)=a_nn(comp1,comp2)+d2alpha_dzeta2(l,k)*&
-                   zeta_n(comp1,l)*zeta_n(comp2,k)
-            endif
+             do k = 1,4
+                if (comp2==1) then ! Compute this only once for each "l" and "k"
+                   if (comp1==1) then ! Compute this only once for each "l" and "k"
+                      if (present(a_VV)) then
+                         a_VV=a_VV+d2alpha_dzeta2(l,k)*zeta_V(l)*zeta_V(k)
+                      endif
+                      if (present(a_TV)) then
+                         a_TV=a_TV+d2alpha_dzeta2(l,k)*zeta_T(l)*zeta_V(k)
+                      endif
+                      if (present(a_TT)) then
+                         a_TT=a_TT+d2alpha_dzeta2(l,k)*zeta_T(l)*zeta_T(k)
+                      endif
+                   end if
+
+                   ! The composition first order derivative of a
+                   if (present(a_Tn)) then
+                      a_Tn(comp1)=a_Tn(comp1)+d2alpha_dzeta2(l,k)*&
+                           zeta_T(l)*zeta_n(comp1,k)
+                   endif
+                   if (present(a_Vn)) then
+                      a_Vn(comp1)=a_Vn(comp1)+d2alpha_dzeta2(l,k)*&
+                           zeta_V(l)*zeta_n(comp1,k)
+                   endif
+                end if
+
+                ! Second order mole number derivative
+                if (present(a_nn)) then
+                   a_nn(comp1,comp2)=a_nn(comp1,comp2)+d2alpha_dzeta2(l,k)*&
+                        zeta_n(comp1,l)*zeta_n(comp2,k)
+                endif
+             end do
           end do
-        end do
-      end do
+       end do
     end do
   end subroutine calc_hardsphere_helmholtzenergy_original
 
@@ -1759,35 +1757,35 @@ Contains
 
     if ( present(a_TT) .or. present(a_VV).or. present(a_TV) .or. &
          present(a_nn) .or. present(a_Tn).or. present(a_Vn)) then
-      difflevel = 2
-      aP1_T => aL1_T
-      aP1_V => aL1_V
-      aP1_n => aL1_n
-      aP1_VV => aL1_VV
-      aP1_TV => aL1_TV
-      aP1_Vn => aL1_Vn
-      aP1_TT => aL1_TT
-      aP1_Tn => aL1_Tn
-      aP1_nn => aL1_nn
-      aP2_T => aL2_T
-      aP2_V => aL2_V
-      aP2_n => aL2_n
-      aP2_VV => aL2_VV
-      aP2_TV => aL2_TV
-      aP2_Vn => aL2_Vn
-      aP2_TT => aL2_TT
-      aP2_Tn => aL2_Tn
-      aP2_nn => aL2_nn
+       difflevel = 2
+       aP1_T => aL1_T
+       aP1_V => aL1_V
+       aP1_n => aL1_n
+       aP1_VV => aL1_VV
+       aP1_TV => aL1_TV
+       aP1_Vn => aL1_Vn
+       aP1_TT => aL1_TT
+       aP1_Tn => aL1_Tn
+       aP1_nn => aL1_nn
+       aP2_T => aL2_T
+       aP2_V => aL2_V
+       aP2_n => aL2_n
+       aP2_VV => aL2_VV
+       aP2_TV => aL2_TV
+       aP2_Vn => aL2_Vn
+       aP2_TT => aL2_TT
+       aP2_Tn => aL2_Tn
+       aP2_nn => aL2_nn
     else if ( present(a_T) .or. present(a_V).or. present(a_n)) then
-      difflevel = 1
-      aP1_T => aL1_T
-      aP1_V => aL1_V
-      aP1_n => aL1_n
-      aP2_T => aL2_T
-      aP2_V => aL2_V
-      aP2_n => aL2_n
+       difflevel = 1
+       aP1_T => aL1_T
+       aP1_V => aL1_V
+       aP1_n => aL1_n
+       aP2_T => aL2_T
+       aP2_V => aL2_V
+       aP2_n => aL2_n
     else
-      difflevel = 0
+       difflevel = 0
     endif
     ! Calculate packing fraction
     call calc_Santos_eta(nc,n,V,difflevel,s_vc%dhs,s_vc%eta_hs)
@@ -1833,44 +1831,44 @@ Contains
          a_TT=aP2_TT,a_VV=aP2_VV,a_TV=aP2_TV,a_Tn=aP2_Tn,a_Vn=aP2_Vn,a_nn=aP2_nn)
 
     call calc_a0_plus_a1(nc,aP2,a,&
-       a0_T=aP2_T,a0_V=aP2_V,a0_n=aP2_n,&
-       a1_T=a_T,a1_V=a_V,a1_n=a_n,&
-       a0_TT=aP2_TT,a0_VV=aP2_VV,a0_TV=aP2_TV,a0_Tn=aP2_Tn,a0_Vn=aP2_Vn,a0_nn=aP2_nn,&
-       a1_TT=a_TT,a1_VV=a_VV,a1_TV=a_TV,a1_Tn=a_Tn,a1_Vn=a_Vn,a1_nn=a_nn)
+         a0_T=aP2_T,a0_V=aP2_V,a0_n=aP2_n,&
+         a1_T=a_T,a1_V=a_V,a1_n=a_n,&
+         a0_TT=aP2_TT,a0_VV=aP2_VV,a0_TV=aP2_TV,a0_Tn=aP2_Tn,a0_Vn=aP2_Vn,a0_nn=aP2_nn,&
+         a1_TT=a_TT,a1_VV=a_VV,a1_TV=a_TV,a1_Tn=a_Tn,a1_Vn=a_Vn,a1_nn=a_nn)
 
     ! Divide by sum n*ms, to counteract multiplication in saftvrmie_interface
     ns = sum(n*saftvrmie_param%ms)
     a = a/ns
     if (present(a_TT)) then
-      a_TT=a_TT/ns
+       a_TT=a_TT/ns
     endif
     if (present(a_T)) then
-      a_T=a_T/ns
+       a_T=a_T/ns
     endif
     if (present(a_V)) then
-      a_V=a_V/ns
+       a_V=a_V/ns
     endif
     if (present(a_VV)) then
-      a_VV=a_VV/ns
+       a_VV=a_VV/ns
     endif
     if (present(a_TV)) then
-      a_TV=a_TV/ns
+       a_TV=a_TV/ns
     endif
     if (present(a_Tn)) then
-      a_Tn=(a_Tn-saftvrmie_param%ms*a_T)/ns
+       a_Tn=(a_Tn-saftvrmie_param%ms*a_T)/ns
     endif
     if (present(a_Vn)) then
-      a_Vn=(a_Vn-saftvrmie_param%ms*a_V)/ns
+       a_Vn=(a_Vn-saftvrmie_param%ms*a_V)/ns
     endif
     if (present(a_n)) then
-      a_n=(a_n-saftvrmie_param%ms*a)/ns
+       a_n=(a_n-saftvrmie_param%ms*a)/ns
     endif
     if (present(a_nn)) then
-      do i=1,nc
-        do j=1,nc
-          a_nn(i,j)=(a_nn(i,j)-saftvrmie_param%ms(i)*a_n(j)-saftvrmie_param%ms(j)*a_n(i))/ns
-        enddo
-      enddo
+       do i=1,nc
+          do j=1,nc
+             a_nn(i,j)=(a_nn(i,j)-saftvrmie_param%ms(i)*a_n(j)-saftvrmie_param%ms(j)*a_n(i))/ns
+          enddo
+       enddo
     endif
 
   end subroutine calc_hardsphere_helmholtzenergy_santos
@@ -1899,62 +1897,62 @@ Contains
     real :: b3mb2, nd3(0:2), denum, d3(nc), d(nc), d_T(nc)
     integer :: i, j
     if (is21) then
-      b2 = b2_p
-      b3 = b3_p
+       b2 = b2_p
+       b3 = b3_p
     else
-      b2 = -1
-      b3 = -1
+       b2 = -1
+       b3 = -1
     endif
     b3mb2 = b3_p - b2_p
     nd3 = 0
     do i=1,nc
-      d(i) = dhs%d(i,i)
-      d3(i) = d(i)**3
-      nd3(0) = nd3(0) + n(i)*d3(i)
-      d_T(i) = dhs%d_T(i,i)
-      nd3(1) = nd3(1) + 3*n(i)*dhs%d(i,i)**2*dhs%d_T(i,i)
-      nd3(2) = nd3(2) + 3*n(i)*(2*dhs%d(i,i)*dhs%d_T(i,i)**2 + dhs%d(i,i)**2*dhs%d_TT(i,i))
+       d(i) = dhs%d(i,i)
+       d3(i) = d(i)**3
+       nd3(0) = nd3(0) + n(i)*d3(i)
+       d_T(i) = dhs%d_T(i,i)
+       nd3(1) = nd3(1) + 3*n(i)*dhs%d(i,i)**2*dhs%d_T(i,i)
+       nd3(2) = nd3(2) + 3*n(i)*(2*dhs%d(i,i)*dhs%d_T(i,i)**2 + dhs%d(i,i)**2*dhs%d_TT(i,i))
     enddo
     denum = b3mb2*nd3(0)**2
     F12 = (b3*nd3(0)*B2s-b2*B3s)/denum
     if (present(F12_n)) then
-      F12_n = (b3*d3*B2s + b3*nd3(0)*B2s_n - b2*B3s_n - 2*b3mb2*nd3(0)*d3*F12)/denum
+       F12_n = (b3*d3*B2s + b3*nd3(0)*B2s_n - b2*B3s_n - 2*b3mb2*nd3(0)*d3*F12)/denum
     endif
     if (present(F12_T)) then
-      F12_T = (b3*nd3(1)*B2s + b3*nd3(0)*B2s_T - b2*B3s_T - 2*b3mb2*nd3(0)*nd3(1)*F12)/denum
+       F12_T = (b3*nd3(1)*B2s + b3*nd3(0)*B2s_T - b2*B3s_T - 2*b3mb2*nd3(0)*nd3(1)*F12)/denum
     endif
     if (present(F12_TT)) then
-      F12_TT = (b3*nd3(2)*B2s + 2*b3*nd3(1)*B2s_T + b3*nd3(0)*B2s_TT - b2*B3s_TT &
-           - 2*b3mb2*nd3(1)**2*F12 - 2*b3mb2*nd3(0)*nd3(2)*F12 &
-           - 4*b3mb2*nd3(0)*nd3(1)*F12_T)/denum
+       F12_TT = (b3*nd3(2)*B2s + 2*b3*nd3(1)*B2s_T + b3*nd3(0)*B2s_TT - b2*B3s_TT &
+            - 2*b3mb2*nd3(1)**2*F12 - 2*b3mb2*nd3(0)*nd3(2)*F12 &
+            - 4*b3mb2*nd3(0)*nd3(1)*F12_T)/denum
     endif
     if (present(F12_Tn)) then
-      F12_Tn = (3*b3*d**2*d_T*B2s + b3*d3*B2s_T + b3*nd3(1)*B2s_n + b3*nd3(0)*B2s_Tn &
-           - b2*B3s_Tn - 2*b3mb2*nd3(1)*d3*F12 - 6*b3mb2*nd3(0)*d**2*d_T*F12 &
-           - 2*b3mb2*nd3(0)*d3*F12_T - 2*b3mb2*nd3(0)*nd3(1)*F12_n)/denum
+       F12_Tn = (3*b3*d**2*d_T*B2s + b3*d3*B2s_T + b3*nd3(1)*B2s_n + b3*nd3(0)*B2s_Tn &
+            - b2*B3s_Tn - 2*b3mb2*nd3(1)*d3*F12 - 6*b3mb2*nd3(0)*d**2*d_T*F12 &
+            - 2*b3mb2*nd3(0)*d3*F12_T - 2*b3mb2*nd3(0)*nd3(1)*F12_n)/denum
     endif
     if (present(F12_nn)) then
-      do i=1,nc
-        do j=1,nc
-          F12_nn(i,j) = (b3*d3(i)*B2s_n(j) + b3*d3(j)*B2s_n(i) + b3*nd3(0)*B2s_nn(i,j) &
-               - b2*B3s_nn(i,j) - 2*b3mb2*d3(i)*d3(j)*F12 &
-               - 2*b3mb2*nd3(0)*d3(j)*F12_n(i) &
-               - 2*b3mb2*nd3(0)*d3(i)*F12_n(j))/denum
-        enddo
-      enddo
+       do i=1,nc
+          do j=1,nc
+             F12_nn(i,j) = (b3*d3(i)*B2s_n(j) + b3*d3(j)*B2s_n(i) + b3*nd3(0)*B2s_nn(i,j) &
+                  - b2*B3s_nn(i,j) - 2*b3mb2*d3(i)*d3(j)*F12 &
+                  - 2*b3mb2*nd3(0)*d3(j)*F12_n(i) &
+                  - 2*b3mb2*nd3(0)*d3(i)*F12_n(j))/denum
+          enddo
+       enddo
     endif
 
     if (present(F12_V)) then
-      F12_V = 0.0
+       F12_V = 0.0
     endif
     if (present(F12_VV)) then
-      F12_VV = 0.0
+       F12_VV = 0.0
     endif
     if (present(F12_TV)) then
-      F12_TV = 0.0
+       F12_TV = 0.0
     endif
     if (present(F12_Vn)) then
-      F12_Vn = 0.0
+       F12_Vn = 0.0
     endif
   end subroutine calc_Santos_F12_or_F22
 
@@ -1987,15 +1985,15 @@ Contains
     B2s_k = 0.0
     B2s_kl = 0.0
     do i=1,nc
-      do j=1,nc
-        B2s = B2s + prefactor*n(i)*n(j)*d(i,j)**3
-        b2s_T = B2s_T + 3*prefactor*n(i)*n(j)*d(i,j)**2*d_T(i,j)
-        B2s_TT = B2s_TT + 3*prefactor*n(i)*n(j)*(2.0*d(i,j)*d_T(i,j)**2 + d(i,j)**2*d_TT(i,j))
-        ! We can do a shortcut here and use i for the k which is in the memo, etc.
-        B2s_Tk(i) = B2s_Tk(i) + 6*prefactor*n(j)*d(i,j)**2*d_T(i,j)
-        B2s_k(i) = B2s_k(i) + 2*prefactor*n(j)*d(i,j)**3
-        B2s_kl(i,j) = 2*prefactor*d(i,j)**3
-      enddo
+       do j=1,nc
+          B2s = B2s + prefactor*n(i)*n(j)*d(i,j)**3
+          b2s_T = B2s_T + 3*prefactor*n(i)*n(j)*d(i,j)**2*d_T(i,j)
+          B2s_TT = B2s_TT + 3*prefactor*n(i)*n(j)*(2.0*d(i,j)*d_T(i,j)**2 + d(i,j)**2*d_TT(i,j))
+          ! We can do a shortcut here and use i for the k which is in the memo, etc.
+          B2s_Tk(i) = B2s_Tk(i) + 6*prefactor*n(j)*d(i,j)**2*d_T(i,j)
+          B2s_k(i) = B2s_k(i) + 2*prefactor*n(j)*d(i,j)**3
+          B2s_kl(i,j) = 2*prefactor*d(i,j)**3
+       enddo
     enddo
 
   end subroutine calc_hardsphere_virial_B2
@@ -2027,46 +2025,46 @@ Contains
     B3s_l = 0.0
     B3s_lm = 0.0
     do i=1,nc
-      do j=1,nc
-        do k=1,nc
-          B3s = B3s + prefactor*n(i)*n(j)*n(k)*B_ijk(i,j,k)
-          B3s_T = B3s_T + prefactor*n(i)*n(j)*n(k)*B_ijk_T(i,j,k)
-          B3s_TT = B3s_TT + prefactor*n(i)*n(j)*n(k)*B_ijk_TT(i,j,k)
-        enddo
-      enddo
+       do j=1,nc
+          do k=1,nc
+             B3s = B3s + prefactor*n(i)*n(j)*n(k)*B_ijk(i,j,k)
+             B3s_T = B3s_T + prefactor*n(i)*n(j)*n(k)*B_ijk_T(i,j,k)
+             B3s_TT = B3s_TT + prefactor*n(i)*n(j)*n(k)*B_ijk_TT(i,j,k)
+          enddo
+       enddo
     enddo
     do l=1,nc
-      do j=1,nc
-        do k=1,nc
-          B3s_Tl(l) = B3s_Tl(l) + prefactor*n(j)*n(k)*B_ijk_T(l,j,k)
-          B3s_l(l) = B3s_l(l) + prefactor*n(j)*n(k)*B_ijk(l,j,k)
-        enddo
-      enddo
-      do i=1,nc
-        do k=1,nc
-          B3s_Tl(l) = B3s_Tl(l) + prefactor*n(i)*n(k)*B_ijk_T(i,l,k)
-          B3s_l(l) = B3s_l(l) + prefactor*n(i)*n(k)*B_ijk(i,l,k)
-        enddo
-      enddo
-      do i=1,nc
-        do j=1,nc
-          B3s_Tl(l) = B3s_Tl(l) + prefactor*n(i)*n(j)*B_ijk_T(i,j,l)
-          B3s_l(l) = B3s_l(l) + prefactor*n(i)*n(j)*B_ijk(i,j,l)
-        enddo
-      enddo
+       do j=1,nc
+          do k=1,nc
+             B3s_Tl(l) = B3s_Tl(l) + prefactor*n(j)*n(k)*B_ijk_T(l,j,k)
+             B3s_l(l) = B3s_l(l) + prefactor*n(j)*n(k)*B_ijk(l,j,k)
+          enddo
+       enddo
+       do i=1,nc
+          do k=1,nc
+             B3s_Tl(l) = B3s_Tl(l) + prefactor*n(i)*n(k)*B_ijk_T(i,l,k)
+             B3s_l(l) = B3s_l(l) + prefactor*n(i)*n(k)*B_ijk(i,l,k)
+          enddo
+       enddo
+       do i=1,nc
+          do j=1,nc
+             B3s_Tl(l) = B3s_Tl(l) + prefactor*n(i)*n(j)*B_ijk_T(i,j,l)
+             B3s_l(l) = B3s_l(l) + prefactor*n(i)*n(j)*B_ijk(i,j,l)
+          enddo
+       enddo
     enddo
     do m=1,nc
-      do l=1,nc
-        do k=1,nc
-          B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(k)*B_ijk(l,m,k) + n(k)*B_ijk(m,l,k))
-        enddo
-        do j=1,nc
-          B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(j)*B_ijk(m,j,l) + n(j)*B_ijk(l,j,m))
-        enddo
-        do i=1,nc
-          B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(i)*B_ijk(i,l,m) + n(i)*B_ijk(i,m,l))
-        enddo
-      enddo
+       do l=1,nc
+          do k=1,nc
+             B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(k)*B_ijk(l,m,k) + n(k)*B_ijk(m,l,k))
+          enddo
+          do j=1,nc
+             B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(j)*B_ijk(m,j,l) + n(j)*B_ijk(l,j,m))
+          enddo
+          do i=1,nc
+             B3s_lm(l,m) = B3s_lm(l,m) + prefactor*(n(i)*B_ijk(i,l,m) + n(i)*B_ijk(i,m,l))
+          enddo
+       enddo
     enddo
 
   end subroutine calc_hardsphere_virial_B3
@@ -2096,80 +2094,80 @@ Contains
 
     ! Compute the d3 (and derivs wrt T) which enter into the coefficients c3
     do i=1,nc
-      do j=1,nc
-        do k=1,nc
-          d3(k,i,j)    = d(i,k)    + d(j,k)    - d(i,j)
-          if (d3(k,i,j) > 0) then
-            d3_T(k,i,j)  = d_T(i,k)  + d_T(j,k)  - d_T(i,j)
-            d3_TT(k,i,j) = d_TT(i,k) + d_TT(j,k) - d_TT(i,j)
-          else
-            d3(k,i,j)    = 0.0
-            d3_T(k,i,j)  = 0.0
-            d3_TT(k,i,j) = 0.0
-          endif
-        enddo
-      enddo
+       do j=1,nc
+          do k=1,nc
+             d3(k,i,j)    = d(i,k)    + d(j,k)    - d(i,j)
+             if (d3(k,i,j) > 0) then
+                d3_T(k,i,j)  = d_T(i,k)  + d_T(j,k)  - d_T(i,j)
+                d3_TT(k,i,j) = d_TT(i,k) + d_TT(j,k) - d_TT(i,j)
+             else
+                d3(k,i,j)    = 0.0
+                d3_T(k,i,j)  = 0.0
+                d3_TT(k,i,j) = 0.0
+             endif
+          enddo
+       enddo
     enddo
 
     ! Compute the c3 coefficents (and derivs wrt T) given by the formula
     ! c_kij = d_kij^3 + 1.5 d_kij^2/d_ij * d_ijk * d_jik
     do i=1,nc
-      do j=1,nc
-        do k=1,nc
-          c3(k,i,j) = d3(k,i,j)**3 + 1.5*d3(k,i,j)**2*d3(i,j,k)*d3(j,i,k)/d(i,j)
+       do j=1,nc
+          do k=1,nc
+             c3(k,i,j) = d3(k,i,j)**3 + 1.5*d3(k,i,j)**2*d3(i,j,k)*d3(j,i,k)/d(i,j)
 
-          c3_T(k,i,j) = 3.0*d3(k,i,j)**2*d3_T(k,i,j) + &
-               1.5*( ( 2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )&
-               *d3(i,j,k)*d3(j,i,k)/d(i,j)**2 &
-               + d3(k,i,j)**2/d(i,j)*( d3_T(i,j,k)*d3(j,i,k) + d3(i,j,k)*d3_T(j,i,k) ) &
-               )
+             c3_T(k,i,j) = 3.0*d3(k,i,j)**2*d3_T(k,i,j) + &
+                  1.5*( ( 2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )&
+                  *d3(i,j,k)*d3(j,i,k)/d(i,j)**2 &
+                  + d3(k,i,j)**2/d(i,j)*( d3_T(i,j,k)*d3(j,i,k) + d3(i,j,k)*d3_T(j,i,k) ) &
+                  )
 
-          c3_TT(k,i,j) = 6.0*d3(k,i,j)*d3_T(k,i,j)**2 + 3.0*d3(k,i,j)**2*d3_TT(k,i,j) + &
-               1.5*(  ( 2.0*d3(k,i,j)*d3_TT(k,i,j) + 2.0*d3_T(k,i,j)**2 - &
-               2.0*d_T(i,j)*(  2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )/d(i,j)**2 - &
-               d3(k,i,j)**2/d(i,j)*d_TT(i,j) &
-               )*d3(i,j,k)*d3(j,i,k)/d(i,j) &
-               + 2.0*( 2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )/d(i,j)**2&
-               *( d3_T(i,j,k)*d3(j,i,k) + d3(i,j,k)*d3_T(j,i,k) ) &
-               + d3(k,i,j)**2/d(i,j)&
-               *( d3_TT(i,j,k)*d3(j,i,k) + 2.0*d3_T(i,j,k)*d3_T(j,i,k) + d3(i,j,k)*d3_TT(j,i,k)) &
-               )
+             c3_TT(k,i,j) = 6.0*d3(k,i,j)*d3_T(k,i,j)**2 + 3.0*d3(k,i,j)**2*d3_TT(k,i,j) + &
+                  1.5*(  ( 2.0*d3(k,i,j)*d3_TT(k,i,j) + 2.0*d3_T(k,i,j)**2 - &
+                  2.0*d_T(i,j)*(  2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )/d(i,j)**2 - &
+                  d3(k,i,j)**2/d(i,j)*d_TT(i,j) &
+                  )*d3(i,j,k)*d3(j,i,k)/d(i,j) &
+                  + 2.0*( 2.0*d3(k,i,j)*d3_T(k,i,j)*d(i,j) - d3(k,i,j)**2*d_T(i,j) )/d(i,j)**2&
+                  *( d3_T(i,j,k)*d3(j,i,k) + d3(i,j,k)*d3_T(j,i,k) ) &
+                  + d3(k,i,j)**2/d(i,j)&
+                  *( d3_TT(i,j,k)*d3(j,i,k) + 2.0*d3_T(i,j,k)*d3_T(j,i,k) + d3(i,j,k)*d3_TT(j,i,k)) &
+                  )
 
-        enddo
-      enddo
+          enddo
+       enddo
     enddo
 
     ! Sum up the c3 coefficients to get B_ijk (and derivs wrt T)
     ! B_ijk = 4/3 (c_kij d_ij^3 + c_jik d_ik^3 + c_ijk d_jk^3)
     ! NB! Note that the d's in this formula are not the d3's, but the dhs%d etc.
     do i=1,nc
-      do j=1,nc
-        do k=1,nc
-          B_ijk(i,j,k) = 4.0/3.0 *&
-               (c3(k,i,j)*d(i,j)**3 + &
-               c3(j,i,k)*d(i,k)**3 + &
-               c3(i,j,k)*d(j,k)**3)
+       do j=1,nc
+          do k=1,nc
+             B_ijk(i,j,k) = 4.0/3.0 *&
+                  (c3(k,i,j)*d(i,j)**3 + &
+                  c3(j,i,k)*d(i,k)**3 + &
+                  c3(i,j,k)*d(j,k)**3)
 
-          B_ijk_T(i,j,k) = 4.0/3.0 *&
-               (c3(k,i,j)*3.0*d(i,j)**2*d_T(i,j) + &
-               c3(j,i,k)*3.0*d(i,k)**2*d_T(i,k) + &
-               c3(i,j,k)*3.0*d(j,k)**2*d_T(j,k) + &
-               c3_T(k,i,j)*d(i,j)**3 + &
-               c3_T(j,i,k)*d(i,k)**3 + &
-               c3_T(i,j,k)*d(j,k)**3)
+             B_ijk_T(i,j,k) = 4.0/3.0 *&
+                  (c3(k,i,j)*3.0*d(i,j)**2*d_T(i,j) + &
+                  c3(j,i,k)*3.0*d(i,k)**2*d_T(i,k) + &
+                  c3(i,j,k)*3.0*d(j,k)**2*d_T(j,k) + &
+                  c3_T(k,i,j)*d(i,j)**3 + &
+                  c3_T(j,i,k)*d(i,k)**3 + &
+                  c3_T(i,j,k)*d(j,k)**3)
 
-          B_ijk_TT(i,j,k) = 4.0/3.0 *&
-               (c3(k,i,j)*(3.0*d(i,j)**2*d_TT(i,j) + 6.0*d(i,j)*d_T(i,j)**2) + &
-               c3(j,i,k)*(3.0*d(i,k)**2*d_TT(i,k) + 6.0*d(i,k)*d_T(i,k)**2) + &
-               c3(i,j,k)*(3.0*d(j,k)**2*d_TT(j,k) + 6.0*d(j,k)*d_T(j,k)**2) + &
-               c3_T(k,i,j)*6.0*d(i,j)**2*d_T(i,j) + &
-               c3_T(j,i,k)*6.0*d(i,k)**2*d_T(i,k) + &
-               c3_T(i,j,k)*6.0*d(j,k)**2*d_T(j,k) + &
-               c3_TT(k,i,j)*d(i,j)**3 + &
-               c3_TT(j,i,k)*d(i,k)**3 + &
-               c3_TT(i,j,k)*d(j,k)**3)
-        enddo
-      enddo
+             B_ijk_TT(i,j,k) = 4.0/3.0 *&
+                  (c3(k,i,j)*(3.0*d(i,j)**2*d_TT(i,j) + 6.0*d(i,j)*d_T(i,j)**2) + &
+                  c3(j,i,k)*(3.0*d(i,k)**2*d_TT(i,k) + 6.0*d(i,k)*d_T(i,k)**2) + &
+                  c3(i,j,k)*(3.0*d(j,k)**2*d_TT(j,k) + 6.0*d(j,k)*d_T(j,k)**2) + &
+                  c3_T(k,i,j)*6.0*d(i,j)**2*d_T(i,j) + &
+                  c3_T(j,i,k)*6.0*d(i,k)**2*d_T(i,k) + &
+                  c3_T(i,j,k)*6.0*d(j,k)**2*d_T(j,k) + &
+                  c3_TT(k,i,j)*d(i,j)**3 + &
+                  c3_TT(j,i,k)*d(i,k)**3 + &
+                  c3_TT(i,j,k)*d(j,k)**3)
+          enddo
+       enddo
     enddo
 
     ! Et fine.
@@ -2194,11 +2192,11 @@ Contains
 
     if ( present(a_TT) .or. present(a_VV).or. present(a_TV) .or. &
          present(a_nn) .or. present(a_Tn).or. present(a_Vn)) then
-      difflevel = 2
+       difflevel = 2
     else if ( present(a_T) .or. present(a_V).or. present(a_n)) then
-      difflevel = 1
+       difflevel = 1
     else
-      difflevel = 0
+       difflevel = 0
     endif
     ! Calculate packing fraction
     call calc_eta_dij(nc,n,V,difflevel,s_vc%dhs,s_vc%eta_hs)
@@ -2228,13 +2226,13 @@ Contains
     di = 0.0
     d = 0.0
     do i=1,nc
-      do j=1,nc
-        d(0) = d(0) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
-        d(1) = d(1) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
-        d(2) = d(2) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_TT(i,j)
-        di(i,0) = di(i,0) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
-        di(i,1) = di(i,1) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
-      enddo
+       do j=1,nc
+          d(0) = d(0) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
+          d(1) = d(1) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
+          d(2) = d(2) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_TT(i,j)
+          di(i,0) = di(i,0) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
+          di(i,1) = di(i,1) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
+       enddo
     enddo
     d3(0) = d(0)**3
     d3(1) = 3*d(0)**2*d(1)
@@ -2242,33 +2240,33 @@ Contains
     prefactor = pi*N_AVOGADRO/(6.0*V)
     eta%zx = prefactor*d3(0)/ns**5
     if (difflevel > 0) then
-      eta%zx_T = prefactor*d3(1)/ns**5
-      eta%zx_V = -eta%zx/V
-      eta%zx_n = (prefactor*3*d(0)**2*di(:,0) - 5*saftvrmie_param%ms*ns**4*eta%zx)/ns**5
+       eta%zx_T = prefactor*d3(1)/ns**5
+       eta%zx_V = -eta%zx/V
+       eta%zx_n = (prefactor*3*d(0)**2*di(:,0) - 5*saftvrmie_param%ms*ns**4*eta%zx)/ns**5
     endif
     if (difflevel > 1) then
-      eta%zx_TT = prefactor*d3(2)/ns**5
-      eta%zx_VV = 2.0*eta%zx/V**2
-      eta%zx_TV = -eta%zx_T/V
-      eta%zx_Vn = -eta%zx_n/V
-      eta%zx_Tn = (prefactor*3*d(0)*(2*di(:,0)*d(1) + d(0)*di(:,1))  &
-           - 5*saftvrmie_param%ms*ns**4*eta%zx_T)/ns**5
-      do i=1,nc
-        do j=1,nc
-          eta%zx_nn(i,j) = (prefactor*6*d(0)*(di(i,0)*di(j,0) &
-               + d(0)*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*dhs%d(i,j)) &
-               - 20*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*ns**3*eta%zx &
-               - 5*saftvrmie_param%ms(i)*ns**4*eta%zx_n(j)  &
-               - 5*saftvrmie_param%ms(j)*ns**4*eta%zx_n(i))/ns**5
-        enddo
-      enddo
-      !
-      eta%zx_VVV = -6*eta%zx/V**3
-      eta%zx_VVT = 2*eta%zx_T/V**2
-      eta%zx_VTn = -eta%zx_Tn/V
-      eta%zx_VVn = 2*eta%zx_n/V**2
-      eta%zx_Vnn = -eta%zx_nn/V
-      eta%zx_VTT = -eta%zx_TT/V
+       eta%zx_TT = prefactor*d3(2)/ns**5
+       eta%zx_VV = 2.0*eta%zx/V**2
+       eta%zx_TV = -eta%zx_T/V
+       eta%zx_Vn = -eta%zx_n/V
+       eta%zx_Tn = (prefactor*3*d(0)*(2*di(:,0)*d(1) + d(0)*di(:,1))  &
+            - 5*saftvrmie_param%ms*ns**4*eta%zx_T)/ns**5
+       do i=1,nc
+          do j=1,nc
+             eta%zx_nn(i,j) = (prefactor*6*d(0)*(di(i,0)*di(j,0) &
+                  + d(0)*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*dhs%d(i,j)) &
+                  - 20*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*ns**3*eta%zx &
+                  - 5*saftvrmie_param%ms(i)*ns**4*eta%zx_n(j)  &
+                  - 5*saftvrmie_param%ms(j)*ns**4*eta%zx_n(i))/ns**5
+          enddo
+       enddo
+       !
+       eta%zx_VVV = -6*eta%zx/V**3
+       eta%zx_VVT = 2*eta%zx_T/V**2
+       eta%zx_VTn = -eta%zx_Tn/V
+       eta%zx_VVn = 2*eta%zx_n/V**2
+       eta%zx_Vnn = -eta%zx_nn/V
+       eta%zx_VTT = -eta%zx_TT/V
     endif
   end subroutine calc_eta_dij
 
@@ -2291,41 +2289,41 @@ Contains
     di = 0.0
     d = 0.0
     do i=1,nc
-      do j=1,nc
-        d(0) = d(0) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
-        d(1) = d(1) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
-        d(2) = d(2) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_TT(i,j)
-        di(i,0) = di(i,0) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
-        di(i,1) = di(i,1) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
-      enddo
+       do j=1,nc
+          d(0) = d(0) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
+          d(1) = d(1) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
+          d(2) = d(2) + saftvrmie_param%ms(i)*n(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_TT(i,j)
+          di(i,0) = di(i,0) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d(i,j)
+          di(i,1) = di(i,1) + 2*saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*n(j)*dhs%d_T(i,j)
+       enddo
     enddo
     d_pure%zx = d(0)/ns**2
     if (difflevel > 0) then
-      d_pure%zx_T = d(1)/ns**2
-      d_pure%zx_V = 0.0
-      d_pure%zx_n = (di(:,0) - 2*saftvrmie_param%ms(:)*ns*d_pure%zx)/ns**2
+       d_pure%zx_T = d(1)/ns**2
+       d_pure%zx_V = 0.0
+       d_pure%zx_n = (di(:,0) - 2*saftvrmie_param%ms(:)*ns*d_pure%zx)/ns**2
     endif
     if (difflevel > 1) then
-      d_pure%zx_TT = d(2)/ns**2
-      d_pure%zx_VV = 0.0
-      d_pure%zx_TV = 0.0
-      d_pure%zx_Vn = 0.0
-      d_pure%zx_Tn = (di(:,1) - 2*saftvrmie_param%ms(:)*ns*d_pure%zx_T)/ns**2
-      do i=1,nc
-        do j=1,nc
-          d_pure%zx_nn(i,j) = 2*(saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*dhs%d(i,j) &
-               - saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*d_pure%zx &
-               - saftvrmie_param%ms(i)*ns*d_pure%zx_n(j)  &
-               - saftvrmie_param%ms(j)*ns*d_pure%zx_n(i))/ns**2
-        enddo
-      enddo
-      !
-      d_pure%zx_VVV = 0.0
-      d_pure%zx_VVT = 0.0
-      d_pure%zx_VTn = 0.0
-      d_pure%zx_VVn = 0.0
-      d_pure%zx_Vnn = 0.0
-      d_pure%zx_VTT = 0.0
+       d_pure%zx_TT = d(2)/ns**2
+       d_pure%zx_VV = 0.0
+       d_pure%zx_TV = 0.0
+       d_pure%zx_Vn = 0.0
+       d_pure%zx_Tn = (di(:,1) - 2*saftvrmie_param%ms(:)*ns*d_pure%zx_T)/ns**2
+       do i=1,nc
+          do j=1,nc
+             d_pure%zx_nn(i,j) = 2*(saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*dhs%d(i,j) &
+                  - saftvrmie_param%ms(i)*saftvrmie_param%ms(j)*d_pure%zx &
+                  - saftvrmie_param%ms(i)*ns*d_pure%zx_n(j)  &
+                  - saftvrmie_param%ms(j)*ns*d_pure%zx_n(i))/ns**2
+          enddo
+       enddo
+       !
+       d_pure%zx_VVV = 0.0
+       d_pure%zx_VVT = 0.0
+       d_pure%zx_VTn = 0.0
+       d_pure%zx_VVn = 0.0
+       d_pure%zx_Vnn = 0.0
+       d_pure%zx_VTT = 0.0
     endif
   end subroutine calc_d_pure
 
@@ -2348,7 +2346,7 @@ Contains
     integer :: j
 
     if (nc>1) then
-      call stoperror("This test is only made for one component")
+       call stoperror("This test is only made for one component")
     end if
 
     j=1
@@ -2406,16 +2404,16 @@ Contains
 
     ! Add the first order quantum correction
     if (quantum_correction_hs>0) then
-      s_2=(s_1)**2
-      U_q1_x=D*s_1*s_2*(-(n+2)*Q1_n*s_n+(m+2)*Q1_m*s_m)
-      Ux=Ux+U_q1_x
+       s_2=(s_1)**2
+       U_q1_x=D*s_1*s_2*(-(n+2)*Q1_n*s_n+(m+2)*Q1_m*s_m)
+       Ux=Ux+U_q1_x
     end if
 
     ! Add the second order quantum correction
     if (quantum_correction_hs>1) then
-      s_4=s_2**2
-      U_q2_x=D2*s_1*s_4*(-(n+4)*Q2_n*s_n+(m+4)*Q2_m*s_m)
-      Ux=Ux+U_q2_x
+       s_4=s_2**2
+       U_q2_x=D2*s_1*s_4*(-(n+4)*Q2_n*s_n+(m+4)*Q2_m*s_m)
+       Ux=Ux+U_q2_x
     end if
 
     ! Multiply everything by the prefactor:
@@ -2462,15 +2460,15 @@ Contains
 
     ! Add the first order quantum correction
     if (quantum_correction_hs>0) then
-      U_q1_x=D*s_2*s_2*((n+2)*(n+3)*Q1_n*s_n-(m+2)*(m+3)*Q1_m*s_m)
-      Ux=Ux+U_q1_x
+       U_q1_x=D*s_2*s_2*((n+2)*(n+3)*Q1_n*s_n-(m+2)*(m+3)*Q1_m*s_m)
+       Ux=Ux+U_q1_x
     end if
 
     ! Add the second order quantum correction
     if (quantum_correction_hs>1) then
-      s_4=s_2**2
-      U_q2_x=D2*s_2*s_4*((n+4)*(n+5)*Q2_n*s_n-(m+4)*(m+5)*Q2_m*s_m)
-      Ux=Ux+U_q2_x
+       s_4=s_2**2
+       U_q2_x=D2*s_2*s_4*((n+4)*(n+5)*Q2_n*s_n-(m+4)*(m+5)*Q2_m*s_m)
+       Ux=Ux+U_q2_x
     end if
 
     ! Multiply everything by the prefactor:
@@ -2502,87 +2500,87 @@ Contains
     real :: z, z_T, z_TT
 
     if (quantum_correction_hs==0) then ! With no quantum corrections
-      eps_divk_eff=saftvrmie_param%eps_divk_ij
-      eps_divk_eff_T=0.0
-      eps_divk_eff_TT=0.0
-      return
+       eps_divk_eff=saftvrmie_param%eps_divk_ij
+       eps_divk_eff_T=0.0
+       eps_divk_eff_TT=0.0
+       return
     else
-      do i=1,nc
-        do j=i,nc
-          if (.not. exact_crosspot_eff .and. i/=j) then
-            cycle
-          end if
+       do i=1,nc
+          do j=i,nc
+             if (.not. exact_crosspot_eff .and. i/=j) then
+                cycle
+             end if
 
-          ! Obtain the quantum-parameters
-          call get_DFeynHibbsPower(i,j,D,D_T,D_TT,s_vc,power_in=1,divideBySigmaMie=.true.)
-          call get_DFeynHibbsPower(i,j,D2,D2_T,D2_TT,s_vc,power_in=2,divideBySigmaMie=.true.)
+             ! Obtain the quantum-parameters
+             call get_DFeynHibbsPower(i,j,D,D_T,D_TT,s_vc,power_in=1,divideBySigmaMie=.true.)
+             call get_DFeynHibbsPower(i,j,D2,D2_T,D2_TT,s_vc,power_in=2,divideBySigmaMie=.true.)
 
-          ! Construct the parameter vector
-          param(1)=saftvrmie_param%lambda_r_ij(i,j)
-          param(2)=saftvrmie_param%lambda_a_ij(i,j)
-          param(3)=saftvrmie_param%sigma_ij(i,j)
-          param(4)=saftvrmie_param%Cij(i,j)
-          param(5)=D
-          param(6)=D2
-          param(7)=saftvrmie_param%Quantum_const_1a_ij(i,j)
-          param(8)=saftvrmie_param%Quantum_const_1r_ij(i,j)
-          param(9)=saftvrmie_param%Quantum_const_2a_ij(i,j)
-          param(10)=saftvrmie_param%Quantum_const_2r_ij(i,j)
+             ! Construct the parameter vector
+             param(1)=saftvrmie_param%lambda_r_ij(i,j)
+             param(2)=saftvrmie_param%lambda_a_ij(i,j)
+             param(3)=saftvrmie_param%sigma_ij(i,j)
+             param(4)=saftvrmie_param%Cij(i,j)
+             param(5)=D
+             param(6)=D2
+             param(7)=saftvrmie_param%Quantum_const_1a_ij(i,j)
+             param(8)=saftvrmie_param%Quantum_const_1r_ij(i,j)
+             param(9)=saftvrmie_param%Quantum_const_2a_ij(i,j)
+             param(10)=saftvrmie_param%Quantum_const_2r_ij(i,j)
 
-          ! Set the limits and the initial condition
-          xmin=1.0
-          xmax=10
-          x=1.0
-          solver%abs_tol = 1e-12
+             ! Set the limits and the initial condition
+             xmin=1.0
+             xmax=10
+             x=1.0
+             solver%abs_tol = 1e-12
 
-          ! NB, the variable we iterate on is x=r/sigma, i.e. a scaled radius
-          ! The interaction potential is scaled with epsilon
-          call nonlinear_solve(solver,epseff_Ux,epseff_Uxx,epseff_Uxx,limit_dx,&
-               premReturn,setXv,x,xmin,xmax,param)
-          if (solver%exitflag /= 0 .and. verbose) then
-            print *,"Not able to solve for effective epsilon"
-          endif
-          z=x(1)*saftvrmie_param%sigma_ij(i,j)
+             ! NB, the variable we iterate on is x=r/sigma, i.e. a scaled radius
+             ! The interaction potential is scaled with epsilon
+             call nonlinear_solve(solver,epseff_Ux,epseff_Uxx,epseff_Uxx,limit_dx,&
+                  premReturn,setXv,x,xmin,xmax,param)
+             if (solver%exitflag /= 0 .and. verbose) then
+                print *,"Not able to solve for effective epsilon"
+             endif
+             z=x(1)*saftvrmie_param%sigma_ij(i,j)
 
-          call calc_mie_potential_quantumcorrected(i,j,s_vc,&
-               saftvrmie_param%sigma_ij(i,j),saftvrmie_param%eps_divk_ij(i,j),&
-               saftvrmie_param%lambda_a_ij(i,j),saftvrmie_param%lambda_r_ij(i,j),&
-               saftvrmie_param%Cij(i,j),&
-               saftvrmie_param%Quantum_const_1a_ij(i,j),&
-               saftvrmie_param%Quantum_const_1r_ij(i,j),&
-               saftvrmie_param%Quantum_const_2a_ij(i,j),&
-               saftvrmie_param%Quantum_const_2r_ij(i,j),&
-               z,U,U_divk_T=U_T,U_divk_TT=U_TT,&
-               U_divk_r=U_r,U_divk_Tr=U_Tr,&
-               U_divk_rr=U_rr,U_divk_rrr=U_rrr,&
-               U_divk_Trr=U_Trr,U_divk_TTr=U_TTr)
+             call calc_mie_potential_quantumcorrected(i,j,s_vc,&
+                  saftvrmie_param%sigma_ij(i,j),saftvrmie_param%eps_divk_ij(i,j),&
+                  saftvrmie_param%lambda_a_ij(i,j),saftvrmie_param%lambda_r_ij(i,j),&
+                  saftvrmie_param%Cij(i,j),&
+                  saftvrmie_param%Quantum_const_1a_ij(i,j),&
+                  saftvrmie_param%Quantum_const_1r_ij(i,j),&
+                  saftvrmie_param%Quantum_const_2a_ij(i,j),&
+                  saftvrmie_param%Quantum_const_2r_ij(i,j),&
+                  z,U,U_divk_T=U_T,U_divk_TT=U_TT,&
+                  U_divk_r=U_r,U_divk_Tr=U_Tr,&
+                  U_divk_rr=U_rr,U_divk_rrr=U_rrr,&
+                  U_divk_Trr=U_Trr,U_divk_TTr=U_TTr)
 
-          z_T = -U_Tr/U_rr
-          z_TT = -(U_TTr+U_rrr*z_T**2+2.0*U_Trr*z_T)/U_rr
-          eps_divk_eff(i,j)=-U
-          eps_divk_eff_T(i,j)=-(U_r*z_T+U_T)
-          eps_divk_eff_TT(i,j)=-(U_rr*z_T**2+2.0*U_Tr*z_T+U_r*z_TT+U_TT)
+             z_T = -U_Tr/U_rr
+             z_TT = -(U_TTr+U_rrr*z_T**2+2.0*U_Trr*z_T)/U_rr
+             eps_divk_eff(i,j)=-U
+             eps_divk_eff_T(i,j)=-(U_r*z_T+U_T)
+             eps_divk_eff_TT(i,j)=-(U_rr*z_T**2+2.0*U_Tr*z_T+U_r*z_TT+U_TT)
 
-          eps_divk_eff(j,i) = eps_divk_eff(i,j)
-          eps_divk_eff_T(j,i) = eps_divk_eff_T(i,j)
-          eps_divk_eff_TT(j,i) = eps_divk_eff_TT(i,j)
-        end do
-      end do
-
-      if (.not. exact_crosspot_eff) then
-        ! Use simplified combining rule for effective eps_divk. NOTE: this is
-        ! probably a very bad simplified combining rule
-        do i=1,nc
-          do j=i+1,nc
-            eps_divk_eff(i,j) = 0.5*(eps_divk_eff(i,i) + eps_divk_eff(j,j))
-            eps_divk_eff_T(i,j) = 0.5*(eps_divk_eff_T(i,i) + eps_divk_eff_T(j,j))
-            eps_divk_eff_TT(i,j) = 0.5*(eps_divk_eff_TT(i,i) + eps_divk_eff_TT(j,j))
-            eps_divk_eff(j,i) = eps_divk_eff(i,j)
-            eps_divk_eff_T(j,i) = eps_divk_eff_T(i,j)
-            eps_divk_eff_TT(j,i) = eps_divk_eff_TT(i,j)
+             eps_divk_eff(j,i) = eps_divk_eff(i,j)
+             eps_divk_eff_T(j,i) = eps_divk_eff_T(i,j)
+             eps_divk_eff_TT(j,i) = eps_divk_eff_TT(i,j)
           end do
-        end do
-      end if
+       end do
+
+       if (.not. exact_crosspot_eff) then
+          ! Use simplified combining rule for effective eps_divk. NOTE: this is
+          ! probably a very bad simplified combining rule
+          do i=1,nc
+             do j=i+1,nc
+                eps_divk_eff(i,j) = 0.5*(eps_divk_eff(i,i) + eps_divk_eff(j,j))
+                eps_divk_eff_T(i,j) = 0.5*(eps_divk_eff_T(i,i) + eps_divk_eff_T(j,j))
+                eps_divk_eff_TT(i,j) = 0.5*(eps_divk_eff_TT(i,i) + eps_divk_eff_TT(j,j))
+                eps_divk_eff(j,i) = eps_divk_eff(i,j)
+                eps_divk_eff_T(j,i) = eps_divk_eff_T(i,j)
+                eps_divk_eff_TT(j,i) = eps_divk_eff_TT(i,j)
+             end do
+          end do
+       end if
 
     end if
   end subroutine calc_binary_effective_eps_divk
@@ -2604,33 +2602,33 @@ Contains
     integer :: i
     nsum_d3 = 0.0
     do i=1,nc
-      d3(i,1) = dhs%d(i,i)**3
-      d3(i,2) = 3.0*dhs%d(i,i)**2*dhs%d_T(i,i)
-      nsum_d3(1) = nsum_d3(1) + n(i)*d3(i,1)
-      nsum_d3(2) = nsum_d3(2) + n(i)*d3(i,2)
-      nsum_d3(3) = nsum_d3(3) + 3.0*n(i)*(2.0*dhs%d(i,i)*dhs%d_T(i,i)**2 + dhs%d(i,i)**2*dhs%d_TT(i,i))
+       d3(i,1) = dhs%d(i,i)**3
+       d3(i,2) = 3.0*dhs%d(i,i)**2*dhs%d_T(i,i)
+       nsum_d3(1) = nsum_d3(1) + n(i)*d3(i,1)
+       nsum_d3(2) = nsum_d3(2) + n(i)*d3(i,2)
+       nsum_d3(3) = nsum_d3(3) + 3.0*n(i)*(2.0*dhs%d(i,i)*dhs%d_T(i,i)**2 + dhs%d(i,i)**2*dhs%d_TT(i,i))
     enddo
     prefactor = pi*N_AVOGADRO/(6.0*V)
     eta%zx = prefactor*nsum_d3(1)
     if (difflevel > 0) then
-      eta%zx_T = prefactor*nsum_d3(2)
-      eta%zx_V = -eta%zx/V
-      eta%zx_n = prefactor*d3(:,1)
+       eta%zx_T = prefactor*nsum_d3(2)
+       eta%zx_V = -eta%zx/V
+       eta%zx_n = prefactor*d3(:,1)
     endif
     if (difflevel > 1) then
-      eta%zx_TT = prefactor*nsum_d3(3)
-      eta%zx_VV = 2.0*eta%zx/V**2
-      eta%zx_TV = -eta%zx_T/V
-      eta%zx_Vn = -eta%zx_n/V
-      eta%zx_Tn = prefactor*d3(:,2)
-      eta%zx_nn = 0.0
-      ! Should not be used
-      eta%zx_VVV = 0.0
-      eta%zx_VVT = 0.0
-      eta%zx_VTn = 0.0
-      eta%zx_VVn = 0.0
-      eta%zx_Vnn = 0.0
-      eta%zx_VTT = 0.0
+       eta%zx_TT = prefactor*nsum_d3(3)
+       eta%zx_VV = 2.0*eta%zx/V**2
+       eta%zx_TV = -eta%zx_T/V
+       eta%zx_Vn = -eta%zx_n/V
+       eta%zx_Tn = prefactor*d3(:,2)
+       eta%zx_nn = 0.0
+       ! Should not be used
+       eta%zx_VVV = 0.0
+       eta%zx_VVT = 0.0
+       eta%zx_VTn = 0.0
+       eta%zx_VVn = 0.0
+       eta%zx_Vnn = 0.0
+       eta%zx_VTT = 0.0
     endif
   end subroutine calc_Santos_eta
 
@@ -2687,11 +2685,11 @@ Contains
     real, intent(in) :: y
     real, intent(out) :: a,a_y,a_yy
     if (pure_hs_EoS == PURE_HS_CSK) then
-      call calc_ahs_div_nRT_CSK(y,a,a_y,a_yy)
+       call calc_ahs_div_nRT_CSK(y,a,a_y,a_yy)
     else if (pure_hs_EoS == PURE_HS_CS) then
-      call calc_ahs_div_nRT_CS(y,a,a_y,a_yy)
+       call calc_ahs_div_nRT_CS(y,a,a_y,a_yy)
     else
-      call stoperror("Wrong pure hard-sphere model")
+       call stoperror("Wrong pure hard-sphere model")
     endif
   end subroutine calc_pure_ahs_div_nRT_eta
 
@@ -2700,11 +2698,11 @@ Contains
     real, intent(in) :: y
     real :: Zp
     if (pure_hs_EoS == PURE_HS_CSK) then
-      Zp = (1+y+y**2-2*y**3*(1+y)/3)/(1-y)**3
+       Zp = (1+y+y**2-2*y**3*(1+y)/3)/(1-y)**3
     else if (pure_hs_EoS == PURE_HS_CS) then
-      Zp = (1+y+y**2-y**3)/(1-y)**3
+       Zp = (1+y+y**2-y**3)/(1-y)**3
     else
-      Zp = 0.0
+       Zp = 0.0
     endif
   end function calc_z_ahs_pure
 

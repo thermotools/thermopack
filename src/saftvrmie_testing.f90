@@ -1,9 +1,7 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
+! Module and subroutines for testing SAFT-VRQ Mie
 ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
 ! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
 !---------------------------------------------------------------------
 
 module saftvrmie_testing
@@ -72,11 +70,11 @@ contains
   end subroutine test_by_integration
 
   subroutine calc_virial_B_by_integration(nc,T,s_vc,Int_B,prt)
-  !--------------------------------------------------------------------
-  !  2018-04, Morten Hammer
-  !
-  !  This subroutine tests virial coefficient
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-04, Morten Hammer
+    !
+    !  This subroutine tests virial coefficient
+    !---------------------------------------------------------------------
     use eosTV, only: Fres
     integer, intent(in) :: nc   ! Number of components
     real, intent(in) :: T       ! Temperature [K]
@@ -92,12 +90,12 @@ contains
 
     ! Check for more than one component
     if (nc>1) then
-      call stoperror("This test is only made for one component")
+       call stoperror("This test is only made for one component")
     end if
 
     prt_l = .true.
     if (present(prt)) then
-      prt_l = prt
+       prt_l = prt
     endif
     ! Compute B from EOS
     V = 1.0e8 ! Might need tuning...
@@ -124,23 +122,23 @@ contains
 
     Int_B=Int_B*prefactor
     if (prt_l) then
-      ! Print stuff
-      print *, " ---- Testing of second virial coeff  ------- "
-      print *, " -------------------------------------------- "
-      print *, " The quantum correction            : ", quantum_correction
-      print *, " Integrated B                      : ", Int_B
-      print *, " EOS B                             : ", BvirialEOS
-      print *, " -------------------------------------------- "
-      print *, ""
+       ! Print stuff
+       print *, " ---- Testing of second virial coeff  ------- "
+       print *, " -------------------------------------------- "
+       print *, " The quantum correction            : ", quantum_correction
+       print *, " Integrated B                      : ", Int_B
+       print *, " EOS B                             : ", BvirialEOS
+       print *, " -------------------------------------------- "
+       print *, ""
     endif
   end subroutine calc_virial_B_by_integration
 
   subroutine test_alpha_a3_integration(nc,T,s_vc)
-  !--------------------------------------------------------------------
-  !  2018-03-15, Oivind Wilhelmsen
-  !
-  !  This subroutine tests a2
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-03-15, Oivind Wilhelmsen
+    !
+    !  This subroutine tests a2
+    !---------------------------------------------------------------------
     integer, intent(in) :: nc   ! Number of components
     real, intent(in) :: T       ! Temperature [K]
     type(saftvrmie_var_container), intent(inout) :: s_vc
@@ -153,17 +151,17 @@ contains
 
     ! Check for more than one component
     if (nc>1) then
-      call stoperror("This test is only made for one component")
+       call stoperror("This test is only made for one component")
     end if
 
     Nr=10000
 
     ! Compute alpha
     if (quantum_correction_hs == 0) then
-      alpha = saftvrmie_param%alpha_ij(1,1)
+       alpha = saftvrmie_param%alpha_ij(1,1)
     else
-      call calcAlpha(nc,s_vc%sigma_eff,s_vc%eps_divk_eff,T,saftvrmie_var(1),alph)
-      alpha = alph(1)
+       call calcAlpha(nc,s_vc%sigma_eff,s_vc%eps_divk_eff,T,saftvrmie_var(1),alph)
+       alpha = alph(1)
     endif
 
     ! The prefactor of alpha
@@ -201,11 +199,11 @@ contains
   end subroutine test_alpha_a3_integration
 
   subroutine test_a2_integration(nc,T,V,n,s_vc)
-  !--------------------------------------------------------------------
-  !  2018-03-15, Oivind Wilhelmsen
-  !
-  !  This subroutine tests a2
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-03-15, Oivind Wilhelmsen
+    !
+    !  This subroutine tests a2
+    !---------------------------------------------------------------------
     integer, intent(in) :: nc   ! Number of components
     real, intent(in) :: T       ! Temperature [K]
     real, intent(in) :: V       ! Volume [m^3]
@@ -221,7 +219,7 @@ contains
 
     ! Check for more than one component
     if (nc>1) then
-      call stoperror("This test is only made for one component")
+       call stoperror("This test is only made for one component")
     end if
 
     Nr=10000
@@ -261,8 +259,8 @@ contains
     call trapz_integration(nc,T,V,n,a2_term_integral_argument,&
          a, b, Nr, Int_a2_Dpart,3)
 
-    
-    
+
+
     ! Print stuff
     print *, " --------- Testing of a2 terms -------------- "
     print *, " -- s=sigma, s_eff=sigma_eff, Int=Integral -- "
@@ -286,11 +284,11 @@ contains
   end subroutine test_a2_integration
 
   subroutine test_a1_integration(nc,T,V,n,saftvrmie_vc)
-  !--------------------------------------------------------------------
-  !  2018-03-13, Oivind Wilhelmsen
-  !
-  !  This subroutine tests a1
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-03-13, Oivind Wilhelmsen
+    !
+    !  This subroutine tests a1
+    !---------------------------------------------------------------------
     integer, intent(in) :: nc   ! Number of components
     real, intent(in) :: T       ! Temperature [K]
     real, intent(in) :: V       ! Volume [m^3]
@@ -313,7 +311,7 @@ contains
     real :: a1_Mie, a1_Q1, Int_morten, Minimum
 
     if (nc>1) then
-      call stoperror("This test is only made for one component")
+       call stoperror("This test is only made for one component")
     end if
 
     ! The integral and the specs.
@@ -339,9 +337,9 @@ contains
     call  calcA1ij(nc,T,V,n,1,1,saftvrmie_vc,a1_Mie)
 
     if (quantum_correction==0) then
-      a1_Q1=0.0
+       a1_Q1=0.0
     else
-      call calcA1ijQuantumCorrection(nc,T,V,n,1,1,saftvrmie_vc,a1_Q1)
+       call calcA1ijQuantumCorrection(nc,T,V,n,1,1,saftvrmie_vc,a1_Q1)
     end if
 
     ! Multiply by the appropriate prefactors
@@ -380,31 +378,31 @@ contains
     print *, " -------------------------------------------- "
     print *, ""
 
-   ! print *, "---------- Testing of A1 terms ------------ "
+    ! print *, "---------- Testing of A1 terms ------------ "
     !print *, " The quantum correction: ", quantum_correction
-  !  print *, " The a1                  : ", a1
-   ! print *, " Test of a1             : ", a1_test
-   ! print *, " Test of wrong a1        : ", I1D
-   ! print *, " The wrong a1 Mie        : ", a1_Mie
-   ! print *, " Test of the wrong a1 Mie: ", Int_1D_Mie*prefactor
-   ! print *, " The wrong a1 Q1         : ", a1_Q1
-   ! print *, " Test of the wrong a1 Q1 : ", (Int_1D_Q1+Int_1D_Q2)*prefactor
-   ! print *, " a1+I_1C (numerical) : ", I1C+a1
+    !  print *, " The a1                  : ", a1
+    ! print *, " Test of a1             : ", a1_test
+    ! print *, " Test of wrong a1        : ", I1D
+    ! print *, " The wrong a1 Mie        : ", a1_Mie
+    ! print *, " Test of the wrong a1 Mie: ", Int_1D_Mie*prefactor
+    ! print *, " The wrong a1 Q1         : ", a1_Q1
+    ! print *, " Test of the wrong a1 Q1 : ", (Int_1D_Q1+Int_1D_Q2)*prefactor
+    ! print *, " a1+I_1C (numerical) : ", I1C+a1
     !print *, " I_1B (from d to sigma): ", I1B
-   ! print *, " I_1C (from sigma to sigma_eff): ", I1C
-  !  print *, " Mortens parameter:  ", Int_Morten*prefactor
-  !  print *, " a1 Morten:          ", a1_Mie-Int_Morten*prefactor
-  !  print *, " -------------------------------------------"
+    ! print *, " I_1C (from sigma to sigma_eff): ", I1C
+    !  print *, " Mortens parameter:  ", Int_Morten*prefactor
+    !  print *, " a1 Morten:          ", a1_Mie-Int_Morten*prefactor
+    !  print *, " -------------------------------------------"
 
   end subroutine test_a1_integration
 
   subroutine trapz_integration(nc,T,V,n,func,a,b,Nr,Int,spec)
-  !--------------------------------------------------------------------
-  !  2018-03-14, Oivind Wilhelmsen
-  !
-  !  This function obtains the numerical integral of func
-  !  from a to b with N number of steps.
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-03-14, Oivind Wilhelmsen
+    !
+    !  This function obtains the numerical integral of func
+    !  from a to b with N number of steps.
+    !---------------------------------------------------------------------
     integer, intent(in) :: nc             ! Number of components
     real, intent(in) :: T,V,n(nc)         ! State variables
     external :: func                      ! Subroutine to integrate, f(r)
@@ -425,23 +423,23 @@ contains
     ! We now perform a trapezoidal integration
     do i= 1, Nr
 
-      if (present(spec)) then
-        ! Evaluate the subroutine
-        call  func(nc,T,V,n,r,spec,f_val)
-      else
-        call  func(nc,T,V,n,r,f_val)
-      end if
+       if (present(spec)) then
+          ! Evaluate the subroutine
+          call  func(nc,T,V,n,r,spec,f_val)
+       else
+          call  func(nc,T,V,n,r,f_val)
+       end if
 
-      if (i==1) then
-        Int=Int+f_val
-      elseif(i==Nr) then
-        Int=Int+f_val
-      else
-        Int=Int+2.0*f_val
-      end if
+       if (i==1) then
+          Int=Int+f_val
+       elseif(i==Nr) then
+          Int=Int+f_val
+       else
+          Int=Int+2.0*f_val
+       end if
 
-      ! Update r
-      r=r+dr
+       ! Update r
+       r=r+dr
     end do
     ! Multiply by the prefactors
     Int=((b-a)/(2.0*Nr))*Int
@@ -449,12 +447,12 @@ contains
   end subroutine trapz_integration
 
   subroutine find_approximate_epsilon_eff(nc,T,V,n,func,a,b,Nr,Minimum)
-  !--------------------------------------------------------------------
-  !  2018-03-14, Oivind Wilhelmsen
-  !
-  !  This function obtains the numerical integral of func
-  !  from a to b with N number of steps.
-  !---------------------------------------------------------------------
+    !--------------------------------------------------------------------
+    !  2018-03-14, Oivind Wilhelmsen
+    !
+    !  This function obtains the numerical integral of func
+    !  from a to b with N number of steps.
+    !---------------------------------------------------------------------
     integer, intent(in) :: nc             ! Number of components
     real, intent(in) :: T,V,n(nc)         ! State variables
     external :: func                      ! Subroutine to integrate, f(r)
@@ -474,14 +472,14 @@ contains
     ! We now perform a trapezoidal integration
     do i= 1, Nr
 
-      call  func(nc,T,V,n,r,f_val)
+       call  func(nc,T,V,n,r,f_val)
 
-      if (f_val<Minimum) then
-        Minimum=f_val
-      end if
+       if (f_val<Minimum) then
+          Minimum=f_val
+       end if
 
-      ! Update r
-      r=r+dr
+       ! Update r
+       r=r+dr
     end do
   end subroutine find_approximate_epsilon_eff
 
@@ -543,12 +541,12 @@ contains
     call get_rdf(nc,T,V,n,r,g)
 
     if (spec<3) then
-      call get_u_part(T,r,spec,U_divk)
-      out_var=g*(U_divk**2)*r**2
+       call get_u_part(T,r,spec,U_divk)
+       out_var=g*(U_divk**2)*r**2
     elseif (spec==3) then
-      call get_u_part(T,r,0,U_divk_1)
-      call get_u_part(T,r,1,U_divk_2)
-      out_var=g*(U_divk_1*U_divk_2)*r**2
+       call get_u_part(T,r,0,U_divk_1)
+       call get_u_part(T,r,1,U_divk_2)
+       out_var=g*(U_divk_1*U_divk_2)*r**2
     end if
 
   end subroutine a2_term_integral_argument
@@ -589,9 +587,9 @@ contains
     real :: U_divk, arg
 
     if (r > 1.0e-300) then
-      call get_FH_potential(T,r,spec,U_divk)
+       call get_FH_potential(T,r,spec,U_divk)
     else
-      U_divk = expMax
+       U_divk = expMax
     endif
     arg = 1.0 - exp(-U_divk/T)
     out_var=arg*r**2
@@ -625,36 +623,36 @@ contains
     r_m=(sigma_r)**m
 
     if (spec==0) then
-      U_divk=r_n-r_m
+       U_divk=r_n-r_m
     elseif (spec==1) then
 
-      r_2=en_r**2
+       r_2=en_r**2
 
-      D=(h_const**2)/(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T)
+       D=(h_const**2)/(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T)
 
-      ! The modified interaction potential and derivatives
-      product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
-      U_divk=D*product_q1
+       ! The modified interaction potential and derivatives
+       product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
+       U_divk=D*product_q1
 
     elseif(spec==2) then
 
-      r_4=en_r**4
-      D2=((h_const**2)&
-           /(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T))**2
+       r_4=en_r**4
+       D2=((h_const**2)&
+            /(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T))**2
 
-      ! The modified interaction potential and its T-derivatives
-      product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
+       ! The modified interaction potential and its T-derivatives
+       product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
 
-      ! The interaction potential
-      U_divk=D2*product_q2
+       ! The interaction potential
+       U_divk=D2*product_q2
     else
-      U_divk=0
+       U_divk=0
     end if
 
-     ! Multiply everything by the appropriate prefactor:
-     U_divk=U_divk*mie_c_factor(saftvrmie_param%comp(1)%lambda_r,&
-          saftvrmie_param%comp(1)%lambda_a)*&
-          saftvrmie_param%comp(1)%eps_depth_divk
+    ! Multiply everything by the appropriate prefactor:
+    U_divk=U_divk*mie_c_factor(saftvrmie_param%comp(1)%lambda_r,&
+         saftvrmie_param%comp(1)%lambda_a)*&
+         saftvrmie_param%comp(1)%eps_depth_divk
   end subroutine get_u_part
 
   subroutine get_FH_potential(T,r,spec,U_divk)
@@ -686,18 +684,18 @@ contains
     U_divk=r_n-r_m
 
     if (spec>=1) then
-      r_2=en_r**2
-      D=(h_const**2)/(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T)
-      product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
-      U_divk = U_divk + D*product_q1
+       r_2=en_r**2
+       D=(h_const**2)/(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T)
+       product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
+       U_divk = U_divk + D*product_q1
     end if
 
     if(spec>=2) then
-      r_4=en_r**4
-      D2=((h_const**2)&
-           /(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T))**2
-      product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
-      U_divk = U_divk + D2*product_q2
+       r_4=en_r**4
+       D2=((h_const**2)&
+            /(48.0*(pi**2)*saftvrmie_param%comp(1)%mass*kB_const*T))**2
+       product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
+       U_divk = U_divk + D2*product_q2
     end if
 
     ! Multiply everything by the appropriate prefactor:
@@ -727,20 +725,20 @@ contains
     nIter = 100
     call init_saftvrmie_containers(nc,comp,setno,mixing)
     do i=1,nIter
-      T = Tmin + (Tmax-Tmin)*real(i-1)/(nIter-1)
-      quantum_correction=0
-      quantum_correction_hs=0
-      call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-      call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B,.false.)
-      quantum_correction=1
-      quantum_correction_hs=1
-      call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-      call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B1,.false.)
-      quantum_correction=2
-      quantum_correction_hs=2
-      call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-      call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B2,.false.)
-      write(20,*) T, Int_B, Int_B1, Int_B2
+       T = Tmin + (Tmax-Tmin)*real(i-1)/(nIter-1)
+       quantum_correction=0
+       quantum_correction_hs=0
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B,.false.)
+       quantum_correction=1
+       quantum_correction_hs=1
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B1,.false.)
+       quantum_correction=2
+       quantum_correction_hs=2
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B2,.false.)
+       write(20,*) T, Int_B, Int_B1, Int_B2
     enddo
     close(20)
     stop

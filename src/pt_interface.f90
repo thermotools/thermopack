@@ -1,9 +1,6 @@
 !---------------------------------------------------------------------
-! Module and subroutines for the Quatum-SAFT-VR-Mie (QSAFT-VR-MIE)
-! Equation of State implmented in Thermopack.
-! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
-! Spring 2018, Imperial College London, UK
-! © SINTEF Energy Research. All rights reserved.
+! Interface for Barker-Henderson perturbation theory models
+! Programmed by: M. Hammer
 !---------------------------------------------------------------------
 
 module bh_interface
@@ -34,7 +31,7 @@ contains
     !
     bh_model = cbeos%subeosidx
     if (cbeos%subeosidx == eosSAFT_VR_MIE) then
-      call init_saftvrmie(nc,comp,cbeos,setno,mixing)
+       call init_saftvrmie(nc,comp,cbeos,setno,mixing)
     endif
   end subroutine init_BH_pert_model
 
@@ -52,7 +49,7 @@ contains
     real :: zeta
     !
     if (bh_model == eosSAFT_VR_MIE) then
-      zeta = calc_saftvrmie_zeta(nc,T,V,n)
+       zeta = calc_saftvrmie_zeta(nc,T,V,n)
     endif
 
   end function calc_BH_zeta
@@ -75,8 +72,8 @@ contains
     real, optional, dimension(nc,nc), intent(out) :: F_nn
     !
     if (bh_model == eosSAFT_VR_MIE) then
-      call calcFresSAFTVRMie(nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
-           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+       call calcFresSAFTVRMie(nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+            F_VV,F_TV,F_Tn,F_Vn,F_nn)
     endif
   end subroutine calcFresBH
 

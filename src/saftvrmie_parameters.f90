@@ -1,10 +1,8 @@
- !---------------------------------------------------------------------
- ! Module containing the parameters for the Quatum-SAFT-VR-Mie
- ! Equation of State implmented in Thermopack.
- ! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
- ! Spring 2018, Imperial College London, UK
- ! © SINTEF Energy Research. All rights reserved.
- !---------------------------------------------------------------------
+!---------------------------------------------------------------------
+! Module containing the parameters for SAFT-VRQ Mie
+! Programmed by: M. Hammer, A. Aasen and Mr. Wilhelmsen
+! Spring 2018, Imperial College London, UK
+!---------------------------------------------------------------------
 module saftvrmie_parameters
   use AssocSchemeUtils
   use eosdata, only: eosSAFT_VR_MIE, eosLJsplined
@@ -17,27 +15,27 @@ module saftvrmie_parameters
   !> SAFT-VRQ Mie EoS
   ! ---------------------------------------------------------------------------
   type :: saftvrmie_data
-    sequence
-    integer :: eosidx
-    character (len=10) :: compName
-    ! Pure component fitted parameters.
-    real :: m        !< [-]. Mean number of segments.
-    real :: sigma    !< [m]. Temperature-independent segment diameter.
-    real :: eps_depth_divk !< [K]. Well depth divided by Boltzmann's c.
-    real :: lambda_a !< [] attractive exponent of the Mie potential
-    real :: lambda_r !< [] repulsive exponent of the Mie potential
-    real :: mass     !< Segment mass, i.e. molecule mass dividided by number of segments [kg]
-    ! Association parameters.
-    real :: eps  !< [J/mol].
-    real :: beta !< [-]. Also known as kappa in SAFT literature.
-    !real :: rc  !< [m]. range of association
+     sequence
+     integer :: eosidx
+     character (len=10) :: compName
+     ! Pure component fitted parameters.
+     real :: m        !< [-]. Mean number of segments.
+     real :: sigma    !< [m]. Temperature-independent segment diameter.
+     real :: eps_depth_divk !< [K]. Well depth divided by Boltzmann's c.
+     real :: lambda_a !< [] attractive exponent of the Mie potential
+     real :: lambda_r !< [] repulsive exponent of the Mie potential
+     real :: mass     !< Segment mass, i.e. molecule mass dividided by number of segments [kg]
+     ! Association parameters.
+     real :: eps  !< [J/mol].
+     real :: beta !< [-]. Also known as kappa in SAFT literature.
+     !real :: rc  !< [m]. range of association
 
-    ! Association scheme.
-    integer :: assoc_scheme
-    ! Order of Feynman--Hibbs correction (nonzero only for quantum fluids).
-    integer :: fh_order
-    ! Parameter set number
-    integer :: setno
+     ! Association scheme.
+     integer :: assoc_scheme
+     ! Order of Feynman--Hibbs correction (nonzero only for quantum fluids).
+     integer :: fh_order
+     ! Parameter set number
+     integer :: setno
   end type saftvrmie_data
 
   ! Lafitte et al. 2013: 10.1063/1.4819786
@@ -320,13 +318,13 @@ contains
     idx = 1
     do while (idx <= nMiemodels .and. .not. found)
 
-      if ((eosidx==Miearray(idx)%eosidx) .and. &
-           str_eq(compName, Miearray(idx)%compName) .and. &
-           setno==MieArray(idx)%setno) then
-        found = .true.
-      else
-        idx = idx + 1
-      endif
+       if ((eosidx==Miearray(idx)%eosidx) .and. &
+            str_eq(compName, Miearray(idx)%compName) .and. &
+            setno==MieArray(idx)%setno) then
+          found = .true.
+       else
+          idx = idx + 1
+       endif
     enddo
 
     if (.not. found) then
@@ -400,18 +398,18 @@ contains
 
     idx = getMiedataIdx(eosidx,compName,setno)
     if ( idx == 0 ) then
-      if (present(found)) then
-        found = .false.
-      else
-        write(message,*) "saftvrmie_interface::getSaftVrMiePureFluidParams"//&
-             "No SAFT-VR Mie paramaters for "//trim(compName)
-        call stoperror(trim(message))
-      endif
-      return
+       if (present(found)) then
+          found = .false.
+       else
+          write(message,*) "saftvrmie_interface::getSaftVrMiePureFluidParams"//&
+               "No SAFT-VR Mie paramaters for "//trim(compName)
+          call stoperror(trim(message))
+       endif
+       return
     else
-      if (present(found)) then
-        found = .true.
-      endif
+       if (present(found)) then
+          found = .true.
+       endif
     end if
 
     saftvrmie_comp%m = Miearray(idx)%m
@@ -442,13 +440,13 @@ contains
     integer :: i
 
     do i=1,nc
-      call getSaftVrMiePureFluidParams(trim(comp(i)%ident),eosidx,setno(i),&
-           saftvrmie_comp(i),fh_orders(i), found)
-      if (present(found)) then
-        if (.not. found) then
-          return
-        endif
-      endif
+       call getSaftVrMiePureFluidParams(trim(comp(i)%ident),eosidx,setno(i),&
+            saftvrmie_comp(i),fh_orders(i), found)
+       if (present(found)) then
+          if (.not. found) then
+             return
+          endif
+       endif
     enddo
   end subroutine getSaftVrMieParams
 
