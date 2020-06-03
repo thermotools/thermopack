@@ -343,8 +343,8 @@ contains
       converged = .false.
     endif
 
-90  format (1x,'Iteration ',i3,', residual ',es11.5)
-100 format (1x,'Solver', i2, ' converged after', i4,' iterations with residual ',es11.5)
+90  format (1x,'Iteration ',i3,', residual ',es12.5)
+100 format (1x,'Solver', i2, ' converged after', i4,' iterations with residual ',es12.5)
 
   end function converged
 
