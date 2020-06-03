@@ -30,7 +30,7 @@
   end interface
 
   interface
-    subroutine trend_thermo(t,p,z,phase,lnfug,lnfugt,lnfugp,lnfugx)
+    subroutine trend_thermo(t,p,z,phase,lnfug,lnfugt,lnfugp,lnfugn)
       implicit none
       ! Transferred variables
       integer, intent(in) :: phase !< Phase identifyer
@@ -40,7 +40,7 @@
       real, dimension(:), intent(out) :: lnfug !< Logarithm of fugasity coefficient
       real, optional, dimension(:), intent(out) :: lnfugt !< 1/K - Logarithm of fugasity coefficient differential wrpt. temperature
       real, optional, dimension(:), intent(out) :: lnfugp !< 1/Pa - Logarithm of fugasity coefficient differential wrpt. pressure
-      real, optional, dimension(:,:), intent(out) :: lnfugx !< Logarithm of fugasity coefficient differential wrpt. mole numbers
+      real, optional, dimension(:,:), intent(out) :: lnfugn !< Logarithm of fugasity coefficient differential wrpt. mole numbers.
     end subroutine trend_thermo
   end interface
 
@@ -59,7 +59,7 @@
   end interface
 
   interface
-    subroutine trend_thermo_dens(t,rho,z,lnfug,lnfugt,lnfugp,lnfugx)
+    subroutine trend_thermo_dens(t,rho,z,lnfug,lnfugt,lnfugp,lnfugn)
       implicit none
       ! Transferred variables
       real, intent(in) :: rho !< mol/m3 - Density
@@ -68,7 +68,7 @@
       real, dimension(:), intent(out) :: lnfug !< Logarithm of fugasity coefficient
       real, optional, dimension(:), intent(out) :: lnfugt !< 1/K - Logarithm of fugasity coefficient differential wrpt. temperature
       real, optional, dimension(:), intent(out) :: lnfugp !< 1/Pa - Logarithm of fugasity coefficient differential wrpt. pressure
-      real, optional, dimension(:,:), intent(out) :: lnfugx !< Logarithm of fugasity coefficient differential wrpt. mole numbers
+      real, optional, dimension(:,:), intent(out) :: lnfugn !< Logarithm of fugasity coefficient differential wrpt. mole numbers
     end subroutine trend_thermo_dens
   end interface
 
@@ -91,7 +91,7 @@
       implicit none
       ! Transferred variables
       real, intent(in) :: t !< K - Temperature
-      real, intent(in) :: v !< m3/mol - Specific volume
+    real, intent(in) :: v !< m3 - Specific volume
       real, dimension(:), intent(in) :: n !< Mol numbers
       real, optional, intent(out) :: dpdt !< Pa/K - Pressure differential wrpt. temperature
       real, optional, intent(out) :: dpdv !< Pa/m3 - Pressure differential wrpt. volume
@@ -181,7 +181,7 @@
       real, intent(out) :: tci !< K - Critical temperature
       real, intent(out) :: pci !< Pa - Critical pressure
       real, intent(out) :: oi  !< Asentric factor
-      real, optional, intent(out) :: vci !< Cricital specific volume m3/mol
+      real, optional, intent(out) :: vci !< Critical specific volume (m3/mol)
       real, optional, intent(out) :: tnbi !< Normal boiling point temperature
     end subroutine trend_getcrit
   end interface
