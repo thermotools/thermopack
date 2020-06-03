@@ -56,13 +56,11 @@ contains
   !! \param dZdt Temperature derivative [1/K]
   !! \param dZdp Pressure derivative [1/Pa]
   !! \param dZdz Composition derivative [-]
-  !! \param numder Analytical derivatives if true (default false)
   !!
   !! \retval Zfac The Z-factor [-]
   !!
   !! \author Oivind W
-  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz,&
-       numder) result (Zfac)
+  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz) result (Zfac)
     use compdata, only: gendata
     use eosdata, only: eoscubic
     implicit none
@@ -75,24 +73,10 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: dZdt, dZdp
     real, optional, dimension(nc), intent(out) :: dZdz
-    logical, optional, intent(in) :: numder
     real :: Zfac
-    ! Locals
-    logical :: numder_local
-    !
-    ! If values are not present, then assign deafult values
-    numder_local = .false.
-    if (present(numder)) then
-      numder_local = numder
-    end if
 
-    if(numder_local) then ! Numerical derivatives
-      Zfac = fork_Zfac_calculation(nc,comp,cbeos,T,P,Z,phase,gflag_opt)
-      call tp_numderiv(nc,comp,cbeos,T,P,Z,phase,'ZFAC',gflag_opt,dZdt,dZdp,dZdz)
-    else
-      Zfac = fork_Zfac_calculation(nc,comp,cbeos,T,P,Z/sum(Z),phase,gflag_opt,&
-           dZdt,dZdp,dZdz)
-    endif
+    Zfac = fork_Zfac_calculation(nc,comp,cbeos,T,P,Z/sum(Z),phase,gflag_opt,&
+         dZdt,dZdp,dZdz)
 
   end function TP_CalcZfac
 
@@ -112,13 +96,12 @@ contains
   !! \param dhdt Temperature derivative [J/molK]
   !! \param dhdp Pressure derivative [J/molPa]
   !! \param dhdz Composition derivative [J/mol^2]
-  !! \param numder Analytical derivatives if true (default false)
   !!
   !! \retval enthalpy The enthalpy with derivatives [-]
   !!
   !! \author Oivind W
   function TP_CalcEnthalpy(nc,comp,cbeos,T,P,n,phase,residual,&
-       dhdt,dhdp,dhdz,numder,gflag_opt) result (enthalpy)
+       dhdt,dhdp,dhdz,gflag_opt) result (enthalpy)
     use tpcubic
     use ideal
     use stringmod, only: str_eq
@@ -137,7 +120,6 @@ contains
     real, intent(in) :: T, P
     real, optional, intent(out) :: dhdt, dhdp
     real, optional, dimension(nc), intent(out) :: dhdz
-    logical, optional, intent(in) :: numder
     integer, intent(in) :: phase
     logical, intent(in) :: residual
     integer, optional, intent(in) :: gflag_opt
@@ -145,14 +127,7 @@ contains
     ! Locals
     real :: h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix
     real, dimension(nce) :: dhdz_ideal_mix, ne
-    logical :: numder_local
     !
-    ! If values are not present, then assign deafult values
-    numder_local = .false.
-    if (present(numder)) then
-      numder_local = numder
-    end if
-
     call apparent_to_real_mole_numbers(n,ne,nc)
     if (nc /= nce .and. present(dhdz)) then
       call stoperror("TP_CalcEnthalpy: dhdn not yet implemented for apparent mode")
@@ -178,17 +153,8 @@ contains
       call calc_multiparameter_idealmix_enthalpy(nc, cbeos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
     else
-      if(numder_local) then ! Numerical derivatives
-        call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,gflag_opt=gflag_opt)
-        call tp_numderiv(nce,comp,cbeos,T,P,ne,phase,'ENTHALPY',gflag_opt,dhdt,dhdp,dhdz)
-        if(present(dhdz)) then ! Numerical composition derivative
-          ! NB: Remember that d(H)/dNi=d(Nh)/dNi
-          dhdz=dhdz+enthalpy
-        end if
-      else
-        call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
-             dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
-      endif
+       call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
+            dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
     endif
 
     if (cbeos%volumeShiftId /= NOSHIFT) then
@@ -227,13 +193,12 @@ contains
   !! \param dsdt Temperature derivative [J/molK]
   !! \param dsdp Pressure derivative [J/molPa]
   !! \param dsdz Composition derivative [J/mol^2]
-  !! \param numder Analytical derivatives if true (default false)
   !!
   !! \retval entropy The entropy [J/mol K]
   !!
   !! \author Oivind W
   function TP_CalcEntropy(nc,comp,cbeos,T,P,n,phase,residual,&
-       dsdt,dsdp,dsdz,numder,gflag_opt) result (entropy)
+       dsdt,dsdp,dsdz,gflag_opt) result (entropy)
     use tpcubic
     use ideal
     use stringmod, only: str_eq
@@ -253,20 +218,12 @@ contains
     logical, intent(in) :: residual
     real, optional, intent(out) :: dsdt, dsdp
     real, optional, dimension(nc), intent(out) :: dsdz
-    logical, optional, intent(in) :: numder
     integer, intent(in) :: phase
     integer, optional, intent(in) :: gflag_opt
     real :: entropy
     ! Locals
     real :: S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix
     real, dimension(nce) :: dsdz_ideal_mix, ne
-    logical :: numder_local
-
-    ! If values are not present, then assign deafult values
-    numder_local = .false.
-    if (present(numder)) then
-      numder_local = numder
-    end if
 
     call apparent_to_real_mole_numbers(n,ne,nc)
     if (nc /= nce .and. present(dsdz)) then
@@ -292,18 +249,10 @@ contains
       call calc_multiparameter_idealmix_entropy(nc, cbeos, T, p, ne, phase, &
            entropy, dsdt, dsdp, dsdz)
     else
-      if(numder_local) then ! Numerical derivatives
-        call tp_numderiv(nce,comp,cbeos,T,P,ne,phase,'ENTROPY',gflag_opt,dsdt,dsdp,dsdz)
-        if(present(dsdz)) then ! Numerical composition derivative
-          ! NB: Remember that d(H)/dNi=d(Nh)/dNi
-          dsdz=dsdz+entropy
-        end if
-      else
-        call TP_ResidEntropy(nce,comp,cbeos,phase,T,P,ne,entropy,dSdt,dSdp,dSdz,gflag_opt)
-      endif
+       call TP_ResidEntropy(nce,comp,cbeos,phase,T,P,ne,entropy,dSdt,dSdp,dSdz,gflag_opt)
 
-      if (cbeos%volumeShiftId /= NOSHIFT) then
-        call volumeShiftEntropy(nce,comp,cbeos%volumeShiftId,T,P,ne,phase,&
+       if (cbeos%volumeShiftId /= NOSHIFT) then
+          call volumeShiftEntropy(nce,comp,cbeos%volumeShiftId,T,P,ne,phase,&
              entropy,dsdt,dsdp,dsdz)
       endif
     endif
@@ -502,12 +451,11 @@ contains
   !! \param dlnfdt Temperature derivative [1/K] (dlog(f)/dT)
   !! \param dlnfdp Pressure derivative [1/Pa]   (dlog(f)/dP)
   !! \param dlnfdz Composition derivative [1/mol] (dlog(f)/dNi)
-  !! \param numder Analytical derivatives if true (default false)
   !! \param lnfug Logarithm of the fugacity coefficients [-]
   !!
   !! \author Oivind W
   subroutine TP_CalcFugacity(nc,comp,cbeos,T,P,Z,phase,lnfug,&
-       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,numder,v)
+       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v)
     use tpcubic
     use LeeKesler, only: lkCalcFug
     use eosdata
@@ -524,16 +472,7 @@ contains
     real, dimension(nc), intent(out) :: lnfug
     real, optional, dimension(nc), intent(out) :: dlnfugdt, dlnfugdp
     real, optional, dimension(nc,nc), intent(out) :: dlnfugdn
-    logical, optional, intent(in) :: numder
     real, optional, intent(out) :: v !< Specific volume [mol/m3]
-    ! Locals
-    logical :: numder_local
-
-    ! If values are not present, then assign deafult values
-    numder_local = .false.
-    if (present(numder)) then
-      numder_local = numder
-    end if
 
     if (cbeos%eosidx == eosLK) then ! Lee-Kesler equations of state
       call lkCalcFug(nc,comp,cbeos,T,p,z,phase,lnfug,dlnfugdt,dlnfugdp,dlnfugdn,v)
@@ -541,14 +480,8 @@ contains
       call calc_multiparameter_idealmix_fugacity(nc, cbeos, T, p, Z, phase, &
            lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
     else
-      if(numder_local) then ! Numerical derivatives
-        call TP_lnfug(nc,comp,cbeos,phase,T,P,z,lnfug,gflag_opt=gflag_opt,v_out=v)
-        call tp_numderiv_matrix(nc,comp,cbeos,T,P,Z,phase,'FUGACITY',&
-             gflag_opt,dlnfugdt,dlnfugdp,dlnfugdn)
-      else
         call TP_lnfug(nc,comp,cbeos,phase,T,P,z,lnfug,&
              dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v)
-      endif
     endif
   end subroutine TP_CalcFugacity
 
@@ -1124,7 +1057,6 @@ contains
   !! \param dZdt Temperature derivative [1/K]
   !! \param dZdp Pressure derivative [1/Pa]
   !! \param dZdz Composition derivative [-]
-  !! \param numder Analytical derivatives if true (default false)
   !!
   !! \retval Zfac The Z-factor [-]
   !!
