@@ -38,7 +38,6 @@ contains
     ! Locals
     real :: F,F_T,F_V,F_n(1),F_TT,F_TV,F_VV,F_Tn(1),F_Vn(1),F_nn(1,1)
     real :: F19,F19_T,F19_V,F19_n(1),F19_TT,F19_TV,F19_VV,F19_Tn(1),F19_Vn(1),F19_nn(1,1)
-    real :: F32,F32_T,F32_V,F32_n(1),F32_TT,F32_TV,F32_VV,F32_Tn(1),F32_Vn(1),F32_nn(1,1)
 
     ! Up-to-date accurate reference equation of state
     call init_thermo("Thermopack", "NIST_MEOS", "Classic", 'Classic', 1, compstr, 1)

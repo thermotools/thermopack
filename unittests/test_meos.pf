@@ -380,7 +380,6 @@ contains
 
     ! residual enthalpy
     call m%calc_enthalpy(T,p   ,n,phase, q,    q_t,    q_p,    q_n, residual=.true.)
-    !print *, "H, H_t, H_p, H_n", q,    q_t,    q_p,    q_n
     call m%calc_enthalpy(T+dt,p,n,phase, q_dt, residual=.true.)
     call m%calc_enthalpy(T,p+dp,n,phase, q_dp, residual=.true.)
     call m%calc_enthalpy(T,p,n+dn,phase, q_dn, residual=.true.)
@@ -537,30 +536,21 @@ contains
 
     do i=1,np
 
-      if (abs(T(i)-m%tc)>1e-4*m%tc .or. abs(P(i)-m%pc)>1e-4*m%pc) then
-        cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
-        cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
-        sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
-        @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
-        @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
-        @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
+       if (abs(T(i)-m%tc)>1e-4*m%tc .or. abs(P(i)-m%pc)>1e-4*m%pc) then
+          cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
+          cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
+          sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
+          @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
+          @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
+          @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
 
-        cvVap_mod = m%cv(T(i),1/rhoVap(i))
-        cpVap_mod = m%cp(T(i),1/rhoVap(i))
-        sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
-        @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
-        @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
-        @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
-      end if
-
-      ! The following tests don't work, as small uncertainties in rho give large
-      ! uncertainties in P. I.e. rhoLiq and rhoVap need more sig figs for these
-      ! to work.
-      !
-      !call m%mp_pressure(rhoLiq(i),T(i),pLiq_mod)
-      !@assertEqual(P(i), pLiq_mod, releps*abs(P(i)))
-      !call m%mp_pressure(rhoVap(i),T(i),pVap_mod)
-      !@assertEqual(P(i), pVap_mod, releps*abs(P(i)))
+          cvVap_mod = m%cv(T(i),1/rhoVap(i))
+          cpVap_mod = m%cp(T(i),1/rhoVap(i))
+          sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
+          @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
+          @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
+          @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
+       end if
 
     end do
 
@@ -614,14 +604,10 @@ contains
          380.33, 378.99, 376.59, 373.03, 370.01, -1.0e10/)
 
     do i=1,np
-       !print *, i, T(i), P(i)
        if (abs(T(i)-m%tc)>1e-4*m%tc .or. abs(P(i)-m%pc)>1e-3*m%pc) then
           cvLiq_mod = m%cv(T(i),1/rhoLiq(i))
           cpLiq_mod = m%cp(T(i),1/rhoLiq(i))
           sosLiq_mod = m%speed_of_sound(T(i),1/rhoLiq(i))
-          !print *, cvLiq(i), cvLiq_mod, abs(cvLiq(i)-cvLiq_mod)/cvLiq(i)
-          !print *, cpLiq(i), cpLiq_mod, abs(cpLiq(i)-cpLiq_mod)/cpLiq(i)
-          !print *, sosLiq(i), sosLiq_mod, abs(sosLiq(i)-sosLiq_mod)/sosLiq(i)
           @assertEqual(cvLiq_mod, cvLiq(i), releps*abs(cvLiq(i)))
           @assertEqual(cpLiq_mod, cpLiq(i), releps*abs(cpLiq(i)))
           @assertEqual(sosLiq_mod, sosLiq(i), releps*abs(sosLiq(i)))
@@ -629,23 +615,12 @@ contains
           cvVap_mod = m%cv(T(i),1/rhoVap(i))
           cpVap_mod = m%cp(T(i),1/rhoVap(i))
           sosVap_mod = m%speed_of_sound(T(i),1/rhoVap(i))
-          !print *, cvVap(i), cvVap_mod, abs(cvVap(i)-cvVap_mod)/cvVap(i)
-          !print *, cpVap(i), cpVap_mod, abs(cpVap(i)-cpVap_mod)/cpVap(i)
-          !print *, sosVap(i), sosVap_mod, abs(sosVap(i)-sosVap_mod)/sosVap(i)
           @assertEqual(cvVap_mod, cvVap(i), releps*abs(cvVap(i)))
           @assertEqual(cpVap_mod, cpVap(i), releps*abs(cpVap(i)))
           @assertEqual(sosVap_mod, sosVap(i), releps*abs(sosVap(i)))
 
        end if
 
-       ! The following tests don't work, as small uncertainties in rho give large
-       ! uncertainties in P. I.e. rhoLiq and rhoVap need more sig figs for these
-       ! to work.
-       !
-       !call m%mp_pressure(rhoLiq(i),T(i),pLiq_mod)
-       !@assertEqual(P(i), pLiq_mod, releps*abs(P(i)))
-       !call m%mp_pressure(rhoVap(i),T(i),pVap_mod)
-       !@assertEqual(P(i), pVap_mod, releps*abs(P(i)))
 
     end do
 
@@ -678,14 +653,12 @@ contains
     releps = 1e-5
     do i=1,np-2
        call m%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
-       !print *, rhoLiq(i), rhoLiq_mod, abs(rhoLiq(i)-rhoLiq_mod)/rhoLiq(i)
        @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
     end do
 
     releps = 1e-4
     do i=1,np-2
        call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
-       !print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
        @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
     end do
 
@@ -720,14 +693,12 @@ contains
     releps = 5.5e-5
     do i=1,np-2
        call m%densitySolver(T(i), P(i), LIQPH, rhoLiq_mod, phase_found)
-       !print *, rhoLiq(i), rhoLiq_mod, abs(rhoLiq(i)-rhoLiq_mod)/rhoLiq(i)
        @assertEqual(rhoLiq(i), rhoLiq_mod, releps*abs(rhoLiq(i)))
     end do
 
     releps = 2e-4
     do i=1,np-2
        call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
-       !print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
        @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
     end do
 
@@ -799,7 +770,6 @@ contains
 
 
     do i=1,np
-       !print *, "i, T, P", i, T(i), P(i)
        if (T(i)<=31.0) then
           call m%calc_enthalpy(T(i),P(i),n, LIQPH, hLiq_mod, hLiq_mod_t, residual=.false.)
 
@@ -940,8 +910,6 @@ contains
     real :: T(np), P(np), rhoLiq(np), rhoVap(np)
     real :: rhoLiq_mod, rhoVap_mod
     real :: releps
-    !real :: pcrit, tcrit, rcrit, rcrit_mod
-    !real :: ptestfasit, ptest
 
     call m%init()
     Rgas_meos = m%Rgas_fit
@@ -1008,12 +976,6 @@ contains
     do i=1,np
        call m%densitySolver(T(i), P(i), VAPPH, rhoVap_mod, phase_found)
        @assertEqual(rhoVap(i), rhoVap_mod, releps*abs(rhoVap(i)))
-       ! print *, rhoVap(i), rhoVap_mod, abs(rhoVap(i)-rhoVap_mod)/rhoVap(i)
-       ! call m%mp_pressure(rhoVap(i), T(i), ptestfasit)
-       ! call m%mp_pressure(rhoVap_mod, T(i), ptest)
-       ! print *, rhoVap(i), ptestfasit
-       ! print *, rhoVap_mod, ptest
-       ! print *, " "
     end do
 
   end subroutine test_densitySolver_C3

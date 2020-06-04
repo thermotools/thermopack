@@ -185,8 +185,8 @@ contains
     beta = 0.9993
     betaL = 1 - beta
     call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
-    print *,T, p, beta, betaL, phase
-    stop
+    !print *,T, p, beta, betaL, phase
+    !stop
     @assertTrue(T > 0)
     @assertTrue(p > 0)
     @assertTrue(beta > 0)
