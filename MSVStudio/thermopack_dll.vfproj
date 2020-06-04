@@ -5,7 +5,7 @@
 		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" StringLengthArgPassing="strLenArgsMixed" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
 				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -15,7 +15,7 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" StringLengthArgPassing="strLenArgsMixed" ExternalNameUnderscore="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
 				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -25,8 +25,8 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Debug|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" StringLengthArgPassing="strLenArgsMixed" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
@@ -35,8 +35,8 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" StringLengthArgPassing="strLenArgsMixed" ExternalNameUnderscore="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>

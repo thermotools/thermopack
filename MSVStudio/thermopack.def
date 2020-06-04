@@ -1,0 +1,23 @@
+; @NAME@.def : Declares the module parameters.
+
+LIBRARY
+
+EXPORTS
+	get_phase_flags_
+	eoslibinit_mp_init_thermo_
+	solideos_mp_solid_init_
+	eos_mp_specificvolume_
+	eos_mp_zfac_
+	eos_mp_thermo_
+	eos_mp_entropy_
+	eos_mp_enthalpy_
+	eos_mp_compmoleweight_
+	eos_mp_idealenthalpysingle_
+	speed_of_sound_mp_sound_velocity_2ph_
+	ph_solver_mp_setphtolerance_
+	tp_solver_mp_twophasetpflash_
+	ps_solver_mp_twophasepsflash_
+	uv_solver_mp_twophaseuvflash_
+	ph_solver_mp_twophasephflash_
+    sv_solver_mp_twophasesvflash_
+    thermo_utils_mp_guessphase_
