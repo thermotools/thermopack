@@ -714,4 +714,10 @@ contains
     end if
   end subroutine mp_pressure
 
+
+  !> Clean up MEoS
+  subroutine cleanup_meos ()
+    Rgas_meos = Rgas_default ! Revert any redefinition of Rgas_meos
+  end subroutine cleanup_meos
+
 end module multiparameter_base

@@ -436,6 +436,7 @@ contains
     use parameters, only: complist
     use tpselect, only: deAllocateEosCubic
     use tpvar, only: comp, cbeos, cbeos_alternative
+    use multiparameter_base, only: cleanup_meos
     implicit none
     integer :: stat, i
     !
@@ -459,6 +460,7 @@ contains
       if (stat /= 0) call stoperror('Not able to deallocate cbeos')
     endif
 
+    call cleanup_meos() ! Clean up multiparameter EoS
   end subroutine cleanup_eos
 
 end module eoslibinit
