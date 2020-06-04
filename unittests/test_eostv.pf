@@ -12,7 +12,7 @@ contains
     ! Test TV routines for single component, single-phase CO2
     !
     ! GL, 2015-01-28
-    integer, parameter :: n = 40
+    integer, parameter :: n = 30
     real :: t, v
     real :: p, dpdt, dpdv, dpdt_num, dpdv_num
     real :: u, dudt, dudv, dudt_num, dudv_num
@@ -129,7 +129,7 @@ contains
         @assertTrue( abs((dpdv-dpdv_num)/dpdv) < tol )
         @assertTrue( abs((dudt-dudt_num)/dudt) < tol )
         @assertTrue( abs((dudv-dudv_num)/dudv) < tol )
-        @assertTrue( abs((dydt-dydt_num)/dydt) < tol )
+        @assertTrue( abs((dydt-dydt_num)/dydt) < 10*tol )
         @assertTrue( abs((dydv-dydv_num)/dydv) < tol )
 
         @assertTrue( abs((s-s_alt)/s) < tol )
@@ -266,6 +266,7 @@ contains
     real :: F,F_T,F_V,F_n(ncomp),F_TT,F_TV,F_VV,F_Tn(ncomp)
     real :: F_Vn(ncomp),F_nn(ncomp,ncomp),F_VVV
     real :: F2,F2_T,F2_V,F2_n(ncomp),F2_VV
+    real :: F3,F3_T,F3_V,F3_n(ncomp),F3_VV
     real, dimension(ncomp) :: n, dn, x
     integer :: i, j
     character(len=100) :: mixing_l
@@ -480,14 +481,14 @@ contains
     !
     do it = 1, nt
       do iv = 1, nv
-        t = tmin + (it - 1)*(tmax - tmin)/(nt - 1) 
+        t = tmin + (it - 1)*(tmax - tmin)/(nt - 1)
         v = vmin + (iv - 1)*(vmax - vmin)/(nv - 1)
         !
         ! Test chemical potential
         ! =======================
         !
         z = n
-        call chemical_potential(t, v, z, mu=mu)  
+        call chemical_potential(t, v, z, mu=mu)
         !
         ! Compute numerical derivative of Helmholtz free energy for
         ! component 1
