@@ -1,4 +1,4 @@
-!> Initialization of
+!> Initialize thermodynamic models
 !!
 !! \author MH, 2014-02
 module eoslibinit
@@ -306,7 +306,7 @@ contains
         if (present(csp_eos)) then
           csp_refEos = uppercase(csp_eos)
         else
-          csp_refEos = "MBWR32"
+          csp_refEos = "NIST_MEOS"
           if (.not. silent_init) &
                print *,'init_thermopack: CSP model defaulted to MBWR32'
         endif
