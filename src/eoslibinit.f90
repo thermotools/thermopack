@@ -62,9 +62,6 @@ contains
     if (present(silent)) then
       silent_init = silent
     endif
-    !
-    ! Initialize libnum
-    call set_numconstants()
 
     ! Store eos model information
     model = trim(eos)
