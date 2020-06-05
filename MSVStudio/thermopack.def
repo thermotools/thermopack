@@ -19,5 +19,25 @@ EXPORTS
 	ps_solver_mp_twophasepsflash_
 	uv_solver_mp_twophaseuvflash_
 	ph_solver_mp_twophasephflash_
-    sv_solver_mp_twophasesvflash_
-    thermo_utils_mp_guessphase_
+	sv_solver_mp_twophasesvflash_
+	thermo_utils_mp_guessphase_
+	tpconst_mp_rgas_
+	tpconst_mp_tptmin_
+	tpconst_mp_tppmin_
+	eostv_mp_internal_energy_
+	eostv_mp_entropytv_
+	eostv_mp_pressure_
+	eostv_mp_thermotv_
+	eostv_mp_enthalpytv_
+	eostv_mp_free_energy_
+	eostv_mp_chemical_potential_
+	saturation_mp_safe_bubt_
+	saturation_mp_safe_bubp_
+	saturation_mp_safe_dewt_
+	saturation_mp_safe_dewp_
+	saturation_curve_mp_envelopeplot_
+	binaryplot_mp_vllebinaryxy_
+	critical_mp_calccriticaltv_
+	eostv_mp_virial_coefficients_
+	eostv_mp_secondvirialcoeffmatrix_
+	eostv_mp_binarythirdvirialcoeffmatrix_

@@ -22,7 +22,7 @@ def get_platform_specifics():
     dyn_lib = ""
     if platform == "linux" or platform == "linux2":
         # linux
-        # Assuming GNU FORTRAN 
+        # Assuming GNU FORTRAN
         prefix = G_PREFIX
         module = G_MODULE
         postfix = G_POSTFIX
@@ -34,7 +34,7 @@ def get_platform_specifics():
         exit(1)
     elif platform == "win32":
         # Windows
-        # Assuming INTEL FORTRAN 
+        # Assuming INTEL FORTRAN
         prefix = I_PREFIX #"_"
         module = I_MODULE
         postfix = I_POSTFIX
@@ -42,7 +42,7 @@ def get_platform_specifics():
         os_id = "win"
     elif platform == "win64":
         # Windows 64-bit
-        # Assuming INTEL FORTRAN 
+        # Assuming INTEL FORTRAN
         prefix = I_PREFIX
         module = I_MODULE
         postfix = I_POSTFIX
@@ -60,6 +60,7 @@ class thermopack(object):
         Load libthermopack.so and initialize function pointers
         """
         self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
+        print(dyn_lib)
         if os_id == "linux":
             self.tp = cdll.LoadLibrary(dyn_lib)
         else:
@@ -79,6 +80,10 @@ class thermopack(object):
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
+        self.nc = None
+        self.Rgas = None
+        self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
+        self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
 
         # Eos interface
@@ -108,28 +113,29 @@ class thermopack(object):
         self.guess_phase = getattr(self.tp, self.get_export_name("thermo_utils", "guessphase"))
 
         # TV interfaces
-        # self.s_specific_internal_energy_tv = self.tp.specific_internal_energy_tv_
-        # self.s_specific_entropy_tv = self.tp.specific_entropy_tv_
-        # self.s_pressure_v = self.tp.pressure_v_
-        # self.s_lnphi_tv = self.tp.lnphi_tv_
-        # self.s_chempottv = self.tp.chempottv_
+        self.s_internal_energy_tv = getattr(self.tp, self.get_export_name("eostv", "internal_energy"))
+        self.s_entropy_tv = getattr(self.tp, self.get_export_name("eostv", "entropytv"))
+        self.s_pressure_tv = getattr(self.tp, self.get_export_name("eostv", "pressure"))
+        self.s_lnphi_tv = getattr(self.tp, self.get_export_name("eostv", "thermotv"))
+        self.s_enthalpy_tv = getattr(self.tp, self.get_export_name("eostv", "enthalpytv"))
+        self.s_helmholtz_energy = getattr(self.tp, self.get_export_name("eostv", "free_energy"))
+        self.s_chempot = getattr(self.tp, self.get_export_name("eostv", "chemical_potential"))
 
         # Saturation properties
-        # self.s_bubble_p = self.tp.bubble_p_
-        # self.s_bubble_t = self.tp.bubble_t_
-        # self.s_dew_p = self.tp.dew_p_
-        # self.s_dew_t = self.tp.dew_t_
-        # self.s_envelope_twophase = self.tp.envelope_twophase_
-        # self.s_envelope_isentrope_cross_single = self.tp.envelope_isentrope_cross_single_
-        # self.s_vllebinarypxy = self.tp.vllebinarypxy_
-
+        self.s_bubble_t = getattr(self.tp, self.get_export_name("saturation", "safe_bubt"))
+        self.s_bubble_p = getattr(self.tp, self.get_export_name("saturation", "safe_bubp"))
+        self.s_dew_t = getattr(self.tp, self.get_export_name("saturation", "safe_dewt"))
+        self.s_dew_p = getattr(self.tp, self.get_export_name("saturation", "safe_dewp"))
+        self.s_envelope_plot = getattr(self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
+        self.s_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
         # Stability
-        # self.s_stability_limit_line_tp = self.tp.stability_limit_line_tp_
-        # self.s_stability_limit_liquid_p = self.tp.stability_limit_liquid_p_
-        # self.s_stability_limit_vapor_p = self.tp.stability_limit_vapor_p_
-        # self.s_critical = self.tp.critical_
-        # self.s_pseudo_critical = self.tp.pseudo_critical_
-        # self.s_calculatecriticaltvp = self.tp.calculatecriticaltvp_
+        self.s_crit_tv = getattr(self.tp, self.get_export_name("critical", "calccriticaltv"))
+
+        # Virials
+        self.s_virial_coeffcients = getattr(self.tp, self.get_export_name("eostv", "virial_coefficients"))
+        self.s_second_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "secondvirialcoeffmatrix"))
+        self.s_binary_third_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "binarythirdvirialcoeffmatrix"))
+
 
     def activate(self):
         """Activate this instance of thermopack parameters for calculation
@@ -138,7 +144,7 @@ class thermopack(object):
             print("Activate")
         else:
             print("Check for default....")
-    
+
     def get_export_name(self, module, method):
         """Generate library export name based on module and method name
 
@@ -148,7 +154,7 @@ class thermopack(object):
 
         Returns:
             string: Library export name
-        """        
+        """
         return self.prefix + module + "_" + self.module + "_" + method + self.postfix
 
     #################################
@@ -275,6 +281,8 @@ class thermopack(object):
                                     csp_eos_len,
                                     csp_ref_comp_len,
                                     TrendEosForCp_len)
+        self.nc = ncomp
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
 
     def init_solid(self,scomp):
         """
@@ -299,7 +307,7 @@ class thermopack(object):
 
         Returns:
             integer: Component FORTRAN index
-        """        
+        """
         comp_c = c_char_p(comp.encode('ascii'))
         self.parameters_getcomp.argtypes = [c_char_p]
         self.parameters_getcomp.restype = c_int
@@ -326,7 +334,7 @@ class thermopack(object):
 
         Returns:
             [integer]: Phase integer identifiers
-        """        
+        """
         iTWOPH = c_int()
         iLIQPH = c_int()
         iVAPPH = c_int()
@@ -359,9 +367,15 @@ class thermopack(object):
 
         Returns:
             string: Phase type
-        """        
+        """
         phase_string_list = ["TWO_PHASE", "LIQUID", "VAPOR", "MINIMUM_GIBBS", "SINGLE", "SOLID", "FAKE"]
         return phase_string_list[i_phase]
+
+    def set_tmin(self, temp):
+        self.minimum_temperature_c.value = temp
+
+    def set_pmin(self, press):
+        self.minimum_pressure_c.value = press
 
     #################################
     # Phase properties
@@ -371,12 +385,12 @@ class thermopack(object):
         """ Calculate single-phase specific volume
             Note that the order of the output match the default order of input for the differentials.
             Note further that dvdt, dvdp and dvdn only are flags to enable calculation.
-        
+
         Args:
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase 
+            phase (integer): Calcualte root for specified phase
             dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dvdn (logical, optional): Calculate volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -438,12 +452,12 @@ class thermopack(object):
         """ Calculate single-phase compressibility
             Note that the order of the output match the default order of input for the differentials.
             Note further that dzdt, dzdp and dzdn only are flags to enable calculation.
-        
+
         Args:
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase 
+            phase (integer): Calcualte root for specified phase
             dzdt (logical, optional): Calculate compressibility differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dzdp (logical, optional): Calculate compressibility differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dzdn (logical, optional): Calculate compressibility differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -587,12 +601,12 @@ class thermopack(object):
         """ Calculate specific single-phase enthalpy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dhdt, dhdp and dhdn only are flags to enable calculation.
-        
+
         Args:
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase 
+            phase (integer): Calcualte root for specified phase
             dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dhdn (logical, optional): Calculate enthalpy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -621,6 +635,7 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(x))(0.0)
 
+        residual_c = POINTER(c_int)()
         self.eos_enthalpy.argtypes = [POINTER( c_double ),
                                       POINTER( c_double ),
                                       POINTER( c_double ),
@@ -628,7 +643,8 @@ class thermopack(object):
                                       POINTER( c_double ),
                                       POINTER( c_double ),
                                       POINTER( c_double ),
-                                      POINTER( c_double )]
+                                      POINTER( c_double ),
+                                      POINTER( c_int )]
 
         self.eos_enthalpy.restype = None
 
@@ -639,7 +655,9 @@ class thermopack(object):
                           byref(h_c),
                           dhdt_c,
                           dhdp_c,
-                          dhdn_c)
+                          dhdn_c,
+                          residual_c)
+
         return_tuple = (h_c.value, )
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
@@ -654,12 +672,12 @@ class thermopack(object):
         """ Calculate specific single-phase entropy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dsdt, dhsp and dsdn only are flags to enable calculation.
-        
+
         Args:
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase 
+            phase (integer): Calcualte root for specified phase
             dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dsdn (logical, optional): Calculate entropy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -687,6 +705,7 @@ class thermopack(object):
             dsdn_c = null_pointer
         else:
             dsdn_c = (c_double * len(x))(0.0)
+        residual_c = POINTER(c_int)()
 
         self.eos_entropy.argtypes = [POINTER( c_double ),
                                      POINTER( c_double ),
@@ -695,7 +714,8 @@ class thermopack(object):
                                      POINTER( c_double ),
                                      POINTER( c_double ),
                                      POINTER( c_double ),
-                                     POINTER( c_double )]
+                                     POINTER( c_double ),
+                                     POINTER( c_int )]
 
         self.eos_entropy.restype = None
 
@@ -706,7 +726,8 @@ class thermopack(object):
                          byref(s_c),
                          dsdt_c,
                          dsdp_c,
-                         dsdn_c)
+                         dsdn_c,
+                         residual_c)
         return_tuple = (s_c.value, )
         if not dsdt is None:
             return_tuple += (dsdt_c[0], )
@@ -721,15 +742,15 @@ class thermopack(object):
         """ Calculate specific ideal enthalpy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dhdt, and dhdp only are flags to enable calculation.
-        
+
         Args:
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase 
+            phase (integer): Calcualte root for specified phase
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate ideal enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
-            
+
         Returns:
             [float]: Specific ideal enthalpy (J/mol), and optionally differentials
         """
@@ -774,7 +795,7 @@ class thermopack(object):
 
     def speed_of_sound(self,temp,press,x,y,z,betaV,betaL,phase):
         """Calculate speed of sound for single phase or two phase mixture assuming
-        mechanical, thermal and chemical equilibrium. 
+        mechanical, thermal and chemical equilibrium.
 
         Args:
             temp (float): Temperature (K)
@@ -782,7 +803,7 @@ class thermopack(object):
             x (float array): Liquid molar composition
             y (float array): Gas molar composition
             z (float array): Overall molar composition
-            betaV (float): Molar gas phase fraction 
+            betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
             phase (integer): Calcualte root for specified phase
 
@@ -798,7 +819,7 @@ class thermopack(object):
         betaL_c = c_double(betaL)
         phase_c = c_int(phase)
         ph_c = POINTER(c_int)()
-    
+
         self.sos_sound_velocity_2ph.argtypes = [POINTER( c_double ),
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
@@ -828,7 +849,7 @@ class thermopack(object):
     #################################
 
     def set_ph_tolerance(tol):
-        """Set tolerance of isobaric-isentalpic (PH) flash 
+        """Set tolerance of isobaric-isentalpic (PH) flash
 
         Args:
             tol (float): Tolerance
@@ -845,11 +866,11 @@ class thermopack(object):
             temp (float): Temperature (K)
             press (folat): Pressure (Pa)
             z (float array): Overall molar composition
-    
+
         Returns:
             x (float array): Liquid molar composition
             y (float array): Gas molar composition
-            betaV (float): Molar gas phase fraction 
+            betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
             phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
@@ -897,12 +918,12 @@ class thermopack(object):
             z (float array): Overall molar composition
             entropy (float): Specific entropy (J/mol/K)
             temp (float, optional): Initial guess for temperature (K)
-    
+
         Returns:
             temp (float): Temperature (K)
             x (float array): Liquid molar composition
             y (float array): Gas molar composition
-            betaV (float): Molar gas phase fraction 
+            betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
             phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
@@ -957,12 +978,12 @@ class thermopack(object):
             z (float array): Overall molar composition
             enthalpy (float): Specific enthalpy (J/mol)
             temp (float, optional): Initial guess for temperature (K)
-    
+
         Returns:
             temp (float): Temperature (K)
             x (float array): Liquid molar composition
             y (float array): Gas molar composition
-            betaV (float): Molar gas phase fraction 
+            betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
             phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
@@ -1018,13 +1039,13 @@ class thermopack(object):
             specific_volume (float): Specific volume (m3/mol)
             temp (float, optional): Initial guess for temperature (K)
             press (float, optional): Initial guess for pressure (Pa)
-    
+
         Returns:
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (float array): Liquid molar composition
             y (float array): Gas molar composition
-            betaV (float): Molar gas phase fraction 
+            betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
             phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
@@ -1079,12 +1100,743 @@ class thermopack(object):
         return temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
 
-    # self.uvflash_twophase
-    # twoPhaseUVflash(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase)
+    #################################
+    # Temperature-volume property interfaces
+    #################################
 
-    # self.svflash_twophase
-    # twoPhaseSVflash(t,p,Z,beta,betaL,X,Y,sspec,vspec,phase,ierr)
-    # self.guess_phase
-    # guessPhase(T,P,z,T_comp,p_comp)
-    # self.tpflash_multiphase
-    # mp_flash_tp(nd,t,p,Z,BETA,XX,phaseVec)
+    def pressure_tv(self,temp,volume,n,dpdt=None,dpdv=None,dpdn=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dpdt is None:
+            dpdt_c = null_pointer
+        else:
+            dpdt_c = POINTER(c_double)(c_double(0.0))
+        if dpdv is None:
+            dpdv_c = null_pointer
+        else:
+            dpdv_c = POINTER(c_double)(c_double(0.0))
+        d2pdv2_c = null_pointer
+        if dpdn is None:
+            dpdn_c = null_pointer
+        else:
+            dpdn_c = (c_double * len(n))(0.0)
+
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_pressure_tv.argtypes = [POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_int )]
+
+        self.s_pressure_tv.restype = c_double
+
+        P = self.s_pressure_tv(byref(temp_c),
+                               byref(v_c),
+                               n_c,
+                               dpdv_c,
+                               dpdt_c,
+                               d2pdv2_c,
+                               dpdn_c,
+                               recalculate_c)
+
+        return_tuple = (P, )
+        if not dpdt is None:
+            return_tuple += (dpdt_c[0], )
+        if not dpdv is None:
+            return_tuple += (dpdv_c[0], )
+        if not dpdn is None:
+            return_tuple += (np.array(dpdn_c), )
+
+        return return_tuple
+
+    def internal_energy_tv(self,temp,volume,n,dedt=None,dedv=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        e_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dedt is None:
+            dedt_c = null_pointer
+        else:
+            dedt_c = POINTER(c_double)(c_double(0.0))
+        if dedv is None:
+            dedv_c = null_pointer
+        else:
+            dedv_c = POINTER(c_double)(c_double(0.0))
+
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_internal_energy_tv.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int )]
+
+        self.s_internal_energy_tv.restype = None
+
+        self.s_internal_energy_tv(byref(temp_c),
+                                  byref(v_c),
+                                  n_c,
+                                  byref(e_c),
+                                  dedt_c,
+                                  dedv_c,
+                                  recalculate_c)
+
+        return_tuple = (e_c.value, )
+        if not dedt is None:
+            return_tuple += (dedt_c[0], )
+        if not dedv is None:
+            return_tuple += (dedv_c[0], )
+
+        return return_tuple
+
+    def entropy_tv(self,temp,volume,n,dsdt=None,dsdv=None,dsdn=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        s_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dsdt is None:
+            dsdt_c = null_pointer
+        else:
+            dsdt_c = POINTER(c_double)(c_double(0.0))
+        if dsdv is None:
+            dsdv_c = null_pointer
+        else:
+            dsdv_c = POINTER(c_double)(c_double(0.0))
+        if dsdn is None:
+            dsdn_c = null_pointer
+        else:
+            dsdn_c = (c_double * len(n))(0.0)
+
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_entropy_tv.argtypes = [POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_int )]
+
+        self.s_entropy_tv.restype = None
+
+        self.s_entropy_tv(byref(temp_c),
+                          byref(v_c),
+                          n_c,
+                          byref(s_c),
+                          dsdt_c,
+                          dsdv_c,
+                          dsdn_c,
+                          recalculate_c)
+
+        return_tuple = (s_c.value, )
+        if not dsdt is None:
+            return_tuple += (dsdt_c[0], )
+        if not dsdv is None:
+            return_tuple += (dsdv_c[0], )
+        if not dsdn is None:
+            return_tuple += (np.array(dsdn_c), )
+
+        return return_tuple
+
+    def enthalpy_tv(self,temp,volume,n,dhdt=None,dhdv=None,dhdn=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        h_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdv is None:
+            dhdv_c = null_pointer
+        else:
+            dhdv_c = POINTER(c_double)(c_double(0.0))
+        if dhdn is None:
+            dhdn_c = null_pointer
+        else:
+            dhdn_c = (c_double * len(n))(0.0)
+
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_int )]
+
+        self.s_enthalpy_tv.restype = None
+
+        self.s_enthalpy_tv(byref(temp_c),
+                           byref(v_c),
+                           n_c,
+                           byref(h_c),
+                           dhdt_c,
+                           dhdv_c,
+                           dhdn_c,
+                           recalculate_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdv is None:
+            return_tuple += (dhdv_c[0], )
+        if not dhdn is None:
+            return_tuple += (np.array(dhdn_c), )
+
+        return return_tuple
+
+    def helmholtz_tv(self,temp,volume,n,dadt=None,dadv=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        a_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dadt is None:
+            dadt_c = null_pointer
+        else:
+            dadt_c = POINTER(c_double)(c_double(0.0))
+        if dadv is None:
+            dadv_c = null_pointer
+        else:
+            dadv_c = POINTER(c_double)(c_double(0.0))
+        d2adt2_c = null_pointer
+        d2adv2_c = null_pointer
+        d2advdt_c = null_pointer
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_helmholtz_energy.argtypes = [POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_int )]
+
+        self.s_helmholtz_energy.restype = None
+
+        self.s_helmholtz_energy(byref(temp_c),
+                                byref(v_c),
+                                n_c,
+                                byref(a_c),
+                                dadt_c,
+                                dadv_c,
+                                d2adt2_c,
+                                d2adv2_c,
+                                d2advdt_c,
+                                recalculate_c)
+
+        return_tuple = (a_c.value, )
+        if not dadt is None:
+            return_tuple += (dadt_c[0], )
+        if not dadv is None:
+            return_tuple += (dadv_c[0], )
+
+        return return_tuple
+
+    def chemical_potential_tv(self,temp,volume,n,dmudt=None,dmudv=None,dmudn=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        mu_c = (c_double * len(n))(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dmudt is None:
+            dmudt_c = null_pointer
+        else:
+            dmudt_c = (c_double * len(n))(0.0)
+        if dmudv is None:
+            dmudv_c = null_pointer
+        else:
+            dmudv_c = (c_double * len(n))(0.0)
+        if dmudn is None:
+            dmudn_c = null_pointer
+        else:
+            dmudn_c = (c_double * len(n)**2)(0.0)
+
+        recalculate_c = POINTER(c_int)(c_int(1))
+
+        self.s_chempot.argtypes = [POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_int )]
+
+        self.s_chempot.restype = None
+
+        self.s_chempot(byref(temp_c),
+                       byref(v_c),
+                       n_c,
+                       mu_c,
+                       dmudv_c,
+                       dmudt_c,
+                       dmudn_c,
+                       recalculate_c)
+
+        return_tuple = (np.array(mu_c), )
+        if not dmudt is None:
+            return_tuple += (np.array(dmudt_c), )
+        if not dmudv is None:
+            return_tuple += (np.array(dmudv_c), )
+        if not dmudn is None:
+            dmudn = np.zeros((len(n), len(n)))
+            for i in range(len(n)):
+                for j in range(len(n)):
+                    dmudn[i][j] = dmudn_c[i + j*len(n)]
+            return_tuple += (np.array(dmudn), )
+
+        return return_tuple
+
+    def fugacity_tv(self,temp,volume,n,dlnphidt=None,dlnphidv=None,dlnphidn=None):
+
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        lnphi_c = (c_double * len(n))(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dlnphidt is None:
+            dlnphidt_c = null_pointer
+        else:
+            dlnphidt_c = (c_double * len(n))(0.0)
+        if dlnphidv is None:
+            dlnphidv_c = null_pointer
+        else:
+            dlnphidv_c = (c_double * len(n))(0.0)
+        if dlnphidn is None:
+            dlnphidn_c = null_pointer
+        else:
+            dlnphidn_c = (c_double * len(n)**2)(0.0)
+
+        self.s_lnphi_tv.argtypes = [POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double )]
+
+        self.s_lnphi_tv.restype = None
+
+        self.s_lnphi_tv(byref(temp_c),
+                        byref(v_c),
+                        n_c,
+                        lnphi_c,
+                        dlnphidt_c,
+                        dlnphidv_c,
+                        dlnphidn_c)
+
+        return_tuple = (np.array(lnphi_c), )
+        if not dlnphidt is None:
+            return_tuple += (np.array(dlnphidt_c), )
+        if not dlnphidv is None:
+            return_tuple += (np.array(dlnphidv_c), )
+        if not dlnphidn is None:
+            dlnphidn = np.zeros((len(n),len(n)))
+            for i in range(len(n)):
+                for j in range(len(n)):
+                    dlnphidn[i][j] = dlnphidn_c[i + j*len(n)]
+            return_tuple += (dlnphidn, )
+
+        return return_tuple
+
+    #################################
+    # Saturation interfaces
+    #################################
+
+    def bubble_temperature(self,press,z):
+        press_c = c_double(press)
+        y_c = (c_double * len(z))(0.0)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+
+        self.s_bubble_t.argtypes = [POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_int )]
+
+        self.s_bubble_t.restype = c_double
+
+        temp = self.s_bubble_t(byref(press_c),
+                               z_c,
+                               y_c,
+                               byref(ierr_c))
+
+        y = np.array(y_c)
+        if ierr_c.value is not 0:
+            raise Exception("bubble_temperature calclualtion failed")
+        return temp, y
+
+    def bubble_pressure(self,temp,z):
+        temp_c = c_double(temp)
+        y_c = (c_double * len(z))(0.0)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+
+        self.s_bubble_p.argtypes = [POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_int )]
+
+        self.s_bubble_p.restype = c_double
+
+        press = self.s_bubble_p(byref(temp_c),
+                                z_c,
+                                y_c,
+                                byref(ierr_c))
+
+        y = np.array(y_c)
+        if ierr_c.value is not 0:
+            raise Exception("bubble_pressure calclualtion failed")
+        return press, y
+
+    def dew_temperature(self,press,z):
+        press_c = c_double(press)
+        x_c = (c_double * len(z))(0.0)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+
+        self.s_dew_t.argtypes = [POINTER( c_double ),
+                                 POINTER( c_double ),
+                                 POINTER( c_double ),
+                                 POINTER( c_int )]
+
+        self.s_dew_t.restype = c_double
+
+        temp = self.s_dew_t(byref(press_c),
+                            x_c,
+                            z_c,
+                            byref(ierr_c))
+
+        x = np.array(x_c)
+        if ierr_c.value is not 0:
+            raise Exception("dew_temperature calclualtion failed")
+        return temp, x
+
+    def dew_pressure(self,temp,z):
+        temp_c = c_double(temp)
+        x_c = (c_double * len(z))(0.0)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+
+        self.s_dew_p.argtypes = [POINTER( c_double ),
+                                 POINTER( c_double ),
+                                 POINTER( c_double ),
+                                 POINTER( c_int )]
+
+        self.s_dew_p.restype = c_double
+
+        press = self.s_dew_p(byref(temp_c),
+                             x_c,
+                             z_c,
+                             byref(ierr_c))
+
+        x = np.array(x_c)
+        if ierr_c.value is not 0:
+            raise Exception("bubble_pressure calclualtion failed")
+        return press, x
+
+    def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
+                              minimum_temperature=None, step_size=None):
+        """Get the phase-envelope
+
+        Arguments
+        T_init      Initial guess for temperature for p_init
+        p_init      Initial pressure
+        z           Mixture molar composition
+
+        Returns
+        Temperature values (K)
+        Pressure values (Pa)
+        Molar composition of incipient phase (-)
+        Label of incipient phase (-)
+        """
+        nmax = 1000
+        z_c = (c_double * len(z))(*z)
+        temp_c = c_double(0.0)
+        press_c = c_double(initial_pressure)
+        spec_c = c_int(1)
+        beta_in_c = c_double(1.0)
+        max_press_c = c_double(maximum_pressure)
+        nmax_c = c_int(nmax)
+        Ta_c = (c_double * nmax)(0.0)
+        Pa_c = (c_double * nmax)(0.0)
+        Ki_c = (c_double * (nmax*len(z)))(0.0)
+        beta_c = (c_double * nmax)(0.0)
+        n_c = c_int(0)
+        null_pointer = POINTER(c_double)()
+        criconden_c = null_pointer
+        crit_c = null_pointer
+        if step_size is None:
+            ds_c = null_pointer
+        else:
+            ds_c = POINTER(c_double)(c_double(step_size))
+        exitOnTriplePoint_c = POINTER(c_int)()
+        if minimum_temperature is None:
+            tme_c = null_pointer
+        else:
+            tme_c = POINTER(c_double)(c_double(minimum_temperature))
+
+        self.s_envelope_plot.argtypes = [POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_int ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_int ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_int ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_double ),
+                                         POINTER( c_int ),
+                                         POINTER( c_double )]
+
+        self.s_envelope_plot.restype = None
+
+        self.s_envelope_plot(z_c,
+                             byref(temp_c),
+                             byref(press_c),
+                             byref(spec_c),
+                             byref(beta_in_c),
+                             byref(max_press_c),
+                             byref(nmax_c),
+                             Ta_c,
+                             Pa_c,
+                             Ki_c,
+                             beta_c,
+                             byref(n_c),
+                             criconden_c,
+                             crit_c,
+                             ds_c,
+                             exitOnTriplePoint_c,
+                             tme_c)
+
+        Tvals = np.array(Ta_c[0:n_c.value])
+        Pvals = np.array(Pa_c[0:n_c.value])
+
+        return Tvals, Pvals
+
+    def get_binary_pxy(self,
+                       temp,
+                       maximum_pressure=1.5e7,
+                       minimum_pressure=1.0e5,
+                       maximum_dz = 0.003,
+                       maximum_dlns=0.01):
+        # Redefinition of module parameter:
+        nmax = 10000
+        #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
+
+        temp_c = c_double(temp)
+        min_temp_c = c_double(0.0)
+        ispec_c = c_int(1)
+        press_c = c_double(0.0)
+        max_press_c = c_double(maximum_pressure)
+        min_press_c = c_double(minimum_pressure)
+        dz_max_c = c_double(maximum_dz)
+        dlns_max_c = c_double(maximum_dlns)
+        filename = "binaryVLLE.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_int(len(filename))
+        res_c = (c_double * (nmax*9))(0.0)
+        nres_c = (c_int * 3)(0)
+        wsf_c = c_int(1)
+
+        self.s_binary_plot.argtypes = [POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_int ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_char_p ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_int ),
+                                       POINTER( c_int ),
+                                       POINTER( c_double ),
+                                       c_int]
+
+        self.s_binary_plot.restype = None
+
+        self.s_binary_plot(byref(temp_c),
+                           byref(press_c),
+                           byref(ispec_c),
+                           byref(min_temp_c),
+                           byref(max_press_c),
+                           byref(dz_max_c),
+                           filename_c,
+                           byref(dlns_max_c),
+                           res_c,
+                           nres_c,
+                           byref(wsf_c),
+                           byref(min_press_c),
+                           filename_len)
+
+        nLLE = nres_c[0]
+        nL1VE = nres_c[1]
+        nL2VE = nres_c[2]
+
+        if nLLE > 0:
+            xLLE = np.zeros(nLLE)
+            wLLE = np.zeros(nLLE)
+            pLLE = np.zeros(nLLE)
+            for i in range(nLLE):
+                xLLE[i] = res_c[i*9]
+                wLLE[i] = res_c[i*9+1]
+                pLLE[i] = res_c[i*9+2]
+            LLE = (xLLE, wLLE, pLLE)
+        else:
+            LLE = (None, None, None)
+
+        if nL1VE > 0:
+            xL1VE = np.zeros(nL1VE)
+            wL1VE = np.zeros(nL1VE)
+            pL1VE = np.zeros(nL1VE)
+            for i in range(nL1VE):
+                xL1VE[i] = res_c[i*9+3]
+                wL1VE[i] = res_c[i*9+4]
+                pL1VE[i] = res_c[i*9+5]
+            L1VE = (xL1VE, wL1VE, pL1VE)
+        else:
+            L1VE = (None, None, None)
+
+        if nL2VE > 0:
+            xL2VE = np.zeros(nL2VE)
+            wL2VE = np.zeros(nL2VE)
+            pL2VE = np.zeros(nL2VE)
+            for i in range(nL2VE):
+                xL2VE[i] = res_c[i*9+6]
+                wL2VE[i] = res_c[i*9+7]
+                pL2VE[i] = res_c[i*9+8]
+            L2VE = (xL2VE, wL2VE, pL2VE)
+        else:
+            L2VE = (None, None, None)
+
+        return LLE, L1VE, L2VE
+
+
+    #################################
+    # Stability interfaces
+    #################################
+
+    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-8):
+        temp_c = c_double(temp)
+        v_c = c_double(v)
+        n_c = (c_double * len(n))(*n)
+        ierr_c = c_int(0)
+        P_c = c_double(0.0)
+        tol_c = c_double(tol)
+        self.s_crit_tv.argtypes = [POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double ),
+                                   POINTER( c_int ),
+                                   POINTER( c_double ),
+                                   POINTER( c_double )]
+
+        self.s_crit_tv.restype = None
+
+        self.s_crit_tv(byref(temp_c),
+                       byref(v_c),
+                       n_c,
+                       byref(ierr_c),
+                       byref(tol_c),
+                       byref(P_c))
+
+        if ierr_c.value is not 0:
+            raise Exception("critical calclualtion failed")
+
+        return temp_c.value, v_c.value, P_c.value
+
+    #################################
+    # Virial interfaces
+    #################################
+
+    def virial_coeffcients(self, temp, n):
+        temp_c = POINTER( c_double )(c_double(temp))
+        n_c = (c_double * len(n))(*n)
+        B_c = c_double(0.0)
+        C_c = c_double(0.0)
+        self.s_virial_coeffcients.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double )]
+
+        self.s_virial_coeffcients.restype = None
+
+        self.s_virial_coeffcients(temp_c,
+                                  n_c,
+                                  byref(B_c),
+                                  byref(C_c))
+
+        return B_c.value, C_c.value
+
+    def second_virial_matrix(self, temp):
+        temp_c = POINTER( c_double )(c_double(temp))
+        bmat_c = (c_double * self.nc**2)(0.0)
+
+        self.s_second_virial_matrix.argtypes = [POINTER( c_double ),
+                                                POINTER( c_double )]
+
+        self.s_second_virial_matrix.restype = None
+
+        self.s_second_virial_matrix(temp_c, bmat_c)
+
+        bmat = np.zeros((self.nc,self.nc))
+        for i in range(self.nc):
+            for j in range(self.nc):
+                bmat[i][j] = bmat_c[i+j*self.nc]
+
+        return bmat
+
+    def binary_third_virial_matrix(self, temp):
+        assert self.nc == 2
+        temp_c = POINTER( c_double )(c_double(temp))
+        cmat_c = (c_double * self.nc**2)(0.0)
+
+        self.s_binary_third_virial_matrix.argtypes = [POINTER( c_double ),
+                                                      POINTER( c_double )]
+
+        self.s_binary_third_virial_matrix.restype = None
+
+        self.s_binary_third_virial_matrix(temp_c, cmat_c)
+
+        cmat = np.zeros((self.nc,self.nc))
+        for i in range(self.nc):
+            for j in range(self.nc):
+                cmat[i][j] = cmat_c[i+j*self.nc]
+
+        return cmat

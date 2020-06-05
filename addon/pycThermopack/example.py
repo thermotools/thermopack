@@ -37,12 +37,15 @@ print("dlnfugn", dlnfugdn)
 print("0:",dlnfugdn[0][:])
 print("1:",dlnfugdn[1][:])
 
+print("calling enthalpy:")
 h, dhdt, dhdp, dhdn = tp.enthalpy(270.0,1.0e6,z,tp.VAPPH,dhdt=True,dhdp=True,dhdn=True)
 print(h, dhdt, dhdp, dhdn)
 
+print("calling entroy:")
 s, dsdt, dsdp, dsdn = tp.entropy(270.0,1.0e6,z,tp.VAPPH,dsdt=True,dsdp=True,dsdn=True)
 print(s, dsdt, dsdp, dsdn)
 
+print("calling ideal enthalpy:")
 hi, dhidt, dhidp = tp.idealenthalpysingle(300.0,1.0e5,1,dhdt=True,dhdp=True)
 print(hi, dhidt, dhidp)
 
@@ -73,6 +76,85 @@ volume = v
 temp, press, x, y, betaV, betaL, phase = tp.two_phase_uvflash(z,energy, volume, temp=temp, press=p)
 print(temp, press, x, y, betaV, betaL, phase)
 
+print("Rgas",tp.Rgas)
+tp.set_tmin(100.0)
+tp.set_pmin(9999.0)
 
 
+p, = tp.pressure_tv(270.0,v,z)
+print("p ",p)
+p, dpdt ,dpdv, dpdn = tp.pressure_tv(270.0,v,z,dpdt=True,dpdv=True,dpdn=True)
+print("p, dpdt ,dpdv, dpdn ",p, dpdt ,dpdv, dpdn)
 
+e, = tp.internal_energy_tv(270.0,v,z)
+print("e ",e)
+e, dedt ,dedv = tp.internal_energy_tv(270.0,v,z,dedt=True,dedv=True)
+print("e, dedt ,dedv ",e, dedt ,dedv)
+
+s, = tp.entropy_tv(270.0,v,z)
+print("s ",s)
+s, dsdt ,dsdv, dsdn = tp.entropy_tv(270.0,v,z,dsdt=True,dsdv=True,dsdn=True)
+print("s, dsdt ,dsdv, dsdn ",s, dsdt ,dsdv, dsdn)
+
+h, = tp.enthalpy_tv(270.0,v,z)
+print("h ",h)
+h, dhdt ,dhdv, dhdn = tp.enthalpy_tv(270.0,v,z,dhdt=True,dhdv=True,dhdn=True)
+print("h, dhdt ,dhdv, dhdn ",h, dhdt ,dhdv, dhdn)
+
+a, = tp.helmholtz_tv(270.0,v,z)
+print("a ",a)
+a, dadt ,dadv = tp.helmholtz_tv(270.0,v,z,dadt=True,dadv=True)
+print("a, dadt ,dadv ",a, dadt ,dadv)
+
+mu, = tp.chemical_potential_tv(270.0,v,z)
+print("mu ",mu)
+mu, dmudt ,dmudv, dmudn = tp.chemical_potential_tv(270.0,v,z,dmudt=True,dmudv=True,dmudn=True)
+print("mu, dmudt ,dmudv, dmudn ",mu, dmudt ,dmudv, dmudn)
+
+lnphi, = tp.fugacity_tv(270.0,v,z)
+print("lnphi ",lnphi)
+lnphi, dlnphidt ,dlnphidv, dlnphidn = tp.fugacity_tv(270.0,v,z,dlnphidt=True,dlnphidv=True,dlnphidn=True)
+print("lnphi, dlnphidt ,dlnphidv, dlnphidn ",lnphi, dlnphidt ,dlnphidv, dlnphidn)
+
+T_c, v_c, P_c = tp.critical(z)
+print("T_c, v_c, P_c", T_c, v_c, P_c)
+
+B,C = tp.virial_coeffcients(300.0,z)
+print(B,C)
+
+B = tp.second_virial_matrix(300.0)
+print(B)
+
+C = tp.binary_third_virial_matrix(300.0)
+print(C)
+
+# Saturation intefaces
+
+T, y = tp.bubble_temperature(5.0e5,z)
+print(T, y)
+T, x = tp.dew_temperature(5.0e5,z)
+print(T, x)
+
+P, y = tp.bubble_pressure(150.0,z)
+print(P, y)
+P, x = tp.dew_pressure(220.0,z)
+print(P, x)
+
+Tvals, Pvals = tp.get_envelope_twophase(1.0e5, z)
+print(Pvals)
+plt.plot(Tvals, Pvals)
+plt.show()
+plt.clf()
+
+LLE, L1VE, L2VE = tp.get_binary_pxy(250.0)
+if LLE[0] is not None:
+    plt.plot(LLE[0], LLE[2])
+    plt.plot(LLE[1], LLE[2])
+if L1VE[0] is not None:
+    plt.plot(L1VE[0], L1VE[2])
+    plt.plot(L1VE[1], L1VE[2])
+if L2VE[0] is not None:
+    plt.plot(L2VE[0], L2VE[2])
+    plt.plot(L2VE[1], L2VE[2])
+plt.show()
+plt.clf()

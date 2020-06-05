@@ -63,6 +63,26 @@ libthermopack {
 	  *_twophasephflash;
 	  *_twophasesvflash;
           *_guessphase;
+	  *_rgas;
+          *_tptmin;
+          *_tppmin;
+          *_internal_energy;
+          *_entropytv;
+          *_pressure;
+          *_thermotv;
+          *_enthalpytv;
+          *_free_energy;
+          *_chemical_potential;
+          *_safe_bubt;
+          *_safe_bubp;
+          *_safe_dewt;
+          *_safe_dewp;
+          *_envelopeplot;
+          *_vllebinaryxy;
+          *_calccriticaltv;
+          *_virial_coefficients;
+	  *_secondvirialcoeffmatrix;
+          *_binarythirdvirialcoeffmatrix;
 
   local: *;      # hide everything else
 };
