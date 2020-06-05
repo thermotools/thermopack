@@ -43,6 +43,26 @@ libthermopack {
 	  themopack_exp_adiabatic_;
 	  thermopack_cp_ideal_;
 	  thermopack_twophase_dhdt_;
+	  #
+	  get_phase_flags_;
+	  *_init_thermo;
+	  *_solid_init;
+	  *_specificvolume;
+	  *_zfac;
+	  *_thermo;
+	  *_entropy;
+	  *_enthalpy;
+	  *_compmoleweight;
+	  *_idealenthalpysingle;
+	  *_sound_velocity_2ph;
+	  *_getcomp;
+	  *_setphtolerance;
+	  *_twophasetpflash;
+	  *_twophasepsflash;
+	  *_twophaseuvflash;
+	  *_twophasephflash;
+	  *_twophasesvflash;
+          *_guessphase;
 
   local: *;      # hide everything else
 };
