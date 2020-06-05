@@ -654,39 +654,59 @@ contains
   !>
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
-  subroutine chemical_potential(t, v, z, mu, dmudv, dmudt, dmudz)
+  subroutine chemical_potential(t, v, n, mu, dmudv, dmudt, dmudn)
     use tpconst, only: rgas
     implicit none
     real,                             intent(in)  :: t !< K - Temperature
-    real,                             intent(in)  :: v !< m3/mol - Molar volume
-    real, dimension(nc),              intent(in)  :: z !< 1 - Composition
+    real,                             intent(in)  :: v !< m3 - Molar volume
+    real, dimension(nc),              intent(in)  :: n !< mol - Mol numbers
     real, dimension(nc),              intent(out) :: mu !< J/mol
     real, dimension(nc),    optional, intent(out) :: dmudv !< J/m^3
     real, dimension(nc),    optional, intent(out) :: dmudt !< J/mol K
-    real, dimension(nc,nc), optional, intent(out) :: dmudz !< J/mol^2
-    real :: dfdn_res(nc), d2fdvdn_res(nc), d2fdtdn_res(nc), d2fdndn_res(nc, nc)
-    real :: dfdn_id(nc), d2fdtdn_id(nc), d2fdvdn_id(nc), d2fdndn_id(nc, nc)
-    !
-    call Fres(t, v, z, f_n=dfdn_res)
-    call Fideal(t, v, z, f_n=dfdn_id)
-    mu = rgas*t*(dfdn_res + dfdn_id)
+    real, dimension(nc,nc), optional, intent(out) :: dmudn !< J/mol^2
+    ! Locals
+    real :: Fr_n(nc), Fi_n(nc)
+    real, pointer :: Fr_Tn_p(:), Fr_vn_p(:), Fr_nn_p(:,:)
+    real, target :: Fr_Tn(nc), Fr_vn(nc), Fr_nn(nc,nc)
+    real, pointer :: Fi_Tn_p(:), Fi_vn_p(:), Fi_nn_p(:,:)
+    real, target :: Fi_Tn(nc), Fi_vn(nc), Fi_nn(nc,nc)
     !
     if (present(dmudt)) then
-      call Fres(t, v, z, f_tn=d2fdtdn_res)
-      call Fideal(t, v, z, f_tn=d2fdtdn_id)
-      dmudt = rgas*(dfdn_res + dfdn_id + t*(d2fdtdn_res + d2fdtdn_id))
+      Fr_Tn_p => Fr_Tn
+      Fi_Tn_p => Fi_Tn
+    else
+      Fr_Tn_p => NULL()
+      Fi_Tn_p => NULL()
+    endif
+    if (present(dmudV)) then
+      Fr_Vn_p => Fr_Vn
+      Fi_Vn_p => Fi_Vn
+    else
+      Fr_Vn_p => NULL()
+      Fi_Vn_p => NULL()
+    endif
+    if (present(dmudn)) then
+      Fr_nn_p => Fr_nn
+      Fi_nn_p => Fi_nn
+    else
+      Fr_nn_p => NULL()
+      Fi_nn_p => NULL()
+    endif
+
+    call Fres(t, v, n, f_n=Fr_n, F_Tn=Fr_Tn_p, F_Vn=Fr_Vn_p, F_nn=Fr_nn_p)
+    call Fideal(t, v, n, f_n=Fi_n, F_Tn=Fi_Tn_p, F_Vn=Fi_Vn_p, F_nn=Fi_nn_p)
+    mu = rgas*t*(Fr_n + Fi_n)
+    !
+    if (present(dmudt)) then
+      dmudt = rgas*(Fr_n + Fi_n + t*(Fr_Tn + Fi_Tn))
     end if
     if (present(dmudv)) then
-      call Fres(t, v, z, f_vn=d2fdvdn_res)
-      call Fideal(t, v, z, f_vn=d2fdvdn_id)
-      dmudv = rgas*t*(d2fdvdn_res + d2fdvdn_id)
+      dmudv = rgas*t*(Fr_Vn + Fi_Vn)
     end if
-    if (present(dmudz)) then
-      call Fres(t, v, z, f_nn=d2fdndn_res)
-      call Fideal(t, v, z, f_nn=d2fdndn_id)
-      dmudz = rgas*t*(d2fdndn_res +  d2fdndn_id)
+    if (present(dmudn)) then
+      dmudn = rgas*t*(Fr_nn +  Fi_nn)
     end if
     !
   end subroutine chemical_potential
-  
+
 end module eosTV
