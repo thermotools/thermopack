@@ -109,7 +109,7 @@ unittests_all_openmp:
 #   variables named: <mode>_<OS>_flags.
 #
 ifeq ($(OS),Linux)
-  compilers += gfortran
+  compilers += gfortran ifort
 
   # Define gfortran flags
   debug_gfortran_flags   = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -g -fbounds-check -fbacktrace\
