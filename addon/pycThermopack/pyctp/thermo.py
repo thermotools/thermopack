@@ -4,6 +4,8 @@ from ctypes import *
 import numpy as np
 # Import platform to detect OS
 from sys import platform, exit
+# Import os utils
+from os import path
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -60,23 +62,16 @@ class thermopack(object):
         Load libthermopack.so and initialize function pointers
         """
         self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
-        print(dyn_lib)
+        dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         if os_id == "linux":
-            self.tp = cdll.LoadLibrary(dyn_lib)
+            self.tp = cdll.LoadLibrary(dyn_lib_path)
         else:
             self.tp = cdll.LoadLibrary("C:\\code\\2020\\thermopack\\MSVStudio\\x64\\Debug\\thermopack.dll")
 
         self.model_id = None
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_
-        phase_flags = self.get_phase_flags()
-        self.TWOPH = phase_flags[0]
-        self.LIQPH = phase_flags[1]
-        self.VAPPH = phase_flags[2]
-        self.MINGIBBSPH = phase_flags[3]
-        self.SINGLEPH = phase_flags[4]
-        self.SOLIDPH = phase_flags[5]
-        self.FAKEPH = phase_flags[6]
+        self.get_phase_flags()
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
@@ -357,7 +352,13 @@ class thermopack(object):
                                byref(iMINGIBBSPH),
                                byref(iSINGLEPH),
                                byref(iSOLIDPH),byref(iFAKEPH))
-        return iTWOPH.value, iLIQPH.value, iVAPPH.value, iMINGIBBSPH.value, iSINGLEPH.value, iSOLIDPH.value, iFAKEPH.value
+        self.TWOPH = iTWOPH.value
+        self.LIQPH = iLIQPH.value
+        self.VAPPH = iVAPPH.value
+        self.MINGIBBSPH = iMINGIBBSPH.value
+        self.SINGLEPH = iSINGLEPH.value
+        self.SOLIDPH = iSOLIDPH.value
+        self.FAKEPH = iFAKEPH.value
 
     def get_phase_type(self, i_phase):
         """Get phase type
