@@ -1495,7 +1495,7 @@ class thermopack(object):
                                byref(ierr_c))
 
         y = np.array(y_c)
-        if ierr_c.value is not 0:
+        if ierr_c.value != 0:
             raise Exception("bubble_temperature calclualtion failed")
         return temp, y
 
@@ -1518,7 +1518,7 @@ class thermopack(object):
                                 byref(ierr_c))
 
         y = np.array(y_c)
-        if ierr_c.value is not 0:
+        if ierr_c.value != 0:
             raise Exception("bubble_pressure calclualtion failed")
         return press, y
 
@@ -1541,7 +1541,7 @@ class thermopack(object):
                             byref(ierr_c))
 
         x = np.array(x_c)
-        if ierr_c.value is not 0:
+        if ierr_c.value != 0:
             raise Exception("dew_temperature calclualtion failed")
         return temp, x
 
@@ -1564,7 +1564,7 @@ class thermopack(object):
                              byref(ierr_c))
 
         x = np.array(x_c)
-        if ierr_c.value is not 0:
+        if ierr_c.value != 0:
             raise Exception("bubble_pressure calclualtion failed")
         return press, x
 
@@ -1777,7 +1777,7 @@ class thermopack(object):
                        byref(tol_c),
                        byref(P_c))
 
-        if ierr_c.value is not 0:
+        if ierr_c.value != 0:
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
