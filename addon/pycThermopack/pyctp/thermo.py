@@ -65,10 +65,7 @@ class thermopack(object):
         """
         self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
-        if os_id == "linux":
-            self.tp = cdll.LoadLibrary(dyn_lib_path)
-        else:
-            self.tp = cdll.LoadLibrary("C:\\code\\2020\\thermopack\\MSVStudio\\x64\\Debug\\thermopack.dll")
+        self.tp = cdll.LoadLibrary(dyn_lib_path)
 
         self.model_id = None
         # Set phase flags
