@@ -61,7 +61,7 @@ class thermopack(object):
     """
     def __init__(self):
         """
-        Load libthermopack.so and initialize function pointers
+        Load libthermopack.(so/dll) and initialize function pointers
         """
         self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
@@ -148,11 +148,11 @@ class thermopack(object):
         """Generate library export name based on module and method name
 
         Args:
-            module (string): Name of module
-            method (string): Name of method
+            module (str): Name of module
+            method (str): Name of method
 
         Returns:
-            string: Library export name
+            str: Library export name
         """
         return self.prefix + module + "_" + self.module + "_" + method + self.postfix
 
@@ -284,10 +284,11 @@ class thermopack(object):
         self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
 
     def init_solid(self,scomp):
-        """
-        Initialize solid component
-        """
+        """Initialize pure solid
 
+        Args:
+            scomp (str): Component name
+        """
         scomp_c = c_char_p(scomp.encode('ascii'))
         scomp_len = c_int(len(scomp))
         self.solideos_solid_init.argtypes = [c_char_p, c_int]
@@ -302,10 +303,10 @@ class thermopack(object):
         """Get component index
 
         Args:
-            comp (string): Component name
+            comp (str): Component name
 
         Returns:
-            idx (integer): Component FORTRAN index
+            int: Component FORTRAN index
         """
         comp_c = c_char_p(comp.encode('ascii'))
         self.parameters_getcomp.argtypes = [c_char_p]
@@ -317,10 +318,10 @@ class thermopack(object):
         """Get component mole weight (g/mol)
 
         Args:
-            comp (integer): Component FORTRAN index
+            comp (int): Component FORTRAN index
 
         Returns:
-            float: component mole weight (g/mol)
+            float: Component mole weight (g/mol)
         """
         comp_c = c_int(comp)
         self.s_eos_compmoleweight.argtypes = [POINTER( c_int )]
@@ -332,7 +333,7 @@ class thermopack(object):
         """Get phase identifiers used by thermopack
 
         Returns:
-            [integer]: Phase integer identifiers
+            int: Phase int  identifiers
         """
         iTWOPH = c_int()
         iLIQPH = c_int()
@@ -369,10 +370,10 @@ class thermopack(object):
         """Get phase type
 
         Args:
-            i_phase (integer): Phase flag returned by thermopack
+            i_phase (int): Phase flag returned by thermopack
 
         Returns:
-            string: Phase type
+            str: Phase type
         """
         phase_string_list = ["TWO_PHASE", "LIQUID", "VAPOR", "MINIMUM_GIBBS", "SINGLE", "SOLID", "FAKE"]
         return phase_string_list[i_phase]
@@ -394,15 +395,15 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
             dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dvdn (logical, optional): Calculate volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
-            [float]: Specific volume (m3/mol), and optionally differentials
+            float: Specific volume (m3/mol), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
 
@@ -461,15 +462,15 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
             dzdt (logical, optional): Calculate compressibility differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dzdp (logical, optional): Calculate compressibility differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dzdn (logical, optional): Calculate compressibility differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
-            [float]: Compressibility (-), and optionally differentials
+            float: Compressibility (-), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
 
@@ -523,11 +524,23 @@ class thermopack(object):
 
     def thermo(self,temp,press,x,phase,dlnfugdt=None,dlnfugdp=None,
                dlnfugdn=None,ophase=None,v=None):
-        """
-        Calculate logarithm of fugacity coefficient given composition,
-        temperature and pressure
-        dlnfugdt, dlnfugdp, dlnfugdn, ophase are
-        only flags to enable calculation
+        """ Calculate logarithm of fugacity coefficient given composition,
+        temperature and pressure.
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition (.)
+            phase (int): Calcualte root for specified phase
+            dlnfugdt (logical, optional): Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dlnfugdp (logical, optional): Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dlnfugdn (logical, optional): Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+            ophase (int, optional): Phase flag. Only set when phase=MINGIBBSPH.
+            v (float, optional): Specific volume (m3/mol)
+        Returns:
+            ndarray: fugacity coefficient (-), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
         temp_c = c_double(temp)
@@ -610,15 +623,15 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
             dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dhdn (logical, optional): Calculate enthalpy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
-            [float]: Specific enthalpy (J/mol), and optionally differentials
+            float: Specific enthalpy (J/mol), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
 
@@ -681,15 +694,15 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
             dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dsdn (logical, optional): Calculate entropy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
-            [float]: Specific entropy (J/mol/K), and optionally differentials
+            float: Specific entropy (J/mol/K), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
 
@@ -751,14 +764,14 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Molar composition
-            phase (integer): Calcualte root for specified phase
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate ideal enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
         Returns:
-            [float]: Specific ideal enthalpy (J/mol), and optionally differentials
+            float: Specific ideal enthalpy (J/mol), and optionally differentials
         """
         null_pointer = POINTER(c_double)()
 
@@ -805,16 +818,16 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            x (float array): Liquid molar composition
-            y (float array): Gas molar composition
-            z (float array): Overall molar composition
+            press (float): Pressure (Pa)
+            x (array_like): Liquid molar composition
+            y (array_like): Gas molar composition
+            z (array_like): Overall molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (integer): Calcualte root for specified phase
+            phase (int): Calcualte root for specified phase
 
         Returns:
-            [float]: Speed of sound (m/s)
+            float: Speed of sound (m/s)
         """
         temp_c = c_double(temp)
         press_c = c_double(press)
@@ -860,7 +873,6 @@ class thermopack(object):
         Args:
             tol (float): Tolerance
         """
-        print("tol",tol)
         tol_c = c_double(tol)
         self.s_set_ph_tolerance.argtypes = [POINTER( c_double )]
         self.s_set_ph_tolerance.restype = None
@@ -871,15 +883,15 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            press (folat): Pressure (Pa)
-            z (float array): Overall molar composition
+            press (float): Pressure (Pa)
+            z (array_like): Overall molar composition
 
         Returns:
-            x (float array): Liquid molar composition
-            y (float array): Gas molar composition
+            x (ndarray): Liquid molar composition
+            y (ndarray): Gas molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
         temp_c = c_double(temp)
         press_c = c_double(press)
@@ -922,17 +934,17 @@ class thermopack(object):
 
         Args:
             press (float): Pressure (Pa)
-            z (float array): Overall molar composition
+            z (array_like): Overall molar composition
             entropy (float): Specific entropy (J/mol/K)
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
             temp (float): Temperature (K)
-            x (float array): Liquid molar composition
-            y (float array): Gas molar composition
+            x (ndarray): Liquid molar composition
+            y (ndarray): Gas molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
 
         press_c = c_double(press)
@@ -982,17 +994,17 @@ class thermopack(object):
 
         Args:
             press (float): Pressure (Pa)
-            z (float array): Overall molar composition
+            z (array_like): Overall molar composition
             enthalpy (float): Specific enthalpy (J/mol)
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
             temp (float): Temperature (K)
-            x (float array): Liquid molar composition
-            y (float array): Gas molar composition
+            x (ndarray): Liquid molar composition
+            y (ndarray): Gas molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
         press_c = c_double(press)
         z_c = (c_double * len(z))(*z)
@@ -1041,7 +1053,7 @@ class thermopack(object):
 
         Args:
             press (float): Pressure (Pa)
-            z (float array): Overall molar composition
+            z (array_like): Overall molar composition
             specific_energy (float): Specific energy (J/mol)
             specific_volume (float): Specific volume (m3/mol)
             temp (float, optional): Initial guess for temperature (K)
@@ -1050,11 +1062,11 @@ class thermopack(object):
         Returns:
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
-            x (float array): Liquid molar composition
-            y (float array): Gas molar composition
+            x (ndarray): Liquid molar composition
+            y (ndarray): Gas molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (integer): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
 
         z_c = (c_double * len(z))(*z)
@@ -1104,6 +1116,42 @@ class thermopack(object):
 
         return temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
+    def guess_phase(self, temp, press, z):
+        """If only one root exsist for the equation of state the phase type can be 
+        determined from either the psedo-critical volume or a volume ratio to the co-volume  
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+
+        Returns:
+            int: Phase int (VAPPH or LIQPH)
+        """        
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        z_c = (c_double * len(z))(*z)
+        null_pointer = POINTER(c_double)()
+        temp_comp_c = null_pointer
+        press_comp_c = null_pointer
+        vb_ratio_c = null_pointer
+
+        self.s_guess_phase.argtypes = [POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double )]
+
+        self.s_guess_phase.restype = c_int
+
+        phase = self.s_guess_phase(byref(temp_c),
+                                   byref(press_c),
+                                   z_c,
+                                   temp_comp_c,
+                                   press_comp_c,
+                                   vb_ratio_c)
+
+        return phase
 
     #################################
     # Temperature-volume property interfaces
@@ -1527,6 +1575,19 @@ class thermopack(object):
         return press, y
 
     def dew_temperature(self,press,z):
+        """Calculate dew temperature given pressure and composition
+
+        Args:
+            temp (float): Pressure (Pa)
+            z (float): Compositon (-)
+
+        Raises:
+            Exception: Not able to solve for dew point
+
+        Returns:
+            float : Temperature (K)
+            ndarray : Incipient phase composition (-)
+        """
         press_c = c_double(press)
         x_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1550,6 +1611,19 @@ class thermopack(object):
         return temp, x
 
     def dew_pressure(self,temp,z):
+        """Calculate dew pressure given temperature and composition
+
+        Args:
+            temp (float): Temperature (K)
+            z (float): Compositon (-)
+
+        Raises:
+            Exception: Not able to solve for dew point
+
+        Returns:
+            float : Pressure (Pa)
+            ndarray : Incipient phase composition (-)
+        """
         temp_c = c_double(temp)
         x_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1576,16 +1650,16 @@ class thermopack(object):
                               minimum_temperature=None, step_size=None):
         """Get the phase-envelope
 
-        Arguments
-        T_init      Initial guess for temperature for p_init
-        p_init      Initial pressure
-        z           Mixture molar composition
+        Args:
+            initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
+            step_size (float , optional): Tune step size of envelope trace. Defaults to None.
 
-        Returns
-        Temperature values (K)
-        Pressure values (Pa)
-        Molar composition of incipient phase (-)
-        Label of incipient phase (-)
+        Returns:
+            ndarray: Temperature values (K)
+            ndarray: Pressure values (Pa)
         """
         nmax = 1000
         z_c = (c_double * len(z))(*z)
@@ -1662,6 +1736,18 @@ class thermopack(object):
                        minimum_pressure=1.0e5,
                        maximum_dz = 0.003,
                        maximum_dlns=0.01):
+        """Calculate binary three phase envelope
+
+        Args:
+            temp (float): Temperature (K)
+            maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
+            maximum_dz (float, optional): [description]. Defaults to 0.003.
+            maximum_dlns (float, optional): [description]. Defaults to 0.01.
+
+        Returns:
+            tuple of arrays: LLE, L1VE, L2VE
+        """                       
         # Redefinition of module parameter:
         nmax = 10000
         #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
@@ -1753,38 +1839,27 @@ class thermopack(object):
 
         return LLE, L1VE, L2VE
 
-    def guess_phase(self, temp, press, z):
-        temp_c = c_double(temp)
-        press_c = c_double(press)
-        z_c = (c_double * len(z))(*z)
-        null_pointer = POINTER(c_double)()
-        temp_comp_c = null_pointer
-        press_comp_c = null_pointer
-        vb_ratio_c = null_pointer
-
-        self.s_guess_phase.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double )]
-
-        self.s_guess_phase.restype = c_int
-
-        phase = self.s_guess_phase(byref(temp_c),
-                                   byref(press_c),
-                                   z_c,
-                                   temp_comp_c,
-                                   press_comp_c,
-                                   vb_ratio_c)
-
-        return phase
-
     #################################
     # Stability interfaces
     #################################
 
     def critical(self, n, temp=0.0, v=0.0, tol=1.0e-8):
+        """Calculate critical point in variables T and V
+
+        Args:
+            n (array_like): Mol numbers (mol)
+            temp (float, optional): Initial guess for temperature (K). Defaults to 0.0.
+            v (float, optional): Initial guess for volume (m3). Defaults to 0.0.
+            tol (float, optional): Error tolerance (-). Defaults to 1.0e-8.
+
+        Raises:
+            Exception: Failure to solve for critcal point
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3)
+            float: Pressure (Pa)
+        """        
         temp_c = c_double(temp)
         v_c = c_double(v)
         n_c = (c_double * len(n))(*n)
@@ -1817,6 +1892,17 @@ class thermopack(object):
     #################################
 
     def virial_coeffcients(self, temp, n):
+        """Calculate (composition-dependent) virial coefficients B and C,
+        defined as P/RT = rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
+
+        Args:
+            temp (float): Temperature
+            n (array_like): Mol numbers (mol)
+
+        Returns:
+            float: B (m3/mol)
+            float: C (m6/mol2)
+        """        
         temp_c = POINTER( c_double )(c_double(temp))
         n_c = (c_double * len(n))(*n)
         B_c = c_double(0.0)
@@ -1836,6 +1922,16 @@ class thermopack(object):
         return B_c.value, C_c.value
 
     def second_virial_matrix(self, temp):
+        """Calculate composition-independent virial coefficients B,
+        defined as P = RT*rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
+        Including cross coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+
+        Returns:
+            ndarray: B - Second virial coefficient matrix (m3/mol)
+        """        
         temp_c = POINTER( c_double )(c_double(temp))
         bmat_c = (c_double * self.nc**2)(0.0)
 
@@ -1854,6 +1950,17 @@ class thermopack(object):
         return bmat
 
     def binary_third_virial_matrix(self, temp):
+        """Calculate composition-independent virial coefficients C,
+        defined as P = RT*rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
+        Including cross coefficients
+        Currently the code only support binary mixtures
+
+        Args:
+            temp (float): Temperature (K)
+
+        Returns:
+            ndarray: C - Third virial coefficient matrix (m6/mol2)  
+        """        
         assert self.nc == 2
         temp_c = POINTER( c_double )(c_double(temp))
         cmat_c = (c_double * self.nc**2)(0.0)
