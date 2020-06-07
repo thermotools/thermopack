@@ -16,8 +16,6 @@ dependent.
 
 To use pycThermopack you need have `numpy` available.
 
-Currently only python3 on Linux and Windows have been tested.
-
 # Installation
 
 ##Linux
@@ -27,13 +25,13 @@ the pyctp folder. This is done as follows:
 
 ```sh
 # Either
+make optim
+
+# or
 ./makescript.py optim
 
 # or
 python makescript.py optim
-
-# or (to specify the python version)
-make optim
 ```
 
 One may also, optionally, install `pyctp` on a user or system level, which
@@ -41,11 +39,15 @@ allwos one to import pycThermopack from anywhere. If this is desired, one can
 do:
 
 ```sh
-### System level
-sudo python3 install
+# System level
+## Either
+sudo ./install
 
-### User level
-python install
+## or (to specify the python version)
+sudo python setup.py install
+
+# User level
+python setup.py install
 ```
 
 ## Windows:

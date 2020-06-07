@@ -1,5 +1,6 @@
-#!/usr/bin/python3
-
+#!/usr/bin/python
+# Support for python2
+from __future__ import print_function
 # Importing pyThermopack
 from pyctp import thermo
 # Importing Numpy (math, arrays, etc...)
@@ -50,9 +51,7 @@ hi, dhidt, dhidp = tp.idealenthalpysingle(300.0,1.0e5,1,dhdt=True,dhdp=True)
 print(hi, dhidt, dhidp)
 
 sos = tp.speed_of_sound(300.0,1e5,x=z,y=z,z=z,betaV=1.0,betaL=0.0,phase=tp.VAPPH)
-print("sos",sos)
-tp.set_ph_tolerance(tol=1.0e-8)
-
+tp.set_ph_tolerance(1.0e-8)
 x, y, betaV, betaL, phase = tp.two_phase_tpflash(270.0,2.0e6,z)
 print(x, y, betaV, betaL, phase)
 
@@ -70,11 +69,18 @@ temp = 270.0
 temp, x, y, betaV, betaL, phase = tp.two_phase_phflash(2.0e6,z,enthalpy,temp=temp)
 print(temp, x, y, betaV, betaL, phase)
 
+print("Testing UV flash")
 p = 1.0e6
 energy = h - p*v
 volume = v
+p = 1.5e6
+t = 280.0
 temp, press, x, y, betaV, betaL, phase = tp.two_phase_uvflash(z,energy, volume, temp=temp, press=p)
 print(temp, press, x, y, betaV, betaL, phase)
+
+phase = tp.guess_phase(temp, press, z)
+print("Guessing phase: ", phase)
+
 
 print("Rgas",tp.Rgas)
 tp.set_tmin(100.0)
