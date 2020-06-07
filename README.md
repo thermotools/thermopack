@@ -23,7 +23,7 @@ Intel Fortran with Visual Studio:
 Fortran/Data/Default Real KIND = 8
 Fortran/External Procedures/Calling Convention = cref
 Fortran/External Procedures/Name Case Interpretation = lowercase
-Fortran/External Procedures/String Length Argument Parsing = mixed_str_len_arg
+Fortran/External Procedures/String Length Argument Parsing = After All Arguments
 Fortran/External Procedures/Append Underscore to External Names = Yes
 Fortran/Floating Point/Floating Point Model = precise
 
