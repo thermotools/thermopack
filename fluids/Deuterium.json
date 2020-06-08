@@ -1,0 +1,110 @@
+{
+  "ident": "D2",
+  "formula": "D2",
+  "cas_number": "7782-39-0",
+  "name": "DEUTERIUM",
+  "aliases": [
+    "Deuterium",
+    "DiDeuterium"
+  ],
+  "mol_weight": 4.0282,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "10.1063/1.4864752",
+    "temperature": 38.34,
+    "pressure": 1679600.0,
+    "compressibility": 0.3042
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": -0.13629
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 23.661
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      20.786,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -175.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.315
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.215,
+        0.9921,
+        1.1079
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.2543e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1486,
+        0.9968,
+        1.0587
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -4.5555e-06
+    }
+  }
+}

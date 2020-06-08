@@ -1,0 +1,100 @@
+{
+  "ident": "C2_1",
+  "formula": "C2H4",
+  "cas_number": "74-85-1",
+  "name": "ETYLENE",
+  "aliases": [
+    "Etylene",
+    "R1150"
+  ],
+  "mol_weight": 28.054,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 282.4,
+    "pressure": 5035900.0,
+    "compressibility": 0.276
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.085
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 169.4
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      15.5368,
+      1347.01,
+      -18.15
+    ],
+    "Tmin": 120.0,
+    "Tmax": 182.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      60.093536,
+      0.60693,
+      0.001288788,
+      1.033636e-06,
+      -1.099537e-09,
+      2.929326e-13,
+      4.489853,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -20.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2815
+  },
+  "SRK": {
+    "MC-1": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.652,
+        -0.315,
+        0.563
+      ]
+    }
+  },
+  "PR": {
+    "MC-1": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.512,
+        -0.087,
+        0.349
+      ]
+    }
+  }
+}

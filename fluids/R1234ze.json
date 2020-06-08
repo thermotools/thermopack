@@ -1,0 +1,109 @@
+{
+  "ident": "R1234ze",
+  "formula": "CHF=CHCF3_(t",
+  "cas_number": "29118-24-9",
+  "name": "TRANS-1,3,3,3-TETRAFLUOROPROPENE",
+  "aliases": [
+    "R1234ze"
+  ],
+  "mol_weight": 114.0416,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 382.513,
+    "pressure": 3634900.0,
+    "compressibility": 0.266412318
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.313
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 254.177
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      16.9543,
+      2509.17,
+      -10.8418
+    ],
+    "Tmin": 253.8,
+    "Tmax": 383.02
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 6,
+    "cp": [
+      -0.175392,
+      0.0079632,
+      -2.60047e-05,
+      4.67071e-08,
+      -3.17226e-11,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 170.0,
+    "Tmax": 500.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2664
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2239,
+        0.8336,
+        2.8339
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.16861e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1472,
+        0.8304,
+        2.889
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.4789e-06
+    }
+  }
+}

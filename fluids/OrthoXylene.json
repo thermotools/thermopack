@@ -1,0 +1,111 @@
+{
+  "ident": "OXYL",
+  "formula": "C8H10",
+  "cas_number": "95-47-6",
+  "name": "O-XYLENE",
+  "aliases": [
+    "OrthoXylene",
+    "O-Xylene",
+    "Orto-diMethylBenzene"
+  ],
+  "mol_weight": 106.167,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 630.33,
+    "pressure": 3734000.0,
+    "compressibility": 0.263
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.3104
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 417.58
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 7,
+    "cp": [
+      85210.0,
+      329540.0,
+      1494.4,
+      211500.0,
+      -675.8,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 200.0,
+    "Tmax": 1500.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2616
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3206,
+        0.8586,
+        2.4177
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.3825099999999997e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3108,
+        0.8463,
+        2.0289
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.5288e-06
+    }
+  }
+}

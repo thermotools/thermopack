@@ -1,0 +1,118 @@
+{
+  "ident": "NC5",
+  "formula": "C5H12",
+  "cas_number": "109-66-0",
+  "name": "N-PENTAN",
+  "aliases": [
+    "n-Pentane",
+    "Pentane"
+  ],
+  "mol_weight": 72.151,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 469.6,
+    "pressure": 3374100.0,
+    "compressibility": 0.262
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.251
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 309.2
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      15.8333,
+      2477.07,
+      -39.94
+    ],
+    "Tmin": 220.0,
+    "Tmax": 330.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      63.201677,
+      -0.011701,
+      0.003316498,
+      -1.17051e-06,
+      1.99648e-10,
+      -8.6652e-15,
+      4.075275,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -20.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2684
+  },
+  "SRK": {
+    "MC-1": {
+      "ref": "Default",
+      "bib_reference": "10.1016/j.fluid.2005.11.010",
+      "correlation": [
+        0.982,
+        -1.1695,
+        2.7523
+      ]
+    },
+    "MC-2": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.901,
+        -0.305,
+        0.542
+      ]
+    }
+  },
+  "PR": {
+    "MC-1": {
+      "ref": "Default",
+      "bib_reference": "10.1016/j.fluid.2005.11.010",
+      "correlation": [
+        0.982,
+        -1.1695,
+        2.7523
+      ]
+    },
+    "MC-2": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.763,
+        -0.224,
+        0.669
+      ]
+    }
+  }
+}

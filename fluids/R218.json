@@ -1,0 +1,110 @@
+{
+  "ident": "R218",
+  "formula": "C3F8",
+  "cas_number": "76-19-7",
+  "name": "OCTAFLUOROPROPANE",
+  "aliases": [
+    "R218",
+    "OctaFluoroPropane"
+  ],
+  "mol_weight": 188.017,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 345.1,
+    "pressure": 2680000.0,
+    "compressibility": 0.28
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.325
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 236.5
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      12.94,
+      0.622,
+      -0.0006408,
+      2.398e-07,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2778
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.884,
+        0.971,
+        1.1189
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 5.5808e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        1.0384,
+        1,
+        0.8046
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.06166e-05
+    }
+  }
+}

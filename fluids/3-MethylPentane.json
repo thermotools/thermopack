@@ -1,0 +1,109 @@
+{
+  "ident": "3MP",
+  "formula": "C6H14",
+  "cas_number": "96-14-0",
+  "name": "3-METHYLPENTANE",
+  "aliases": [
+    "3-MethylPentane"
+  ],
+  "mol_weight": 86.178,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 504.5,
+    "pressure": 3120000.0,
+    "compressibility": 0.273
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.272
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 336.4
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      17.964768,
+      0.397799,
+      0.00120987,
+      3.254556e-06,
+      -3.942661e-09,
+      1.4384148e-12,
+      2.149541,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -75.0,
+    "Tmax": 700.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.269
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2763,
+        0.8451,
+        2.375
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.8896599999999998e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2525,
+        0.8322,
+        2.0468
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.7479e-06
+    }
+  }
+}

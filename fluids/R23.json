@@ -1,0 +1,111 @@
+{
+  "ident": "R23",
+  "formula": "CHF3",
+  "cas_number": "75-46-7",
+  "name": "TRIFLUOROMETHANE",
+  "aliases": [
+    "R23",
+    "TriFluoroMethane",
+    "Fluoroform"
+  ],
+  "mol_weight": 70.013,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 299.3,
+    "pressure": 4860000.0,
+    "compressibility": 0.259
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.26
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 191.0
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      8.156,
+      0.1813,
+      -0.0001379,
+      3.938e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2576
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3609,
+        0.8537,
+        2.0022
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.08742e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3864,
+        0.842,
+        1.5744
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.9437999999999997e-06
+    }
+  }
+}

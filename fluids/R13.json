@@ -1,0 +1,110 @@
+{
+  "ident": "R13",
+  "formula": "CCLF3",
+  "cas_number": "75-72-9",
+  "name": "CHLOROTRIFLUOROMETHANE",
+  "aliases": [
+    "R13",
+    "ChlorotriFluoroMethane"
+  ],
+  "mol_weight": 104.459,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 302.0,
+    "pressure": 3921300.0,
+    "compressibility": 0.282
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.18
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 191.7
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "cp": [
+      5.449,
+      0.04565,
+      -3.765e-05,
+      1.065e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2771
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2152,
+        0.8609,
+        2.3838
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 6.2544e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.14,
+        0.8581,
+        2.4249
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -3.8858999999999995e-06
+    }
+  }
+}

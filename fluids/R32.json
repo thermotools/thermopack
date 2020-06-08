@@ -1,0 +1,110 @@
+{
+  "ident": "R32",
+  "formula": "CH2F2",
+  "cas_number": "75-10-5",
+  "name": "DIFLUOROMETHANE",
+  "aliases": [
+    "R32",
+    "DiFluoroMethane"
+  ],
+  "mol_weight": 52.023,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 351.6,
+    "pressure": 5830000.0,
+    "compressibility": 0.241
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.271
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 221.5
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      11.79,
+      0.1181,
+      -4.843e-05,
+      2.125e-09,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2444
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3483,
+        0.8724,
+        2.2259
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.49356e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2483,
+        0.8644,
+        2.3332
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 7.1952999999999995e-06
+    }
+  }
+}

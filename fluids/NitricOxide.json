@@ -1,0 +1,111 @@
+{
+  "ident": "NO",
+  "formula": "NO",
+  "cas_number": "10102-43-9",
+  "name": "NITRIC OXIDE",
+  "aliases": [
+    "NitricOxide",
+    "NitrogenMonOxide",
+    "OxoAmino"
+  ],
+  "mol_weight": 30.0061,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 180.0,
+    "pressure": 6480000.0,
+    "compressibility": 0.251127
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.582
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 121.38
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      20.1315,
+      1572.5,
+      -4.88
+    ],
+    "Tmin": 106.9,
+    "Tmax": 127.56
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 6,
+    "cp": [
+      0.8565,
+      -0.0014439,
+      3.9026e-06,
+      -4.0727e-09,
+      1.5225e-12,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 50.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2668
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.8681,
+        0.932,
+        1.5954
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.6364999999999997e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.8815,
+        0.9552,
+        1.4047
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -7.54e-07
+    }
+  }
+}

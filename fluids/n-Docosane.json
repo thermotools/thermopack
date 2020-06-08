@@ -1,0 +1,110 @@
+{
+  "ident": "NC22",
+  "formula": "C22H46",
+  "cas_number": "629-97-0",
+  "name": "N-DOCOSANE",
+  "aliases": [
+    "n-Docosane",
+    "Docosane"
+  ],
+  "mol_weight": 310.61,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 787.0,
+    "pressure": 1060000.0,
+    "compressibility": 0.24
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.9722
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 641.75
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 7,
+    "cp": [
+      392560.0,
+      1182000.0,
+      1723.4,
+      815780.0,
+      785.13,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 300.0,
+    "Tmax": 1500.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.22995
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.5016,
+        0.8082,
+        3.1243
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 0.00017145609999999999
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4788,
+        0.799,
+        2.8499
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 8.51555e-05
+    }
+  }
+}

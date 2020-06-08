@@ -1,0 +1,110 @@
+{
+  "ident": "R142b",
+  "formula": "C2H3ClF2",
+  "cas_number": "75-68-3",
+  "name": "1-CHLORO-1,1-DIFLUOROETHANE",
+  "aliases": [
+    "R142b",
+    "1-Chloro-1_1-diFluoroEthane"
+  ],
+  "mol_weight": 100.496,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 409.6,
+    "pressure": 4218000.0,
+    "compressibility": 0.2861
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.236
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 262.93
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "cp": [
+      4.017,
+      0.06584,
+      -4.758e-05,
+      1.267e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2668
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2561,
+        0.8585,
+        2.4188
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.3021599999999999e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1787,
+        0.8556,
+        2.4625
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -2.1899999999999998e-08
+    }
+  }
+}

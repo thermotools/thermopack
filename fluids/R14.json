@@ -1,0 +1,110 @@
+{
+  "ident": "R14",
+  "formula": "CF4",
+  "cas_number": "75-73-0",
+  "name": "CARBON TETRAFLUORIDE",
+  "aliases": [
+    "R14",
+    "CarbonTetraFluoride"
+  ],
+  "mol_weight": 88.005,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 227.6,
+    "pressure": 3738900.0,
+    "compressibility": 0.277
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.191
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 145.2
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      16.0543,
+      1244.55,
+      -13.06
+    ],
+    "Tmin": 93.0,
+    "Tmax": 148.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "cp": [
+      3.339,
+      0.04838,
+      -3.883e-05,
+      1.078e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.281
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2404,
+        0.8659,
+        2.3126
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 3.3487e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1653,
+        0.8584,
+        2.2953
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -4.5258e-06
+    }
+  }
+}

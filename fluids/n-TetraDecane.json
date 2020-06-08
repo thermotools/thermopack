@@ -1,0 +1,110 @@
+{
+  "ident": "NC14",
+  "formula": "C14H30",
+  "cas_number": "629-59-4",
+  "name": "N-TETRADECANE",
+  "aliases": [
+    "n-TetraDecane",
+    "TetraDecane"
+  ],
+  "mol_weight": 198.39,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 693.0,
+    "pressure": 1570000.0,
+    "compressibility": 0.244
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.644
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 526.76
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 8,
+    "cp": [
+      18.375,
+      0.006585,
+      0.00032307,
+      -4.2663e-07,
+      1.659e-10,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -20.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.24006
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4841,
+        0.8118,
+        2.4995
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 9.26542e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4902,
+        0.7974,
+        2.1353
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 3.96525e-05
+    }
+  }
+}

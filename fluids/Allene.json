@@ -1,0 +1,112 @@
+{
+  "ident": "ALLENE",
+  "formula": "C3H4",
+  "cas_number": "7173-51-5",
+  "name": "PROPADIENE",
+  "aliases": [
+    "Allene",
+    "Propadiene",
+    "R2250",
+    "1_2-Propadiene"
+  ],
+  "mol_weight": 40.065,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 393.85,
+    "pressure": 5248600.0,
+    "compressibility": 0.2597
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.12
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 238.65
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      6.5361,
+      1054.72,
+      -77.08
+    ],
+    "Tmin": 174.0,
+    "Tmax": 257.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      9.906,
+      0.1977,
+      -0.0001182,
+      2.782e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2677
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4198,
+        0.7256,
+        1.0307
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.1899699999999999e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        1.0853,
+        0.4788,
+        0.4593
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.923e-06
+    }
+  }
+}

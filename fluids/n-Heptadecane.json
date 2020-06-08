@@ -1,0 +1,110 @@
+{
+  "ident": "NC17",
+  "formula": "C17H36",
+  "cas_number": "629-78-7",
+  "name": "N-HEPTADECANE",
+  "aliases": [
+    "n-Heptadecane",
+    "Heptadecane"
+  ],
+  "mol_weight": 240.47,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 736.0,
+    "pressure": 1340000.0,
+    "compressibility": 0.242
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.753
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 574.56
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 8,
+    "cp": [
+      23.813,
+      -0.00921,
+      0.00045333,
+      -6.0601e-07,
+      2.4455e-10,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -20.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.23642
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.5161,
+        0.8098,
+        2.6919
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 0.0001171847
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.5257,
+        0.7969,
+        2.3092
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 5.24579e-05
+    }
+  }
+}

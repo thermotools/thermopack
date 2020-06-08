@@ -1,0 +1,147 @@
+{
+  "ident": "C1",
+  "formula": "CH4",
+  "cas_number": "74-82-8",
+  "name": "METHANE",
+  "aliases": [
+    "Methane",
+    "CH4",
+    "R50"
+  ],
+  "mol_weight": 16.0425,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 190.555,
+    "pressure": 4598837.0,
+    "compressibility": 0.283742
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.01131
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 111.7
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      15.2243,
+      897.84,
+      -7.16
+    ],
+    "Tmin": 93.0,
+    "Tmax": 120.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      -16.228549,
+      2.393594,
+      -0.002218007,
+      5.74022e-06,
+      -3.727905e-09,
+      8.549685e-13,
+      -0.339779,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -175.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2892
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2171,
+        0.9082,
+        1.8172
+      ]
+    },
+    "MC-1": {
+      "ref": "Default",
+      "bib_reference": "10.1016/j.fluid.2005.11.010",
+      "correlation": [
+        0.5857,
+        -0.7206,
+        1.2899
+      ]
+    },
+    "MC-2": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.549,
+        -0.409,
+        0.603
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.0503e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1471,
+        0.9074,
+        1.8253
+      ]
+    },
+    "MC-1": {
+      "ref": "Default",
+      "bib_reference": "10.1016/j.fluid.2005.11.010",
+      "correlation": [
+        0.5857,
+        -0.7206,
+        1.2899
+      ]
+    },
+    "MC-2": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.416,
+        -0.173,
+        0.348
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -3.5606e-06
+    }
+  }
+}

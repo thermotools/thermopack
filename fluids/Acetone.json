@@ -1,0 +1,111 @@
+{
+  "ident": "ACETONE",
+  "formula": "C3H6O",
+  "cas_number": "67-64-1",
+  "name": "ACETONE",
+  "aliases": [
+    "Acetone",
+    "Propan-2-one",
+    "2-Propanone"
+  ],
+  "mol_weight": 58.08,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 508.1,
+    "pressure": 4700000.0,
+    "compressibility": 0.233
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.307
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 329.22
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 6,
+    "cp": [
+      0.73379996,
+      0.0002163035,
+      8.2040725e-06,
+      -1.027406e-08,
+      3.9052015e-12,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 50.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2442
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3207,
+        0.8547,
+        2.363
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.6151199999999998e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.6041,
+        0.8402,
+        1.1984
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.26537e-05
+    }
+  }
+}

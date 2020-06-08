@@ -1,0 +1,111 @@
+{
+  "ident": "HE",
+  "formula": "HE",
+  "cas_number": "7440-59-7",
+  "name": "HELIUM-4",
+  "aliases": [
+    "Helium",
+    "HE4",
+    "R704"
+  ],
+  "mol_weight": 4.003,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 5.1953,
+    "pressure": 227600.0,
+    "compressibility": 0.301
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": -0.385
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 4.21
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      12.2514,
+      33.7329,
+      1.79
+    ],
+    "Tmin": 3.7,
+    "Tmax": 4.3
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      20.786,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.3355
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        -0.0466,
+        1.2473,
+        0.5401
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.4608e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.0063,
+        1.2175,
+        1.0909
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -4.8915e-06
+    }
+  }
+}

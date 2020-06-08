@@ -1,0 +1,112 @@
+{
+  "ident": "PRLN",
+  "formula": "C3H6",
+  "cas_number": "115-07-1",
+  "name": "PROPYLENE",
+  "aliases": [
+    "Propylene",
+    "1-Propene",
+    "Propene",
+    "R1270"
+  ],
+  "mol_weight": 42.081,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 364.9,
+    "pressure": 4600000.0,
+    "compressibility": 0.274
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.144
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 225.5
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      15.7027,
+      1807.53,
+      -26.15
+    ],
+    "Tmin": 160.0,
+    "Tmax": 240.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      66.369991,
+      0.128994,
+      0.00264691,
+      -6.71019e-07,
+      -5.5225e-11,
+      4.9469e-14,
+      5.117553,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -20.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2779
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3849,
+        0.8513,
+        1.4657
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 6.8987e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4641,
+        0.8419,
+        1.0455
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -3.5619999999999995e-06
+    }
+  }
+}

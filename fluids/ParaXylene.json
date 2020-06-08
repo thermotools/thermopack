@@ -1,0 +1,110 @@
+{
+  "ident": "PXYL",
+  "formula": "C8H10",
+  "cas_number": "106-42-3",
+  "name": "P-XYLENE",
+  "aliases": [
+    "ParaXylene",
+    "p-Xylene"
+  ],
+  "mol_weight": 106.167,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 616.23,
+    "pressure": 3511000.0,
+    "compressibility": 0.26
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.3215
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 411.51
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 7,
+    "cp": [
+      75120.0,
+      339700.0,
+      1492.8,
+      224700.0,
+      -675.1,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 200.0,
+    "Tmax": 1500.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2585
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2979,
+        0.8514,
+        2.5278
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.76019e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2262,
+        0.8501,
+        2.5471
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 5.3732e-06
+    }
+  }
+}

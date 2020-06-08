@@ -1,0 +1,156 @@
+{
+  "ident": "CO2",
+  "formula": "CO2",
+  "cas_number": "124-38-9",
+  "name": "CARBON DIOXIDE",
+  "aliases": [
+    "CarbonDioxide",
+    "R744"
+  ],
+  "mol_weight": 44.01,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 304.2,
+    "pressure": 7376500.0,
+    "compressibility": 0.274
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.225
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 194.7
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      22.5898,
+      3103.39,
+      -0.16
+    ],
+    "Tmin": 154.0,
+    "Tmax": 204.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      11.113744,
+      0.479107,
+      0.000762159,
+      -3.59392e-07,
+      8.4744e-11,
+      -5.7752e-15,
+      2.71918,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -175.0,
+    "Tmax": 1200.0
+  },
+  "ideal_heat_capacity-2": {
+    "ref": "",
+    "bib_reference": "",
+    "correlation": 5,
+    "cp": [
+      0.567998955,
+      0.00125397835,
+      -7.65547666e-07,
+      1.80606165e-10,
+      -3104.73875,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 50.0,
+    "Tmax": 5000.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2722
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2807,
+        0.8685,
+        2.2778
+      ]
+    },
+    "MC-1": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.867,
+        -0.674,
+        2.471
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 4.158199999999999e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1783,
+        0.859,
+        2.4107
+      ]
+    },
+    "MC-1": {
+      "ref": "Default",
+      "bib_reference": "Unknown",
+      "correlation": [
+        0.704606,
+        -0.314862,
+        1.89083
+      ]
+    },
+    "MC-2": {
+      "ref": "Chapoy2005",
+      "bib_reference": "Thesis by Antonin Chapoy (2005)",
+      "correlation": [
+        0.705,
+        -0.315,
+        1.89
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -1.1368e-06
+    }
+  }
+}

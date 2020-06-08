@@ -1,0 +1,111 @@
+{
+  "ident": "MEG",
+  "formula": "C2H6O2",
+  "cas_number": "107-21-1",
+  "name": "ETHYLENE GLYCOL",
+  "aliases": [
+    "MoneEthyleneGlycol",
+    "EthyleneGlycol",
+    "Ethane-1_2-diol"
+  ],
+  "mol_weight": 62.07,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 720.0,
+    "pressure": 8200000.0,
+    "compressibility": 0.2616
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.5347
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 470.25
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      18.90908,
+      4977.975,
+      -64.721
+    ],
+    "Tmin": 200.0,
+    "Tmax": 720.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      0.54467,
+      0.0011854,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -22.0,
+    "Tmax": 150.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2424
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        1.5454,
+        1,
+        0.7625
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.9295399999999998e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        1.5753,
+        1,
+        0.6614
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 8.387e-06
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "ident": "2MHX",
+  "formula": "C7H16",
+  "cas_number": "591-76-4",
+  "name": "2-METHYLHEXANE",
+  "aliases": [
+    "2-MethylHexane",
+    "Isoheptane"
+  ],
+  "mol_weight": 100.205,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 530.4,
+    "pressure": 2730000.0,
+    "compressibility": 0.261
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.329
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 363.2
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      17.893709,
+      0.404849,
+      0.001334653,
+      2.877698e-06,
+      -3.511818e-09,
+      1.2540055e-12,
+      1.823456,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -75.0,
+    "Tmax": 700.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2638
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3426,
+        0.8322,
+        2.2021
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 2.5115999999999998e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3796,
+        0.8103,
+        1.683
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 7.276999999999999e-07
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "ident": "NC25",
+  "formula": "C25H52",
+  "cas_number": "629-99-2",
+  "name": "N-PENTACOSANE",
+  "aliases": [
+    "n-Pentacosane",
+    "Pentacosane"
+  ],
+  "mol_weight": 352.69,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 812.0,
+    "pressure": 950000.0,
+    "compressibility": 0.24
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 1.1053
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 674.15
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 7,
+    "cp": [
+      445150.0,
+      1338900.0,
+      1721.5,
+      924780.0,
+      784.28,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 300.0,
+    "Tmax": 1500.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.22811
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.6034,
+        0.779,
+        2.5035
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 0.00021100159999999998
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.5717,
+        0.7803,
+        2.4666
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 0.0001056645
+    }
+  }
+}

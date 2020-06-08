@@ -1,0 +1,109 @@
+{
+  "ident": "CYCLOHEX",
+  "formula": "C6H12",
+  "cas_number": "110-82-7",
+  "name": "CYCLOHEXANE",
+  "aliases": [
+    "CycloHexane"
+  ],
+  "mol_weight": 84.161,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 553.5,
+    "pressure": 4073000.0,
+    "compressibility": 0.273
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.211
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 353.93
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 8,
+    "cp": [
+      4.035,
+      -0.004433,
+      0.00016834,
+      -2.0775e-07,
+      7.746e-11,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -100.0,
+    "Tmax": 1000.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.273
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3169,
+        0.8332,
+        1.8629
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 1.33377e-05
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3691,
+        0.812,
+        1.3617
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -4.2327e-06
+    }
+  }
+}

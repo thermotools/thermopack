@@ -1,0 +1,80 @@
+{
+  "ident": "S434",
+  "formula": "C12H26O",
+  "cas_number": "112-58-3",
+  "name": "DI-n-HEXYL ETHER",
+  "aliases": [
+    "DiHexylEther",
+    "1-(Hexyloxy)hexane"
+  ],
+  "mol_weight": 186.339,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 657.0,
+    "pressure": 1823900.0,
+    "compressibility": 0.24
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.7
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 499.6
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      16.3372,
+      3982.78,
+      -89.15
+    ],
+    "Tmin": 373.0,
+    "Tmax": 545.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "cp": [
+      8.01,
+      0.2564,
+      -0.0001322,
+      4.007e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": -1.0
+  },
+  "SRK": {},
+  "PR": {}
+}

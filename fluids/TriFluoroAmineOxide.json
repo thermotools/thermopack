@@ -1,0 +1,79 @@
+{
+  "ident": "F3NO",
+  "formula": "F3N0",
+  "cas_number": "13847-65-9",
+  "name": "TRIFLUOROAMINEOXIDE",
+  "aliases": [
+    "TriFluoroAmineOxide"
+  ],
+  "mol_weight": 87.001,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 303.0,
+    "pressure": 6430000.0,
+    "compressibility": 0.375
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.212
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 186.0
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      15.13,
+      0.2446,
+      -0.0002528,
+      9.375e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": -1.0
+  },
+  "SRK": {},
+  "PR": {}
+}
