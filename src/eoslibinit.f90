@@ -13,10 +13,29 @@ module eoslibinit
   !
   private
   public :: init_thermo
+  public :: init_cubic
   public :: cleanup_eos, silent_init
   public :: redefine_critical_parameters
   !
 contains
+
+  ! EOSLIBINIT.F90
+  ! init_cubic(compstr, eos, mixrule, alpha)
+  ! init_cpa(comp_string)
+  ! init_quantum_cubic(comp_string)
+  ! init_corresponding_states(comp_string, ref_comp, ref_eos, shape_eos)
+  ! init_multiparameter(comp_string, eos)
+  ! init_pcsaft(comp_string)
+  ! init_saftvrmie(comp_string)
+  ! init_quantum_saftvrmie(comp_string)
+  ! init_leekesler(comp_string)
+  ! init_solid
+  ! init_legacy_interface -> init_thermo
+  !
+  ! TUNING.F90
+  ! set_cubic_kij()
+  ! ...
+
 
   !----------------------------------------------------------------------
   !> Initialize thermo library
@@ -26,16 +45,13 @@ contains
   subroutine init_thermo(eosLibrary,eos,mixing,alpha,ncomp,comp_string,nphases,&
        liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_setno,alpha_setno,&
        saft_setno,b_exponent,TrendEosForCp,cptype,silent)
-    use parameters, only: clen, liq_vap_discr_method, initCompList, nc, TREND, &
+    use parameters, only: clen, liq_vap_discr_method, initCompList_legacy, nc, TREND, &
          eosLib, model, THERMOPACK
     use tpselect,   only: SelectComp, SelectEOS
     use tpvar,      only: comp, cbeos, cbeos_alternative, nce, ncsym
-    use stringmod,  only: str_upcase
-    use stringmod,  only: uppercase ! as  Function use to uppercase before string comperison
+    use stringmod,  only: uppercase
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
-    use numconstants, only: set_numconstants
     !$ use omp_lib, only: omp_get_max_threads
-    implicit none
     ! Method information
     character(len=*), intent(in) :: eosLibrary !< String defining eos library (TREND, ThermoPack)
     character(len=*), intent(in) :: eos    !< String defining equation of state
@@ -72,9 +88,8 @@ contains
     end if
 
     ! Component list is always set, no matter the EoSlib.
-    comp_string_upper=trim(comp_string)
-    call str_upcase(comp_string_upper)
-    call initCompList(ncomp,comp_string_upper)
+    comp_string_upper=trim(uppercase(comp_string))
+    call initCompList_legacy(ncomp,comp_string_upper)
     ncsym = ncomp
     ! Initialize components
     call SelectComp(trim(comp_string_upper),nce,comp)
@@ -87,8 +102,7 @@ contains
       enddo
     endif
 
-    eosLibrary_cpy = trim(eosLibrary)
-    call str_upcase(eosLibrary_cpy)
+    eosLibrary_cpy = trim(uppercase(eosLibrary))
     if (nce /= nc .and. eosLibrary_cpy /= "THERMOPACK") then
       write(message,*) 'EoS library: ', trim(eosLibrary), '. Does not yet support electrolytes!'
       call stoperror(trim(message))
@@ -152,6 +166,81 @@ contains
     endif
   end subroutine init_thermo
 
+
+  !----------------------------------------------------------------------------
+  !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
+  !----------------------------------------------------------------------------
+  subroutine init_cubic(compstr,eos,mixing,alpha)
+    use parameters, only: initCompList
+    use tpselect,   only: SelectComp
+    use tpvar,      only: comp, nce, ncsym
+    use stringmod,  only: uppercase
+    !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+    character(len=*), intent(in) :: eos     !< Equation of state
+    character(len=*), optional, intent(in) :: mixing !< Mixing rule
+    character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
+    ! Locals
+    integer                          :: ncomp
+    character(len=len_trim(compstr)) :: compstr_upper
+    character(len=100)               :: mixing_loc, alpha_loc
+
+    ! Set component list
+    compstr_upper=trim(uppercase(compstr))
+    call initCompList(compstr_upper,ncomp)
+    ncsym = ncomp
+
+    ! Initialize components module
+    call SelectComp(trim(compstr_upper),nce,comp)
+
+    ! Initialize Thermopack
+    alpha_loc = "Classic"
+    mixing_loc = "Classic"
+    if (present(mixing)) mixing_loc = uppercase(mixing)
+    if (present(alpha)) alpha_loc = uppercase(alpha)
+    call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
+         trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
+
+  end subroutine init_cubic
+
+  ! !----------------------------------------------------------------------------
+  ! !> Initialize corresponding state 
+  ! !----------------------------------------------------------------------------
+  ! subroutine init_(compstr,eos,mixing,alpha)
+  !   use parameters, only: initCompList
+  !   use tpselect,   only: SelectComp
+  !   use tpvar,      only: comp, nce, ncsym
+  !   use stringmod,  only: uppercase
+  !   !$ use omp_lib, only: omp_get_max_threads
+  !   character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+  !   character(len=*), intent(in) :: eos     !< Equation of state
+  !   character(len=*), optional, intent(in) :: mixing !< Mixing rule
+  !   character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
+  !   ! Locals
+  !   integer                          :: ncomp
+  !   character(len=len_trim(compstr)) :: compstr_upper
+  !   character(len=100)               :: mixing_loc, alpha_loc
+
+  !   ! Set component list
+  !   compstr_upper=trim(uppercase(compstr))
+  !   call initCompList(compstr_upper,ncomp)
+  !   ncsym = ncomp
+
+  !   ! Initialize components module
+  !   call SelectComp(trim(compstr_upper),nce,comp)
+
+  !   ! Initialize Thermopack
+  !   alpha_loc = "Classic"
+  !   mixing_loc = "Classic"
+  !   if (present(mixing)) mixing_loc = uppercase(mixing)
+  !   if (present(alpha)) alpha_loc = uppercase(alpha)
+  !   call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
+  !        trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
+
+  ! end subroutine init_cubic
+
+
+
   !----------------------------------------------------------------------
   !> Set critical parameters to represent actual model
   !>
@@ -165,7 +254,6 @@ contains
     use saturation,   only: acentricFactorEos
     use tpconst,      only: tpTmin, Rgas
     use cbAlpha,      only: getAlphaClassicParam
-    implicit none
     logical, intent(in) :: silent_init
     ! Locals
     integer :: i, j, ierr
@@ -233,7 +321,6 @@ contains
     use saft_association, only: numAssocSites
     use stringmod, only: uppercase
     !$ use omp_lib
-    implicit none
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
     character(len=*), intent(in) :: mixing !< String defining mixing rules
@@ -355,7 +442,6 @@ contains
 #ifdef __INTEL_COMPILER
     use ifport
 #endif
-    implicit none
     ! Input:
     character(len=*), intent(in)    :: eos            !< String defining equation of state
     integer, intent(in)             :: ncomp          !< Number of components
@@ -434,7 +520,6 @@ contains
     use tpselect, only: deAllocateEosCubic
     use tpvar, only: comp, cbeos, cbeos_alternative
     use multiparameter_base, only: cleanup_meos
-    implicit none
     integer :: stat, i
     !
     stat = 0

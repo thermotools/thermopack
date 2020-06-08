@@ -1,5 +1,5 @@
 module test_eosTV
-  use eoslibinit, only: init_thermo, silent_init
+  use eoslibinit, only: init_thermo, init_cubic, silent_init
   use eosTV, only: internal_energy, free_energy, pressure
   use pfunit_mod
   implicit none
@@ -26,8 +26,8 @@ contains
     integer :: i, j
     real :: tol = 1e-6
 
-    call init_thermo('Thermopack', 'SRK', 'vdW', 'Classic', 1,&
-         "CO2", 1)
+    call init_cubic('CO2', 'SRK')
+
     x = [1.0]
 
     Tmin = 200 ! K
@@ -266,7 +266,6 @@ contains
     real :: F,F_T,F_V,F_n(ncomp),F_TT,F_TV,F_VV,F_Tn(ncomp)
     real :: F_Vn(ncomp),F_nn(ncomp,ncomp),F_VVV
     real :: F2,F2_T,F2_V,F2_n(ncomp),F2_VV
-    real :: F3,F3_T,F3_V,F3_n(ncomp),F3_VV
     real, dimension(ncomp) :: n, dn, x
     integer :: i, j
     character(len=100) :: mixing_l

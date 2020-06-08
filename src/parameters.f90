@@ -43,14 +43,13 @@ module parameters
   integer, parameter :: GRID = 1, ENVELOPE_PL = 2, &
        BINARY_PL = 3, BINARY_VLLE_PL = 4, META_LIMIT_PL = 5, SOLIDENVELOPE_PL = 6
 
-  public :: parseCompVector, compIndex, initCompList
+  public :: parseCompVector, compIndex, initCompList, initCompList_legacy
   public :: continueOnError, phaseIntToName
   public :: isWaterComponent, calcLnPhiOffset, waterComponentFraction
 
 contains
 
   function compIndex(compName) result(index)
-    implicit none
     character(len=*), intent(in) :: compName
     integer :: index
     ! Locals
@@ -65,8 +64,7 @@ contains
     !call stoperror('Component '//trim(compName)//'not found in list of components')
   end function compIndex
 
-  subroutine initCompList(ncomp,componentString)
-    implicit none
+  subroutine initCompList_legacy(ncomp,componentString)
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: componentString
     integer :: ipos, err, i, j
@@ -106,10 +104,56 @@ contains
         print *,trim(complist(i))
       enddo
     endif
+  end subroutine initCompList_legacy
+
+  subroutine initCompList(componentString, ncomp)
+    use stringmod, only: count_substr
+    character(len=*), intent(in) :: componentString
+    integer, intent(out) :: ncomp
+    integer :: ipos, err, i, j
+    character(len=clen) :: comp_string
+    comp_string = trim(componentString)
+
+    ! Ensure the components are comma-delimited.
+    if (contains_space(trim(comp_string))) then
+      comp_string = space_delimited_to_comma_delimited(trim(comp_string))
+    end if
+
+    ncomp = count_substr(str=comp_string, substr=',') + 1
+    nc = ncomp
+
+    if (allocated(complist)) then
+      deallocate(complist,STAT=err)
+      if (err /= 0) Call StopError('Could not deallocate component list!')
+    endif
+    allocate(complist(nc),STAT=err)
+    if (err /= 0) Call StopError('Could not allocate component list!')
+
+    do i=1,nc
+      ipos = getComp(trim(comp_string))
+      complist(i)=comp_string(1:ipos)
+      comp_string = comp_string(ipos+2:clen)
+    enddo
+    ! Check for duplicates
+    do i=1,nc
+      do j=1,nc
+        if (trim(complist(i)) == trim(complist(j)) .and. j /= i) then
+          Call StopError('Duplicate in component list. Check input!')
+        endif
+      enddo
+    enddo
+
+    if (verbose) then
+      print *,'Component vector:'
+      do i=1,nc
+        print *,trim(complist(i))
+      enddo
+    endif
   end subroutine initCompList
+
+
   !----------------------------------------------------------------------
   function parseCompVector(compvector) result(nc)
-    implicit none
     character(len=*), intent(in) :: compvector
     integer :: nc
     ! Locals
@@ -134,7 +178,6 @@ contains
 
   !----------------------------------------------------------------------
   logical function contains_space(in_string)
-    implicit none
     character(len=*), intent(in) :: in_string !< No leading or trailing spaces.
     ! Locals
     integer :: i
@@ -151,7 +194,6 @@ contains
 
   !----------------------------------------------------------------------
   function space_delimited_to_comma_delimited(in_string) result(out_string)
-    implicit none
     character(len=*), intent(in) :: in_string !< Space-separated component string
     character(len=clen) :: out_string !< Comma-separated
     ! Locals
@@ -176,7 +218,6 @@ contains
 
   !----------------------------------------------------------------------
   function getComp(compvector) result(ipos)
-    implicit none
     character(len=*), intent(in) :: compvector
     integer :: ipos
     ! Locals
@@ -194,7 +235,6 @@ contains
   end function getComp
   !----------------------------------------------------------------------
   subroutine phaseIntToName(phase,phaseName)
-    implicit none
     integer, intent(in) :: phase
     character(len=*), intent(out) :: phaseName
     !
@@ -220,7 +260,6 @@ contains
 
   ! Return true if component is water or water soluble
   function isWaterComponent(i) result(isWComp)
-    implicit none
     integer, intent(in) :: i
     logical :: isWComp
     ! Locals
@@ -234,7 +273,6 @@ contains
 
   ! Return amount of water components
   function waterComponentFraction(Z) result(wCompFrac)
-    implicit none
     real, dimension(nc), intent(in) :: Z
     real :: wCompFrac
     ! Locals
@@ -253,7 +291,6 @@ contains
   !> \author MH, 2016-03
   !-------------------------------------------------------------------------
   subroutine calcLnPhiOffset(pid,lnPhi_offset)
-    implicit none
     integer, optional, intent(in) :: pid
     real, dimension(nc), intent(out) :: lnPhi_offset
     ! Locals
