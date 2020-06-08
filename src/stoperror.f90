@@ -4,10 +4,10 @@ module error
 
   integer :: err=1 !< Used in exit call: call exit(error)
   logical :: writeToFile = .false.   !< .true. Print error message
-                                     !< .flase. Write error message to file
+                                     !< .false. Write error message to file
 
   logical :: dostop = .true. !< .true. exit when error occurs
-                                        !< .false. try to continue
+                             !< .false. try to continue
   logical :: lwin = .false.  !< .true. Stop and wait for keyboard input
   character(len=cLen) :: errorfile = 'error.dat'
 
@@ -18,7 +18,7 @@ contains
     implicit none
     integer, optional :: err_in
     logical, optional :: writeToFile_in
-    logical, optional :: dostop_in 
+    logical, optional :: dostop_in
     logical, optional :: lwin_in
     character(len=*), optional :: errorfile_in
     !
@@ -51,7 +51,7 @@ use ifcore, only: tracebackqq
   ! Can set breakpoint here and then see where the stop occured
   ! Can see why the stop occure
   !
-  ! Now use subroutine exit (intrinsic) to give exit code 1. This 
+  ! Now use subroutine exit (intrinsic) to give exit code 1. This
   ! is beneficial for the nautotester automatic testing routines.
   ! Note: subroutine exit does not seem to be standard Fortran.
   ! However, all of pgf90, gfortran, g95, sunf90 and ifort have it.
@@ -61,7 +61,7 @@ use ifcore, only: tracebackqq
   ! STM, 2009-07-29
   !
   character , intent(IN) :: s*(*)
-  ! Using of variable dostop makes it posible to not stop here 
+  ! Using of variable dostop makes it posible to not stop here
   ! from the debugger
   if (writeToFile) then
      open(15, FILE = trim(errorfile))
@@ -71,12 +71,12 @@ use ifcore, only: tracebackqq
         write(15,*) 'Unknown error'
      endif
      close(15)
-   else 
+   else
 
-#ifdef __GNUC__  
+#ifdef __GNUC__
 #if ((__GNUC__  ==4 ) && (__GNUC_MINOR__ >= 8 )) || (__GNUC__  >= 5 )
-call backtrace 
-#endif 
+call backtrace
+#endif
 #endif
 
 #ifdef __INTEL_COMPILER

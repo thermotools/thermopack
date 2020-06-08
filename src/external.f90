@@ -254,7 +254,6 @@ subroutine thermopack_init_liq_vap_discr(components,n_comp,strlen,&
   !use model, only: parseCompVector,getComp
   use eoslibinit, only: init_thermo
   use parameters, only: clen
-  use numconstants, only: set_numconstants
   !use error, only: stoperror
   implicit none
   ! Input:
@@ -273,8 +272,6 @@ subroutine thermopack_init_liq_vap_discr(components,n_comp,strlen,&
   ! write(*,*) "---WELCOME TO THERMOPACK--"
   ! write(*,*) "--------------------------"
 
-  ! Initializing numlib
-  call set_numconstants()
 
   ierr = 0
 

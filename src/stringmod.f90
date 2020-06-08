@@ -1,6 +1,6 @@
 module stringmod
 
-  public  :: chartoascii, str_upcase, str_eq
+  public  :: chartoascii, str_upcase, str_eq, count_substr
   private :: value_dr,value_sr,value_di,value_si
   private :: write_dr,write_sr,write_di,write_si
   private :: writeq_dr,writeq_sr,writeq_di,writeq_si
@@ -845,5 +845,23 @@ contains
       inttxt(i) = ichar(chartxt(i:i))
     enddo
   end subroutine chartoascii
+
+  !> Calculate the number of occurrences of substring in a string
+  function count_substr(str, substr) result(c)
+    character(*), intent(in) :: str !< Main string to search
+    character(*), intent(in) :: substr !< Substring to search for
+    integer :: c, p, posn
+
+    c = 0
+    if(len(substr) == 0) return
+    p = 1
+    do
+       posn = index(str(p:), substr)
+       if(posn == 0) return
+       c = c + 1
+       p = p + posn + len(substr)
+    end do
+  end function count_substr
+
 
 end module stringmod

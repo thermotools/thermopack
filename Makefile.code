@@ -108,10 +108,10 @@ TESTOBJS = $(TESTSRCS:.pf=.o)
 # Note: The order of the objects listed here decides the order of compilation.
 #
 OBJE = 	\
-	$(ODIR)/parameters.o \
-	$(ODIR)/stringmod.o \
 	$(ODIR)/numconstants.o \
+	$(ODIR)/stringmod.o \
 	$(ODIR)/quadratures.o \
+	$(ODIR)/parameters.o \
 	$(ODIR)/stoperror.o \
 	$(ODIR)/nonlin_optimizer.o \
 	$(ODIR)/nonlinear_solvers.o \
