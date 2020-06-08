@@ -1,0 +1,421 @@
+module test_eos_consistency
+  !> Test that the analytical derivatives equal numerical derivatives of the
+  !> reduced, residual Helmholtz (F=A/RT), as well as the fulfilment of
+  !> thermodynamic identities.
+  use eoslibinit, only: init_thermo, silent_init, cleanup_eos
+  use pfunit_mod
+  implicit none
+  public
+
+  logical :: VERBOSE = .false.
+
+contains
+
+  @Test
+  subroutine test_fres_tv_SRK()
+    integer, parameter :: ncomp = 3
+    character(len=*), parameter :: eos="SRK"
+    character(len=*), parameter :: compstr="CO2,N2,C1"
+    real :: T0, P0, n0(ncomp)
+    n0 = [0.9,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_SRK
+
+
+  @Test
+  subroutine test_fres_tv_CSP_SRK()
+    integer, parameter :: ncomp = 3
+    character(len=*), parameter :: eos="CSP-SRK"
+    character(len=*), parameter :: compstr="CO2,N2,C1"
+    real :: T0, P0, n0(ncomp)
+    n0 = [0.9,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_CSP_SRK
+
+
+  @Test
+  subroutine test_fres_tv_PRHV()
+    integer, parameter :: ncomp = 3
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="CO2,H2O,MEG"
+    character(len=*), parameter :: mixing="HV1"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.9,0.15,0.15]
+    P0 = 5.0e6
+    T0 = 300.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+  end subroutine test_fres_tv_PRHV
+
+
+  @Test
+  subroutine test_fres_tv_CPA_SRK()
+    integer, parameter :: ncomp = 2
+    character(len=*), parameter :: eos="CPA-SRK"
+    character(len=*), parameter :: compstr="CO2,H2O"
+    real :: T0, P0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = [0.1,0.9]
+    P0 = 5.0e6
+    T0 = 300.0
+
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_CPA_SRK
+
+
+  @Test
+  subroutine test_fres_tv_PCSAFT()
+    integer, parameter :: ncomp = 2
+    character(len=*), parameter :: eos="PC-SAFT"
+    character(len=*), parameter :: compstr="CO2,H2O"
+    real :: T0, P0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = [0.1,0.9]
+    P0 = 5.0e6
+    T0 = 300.0
+
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_PCSAFT
+
+
+  @Test
+  subroutine test_fres_tv_MBWR19()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="MBWR32"
+    character(len=*), parameter :: compstr="C3"
+    real :: T0, P0, V0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = [1.0]
+    P0 = 0.0 ! not used
+    V0 = 1.0
+    T0 = 300.0
+
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+  end subroutine test_fres_tv_MBWR19
+
+
+  @Test
+  subroutine test_fres_tv_MBWR32()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="MBWR32"
+    character(len=*), parameter :: compstr="C3"
+    real :: T0, P0, V0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = [1.0]
+    P0 = 0.0 ! not used
+    V0 = 1.0
+    T0 = 300.0
+
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+  end subroutine test_fres_tv_MBWR32
+
+
+  @Test
+  subroutine test_fres_tv_NIST()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="NIST_MEOS"
+    character(len=*), parameter :: compstr="C3"
+    real :: T0, P0, V0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = [1.0]
+    P0 = 0.0 ! not used
+    V0 = 1.0
+    T0 = 300.0
+
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
+  end subroutine test_fres_tv_NIST
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! The following routines are model-independent
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine test_numder(dy, y_plus, y_minus, dx, reltol_opt, string_opt)
+    !> Tests whether analytical derivative dy equals numerical derivative within
+    !> the given relative tolerance
+    real, intent(in) :: dy, y_plus, y_minus, dx
+    real, optional, intent(in) :: reltol_opt
+    character(len=*), optional, intent(in) :: string_opt
+    ! Locals
+    real :: reltol
+
+    reltol = 1e-5
+    if (present(reltol_opt)) reltol = reltol_opt
+
+    if (present(string_opt) .and. VERBOSE) then
+       ! Display numerical and analytical derivative
+       print *, string_opt
+       print *, "analytical", dy
+       print *, "numerical ", (y_plus-y_minus)/(2*dx)
+    end if
+
+    @assertEqual(dy,(y_plus-y_minus)/(2*dx), reltol*abs(dy))
+  end subroutine test_numder
+
+  subroutine eos_init(ncomp,eos,compstr,mixing, isCubic)
+    use eos, only: specificvolume
+    use eosTV, only: Fres
+    use parameters, only: LIQPH, VAPPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: eos
+    character(len=*), intent(in) :: compstr
+    character(len=*), optional, intent(in) :: mixing
+    logical, intent(out) :: isCubic
+    ! Locals
+    character(len=100) :: mixing_l
+    character(len=10) :: eoslib
+    call cleanup_eos()
+
+    mixing_l = "vdW"
+    if (present(mixing)) mixing_l = mixing
+
+    eoslib = "Thermopack"
+    if (str_eq(eos, "EOSCG") .OR. str_eq(eos, "EOSCG-GERG") .OR. str_eq(eos, "GERG2008")) then
+       eoslib = "TREND"
+    endif
+
+    isCubic = .false.
+    if ( str_eq(eos, "SRK") .or. str_eq(eos, "PR") ) isCubic = .true.
+
+    ! if ( index(eos, "CSP")>0) then
+    !    pass
+    ! end if
+
+
+    silent_init = .true.
+    call init_thermo(trim(eoslib), trim(eos), trim(mixing_l), 'Classic', ncomp,&
+         trim(compstr), 1)
+  end subroutine eos_init
+
+  subroutine test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec,mixing)
+    use eos, only: specificvolume
+    use eosTV, only: Fres
+    use parameters, only: LIQPH, VAPPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: eos
+    character(len=*), intent(in) :: compstr
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: n0
+    real, optional, intent(in) :: v_spec ! if present(v_spec) then P0 is ignored
+    character(len=*), optional, intent(in) :: mixing
+    ! Locals
+    real, parameter :: eps = 1.0e-5
+    real :: t, v, dt, dv, v0, sumn
+    real :: F,F_T,F_V,F_n(ncomp),F_TT,F_TV,F_VV,F_Tn(ncomp)
+    real :: F_Vn(ncomp),F_nn(ncomp,ncomp),F_VVV
+    real :: F2,F2_T,F2_V,F2_n(ncomp),F2_VV
+    real :: F3,F3_T,F3_V,F3_n(ncomp),F3_VV
+    real, dimension(ncomp) :: n, dn, x
+    integer :: i, j
+    logical :: isCubic
+
+    call eos_init(ncomp,eos,compstr,mixing,isCubic)
+
+    ! Calculate initial point
+    if (present(v_spec)) then
+       v0 = v_spec
+    else
+       sumn = sum(n0)
+       x = n0/sumn
+       call specificvolume(T0,p0,x,LIQPH,v0)
+       v0 = v0*sumn
+    end if
+    t = t0
+    v = v0
+    n = n0
+    if (isCubic) then
+       call Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
+    else
+       call Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    endif
+
+    ! Set step lengths ("dx")
+    dv = v0*eps
+    dt = t0*eps
+    dn = n0*eps
+
+    ! Test temperature derivatives
+    t = t0 + dt
+    n = n0
+    v = v0
+    call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
+    t = t0 - dt
+    call Fres(T,V,n,F=F3,F_T=F3_T,F_V=F3_V,F_n=F3_n)
+    call test_numder(F_T, F2, F3, dt, string_opt="F_T")
+    call test_numder(F_TT, F2_T, F3_T, dt, string_opt="F_TT")
+    call test_numder(F_TV, F2_V, F3_V, dt, string_opt="F_TV")
+    do i=1,ncomp
+       call test_numder(F_Tn(i), F2_n(i), F3_n(i), dt, string_opt="F_Tn_i")
+    enddo
+
+    ! Test volume derivatives
+    t = t0
+    n = n0
+    v = v0 + dv
+    call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n,F_VV=F2_VV)
+    v = v0 - dv
+    call Fres(T,V,n,F=F3,F_T=F3_T,F_V=F3_V,F_n=F3_n,F_VV=F3_VV)
+    call test_numder(F_V, F2, F3, dv, string_opt="F_V")
+    call test_numder(F_TV, F2_T, F3_T, dv, string_opt="F_TV")
+    call test_numder(F_VV, F2_V, F3_V, dv, string_opt="F_VV")
+    do i=1,ncomp
+       call test_numder(F_Vn(i), F2_n(i), F3_n(i), dv, string_opt="F_Vn_i")
+    enddo
+
+    ! Test mole number derivatives
+    t = t0
+    v = v0
+    do j=1,ncomp
+       n = n0
+       n(j) = n0(j) + dn(j)
+       call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
+       n(j) = n0(j) - dn(j)
+       call Fres(T,V,n,F=F3,F_T=F3_T,F_V=F3_V,F_n=F3_n)
+       call test_numder(F_n(j), F2, F3, dn(j), string_opt="F_n_j")
+       call test_numder(F_Vn(j), F2_V, F3_V, dn(j), string_opt="F_Vn_j")
+       call test_numder(F_Tn(j), F2_T, F3_T, dn(j), string_opt="F_Tn_j")
+
+       do i=1,ncomp
+          call test_numder(F_nn(i,j), F2_n(i), F3_n(i), dn(j), string_opt="F_nn_ij")
+       enddo
+    enddo
+
+  end subroutine test_fres_tv_model
+
+
+
+  subroutine test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing,v_spec)
+    !> Verifies that a selection of thermodynamic identities are fulfilled.
+    use eosTV, only: thermoTV, Fres
+    use eos, only: specificvolume
+    use parameters, only: LIQPH, VAPPH
+    use stringmod, only: str_eq
+    integer, intent(in) :: ncomp
+    character(len=*), intent(in) :: eos
+    character(len=*), intent(in) :: compstr
+    real, intent(in) :: T0, P0
+    real, dimension(ncomp), intent(in) :: n0
+    real, optional, intent(in) :: v_spec ! if present(v_spec) then P0 is ignored
+    character(len=*), optional, intent(in) :: mixing
+    real :: n(ncomp), V, z(ncomp), n2(ncomp), lnf(ncomp), lnf2(ncomp), F, F2
+    real, parameter :: tol1 = 1e-10, tol2 = 5e-8
+    integer :: index, i, j, ph, eos_idx
+    real :: factor
+    ! Test variables
+    real :: T, P, v0
+    real :: gi,phiP,phiT
+    real, dimension(ncomp) :: gd,phi,phinumP,phinumT
+    real, dimension(ncomp*ncomp) :: phinumX
+    real, dimension((ncomp*ncomp-ncomp)/2) :: phisym
+    logical :: isCubic
+
+    call eos_init(ncomp,eos,compstr,mixing,isCubic)
+
+    ! Calculate initial point
+    if (present(v_spec)) then
+       v0 = v_spec
+    else
+       call specificvolume(T0,p0,n0/sum(n0),LIQPH,v0)
+       v0 = v0*sum(n0)
+    end if
+    t = t0
+    v = v0
+    n = n0
+
+    if (VERBOSE) print *, "VERIFYING THERMODYNAMIC IDENTITIES"
+    z = n/sum(n)
+
+    do ph=1,2
+       if (VERBOSE) print *, " phase idx", ph
+       call consistency(t,p,n,ph,gi,phiP,phiT,gd,phi,phisym,phinumP,phinumT,phinumX)
+       if (VERBOSE) then
+          print *, "  gi     ", gi
+          print *, "  phiP   ", phiP
+          print *, "  phiT   ", phiT
+       end if
+       @assertEqual(0.0,gi,tol1)
+       @assertEqual(0.0,phiP,tol1)
+       @assertEqual(0.0,phiT,tol1)
+
+       index = 0
+       do i=1,ncomp
+          if (VERBOSE) then
+             print *, "  i      ", i
+             print *, "  gd     ",gd(i)
+             print *, "  phi    ",phi(i)
+             print *, "  phinumP",phinumP(i)
+             print *, "  phinumT",phinumT(i)
+          end if
+          @assertEqual(0.0,gd(i),tol1)
+          @assertEqual(0.0,phi(i),tol2)
+          @assertEqual(0.0,phinumP(i),tol2)
+          @assertEqual(0.0,phinumT(i),tol2)
+
+          do j=1,ncomp
+             if (VERBOSE) then
+                print *, "  j      ", j
+                print *, "  phinumX", phinumX((i-1)*ncomp+j)
+             end if
+             @assertEqual(0.0,phinumX((i-1)*ncomp+j),2*tol2)
+          enddo
+
+          do j=i+1,ncomp
+             index = index + 1
+             if (VERBOSE) then
+                print *, "  j      ", j
+                print *, "  phisym ", phisym(index)
+             end if
+             @assertEqual(0.0,phisym(index),tol1)
+          enddo
+       enddo
+
+       ! Verify that NVT functions are extensive
+       call specificvolume(t,p,z,ph,v)
+       call thermoTV(t,v,z,lnf)
+       call Fres(t,1000*v,z,F)
+       factor = 1.2345
+       n2 = z*factor
+       v = v*factor
+       call Fres(t,1000*v,n2,F2)
+       @assertEqual(0.0,F*factor-F2,0.1*tol1)
+       call thermoTV(t,v,n2,lnf2)
+       do i=1,ncomp
+          @assertEqual(0.0,lnf(i)-lnf2(i),0.1*tol1)
+       enddo
+    end do
+  end subroutine test_consistency
+
+
+end module test_eos_consistency
+! Local Variables:
+! mode: f90
+! End:
