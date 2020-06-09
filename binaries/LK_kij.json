@@ -1,0 +1,863 @@
+{
+  "LK-1": {
+    "comp1": "C1",
+    "comp2": "C2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.05200000E+00
+  },
+  "LK-2": {
+    "comp1": "C1",
+    "comp2": "C2_1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01400000E+00
+  },
+  "LK-3": {
+    "comp1": "C1",
+    "comp2": "C3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.11300000E+00
+  },
+  "LK-4": {
+    "comp1": "C1",
+    "comp2": "PRLN",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.08900000E+00
+  },
+  "LK-5": {
+    "comp1": "C1",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.15500000E+00
+  },
+  "LK-6": {
+    "comp1": "C1",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.17100000E+00
+  },
+  "LK-7": {
+    "comp1": "C1",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.24000000E+00
+  },
+  "LK-8": {
+    "comp1": "C1",
+    "comp2": "IC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.22800000E+00
+  },
+  "LK-9": {
+    "comp1": "C1",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.30400000E+00
+  },
+  "LK-10": {
+    "comp1": "C1",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.36700000E+00
+  },
+  "LK-11": {
+    "comp1": "C1",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.42300000E+00
+  },
+  "LK-12": {
+    "comp1": "C1",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.48400000E+00
+  },
+  "LK-13": {
+    "comp1": "C1",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.53300000E+00
+  },
+  "LK-14": {
+    "comp1": "C1",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.23400000E+00
+  },
+  "LK-15": {
+    "comp1": "C2",
+    "comp2": "C2_1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.91000000E-01
+  },
+  "LK-16": {
+    "comp1": "C2",
+    "comp2": "C3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01000000E+00
+  },
+  "LK-17": {
+    "comp1": "C2",
+    "comp2": "PRLN",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00200000E+00
+  },
+  "LK-18": {
+    "comp1": "C2",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.03600000E+00
+  },
+  "LK-19": {
+    "comp1": "C2",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.02900000E+00
+  },
+  "LK-20": {
+    "comp1": "C2",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.06400000E+00
+  },
+  "LK-21": {
+    "comp1": "C2",
+    "comp2": "IC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.07000000E+00
+  },
+  "LK-22": {
+    "comp1": "C2",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.10600000E+00
+  },
+  "LK-23": {
+    "comp1": "C2",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.14300000E+00
+  },
+  "LK-24": {
+    "comp1": "C2",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.16500000E+00
+  },
+  "LK-25": {
+    "comp1": "C2",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.21400000E+00
+  },
+  "LK-26": {
+    "comp1": "C2",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.23700000E+00
+  },
+  "LK-27": {
+    "comp1": "C2",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.06600000E+00
+  },
+  "LK-28": {
+    "comp1": "C2_1",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.98000000E-01
+  },
+  "LK-29": {
+    "comp1": "C2_1",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.09400000E+00
+  },
+  "LK-30": {
+    "comp1": "C2_1",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.16300000E+00
+  },
+  "LK-31": {
+    "comp1": "C3",
+    "comp2": "PRLN",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.92000000E-01
+  },
+  "LK-32": {
+    "comp1": "C3",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00300000E+00
+  },
+  "LK-33": {
+    "comp1": "C3",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00300000E+00
+  },
+  "LK-34": {
+    "comp1": "C3",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00600000E+00
+  },
+  "LK-35": {
+    "comp1": "C3",
+    "comp2": "IC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00900000E+00
+  },
+  "LK-36": {
+    "comp1": "C3",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.04700000E+00
+  },
+  "LK-37": {
+    "comp1": "C3",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01100000E+00
+  },
+  "LK-38": {
+    "comp1": "C3",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.06700000E+00
+  },
+  "LK-39": {
+    "comp1": "C3",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.09000000E+00
+  },
+  "LK-40": {
+    "comp1": "C3",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01150000E+00
+  },
+  "LK-41": {
+    "comp1": "C3",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.13900000E+00
+  },
+  "LK-42": {
+    "comp1": "PRLN",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01000000E+00
+  },
+  "LK-43": {
+    "comp1": "PRLN",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00900000E+00
+  },
+  "LK-44": {
+    "comp1": "NC4",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00100000E+00
+  },
+  "LK-45": {
+    "comp1": "NC4",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.94000000E-01
+  },
+  "LK-46": {
+    "comp1": "NC4",
+    "comp2": "IC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.98000000E-01
+  },
+  "LK-47": {
+    "comp1": "NC4",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01800000E+00
+  },
+  "LK-48": {
+    "comp1": "NC4",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.99000000E-01
+  },
+  "LK-49": {
+    "comp1": "NC4",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.02700000E+00
+  },
+  "LK-50": {
+    "comp1": "NC4",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.04600000E+00
+  },
+  "LK-51": {
+    "comp1": "NC4",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.06400000E+00
+  },
+  "LK-52": {
+    "comp1": "NC4",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.07800000E+00
+  },
+  "LK-53": {
+    "comp1": "NC5",
+    "comp2": "IC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.87000000E-01
+  },
+  "LK-54": {
+    "comp1": "NC5",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.96000000E-01
+  },
+  "LK-55": {
+    "comp1": "NC5",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.77000000E-01
+  },
+  "LK-56": {
+    "comp1": "NC5",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00400000E+00
+  },
+  "LK-57": {
+    "comp1": "NC5",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.02000000E+00
+  },
+  "LK-58": {
+    "comp1": "NC5",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.03300000E+00
+  },
+  "LK-59": {
+    "comp1": "NC5",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.04500000E+00
+  },
+  "LK-60": {
+    "comp1": "NC6",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.78000000E-01
+  },
+  "LK-61": {
+    "comp1": "NC6",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00800000E+00
+  },
+  "LK-62": {
+    "comp1": "NC6",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00500000E+00
+  },
+  "LK-63": {
+    "comp1": "NC6",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01500000E+00
+  },
+  "LK-64": {
+    "comp1": "NC6",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.02500000E+00
+  },
+  "LK-65": {
+    "comp1": "BENZENE",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.85000000E-01
+  },
+  "LK-66": {
+    "comp1": "BENZENE",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.87000000E-01
+  },
+  "LK-67": {
+    "comp1": "BENZENE",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.03400000E+00
+  },
+  "LK-68": {
+    "comp1": "BENZENE",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.04700000E+00
+  },
+  "LK-69": {
+    "comp1": "NC7",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.93000000E-01
+  },
+  "LK-70": {
+    "comp1": "NC7",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00200000E+00
+  },
+  "LK-71": {
+    "comp1": "NC7",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01000000E+00
+  },
+  "LK-72": {
+    "comp1": "NC8",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.93000000E-01
+  },
+  "LK-73": {
+    "comp1": "NC8",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.99000000E-01
+  },
+  "LK-74": {
+    "comp1": "NC9",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.91000000E-01
+  },
+  "LK-75": {
+    "comp1": "N2",
+    "comp2": "C1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.77000000E-01
+  },
+  "LK-76": {
+    "comp1": "N2",
+    "comp2": "C2_1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.03200000E+00
+  },
+  "LK-77": {
+    "comp1": "N2",
+    "comp2": "C2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.08200000E+00
+  },
+  "LK-78": {
+    "comp1": "N2",
+    "comp2": "C3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.17700000E+00
+  },
+  "LK-79": {
+    "comp1": "N2",
+    "comp2": "PRLN",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.15100000E+00
+  },
+  "LK-80": {
+    "comp1": "N2",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.27600000E+00
+  },
+  "LK-81": {
+    "comp1": "N2",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.37200000E+00
+  },
+  "LK-82": {
+    "comp1": "N2",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.44200000E+00
+  },
+  "LK-83": {
+    "comp1": "N2",
+    "comp2": "O2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.97000000E-01
+  },
+  "LK-84": {
+    "comp1": "N2",
+    "comp2": "CO",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.87000000E-01
+  },
+  "LK-85": {
+    "comp1": "N2",
+    "comp2": "H2S",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.83000000E-01
+  },
+  "LK-86": {
+    "comp1": "N2",
+    "comp2": "CO2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.11000000E+00
+  },
+  "LK-87": {
+    "comp1": "N2",
+    "comp2": "N2O",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.07300000E+00
+  },
+  "LK-88": {
+    "comp1": "N2",
+    "comp2": "NH3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.03300000E+00
+  },
+  "LK-89": {
+    "comp1": "CO2",
+    "comp2": "C1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.75000000E-01
+  },
+  "LK-90": {
+    "comp1": "CO2",
+    "comp2": "C2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.38000000E-01
+  },
+  "LK-91": {
+    "comp1": "CO2",
+    "comp2": "C3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.25000000E-01
+  },
+  "LK-92": {
+    "comp1": "CO2",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.55000000E-01
+  },
+  "LK-93": {
+    "comp1": "CO2",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.46000000E-01
+  },
+  "LK-94": {
+    "comp1": "CO2",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.00200000E+00
+  },
+  "LK-95": {
+    "comp1": "CO2",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01800000E+00
+  },
+  "LK-96": {
+    "comp1": "CO2",
+    "comp2": "BENZENE",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01800000E+00
+  },
+  "LK-97": {
+    "comp1": "CO2",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.05800000E+00
+  },
+  "LK-98": {
+    "comp1": "CO2",
+    "comp2": "NC8",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.09000000E+00
+  },
+  "LK-99": {
+    "comp1": "CO2",
+    "comp2": "NC9",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.12600000E+00
+  },
+  "LK-100": {
+    "comp1": "CO2",
+    "comp2": "NC10",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.16000000E+00
+  },
+  "LK-101": {
+    "comp1": "CO2",
+    "comp2": "H2S",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.22000000E-01
+  },
+  "LK-102": {
+    "comp1": "CO2",
+    "comp2": "R12",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.69000000E-01
+  },
+  "LK-103": {
+    "comp1": "CO2",
+    "comp2": "MEOH",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.06900000E+00
+  },
+  "LK-104": {
+    "comp1": "H2",
+    "comp2": "C1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.21600000E+00
+  },
+  "LK-105": {
+    "comp1": "H2",
+    "comp2": "C2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.60400000E+00
+  },
+  "LK-106": {
+    "comp1": "H2",
+    "comp2": "PRLN",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.49800000E+00
+  },
+  "LK-107": {
+    "comp1": "H2",
+    "comp2": "C3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.82600000E+00
+  },
+  "LK-108": {
+    "comp1": "H2",
+    "comp2": "NC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  2.09300000E+00
+  },
+  "LK-109": {
+    "comp1": "H2",
+    "comp2": "NC5",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  2.33500000E+00
+  },
+  "LK-110": {
+    "comp1": "H2",
+    "comp2": "NC6",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  2.45600000E+00
+  },
+  "LK-111": {
+    "comp1": "H2",
+    "comp2": "NC7",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  2.63400000E+00
+  },
+  "LK-112": {
+    "comp1": "H2",
+    "comp2": "N2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.08000000E+00
+  },
+  "LK-113": {
+    "comp1": "H2",
+    "comp2": "CO",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.08500000E+00
+  },
+  "LK-114": {
+    "comp1": "H2",
+    "comp2": "CO2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.62400000E+00
+  },
+  "LK-115": {
+    "comp1": "O2",
+    "comp2": "N2O",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.05700000E+00
+  },
+  "LK-116": {
+    "comp1": "CO",
+    "comp2": "C1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.74000000E-01
+  },
+  "LK-117": {
+    "comp1": "H2S",
+    "comp2": "IC4",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.47000000E-01
+  },
+  "LK-118": {
+    "comp1": "N2O",
+    "comp2": "C1",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.01700000E+00
+  },
+  "LK-119": {
+    "comp1": "H2O",
+    "comp2": "CO2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.20000000E-01
+  },
+  "LK-120": {
+    "comp1": "H2O",
+    "comp2": "NH3",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  1.15200000E+00
+  },
+  "LK-121": {
+    "comp1": "H2O",
+    "comp2": "MEOH",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.1021/i260067a020",
+    "kij":  9.79000000E-01
+  },
+  "LK-122": {
+    "comp1": "CO2",
+    "comp2": "AR",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "10.3303/CET1332311",
+    "kij":  9.92000000E-01
+  },
+  "LK-123": {
+    "comp1": "CO2",
+    "comp2": "O2",
+    "ref": "Plocker1982(+)",
+    "bib_reference": "",
+    "kij":  1.03200000E+00
+  }
+}

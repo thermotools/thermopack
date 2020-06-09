@@ -1,0 +1,604 @@
+{
+  "vdW-1": {
+    "comp1": "C1",
+    "comp2": "H2S",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.01000000E-01
+  },
+  "vdW-2": {
+    "comp1": "C1",
+    "comp2": "C2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -7.80000000E-03
+  },
+  "vdW-3": {
+    "comp1": "C1",
+    "comp2": "C2_1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.00000000E-02
+  },
+  "vdW-4": {
+    "comp1": "C1",
+    "comp2": "C3",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  9.00000000E-03
+  },
+  "vdW-5": {
+    "comp1": "C1",
+    "comp2": "IC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.41000000E-02
+  },
+  "vdW-6": {
+    "comp1": "C1",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.60000000E-03
+  },
+  "vdW-7": {
+    "comp1": "C1",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.90000000E-02
+  },
+  "vdW-8": {
+    "comp1": "C1",
+    "comp2": "H2S",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-9": {
+    "comp1": "C2",
+    "comp2": "C2_1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.12000000E-02
+  },
+  "vdW-10": {
+    "comp1": "C2",
+    "comp2": "C3",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -2.20000000E-03
+  },
+  "vdW-11": {
+    "comp1": "C2",
+    "comp2": "IC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -1.00000000E-02
+  },
+  "vdW-12": {
+    "comp1": "C2",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  6.70000000E-03
+  },
+  "vdW-13": {
+    "comp1": "C2",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.60000000E-03
+  },
+  "vdW-14": {
+    "comp1": "NC4",
+    "comp2": "C2_1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.00000000E-01
+  },
+  "vdW-15": {
+    "comp1": "C3",
+    "comp2": "IC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -1.00000000E-02
+  },
+  "vdW-16": {
+    "comp1": "C3",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.30000000E-02
+  },
+  "vdW-17": {
+    "comp1": "IC4",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.10000000E-03
+  },
+  "vdW-18": {
+    "comp1": "NC4",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.04000000E-02
+  },
+  "vdW-19": {
+    "comp1": "H2O",
+    "comp2": "C1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-20": {
+    "comp1": "CO2",
+    "comp2": "O2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.18000000E-01
+  },
+  "vdW-21": {
+    "comp1": "CO2",
+    "comp2": "NH3",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-22": {
+    "comp1": "CO2",
+    "comp2": "N2O",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.00000000E-02
+  },
+  "vdW-23": {
+    "comp1": "CO2",
+    "comp2": "N2O4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-24": {
+    "comp1": "CO2",
+    "comp2": "CO",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -6.80000000E-02
+  },
+  "vdW-25": {
+    "comp1": "CO2",
+    "comp2": "C1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.06000000E-01
+  },
+  "vdW-26": {
+    "comp1": "CO2",
+    "comp2": "C2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-27": {
+    "comp1": "CO2",
+    "comp2": "C2_1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-28": {
+    "comp1": "CO2",
+    "comp2": "C3",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-29": {
+    "comp1": "CO2",
+    "comp2": "H2O",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  7.40000000E-02
+  },
+  "vdW-30": {
+    "comp1": "CO2",
+    "comp2": "IC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-31": {
+    "comp1": "CO2",
+    "comp2": "IC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-32": {
+    "comp1": "CO2",
+    "comp2": "NC10",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-33": {
+    "comp1": "CO2",
+    "comp2": "NC11",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-34": {
+    "comp1": "CO2",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-35": {
+    "comp1": "CO2",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-36": {
+    "comp1": "CO2",
+    "comp2": "H2S",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  9.90000000E-02
+  },
+  "vdW-37": {
+    "comp1": "CO2",
+    "comp2": "N2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -4.20000000E-02
+  },
+  "vdW-38": {
+    "comp1": "CO2",
+    "comp2": "AR",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  9.40000000E-02
+  },
+  "vdW-39": {
+    "comp1": "CO2",
+    "comp2": "SO2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.00000000E-02
+  },
+  "vdW-40": {
+    "comp1": "CO2",
+    "comp2": "H2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.08000000E-01
+  },
+  "vdW-41": {
+    "comp1": "H2S",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  6.00000000E-02
+  },
+  "vdW-42": {
+    "comp1": "H2S",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  6.00000000E-02
+  },
+  "vdW-43": {
+    "comp1": "H2S",
+    "comp2": "NC6",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.00000000E-02
+  },
+  "vdW-44": {
+    "comp1": "H2S",
+    "comp2": "NC7",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  4.00000000E-02
+  },
+  "vdW-45": {
+    "comp1": "H2S",
+    "comp2": "NC8",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  4.00000000E-02
+  },
+  "vdW-46": {
+    "comp1": "H2S",
+    "comp2": "NC9",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  3.00000000E-02
+  },
+  "vdW-47": {
+    "comp1": "MEG",
+    "comp2": "CO2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-48": {
+    "comp1": "MEG",
+    "comp2": "H2O",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-49": {
+    "comp1": "MEG",
+    "comp2": "C1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  0.00000000E+00
+  },
+  "vdW-50": {
+    "comp1": "MEOH",
+    "comp2": "CO2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.70000000E-02
+  },
+  "vdW-51": {
+    "comp1": "N2",
+    "comp2": "C1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  4.20000000E-02
+  },
+  "vdW-52": {
+    "comp1": "N2",
+    "comp2": "C2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  6.00000000E-02
+  },
+  "vdW-53": {
+    "comp1": "N2",
+    "comp2": "C2_1",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  7.50000000E-02
+  },
+  "vdW-54": {
+    "comp1": "N2",
+    "comp2": "C3",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  9.00000000E-02
+  },
+  "vdW-55": {
+    "comp1": "N2",
+    "comp2": "IC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.13000000E-01
+  },
+  "vdW-56": {
+    "comp1": "N2",
+    "comp2": "IC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.70000000E-02
+  },
+  "vdW-57": {
+    "comp1": "N2",
+    "comp2": "NC10",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.00000000E-02
+  },
+  "vdW-58": {
+    "comp1": "N2",
+    "comp2": "NC11",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.00000000E-02
+  },
+  "vdW-59": {
+    "comp1": "N2",
+    "comp2": "NC4",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.13000000E-01
+  },
+  "vdW-60": {
+    "comp1": "N2",
+    "comp2": "NC5",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.40000000E-01
+  },
+  "vdW-61": {
+    "comp1": "N2",
+    "comp2": "NC6",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-01
+  },
+  "vdW-62": {
+    "comp1": "N2",
+    "comp2": "NC7",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.42000000E-01
+  },
+  "vdW-63": {
+    "comp1": "N2",
+    "comp2": "NC8",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.00000000E-02
+  },
+  "vdW-64": {
+    "comp1": "N2",
+    "comp2": "NC9",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.00000000E-02
+  },
+  "vdW-65": {
+    "comp1": "N2",
+    "comp2": "O2",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -8.00000000E-03
+  },
+  "vdW-66": {
+    "comp1": "NC6",
+    "comp2": "BENZENE",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.10000000E-02
+  },
+  "vdW-67": {
+    "comp1": "R12",
+    "comp2": "R11",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.40000000E-03
+  },
+  "vdW-68": {
+    "comp1": "R12",
+    "comp2": "R114",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.50000000E-03
+  },
+  "vdW-69": {
+    "comp1": "R12",
+    "comp2": "R152a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.67000000E-02
+  },
+  "vdW-70": {
+    "comp1": "R13",
+    "comp2": "R11",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.62000000E-02
+  },
+  "vdW-71": {
+    "comp1": "R13",
+    "comp2": "R113",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.43000000E-02
+  },
+  "vdW-72": {
+    "comp1": "R13",
+    "comp2": "R12",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  2.99000000E-02
+  },
+  "vdW-73": {
+    "comp1": "R13B",
+    "comp2": "R12",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -3.20000000E-03
+  },
+  "vdW-74": {
+    "comp1": "R13B",
+    "comp2": "R152a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  7.99000000E-02
+  },
+  "vdW-75": {
+    "comp1": "R14",
+    "comp2": "R13",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  3.04000000E-02
+  },
+  "vdW-76": {
+    "comp1": "R14",
+    "comp2": "R23",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.00800000E-01
+  },
+  "vdW-77": {
+    "comp1": "R22",
+    "comp2": "R11",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  4.66000000E-02
+  },
+  "vdW-78": {
+    "comp1": "R22",
+    "comp2": "R114",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  3.99000000E-02
+  },
+  "vdW-79": {
+    "comp1": "R22",
+    "comp2": "R12",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.64000000E-02
+  },
+  "vdW-80": {
+    "comp1": "R22",
+    "comp2": "R142b",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  5.70000000E-03
+  },
+  "vdW-81": {
+    "comp1": "R22",
+    "comp2": "R115",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  8.90000000E-02
+  },
+  "vdW-82": {
+    "comp1": "R23",
+    "comp2": "R13",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.03200000E-01
+  },
+  "vdW-83": {
+    "comp1": "R218",
+    "comp2": "R152a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.20000000E-01
+  },
+  "vdW-84": {
+    "comp1": "R125",
+    "comp2": "R143a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -1.11000000E-02
+  },
+  "vdW-85": {
+    "comp1": "R125",
+    "comp2": "R134a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij": -2.40000000E-03
+  },
+  "vdW-86": {
+    "comp1": "R143a",
+    "comp2": "R134a",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  1.30000000E-03
+  }
+}

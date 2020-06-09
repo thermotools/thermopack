@@ -1,0 +1,40 @@
+{
+  "HV1-1": {
+    "comp1": "H2O",
+    "comp2": "MEG",
+    "ref": "Hemmingsen2011",
+    "bib_reference": "10.1016/j.fluid.2011.05.010",
+    "correlation": "Default",
+    "alphaij":  4.00000000E-01,
+    "polyij": [
+       0.00000000E+00,
+       2.18300000E+02
+    ],
+    "alphaji":  4.00000000E-01,
+    "polyji": [
+       0.00000000E+00,
+       7.20200000E+01
+    ],
+    "kij": -6.50000000E-02
+  },
+  "NRTL-1": {
+    "comp1": "H2S",
+    "comp2": "C3",
+    "ref": "Dicko2012",
+    "bib_reference": "10.1021/je300111m",
+    "correlation": "Default",
+    "alphaij":  3.00000000E-01,
+    "polyij": [
+       3.45712000E+02,
+       0.00000000E+00,
+       0.00000000E+00
+    ],
+    "alphaji":  3.00000000E-01,
+    "polyji": [
+      -2.93377000E+01,
+       0.00000000E+00,
+       0.00000000E+00
+    ],
+    "kij":  7.50000000E-02
+  }
+}
