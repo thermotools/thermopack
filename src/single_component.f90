@@ -329,9 +329,12 @@ contains
     !-------- Specific for each equation of state ------------------------
     Choice_EoS: select case (cbeos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
-      call MBWR_Fres(cbeos%mbwr_meos(1), T, V, n(1), F, &
+      call MBWR_Fres(cbeos%mbwr_meos(1), T, V*1e3, n(1), F, &
            F_T, F_v, F_TT, F_Tv, F_vv, F_n_p, F_Tn_p, F_vn_p, F_nn_p)
-      if (present(F_Vn)) F_Vn = F_Vn_l
+      if (present(F_V)) F_V = F_V*1.0e3
+      if (present(F_TV)) F_TV = F_TV*1.0e3
+      if (present(F_VV)) F_VV = F_VV*1.0e6
+      if (present(F_Vn)) F_Vn = F_Vn_l*1.0e3
       if (present(F_n)) F_n = F_n_l
       if (present(F_nn)) F_nn = F_nn_l
       if (present(F_Tn)) F_Tn = F_Tn_l

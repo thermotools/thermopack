@@ -185,7 +185,7 @@ CONTAINS
     if (nRhoDerivs .ge. 2) deriv(2) = poly(2)*rho_2 + expo(2)*exponential
   end subroutine alphar_derivatives
 
-  !> Outputs volume in cubic meters
+  !> Outputs volume in m^3/mol
   real function mbwr_volume(T,P,nMoles,phase,model)
     use tpmbwr, only: eosmbwr, makeParam, MBWR_density
     implicit none
@@ -203,6 +203,7 @@ CONTAINS
     call makeParam(parameters=param,T=T,model=model,nTderivatives=0)
     rho = MBWR_density(t=T,p=P,phase_in=phase,param=param,model=model,phase_found_out=phase_found_out)
 
+    rho = rho*1e3 ! mol/L -> mol/m^3
     mbwr_volume = nMoles/rho
   end function mbwr_volume
 

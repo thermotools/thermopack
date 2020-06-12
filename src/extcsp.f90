@@ -749,7 +749,7 @@ contains
   function solveRefEqZfac(T0,P0,phase,i_thread) result(zFac)
     use tpcubic
     use tpmbwr_additional, only: mbwr_volume
-    use tpconst, only: Rgas, kRgas
+    use tpconst, only: Rgas, Rgas
     implicit none
     !input
     real, intent(in) :: P0 !< Pressure of the reference fluid [Pa]
@@ -765,7 +765,7 @@ contains
       call cbCalcZfac(refNc,refComp,cbrefEos(i_thread),T0,P0,zRef,phase,zFac,1)
     else if (refEosType .eq. mbwr) then
       v0 = mbwr_volume(T0,P0,nMoles=1.0,phase=phase,model=mbwrRefEos(i_thread))
-      zFac = P0*v0/(kRgas*T0) ! Need to use kRgas here since V is calculated in litres.
+      zFac = P0*v0/(Rgas*T0) ! Need to use kRgas here since V is calculated in litres.
     else if (refEosType .eq. nist) then
       call nistRefEos(i_thread)%densitySolver(T0,P0,phase,rho0)
       zFac = P0/(rho0*Rgas*T0) ! Need to use Rgas here since rho is calculated in mol/m^3..
