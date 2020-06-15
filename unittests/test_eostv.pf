@@ -536,7 +536,7 @@ contains
         !
         z = n/sum(n)
         call chemical_potential(t, v, z, mu=mu, dmudv=dmudv, dmudt=dmudt, &
-             dmudz=dmudz)
+             dmudn=dmudz)
         !
         ! Test derivatives of chemical potential w.r.t. temperature
         ! =========================================================

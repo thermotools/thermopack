@@ -170,28 +170,28 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
-  subroutine init_cubic(compstr,eos,mixing,alpha)
+  subroutine init_cubic(comps,eos,mixing,alpha)
     use parameters, only: initCompList
     use tpselect,   only: SelectComp
     use tpvar,      only: comp, nce, ncsym
     use stringmod,  only: uppercase
     !$ use omp_lib, only: omp_get_max_threads
-    character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos     !< Equation of state
     character(len=*), optional, intent(in) :: mixing !< Mixing rule
     character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
     ! Locals
     integer                          :: ncomp
-    character(len=len_trim(compstr)) :: compstr_upper
+    character(len=len_trim(comps)) :: comps_upper
     character(len=100)               :: mixing_loc, alpha_loc
 
     ! Set component list
-    compstr_upper=trim(uppercase(compstr))
-    call initCompList(compstr_upper,ncomp)
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp)
     ncsym = ncomp
 
     ! Initialize components module
-    call SelectComp(trim(compstr_upper),nce,comp)
+    call SelectComp(trim(comps_upper),nce,comp)
 
     ! Initialize Thermopack
     alpha_loc = "Classic"
@@ -204,15 +204,16 @@ contains
   end subroutine init_cubic
 
   ! !----------------------------------------------------------------------------
-  ! !> Initialize corresponding state 
+  ! !> Initialize extended corresponding state EoS. Use: call init_extcsp
   ! !----------------------------------------------------------------------------
-  ! subroutine init_(compstr,eos,mixing,alpha)
+  ! subroutine init_extcsp(comps,eos,sh_eos,sh_mixing,sh_alpha,ref_eos,ref_comp)
   !   use parameters, only: initCompList
   !   use tpselect,   only: SelectComp
   !   use tpvar,      only: comp, nce, ncsym
   !   use stringmod,  only: uppercase
   !   !$ use omp_lib, only: omp_get_max_threads
-  !   character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+  !   character(len=*), intent(in) :: comps !< Components. Comma or white-space
+  !   !separated
   !   character(len=*), intent(in) :: eos     !< Equation of state
   !   character(len=*), optional, intent(in) :: mixing !< Mixing rule
   !   character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
@@ -237,7 +238,7 @@ contains
   !   call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
   !        trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
 
-  ! end subroutine init_cubic
+  ! end subroutine init_extcsp
 
 
 
