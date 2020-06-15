@@ -46,6 +46,7 @@ libthermopack {
 	  #
 	  get_phase_flags_;
 	  *_init_thermo;
+	  *_init_cubic;
 	  *_solid_init;
 	  *_specificvolume;
 	  *_zfac;

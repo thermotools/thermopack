@@ -74,6 +74,7 @@ class thermopack(object):
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
+        self.eoslibinit_init_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_cubic"))
         self.nc = None
         self.Rgas = None
         self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
@@ -279,6 +280,66 @@ class thermopack(object):
                                     TrendEosForCp_len)
         self.nc = ncomp
         self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
+
+    #################################
+    # Cubic
+    #################################
+
+    def init_cubic(self,comps,eos,mixing="vdW",alpha="Classic",model_ref=None):
+        """
+        Initialize cubic model in thermopack
+        """
+        eos_c = c_char_p(eos.encode('ascii'))
+        eos_len = c_int(len(eos))
+        mixing_c = c_char_p(mixing.encode('ascii'))
+        mixing_len = c_int(len(mixing))
+        alpha_c = c_char_p(alpha.encode('ascii'))
+        alpha_len = c_int(len(alpha))
+        comp_string_c = c_char_p(comps.encode('ascii'))
+        comp_string_len = c_int(len(comps))
+
+        self.eoslibinit_init_cubic.argtypes = [c_char_p,
+                                               c_char_p,
+                                               c_char_p,
+                                               c_char_p,
+                                               c_int,
+                                               c_int,
+                                               c_int,
+                                               c_int]
+
+        self.eoslibinit_init_cubic.restype = None
+
+        self.eoslibinit_init_cubic(comp_string_c,
+                                   eos_c,
+                                   mixing_c,
+                                   alpha_c,
+                                   comp_string_len,
+                                   eos_len,
+                                   mixing_len,
+                                   alpha_len)
+        self.nc = max(len(comps.split(" ")),len(comps.split(",")))
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
+
+    def get_kij(self,c1,c2):
+        return 1.0
+
+    def set_kij(self,c1,c2,lij):
+        # ....
+        print("Setting kij")
+
+    def init_peneloux(self,method,model_ref=None):
+        print("Setting volume shift method")
+
+    def get_lij(self,c1,c2):
+        return 1.0
+        print("Setting volume shift method")
+
+    def set_lij(self,c1,c2,lij):
+        print("Setting lij")
+
+    #################################
+    # Solids
+    #################################
 
     def init_solid(self,scomp):
         """Initialize pure solid
@@ -1840,7 +1901,7 @@ class thermopack(object):
     # Stability interfaces
     #################################
 
-    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-8):
+    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-7):
         """Calculate critical point in variables T and V
 
         Args:
@@ -1856,7 +1917,7 @@ class thermopack(object):
             float: Temperature (K)
             float: Volume (m3)
             float: Pressure (Pa)
-        """        
+        """
         temp_c = c_double(temp)
         v_c = c_double(v)
         n_c = (c_double * len(n))(*n)

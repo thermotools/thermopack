@@ -5,6 +5,7 @@ LIBRARY
 EXPORTS
 	get_phase_flags_
 	eoslibinit_mp_init_thermo_
+	eoslibinit_mp_init_cubic_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_
