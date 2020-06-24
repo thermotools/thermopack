@@ -42,3 +42,7 @@ EXPORTS
 	eostv_mp_virial_coefficients_
 	eostv_mp_secondvirialcoeffmatrix_
 	eostv_mp_binarythirdvirialcoeffmatrix_
+	isolines_mp_isobar_
+	isolines_mp_isotherm_
+	isolines_mp_isenthalp_
+	isolines_mp_isentrope_

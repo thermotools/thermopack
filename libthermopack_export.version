@@ -84,6 +84,10 @@ libthermopack {
           *_virial_coefficients;
 	  *_secondvirialcoeffmatrix;
           *_binarythirdvirialcoeffmatrix;
+	  *_isobar;
+	  *_isotherm;
+	  *_isenthalp;
+	  *_isentrope;
 
   local: *;      # hide everything else
 };
