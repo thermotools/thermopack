@@ -74,6 +74,7 @@
 		<File RelativePath="..\src\h2oGibbs.f90"/>
 		<File RelativePath="..\src\ideal.f90"/>
 		<File RelativePath="..\src\idealh2.f90"/>
+		<File RelativePath="..\src\isolines.f90"/>
 		<File RelativePath="..\src\leekesler.f90"/>
 		<File RelativePath="..\src\mbwr.f90"/>
 		<File RelativePath="..\src\mbwr_additional.f90"/>
