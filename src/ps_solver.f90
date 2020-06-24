@@ -33,7 +33,7 @@ contains
   !>
   !> \author MHA, 2012-03-20
   !-----------------------------------------------------------------------------
-  subroutine twoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase)
+  subroutine twoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr_out)
     use thermo_utils, only: isSingleComp
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
@@ -45,28 +45,36 @@ contains
     real, intent(in) :: p !< Pressure [Pa]
     real, intent(in) :: sspec !< Specified entropy [J/mol/K]
     integer, intent(inout) :: phase !< Phase identifier
+    integer, optional, intent(out) :: ierr_out !< Error flag (ierr==0 means everything vent well. ierr==-2 out of temperature range, ierr==-1 tolerance not met)
     ! Locals
     real :: tInitial,Tmin,Tmax
     integer :: ierr
+
+    ! Initialize error flag
+    if (present(ierr_out)) then
+      ierr_out = 0
+    endif
 
     tInitial = t
     if (isSingleComp(Z)) then
       call singleComponentTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase)
     else
      call nestedMultiCompTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr,Tmin,Tmax)
-      !if (ierr == -1) then
-      !  call fullMultiCompTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr,Tmin,Tmax)
-      !endif
-      if (ierr /= 0 .and. .not. continueOnError) then
-        print *,'Temperature at exit',t
-        print *,'Temperature upper limit',Tmax
-        print *,'Temperature lower limit',Tmin
-        print *,'Initial temperature',tInitial
-        print *,'Pressure',p
-        print *,'Entropy',sspec
-        print *,'Comp.',Z
-        call stoperror('ps_solver::twoPhasePSflash: The nonlinear solver did not converge')
-      endif
+     !if (ierr == -1) then
+     !  call fullMultiCompTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr,Tmin,Tmax)
+     !endif
+     if (present(ierr_out)) then
+       ierr_out = ierr
+     else if (ierr /= 0 .and. .not. continueOnError) then
+       print *,'Temperature at exit',t
+       print *,'Temperature upper limit',Tmax
+       print *,'Temperature lower limit',Tmin
+       print *,'Initial temperature',tInitial
+       print *,'Pressure',p
+       print *,'Entropy',sspec
+       print *,'Comp.',Z
+       call stoperror('ps_solver::twoPhasePSflash: The nonlinear solver did not converge')
+     endif
     endif
   end subroutine twoPhasePSflash
 
@@ -181,21 +189,25 @@ contains
     param(nc+5) = solver%abs_tol*2.0
     call nonlinear_solve(solver,fun,diff,diff,limitTv,premReturn,setXv,&
          Tv,Tvmin,Tvmax,param)
-    if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
-      ! Not able to meet tolerance
-      solver%exitflag = 0
-    endif
     ierr = solver%exitflag
-
-    if (solver%exitflag == -1) then
-      call stoperror('ps_solver::nestedMultiCompTwoPhasePSflash: Temperature out of range')
+    if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
+      solver%exitflag = 0
+      if (abs(param(nc+4)-Tmin) > 0.01 .or. abs(param(nc+3)-Tmax) > 0.01) then
+        ! Out of temperature range
+        ierr = -2
+      else
+        ! Not able to meet tolerance
+        ierr = -1
+      endif
     endif
 
-    ! Set solution
-    Tmin = param(nc+3)
-    Tmax = param(nc+4)
-    t = Tv(1)
-    call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+    if (solver%exitflag == 0) then
+      ! Set solution
+      Tmin = param(nc+3)
+      Tmax = param(nc+4)
+      t = Tv(1)
+      call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+    endif
   end subroutine nestedMultiCompTwoPhasePSflash
 
   !-----------------------------------------------------------------------------

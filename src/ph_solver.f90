@@ -40,7 +40,7 @@ contains
   !>
   !> \author MH, 2012-03-20
   !-----------------------------------------------------------------------------
-  subroutine twoPhasePHflash(t,p,Z,beta,betaL,X,Y,hspec,phase)
+  subroutine twoPhasePHflash(t,p,Z,beta,betaL,X,Y,hspec,phase,ierr_out)
     use thermo_utils, only: isSingleComp
     use eos, only: need_alternative_eos
     implicit none
@@ -53,6 +53,7 @@ contains
     real, intent(in) :: p !< Pressure [Pa]
     real, intent(in) :: hspec !< Specified enthalpy [J/mol]
     integer, intent(inout) :: phase !< Phase identifier
+    integer, optional, intent(out) :: ierr_out !< Error flag (ierr==0 means everything vent well. ierr==-2 out of temperature range, ierr==-1 tolerance not met)
     ! Locals
     real :: tInitial,Tmin,Tmax
     real :: tpc,ppc,zpc,vpc
@@ -62,7 +63,10 @@ contains
     integer :: new_phase, ierr, initial_phase
     logical :: isStable,alt_eos
     real :: Wsol(nc)
-
+    ! Initialize error flag
+    if (present(ierr_out)) then
+      ierr_out = 0
+    endif
     isStable=.true.
     tInitial = t
     call get_eoslib_templimits(eoslib,Tmin,Tmax)
@@ -72,7 +76,7 @@ contains
 
     ! Single-component algorithm.
     if (isSingleComp(Z)) then
-      call singleComponentTwoPhasePHflash(t,p,Z,beta,betaL,hspec,Tmin,Tmax,phase,ierr)
+      call singleComponentTwoPhasePHflash(t,p,Z,beta,betaL,hspec,Tmin,Tmax,phase,ierr_out)
       X=Z
       Y=Z
       return
@@ -165,8 +169,9 @@ contains
         t = 0.5*(Tmax+Tmin)
       endif
       call nestedMultiCompTwoPhasePHflash(t,p,Z,beta,betaL,X,Y,hspec,phase,ierr,Tmin,Tmax)
-
-      if (ierr/=0 .and. verbose_loc) then
+      if (present(ierr_out)) then
+        ierr_out = ierr
+      else if (ierr/=0 .and. verbose_loc) then
         print *, "nestedMultiCompTwoPhasePHflash FAILED"
         print *,'Temperature at exit',t
         print *,'Temperature upper limit',Tmax
@@ -179,7 +184,6 @@ contains
         print *,'Y', Y
       end if
     end if
-
   end subroutine twoPhasePHflash
 
   !-----------------------------------------------------------------------------
@@ -351,22 +355,26 @@ contains
     param(nc+5) = solver%abs_tol*2.0
     call nonlinear_solve(solver,fun,diff,diff,limitTv,premReturn,setXv,&
          Tv,Tvmin,Tvmax,param)
-    if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
-      ! Not able to meet tolerance
-      solver%exitflag = 0
-      ierr = -1
-    endif
     ierr = solver%exitflag
-    if (solver%exitflag == -1) then
-      call stoperror('ph_solver::nestedMultiCompTwoPhasePHflash: Temperature out of range')
+    if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
+      ! Premature termination
+      solver%exitflag = 0
+      if (abs(param(nc+4)-Tmin) > 0.01 .or. abs(param(nc+3)-Tmax) > 0.01) then
+        ! Out of temperature range
+        ierr = -2
+      else
+        ! Not able to meet tolerance
+        ierr = -1
+      endif
     endif
 
-    ! Set solution
-    Tmin = param(nc+3)
-    Tmax = param(nc+4)
-    t = Tv(1)
-    call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
-
+    if (solver%exitflag == 0) then
+      ! Set solution
+      Tmin = param(nc+3)
+      Tmax = param(nc+4)
+      t = Tv(1)
+      call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+    endif
   end subroutine nestedMultiCompTwoPhasePHflash
 
   !-----------------------------------------------------------------------------
