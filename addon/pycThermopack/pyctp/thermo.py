@@ -18,7 +18,7 @@ I_PREFIX=""
 I_MODULE="mp"
 I_POSTFIX="_"
 
-c_len_type = c_int # c_size_t on GCC > 7
+c_len_type = c_size_t # c_int, c_size_t on GCC > 7
 
 def get_platform_specifics():
     os_id = ""
@@ -1352,7 +1352,7 @@ class thermopack(object):
         else:
             dsdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        residual_c = POINTER(c_int)(c_int(0))
 
         self.s_entropy_tv.argtypes = [POINTER( c_double ),
                                       POINTER( c_double ),
@@ -1372,7 +1372,7 @@ class thermopack(object):
                           dsdt_c,
                           dsdv_c,
                           dsdn_c,
-                          recalculate_c)
+                          residual_c)
 
         return_tuple = (s_c.value, )
         if not dsdt is None:
@@ -1405,7 +1405,7 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        residual_c = POINTER(c_int)(c_int(0))
 
         self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1425,7 +1425,7 @@ class thermopack(object):
                            dhdt_c,
                            dhdv_c,
                            dhdn_c,
-                           recalculate_c)
+                           residual_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
