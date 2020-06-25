@@ -57,7 +57,9 @@ contains
 
     tInitial = t
     if (isSingleComp(Z)) then
-      call singleComponentTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase)
+      call singleComponentTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr)
+      X=Z
+      Y=Z
     else
      call nestedMultiCompTwoPhasePSflash(t,p,Z,beta,betaL,X,Y,sspec,phase,ierr,Tmin,Tmax)
      !if (ierr == -1) then
