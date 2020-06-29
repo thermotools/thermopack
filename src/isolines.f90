@@ -281,10 +281,10 @@ contains
         ierr(i) = 0
         if (phase == SINGLEPH) phase = LIQPH
         if (phase == TWOPH) then
-          call specificvolume(ta(i),pa(i),z,VAPPH,vg)
-          call enthalpyTV(ta(i),vg,z,hg)
-          call specificvolume(ta(i),pa(i),z,LIQPH,vl)
-          call enthalpyTV(ta(i),vl,z,hl)
+          call specificvolume(ta(i),pa(i),y,VAPPH,vg)
+          call enthalpyTV(ta(i),vg,y,hg)
+          call specificvolume(ta(i),pa(i),x,LIQPH,vl)
+          call enthalpyTV(ta(i),vl,x,hl)
           va(i) = beta*vg + betaL*vl
           ha(i) = beta*hg + betaL*hl
         else
