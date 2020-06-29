@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QTreeWidgetItemIterator, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QSplashScreen, QFileDialog
 from PyQt5.uic import loadUi
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import QCoreApplication, Qt, QTimer
 
 import sys
 import os
@@ -164,6 +164,12 @@ class MenuItem(QTreeWidgetItem):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    splash = QSplashScreen(QPixmap("images/Thermopack logo.png"))
+    splash.setWindowFlag(Qt.WindowStaysOnTopHint)
+    splash.show()
+    QTimer.singleShot(2000, splash.close)
+
     win = ThermopackGUIApp()
     win.show()
     sys.exit(app.exec_())
