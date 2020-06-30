@@ -20,7 +20,7 @@ I_MODULE="mp"
 I_POSTFIX="_"
 I_POSTFIX_NM = "_"
 
-c_len_type = c_int # c_size_t on GCC > 7
+c_len_type = c_size_t # c_size_t on GCC > 7
 
 def get_platform_specifics():
     os_id = ""
@@ -102,7 +102,7 @@ class thermopack(object):
         self.s_sos_sound_velocity_2ph = getattr(self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
 
         # Parameters
-        #self.parameters_getcomp = getattr(self.tp, self.get_export_name("parameters", "getcomp"))
+        self.s_parameters_compindex = getattr(self.tp, self.get_export_name("parameters", "compindex"))
 
         # Flashes
         self.s_set_ph_tolerance = getattr(self.tp, self.get_export_name("ph_solver", "setphtolerance"))
@@ -315,7 +315,7 @@ class thermopack(object):
     # Utility
     #################################
 
-    def getcomp(self, comp):
+    def getcompindex(self, comp):
         """Get component index
 
         Args:
@@ -325,9 +325,10 @@ class thermopack(object):
             int: Component FORTRAN index
         """
         comp_c = c_char_p(comp.encode('ascii'))
-        self.parameters_getcomp.argtypes = [c_char_p]
-        self.parameters_getcomp.restype = c_int
-        idx = self.parameters_getcomp(comp_c, c_len_type)
+        comp_len = c_len_type(len(comp))
+        self.s_parameters_compindex.argtypes = [c_char_p, c_len_type]
+        self.s_parameters_compindex.restype = c_int
+        idx = self.s_parameters_compindex(comp_c, comp_len)
         return idx
 
     def compmoleweight(self, comp):

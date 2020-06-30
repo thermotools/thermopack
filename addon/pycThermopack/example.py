@@ -231,3 +231,5 @@ cpa_srk.init("ETOH,H2O")
 #print("kij",cpa_srk.get_kij(1,2))
 #pcs.set_kij(1,2,0.012)
 #print("kij",pcs.get_kij(2,1))
+
+print(cpa_srk.getcompindex("H2O"))
