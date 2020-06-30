@@ -80,18 +80,38 @@ class cubic(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
+        kij_c = c_double(0.0)
         self.s_get_kij.argtypes = [POINTER(c_int),
-                                   POINTER(c_int)]
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
 
-        self.s_get_kij.restype = c_double
+        self.s_get_kij.restype = None
 
-        kij = self.s_get_kij(byref(c1_c),
-                             byref(c2_c))
-        return kij
+        self.s_get_kij(byref(c1_c),
+                       byref(c2_c),
+                       byref(kij_c))
+
+        return kij_c.value
 
     def set_kij(self, c1, c2, kij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            kij ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -107,12 +127,37 @@ class cubic(thermo.thermopack):
 
 
     def get_lij(self,c1,c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         return 1.0
 
     def set_lij(self,c1,c2,lij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            lij ([type]): [description]
+        """        
         print("Setting lij")
 
     def get_hv_param(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(0.0)
@@ -150,6 +195,20 @@ class cubic(thermo.thermopack):
         return alpha_ij_c.value, alpha_ji_c.value, a_ij_c.value, a_ji_c.value, b_ij_c.value, b_ji_c.value, c_ij_c.value, c_ji_c.value
 
     def set_hv_param(self, c1, c2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            alpha_ij ([type]): [description]
+            alpha_ji ([type]): [description]
+            a_ij ([type]): [description]
+            a_ji ([type]): [description]
+            b_ij ([type]): [description]
+            b_ji ([type]): [description]
+            c_ij ([type]): [description]
+            c_ji ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(alpha_ij)

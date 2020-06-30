@@ -39,7 +39,7 @@ class cpa(cubic.cubic):
     def init(self, comps, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
         """
-        Initialize cubic model in thermopack
+        Initialize cubic plus association model in thermopack
         """
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))

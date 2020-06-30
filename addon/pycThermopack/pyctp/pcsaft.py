@@ -57,18 +57,37 @@ class pcsaft(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
+        kij_c = c_double(0.0)
         self.s_get_kij.argtypes = [POINTER(c_int),
-                                   POINTER(c_int)]
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
 
-        self.s_get_kij.restype = c_double
+        self.s_get_kij.restype = None
 
-        kij = self.s_get_kij(byref(c1_c),
-                             byref(c2_c))
-        return kij
+        self.s_get_kij(byref(c1_c),
+                       byref(c2_c),
+                       byref(kij_c))
+        return kij_c.value
 
     def set_kij(self, c1, c2, kij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            kij ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)

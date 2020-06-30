@@ -182,14 +182,16 @@ if L2VE[0] is not None:
 plt.show()
 plt.clf()
 
+print("Cubic instance")
+
 # Instanciate cubic object
 cb = cubic.cubic()
 cb.init("CO2,C1","PR","Classic","Classic")
 print(cb.get_kij(1,2))
 cb.set_kij(1,2,0.1)
 print(cb.get_kij(2,1))
-cb.init("H2O,C1","SRK","HV","Classic")
 
+cb.init("H2O,C1","SRK","HV","Classic")
 hvp = cb.get_hv_param(1, 2)
 alpha_12, alpha_21, a_12, a_21, b_12, b_21, c_12, c_21 = hvp
 print(hvp)
@@ -200,6 +202,7 @@ hvp = cb.get_hv_param(1, 2)
 print(hvp)
 
 # Instanciate saftvrmie object
+print("SAFT-VR Mie")
 svrm = saftvrmie.saftvrmie()
 svrm.init("CO2,C1")
 print("kij",svrm.get_eps_kij(1,2))

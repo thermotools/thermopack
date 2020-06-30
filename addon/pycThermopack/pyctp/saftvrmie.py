@@ -94,24 +94,48 @@ class saftvrmie(thermo.thermopack):
             self.enable_a3_c.value = 0
 
     def model_control_chain(self, active):
+        """[summary]
+
+        Args:
+            active ([type]): [description]
+        """        
         if active:
             self.enable_chain_c.value = 1
         else:
             self.enable_chain_c.value = 0
 
     def get_eps_kij(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
+        kij_c = c_double(0.0)
         self.s_get_eps_kij.argtypes = [POINTER(c_int),
-                                       POINTER(c_int)]
+                                       POINTER(c_int),
+                                       POINTER(c_double)]
 
-        self.s_get_eps_kij.restype = c_double
+        self.s_get_eps_kij.restype = None
 
-        kij = self.s_get_eps_kij(byref(c1_c),
-                                 byref(c2_c))
-        return kij
+        self.s_get_eps_kij(byref(c1_c),
+                           byref(c2_c),
+                           byref(kij_c))
+        return kij_c.value
 
     def set_eps_kij(self, c1, c2, kij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            kij ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -126,18 +150,37 @@ class saftvrmie(thermo.thermopack):
                            byref(kij_c))
 
     def get_sigma_lij(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
+        lij_c = c_double(0.0)
         self.s_get_sigma_lij.argtypes = [POINTER(c_int),
-                                         POINTER(c_int)]
+                                         POINTER(c_int),
+                                         POINTER(c_double)]
 
-        self.s_get_sigma_lij.restype = c_double
+        self.s_get_sigma_lij.restype = None
 
-        lij = self.s_get_sigma_lij(byref(c1_c),
-                                   byref(c2_c))
-        return lij
+        self.s_get_sigma_lij(byref(c1_c),
+                             byref(c2_c),
+                             byref(lij_c))
+        return lij_c.value
 
     def set_sigma_lij(self, c1, c2, lij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            lij ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(lij)
@@ -152,18 +195,37 @@ class saftvrmie(thermo.thermopack):
                              byref(lij_c))
 
     def get_lr_gammaij(self, c1, c2):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
+        gammaij_c = c_double(0.0)
         self.s_get_lr_gammaij.argtypes = [POINTER(c_int),
-                                          POINTER(c_int)]
+                                          POINTER(c_int),
+                                          POINTER(c_double)]
 
-        self.s_get_lr_gammaij.restype = c_double
+        self.s_get_lr_gammaij.restype = None
 
-        gammaij = self.s_get_lr_gammaij(byref(c1_c),
-                                        byref(c2_c))
-        return gammaij
+        self.s_get_lr_gammaij(byref(c1_c),
+                              byref(c2_c),
+                              byref(gammaij_c))
+        return gammaij_c.value
 
     def set_lr_gammaij(self, c1, c2, gammaij):
+        """[summary]
+
+        Args:
+            c1 ([type]): [description]
+            c2 ([type]): [description]
+            gammaij ([type]): [description]
+        """        
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         gammaij_c = c_double(gammaij)
