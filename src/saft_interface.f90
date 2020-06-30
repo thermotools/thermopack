@@ -1412,8 +1412,8 @@ contains
     call getActiveAssocParams(i, eps_i, beta_i)
     call getActiveAssocParams(j, eps_j, beta_j)
 
-    call compidx_to_sites(1,k_first,k_last)
-    call compidx_to_sites(2,l_first,l_last)
+    call compidx_to_sites(i,k_first,k_last)
+    call compidx_to_sites(j,l_first,l_last)
     do k=k_first,k_last
        do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
