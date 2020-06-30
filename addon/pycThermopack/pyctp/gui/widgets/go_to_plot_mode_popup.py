@@ -3,6 +3,8 @@ from PyQt5.uic import loadUi
 from gui.widgets.plot_mode import PlotMode
 
 
+# TODO: Når du dobbelttrykker på en complist eller setting (ev. hover) --> Vise vindu med info (ev. et (?)-ikon)
+
 class GoToPlotModeWidget(QDialog):
     def __init__(self, data, parent=None):
         super().__init__(parent=parent)

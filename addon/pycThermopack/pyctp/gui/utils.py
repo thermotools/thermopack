@@ -1,3 +1,5 @@
+from gui.classes.component import Component
+
 import json
 import os
 
@@ -31,3 +33,32 @@ def get_unique_name(prefix, lst):
 
         else:
             i += 1
+
+
+def get_unique_id(data):
+    all_ids = []
+    for settings in data["Model setups"].values():
+        all_ids.append(settings["id"])
+
+    id = 1
+    while id in all_ids:
+        id += 1
+
+    return id
+
+
+def get_fluids():
+
+    fluids = {}
+
+    for root, dirs, files in os.walk("../../../../fluids"):
+        for file_name in files:
+            file = open(os.path.join(root, file_name), "r")
+
+            component_data = json.load(file)
+            name = component_data["name"]
+
+            component = Component(name, component_data)
+            fluids[name] = component
+
+    return fluids

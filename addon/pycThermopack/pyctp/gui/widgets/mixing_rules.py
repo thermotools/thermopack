@@ -4,6 +4,8 @@ from PyQt5 import QtCore
 from thermo import thermopack
 
 # TODO: Skal være mulig å endre koeffisienter
+# TODO: Mulig at alle koeffisienter nå resettes når fanen åpnes igjen.
+#  Må ha en update() i stedet for init() som lager de rette matrisene
 
 
 class VdWBinaryCoefficientsWidget(QDialog):
@@ -14,7 +16,7 @@ class VdWBinaryCoefficientsWidget(QDialog):
         self.settings = data["Model setups"][settings_name]
         self.component_lists = data["Component lists"]
 
-        self.current_composition = None     # Den som er valgt nå (str)
+        self.current_composition = None     # Currently chosen (str)
 
         self.thermo = thermopack()
 
@@ -23,6 +25,7 @@ class VdWBinaryCoefficientsWidget(QDialog):
         self.composition_list.itemSelectionChanged.connect(self.show_matrix)
 
     def init_composition_list(self):
+        self.composition_list.clear()
         for list_name in self.component_lists.keys():
             # All coefficient matrices are created and saved
             self.composition_list.addItem(list_name)
@@ -81,6 +84,13 @@ class VdWBinaryCoefficientsWidget(QDialog):
         header = self.coeff_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
+    def update_composition_list(self):
+        self.composition_list.clear()
+        for list_name in self.component_lists.keys():
+            # All coefficient matrices are created and saved
+            self.composition_list.addItem(list_name)
+            self.init_create_matrix_data(list_name)
+
 
 class HV1BinaryCoefficientsWidget(QDialog):
     def __init__(self, data, settings_name, parent=None):
@@ -90,6 +100,16 @@ class HV1BinaryCoefficientsWidget(QDialog):
         self.settings = data["Model setups"][settings_name]
         self.component_lists = data["Component lists"]
 
+    def init_composition_list(self):
+        self.composition_list.clear()
+        for list_name in self.component_lists.keys():
+            self.composition_list.addItem(list_name)
+
+    def update_composition_list(self):
+        self.composition_list.clear()
+        for list_name in self.component_lists.keys():
+            self.composition_list.addItem(list_name)
+
 
 class HV2BinaryCoefficientsWidget(QDialog):
     def __init__(self, data, settings_name, parent=None):
@@ -98,3 +118,13 @@ class HV2BinaryCoefficientsWidget(QDialog):
 
         self.settings = data["Model setups"][settings_name]
         self.component_lists = data["Component lists"]
+
+    def init_composition_list(self):
+        self.composition_list.clear()
+        for list_name in self.component_lists.keys():
+            self.composition_list.addItem(list_name)
+
+    def update_composition_list(self):
+        self.composition_list.clear()
+        for list_name in self.component_lists.keys():
+            self.composition_list.addItem(list_name)
