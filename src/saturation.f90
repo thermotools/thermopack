@@ -708,6 +708,7 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   subroutine sat_fun_newton(G,Xvar,param)
+    use eos, only: entropy, enthalpy
     implicit none
     real, dimension(nc+2), intent(out) :: G !< Function values
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
@@ -715,6 +716,7 @@ contains
     ! Locals
     real, dimension(nc) :: Z
     real, dimension(nc) :: K, FUGV, FUGL, Y, X
+    real :: hsl,hsg,hs,denum
     integer :: s, i
     real :: p, t,ln_s, beta
 
@@ -750,7 +752,23 @@ contains
       endif
     enddo
     G(nc+1) = sum(Y-X)
-    G(nc+2) = Xvar(s) - ln_s
+    if (s <= nc + 2) then
+      G(nc+2) = Xvar(s) - ln_s
+    else
+      if (s == nc + 3) then
+        ! Entropy
+        call entropy(t,p,X,LIQPH,hsl)
+        call entropy(t,p,Y,VAPPH,hsg)
+      else if (s == nc + 4) then
+        ! Enthalpy
+        call enthalpy(t,p,X,LIQPH,hsl)
+        call enthalpy(t,p,Y,VAPPH,hsg)
+      endif
+      denum = max(abs(ln_s), 1.0)
+      !
+      hs = beta*hsg + (1-beta)*hsl
+      G(nc+2) = (hs - ln_s)/denum
+    endif
 
   end subroutine sat_fun_newton
 
@@ -797,6 +815,7 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   subroutine sat_diff_newton(Jac,Xvar,param)
+    use eos, only: entropy, enthalpy
     implicit none
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
     real, dimension(nc+2,nc+2), intent(out) :: Jac !< Function differentials
@@ -805,12 +824,13 @@ contains
     real, dimension(nc) :: Z
     real, dimension(nc) :: K, FUGV, FUGTV, FUGPV, FUGL, FUGTL, FUGPL, Y, X
     real, dimension(nc,nc) :: FUGXV, FUGXL
+    real :: hsl,hslt,hslp,hsln(nc),hsg,hsgt,hsgp,hsgn(nc),hs
     integer :: s, i, j
     real :: p, t, beta
 
     Z = param(1:nc)
     beta = param(nc+1)
-    s = int(param(nc+2))
+    s = nint(param(nc+2))
 
     K = exp(Xvar(1:nc))
     t = exp(Xvar(nc+1))
@@ -856,8 +876,33 @@ contains
     Jac(nc+1,nc+2) = 0
 
     ! Bottom row
-    Jac(nc+2,:) = 0.0
-    Jac(nc+2,s) = 1.0
+    if (s <= nc + 2) then
+      Jac(nc+2,:) = 0.0
+      Jac(nc+2,s) = 1.0
+    else
+      if (s == nc + 3) then
+        ! Entropy
+        call entropy(t,p,X,LIQPH,hsl,hslt,hslp,hsln)
+        call entropy(t,p,Y,VAPPH,hsg,hsgt,hsgp,hsgn)
+      else if (s == nc + 4) then
+        ! Enthalpy
+        call enthalpy(t,p,X,LIQPH,hsl,hslt,hslp,hsln)
+        call enthalpy(t,p,Y,VAPPH,hsg,hsgt,hsgp,hsgn)
+      endif
+      hs = param(nc+3)
+      hs = max(abs(hs), 1.0)
+      !
+      ! nc+2 row
+      do i=1,nc
+        if (Z(i) > 0.0) then
+          Jac(nc+2,i) = (1-beta)*beta*(hsgn(i)+hsln(i))*X(i)*Y(i)/(Z(i)*hs)
+        else
+          Jac(nc+2,i) = 0.0
+        endif
+      enddo
+      Jac(nc+2,nc+1) = T*(beta*hsgt+(1-beta)*hslt)/hs
+      Jac(nc+2,nc+2) = P*(beta*hsgp+(1-beta)*hslp)/hs
+    endif
 
   end subroutine sat_diff_newton
 

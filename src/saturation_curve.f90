@@ -9,6 +9,9 @@ module saturation_curve
   private
   save
 
+  integer, parameter :: ISO_P=1, ISO_T=2, ISO_S=3, ISO_H=4
+  character(len=1), parameter, dimension(4) :: ISO_LABEL = (/ "P", "T", "S", "H" /)
+
   integer, parameter :: AZ_NONE = 0, AZ_PAEP = 1, AZ_CAEP = 2, AZ_HAEP = 3
   ! Azeotropic end point
   type aep
@@ -32,6 +35,7 @@ module saturation_curve
   public :: newton_extrapolate, changeformulation
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
+  public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
 
 contains
 
@@ -134,6 +138,8 @@ contains
   !-----------------------------------------------------------------------------
   subroutine extrapolate_to_saturation_line(t,p,X,Y,Z,beta,extrap,ierr,dtds_sat,dpds_sat)
     use numconstants, only: machine_prec
+    use eos, only: twoPhaseEnthalpy, twoPhaseEntropy
+    use parameters, only: TWOPH
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, intent(inout) :: t, p, beta
@@ -147,16 +153,24 @@ contains
     integer :: s, i, smax(1)
     real, dimension(nc+2) :: Xvar, dXvardBeta, dXvardS, Xold
     real, dimension(nc) :: K
-
+    real :: hs
     p0 = p
     t0 = t
     ! How to extrapolate?
-    if (extrap == 1 .or. extrap == 3) then
-      s = nc+2
+    if (extrap == ISO_P) then
+      s = nc + 2
       ln_s = log(p)
-    else
-      s = nc+1
+    else if (extrap == ISO_T) then
+      s = nc + 1
       ln_s = log(t)
+    else if (extrap == ISO_S) then
+      s = nc + 3
+      hs = twoPhaseEntropy(t,p,z,x,y,beta,TWOPH)
+      ln_s = hs
+    else if (extrap == ISO_H) then
+      s = nc + 4
+      hs = twoPhaseEnthalpy(t,p,z,x,y,beta,TWOPH)
+      ln_s = hs
     endif
 
     ! Set variable vector
@@ -216,26 +230,42 @@ contains
         endif
       endif
     enddo
-    if (ierr == 0 .and. s <= nc .and. extrap < 3) then
+    if (ierr == 0 .and. s <= nc) then
       ! Try solving for T or P
       Xvar(1:nc) = log(K)
       Xvar(nc+1) = log(t)
       Xvar(nc+2) = log(p)
       Xold = Xvar
-      if (extrap == 1) then
-        s = nc+2
-        ln_s = log(p)
-      else
-        s = nc+1
-        ln_s = log(t)
-      endif
+      s = nc + extrap
+      ! if (extrap == ISO_P) then
+      !   s = nc+2
+      !   ln_s = log(p)
+      ! else if (extrap == ISO_T) then
+      !   s = nc+1
+      !   ln_s = log(t)
+      ! else if (extrap == ISO_S) then
+      !   s = nc+3
+      !   ln_s = hs
+      ! else if (extrap == ISO_H) then
+      !   s = nc+4
+      !   ln_s = hs
+      ! endif
       call newton_extrapolate(Z,Xvar,dXvardS,beta,s,ln_s)
-      if (extrap == 1) then
+      if (extrap == ISO_P) then
         ln_s = log(p0)
-      else
+        dS = ln_s - Xvar(s)
+      else if (extrap == ISO_T) then
         ln_s = log(t0)
+        dS = ln_s - Xvar(s)
+      else !ISO_S/ISO_H
+        ln_s = hs
+        if (extrap == ISO_S) then
+          hs = twoPhaseEntropy(t,p,z,x,y,beta,TWOPH)
+        else if (extrap == ISO_H) then
+          hs = twoPhaseEnthalpy(t,p,z,x,y,beta,TWOPH)
+        endif
+        dS = (ln_s - hs)/max(abs(ln_s),1.0)
       endif
-      dS = ln_s - Xvar(s)
       Xvar = Xvar + dXvardS*dS
       ! Solve for saturation point
       iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr)
