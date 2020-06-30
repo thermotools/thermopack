@@ -80,15 +80,15 @@ class cubic(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
-        """[summary]
+        """Get attractive energy interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            kij (float): i-j interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(0.0)
@@ -105,13 +105,13 @@ class cubic(thermo.thermopack):
         return kij_c.value
 
     def set_kij(self, c1, c2, kij):
-        """[summary]
+        """Set attractive energy interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            kij ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            kij (float): i-j interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -126,38 +126,45 @@ class cubic(thermo.thermopack):
                        byref(kij_c))
 
 
-    def get_lij(self,c1,c2):
-        """[summary]
+    def get_lij(self, c1, c2):
+        """Get co-volume interaction
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            lij (float): i-j interaction parameter
+        """
         return 1.0
 
-    def set_lij(self,c1,c2,lij):
-        """[summary]
+    def set_lij(self, c1, c2, lij):
+        """Set co-volume interaction
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
             lij ([type]): [description]
-        """        
+        """
         print("Setting lij")
 
     def get_hv_param(self, c1, c2):
-        """[summary]
+        """Get Huron-Vidal parameters
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            alpha_ij (float): alpha param i-j
+            alpha_ji (float): alpha param j-i
+            a_ij (float): a param i-j
+            a_ji (float): a param j-i
+            b_ij (float): b param i-j
+            b_ji (float): b param j-i
+            c_ij (float): c param i-j
+            c_ji (float): c param j-i
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(0.0)
@@ -195,20 +202,20 @@ class cubic(thermo.thermopack):
         return alpha_ij_c.value, alpha_ji_c.value, a_ij_c.value, a_ji_c.value, b_ij_c.value, b_ji_c.value, c_ij_c.value, c_ji_c.value
 
     def set_hv_param(self, c1, c2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji):
-        """[summary]
+        """Set Huron-Vidal parameters
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            alpha_ij ([type]): [description]
-            alpha_ji ([type]): [description]
-            a_ij ([type]): [description]
-            a_ji ([type]): [description]
-            b_ij ([type]): [description]
-            b_ji ([type]): [description]
-            c_ij ([type]): [description]
-            c_ji ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            alpha_ij (float): alpha param i-j
+            alpha_ji (float): alpha param j-i
+            a_ij (float): a param i-j
+            a_ji (float): a param j-i
+            b_ij (float): b param i-j
+            b_ji (float): b param j-i
+            c_ij (float): c param i-j
+            c_ji (float): c param j-i
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(alpha_ij)

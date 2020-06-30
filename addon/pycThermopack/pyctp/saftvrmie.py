@@ -69,12 +69,22 @@ class saftvrmie(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def model_control_hard_sphere(self, active):
+        """Model control. Enable/disable hard-sphere term.
+
+        Args:
+            active (bool): Enable/disable hard-sphere dispersion term
+        """
         if active:
             self.enable_hs_c.value = 1
         else:
             self.enable_hs_c.value = 0
 
     def model_control_a1(self, active):
+        """Model control. Enable/disable first dispersion term.
+
+        Args:
+            active (bool): Enable/disable first dispersion term
+        """
         if active:
             self.enable_a1_c.value = 1
         else:
@@ -82,38 +92,48 @@ class saftvrmie(thermo.thermopack):
             self.enable_a1_c.value = 0
 
     def model_control_a2(self, active):
+        """Model control. Enable/disable second dispersion term.
+
+        Args:
+            active (bool): Enable/disable second dispersion term
+        """
         if active:
             self.enable_a2_c.value = 1
         else:
             self.enable_a2_c.value = 0
 
     def model_control_a3(self, active):
+        """Model control. Enable/disable third dispersion term.
+
+        Args:
+            active (bool): Enable/disable third dispersion term
+        """
         if active:
             self.enable_a3_c.value = 1
         else:
             self.enable_a3_c.value = 0
 
     def model_control_chain(self, active):
-        """[summary]
+        """Model control. Enable/disable chain term.
 
         Args:
-            active ([type]): [description]
-        """        
+            active (bool): Enable/disable chain term
+        """
         if active:
             self.enable_chain_c.value = 1
         else:
             self.enable_chain_c.value = 0
 
     def get_eps_kij(self, c1, c2):
-        """[summary]
+        """Get binary well depth interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            kij (float): Well depth interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(0.0)
@@ -129,13 +149,13 @@ class saftvrmie(thermo.thermopack):
         return kij_c.value
 
     def set_eps_kij(self, c1, c2, kij):
-        """[summary]
+        """Set binary well depth interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            kij ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            kij (float): Well depth interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -150,15 +170,15 @@ class saftvrmie(thermo.thermopack):
                            byref(kij_c))
 
     def get_sigma_lij(self, c1, c2):
-        """[summary]
+        """Get the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            lij (float): Sigma interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(0.0)
@@ -174,13 +194,13 @@ class saftvrmie(thermo.thermopack):
         return lij_c.value
 
     def set_sigma_lij(self, c1, c2, lij):
-        """[summary]
+        """Set the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            lij ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            lij (float): Sigma interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(lij)
@@ -195,15 +215,15 @@ class saftvrmie(thermo.thermopack):
                              byref(lij_c))
 
     def get_lr_gammaij(self, c1, c2):
-        """[summary]
+        """Get the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
-        """        
+            gammaij (float): Repulsive exponent interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         gammaij_c = c_double(0.0)
@@ -219,13 +239,13 @@ class saftvrmie(thermo.thermopack):
         return gammaij_c.value
 
     def set_lr_gammaij(self, c1, c2, gammaij):
-        """[summary]
+        """Set the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            gammaij ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            gammaij (float): Repulsive exponent interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         gammaij_c = c_double(gammaij)

@@ -57,14 +57,14 @@ class pcsaft(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
-        """[summary]
+        """Get binary well depth interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
+            c1 (int): Component one
+            c2 (int): Component two
 
         Returns:
-            [type]: [description]
+            kij (float): Well depth interaction parameter
         """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
@@ -81,13 +81,13 @@ class pcsaft(thermo.thermopack):
         return kij_c.value
 
     def set_kij(self, c1, c2, kij):
-        """[summary]
+        """Set binary well depth interaction parameter
 
         Args:
-            c1 ([type]): [description]
-            c2 ([type]): [description]
-            kij ([type]): [description]
-        """        
+            c1 (int): Component one
+            c2 (int): Component two
+            kij (float): Well depth interaction parameter
+        """
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
