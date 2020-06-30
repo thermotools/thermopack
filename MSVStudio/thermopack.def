@@ -6,6 +6,9 @@ EXPORTS
 	get_phase_flags_
 	eoslibinit_mp_init_thermo_
 	eoslibinit_mp_init_cubic_
+	eoslibinit_mp_init_cpa_
+	eoslibinit_mp_init_pcsaft_
+	eoslibinit_mp_init_saftvrmie_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_
@@ -46,3 +49,22 @@ EXPORTS
 	isolines_mp_isotherm_
 	isolines_mp_isenthalp_
 	isolines_mp_isentrope_
+	thermopack_getkij_;
+        thermopack_setkijandji_;
+	thermopack_gethvparam_;
+        thermopack_sethvparam_;
+	saftvrmie_options_mp_enable_hs;
+	saftvrmie_options_mp_enable_a1;
+	saftvrmie_options_mp_enable_a2;
+	saftvrmie_options_mp_enable_a3;
+        saftvrmie_options_mp_enable_chain;
+	saftvrmie_containers_mp_get_saftvrmie_eps_kij;
+        saftvrmie_containers_mp_set_saftvrmie_eps_kij;
+	saftvrmie_containers_mp_get_saftvrmie_sigma_lij;
+	saftvrmie_containers_mp_set_saftvrmie_sigma_lij;
+        saftvrmie_containers_mp_get_saftvrmie_lr_gammaij;
+        saftvrmie_containers_mp_set_saftvrmie_ls_gammaij;
+        saft_inteface_mp_cpa_get_kij;
+        saft_inteface_mp_cpa_set_kij;
+        saft_inteface_mp_pc_saft_get_kij;
+        saft_inteface_mp_pc_saft_set_kij_asym;

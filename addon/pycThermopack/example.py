@@ -3,6 +3,10 @@
 from __future__ import print_function
 # Importing pyThermopack
 from pyctp import thermo
+from pyctp import cubic
+from pyctp import saftvrmie
+from pyctp import cpa
+from pyctp import pcsaft
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -16,8 +20,7 @@ print("calling get_phase_flags")
 print(tp.get_phase_flags())
 
 print("calling thermo_init")
-#tp.init_thermo("Thermopack","PR","Classic","Classic",2,"CO2,C1",2,liq_vap_discr_method=1,kij_setno=2,alpha_setno=1,b_exponent=2,csp_eos="SRK",csp_ref_comp="C3",saft_setno=[1,1])
-tp.init_cubic("CO2,C1","PR","Classic","Classic")
+tp.init_thermo("Thermopack","PR","Classic","Classic",2,"CO2,C1",2,liq_vap_discr_method=1,kij_setno=2,alpha_setno=1,b_exponent=2,csp_eos="SRK",csp_ref_comp="C3",saft_setno=[1,1])
 
 print("Done calling init")
 z = np.array([0.9,0.1])
@@ -178,3 +181,50 @@ if L2VE[0] is not None:
     plt.plot(L2VE[1], L2VE[2])
 plt.show()
 plt.clf()
+
+# Instanciate cubic object
+cb = cubic.cubic()
+cb.init("CO2,C1","PR","Classic","Classic")
+print(cb.get_kij(1,2))
+cb.set_kij(1,2,0.1)
+print(cb.get_kij(2,1))
+cb.init("H2O,C1","SRK","HV","Classic")
+
+hvp = cb.get_hv_param(1, 2)
+alpha_12, alpha_21, a_12, a_21, b_12, b_21, c_12, c_21 = hvp
+print(hvp)
+alpha_12=0.16
+alpha_21=0.17
+cb.set_hv_param(1, 2, alpha_12, alpha_21, a_12, a_21, b_12, b_21, c_12, c_21)
+hvp = cb.get_hv_param(1, 2)
+print(hvp)
+
+# Instanciate saftvrmie object
+svrm = saftvrmie.saftvrmie()
+svrm.init("CO2,C1")
+print("kij",svrm.get_eps_kij(1,2))
+svrm.set_eps_kij(1,2,0.012)
+print("kij",svrm.get_eps_kij(2,1))
+print("sigma",svrm.get_sigma_lij(1,2))
+svrm.set_sigma_lij(1,2,0.013)
+print("sigma",svrm.get_sigma_lij(2,1))
+print("gamma ij",svrm.get_lr_gammaij(1,2))
+svrm.set_lr_gammaij(1,2,0.014)
+print("gamma ij",svrm.get_lr_gammaij(2,1))
+svrm.model_control_chain(False)
+
+# Instanciate saftvrmie object
+print("PC-SAFT")
+pcs = pcsaft.pcsaft()
+pcs.init("CO2,C1")
+print("kij",pcs.get_kij(1,2))
+pcs.set_kij(1,2,0.012)
+print("kij",pcs.get_kij(2,1))
+
+# Instanciate saftvrmie object
+print("CPA")
+cpa_srk = cpa.cpa()
+cpa_srk.init("ETOH,H2O")
+#print("kij",cpa_srk.get_kij(1,2))
+#pcs.set_kij(1,2,0.012)
+#print("kij",pcs.get_kij(2,1))

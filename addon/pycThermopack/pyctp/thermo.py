@@ -13,18 +13,21 @@ from os import path
 G_PREFIX = "__"
 G_MODULE = "MOD"
 G_POSTFIX = ""
+G_POSTFIX_NM = "_"
 # INTEL FORTRAN (x64)
 I_PREFIX=""
 I_MODULE="mp"
 I_POSTFIX="_"
+I_POSTFIX_NM = "_"
 
-c_len_type = c_size_t # c_int, c_size_t on GCC > 7
+c_len_type = c_int # c_size_t on GCC > 7
 
 def get_platform_specifics():
     os_id = ""
     prefix = ""
     module = ""
     postfix = ""
+    postfix_no_module = ""
     dyn_lib = ""
     if platform == "linux" or platform == "linux2":
         # linux
@@ -32,6 +35,7 @@ def get_platform_specifics():
         prefix = G_PREFIX
         module = G_MODULE
         postfix = G_POSTFIX
+        postfix_no_module = G_POSTFIX_NM
         dyn_lib = "libthermopack.so"
         os_id = "linux"
     elif platform == "darwin":
@@ -44,6 +48,7 @@ def get_platform_specifics():
         prefix = I_PREFIX #"_"
         module = I_MODULE
         postfix = I_POSTFIX
+        postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
     elif platform == "win64":
@@ -52,9 +57,10 @@ def get_platform_specifics():
         prefix = I_PREFIX
         module = I_MODULE
         postfix = I_POSTFIX
+        postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
-    return prefix, module, postfix, dyn_lib, os_id
+    return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
 
 
 class thermopack(object):
@@ -65,7 +71,7 @@ class thermopack(object):
         """
         Load libthermopack.(so/dll) and initialize function pointers
         """
-        self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
+        self.prefix, self.module, self.postfix, self.postfix_nm, dyn_lib, os_id = get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
@@ -76,9 +82,8 @@ class thermopack(object):
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
-        self.eoslibinit_init_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_cubic"))
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
         self.nc = None
-        self.Rgas = None
         self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
         self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
@@ -158,7 +163,11 @@ class thermopack(object):
         Returns:
             str: Library export name
         """
-        return self.prefix + module + "_" + self.module + "_" + method + self.postfix
+        if len(module) > 0:
+            export_name = self.prefix + module + "_" + self.module + "_" + method + self.postfix
+        else:
+            export_name = method + self.postfix_nm
+        return export_name
 
     #################################
     # Init
@@ -285,64 +294,6 @@ class thermopack(object):
                                     csp_ref_comp_len,
                                     TrendEosForCp_len)
         self.nc = ncomp
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
-
-    #################################
-    # Cubic
-    #################################
-
-    def init_cubic(self,comps,eos,mixing="vdW",alpha="Classic",model_ref=None):
-        """
-        Initialize cubic model in thermopack
-        """
-        eos_c = c_char_p(eos.encode('ascii'))
-        eos_len = c_len_type(len(eos))
-        mixing_c = c_char_p(mixing.encode('ascii'))
-        mixing_len = c_len_type(len(mixing))
-        alpha_c = c_char_p(alpha.encode('ascii'))
-        alpha_len = c_len_type(len(alpha))
-        comp_string_c = c_char_p(comps.encode('ascii'))
-        comp_string_len = c_len_type(len(comps))
-
-        self.eoslibinit_init_cubic.argtypes = [c_char_p,
-                                               c_char_p,
-                                               c_char_p,
-                                               c_char_p,
-                                               c_len_type,
-                                               c_len_type,
-                                               c_len_type,
-                                               c_len_type]
-
-        self.eoslibinit_init_cubic.restype = None
-
-        print(comps,eos,mixing,alpha)
-        self.eoslibinit_init_cubic(comp_string_c,
-                                   eos_c,
-                                   mixing_c,
-                                   alpha_c,
-                                   comp_string_len,
-                                   eos_len,
-                                   mixing_len,
-                                   alpha_len)
-        self.nc = max(len(comps.split(" ")),len(comps.split(",")))
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
-
-    def get_kij(self,c1,c2):
-        return 1.0
-
-    def set_kij(self,c1,c2,lij):
-        # ....
-        print("Setting kij")
-
-    def init_peneloux(self,method,model_ref=None):
-        print("Setting volume shift method")
-
-    def get_lij(self,c1,c2):
-        return 1.0
-        print("Setting volume shift method")
-
-    def set_lij(self,c1,c2,lij):
-        print("Setting lij")
 
     #################################
     # Solids
@@ -1946,6 +1897,7 @@ class thermopack(object):
         sa_c = (c_double * nmax)(0.0)
         ha_c = (c_double * nmax)(0.0)
         nmax_c = c_int(nmax)
+        na_c = c_int(0)
 
         self.s_isotherm.argtypes = [POINTER( c_double ),
                                     POINTER( c_double ),
@@ -1955,7 +1907,8 @@ class thermopack(object):
                                     POINTER( c_double ),
                                     POINTER( c_double ),
                                     POINTER( c_double ),
-                                    POINTER( c_double )]
+                                    POINTER( c_double ),
+                                    POINTER( c_int )]
 
         self.s_isotherm.restype = None
 
@@ -1967,12 +1920,13 @@ class thermopack(object):
                         pa_c,
                         va_c,
                         sa_c,
-                        ha_c)
+                        ha_c,
+                        byref(na_c))
 
-        p_vals = np.array(pa_c)
-        v_vals = np.array(va_c)
-        s_vals = np.array(sa_c)
-        h_vals = np.array(ha_c)
+        p_vals = np.array(pa_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        s_vals = np.array(sa_c[0:na_c.value])
+        h_vals = np.array(ha_c[0:na_c.value])
 
         return p_vals, v_vals, s_vals, h_vals
 
@@ -1992,6 +1946,7 @@ class thermopack(object):
         sa_c = (c_double * nmax)(0.0)
         ha_c = (c_double * nmax)(0.0)
         nmax_c = c_int(nmax)
+        na_c = c_int(0)
 
         self.s_isobar.argtypes = [POINTER( c_double ),
                                   POINTER( c_double ),
@@ -2001,7 +1956,8 @@ class thermopack(object):
                                   POINTER( c_double ),
                                   POINTER( c_double ),
                                   POINTER( c_double ),
-                                  POINTER( c_double )]
+                                  POINTER( c_double ),
+                                  POINTER( c_int )]
 
         self.s_isobar.restype = None
 
@@ -2013,12 +1969,13 @@ class thermopack(object):
                       ta_c,
                       va_c,
                       sa_c,
-                      ha_c)
+                      ha_c,
+                      byref(na_c))
 
-        t_vals = np.array(ta_c)
-        v_vals = np.array(va_c)
-        s_vals = np.array(sa_c)
-        h_vals = np.array(ha_c)
+        t_vals = np.array(ta_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        s_vals = np.array(sa_c[0:na_c.value])
+        h_vals = np.array(ha_c[0:na_c.value])
 
         return t_vals, v_vals, s_vals, h_vals
 
