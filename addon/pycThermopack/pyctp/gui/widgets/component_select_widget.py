@@ -1,18 +1,19 @@
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QHeaderView
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QTreeWidgetItem
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
-import os
-import json
-
-from gui.classes.component import Component
 from gui.widgets.component_info import ComponentInformationWindow
-from gui.utils import get_unique_name
+from gui.utils import get_unique_name, get_fluids
 
 
 # TODO: Vise lagrede komposisjoner i en liste av noe slag
 # TODO: Søkefunksjon. QSortFilterProxyModel(). Bookmarked in Chrome
 # TODO: Mulighet for å slette en lagret komposisjon
+
+
+class ComponentListMenuItem(QTreeWidgetItem):
+    def __init__(self, parent, text):
+        super().__init__(parent, [text])
 
 
 class ComponentSelectWidget(QWidget):
@@ -24,15 +25,15 @@ class ComponentSelectWidget(QWidget):
         self.data = data
 
         # Components available in the 'fluids' folder
-        self.available_components = {}
-
-        # Chosen final composition (can store multiple)
+        self.fluids = get_fluids()
+        # Chosen final composition (list_name: component_list)
         self.final_compositions = {}
-
         # To keep track of currently selected components
         self.selected_components = []
 
         self.set_component_list_placeholder_name()
+
+        self.populate_component_choices()
 
         # Buttons for adding or removing components from selected component list
         self.button_add.clicked.connect(self.choose_components)
@@ -48,30 +49,16 @@ class ComponentSelectWidget(QWidget):
 
         self.search_box.textChanged.connect(self.search)
 
-        # Get available fluids and populate table
-        for root, dirs, files in os.walk("../../../../fluids"):
-            for file_name in files:
-                self.populate_component_choices(os.path.join(root, file_name))
-
-    component_list_updated = pyqtSignal(str, dict)
+    component_list_updated = pyqtSignal(str, bool, str)
 
     def set_component_list_placeholder_name(self):
         self.set_name_edit.clear()
         name = get_unique_name("Composition", self.final_compositions.keys())
         self.set_name_edit.setPlaceholderText(name)
 
-    def populate_component_choices(self, file_name):
-        file = open(file_name, "r")
-
-        component_data = json.load(file)
-        name = component_data["name"]
-
-        component = Component(name, component_data)
-        self.available_components[name] = component
-
-        self.insert_component(self.component_choices_table, component)
-
-        file.close()
+    def populate_component_choices(self):
+        for component in self.fluids.values():
+            self.insert_component(self.component_choices_table, component)
 
     def choose_components(self):
         selected_rows = self.component_choices_table.selectionModel().selectedRows()
@@ -79,7 +66,7 @@ class ComponentSelectWidget(QWidget):
             for row_object in selected_rows:
 
                 name = self.component_choices_table.item(row_object.row(), 0).text()
-                component = self.available_components[name]
+                component = self.fluids[name]
 
                 if component.name not in self.selected_components:
                     self.selected_components.append(component.name)
@@ -106,7 +93,7 @@ class ComponentSelectWidget(QWidget):
 
     def display_component_info(self, item):
         name = self.component_choices_table.item(item.row(), 0).text()
-        component = self.available_components[name]
+        component = self.fluids[name]
         dialog = ComponentInformationWindow(component, self)
         dialog.show()
 
@@ -124,11 +111,11 @@ class ComponentSelectWidget(QWidget):
                     component_list = self.selected_components.copy()
                     self.final_compositions[list_name] = component_list
 
-                    id_list = [self.available_components[name].json_data["ident"] for name in component_list]
+                    id_list = [self.fluids[name].json_data["ident"] for name in component_list]
                     self.data["Component lists"][list_name] = {"Names": component_list,
                                                                "Identities": id_list}
 
-                    self.component_list_updated.emit(list_name, self.data)
+                    self.component_list_updated.emit(list_name, True, list_name)
 
                     # Clear table and selection
                     self.selected_components_table.setRowCount(0)
@@ -137,15 +124,83 @@ class ComponentSelectWidget(QWidget):
                     self.set_component_list_placeholder_name()
                 else:
                     msg = ListNameAlreadyExistsMessageBox(list_name)
+                    msg.exec_()
+                    self.set_name_edit.undo()
 
             else:
                 msg = CompositionAlreadyExistsMessageBox(self.selected_components, self.final_compositions)
+                msg.exec_()
 
         else:
             msg = NoComponentsChosenMessageBox()
+            msg.exec_()
 
     def search(self, search_text):
         pass
+
+
+class ComponentEditWidget(ComponentSelectWidget):
+    def __init__(self, data, name, parent=None):
+        ComponentSelectWidget.__init__(self, data, parent)
+
+        self.name = name
+
+        self.label_title.setText("Component List Edit Menu")
+
+        self.populate_widget()
+
+    def populate_widget(self):
+        self.set_name_edit.setText(self.name)
+        comp_list = [self.fluids[name] for name in self.data["Component lists"][self.name]["Names"]]
+        for comp in comp_list:
+            self.selected_components.append(comp.name)
+            self.insert_component(self.selected_components_table, comp)
+
+    def save_composition(self):
+
+        if self.selected_components:
+
+            if self.set_name_edit.text():
+                list_name = self.set_name_edit.text()
+            elif self.set_name_edit.placeHolderText():
+                list_name = self.set_name_edit.placeholderText()
+            else:
+                list_name = get_unique_name("Composition", self.final_compositions.keys())
+                self.set_name_edit.setPlaceholderText(list_name)
+
+            if list_name == self.name:
+                component_list = self.selected_components.copy()
+                self.final_compositions[list_name] = component_list
+
+                id_list = [self.fluids[comp].json_data["ident"] for comp in component_list]
+                self.data["Component lists"][list_name] = {"Names": component_list,
+                                                           "Identities": id_list}
+
+                self.component_list_updated.emit(list_name, False, self.name)
+                self.name = list_name
+
+            elif list_name not in self.data["Component lists"]:
+                component_list = self.selected_components.copy()
+                self.final_compositions[list_name] = component_list
+
+                id_list = [self.fluids[comp].json_data["ident"] for comp in component_list]
+
+                self.data["Component lists"][self.name] = {"Names": component_list,
+                                                           "Identities": id_list}
+
+                self.data["Component lists"][list_name] = self.data["Component lists"].pop(self.name)
+
+                self.component_list_updated.emit(list_name, False, self.name)
+                self.name = list_name
+
+            else:
+                msg = ListNameAlreadyExistsMessageBox(list_name)
+                self.set_name_edit.undo()
+                msg.exec_()
+
+        else:
+            msg = NoComponentsChosenMessageBox()
+            msg.exec_()
 
 
 class NoComponentsChosenMessageBox(QMessageBox):
@@ -167,7 +222,6 @@ class CompositionAlreadyExistsMessageBox(QMessageBox):
         self.setIcon(QMessageBox.Information)
         self.setStandardButtons(QMessageBox.Close)
         self.setDefaultButton(QMessageBox.Ignore)
-        self.exec_()
 
 
 class ListNameAlreadyExistsMessageBox(QMessageBox):

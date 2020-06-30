@@ -9,6 +9,13 @@ import numpy as np
 
 import thermo
 
+# TODO: Mulighet for å plotte flere ting oppå hverandre (Default: Clear hver gang, mulig å endre eks checkbox)
+
+# TODO: Når isopleter toggles on/off, fjern/legg til i legend
+
+# TODO: Mulighet for å tune parametere for de ulike plottetypene (pmax, pmin, tmax, tmin, NISOPLETHS, dlns, ...)
+#  Få opp en liten [...]-pushbtn ved siden av plot type radio btn
+
 
 class PlotMode(QMainWindow):
     def __init__(self, component_data, settings, parent=None):
