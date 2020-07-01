@@ -417,53 +417,6 @@
               </layout>
              </widget>
             </item>
-            <item>
-             <widget class="QFrame" name="frame_10">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QFormLayout" name="formLayout_4">
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_search_3">
-                 <property name="text">
-                  <string>Search by:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QComboBox" name="filter_cbox">
-                 <item>
-                  <property name="text">
-                   <string>Name</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Formula</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>CAS number</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
            </layout>
           </widget>
          </item>
