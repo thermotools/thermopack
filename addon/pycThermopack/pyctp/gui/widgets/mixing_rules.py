@@ -1,11 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QHeaderView
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
-from thermo import thermopack
-
-# TODO: Skal være mulig å endre koeffisienter
-# TODO: Mulig at alle koeffisienter nå resettes når fanen åpnes igjen.
-#  Må ha en update() i stedet for init() som lager de rette matrisene
+from cubic import cubic
 
 
 class VdWBinaryCoefficientsWidget(QDialog):
@@ -16,13 +12,25 @@ class VdWBinaryCoefficientsWidget(QDialog):
         self.settings = data["Model setups"][settings_name]
         self.component_lists = data["Component lists"]
 
-        self.current_composition = None     # Currently chosen (str)
+        self.current_composition = None  # Currently chosen (str)
 
-        self.thermo = thermopack()
+        self.thermopack = cubic()
 
         self.init_composition_list()
 
+        self.coeff_table.itemChanged.connect(self.change_coeff)
+
         self.composition_list.itemSelectionChanged.connect(self.show_matrix)
+
+    def init_thermopack(self, list_name):
+        if self.settings["Model category"] == "Cubic":
+            comps = ",".join(self.component_lists[list_name]["Identities"])
+            eos = self.settings["EOS"]
+            mixing = self.settings["Model options"]["Mixing rule"]
+            alpha = self.settings["Model options"]["Alpha correlation"]
+            ref = self.settings["Model options"]["Reference"]
+
+            self.thermopack.init(comps, eos, mixing=mixing, alpha=alpha, parameter_reference=ref)
 
     def init_composition_list(self):
         self.composition_list.clear()
@@ -37,10 +45,16 @@ class VdWBinaryCoefficientsWidget(QDialog):
         component_list = self.component_lists[component_list_name]["Names"]
         size = len(component_list)
 
+        self.init_thermopack(component_list_name)
+
         for row in range(size):
             coeffs = []
             for col in range(size):
-                coeff = self.thermo.get_kij(component_list[row], component_list[col])
+                identity1 = self.component_lists[component_list_name]["Identities"][row]
+                identity2 = self.component_lists[component_list_name]["Identities"][col]
+                index1 = self.thermopack.getcompindex(identity1)
+                index2 = self.thermopack.getcompindex(identity2)
+                coeff = self.thermopack.get_kij(index1, index2)
                 coeffs.append(coeff)
             matrix_data.append(coeffs)
 
@@ -75,7 +89,10 @@ class VdWBinaryCoefficientsWidget(QDialog):
 
                 item = QTableWidgetItem(str(coeff))
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
+
+                self.coeff_table.blockSignals(True)
                 self.coeff_table.setItem(i, j, item)
+                self.coeff_table.blockSignals(False)
 
                 # Matrix is symmetric, so these items can't be edited
                 if i >= j:
@@ -90,6 +107,26 @@ class VdWBinaryCoefficientsWidget(QDialog):
             # All coefficient matrices are created and saved
             self.composition_list.addItem(list_name)
             self.init_create_matrix_data(list_name)
+
+    def change_coeff(self, item):
+        row = item.row()
+        col = item.column()
+
+        component_list = self.composition_list.currentItem().text()
+        matrix = self.component_lists[component_list]["Coefficient matrix"]
+
+        try:
+            value = float(item.text().replace(",", "."))
+        except ValueError:
+            previous_value = matrix[row][col]
+            item.setText(str(previous_value))
+            return
+
+        matrix[row][col] = value
+
+        # Symmetric matrix
+        matrix[col][row] = value
+        self.coeff_table.item(col, row).setText(str(value))
 
 
 class HV1BinaryCoefficientsWidget(QDialog):
