@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1136</width>
-    <height>467</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,10 +76,9 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_9">
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>HV1</string>
-        </property>
+       <widget class="QStackedWidget" name="tab_stack">
+        <widget class="QWidget" name="page"/>
+        <widget class="QWidget" name="page_2"/>
        </widget>
       </item>
      </layout>

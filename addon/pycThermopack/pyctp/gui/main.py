@@ -22,6 +22,8 @@ from gui.utils import get_json_data, save_json_data
 # TODO: Lag en Calc Mode: PT flash (+andre flasher). Velger Comp + Model, Velger T, P --> Properties
 #  Kose seg med enheter og greier
 
+# TODO: Lag en QToolBar med QToolButtons for Open, Save, ...
+
 
 class ThermopackGUIApp(QMainWindow):
     def __init__(self, parent=None, json_file=None):
@@ -130,11 +132,6 @@ class ThermopackGUIApp(QMainWindow):
             for index in range(root.childCount()):
                 if root.child(index).text(0) == old_name:
                     root.child(index).setText(0, list_name)
-
-        # Also want to update coeff widgets to include the new component list
-        root = self.tree_menu.topLevelItem(1)
-        for index in range(root.childCount()):
-            root.child(index).widget.show_correct_coeff_widget()
 
     def update_model_lists(self, list_name, data, id):
         # Find correct tab and change its name

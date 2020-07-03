@@ -6,7 +6,6 @@ from gui.widgets.component_info import ComponentInformationWindow
 from gui.utils import get_unique_name, get_fluids
 
 
-# TODO: Søkefunksjon. QSortFilterProxyModel(). Bookmarked in Chrome
 # TODO: Mulighet for å slette en lagret komposisjon
 
 

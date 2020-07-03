@@ -12,7 +12,8 @@ from gui.utils import get_unique_name, get_unique_id
 # TODO
 #  Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 #  Ordne mer i menyen: Doubleclick --> Åpne og instansiere en tab
-#  Ta backup. Lokalt på disk + git
+
+# TODO:  No self associating components. Initializing PR(/SRK) instead of CPA-PR(/SRK) dukker opp hele tiden for CPA
 
 
 class ModelListMenuItem(QTreeWidgetItem):
@@ -23,6 +24,12 @@ class ModelListMenuItem(QTreeWidgetItem):
 
 
 class ModelSelectWidget(QWidget):
+    """
+    EOS-stack:      0: Empty   1: PR + SRK
+    Options-stack:  0: Empty   1: Cubic (or CPA)
+    Coeff-stack:    0: Empty   1: VdW              2: HV1       3: HV2
+    """
+
     def __init__(self, data, name=None, parent=None):
         QWidget.__init__(self, parent)
 
@@ -53,6 +60,8 @@ class ModelSelectWidget(QWidget):
         self.model_category_list.currentItemChanged.connect(self.category_selected)
         self.cubic_eos_list.currentItemChanged.connect(self.change_cubic_eos)
 
+        self.tabs.currentChanged.connect(self.show_correct_tab)
+
         self.name_edit.returnPressed.connect(self.change_name)
 
     settings_updated = pyqtSignal(str, dict, int)
@@ -62,7 +71,7 @@ class ModelSelectWidget(QWidget):
         model_category = self.data["Model setups"][self.name]["Model category"]
         self.model_category_list.setCurrentItem(self.model_category_list.findItems(model_category, Qt.MatchExactly)[0])
 
-        if model_category == "Cubic":
+        if model_category == "Cubic" or model_category == "CPA":
             eos = self.data["Model setups"][self.name]["EOS"]
             alpha_corr = self.data["Model setups"][self.name]["Model options"]["Alpha correlation"]
             mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
@@ -99,20 +108,24 @@ class ModelSelectWidget(QWidget):
 
     def show_correct_coeff_widget(self):
         mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
+
         if mixing_rule == "vdW":
-            self.coeff_stack.setCurrentIndex(self.vdw_index)
+            index = self.vdw_index
         elif mixing_rule == "HV1":
-            self.coeff_stack.setCurrentIndex(self.hv1_index)
+            index = self.hv1_index
         elif mixing_rule == "HV2":
-            self.coeff_stack.setCurrentIndex(self.hv2_index)
+            index = self.hv2_index
         else:
             self.coeff_stack.setCurrentIndex(0)
+            return
 
-        self.coeff_stack.currentWidget().update_composition_list()
+        self.coeff_stack.setCurrentIndex(index)
+        coeff_widget = self.coeff_stack.widget(index)
 
     def category_selected(self, category_item):
         category = category_item.text()
-        if category == "Cubic":
+        self.data["Model setups"][self.name]["Model category"] = category
+        if category == "Cubic" or category == "CPA":
             self.eos_stack.setCurrentIndex(1)
             self.options_stack.setCurrentIndex(1)
             self.coeff_stack.setCurrentIndex(1)
@@ -148,12 +161,18 @@ class ModelSelectWidget(QWidget):
         self.data["Model setups"][self.name]["Model options"]["Reference"] = ref
         self.settings_updated.emit(self.name, self.data, self.id)
 
+    def show_correct_tab(self, index):
+        if index >= 0:
+            if self.tabs.tabText(index) == "Binary coefficients":
+                self.coeff_stack.currentWidget().init_widget()
+
     def change_name(self):
         new_name = self.name_edit.text()
         self.name_edit.clearFocus()
 
         if new_name in self.data["Model setups"] and new_name != self.name:
             msg = SettingsExistMsg(new_name)
+            msg.exec_()
             self.name_edit.undo()
 
         else:
