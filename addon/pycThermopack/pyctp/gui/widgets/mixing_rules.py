@@ -75,11 +75,13 @@ class BinaryCoefficientsWidget(QWidget):
             for j in range(size):
 
                 if i == j:
-                    coeff = "-"
-                else:
-                    coeff = matrix_data[i][j]
+                    item = QTableWidgetItem("-")
+                    # Not editable
+                    item.setFlags(QtCore.Qt.NoItemFlags)
 
-                item = QTableWidgetItem(str(coeff))
+                else:
+                    item = QTableWidgetItem(str(matrix_data[i][j]))
+
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
 
                 table.blockSignals(True)
@@ -104,31 +106,31 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         loadUi("widgets/layouts/vdw_bin_coeff_widget.ui", self)
 
         self.composition_list.currentItemChanged.connect(self.show_correct_matrix)
+        self.stack_indices = {}
 
     def init_widget(self):
         self.thermopack = self.get_thermopack()
 
         list_names = []
         for i in range(self.composition_list.count()):
-            list_names.append(self.composition_list.item(i))
+            list_names.append(self.composition_list.item(i).text())
 
         for name in self.component_lists.keys():
             if name not in list_names:
                 self.component_lists[name]["Coefficient matrices"] = {}
+                # Create one table for each list in a stacked widget.
+                # The dict keeps track of the table's index in the stack
+
+                # Create table
+                self.calculate_matrix_data(name)
+                table = self.get_table(name, "K")
+                table.itemChanged.connect(lambda item: self.change_coeff(item, table, "K"))
+
+                # Keep track of table in stack
+                index = self.table_stack.addWidget(table)
+                self.stack_indices[name] = index
 
         self.init_composition_list()
-        self.stack_indices = {}
-
-        # Create one table for each list in a stacked widget. The dict keeps track of the table's index in the stack
-        for list_name in self.component_lists.keys():
-            # Create table
-            self.calculate_matrix_data(list_name)
-            table = self.get_table(list_name, "K")
-            table.itemChanged.connect(lambda item: self.change_coeff(item, "K"))
-
-            # Keep track of table in stack
-            index = self.table_stack.addWidget(table)
-            self.stack_indices[list_name] = index
 
     def calculate_matrix_data(self, list_name):
         """
@@ -142,18 +144,17 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         self.init_thermopack(list_name)
 
-        for row in range(size - 1):
-            for col in range(row + 1, size):
+        for row in range(size):
+            for col in range(size):
                 identity1 = self.component_lists[list_name]["Identities"][row]
                 identity2 = self.component_lists[list_name]["Identities"][col]
                 index1 = self.thermopack.getcompindex(identity1)
                 index2 = self.thermopack.getcompindex(identity2)
                 coeff = self.thermopack.get_kij(index1, index2)
                 matrix_data[row][col] = coeff
-                matrix_data[col][row] = coeff
 
         for row in range(size):
-            matrix_data[row][row] = 0
+            matrix_data[row][row] = 0.0
 
         matrix_data = matrix_data.tolist()
         self.component_lists[list_name]["Coefficient matrices"]["K"] = matrix_data
@@ -165,7 +166,7 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         index = self.stack_indices[list_name]
         self.table_stack.setCurrentIndex(index)
 
-    def change_coeff(self, item, table_name):
+    def change_coeff(self, item, table, table_name):
         # Item has to be changed in table, self.data and be set in thermopack
         row = item.row()
         col = item.column()
@@ -190,49 +191,48 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         # Symmetric matrix
         matrix[col][row] = value
-        self.coeff_table.item(col, row).setText(str(value))
+        table.item(col, row).setText(str(value))
 
 
 class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
+        self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
     def init_widget(self):
         self.thermopack = self.get_thermopack()
 
-        self.init_composition_list()
-        self.tab_stack_indices = {}
-
         list_names = []
         for i in range(self.composition_list.count()):
-            list_names.append(self.composition_list.item(i))
+            list_names.append(self.composition_list.item(i).text())
 
-        for name in self.component_lists.keys():
-            if name not in list_names:
-                self.component_lists[name]["Coefficient matrices"] = {}
-
-        # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
         for list_name in self.component_lists.keys():
-            self.calculate_matrix_data(list_name)
+            if list_name not in list_names:
+                self.component_lists[list_name]["Coefficient matrices"] = {}
 
-            self.alpha_table = self.get_table(list_name, "alpha")
-            self.a_table = self.get_table(list_name, "A")
-            self.b_table = self.get_table(list_name, "B")
-            self.c_table = self.get_table(list_name, "C")
+                # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
+                self.calculate_matrix_data(list_name)
 
-            self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
-            self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
-            self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
-            self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
+                self.alpha_table = self.get_table(list_name, "alpha")
+                self.a_table = self.get_table(list_name, "A")
+                self.b_table = self.get_table(list_name, "B")
+                self.c_table = self.get_table(list_name, "C")
 
-            tab_widget = HV1TabWidget(self.alpha_table, self.a_table, self.b_table)
+                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
+                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
+                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
+                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
 
-            # Keep track of tabs in stack
-            index = self.tab_stack.addWidget(tab_widget)
-            self.tab_stack_indices[list_name] = index
+                tab_widget = HV1TabWidget(self.alpha_table, self.a_table, self.b_table)
+
+                # Keep track of tabs in stack
+                index = self.tab_stack.addWidget(tab_widget)
+                self.tab_stack_indices[list_name] = index
+
+        self.init_composition_list()
 
     def calculate_matrix_data(self, list_name):
         # Creating 2D arrays to be stored in self.data
@@ -320,57 +320,47 @@ class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
         index1 = self.thermopack.getcompindex(identity1)
         index2 = self.thermopack.getcompindex(identity2)
         self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
-
-        if table_name == "alpha":
-            self.alpha_table.item(col, row).setText(str(value))
-        elif table_name == "A":
-            self.a_table.item(col, row).setText(str(value))
-        elif table_name == "B":
-            self.b_table.item(col, row).setText(str(value))
-        elif table_name == "C":
-            self.c_table.item(col, row).setText(str(value))
 
 
 class HV2BinaryCoefficientsWidget(BinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv2_bin_coeff_widget.ui", self)
+        self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
     def init_widget(self):
         self.thermopack = self.get_thermopack()
 
-        self.init_composition_list()
-        self.tab_stack_indices = {}
-
         list_names = []
         for i in range(self.composition_list.count()):
-            list_names.append(self.composition_list.item(i))
+            list_names.append(self.composition_list.item(i).text())
 
-        for name in self.component_lists.keys():
-            if name not in list_names:
-                self.component_lists[name]["Coefficient matrices"] = {}
-
-        # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
         for list_name in self.component_lists.keys():
-            self.calculate_matrix_data(list_name)
+            if list_name not in list_names:
+                self.component_lists[list_name]["Coefficient matrices"] = {}
 
-            self.alpha_table = self.get_table(list_name, "alpha")
-            self.a_table = self.get_table(list_name, "A")
-            self.b_table = self.get_table(list_name, "B")
-            self.c_table = self.get_table(list_name, "C")
+                # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
+                self.calculate_matrix_data(list_name)
 
-            self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
-            self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
-            self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
-            self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
+                self.alpha_table = self.get_table(list_name, "alpha")
+                self.a_table = self.get_table(list_name, "A")
+                self.b_table = self.get_table(list_name, "B")
+                self.c_table = self.get_table(list_name, "C")
 
-            tab_widget = HV2TabWidget(self.alpha_table, self.a_table, self.b_table, self.c_table)
+                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
+                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
+                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
+                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
 
-            # Keep track of tabs in stack
-            index = self.tab_stack.addWidget(tab_widget)
-            self.tab_stack_indices[list_name] = index
+                tab_widget = HV2TabWidget(self.alpha_table, self.a_table, self.b_table, self.c_table)
+
+                # Keep track of tabs in stack
+                index = self.tab_stack.addWidget(tab_widget)
+                self.tab_stack_indices[list_name] = index
+
+        self.init_composition_list()
 
     def calculate_matrix_data(self, list_name):
         # Creating 2D arrays to be stored in self.data
@@ -458,15 +448,6 @@ class HV2BinaryCoefficientsWidget(BinaryCoefficientsWidget):
         index1 = self.thermopack.getcompindex(identity1)
         index2 = self.thermopack.getcompindex(identity2)
         self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
-
-        if table_name == "alpha":
-            self.alpha_table.item(col, row).setText(str(value))
-        elif table_name == "A":
-            self.a_table.item(col, row).setText(str(value))
-        elif table_name == "B":
-            self.b_table.item(col, row).setText(str(value))
-        elif table_name == "C":
-            self.c_table.item(col, row).setText(str(value))
 
 
 class HV1TabWidget(QTabWidget):
@@ -481,3 +462,15 @@ class HV2TabWidget(HV1TabWidget):
     def __init__(self, alpha_table, a_table, b_table, c_table, parent=None):
         HV1TabWidget.__init__(self, alpha_table, a_table, b_table, parent)
         self.addTab(c_table, "C")
+
+
+class PCSAFTBinaryCoefficientsWidget(BinaryCoefficientsWidget):
+    def __init__(self, data, settings_name, parent=None):
+        super().__init__(data, settings_name, parent)
+        self.table = QTableWidget(5, 5, parent=self)
+
+
+class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
+    def __init__(self, data, settings_name, parent=None):
+        super().__init__(data, settings_name, parent)
+        self.table = QTableWidget(5, 5, parent=self)

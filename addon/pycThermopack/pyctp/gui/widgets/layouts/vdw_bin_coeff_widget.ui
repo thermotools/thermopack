@@ -80,6 +80,9 @@
      <layout class="QGridLayout" name="gridLayout_9">
       <item row="0" column="0">
        <widget class="QStackedWidget" name="table_stack">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
         <widget class="QWidget" name="page">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
