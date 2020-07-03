@@ -7,8 +7,6 @@ N_ISOPLETHS = 15
 NMAX = 50
 
 
-# TODO: Fix legends
-
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, components):
         self.fig = Figure(dpi=100)
@@ -79,17 +77,15 @@ class MplCanvas(FigureCanvasQTAgg):
         H = np.array([tp.enthalpy_tv(T[i], V[i], fractions) for i in range(len(T))])
         S = np.array([tp.entropy_tv(T[i], V[i], fractions) for i in range(len(T))])
 
-        # TODO: Per nå er disse bare dummies. Må gjøre dem mer dynamisk uavhengig av komposisjon og molfraksjon.
-        #  Morten spør HYVA-fyren. (ev. min og max av de respektive variablene? Njaa, da får jeg masse errors)
         global H_list_test
         global T_list_test
         global S_list_test
         global P_list_test
 
-        H_list_test = np.linspace(-14000, 6600, N_ISOPLETHS)
-        T_list_test = np.linspace(100, 290, N_ISOPLETHS)
-        S_list_test = np.linspace(-82, 43, N_ISOPLETHS)
-        P_list_test = np.linspace(200, 8.5e6, N_ISOPLETHS)
+        H_list_test = np.linspace(np.min(H), np.max(H), N_ISOPLETHS)
+        S_list_test = np.linspace(np.min(S), np.max(S), N_ISOPLETHS)
+        T_list_test = np.linspace(np.min(T) * 0.60, np.max(T) * 1.40, N_ISOPLETHS)
+        P_list_test = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, N_ISOPLETHS)
 
         # Calculate critical variables
         T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
