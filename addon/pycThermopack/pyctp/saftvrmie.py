@@ -32,7 +32,9 @@ class saftvrmie(thermo.thermopack):
         self.enable_chain_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_chain")) # Option to enable/disable A1 contribution
 
         # Init methods
-        self.eoslibinit_init_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_saftvrmie"))
+        self.s_eoslibinit_init_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_saftvrmie"))
+        self.s_get_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_pure_fluid_param"))
+        self.s_set_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name("saftvrmie_containers", "set_saftvrmie_pure_fluid_param"))
 
         # Tuning methods
         self.s_get_eps_kij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_eps_kij"))
@@ -55,17 +57,17 @@ class saftvrmie(thermo.thermopack):
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
-        self.eoslibinit_init_saftvrmie.argtypes = [c_char_p,
-                                                   c_char_p,
-                                                   c_len_type,
-                                                   c_len_type]
+        self.s_eoslibinit_init_saftvrmie.argtypes = [c_char_p,
+                                                     c_char_p,
+                                                     c_len_type,
+                                                     c_len_type]
 
-        self.eoslibinit_init_saftvrmie.restype = None
+        self.s_eoslibinit_init_saftvrmie.restype = None
 
-        self.eoslibinit_init_saftvrmie(comp_string_c,
-                                       ref_string_c,
-                                       comp_string_len,
-                                       ref_string_len)
+        self.s_eoslibinit_init_saftvrmie(comp_string_c,
+                                         ref_string_c,
+                                         comp_string_len,
+                                         ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def model_control_hard_sphere(self, active):
@@ -258,3 +260,72 @@ class saftvrmie(thermo.thermopack):
         self.s_set_lr_gammaij(byref(c1_c),
                               byref(c2_c),
                               byref(gammaij_c))
+
+    def get_pure_fluid_param(self, ic):
+        """Set pure fluid parameters
+
+        Args:
+            ic (int): Component index
+        Returns;
+            m (float): Mean number of segments.
+            sigma (float): Temperature-independent segment diameter [m].
+            eps_div_k (float): Well depth divided by Boltzmann's const. [K].
+            lambda_a (float): Attractive exponent of the Mie potential
+            lambda_r (float): Repulsive exponent of the Mie potential
+        """
+        ic_c = c_int(ic)
+        m_c = c_double(0.0)
+        sigma_c = c_double(0.0)
+        eps_c = c_double(0.0)
+        lambda_a_c = c_double(0.0)
+        lambda_r_c = c_double(0.0)
+        self.s_get_saftvrmie_pure_fluid_param.argtypes = [POINTER(c_int),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double)]
+
+        self.s_get_saftvrmie_pure_fluid_param.restype = None
+
+        self.s_get_saftvrmie_pure_fluid_param(byref(ic_c),
+                                              byref(m_c),
+                                              byref(sigma_c),
+                                              byref(eps_c),
+                                              byref(lambda_a_c),
+                                              byref(lambda_r_c))
+
+        return m_c.value, sigma_c.value, eps_c.value, lambda_a_c.value, lambda_r_c.value
+
+    def set_pure_fluid_param(self, ic, m, sigma, eps_div_k, lambda_a, lambda_r):
+        """Set pure fluid parameters
+
+        Args:
+            ic (int): Component index
+            m (float): Mean number of segments.
+            sigma (float): Temperature-independent segment diameter [m].
+            eps_div_k (float): Well depth divided by Boltzmann's const. [K].
+            lambda_a (float): Attractive exponent of the Mie potential
+            lambda_r (float): Repulsive exponent of the Mie potential
+        """
+        ic_c = c_int(ic)
+        m_c = c_double(m)
+        sigma_c = c_double(sigma)
+        eps_c = c_double(eps_div_k)
+        lambda_a_c = c_double(lambda_a)
+        lambda_r_c = c_double(lambda_r)
+        self.s_set_saftvrmie_pure_fluid_param.argtypes = [POINTER(c_int),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double),
+                                                          POINTER(c_double)]
+
+        self.s_set_saftvrmie_pure_fluid_param.restype = None
+
+        self.s_set_saftvrmie_pure_fluid_param(byref(ic_c),
+                                              byref(m_c),
+                                              byref(sigma_c),
+                                              byref(eps_c),
+                                              byref(lambda_a_c),
+                                              byref(lambda_r_c))
