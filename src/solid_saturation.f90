@@ -12,7 +12,13 @@ module solid_saturation
   private
   save
 
-  integer, parameter :: TRIPLE = 1, VARSOLID = 2, VARFLUID = 3, VARFLUID_DUMMY = 4
+  integer, parameter :: &
+       TRIPLE         = 1, &
+       VARSOLID       = 2, &
+       VARFLUID       = 3, &
+       VARFLUID_DUMMY = 4
+
+  logical, parameter :: debug=.false.
 
   public :: solidEnvelopePlot, solidFluidEqSingleComp
   public :: TRIPLE, VARSOLID, VARFLUID, VARFLUID_DUMMY
@@ -541,6 +547,7 @@ contains
     integer, dimension(nc+3) :: INDX
     integer :: INFO, imax(1)
     real, dimension(nc+5) :: param
+    real :: scaling
     ! Debug
     !real, dimension(nc+3) :: G0, G1
     !integer :: i
@@ -577,6 +584,20 @@ contains
       if (abs(dX(imax(1))) > dln_s_max) then
         dln_s = sign(1.0,dln_s)*dln_s_max/abs(dXds_local(imax(1)))
         dX = dXds_local*dln_s
+      endif
+      if (dX(nc+3) > 0.999999*Z(is) - X(nc+3)) then
+        dX(nc+3) = 0.0
+      endif
+    else
+      if (dX(nc+3) > 0.999999*Z(is) - X(nc+3)) then
+        if (dX(nc+3) > 1.0e-25) then
+          scaling = (0.9999999*Z(is) - X(nc+3))/dX(nc+3)
+          dX = dX*scaling
+        endif
+      endif
+      if (abs(dX(nc+3)) > 0.05) then
+        scaling = 0.05/abs(dX(nc+3))
+        dX = dX*scaling
       endif
     ! else
     !   call sat_fun_newton_threePh(G0,X,param)
@@ -799,6 +820,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine solidEnvelopePlot(Z,T_init,p_init,spec,Pmax,filename,plotESV)
     use solideos, only: nSolid, solidComp
+    use utilities, only: newunit
     !use utils, only: isSingleComp
     implicit none
     ! Input:
@@ -818,10 +840,11 @@ contains
     real                        :: Ki(nmax,nc) ! K factors
     real                        :: betai(nmax) ! Gas phase fraction
     real :: T, p, beta, betaSol, ln_spec, K(nc), p0, e, v, ent, dln_s
-    real :: pn
-    integer :: s, is, iter, ierr, i
-    integer, parameter :: ifile = 12
-    logical :: plotEnergiesEtc
+    real :: pn, pcrit, tcrit, critLV(2)
+    real :: betaMin, point(5), betaSolCrit
+    integer :: s, is, iter, ierr, i, n_vap_line
+    integer :: ifile
+    logical :: plotEnergiesEtc, exit_loop, closing
     character(len=*), parameter :: sep = '  '
     character(len=*), parameter :: non = 'NaN' ! '.' for gnuplot, NaN for numpy
     character(len=clen) :: line, mergedlines
@@ -829,7 +852,7 @@ contains
     real :: Ttr, Ptr, Ktr(nc)
     real :: Ttr2, Ptr2, Ktr2(nc)
     ! Three phase lines
-    integer, parameter :: nsol = 150
+    integer, parameter :: nsol = 250
     real :: Kl(nsol,nc), bl(nsol), Tl(nsol), Pl(nsol)
     real :: bs(2*nsol), Ks(2*nsol,nc), Ts(2*nsol), Ps(2*nsol)
     real :: bs2(nsol), Ks2(nsol,nc), Ts2(nsol), Ps2(nsol)
@@ -837,12 +860,22 @@ contains
     real :: tsg(nsol),psg(nsol)
     ! Solid liquid line
     real :: tsl(nsol),psl(nsol)
-
+    ! Number of points in each line
+    integer :: n_sol_lines(5)
     if (nSolid /= 1) then
       call stoperror('saturation::solidEnvelopePlot: No solid model initialized!')
     else
       is = solidComp(1)
     endif
+
+    ! Default number of points in lines
+    n_sol_lines = (/nsol, nsol, nsol, 2*nsol, nsol/)
+    !              Tsg,   Tsl,  Tl,   Ts,    Ts2
+    if (nc == 2) n_sol_lines(4) = 0
+
+    ! Initialize critical point values
+    tcrit = 0
+    pcrit = 0
 
     beta = 1.0
     call envelopePlot(Z,T_init,p_init,spec,beta,Pmax,nmax,&
@@ -859,6 +892,10 @@ contains
     K = Ki(n,:)
     iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
          TRIPLE,ierr)
+    if (ierr /= 0) then
+      print *,"Not able to solve for triple line edge where sublimation "//&
+           "and saturation curve meets"
+    endif
     if (verbose) then
       print *
       print *,'Triple point for mixture'
@@ -874,17 +911,33 @@ contains
       print *
       print *,'Mapping solid appearance line'
     endif
+    closing = .true.
     Kl(1,:) = K
     bl(1) = 1.0
     Tl(1) = t
     Pl(1) = p
     betaSol = 0.0
+    betaMin = 0.0
     s = nc+3
     do i=2,nsol-1
       beta = 1.0 - real(i-1)/real(nsol-1)
       ln_spec = beta
       iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
            VARFLUID,ierr)
+      if (p > Pmax) then
+        closing = .false.
+        ln_spec = log(Pmax)
+        s = nc+2
+        iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+             VARFLUID,ierr)
+        betaMin = beta
+        exit
+      endif
+      if (ierr /= 0) then
+        print *,"Not able to solve for point on triple line (solid apperance)."
+        n_sol_lines(3) = i - 1
+        exit
+      endif
       if (verbose) then
         print *,t,p
       endif
@@ -894,23 +947,56 @@ contains
       Pl(i) = p
     enddo
 
-    ! Locate triple point
-    beta = 0.0
-    iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
-         TRIPLE,ierr)
-    if (verbose) then
-      print *
-      print *,'Triple point 2 for mixture'
-      print *,'Triple point temperature (K): ',T
-      print *,'Triple point pressure    (Pa): ',p
+    if (.not. closing) then
+      ! Not all lines will be mapped:
+      n_sol_lines = (/nsol, 0, nsol, 0, 0/)
+      ! Remap
+      K=Kl(1,:)
+      t=Tl(1)
+      p=Pl(1)
+      s = nc+3
+      do i=2,nsol
+        beta = 1.0 - (1.0 - betaMin)*real(i-1)/real(nsol-1)
+        ln_spec = beta
+        iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+             VARFLUID,ierr)
+        if (ierr /= 0) then
+          print *,"Not able to solve for point on triple line (solid apperance)."
+          n_sol_lines(3) = i - 1
+          exit
+        endif
+        if (verbose) then
+          print *,t,p
+        endif
+        bl(i) = beta
+        Kl(i,:) = K
+        Tl(i) = t
+        Pl(i) = p
+      enddo
     endif
-    Ttr2 = T
-    Ptr2 = p
-    Ktr2 = K
-    Kl(nsol,:) = Ktr2
-    bl(nsol) = 0.0
-    Tl(nsol) = Ttr2
-    Pl(nsol) = Ptr2
+
+    if (closing) then
+      ! Locate triple point
+      beta = 0.0
+      iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+           TRIPLE,ierr)
+      if (verbose) then
+        print *
+        print *,'Triple point 2 for mixture'
+        print *,'Triple point temperature (K): ',T
+        print *,'Triple point pressure    (Pa): ',p
+      endif
+      Ttr2 = T
+      Ptr2 = p
+      Ktr2 = K
+      Kl(nsol,:) = Ktr2
+      bl(nsol) = 0.0
+      Tl(nsol) = Ttr2
+      Pl(nsol) = Ptr2
+    else
+      Ptr2 = Pmax
+      Ttr2 = Ttr
+    endif
 
     ! Mapping solid-gas line starting at triple point
     if (verbose) then
@@ -928,6 +1014,11 @@ contains
       call newton_extrapolate_solid(Z,t,p,betaSol,VAPPH,s,is,ln_spec,dln_s)
       iter = solidPointOnEnvelope(Z,t,p,VAPPH,betaSol,is,s,&
            ln_spec,ierr)
+      if (ierr /= 0) then
+        print *,"Not able to solve for point on sublimation line."
+        n_sol_lines(1) = i - 1
+        exit
+      endif
       tsg(i) = t
       psg(i) = p
       if (verbose) then
@@ -936,118 +1027,158 @@ contains
     enddo
 
     ! Mapping solid-liquid line starting at second triple point
-    if (verbose) then
-      print *
-      print *,'Mapping solid-liquid line'
-    endif
-    t = Ttr2
-    p = Ptr2
-    betaSol = 0.0
-    s = 2 ! Specify pressure
-    do i=1,nsol
-      pn = Ptr2 + (Pmax-Ptr2)*real(i-1)/real(nsol-1)
-      ln_spec = log(pn)
-      dln_s = ln_spec - log(p)
-      call newton_extrapolate_solid(Z,t,p,betaSol,LIQPH,s,is,ln_spec,dln_s)
-      iter = solidPointOnEnvelope(Z,t,p,LIQPH,betaSol,is,s,&
-           ln_spec,ierr)
-      tsl(i) = t
-      psl(i) = p
+    if (closing) then
       if (verbose) then
-        print *,t,p
+        print *
+        print *,'Mapping solid-liquid line'
       endif
-    enddo
-
-    if (verbose) then
-      print *,'Zero liquid line'
+      t = Ttr2
+      p = Ptr2
+      betaSol = 0.0
+      s = 2 ! Specify pressure
+      do i=1,nsol
+        pn = Ptr2 + (Pmax-Ptr2)*real(i-1)/real(nsol-1)
+        ln_spec = log(pn)
+        dln_s = ln_spec - log(p)
+        call newton_extrapolate_solid(Z,t,p,betaSol,LIQPH,s,is,ln_spec,dln_s)
+        iter = solidPointOnEnvelope(Z,t,p,LIQPH,betaSol,is,s,&
+             ln_spec,ierr)
+        if (ierr /= 0) then
+          print *,"Not able to solve for point on melting line."
+          n_sol_lines(2) = i - 1
+          exit
+        endif
+        tsl(i) = t
+        psl(i) = p
+        if (verbose) then
+          print *,t,p
+        endif
+      enddo
     endif
-    Ts(1) = Tl(1)
-    Ps(1) = Pl(1)
-    bs(1) = 0.0
-    Ks(1,:) = Kl(1,:)
-    s = nc+2
-    beta = 1.0
-    p = Ps(1)
-    t = Ts(1)
-    K = Ks(1,:)
-    betaSol = bs(1)
-    do i=2,nsol
-      ln_spec = log(Pl(i))
-      dln_s = ln_spec - log(Ps(i-1))
-      call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
-           dln_s,VARSOLID)
-      iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
-           VARSOLID,ierr)
-      if (verbose) then
-        print *,t,p, betaSol
-      endif
-      Ks(i,:) = K
-      Ts(i) = t
-      Ps(i) = p
-      bs(i) = betaSol
-    enddo
 
-    do i=nsol+1,2*nsol
+    if (closing .and. nc > 2) then
+      if (verbose) then
+        print *,'Zero liquid line'
+      endif
+      Ts(1) = Tl(1)
+      Ps(1) = Pl(1)
+      bs(1) = 0.0
+      Ks(1,:) = Kl(1,:)
+      s = nc+2
       beta = 1.0
-      pn = Ptr2 + (Pmax-Ptr2)*real(i-1-nsol)/real(nsol-1)
-      ln_spec = log(pn)
-      dln_s = ln_spec - log(Ps(i-1))
-      call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
-           dln_s,VARSOLID)
-      iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
-           VARSOLID,ierr)
-      if (verbose) then
-        print *,t,p, betaSol
-      endif
-      Ks(i,:) = K
-      Ts(i) = t
-      Ps(i) = p
-      bs(i) = betaSol
-    enddo
+      p = Ps(1)
+      t = Ts(1)
+      K = Ks(1,:)
+      betaSol = bs(1)
+      do i=2,nsol
+        ln_spec = log(Pl(i))
+        dln_s = ln_spec - log(Ps(i-1))
+        call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
+             dln_s,VARSOLID)
+        iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+             VARSOLID,ierr)
+        if (ierr /= 0) then
+          print *,"Not able to solve for point on triple line (zero liquid)."
+          n_sol_lines(4) = i - 1
+          exit
+        endif
+        if (verbose) then
+          print *,t,p, betaSol
+        endif
+        Ks(i,:) = K
+        Ts(i) = t
+        Ps(i) = p
+        bs(i) = betaSol
+      enddo
 
-    if (verbose) then
-      print *
-      print *,'Mapping vapour appearance line'
+      do i=nsol+1,2*nsol
+        beta = 1.0
+        pn = Ptr2 + (Pmax-Ptr2)*real(i-1-nsol)/real(nsol-1)
+        ln_spec = log(pn)
+        dln_s = ln_spec - log(Ps(i-1))
+        call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
+             dln_s,VARSOLID)
+        iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+             VARSOLID,ierr)
+        if (ierr /= 0) then
+          print *,"Not able to solve for point on zero liquid."
+          if (i > nsol + 1) n_sol_lines(4) = i - 1
+          exit
+        endif
+        if (verbose) then
+          print *,t,p, betaSol
+        endif
+        Ks(i,:) = K
+        Ts(i) = t
+        Ps(i) = p
+        bs(i) = betaSol
+      enddo
     endif
-    beta = 0.0
-    Ts2(1) = Ttr2
-    Ps2(1) = Ptr2
-    Ks2(1,:) = Ktr2
-    bs2(1) = 0.0
-    s = nc+2 ! Specify pressure
-    t = Ttr2
-    K = Ktr2
-    p = Ptr2
-    betaSol = 0.0
-    do i=2,nsol
-      pn = Ptr2 + (Pmax-Ptr2)*real(i-1)/real(nsol-1)
-      ln_spec = log(pn)
-      dln_s = ln_spec - log(Ps2(i-1))
-      call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
-           dln_s,VARSOLID)
-      iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
-           VARSOLID,ierr)
+
+    if (closing) then
       if (verbose) then
-        print *,t,p, betaSol
+        print *
+        print *,'Mapping vapour appearance line'
       endif
-      Ks2(i,:) = K
-      Ts2(i) = t
-      Ps2(i) = p
-      bs2(i) = betaSol
-    enddo
+      beta = 0.0
+      Ts2(1) = Ttr2
+      Ps2(1) = Ptr2
+      Ks2(1,:) = Ktr2
+      bs2(1) = 0.0
+      s = nc+2 ! Specify pressure
+      t = Ttr2
+      K = Ktr2
+      p = Ptr2
+      betaSol = 0.0
+      n_vap_line = nsol
+      exit_loop = .false.
+      do i=2,nsol
+        pn = Ptr2 + (Pmax-Ptr2)*real(i-1)/real(nsol-1)
+        ln_spec = log(pn)
+        dln_s = ln_spec - log(Ps2(i-1))
+        call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
+             dln_s,VARSOLID)
+        iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,ln_spec,&
+             VARSOLID,ierr)
+        if (ierr /= 0) then
+          print *,"Not able to solve for point on vapour appearance line."
+          n_sol_lines(5) = i - 1
+          exit
+        endif
+        if (isCriticalThreePhase(Z,K,t,p,beta,betaSol,is,tcrit,pcrit,ierr)) then
+          betaSolCrit = betaSol
+          exit_loop = .true.
+          n_vap_line = i
+        endif
+        if (verbose) then
+          print *,t,p, betaSol
+        endif
+        Ks2(i,:) = K
+        Ts2(i) = t
+        Ps2(i) = p
+        bs2(i) = betaSol
+        if (exit_loop) exit
+      enddo
+      n_sol_lines(5) = n_vap_line
+    endif
 
     if (verbose) then
       print *,'Mapping liquid-vapour line'
     endif
     beta = 1.0
     call envelopePlot(Z,Ttr,Ptr,1,beta,Pmax,nmax,&
-         Ta,Pa,Ki,betai,n,Tme=Ttr2)
+         Ta,Pa,Ki,betai,n,Tme=Ttr2,crit=critLV,&
+         dS_override=0.05)
     if (verbose) then
       do i=1,n
         print *,Ta(i),Pa(i)
       enddo
     endif
 
+    if (.not. closing) then
+      Ptr2 = 0.0
+      Ttr2 = 0.0
+    endif
     ! TODO: Map solid iso-fraction lines
     ! betaSol = 0.5*Z(is)
     ! call solveForZeroBeta(Z,Pl(i-1),Pl(i),p,t,K,betaSol,is)
@@ -1058,10 +1189,39 @@ contains
       plotEnergiesEtc = plotESV
     endif
 
+    ifile = newunit()
     open(file=trim(filename),unit=ifile)
     write(ifile,'(A)') '#Solid-liquid-gas equilibrium line plot:'
-    write(ifile,'(A,2es19.10e3)')'#Triple point 1: ',Ttr,Ptr
-    write(ifile,'(A,2es19.10e3)')'#Triple point 2: ',Ttr2,Ptr2
+    if (plotEnergiesEtc) then
+      call getESV(Ttr,Ptr,Z,1.0,0.0,is,e,ent,v,Ktr)
+      write(ifile,'(A,5es19.10e3)') '#Triple point 1: ',Ttr,Ptr,e,ent,v
+      if (Ttr2 > 0) then
+        call getESV(Ttr2,Ptr2,Z,0.0,0.0,is,e,ent,v,Ktr2)
+        point = (/Ttr2,Ptr2,e,ent,v/)
+      else
+        point = 0
+      endif
+      write(ifile,'(A,5es19.10e3)') '#Triple point 2: ', point
+      if (critLV(1) > 0)  then
+        call getESV(critLV(1),critLV(2),Z,0.0,0.0,is,e,ent,v)
+        point = (/critLV(1),critLV(2),e,ent,v/)
+      else
+        point = 0
+      endif
+      write(ifile,'(A,5es19.10e3)') '#Critical point 1: ', point
+      if (tcrit > 0)  then
+        call getESV(tcrit,pcrit,Z,0.0,betaSolCrit,is,e,ent,v)
+        point = (/tcrit,pcrit,e,ent,v/)
+      else
+        point = 0
+      endif
+      write(ifile,'(A,5es19.10e3)') '#Critical point 2: ', point
+    else
+      write(ifile,'(A,2es19.10e3)') '#Triple point 1: ',Ttr,Ptr
+      write(ifile,'(A,2es19.10e3)') '#Triple point 2: ',Ttr2,Ptr2
+      write(ifile,'(A,2es19.10e3)') '#Critical point 1: ',critLV
+      write(ifile,'(A,2es19.10e3)') '#Critical point 2: ', tcrit, pcrit
+    endif
     if (plotEnergiesEtc) then
       line = '#Tgl (K) [1]'//sep//'Pgl (Pa) [2]'//&
            sep//'egl (J/mol) [3]'//sep//'sgl (J/mol/K) [4]'//&
@@ -1081,7 +1241,7 @@ contains
            sep//'Pgls3 (Pa) [27]'//sep//'egls3 (J/mol) [28]'//&
            sep//'sgls3 (J/mol/K) [29]'//sep//'vgls3 (m3/mol) [30]'
       write(ifile,'(A)') trim(line)
-      do i=1,max(n,2*nsol)
+      do i=1,max(n,maxval(n_sol_lines))
         if (i > n) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
@@ -1089,35 +1249,35 @@ contains
           write(line,'(5es19.10e3)') Ta(i), Pa(i), e, ent, v
         endif
         mergedlines = trim(line)
-        if (i > nsol) then
+        if (i > n_sol_lines(1)) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
           call getESV(Tsg(i),Psg(i),Z,1.0,0.0,is,e,ent,v)
           write(line,'(5es19.10e3)') Tsg(i), Psg(i), e, ent, v
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > nsol) then
+        if (i > n_sol_lines(2)) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
           call getESV(Tsl(i),Psl(i),Z,0.0,0.0,is,e,ent,v)
           write(line,'(5es19.10e3)') Tsl(i), Psl(i), e, ent, v
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > nsol) then
+        if (i > n_sol_lines(3)) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
           call getESV(Tl(i),Pl(i),Z,bl(i),0.0,is,e,ent,v,Kl(i,:))
           write(line,'(5es19.10e3)') Tl(i), Pl(i), e, ent, v
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > 2*nsol) then
+        if (i > n_sol_lines(4)) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
           call getESV(Ts(i),Ps(i),Z,1.0,bs(i),is,e,ent,v,Ks(i,:))
           write(line,'(5es19.10e3)') Ts(i), Ps(i), e, ent, v
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > nsol) then
+        if (i > n_sol_lines(5)) then
           line = non // sep // non // sep // non // sep // non // sep // non
         else
           call getESV(Ts2(i),Ps2(i),Z,0.0,bs2(i),is,e,ent,v,Ks2(i,:))
@@ -1134,26 +1294,39 @@ contains
            sep//'Tgls2 (K) [9]'//sep//'Pgls2 (Pa) [10]'//&
            sep//'Tgls3 (K) [11]'//sep//'Pgls3 (Pa) [12]'
       write(ifile,'(A)') trim(line)
-      do i=1,max(n,2*nsol)
+
+      do i=1,max(n,maxval(n_sol_lines))
         if (i > n) then
           line = non // sep // non
         else
           write(line,'(2es19.10e3)') Ta(i), Pa(i)
         endif
         mergedlines = trim(line)
-        if (i > nsol) then
-          line = non // sep // non // sep // non // sep // non // sep // non // sep // non
+        if (i > n_sol_lines(1)) then
+          line = non // sep // non
         else
-          write(line,'(6es19.10e3)') Tsg(i), Psg(i), Tsl(i), Psl(i), Tl(i), Pl(i)
+          write(line,'(2es19.10e3)') Tsg(i), Psg(i)
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > 2*nsol) then
+        if (i > n_sol_lines(2)) then
+          line = non // sep // non
+        else
+          write(line,'(2es19.10e3)') Tsl(i), Psl(i)
+        endif
+        mergedlines = trim(mergedlines) // sep // trim(line)
+        if (i > n_sol_lines(3)) then
+          line = non // sep // non
+        else
+          write(line,'(2es19.10e3)') Tl(i), Pl(i)
+        endif
+        mergedlines = trim(mergedlines) // sep // trim(line)
+        if (i > n_sol_lines(4)) then
           line = non // sep // non
         else
           write(line,'(2es19.10e3)') Ts(i), Ps(i)
         endif
         mergedlines = trim(mergedlines) // sep // trim(line)
-        if (i > nsol) then
+        if (i > n_sol_lines(5)) then
           line = non // sep // non
         else
           write(line,'(2es19.10e3)') Ts2(i), Ps2(i)
@@ -1675,7 +1848,7 @@ contains
         ! Step along line to find solution
         do while (abs(dln_s) > machine_prec)
           call newton_extrapolate_threePh(Z,K,t,p,beta,betaSol,s,is,ln_spec,&
-               dln_s,VARFLUID,dln_s_max=0.25)
+               dln_s,VARFLUID,dln_s_max=0.15)
           ln_spec = log(p)
           iter = solidPointOnEnvelopeThreePh(Z,K,t,p,beta,betaSol,is,s,&
                ln_spec,VARFLUID,ierr)
@@ -1696,5 +1869,224 @@ contains
     endif
 
   end subroutine threePhaseLineTemperature
+
+  !-------------------------------------------------------------------------
+  !> Test for critical phase in equilibrim with solid phase
+  !>
+  !> \author MH, 2020-06
+  !-------------------------------------------------------------------------
+  function isCriticalThreePhase(Z,K,t,p,beta,betaSol,is,tcrit,pcrit,ierr) result(isCrit)
+    use parameters, only: LIQPH, VAPPH, nc, MINGIBBSPH
+    use eos!, only: specificvolume
+    use critical!, only: calcCriticalTV
+    implicit none
+    real, intent(out) :: t !< Temperature [K]
+    real, intent(out) :: p !< Pressure [Pa]
+    real, intent(in) :: beta !< Gas mole fraction in gas-liquid [-]
+    real, intent(inout) :: betaSol !< Solid phase fractions [-]
+    real, dimension(nc), intent(inout) :: K !< Gas liquid equilibrium constants [-]
+    real, dimension(nc), intent(in) :: Z !< Overall molar compozition [-]
+    real, intent(out) :: tcrit !< Temperature [K]
+    real, intent(out) :: pcrit !< Pressure [Pa]
+    integer, intent(in) :: is !< Solid component
+    integer, intent(out) :: ierr
+    logical :: isCrit
+    ! Locals
+    real :: K1max, betaSolCrit
+
+    isCrit = .false.
+    K1max = maxval(abs(K-1))
+    if (K1max < 5.0e-4) then
+      ! Look for critical point
+      isCrit = .true.
+      ! MH: Should distinguish between critical points and azeotropes
+      tcrit = t
+      pcrit = p
+      betaSolCrit = betaSol
+      call threePhaseCriticalPoint(tcrit,pcrit,Z,betaSolCrit,is,ierr)
+      if (ierr /= 0) then
+        t = tcrit
+        p = pcrit
+        betaSol = betaSolCrit
+        K = 1.0
+      else
+        tcrit = -1.0
+        pcrit = -1.0
+        betaSolCrit = -1.0
+      endif
+    endif
+  end function isCriticalThreePhase
+
+  !-------------------------------------------------------------------------
+  !> Get critical point ending triple line/area
+  !>
+  !> \author MH, 2017-12
+  !-------------------------------------------------------------------------
+  subroutine threePhaseCriticalPoint(tcrit,pcrit,Z,betaSol,is,ierr)
+    use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
+         NS_PEGASUS
+    use parameters, only: nc
+    use eosTV, only: pressure
+    use critical!, only: calcCriticalTV
+    implicit none
+    real, intent(inout) :: betaSol !< Solid phase fractions [-]
+    real, dimension(nc), intent(in) :: Z !< Overall molar compozition [-]
+    real, intent(inout) :: tcrit !< Temperature [K]
+    real, intent(inout) :: pcrit !< Pressure [Pa]
+    integer, intent(in) :: is !< Solid component
+    integer, intent(out) :: ierr
+    ! Locals
+    type(nonlinear_solver) :: solver
+    real, dimension(nc+3) :: param
+    real :: localZstar(nc), dbeta
+    real :: betaSolMin, betaSolMax, funMin, funMax, vcrit
+    integer :: i
+    integer, parameter :: nbeta = 25
+    !
+    if (is < 1 .or. is > nc) then
+      call stoperror('threePhaseCriticalPoint: Solid component index is out of bounds')
+    endif
+    ierr = 0
+
+    ! Generate initial volume
+    localZstar = Z
+    localZstar(is) = Z(is) - betaSol
+    ! Normalize
+    localZstar = localZstar/(1.0-betaSol)
+    !call specificVolume(tcrit,pcrit,localZstar,ph,vcrit)
+    !print *,vcrit
+    ! Set param vector
+    param(1:nc) = Z
+    !param(nc+1) = tcrit
+    !param(nc+2) = vcrit
+    param(nc+3) = real(is)
+
+    ! Get search range
+    betaSolMin = max(0.0,betaSol - 0.05)
+    funMin = criticalError(betaSolMin,param)
+    dbeta = (Z(is)*(1.0-1.0e-7) - betaSol)/(nbeta-1)
+    do i=1,nbeta
+      betaSolMax = betaSol + dbeta*real(i-1)
+      funMax = criticalError(betaSolMax,param)
+      if (funMin*funMax < 0.0) exit
+    enddo
+
+    if (funMin*funMax > 0.0) then
+      ! Not able to locate critical point
+      ierr = 1
+      return
+    endif
+
+    ! Locate critical point
+    solver%abs_tol = 1.0e-6
+    solver%max_it = 1000
+    solver%isolver = NS_PEGASUS
+    call bracketing_solver(betaSolMin,betaSolMax,criticalError,betaSol,&
+         solver,param)
+
+    ! Check for successful convergence
+    if (solver%exitflag /= 0) then
+      if (verbose) then
+        print *, "Bracketing solver for critical point"
+        print *, "ending triple line/area failed."
+      endif
+      ierr = solver%exitflag
+      return
+    endif
+
+    ! Get results
+    localZstar = Z
+    localZstar(is) = Z(is) - betaSol
+    ! Normalize
+    localZstar = localZstar/(1.0-betaSol)
+    tcrit = -1.0
+    vcrit = -1.0
+    call calcCriticalTV(tcrit,vcrit,localZstar,ierr,1.0e-8)
+    !tcrit = param(nc+1)
+    !vcrit = param(nc+2)
+    pcrit = pressure(tcrit,vcrit,localZstar)
+  end subroutine threePhaseCriticalPoint
+
+  !-----------------------------------------------------------------------------
+  !> Function used to solve for critical point ending three phase line/area
+  !>
+  !> \author MH 2017-12
+  !-----------------------------------------------------------------------------
+  function criticalError(betaSol,param) result(fun)
+    use critical, only: calcCriticalTV
+    use eosTV, only: pressure
+    use solideos, only: solid_thermo
+    use eos, only: thermo
+    implicit none
+    real, intent(in) :: betaSol
+    real, dimension(nc+3), intent(inout) :: param
+    real :: fun
+    ! Locals:
+    real :: tcrit, vcrit, pcrit, lnfug(nc), lnfugs
+    real :: localZstar(nc), Zs(nc), Z(nc)
+    integer :: ierr, is
+    Z = param(1:nc)
+    vcrit = param(nc+1)
+    tcrit = param(nc+2)
+    is = int(param(nc+3))
+    localZstar = Z
+    localZstar(is) = Z(is) - betaSol
+    ! Normalize
+    localZstar = localZstar/(1.0-betaSol)
+    tcrit = -1.0
+    vcrit = -1.0
+    call calcCriticalTV(tcrit,vcrit,localZstar,ierr,1.0e-8)
+    if (debug) then
+      print *,"calcCriticalTV ierr",ierr
+    endif
+    param(nc+1) = vcrit
+    param(nc+2) = tcrit
+    pcrit = pressure(tcrit,vcrit,localZstar)
+    call thermo(tcrit,pcrit,localZstar,LIQPH,lnfug,v=vcrit)
+    Zs = 0.0
+    Zs(is) = 1.0
+    call solid_thermo(tcrit,pcrit,Zs,lnfugs)
+    fun = lnfugs-lnfug(is)-log(localZstar(is))
+  end function criticalError
+
+  !-------------------------------------------------------------------------
+  !> Get critical point ending triple line/area
+  !> Used for debugging
+  !> \author MH, 2017-12
+  !-------------------------------------------------------------------------
+  subroutine printCriticalRange(Z,betaSolMin,betaSolMax,is)
+    use parameters, only: nc
+    use eosTV, only: pressure
+    use critical, only: calcCriticalTV
+    implicit none
+    real, intent(in) :: betaSolMin, betaSolMax !< Solid phase fractions [-]
+    real, dimension(nc), intent(in) :: Z !< Overall molar compozition [-]
+    integer, intent(in) :: is !< Solid component
+    ! Locals
+    real :: localZstar(nc)
+    real :: vcrit, betaSol
+    real :: tcrit !< Temperature [K]
+    real :: pcrit !< Pressure [Pa]
+    integer :: i, n, ierr
+    !
+    if (is < 1 .or. is > nc) then
+      call stoperror('printCriticalRange: Solid component index is out of bounds')
+    endif
+
+    n = 1000
+    do i=1,n
+      betaSol = betaSolMin + (betaSolMax-betaSolMin)*real(i-1)/real(n-1)
+      ! Generate initial volume
+      localZstar = Z
+      localZstar(is) = Z(is) - betaSol
+      ! Normalize
+      localZstar = localZstar/(1.0-betaSol)
+      tcrit = -1.0
+      vcrit = -1.0
+      call calcCriticalTV(tcrit,vcrit,localZstar,ierr,1.0e-8)
+      pcrit = pressure(tcrit,vcrit,localZstar)
+      print *,ierr,tcrit,pcrit
+    enddo
+  end subroutine printCriticalRange
 
 end module solid_saturation
