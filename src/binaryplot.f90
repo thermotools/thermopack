@@ -62,20 +62,35 @@ module binaryPlot
        BP_TERM_TMIN = 3, BP_TERM_CRIT = 4, BP_TERM_SINGLE = 5, &
        BP_TERM_ERR = 6, BP_TERM_NPOINT = 7, BP_TERM_TPD = 8
   integer, parameter :: BCL_PMAX = 1, BCL_PURE_C2 = 2, BCL_PURE_C1 = 3
+  integer , parameter :: char_term_len = 15
   public :: binaryXY, fillX, binaryXYfun
   public :: map_binary_envelope, binaryXYarray
   public :: binaryPxy, binaryTxy, maxPoints
   public :: VLLEBinaryXY, TSPEC, PSPEC, binaryAbsTol
   public :: global_binary_plot, BP_TERM_ERR
   public :: LLVE_TV_sensitivity, LLVEpointTV, binary_is_stable
-  public :: getPropFromX_LLVE, setX_LLVE
+  public :: getPropFromX_LLVE, setX_LLVE, get_BP_TERM
   !
 contains
 
-  !-----------------------------------------7-----------------------------
+  !----------------------------------------------------------------------
+  subroutine get_BP_TERM(iTerm, charTerm)
+    integer, intent(in) :: iTerm
+    character(len=*), intent(out) :: charTerm
+    if (len(charTerm) >= char_term_len) then
+      charTerm = print_BP_TERM(iTerm)
+      print *,charterm
+      print *,len(charTerm)
+    else
+      charTerm = ""
+      print *,"get_BP_TERM: character variable too short"
+    endif
+  end subroutine get_BP_TERM
+
+  !----------------------------------------------------------------------
   function print_BP_TERM(iTerm) result(charTerm)
     integer, intent(in) :: iTerm
-    character(len=15) :: charTerm
+    character(len=char_term_len) :: charTerm
     select case(iTerm)
     case(BP_TERM_NONE)
       charTerm = "BP_TERM_NONE"
@@ -100,7 +115,7 @@ contains
     end select
   end function print_BP_TERM
 
-  !-----------------------------------------7-----------------------------
+  !----------------------------------------------------------------------
   subroutine binaryXY(T,P,x,y,ispec,Tmin,Pmax,dzmax,filename,&
        dlns_max_override,phase,ispecStep0,dlns0,Pmin,calcvolumes)
     ! Dump x/y,P/T to file (filename)
@@ -2575,6 +2590,12 @@ contains
       XX(10) = log(T)
       param(3) = p
       param(2) = 12
+    else if (ispec == 14) then
+      if (abs(y(1) - x(1)) < abs(y(1) - w(1))) then
+        param(3) = 1
+      else
+        param(3) = 3
+      endif
     else
       param(3) = XX(ispec)
     endif
@@ -2635,7 +2656,7 @@ contains
     real, dimension(nc) :: lnfx, lnfy, lnfw, x, y, w
     real :: vx, vy, vw, Px, Py, Pw
     real :: T, P
-    integer :: is
+    integer :: is, ix
 
     x = exp(XX(1:2))
     w = exp(XX(3:4))
@@ -2675,6 +2696,9 @@ contains
       G(10) = y(1) - x(1) - 2*param(3)
     else if (is == 12) then
       G(10) = (Px-param(3))/P
+    else if (is == 14) then
+      ix = nint(param(3))
+      G(10) = XX(5) - XX(ix)
     endif
 
   end subroutine llve_TV_fun_newton
@@ -2699,7 +2723,7 @@ contains
     real, dimension(nc) :: lnfxv, lnfwv, lnfyv
     real, dimension(nc) :: Pxn, Pwn, Pyn
     real :: T, P
-    integer :: is
+    integer :: is, ix
 
     x = exp(XX(1:2))
     w = exp(XX(3:4))
@@ -2767,6 +2791,10 @@ contains
       Jac(10,1:2) = Jac(1,1:2)
       Jac(10,7) = Jac(1,7)
       Jac(10,10) = T*PxT/P
+    else if (is == 14) then
+      ix = nint(param(3))
+      Jac(10,5) = 1
+      Jac(10,ix) = -1
     endif
 
   end subroutine llve_TV_diff_newton
@@ -3631,13 +3659,17 @@ contains
     ! Locals
     type(criticalLine) :: critlineC2, critlineHP, critlineC1
     type(VLLE_Line) :: lVLLE_C2, lVLLE_HP, lVLLE_C1
-    type(aep), target :: paep1, paep2, caep_C2, caep_HP, caep_C1, haep_C2, haep_HP, haep_C1
-    type(aep), pointer :: p_paep1, p_paep2, p_caep_C2, p_caep_HP, p_caep_C1, p_haep_C2, p_haep_HP, p_haep_C1
-    type(azeotropicLine) :: azLine_C2
+    integer, parameter :: CAEP_C2=1, CAEP_HP=2, CAEP_C1=3, PAEP1=4, PAEP2=5
+    integer, parameter :: HAEP_C1=7, HAEP_HP=6, HAEP_C2=8, NAEPS = 8
+    type aep_pointer
+      type(aep), pointer :: p_aep
+    end type aep_pointer
+    type(aep_pointer) :: aeps(NAEPS)
+    type(azeotropicLine) :: azLine(NAEPS)
     integer :: iTermC2, iTermHP, iTermC1
     integer :: iTermLLV_C2, iTermLLV_HP, iTermLLV_C1
     real :: Zc(nc), Pc, Tc, vc
-    integer :: type, n1, n2, i, n
+    integer :: type, n1, n2, i, n, k
     real :: y1(nc), vy1, y2(nc), vy2, yHP(nc), vyHP
     integer, parameter :: nmax = 1000
     real :: Ta1(nmax), Pa1(nmax), Ta2(nmax), Pa2(nmax), vla1(nmax)
@@ -3650,31 +3682,14 @@ contains
 
     ! Initialize azeotropic end points
     if (incAZ) then
-      paep1%found = .false.
-      paep2%found = .false.
-      caep_C2%found = .false.
-      caep_HP%found = .false.
-      caep_C1%found = .false.
-      haep_C2%found = .false.
-      haep_HP%found = .false.
-      haep_C1%found = .false.
-      p_paep1 => paep1
-      p_paep2 => paep2
-      p_caep_C2 => caep_C2
-      p_caep_HP => caep_HP
-      p_caep_C1 => caep_C1
-      p_haep_C2 => haep_C2
-      p_haep_HP => haep_HP
-      p_haep_C1 => haep_C1
+      do i=1,NAEPS
+        allocate(aeps(i)%p_aep)
+        aeps(i)%p_aep%found = .false.
+      enddo
     else
-      p_paep1 => NULL()
-      p_paep2 => NULL()
-      p_caep_C2 => NULL()
-      p_caep_HP => NULL()
-      p_caep_C1 => NULL()
-      p_haep_C2 => NULL()
-      p_haep_HP => NULL()
-      p_haep_C1 => NULL()
+      do i=1,NAEPS
+        aeps(i)%p_aep => NULL()
+      enddo
     endif
 
     print *,"Mapping global phase diagram for binary system"
@@ -3682,7 +3697,8 @@ contains
     iTermHP = BP_TERM_NONE
     iTermC1 = BP_TERM_NONE
     ! Loop all critical lines
-    call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PURE_C2,iTermC2,critlineC2,y2,vy2,p_caep_C2)
+    call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PURE_C2,iTermC2,&
+         critlineC2,y2,vy2,aeps(CAEP_C2)%p_aep)
     if (iTermC2 == BP_TERM_ERR) then
       iTermination = BP_TERM_ERR
       return
@@ -3692,11 +3708,13 @@ contains
     if (iTermC2 /= BP_TERM_PMAX) then
       if (high_pressure_critical_point(Pc,Tc,Zc,Tmin,Tmax)) then
         call specificvolume(Tc,Pc,Zc,LIQPH,vc)
-        call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PMAX,iTermHP,critlineHP,yHP,vyHP,p_caep_HP)
+        call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PMAX,iTermHP,&
+             critlineHP,yHP,vyHP,aeps(CAEP_HP)%p_aep)
       endif
     endif
     if (iTermC2 /= BP_TERM_SINGLE) then
-      call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PURE_C1,iTermC1,critlineC1,y1,vy1,p_caep_C1)
+      call loop_critical_line(Pmin,Pmax,Tmin,Pc,Tc,Zc,vc,BCL_PURE_C1,iTermC1,&
+           critlineC1,y1,vy1,aeps(CAEP_C1)%p_aep)
     endif
 
     ! Classify according to Scott and Konynemburg
@@ -3721,7 +3739,7 @@ contains
       return
     end select
 
-    print *,"type: ",type
+    print *,"van Konynenburg and Scott type: ",type
     print *,"Critical lines:"
     print *,"iTermHP: ",trim(print_BP_TERM(iTermHP))
     print *,"iTermC1: ",trim(print_BP_TERM(iTermC1))
@@ -3735,19 +3753,19 @@ contains
       n = critlineHP%get_n_points()
       call lVLLE_HP%push_back(critlineHP%Tc(n),critlineHP%Pc(n),critlineHP%Zc(n,:),&
            yHP,critlineHP%Zc(n,:),critlineHP%vc(n),vyHP,critlineHP%vc(n))
-      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_HP,lVLLE_HP,p_haep_HP)
+      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_HP,lVLLE_HP,aeps(HAEP_HP)%p_aep)
     endif
     if (iTermC1 == BP_TERM_TPD) then
       n = critlineC1%get_n_points()
       call lVLLE_C1%push_back(critlineC1%Tc(n),critlineC1%Pc(n),critlineC1%Zc(n,:),&
            y1,critlineC1%Zc(n,:),critlineC1%vc(n),vy1,critlineC1%vc(n))
-      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_C1,lVLLE_C1,p_haep_C1)
+      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_C1,lVLLE_C1,aeps(HAEP_C1)%p_aep)
     endif
     if (iTermC2 == BP_TERM_TPD) then
       n = critlineC2%get_n_points()
       call lVLLE_C2%push_back(critlineC2%Tc(n),critlineC2%Pc(n),critlineC2%Zc(n,:),&
            y2,critlineC2%Zc(n,:),critlineC2%vc(n),vy2,critlineC2%vc(n))
-      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_C2,lVLLE_C2,p_haep_C2)
+      call loop_LLVE_line(Tmin,Pmin,Pmax,iTermLLV_C2,lVLLE_C2,aeps(HAEP_C2)%p_aep)
     endif
     print *,"LLVE lines:"
     print *,"iTermHP: ",trim(print_BP_TERM(iTermLLV_HP))
@@ -3758,7 +3776,8 @@ contains
     Zc = (/1.0, 0.0/)
     Tc = 0.0
     Pc = Pmin
-    call singleCompSaturation(Zc,Tc,Pc,specP,Ta1,Pa1,nmax,n1,maxDeltaP=0.25e5,paep=p_paep1)
+    call singleCompSaturation(Zc,Tc,Pc,specP,Ta1,Pa1,nmax,n1,maxDeltaP=0.25e5,&
+         paep=aeps(PAEP1)%p_aep)
     do i=1,n1
       call specificvolume(Ta1(i),Pa1(i),Zc,LIQPH,vla1(i))
       call specificvolume(Ta1(i),Pa1(i),Zc,VAPPH,vva1(i))
@@ -3766,50 +3785,124 @@ contains
     Zc = (/0.0, 1.0/)
     Tc = 0.0
     Pc = Pmin
-    call singleCompSaturation(Zc,Tc,Pc,specP,Ta2,Pa2,nmax,n2,maxDeltaP=0.25e5,paep=p_paep2)
+    call singleCompSaturation(Zc,Tc,Pc,specP,Ta2,Pa2,nmax,n2,maxDeltaP=0.25e5,&
+         paep=aeps(PAEP2)%p_aep)
     do i=1,n2
       call specificvolume(Ta2(i),Pa2(i),Zc,LIQPH,vla2(i))
       call specificvolume(Ta2(i),Pa2(i),Zc,VAPPH,vva2(i))
     enddo
 
     if (incAZ) then
-      if (paep1%found) then
-        print *,"paep1%found"
-      endif
-      if (paep2%found) then
-        print *,"paep2%found"
-      endif
-      if (caep_C2%found) then
-        print *,"caep_C2%found"
-        !call caep_C2%print()
-        call loop_azeotropic_line(Pmin,Pmax,Tmin,caep_C2,iTermination,azline_C2)
-        print *,"iTermination",trim(print_BP_TERM(iTermination))
-      endif
-      if (caep_C1%found) then
-        print *,"caep_C1%found"
-      endif
-      if (caep_HP%found) then
-        print *,"caep_HP%found"
-      endif
-      if (haep_C2%found) then
-        print *,"haep_C2%found"
-      endif
-      if (haep_C1%found)  then
-        print *,"haep_C1%found"
-      endif
-      if (haep_HP%found) then
-        print *,"haep_HP%found"
+      print *,"Azeotropic end points located:"
+      n = 0
+      do i=1,NAEPS
+        if (aeps(i)%p_aep%found) then
+          print *,trim(print_AEP(i))
+          n = n + 1
+        endif
+      enddo
+      if (n == 0) then
+        print *,"NONE"
+      else
+        print *,"Azeotropic lines:"
+        do i=1,NAEPS
+          if (aeps(i)%p_aep%found) then
+            print *,trim(print_AEP(i))
+            !call aeps(i)%p_aep%print()
+            call loop_azeotropic_line(Pmin,Pmax,Tmin,aeps(i)%p_aep,iTermination,azLine(i))
+            print *,"iTermination: ",trim(print_BP_TERM(iTermination))
+            if (iTermination == BP_TERM_CRIT) then
+              do k=i,CAEP_C1
+                if (aeps(k)%p_aep%found) then
+                  if (az_line_endpoint_is_aep(azLine(i), aeps(k)%p_aep, reltol=5.0e-2)) then
+                    aeps(k)%p_aep%found = .false. ! Disable running AZ line form this point
+                    ! Write correct CAEP to line
+                    call write_aep_to_az_line_endpoint(azLine(i), aeps(k)%p_aep)
+                  endif
+                endif
+              enddo
+            else if (iTermination == BP_TERM_SINGLE .or. &
+                 iTermination == BP_TERM_TPD) then
+              do k=i,NAEPS
+                if (aeps(k)%p_aep%found) then
+                  if (az_line_endpoint_is_aep(azLine(i), aeps(k)%p_aep, reltol=1.0e-5)) then
+                    aeps(k)%p_aep%found = .false. ! Disable running AZ line form this point
+                  endif
+                endif
+              enddo
+            endif
+          endif
+        enddo
       endif
     endif
     !stop
     ! Dump data to file
     call dump_global_plot_to_file()
   contains
+    function az_line_endpoint_is_aep(azLn, xaep, reltol) result(isSamePoint)
+      use utilities, only: is_numerically_equal
+      type(aep), intent(in) :: xaep
+      type(azeotropicLine), intent(in) :: azLn
+      real, intent(in) :: reltol
+      logical :: isSamePoint
+      ! Locals
+      integer :: n
+      n = azLn%get_n_points()
+      ! print *,azLn%T(n),xaep%t,is_numerically_equal(azLn%T(n),xaep%t,xaep%t*reltol)
+      ! print *,azLn%vg(n),xaep%vg,is_numerically_equal(azLn%vg(n),xaep%vg,xaep%vg*reltol)
+      ! print *,azLn%vl(n),xaep%vl,is_numerically_equal(azLn%vl(n),xaep%vl,xaep%vl*reltol)
+      ! print *,azLn%p(n),xaep%p,is_numerically_equal(azLn%p(n),xaep%p,xaep%p*reltol)
+      ! print *,azLn%z(n,1),xaep%x(1),is_numerically_equal(azLn%z(n,1),xaep%x(1),reltol)
+      isSamePoint = (is_numerically_equal(azLn%T(n),xaep%t,xaep%t*reltol) .and. &
+           is_numerically_equal(azLn%vg(n),xaep%vg,xaep%vg*reltol) .and. &
+           is_numerically_equal(azLn%vl(n),xaep%vl,xaep%vl*reltol) .and. &
+           is_numerically_equal(azLn%p(n),xaep%p,xaep%p*reltol) .and. &
+           is_numerically_equal(azLn%z(n,1),xaep%x(1),reltol))
+    end function az_line_endpoint_is_aep
+
+    subroutine write_aep_to_az_line_endpoint(azLn, xaep)
+      type(aep), intent(in) :: xaep
+      type(azeotropicLine), intent(inout) :: azLn
+      ! Locals
+      integer :: n
+      n = azLn%get_n_points()
+      azLn%T(n) = xaep%t
+      azLn%vg(n) = xaep%vg
+      azLn%vl(n) = xaep%vl
+      azLn%p(n) = xaep%p
+      azLn%z(n,:) = xaep%x(:)
+    end subroutine write_aep_to_az_line_endpoint
+
+    function print_AEP(iAEP) result(charAEP)
+      integer, intent(in) :: iAEP
+      character(len=15) :: charAEP
+      select case(iAEP)
+      case(CAEP_C2)
+        charAEP = "CAEP_C2"
+      case(CAEP_HP)
+        charAEP = "CAEP_HP"
+      case(CAEP_C1)
+        charAEP = "CAEP_C1"
+      case(PAEP1)
+        charAEP = "PAEP1"
+      case(PAEP2)
+        charAEP = "PAEP2"
+      case(HAEP_C2)
+        charAEP = "HAEP_C2"
+      case(HAEP_HP)
+        charAEP = "HAEP_HP"
+      case(HAEP_C1)
+        charAEP = "HAEP_C1"
+      case default
+        call stoperror("print_AEP: Wrong iAEP")
+      end select
+    end function print_AEP
+
     subroutine dump_global_plot_to_file()
       use utilities, only: newunit
       use parameters, only: clen
       !
-      integer :: i, nLines, ifile, nCols, nCritLines, nLLVE, nAZ
+      integer :: i, k, nLines, ifile, nCols, nCritLines, nLLVE, nAZ
       character(len=clen) :: binaryline, mergedline
       character(len=*), parameter :: sep = '  '
       character(len=*), parameter :: nod = 'NaN'
@@ -3864,13 +3957,15 @@ contains
         write(n_str, "(I2)") nCols
         mergedline = trim(mergedline)//", T_C1, P_C1, vx_C1, vw_C1, vy_C1, x_C1, w_C1, y_C1 ("//n_str//")"
       endif
-      if (azLine_C2%get_n_points() > 0) then
-        nAZ = nAZ + 1
-        nCols = nCols + 5
-        nLines = max(nLines,azLine_C2%get_n_points())
-        write(n_str, "(I2)") nCols
-        mergedline = trim(mergedline)//", T_AZC2, P__AZC2, vl_AZC2, vg_AZC2, x_AZC2 ("//n_str//")"
-      endif
+      do k=1,NAEPS
+        if (azLine(k)%get_n_points() > 0) then
+          nAZ = nAZ + 1
+          nCols = nCols + 5
+          nLines = max(nLines,azLine(k)%get_n_points())
+          write(n_str, "(I2)") nCols
+          mergedline = trim(mergedline)//", T_AZC2, P__AZC2, vl_AZC2, vg_AZC2, x_AZC2 ("//n_str//")"
+        endif
+      enddo
       ! Dump data to file
       ifile = newunit()
       open(unit=ifile,file=trim(filename))
@@ -3952,15 +4047,17 @@ contains
           endif
           mergedline = trim(mergedline) // sep // trim(binaryline)
         endif
-        if (azLine_C2%get_n_points() > 0) then
-          if (i > azLine_C2%get_n_points()) then
-            binaryline = empty // sep // nod
-          else
-            write(binaryline,'(5es19.10e3)') azLine_C2%T(i), azLine_C2%P(i), &
-                 azLine_C2%vl(i), azLine_C2%vg(i), azLine_C2%z(i,1)
+        do k=1,NAEPS
+          if (azLine(k)%get_n_points() > 0) then
+            if (i > azLine(k)%get_n_points()) then
+              binaryline = empty // sep // nod
+            else
+              write(binaryline,'(5es19.10e3)') azLine(k)%T(i), azLine(k)%P(i), &
+                   azLine(k)%vl(i), azLine(k)%vg(i), azLine(k)%z(i,1)
+            endif
+            mergedline = trim(mergedline) // sep // trim(binaryline)
           endif
-          mergedline = trim(mergedline) // sep // trim(binaryline)
-        endif
+        enddo
         ! Write line to file
         write(ifile,'(A)') trim(mergedline)
       enddo
@@ -4265,7 +4362,7 @@ contains
           dxvl = XX(i_liq)-XX(i_vap)
           if (dxvl*dxvl_old < 0) then
             ! Search for HAEP
-            call solve_for_haep(X(s),XXold,dXds*sgn,s,i_vap,i_liq,haep,ierr)
+            call solve_for_haep(XXold,XX,s,i_vap,i_liq,haep,ierr)
           endif
           dxvl_old = dxvl
         endif
@@ -4372,36 +4469,31 @@ contains
     XX(10) = log(T)
   end subroutine setX_LLVE
 
-  subroutine solve_for_haep(XXs,XXold,dXXds,s,i_vap,i_liq,haep,ierr)
+  subroutine solve_for_haep(XXold,XXcurrent,s,i_vap,i_liq,haep,ierr)
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver, NS_PEGASUS
     use saturation_curve, only: aep
     integer, intent(in) :: s,i_vap,i_liq
-    real, intent(in) :: XXs, XXold(10), dXXds(10) !<
+    real, intent(in) :: XXold(10), XXcurrent(10) !<
     type(aep), intent(inout) :: haep
     integer, intent(out) :: ierr          ! error flag
     ! Locals
     real, parameter :: tol = 1.0e-6
-    real :: XXs_min, XXs_max, param(23), XXs_var, XX(10), ds
+    real :: s_min, s_max, param(23), XX(10), ds
     real :: T,P,vx,vw,vy,x(2),w(2),y(2)
     type(nonlinear_solver) :: solver_cfg
     param(1:10) = XXold
-    param(11:20) = dXXds
+    param(11:20) = XXcurrent - XXold
     param(21) = real(s)
     param(22) = real(i_vap)
     param(23) = real(i_liq)
-    if (XXs > XXold(s)) then
-      XXs_min = XXold(s)
-      XXs_max = XXs
-    else
-      XXs_min = XXs
-      XXs_max = XXold(s)
-    endif
-        ! Configure solver
+    s_min = 0
+    s_max = 1
+    ! Configure solver
     solver_cfg%abs_tol = tol
     solver_cfg%max_it = 1000
     solver_cfg%isolver = NS_PEGASUS
     ! Find f=0 inside the bracket.
-    call bracketing_solver(XXs_min,XXs_max,fun_haep,XXs_var,solver_cfg,param)
+    call bracketing_solver(s_min,s_max,fun_haep,ds,solver_cfg,param)
     ! Check for successful convergence
     if (solver_cfg%exitflag /= 0) then
       if (verbose) write(*,*) "HAEP: Bracketing solver failed."
@@ -4410,8 +4502,7 @@ contains
     else
       ierr = 0
       haep%found = .true.
-      ds = XXs_var - XXold(s)
-      XX = XXold + dXXds*ds
+      XX = XXold + param(11:20)*ds
       call getPropFromX_LLVE(XX,T,vx,vw,vy,x,w,y)
       call LLVEpointTV(P,T,vx,vw,vy,x,w,y,s,ierr)
       haep%x = exp(XX(i_vap:i_vap+1))
@@ -4435,19 +4526,19 @@ contains
 
   end subroutine solve_for_haep
 
-  function fun_haep(XXs,param) result(f)
+  function fun_haep(ds,param) result(f)
     ! Objective function for x(1) - y(1) = 0
     !
     implicit none
     ! Input:
-    real,     intent(in)  :: XXs !<
+    real,     intent(in)  :: ds !<
     real,     intent(in)  :: param(23) !< Parameters
     ![i_pure,i_insip,T_guess]
     ! Output:
     real                  :: f !< s_sat - sspec
     ! Internal:
     integer :: s,i_vap,i_liq,ierr
-    real :: XX(10), XXold(10), dXXds(10), ds
+    real :: XX(10), XXold(10), dXXds(10)
     real :: T,P,vx,vw,vy,x(2),w(2),y(2)
     ! Read from param
     XXold = param(1:10)
@@ -4457,7 +4548,6 @@ contains
     i_liq = nint(param(23))
 
     ! Extrapolate state
-    ds = XXs - XXold(s)
     XX = XXold + dXXds*ds
     call getPropFromX_LLVE(XX,T,vx,vw,vy,x,w,y)
     call LLVEpointTV(P,T,vx,vw,vy,x,w,y,s,ierr)
@@ -4478,6 +4568,7 @@ contains
          calcCriticalTV
     use eosTV, only: pressure
     use saturation_curve, only: aep,AZ_PAEP,AZ_CAEP,AZ_HAEP
+    use numconstants, only: small
     implicit none
     type(aep), intent(in) :: xaep
     integer, intent(out) :: iTermination
@@ -4488,10 +4579,10 @@ contains
     integer :: s, ierr, smax, iter, i, ic
     real :: ds, X(4), Xold(4), dXds(4), sgn, Pmax_term
     real :: Z(nc), P, T, vg, vl
-    !real, dimension(nc) ::tci, pci, oi
+    real :: vg_ext, vl_ext
     real, parameter :: dzLim = 0.02
     real, parameter :: tuning = 1.2, ds_min = 0.001, ds_max = 0.005
-
+    integer, parameter :: SIG_CAEP = -101010
     ! Copy state
     Z = xaep%x
     P = xaep%P
@@ -4504,19 +4595,22 @@ contains
     Xold = X
     select case(xaep%type)
     case (AZ_PAEP)
-      stop "AZ_PAEP"
-      ! Pmax_term = max(Pmax, P0)
-      ! s = 4
-      ! Tc = T0
-      ! vc = v0
-      ! Pc = P0
-      ! Zc = Z0
-      ! call setXaz(Tc,vc,Zc,Pc,X)
-      ! ierr = 0
-      ! iTermination = addPoint()
-      ! if (iTermination /= BP_TERM_NONE) return
-      ! sgn = -1.0
-      ! ds = 0.02
+      s = 2
+      if (abs(Z(1)- 1) < small) then
+        Z(1) = 0.995
+      else
+        Z(1) = 0.005
+      endif
+      Z(2) = 1 - Z(1)
+      call calcAzeotropicPoint(t,vg,vl,P,Z,s,ierr,tol)
+      iTermination = addPoint()
+      if (iTermination /= BP_TERM_NONE) return
+      call setXaz(T,vg,vl,Z,X,ic)
+      call azSensitivity(1,X,dXdS,s,ierr)
+      s = maxloc(abs(dXdS),dim=1)
+      sgn = sign(1.0,X(s) - Xold(s))
+      ds = ds_min
+      Pmax_term = Pmax
     case (AZ_CAEP)
       s = 0
       vg = 1.01*vg
@@ -4532,7 +4626,7 @@ contains
       ds = ds_min
       Pmax_term = Pmax
     case (AZ_HAEP)
-     stop "AZ_HAEP"
+     stop "Should not be required to start from AZ_HAEP"
    case default
      stop "Unknown AEP"
     end select
@@ -4550,6 +4644,8 @@ contains
       endif
       Xold = X
       X = Xold + dXdS*dS*sgn
+      vl_ext = exp(X(3))
+      vg_ext = exp(X(4))
       if (X(2) < dzLim .and. dXdS(2)*sgn < 0.0) then
         s = 2
         if (X(2) < 0.0) then
@@ -4586,6 +4682,23 @@ contains
         if (iTermination /= BP_TERM_NONE) return
         iTermination = BP_TERM_TMIN
         return
+      else if (vg_ext < vl_ext .or. &
+           (vg_ext/vl_ext < 1.1 .and. vg_ext/vl_ext < vg/vl) ) then
+        ! Approaching critical point
+        if (vg_ext/vl_ext < 1.02) then
+          ! Solve for CAEP
+          ! Extrapolate to vg/vl=1
+          ds = (Xold(3) - Xold(4))/(dXdS(4) - dXdS(3))/sgn
+          X = Xold + dXdS*dS*sgn
+          call getPropFromXaz(X,T,vg,vl,Z,ic)
+          ierr = SIG_CAEP ! Signal CAEP
+          iTermination = addPoint()
+          iTermination = BP_TERM_CRIT
+          return
+        else
+          ! Specify vg/vl
+          s = 0
+        endif
       endif
       call getPropFromXaz(X,T,vg,vl,Z,ic)
       call calcAzeotropicPoint(t,vg,vl,P,Z,s,ierr,tol,iter=iter)
@@ -4615,21 +4728,24 @@ contains
   contains
     function addPoint() result(iTerm)
       integer :: iTerm
+      ! Locals
+      real :: xl2(nc), vl2, xl(nc)
       if (ierr /= 0) then
         iTerm = BP_TERM_ERR
       else
         iTerm = BP_TERM_NONE
+        if (ierr /= SIG_CAEP) then ! Signal CAEP
+          if (.not. az_is_stable(T,P,Z,xl2,vl2)) then
+            iTerm = BP_TERM_TPD
+            xl = Z
+            call LLVEpointTV(P,T,vl,vl2,vg,xl,xl2,Z,ispec=14,ierr=ierr)
+            if (ierr /= 0) then
+              iTerm = BP_TERM_ERR
+              return
+            endif
+          endif
+        endif
       endif
-      ! if (.not. binary_is_stable(Tc,Pc,Zc,y,vy)) then
-      !   call calcCriticalEndPoint(Tc,vc,Zc,y,vy,ierr,tol)
-      !   Pc = pressure(Tc,vc,Zc)
-      !   if (ierr /= 0) then
-      !     iTerm = BP_TERM_ERR
-      !     return
-      !   else
-      !     iTerm = BP_TERM_TPD
-      !   endif
-      ! endif
       if (iTerm /= BP_TERM_ERR) then
         !print *,T,P,Z(1),vg,vl
         call azLine%push_back(T,vg,vl,P,Z)
@@ -4640,6 +4756,52 @@ contains
        endif
     end function addPoint
   end subroutine loop_azeotropic_line
+
+  !-------------------------------------------------------------------
+  !> Test for phase stabillity of azeotrop
+  !>
+  !> \author MH, 2019-10
+  !-------------------------------------------------------------------
+  function az_is_stable(T,P,z,x,v) result(isStable)
+    use parameters, only: nc, LIQPH, VAPPH
+    use eos, only: specificvolume, thermo
+    use stability, only: stabilityLimit, stabcalcW
+    implicit none
+    real, dimension(nc), intent(in) :: z !< Phase compositions
+    real, intent(in) :: T !<
+    real, intent(in) :: P !<
+    real, dimension(nc), intent(out) :: x !<
+    real, intent(out) :: v !<
+    logical :: isStable
+    !
+    real :: tpd
+    real :: lnFugZ(nc), lnFugX(nc)
+    logical :: isTrivial
+    real, dimension(1,nc) :: XX
+
+    call thermo(t,p,Z,VAPPH,lnFugZ)
+    isStable = .true.
+    XX(1,:) = Z
+
+    ! Perform minimization determine stability and to get best possible starting values
+    x = 0
+    x(1) = 1
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    if (tpd < stabilityLimit*1000.0) then
+      isStable = .false.
+      call specificvolume(T,P,x,LIQPH,v)
+      return
+    endif
+
+    x = 0
+    x(2) = 1
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    if (tpd < stabilityLimit*1000.0) then
+      isStable = .false.
+      call specificvolume(T,P,x,LIQPH,v)
+    endif
+
+  end function az_is_stable
 
   subroutine getPropFromXaz(X,T,vg,vl,Z,ic)
     real, intent(out) :: T,vg,vl,Z(2)
@@ -5022,7 +5184,7 @@ contains
     azLine%T(azLine%nPoints) = T
     azLine%P(azLine%nPoints) = P
     azLine%vg(azLine%nPoints) = vg
-    azLine%vg(azLine%nPoints) = vl
+    azLine%vl(azLine%nPoints) = vl
     azLine%Z(azLine%nPoints,:) = Z
   end subroutine azeotropicLine_push_back
 
