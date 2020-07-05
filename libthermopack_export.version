@@ -106,10 +106,14 @@ libthermopack {
 	  *_set_saftvrmie_sigma_lij;
           *_get_saftvrmie_lr_gammaij;
           *_set_saftvrmie_lr_gammaij;
+	  *_get_saftvrmie_pure_fluid_param;
+	  *_set_saftvrmie_pure_fluid_param;
           *_cpa_get_kij;
           *_cpa_set_kij;
           *_pc_saft_get_kij;
           *_pc_saft_set_kij_asym;
-
+	  *_global_binary_plot;
+	  *_get_bp_term;
+	  *_solidenvelopeplot;
   local: *;      # hide everything else
 };

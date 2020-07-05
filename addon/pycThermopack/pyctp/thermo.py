@@ -8,6 +8,10 @@ import numpy as np
 from sys import platform, exit
 # Import os utils
 from os import path
+# Import plotting tools
+from . import plotutils
+# Import utils
+from . import utils
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -20,7 +24,10 @@ I_MODULE="mp"
 I_POSTFIX="_"
 I_POSTFIX_NM = "_"
 
-c_len_type = c_size_t # c_size_t on GCC > 7
+if utils.gcc_major_version_greater_than(7):
+    c_len_type = c_size_t # c_size_t on GCC > 7
+else:
+    c_len_type = c_int
 
 def get_platform_specifics():
     os_id = ""
@@ -130,6 +137,9 @@ class thermopack(object):
         self.s_dew_p = getattr(self.tp, self.get_export_name("saturation", "safe_dewp"))
         self.s_envelope_plot = getattr(self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
         self.s_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
+        self.s_global_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
+        self.s_get_bp_term = getattr(self.tp, self.get_export_name("binaryplot", "get_bp_term"))
+        self.s_solid_envelope_plot = getattr(self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
         self.s_isotherm = getattr(self.tp, self.get_export_name("isolines", "isotherm"))
         self.s_isobar = getattr(self.tp, self.get_export_name("isolines", "isobar"))
         self.s_isenthalp = getattr(self.tp, self.get_export_name("isolines", "isenthalp"))
@@ -299,7 +309,7 @@ class thermopack(object):
     # Solids
     #################################
 
-    def init_solid(self,scomp):
+    def init_solid(self, scomp):
         """Initialize pure solid
 
         Args:
@@ -398,6 +408,10 @@ class thermopack(object):
     def set_tmin(self, temp):
         self.minimum_temperature_c.value = temp
 
+    def get_tmin(self):
+        temp = self.minimum_temperature_c.value
+        return temp
+
     def set_pmin(self, press):
         self.minimum_pressure_c.value = press
 
@@ -405,7 +419,7 @@ class thermopack(object):
     # Phase properties
     #################################
 
-    def specific_volume(self,temp,press,x,phase,dvdt=None,dvdp=None,dvdn=None):
+    def specific_volume(self, temp, press, x, phase, dvdt=None, dvdp=None, dvdn=None):
         """ Calculate single-phase specific volume
             Note that the order of the output match the default order of input for the differentials.
             Note further that dvdt, dvdp and dvdn only are flags to enable calculation.
@@ -1881,6 +1895,135 @@ class thermopack(object):
 
         return LLE, L1VE, L2VE
 
+    def get_bp_term(self,
+                    i_term):
+
+        message_len = 50
+        message_c = c_char_p(b" " * message_len)
+        message_len = c_len_type(message_len)
+        i_term_c = c_int(i_term)
+
+        self.s_get_bp_term.argtypes = [POINTER( c_int ),
+                                       c_char_p,
+                                       c_len_type]
+
+        self.s_get_bp_term.restype = None
+
+        self.s_get_bp_term(byref(i_term_c),
+                           message_c,
+                           message_len)
+        message = message_c.value.decode('ascii')
+        return message
+
+    def global_binary_plot(self,
+                           maximum_pressure=1.5e7,
+                           minimum_pressure=1.0e5,
+                           minimum_temperature=150.0,
+                           maximum_temperature=500.0,
+                           include_azeotropes=False):
+        """Calculate global binary phase envelope
+
+        Args:
+            maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
+            minimum_temperature (float, optional): Terminate phase line traceing at minimum temperature. Defaults to 150.0 K.
+            maximum_temperature (float, optional): Terminate phase line traceing at maximum temperature. Defaults to 500.0 K.
+            include_azeotropes (bool, optional): Include azeotropic lines. Defaults to False.
+
+        Returns:
+            tuple of arrays
+        """
+        max_press_c = c_double(maximum_pressure)
+        min_press_c = c_double(minimum_pressure)
+        max_temp_c = c_double(maximum_temperature)
+        min_temp_c = c_double(minimum_temperature)
+        az_bool_c = c_int(1 if include_azeotropes else 0)
+        filename = "global_binary.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_len_type(len(filename))
+        i_term_c = c_int(0)
+
+        self.s_global_binary_plot.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              c_char_p,
+                                              POINTER( c_int ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int ),
+                                              c_len_type]
+
+        self.s_global_binary_plot.restype = None
+
+        self.s_global_binary_plot(byref(min_press_c),
+                                  byref(max_press_c),
+                                  byref(min_temp_c),
+                                  filename_c,
+                                  byref(i_term_c),
+                                  byref(max_temp_c),
+                                  byref(az_bool_c),
+                                  filename_len)
+
+        if not i_term_c.value == 0:
+            message = self.get_bp_term(i_term_c.value)
+            print(message)
+
+        # Load file with filename and read into arrays
+        return plotutils.get_globa_binary_data(filename)
+
+    def solid_envelope_plot(self, initial_pressure, z, maximum_pressure=1.5e7,
+                            minimum_temperature=170.0, calc_esv=False):
+        """Calculate phase envelope including solid lines
+
+        Args:
+            initial_pressure (float): Start mapping from initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            calc_esv (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+
+        Returns:
+            tuple of arrays
+        """
+        z_c = (c_double * len(z))(*z)
+        temp_c = c_double(0.0)
+        press_c = c_double(initial_pressure)
+        max_press_c = c_double(maximum_pressure)
+        filename = "solid_envelope.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_len_type(len(filename))
+        i_spec_c = c_int(1)
+        esv_bool_c = c_int(1 if calc_esv else 0)
+
+        min_t = self.get_tmin()
+        self.set_tmin(minimum_temperature)
+
+        self.s_solid_envelope_plot.argtypes = [POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_int ),
+                                               POINTER( c_double ),
+                                               c_char_p,
+                                               POINTER( c_int ),
+                                               c_len_type]
+
+        self.s_solid_envelope_plot.restype = None
+
+        self.s_solid_envelope_plot(z_c,
+                                   byref(temp_c),
+                                   byref(press_c),
+                                   byref(i_spec_c),
+                                   byref(max_press_c),
+                                   filename_c,
+                                   byref(esv_bool_c),
+                                   filename_len)
+
+        self.set_tmin(min_t)
+
+        #if .not. i_term_c.value == 0:
+        #    message = self.get_bp_term(iTerm)
+        #    print(message)
+
+        # Load file with filename and read into lists....
+        return plotutils.get_solid_envelope_data(filename)
 
     def get_isotherm(self,
                      temp,

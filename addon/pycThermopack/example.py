@@ -215,6 +215,9 @@ print("gamma ij",svrm.get_lr_gammaij(1,2))
 svrm.set_lr_gammaij(1,2,0.014)
 print("gamma ij",svrm.get_lr_gammaij(2,1))
 svrm.model_control_chain(False)
+m, sigma, eps, lambda_a, lambda_r = svrm.get_pure_fluid_param(1)
+print("m, sigma, eps, lambda_a, lambda_r",m, sigma, eps, lambda_a, lambda_r)
+svrm.set_pure_fluid_param(1,m, sigma, eps, lambda_a, lambda_r)
 
 # Instanciate saftvrmie object
 print("PC-SAFT")
@@ -233,3 +236,57 @@ cpa_srk.init("ETOH,H2O")
 #print("kij",pcs.get_kij(2,1))
 
 print(cpa_srk.getcompindex("H2O"))
+
+print("Solid plot")
+cb = cubic.cubic()
+cb.init("CO2,N2","PR","Classic","Classic")
+cb.init_solid("CO2")
+z = np.array([0.98,0.02])
+lines, crits = cb.solid_envelope_plot(1.0e5, z)
+for i in range(len(lines)):
+    plt.plot(lines[i][:,0], lines[i][:,1])
+label = "Critical"
+for i in range(len(crits)):
+    plt.plot(crits[i][0], crits[i][1], linestyle="None",
+             marker="o", color="k", label=label)
+    label = None
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
+plt.show()
+plt.clf()
+
+# print("Global binary plot")
+# cb = cubic.cubic()
+# cb.init("C1,C3","SRK","Classic","Classic")
+# KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=80.0, include_azeotropes=True)
+# colors = [ "black", "blue", "red", "green"]
+# linestyles = [ "-", "--", ":", "-."]
+# label = "VLE"
+# for i in range(len(VLE)):
+#     plt.plot(VLE[i][:,0], VLE[i][:,1], linestyle=linestyles[0],
+#              color=colors[0], label=label)
+#     label = None
+
+# label = "VLLE"
+# for i in range(len(LLVE)):
+#     plt.plot(LLVE[i][:,0], LLVE[i][:,1], linestyle=linestyles[1],
+#              color=colors[1], label=label)
+#     label = None
+
+# label = "Critical"
+# for i in range(len(CRIT)):
+#     plt.plot(CRIT[i][:,0], CRIT[i][:,1], linestyle=linestyles[2],
+#              color=colors[2], label=label)
+#     label = None
+
+# label = "AZ"
+# for i in range(len(AZ)):
+#     plt.plot(AZ[i][:,0], AZ[i][:,1], linestyle=linestyles[3],
+#              color=colors[3], label=label)
+#     label = None
+
+# plt.title("van Konynenburg and Scott type: " + str(KSTYPE))
+# leg = plt.legend(loc="best", numpoints=1)
+# leg.get_frame().set_linewidth(0.0)
+# plt.show()
+# plt.clf()
