@@ -255,38 +255,40 @@ leg.get_frame().set_linewidth(0.0)
 plt.show()
 plt.clf()
 
-# print("Global binary plot")
-# cb = cubic.cubic()
-# cb.init("C1,C3","SRK","Classic","Classic")
-# KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=80.0, include_azeotropes=True)
-# colors = [ "black", "blue", "red", "green"]
-# linestyles = [ "-", "--", ":", "-."]
-# label = "VLE"
-# for i in range(len(VLE)):
-#     plt.plot(VLE[i][:,0], VLE[i][:,1], linestyle=linestyles[0],
-#              color=colors[0], label=label)
-#     label = None
+print("Global binary plot")
+cb = cubic.cubic()
+cb.init("Ne,H2","SRK","Classic","Classic")
+cb.set_kij(1,2,0.19)
+KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=2.0, include_azeotropes=True)
+colors = [ "black", "blue", "red", "green"]
+linestyles = [ "-", "--", ":", "-."]
+label = "VLE"
+for i in range(len(VLE)):
+    plt.plot(VLE[i][:,0], VLE[i][:,1], linestyle=linestyles[0],
+             color=colors[0], label=label)
+    label = None
 
-# label = "VLLE"
-# for i in range(len(LLVE)):
-#     plt.plot(LLVE[i][:,0], LLVE[i][:,1], linestyle=linestyles[1],
-#              color=colors[1], label=label)
-#     label = None
+label = "VLLE"
+for i in range(len(LLVE)):
+    plt.plot(LLVE[i][:,0], LLVE[i][:,1], linestyle=linestyles[1],
+             color=colors[1], label=label)
+    label = None
 
-# label = "Critical"
-# for i in range(len(CRIT)):
-#     plt.plot(CRIT[i][:,0], CRIT[i][:,1], linestyle=linestyles[2],
-#              color=colors[2], label=label)
-#     label = None
+label = "Critical"
+for i in range(len(CRIT)):
+    plt.plot(CRIT[i][:,0], CRIT[i][:,1], linestyle=linestyles[2],
+             color=colors[2], label=label)
+    label = None
 
-# label = "AZ"
-# for i in range(len(AZ)):
-#     plt.plot(AZ[i][:,0], AZ[i][:,1], linestyle=linestyles[3],
-#              color=colors[3], label=label)
-#     label = None
+label = "AZ"
+for i in range(len(AZ)):
+    plt.plot(AZ[i][:,0], AZ[i][:,1], linestyle=linestyles[3],
+             color=colors[3], label=label)
+    label = None
 
-# plt.title("van Konynenburg and Scott type: " + str(KSTYPE))
-# leg = plt.legend(loc="best", numpoints=1)
-# leg.get_frame().set_linewidth(0.0)
-# plt.show()
-# plt.clf()
+plt.title("van Konynenburg and Scott type: " + str(KSTYPE))
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
+plt.ylim([1.0e5,0.5e7])
+plt.show()
+plt.clf()
