@@ -83,12 +83,10 @@ def getPoint(filename,pointLabel):
 def getNaNindices(data):
     n = np.shape(data)[0]
     m = np.shape(data)[1]
-    nans = [0]*m
+    nans = [n]*m
     for i in range(m):
         for j in range(n):
             if math.isnan(data[j,i]):
-                nans[i] = j - 1
-                break
-            else:
                 nans[i] = j
+                break
     return nans

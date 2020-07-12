@@ -36,6 +36,8 @@ module binaryPlot
     procedure, public :: clear => VLLE_Line_clear
     procedure, public :: allocate => VLLE_Line_allocate
     procedure, public :: push_back => VLLE_Line_push_back
+    procedure, public :: print_index => VLLE_Line_print_index
+    procedure, public :: swap_with_last => VLLE_Line_swap_with_last
     procedure :: VLLE_Line_assign
     generic,   public   :: assignment(=) => VLLE_Line_assign
   end type VLLE_Line
@@ -3799,6 +3801,7 @@ contains
         if (aeps(i)%p_aep%found) then
           print *,trim(print_AEP(i))
           n = n + 1
+          !call aeps(i)%p_aep%print()
         endif
       enddo
       if (n == 0) then
@@ -3827,6 +3830,7 @@ contains
                 if (aeps(k)%p_aep%found) then
                   if (az_line_endpoint_is_aep(azLine(i), aeps(k)%p_aep, reltol=1.0e-5)) then
                     aeps(k)%p_aep%found = .false. ! Disable running AZ line form this point
+                    call write_aep_to_az_line_endpoint(azLine(i), aeps(k)%p_aep)
                   endif
                 endif
               enddo
@@ -4157,7 +4161,50 @@ contains
     vlleL%vx(vlleL%nPoints) = vx
     vlleL%vw(vlleL%nPoints) = vw
     vlleL%vy(vlleL%nPoints) = vy
+    !call vlleL%print_index(vlleL%nPoints)
   end subroutine VLLE_Line_push_back
+
+  subroutine VLLE_Line_print_index(vlleL,idx)
+    class(VLLE_Line), intent(in) :: vlleL
+    integer, intent(in) :: idx
+    ! Locals
+    print *,"VLLE point ",idx
+    print *,"T: ",vlleL%T(idx)
+    print *,"P: ",vlleL%P(idx)
+    print *,"X: ",vlleL%X(idx,:)
+    print *,"W: ",vlleL%W(idx,:)
+    print *,"Y: ",vlleL%Y(idx,:)
+    print *,"vx: ",vlleL%vx(idx)
+    print *,"vw: ",vlleL%vw(idx)
+    print *,"vy: ",vlleL%vy(idx)
+  end subroutine VLLE_Line_print_index
+
+  subroutine VLLE_Line_swap_with_last(vlleL,T,P,X,W,Y,vx,vw,vy)
+    class(VLLE_Line), intent(inout) :: vlleL
+    real, intent(in) :: T,P,X(2),W(2),Y(2),vx,vw,vy
+    ! Locals
+    real :: Tt,Pt,Xt(2),Wt(2),Yt(2),vxt,vwt,vyt
+
+    Tt = vlleL%T(vlleL%nPoints)
+    Pt = vlleL%P(vlleL%nPoints)
+    Xt = vlleL%X(vlleL%nPoints,:)
+    Wt = vlleL%W(vlleL%nPoints,:)
+    Yt = vlleL%Y(vlleL%nPoints,:)
+    vxt = vlleL%vx(vlleL%nPoints)
+    vwt = vlleL%vw(vlleL%nPoints)
+    vyt = vlleL%vy(vlleL%nPoints)
+
+    vlleL%T(vlleL%nPoints) = T
+    vlleL%P(vlleL%nPoints) = P
+    vlleL%X(vlleL%nPoints,:) = X
+    vlleL%W(vlleL%nPoints,:) = W
+    vlleL%Y(vlleL%nPoints,:) = Y
+    vlleL%vx(vlleL%nPoints) = vx
+    vlleL%vw(vlleL%nPoints) = vw
+    vlleL%vy(vlleL%nPoints) = vy
+
+    call vlleL%push_back(Tt,Pt,Xt,Wt,Yt,vxt,vwt,vyt)
+  end subroutine VLLE_Line_swap_with_last
 
   function VLLE_Line_get_size(vllel) result(n)
     class(VLLE_Line), intent(in) :: vllel
@@ -4210,6 +4257,7 @@ contains
   subroutine loop_LLVE_line(Tmin,Pmin,Pmax,iTermination,lLLVE,haep)
     !use critical, only: calcCriticalEndPoint
     use eos, only: specificvolume
+    use eosTV, only: pressure
     use saturation_curve, only: aep, AZ_HAEP
     implicit none
     integer, intent(out) :: iTermination
@@ -4221,7 +4269,7 @@ contains
     ! Locals
     real, parameter :: tol = 1.0e-7
     integer :: s, ierr, iter, i
-    real :: ds, XX(10), XXold(10), dXds(10), sgn
+    real :: ds, XX(10), XXold(10), dXds(10), sgn, XXaep(10)
     real, parameter :: dzLim = 0.02
     real :: T,P,vx,vw,vy,x(2),w(2),y(2),lambda_old
     integer :: smax(1)
@@ -4362,7 +4410,13 @@ contains
           dxvl = XX(i_liq)-XX(i_vap)
           if (dxvl*dxvl_old < 0) then
             ! Search for HAEP
-            call solve_for_haep(XXold,XX,s,i_vap,i_liq,haep,ierr)
+            call solve_for_haep(XXold,XX,XXaep,s,i_vap,i_liq,haep,ierr)
+            if (ierr == 0) then
+              call getPropFromX_LLVE(XXaep,T,vx,vw,vy,x,w,y)
+              P = pressure(T,vx,x)
+              call lLLVE%swap_with_last(T,P,X,W,Y,vx,vw,vy)
+            endif
+            !stop
           endif
           dxvl_old = dxvl
         endif
@@ -4469,16 +4523,17 @@ contains
     XX(10) = log(T)
   end subroutine setX_LLVE
 
-  subroutine solve_for_haep(XXold,XXcurrent,s,i_vap,i_liq,haep,ierr)
+  subroutine solve_for_haep(XXold,XXcurrent,XX,s,i_vap,i_liq,haep,ierr)
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver, NS_PEGASUS
     use saturation_curve, only: aep
     integer, intent(in) :: s,i_vap,i_liq
     real, intent(in) :: XXold(10), XXcurrent(10) !<
+    real, intent(out) :: XX(10)
     type(aep), intent(inout) :: haep
     integer, intent(out) :: ierr          ! error flag
     ! Locals
     real, parameter :: tol = 1.0e-6
-    real :: s_min, s_max, param(23), XX(10), ds
+    real :: s_min, s_max, param(23), ds
     real :: T,P,vx,vw,vy,x(2),w(2),y(2)
     type(nonlinear_solver) :: solver_cfg
     param(1:10) = XXold
@@ -4505,6 +4560,7 @@ contains
       XX = XXold + param(11:20)*ds
       call getPropFromX_LLVE(XX,T,vx,vw,vy,x,w,y)
       call LLVEpointTV(P,T,vx,vw,vy,x,w,y,s,ierr)
+      call setX_LLVE(T,vx,vw,vy,x,w,y,XX)
       haep%x = exp(XX(i_vap:i_vap+1))
       haep%T = T
       haep%P = P
@@ -4551,7 +4607,7 @@ contains
     XX = XXold + dXXds*ds
     call getPropFromX_LLVE(XX,T,vx,vw,vy,x,w,y)
     call LLVEpointTV(P,T,vx,vw,vy,x,w,y,s,ierr)
-
+    call setX_LLVE(T,vx,vw,vy,x,w,y,XX)
     ! Make objective function
     f = XX(i_liq)-XX(i_vap)
   end function fun_haep
@@ -5223,7 +5279,7 @@ contains
     azl1%T(1:n) = azl2%T
     azl1%P(1:n) = azl2%P
     azl1%vg(1:n) = azl2%vg
-    azl1%vl(1:n) = azl2%vg
+    azl1%vl(1:n) = azl2%vl
     azl1%z(1:n,:) = azl2%z
     azl1%npoints = n
   end subroutine azeotropicLine_assign

@@ -286,7 +286,18 @@ for i in range(len(AZ)):
              color=colors[3], label=label)
     label = None
 
-plt.title("van Konynenburg and Scott type: " + str(KSTYPE))
+if KSTYPE == 1:
+    ks_str = "I"
+elif KSTYPE == 2:
+    ks_str = "II"
+elif KSTYPE == 3:
+    ks_str = "III"
+elif KSTYPE == 4:
+    ks_str = "IV"
+elif KSTYPE == 5:
+    ks_str = "V"
+
+plt.title("van Konynenburg and Scott type: " + ks_str)
 leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
 plt.ylim([1.0e5,0.5e7])
