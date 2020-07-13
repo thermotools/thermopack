@@ -3277,8 +3277,12 @@ contains
     end select
 
     if (present(caep)) then
-      call calc_pressurediff(Tc,vc,Zc,d2pdv2,d3pdv3)
-      d2pdv2_old = d2pdv2
+      if (initCritLine == BCL_PMAX) then
+        call calc_pressurediff(Tc,vc,Zc,d2pdv2,d3pdv3)
+        d2pdv2_old = d2pdv2
+      else
+        d2pdv2_old = 0
+      endif
       caep%found = .false.
       caep%type = AZ_CAEP
     endif
@@ -4622,7 +4626,6 @@ contains
     use eos, only: getCriticalParam
     use critical, only: calcCriticalEndPoint, calcCriticalZ, critZsensitivity, &
          calcCriticalTV
-    use eosTV, only: pressure
     use saturation_curve, only: aep,AZ_PAEP,AZ_CAEP,AZ_HAEP
     use numconstants, only: small
     implicit none
@@ -4638,7 +4641,7 @@ contains
     real :: vg_ext, vl_ext
     real, parameter :: dzLim = 0.02
     real, parameter :: tuning = 1.2, ds_min = 0.001, ds_max = 0.005
-    integer, parameter :: SIG_CAEP = -101010
+    integer, parameter :: SIG_NO_TPD = -101010
     ! Copy state
     Z = xaep%x
     P = xaep%P
@@ -4646,7 +4649,7 @@ contains
     vg = xaep%vg
     vl = xaep%vl
     ic = 1
-    ierr = 0
+    ierr = SIG_NO_TPD
     iTermination = addPoint()
     Xold = X
     select case(xaep%type)
@@ -4747,7 +4750,7 @@ contains
           ds = (Xold(3) - Xold(4))/(dXdS(4) - dXdS(3))/sgn
           X = Xold + dXdS*dS*sgn
           call getPropFromXaz(X,T,vg,vl,Z,ic)
-          ierr = SIG_CAEP ! Signal CAEP
+          ierr = SIG_NO_TPD ! Signal not to do stability check
           iTermination = addPoint()
           iTermination = BP_TERM_CRIT
           return
@@ -4786,11 +4789,9 @@ contains
       integer :: iTerm
       ! Locals
       real :: xl2(nc), vl2, xl(nc)
-      if (ierr /= 0) then
-        iTerm = BP_TERM_ERR
-      else
+      if (ierr == 0 .or. ierr == SIG_NO_TPD) then
         iTerm = BP_TERM_NONE
-        if (ierr /= SIG_CAEP) then ! Signal CAEP
+        if (ierr /= SIG_NO_TPD) then ! Disable stability test
           if (.not. az_is_stable(T,P,Z,xl2,vl2)) then
             iTerm = BP_TERM_TPD
             xl = Z
@@ -4801,9 +4802,10 @@ contains
             endif
           endif
         endif
+      else
+        iTerm = BP_TERM_ERR
       endif
       if (iTerm /= BP_TERM_ERR) then
-        !print *,T,P,Z(1),vg,vl
         call azLine%push_back(T,vg,vl,P,Z)
         call setXaz(T,vg,vl,Z,X,ic)
       else

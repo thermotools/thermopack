@@ -1460,18 +1460,21 @@ contains
     ! Find initlal point
     if (specification == specP) then
       p0 = p
-      T = safe_bubT(P,X,Y)
+      T = safe_bubT(P,X,Y,ierr)
       n = min(int((pci-P)/maxDelP)+1,nmax)
       dP = (pci-P)/n
       xmax = log(tci)
       xmin = log(t)
     else if (specification == specT) then
       T0 = T
-      P = safe_bubP(T,X,Y)
+      P = safe_bubP(T,X,Y,ierr)
       n = min(int((pci-P)/maxDelP)+1,nmax)
       dT = (tci-T)/n
       xmax = log(pci)
       xmin = log(p)
+    endif
+    if (ierr /= 0) then
+      call stoperror('saturation_curve::singleCompSaturation solve for initial point')
     endif
     Ta(1) = t
     Pa(1) = p
@@ -1534,7 +1537,16 @@ contains
           Pa(n) = pci
           return
         else
-          call stoperror('saturation::singleCompSaturation could not invert J')
+          if (specification == specP) then
+            P = param(3)
+            T = safe_bubT(P,X,Y,ierr)
+          else if (specification == specT) then
+            T = param(3)
+            P = safe_bubP(T,X,Y,ierr)
+          endif
+          if (ierr /= 0) then
+            call stoperror('saturation::singleCompSaturation could not invert J')
+          endif
         endif
       else
         write(*,*) "Error flag: ",solver%exitflag
@@ -1553,10 +1565,14 @@ contains
               ! Solve for PAEP
               call solve_for_paep(Ta(iter-1),Pa(iter-1),t,p,i_pure,i_insip,paep,ierr)
               if (ierr == 0) then
-                paep%found = .true.
-                call thermo(paep%t,paep%p,x,LIQPH,lnfugl,v=paep%vl)
-                call thermo(paep%t,paep%p,x,VAPPH,lnfugg,v=paep%vg)
-                paep%x = x
+                ! Make sure paep is on saturation curve
+                if (abs(Ta(iter-1)-paep%t) < abs(Ta(iter)-paep%t)) then
+                  Ta(iter-1) = paep%t
+                  Pa(iter-1) = paep%p
+                else
+                  Ta(iter) = paep%t
+                  Pa(iter) = paep%p
+                endif
               endif
             endif
           endif
@@ -1579,7 +1595,7 @@ contains
     real, intent(in) :: t0, p0            ! init. point has pressure p0
     real, intent(in) :: t1, p1            ! t and p
     integer, intent(in) :: i_pure,i_insip ! component indices
-    type(aep), intent(out) :: paep        ! pure fluid azeotrope end point
+    type(aep), intent(inout) :: paep        ! pure fluid azeotrope end point
     integer, intent(out) :: ierr          ! error flag
     ! Locals
     real :: T_guess, zpure(nc), y(nc), param(4), p, a, b
@@ -1603,6 +1619,7 @@ contains
     if (solver_cfg%exitflag /= 0) then
       if (verbose) write(*,*) "PAEP: Bracketing solver failed."
       ierr = solver_cfg%exitflag
+      paep%found = .false.
       return
     else
       ierr = 0
@@ -1613,6 +1630,8 @@ contains
     T_guess = a*p + b
     paep%t = bubT(T_guess,paep%p,zpure,y)
     paep%found = .true.
+    paep%type = AZ_PAEP
+    paep%x = zpure
     call thermo(paep%t,paep%p,zpure,LIQPH,lnfugl,v=paep%vl)
     call thermo(paep%t,paep%p,zpure,VAPPH,lnfugg,v=paep%vg)
   end subroutine solve_for_paep
@@ -1633,7 +1652,7 @@ contains
     real                  :: lnfugl(nc), lnfugg(nc), a, b
     ! Read from param
     i_pure = nint(param(1))
-    i_insip = nint(param(1))
+    i_insip = nint(param(2))
     a = param(3)
     b = param(4)
     ! Make pure composition vector
