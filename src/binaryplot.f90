@@ -3783,7 +3783,7 @@ contains
     Tc = 0.0
     Pc = Pmin
     call singleCompSaturation(Zc,Tc,Pc,specP,Ta1,Pa1,nmax,n1,maxDeltaP=0.25e5,&
-         paep=aeps(PAEP1)%p_aep)
+         paep=aeps(PAEP1)%p_aep,log_linear=.true.)
     do i=1,n1
       call specificvolume(Ta1(i),Pa1(i),Zc,LIQPH,vla1(i))
       call specificvolume(Ta1(i),Pa1(i),Zc,VAPPH,vva1(i))
@@ -3792,7 +3792,7 @@ contains
     Tc = 0.0
     Pc = Pmin
     call singleCompSaturation(Zc,Tc,Pc,specP,Ta2,Pa2,nmax,n2,maxDeltaP=0.25e5,&
-         paep=aeps(PAEP2)%p_aep)
+         paep=aeps(PAEP2)%p_aep,log_linear=.true.)
     do i=1,n2
       call specificvolume(Ta2(i),Pa2(i),Zc,LIQPH,vla2(i))
       call specificvolume(Ta2(i),Pa2(i),Zc,VAPPH,vva2(i))

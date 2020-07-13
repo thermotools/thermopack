@@ -1413,7 +1413,7 @@ contains
   !>
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
-  subroutine singleCompSaturation(Z,t,p,specification,Ta,Pa,nmax,n,maxDeltaP,paep)
+  subroutine singleCompSaturation(Z,t,p,specification,Ta,Pa,nmax,n,maxDeltaP,paep,log_linear)
     use eos, only: getCriticalParam
     use critical, only: calcCriticalTV
     use eosTV, only: pressure
@@ -1426,23 +1426,32 @@ contains
     integer, intent(out) :: n
     real, optional, intent(in) :: maxDeltaP !< Maximum Delta P between points
     type(aep), optional, intent(out) :: paep
+    logical, optional, intent(in) :: log_linear !< Distribute values lineary based on natural logarithm
     ! Locals
     integer, dimension(1) :: zmax
     real, dimension(nc) :: X,Y
     integer :: i_pure, iter, ierr, i_insip
     real :: f,dfdt,dfdp,tci,pci,oi,vci,dpdt,dP,dT,p0,t0
+    real :: dlnp, dlnT
+    logical :: log_linear_loc
     real, dimension(4) :: param
     real, dimension(1) :: XX,Xmax,Xmin
     type(nonlinear_solver) :: solver
     real, parameter   :: reltol_close_to_crit = 1e-2
-    real, parameter   :: maxdP = 0.5e5
+    real, parameter   :: maxdP = 0.2e5, max_dlnp = 0.02
     real              :: relerr_crit
     real              :: maxDelP
     real              :: lnfugl(nc), lnfugg(nc), dg_insip, dg_insip_old
     !
-    maxDelP = maxdP
+    if (present(log_linear)) then
+      log_linear_loc = log_linear
+    else
+      log_linear_loc = .false.
+    endif
     if (present(maxDeltaP)) then
       maxDelP = maxDeltaP
+    else
+      maxDelP = maxdP
     endif
     X = 0.0
     zmax = maxloc(Z)
@@ -1461,15 +1470,37 @@ contains
     if (specification == specP) then
       p0 = p
       T = safe_bubT(P,X,Y,ierr)
-      n = min(int((pci-P)/maxDelP)+1,nmax)
-      dP = (pci-P)/n
+      if (log_linear_loc) then
+        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        dlnp = (log(pci)-log(P))/n
+        do iter=1,n
+          pa(iter) = exp(log(p0) + dlnp*(iter-1))
+        enddo
+      else
+        n = min(int((pci-P)/maxDelP)+1,nmax)
+        dP = (pci-P)/n
+        do iter=1,n
+          pa(iter) = p0 + dP*(iter-1)
+        enddo
+      endif
       xmax = log(tci)
       xmin = log(t)
     else if (specification == specT) then
       T0 = T
       P = safe_bubP(T,X,Y,ierr)
-      n = min(int((pci-P)/maxDelP)+1,nmax)
-      dT = (tci-T)/n
+      if (log_linear_loc) then
+        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        dlnT = (log(tci)-log(T))/n
+        do iter=1,n
+          ta(iter) = exp(log(T0) + dlnT*(iter-1))
+        enddo
+      else
+        n = min(int((pci-P)/maxDelP)+1,nmax)
+        dT = (tci-T)/n
+        do iter=1,n
+          ta(iter) = T0 + dT*(iter-1)
+        enddo
+      endif
       xmax = log(pci)
       xmin = log(p)
     endif
@@ -1501,10 +1532,12 @@ contains
       param(1) = specification
       param(2) = i_pure
       if (specification == specP) then
-        param(3) = p0 + dP*(iter-1)
+        dP = pa(iter) - pa(iter-1)
+        param(3) = pa(iter)
         XX(1) = log(t+dP/dpdt)
       else
-        param(3) = T0 + dT*(iter-1)
+        dT = ta(iter) - ta(iter-1)
+        param(3) = ta(iter)
         XX(1) = log(p+dpdt*dT)
       endif
       ! Limit to bounds
@@ -1580,7 +1613,6 @@ contains
         endif
       endif
     end do
-
   end subroutine singleCompSaturation
 
   !-----------------------------------------------------------------------------
