@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QDoubleSpinBox, QColorDialog, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QDoubleSpinBox, QColorDialog, QMessageBox, QDialog
 from PyQt5.uic import loadUi
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
@@ -7,14 +7,18 @@ from gui.widgets.mpl_canvas import MplCanvas
 
 import numpy as np
 
-import thermo
+from thermo import thermopack
+from cubic import cubic
+from cpa import cpa
+from pcsaft import pcsaft
+from saftvrmie import saftvrmie
+
 
 # TODO: Mulighet for å plotte flere ting oppå hverandre (Default: Clear hver gang, mulig å endre eks checkbox)
 
 # TODO: Når isopleter toggles on/off, fjern/legg til i legend
 
-# TODO: Mulighet for å tune parametere for de ulike plottetypene (pmax, pmin, tmax, tmin, NISOPLETHS, dlns, ...)
-#  Få opp en liten [...]-pushbtn ved siden av plot type radio btn
+# TODO: Lagre paramtere i self.plot_settings = {}
 
 
 class PlotMode(QMainWindow):
@@ -36,13 +40,15 @@ class PlotMode(QMainWindow):
         self.init_fractions()
 
         # Initiating thermopack
-        self.tp = thermo.thermopack()
+        self.tp = self.get_thermopack()
 
         # Init function depends on settings
         self.init_tp()
 
         self.line_color_tool_btn.clicked.connect(self.pick_line_color)
         self.point_color_tool_btn.clicked.connect(self.pick_point_color)
+        self.ph_env_toolbtn.clicked.connect(self.show_ph_env_options)
+        self.bin_pxy_toolbtn.clicked.connect(self.show_bin_pxy_options)
 
         self.plot_type_btn_group.buttonClicked.connect(self.change_plot_type)
 
@@ -57,13 +63,22 @@ class PlotMode(QMainWindow):
         self.init_isopleth_btns()
         self.plot_button.clicked.connect(self.plot)
 
+    def get_thermopack(self):
+        category = self.settings["Model category"]
+        if category == "Cubic":
+            return cubic()
+        elif category == "CPA":
+            return cpa()
+        else:
+            return None
+
     def init_plot_modes(self):
         if len(self.component_data["Names"]) != 2:
             self.binary_pxy_btn.setEnabled(False)
 
     def init_model_options(self):
-        print(self.settings)
-        if self.settings["Model category"] == "Cubic":
+        category = self.settings["Model category"]
+        if category in ["Cubic", "CPA"]:
             pr_btn = QRadioButton("PR")
             srk_btn = QRadioButton("SRK")
             self.model_box_layout.addWidget(pr_btn)
@@ -100,14 +115,15 @@ class PlotMode(QMainWindow):
             self.fractions_layout.addRow(components[i], spin_box)
 
     def init_tp(self):
-        if self.settings["Model category"] == "Cubic":
+        category = self.settings["Model category"]
+        if category in ["Cubic", "CPA"]:
             comps = ",".join(self.component_data["Identities"])
             eos = self.settings["EOS"]
             mixing = self.settings["Model options"]["Mixing rule"]
             alpha = self.settings["Model options"]["Alpha correlation"]
             model_ref = self.settings["Model options"]["Reference"]
 
-            self.tp.init_cubic(comps=comps, eos=eos, mixing=mixing, alpha=alpha, model_ref=model_ref)
+            self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
 
     def init_isopleth_btns(self):
         self.PT_H_btn.clicked.connect(self.canvas.toggle_isenthalps)
@@ -136,6 +152,22 @@ class PlotMode(QMainWindow):
             self.primary_vars_box.setEnabled(False)
         else:
             pass
+
+    def show_ph_env_options(self):
+        options_window = PhaseEnvelopeOptionsWindow()
+        options_window.exec_()
+        options_window.button_box.accepted.connect(self.save_ph_env_options)
+
+    def save_ph_env_options(self):
+        pass
+
+    def show_bin_pxy_options(self):
+        options_window = BinaryPXYOptionsWindow()
+        options_window.exec_()
+        options_window.button_box.accepted.connect(self.save_bin_pxy_options)
+
+    def save_bin_pxy_options(self):
+        pass
 
     def pick_line_color(self):
         initial_color = self.line_color_preview.palette().window().color()
@@ -194,6 +226,20 @@ class PlotMode(QMainWindow):
             pass
 
         self.btn_stack.show()
+
+
+class PhaseEnvelopeOptionsWindow(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        loadUi("widgets/layouts/ph_env_options.ui", self)
+        self.setWindowTitle("Phase envelope options")
+
+
+class BinaryPXYOptionsWindow(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        loadUi("widgets/layouts/bin_pxy_options.ui", self)
+        self.setWindowTitle("Binary pxy options")
 
 
 class MolarFractionsErrorMsg(QMessageBox):

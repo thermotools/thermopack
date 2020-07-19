@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
@@ -6,14 +6,7 @@ from gui.widgets.component_info import ComponentInformationWindow
 from gui.utils import get_unique_name, get_fluids
 
 
-# TODO: Vise lagrede komposisjoner i en liste av noe slag
-# TODO: Søkefunksjon. QSortFilterProxyModel(). Bookmarked in Chrome
 # TODO: Mulighet for å slette en lagret komposisjon
-
-
-class ComponentListMenuItem(QTreeWidgetItem):
-    def __init__(self, parent, text):
-        super().__init__(parent, [text])
 
 
 class ComponentSelectWidget(QWidget):
@@ -135,8 +128,31 @@ class ComponentSelectWidget(QWidget):
             msg = NoComponentsChosenMessageBox()
             msg.exec_()
 
-    def search(self, search_text):
-        pass
+    def search(self, filter_text):
+        table = self.component_choices_table
+        for i in range(table.rowCount()):
+            match = False
+
+            component = self.fluids[table.item(i, 0).text()]
+            aliases = component.json_data["aliases"]
+            identity = component.json_data["ident"]
+
+            if filter_text.lower() in identity:
+                match = True
+                break
+
+            for alias in aliases:
+                if filter_text.lower() in alias.lower():
+                    match = True
+                    break
+
+            for j in range(table.columnCount()):
+                item = table.item(i, j)
+                if filter_text.lower() in item.text().lower():
+                    match = True
+                    break
+
+            table.setRowHidden(i, not match)
 
 
 class ComponentEditWidget(ComponentSelectWidget):

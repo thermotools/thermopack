@@ -6,15 +6,10 @@ from PyQt5.QtCore import QCoreApplication, Qt, QTimer
 import sys
 import os
 
-from gui.widgets.component_select_widget import ComponentListMenuItem, ComponentSelectWidget, ComponentEditWidget
+from gui.widgets.component_select_widget import ComponentSelectWidget, ComponentEditWidget
 from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
 from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget
 from gui.utils import get_json_data, save_json_data
-
-
-# TODO:
-#  Doubleclick på new comp / new model --> åpne new comp/new model-fane (maks én av hver oppe)
-#  Doubleclick (eller vanlig klikk) på comp list x / model x --> Vindu hvor man kan få info om det man har tasta inn
 
 
 # TODO: Lage en Load option. Skal hente frem data (JSON) fra en fil og populere
@@ -26,6 +21,8 @@ from gui.utils import get_json_data, save_json_data
 
 # TODO: Lag en Calc Mode: PT flash (+andre flasher). Velger Comp + Model, Velger T, P --> Properties
 #  Kose seg med enheter og greier
+
+# TODO: Lag en QToolBar med QToolButtons for Open, Save, ...
 
 
 class ThermopackGUIApp(QMainWindow):
@@ -97,7 +94,8 @@ class ThermopackGUIApp(QMainWindow):
                     model_select_widget = ModelSelectWidget(self.data, parent=self)
                     index = self.tabs.addTab(model_select_widget, "Settings- " + model_select_widget.name)
                     model_select_widget.settings_updated.connect(self.update_model_lists)
-                    ModelListMenuItem(self.tree_menu.topLevelItem(1), model_select_widget.name, model_select_widget.id, model_select_widget)
+                    ModelListMenuItem(self.tree_menu.topLevelItem(1), model_select_widget.name, model_select_widget.id,
+                                      model_select_widget)
 
             else:
                 # Open a tab displaying info
@@ -110,6 +108,10 @@ class ThermopackGUIApp(QMainWindow):
                     widget = item.widget
                     tab_text_prefix = "Settings- "
 
+                else:
+                    self.log("Widget doesn't exist")
+                    return
+
                 tab_is_open = False
                 for i in range(self.tabs.count()):
                     if self.tabs.tabText(i)[-len(widget.name):] == widget.name:
@@ -117,7 +119,6 @@ class ThermopackGUIApp(QMainWindow):
                         tab_is_open = True
 
                 if not tab_is_open:
-
                     index = self.tabs.addTab(widget, tab_text_prefix + widget.name)
 
             self.tabs.setCurrentIndex(index)
@@ -132,13 +133,8 @@ class ThermopackGUIApp(QMainWindow):
                 if root.child(index).text(0) == old_name:
                     root.child(index).setText(0, list_name)
 
-        # Also want to update coeff widgets to include the new component list
-        root = self.tree_menu.topLevelItem(1)
-        for index in range(root.childCount()):
-            root.child(index).widget.show_correct_coeff_widget()
-
     def update_model_lists(self, list_name, data, id):
-        # Finn taben som hører til og endre navn på den
+        # Find correct tab and change its name
         self.data = data
 
         for index in range(self.tabs.count()):
