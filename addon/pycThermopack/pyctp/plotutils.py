@@ -136,7 +136,6 @@ def get_globa_binary_data(filename):
             i_nan = i_nans[istart]
             if i_nan < 0:
                 continue
-            print(data[i_nan,istart],data[i_nan+1,istart])
             line = np.zeros((i_nan, 4))
             for j in range(4):
                 line[:,j] = data[0:i_nan,j+istart]

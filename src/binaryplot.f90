@@ -81,8 +81,6 @@ contains
     character(len=*), intent(out) :: charTerm
     if (len(charTerm) >= char_term_len) then
       charTerm = print_BP_TERM(iTerm)
-      print *,charterm
-      print *,len(charTerm)
     else
       charTerm = ""
       print *,"get_BP_TERM: character variable too short"
