@@ -300,6 +300,6 @@ elif KSTYPE == 5:
 plt.title("van Konynenburg and Scott type: " + ks_str)
 leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
-plt.ylim([1.0e5,0.5e7])
+plt.ylim([1.0e5,0.3e7])
 plt.show()
 plt.clf()
