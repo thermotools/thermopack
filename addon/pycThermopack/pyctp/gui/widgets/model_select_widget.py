@@ -6,12 +6,8 @@ from gui.widgets.mixing_rules import *
 
 from gui.utils import get_unique_name, get_unique_id
 
-
-# TODO: Også emit signal når QLineEdit mister fokus
-
 # TODO
 #  Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
-#  Ordne mer i menyen: Doubleclick --> Åpne og instansiere en tab
 
 # TODO:  No self associating components. Initializing PR(/SRK) instead of CPA-PR(/SRK) dukker opp hele tiden for CPA
 
@@ -25,9 +21,9 @@ class ModelListMenuItem(QTreeWidgetItem):
 
 class ModelSelectWidget(QWidget):
     """
-    EOS-stack:      0: Empty   1: PR + SRK
-    Options-stack:  0: Empty   1: Cubic (or CPA)    2: SAFT-VRI Mie
-    Coeff-stack:    0: Empty   1: VdW               2: HV1              3: HV2        4: PC-SAFT        5: SAFT-VR Mie
+    EOS stack:      0: Empty   1: PR + SRK
+    Options stack:  0: Empty   1: Cubic (or CPA)    2: SAFT-VRI Mie
+    Coeff stack:    0: Empty   1: VdW               2: HV1              3: HV2        4: PC-SAFT        5: SAFT-VR Mie
     """
 
     def __init__(self, data, name=None, parent=None):
@@ -70,7 +66,7 @@ class ModelSelectWidget(QWidget):
 
         self.tabs.currentChanged.connect(self.show_correct_tab)
 
-        self.name_edit.returnPressed.connect(self.change_name)
+        self.name_edit.editingFinished.connect(self.change_name)
 
     settings_updated = pyqtSignal(str, dict, int)
 
@@ -177,7 +173,6 @@ class ModelSelectWidget(QWidget):
         if category == "Cubic" or category == "CPA":
             self.eos_stack.setCurrentIndex(1)
             self.options_stack.setCurrentIndex(1)
-            self.coeff_stack.setCurrentIndex(1)
 
             # Store default choices
             self.change_cubic_eos(self.cubic_eos_list.currentItem())
@@ -193,9 +188,10 @@ class ModelSelectWidget(QWidget):
         elif category == "SAFT-VR Mie":
             self.eos_stack.setCurrentIndex(0)
             self.options_stack.setCurrentIndex(2)
-            self.coeff_stack.setCurrentIndex(5)
         else:
             pass
+
+        self.show_correct_coeff_widget()
 
     def change_cubic_eos(self, eos_item):
         eos = eos_item.text()
@@ -209,7 +205,6 @@ class ModelSelectWidget(QWidget):
     def change_cubic_mix_rule(self, mixing_rule):
         self.data["Model setups"][self.name]["Model options"]["Mixing rule"] = mixing_rule
         self.settings_updated.emit(self.name, self.data, self.id)
-        self.show_correct_coeff_widget()
 
     def change_cubic_vol_trans(self, vol_trans):
         self.data["Model setups"][self.name]["Model options"]["Volume translation"] = vol_trans
@@ -237,11 +232,13 @@ class ModelSelectWidget(QWidget):
     def show_correct_tab(self, index):
         if index >= 0:
             if self.tabs.tabText(index) == "Binary coefficients":
-                self.coeff_stack.currentWidget().init_widget()
+                self.coeff_stack.currentWidget().init_widget(self.data, self.name)
 
     def change_name(self):
         new_name = self.name_edit.text()
+        self.name_edit.blockSignals(True)
         self.name_edit.clearFocus()
+        self.name_edit.blockSignals(False)
 
         if new_name in self.data["Model setups"] and new_name != self.name:
             msg = SettingsExistMsg(new_name)

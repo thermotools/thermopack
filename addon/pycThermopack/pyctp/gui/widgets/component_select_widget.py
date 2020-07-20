@@ -165,6 +165,8 @@ class ComponentEditWidget(ComponentSelectWidget):
 
         self.populate_widget()
 
+        self.set_name_edit.editingFinished.connect(self.save_composition)
+
     def populate_widget(self):
         self.set_name_edit.setText(self.name)
         comp_list = [self.fluids[name] for name in self.data["Component lists"][self.name]["Names"]]

@@ -3,7 +3,10 @@ from PyQt5.uic import loadUi
 from PyQt5 import QtCore
 from cubic import cubic
 from cpa import cpa
+from pcsaft import pcsaft
+from saftvrmie import saftvrmie
 import numpy as np
+
 
 # TODO: Ikke sikkert at disse trenger en self.thermopack. Koeffisientene kan fint regnes ut uten å instansiere den.
 #  Foreløpig må den være der ettersom jeg ikke har en annen måte å få tak i dem på
@@ -30,6 +33,10 @@ class BinaryCoefficientsWidget(QWidget):
             return cubic()
         elif category == "CPA":
             return cpa()
+        elif category == "PC-SAFT":
+            return pcsaft()
+        elif category == "SAFT-VR Mie":
+            return saftvrmie()
         else:
             return None
 
@@ -47,6 +54,14 @@ class BinaryCoefficientsWidget(QWidget):
 
             self.thermopack.init(comps, eos, mixing=mixing, alpha=alpha, parameter_reference=ref)
 
+        elif isinstance(self.thermopack, pcsaft):
+            pass
+
+        elif isinstance(self.thermopack, saftvrmie):
+            comps = ",".join(self.component_lists[list_name]["Identities"])
+            ref = self.settings["Model options"]["Reference"]
+            self.thermopack.init(comps, parameter_reference=ref)
+
     def init_composition_list(self):
         self.composition_list.clear()
         for list_name in self.component_lists.keys():
@@ -55,7 +70,7 @@ class BinaryCoefficientsWidget(QWidget):
     def get_table(self, list_name, table_name):
         """
         :param list_name: str, name of component list to which the table is corresponsing
-        :param table_name: str, name of table (could be K, alpha, A, B, C depending on mixing rule)
+        :param table_name: str, name of table (could be K, alpha, A, B, C. epsilon, sigma, gamma depending on mixing rule)
         :return: QTableWidget, table containing the correct parameters
         """
         composition = self.component_lists[list_name]["Names"]
@@ -88,7 +103,7 @@ class BinaryCoefficientsWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name == "K":
+                if table_name in ["K", "epsilon", "sigma", "gamma"]:
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -108,7 +123,9 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         self.composition_list.currentItemChanged.connect(self.show_correct_matrix)
         self.stack_indices = {}
 
-    def init_widget(self):
+    def init_widget(self, data, settings_name):
+        self.settings = data["Model setups"][settings_name]
+
         self.thermopack = self.get_thermopack()
 
         list_names = []
@@ -202,7 +219,8 @@ class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
-    def init_widget(self):
+    def init_widget(self, data, settings_name):
+        self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
 
         list_names = []
@@ -251,6 +269,7 @@ class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
                 identity2 = self.component_lists[list_name]["Identities"][col]
                 index1 = self.thermopack.getcompindex(identity1)
                 index2 = self.thermopack.getcompindex(identity2)
+
                 hv_param = self.thermopack.get_hv_param(index1, index2)
                 alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji = hv_param
 
@@ -264,10 +283,10 @@ class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
                 c_matrix_data[col][row] = c_ji
 
         for row in range(size):
-            alpha_matrix_data[row][row] = 0
-            a_matrix_data[row][row] = 0
-            b_matrix_data[row][row] = 0
-            c_matrix_data[row][row] = 0
+            alpha_matrix_data[row][row] = 0.0
+            a_matrix_data[row][row] = 0.0
+            b_matrix_data[row][row] = 0.0
+            c_matrix_data[row][row] = 0.0
 
         alpha_matrix_data = alpha_matrix_data.tolist()
         a_matrix_data = a_matrix_data.tolist()
@@ -330,7 +349,8 @@ class HV2BinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
-    def init_widget(self):
+    def init_widget(self, data, settings_name):
+        self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
 
         list_names = []
@@ -392,10 +412,10 @@ class HV2BinaryCoefficientsWidget(BinaryCoefficientsWidget):
                 c_matrix_data[col][row] = c_ji
 
         for row in range(size):
-            alpha_matrix_data[row][row] = 0
-            a_matrix_data[row][row] = 0
-            b_matrix_data[row][row] = 0
-            c_matrix_data[row][row] = 0
+            alpha_matrix_data[row][row] = 0.0
+            a_matrix_data[row][row] = 0.0
+            b_matrix_data[row][row] = 0.0
+            c_matrix_data[row][row] = 0.0
 
         alpha_matrix_data = alpha_matrix_data.tolist()
         a_matrix_data = a_matrix_data.tolist()
@@ -467,10 +487,134 @@ class HV2TabWidget(HV1TabWidget):
 class PCSAFTBinaryCoefficientsWidget(BinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        self.table = QTableWidget(5, 5, parent=self)
+        loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
+
+    def init_widget(self, data, settings_name):
+        self.settings = data["Model setups"][settings_name]
+        pass
 
 
 class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        self.table = QTableWidget(5, 5, parent=self)
+        loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
+        self.tab_stack_indices = {}
+
+        self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
+
+    def init_widget(self, data, settings_name):
+        self.settings = data["Model setups"][settings_name]
+        self.thermopack = self.get_thermopack()
+        list_names = []
+        for i in range(self.composition_list.count()):
+            list_names.append(self.composition_list.item(i).text())
+
+        for list_name in self.component_lists.keys():
+            if list_name not in list_names:
+                self.component_lists[list_name]["Coefficient matrices"] = {}
+
+                # Create one tab for each list in QTabWidget
+                self.calculate_matrix_data(list_name)
+
+                self.epsilon_table = self.get_table(list_name, "epsilon")
+                self.sigma_table = self.get_table(list_name, "sigma")
+                self.gamma_table = self.get_table(list_name, "gamma")
+
+                self.epsilon_table.itemChanged.connect(
+                    lambda item: self.change_coeff(item, self.epsilon_table, "epsilon"))
+                self.sigma_table.itemChanged.connect(lambda item: self.change_coeff(item, self.sigma_table, "sigma"))
+                self.gamma_table.itemChanged.connect(lambda item: self.change_coeff(item, self.gamma_table, "gamma"))
+
+                tab_widget = SAFTVRMieTabWidget(self.epsilon_table, self.sigma_table, self.gamma_table)
+
+                index = self.tab_stack.addWidget(tab_widget)
+                self.tab_stack_indices[list_name] = index
+
+        self.init_composition_list()
+
+    def calculate_matrix_data(self, list_name):
+        component_list = self.component_lists[list_name]["Names"]
+        size = len(component_list)
+        epsilon_matrix_data = np.zeros(shape=(size, size))
+        sigma_matrix_data = np.zeros(shape=(size, size))
+        gamma_matrix_data = np.zeros(shape=(size, size))
+
+        self.init_thermopack(list_name)
+
+        for row in range(size - 1):
+            for col in range(row + 1, size):
+                identity1 = self.component_lists[list_name]["Identities"][row]
+                identity2 = self.component_lists[list_name]["Identities"][col]
+                index1 = self.thermopack.getcompindex(identity1)
+                index2 = self.thermopack.getcompindex(identity2)
+
+                self.thermopack.set_eps_kij(index1, index2, 0.012)
+                self.thermopack.set_sigma_lij(index1, index2, 0.013)
+                self.thermopack.set_lr_gammaij(index1, index2, 0.014)
+                epsilon_kij = self.thermopack.get_eps_kij(index1, index2)
+                sigma_lij = self.thermopack.get_sigma_lij(index1, index2)
+                lr_gammaij = self.thermopack.get_lr_gammaij(index1, index2)
+
+                # Sytmmetric matrix
+                epsilon_matrix_data[row][col] = epsilon_kij
+                epsilon_matrix_data[col][row] = epsilon_kij
+                sigma_matrix_data[row][col] = sigma_lij
+                sigma_matrix_data[col][row] = sigma_lij
+                gamma_matrix_data[row][col] = lr_gammaij
+                gamma_matrix_data[col][row] = lr_gammaij
+
+        for row in range(size):
+            epsilon_matrix_data[row][row] = 0.0
+            sigma_matrix_data[row][row] = 0.0
+            gamma_matrix_data[row][row] = 0.0
+
+        epsilon_matrix_data = epsilon_matrix_data.tolist()
+        sigma_matrix_data = sigma_matrix_data.tolist()
+        gamma_matrix_data = gamma_matrix_data.tolist()
+        self.component_lists[list_name]["Coefficient matrices"]["epsilon"] = epsilon_matrix_data
+        self.component_lists[list_name]["Coefficient matrices"]["sigma"] = sigma_matrix_data
+        self.component_lists[list_name]["Coefficient matrices"]["gamma"] = gamma_matrix_data
+
+    def show_correct_tab_widget(self, list_item):
+        if not list_item:
+            return
+        index = self.tab_stack_indices[list_item.text()]
+        self.tab_stack.setCurrentIndex(index)
+
+    def change_coeff(self, item, table, table_name):
+        row, col = item.row(), item.column()
+        component_list = self.composition_list.currentItem().text()
+        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+
+        try:
+            value = float(item.text().replace(",", "."))
+        except ValueError:
+            previous_value = matrix[row][col]
+            item.setText(str(previous_value))
+            return
+
+        matrix[row][col] = value
+        matrix[col][row] = value
+        table.item(col, row).setText(str(value))
+
+        id1 = self.component_lists[component_list]["Identities"][row]
+        id2 = self.component_lists[component_list]["Identities"][col]
+        index1 = self.thermopack.getcompindex(id1)
+        index2 = self.thermopack.getcompindex(id2)
+
+        if table_name == "epsilon":
+            self.thermopack.set_eps_kij(index1, index2, value)
+
+        elif table_name == "sigma":
+            self.thermopack.set_sigma_lij(index1, index2, value)
+
+        elif table_name == "gamma":
+            self.thermopack.set_lr_gammaij(index1, index2, value)
+
+
+class SAFTVRMieTabWidget(QTabWidget):
+    def __init__(self, epsilon_table, sigma_table, gamma_table, parent=None):
+        QTabWidget.__init__(self, parent)
+        self.addTab(epsilon_table, "\u03B5")
+        self.addTab(sigma_table, "\u03A3")
+        self.addTab(gamma_table, "\u0393")
