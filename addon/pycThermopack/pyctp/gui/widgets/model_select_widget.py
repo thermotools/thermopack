@@ -122,7 +122,10 @@ class ModelSelectWidget(QWidget):
         elif category == "PC-SAFT":
             self.data["Model setups"][self.name] = {
                 "id": get_unique_id(self.data),
-                "Model category": category
+                "Model category": category,
+                "Model options": {
+                    "Reference": "Default"
+                }
             }
 
         elif category == "SAFT-VR Mie":

@@ -17,7 +17,7 @@ import numpy as np
 
 # TODO: Methane + CO2 + CPA --> error når jeg switcher til bin coeff tab
 
-# TODO: Få HV1 og HV2 til å arve samme hovedklasse. Nå er alt likt utenom et tall ellerno...
+# TODO: Lage en bedre klassestruktur med arv og greier. Veeldig mye likt i disse nå
 
 
 class BinaryCoefficientsWidget(QWidget):
@@ -42,24 +42,20 @@ class BinaryCoefficientsWidget(QWidget):
 
     def init_thermopack(self, list_name):
         # This must be run before coefficients are calculated
+        comps = ",".join(self.component_lists[list_name]["Identities"])
+        ref = self.settings["Model options"]["Reference"]
+
         if isinstance(self.thermopack, cubic) or isinstance(self.thermopack, cpa):
-            comps = ",".join(self.component_lists[list_name]["Identities"])
             eos = self.settings["EOS"]
             mixing = self.settings["Model options"]["Mixing rule"]
             alpha = self.settings["Model options"]["Alpha correlation"]
-            ref = self.settings["Model options"]["Reference"]
 
             if mixing == "HV1":
                 mixing = "HV"
 
             self.thermopack.init(comps, eos, mixing=mixing, alpha=alpha, parameter_reference=ref)
 
-        elif isinstance(self.thermopack, pcsaft):
-            pass
-
-        elif isinstance(self.thermopack, saftvrmie):
-            comps = ",".join(self.component_lists[list_name]["Identities"])
-            ref = self.settings["Model options"]["Reference"]
+        elif isinstance(self.thermopack, pcsaft) or isinstance(self.thermopack, saftvrmie):
             self.thermopack.init(comps, parameter_reference=ref)
 
     def init_composition_list(self):
@@ -103,7 +99,7 @@ class BinaryCoefficientsWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name in ["K", "epsilon", "sigma", "gamma"]:
+                if table_name in ["K", "epsilon", "sigma", "gamma"] and self.settings["Model category"] != "PC-SAFT":
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -206,9 +202,13 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         index2 = self.thermopack.getcompindex(identity2)
         self.thermopack.set_kij(index1, index2, value)
 
-        # Symmetric matrix
         matrix[col][row] = value
+        table.blockSignals(True)
         table.item(col, row).setText(str(value))
+        table.blockSignals(False)
+
+        print(self.thermopack.get_kij(index1, index2))
+        print(self.thermopack.get_kij(index2, index1))
 
 
 class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
@@ -484,14 +484,32 @@ class HV2TabWidget(HV1TabWidget):
         self.addTab(c_table, "C")
 
 
-class PCSAFTBinaryCoefficientsWidget(BinaryCoefficientsWidget):
+class PCSAFTBinaryCoefficientsWidget(VdWBinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
 
-    def init_widget(self, data, settings_name):
-        self.settings = data["Model setups"][settings_name]
-        pass
+    def change_coeff(self, item, table, table_name):
+        # Item has to be changed in table, self.data and be set in thermopack
+        row = item.row()
+        col = item.column()
+
+        component_list = self.composition_list.currentItem().text()
+        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+
+        try:
+            value = float(item.text().replace(",", "."))
+        except ValueError:
+            previous_value = matrix[row][col]
+            item.setText(str(previous_value))
+            return
+
+        matrix[row][col] = value
+
+        identity1 = self.component_lists[component_list]["Identities"][row]
+        identity2 = self.component_lists[component_list]["Identities"][col]
+        index1 = self.thermopack.getcompindex(identity1)
+        index2 = self.thermopack.getcompindex(identity2)
+        self.thermopack.set_kij(index1, index2, value)
 
 
 class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
