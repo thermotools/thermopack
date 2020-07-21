@@ -20,6 +20,10 @@ from saftvrmie import saftvrmie
 
 # TODO: Lagre paramtere i self.plot_settings = {}
 
+# TODO: Velge å regne ut ispleter eller ikke. Tar en stund (Sjekkboks)
+
+# TODO: Mulighet for å lagre (x, y)-data som csv
+
 
 class PlotMode(QMainWindow):
     def __init__(self, component_data, settings, parent=None):
@@ -69,8 +73,10 @@ class PlotMode(QMainWindow):
             return cubic()
         elif category == "CPA":
             return cpa()
-        else:
-            return None
+        elif category == "PC-SAFT":
+            return pcsaft()
+        elif category == "SAFT-VR Mie":
+            return saftvrmie()
 
     def init_plot_modes(self):
         if len(self.component_data["Names"]) != 2:
@@ -92,6 +98,9 @@ class PlotMode(QMainWindow):
                 srk_btn.setChecked(True)
             else:
                 pass
+
+        else:
+            self.model_box.setVisible(False)
 
     def init_fractions(self):
         components = self.component_data["Names"]
@@ -186,14 +195,17 @@ class PlotMode(QMainWindow):
         self.component_data["Fractions"][index] = value
 
     def plot(self):
+        category = self.settings["Model category"]
         plot_type = self.plot_type_btn_group.checkedButton().text()
         prim_vars = self.prim_vars_btn_group.checkedButton().text()
-        eos = self.model_btn_group.checkedButton().text()
-        fractions = np.array(self.component_data["Fractions"])
 
-        if self.settings["EOS"] != eos:
-            self.settings["EOS"] = eos
-            self.init_tp()
+        if category in ["Cubic", "CPA"]:
+            eos = self.model_btn_group.checkedButton().text()
+            if self.settings["EOS"] != eos:
+                self.settings["EOS"] = eos
+                self.init_tp()
+
+        fractions = np.array(self.component_data["Fractions"])
 
         if self.canvas.empty:
             self.canvas.axes = self.canvas.fig.add_subplot(111)

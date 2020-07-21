@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1352</width>
+    <height>708</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calculation Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Flash input</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="flash_mode_label">
+            <property name="text">
+             <string>Flash mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="flash_mode_selection">
+            <item>
+             <property name="text">
+              <string>TP</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>PS</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>PH</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>UV</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QStackedWidget" name="flash_input_stack">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tp_page">
+             <layout class="QFormLayout" name="formLayout_4">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>T:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>P:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="tp_t_input">
+                <property name="suffix">
+                 <string> K</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>298.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="tp_p_input">
+                <property name="suffix">
+                 <string> Pa</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>100000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="ps_page">
+             <layout class="QFormLayout" name="formLayout_3">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>P:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>S:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="ps_p_input">
+                <property name="suffix">
+                 <string> Pa</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>100000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="ps_s_input">
+                <property name="suffix">
+                 <string> J / K mol</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="ph_page">
+             <layout class="QFormLayout" name="formLayout_2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>P:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>H:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="ph_p_input">
+                <property name="suffix">
+                 <string> Pa</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>100000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="ph_h_input">
+                <property name="suffix">
+                 <string> J</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="uv_page">
+             <layout class="QFormLayout" name="formLayout_5">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>U:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>V:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="uv_u_input">
+                <property name="suffix">
+                 <string> J</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="uv_v_input">
+                <property name="suffix">
+                 <string> m^3</string>
+                </property>
+                <property name="minimum">
+                 <double>-10000000000.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Mole fractions</string>
+         </property>
+         <layout class="QFormLayout" name="fractions_layout"/>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QFrame" name="frame_4">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="calculate_btn">
+            <property name="text">
+             <string>Calculate</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="1">
+        <widget class="QTableWidget" name="tableWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="autoScroll">
+          <bool>true</bool>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropOverwriteMode">
+          <bool>false</bool>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <property name="showGrid">
+          <bool>true</bool>
+         </property>
+         <property name="gridStyle">
+          <enum>Qt::SolidLine</enum>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="horizontalHeaderCascadingSectionResizes">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>false</bool>
+         </attribute>
+         <row>
+          <property name="text">
+           <string>Temperature</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Pressure</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Internal energy</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Enthalpy</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Entropy</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Gibbs energy</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Isobar heat capacity</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Isochor heat capacity</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Speed of sound</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Hydration number</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Hydrate structure</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Molecular weight</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Phase fraction</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Unit</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Vap</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Liq1</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Liq2</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Sol</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Overall</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>K</string>
+          </property>
+         </item>
+         <item row="1" column="0">
+          <property name="text">
+           <string>Pa</string>
+          </property>
+         </item>
+         <item row="2" column="0">
+          <property name="text">
+           <string>J / mol</string>
+          </property>
+         </item>
+         <item row="3" column="0">
+          <property name="text">
+           <string>J / mol</string>
+          </property>
+         </item>
+         <item row="4" column="0">
+          <property name="text">
+           <string>J / (mol K)</string>
+          </property>
+         </item>
+         <item row="5" column="0">
+          <property name="text">
+           <string>J / mol</string>
+          </property>
+         </item>
+         <item row="6" column="0">
+          <property name="text">
+           <string>J / (mol K)</string>
+          </property>
+         </item>
+         <item row="7" column="0">
+          <property name="text">
+           <string>J / (mol K)</string>
+          </property>
+         </item>
+         <item row="8" column="0">
+          <property name="text">
+           <string>m / s</string>
+          </property>
+         </item>
+         <item row="9" column="0">
+          <property name="text">
+           <string>-</string>
+          </property>
+         </item>
+         <item row="10" column="0">
+          <property name="text">
+           <string>-</string>
+          </property>
+         </item>
+         <item row="11" column="0">
+          <property name="text">
+           <string>kg / mol</string>
+          </property>
+         </item>
+         <item row="12" column="0">
+          <property name="text">
+           <string>mol / mol</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1352</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 from PyQt5.uic import loadUi
+
 from gui.widgets.plot_mode import PlotMode
+from gui.widgets.calc_mode import CalcMode
 
 
 # TODO: Når du dobbelttrykker på en complist eller setting (ev. hover) --> Vise vindu med info (ev. et (?)-ikon)
 
-class GoToPlotModeWidget(QDialog):
+
+class ChangeModePopup(QDialog):
     def __init__(self, data, parent=None):
         super().__init__(parent=parent)
         loadUi("widgets/layouts/go_to_plot_mode_popup.ui", self)
@@ -17,8 +20,8 @@ class GoToPlotModeWidget(QDialog):
         self.init_options_list()
 
         if self.composition_list.currentItem() and self.model_options_list.currentItem():
-            self.go_to_plot_mode_button.setEnabled(True)
-            self.go_to_plot_mode_button.setAutoDefault(True)
+            self.go_btn.setEnabled(True)
+            self.go_btn.setAutoDefault(True)
         else:
             self.close_button.setAutoDefault(True)
 
@@ -26,7 +29,6 @@ class GoToPlotModeWidget(QDialog):
         self.model_options_list.itemSelectionChanged.connect(self.selection_changed)
 
         self.close_button.clicked.connect(lambda: self.close())
-        self.go_to_plot_mode_button.clicked.connect(self.go_to_plot_mode)
 
     def init_composition_list(self):
         component_lists = self.data["Component lists"].keys()
@@ -53,6 +55,12 @@ class GoToPlotModeWidget(QDialog):
             self.go_to_plot_mode_button.setEnabled(True)
             self.go_to_plot_mode_button.setAutoDefault(True)
 
+
+class GoToPlotModeWidget(ChangeModePopup):
+    def __init__(self, data, parent=None):
+        ChangeModePopup.__init__(self, data, parent)
+        self.go_btn.clicked.connect(self.go_to_plot_mode)
+
     def go_to_plot_mode(self):
         component_list_name = self.composition_list.currentItem().text()
         model_settings_name = self.model_options_list.currentItem().text()
@@ -62,4 +70,21 @@ class GoToPlotModeWidget(QDialog):
 
         self.plot_window = PlotMode(component_data, settings)
         self.plot_window.show()
+        self.close()
+
+
+class GoToCalcModeWidget(ChangeModePopup):
+    def __init__(self, data, parent=None):
+        ChangeModePopup.__init__(self, data, parent)
+        self.go_btn.clicked.connect(self.go_to_calc_mode)
+
+    def go_to_calc_mode(self):
+        component_list_name = self.composition_list.currentItem().text()
+        model_settings_name = self.model_options_list.currentItem().text()
+
+        settings = self.data["Model setups"][model_settings_name]
+        component_data = self.data["Component lists"][component_list_name]
+
+        self.calc_window = CalcMode(component_data, settings)
+        self.calc_window.show()
         self.close()

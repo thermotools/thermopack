@@ -121,7 +121,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="go_to_plot_mode_button">
+       <widget class="QPushButton" name="go_btn">
         <property name="enabled">
          <bool>false</bool>
         </property>
