@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QSplashScreen, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QSplashScreen, QFileDialog, \
+    QActionGroup, QLabel, QDialog
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QCoreApplication, Qt, QTimer
@@ -8,7 +9,7 @@ import os
 
 from gui.widgets.component_select_widget import ComponentSelectWidget, ComponentEditWidget
 from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
-from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget
+from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.utils import get_json_data, save_json_data
 
 
@@ -38,26 +39,24 @@ class ThermopackGUIApp(QMainWindow):
         self.data = {}
         self.set_initial_data()
 
+        # Tree menu to the left
         self.tree_menu.expandAll()
         self.tree_menu.topLevelItem(0).setIcon(0, QIcon("icons/plus.png"))
         self.tree_menu.topLevelItem(1).setIcon(0, QIcon("icons/plus.png"))
         self.tree_menu.itemDoubleClicked.connect(self.menu_selection)
 
+        # Menu actions
         self.action_save.triggered.connect(self.save)
         self.action_save_as.triggered.connect(self.save_as)
-        self.action_quit.triggered.connect(QCoreApplication.quit)
-
-        # TODO: Gjør dette
         self.action_open.triggered.connect(self.open_file)
+        self.action_quit.triggered.connect(QCoreApplication.quit)
+        self.action_units.triggered.connect(self.open_settings)
+
+        # Toolbar
+        self.set_toolbar()
 
         self.tabs.hide()
         self.tabs.tabCloseRequested.connect(lambda index: self.close_tab(index))
-
-        self.plot_mode_btn.setIcon(QIcon("icons/curve.png"))
-        self.plot_mode_btn.clicked.connect(self.go_to_plot_mode)
-
-        self.calc_mode_btn.setIcon(QIcon("icons/calculator.png"))
-        self.calc_mode_btn.clicked.connect(self.go_to_calc_mode)
 
     def set_initial_data(self):
         if self.json_file:
@@ -66,6 +65,45 @@ class ThermopackGUIApp(QMainWindow):
             self.data = {"Component lists": {},
                          "Model setups": {}
                          }
+
+    def set_toolbar(self):
+        # Logo
+        logo = QLabel("Thermopack")
+        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px;")
+
+        # Top toolbar
+        toolbar = self.addToolBar("Tekst")
+        toolbar.setMovable(False)
+        toolbar.actionTriggered.connect(self.handle_toolbar_action)
+        toolbar.setStyleSheet("padding: 5px 10px 5px 10px;")
+        toolbar.addWidget(logo)
+        toolbar.addSeparator()
+
+        action_group = QActionGroup(self)
+        action_group.addAction(toolbar.addAction(QIcon("icons/open_file.png"), "Open file"))
+        action_group.addAction(toolbar.addAction(QIcon("icons/save.png"), "Save"))
+        toolbar.addSeparator()
+        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Settings and preferences"))
+        toolbar.addSeparator()
+        action_group.addAction(toolbar.addAction(QIcon("icons/curve.png"), "Plot mode"))
+        action_group.addAction(toolbar.addAction(QIcon("icons/calculator.png"), "Calculation mode"))
+
+    def handle_toolbar_action(self, action):
+        action = action.text()
+        if action == "Open file":
+            self.open_file()
+        elif action == "Save":
+            self.save()
+        elif action == "Settings and preferences":
+            self.open_settings()
+        elif action == "Plot mode":
+            self.go_to_plot_mode()
+        elif action == "Calculation mode":
+            self.go_to_calc_mode()
+
+    def open_settings(self):
+        dialog = QDialog()
+        dialog.exec_()
 
     def menu_selection(self):
         item = self.tree_menu.currentItem()
@@ -134,6 +172,7 @@ class ThermopackGUIApp(QMainWindow):
                     root.child(index).setText(0, list_name)
 
     def update_model_lists(self, list_name, data, id):
+        # TODO: Noe er fishy her. Klikker når jeg har flere enn to modeller
         # Find correct tab and change its name
         self.data = data
 
@@ -165,17 +204,50 @@ class ThermopackGUIApp(QMainWindow):
         self.dialog.show()
 
     def go_to_calc_mode(self):
-        self.log("Go to calc mode...")
+        self.dialog = GoToCalcModeWidget(self.data)
+        self.dialog.setModal(True)
+        self.dialog.show()
 
     def log(self, text):
         self.message_box.append(text)
 
-    def open_file(self):
-        self.log("Open file...")
+    def open_file(self, file_path=None):
+        if not file_path:
+            file_dialog = QFileDialog()
+            file_dialog.setWindowTitle("Open File")
+            file_dialog.setDirectory(os.getcwd())
+            file_dialog.setNameFilter('Text files (*.json)')
+
+            if file_dialog.exec_() == QFileDialog.Accepted:
+                file_path = file_dialog.selectedFiles()[0]
+
+        loaded_data = get_json_data(file_path)
+        loaded_component_data = loaded_data["Component lists"]
+        loaded_model_setup_data = loaded_data["Model setups"]
+
+        self.data["Component lists"].update(loaded_component_data)
+        self.data["Model setups"].update(loaded_model_setup_data)
+
+        self.json_file = file_path
+        self.setWindowTitle(self.windowTitle() + " - " + self.json_file)
+
+        # Populate menu to the left
+        self.log("Opened and loaded " + self.json_file + " successfully!")
+        # Clear menu
+        for list_name in loaded_component_data.keys():
+            self.update_component_lists(list_name, is_new=True, old_name=None)
+
+        for list_name in loaded_model_setup_data.keys():
+            model_select_widget = ModelSelectWidget(self.data, name=list_name, parent=self)
+            model_select_widget.settings_updated.connect(self.update_model_lists)
+            ModelListMenuItem(self.tree_menu.topLevelItem(1), model_select_widget.name, model_select_widget.id,
+                              model_select_widget)
+
+        self.save()
 
     def save_as(self):
         file_dialog = QFileDialog()
-        file_dialog.setWindowTitle('Save file')
+        file_dialog.setWindowTitle('Save File')
         file_dialog.setDirectory(os.getcwd())
         file_dialog.setAcceptMode(QFileDialog.AcceptSave)
         file_dialog.setNameFilter('Text files (*.json)')
@@ -185,11 +257,14 @@ class ThermopackGUIApp(QMainWindow):
             file_path = file_dialog.selectedFiles()[0]
 
             self.json_file = file_path
+            self.setWindowTitle(self.windowTitle() + " - " + self.json_file)
             save_json_data(self.data, self.json_file)
+            self.log("Saved file.")
 
     def save(self):
         if self.json_file:
             save_json_data(self.data, self.json_file)
+            self.log("Saved file.")
 
         else:
             self.save_as()
@@ -204,5 +279,6 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
+    win.open_file("test.json")
     win.show()
     sys.exit(app.exec_())

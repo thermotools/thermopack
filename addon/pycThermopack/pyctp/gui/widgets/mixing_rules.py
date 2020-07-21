@@ -566,9 +566,6 @@ class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
                 index1 = self.thermopack.getcompindex(identity1)
                 index2 = self.thermopack.getcompindex(identity2)
 
-                self.thermopack.set_eps_kij(index1, index2, 0.012)
-                self.thermopack.set_sigma_lij(index1, index2, 0.013)
-                self.thermopack.set_lr_gammaij(index1, index2, 0.014)
                 epsilon_kij = self.thermopack.get_eps_kij(index1, index2)
                 sigma_lij = self.thermopack.get_sigma_lij(index1, index2)
                 lr_gammaij = self.thermopack.get_lr_gammaij(index1, index2)
