@@ -12,7 +12,10 @@ from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
 from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.utils import get_json_data, save_json_data
 
-# TODO: Funksjonalitet for enheter:
+# TODO: Funksjonalitet for enheter
+# TODO: Binary coefficients endres i ModelSelectWidget, men den instansen av thermopack er ikke med videre inn i
+#  plot mode og calc mode. Koeffisienter MÅ lagres i self.data og sendes med inn. Når thermopack instansieres, må
+#  det loopes over alle koeffisientene og sette dem.
 
 
 class ThermopackGUIApp(QMainWindow):
@@ -261,6 +264,11 @@ class ThermopackGUIApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Load stylesheet
+    stylesheet = open("stylesheet.css", "r")
+    app.setStyleSheet(stylesheet.read())
+    stylesheet.close()
 
     splash = QSplashScreen(QPixmap("images/Thermopack logo.png"))
     splash.setWindowFlag(Qt.WindowStaysOnTopHint)

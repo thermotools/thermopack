@@ -1,0 +1,33 @@
+QMainWindow {
+    background-color: #D2E1EE;
+}
+
+QHeaderView::section {
+    background-color: #133C55;
+	color: #fffff8;
+    padding: 4px;
+    font-size: 10pt;
+    border-style: none;
+    border-bottom: 1px solid #fffff8;
+    border-right: 1px solid #fffff8;
+}
+
+QHeaderView::section:horizontal
+{
+    border-top: 1px solid #fffff8;
+}
+
+QHeaderView::section:vertical
+{
+    border-left: 1px solid #fffff8;
+}
+
+QTableView {
+	grid-line-color: #fffff8;
+	font-size: 10pt;
+	alternate-background-color: #CDE4F3;
+}
+
+QTableView::item:selected {
+	background: #1E5E85;
+}
