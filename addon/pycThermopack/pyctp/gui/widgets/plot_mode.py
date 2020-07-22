@@ -7,7 +7,6 @@ from gui.widgets.mpl_canvas import MplCanvas
 
 import numpy as np
 
-from thermo import thermopack
 from cubic import cubic
 from cpa import cpa
 from pcsaft import pcsaft
@@ -124,15 +123,19 @@ class PlotMode(QMainWindow):
             self.fractions_layout.addRow(components[i], spin_box)
 
     def init_tp(self):
+        comps = ",".join(self.component_data["Identities"])
+        model_ref = self.settings["Model options"]["Reference"]
+
         category = self.settings["Model category"]
         if category in ["Cubic", "CPA"]:
-            comps = ",".join(self.component_data["Identities"])
             eos = self.settings["EOS"]
             mixing = self.settings["Model options"]["Mixing rule"]
             alpha = self.settings["Model options"]["Alpha correlation"]
-            model_ref = self.settings["Model options"]["Reference"]
 
             self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
+
+        elif category in ["PC-SAFT", "SAFT-VR Mie"]:
+            self.tp.init(comps=comps, parameter_reference=model_ref)
 
     def init_isopleth_btns(self):
         self.PT_H_btn.clicked.connect(self.canvas.toggle_isenthalps)

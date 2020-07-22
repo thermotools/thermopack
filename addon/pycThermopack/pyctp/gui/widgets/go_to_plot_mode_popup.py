@@ -49,11 +49,11 @@ class ChangeModePopup(QDialog):
         option_mode_item = self.model_options_list.currentItem()
 
         if not (component_list_item and option_mode_item):
-            self.go_to_plot_mode_button.setEnabled(False)
+            self.go_btn.setEnabled(False)
             self.close_button.setAutoDefault(True)
         else:
-            self.go_to_plot_mode_button.setEnabled(True)
-            self.go_to_plot_mode_button.setAutoDefault(True)
+            self.go_btn.setEnabled(True)
+            self.go_btn.setAutoDefault(True)
 
 
 class GoToPlotModeWidget(ChangeModePopup):

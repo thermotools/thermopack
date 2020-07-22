@@ -12,18 +12,7 @@ from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
 from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.utils import get_json_data, save_json_data
 
-
-# TODO: Lage en Load option. Skal hente frem data (JSON) fra en fil og populere
-#  Denne får da to deler: Components og Settings --> To lister
-#  Kan kjøre init til ComponentSelectWidget og ModelSelectWidget med kwargs
-
-
-# TODO: Load fluids-filer i main. Ingen grunn til å gjøre det for hver gang ComponentSelectWidget starrtes
-
-# TODO: Lag en Calc Mode: PT flash (+andre flasher). Velger Comp + Model, Velger T, P --> Properties
-#  Kose seg med enheter og greier
-
-# TODO: Lag en QToolBar med QToolButtons for Open, Save, ...
+# TODO: Funksjonalitet for enheter:
 
 
 class ThermopackGUIApp(QMainWindow):
