@@ -189,8 +189,8 @@ class CalcMode(QMainWindow):
             P = float(self.ps_p_input.valueFromText(self.ps_p_input.cleanText()))
             S = float(self.ps_s_input.valueFromText(self.ps_s_input.cleanText()))
 
-            if self.ps_t_guess:
-                T = float(self.ps_t_initial_guess.valueFromText(self.ps_t_initial_guess.cleanText()))
+            if self.ps_initial_guess.isChecked():
+                T = float(self.ps_t_guess.valueFromText(self.ps_t_guess.cleanText()))
             else:
                 T = None
 
@@ -200,8 +200,8 @@ class CalcMode(QMainWindow):
             P = float(self.ph_p_input.valueFromText(self.ph_p_input.cleanText()))
             H = float(self.ph_h_input.valueFromText(self.ph_h_input.cleanText()))
 
-            if self.ph_t_guess:
-                T = float(self.ph_t_initial_guess.valueFromText(self.ph_t_initial_guess.cleanText()))
+            if self.ph_initial_guess.isChecked():
+                T = float(self.ph_t_guess.valueFromText(self.ph_t_guess.cleanText()))
             else:
                 T = None
 
@@ -211,13 +211,13 @@ class CalcMode(QMainWindow):
             U = float(self.uv_u_input.valueFromText(self.uv_u_input.cleanText()))
             V = float(self.uv_v_input.valueFromText(self.uv_v_input.cleanText()))
 
-            if self.uv_t_guess:
-                T = float(self.uv_t_initial_guess.valueFromText(self.uv_t_initial_guess.cleanText()))
+            if self.uv_t_initial_guess.isChecked():
+                T = float(self.uv_t_guess.valueFromText(self.uv_t_guess.cleanText()))
             else:
                 T = None
 
-            if self.uv_p_guess:
-                P = float(self.uv_p_initial_guess.valueFromText(self.uv_p_initial_guess.cleanText()))
+            if self.uv_p_initial_guess.isChecked():
+                P = float(self.uv_p_guess.valueFromText(self.uv_p_guess.cleanText()))
             else:
                 P = None
 

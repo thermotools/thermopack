@@ -215,7 +215,7 @@
              <item row="1" column="0" colspan="2">
               <widget class="QStackedWidget" name="flash_input_stack">
                <property name="currentIndex">
-                <number>2</number>
+                <number>3</number>
                </property>
                <widget class="QWidget" name="tp_page">
                 <layout class="QFormLayout" name="formLayout_4">
@@ -238,6 +238,9 @@
                    <property name="suffix">
                     <string> K</string>
                    </property>
+                   <property name="decimals">
+                    <number>5</number>
+                   </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
                    </property>
@@ -253,6 +256,9 @@
                   <widget class="QDoubleSpinBox" name="tp_p_input">
                    <property name="suffix">
                     <string> Pa</string>
+                   </property>
+                   <property name="decimals">
+                    <number>5</number>
                    </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
@@ -281,6 +287,9 @@
                    <property name="suffix">
                     <string> Pa</string>
                    </property>
+                   <property name="decimals">
+                    <number>5</number>
+                   </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
                    </property>
@@ -303,6 +312,9 @@
                   <widget class="QDoubleSpinBox" name="ps_s_input">
                    <property name="suffix">
                     <string> J / K mol</string>
+                   </property>
+                   <property name="decimals">
+                    <number>5</number>
                    </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
@@ -356,6 +368,9 @@
                       <property name="suffix">
                        <string> K</string>
                       </property>
+                      <property name="decimals">
+                       <number>5</number>
+                      </property>
                       <property name="minimum">
                        <double>-10000000000.000000000000000</double>
                       </property>
@@ -383,6 +398,9 @@
                    <property name="suffix">
                     <string> Pa</string>
                    </property>
+                   <property name="decimals">
+                    <number>5</number>
+                   </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
                    </property>
@@ -405,6 +423,9 @@
                   <widget class="QDoubleSpinBox" name="ph_h_input">
                    <property name="suffix">
                     <string> J</string>
+                   </property>
+                   <property name="decimals">
+                    <number>5</number>
                    </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
@@ -458,6 +479,9 @@
                       <property name="suffix">
                        <string> K</string>
                       </property>
+                      <property name="decimals">
+                       <number>5</number>
+                      </property>
                       <property name="minimum">
                        <double>-10000000000.000000000000000</double>
                       </property>
@@ -485,6 +509,9 @@
                    <property name="suffix">
                     <string> J</string>
                    </property>
+                   <property name="decimals">
+                    <number>5</number>
+                   </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
                    </property>
@@ -504,6 +531,9 @@
                   <widget class="QDoubleSpinBox" name="uv_v_input">
                    <property name="suffix">
                     <string> m^3</string>
+                   </property>
+                   <property name="decimals">
+                    <number>5</number>
                    </property>
                    <property name="minimum">
                     <double>-10000000000.000000000000000</double>
@@ -543,6 +573,9 @@
                      <widget class="QDoubleSpinBox" name="uv_t_guess">
                       <property name="suffix">
                        <string> K</string>
+                      </property>
+                      <property name="decimals">
+                       <number>5</number>
                       </property>
                       <property name="minimum">
                        <double>-10000000000.000000000000000</double>
@@ -585,6 +618,9 @@
                      <widget class="QDoubleSpinBox" name="uv_p_guess">
                       <property name="suffix">
                        <string> Pa</string>
+                      </property>
+                      <property name="decimals">
+                       <number>5</number>
                       </property>
                       <property name="minimum">
                        <double>-10000000000.000000000000000</double>
@@ -909,7 +945,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Settings</string>
     </property>
     <addaction name="action_display_settings"/>
    </widget>
