@@ -3,6 +3,9 @@ from matplotlib.figure import Figure
 
 import numpy as np
 
+# TODO: Må kunne sette N_ISOPLETHS og NMAX, og kunne velge om man vil plotte isopleter eller ikke. (Tar jo en del tid)
+# TODO: Ikke ha X_list_test. Få det riktig som det skal være
+
 N_ISOPLETHS = 15
 NMAX = 50
 
@@ -88,10 +91,12 @@ class MplCanvas(FigureCanvasQTAgg):
         P_list_test = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, N_ISOPLETHS)
 
         # Calculate critical variables
-        T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
-
-        H_c = tp.enthalpy_tv(T_c, V_c, fractions)
-        S_c = tp.entropy_tv(T_c, V_c, fractions)
+        try:
+            T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
+            H_c = tp.enthalpy_tv(T_c, V_c, fractions)
+            S_c = tp.entropy_tv(T_c, V_c, fractions)
+        except Exception:
+            T_c, V_c, P_c, H_c, S_c = None, None, None, None, None
 
         # Plot depending on which primary variables are chosen
         if prim_vars == "PT":
@@ -131,7 +136,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def plot_envelope_PT(self, tp, T, P, T_c, P_c, fractions):
 
         # Display correct buttons
-        self.parent().parent().parent().btn_stack.setCurrentIndex(0)
+        self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(0)
         self.parent().parent().parent().PT_H_btn.setChecked(True)
         self.parent().parent().parent().PT_S_btn.setChecked(True)
 
@@ -404,6 +409,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
     def plot_binary_pxy(self, tp, line_color, grid_on):
 
+        # TODO: Hente disse fra options (som er lagret (Skal lagres når options-vinduet åpnes. Eller i init? Må jo ha dem uansett) Hvis ikke, sett til dette)
         T = 288.0
         p_max = 1.5e7
         p_min = 1.0e5
@@ -429,4 +435,76 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_xlabel("xlabel")
         self.axes.set_ylabel("ylabel")
         self.draw()
+        self.draw()
+
+    def plot_pressure_density(self, tp, fractions, line_color, point_color, grid_on):
+        p_initial = 1.0e5
+        p_max = 1.5e7
+        T_min = None
+        step_size = 0.1
+
+        # Calculate T, P, V
+        T, P, V = tp.get_envelope_twophase(initial_pressure=p_initial, z=fractions, maximum_pressure=p_max,
+                                           minimum_temperature=T_min, step_size=step_size, calc_v=True)
+        T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
+
+        # TODO: Q: Hvordan velge verdier for rho og P?
+        rho = 1 / V
+        rho_c = 1 / V_c
+
+        self.axes.plot(rho, P, color=line_color, label="Pressure density")
+        self.axes.scatter([rho_c], [P_c], color=point_color, label="Critical point")
+
+        self.axes.grid(grid_on)
+        self.axes.set_xlabel("$\\rho  [\\frac{1}{m^3}]$")
+        self.axes.set_ylabel("$P  [Pa]$")
+
+        self.axes.legend(loc="best")
+        self.draw()
+
+    def plot_global_binary(self, tp, grid_on):
+        min_press = 1.05e5
+        min_temp = 2.0
+        azeotropes = True
+        KSTYPE, VLE, LLVE, CRIT, AZ = tp.global_binary_plot(minimum_pressure=min_press, minimum_temperature=min_temp,
+                                                            include_azeotropes=azeotropes)
+
+        colors = ["black", "blue", "red", "green"]
+        linestyles = ["-", "--", ":", "-."]
+
+        label = "VLE"
+        for i in range(len(VLE)):
+            self.axes.plot(VLE[i][:, 0], VLE[i][:, 1], linestyle=linestyles[0], color=colors[0], label=label)
+            label = None
+
+        label = "LLVE"
+        for i in range(len(LLVE)):
+            self.axes.plot(LLVE[i][:, 0], LLVE[i][:, 1], linestyle=linestyles[1], color=colors[1], label=label)
+            label = None
+
+        label = "CRIT"
+        for i in range(len(CRIT)):
+            self.axes.plot(CRIT[i][:, 0], CRIT[i][:, 1], linestyle=linestyles[2], color=colors[2], label=label)
+            label = None
+
+        label = "AZ"
+        for i in range(len(AZ)):
+            self.axes.plot(AZ[i][:, 0], AZ[i][:, 1], linestyle=linestyles[3], color=colors[3], label=label)
+            label = None
+
+        ks_strings = {
+            1: "I",
+            2: "II",
+            3: "III",
+            4: "IV",
+            5: "V"
+        }
+
+        self.axes.set_title("van Konyenburg and Scott type: " + ks_strings[KSTYPE])
+        legend = self.axes.legend(loc="best", numpoints=1)
+        legend.get_frame().set_linewidth(0.0)
+
+        # TODO: Q: Hvordan velge ylim?
+        self.axes.set_ylim(1.0e5, 0.3e7)
+        self.axes.grid(grid_on)
         self.draw()
