@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QSplashScreen, QFileDialog, \
-    QActionGroup, QLabel, QDialog
+    QActionGroup, QLabel
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QCoreApplication, Qt, QTimer
@@ -10,6 +10,8 @@ import os
 from gui.widgets.component_select_widget import ComponentSelectWidget, ComponentEditWidget
 from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
 from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget, GoToCalcModeWidget
+from gui.widgets.units_dialog import UnitsDialog
+
 from gui.utils import get_json_data, save_json_data
 
 # TODO: Funksjonalitet for enheter
@@ -19,14 +21,14 @@ from gui.utils import get_json_data, save_json_data
 
 
 class ThermopackGUIApp(QMainWindow):
-    def __init__(self, parent=None, json_file=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
         loadUi("main_layout.ui", self)
         self.setWindowTitle("Thermopack")
         self.showMaximized()
 
-        self.json_file = json_file
+        self.json_file = None
 
         self.data = {}
         self.set_initial_data()
@@ -42,7 +44,7 @@ class ThermopackGUIApp(QMainWindow):
         self.action_save_as.triggered.connect(self.save_as)
         self.action_open.triggered.connect(self.open_file)
         self.action_quit.triggered.connect(QCoreApplication.quit)
-        self.action_units.triggered.connect(self.open_settings)
+        self.action_units.triggered.connect(self.open_units_window)
 
         # Toolbar
         self.set_toolbar()
@@ -51,11 +53,24 @@ class ThermopackGUIApp(QMainWindow):
         self.tabs.tabCloseRequested.connect(lambda index: self.close_tab(index))
 
     def set_initial_data(self):
-        if self.json_file:
-            self.data = get_json_data(self.json_file)
-        else:
+        if not self.json_file:
             self.data = {"Component lists": {},
-                         "Model setups": {}
+                         "Model setups": {},
+                         "Units": {"Selected": {"Energy": "J",
+                                                "Temperature": "K",
+                                                "Pressure": "Pa",
+                                                "Volume": "m^3",
+                                                "Amount": "mol",
+                                                "Speed": "m/s"
+                                                },
+                                   "Choices": {"Energy": ["J", "kJ", "MJ", "kcal"],
+                                               "Temperature": ["K", "C", "F", "R"],
+                                               "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
+                                               "Volume": ["m^3", "L", "mL"],
+                                               "Amount": ["mol", "g", "kg"],
+                                               "Speed": ["m/s", "mph"]
+                                               }
+                                   }
                          }
 
     def set_toolbar(self):
@@ -75,7 +90,7 @@ class ThermopackGUIApp(QMainWindow):
         action_group.addAction(toolbar.addAction(QIcon("icons/open_file.png"), "Open file"))
         action_group.addAction(toolbar.addAction(QIcon("icons/save.png"), "Save"))
         toolbar.addSeparator()
-        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Settings and preferences"))
+        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
         toolbar.addSeparator()
         action_group.addAction(toolbar.addAction(QIcon("icons/curve.png"), "Plot mode"))
         action_group.addAction(toolbar.addAction(QIcon("icons/calculator.png"), "Calculation mode"))
@@ -86,16 +101,17 @@ class ThermopackGUIApp(QMainWindow):
             self.open_file()
         elif action == "Save":
             self.save()
-        elif action == "Settings and preferences":
-            self.open_settings()
+        elif action == "Units":
+            self.open_units_window()
         elif action == "Plot mode":
             self.go_to_plot_mode()
         elif action == "Calculation mode":
             self.go_to_calc_mode()
 
-    def open_settings(self):
-        dialog = QDialog()
-        dialog.exec_()
+    def open_units_window(self):
+        units_data = self.data["Units"]
+        self.dialog = UnitsDialog(units_data)
+        self.dialog.show()
 
     def menu_selection(self):
         item = self.tree_menu.currentItem()
@@ -278,6 +294,6 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    win.open_file("test.json")  # TODO: Fjern denne
+    # win.open_file("test.json")
     win.show()
     sys.exit(app.exec_())
