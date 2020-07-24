@@ -1,0 +1,62 @@
+/* Base styling */
+
+QWidget {
+    background-color: #dfe3ee;
+}
+
+
+/* Button styling */
+
+QPushButton {
+	box-shadow: inset 0px 0px 2px 0px #54a3f7;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                  stop: 0 #59a5d8, stop: 1 #0061a7);
+	border-radius: 9px;
+	border: 2px solid #124d77;
+	color: #ffffff;
+	padding: 6px 24px;
+}
+QPushButton:hover, QPushButton:default {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                              stop: 0 #0061a7, stop: 1 #59a5d8);
+}
+QPushButton:pressed {
+	position: relative;
+	top: 1px;
+}
+
+QPushButton:disabled {
+    border: 1px solid #BDDBEF;
+    background-color: #dddddd;
+    color: #000000;
+}
+
+/* Table styling */
+
+QHeaderView::section {
+    background-color: #133C55;
+	color: #fffff8;
+    padding: 4px;
+    font-size: 10pt;
+    border-style: none;
+    border-bottom: 1px solid #fffff8;
+    border-right: 1px solid #fffff8;
+}
+
+QHeaderView::section:horizontal {
+    border-top: 1px solid #fffff8;
+}
+
+QHeaderView::section:vertical {
+    border-left: 1px solid #fffff8;
+}
+
+QTableView {
+	grid-line-color: #fffff8;
+	font-size: 10pt;
+	alternate-background-color: #CDE4F3;
+}
+
+QTableView::item:selected {
+	background: #1E5E85;
+}

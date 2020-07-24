@@ -212,6 +212,8 @@ class ThermopackGUIApp(QMainWindow):
 
             if file_dialog.exec_() == QFileDialog.Accepted:
                 file_path = file_dialog.selectedFiles()[0]
+            else:
+                return
 
         loaded_data = get_json_data(file_path)
         loaded_component_data = loaded_data["Component lists"]
@@ -266,7 +268,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Load stylesheet
-    stylesheet = open("stylesheet.css", "r")
+    stylesheet = open("stylesheet.txt", "r")
     app.setStyleSheet(stylesheet.read())
     stylesheet.close()
 
@@ -276,6 +278,6 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    win.open_file("test.json")
+    win.open_file("test.json")  # TODO: Fjern denne
     win.show()
     sys.exit(app.exec_())
