@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabs">
@@ -667,7 +670,7 @@
      </widget>
      <widget class="QWidget" name="binary_coeff_tab">
       <attribute name="title">
-       <string>Binary coefficients</string>
+       <string>Parameters</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_10">
        <item row="0" column="0">

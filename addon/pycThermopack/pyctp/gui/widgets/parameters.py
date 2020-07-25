@@ -1,10 +1,14 @@
-from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget
+from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QRadioButton, QButtonGroup
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
+
 from cubic import cubic
 from cpa import cpa
 from pcsaft import pcsaft
 from saftvrmie import saftvrmie
+
+from gui.utils import get_comp_id
+
 import numpy as np
 
 
@@ -29,7 +33,7 @@ import numpy as np
 #  vise i tabellen og lagre i json-data. Da må vi passe på at hvis dataen skal hentes ut igjen, ta det fra json, ikke fra tp
 
 
-class BinaryCoefficientsWidget(QWidget):
+class ParametersWidget(QWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(parent=parent)
 
@@ -123,7 +127,7 @@ class BinaryCoefficientsWidget(QWidget):
         return table
 
 
-class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
+class VdWBinaryCoefficientsWidget(ParametersWidget):
     # Should be reinitiated every time opened, so that coefficients are correct if model is changed
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
@@ -223,7 +227,7 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         table.blockSignals(False)
 
 
-class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
+class HV1BinaryCoefficientsWidget(ParametersWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
@@ -353,7 +357,7 @@ class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
         self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
 
 
-class HV2BinaryCoefficientsWidget(BinaryCoefficientsWidget):
+class HV2BinaryCoefficientsWidget(ParametersWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv2_bin_coeff_widget.ui", self)
@@ -501,15 +505,32 @@ class PCSAFTBinaryCoefficientsWidget(VdWBinaryCoefficientsWidget):
         super().__init__(data, settings_name, parent)
 
 
-
-
-class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
+class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
+        loadUi("widgets/layouts/saftvrmie_parameters.ui", self)
         self.tab_stack_indices = {}
+        self.list_name = None
+        self.component_id = None
 
-        self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
+        self.pure_param_m_label.setText("m:")
+        self.pure_param_sigma_label.setText("\u03C3:")
+        self.pure_param_epsilon_label.setText("\u03B5 / k:")
+        self.pure_param_lambda_a_label.setText("\u03BB a:")
+        self.pure_param_lambda_r_label.setText("\u03BB r:")
+
+        self.pure_param_m_edit.editingFinished.connect(self.change_pure_param_m)
+        self.pure_param_sigma_edit.editingFinished.connect(self.change_pure_param_sigma)
+        self.pure_param_epsilon_edit.editingFinished.connect(self.change_pure_param_epsilon)
+        self.pure_param_lambda_a_edit.editingFinished.connect(self.change_pure_param_lambda_a)
+        self.pure_param_lambda_r_edit.editingFinished.connect(self.change_pure_param_lambda_r)
+
+        self.component_btngroup = QButtonGroup()
+        self.component_btngroup.buttonClicked.connect(self.show_component_pure_params)
+
+        self.pure_params_frame.hide()
+
+        self.composition_list.currentItemChanged.connect(self.on_chosen_composition_list)
 
     def init_widget(self, data, settings_name):
         self.settings = data["Model setups"][settings_name]
@@ -540,6 +561,112 @@ class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
                 self.tab_stack_indices[list_name] = index
 
         self.init_composition_list()
+
+    def change_pure_param_m(self):
+        value = self.pure_param_m_edit.text()
+        self.pure_param_m_edit.blockSignals(True)
+        self.pure_param_m_edit.clearFocus()
+        self.pure_param_m_edit.blockSignals(False)
+
+        selected_component = self.component_btngroup.checkedButton().text()
+        if selected_component:
+            # Validate input
+            print("Setting m for", selected_component, "to", value)
+            self.save_pure_fluid_params()
+        else:
+            return
+
+    def change_pure_param_sigma(self):
+        value = self.pure_param_sigma_edit.text()
+        self.pure_param_sigma_edit.blockSignals(True)
+        self.pure_param_sigma_edit.clearFocus()
+        self.pure_param_sigma_edit.blockSignals(False)
+
+        selected_component = self.component_btngroup.checkedButton().text()
+        if selected_component:
+            # Validate input
+            print("Setting sigma for", selected_component, "to", value)
+            self.save_pure_fluid_params()
+        else:
+            return
+
+    def change_pure_param_epsilon(self):
+        value = self.pure_param_epsilon_edit.text()
+        self.pure_param_epsilon_edit.blockSignals(True)
+        self.pure_param_epsilon_edit.clearFocus()
+        self.pure_param_epsilon_edit.blockSignals(False)
+
+        selected_component = self.component_btngroup.checkedButton().text()
+        if selected_component:
+            # Validate input
+            print("Setting epsilon for", selected_component, "to", value)
+            self.save_pure_fluid_params()
+        else:
+            return
+
+    def change_pure_param_lambda_a(self):
+        value = self.pure_param_lambda_a_edit.text()
+        self.pure_param_lambda_a_edit.blockSignals(True)
+        self.pure_param_lambda_a_edit.clearFocus()
+        self.pure_param_lambda_a_edit.blockSignals(False)
+
+        selected_component = self.component_btngroup.checkedButton().text()
+        if selected_component:
+            # Validate input
+            print("Setting lambda a for", selected_component, "to", value)
+            self.save_pure_fluid_params()
+        else:
+            return
+
+    def change_pure_param_lambda_r(self):
+        value = self.pure_param_lambda_r_edit.text()
+        self.pure_param_lambda_r_edit.blockSignals(True)
+        self.pure_param_lambda_r_edit.clearFocus()
+        self.pure_param_lambda_r_edit.blockSignals(False)
+
+        selected_component = self.component_btngroup.checkedButton().text()
+        if selected_component:
+            # Validate input
+            print("Setting lambda r for", selected_component, "to", value)
+            self.save_pure_fluid_params()
+        else:
+            return
+
+    def save_pure_fluid_params(self):
+        if not self.list_name or not self.component_id:
+            return
+
+        m = float(self.pure_param_m_edit.text())
+        sigma = float(self.pure_param_sigma_edit.text())
+        epsilon = float(self.pure_param_epsilon_edit.text())
+        lambda_a = float(self.pure_param_lambda_a_edit.text())
+        lambda_r = float(self.pure_param_lambda_r_edit.text())
+
+        fluid_params = self.settings["Parameters"][self.list_name]["Pure fluid parameters"][self.component_id]
+        fluid_params["M"] = m
+        fluid_params["Sigma"] = sigma
+        fluid_params["Epsilon"] = epsilon
+        fluid_params["Lambda a"] = lambda_a
+        fluid_params["Lambda r"] = lambda_r
+
+    def show_component_pure_params(self, button):
+        comp_name = button.text()
+        list_name = self.composition_list.currentItem().text()
+
+        self.pure_params_frame.show()
+
+        self.init_thermopack(list_name)
+
+        self.component_id = get_comp_id(self.component_lists[list_name], comp_name)
+        comp_index = self.thermopack.getcompindex(self.component_id)
+
+        m, sigma, eps_div_k, lambda_a, lambda_r = self.thermopack.get_pure_fluid_param(comp_index)
+
+        self.pure_param_m_edit.setText(str(m))
+        self.pure_param_sigma_edit.setText(str(sigma))
+        self.pure_param_epsilon_edit.setText(str(eps_div_k))
+        self.pure_param_lambda_a_edit.setText(str(lambda_a))
+        self.pure_param_lambda_r_edit.setText(str(lambda_r))
 
     def calculate_matrix_data(self, list_name):
         component_list = self.component_lists[list_name]["Names"]
@@ -581,11 +708,23 @@ class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         self.component_lists[list_name]["Coefficient matrices"]["sigma"] = sigma_matrix_data
         self.component_lists[list_name]["Coefficient matrices"]["gamma"] = gamma_matrix_data
 
-    def show_correct_tab_widget(self, list_item):
-        if not list_item:
+    def on_chosen_composition_list(self, list_item):
+        self.list_name = list_item.text()
+        if not self.list_name:
             return
-        index = self.tab_stack_indices[list_item.text()]
+        index = self.tab_stack_indices[self.list_name]
         self.tab_stack.setCurrentIndex(index)
+
+        component_list = self.component_lists[self.list_name]["Names"]
+
+        for button in self.component_btngroup.buttons():
+            self.component_btngroup.removeButton(button)
+            self.component_btn_layout.removeWidget(button)
+
+        for comp_name in component_list:
+            button = QRadioButton(comp_name)
+            self.component_btngroup.addButton(button)
+            self.component_btn_layout.addWidget(button)
 
     def change_coeff(self, item, table, table_name):
         row, col = item.row(), item.column()

@@ -62,3 +62,8 @@ def get_fluids():
             fluids[name] = component
 
     return fluids
+
+
+def get_comp_id(comp_list_data, comp_name):
+    index = comp_list_data["Names"].index(comp_name)
+    return comp_list_data["Identities"][index]

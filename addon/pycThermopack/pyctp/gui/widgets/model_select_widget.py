@@ -2,14 +2,18 @@ from PyQt5.QtWidgets import QWidget, QMessageBox, QTreeWidgetItem
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal, Qt
 
-from gui.widgets.mixing_rules import *
+from gui.widgets.parameters import *
 
 from gui.utils import get_unique_name, get_unique_id
+
 
 # TODO
 #  Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 
 # TODO:  No self associating components. Initializing PR(/SRK) instead of CPA-PR(/SRK) dukker opp hele tiden for CPA
+
+# TODO: Endre navn på matriser. Ingen kan ha samme navn.
+#  Eks VDW-K, HV1-A, HV1-B, HV2-A, HV2-B, HV2-C, PC-SAFT-K, SAFT-VRMIE-epsilon, SAFT-VRMIE-gamma, SAFT-VRMIE-sigma
 
 
 class ModelListMenuItem(QTreeWidgetItem):
@@ -76,13 +80,14 @@ class ModelSelectWidget(QWidget):
         self.model_category_list.setCurrentItem(self.model_category_list.findItems(model_category, Qt.MatchExactly)[0])
 
         if model_category == "Cubic" or model_category == "CPA":
+            self.eos_stack.setCurrentIndex(1)
+            self.options_stack.setCurrentIndex(1)
+
             eos = self.data["Model setups"][self.name]["EOS"]
             alpha_corr = self.data["Model setups"][self.name]["Model options"]["Alpha correlation"]
             mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
             vol_trans = self.data["Model setups"][self.name]["Model options"]["Volume translation"]
             ref = self.data["Model setups"][self.name]["Model options"]["Reference"]
-
-            self.show_correct_coeff_widget()
 
             self.cubic_eos_list.setCurrentItem(self.cubic_eos_list.findItems(eos, Qt.MatchExactly)[0])
             self.cubic_alpha_corr.setCurrentIndex(self.cubic_alpha_corr.findText(alpha_corr))
@@ -91,10 +96,28 @@ class ModelSelectWidget(QWidget):
             self.cubic_ref.setCurrentIndex(self.cubic_ref.findText(ref))
 
         elif model_category == "PC-SAFT":
-            pass
+            self.eos_stack.setCurrentIndex(0)
+            self.options_stack.setCurrentIndex(0)
 
         elif model_category == "SAFT-VR Mie":
-            pass
+            self.eos_stack.setCurrentIndex(0)
+            self.options_stack.setCurrentIndex(2)
+
+            a1 = self.data["Model setups"][self.name]["Model options"]["A1"]
+            a2 = self.data["Model setups"][self.name]["Model options"]["A2"]
+            a3 = self.data["Model setups"][self.name]["Model options"]["A3"]
+            hard_sphere = self.data["Model setups"][self.name]["Model options"]["Hard sphere"]
+            chain = self.data["Model setups"][self.name]["Model options"]["Chain"]
+            ref = self.data["Model setups"][self.name]["Model options"]["Reference"]
+
+            self.saftvrmie_a1.setChecked(a1)
+            self.saftvrmie_a2.setChecked(a2)
+            self.saftvrmie_a3.setChecked(a3)
+            self.saftvrmie_hard_sphere.setChecked(hard_sphere)
+            self.saftvrmie_chain.setChecked(chain)
+            self.saftvrmie_ref.setCurrentIndex(self.saftvrmie_ref.findText(ref))
+
+        self.show_correct_coeff_widget()
 
     def init_bin_coeff_widgets(self):
         # Set binary coefficient widgets
@@ -106,6 +129,7 @@ class ModelSelectWidget(QWidget):
         self.show_correct_coeff_widget()
 
     def data_init(self, category="Cubic"):
+        print("Data init", category)
         if category == "Cubic" or category == "CPA":
             self.data["Model setups"][self.name] = {
                 "EOS": "PR",
@@ -145,7 +169,6 @@ class ModelSelectWidget(QWidget):
         category = self.data["Model setups"][self.name]["Model category"]
         if category == "Cubic" or category == "CPA":
             mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
-
             if mixing_rule == "vdW":
                 index = self.vdw_index
             elif mixing_rule == "HV1":
@@ -167,11 +190,11 @@ class ModelSelectWidget(QWidget):
 
         if index:
             self.coeff_stack.setCurrentIndex(index)
-        # coeff_widget = self.coeff_stack.widget(index)
 
     def category_selected(self, category_item):
         category = category_item.text()
-        self.data_init(category)
+        if not self.data["Model setups"][self.name]["Model category"]:
+            self.data_init(category)
         self.data["Model setups"][self.name]["Model category"] = category
         if category == "Cubic" or category == "CPA":
             self.eos_stack.setCurrentIndex(1)
@@ -208,6 +231,7 @@ class ModelSelectWidget(QWidget):
     def change_cubic_mix_rule(self, mixing_rule):
         self.data["Model setups"][self.name]["Model options"]["Mixing rule"] = mixing_rule
         self.settings_updated.emit(self.name, self.data, self.id)
+        self.show_correct_coeff_widget()
 
     def change_cubic_vol_trans(self, vol_trans):
         self.data["Model setups"][self.name]["Model options"]["Volume translation"] = vol_trans
@@ -234,7 +258,7 @@ class ModelSelectWidget(QWidget):
 
     def show_correct_tab(self, index):
         if index >= 0:
-            if self.tabs.tabText(index) == "Binary coefficients":
+            if self.tabs.tabText(index) == "Parameters":
                 self.coeff_stack.currentWidget().init_widget(self.data, self.name)
 
     def change_name(self):
