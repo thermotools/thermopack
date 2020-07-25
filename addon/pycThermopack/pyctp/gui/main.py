@@ -19,6 +19,8 @@ from gui.utils import get_json_data, save_json_data
 #  plot mode og calc mode. Koeffisienter MÅ lagres i self.data og sendes med inn. Når thermopack instansieres, må
 #  det loopes over alle koeffisientene og sette dem.
 
+# TODO: Sett QValidator til LineEdits (modelselectwidget.py, parameters.py, fractions i plot_mode og i calc_mode. Minst)
+
 
 class ThermopackGUIApp(QMainWindow):
     def __init__(self, parent=None):
@@ -284,7 +286,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Load stylesheet
-    stylesheet = open("stylesheet.txt", "r")
+    stylesheet = open("stylesheet.qss", "r")
     app.setStyleSheet(stylesheet.read())
     stylesheet.close()
 
@@ -294,6 +296,6 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    # win.open_file("test.json")
+    # win.open_file("json_structure.json")
     win.show()
     sys.exit(app.exec_())

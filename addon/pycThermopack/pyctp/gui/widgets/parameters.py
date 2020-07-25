@@ -11,13 +11,22 @@ import numpy as np
 # TODO: Ikke sikkert at disse trenger en self.thermopack. Koeffisientene kan fint regnes ut uten å instansiere den.
 #  Foreløpig må den være der ettersom jeg ikke har en annen måte å få tak i dem på
 
-# TODO: Run get_matrix_data and set_matrix data even when the tab is not opened. (e.g. when Plot mode is initiated)
-
 # TODO: Når fanen byttes skal lista deselectes og table_stack --> page0 (tom)
 
 # TODO: Methane + CO2 + CPA --> error når jeg switcher til bin coeff tab
 
-# TODO: Lage en bedre klassestruktur med arv og greier. Veeldig mye likt i disse nå
+# TODO: Lage en bedre klassestruktur med arv. Veeldig mye likt i disse nå
+
+# TODO: Med flere komponentlister og flere modellister, kan det hende at en komponentliste har flere forskjellige
+#  matriser av samme type. (F eks én standard og én med endra interaksjonsparametere)
+#  Må ha List name { Settings name { Coeff matrices { vdW K: [[]] }, Identities: [], Names: [] } }
+
+# TODO: Må endre navn på matriser. Se i model_select_widget.py
+
+# TODO: PC-SAFT skal være symmetrisk likevel
+
+# TODO: Når ting endres i matrisa: Trenger ikke endre i termopack. Den må endres etterpå uansett. Trenger bare
+#  vise i tabellen og lagre i json-data. Da må vi passe på at hvis dataen skal hentes ut igjen, ta det fra json, ikke fra tp
 
 
 class BinaryCoefficientsWidget(QWidget):
@@ -51,11 +60,15 @@ class BinaryCoefficientsWidget(QWidget):
             alpha = self.settings["Model options"]["Alpha correlation"]
 
             if mixing == "HV1":
+                # To give thermopack the correct parameter
                 mixing = "HV"
 
             self.thermopack.init(comps, eos, mixing=mixing, alpha=alpha, parameter_reference=ref)
 
-        elif isinstance(self.thermopack, pcsaft) or isinstance(self.thermopack, saftvrmie):
+        elif isinstance(self.thermopack, pcsaft):
+            self.thermopack.init(comps, parameter_reference=ref)
+
+        elif isinstance(self.thermopack, saftvrmie):
             self.thermopack.init(comps, parameter_reference=ref)
 
     def init_composition_list(self):
@@ -99,7 +112,7 @@ class BinaryCoefficientsWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name in ["K", "epsilon", "sigma", "gamma"] and self.settings["Model category"] != "PC-SAFT":
+                if table_name in ["K", "epsilon", "sigma", "gamma"]:
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -130,7 +143,10 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         for name in self.component_lists.keys():
             if name not in list_names:
-                self.component_lists[name]["Coefficient matrices"] = {}
+
+                if "Coefficient matrices" not in self.component_lists[name].keys():
+                    self.component_lists[name]["Coefficient matrices"] = {}
+
                 # Create one table for each list in a stacked widget.
                 # The dict keeps track of the table's index in the stack
 
@@ -145,17 +161,22 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         self.init_composition_list()
 
-    def calculate_matrix_data(self, list_name):
+    def calculate_matrix_data(self, list_name, reset=False):
         """
-        :param list_name: str
+        :param list_name: str, Name of component list
+        :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
         Calculates binary coefficients for all composition lists and stores them
         """
+        self.init_thermopack(list_name)
+
+        if "K" in self.component_lists[list_name]["Coefficient matrices"].keys() and not reset:
+            # Loaded data should not be replaced
+            return
+
         # Creating 2D array to be stored in self.data
         component_list = self.component_lists[list_name]["Names"]
         size = len(component_list)
         matrix_data = np.zeros(shape=(size, size))
-
-        self.init_thermopack(list_name)
 
         for row in range(size):
             for col in range(size):
@@ -180,7 +201,7 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
         self.table_stack.setCurrentIndex(index)
 
     def change_coeff(self, item, table, table_name):
-        # Item has to be changed in table, self.data and be set in thermopack
+        # Item has to be changed in table and self.data
         row = item.row()
         col = item.column()
 
@@ -196,19 +217,10 @@ class VdWBinaryCoefficientsWidget(BinaryCoefficientsWidget):
 
         matrix[row][col] = value
 
-        identity1 = self.component_lists[component_list]["Identities"][row]
-        identity2 = self.component_lists[component_list]["Identities"][col]
-        index1 = self.thermopack.getcompindex(identity1)
-        index2 = self.thermopack.getcompindex(identity2)
-        self.thermopack.set_kij(index1, index2, value)
-
         matrix[col][row] = value
         table.blockSignals(True)
         table.item(col, row).setText(str(value))
         table.blockSignals(False)
-
-        print(self.thermopack.get_kij(index1, index2))
-        print(self.thermopack.get_kij(index2, index1))
 
 
 class HV1BinaryCoefficientsWidget(BinaryCoefficientsWidget):
@@ -488,28 +500,7 @@ class PCSAFTBinaryCoefficientsWidget(VdWBinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
 
-    def change_coeff(self, item, table, table_name):
-        # Item has to be changed in table, self.data and be set in thermopack
-        row = item.row()
-        col = item.column()
 
-        component_list = self.composition_list.currentItem().text()
-        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
-
-        try:
-            value = float(item.text().replace(",", "."))
-        except ValueError:
-            previous_value = matrix[row][col]
-            item.setText(str(previous_value))
-            return
-
-        matrix[row][col] = value
-
-        identity1 = self.component_lists[component_list]["Identities"][row]
-        identity2 = self.component_lists[component_list]["Identities"][col]
-        index1 = self.thermopack.getcompindex(identity1)
-        index2 = self.thermopack.getcompindex(identity2)
-        self.thermopack.set_kij(index1, index2, value)
 
 
 class SAFTVRMieBinaryCoefficientsWidget(BinaryCoefficientsWidget):

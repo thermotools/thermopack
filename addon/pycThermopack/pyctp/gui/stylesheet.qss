@@ -8,7 +8,6 @@ QWidget {
 /* Button styling */
 
 QPushButton {
-	box-shadow: inset 0px 0px 2px 0px #54a3f7;
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                   stop: 0 #59a5d8, stop: 1 #0061a7);
 	border-radius: 9px;
@@ -20,10 +19,7 @@ QPushButton:hover, QPushButton:default {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                               stop: 0 #0061a7, stop: 1 #59a5d8);
 }
-QPushButton:pressed {
-	position: relative;
-	top: 1px;
-}
+
 
 QPushButton:disabled {
     border: 1px solid #BDDBEF;
@@ -52,11 +48,50 @@ QHeaderView::section:vertical {
 }
 
 QTableView {
-	grid-line-color: #fffff8;
 	font-size: 10pt;
 	alternate-background-color: #CDE4F3;
 }
 
 QTableView::item:selected {
 	background: #1E5E85;
+}
+
+/* QComboBox styling */
+
+QComboBox {
+    border: 1px solid #124d77;
+    border-radius: 4px;
+    padding: 2px 18px 3px 3px;
+	color: #ffffff;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #59a5d8, stop: 1.0 #0061a7);
+}
+
+/* QComboBox gets the "on" state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #59a5d8, stop: 1.0 #0061a7);
+}
+
+QComboBox::drop-down {
+    border-left-width: 1px;
+    border-left-color: #124d77;
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; /* same radius as the QComboBox */
+    border-bottom-right-radius: 3px;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #124d77;
+    color: black;
+    background-color: #C6EAFB;
+    selection-background-color: #133C55;
+    outline: none;
+}
+
+QComboBox::down-arrow {
+    image: url(icons/down-arrow.png);
 }
