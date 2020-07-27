@@ -9,6 +9,10 @@ from gui.widgets.calc_mode import CalcMode
 
 
 class ChangeModePopup(QDialog):
+    """
+    Base class for popups 'Go to Plot Mode' and 'Go to Calc Mode'
+    The user selects one component list, and one model setup before proceeding
+    """
     def __init__(self, data, parent=None):
         super().__init__(parent=parent)
         loadUi("widgets/layouts/go_to_plot_mode_popup.ui", self)
@@ -31,6 +35,9 @@ class ChangeModePopup(QDialog):
         self.close_button.clicked.connect(lambda: self.close())
 
     def init_composition_list(self):
+        """
+        Displays all composition lists
+        """
         component_lists = self.data["Component lists"].keys()
         for composition_name in component_lists:
             self.composition_list.addItem(QListWidgetItem(composition_name))
@@ -38,6 +45,9 @@ class ChangeModePopup(QDialog):
             self.composition_list.setCurrentRow(0)
 
     def init_options_list(self):
+        """
+        Displays all model settings
+        """
         model_setups = self.data["Model setups"].keys()
         for setting_name in model_setups:
             self.model_options_list.addItem(QListWidgetItem(setting_name))
@@ -45,6 +55,10 @@ class ChangeModePopup(QDialog):
             self.model_options_list.setCurrentRow(0)
 
     def selection_changed(self):
+        """
+        Checks if both a component list and a model setup has been chosen.
+        If so, the user is enabled to proceed
+        """
         component_list_item = self.composition_list.currentItem()
         option_mode_item = self.model_options_list.currentItem()
 
@@ -57,11 +71,18 @@ class ChangeModePopup(QDialog):
 
 
 class GoToPlotModeWidget(ChangeModePopup):
+    """
+    Window popup beofre going to Plot Mode
+    The user selects one component list, and one model setup before proceeding
+    """
     def __init__(self, data, parent=None):
         ChangeModePopup.__init__(self, data, parent)
         self.go_btn.clicked.connect(self.go_to_plot_mode)
 
     def go_to_plot_mode(self):
+        """
+        Opens a Plot Mode window, and closes itself
+        """
         component_list_name = self.composition_list.currentItem().text()
         model_settings_name = self.model_options_list.currentItem().text()
 
@@ -74,11 +95,18 @@ class GoToPlotModeWidget(ChangeModePopup):
 
 
 class GoToCalcModeWidget(ChangeModePopup):
+    """
+    Window popup beofre going to Calc Mode
+    The user selects one component list, and one model setup before proceeding
+    """
     def __init__(self, data, parent=None):
         ChangeModePopup.__init__(self, data, parent)
         self.go_btn.clicked.connect(self.go_to_calc_mode)
 
     def go_to_calc_mode(self):
+        """
+        Opens a Calc Mode window, and closes itself
+        """
         component_list_name = self.composition_list.currentItem().text()
         model_settings_name = self.model_options_list.currentItem().text()
 

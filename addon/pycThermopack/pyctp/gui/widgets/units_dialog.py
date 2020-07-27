@@ -3,6 +3,9 @@ from PyQt5.uic import loadUi
 
 
 class UnitsDialog(QWidget):
+    """
+    A window where the preferred units for the application can be set
+    """
     def __init__(self, units_data, parent=None):
         super().__init__(parent=parent)
         loadUi("widgets/layouts/units.ui", self)
@@ -32,6 +35,9 @@ class UnitsDialog(QWidget):
         self.restore_btn.clicked.connect(self.restore_defaults)
 
     def populate_widget(self):
+        """
+        Adds available unit choices to the different dropdowns, and selects the currently chosen unit
+        """
         self.temp_dropdown.addItems(self.units_data["Choices"]["Temperature"])
         self.volume_dropdown.addItems(self.units_data["Choices"]["Volume"])
         self.press_dropdown.addItems(self.units_data["Choices"]["Pressure"])
@@ -54,9 +60,15 @@ class UnitsDialog(QWidget):
         self.speed_dropdown.setCurrentIndex(speed_index)
 
     def on_unit_change(self):
+        """
+        When a unit has been changed, the save button is enabled
+        """
         self.save_btn.setEnabled(True)
 
     def on_save(self):
+        """
+        Saves the chosen units, and closes the window
+        """
         temp_unit = self.temp_dropdown.currentText()
         vol_unit = self.volume_dropdown.currentText()
         press_unit = self.press_dropdown.currentText()
@@ -74,6 +86,9 @@ class UnitsDialog(QWidget):
         self.close()
 
     def restore_defaults(self):
+        """
+        Resets the selected units to standard SI
+        """
         temp_index = self.temp_dropdown.findText(self.default_units["Temperature"])
         vol_index = self.volume_dropdown.findText(self.default_units["Volume"])
         press_index = self.press_dropdown.findText(self.default_units["Pressure"])

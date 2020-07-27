@@ -23,6 +23,9 @@ from gui.utils import get_json_data, save_json_data
 
 
 class ThermopackGUIApp(QMainWindow):
+    """
+    The main class for the Thermopack GUI Application
+    """
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -55,6 +58,9 @@ class ThermopackGUIApp(QMainWindow):
         self.tabs.tabCloseRequested.connect(lambda index: self.close_tab(index))
 
     def set_initial_data(self):
+        """
+        Creates a dict to store data
+        """
         if not self.json_file:
             self.data = {"Component lists": {},
                          "Model setups": {},
@@ -76,6 +82,9 @@ class ThermopackGUIApp(QMainWindow):
                          }
 
     def set_toolbar(self):
+        """
+        Creates the top toolbar
+        """
         # Logo
         logo = QLabel("Thermopack")
         logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px;")
@@ -98,6 +107,10 @@ class ThermopackGUIApp(QMainWindow):
         action_group.addAction(toolbar.addAction(QIcon("icons/calculator.png"), "Calculation mode"))
 
     def handle_toolbar_action(self, action):
+        """
+        Calls the correct function depending on which tool icon was clicked
+        :param action: Type of tool clicked
+        """
         action = action.text()
         if action == "Open file":
             self.open_file()
@@ -111,11 +124,17 @@ class ThermopackGUIApp(QMainWindow):
             self.go_to_calc_mode()
 
     def open_units_window(self):
+        """
+        Opens a dialog where the user can change default units for the application
+        """
         units_data = self.data["Units"]
         self.dialog = UnitsDialog(units_data)
         self.dialog.show()
 
     def menu_selection(self):
+        """
+        Opens the correct widget (component selection or model setup) when a menu selection item is double clicked
+        """
         item = self.tree_menu.currentItem()
         parent = item.parent()
         selection = item.text(0)
@@ -172,6 +191,12 @@ class ThermopackGUIApp(QMainWindow):
             self.tabs.setCurrentIndex(index)
 
     def update_component_lists(self, list_name, is_new, old_name):
+        """
+        Creates/Updates a component list menu item. If the component list already exists, the menu item is renamed
+        :param list_name: New name of the component list
+        :param is_new: True if this is a new component list
+        :param old_name: Previous name of the component list, to be updated
+        """
         if is_new:
             QTreeWidgetItem(self.tree_menu.topLevelItem(0), [list_name])
         else:
@@ -182,6 +207,12 @@ class ThermopackGUIApp(QMainWindow):
                     root.child(index).setText(0, list_name)
 
     def update_model_lists(self, list_name, data, id):
+        """
+        Creates/Updates a model setup menu item.
+        :param list_name: New name of the model setup list
+        :param is_new: True if this is a new model setup
+        :param id: id of the model setup. Used to find and rename model selection tab
+        """
         # TODO: Noe er fishy her. Klikker når jeg har flere enn to modeller
         # Find correct tab and change its name
         self.data = data
@@ -204,24 +235,42 @@ class ThermopackGUIApp(QMainWindow):
                 return
 
     def close_tab(self, index):
+        """
+        Closes (hides) a tab
+        :param index: Index of tab to be closed
+        """
         self.tabs.removeTab(index)
         if self.tabs.count() < 1:
             self.tabs.hide()
 
     def go_to_plot_mode(self):
+        """
+        Creates a popup where a component list and a model setup has to be chosen before plot mode is initiated
+        """
         self.dialog = GoToPlotModeWidget(self.data)
         self.dialog.setModal(True)
         self.dialog.show()
 
     def go_to_calc_mode(self):
+        """
+        Creates a popup where a component list and a model setup has to be chosen before calculation mode is initiated
+        """
         self.dialog = GoToCalcModeWidget(self.data)
         self.dialog.setModal(True)
         self.dialog.show()
 
     def log(self, text):
+        """
+        Prints text to the user in the message box
+        :param text: Text to be printed
+        """
         self.message_box.append(text)
 
     def open_file(self, file_path=None):
+        """
+        Opens and loads an existing JSON-file and populates the main window.
+        :param file_path: Path to JSON-file
+        """
         if not file_path:
             file_dialog = QFileDialog()
             file_dialog.setWindowTitle("Open File")
@@ -258,6 +307,9 @@ class ThermopackGUIApp(QMainWindow):
         self.save()
 
     def save_as(self):
+        """
+        Opens a file dialog to choose a place to save a JSON-file containing the information from this session
+        """
         file_dialog = QFileDialog()
         file_dialog.setWindowTitle('Save File')
         file_dialog.setDirectory(os.getcwd())
@@ -274,6 +326,9 @@ class ThermopackGUIApp(QMainWindow):
             self.log("Saved file.")
 
     def save(self):
+        """
+        Saves data to the current JSON-file. If none is selected, a file dialog is opened.
+        """
         if self.json_file:
             save_json_data(self.data, self.json_file)
             self.log("Saved file.")
@@ -290,12 +345,13 @@ if __name__ == "__main__":
     app.setStyleSheet(stylesheet.read())
     stylesheet.close()
 
+    # Image shown when application is loading
     splash = QSplashScreen(QPixmap("images/Thermopack logo.png"))
     splash.setWindowFlag(Qt.WindowStaysOnTopHint)
     splash.show()
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    # win.open_file("json_structure.json")
+    win.open_file("json_structure.json")
     win.show()
     sys.exit(app.exec_())

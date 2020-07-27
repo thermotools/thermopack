@@ -11,6 +11,9 @@ NMAX = 50
 
 
 class MplCanvas(FigureCanvasQTAgg):
+    """
+    A canvas for matplotlib plots. Contains all plot functionality for Plot Mode
+    """
     def __init__(self, components):
         self.fig = Figure(dpi=100)
         self.empty = True
@@ -22,6 +25,10 @@ class MplCanvas(FigureCanvasQTAgg):
         super(MplCanvas, self).__init__(figure=self.fig)
 
     def toggle_isenthalps(self, is_checked):
+        """
+        Hides / shows isenthalp lines in the plot if a plot exists
+        :param is_checked: Status of isenthalp button (bool)
+        """
         if not self.empty and self.isenthalps:
             if is_checked:
                 for line in self.isenthalps:
@@ -32,6 +39,10 @@ class MplCanvas(FigureCanvasQTAgg):
             self.draw()
 
     def toggle_isentropes(self, is_checked):
+        """
+        Hides / shows isentrope lines in the plot if a plot exists
+        :param is_checked: Status of isentrope button (bool)
+        """
         if not self.empty and self.isentropes:
             if is_checked:
                 for line in self.isentropes:
@@ -44,6 +55,10 @@ class MplCanvas(FigureCanvasQTAgg):
             return
 
     def toggle_isotherms(self, is_checked):
+        """
+        Hides / shows isotherm lines in the plot if a plot exists
+        :param is_checked: Status of isotherm button (bool)
+        """
         if not self.empty and self.isotherms:
             if is_checked:
                 for line in self.isotherms:
@@ -56,6 +71,10 @@ class MplCanvas(FigureCanvasQTAgg):
             return
 
     def toggle_isobars(self, is_checked):
+        """
+        Hides / shows isobar lines in the plot if a plot exists
+        :param is_checked: Status of isobar button (bool)
+        """
         if not self.empty and self.isobars:
             if is_checked:
                 for line in self.isobars:
@@ -68,6 +87,15 @@ class MplCanvas(FigureCanvasQTAgg):
             return
 
     def plot_envelope(self, tp, prim_vars, fractions, line_color, point_color, grid_on):
+        """
+        Plots a phase envelope
+        :param tp: Thermopack instance
+        :param prim_vars: Primary variables for the plot (e.g. PT, PH, ..)
+        :param fractions: List of molar fractions for the components
+        :param line_color: Primary line color for the plot
+        :param point_color: Primary point color for the plot
+        :param grid_on: bool telling if the plot should contain a grid or not
+        """
         p_initial = 1.0e5
         p_max = 1.5e7
         T_min = None
@@ -134,6 +162,21 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
 
     def plot_envelope_PT(self, tp, T, P, T_c, P_c, fractions):
+        """
+        Return plot data for a PT phase envelope
+        :param tp: Thermopack instance
+        :param T: Temperature values
+        :param P: Pressure values
+        :param T_c: Critical temperature
+        :param P_c: Critical pressure
+        :param fractions: List of molar fractions
+        :return:    x: x values for plot,
+                    y: y values for plot,
+                    crit_x: x value for critical point,
+                    crit_y: y value for critical point,
+                    xlabel: Label for the x axis (Name + unit),
+                    ylabel: Label for the y axis (Name + unit)
+        """
 
         # Display correct buttons
         self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(0)
@@ -189,9 +232,24 @@ class MplCanvas(FigureCanvasQTAgg):
         return x, y, crit_x, crit_y, xlabel, ylabel
 
     def plot_envelope_PH(self, tp, P, H, P_c, H_c, fractions):
+        """
+        Return plot data for a PH phase envelope
+        :param tp: Thermopack instance
+        :param P: Pressure values
+        :param H: Enthalpy values
+        :param P_c: Critical pressure
+        :param H_c: Critical enthalpy
+        :param fractions: List of molar fractions
+        :return:    x: x values for plot,
+                    y: y values for plot,
+                    crit_x: x value for critical point,
+                    crit_y: y value for critical point,
+                    xlabel: Label for the x axis (Name + unit),
+                    ylabel: Label for the y axis (Name + unit)
+        """
 
         # Display correct buttons
-        self.parent().parent().parent().btn_stack.setCurrentIndex(1)
+        self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(1)
         self.parent().parent().parent().PH_T_btn.setChecked(True)
         self.parent().parent().parent().PH_S_btn.setChecked(True)
 
@@ -244,9 +302,24 @@ class MplCanvas(FigureCanvasQTAgg):
         return x, y, crit_x, crit_y, xlabel, ylabel
 
     def plot_envelope_PS(self, tp, P, S, P_c, S_c, fractions):
+        """
+        Return plot data for a PS phase envelope
+        :param tp: Thermopack instance
+        :param P: Pressure values
+        :param S: Entropy values
+        :param P_c: Critical pressure
+        :param S_c: Critical entropy
+        :param fractions: List of molar fractions
+        :return:    x: x values for plot,
+                    y: y values for plot,
+                    crit_x: x value for critical point,
+                    crit_y: y value for critical point,
+                    xlabel: Label for the x axis (Name + unit),
+                    ylabel: Label for the y axis (Name + unit)
+        """
 
         # Display correct buttons
-        self.parent().parent().parent().btn_stack.setCurrentIndex(2)
+        self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(2)
         self.parent().parent().parent().PS_T_btn.setChecked(True)
         self.parent().parent().parent().PS_H_btn.setChecked(True)
 
@@ -299,9 +372,24 @@ class MplCanvas(FigureCanvasQTAgg):
         return x, y, crit_x, crit_y, xlabel, ylabel
 
     def plot_envelope_TH(self, tp, T, H, T_c, H_c, fractions):
+        """
+        Return plot data for a PS phase envelope
+        :param tp: Thermopack instance
+        :param T: Temperature values
+        :param H: Enthalpy values
+        :param T_c: Critical temperature
+        :param H_c: Critical enthalpy
+        :param fractions: List of molar fractions
+        :return:    x: x values for plot,
+                    y: y values for plot,
+                    crit_x: x value for critical point,
+                    crit_y: y value for critical point,
+                    xlabel: Label for the x axis (Name + unit),
+                    ylabel: Label for the y axis (Name + unit)
+        """
 
         # Display correct buttons
-        self.parent().parent().parent().btn_stack.setCurrentIndex(3)
+        self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(3)
         self.parent().parent().parent().TH_S_btn.setChecked(True)
         self.parent().parent().parent().TH_P_btn.setChecked(True)
 
@@ -353,9 +441,23 @@ class MplCanvas(FigureCanvasQTAgg):
         return x, y, crit_x, crit_y, xlabel, ylabel
 
     def plot_envelope_TS(self, tp, T, S, T_c, S_c, fractions):
-
+        """
+        Return plot data for a PS phase envelope
+        :param tp: Thermopack instance
+        :param T: Temperature values
+        :param S: Entropy values
+        :param T_c: Critical temperature
+        :param S_c: Critical entropy
+        :param fractions: List of molar fractions
+        :return:    x: x values for plot,
+                    y: y values for plot,
+                    crit_x: x value for critical point,
+                    crit_y: y value for critical point,
+                    xlabel: Label for the x axis (Name + unit),
+                    ylabel: Label for the y axis (Name + unit)
+        """
         # Display correct buttons
-        self.parent().parent().parent().btn_stack.setCurrentIndex(4)
+        self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(4)
         self.parent().parent().parent().TS_P_btn.setChecked(True)
         self.parent().parent().parent().TS_H_btn.setChecked(True)
 
@@ -408,6 +510,12 @@ class MplCanvas(FigureCanvasQTAgg):
         return x, y, crit_x, crit_y, xlabel, ylabel
 
     def plot_binary_pxy(self, tp, line_color, grid_on):
+        """
+        Plots a binary pxy plot
+        :param tp: Thermopack instance
+        :param line_color: Primary line color for the plot
+        :param grid_on: bool telling if the plot should contain a grid or not
+        """
 
         # TODO: Hente disse fra options (som er lagret (Skal lagres når options-vinduet åpnes. Eller i init? Må jo ha dem uansett) Hvis ikke, sett til dette)
         T = 288.0
@@ -438,6 +546,14 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
 
     def plot_pressure_density(self, tp, fractions, line_color, point_color, grid_on):
+        """
+        Plots a pressure density plot
+        :param tp: Thermopack instance
+        :param fractions: List of molar fractions
+        :param line_color: Primary line color for the plot
+        :param point_color: Primary point color for the plot
+        :param grid_on: bool telling if the plot should contain a grid or not
+        """
         p_initial = 1.0e5
         p_max = 1.5e7
         T_min = None
@@ -449,6 +565,7 @@ class MplCanvas(FigureCanvasQTAgg):
         T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
 
         # TODO: Q: Hvordan velge verdier for rho og P?
+        # TODO: Q: Isolinjer av noe slag?
         rho = 1 / V
         rho_c = 1 / V_c
 
@@ -463,6 +580,11 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
 
     def plot_global_binary(self, tp, grid_on):
+        """
+        Plots a binary pxy plot
+        :param tp: Thermopack instance
+        :param grid_on: bool telling if the plot should contain a grid or not
+        """
         min_press = 1.05e5
         min_temp = 2.0
         azeotropes = True

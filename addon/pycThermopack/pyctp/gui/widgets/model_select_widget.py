@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QMessageBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal, Qt
 
@@ -7,8 +7,7 @@ from gui.widgets.parameters import *
 from gui.utils import get_unique_name, get_unique_id
 
 
-# TODO
-#  Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
+# TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 
 # TODO:  No self associating components. Initializing PR(/SRK) instead of CPA-PR(/SRK) dukker opp hele tiden for CPA
 
@@ -17,6 +16,11 @@ from gui.utils import get_unique_name, get_unique_id
 
 
 class ModelListMenuItem(QTreeWidgetItem):
+    """
+    A TreeWidgetItem which also contains an id and a widget.
+    This connects the menu item to the correct ModelSelectWidget, making it possible to open an edit tab corresponing
+    to the chosen model setting.
+    """
     def __init__(self, parent, text, id, widget):
         super().__init__(parent, [text])
         self.id = id
@@ -25,6 +29,11 @@ class ModelListMenuItem(QTreeWidgetItem):
 
 class ModelSelectWidget(QWidget):
     """
+    Widget for selecting and setting up models. The user can select the model category, the desired EOS,
+    set specific model options and edit interaction (and other) parameters.
+    Depending on the selcted model, different choices for EOS, model options and parameters are displayed.
+    The different choices are stored in QStackWidgets, each with its own index shown below. When the user changes
+    the model category, the correct widgets in the different stacks are shown.
     EOS stack:      0: Empty   1: PR + SRK
     Options stack:  0: Empty   1: Cubic (or CPA)    2: SAFT-VRI Mie
     Coeff stack:    0: Empty   1: VdW               2: HV1              3: HV2        4: PC-SAFT        5: SAFT-VR Mie
@@ -75,6 +84,10 @@ class ModelSelectWidget(QWidget):
     settings_updated = pyqtSignal(str, dict, int)
 
     def populate_widget(self):
+        """
+        Sets the widget with the correct settings for an existing model setup. The correct widgets in the different
+        stacks are shown.
+        """
         self.name_edit.setText(self.name)
         model_category = self.data["Model setups"][self.name]["Model category"]
         self.model_category_list.setCurrentItem(self.model_category_list.findItems(model_category, Qt.MatchExactly)[0])
@@ -120,16 +133,23 @@ class ModelSelectWidget(QWidget):
         self.show_correct_coeff_widget()
 
     def init_bin_coeff_widgets(self):
+        """
+        Sets up widgets for editing parameters and storing their indices, so that the correct widget easily can be
+        shown when the model category or mixing rule changes
+        """
         # Set binary coefficient widgets
-        self.vdw_index = self.coeff_stack.addWidget(VdWBinaryCoefficientsWidget(self.data, self.name))
-        self.hv1_index = self.coeff_stack.addWidget(HV1BinaryCoefficientsWidget(self.data, self.name))
-        self.hv2_index = self.coeff_stack.addWidget(HV2BinaryCoefficientsWidget(self.data, self.name))
-        self.pcsaft_index = self.coeff_stack.addWidget(PCSAFTBinaryCoefficientsWidget(self.data, self.name))
-        self.saftvrmie_index = self.coeff_stack.addWidget(SAFTVRMieBinaryCoefficientsWidget(self.data, self.name))
+        self.vdw_index = self.coeff_stack.addWidget(VdWParametersWidget(self.data, self.name))
+        self.hv1_index = self.coeff_stack.addWidget(HV1ParametersWidget(self.data, self.name))
+        self.hv2_index = self.coeff_stack.addWidget(HV2ParametersWidget(self.data, self.name))
+        self.pcsaft_index = self.coeff_stack.addWidget(PCSAFTParametersWidget(self.data, self.name))
+        self.saftvrmie_index = self.coeff_stack.addWidget(SAFTVRMieParametersWidget(self.data, self.name))
         self.show_correct_coeff_widget()
 
     def data_init(self, category="Cubic"):
-        print("Data init", category)
+        """
+        Sets the session data to default depending on chosen model category if this is a new model setup
+        :param category: Name of the model category (Cubic, CPA, PC-SAFT, SAFT_VR Mie)
+        """
         if category == "Cubic" or category == "CPA":
             self.data["Model setups"][self.name] = {
                 "EOS": "PR",
@@ -166,8 +186,11 @@ class ModelSelectWidget(QWidget):
             }
 
     def show_correct_coeff_widget(self):
+        """
+        Shows the correct widget for editing interaction (and other) parameters
+        """
         category = self.data["Model setups"][self.name]["Model category"]
-        if category == "Cubic" or category == "CPA":
+        if category in ["Cubic", "CPA"]:
             mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
             if mixing_rule == "vdW":
                 index = self.vdw_index
@@ -192,6 +215,10 @@ class ModelSelectWidget(QWidget):
             self.coeff_stack.setCurrentIndex(index)
 
     def category_selected(self, category_item):
+        """
+        Shows the correct widgets in the different stacks when a model category is chosen.
+        :param category_item: Chosen model category item
+        """
         category = category_item.text()
         if not self.data["Model setups"][self.name]["Model category"]:
             self.data_init(category)
@@ -214,10 +241,20 @@ class ModelSelectWidget(QWidget):
         elif category == "SAFT-VR Mie":
             self.eos_stack.setCurrentIndex(0)
             self.options_stack.setCurrentIndex(2)
+
+            self.toggle_a1(self.saftvrmie_a1.isChecked())
+            self.toggle_a2(self.saftvrmie_a2.isChecked())
+            self.toggle_3(self.saftvrmie_a3.isChecked())
+            self.toggle_hard_sphere(self.saftvrmie_hard_sphere.isChecked())
+            self.toggle_chain(self.saftvrmie_chain.isChecked())
+            self.change_saftvrmie_ref(self.saftvrmie_red.currentText())
+
         else:
             pass
 
         self.show_correct_coeff_widget()
+
+    # Handling changes in cubic model options
 
     def change_cubic_eos(self, eos_item):
         eos = eos_item.text()
@@ -241,6 +278,8 @@ class ModelSelectWidget(QWidget):
         self.data["Model setups"][self.name]["Model options"]["Reference"] = ref
         self.settings_updated.emit(self.name, self.data, self.id)
 
+    # Handling changes in SAFT-VR Mie options
+
     def toggle_hard_sphere(self, is_checked):
         self.data["Model setups"][self.name]["Model options"]["Hard sphere"] = is_checked
 
@@ -256,12 +295,22 @@ class ModelSelectWidget(QWidget):
     def toggle_chain(self, is_checked):
         self.data["Model setups"][self.name]["Model options"]["Chain"] = is_checked
 
+    def change_saftvrmie_ref(self, ref):
+        self.data["Model setups"][self.name]["Model options"]["Reference"] = ref
+
     def show_correct_tab(self, index):
+        """
+        When the 'Parameters' tab is chosen, the current coefficient widget is initiated
+        :param index: Index of the clicked tab
+        """
         if index >= 0:
             if self.tabs.tabText(index) == "Parameters":
                 self.coeff_stack.currentWidget().init_widget(self.data, self.name)
 
     def change_name(self):
+        """
+        Changes the name of the current model setup if the name is available
+        """
         new_name = self.name_edit.text()
         self.name_edit.blockSignals(True)
         self.name_edit.clearFocus()
@@ -279,6 +328,9 @@ class ModelSelectWidget(QWidget):
 
 
 class SettingsExistMsg(QMessageBox):
+    """
+    Showed when the user tries to save a model setup with the name of another model setup
+    """
     def __init__(self, name):
         QMessageBox.__init__(self)
         self.setWindowTitle("Oups!")

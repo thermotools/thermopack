@@ -13,6 +13,9 @@ from saftvrmie import saftvrmie
 
 
 class CalcMode(QMainWindow):
+    """
+    Calculation mode: Own window to calculate, display and save flash data
+    """
     def __init__(self, component_data, settings, parent=None):
         super().__init__(parent=parent)
 
@@ -63,6 +66,10 @@ class CalcMode(QMainWindow):
         self.uv_p_initial_guess.stateChanged.connect(self.toggle_initial_guess)
 
     def get_thermopack(self):
+        """
+        Returns the correct type of thermopack instance depending on the chosen model
+        :return: Thermopack instance
+        """
         category = self.settings["Model category"]
         if category == "Cubic":
             return cubic()
@@ -76,6 +83,9 @@ class CalcMode(QMainWindow):
             return None
 
     def init_thermopack(self):
+        """
+        Initiates thermopack and sets the chosen model parameters
+        """
         comps = ",".join(self.component_data["Identities"])
         model_ref = self.settings["Model options"]["Reference"]
 
@@ -87,14 +97,27 @@ class CalcMode(QMainWindow):
 
             self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
 
-        elif category in ["PC-SAFT", "SAFT-VR Mie"]:
+        elif category == "PC-SAFT":
             self.tp.init(comps=comps, parameter_reference=model_ref)
 
+        elif category == "SAFT-VR Mie":
+            self.tp.init(comps=comps, parameter_reference=model_ref)
+            # TODO: Set a1, a2, a3, hard sphere, chain
+
     def show_input_params(self, flash_mode="TP"):
+        """
+        Shows the correct input fields, depending on type of flash chosen
+        :param flash_mode: Type of flash (TP, PS, PH, UV)
+        """
         index = self.input_stack_indices[flash_mode]
         self.flash_input_stack.setCurrentIndex(index)
 
     def get_table_indices(self):
+        """
+        The table_indices dict has the table row and column names as keys, and the correct index as value.
+        This makes it easier to access the correct cell in the table, as there are many rows to keep track of.
+        :return: Dictionary containing the table indices
+        """
         table_indices = {}
         for i in range(self.table.rowCount()):
             table_indices[self.table.verticalHeaderItem(i).text()] = i
@@ -105,16 +128,28 @@ class CalcMode(QMainWindow):
         return table_indices
 
     def set_units(self):
+        """
+        Sets the preferred units into the Units column in the table
+        """
         for property, unit in self.units.items():
             row = self.table_indices[property]
             self.table.setItem(row, 0, QTableWidgetItem(unit))
 
     def set_value(self, property, col_name, value):
+        """
+        Set-function for setting a value to the table
+        :param property: Table row name
+        :param col_name: Table column name
+        :param value: Value to be stored in the desired cell
+        """
         row = self.table_indices[property]
         col = self.table_indices[col_name]
         self.table.setItem(row, col, QTableWidgetItem(str(value)))
 
     def display_settings(self):
+        """
+        Shows a window where the current model setup is displayed
+        """
         self.settings_window = QTextEdit()
 
         for key, value in self.settings.items():
@@ -128,6 +163,11 @@ class CalcMode(QMainWindow):
         self.settings_window.show()
 
     def init_fractions(self):
+        # TODO: Turn this into a LineEdit
+        """
+        Creates input fields for the molar fractions. One for each component. If there is only one component,
+        the molar fraction is set to 1.00 and is uneditable.
+        """
         components = self.component_data["Names"]
         self.component_data["Fractions"] = [0.00] * len(components)
 
@@ -149,6 +189,11 @@ class CalcMode(QMainWindow):
             self.fractions_layout.addRow(components[i], spin_box)
 
     def change_fraction(self, value, comp_name):
+        """
+        Changes the fraction of the given component
+        :param value: New molar fraction
+        :param comp_name: Name of component of which the molar fraction is changed
+        """
         index = self.component_data["Names"].index(comp_name)
         self.component_data["Fractions"][index] = value
 
@@ -159,6 +204,9 @@ class CalcMode(QMainWindow):
         self.uv_p_guess_frame.setEnabled(self.uv_p_initial_guess.isChecked())
 
     def calculate(self):
+        """
+        Calls thermopack's flash functions, and populates the table with the results
+        """
         self.table.clearContents()
         self.set_units()
         self.download_csv_btn.setEnabled(True)
@@ -354,6 +402,9 @@ class CalcMode(QMainWindow):
         self.table.resizeRowsToContents()
 
     def export_csv(self):
+        """
+        Creates and saves a csv file with the table data.
+        """
         file_dialog = QFileDialog()
         file_dialog.setWindowTitle('Save File')
         file_dialog.setDirectory(os.getcwd())

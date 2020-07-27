@@ -28,6 +28,11 @@ from saftvrmie import saftvrmie
 
 
 class PlotMode(QMainWindow):
+    """
+    A window where different types of (matplotlib) plots can be shown for a given composition and model setup.
+    The user may change initial parameters for the calculations and specify some plotting preferences.
+    When a plot is generated, the user may download a csv file containing the (x, y) data.
+    """
     def __init__(self, component_data, settings, parent=None):
         super().__init__(parent=parent)
 
@@ -453,6 +458,9 @@ class PlotMode(QMainWindow):
 
 
 class PhaseEnvelopeOptionsWindow(QDialog):
+    """
+    A window containing the parameters for the phase envelope plot
+    """
     def __init__(self):
         QDialog.__init__(self)
         loadUi("widgets/layouts/ph_env_options.ui", self)
@@ -460,6 +468,9 @@ class PhaseEnvelopeOptionsWindow(QDialog):
 
 
 class BinaryPXYOptionsWindow(QDialog):
+    """
+    A window containing the parameters for the binary pxy plot
+    """
     def __init__(self):
         QDialog.__init__(self)
         loadUi("widgets/layouts/bin_pxy_options.ui", self)
@@ -467,6 +478,9 @@ class BinaryPXYOptionsWindow(QDialog):
 
 
 class PRhoOptionsWindow(QDialog):
+    """
+    A window containing the parameters for the pressure density plot
+    """
     def __init__(self):
         QDialog.__init__(self)
         loadUi("widgets/layouts/bin_pxy_options.ui", self)
@@ -474,6 +488,9 @@ class PRhoOptionsWindow(QDialog):
 
 
 class GlobalBinaryOptionsWindow(QDialog):
+    """
+    A window containing the parameters for the global binary plot
+    """
     def __init__(self):
         QDialog.__init__(self)
         loadUi("widgets/layouts/bin_pxy_options.ui", self)
@@ -481,6 +498,9 @@ class GlobalBinaryOptionsWindow(QDialog):
 
 
 class MolarFractionsErrorMsg(QMessageBox):
+    """
+    Alerts the user that the sum of the molar fractions don't add up to 1
+    """
     def __init__(self, total):
         QMessageBox.__init__(self)
         self.setWindowTitle("Oups!")

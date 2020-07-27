@@ -1,6 +1,7 @@
 /* Base styling */
 
 QWidget {
+    font-size: 10pt;
     background-color: #dfe3ee;
 }
 
@@ -33,7 +34,6 @@ QHeaderView::section {
     background-color: #133C55;
 	color: #fffff8;
     padding: 4px;
-    font-size: 10pt;
     border-style: none;
     border-bottom: 1px solid #fffff8;
     border-right: 1px solid #fffff8;
@@ -48,7 +48,6 @@ QHeaderView::section:vertical {
 }
 
 QTableView {
-	font-size: 10pt;
 	alternate-background-color: #CDE4F3;
 }
 

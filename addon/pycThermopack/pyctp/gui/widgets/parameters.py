@@ -34,6 +34,11 @@ import numpy as np
 
 
 class ParametersWidget(QWidget):
+    """
+    Base class for the widgets for seeing and editing the interaction (and other) parameters.
+    These widgets contain a list of available compositions, and a vies for the different parameters
+    """
+
     def __init__(self, data, settings_name, parent=None):
         super().__init__(parent=parent)
 
@@ -41,6 +46,9 @@ class ParametersWidget(QWidget):
         self.component_lists = data["Component lists"]
 
     def get_thermopack(self):
+        """
+        :return Thermopack instance depending on model category
+        """
         category = self.settings["Model category"]
         if category == "Cubic":
             return cubic()
@@ -54,7 +62,10 @@ class ParametersWidget(QWidget):
             return None
 
     def init_thermopack(self, list_name):
-        # This must be run before coefficients are calculated
+        """
+        Initiates thermopack with the selected model options and interaction parameters.
+        This must be run before coefficients are calculated
+        """
         comps = ",".join(self.component_lists[list_name]["Identities"])
         ref = self.settings["Model options"]["Reference"]
 
@@ -76,13 +87,17 @@ class ParametersWidget(QWidget):
             self.thermopack.init(comps, parameter_reference=ref)
 
     def init_composition_list(self):
+        """
+        Displays available compositions in a QListWidget
+        """
         self.composition_list.clear()
         for list_name in self.component_lists.keys():
             self.composition_list.addItem(list_name)
 
     def get_table(self, list_name, table_name):
         """
-        :param list_name: str, name of component list to which the table is corresponsing
+        Returns a QTableWidget showing an interaction parameter matrix for a given composition
+        :param list_name: str, name of component list to which the table is corresponding
         :param table_name: str, name of table (could be K, alpha, A, B, C. epsilon, sigma, gamma depending on mixing rule)
         :return: QTableWidget, table containing the correct parameters
         """
@@ -127,7 +142,11 @@ class ParametersWidget(QWidget):
         return table
 
 
-class VdWBinaryCoefficientsWidget(ParametersWidget):
+class VdWParametersWidget(ParametersWidget):
+    """
+    Widget for changing interaction coefficients for the VdW mixing rule
+    """
+
     # Should be reinitiated every time opened, so that coefficients are correct if model is changed
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
@@ -137,6 +156,13 @@ class VdWBinaryCoefficientsWidget(ParametersWidget):
         self.stack_indices = {}
 
     def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
         self.settings = data["Model setups"][settings_name]
 
         self.thermopack = self.get_thermopack()
@@ -167,9 +193,9 @@ class VdWBinaryCoefficientsWidget(ParametersWidget):
 
     def calculate_matrix_data(self, list_name, reset=False):
         """
+        Calculates binary coefficients for all composition lists and stores them
         :param list_name: str, Name of component list
         :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
-        Calculates binary coefficients for all composition lists and stores them
         """
         self.init_thermopack(list_name)
 
@@ -198,6 +224,10 @@ class VdWBinaryCoefficientsWidget(ParametersWidget):
         self.component_lists[list_name]["Coefficient matrices"]["K"] = matrix_data
 
     def show_correct_matrix(self, list_item):
+        """
+        Shows the correct interaction coefficient matrix when a composition list is chosen
+        :param list_item: Name of composition list
+        """
         if not list_item:
             return
         list_name = list_item.text()
@@ -205,6 +235,12 @@ class VdWBinaryCoefficientsWidget(ParametersWidget):
         self.table_stack.setCurrentIndex(index)
 
     def change_coeff(self, item, table, table_name):
+        """
+        Changes a value (interaction coefficient) in the given table
+        :param item: New value
+        :param table: QTableWidget in which the value will be changed
+        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        """
         # Item has to be changed in table and self.data
         row = item.row()
         col = item.column()
@@ -227,7 +263,11 @@ class VdWBinaryCoefficientsWidget(ParametersWidget):
         table.blockSignals(False)
 
 
-class HV1BinaryCoefficientsWidget(ParametersWidget):
+class HV1ParametersWidget(ParametersWidget):
+    """
+    Widget for changing interaction coefficients for the HV1 mixing rule
+    """
+
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv1_bin_coeff_widget.ui", self)
@@ -236,6 +276,13 @@ class HV1BinaryCoefficientsWidget(ParametersWidget):
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
     def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
         self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
 
@@ -269,6 +316,10 @@ class HV1BinaryCoefficientsWidget(ParametersWidget):
         self.init_composition_list()
 
     def calculate_matrix_data(self, list_name):
+        """
+        Calculates binary coefficients for all composition lists and stores them in the session data.
+        :param list_name: str, Name of component list
+        """
         # Creating 2D arrays to be stored in self.data
         component_list = self.component_lists[list_name]["Names"]
         size = len(component_list)
@@ -314,12 +365,22 @@ class HV1BinaryCoefficientsWidget(ParametersWidget):
         self.component_lists[list_name]["Coefficient matrices"]["C"] = c_matrix_data
 
     def show_correct_tab_widget(self, list_item):
+        """
+        There is one QTabWidget for each composition. When a composition is chosen, the correct tab is shown
+        :param list_item: Name of composition
+        """
         if not list_item:
             return
         index = self.tab_stack_indices[list_item.text()]
         self.tab_stack.setCurrentIndex(index)
 
     def change_coeff(self, item, table_name):
+        """
+        Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
+        thermopack works, all values have to be set simultaneously
+        :param item: New value
+        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        """
         # Item has to be changed in table, self.data and be set in thermopack
         row = item.row()
         col = item.column()
@@ -357,7 +418,11 @@ class HV1BinaryCoefficientsWidget(ParametersWidget):
         self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
 
 
-class HV2BinaryCoefficientsWidget(ParametersWidget):
+class HV2ParametersWidget(ParametersWidget):
+    """
+    Widget for changing interaction coefficients for the HV2 mixing rule
+    """
+
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/hv2_bin_coeff_widget.ui", self)
@@ -366,6 +431,13 @@ class HV2BinaryCoefficientsWidget(ParametersWidget):
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
 
     def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
         self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
 
@@ -399,6 +471,10 @@ class HV2BinaryCoefficientsWidget(ParametersWidget):
         self.init_composition_list()
 
     def calculate_matrix_data(self, list_name):
+        """
+        Calculates binary coefficients for all composition lists and stores them in the session data.
+        :param list_name: str, Name of component list
+        """
         # Creating 2D arrays to be stored in self.data
         component_list = self.component_lists[list_name]["Names"]
         size = len(component_list)
@@ -443,12 +519,22 @@ class HV2BinaryCoefficientsWidget(ParametersWidget):
         self.component_lists[list_name]["Coefficient matrices"]["C"] = c_matrix_data
 
     def show_correct_tab_widget(self, list_item):
+        """
+        There is one QTabWidget for each composition. When a composition is chosen, the correct tab is shown
+        :param list_item: Name of composition
+        """
         if not list_item:
             return
         index = self.tab_stack_indices[list_item.text()]
         self.tab_stack.setCurrentIndex(index)
 
     def change_coeff(self, item, table_name):
+        """
+        Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
+        thermopack works, all values have to be set simultaneously
+        :param item: New value
+        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        """
         # Item has to be changed in table, self.data and be set in thermopack
         row = item.row()
         col = item.column()
@@ -486,26 +572,20 @@ class HV2BinaryCoefficientsWidget(ParametersWidget):
         self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
 
 
-class HV1TabWidget(QTabWidget):
-    def __init__(self, alpha_table, a_table, b_table, parent=None):
-        QTabWidget.__init__(self, parent)
-        self.addTab(alpha_table, u"\u03B1")
-        self.addTab(a_table, "A")
-        self.addTab(b_table, "B")
+class PCSAFTParametersWidget(VdWParametersWidget):
+    """
+    Widget for changing interaction coefficients for the PC-SAFT model
+    """
 
-
-class HV2TabWidget(HV1TabWidget):
-    def __init__(self, alpha_table, a_table, b_table, c_table, parent=None):
-        HV1TabWidget.__init__(self, alpha_table, a_table, b_table, parent)
-        self.addTab(c_table, "C")
-
-
-class PCSAFTBinaryCoefficientsWidget(VdWBinaryCoefficientsWidget):
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
 
 
-class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
+class SAFTVRMieParametersWidget(ParametersWidget):
+    """
+    Widget for changing interaction coefficients and pure fluid parameters for the SAFT-VR Mie model
+    """
+
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
         loadUi("widgets/layouts/saftvrmie_parameters.ui", self)
@@ -533,6 +613,13 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
         self.composition_list.currentItemChanged.connect(self.on_chosen_composition_list)
 
     def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
         self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
         list_names = []
@@ -563,76 +650,79 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
         self.init_composition_list()
 
     def change_pure_param_m(self):
-        value = self.pure_param_m_edit.text()
+        """
+        Validates input and calls save function
+        """
         self.pure_param_m_edit.blockSignals(True)
         self.pure_param_m_edit.clearFocus()
         self.pure_param_m_edit.blockSignals(False)
 
-        selected_component = self.component_btngroup.checkedButton().text()
-        if selected_component:
-            # Validate input
-            print("Setting m for", selected_component, "to", value)
+        if self.component_btngroup.checkedButton():
+            # TODO: Validate input
             self.save_pure_fluid_params()
         else:
             return
 
     def change_pure_param_sigma(self):
-        value = self.pure_param_sigma_edit.text()
+        """
+        Validates input and calls save function
+        """
         self.pure_param_sigma_edit.blockSignals(True)
         self.pure_param_sigma_edit.clearFocus()
         self.pure_param_sigma_edit.blockSignals(False)
 
-        selected_component = self.component_btngroup.checkedButton().text()
-        if selected_component:
-            # Validate input
-            print("Setting sigma for", selected_component, "to", value)
+        if self.component_btngroup.checkedButton():
+            # TODO: Validate input
             self.save_pure_fluid_params()
         else:
             return
 
     def change_pure_param_epsilon(self):
-        value = self.pure_param_epsilon_edit.text()
+        """
+        Validates input and calls save function
+        """
         self.pure_param_epsilon_edit.blockSignals(True)
         self.pure_param_epsilon_edit.clearFocus()
         self.pure_param_epsilon_edit.blockSignals(False)
 
-        selected_component = self.component_btngroup.checkedButton().text()
-        if selected_component:
-            # Validate input
-            print("Setting epsilon for", selected_component, "to", value)
+        if self.component_btngroup.checkedButton():
+            # TODO: Validate input
             self.save_pure_fluid_params()
         else:
             return
 
     def change_pure_param_lambda_a(self):
-        value = self.pure_param_lambda_a_edit.text()
+        """
+        Validates input and calls save function
+        """
         self.pure_param_lambda_a_edit.blockSignals(True)
         self.pure_param_lambda_a_edit.clearFocus()
         self.pure_param_lambda_a_edit.blockSignals(False)
 
-        selected_component = self.component_btngroup.checkedButton().text()
-        if selected_component:
-            # Validate input
-            print("Setting lambda a for", selected_component, "to", value)
+        if self.component_btngroup.checkedButton():
+            # TODO: Validate input
             self.save_pure_fluid_params()
         else:
             return
 
     def change_pure_param_lambda_r(self):
-        value = self.pure_param_lambda_r_edit.text()
+        """
+        Validates input and calls save function
+        """
         self.pure_param_lambda_r_edit.blockSignals(True)
         self.pure_param_lambda_r_edit.clearFocus()
         self.pure_param_lambda_r_edit.blockSignals(False)
 
-        selected_component = self.component_btngroup.checkedButton().text()
-        if selected_component:
-            # Validate input
-            print("Setting lambda r for", selected_component, "to", value)
+        if self.component_btngroup.checkedButton():
+            # TODO: Validate input
             self.save_pure_fluid_params()
         else:
             return
 
     def save_pure_fluid_params(self):
+        """
+        Saves the current pure fluid parameters to the session data
+        """
         if not self.list_name or not self.component_id:
             return
 
@@ -650,6 +740,10 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
         fluid_params["Lambda r"] = lambda_r
 
     def show_component_pure_params(self, button):
+        """
+        When a component is chosen, the corresponding pure fluid parameters are displayed
+        :param button: Clicked radio button giving the chosen component
+        """
         comp_name = button.text()
         list_name = self.composition_list.currentItem().text()
 
@@ -669,6 +763,10 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
         self.pure_param_lambda_r_edit.setText(str(lambda_r))
 
     def calculate_matrix_data(self, list_name):
+        """
+        Calculates binary coefficients for all composition lists and stores them in the session data.
+        :param list_name: str, Name of component list
+        """
         component_list = self.component_lists[list_name]["Names"]
         size = len(component_list)
         epsilon_matrix_data = np.zeros(shape=(size, size))
@@ -709,6 +807,11 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
         self.component_lists[list_name]["Coefficient matrices"]["gamma"] = gamma_matrix_data
 
     def on_chosen_composition_list(self, list_item):
+        """
+        Show the correct tab with interaction coefficient matrices, and display radio buttons with all components
+        in the given composition.
+        :param list_item: Chosen composition
+        """
         self.list_name = list_item.text()
         if not self.list_name:
             return
@@ -727,6 +830,12 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
             self.component_btn_layout.addWidget(button)
 
     def change_coeff(self, item, table, table_name):
+        """
+        Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
+        thermopack works, all values have to be set simultaneously
+        :param item: New value
+        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        """
         row, col = item.row(), item.column()
         component_list = self.composition_list.currentItem().text()
         matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
@@ -757,7 +866,33 @@ class SAFTVRMieBinaryCoefficientsWidget(ParametersWidget):
             self.thermopack.set_lr_gammaij(index1, index2, value)
 
 
+class HV1TabWidget(QTabWidget):
+    """
+    Contains tabs for the four different interaction coefficient matrices for the HV1 mixing rule
+    """
+
+    def __init__(self, alpha_table, a_table, b_table, parent=None):
+        QTabWidget.__init__(self, parent)
+        self.addTab(alpha_table, u"\u03B1")
+        self.addTab(a_table, "A")
+        self.addTab(b_table, "B")
+
+
+class HV2TabWidget(HV1TabWidget):
+    """
+    Contains tabs for the four different interaction coefficient matrices for the HV2 mixing rule
+    """
+
+    def __init__(self, alpha_table, a_table, b_table, c_table, parent=None):
+        HV1TabWidget.__init__(self, alpha_table, a_table, b_table, parent)
+        self.addTab(c_table, "C")
+
+
 class SAFTVRMieTabWidget(QTabWidget):
+    """
+    Contains tabs for the three different interaction coefficient matrices for the SAFT-VR Mie model
+    """
+
     def __init__(self, epsilon_table, sigma_table, gamma_table, parent=None):
         QTabWidget.__init__(self, parent)
         self.addTab(epsilon_table, "\u03B5")
