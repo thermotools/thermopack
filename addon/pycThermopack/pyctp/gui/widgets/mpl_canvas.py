@@ -6,15 +6,13 @@ import numpy as np
 # TODO: Må kunne sette N_ISOPLETHS og NMAX, og kunne velge om man vil plotte isopleter eller ikke. (Tar jo en del tid)
 # TODO: Ikke ha X_list_test. Få det riktig som det skal være
 
-N_ISOPLETHS = 15
-NMAX = 50
-
 
 class MplCanvas(FigureCanvasQTAgg):
     """
     A canvas for matplotlib plots. Contains all plot functionality for Plot Mode
     """
-    def __init__(self, components):
+
+    def __init__(self, components, plotting_preferences):
         self.fig = Figure(dpi=100)
         self.empty = True
         self.components = components
@@ -23,6 +21,8 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isotherms = None
         self.isobars = None
         super(MplCanvas, self).__init__(figure=self.fig)
+
+        self.plotting_preferences = plotting_preferences
 
     def toggle_isenthalps(self, is_checked):
         """
@@ -86,79 +86,115 @@ class MplCanvas(FigureCanvasQTAgg):
         else:
             return
 
-    def plot_envelope(self, tp, prim_vars, fractions, line_color, point_color, grid_on):
+    def plot_envelope(self, tp, prim_vars, fractions):
         """
         Plots a phase envelope
         :param tp: Thermopack instance
         :param prim_vars: Primary variables for the plot (e.g. PT, PH, ..)
         :param fractions: List of molar fractions for the components
-        :param line_color: Primary line color for the plot
-        :param point_color: Primary point color for the plot
-        :param grid_on: bool telling if the plot should contain a grid or not
         """
-        p_initial = 1.0e5
-        p_max = 1.5e7
-        T_min = None
-        step_size = 0.1
+
+        tpv_settings = self.plotting_preferences["Phase envelope"]["TPV"]
+        isopleth_settings = self.plotting_preferences["Phase envelope"]["Isopleths"]
+        critical_settings = self.plotting_preferences["Phase envelope"]["Critical"]
+        plot_settings = self.plotting_preferences["Plotting"]
+
+        p_initial = tpv_settings["Initial pressure"]
+        t_min = tpv_settings["Minimum temperature"]
+        p_max = tpv_settings["Maximum pressure"]
+        step_size = tpv_settings["Step size"]
 
         # Calculate T, P, V
         T, P, V = tp.get_envelope_twophase(initial_pressure=p_initial, z=fractions, maximum_pressure=p_max,
-                                           minimum_temperature=T_min, step_size=step_size, calc_v=True)
+                                           minimum_temperature=t_min, step_size=step_size, calc_v=True)
 
         H = np.array([tp.enthalpy_tv(T[i], V[i], fractions) for i in range(len(T))])
         S = np.array([tp.entropy_tv(T[i], V[i], fractions) for i in range(len(T))])
 
+        # TODO: Er det en bedre måte å sette disse på? Hvis det krasjer, må det handles på et vis
         global H_list_test
         global T_list_test
         global S_list_test
         global P_list_test
 
-        H_list_test = np.linspace(np.min(H), np.max(H), N_ISOPLETHS)
-        S_list_test = np.linspace(np.min(S), np.max(S), N_ISOPLETHS)
-        T_list_test = np.linspace(np.min(T) * 0.60, np.max(T) * 1.40, N_ISOPLETHS)
-        P_list_test = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, N_ISOPLETHS)
+        n_isopleths = isopleth_settings["Number of isopleths"]
+
+        H_list_test = np.linspace(np.min(H), np.max(H), n_isopleths)
+        S_list_test = np.linspace(np.min(S), np.max(S), n_isopleths)
+        T_list_test = np.linspace(np.min(T) * 0.60, np.max(T) * 1.40, n_isopleths)
+        P_list_test = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, n_isopleths)
+
+        temp = critical_settings["Temperature"]
+        v = critical_settings["Volume"]
+        tol = critical_settings["Error tolerance"]
 
         # Calculate critical variables
         try:
-            T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
+            T_c, V_c, P_c = tp.critical(n=fractions, temp=temp, v=v, tol=tol)
             H_c = tp.enthalpy_tv(T_c, V_c, fractions)
             S_c = tp.entropy_tv(T_c, V_c, fractions)
         except Exception:
             T_c, V_c, P_c, H_c, S_c = None, None, None, None, None
 
+        # Set global variables, so that they are accessible in all phase envelope plot functions
+        global isopleth_1_color
+        global isopleth_2_color
+        global P_min
+        global P_max
+        global T_min
+        global T_max
+        global nmax
+
+        isopleth_1_color = plot_settings["Colors"][2]
+        isopleth_2_color = plot_settings["Colors"][3]
+        P_min = isopleth_settings["Minimum pressure"]
+        P_max = isopleth_settings["Maximum pressure"]
+        T_min = isopleth_settings["Minimum temperature"]
+        T_max = isopleth_settings["Maximum temperature"]
+        nmax = isopleth_settings["N max"]
+
         # Plot depending on which primary variables are chosen
         if prim_vars == "PT":
-            x, y, crit_x, crit_y, xlabel, ylabel = self.plot_envelope_PT(tp, T, P, T_c, P_c, fractions)
+            x, y, crit_x, crit_y = self.plot_envelope_PT(tp, T, P, T_c, P_c, fractions)
 
         elif prim_vars == "PH":
-            x, y, crit_x, crit_y, xlabel, ylabel = self.plot_envelope_PH(tp, P, H, P_c, H_c, fractions)
+            x, y, crit_x, crit_y = self.plot_envelope_PH(tp, P, H, P_c, H_c, fractions)
 
         elif prim_vars == "PS":
-            x, y, crit_x, crit_y, xlabel, ylabel = self.plot_envelope_PS(tp, P, S, P_c, S_c, fractions)
+            x, y, crit_x, crit_y = self.plot_envelope_PS(tp, P, S, P_c, S_c, fractions)
 
         elif prim_vars == "TH":
-            x, y, crit_x, crit_y, xlabel, ylabel = self.plot_envelope_TH(tp, T, H, T_c, H_c, fractions)
+            x, y, crit_x, crit_y = self.plot_envelope_TH(tp, T, H, T_c, H_c, fractions)
 
         elif prim_vars == "TS":
-            x, y, crit_x, crit_y, xlabel, ylabel = self.plot_envelope_TS(tp, T, S, T_c, S_c, fractions)
+            x, y, crit_x, crit_y = self.plot_envelope_TS(tp, T, S, T_c, S_c, fractions)
 
         else:
             return
 
         # Plotting
 
+        line_color = plot_settings["Colors"][0]
+        point_color = plot_settings["Colors"][1]
+        grid_on = plot_settings["Grid on"]
+        xlabel = plot_settings["x label"]
+        ylabel = plot_settings["y label"]
+        title = plot_settings["Title"]
+
         self.axes.plot(x, y, color=line_color, label="Phase envelope")
         self.axes.scatter([crit_x], [crit_y], color=point_color, label="Critical point")
 
+        self.axes.set_title(title)
         self.axes.grid(grid_on)
         self.axes.set_xlabel(xlabel)
         self.axes.set_ylabel(ylabel)
 
         # Sort entries in the legend
-        handles, labels = self.axes.get_legend_handles_labels()
-        self.axes.legend([handles[3], handles[2], handles[0], handles[1]],
-                         [labels[3], labels[2], labels[0], labels[1]],
-                         loc="best")
+        if n_isopleths > 0:
+            handles, labels = self.axes.get_legend_handles_labels()
+            self.axes.legend([handles[3], handles[2], handles[0], handles[1]],
+                             [labels[3], labels[2], labels[0], labels[1]],
+                             loc="best")
         self.draw()
 
     def plot_envelope_PT(self, tp, T, P, T_c, P_c, fractions):
@@ -174,8 +210,6 @@ class MplCanvas(FigureCanvasQTAgg):
                     y: y values for plot,
                     crit_x: x value for critical point,
                     crit_y: y value for critical point,
-                    xlabel: Label for the x axis (Name + unit),
-                    ylabel: Label for the y axis (Name + unit)
         """
 
         # Display correct buttons
@@ -196,20 +230,14 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isenthalps = []
         self.isentropes = []
 
-        P_min = 1.0e5
-        P_max = 1.5e7
-        T_min = 200.0
-        T_max = 500.0
-        nmax = NMAX
-
         for i in range(len(enthalpies)):
             t_vals, p_vals, v_vals, s_vals = tp.get_isenthalp(enthalpies[i], fractions, minimum_pressure=P_min,
                                                               maximum_pressure=P_max, minimum_temperature=T_min,
                                                               maximum_temperature=T_max, nmax=nmax)
             if i == 0:
-                h_line, = self.axes.plot(t_vals, p_vals, color="#ffd2d2", label="Isenthalp")
+                h_line, = self.axes.plot(t_vals, p_vals, color=isopleth_1_color, label="Isenthalp")
             else:
-                h_line, = self.axes.plot(t_vals, p_vals, color="#ffd2d2")
+                h_line, = self.axes.plot(t_vals, p_vals, color=isopleth_1_color)
 
             self.isenthalps.append(h_line)
 
@@ -217,19 +245,16 @@ class MplCanvas(FigureCanvasQTAgg):
                                                               maximum_pressure=P_max, minimum_temperature=T_min,
                                                               maximum_temperature=T_max, nmax=nmax)
             if i == 0:
-                s_line, = self.axes.plot(t_vals, p_vals, color="#d5d3ff", label="Isentrope")
+                s_line, = self.axes.plot(t_vals, p_vals, color=isopleth_2_color, label="Isentrope")
             else:
-                s_line, = self.axes.plot(t_vals, p_vals, color="#d5d3ff")
+                s_line, = self.axes.plot(t_vals, p_vals, color=isopleth_2_color)
 
             self.isentropes.append(s_line)
 
         self.isotherms = None
         self.isobars = None
 
-        xlabel = "T [K]"
-        ylabel = "P [Pa]"
-
-        return x, y, crit_x, crit_y, xlabel, ylabel
+        return x, y, crit_x, crit_y
 
     def plot_envelope_PH(self, tp, P, H, P_c, H_c, fractions):
         """
@@ -244,8 +269,6 @@ class MplCanvas(FigureCanvasQTAgg):
                     y: y values for plot,
                     crit_x: x value for critical point,
                     crit_y: y value for critical point,
-                    xlabel: Label for the x axis (Name + unit),
-                    ylabel: Label for the y axis (Name + unit)
         """
 
         # Display correct buttons
@@ -265,12 +288,6 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.isotherms = []
         self.isentropes = []
-
-        P_min = 1.0e5
-        P_max = 1.5e7
-        T_min = 200.0
-        T_max = 500.0
-        nmax = NMAX
 
         for i in range(len(temperatures)):
             p_vals, v_vals, s_vals, h_vals = tp.get_isotherm(temperatures[i], fractions, minimum_pressure=P_min,
@@ -296,10 +313,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isenthalps = None
         self.isobars = None
 
-        xlabel = "H [J / mol]"
-        ylabel = "P [Pa]"
-
-        return x, y, crit_x, crit_y, xlabel, ylabel
+        return x, y, crit_x, crit_y
 
     def plot_envelope_PS(self, tp, P, S, P_c, S_c, fractions):
         """
@@ -314,8 +328,6 @@ class MplCanvas(FigureCanvasQTAgg):
                     y: y values for plot,
                     crit_x: x value for critical point,
                     crit_y: y value for critical point,
-                    xlabel: Label for the x axis (Name + unit),
-                    ylabel: Label for the y axis (Name + unit)
         """
 
         # Display correct buttons
@@ -335,12 +347,6 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.isotherms = []
         self.isenthalps = []
-
-        P_min = 1.0e5
-        P_max = 1.5e7
-        T_min = 200.0
-        T_max = 500.0
-        nmax = NMAX
 
         for i in range(len(temperatures)):
             p_vals, v_vals, s_vals, h_vals = tp.get_isotherm(temperatures[i], fractions, minimum_pressure=P_min,
@@ -366,10 +372,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isentropes = None
         self.isobars = None
 
-        xlabel = "S [J / K mol]"
-        ylabel = "P [Pa]"
-
-        return x, y, crit_x, crit_y, xlabel, ylabel
+        return x, y, crit_x, crit_y
 
     def plot_envelope_TH(self, tp, T, H, T_c, H_c, fractions):
         """
@@ -384,8 +387,6 @@ class MplCanvas(FigureCanvasQTAgg):
                     y: y values for plot,
                     crit_x: x value for critical point,
                     crit_y: y value for critical point,
-                    xlabel: Label for the x axis (Name + unit),
-                    ylabel: Label for the y axis (Name + unit)
         """
 
         # Display correct buttons
@@ -405,12 +406,6 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.isobars = []
         self.isentropes = []
-
-        P_min = 1.0e5
-        P_max = 1.5e7
-        T_min = 200.0
-        T_max = 500.0
-        nmax = NMAX
 
         for i in range(len(pressures)):
             t_vals, v_vals, s_vals, h_vals = tp.get_isobar(pressures[i], fractions, minimum_temperature=T_min,
@@ -435,10 +430,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isenthalps = None
         self.isotherms = None
 
-        xlabel = "H [J / mol]"
-        ylabel = "T [K]"
-
-        return x, y, crit_x, crit_y, xlabel, ylabel
+        return x, y, crit_x, crit_y
 
     def plot_envelope_TS(self, tp, T, S, T_c, S_c, fractions):
         """
@@ -453,8 +445,6 @@ class MplCanvas(FigureCanvasQTAgg):
                     y: y values for plot,
                     crit_x: x value for critical point,
                     crit_y: y value for critical point,
-                    xlabel: Label for the x axis (Name + unit),
-                    ylabel: Label for the y axis (Name + unit)
         """
         # Display correct buttons
         self.parent().parent().parent().isopleth_btn_stack.setCurrentIndex(4)
@@ -473,12 +463,6 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.isenthalps = []
         self.isobars = []
-
-        P_min = 1.0e5
-        P_max = 1.5e7
-        T_min = 200.0
-        T_max = 500.0
-        nmax = NMAX
 
         for i in range(len(pressures)):
             t_vals, v_vals, s_vals, h_vals = tp.get_isobar(pressures[i], fractions, minimum_temperature=T_min,
@@ -504,28 +488,27 @@ class MplCanvas(FigureCanvasQTAgg):
         self.isentropes = None
         self.isotherms = None
 
-        xlabel = "S [J / K mol]"
-        ylabel = "T [K]"
+        return x, y, crit_x, crit_y
 
-        return x, y, crit_x, crit_y, xlabel, ylabel
-
-    def plot_binary_pxy(self, tp, line_color, grid_on):
+    def plot_binary_pxy(self, tp):
         """
         Plots a binary pxy plot
         :param tp: Thermopack instance
-        :param line_color: Primary line color for the plot
-        :param grid_on: bool telling if the plot should contain a grid or not
         """
 
-        # TODO: Hente disse fra options (som er lagret (Skal lagres når options-vinduet åpnes. Eller i init? Må jo ha dem uansett) Hvis ikke, sett til dette)
-        T = 288.0
-        p_max = 1.5e7
-        p_min = 1.0e5
-        dz_max = 0.003
-        dlns_max = 0.01
+        calc_settings = self.plotting_preferences["Binary pxy"]
+        plot_settings = self.plotting_preferences["Plotting"]
+
+        T = calc_settings["Temperature"]
+        p_max = calc_settings["Maximum pressure"]
+        p_min = calc_settings["Minimum pressure"]
+        dz_max = calc_settings["Maximum dz"]
+        dlns_max = calc_settings["Maximum dlns"]
 
         LLE, L1VE, L2VE = tp.get_binary_pxy(temp=T, maximum_pressure=p_max, minimum_pressure=p_min,
                                             maximum_dz=dz_max, maximum_dlns=dlns_max)
+
+        line_color = plot_settings["Colors"][0]
 
         if LLE[0] is not None:
             self.axes.plot(LLE[0], LLE[2], color=line_color)
@@ -539,59 +522,82 @@ class MplCanvas(FigureCanvasQTAgg):
             self.axes.plot(L2VE[0], L2VE[2], color=line_color)
             self.axes.plot(L2VE[1], L2VE[2], color=line_color)
 
+        grid_on = False
+        title = plot_settings["Title"]
+        xlabel = plot_settings["x label"]
+        ylabel = plot_settings["y label"]
+
         self.axes.grid(grid_on)
-        self.axes.set_xlabel("xlabel")
-        self.axes.set_ylabel("ylabel")
-        self.draw()
+        self.axes.set_title(title)
+        self.axes.set_xlabel(xlabel)
+        self.axes.set_ylabel(ylabel)
         self.draw()
 
-    def plot_pressure_density(self, tp, fractions, line_color, point_color, grid_on):
+    def plot_pressure_density(self, tp, fractions):
         """
         Plots a pressure density plot
         :param tp: Thermopack instance
         :param fractions: List of molar fractions
-        :param line_color: Primary line color for the plot
-        :param point_color: Primary point color for the plot
-        :param grid_on: bool telling if the plot should contain a grid or not
         """
-        p_initial = 1.0e5
-        p_max = 1.5e7
-        T_min = None
-        step_size = 0.1
+
+        calc_settings = self.plotting_preferences["Pressure density"]["TPV"]
+        crit_settings = self.plotting_preferences["Pressure density"]["Critical"]
+        plot_settings = self.plotting_preferences["Plotting"]
+
+        p_initial = calc_settings["Initial pressure"]
+        p_max = calc_settings["Maximum pressure"]
+        T_min = calc_settings["Minimum temperature"]
+        step_size = calc_settings["Step size"]
+
+        crit_t_guess = crit_settings["Temperature"]
+        crit_v_guess = crit_settings["Volume"]
+        crit_tol = crit_settings["Error tolerance"]
 
         # Calculate T, P, V
         T, P, V = tp.get_envelope_twophase(initial_pressure=p_initial, z=fractions, maximum_pressure=p_max,
                                            minimum_temperature=T_min, step_size=step_size, calc_v=True)
-        T_c, V_c, P_c = tp.critical(n=fractions, temp=0.0, v=0.0, tol=1.0e-7)
+        T_c, V_c, P_c = tp.critical(n=fractions, temp=crit_t_guess, v=crit_v_guess, tol=crit_tol)
 
         # TODO: Q: Hvordan velge verdier for rho og P?
-        # TODO: Q: Isolinjer av noe slag?
+        # TODO: Q: Isolinjer?
         rho = 1 / V
         rho_c = 1 / V_c
+
+        line_color = plot_settings["Colors"][0]
+        point_color = plot_settings["Colors"][1]
+        title = plot_settings["Title"]
+        grid_on = plot_settings["Grid on"]
+        xlabel = plot_settings["x label"]
+        ylabel = plot_settings["y label"]
 
         self.axes.plot(rho, P, color=line_color, label="Pressure density")
         self.axes.scatter([rho_c], [P_c], color=point_color, label="Critical point")
 
+        self.axes.set_title(title)
         self.axes.grid(grid_on)
-        self.axes.set_xlabel("$\\rho  [\\frac{1}{m^3}]$")
-        self.axes.set_ylabel("$P  [Pa]$")
+        self.axes.set_xlabel(xlabel)
+        self.axes.set_ylabel(ylabel)
 
         self.axes.legend(loc="best")
         self.draw()
 
-    def plot_global_binary(self, tp, grid_on):
+    def plot_global_binary(self, tp):
         """
         Plots a binary pxy plot
         :param tp: Thermopack instance
-        :param grid_on: bool telling if the plot should contain a grid or not
         """
-        min_press = 1.05e5
-        min_temp = 2.0
-        azeotropes = True
+
+        calc_settings = self.plotting_preferences["Global binary"]
+        plot_settings = self.plotting_preferences["Plotting"]
+
+        min_press = calc_settings["Minimum pressure"]
+        min_temp = calc_settings["Minimum temperature"]
+        azeotropes = calc_settings["Azeotropes"]
+
         KSTYPE, VLE, LLVE, CRIT, AZ = tp.global_binary_plot(minimum_pressure=min_press, minimum_temperature=min_temp,
                                                             include_azeotropes=azeotropes)
 
-        colors = ["black", "blue", "red", "green"]
+        colors = plot_settings["Colors"]
         linestyles = ["-", "--", ":", "-."]
 
         label = "VLE"
@@ -622,11 +628,19 @@ class MplCanvas(FigureCanvasQTAgg):
             5: "V"
         }
 
-        self.axes.set_title("van Konyenburg and Scott type: " + ks_strings[KSTYPE])
+        title = plot_settings["Title"]
+        xlabel = plot_settings["x label"]
+        ylabel = plot_settings["y label"]
+        grid_on = plot_settings["Grid on"]
+
+        if title == "van Konyenburg and Scott type: ":
+            title += ks_strings[KSTYPE]
+
+        self.axes.set_title(title)
         legend = self.axes.legend(loc="best", numpoints=1)
         legend.get_frame().set_linewidth(0.0)
 
-        # TODO: Q: Hvordan velge ylim?
-        self.axes.set_ylim(1.0e5, 0.3e7)
+        self.axes.set_xlabel(xlabel)
+        self.axes.set_ylabel(ylabel)
         self.axes.grid(grid_on)
         self.draw()

@@ -1,10 +1,12 @@
-from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QDoubleSpinBox, QColorDialog, QMessageBox, QDialog, \
+from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QDoubleSpinBox, QColorDialog, QMessageBox, \
     QCheckBox
 from PyQt5.uic import loadUi
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 
 from gui.widgets.mpl_canvas import MplCanvas
+from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYOptionsWindow, PRhoOptionsWindow, \
+    GlobalBinaryOptionsWindow
 
 import numpy as np
 
@@ -18,13 +20,9 @@ from saftvrmie import saftvrmie
 
 # TODO: Når isopleter toggles on/off, fjern/legg til i legend
 
-# TODO: Lagre paramtere i self.plot_settings = {}
-
-# TODO: Velge å regne ut isopleter eller ikke. Tar en stund (Sjekkboks)
+# TODO: Lagre parametere i self.plot_settings = {}
 
 # TODO: Mulighet for å lagre (x, y)-data som csv
-
-# TODO: Ikke ha toolbtn-boks med eget vindu. Ha stack som bestemmer hvilke options. Én for hver plotteopsjon
 
 
 class PlotMode(QMainWindow):
@@ -33,6 +31,7 @@ class PlotMode(QMainWindow):
     The user may change initial parameters for the calculations and specify some plotting preferences.
     When a plot is generated, the user may download a csv file containing the (x, y) data.
     """
+
     def __init__(self, component_data, settings, parent=None):
         super().__init__(parent=parent)
 
@@ -42,6 +41,10 @@ class PlotMode(QMainWindow):
 
         self.component_data = component_data
         self.settings = settings
+
+        self.plotting_preferences = self.init_plotting_preferences()
+        # In case the user wants to reset settings
+        self.default_plotting_preferences = self.plotting_preferences.copy()
 
         self.init_plot_modes()
 
@@ -56,16 +59,15 @@ class PlotMode(QMainWindow):
         # Init function depends on settings
         self.init_tp()
 
-        self.line_color_tool_btn.clicked.connect(self.pick_line_color)
-        self.point_color_tool_btn.clicked.connect(self.pick_point_color)
         self.ph_env_toolbtn.clicked.connect(self.show_ph_env_options)
         self.bin_pxy_toolbtn.clicked.connect(self.show_bin_pxy_options)
         self.p_rho_toolbtn.clicked.connect(self.show_p_rho_options)
+        self.global_binary_toolbtn.clicked.connect(self.show_global_binary_options)
 
         self.plot_type_btn_group.buttonClicked.connect(self.change_plot_type)
 
         # Setup for plot window
-        self.canvas = MplCanvas(self.component_data["Names"])
+        self.canvas = MplCanvas(self.component_data["Names"], self.plotting_preferences)
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
         self.toolbar.hide()
         self.canvas.hide()
@@ -74,6 +76,69 @@ class PlotMode(QMainWindow):
 
         self.init_isopleth_btns()
         self.plot_button.clicked.connect(self.plot)
+
+    def init_plotting_preferences(self):
+        """
+        :return: Dictionary for storing plotting preferences and parameters
+        """
+        return {
+            "Phase envelope": {
+                "Isopleths": {
+                    "Minimum pressure": 100000.0,
+                    "Maximum pressure": 15000000.0,
+                    "Number of isopleths": 15,
+                    "Minimum temperature": 200.0,
+                    "Maximum temperature": 500.0,
+                    "N max": 50
+                },
+                "TPV": {
+                    "Initial pressure": 100000.0,
+                    "Maximum pressure": 15000000.0,
+                    "Minimum temperature": None,
+                    "Step size": 0.1,
+                },
+                "Critical": {
+                    "Temperature": 0.0,
+                    "Volume": 0.0,
+                    "Error tolerance": 1.0e-7
+                }
+            },
+            "Binary pxy": {
+                "Temperature": 288.0,
+                "Maximum pressure": 1.5e7,
+                "Minimum pressure": 1.0e5,
+                "Maximum dz": 0.003,
+                "Maximum dlns": 0.01
+            },
+            "Pressure density": {
+                "TPV": {
+                    "Initial pressure": 100000,
+                    "Maximum pressure": 15000000,
+                    "Minimum temperature": None,
+                    "Step size": 0.1,
+                },
+                "Critical": {
+                    "Temperature": 0.0,
+                    "Volume": 0.0,
+                    "Error tolerance": 1.0e-7
+                }
+            },
+            "Global binary": {
+                "Minimum pressure": 1.05e5,
+                "Minimum temperature": 2.0,
+                "Azeotropes": True,
+                "Colors": ["black", "blue", "red", "green"],
+                "Linestyles": ["-", "--", ":", "-."],
+            },
+            "Plotting": {
+                "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
+                "Linestyles": ["-", "--", ":", "-."],
+                "Grid on": False,
+                "Title": None,
+                "x label": None,
+                "y label": None
+            }
+        }
 
     def get_thermopack(self):
         """
@@ -322,61 +387,30 @@ class PlotMode(QMainWindow):
         """
         Opens an option window where initial parameters for phase envelope plot can be set
         """
-        options_window = PhaseEnvelopeOptionsWindow()
-        options_window.exec_()
-        options_window.button_box.accepted.connect(self.save_ph_env_options)
 
-    def save_ph_env_options(self):
-        """
-        Saves selected initial parameters for phase envelope plot
-        """
-        pass
+        options_window = PhaseEnvelopeOptionsWindow(self.plotting_preferences)
+        options_window.exec_()
 
     def show_bin_pxy_options(self):
         """
         Opens an option window where initial parameters for binary pxy plot can be set
         """
-        options_window = BinaryPXYOptionsWindow()
+        options_window = BinaryPXYOptionsWindow(self.plotting_preferences)
         options_window.exec_()
-        options_window.button_box.accepted.connect(self.save_bin_pxy_options)
-
-    def save_bin_pxy_options(self):
-        """
-        Saves selected initial parameters for binary pxy plot
-        """
-        pass
 
     def show_p_rho_options(self):
         """
         Opens an option window where initial parameters for pressure density plot can be set
         """
-        options_window = PRhoOptionsWindow()
+        options_window = PRhoOptionsWindow(self.plotting_preferences)
         options_window.exec_()
-        options_window.button_box.accepted.connect(self.save_p_rho_options)
 
-    def save_p_rho_options(self):
+    def show_global_binary_options(self):
         """
-        Saves selected initial parameters for pressure density plot
+        Opens an option window where initial parameters for global binary plot can be set
         """
-        pass
-
-    def pick_line_color(self):
-        """
-        Opens a color picker and sets line color for the plot
-        """
-        initial_color = self.line_color_preview.palette().window().color()
-        color = QColorDialog.getColor(initial_color)
-        style = "background-color: %s; border-style: solid; border-width: 1px; border-color: black;" % color.name()
-        self.line_color_preview.setStyleSheet(style)
-
-    def pick_point_color(self):
-        """
-        Opens a color picker and sets point color for the plot
-        """
-        initial_color = self.point_color_preview.palette().window().color()
-        color = QColorDialog.getColor(initial_color)
-        style = "background-color: %s; border-style: solid; border-width: 1px; border-color: black;" % color.name()
-        self.point_color_preview.setStyleSheet(style)
+        options_window = GlobalBinaryOptionsWindow(self.plotting_preferences)
+        options_window.exec_()
 
     def change_fraction(self, value, comp_name):
         """
@@ -418,10 +452,7 @@ class PlotMode(QMainWindow):
             self.canvas.empty = False
 
         self.canvas.axes.cla()
-
-        grid_on = self.grid_checkbox.isChecked()
-        line_color = self.line_color_preview.palette().window().color().name()
-        point_color = self.point_color_preview.palette().window().color().name()
+        self.isopleth_btn_stack.hide()
 
         if plot_type in ["Phase envelope", "Pressure density"]:
             mole_fraction_sum = np.sum(fractions)
@@ -432,75 +463,36 @@ class PlotMode(QMainWindow):
                 return
 
         if plot_type == "Phase envelope":
-            self.canvas.plot_envelope(self.tp, prim_vars, fractions, line_color, point_color, grid_on)
+            self.canvas.plot_envelope(self.tp, prim_vars, fractions)
             self.canvas.show()
             self.toolbar.show()
+            if self.plotting_preferences["Phase envelope"]["Isopleths"]["Number of isopleths"] > 0:
+                self.isopleth_btn_stack.show()
 
         elif plot_type == "Binary pxy":
-            self.canvas.plot_binary_pxy(self.tp, line_color, grid_on)
+            self.canvas.plot_binary_pxy(self.tp)
             self.canvas.show()
             self.toolbar.show()
 
         elif plot_type == "Pressure density":
-            self.canvas.plot_pressure_density(self.tp, fractions, line_color, point_color, grid_on)
+            self.canvas.plot_pressure_density(self.tp, fractions)
             self.canvas.show()
             self.toolbar.show()
 
         elif plot_type == "Global binary":
-            self.canvas.plot_global_binary(self.tp, grid_on)
+            self.canvas.plot_global_binary(self.tp)
             self.canvas.show()
             self.toolbar.show()
 
         else:
             pass
 
-        self.isopleth_btn_stack.show()
-
-
-class PhaseEnvelopeOptionsWindow(QDialog):
-    """
-    A window containing the parameters for the phase envelope plot
-    """
-    def __init__(self):
-        QDialog.__init__(self)
-        loadUi("widgets/layouts/ph_env_options.ui", self)
-        self.setWindowTitle("Phase envelope options")
-
-
-class BinaryPXYOptionsWindow(QDialog):
-    """
-    A window containing the parameters for the binary pxy plot
-    """
-    def __init__(self):
-        QDialog.__init__(self)
-        loadUi("widgets/layouts/bin_pxy_options.ui", self)
-        self.setWindowTitle("Binary pxy options")
-
-
-class PRhoOptionsWindow(QDialog):
-    """
-    A window containing the parameters for the pressure density plot
-    """
-    def __init__(self):
-        QDialog.__init__(self)
-        loadUi("widgets/layouts/bin_pxy_options.ui", self)
-        self.setWindowTitle("Pressure density options")
-
-
-class GlobalBinaryOptionsWindow(QDialog):
-    """
-    A window containing the parameters for the global binary plot
-    """
-    def __init__(self):
-        QDialog.__init__(self)
-        loadUi("widgets/layouts/bin_pxy_options.ui", self)
-        self.setWindowTitle("Global binary options")
-
 
 class MolarFractionsErrorMsg(QMessageBox):
     """
     Alerts the user that the sum of the molar fractions don't add up to 1
     """
+
     def __init__(self, total):
         QMessageBox.__init__(self)
         self.setWindowTitle("Oups!")

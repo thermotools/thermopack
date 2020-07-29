@@ -244,10 +244,10 @@ class ModelSelectWidget(QWidget):
 
             self.toggle_a1(self.saftvrmie_a1.isChecked())
             self.toggle_a2(self.saftvrmie_a2.isChecked())
-            self.toggle_3(self.saftvrmie_a3.isChecked())
+            self.toggle_a3(self.saftvrmie_a3.isChecked())
             self.toggle_hard_sphere(self.saftvrmie_hard_sphere.isChecked())
             self.toggle_chain(self.saftvrmie_chain.isChecked())
-            self.change_saftvrmie_ref(self.saftvrmie_red.currentText())
+            self.change_saftvrmie_ref(self.saftvrmie_ref.currentText())
 
         else:
             pass

@@ -16,6 +16,7 @@ QPushButton {
 	color: #ffffff;
 	padding: 6px 24px;
 }
+
 QPushButton:hover, QPushButton:default {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                               stop: 0 #0061a7, stop: 1 #59a5d8);
@@ -26,6 +27,11 @@ QPushButton:disabled {
     border: 1px solid #BDDBEF;
     background-color: #dddddd;
     color: #000000;
+}
+
+QPushButton:checked, QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                          stop: 0 #00538F, stop: 1 #59a5d8);
 }
 
 /* Table styling */
@@ -93,4 +99,25 @@ QComboBox QAbstractItemView {
 
 QComboBox::down-arrow {
     image: url(icons/down-arrow.png);
+}
+
+/* QToolButton styling */
+
+
+QToolButton[text="..."] {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                  stop: 0 #59a5d8, stop: 1 #0061a7);
+	border-radius: 2px;
+	border: 1px solid #124d77;
+	color: #ffffff;
+}
+
+QToolButton[text="..."]:hover, QToolButton[text="..."]:default {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                              stop: 0 #0061a7, stop: 1 #59a5d8);
+}
+
+QToolButton[text="..."]:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                          stop: 0 #00538F, stop: 1 #59a5d8);
 }

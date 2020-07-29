@@ -98,3 +98,11 @@ def get_comp_id(comp_list_data, comp_name):
     """
     index = comp_list_data["Names"].index(comp_name)
     return comp_list_data["Identities"][index]
+
+
+def valid_float_input(input):
+    try:
+        float(input)
+    except ValueError:
+        return False
+    return True
