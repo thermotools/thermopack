@@ -21,8 +21,6 @@ from pcsaft import pcsaft
 from saftvrmie import saftvrmie
 
 
-# TODO: Mulighet for å plotte flere ting oppå hverandre (Default: Clear hver gang, mulig å endre eks checkbox)
-
 # TODO: Lagre parametere i self.plot_settings = {}
 
 
@@ -49,6 +47,9 @@ class PlotMode(QMainWindow):
         self.settings = settings
 
         self.plotting_preferences = self.init_plotting_preferences()
+
+        self.redraw = True
+        self.redraw_checkbox.setChecked(self.redraw)
 
         if not self.plotting_preferences:
             self.plotting_preferences = self.init_plotting_preferences()
@@ -84,6 +85,7 @@ class PlotMode(QMainWindow):
         self.plot_layout.addWidget(self.canvas)
 
         self.init_isopleth_btns()
+        self.redraw_checkbox.clicked.connect(self.toggle_redraw)
         self.plot_button.clicked.connect(self.plot)
         self.download_csv_btn.clicked.connect(self.export_csv)
 
@@ -490,6 +492,9 @@ class PlotMode(QMainWindow):
         else:
             line_edit.setText(str(self.component_data["Fractions"][index]))
 
+    def toggle_redraw(self, is_checked):
+        self.redraw = is_checked
+
     def plot(self):
         """
         Checks type of plot selected, gets the correct parameters, inits thermopack,
@@ -519,7 +524,9 @@ class PlotMode(QMainWindow):
             self.canvas.axes = self.canvas.fig.add_subplot(111)
             self.canvas.empty = False
 
-        self.canvas.axes.cla()
+        if self.redraw:
+            self.canvas.axes.cla()
+
         self.isopleth_btn_stack.hide()
         self.download_csv_btn.setEnabled(True)
 

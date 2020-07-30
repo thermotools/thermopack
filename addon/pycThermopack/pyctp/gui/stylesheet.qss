@@ -101,6 +101,12 @@ QComboBox::down-arrow {
     image: url(icons/down-arrow.png);
 }
 
+QComboBox:disabled {
+    border: 1px solid #BDDBEF;
+    background-color: #dddddd;
+    color: #000000;
+}
+
 /* QToolButton styling */
 
 

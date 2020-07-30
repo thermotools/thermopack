@@ -569,8 +569,8 @@ class MplCanvas(FigureCanvasQTAgg):
         xlabel = plot_settings["x label"]
         ylabel = plot_settings["y label"]
 
-        self.axes.plot(rho, P, color=line_color, label="Pressure density")
-        self.axes.scatter([rho_c], [P_c], color=point_color, label="Critical point")
+        self.axes.plot(P, rho, color=line_color, label="Pressure density")
+        self.axes.scatter([P_c], [rho_c], color=point_color, label="Critical point")
 
         self.axes.set_title(title)
         self.axes.grid(grid_on)
