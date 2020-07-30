@@ -3,8 +3,7 @@ from matplotlib.figure import Figure
 
 import numpy as np
 
-# TODO: Må kunne sette N_ISOPLETHS og NMAX, og kunne velge om man vil plotte isopleter eller ikke. (Tar jo en del tid)
-# TODO: Ikke ha X_list_test. Få det riktig som det skal være
+# TODO: Q: get_isobar returnerer bare tomme lister
 
 
 class MplCanvas(FigureCanvasQTAgg):
@@ -97,7 +96,7 @@ class MplCanvas(FigureCanvasQTAgg):
         tpv_settings = self.plotting_preferences["Phase envelope"]["TPV"]
         isopleth_settings = self.plotting_preferences["Phase envelope"]["Isopleths"]
         critical_settings = self.plotting_preferences["Phase envelope"]["Critical"]
-        plot_settings = self.plotting_preferences["Plotting"]
+        plot_settings = self.plotting_preferences["Phase envelope"]["Plotting"]
 
         p_initial = tpv_settings["Initial pressure"]
         t_min = tpv_settings["Minimum temperature"]
@@ -112,17 +111,17 @@ class MplCanvas(FigureCanvasQTAgg):
         S = np.array([tp.entropy_tv(T[i], V[i], fractions) for i in range(len(T))])
 
         # TODO: Er det en bedre måte å sette disse på? Hvis det krasjer, må det handles på et vis
-        global H_list_test
-        global T_list_test
-        global S_list_test
-        global P_list_test
+        global H_list
+        global T_list
+        global S_list
+        global P_list
 
         n_isopleths = isopleth_settings["Number of isopleths"]
 
-        H_list_test = np.linspace(np.min(H), np.max(H), n_isopleths)
-        S_list_test = np.linspace(np.min(S), np.max(S), n_isopleths)
-        T_list_test = np.linspace(np.min(T) * 0.60, np.max(T) * 1.40, n_isopleths)
-        P_list_test = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, n_isopleths)
+        H_list = np.linspace(np.min(H), np.max(H), n_isopleths)
+        S_list = np.linspace(np.min(S), np.max(S), n_isopleths)
+        T_list = np.linspace(np.min(T) * 0.60, np.max(T) * 1.40, n_isopleths)
+        P_list = np.linspace(np.min(P) * 0.60, np.max(P) * 1.40, n_isopleths)
 
         temp = critical_settings["Temperature"]
         v = critical_settings["Volume"]
@@ -224,8 +223,8 @@ class MplCanvas(FigureCanvasQTAgg):
         crit_y = P_c
 
         # Isenthalps, isentropes
-        enthalpies = H_list_test
-        entropies = S_list_test
+        enthalpies = H_list
+        entropies = S_list
 
         self.isenthalps = []
         self.isentropes = []
@@ -283,8 +282,8 @@ class MplCanvas(FigureCanvasQTAgg):
         crit_y = P_c
 
         # isotherms, isentropes
-        temperatures = T_list_test
-        entropies = S_list_test
+        temperatures = T_list
+        entropies = S_list
 
         self.isotherms = []
         self.isentropes = []
@@ -294,9 +293,9 @@ class MplCanvas(FigureCanvasQTAgg):
                                                              maximum_pressure=P_max, nmax=nmax)
 
             if i == 0:
-                t_line, = self.axes.plot(h_vals, p_vals, color="#ffd2d2", label="Isotherm")
+                t_line, = self.axes.plot(h_vals, p_vals, color=isopleth_1_color, label="Isotherm")
             else:
-                t_line, = self.axes.plot(h_vals, p_vals, color="#ffd2d2")
+                t_line, = self.axes.plot(h_vals, p_vals, color=isopleth_1_color)
 
             self.isotherms.append(t_line)
 
@@ -304,9 +303,9 @@ class MplCanvas(FigureCanvasQTAgg):
                                                               maximum_pressure=P_max, minimum_temperature=T_min,
                                                               maximum_temperature=T_max, nmax=nmax)
             if i == 0:
-                s_line, = self.axes.plot(h_vals, p_vals, color="#d5d3ff", label="Isentrope")
+                s_line, = self.axes.plot(h_vals, p_vals, color=isopleth_2_color, label="Isentrope")
             else:
-                s_line, = self.axes.plot(h_vals, p_vals, color="#d5d3ff")
+                s_line, = self.axes.plot(h_vals, p_vals, color=isopleth_2_color)
 
             self.isentropes.append(s_line)
 
@@ -342,8 +341,8 @@ class MplCanvas(FigureCanvasQTAgg):
         crit_y = P_c
 
         # isotherms, isenthalps
-        temperatures = T_list_test
-        enthalpies = H_list_test
+        temperatures = T_list
+        enthalpies = H_list
 
         self.isotherms = []
         self.isenthalps = []
@@ -352,9 +351,9 @@ class MplCanvas(FigureCanvasQTAgg):
             p_vals, v_vals, s_vals, h_vals = tp.get_isotherm(temperatures[i], fractions, minimum_pressure=P_min,
                                                              maximum_pressure=P_max, nmax=nmax)
             if i == 0:
-                t_line, = self.axes.plot(s_vals, p_vals, color="#ffd2d2", label="Isotherm")
+                t_line, = self.axes.plot(s_vals, p_vals, color=isopleth_1_color, label="Isotherm")
             else:
-                t_line, = self.axes.plot(s_vals, p_vals, color="#ffd2d2")
+                t_line, = self.axes.plot(s_vals, p_vals, color=isopleth_1_color)
 
             self.isotherms.append(t_line)
 
@@ -363,9 +362,9 @@ class MplCanvas(FigureCanvasQTAgg):
                                                               maximum_temperature=T_max, nmax=nmax)
 
             if i == 0:
-                h_line, = self.axes.plot(s_vals, p_vals, color="#d5d3ff", label="Isenthalp")
+                h_line, = self.axes.plot(s_vals, p_vals, color=isopleth_2_color, label="Isenthalp")
             else:
-                h_line, = self.axes.plot(s_vals, p_vals, color="#d5d3ff")
+                h_line, = self.axes.plot(s_vals, p_vals, color=isopleth_2_color)
 
             self.isenthalps.append(h_line)
 
@@ -401,19 +400,19 @@ class MplCanvas(FigureCanvasQTAgg):
         crit_y = T_c
 
         # isobars, isentropes
-        pressures = P_list_test
-        entropies = S_list_test
+        pressures = P_list
+        entropies = S_list
 
         self.isobars = []
         self.isentropes = []
 
         for i in range(len(pressures)):
-            t_vals, v_vals, s_vals, h_vals = tp.get_isobar(pressures[i], fractions, minimum_temperature=T_min,
-                                                           maximum_temperature=T_max, nmax=nmax)
+            t_vals, v_vals, s_vals, h_vals = tp.get_isobar(pressures[i], fractions, minimum_temperature=200.0,
+                                                           maximum_temperature=500.0, nmax=100)
             if i == 0:
-                p_line, = self.axes.plot(h_vals, t_vals, color="#ffd2d2", label="Isobar")
+                p_line, = self.axes.plot(h_vals, t_vals, color=isopleth_1_color, label="Isobar")
             else:
-                p_line, = self.axes.plot(h_vals, t_vals, color="#ffd2d2")
+                p_line, = self.axes.plot(h_vals, t_vals, color=isopleth_1_color)
 
             self.isobars.append(p_line)
 
@@ -421,9 +420,9 @@ class MplCanvas(FigureCanvasQTAgg):
                                                               maximum_pressure=P_max, minimum_temperature=T_min,
                                                               maximum_temperature=T_max, nmax=nmax)
             if i == 0:
-                s_line, = self.axes.plot(h_vals, t_vals, color="#d5d3ff", label="Isentrope")
+                s_line, = self.axes.plot(h_vals, t_vals, color=isopleth_2_color, label="Isentrope")
             else:
-                s_line, = self.axes.plot(h_vals, t_vals, color="#d5d3ff")
+                s_line, = self.axes.plot(h_vals, t_vals, color=isopleth_2_color)
 
             self.isentropes.append(s_line)
 
@@ -458,8 +457,8 @@ class MplCanvas(FigureCanvasQTAgg):
         crit_y = T_c
 
         # Isenthalps, isobars
-        pressures = P_list_test
-        enthalpies = H_list_test
+        pressures = P_list
+        enthalpies = H_list
 
         self.isenthalps = []
         self.isobars = []
@@ -496,8 +495,8 @@ class MplCanvas(FigureCanvasQTAgg):
         :param tp: Thermopack instance
         """
 
-        calc_settings = self.plotting_preferences["Binary pxy"]
-        plot_settings = self.plotting_preferences["Plotting"]
+        calc_settings = self.plotting_preferences["Binary pxy"]["Calc"]
+        plot_settings = self.plotting_preferences["Binary pxy"]["Plotting"]
 
         T = calc_settings["Temperature"]
         p_max = calc_settings["Maximum pressure"]
@@ -522,7 +521,7 @@ class MplCanvas(FigureCanvasQTAgg):
             self.axes.plot(L2VE[0], L2VE[2], color=line_color)
             self.axes.plot(L2VE[1], L2VE[2], color=line_color)
 
-        grid_on = False
+        grid_on = plot_settings["Grid on"]
         title = plot_settings["Title"]
         xlabel = plot_settings["x label"]
         ylabel = plot_settings["y label"]
@@ -542,7 +541,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
         calc_settings = self.plotting_preferences["Pressure density"]["TPV"]
         crit_settings = self.plotting_preferences["Pressure density"]["Critical"]
-        plot_settings = self.plotting_preferences["Plotting"]
+        plot_settings = self.plotting_preferences["Pressure density"]["Plotting"]
 
         p_initial = calc_settings["Initial pressure"]
         p_max = calc_settings["Maximum pressure"]
@@ -587,8 +586,8 @@ class MplCanvas(FigureCanvasQTAgg):
         :param tp: Thermopack instance
         """
 
-        calc_settings = self.plotting_preferences["Global binary"]
-        plot_settings = self.plotting_preferences["Plotting"]
+        calc_settings = self.plotting_preferences["Global binary"]["Calc"]
+        plot_settings = self.plotting_preferences["Global binary"]["Plotting"]
 
         min_press = calc_settings["Minimum pressure"]
         min_temp = calc_settings["Minimum temperature"]

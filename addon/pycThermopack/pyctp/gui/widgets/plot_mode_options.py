@@ -11,7 +11,7 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     A window containing the parameters for the phase envelope plot
     """
 
-    def __init__(self, plotting_preferences):
+    def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
         loadUi("widgets/layouts/ph_env_options.ui", self)
         self.setWindowTitle("Phase envelope options")
@@ -19,7 +19,9 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.calc_pvt_settings = plotting_preferences["Phase envelope"]["TPV"]
         self.isopleth_settings = plotting_preferences["Phase envelope"]["Isopleths"]
         self.crit_point_settings = plotting_preferences["Phase envelope"]["Critical"]
-        self.plotting_options = plotting_preferences["Plotting"]
+        self.plotting_options = plotting_preferences["Phase envelope"]["Plotting"]
+
+        self.default = default
 
         # Set initial data
         self.p_0.setText(str(self.calc_pvt_settings["Initial pressure"]))
@@ -97,6 +99,9 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.title.editingFinished.connect(self.set_plot_title)
         self.xlabel.editingFinished.connect(self.set_plot_x_label)
         self.ylabel.editingFinished.connect(self.set_plot_y_label)
+
+        self.save_btn.clicked.connect(self.close)
+        self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_0(self):
         p_0 = self.p_0.text().replace(",", ".")
@@ -261,19 +266,73 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         ylabel = self.ylabel.text()
         self.plotting_options["y label"] = ylabel
 
+    def restore_defaults(self):
+        calc_pvt_settings = self.default["Phase envelope"]["TPV"]
+        isopleth_settings = self.default["Phase envelope"]["Isopleths"]
+        crit_point_settings = self.default["Phase envelope"]["Critical"]
+        plotting_options = self.default["Phase envelope"]["Plotting"]
+
+        self.p_0.setText(str(calc_pvt_settings["Initial pressure"]))
+        self.p_max.setText(str(calc_pvt_settings["Maximum pressure"]))
+        self.t_min.setText(str(calc_pvt_settings["Minimum temperature"]))
+        self.step_size.setText(str(calc_pvt_settings["Step size"]))
+
+        self.set_p_0()
+        self.set_p_max()
+        self.set_t_min()
+        self.set_step_size()
+
+        self.crit_t.setText(str(crit_point_settings["Temperature"]))
+        self.crit_v.setText(str(crit_point_settings["Volume"]))
+        self.crit_tol.setText(str(crit_point_settings["Error tolerance"]))
+
+        self.set_crit_t()
+        self.set_crit_v()
+        self.set_crit_tol()
+
+        self.iso_p_min.setText(str(isopleth_settings["Minimum pressure"]))
+        self.iso_p_max.setText(str(isopleth_settings["Maximum pressure"]))
+        self.iso_t_min.setText(str(isopleth_settings["Minimum temperature"]))
+        self.iso_t_max.setText(str(isopleth_settings["Maximum temperature"]))
+        self.n_isopleths.setText(str(isopleth_settings["Number of isopleths"]))
+        self.n_max.setText(str(isopleth_settings["N max"]))
+
+        self.set_iso_p_min()
+        self.set_iso_p_max()
+        self.set_iso_t_min()
+        self.set_iso_t_max()
+        self.set_n_isopleths()
+        self.set_n_max()
+
+        self.set_line_color(plotting_options["Colors"][0])
+        self.set_point_color(plotting_options["Colors"][1])
+        self.set_isopleth_1_color(plotting_options["Colors"][2])
+        self.set_isopleth_2_color(plotting_options["Colors"][3])
+        self.grid_checkbox.setChecked(plotting_options["Grid on"])
+        self.title.setText(plotting_options["Title"])
+        self.xlabel.setText(plotting_options["x label"])
+        self.ylabel.setText(plotting_options["y label"])
+
+        self.set_grid(self.grid_checkbox.isChecked())
+        self.set_plot_title()
+        self.set_plot_x_label()
+        self.set_plot_y_label()
+
 
 class BinaryPXYOptionsWindow(QDialog):
     """
     A window containing the parameters for the binary pxy plot
     """
 
-    def __init__(self, plotting_preferences):
+    def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
         loadUi("widgets/layouts/bin_pxy_options.ui", self)
         self.setWindowTitle("Binary pxy options")
 
-        self.calc_settings = plotting_preferences["Binary pxy"]
-        self.plotting_options = plotting_preferences["Plotting"]
+        self.calc_settings = plotting_preferences["Binary pxy"]["Calc"]
+        self.plotting_options = plotting_preferences["Binary pxy"]["Plotting"]
+
+        self.default = default
 
         # Set initial data
         self.temp.setText(str(self.calc_settings["Temperature"]))
@@ -314,6 +373,9 @@ class BinaryPXYOptionsWindow(QDialog):
         self.title.editingFinished.connect(self.set_plot_title)
         self.xlabel.editingFinished.connect(self.set_plot_x_label)
         self.ylabel.editingFinished.connect(self.set_plot_y_label)
+
+        self.save_btn.clicked.connect(self.close)
+        self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_temp(self):
         temp = self.temp.text().replace(",", ".")
@@ -383,20 +445,49 @@ class BinaryPXYOptionsWindow(QDialog):
         ylabel = self.ylabel.text()
         self.plotting_options["y label"] = ylabel
 
+    def restore_defaults(self):
+        calc_settings = self.default["Binary pxy"]["Calc"]
+        plotting_options = self.default["Binary pxy"]["Plotting"]
+
+        self.temp.setText(str(calc_settings["Temperature"]))
+        self.p_max.setText(str(calc_settings["Maximum pressure"]))
+        self.p_min.setText(str(calc_settings["Minimum pressure"]))
+        self.dz_max.setText(str(calc_settings["Maximum dz"]))
+        self.dlns_max.setText(str(calc_settings["Maximum dlns"]))
+
+        self.set_temp()
+        self.set_p_max()
+        self.set_p_min()
+        self.set_dz_max()
+        self.set_dlns_max()
+
+        self.set_line_color(plotting_options["Colors"][0])
+        self.grid_checkbox.setChecked(plotting_options["Grid on"])
+        self.title.setText(plotting_options["Title"])
+        self.xlabel.setText(plotting_options["x label"])
+        self.ylabel.setText(plotting_options["y label"])
+
+        self.set_grid(self.grid_checkbox.isChecked())
+        self.set_plot_title()
+        self.set_plot_x_label()
+        self.set_plot_y_label()
+
 
 class PRhoOptionsWindow(QDialog):
     """
     A window containing the parameters for the pressure density plot
     """
 
-    def __init__(self, plotting_preferences):
+    def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
         loadUi("widgets/layouts/pressure_density_options.ui", self)
         self.setWindowTitle("Pressure density options")
 
         self.calc_settings = plotting_preferences["Pressure density"]["TPV"]
         self.crit_point_settings = plotting_preferences["Pressure density"]["Critical"]
-        self.plotting_options = plotting_preferences["Plotting"]
+        self.plotting_options = plotting_preferences["Pressure density"]["Plotting"]
+
+        self.default = default
 
         # Set initial data
 
@@ -410,6 +501,7 @@ class PRhoOptionsWindow(QDialog):
         self.crit_tol.setText(str(self.crit_point_settings["Error tolerance"]))
 
         self.set_line_color(self.plotting_options["Colors"][0])
+        self.set_point_color(self.plotting_options["Colors"][1])
         self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
         self.title.setText(self.plotting_options["Title"])
         self.xlabel.setText(self.plotting_options["x label"])
@@ -448,6 +540,9 @@ class PRhoOptionsWindow(QDialog):
         self.title.editingFinished.connect(self.set_plot_title)
         self.xlabel.editingFinished.connect(self.set_plot_x_label)
         self.ylabel.editingFinished.connect(self.set_plot_y_label)
+
+        self.save_btn.clicked.connect(self.close)
+        self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_0(self):
         p_0 = self.p_0.text().replace(",", ".")
@@ -572,19 +667,56 @@ class PRhoOptionsWindow(QDialog):
         ylabel = self.ylabel.text()
         self.plotting_options["y label"] = ylabel
 
+    def restore_defaults(self):
+        calc_settings = self.default["Pressure density"]["TPV"]
+        crit_point_settings = self.default["Pressure density"]["Critical"]
+        plotting_options = self.default["Pressure density"]["Plotting"]
+
+        self.p_0.setText(str(calc_settings["Initial pressure"]))
+        self.p_max.setText(str(calc_settings["Maximum pressure"]))
+        self.t_min.setText(str(calc_settings["Minimum temperature"]))
+        self.step_size.setText(str(calc_settings["Step size"]))
+
+        self.set_p_0()
+        self.set_p_max()
+        self.set_t_min()
+        self.set_step_size()
+
+        self.crit_t.setText(str(crit_point_settings["Temperature"]))
+        self.crit_v.setText(str(crit_point_settings["Volume"]))
+        self.crit_tol.setText(str(crit_point_settings["Error tolerance"]))
+
+        self.set_crit_t()
+        self.set_crit_v()
+        self.set_crit_tol()
+
+        self.set_line_color(plotting_options["Colors"][0])
+        self.set_point_color(plotting_options["Colors"][1])
+        self.grid_checkbox.setChecked(plotting_options["Grid on"])
+        self.title.setText(plotting_options["Title"])
+        self.xlabel.setText(plotting_options["x label"])
+        self.ylabel.setText(plotting_options["y label"])
+
+        self.set_grid(self.grid_checkbox.isChecked())
+        self.set_plot_title()
+        self.set_plot_x_label()
+        self.set_plot_y_label()
+
 
 class GlobalBinaryOptionsWindow(QDialog):
     """
     A window containing the parameters for the global binary plot
     """
 
-    def __init__(self, plotting_preferences):
+    def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
         loadUi("widgets/layouts/global_binary_options.ui", self)
         self.setWindowTitle("Global binary options")
 
-        self.calc_settings = plotting_preferences["Global binary"]
-        self.plotting_options = plotting_preferences["Plotting"]
+        self.calc_settings = plotting_preferences["Global binary"]["Calc"]
+        self.plotting_options = plotting_preferences["Global binary"]["Plotting"]
+
+        self.default = default
 
         # Set initial data
         self.p_min.setText(str(self.calc_settings["Minimum pressure"]))
@@ -596,7 +728,8 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.set_line_color_3(self.plotting_options["Colors"][2])
         self.set_line_color_4(self.plotting_options["Colors"][3])
         self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
-        self.plotting_options["Title"] = "van Konyenburg and Scott type: "
+        if not self.plotting_options["Title"]:
+            self.plotting_options["Title"] = "van Konyenburg and Scott type: "
         self.title.setText(self.plotting_options["Title"])
         self.xlabel.setText(self.plotting_options["x label"])
         self.ylabel.setText(self.plotting_options["y label"])
@@ -624,6 +757,9 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.title.editingFinished.connect(self.set_plot_title)
         self.xlabel.editingFinished.connect(self.set_plot_x_label)
         self.ylabel.editingFinished.connect(self.set_plot_y_label)
+
+        self.save_btn.clicked.connect(self.close)
+        self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_min(self):
         p_min = self.p_min.text().replace(",", ".")
@@ -710,3 +846,29 @@ class GlobalBinaryOptionsWindow(QDialog):
     def set_plot_y_label(self):
         ylabel = self.ylabel.text()
         self.plotting_options["y label"] = ylabel
+
+    def restore_defaults(self):
+        calc_settings = self.default["Global binary"]["Calc"]
+        plotting_options = self.default["Global binary"]["Plotting"]
+
+        self.p_min.setText(str(calc_settings["Minimum pressure"]))
+        self.t_min.setText(str(calc_settings["Minimum temperature"]))
+        self.azeotropes_checkbox.setChecked(calc_settings["Azeotropes"])
+
+        self.set_p_min()
+        self.set_t_min()
+        self.set_azeotropes(self.azeotropes_checkbox.isChecked())
+
+        self.set_line_color_1(plotting_options["Colors"][0])
+        self.set_line_color_2(plotting_options["Colros"][1])
+        self.set_line_color_3(plotting_options["Colors"][2])
+        self.set_line_color_4(plotting_options["Colors"][3])
+        self.grid_checkbox.setChecked(plotting_options["Grid on"])
+        self.title.setText("van Konyenburg and Scott type: ")
+        self.xlabel.setText(plotting_options["x label"])
+        self.ylabel.setText(plotting_options["y label"])
+
+        self.set_grid(self.grid_checkbox.isChecked())
+        self.set_plot_title()
+        self.set_plot_x_label()
+        self.set_plot_y_label()

@@ -44,7 +44,7 @@ class PlotMode(QMainWindow):
 
         self.plotting_preferences = self.init_plotting_preferences()
         # In case the user wants to reset settings
-        self.default_plotting_preferences = self.plotting_preferences.copy()
+        self.default_plotting_preferences = self.init_plotting_preferences()
 
         self.init_plot_modes()
 
@@ -101,14 +101,30 @@ class PlotMode(QMainWindow):
                     "Temperature": 0.0,
                     "Volume": 0.0,
                     "Error tolerance": 1.0e-7
+                },
+                "Plotting": {
+                    "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
+                    "Grid on": False,
+                    "Title": None,
+                    "x label": None,
+                    "y label": None
                 }
             },
             "Binary pxy": {
-                "Temperature": 288.0,
-                "Maximum pressure": 1.5e7,
-                "Minimum pressure": 1.0e5,
-                "Maximum dz": 0.003,
-                "Maximum dlns": 0.01
+                "Calc": {
+                    "Temperature": 288.0,
+                    "Maximum pressure": 1.5e7,
+                    "Minimum pressure": 1.0e5,
+                    "Maximum dz": 0.003,
+                    "Maximum dlns": 0.01,
+                },
+                "Plotting": {
+                    "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
+                    "Grid on": False,
+                    "Title": None,
+                    "x label": None,
+                    "y label": None
+                }
             },
             "Pressure density": {
                 "TPV": {
@@ -121,22 +137,29 @@ class PlotMode(QMainWindow):
                     "Temperature": 0.0,
                     "Volume": 0.0,
                     "Error tolerance": 1.0e-7
+                },
+                "Plotting": {
+                    "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
+                    "Grid on": False,
+                    "Title": None,
+                    "x label": None,
+                    "y label": None
                 }
             },
             "Global binary": {
-                "Minimum pressure": 1.05e5,
-                "Minimum temperature": 2.0,
-                "Azeotropes": True,
-                "Colors": ["black", "blue", "red", "green"],
-                "Linestyles": ["-", "--", ":", "-."],
-            },
-            "Plotting": {
-                "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
-                "Linestyles": ["-", "--", ":", "-."],
-                "Grid on": False,
-                "Title": None,
-                "x label": None,
-                "y label": None
+                "Calc": {
+                    "Minimum pressure": 1.05e5,
+                    "Minimum temperature": 2.0,
+                    "Azeotropes": True,
+                },
+                "Plotting": {
+                    "Colors": ["black", "blue", "red", "green"],
+                    "Linestyles": ["-", "--", ":", "-."],
+                    "Grid on": False,
+                    "Title": None,
+                    "x label": None,
+                    "y label": None
+                }
             }
         }
 
@@ -387,29 +410,28 @@ class PlotMode(QMainWindow):
         """
         Opens an option window where initial parameters for phase envelope plot can be set
         """
-
-        options_window = PhaseEnvelopeOptionsWindow(self.plotting_preferences)
+        options_window = PhaseEnvelopeOptionsWindow(self.plotting_preferences, self.default_plotting_preferences)
         options_window.exec_()
 
     def show_bin_pxy_options(self):
         """
         Opens an option window where initial parameters for binary pxy plot can be set
         """
-        options_window = BinaryPXYOptionsWindow(self.plotting_preferences)
+        options_window = BinaryPXYOptionsWindow(self.plotting_preferences, self.default_plotting_preferences)
         options_window.exec_()
 
     def show_p_rho_options(self):
         """
         Opens an option window where initial parameters for pressure density plot can be set
         """
-        options_window = PRhoOptionsWindow(self.plotting_preferences)
+        options_window = PRhoOptionsWindow(self.plotting_preferences, self.default_plotting_preferences)
         options_window.exec_()
 
     def show_global_binary_options(self):
         """
         Opens an option window where initial parameters for global binary plot can be set
         """
-        options_window = GlobalBinaryOptionsWindow(self.plotting_preferences)
+        options_window = GlobalBinaryOptionsWindow(self.plotting_preferences, self.default_plotting_preferences)
         options_window.exec_()
 
     def change_fraction(self, value, comp_name):
