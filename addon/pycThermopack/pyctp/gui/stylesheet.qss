@@ -121,3 +121,9 @@ QToolButton[text="..."]:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                           stop: 0 #00538F, stop: 1 #59a5d8);
 }
+
+QToolButton[text="..."]:disabled {
+    border: 1px solid #BDDBEF;
+    background-color: #dddddd;
+    color: #000000;
+}

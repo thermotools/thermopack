@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QDoubleSpinBox, QColorDialog, QMessageBox, \
-    QCheckBox
+from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QMessageBox, QCheckBox, QLineEdit, QLabel, \
+    QFileDialog
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtCore import QLocale
 from PyQt5.uic import loadUi
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
@@ -9,6 +11,9 @@ from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYO
     GlobalBinaryOptionsWindow
 
 import numpy as np
+import csv
+import os
+from gui.utils import valid_float_input
 
 from cubic import cubic
 from cpa import cpa
@@ -18,11 +23,7 @@ from saftvrmie import saftvrmie
 
 # TODO: Mulighet for å plotte flere ting oppå hverandre (Default: Clear hver gang, mulig å endre eks checkbox)
 
-# TODO: Når isopleter toggles on/off, fjern/legg til i legend
-
 # TODO: Lagre parametere i self.plot_settings = {}
-
-# TODO: Mulighet for å lagre (x, y)-data som csv
 
 
 class PlotMode(QMainWindow):
@@ -39,10 +40,18 @@ class PlotMode(QMainWindow):
         self.setWindowTitle("Thermopack")
         self.showMaximized()
 
+        logo = QLabel("Thermopack    |    Plot Mode    ")
+        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px; "
+                           "border-bottom: 1px solid black;")
+        self.logo_layout.addWidget(logo)
+
         self.component_data = component_data
         self.settings = settings
 
         self.plotting_preferences = self.init_plotting_preferences()
+
+        if not self.plotting_preferences:
+            self.plotting_preferences = self.init_plotting_preferences()
         # In case the user wants to reset settings
         self.default_plotting_preferences = self.init_plotting_preferences()
 
@@ -76,8 +85,10 @@ class PlotMode(QMainWindow):
 
         self.init_isopleth_btns()
         self.plot_button.clicked.connect(self.plot)
+        self.download_csv_btn.clicked.connect(self.export_csv)
 
-    def init_plotting_preferences(self):
+    @staticmethod
+    def init_plotting_preferences():
         """
         :return: Dictionary for storing plotting preferences and parameters
         """
@@ -236,22 +247,26 @@ class PlotMode(QMainWindow):
         components = self.component_data["Names"]
         self.component_data["Fractions"] = [0.00] * len(components)
 
-        for i in range(len(components)):
-            spin_box = QDoubleSpinBox()
-            spin_box.setMinimumWidth(60)
-            spin_box.setMaximum(1.00)
-            spin_box.setSingleStep(0.10)
+        float_validator = QDoubleValidator()
+        locale = QLocale(QLocale.English)
+        float_validator.setLocale(locale)
 
-            spin_box.valueChanged.connect(lambda value, x=components[i]: self.change_fraction(value, x))
+        for i in range(len(components)):
+            component = components[i]
+            line_edit = QLineEdit()
+            line_edit.setValidator(float_validator)
+            line_edit.setText("0.00")
+            line_edit.setObjectName(component)
+            line_edit.editingFinished.connect(lambda comp=component: self.change_fraction(comp))
 
             if len(components) == 1:
-                spin_box.setValue(1.00)
-                spin_box.setEnabled(False)
+                line_edit.setText("1.00")
+                line_edit.setEnabled(False)
                 self.component_data["Fractions"][i] = 1.00
             else:
                 self.component_data["Fractions"][i] = 0.00
 
-            self.fractions_layout.addRow(components[i], spin_box)
+            self.fractions_layout.addRow(components[i], line_edit)
 
     def init_tp(self):
         """
@@ -269,7 +284,7 @@ class PlotMode(QMainWindow):
 
             self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
 
-            # TODO: Sjekk at instansieringen av interaksjonskoeffisienter faktisk fungerer
+            # TODO: Sjekk at instansieringen av interaksjonskoeffisienter fungerer som det skal
             if "Coefficient matrices" in self.component_data:
                 if mixing == "vdW" and "K" in self.component_data["Coefficient matrices"].keys():
                     matrix = self.component_data["Coefficient matrices"]["K"]
@@ -392,17 +407,41 @@ class PlotMode(QMainWindow):
         Enables/disables the different plot and model options depending on plot type
         """
         if btn.text() == "Phase envelope":
+            self.ph_env_toolbtn.setEnabled(True)
+            self.p_rho_toolbtn.setEnabled(False)
+            self.bin_pxy_toolbtn.setEnabled(False)
+            self.global_binary_toolbtn.setEnabled(False)
+
             self.molar_fractions_box.setEnabled(True)
             self.primary_vars_box.setEnabled(True)
+
         elif btn.text() == "Binary pxy":
+            self.ph_env_toolbtn.setEnabled(False)
+            self.p_rho_toolbtn.setEnabled(False)
+            self.bin_pxy_toolbtn.setEnabled(True)
+            self.global_binary_toolbtn.setEnabled(False)
+
             self.molar_fractions_box.setEnabled(False)
             self.primary_vars_box.setEnabled(False)
+
         elif btn.text() == "Pressure density":
+            self.ph_env_toolbtn.setEnabled(False)
+            self.p_rho_toolbtn.setEnabled(True)
+            self.bin_pxy_toolbtn.setEnabled(False)
+            self.global_binary_toolbtn.setEnabled(False)
+
             self.molar_fractions_box.setEnabled(True)
             self.primary_vars_box.setEnabled(False)
+
         elif btn.text() == "Global binary":
+            self.ph_env_toolbtn.setEnabled(False)
+            self.p_rho_toolbtn.setEnabled(False)
+            self.bin_pxy_toolbtn.setEnabled(False)
+            self.global_binary_toolbtn.setEnabled(True)
+
             self.molar_fractions_box.setEnabled(False)
             self.primary_vars_box.setEnabled(False)
+
         else:
             pass
 
@@ -434,15 +473,22 @@ class PlotMode(QMainWindow):
         options_window = GlobalBinaryOptionsWindow(self.plotting_preferences, self.default_plotting_preferences)
         options_window.exec_()
 
-    def change_fraction(self, value, comp_name):
+    def change_fraction(self, comp_name):
         """
         Changes the mole fraction of a component
 
-        :param float value: New mole fraction
         :param str comp_name: Name of the component
+        :param: QLineEdit line_edit: Edit field containing the new molar fraction
         """
+        line_edit = self.molar_fractions_box.findChild(QLineEdit, comp_name)
+        mol_frac = line_edit.text().replace(",", ".")
         index = self.component_data["Names"].index(comp_name)
-        self.component_data["Fractions"][index] = value
+
+        if valid_float_input(mol_frac):
+            self.component_data["Fractions"][index] = float(mol_frac)
+            line_edit.setText(mol_frac)
+        else:
+            line_edit.setText(str(self.component_data["Fractions"][index]))
 
     def plot(self):
         """
@@ -451,7 +497,7 @@ class PlotMode(QMainWindow):
         """
         category = self.settings["Model category"]
         plot_type = self.plot_type_btn_group.checkedButton().text()
-        prim_vars = self.prim_vars_btn_group.checkedButton().text()
+        prim_vars = self.prim_vars_dropdown.currentText()
 
         if category in ["Cubic", "CPA"]:
             eos = self.model_btn_group.checkedButton().text()
@@ -475,6 +521,7 @@ class PlotMode(QMainWindow):
 
         self.canvas.axes.cla()
         self.isopleth_btn_stack.hide()
+        self.download_csv_btn.setEnabled(True)
 
         if plot_type in ["Phase envelope", "Pressure density"]:
             mole_fraction_sum = np.sum(fractions)
@@ -508,6 +555,36 @@ class PlotMode(QMainWindow):
 
         else:
             pass
+
+    def export_csv(self):
+        """
+        Creates and saves a csv file with the (x,y) data from all the currently plotted lines
+        """
+        file_dialog = QFileDialog()
+        file_dialog.setWindowTitle('Save File')
+        file_dialog.setDirectory(os.getcwd())
+        file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+        file_dialog.setNameFilter('Csv files (*.csv)')
+        file_dialog.setDefaultSuffix('csv')
+
+        if file_dialog.exec_() == QFileDialog.Accepted:
+            path = file_dialog.selectedFiles()[0]
+
+            if path:
+                with open(path, mode="w", newline='', encoding='utf8') as csv_file:
+
+                    writer = csv.writer(csv_file)
+                    lines = self.canvas.axes.lines
+
+                    for i in range(len(lines)):
+                        line = lines[i]
+                        x_list = [line.get_label() + " x"]
+                        y_list = [line.get_label() + " y"]
+
+                        x_list += list(line.get_xdata())
+                        y_list += list(line.get_ydata())
+
+                        writer.writerows([x_list, y_list])
 
 
 class MolarFractionsErrorMsg(QMessageBox):

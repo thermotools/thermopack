@@ -89,6 +89,9 @@
              </item>
              <item row="2" column="1">
               <widget class="QToolButton" name="p_rho_toolbtn">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>...</string>
                </property>
@@ -99,6 +102,9 @@
                <property name="text">
                 <string>Global binary</string>
                </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
                <attribute name="buttonGroup">
                 <string notr="true">plot_type_btn_group</string>
                </attribute>
@@ -106,6 +112,9 @@
              </item>
              <item row="4" column="1">
               <widget class="QToolButton" name="global_binary_toolbtn">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>...</string>
                </property>
@@ -132,6 +141,9 @@
              </item>
              <item row="3" column="1">
               <widget class="QToolButton" name="bin_pxy_toolbtn">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>...</string>
                </property>
@@ -152,82 +164,28 @@
              <string>Primary variables</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_3">
-             <item row="1" column="0">
-              <widget class="QRadioButton" name="ph_btn">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="text">
-                <string>PH</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QRadioButton" name="ps_btn">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="text">
-                <string>PS</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QRadioButton" name="sv_btn">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>SV</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QRadioButton" name="uv_btn">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>UV</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QRadioButton" name="pt_btn">
-               <property name="text">
-                <string>PT</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QRadioButton" name="th_btn">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="text">
-                <string>TH</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">prim_vars_btn_group</string>
-               </attribute>
+             <item row="3" column="1">
+              <widget class="QComboBox" name="prim_vars_dropdown">
+               <item>
+                <property name="text">
+                 <string>PT</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>PH</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>PS</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>TH</string>
+                </property>
+               </item>
               </widget>
              </item>
             </layout>
@@ -245,6 +203,41 @@
              <string>Mole fractions</string>
             </property>
             <layout class="QFormLayout" name="fractions_layout"/>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_4">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="download_csv_btn">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Download csv</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
@@ -388,18 +381,14 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="plot_mode_title">
-         <property name="font">
-          <font>
-           <family>Arial</family>
-           <pointsize>14</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
+        <widget class="QFrame" name="logo_frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
-         <property name="text">
-          <string>Thermopack    |    Plot Mode    |    </string>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
+         <layout class="QHBoxLayout" name="logo_layout"/>
         </widget>
        </item>
        <item>
@@ -626,7 +615,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="prim_vars_btn_group"/>
   <buttongroup name="plot_type_btn_group"/>
  </buttongroups>
 </ui>
