@@ -14,18 +14,14 @@ from gui.widgets.units_dialog import UnitsDialog
 
 from gui.utils import get_json_data, save_json_data
 
-# TODO: Funksjonalitet for enheter
-# TODO: Binary coefficients endres i ModelSelectWidget, men den instansen av thermopack er ikke med videre inn i
-#  plot mode og calc mode. Koeffisienter MÅ lagres i self.data og sendes med inn. Når thermopack instansieres, må
-#  det loopes over alle koeffisientene og sette dem.
-
-# TODO: Sett QValidator til LineEdits (modelselectwidget.py, parameters.py, fractions i plot_mode og i calc_mode. Minst)
+# TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 
 
 class ThermopackGUIApp(QMainWindow):
     """
     The main class for the Thermopack GUI Application
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -64,21 +60,24 @@ class ThermopackGUIApp(QMainWindow):
         if not self.json_file:
             self.data = {"Component lists": {},
                          "Model setups": {},
-                         "Units": {"Selected": {"Energy": "J",
-                                                "Temperature": "K",
-                                                "Pressure": "Pa",
-                                                "Volume": "m^3",
-                                                "Amount": "mol",
-                                                "Speed": "m/s"
-                                                },
-                                   "Choices": {"Energy": ["J", "kJ", "MJ", "kcal"],
-                                               "Temperature": ["K", "C", "F", "R"],
-                                               "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
-                                               "Volume": ["m^3", "L", "mL"],
-                                               "Amount": ["mol", "g", "kg"],
-                                               "Speed": ["m/s", "mph"]
-                                               }
-                                   }
+                         "Units": {
+                             "Selected": {
+                                 "Energy": "J",
+                                 "Temperature": "K",
+                                 "Pressure": "Pa",
+                                 "Volume": "m^3",
+                                 "Amount": "mol",
+                                 "Speed": "m/s"
+                             },
+                             "Choices": {
+                                 "Energy": ["J", "kJ", "MJ", "kcal"],
+                                 "Temperature": ["K", "C", "F", "R"],
+                                 "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
+                                 "Volume": ["m^3", "L", "mL"],
+                                 "Amount": ["mol", "g", "kg"],
+                                 "Speed": ["m/s", "mph"]
+                             }
+                         },
                          }
 
     def set_toolbar(self):
@@ -90,7 +89,7 @@ class ThermopackGUIApp(QMainWindow):
         logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px;")
 
         # Top toolbar
-        toolbar = self.addToolBar("Tekst")
+        toolbar = self.addToolBar("Tool bar")
         toolbar.setMovable(False)
         toolbar.actionTriggered.connect(self.handle_toolbar_action)
         toolbar.setStyleSheet("padding: 5px 10px 5px 10px;")
@@ -213,7 +212,6 @@ class ThermopackGUIApp(QMainWindow):
         :param is_new: True if this is a new model setup
         :param id: id of the model setup. Used to find and rename model selection tab
         """
-        # TODO: Noe er fishy her. Klikker når jeg har flere enn to modeller
         # Find correct tab and change its name
         self.data = data
 
@@ -352,6 +350,6 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    win.open_file("json_structure.json")
+    # win.open_file("json_structure.json")
     win.show()
     sys.exit(app.exec_())

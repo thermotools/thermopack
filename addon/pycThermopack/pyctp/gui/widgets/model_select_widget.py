@@ -6,13 +6,7 @@ from gui.widgets.parameters import *
 
 from gui.utils import get_unique_name, get_unique_id
 
-
-# TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
-
-# TODO:  No self associating components. Initializing PR(/SRK) instead of CPA-PR(/SRK) dukker opp hele tiden for CPA
-
-# TODO: Endre navn på matriser. Ingen kan ha samme navn.
-#  Eks VDW-K, HV1-A, HV1-B, HV2-A, HV2-B, HV2-C, PC-SAFT-K, SAFT-VRMIE-epsilon, SAFT-VRMIE-gamma, SAFT-VRMIE-sigma
+# TODO: Mulighet for å slette en model setup
 
 
 class ModelListMenuItem(QTreeWidgetItem):
@@ -21,6 +15,7 @@ class ModelListMenuItem(QTreeWidgetItem):
     This connects the menu item to the correct ModelSelectWidget, making it possible to open an edit tab corresponing
     to the chosen model setting.
     """
+
     def __init__(self, parent, text, id, widget):
         super().__init__(parent, [text])
         self.id = id
@@ -160,7 +155,8 @@ class ModelSelectWidget(QWidget):
                     "Mixing rule": "vdW",
                     "Reference": "Default",
                     "Volume translation": "None"
-                }
+                },
+                "Parameters": {}
             }
 
         elif category == "PC-SAFT":
@@ -169,7 +165,8 @@ class ModelSelectWidget(QWidget):
                 "Model category": category,
                 "Model options": {
                     "Reference": "Default"
-                }
+                },
+                "Parameters": {}
             }
 
         elif category == "SAFT-VR Mie":
@@ -182,7 +179,8 @@ class ModelSelectWidget(QWidget):
                     "A3": True,
                     "Chain": True,
                     "Reference": "Default"
-                }
+                },
+                "Parameters": {}
             }
 
     def show_correct_coeff_widget(self):
@@ -331,6 +329,7 @@ class SettingsExistMsg(QMessageBox):
     """
     Showed when the user tries to save a model setup with the name of another model setup
     """
+
     def __init__(self, name):
         QMessageBox.__init__(self)
         self.setWindowTitle("Oups!")

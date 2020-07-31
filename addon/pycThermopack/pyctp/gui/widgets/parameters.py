@@ -1,36 +1,20 @@
 from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QRadioButton, QButtonGroup
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
+from PyQt5.QtGui import QDoubleValidator
 
 from cubic import cubic
 from cpa import cpa
 from pcsaft import pcsaft
 from saftvrmie import saftvrmie
 
-from gui.utils import get_comp_id
+from gui.utils import get_comp_id, valid_float_input
 
 import numpy as np
 
 
-# TODO: Ikke sikkert at disse trenger en self.thermopack. Koeffisientene kan fint regnes ut uten å instansiere den.
-#  Foreløpig må den være der ettersom jeg ikke har en annen måte å få tak i dem på
-
 # TODO: Når fanen byttes skal lista deselectes og table_stack --> page0 (tom)
-
-# TODO: Methane + CO2 + CPA --> error når jeg switcher til bin coeff tab
-
-# TODO: Lage en bedre klassestruktur med arv. Veeldig mye likt i disse nå
-
-# TODO: Med flere komponentlister og flere modellister, kan det hende at en komponentliste har flere forskjellige
-#  matriser av samme type. (F eks én standard og én med endra interaksjonsparametere)
-#  Må ha List name { Settings name { Coeff matrices { vdW K: [[]] }, Identities: [], Names: [] } }
-
-# TODO: Må endre navn på matriser. Se i model_select_widget.py
-
-# TODO: PC-SAFT skal være symmetrisk likevel
-
-# TODO: Når ting endres i matrisa: Trenger ikke endre i termopack. Den må endres etterpå uansett. Trenger bare
-#  vise i tabellen og lagre i json-data. Da må vi passe på at hvis dataen skal hentes ut igjen, ta det fra json, ikke fra tp
+# TODO: Lage en bedre klassestruktur med arv.
 
 
 class ParametersWidget(QWidget):
@@ -90,19 +74,21 @@ class ParametersWidget(QWidget):
         """
         Displays available compositions in a QListWidget
         """
+        self.composition_list.blockSignals(True)
         self.composition_list.clear()
+        self.composition_list.blockSignals(False)
         for list_name in self.component_lists.keys():
             self.composition_list.addItem(list_name)
 
     def get_table(self, list_name, table_name):
         """
         Returns a QTableWidget showing an interaction parameter matrix for a given composition
-        :param list_name: str, name of component list to which the table is corresponding
-        :param table_name: str, name of table (could be K, alpha, A, B, C. epsilon, sigma, gamma depending on mixing rule)
+        :param list_name: str, name of component list of the corresponding table
+        :param table_name: str, name of table (could be K, alpha, A, B, C. epsilon, sigma, gamma dep on mixing rule)
         :return: QTableWidget, table containing the correct parameters
         """
         composition = self.component_lists[list_name]["Names"]
-        matrix_data = self.component_lists[list_name]["Coefficient matrices"][table_name]
+        matrix_data = self.settings["Parameters"][list_name]["Coefficient matrices"][table_name]
         size = len(composition)
 
         table = QTableWidget(size, size)
@@ -131,7 +117,7 @@ class ParametersWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name in ["K", "epsilon", "sigma", "gamma"]:
+                if table_name in ["VDW K", "PC-SAFT K", "SAFT-VR Mie Epsilon", "SAFT-VR Mie Sigma", "SAFT-VR Mie Gamma"]:
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -164,7 +150,6 @@ class VdWParametersWidget(ParametersWidget):
         :return:
         """
         self.settings = data["Model setups"][settings_name]
-
         self.thermopack = self.get_thermopack()
 
         list_names = []
@@ -172,18 +157,20 @@ class VdWParametersWidget(ParametersWidget):
             list_names.append(self.composition_list.item(i).text())
 
         for name in self.component_lists.keys():
-            if name not in list_names:
 
-                if "Coefficient matrices" not in self.component_lists[name].keys():
-                    self.component_lists[name]["Coefficient matrices"] = {}
+            if name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][name] = {"Coefficient matrices": {}}
 
-                # Create one table for each list in a stacked widget.
+            existing_matrices = self.settings["Parameters"][name]["Coefficient matrices"].keys()
+
+            if "VDW K" not in existing_matrices:
+                # Create one table for each list in a stacked widget if it does not already exist
                 # The dict keeps track of the table's index in the stack
 
                 # Create table
-                self.calculate_matrix_data(name)
-                table = self.get_table(name, "K")
-                table.itemChanged.connect(lambda item: self.change_coeff(item, table, "K"))
+                self.calculate_matrix_data(name, settings_name)
+                table = self.get_table(name, "VDW K")
+                table.itemChanged.connect(lambda item: self.change_coeff(item, "VDW K"))
 
                 # Keep track of table in stack
                 index = self.table_stack.addWidget(table)
@@ -199,7 +186,8 @@ class VdWParametersWidget(ParametersWidget):
         """
         self.init_thermopack(list_name)
 
-        if "K" in self.component_lists[list_name]["Coefficient matrices"].keys() and not reset:
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+        if "VDW K" in coeff_matrices.keys() and not reset:
             # Loaded data should not be replaced
             return
 
@@ -221,7 +209,7 @@ class VdWParametersWidget(ParametersWidget):
             matrix_data[row][row] = 0.0
 
         matrix_data = matrix_data.tolist()
-        self.component_lists[list_name]["Coefficient matrices"]["K"] = matrix_data
+        coeff_matrices["VDW K"] = matrix_data
 
     def show_correct_matrix(self, list_item):
         """
@@ -234,19 +222,18 @@ class VdWParametersWidget(ParametersWidget):
         index = self.stack_indices[list_name]
         self.table_stack.setCurrentIndex(index)
 
-    def change_coeff(self, item, table, table_name):
+    def change_coeff(self, item, table_name):
         """
         Changes a value (interaction coefficient) in the given table
         :param item: New value
-        :param table: QTableWidget in which the value will be changed
-        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        :param table_name: Name of coefficient matrix (VDW K, PC-SAFT Sigma, ...)
         """
         # Item has to be changed in table and self.data
         row = item.row()
         col = item.column()
 
         component_list = self.composition_list.currentItem().text()
-        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+        matrix = self.settings["Parameters"][component_list]["Coefficient matrices"][table_name]
 
         try:
             value = float(item.text().replace(",", "."))
@@ -258,9 +245,9 @@ class VdWParametersWidget(ParametersWidget):
         matrix[row][col] = value
 
         matrix[col][row] = value
-        table.blockSignals(True)
-        table.item(col, row).setText(str(value))
-        table.blockSignals(False)
+        item.tableWidget().blockSignals(True)
+        item.tableWidget().item(col, row).setText(str(value))
+        item.tableWidget().blockSignals(False)
 
 
 class HV1ParametersWidget(ParametersWidget):
@@ -281,7 +268,6 @@ class HV1ParametersWidget(ParametersWidget):
         to display the matrix
         :param data: Session data
         :param settings_name: Name of the current model setup
-        :return:
         """
         self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
@@ -291,21 +277,25 @@ class HV1ParametersWidget(ParametersWidget):
             list_names.append(self.composition_list.item(i).text())
 
         for list_name in self.component_lists.keys():
-            if list_name not in list_names:
-                self.component_lists[list_name]["Coefficient matrices"] = {}
 
+            if list_name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][list_name] = {"Coefficient matrices": {}}
+
+            existing_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"].keys()
+
+            if "HV1 Alpha" not in existing_matrices:
                 # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
                 self.calculate_matrix_data(list_name)
 
-                self.alpha_table = self.get_table(list_name, "alpha")
-                self.a_table = self.get_table(list_name, "A")
-                self.b_table = self.get_table(list_name, "B")
-                self.c_table = self.get_table(list_name, "C")
+                self.alpha_table = self.get_table(list_name, "HV1 Alpha")
+                self.a_table = self.get_table(list_name, "HV1 A")
+                self.b_table = self.get_table(list_name, "HV1 B")
+                self.c_table = self.get_table(list_name, "HV1 C")
 
-                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
-                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
-                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
-                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
+                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 Alpha"))
+                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 A"))
+                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 B"))
+                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 C"))
 
                 tab_widget = HV1TabWidget(self.alpha_table, self.a_table, self.b_table)
 
@@ -359,10 +349,13 @@ class HV1ParametersWidget(ParametersWidget):
         a_matrix_data = a_matrix_data.tolist()
         b_matrix_data = b_matrix_data.tolist()
         c_matrix_data = c_matrix_data.tolist()
-        self.component_lists[list_name]["Coefficient matrices"]["alpha"] = alpha_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["A"] = a_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["B"] = b_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["C"] = c_matrix_data
+
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+
+        coeff_matrices["HV1 Alpha"] = alpha_matrix_data
+        coeff_matrices["HV1 A"] = a_matrix_data
+        coeff_matrices["HV1 B"] = b_matrix_data
+        coeff_matrices["HV1 C"] = c_matrix_data
 
     def show_correct_tab_widget(self, list_item):
         """
@@ -386,7 +379,7 @@ class HV1ParametersWidget(ParametersWidget):
         col = item.column()
 
         component_list = self.composition_list.currentItem().text()
-        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+        matrix = self.settings["Parameters"][component_list]["Coefficient matrices"][table_name]
 
         try:
             value = float(item.text().replace(",", "."))
@@ -396,26 +389,6 @@ class HV1ParametersWidget(ParametersWidget):
             return
 
         matrix[row][col] = value
-
-        alpha_matrix = self.component_lists[component_list]["Coefficient matrices"]["alpha"]
-        a_matrix = self.component_lists[component_list]["Coefficient matrices"]["A"]
-        b_matrix = self.component_lists[component_list]["Coefficient matrices"]["B"]
-        c_matrix = self.component_lists[component_list]["Coefficient matrices"]["C"]
-
-        alpha_ij = alpha_matrix[row][col]
-        alpha_ji = alpha_matrix[col][row]
-        a_ij = a_matrix[row][col]
-        a_ji = a_matrix[col][row]
-        b_ij = b_matrix[row][col]
-        b_ji = b_matrix[col][row]
-        c_ij = c_matrix[row][col]
-        c_ji = c_matrix[col][row]
-
-        identity1 = self.component_lists[component_list]["Identities"][row]
-        identity2 = self.component_lists[component_list]["Identities"][col]
-        index1 = self.thermopack.getcompindex(identity1)
-        index2 = self.thermopack.getcompindex(identity2)
-        self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
 
 
 class HV2ParametersWidget(ParametersWidget):
@@ -446,21 +419,25 @@ class HV2ParametersWidget(ParametersWidget):
             list_names.append(self.composition_list.item(i).text())
 
         for list_name in self.component_lists.keys():
-            if list_name not in list_names:
-                self.component_lists[list_name]["Coefficient matrices"] = {}
 
+            if list_name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][list_name] = {"Coefficient matrices": {}}
+
+            existing_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"].keys()
+
+            if "HV2 Alpha" not in existing_matrices:
                 # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
                 self.calculate_matrix_data(list_name)
 
-                self.alpha_table = self.get_table(list_name, "alpha")
-                self.a_table = self.get_table(list_name, "A")
-                self.b_table = self.get_table(list_name, "B")
-                self.c_table = self.get_table(list_name, "C")
+                self.alpha_table = self.get_table(list_name, "HV2 Alpha")
+                self.a_table = self.get_table(list_name, "HV2 A")
+                self.b_table = self.get_table(list_name, "HV2 B")
+                self.c_table = self.get_table(list_name, "HV2 C")
 
-                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "alpha"))
-                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "A"))
-                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "B"))
-                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "C"))
+                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 Alpha"))
+                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 A"))
+                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 B"))
+                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 C"))
 
                 tab_widget = HV2TabWidget(self.alpha_table, self.a_table, self.b_table, self.c_table)
 
@@ -513,10 +490,13 @@ class HV2ParametersWidget(ParametersWidget):
         a_matrix_data = a_matrix_data.tolist()
         b_matrix_data = b_matrix_data.tolist()
         c_matrix_data = c_matrix_data.tolist()
-        self.component_lists[list_name]["Coefficient matrices"]["alpha"] = alpha_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["A"] = a_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["B"] = b_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["C"] = c_matrix_data
+
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+
+        coeff_matrices["HV2 Alpha"] = alpha_matrix_data
+        coeff_matrices["HV2 A"] = a_matrix_data
+        coeff_matrices["HV2 B"] = b_matrix_data
+        coeff_matrices["HV2 C"] = c_matrix_data
 
     def show_correct_tab_widget(self, list_item):
         """
@@ -540,7 +520,7 @@ class HV2ParametersWidget(ParametersWidget):
         col = item.column()
 
         component_list = self.composition_list.currentItem().text()
-        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+        matrix = self.settings["Parameters"][component_list]["Coefficient matrices"][table_name]
 
         try:
             value = float(item.text().replace(",", "."))
@@ -551,26 +531,6 @@ class HV2ParametersWidget(ParametersWidget):
 
         matrix[row][col] = value
 
-        alpha_matrix = self.component_lists[component_list]["Coefficient matrices"]["alpha"]
-        a_matrix = self.component_lists[component_list]["Coefficient matrices"]["A"]
-        b_matrix = self.component_lists[component_list]["Coefficient matrices"]["B"]
-        c_matrix = self.component_lists[component_list]["Coefficient matrices"]["C"]
-
-        alpha_ij = alpha_matrix[row][col]
-        alpha_ji = alpha_matrix[col][row]
-        a_ij = a_matrix[row][col]
-        a_ji = a_matrix[col][row]
-        b_ij = b_matrix[row][col]
-        b_ji = b_matrix[col][row]
-        c_ij = c_matrix[row][col]
-        c_ji = c_matrix[col][row]
-
-        identity1 = self.component_lists[component_list]["Identities"][row]
-        identity2 = self.component_lists[component_list]["Identities"][col]
-        index1 = self.thermopack.getcompindex(identity1)
-        index2 = self.thermopack.getcompindex(identity2)
-        self.thermopack.set_hv_param(index1, index2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
-
 
 class PCSAFTParametersWidget(VdWParametersWidget):
     """
@@ -579,6 +539,76 @@ class PCSAFTParametersWidget(VdWParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
+
+    def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
+        self.settings = data["Model setups"][settings_name]
+        self.thermopack = self.get_thermopack()
+
+        list_names = []
+        for i in range(self.composition_list.count()):
+            list_names.append(self.composition_list.item(i).text())
+
+        for name in self.component_lists.keys():
+
+            if name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][name] = {"Coefficient matrices": {}}
+
+            existing_matrices = self.settings["Parameters"][name]["Coefficient matrices"].keys()
+
+            if "PC-SAFT K" not in existing_matrices:
+                # Create one table for each list in a stacked widget.
+                # The dict keeps track of the table's index in the stack
+
+                # Create table
+                self.calculate_matrix_data(name, settings_name)
+                table = self.get_table(name, "PC-SAFT K")
+                table.itemChanged.connect(lambda item: self.change_coeff(item, "PC-SAFT K"))
+
+                # Keep track of table in stack
+                index = self.table_stack.addWidget(table)
+                self.stack_indices[name] = index
+
+        self.init_composition_list()
+
+    def calculate_matrix_data(self, list_name, reset=False):
+        """
+        Calculates binary coefficients for all composition lists and stores them
+        :param list_name: str, Name of component list
+        :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
+        """
+        self.init_thermopack(list_name)
+
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+        if "PC-SAFT K" in coeff_matrices.keys() and not reset:
+            # Loaded data should not be replaced
+            return
+
+        # Creating 2D array to be stored in self.data
+        component_list = self.component_lists[list_name]["Names"]
+        size = len(component_list)
+        matrix_data = np.zeros(shape=(size, size))
+
+        for row in range(size):
+            for col in range(size):
+                identity1 = self.component_lists[list_name]["Identities"][row]
+                identity2 = self.component_lists[list_name]["Identities"][col]
+                index1 = self.thermopack.getcompindex(identity1)
+                index2 = self.thermopack.getcompindex(identity2)
+                coeff = self.thermopack.get_kij(index1, index2)
+                matrix_data[row][col] = coeff
+
+        for row in range(size):
+            matrix_data[row][row] = 0.0
+
+        matrix_data = matrix_data.tolist()
+        coeff_matrices["PC-SAFT K"] = matrix_data
 
 
 class SAFTVRMieParametersWidget(ParametersWidget):
@@ -598,6 +628,18 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_epsilon_label.setText("\u03B5 / k:")
         self.pure_param_lambda_a_label.setText("\u03BB a:")
         self.pure_param_lambda_r_label.setText("\u03BB r:")
+
+        # Validators for input
+        float_validator = QDoubleValidator()
+        # Set to English to allow dot as decimal point
+        locale = QtCore.QLocale(QtCore.QLocale.English)
+        float_validator.setLocale(locale)
+
+        self.pure_param_m_edit.setValidator(float_validator)
+        self.pure_param_sigma_edit.setValidator(float_validator)
+        self.pure_param_epsilon_edit.setValidator(float_validator)
+        self.pure_param_lambda_a_edit.setValidator(float_validator)
+        self.pure_param_lambda_r_edit.setValidator(float_validator)
 
         self.pure_param_m_edit.editingFinished.connect(self.change_pure_param_m)
         self.pure_param_sigma_edit.editingFinished.connect(self.change_pure_param_sigma)
@@ -622,25 +664,35 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         """
         self.settings = data["Model setups"][settings_name]
         self.thermopack = self.get_thermopack()
+
         list_names = []
         for i in range(self.composition_list.count()):
             list_names.append(self.composition_list.item(i).text())
 
         for list_name in self.component_lists.keys():
-            if list_name not in list_names:
-                self.component_lists[list_name]["Coefficient matrices"] = {}
 
+            if list_name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][list_name] = {
+                    "Coefficient matrices": {},
+                    "Pure fluid parameters": {}
+                }
+
+            existing_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"].keys()
+
+            if "SAFT-VR Mie Epsilon" not in existing_matrices:
                 # Create one tab for each list in QTabWidget
                 self.calculate_matrix_data(list_name)
 
-                self.epsilon_table = self.get_table(list_name, "epsilon")
-                self.sigma_table = self.get_table(list_name, "sigma")
-                self.gamma_table = self.get_table(list_name, "gamma")
+                self.epsilon_table = self.get_table(list_name, "SAFT-VR Mie Epsilon")
+                self.sigma_table = self.get_table(list_name, "SAFT-VR Mie Sigma")
+                self.gamma_table = self.get_table(list_name, "SAFT-VR Mie Gamma")
 
                 self.epsilon_table.itemChanged.connect(
-                    lambda item: self.change_coeff(item, self.epsilon_table, "epsilon"))
-                self.sigma_table.itemChanged.connect(lambda item: self.change_coeff(item, self.sigma_table, "sigma"))
-                self.gamma_table.itemChanged.connect(lambda item: self.change_coeff(item, self.gamma_table, "gamma"))
+                    lambda item: self.change_coeff(item, "SAFT-VR Mie Epsilon"))
+                self.sigma_table.itemChanged.connect(
+                    lambda item: self.change_coeff(item, "SAFT-VR Mie Sigma"))
+                self.gamma_table.itemChanged.connect(
+                    lambda item: self.change_coeff(item, "SAFT-VR Mie Gamma"))
 
                 tab_widget = SAFTVRMieTabWidget(self.epsilon_table, self.sigma_table, self.gamma_table)
 
@@ -658,8 +710,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_m_edit.blockSignals(False)
 
         if self.component_btngroup.checkedButton():
-            # TODO: Validate input
-            self.save_pure_fluid_params()
+
+            m = self.pure_param_m_edit.text().replace(",", ".")
+            if valid_float_input(m):
+                self.pure_param_m_edit.setText(m)
+                self.save_pure_fluid_params()
+            else:
+                self.pure_param_m_edit.undo()
+
         else:
             return
 
@@ -672,8 +730,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_sigma_edit.blockSignals(False)
 
         if self.component_btngroup.checkedButton():
-            # TODO: Validate input
-            self.save_pure_fluid_params()
+
+            sigma = self.pure_param_sigma_edit.text().replace(",", ".")
+            if valid_float_input(sigma):
+                self.pure_param_sigma_edit.setText(sigma)
+                self.save_pure_fluid_params()
+            else:
+                self.pure_param_sigma_edit.undo()
+
         else:
             return
 
@@ -686,7 +750,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_epsilon_edit.blockSignals(False)
 
         if self.component_btngroup.checkedButton():
-            # TODO: Validate input
+
+            epsilon = self.pure_param_epsilon_edit.text().replace(",", ".")
+            if valid_float_input(epsilon):
+                self.pure_param_epsilon_edit.setText(epsilon)
+                self.save_pure_fluid_params()
+            else:
+                self.pure_param_epsilon_edit.undo()
+
             self.save_pure_fluid_params()
         else:
             return
@@ -700,7 +771,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_lambda_a_edit.blockSignals(False)
 
         if self.component_btngroup.checkedButton():
-            # TODO: Validate input
+
+            lambda_a = self.pure_param_lambda_a_edit.text().replace(",", ".")
+            if valid_float_input(lambda_a):
+                self.pure_param_lambda_a_edit.setText(lambda_a)
+                self.save_pure_fluid_params()
+            else:
+                self.pure_param_lambda_a_edit.undo()
+
             self.save_pure_fluid_params()
         else:
             return
@@ -714,7 +792,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_lambda_r_edit.blockSignals(False)
 
         if self.component_btngroup.checkedButton():
-            # TODO: Validate input
+
+            lambda_r = self.pure_param_lambda_r_edit.text().replace(",", ".")
+            if valid_float_input(lambda_r):
+                self.pure_param_lambda_r_edit.setText(lambda_r)
+                self.save_pure_fluid_params()
+            else:
+                self.pure_param_lambda_r_edit.undo()
+
             self.save_pure_fluid_params()
         else:
             return
@@ -726,11 +811,35 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         if not self.list_name or not self.component_id:
             return
 
-        m = float(self.pure_param_m_edit.text())
-        sigma = float(self.pure_param_sigma_edit.text())
-        epsilon = float(self.pure_param_epsilon_edit.text())
-        lambda_a = float(self.pure_param_lambda_a_edit.text())
-        lambda_r = float(self.pure_param_lambda_r_edit.text())
+        try:
+            m = float(self.pure_param_m_edit.text())
+        except ValueError:
+            self.pure_param_m_edit.undo()
+            return
+
+        try:
+            sigma = float(self.pure_param_sigma_edit.text())
+        except ValueError:
+            self.pure_param_sigma_edit.undo()
+            return
+
+        try:
+            epsilon = float(self.pure_param_epsilon_edit.text())
+        except ValueError:
+            self.pure_param_epsilon_edit.undo()
+            return
+
+        try:
+            lambda_a = float(self.pure_param_lambda_a_edit.text())
+        except ValueError:
+            self.pure_param_lambda_a_edit.undo()
+            return
+
+        try:
+            lambda_r = float(self.pure_param_lambda_r_edit.text())
+        except ValueError:
+            self.pure_param_lambda_r_edit.undo()
+            return
 
         fluid_params = self.settings["Parameters"][self.list_name]["Pure fluid parameters"][self.component_id]
         fluid_params["M"] = m
@@ -802,9 +911,12 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         epsilon_matrix_data = epsilon_matrix_data.tolist()
         sigma_matrix_data = sigma_matrix_data.tolist()
         gamma_matrix_data = gamma_matrix_data.tolist()
-        self.component_lists[list_name]["Coefficient matrices"]["epsilon"] = epsilon_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["sigma"] = sigma_matrix_data
-        self.component_lists[list_name]["Coefficient matrices"]["gamma"] = gamma_matrix_data
+
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+
+        coeff_matrices["SAFT-VR Mie Epsilon"] = epsilon_matrix_data
+        coeff_matrices["SAFT-VR Mie Sigma"] = sigma_matrix_data
+        coeff_matrices["SAFT-VR Mie Gamma"] = gamma_matrix_data
 
     def on_chosen_composition_list(self, list_item):
         """
@@ -818,27 +930,46 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         index = self.tab_stack_indices[self.list_name]
         self.tab_stack.setCurrentIndex(index)
 
+        self.pure_params_frame.hide()
+
         component_list = self.component_lists[self.list_name]["Names"]
 
         for button in self.component_btngroup.buttons():
             self.component_btngroup.removeButton(button)
             self.component_btn_layout.removeWidget(button)
+            button.hide()
+
+        if "Pure fluid parameters" not in self.settings["Parameters"][self.list_name].keys():
+            self.settings["Parameters"][self.list_name]["Pure fluid parameters"] = {}
+
+        pure_fluid_params = self.settings["Parameters"][self.list_name]["Pure fluid parameters"]
 
         for comp_name in component_list:
+            comp_id = get_comp_id(self.component_lists[self.list_name], comp_name)
+
+            if comp_id not in pure_fluid_params.keys():
+                pure_fluid_params[comp_id] = {
+                    "M": None,
+                    "Sigma": None,
+                    "Epsilon": None,
+                    "Lambda a": None,
+                    "Lambda r": None
+                }
+
             button = QRadioButton(comp_name)
             self.component_btngroup.addButton(button)
             self.component_btn_layout.addWidget(button)
 
-    def change_coeff(self, item, table, table_name):
+    def change_coeff(self, item, table_name):
         """
         Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
         thermopack works, all values have to be set simultaneously
         :param item: New value
-        :param table_name: Name of coefficient matrix (K, A, B, C, Sigma, ...)
+        :param table_name: Name of coefficient matrix (VDW K, HV1 A, SAFT-VR Mie Sigma, ...)
         """
         row, col = item.row(), item.column()
         component_list = self.composition_list.currentItem().text()
-        matrix = self.component_lists[component_list]["Coefficient matrices"][table_name]
+        matrix = self.settings["Parameters"][component_list]["Coefficient matrices"][table_name]
 
         try:
             value = float(item.text().replace(",", "."))
@@ -849,21 +980,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
         matrix[row][col] = value
         matrix[col][row] = value
-        table.item(col, row).setText(str(value))
-
-        id1 = self.component_lists[component_list]["Identities"][row]
-        id2 = self.component_lists[component_list]["Identities"][col]
-        index1 = self.thermopack.getcompindex(id1)
-        index2 = self.thermopack.getcompindex(id2)
-
-        if table_name == "epsilon":
-            self.thermopack.set_eps_kij(index1, index2, value)
-
-        elif table_name == "sigma":
-            self.thermopack.set_sigma_lij(index1, index2, value)
-
-        elif table_name == "gamma":
-            self.thermopack.set_lr_gammaij(index1, index2, value)
+        item.tableWidget().item(col, row).setText(str(value))
 
 
 class HV1TabWidget(QTabWidget):

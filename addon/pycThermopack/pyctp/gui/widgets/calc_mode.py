@@ -11,6 +11,8 @@ from gui.widgets.plot_mode import MolarFractionsErrorMsg
 from pcsaft import pcsaft
 from saftvrmie import saftvrmie
 
+# TODO: Validators for molar fractions (endre til QLineEdits)
+
 
 class CalcMode(QMainWindow):
     """

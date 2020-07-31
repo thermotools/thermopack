@@ -100,6 +100,154 @@ def get_comp_id(comp_list_data, comp_name):
     return comp_list_data["Identities"][index]
 
 
+def init_thermopack(tp, comp_data, comp_list_name, settings):
+    """
+    Initiates thermopack with the selected model options and interaction parameters
+    :param tp: Thermopack instance to be initiated
+    :param comp_data: dict, data of the current composition
+    :param comp_list_name: str, name of current composition
+    :param settings: dict, data of the selected model
+    """
+    comp_list = comp_data["Identities"]
+    comps = ",".join(comp_list)
+    model_ref = settings["Model options"]["Reference"]
+
+    if comp_list_name in settings["Parameters"].keys():
+        parameters_exist = (len(settings["Parameters"][comp_list_name].keys()) > 0)
+        if parameters_exist:
+            all_matrices = settings["Parameters"][comp_list_name]["Coefficient matrices"]
+    else:
+        parameters_exist = False
+
+    category = settings["Model category"]
+    if category in ["Cubic", "CPA"]:
+
+        eos = settings["EOS"]
+        mixing = settings["Model options"]["Mixing rule"]
+        alpha = settings["Model options"]["Alpha correlation"]
+
+        tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
+
+        if parameters_exist:
+            if mixing == "vdW" and "VDW K" in all_matrices.keys():
+                matrix = all_matrices["VDW K"]
+
+                for row in range(len(matrix)):
+                    for col in range(len(matrix)):
+
+                        c1 = comp_list[row]
+                        c2 = comp_list[col]
+                        index1 = tp.getcompindex(c1)
+                        index2 = tp.getcompindex(c2)
+                        if row != col:
+                            tp.set_kij(index1, index2, matrix[row][col])
+
+            elif mixing in ["HV1", "HV2"]:
+
+                if "HV1 Alpha" in all_matrices.keys():
+                    alpha_matrix = all_matrices["HV1 Alpha"]
+                    a_matrix = all_matrices["HV1 A"]
+                    b_matrix = all_matrices["HV1 B"]
+                    c_matrix = all_matrices["HV1 C"]
+
+                elif "HV2 Alpha" in all_matrices.keys():
+                    alpha_matrix = all_matrices["HV2 Alpha"]
+                    a_matrix = all_matrices["HV2 A"]
+                    b_matrix = all_matrices["HV2 B"]
+                    c_matrix = all_matrices["HV2 C"]
+
+                else:
+                    return
+
+                for row in range(len(a_matrix)):
+                    for col in range(len(a_matrix)):
+
+                        c1 = comp_list[row]
+                        c2 = comp_list[col]
+                        index1 = tp.getcompindex(c1)
+                        index2 = tp.getcompindex(c2)
+
+                        if row != col and row < col:
+                            alpha_ij = alpha_matrix[row][col]
+                            alpha_ji = alpha_matrix[col][row]
+                            a_ij = a_matrix[row][col]
+                            a_ji = a_matrix[col][row]
+                            b_ij = b_matrix[row][col]
+                            b_ji = b_matrix[col][row]
+                            c_ij = c_matrix[row][col]
+                            c_ji = c_matrix[col][row]
+
+                            tp.set_hv_param(index1, index2, alpha_ij, alpha_ji,
+                                            a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
+
+    elif category == "PC-SAFT":
+        tp.init(comps=comps, parameter_reference=model_ref)
+
+        if parameters_exist and "PC-SAFT K" in all_matrices.keys():
+            matrix = comp_data["Coefficient matrices"]["K"]
+
+            for row in range(len(matrix)):
+                for col in range(len(matrix)):
+
+                    c1 = comp_list[row]
+                    c2 = comp_list[col]
+                    index1 = tp.getcompindex(c1)
+                    index2 = tp.getcompindex(c2)
+
+                    if row != col:
+                        tp.set_kij(index1, index2, matrix[row][col])
+
+    elif category == "SAFT-VR Mie":
+        tp.init(comps=comps, parameter_reference=model_ref)
+        a1 = settings["Model options"]["A1"]
+        a2 = settings["Model options"]["A2"]
+        a3 = settings["Model options"]["A3"]
+        hard_sphere = settings["Model options"]["Hard sphere"]
+        chain = settings["Model options"]["Chain"]
+
+        tp.model_control_a1(a1)
+        tp.model_control_a2(a2)
+        tp.model_control_a3(a3)
+        tp.model_control_hard_sphere(hard_sphere)
+        tp.model_control_chain(chain)
+
+        if parameters_exist:
+            pure_fluid_parameters_exist = (
+                    len(settings["Parameters"][comp_list_name]["Pure fluid parameters"].keys()) > 0
+            )
+
+            epsilon_matrix = all_matrices["SAFT-VR Mie Epsilon"]
+            sigma_matrix = all_matrices["SAFT-VR Mie Sigma"]
+            gamma_matrix = all_matrices["SAFT-VR Mie Gamma"]
+
+            for row in range(len(epsilon_matrix)):
+                for col in range(len(epsilon_matrix)):
+
+                    c1 = comp_list[row]
+                    c2 = comp_list[col]
+                    index1 = tp.getcompindex(c1)
+                    index2 = tp.getcompindex(c2)
+                    if row != col:
+                        tp.set_eps_kij(index1, index2, epsilon_matrix[row][col])
+                        tp.set_sigma_lij(index1, index2, sigma_matrix[row][col])
+                        tp.set_lr_gammaij(index1, index2, gamma_matrix[row][col])
+
+            if pure_fluid_parameters_exist:
+                pure_fluid_parameters = settings["Parameters"][comp_list_name]["Pure fluid parameters"]
+
+                for comp_id in comp_data["Identities"]:
+                    comp_index = tp.getcompindex(comp_id)
+
+                    if None not in pure_fluid_parameters[comp_id]:
+                        m = pure_fluid_parameters[comp_id]["M"]
+                        sigma = pure_fluid_parameters[comp_id]["Sigma"]
+                        eps_div_k = pure_fluid_parameters[comp_id]["Epsilon"]
+                        lambda_a = pure_fluid_parameters[comp_id]["Lambda a"]
+                        lambda_r = pure_fluid_parameters[comp_id]["Lambda r"]
+
+                        tp.set_pure_fluid_param(comp_index, m, sigma, eps_div_k, lambda_a, lambda_r)
+
+
 def valid_float_input(input):
     try:
         float(input)

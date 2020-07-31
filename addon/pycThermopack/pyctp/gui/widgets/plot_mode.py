@@ -13,25 +13,24 @@ from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYO
 import numpy as np
 import csv
 import os
-from gui.utils import valid_float_input
+from gui.utils import valid_float_input, init_thermopack
 
 from cubic import cubic
 from cpa import cpa
 from pcsaft import pcsaft
 from saftvrmie import saftvrmie
 
-
-# TODO: Lagre parametere i self.plot_settings = {}
+# TODO: Handle enheter
 
 
 class PlotMode(QMainWindow):
     """
     A window where different types of (matplotlib) plots can be shown for a given composition and model setup.
     The user may change initial parameters for the calculations and specify some plotting preferences.
-    When a plot is generated, the user may download a csv file containing the (x, y) data.
+    When a plot is generated, the user may download a csv file containing the x and y data for each plotted line
     """
 
-    def __init__(self, component_data, settings, parent=None):
+    def __init__(self, component_data, component_list_name, settings, parent=None):
         super().__init__(parent=parent)
 
         loadUi("widgets/layouts/plot_mode.ui", self)
@@ -44,6 +43,7 @@ class PlotMode(QMainWindow):
         self.logo_layout.addWidget(logo)
 
         self.component_data = component_data
+        self.comp_list_name = component_list_name
         self.settings = settings
 
         self.plotting_preferences = self.init_plotting_preferences()
@@ -67,7 +67,7 @@ class PlotMode(QMainWindow):
         self.tp = self.get_thermopack()
 
         # Init function depends on settings
-        self.init_tp()
+        init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
 
         self.ph_env_toolbtn.clicked.connect(self.show_ph_env_options)
         self.bin_pxy_toolbtn.clicked.connect(self.show_bin_pxy_options)
@@ -271,6 +271,7 @@ class PlotMode(QMainWindow):
             self.fractions_layout.addRow(components[i], line_edit)
 
     def init_tp(self):
+        # TODO: Gjøre denne static, fjerne den herfra og legge i utils
         """
         Initiates thermopack with the selected model options and interaction parameters
         """
@@ -278,18 +279,25 @@ class PlotMode(QMainWindow):
         comps = ",".join(comp_list)
         model_ref = self.settings["Model options"]["Reference"]
 
+        if self.comp_list_name in self.settings["Parameters"].keys():
+            parameters_exist = (len(self.settings["Parameters"][self.comp_list_name].keys()) > 0)
+            if parameters_exist:
+                all_matrices = self.settings["Parameters"][self.comp_list_name]["Coefficient matrices"]
+        else:
+            parameters_exist = False
+
         category = self.settings["Model category"]
         if category in ["Cubic", "CPA"]:
+
             eos = self.settings["EOS"]
             mixing = self.settings["Model options"]["Mixing rule"]
             alpha = self.settings["Model options"]["Alpha correlation"]
 
             self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
 
-            # TODO: Sjekk at instansieringen av interaksjonskoeffisienter fungerer som det skal
-            if "Coefficient matrices" in self.component_data:
-                if mixing == "vdW" and "K" in self.component_data["Coefficient matrices"].keys():
-                    matrix = self.component_data["Coefficient matrices"]["K"]
+            if parameters_exist:
+                if mixing == "vdW" and "VDW K" in all_matrices.keys():
+                    matrix = all_matrices["VDW K"]
 
                     for row in range(len(matrix)):
                         for col in range(len(matrix)):
@@ -301,11 +309,22 @@ class PlotMode(QMainWindow):
                             if row != col:
                                 self.tp.set_kij(index1, index2, matrix[row][col])
 
-                elif mixing in ["HV1", "HV2"] and "Alpha" in self.component_data["Coefficient matrices"].keys():
-                    alpha_matrix = self.component_data["Coefficient matrices"]["Alpha"]
-                    a_matrix = self.component_data["Coefficient matrices"]["A"]
-                    b_matrix = self.component_data["Coefficient matrices"]["B"]
-                    c_matrix = self.component_data["Coefficient matrices"]["C"]
+                elif mixing in ["HV1", "HV2"]:
+
+                    if "HV1 Alpha" in all_matrices.keys():
+                        alpha_matrix = all_matrices["HV1 Alpha"]
+                        a_matrix = all_matrices["HV1 A"]
+                        b_matrix = all_matrices["HV1 B"]
+                        c_matrix = all_matrices["HV1 C"]
+
+                    elif "HV2 Alpha" in all_matrices.keys():
+                        alpha_matrix = all_matrices["HV2 Alpha"]
+                        a_matrix = all_matrices["HV2 A"]
+                        b_matrix = all_matrices["HV2 B"]
+                        c_matrix = all_matrices["HV2 C"]
+
+                    else:
+                        return
 
                     for row in range(len(a_matrix)):
                         for col in range(len(a_matrix)):
@@ -322,21 +341,16 @@ class PlotMode(QMainWindow):
                                 a_ji = a_matrix[col][row]
                                 b_ij = b_matrix[row][col]
                                 b_ji = b_matrix[col][row]
-
-                                if mixing == "HV2" and "C" in self.component_data["Coefficient matrices"].keys():
-                                    c_ij = c_matrix[row][col]
-                                    c_ji = c_matrix[col][row]
-                                else:
-                                    c_ij = 0.0
-                                    c_ji = 0.0
+                                c_ij = c_matrix[row][col]
+                                c_ji = c_matrix[col][row]
 
                                 self.tp.set_hv_param(index1, index2, alpha_ij, alpha_ji,
-                                                     a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
+                                                a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
 
         elif category == "PC-SAFT":
             self.tp.init(comps=comps, parameter_reference=model_ref)
 
-            if "K" in self.component_data["Coefficient matrices"].keys():
+            if parameters_exist and "PC-SAFT K" in all_matrices.keys():
                 matrix = self.component_data["Coefficient matrices"]["K"]
 
                 for row in range(len(matrix)):
@@ -351,6 +365,7 @@ class PlotMode(QMainWindow):
                             self.tp.set_kij(index1, index2, matrix[row][col])
 
         elif category == "SAFT-VR Mie":
+            print("Init saftvrmie")
             self.tp.init(comps=comps, parameter_reference=model_ref)
             a1 = self.settings["Model options"]["A1"]
             a2 = self.settings["Model options"]["A2"]
@@ -364,11 +379,15 @@ class PlotMode(QMainWindow):
             self.tp.model_control_hard_sphere(hard_sphere)
             self.tp.model_control_chain(chain)
 
-            if "epsilon" in self.component_data["Coefficient matrices"].keys():
+            if parameters_exist:
+                print("Parameters exist")
+                pure_fluid_parameters_exist = (
+                        len(self.settings["Parameters"][self.comp_list_name]["Pure fluid parameters"].keys()) > 0
+                )
 
-                epsilon_matrix = self.component_data["Coefficient matrices"]["epsilon"]
-                sigma_matrix = self.component_data["Coefficient matrices"]["sigma"]
-                gamma_matrix = self.component_data["Coefficient matrices"]["gamma"]
+                epsilon_matrix = all_matrices["SAFT-VR Mie Epsilon"]
+                sigma_matrix = all_matrices["SAFT-VR Mie Sigma"]
+                gamma_matrix = all_matrices["SAFT-VR Mie Gamma"]
 
                 for row in range(len(epsilon_matrix)):
                     for col in range(len(epsilon_matrix)):
@@ -381,6 +400,23 @@ class PlotMode(QMainWindow):
                             self.tp.set_eps_kij(index1, index2, epsilon_matrix[row][col])
                             self.tp.set_sigma_lij(index1, index2, sigma_matrix[row][col])
                             self.tp.set_lr_gammaij(index1, index2, gamma_matrix[row][col])
+
+                if pure_fluid_parameters_exist:
+                    print("Pure fluid parameters exist")
+                    pure_fluid_parameters = self.settings["Parameters"][self.comp_list_name]["Pure fluid parameters"]
+
+                    for comp_id in self.component_data["Identities"]:
+                        comp_index = self.tp.getcompindex(comp_id)
+
+                        if None not in pure_fluid_parameters[comp_id]:
+                            print("Setting pure fluid params")
+                            m = pure_fluid_parameters[comp_id]["M"]
+                            sigma = pure_fluid_parameters[comp_id]["Sigma"]
+                            eps_div_k = pure_fluid_parameters[comp_id]["Epsilon"]
+                            lambda_a = pure_fluid_parameters[comp_id]["Lambda a"]
+                            lambda_r = pure_fluid_parameters[comp_id]["Lambda r"]
+
+                            self.tp.set_pure_fluid_param(comp_index, m, sigma, eps_div_k, lambda_a, lambda_r)
 
     def init_isopleth_btns(self):
         """
@@ -516,7 +552,7 @@ class PlotMode(QMainWindow):
             self.settings["Model options"]["Hard sphere"] = self.hard_sphere_checkbox.isChecked()
             self.settings["Model options"]["Chain"] = self.chain_checkbox.isChecked()
 
-        self.init_tp()
+        init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
 
         fractions = np.array(self.component_data["Fractions"])
 

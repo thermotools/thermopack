@@ -3,8 +3,6 @@ from matplotlib.figure import Figure
 
 import numpy as np
 
-# TODO: Q: get_isobar returnerer bare tomme lister
-
 
 class MplCanvas(FigureCanvasQTAgg):
     """
