@@ -37,7 +37,7 @@ module saft_interface
   public :: saft_zfac, saft_lnphi, saft_ResidEntropy, saft_ResidEnthalpy, saft_ResidGibbs
   public :: saft_setAssocParams, cpa_setAssocParams
   public :: pcsaft_set_nonassoc_params, cpa_set_cubic_params
-  public :: cpa_set_kij, cpa_get_pure_params, cpa_set_pure_params
+  public :: cpa_get_kij, cpa_set_kij, cpa_get_pure_params, cpa_set_pure_params
   public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
   public :: calcSaftFder_res_nonassoc
   public :: pets_get_pure_params, pets_set_pure_params
