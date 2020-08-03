@@ -88,25 +88,19 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.iso_p_max.editingFinished.connect(self.set_iso_p_max)
         self.iso_t_min.editingFinished.connect(self.set_iso_t_min)
         self.iso_t_max.editingFinished.connect(self.set_iso_t_max)
-        self.n_isopleths.editingFinished.connect(self.set_n_isopleths)
-        self.n_max.editingFinished.connect(self.set_n_max)
 
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
         self.point_color_tool_btn.clicked.connect(self.set_point_color)
         self.isopleth_1_color_tool_btn.clicked.connect(self.set_isopleth_1_color)
         self.isopleth_2_color_tool_btn.clicked.connect(self.set_isopleth_2_color)
-        self.grid_checkbox.clicked.connect(self.set_grid)
-        self.title.editingFinished.connect(self.set_plot_title)
-        self.xlabel.editingFinished.connect(self.set_plot_x_label)
-        self.ylabel.editingFinished.connect(self.set_plot_y_label)
 
-        self.save_btn.clicked.connect(self.close)
+        self.save_btn.clicked.connect(self.save)
+        self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_0(self):
         p_0 = self.p_0.text().replace(",", ".")
         if valid_float_input(p_0):
-            self.calc_pvt_settings["Initial pressure"] = float(p_0)
             self.p_0.setText(p_0)
         else:
             self.p_0.undo()
@@ -114,7 +108,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_p_max(self):
         p_max = self.p_max.text().replace(",", ".")
         if valid_float_input(p_max):
-            self.calc_pvt_settings["Maximum pressure"] = float(p_max)
             self.p_max.setText(p_max)
         else:
             self.p_max.undo()
@@ -122,7 +115,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_t_min(self):
         t_min = self.t_min.text().replace(",", ".")
         if valid_float_input(t_min):
-            self.calc_pvt_settings["Minimum temperature"] = float(t_min)
             self.t_min.setText(t_min)
         else:
             self.t_min.undo()
@@ -130,7 +122,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_step_size(self):
         step_size = self.step_size.text().replace(",", ".")
         if valid_float_input(step_size):
-            self.calc_pvt_settings["Step size"] = float(step_size)
             self.step_size.setText(step_size)
         else:
             self.step_size.undo()
@@ -138,7 +129,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_crit_t(self):
         crit_t = self.crit_t.text().replace(",", ".")
         if valid_float_input(crit_t):
-            self.crit_point_settings["Temperature"] = float(crit_t)
             self.crit_t.setText(crit_t)
         else:
             self.crit_t.undo()
@@ -146,7 +136,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_crit_v(self):
         crit_v = self.crit_v.text().replace(",", ".")
         if valid_float_input(crit_v):
-            self.crit_point_settings["Volume"] = float(crit_v)
             self.crit_v.setText(crit_v)
         else:
             self.crit_v.undo()
@@ -154,7 +143,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_crit_tol(self):
         crit_tol = self.crit_tol.text().replace(",", ".")
         if valid_float_input(crit_tol):
-            self.crit_point_settings["Error tolerance"] = float(crit_tol)
             self.crit_tol.setText(crit_tol)
         else:
             self.crit_tol.undo()
@@ -162,7 +150,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_iso_p_min(self):
         iso_p_min = self.iso_p_min.text().replace(",", ".")
         if valid_float_input(iso_p_min):
-            self.isopleth_settings["Minimum pressure"] = float(iso_p_min)
             self.iso_p_min.setText(iso_p_min)
         else:
             self.iso_p_min.undo()
@@ -170,7 +157,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_iso_p_max(self):
         iso_p_max = self.iso_p_max.text().replace(",", ".")
         if valid_float_input(iso_p_max):
-            self.isopleth_settings["Maximum pressure"] = float(iso_p_max)
             self.iso_p_max.setText(iso_p_max)
         else:
             self.iso_p_max.undo()
@@ -178,7 +164,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_iso_t_min(self):
         iso_t_min = self.iso_t_min.text().replace(",", ".")
         if valid_float_input(iso_t_min):
-            self.isopleth_settings["Minimum temperature"] = float(iso_t_min)
             self.iso_t_min.setText(iso_t_min)
         else:
             self.iso_t_min.undo()
@@ -186,18 +171,9 @@ class PhaseEnvelopeOptionsWindow(QDialog):
     def set_iso_t_max(self):
         iso_t_max = self.iso_t_max.text().replace(",", ".")
         if valid_float_input(iso_t_max):
-            self.isopleth_settings["Maximum temperature"] = float(iso_t_max)
             self.iso_t_max.setText(iso_t_max)
         else:
             self.iso_t_max.undo()
-
-    def set_n_isopleths(self):
-        n_isopleths = self.n_isopleths.text()
-        self.isopleth_settings["Number of isopleths"] = int(n_isopleths)
-
-    def set_n_max(self):
-        n_max = self.n_max.text()
-        self.isopleth_settings["N max"] = int(n_max)
 
     def set_line_color(self, color=None):
         """
@@ -210,8 +186,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][0] = color
-
     def set_point_color(self, color=None):
         """
         Opens a color picker and sets point color for the plot if a color is not specified
@@ -222,8 +196,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
 
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.point_color_preview.setStyleSheet(style)
-
-        self.plotting_options["Colors"][1] = color
 
     def set_isopleth_1_color(self, color=None):
         """
@@ -236,8 +208,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.isopleth_1_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][2] = color
-
     def set_isopleth_2_color(self, color=None):
         """
         Opens a color picker and sets point color for the plot if a color is not specified
@@ -249,22 +219,38 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.isopleth_2_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][3] = color
+    def save(self):
+        self.calc_pvt_settings["Initial pressure"] = float(self.p_0.text())
+        self.calc_pvt_settings["Maximum pressure"] = float(self.p_max.text())
 
-    def set_grid(self, is_checked):
-        self.plotting_options["Grid on"] = is_checked
+        if self.t_min.text() != "None":
+            self.calc_pvt_settings["Minimum temperature"] = float(self.t_min.text())
+        else:
+            self.calc_pvt_settings["Minimum temperature"] = None
 
-    def set_plot_title(self):
-        title = self.title.text()
-        self.plotting_options["Title"] = title
+        self.calc_pvt_settings["Step size"] = float(self.step_size.text())
 
-    def set_plot_x_label(self):
-        xlabel = self.xlabel.text()
-        self.plotting_options["x label"] = xlabel
+        self.crit_point_settings["Temperature"] = float(self.crit_t.text())
+        self.crit_point_settings["Volume"] = float(self.crit_v.text())
+        self.crit_point_settings["Error tolerance"] = float(self.crit_tol.text())
 
-    def set_plot_y_label(self):
-        ylabel = self.ylabel.text()
-        self.plotting_options["y label"] = ylabel
+        self.isopleth_settings["Minimum pressure"] = float(self.iso_p_min.text())
+        self.isopleth_settings["Maximum pressure"] = float(self.iso_p_max.text())
+        self.isopleth_settings["Minimum temperature"] = float(self.iso_t_min.text())
+        self.isopleth_settings["Maximum temperature"] = float(self.iso_t_max.text())
+        self.isopleth_settings["Number of isopleths"] = int(self.n_isopleths.text())
+        self.isopleth_settings["N max"] = int(self.n_max.text())
+
+        self.plotting_options["Colors"][0] = self.line_color_preview.palette().window().color().name()
+        self.plotting_options["Colors"][1] = self.point_color_preview.palette().window().color().name()
+        self.plotting_options["Colors"][2] = self.isopleth_1_color_preview.palette().window().color().name()
+        self.plotting_options["Colors"][3] = self.isopleth_2_color_preview.palette().window().color().name()
+        self.plotting_options["Title"] = self.title.text()
+        self.plotting_options["x label"] = self.xlabel.text()
+        self.plotting_options["y label"] = self.ylabel.text()
+        self.plotting_options["Grid on"] = self.grid_checkbox.isChecked()
+
+        self.close()
 
     def restore_defaults(self):
         calc_pvt_settings = self.default["Phase envelope"]["TPV"]
@@ -277,18 +263,9 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.t_min.setText(str(calc_pvt_settings["Minimum temperature"]))
         self.step_size.setText(str(calc_pvt_settings["Step size"]))
 
-        self.set_p_0()
-        self.set_p_max()
-        self.set_t_min()
-        self.set_step_size()
-
         self.crit_t.setText(str(crit_point_settings["Temperature"]))
         self.crit_v.setText(str(crit_point_settings["Volume"]))
         self.crit_tol.setText(str(crit_point_settings["Error tolerance"]))
-
-        self.set_crit_t()
-        self.set_crit_v()
-        self.set_crit_tol()
 
         self.iso_p_min.setText(str(isopleth_settings["Minimum pressure"]))
         self.iso_p_max.setText(str(isopleth_settings["Maximum pressure"]))
@@ -296,13 +273,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.iso_t_max.setText(str(isopleth_settings["Maximum temperature"]))
         self.n_isopleths.setText(str(isopleth_settings["Number of isopleths"]))
         self.n_max.setText(str(isopleth_settings["N max"]))
-
-        self.set_iso_p_min()
-        self.set_iso_p_max()
-        self.set_iso_t_min()
-        self.set_iso_t_max()
-        self.set_n_isopleths()
-        self.set_n_max()
 
         self.set_line_color(plotting_options["Colors"][0])
         self.set_point_color(plotting_options["Colors"][1])
@@ -312,11 +282,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.title.setText(plotting_options["Title"])
         self.xlabel.setText(plotting_options["x label"])
         self.ylabel.setText(plotting_options["y label"])
-
-        self.set_grid(self.grid_checkbox.isChecked())
-        self.set_plot_title()
-        self.set_plot_x_label()
-        self.set_plot_y_label()
 
 
 class BinaryPXYOptionsWindow(QDialog):
@@ -342,10 +307,6 @@ class BinaryPXYOptionsWindow(QDialog):
         self.dlns_max.setText(str(self.calc_settings["Maximum dlns"]))
 
         self.set_line_color(self.plotting_options["Colors"][0])
-        self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
-        self.title.setText(self.plotting_options["Title"])
-        self.xlabel.setText(self.plotting_options["x label"])
-        self.ylabel.setText(self.plotting_options["y label"])
 
         self.setFocus()
 
@@ -369,18 +330,18 @@ class BinaryPXYOptionsWindow(QDialog):
         self.dlns_max.editingFinished.connect(self.set_dlns_max)
 
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
-        self.grid_checkbox.clicked.connect(self.set_grid)
-        self.title.editingFinished.connect(self.set_plot_title)
-        self.xlabel.editingFinished.connect(self.set_plot_x_label)
-        self.ylabel.editingFinished.connect(self.set_plot_y_label)
+        self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
+        self.title.setText(self.plotting_options["Title"])
+        self.xlabel.setText(self.plotting_options["x label"])
+        self.ylabel.setText(self.plotting_options["y label"])
 
-        self.save_btn.clicked.connect(self.close)
+        self.save_btn.clicked.connect(self.save)
+        self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_temp(self):
         temp = self.temp.text().replace(",", ".")
         if valid_float_input(temp):
-            self.calc_settings["Temperature"] = float(temp)
             self.temp.setText(temp)
         else:
             self.temp.undo()
@@ -388,7 +349,6 @@ class BinaryPXYOptionsWindow(QDialog):
     def set_p_max(self):
         p_max = self.p_max.text().replace(",", ".")
         if valid_float_input(p_max):
-            self.calc_settings["Maximum pressure"] = float(p_max)
             self.p_max.setText(p_max)
         else:
             self.p_max.undo()
@@ -396,7 +356,6 @@ class BinaryPXYOptionsWindow(QDialog):
     def set_p_min(self):
         p_min = self.p_min.text().replace(",", ".")
         if valid_float_input(p_min):
-            self.calc_settings["Minimum pressure"] = float(p_min)
             self.p_min.setText(p_min)
         else:
             self.p_min.undo()
@@ -404,7 +363,6 @@ class BinaryPXYOptionsWindow(QDialog):
     def set_dz_max(self):
         dz_max = self.dz_max.text().replace(",", ".")
         if valid_float_input(dz_max):
-            self.calc_settings["Maximum dz"] = float(dz_max)
             self.dz_max.setText(dz_max)
         else:
             self.dz_max.undo()
@@ -412,7 +370,6 @@ class BinaryPXYOptionsWindow(QDialog):
     def set_dlns_max(self):
         dlns_max = self.dlns_max.text().replace(",", ".")
         if valid_float_input(dlns_max):
-            self.calc_settings["Maximum dlns"] = float(dlns_max)
             self.dlns_max.setText(dlns_max)
         else:
             self.dlns_max.undo()
@@ -428,22 +385,20 @@ class BinaryPXYOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][0] = color
+    def save(self):
+        self.calc_settings["Temperature"] = float(self.temp.text())
+        self.calc_settings["Maximum pressure"] = float(self.p_max.text())
+        self.calc_settings["Minimum pressure"] = float(self.p_min.text())
+        self.calc_settings["Maximum dz"] = float(self.dz_max.text())
+        self.calc_settings["Maximum dlns"] = float(self.dlns_max.text())
 
-    def set_grid(self, is_checked):
-        self.plotting_options["Grid on"] = is_checked
+        self.plotting_options["Colors"][0] = self.line_color_preview.palette().window().color().name()
+        self.plotting_options["Grid on"] = self.grid_checkbox.isChecked()
+        self.plotting_options["Title"] = self.title.text()
+        self.plotting_options["x label"] = self.xlabel.text()
+        self.plotting_options["y label"] = self.ylabel.text()
 
-    def set_plot_title(self):
-        title = self.title.text()
-        self.plotting_options["Title"] = title
-
-    def set_plot_x_label(self):
-        xlabel = self.xlabel.text()
-        self.plotting_options["x label"] = xlabel
-
-    def set_plot_y_label(self):
-        ylabel = self.ylabel.text()
-        self.plotting_options["y label"] = ylabel
+        self.close()
 
     def restore_defaults(self):
         calc_settings = self.default["Binary pxy"]["Calc"]
@@ -455,22 +410,11 @@ class BinaryPXYOptionsWindow(QDialog):
         self.dz_max.setText(str(calc_settings["Maximum dz"]))
         self.dlns_max.setText(str(calc_settings["Maximum dlns"]))
 
-        self.set_temp()
-        self.set_p_max()
-        self.set_p_min()
-        self.set_dz_max()
-        self.set_dlns_max()
-
         self.set_line_color(plotting_options["Colors"][0])
         self.grid_checkbox.setChecked(plotting_options["Grid on"])
         self.title.setText(plotting_options["Title"])
         self.xlabel.setText(plotting_options["x label"])
         self.ylabel.setText(plotting_options["y label"])
-
-        self.set_grid(self.grid_checkbox.isChecked())
-        self.set_plot_title()
-        self.set_plot_x_label()
-        self.set_plot_y_label()
 
 
 class PRhoOptionsWindow(QDialog):
@@ -536,18 +480,14 @@ class PRhoOptionsWindow(QDialog):
 
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
         self.point_color_tool_btn.clicked.connect(self.set_point_color)
-        self.grid_checkbox.clicked.connect(self.set_grid)
-        self.title.editingFinished.connect(self.set_plot_title)
-        self.xlabel.editingFinished.connect(self.set_plot_x_label)
-        self.ylabel.editingFinished.connect(self.set_plot_y_label)
 
-        self.save_btn.clicked.connect(self.close)
+        self.save_btn.clicked.connect(self.save)
+        self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_0(self):
         p_0 = self.p_0.text().replace(",", ".")
         if valid_float_input(p_0):
-            self.calc_settings["Initial pressure"] = float(p_0)
             self.p_0.setText(p_0)
         else:
             self.p_0.undo()
@@ -555,7 +495,6 @@ class PRhoOptionsWindow(QDialog):
     def set_p_max(self):
         p_max = self.p_max.text().replace(",", ".")
         if valid_float_input(p_max):
-            self.calc_settings["Maximum pressure"] = float(p_max)
             self.p_max.setText(p_max)
         else:
             self.p_max.undo()
@@ -563,7 +502,6 @@ class PRhoOptionsWindow(QDialog):
     def set_t_min(self):
         t_min = self.t_min.text().replace(",", ".")
         if valid_float_input(t_min):
-            self.calc_settings["Minimum temperature"] = float(t_min)
             self.t_min.setText(t_min)
         else:
             self.t_min.undo()
@@ -571,7 +509,6 @@ class PRhoOptionsWindow(QDialog):
     def set_step_size(self):
         step_size = self.step_size.text().replace(",", ".")
         if valid_float_input(step_size):
-            self.calc_settings["Step size"] = float(step_size)
             self.step_size.setText(step_size)
         else:
             self.step_size.undo()
@@ -579,7 +516,6 @@ class PRhoOptionsWindow(QDialog):
     def set_crit_t(self):
         crit_t = self.crit_t.text().replace(",", ".")
         if valid_float_input(crit_t):
-            self.crit_point_settings["Temperature"] = float(crit_t)
             self.crit_t.setText(crit_t)
         else:
             self.crit_t.undo()
@@ -587,7 +523,6 @@ class PRhoOptionsWindow(QDialog):
     def set_crit_v(self):
         crit_v = self.crit_v.text().replace(",", ".")
         if valid_float_input(crit_v):
-            self.crit_point_settings["Volume"] = float(crit_v)
             self.crit_v.setText(crit_v)
         else:
             self.crit_v.undo()
@@ -595,7 +530,6 @@ class PRhoOptionsWindow(QDialog):
     def set_crit_tol(self):
         crit_tol = self.crit_tol.text().replace(",", ".")
         if valid_float_input(crit_tol):
-            self.crit_point_settings["Error tolerance"] = float(crit_tol)
             self.crit_tol.setText(crit_tol)
         else:
             self.crit_tol.undo()
@@ -611,8 +545,6 @@ class PRhoOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][0] = color
-
     def set_point_color(self, color=None):
         """
         Opens a color picker and sets point color for the plot if a color is not specified
@@ -623,8 +555,6 @@ class PRhoOptionsWindow(QDialog):
 
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.point_color_preview.setStyleSheet(style)
-
-        self.plotting_options["Colors"][1] = color
 
     def set_isopleth_1_color(self, color=None):
         """
@@ -637,8 +567,6 @@ class PRhoOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.isopleth_1_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][2] = color
-
     def set_isopleth_2_color(self, color=None):
         """
         Opens a color picker and sets point color for the plot if a color is not specified
@@ -650,22 +578,30 @@ class PRhoOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.isopleth_2_color_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][3] = color
+    def save(self):
+        self.calc_settings["Initial pressure"] = float(self.p_0.text())
+        self.calc_settings["Maximum pressure"] = float(self.p_max.text())
 
-    def set_grid(self, is_checked):
-        self.plotting_options["Grid on"] = is_checked
+        if self.t_min.text() != "None":
+            self.calc_settings["Minimum temperature"] = float(self.t_min.text())
+        else:
+            self.calc_settings["Minimum temperature"] = None
 
-    def set_plot_title(self):
-        title = self.title.text()
-        self.plotting_options["Title"] = title
+        self.calc_settings["Step size"] = float(self.step_size.text())
 
-    def set_plot_x_label(self):
-        xlabel = self.xlabel.text()
-        self.plotting_options["x label"] = xlabel
+        self.crit_point_settings["Temperature"] = float(self.crit_t.text())
+        self.crit_point_settings["Volume"] = float(self.crit_v.text())
+        self.crit_point_settings["Error tolerance"] = float(self.crit_tol.text())
 
-    def set_plot_y_label(self):
-        ylabel = self.ylabel.text()
-        self.plotting_options["y label"] = ylabel
+        self.plotting_options["Colors"][0] = self.line_color_preview.palette().window().color().name()
+        self.plotting_options["Colors"][1] = self.point_color_preview.palette().window().color().name()
+
+        self.plotting_options["Title"] = self.title.text()
+        self.plotting_options["x label"] = self.xlabel.text()
+        self.plotting_options["y label"] = self.ylabel.text()
+        self.plotting_options["Grid on"] = self.grid_checkbox.isChecked()
+
+        self.close()
 
     def restore_defaults(self):
         calc_settings = self.default["Pressure density"]["TPV"]
@@ -677,18 +613,9 @@ class PRhoOptionsWindow(QDialog):
         self.t_min.setText(str(calc_settings["Minimum temperature"]))
         self.step_size.setText(str(calc_settings["Step size"]))
 
-        self.set_p_0()
-        self.set_p_max()
-        self.set_t_min()
-        self.set_step_size()
-
         self.crit_t.setText(str(crit_point_settings["Temperature"]))
         self.crit_v.setText(str(crit_point_settings["Volume"]))
         self.crit_tol.setText(str(crit_point_settings["Error tolerance"]))
-
-        self.set_crit_t()
-        self.set_crit_v()
-        self.set_crit_tol()
 
         self.set_line_color(plotting_options["Colors"][0])
         self.set_point_color(plotting_options["Colors"][1])
@@ -696,11 +623,6 @@ class PRhoOptionsWindow(QDialog):
         self.title.setText(plotting_options["Title"])
         self.xlabel.setText(plotting_options["x label"])
         self.ylabel.setText(plotting_options["y label"])
-
-        self.set_grid(self.grid_checkbox.isChecked())
-        self.set_plot_title()
-        self.set_plot_x_label()
-        self.set_plot_y_label()
 
 
 class GlobalBinaryOptionsWindow(QDialog):
@@ -747,24 +669,19 @@ class GlobalBinaryOptionsWindow(QDialog):
         # Action handling
         self.p_min.editingFinished.connect(self.set_p_min)
         self.t_min.editingFinished.connect(self.set_t_min)
-        self.azeotropes_checkbox.clicked.connect(self.set_azeotropes)
 
         self.line_color_1_tool_btn.clicked.connect(self.set_line_color_1)
         self.line_color_2_tool_btn.clicked.connect(self.set_line_color_2)
         self.line_color_3_tool_btn.clicked.connect(self.set_line_color_3)
         self.line_color_4_tool_btn.clicked.connect(self.set_line_color_4)
-        self.grid_checkbox.clicked.connect(self.set_grid)
-        self.title.editingFinished.connect(self.set_plot_title)
-        self.xlabel.editingFinished.connect(self.set_plot_x_label)
-        self.ylabel.editingFinished.connect(self.set_plot_y_label)
 
-        self.save_btn.clicked.connect(self.close)
+        self.save_btn.clicked.connect(self.save)
+        self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def set_p_min(self):
         p_min = self.p_min.text().replace(",", ".")
         if valid_float_input(p_min):
-            self.calc_settings["Minimum pressure"] = float(p_min)
             self.p_min.setText(p_min)
         else:
             self.p_min.undo()
@@ -772,13 +689,9 @@ class GlobalBinaryOptionsWindow(QDialog):
     def set_t_min(self):
         t_min = self.t_min.text().replace(",", ".")
         if valid_float_input(t_min):
-            self.calc_settings["Minimum temperature"] = float(t_min)
             self.t_min.setText(t_min)
         else:
             self.t_min.undo()
-
-    def set_azeotropes(self, is_checked):
-        self.calc_settings["Azeotropes"] = is_checked
 
     def set_line_color_1(self, color=None):
         """
@@ -791,8 +704,6 @@ class GlobalBinaryOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_1_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][0] = color
-
     def set_line_color_2(self, color=None):
         """
         Opens a color picker and sets line color for the plot if a color is not specified
@@ -803,8 +714,6 @@ class GlobalBinaryOptionsWindow(QDialog):
 
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_2_preview.setStyleSheet(style)
-
-        self.plotting_options["Colors"][1] = color
 
     def set_line_color_3(self, color=None):
         """
@@ -817,8 +726,6 @@ class GlobalBinaryOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_3_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][2] = color
-
     def set_line_color_4(self, color=None):
         """
         Opens a color picker and sets line color for the plot if a color is not specified
@@ -830,22 +737,22 @@ class GlobalBinaryOptionsWindow(QDialog):
         style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
         self.line_color_4_preview.setStyleSheet(style)
 
-        self.plotting_options["Colors"][3] = color
+    def save(self):
+        self.calc_settings["Minimum pressure"] = float(self.p_min.text())
+        self.calc_settings["Minimum temperature"] = float(self.t_min.text())
+        self.calc_settings["Azeotropes"] = self.azeotropes_checkbox.isChecked()
 
-    def set_grid(self, is_checked):
-        self.plotting_options["Grid on"] = is_checked
+        self.plotting_options["Colors"][0] = self.line_color_1_preview.palette().window().color().name()
+        self.plotting_options["Colors"][1] = self.line_color_2_preview.palette().window().color().name()
+        self.plotting_options["Colors"][2] = self.line_color_3_preview.palette().window().color().name()
+        self.plotting_options["Colors"][3] = self.line_color_4_preview.palette().window().color().name()
 
-    def set_plot_title(self):
-        title = self.title.text()
-        self.plotting_options["Title"] = title
+        self.plotting_options["Title"] = self.title.text()
+        self.plotting_options["x label"] = self.xlabel.text()
+        self.plotting_options["y label"] = self.ylabel.text()
+        self.plotting_options["Grid on"] = self.grid_checkbox.isChecked()
 
-    def set_plot_x_label(self):
-        xlabel = self.xlabel.text()
-        self.plotting_options["x label"] = xlabel
-
-    def set_plot_y_label(self):
-        ylabel = self.ylabel.text()
-        self.plotting_options["y label"] = ylabel
+        self.close()
 
     def restore_defaults(self):
         calc_settings = self.default["Global binary"]["Calc"]
@@ -855,20 +762,11 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.t_min.setText(str(calc_settings["Minimum temperature"]))
         self.azeotropes_checkbox.setChecked(calc_settings["Azeotropes"])
 
-        self.set_p_min()
-        self.set_t_min()
-        self.set_azeotropes(self.azeotropes_checkbox.isChecked())
-
         self.set_line_color_1(plotting_options["Colors"][0])
-        self.set_line_color_2(plotting_options["Colros"][1])
+        self.set_line_color_2(plotting_options["Colors"][1])
         self.set_line_color_3(plotting_options["Colors"][2])
         self.set_line_color_4(plotting_options["Colors"][3])
         self.grid_checkbox.setChecked(plotting_options["Grid on"])
         self.title.setText("van Konyenburg and Scott type: ")
         self.xlabel.setText(plotting_options["x label"])
         self.ylabel.setText(plotting_options["y label"])
-
-        self.set_grid(self.grid_checkbox.isChecked())
-        self.set_plot_title()
-        self.set_plot_x_label()
-        self.set_plot_y_label()
