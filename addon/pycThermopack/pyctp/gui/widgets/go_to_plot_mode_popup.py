@@ -113,6 +113,6 @@ class GoToCalcModeWidget(ChangeModePopup):
         settings = self.data["Model setups"][model_settings_name]
         component_data = self.data["Component lists"][component_list_name]
 
-        self.calc_window = CalcMode(component_data, settings)
+        self.calc_window = CalcMode(component_data, component_list_name, settings)
         self.calc_window.show()
         self.close()

@@ -1,24 +1,27 @@
-from PyQt5.QtWidgets import QMainWindow, QDoubleSpinBox, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy, QLineEdit
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtCore import QLocale
 from PyQt5.uic import loadUi
 
 import numpy as np
 import csv
 import os
 
+from gui.widgets.plot_mode import MolarFractionsErrorMsg
+from gui.utils import valid_float_input, init_thermopack
+
 from cpa import cpa
 from cubic import cubic
-from gui.widgets.plot_mode import MolarFractionsErrorMsg
 from pcsaft import pcsaft
 from saftvrmie import saftvrmie
-
-# TODO: Validators for molar fractions (endre til QLineEdits)
 
 
 class CalcMode(QMainWindow):
     """
     Calculation mode: Own window to calculate, display and save flash data
     """
-    def __init__(self, component_data, settings, parent=None):
+
+    def __init__(self, component_data, component_list_name, settings, parent=None):
         super().__init__(parent=parent)
 
         loadUi("widgets/layouts/calc_mode.ui", self)
@@ -26,6 +29,7 @@ class CalcMode(QMainWindow):
         self.showMaximized()
 
         self.component_data = component_data
+        self.comp_list_name = component_list_name
         self.settings = settings
         self.tp = self.get_thermopack()
 
@@ -83,28 +87,6 @@ class CalcMode(QMainWindow):
             return saftvrmie()
         else:
             return None
-
-    def init_thermopack(self):
-        """
-        Initiates thermopack and sets the chosen model parameters
-        """
-        comps = ",".join(self.component_data["Identities"])
-        model_ref = self.settings["Model options"]["Reference"]
-
-        category = self.settings["Model category"]
-        if category in ["Cubic", "CPA"]:
-            eos = self.settings["EOS"]
-            mixing = self.settings["Model options"]["Mixing rule"]
-            alpha = self.settings["Model options"]["Alpha correlation"]
-
-            self.tp.init(comps=comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
-
-        elif category == "PC-SAFT":
-            self.tp.init(comps=comps, parameter_reference=model_ref)
-
-        elif category == "SAFT-VR Mie":
-            self.tp.init(comps=comps, parameter_reference=model_ref)
-            # TODO: Set a1, a2, a3, hard sphere, chain
 
     def show_input_params(self, flash_mode="TP"):
         """
@@ -165,7 +147,6 @@ class CalcMode(QMainWindow):
         self.settings_window.show()
 
     def init_fractions(self):
-        # TODO: Turn this into a LineEdit
         """
         Creates input fields for the molar fractions. One for each component. If there is only one component,
         the molar fraction is set to 1.00 and is uneditable.
@@ -173,31 +154,41 @@ class CalcMode(QMainWindow):
         components = self.component_data["Names"]
         self.component_data["Fractions"] = [0.00] * len(components)
 
-        for i in range(len(components)):
-            spin_box = QDoubleSpinBox()
-            spin_box.setMinimumWidth(60)
-            spin_box.setMaximum(1.00)
-            spin_box.setSingleStep(0.10)
+        float_validator = QDoubleValidator()
+        locale = QLocale(QLocale.English)
+        float_validator.setLocale(locale)
 
-            spin_box.valueChanged.connect(lambda value, x=components[i]: self.change_fraction(value, x))
+        for i in range(len(components)):
+            component = components[i]
+            line_edit = QLineEdit()
+            line_edit.setValidator(float_validator)
+            line_edit.setText("0.00")
+            line_edit.setObjectName(component)
+            line_edit.editingFinished.connect(lambda comp=component: self.change_fraction(comp))
 
             if len(components) == 1:
-                spin_box.setValue(1.00)
-                spin_box.setEnabled(False)
+                line_edit.setText("1.00")
+                line_edit.setEnabled(False)
                 self.component_data["Fractions"][i] = 1.00
             else:
                 self.component_data["Fractions"][i] = 0.00
 
-            self.fractions_layout.addRow(components[i], spin_box)
+            self.fractions_layout.addRow(components[i], line_edit)
 
-    def change_fraction(self, value, comp_name):
+    def change_fraction(self, comp_name):
         """
         Changes the fraction of the given component
-        :param value: New molar fraction
         :param comp_name: Name of component of which the molar fraction is changed
         """
+        line_edit = self.molar_fractions_box.findChild(QLineEdit, comp_name)
+        mol_frac = line_edit.text().replace(",", ".")
         index = self.component_data["Names"].index(comp_name)
-        self.component_data["Fractions"][index] = value
+
+        if valid_float_input(mol_frac):
+            self.component_data["Fractions"][index] = float(mol_frac)
+            line_edit.setText(mol_frac)
+        else:
+            line_edit.setText(str(self.component_data["Fractions"][index]))
 
     def toggle_initial_guess(self):
         self.ps_guess_frame.setEnabled(self.ps_initial_guess.isChecked())
@@ -216,13 +207,13 @@ class CalcMode(QMainWindow):
         fractions = np.array(self.component_data["Fractions"])
         mole_fraction_sum = np.sum(fractions)
 
-        if mole_fraction_sum > 1.000001 or mole_fraction_sum < 0.999999:
+        if abs(mole_fraction_sum - 1.00) > 0.00000001:
             # TODO: Q: Dette er litt tricky med floating point numbers. Hvor nøyaktig må det være?
             msg = MolarFractionsErrorMsg(mole_fraction_sum)
             msg.exec_()
             return
 
-        self.init_thermopack()
+        init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
 
         flash_mode = self.flash_mode_selection.currentText()
         self.tp.set_ph_tolerance(1.0e-8)  # Skal denne kunne endres?
