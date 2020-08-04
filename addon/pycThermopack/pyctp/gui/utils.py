@@ -1,7 +1,40 @@
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtGui import QValidator
+
 from gui.classes.component import Component
+
+from cubic import cubic
+from cpa import cpa
+from pcsaft import pcsaft
+from saftvrmie import saftvrmie
 
 import json
 import os
+import re
+
+
+class FloatValidator(QValidator):
+    _float_re = re.compile(r'(([+-]?\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)')
+
+    def valid_float_string(self, string):
+        match = self._float_re.search(string)
+        if match:
+            return match.groups()[0] == string
+        else:
+            return False
+
+    def validate(self, string, position):
+        if self.valid_float_string(string):
+            state = QValidator.Acceptable
+        elif string == "" or string[position - 1] in 'e.-+' and string.lower() != "e":
+            state = QValidator.Intermediate
+        else:
+            state = QValidator.Invalid
+        return state, string, position
+
+    def fixup(self, text):
+        match = self._float_re.search(text)
+        return match.groups()[0] if match else "0.0"
 
 
 def get_json_data(file_name):
@@ -76,6 +109,7 @@ def get_fluids():
     """
     fluids = {}
 
+    # TODO: Endre fra os.walk() til noe som er kompatibelt med andre OS-er
     for root, dirs, files in os.walk("../../../../fluids"):
         for file_name in files:
             file = open(os.path.join(root, file_name), "r")
@@ -98,6 +132,24 @@ def get_comp_id(comp_list_data, comp_name):
     """
     index = comp_list_data["Names"].index(comp_name)
     return comp_list_data["Identities"][index]
+
+
+def get_thermopack(category):
+    """
+    Returns the correct type of thermopack instance depending on the chosen model
+    :param category: Name of model category
+    :return: Thermopack instance
+    """
+    if category == "Cubic":
+        return cubic()
+    elif category == "CPA":
+        return cpa()
+    elif category == "PC-SAFT":
+        return pcsaft()
+    elif category == "SAFT-VR Mie":
+        return saftvrmie()
+    else:
+        return None
 
 
 def init_thermopack(tp, comp_data, comp_list_name, settings):
@@ -216,21 +268,22 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
                     len(settings["Parameters"][comp_list_name]["Pure fluid parameters"].keys()) > 0
             )
 
-            epsilon_matrix = all_matrices["SAFT-VR Mie Epsilon"]
-            sigma_matrix = all_matrices["SAFT-VR Mie Sigma"]
-            gamma_matrix = all_matrices["SAFT-VR Mie Gamma"]
+            if "SAFT-VR Mie Epsilon" in all_matrices.keys():
+                epsilon_matrix = all_matrices["SAFT-VR Mie Epsilon"]
+                sigma_matrix = all_matrices["SAFT-VR Mie Sigma"]
+                gamma_matrix = all_matrices["SAFT-VR Mie Gamma"]
 
-            for row in range(len(epsilon_matrix)):
-                for col in range(len(epsilon_matrix)):
+                for row in range(len(epsilon_matrix)):
+                    for col in range(len(epsilon_matrix)):
 
-                    c1 = comp_list[row]
-                    c2 = comp_list[col]
-                    index1 = tp.getcompindex(c1)
-                    index2 = tp.getcompindex(c2)
-                    if row != col:
-                        tp.set_eps_kij(index1, index2, epsilon_matrix[row][col])
-                        tp.set_sigma_lij(index1, index2, sigma_matrix[row][col])
-                        tp.set_lr_gammaij(index1, index2, gamma_matrix[row][col])
+                        c1 = comp_list[row]
+                        c2 = comp_list[col]
+                        index1 = tp.getcompindex(c1)
+                        index2 = tp.getcompindex(c2)
+                        if row != col:
+                            tp.set_eps_kij(index1, index2, epsilon_matrix[row][col])
+                            tp.set_sigma_lij(index1, index2, sigma_matrix[row][col])
+                            tp.set_lr_gammaij(index1, index2, gamma_matrix[row][col])
 
             if pure_fluid_parameters_exist:
                 pure_fluid_parameters = settings["Parameters"][comp_list_name]["Pure fluid parameters"]
@@ -238,7 +291,7 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
                 for comp_id in comp_data["Identities"]:
                     comp_index = tp.getcompindex(comp_id)
 
-                    if None not in pure_fluid_parameters[comp_id]:
+                    if None not in pure_fluid_parameters[comp_id].values():
                         m = pure_fluid_parameters[comp_id]["M"]
                         sigma = pure_fluid_parameters[comp_id]["Sigma"]
                         eps_div_k = pure_fluid_parameters[comp_id]["Epsilon"]
@@ -246,11 +299,3 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
                         lambda_r = pure_fluid_parameters[comp_id]["Lambda r"]
 
                         tp.set_pure_fluid_param(comp_index, m, sigma, eps_div_k, lambda_a, lambda_r)
-
-
-def valid_float_input(input):
-    try:
-        float(input)
-    except ValueError:
-        return False
-    return True

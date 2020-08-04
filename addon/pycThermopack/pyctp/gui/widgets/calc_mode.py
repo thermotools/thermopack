@@ -1,19 +1,20 @@
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy, QLineEdit
-from PyQt5.QtGui import QDoubleValidator
-from PyQt5.QtCore import QLocale
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy, QLineEdit, QLabel
 from PyQt5.uic import loadUi
 
-import numpy as np
 import csv
 import os
 
-from gui.widgets.plot_mode import MolarFractionsErrorMsg
-from gui.utils import valid_float_input, init_thermopack
+import numpy as np
+import pint
 
-from cpa import cpa
-from cubic import cubic
-from pcsaft import pcsaft
-from saftvrmie import saftvrmie
+from gui.widgets.plot_mode import MolarFractionsErrorMsg
+from gui.utils import get_thermopack, init_thermopack, FloatValidator
+
+
+# TODO: ENHETER: Alltid lagre verdier som SI i JSON-fila. Bruke pint-biblioteket til å konvertere til ønskede enheter
+#  Kan egentlig flytte (/også ha) UnitDialog i CalcMode.
+#  Alle inputs som har noe med enheter å gjøre, må endre labels 'Label' => 'Label [Unit]'
+#  value --> Quantity-objekt med unit_from --> Quantity-objekt med unit_to, set i tabell med str(quantity.magnitude)
 
 
 class CalcMode(QMainWindow):
@@ -28,10 +29,15 @@ class CalcMode(QMainWindow):
         self.setWindowTitle("Thermopack")
         self.showMaximized()
 
+        logo = QLabel("Thermopack  |  Calculation Mode  ")
+        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px; "
+                           "border-bottom: 1px solid black;")
+        self.logo_layout.addWidget(logo)
+
         self.component_data = component_data
         self.comp_list_name = component_list_name
         self.settings = settings
-        self.tp = self.get_thermopack()
+        self.tp = get_thermopack(category=self.settings["Model category"])
 
         self.input_stack_indices = {
             "TP": 0,
@@ -43,22 +49,30 @@ class CalcMode(QMainWindow):
         self.units = {
             "Temperature": "K",
             "Pressure": "Pa",
-            "Specific volume": "m^3/mol",
-            "Internal energy": "J/mol",
-            "Enthalpy": "J/mol",
-            "Entropy": "J/(K mol)",
-            "Gibbs energy": "J/mol",
-            "Isobar heat capacity": "J/(K mol)",
-            "Isochor heat capacity": "J/(K mol)",
-            "Speed of sound": "m/s",
-            "Molecular weight": "kg/mol",
-            "Phase fraction": "mol/mol"
+            "Specific volume": "m ** 3 / mol",
+            "Internal energy": "J / mol",
+            "Enthalpy": "J / mol",
+            "Entropy": "J / (K * mol)",
+            "Gibbs energy": "J / mol",
+            "Isobar heat capacity": "J / (K * mol)",
+            "Isochor heat capacity": "J / (K * mol)",
+            "Speed of sound": "m / s",
+            "Molecular weight": "kg / mol",
+            "Phase fraction": "mol / mol"
         }
+
+        # Units registry from pint library
+        self.ureg = pint.UnitRegistry()
 
         self.table_indices = self.get_table_indices()
 
+        # Validator for float inputs
+        self.float_validator = FloatValidator()
+
         self.show_input_params()
         self.init_fractions()
+
+        self.set_validators()
 
         self.flash_mode_selection.currentTextChanged.connect(self.show_input_params)
         self.calculate_btn.clicked.connect(self.calculate)
@@ -71,23 +85,6 @@ class CalcMode(QMainWindow):
         self.uv_t_initial_guess.stateChanged.connect(self.toggle_initial_guess)
         self.uv_p_initial_guess.stateChanged.connect(self.toggle_initial_guess)
 
-    def get_thermopack(self):
-        """
-        Returns the correct type of thermopack instance depending on the chosen model
-        :return: Thermopack instance
-        """
-        category = self.settings["Model category"]
-        if category == "Cubic":
-            return cubic()
-        elif category == "CPA":
-            return cpa()
-        elif category == "PC-SAFT":
-            return pcsaft()
-        elif category == "SAFT-VR Mie":
-            return saftvrmie()
-        else:
-            return None
-
     def show_input_params(self, flash_mode="TP"):
         """
         Shows the correct input fields, depending on type of flash chosen
@@ -95,6 +92,27 @@ class CalcMode(QMainWindow):
         """
         index = self.input_stack_indices[flash_mode]
         self.flash_input_stack.setCurrentIndex(index)
+
+    def set_validators(self):
+        """
+        Sets a float validator to all input fields
+        """
+        self.tp_t_input.setValidator(self.float_validator)
+        self.tp_p_input.setValidator(self.float_validator)
+
+        self.ps_p_input.setValidator(self.float_validator)
+        self.ps_s_input.setValidator(self.float_validator)
+        self.ps_t_guess.setValidator(self.float_validator)
+
+        self.ph_p_input.setValidator(self.float_validator)
+        self.ph_h_input.setValidator(self.float_validator)
+        self.ph_tol.setValidator(self.float_validator)
+        self.ph_t_guess.setValidator(self.float_validator)
+
+        self.uv_u_input.setValidator(self.float_validator)
+        self.uv_v_input.setValidator(self.float_validator)
+        self.uv_t_guess.setValidator(self.float_validator)
+        self.uv_p_guess.setValidator(self.float_validator)
 
     def get_table_indices(self):
         """
@@ -119,16 +137,21 @@ class CalcMode(QMainWindow):
             row = self.table_indices[property]
             self.table.setItem(row, 0, QTableWidgetItem(unit))
 
-    def set_value(self, property, col_name, value):
+    def set_table_value(self, property, col_name, base_unit, to_unit, value):
         """
         Set-function for setting a value to the table
         :param property: Table row name
         :param col_name: Table column name
         :param value: Value to be stored in the desired cell
         """
+
+        quantity = value * self.ureg(base_unit)
+        quantity.ito(to_unit)
+        converted_value = quantity.magnitude
+
         row = self.table_indices[property]
         col = self.table_indices[col_name]
-        self.table.setItem(row, col, QTableWidgetItem(str(value)))
+        self.table.setItem(row, col, QTableWidgetItem(str(converted_value)))
 
     def display_settings(self):
         """
@@ -154,14 +177,10 @@ class CalcMode(QMainWindow):
         components = self.component_data["Names"]
         self.component_data["Fractions"] = [0.00] * len(components)
 
-        float_validator = QDoubleValidator()
-        locale = QLocale(QLocale.English)
-        float_validator.setLocale(locale)
-
         for i in range(len(components)):
             component = components[i]
             line_edit = QLineEdit()
-            line_edit.setValidator(float_validator)
+            line_edit.setValidator(self.float_validator)
             line_edit.setText("0.00")
             line_edit.setObjectName(component)
             line_edit.editingFinished.connect(lambda comp=component: self.change_fraction(comp))
@@ -180,15 +199,9 @@ class CalcMode(QMainWindow):
         Changes the fraction of the given component
         :param comp_name: Name of component of which the molar fraction is changed
         """
-        line_edit = self.molar_fractions_box.findChild(QLineEdit, comp_name)
-        mol_frac = line_edit.text().replace(",", ".")
+        frac_line_edit = self.molar_fractions_box.findChild(QLineEdit, comp_name)
         index = self.component_data["Names"].index(comp_name)
-
-        if valid_float_input(mol_frac):
-            self.component_data["Fractions"][index] = float(mol_frac)
-            line_edit.setText(mol_frac)
-        else:
-            line_edit.setText(str(self.component_data["Fractions"][index]))
+        self.component_data["Fractions"][index] = float(frac_line_edit.text())
 
     def toggle_initial_guess(self):
         self.ps_guess_frame.setEnabled(self.ps_initial_guess.isChecked())
@@ -207,58 +220,58 @@ class CalcMode(QMainWindow):
         fractions = np.array(self.component_data["Fractions"])
         mole_fraction_sum = np.sum(fractions)
 
-        if abs(mole_fraction_sum - 1.00) > 0.00000001:
-            # TODO: Q: Dette er litt tricky med floating point numbers. Hvor nøyaktig må det være?
+        if abs(mole_fraction_sum - 1.00) > 1e-8:
             msg = MolarFractionsErrorMsg(mole_fraction_sum)
             msg.exec_()
             return
+        else:
+            # Setting the last mol fraction to 1 - the rest of them, to ensure that the total sum is exactly 1
+            fractions[-1] = 1 - np.sum(fractions[:-1])
 
         init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
 
         flash_mode = self.flash_mode_selection.currentText()
-        self.tp.set_ph_tolerance(1.0e-8)  # Skal denne kunne endres?
-
-        # TODO: Q: Trenger en måte å handle errors uten at hele programmet krasjer
+        self.tp.set_ph_tolerance(float(self.ph_tol.text()))
 
         if flash_mode == "TP":
-            T = float(self.tp_t_input.valueFromText(self.tp_t_input.cleanText()))
-            P = float(self.tp_p_input.valueFromText(self.tp_p_input.cleanText()))
+            T = float(self.tp_t_input.text())
+            P = float(self.tp_p_input.text())
 
             x, y, beta_vap, beta_liq, phase = self.tp.two_phase_tpflash(T, P, fractions)
 
         elif flash_mode == "PS":
-            P = float(self.ps_p_input.valueFromText(self.ps_p_input.cleanText()))
-            S = float(self.ps_s_input.valueFromText(self.ps_s_input.cleanText()))
+            P = float(self.ps_p_input.text())
+            S = float(self.ps_s_input.text())
 
             if self.ps_initial_guess.isChecked():
-                T = float(self.ps_t_guess.valueFromText(self.ps_t_guess.cleanText()))
+                T = float(self.ps_t_guess.text())
             else:
                 T = None
 
             T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_psflash(press=P, z=fractions, entropy=S, temp=T)
 
         elif flash_mode == "PH":
-            P = float(self.ph_p_input.valueFromText(self.ph_p_input.cleanText()))
-            H = float(self.ph_h_input.valueFromText(self.ph_h_input.cleanText()))
+            P = float(self.ph_p_input.text())
+            H = float(self.ph_h_input.text())
 
             if self.ph_initial_guess.isChecked():
-                T = float(self.ph_t_guess.valueFromText(self.ph_t_guess.cleanText()))
+                T = float(self.ph_t_guess.text())
             else:
                 T = None
 
             T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_phflash(press=P, z=fractions, enthalpy=H, temp=T)
 
         elif flash_mode == "UV":
-            U = float(self.uv_u_input.valueFromText(self.uv_u_input.cleanText()))
-            V = float(self.uv_v_input.valueFromText(self.uv_v_input.cleanText()))
+            U = float(self.uv_u_input.text())
+            V = float(self.uv_v_input.text())
 
             if self.uv_t_initial_guess.isChecked():
-                T = float(self.uv_t_guess.valueFromText(self.uv_t_guess.cleanText()))
+                T = float(self.uv_t_guess.text())
             else:
                 T = None
 
             if self.uv_p_initial_guess.isChecked():
-                P = float(self.uv_p_guess.valueFromText(self.uv_p_guess.cleanText()))
+                P = float(self.uv_p_guess.text())
             else:
                 P = None
 
@@ -277,40 +290,46 @@ class CalcMode(QMainWindow):
         elif phase_type == "VAPOR":
             is_vap = True
 
-        # TODO: Q: Hva betyr de andre i_phase-ene MINIMUM_GIBBS, SINGLE, SOLID, FAKE?
+        # TODO: SINGLE => Endre kolonnenavn fra liq og vap til Single (liq og vap er jo basically det samme)
+        #  Sette samme verdi i begge kolonner
 
-        # TODO: Q: phase: Liq = 1, Vap = 2. Stemmer dette alltid?
+        # TODO: MINIMUM_GIBBS => Endre kolonnenavn til Minimum Gibbs. Sett samme verdi i begge kolonner
+
+        # TODO: FAKE / SOLID => Popup med melding om at resultatet ikke er kompatibelt med GUI-en enda
+
         component_indices = [self.tp.getcompindex(comp) for comp in self.component_data["Identities"]]
         molecular_weights = [self.tp.compmoleweight(index) for index in component_indices]
+
+        # TODO: Ikke skriv phase=1 eller phase=2. Ha dem som indekser LIQ = 1, VAP = 2
 
         if is_liq:
             V_liq, dVdT_liq, dVdn_liq = self.tp.specific_volume(T, P, x, phase=1, dvdt=True, dvdn=True)
             H_liq, dHdT_liq, dHdP_liq, dHdn_liq = self.tp.enthalpy(T, P, x, phase=1, dhdt=True, dhdp=True, dhdn=True)
             S_liq, dSdT_liq, dSdP_liq, dSdn_liq = self.tp.entropy(T, P, x, phase=1, dsdt=True, dsdp=True, dsdn=True)
 
-            # TODO: Q: Hva skal phase være her? Får veldig høyt tall for vann (3632 mot 1840)
             sos_liq = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=1)
 
             U_liq = H_liq - P * V_liq
             G_liq = H_liq - T * S_liq
 
             Cp_liq = dHdT_liq
-            Cv_liq = -1  # TODO: Q: Hvordan regne ut denne?
+            # TODO: Calculate isochoric heat capacity. Default value is now -1
+            Cv_liq = -1
 
             mol_weight_liq = sum([x[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
-            self.set_value("Temperature", "Liq", T)
-            self.set_value("Pressure", "Liq", P)
-            self.set_value("Specific volume", "Liq", V_liq)
-            self.set_value("Internal energy", "Liq", U_liq)
-            self.set_value("Enthalpy", "Liq", H_liq)
-            self.set_value("Entropy", "Liq", S_liq)
-            self.set_value("Gibbs energy", "Liq", G_liq)
-            self.set_value("Isobar heat capacity", "Liq", Cp_liq)
-            self.set_value("Isochor heat capacity", "Liq", Cv_liq)
-            self.set_value("Speed of sound", "Liq", sos_liq)
-            self.set_value("Phase fraction", "Liq", beta_liq)
-            self.set_value("Molecular weight", "Liq", mol_weight_liq)
+            self.set_table_value("Temperature", "Liq", "degK", "degK", T)
+            self.set_table_value("Pressure", "Liq", "Pa", "Pa", P)
+            self.set_table_value("Specific volume", "Liq", "m**3 / mol", "m**3 / mol", V_liq)
+            self.set_table_value("Internal energy", "Liq", "J / mol", "J / mol", U_liq)
+            self.set_table_value("Enthalpy", "Liq", "J / mol", "J / mol", H_liq)
+            self.set_table_value("Entropy", "Liq", "J / (K * mol)", "J / (K * mol)", S_liq)
+            self.set_table_value("Gibbs energy", "Liq", "J / mol", "J / mol", G_liq)
+            self.set_table_value("Isobar heat capacity", "Liq", "J / (K * mol)", "J / (K * mol)", Cp_liq)
+            self.set_table_value("Isochor heat capacity", "Liq", "J / (K * mol)", "J / (K * mol)", Cv_liq)
+            self.set_table_value("Speed of sound", "Liq", "m / s", "m / s", sos_liq)
+            self.set_table_value("Phase fraction", "Liq", "mol / mol", "mol / mol", beta_liq)
+            self.set_table_value("Molecular weight", "Liq", "kg / mol", "kg / mol", mol_weight_liq)
 
         if is_vap:
             V_vap, dVdT_vap, dVdP_vap, dVdn_vap = self.tp.specific_volume(T, P, x, phase=2, dvdt=True, dvdp=True,
@@ -327,18 +346,18 @@ class CalcMode(QMainWindow):
 
             mol_weight_vap = sum([y[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
-            self.set_value("Temperature", "Vap", T)
-            self.set_value("Pressure", "Vap", P)
-            self.set_value("Specific volume", "Vap", V_vap)
-            self.set_value("Internal energy", "Vap", U_vap)
-            self.set_value("Enthalpy", "Vap", H_vap)
-            self.set_value("Entropy", "Vap", S_vap)
-            self.set_value("Gibbs energy", "Vap", G_vap)
-            self.set_value("Isobar heat capacity", "Vap", Cp_vap)
-            self.set_value("Isochor heat capacity", "Vap", Cv_vap)
-            self.set_value("Speed of sound", "Vap", sos_vap)
-            self.set_value("Phase fraction", "Vap", beta_vap)
-            self.set_value("Molecular weight", "Vap", mol_weight_vap)
+            self.set_table_value("Temperature", "Vap", "degK", "degK", T)
+            self.set_table_value("Pressure", "Vap", "Pa", "Pa", P)
+            self.set_table_value("Specific volume", "Vap", "m**3 / mol", "m**3 / mol", V_vap)
+            self.set_table_value("Internal energy", "Vap", "J / mol", "J / mol", U_vap)
+            self.set_table_value("Enthalpy", "Vap", "J / mol", "J / mol", H_vap)
+            self.set_table_value("Entropy", "Vap", "J / (K * mol)", "J / (K * mol)", S_vap)
+            self.set_table_value("Gibbs energy", "Vap", "J / mol", "J / mol", G_vap)
+            self.set_table_value("Isobar heat capacity", "Vap", "J / (K * mol)", "J / (K * mol)", Cp_vap)
+            self.set_table_value("Isochor heat capacity", "Vap", "J / (K * mol)", "J / (K * mol)", Cv_vap)
+            self.set_table_value("Speed of sound", "Vap", "m / s", "m / s", sos_vap)
+            self.set_table_value("Phase fraction", "Vap", "mol / mol", "mol / mol", beta_vap)
+            self.set_table_value("Molecular weight", "Vap", "kg / mol", "kg / mol", mol_weight_vap)
 
         if is_liq and is_vap:
             V_overall = V_vap * beta_vap + V_liq * beta_liq
@@ -377,19 +396,18 @@ class CalcMode(QMainWindow):
             mol_weight_overall = mol_weight_vap
 
         if is_liq or is_vap:
-            # TODO: Q: T og P er vel alltid fast siden det er snakk om likevekt?
-            self.set_value("Temperature", "Overall", T)
-            self.set_value("Pressure", "Overall", P)
-            self.set_value("Specific volume", "Overall", V_overall)
-            self.set_value("Internal energy", "Overall", U_overall)
-            self.set_value("Enthalpy", "Overall", H_overall)
-            self.set_value("Entropy", "Overall", S_overall)
-            self.set_value("Gibbs energy", "Overall", G_overall)
-            self.set_value("Isobar heat capacity", "Overall", Cp_overall)
-            self.set_value("Isochor heat capacity", "Overall", Cv_overall)
-            self.set_value("Speed of sound", "Overall", sos_overall)
-            self.set_value("Phase fraction", "Overall", frac_overall)
-            self.set_value("Molecular weight", "Overall", mol_weight_overall)
+            self.set_table_value("Temperature", "Overall", "degK", "degK", T)
+            self.set_table_value("Pressure", "Overall", "Pa", "Pa", P)
+            self.set_table_value("Specific volume", "Overall", "m**3 / mol", "m**3 / mol", V_overall)
+            self.set_table_value("Internal energy", "Overall", "J / mol", "J / mol", U_overall)
+            self.set_table_value("Enthalpy", "Overall", "J / mol", "J / mol", H_overall)
+            self.set_table_value("Entropy", "Overall", "J / (K * mol)", "J / (K * mol)", S_overall)
+            self.set_table_value("Gibbs energy", "Overall", "J / mol", "J / mol", G_overall)
+            self.set_table_value("Isobar heat capacity", "Overall", "J / (K * mol)", "J / (K * mol)", Cp_overall)
+            self.set_table_value("Isochor heat capacity", "Overall", "J / (K * mol)", "J / (K * mol)", Cv_overall)
+            self.set_table_value("Speed of sound", "Overall", "m / s", "m / s", sos_overall)
+            self.set_table_value("Phase fraction", "Overall", "mol / mol", "mol / mol", frac_overall)
+            self.set_table_value("Molecular weight", "Overall", "kg / mol", "kg / mol", mol_weight_overall)
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()

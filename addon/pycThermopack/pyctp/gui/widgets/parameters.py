@@ -1,14 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QRadioButton, QButtonGroup
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
-from PyQt5.QtGui import QDoubleValidator
 
-from cubic import cubic
-from cpa import cpa
-from pcsaft import pcsaft
-from saftvrmie import saftvrmie
-
-from gui.utils import get_comp_id, valid_float_input
+from gui.utils import get_thermopack, init_thermopack, get_comp_id, FloatValidator
 
 import numpy as np
 
@@ -28,47 +22,6 @@ class ParametersWidget(QWidget):
 
         self.settings = data["Model setups"][settings_name]
         self.component_lists = data["Component lists"]
-
-    def get_thermopack(self):
-        """
-        :return Thermopack instance depending on model category
-        """
-        category = self.settings["Model category"]
-        if category == "Cubic":
-            return cubic()
-        elif category == "CPA":
-            return cpa()
-        elif category == "PC-SAFT":
-            return pcsaft()
-        elif category == "SAFT-VR Mie":
-            return saftvrmie()
-        else:
-            return None
-
-    def init_thermopack(self, list_name):
-        """
-        Initiates thermopack with the selected model options and interaction parameters.
-        This must be run before coefficients are calculated
-        """
-        comps = ",".join(self.component_lists[list_name]["Identities"])
-        ref = self.settings["Model options"]["Reference"]
-
-        if isinstance(self.thermopack, cubic) or isinstance(self.thermopack, cpa):
-            eos = self.settings["EOS"]
-            mixing = self.settings["Model options"]["Mixing rule"]
-            alpha = self.settings["Model options"]["Alpha correlation"]
-
-            if mixing == "HV1":
-                # To give thermopack the correct parameter
-                mixing = "HV"
-
-            self.thermopack.init(comps, eos, mixing=mixing, alpha=alpha, parameter_reference=ref)
-
-        elif isinstance(self.thermopack, pcsaft):
-            self.thermopack.init(comps, parameter_reference=ref)
-
-        elif isinstance(self.thermopack, saftvrmie):
-            self.thermopack.init(comps, parameter_reference=ref)
 
     def init_composition_list(self):
         """
@@ -117,7 +70,8 @@ class ParametersWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name in ["VDW K", "PC-SAFT K", "SAFT-VR Mie Epsilon", "SAFT-VR Mie Sigma", "SAFT-VR Mie Gamma"]:
+                if table_name in ["VDW K", "PC-SAFT K", "SAFT-VR Mie Epsilon", "SAFT-VR Mie Sigma",
+                                  "SAFT-VR Mie Gamma"]:
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -150,7 +104,7 @@ class VdWParametersWidget(ParametersWidget):
         :return:
         """
         self.settings = data["Model setups"][settings_name]
-        self.thermopack = self.get_thermopack()
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
 
         list_names = []
         for i in range(self.composition_list.count()):
@@ -184,7 +138,7 @@ class VdWParametersWidget(ParametersWidget):
         :param list_name: str, Name of component list
         :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
         """
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
         if "VDW K" in coeff_matrices.keys() and not reset:
@@ -270,7 +224,7 @@ class HV1ParametersWidget(ParametersWidget):
         :param settings_name: Name of the current model setup
         """
         self.settings = data["Model setups"][settings_name]
-        self.thermopack = self.get_thermopack()
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
 
         list_names = []
         for i in range(self.composition_list.count()):
@@ -318,7 +272,7 @@ class HV1ParametersWidget(ParametersWidget):
         b_matrix_data = np.zeros(shape=(size, size))
         c_matrix_data = np.zeros(shape=(size, size))
 
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         for row in range(size - 1):
             for col in range(row + 1, size):
@@ -412,7 +366,7 @@ class HV2ParametersWidget(ParametersWidget):
         :return:
         """
         self.settings = data["Model setups"][settings_name]
-        self.thermopack = self.get_thermopack()
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
 
         list_names = []
         for i in range(self.composition_list.count()):
@@ -460,7 +414,7 @@ class HV2ParametersWidget(ParametersWidget):
         b_matrix_data = np.zeros(shape=(size, size))
         c_matrix_data = np.zeros(shape=(size, size))
 
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         for row in range(size - 1):
             for col in range(row + 1, size):
@@ -549,7 +503,7 @@ class PCSAFTParametersWidget(VdWParametersWidget):
         :return:
         """
         self.settings = data["Model setups"][settings_name]
-        self.thermopack = self.get_thermopack()
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
 
         list_names = []
         for i in range(self.composition_list.count()):
@@ -583,7 +537,7 @@ class PCSAFTParametersWidget(VdWParametersWidget):
         :param list_name: str, Name of component list
         :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
         """
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
         if "PC-SAFT K" in coeff_matrices.keys() and not reset:
@@ -630,22 +584,14 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         self.pure_param_lambda_r_label.setText("\u03BB r:")
 
         # Validators for input
-        float_validator = QDoubleValidator()
-        # Set to English to allow dot as decimal point
-        locale = QtCore.QLocale(QtCore.QLocale.English)
-        float_validator.setLocale(locale)
+        self.float_validator = FloatValidator()
+        self.set_validators()
 
-        self.pure_param_m_edit.setValidator(float_validator)
-        self.pure_param_sigma_edit.setValidator(float_validator)
-        self.pure_param_epsilon_edit.setValidator(float_validator)
-        self.pure_param_lambda_a_edit.setValidator(float_validator)
-        self.pure_param_lambda_r_edit.setValidator(float_validator)
-
-        self.pure_param_m_edit.editingFinished.connect(self.change_pure_param_m)
-        self.pure_param_sigma_edit.editingFinished.connect(self.change_pure_param_sigma)
-        self.pure_param_epsilon_edit.editingFinished.connect(self.change_pure_param_epsilon)
-        self.pure_param_lambda_a_edit.editingFinished.connect(self.change_pure_param_lambda_a)
-        self.pure_param_lambda_r_edit.editingFinished.connect(self.change_pure_param_lambda_r)
+        self.pure_param_m_edit.editingFinished.connect(self.save_pure_fluid_params)
+        self.pure_param_sigma_edit.editingFinished.connect(self.save_pure_fluid_params)
+        self.pure_param_epsilon_edit.editingFinished.connect(self.save_pure_fluid_params)
+        self.pure_param_lambda_a_edit.editingFinished.connect(self.save_pure_fluid_params)
+        self.pure_param_lambda_r_edit.editingFinished.connect(self.save_pure_fluid_params)
 
         self.component_btngroup = QButtonGroup()
         self.component_btngroup.buttonClicked.connect(self.show_component_pure_params)
@@ -663,7 +609,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         :return:
         """
         self.settings = data["Model setups"][settings_name]
-        self.thermopack = self.get_thermopack()
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
 
         list_names = []
         for i in range(self.composition_list.count()):
@@ -671,7 +617,11 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
         for list_name in self.component_lists.keys():
 
-            if list_name not in self.settings["Parameters"].keys():
+            if list_name in self.settings["Parameters"].keys():
+                if "Pure fluid parameters" not in self.settings["Parameters"][list_name].keys():
+                    self.settings["Parameters"][list_name]["Pure fluid parameters"] = {}
+
+            else:
                 self.settings["Parameters"][list_name] = {
                     "Coefficient matrices": {},
                     "Pure fluid parameters": {}
@@ -701,108 +651,15 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
         self.init_composition_list()
 
-    def change_pure_param_m(self):
+    def set_validators(self):
         """
-        Validates input and calls save function
+        Sets a validator for input fields to ensure a valid float input
         """
-        self.pure_param_m_edit.blockSignals(True)
-        self.pure_param_m_edit.clearFocus()
-        self.pure_param_m_edit.blockSignals(False)
-
-        if self.component_btngroup.checkedButton():
-
-            m = self.pure_param_m_edit.text().replace(",", ".")
-            if valid_float_input(m):
-                self.pure_param_m_edit.setText(m)
-                self.save_pure_fluid_params()
-            else:
-                self.pure_param_m_edit.undo()
-
-        else:
-            return
-
-    def change_pure_param_sigma(self):
-        """
-        Validates input and calls save function
-        """
-        self.pure_param_sigma_edit.blockSignals(True)
-        self.pure_param_sigma_edit.clearFocus()
-        self.pure_param_sigma_edit.blockSignals(False)
-
-        if self.component_btngroup.checkedButton():
-
-            sigma = self.pure_param_sigma_edit.text().replace(",", ".")
-            if valid_float_input(sigma):
-                self.pure_param_sigma_edit.setText(sigma)
-                self.save_pure_fluid_params()
-            else:
-                self.pure_param_sigma_edit.undo()
-
-        else:
-            return
-
-    def change_pure_param_epsilon(self):
-        """
-        Validates input and calls save function
-        """
-        self.pure_param_epsilon_edit.blockSignals(True)
-        self.pure_param_epsilon_edit.clearFocus()
-        self.pure_param_epsilon_edit.blockSignals(False)
-
-        if self.component_btngroup.checkedButton():
-
-            epsilon = self.pure_param_epsilon_edit.text().replace(",", ".")
-            if valid_float_input(epsilon):
-                self.pure_param_epsilon_edit.setText(epsilon)
-                self.save_pure_fluid_params()
-            else:
-                self.pure_param_epsilon_edit.undo()
-
-            self.save_pure_fluid_params()
-        else:
-            return
-
-    def change_pure_param_lambda_a(self):
-        """
-        Validates input and calls save function
-        """
-        self.pure_param_lambda_a_edit.blockSignals(True)
-        self.pure_param_lambda_a_edit.clearFocus()
-        self.pure_param_lambda_a_edit.blockSignals(False)
-
-        if self.component_btngroup.checkedButton():
-
-            lambda_a = self.pure_param_lambda_a_edit.text().replace(",", ".")
-            if valid_float_input(lambda_a):
-                self.pure_param_lambda_a_edit.setText(lambda_a)
-                self.save_pure_fluid_params()
-            else:
-                self.pure_param_lambda_a_edit.undo()
-
-            self.save_pure_fluid_params()
-        else:
-            return
-
-    def change_pure_param_lambda_r(self):
-        """
-        Validates input and calls save function
-        """
-        self.pure_param_lambda_r_edit.blockSignals(True)
-        self.pure_param_lambda_r_edit.clearFocus()
-        self.pure_param_lambda_r_edit.blockSignals(False)
-
-        if self.component_btngroup.checkedButton():
-
-            lambda_r = self.pure_param_lambda_r_edit.text().replace(",", ".")
-            if valid_float_input(lambda_r):
-                self.pure_param_lambda_r_edit.setText(lambda_r)
-                self.save_pure_fluid_params()
-            else:
-                self.pure_param_lambda_r_edit.undo()
-
-            self.save_pure_fluid_params()
-        else:
-            return
+        self.pure_param_m_edit.setValidator(self.float_validator)
+        self.pure_param_sigma_edit.setValidator(self.float_validator)
+        self.pure_param_epsilon_edit.setValidator(self.float_validator)
+        self.pure_param_lambda_a_edit.setValidator(self.float_validator)
+        self.pure_param_lambda_r_edit.setValidator(self.float_validator)
 
     def save_pure_fluid_params(self):
         """
@@ -811,35 +668,11 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         if not self.list_name or not self.component_id:
             return
 
-        try:
-            m = float(self.pure_param_m_edit.text())
-        except ValueError:
-            self.pure_param_m_edit.undo()
-            return
-
-        try:
-            sigma = float(self.pure_param_sigma_edit.text())
-        except ValueError:
-            self.pure_param_sigma_edit.undo()
-            return
-
-        try:
-            epsilon = float(self.pure_param_epsilon_edit.text())
-        except ValueError:
-            self.pure_param_epsilon_edit.undo()
-            return
-
-        try:
-            lambda_a = float(self.pure_param_lambda_a_edit.text())
-        except ValueError:
-            self.pure_param_lambda_a_edit.undo()
-            return
-
-        try:
-            lambda_r = float(self.pure_param_lambda_r_edit.text())
-        except ValueError:
-            self.pure_param_lambda_r_edit.undo()
-            return
+        m = float(self.pure_param_m_edit.text())
+        sigma = float(self.pure_param_sigma_edit.text())
+        epsilon = float(self.pure_param_epsilon_edit.text())
+        lambda_a = float(self.pure_param_lambda_a_edit.text())
+        lambda_r = float(self.pure_param_lambda_r_edit.text())
 
         fluid_params = self.settings["Parameters"][self.list_name]["Pure fluid parameters"][self.component_id]
         fluid_params["M"] = m
@@ -858,7 +691,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
         self.pure_params_frame.show()
 
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         self.component_id = get_comp_id(self.component_lists[list_name], comp_name)
         comp_index = self.thermopack.getcompindex(self.component_id)
@@ -882,7 +715,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
         sigma_matrix_data = np.zeros(shape=(size, size))
         gamma_matrix_data = np.zeros(shape=(size, size))
 
-        self.init_thermopack(list_name)
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
 
         for row in range(size - 1):
             for col in range(row + 1, size):

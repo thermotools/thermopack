@@ -7,6 +7,7 @@ from gui.utils import get_unique_name, get_fluids
 
 
 # TODO: Mulighet for å slette en lagret komposisjon
+# TODO: Resize table to fit contents
 
 
 class ComponentSelectWidget(QWidget):

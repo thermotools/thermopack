@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QMessageBox, QCheckBox, QLineEdit, QLabel, \
     QFileDialog
-from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtCore import QLocale
 from PyQt5.uic import loadUi
 
@@ -13,14 +12,11 @@ from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYO
 import numpy as np
 import csv
 import os
-from gui.utils import valid_float_input, init_thermopack
+from gui.utils import get_thermopack, init_thermopack, FloatValidator
 
-from cubic import cubic
-from cpa import cpa
-from pcsaft import pcsaft
-from saftvrmie import saftvrmie
 
 # TODO: Handle enheter
+# TODO: Lage Toolbar
 
 
 class PlotMode(QMainWindow):
@@ -64,7 +60,7 @@ class PlotMode(QMainWindow):
         self.init_fractions()
 
         # Initiating thermopack
-        self.tp = self.get_thermopack()
+        self.tp = get_thermopack(category=self.settings["Model category"])
 
         # Init function depends on settings
         init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
@@ -176,20 +172,6 @@ class PlotMode(QMainWindow):
             }
         }
 
-    def get_thermopack(self):
-        """
-        :return Thermopack instance depending on model category
-        """
-        category = self.settings["Model category"]
-        if category == "Cubic":
-            return cubic()
-        elif category == "CPA":
-            return cpa()
-        elif category == "PC-SAFT":
-            return pcsaft()
-        elif category == "SAFT-VR Mie":
-            return saftvrmie()
-
     def init_plot_modes(self):
         """
         Disables some plot options if there are too few or too many components
@@ -249,9 +231,7 @@ class PlotMode(QMainWindow):
         components = self.component_data["Names"]
         self.component_data["Fractions"] = [0.00] * len(components)
 
-        float_validator = QDoubleValidator()
-        locale = QLocale(QLocale.English)
-        float_validator.setLocale(locale)
+        float_validator = FloatValidator()
 
         for i in range(len(components)):
             component = components[i]
@@ -372,11 +352,7 @@ class PlotMode(QMainWindow):
         mol_frac = line_edit.text().replace(",", ".")
         index = self.component_data["Names"].index(comp_name)
 
-        if valid_float_input(mol_frac):
-            self.component_data["Fractions"][index] = float(mol_frac)
-            line_edit.setText(mol_frac)
-        else:
-            line_edit.setText(str(self.component_data["Fractions"][index]))
+        self.component_data["Fractions"][index] = float(mol_frac)
 
     def toggle_redraw(self, is_checked):
         self.redraw = is_checked
@@ -419,10 +395,13 @@ class PlotMode(QMainWindow):
         if plot_type in ["Phase envelope", "Pressure density"]:
             mole_fraction_sum = np.sum(fractions)
 
-            if mole_fraction_sum != 1.00:
+            if abs(mole_fraction_sum - 1.00) > 1e-8:
                 msg = MolarFractionsErrorMsg(mole_fraction_sum)
                 msg.exec_()
                 return
+            else:
+                # Setting the last mol fraction to 1 - the rest of them, to ensure that the total sum is exactly 1
+                fractions[-1] = 1 - np.sum(fractions[:-1])
 
         if plot_type == "Phase envelope":
             self.canvas.plot_envelope(self.tp, prim_vars, fractions)

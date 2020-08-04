@@ -108,7 +108,6 @@ class MplCanvas(FigureCanvasQTAgg):
         H = np.array([tp.enthalpy_tv(T[i], V[i], fractions) for i in range(len(T))])
         S = np.array([tp.entropy_tv(T[i], V[i], fractions) for i in range(len(T))])
 
-        # TODO: Er det en bedre måte å sette disse på? Hvis det krasjer, må det handles på et vis
         global H_list
         global T_list
         global S_list
@@ -537,6 +536,10 @@ class MplCanvas(FigureCanvasQTAgg):
         :param fractions: List of molar fractions
         """
 
+        # TODO: Velg en temperatur (isoterm). Velg en V-range: [~0, 0.10 * V_crit]
+        #  P = pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None)
+        #  Plot P (y-akse) mot rho(=1/V) (x-akse)
+
         calc_settings = self.plotting_preferences["Pressure density"]["TPV"]
         crit_settings = self.plotting_preferences["Pressure density"]["Critical"]
         plot_settings = self.plotting_preferences["Pressure density"]["Plotting"]
@@ -555,8 +558,6 @@ class MplCanvas(FigureCanvasQTAgg):
                                            minimum_temperature=T_min, step_size=step_size, calc_v=True)
         T_c, V_c, P_c = tp.critical(n=fractions, temp=crit_t_guess, v=crit_v_guess, tol=crit_tol)
 
-        # TODO: Q: Hvordan velge verdier for rho og P?
-        # TODO: Q: Isolinjer?
         rho = 1 / V
         rho_c = 1 / V_c
 
@@ -567,8 +568,8 @@ class MplCanvas(FigureCanvasQTAgg):
         xlabel = plot_settings["x label"]
         ylabel = plot_settings["y label"]
 
-        self.axes.plot(P, rho, color=line_color, label="Pressure density")
-        self.axes.scatter([P_c], [rho_c], color=point_color, label="Critical point")
+        self.axes.plot(rho, P, color=line_color, label="Pressure density")
+        self.axes.scatter([rho_c], [P_c], color=point_color, label="Critical point")
 
         self.axes.set_title(title)
         self.axes.grid(grid_on)

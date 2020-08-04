@@ -16,6 +16,10 @@ from gui.utils import get_json_data, save_json_data
 
 # TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 
+# TODO: Notere i koden der funksjoner kalles som burde raise Exception hvis noe går galt så det kan handles.
+#  Kan også displayes for bruker i en ErrorMsgBox f eks
+
+# TODO: Endre litt på mappestruktur i prosjektet, så jeg ikke trenger å endre cubic.py, thermo.py, cpa.py, ...
 
 class ThermopackGUIApp(QMainWindow):
     """
@@ -350,6 +354,5 @@ if __name__ == "__main__":
     QTimer.singleShot(500, splash.close)
 
     win = ThermopackGUIApp()
-    # win.open_file("json_structure.json")
     win.show()
     sys.exit(app.exec_())

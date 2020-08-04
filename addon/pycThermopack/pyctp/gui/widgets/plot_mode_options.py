@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QDialog, QColorDialog
 from PyQt5.uic import loadUi
-from PyQt5.QtGui import QDoubleValidator, QIntValidator
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtCore import QLocale
 
-from gui.utils import valid_float_input
+from gui.utils import FloatValidator
 
 
 class PhaseEnvelopeOptionsWindow(QDialog):
@@ -52,10 +52,7 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.setFocus()
 
         # Validators for input
-        float_validator = QDoubleValidator()
-        # Set to English to allow dot as decimal point
-        locale = QLocale(QLocale.English)
-        float_validator.setLocale(locale)
+        float_validator = FloatValidator()
         int_validator = QIntValidator()
 
         self.p_0.setValidator(float_validator)
@@ -75,20 +72,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.n_max.setValidator(int_validator)
 
         # Action handling
-        self.p_0.editingFinished.connect(self.set_p_0)
-        self.p_max.editingFinished.connect(self.set_p_max)
-        self.t_min.editingFinished.connect(self.set_t_min)
-        self.step_size.editingFinished.connect(self.set_step_size)
-
-        self.crit_t.editingFinished.connect(self.set_crit_t)
-        self.crit_v.editingFinished.connect(self.set_crit_v)
-        self.crit_tol.editingFinished.connect(self.set_crit_tol)
-
-        self.iso_p_min.editingFinished.connect(self.set_iso_p_min)
-        self.iso_p_max.editingFinished.connect(self.set_iso_p_max)
-        self.iso_t_min.editingFinished.connect(self.set_iso_t_min)
-        self.iso_t_max.editingFinished.connect(self.set_iso_t_max)
-
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
         self.point_color_tool_btn.clicked.connect(self.set_point_color)
         self.isopleth_1_color_tool_btn.clicked.connect(self.set_isopleth_1_color)
@@ -97,83 +80,6 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.save_btn.clicked.connect(self.save)
         self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
-
-    def set_p_0(self):
-        p_0 = self.p_0.text().replace(",", ".")
-        if valid_float_input(p_0):
-            self.p_0.setText(p_0)
-        else:
-            self.p_0.undo()
-
-    def set_p_max(self):
-        p_max = self.p_max.text().replace(",", ".")
-        if valid_float_input(p_max):
-            self.p_max.setText(p_max)
-        else:
-            self.p_max.undo()
-
-    def set_t_min(self):
-        t_min = self.t_min.text().replace(",", ".")
-        if valid_float_input(t_min):
-            self.t_min.setText(t_min)
-        else:
-            self.t_min.undo()
-
-    def set_step_size(self):
-        step_size = self.step_size.text().replace(",", ".")
-        if valid_float_input(step_size):
-            self.step_size.setText(step_size)
-        else:
-            self.step_size.undo()
-
-    def set_crit_t(self):
-        crit_t = self.crit_t.text().replace(",", ".")
-        if valid_float_input(crit_t):
-            self.crit_t.setText(crit_t)
-        else:
-            self.crit_t.undo()
-
-    def set_crit_v(self):
-        crit_v = self.crit_v.text().replace(",", ".")
-        if valid_float_input(crit_v):
-            self.crit_v.setText(crit_v)
-        else:
-            self.crit_v.undo()
-
-    def set_crit_tol(self):
-        crit_tol = self.crit_tol.text().replace(",", ".")
-        if valid_float_input(crit_tol):
-            self.crit_tol.setText(crit_tol)
-        else:
-            self.crit_tol.undo()
-
-    def set_iso_p_min(self):
-        iso_p_min = self.iso_p_min.text().replace(",", ".")
-        if valid_float_input(iso_p_min):
-            self.iso_p_min.setText(iso_p_min)
-        else:
-            self.iso_p_min.undo()
-
-    def set_iso_p_max(self):
-        iso_p_max = self.iso_p_max.text().replace(",", ".")
-        if valid_float_input(iso_p_max):
-            self.iso_p_max.setText(iso_p_max)
-        else:
-            self.iso_p_max.undo()
-
-    def set_iso_t_min(self):
-        iso_t_min = self.iso_t_min.text().replace(",", ".")
-        if valid_float_input(iso_t_min):
-            self.iso_t_min.setText(iso_t_min)
-        else:
-            self.iso_t_min.undo()
-
-    def set_iso_t_max(self):
-        iso_t_max = self.iso_t_max.text().replace(",", ".")
-        if valid_float_input(iso_t_max):
-            self.iso_t_max.setText(iso_t_max)
-        else:
-            self.iso_t_max.undo()
 
     def set_line_color(self, color=None):
         """
@@ -223,7 +129,7 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         self.calc_pvt_settings["Initial pressure"] = float(self.p_0.text())
         self.calc_pvt_settings["Maximum pressure"] = float(self.p_max.text())
 
-        if self.t_min.text() != "None":
+        if self.t_min.text().lower() != "none":
             self.calc_pvt_settings["Minimum temperature"] = float(self.t_min.text())
         else:
             self.calc_pvt_settings["Minimum temperature"] = None
@@ -307,13 +213,15 @@ class BinaryPXYOptionsWindow(QDialog):
         self.dlns_max.setText(str(self.calc_settings["Maximum dlns"]))
 
         self.set_line_color(self.plotting_options["Colors"][0])
+        self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
+        self.title.setText(self.plotting_options["Title"])
+        self.xlabel.setText(self.plotting_options["x label"])
+        self.ylabel.setText(self.plotting_options["y label"])
 
         self.setFocus()
 
         # Validators for input
-        float_validator = QDoubleValidator()
-        locale = QLocale(QLocale.English)
-        float_validator.setLocale(locale)
+        float_validator = FloatValidator()
 
         self.temp.setValidator(float_validator)
         self.p_max.setValidator(float_validator)
@@ -322,57 +230,11 @@ class BinaryPXYOptionsWindow(QDialog):
         self.dlns_max.setValidator(float_validator)
 
         # Action handling
-
-        self.temp.editingFinished.connect(self.set_temp)
-        self.p_max.editingFinished.connect(self.set_p_max)
-        self.p_min.editingFinished.connect(self.set_p_min)
-        self.dz_max.editingFinished.connect(self.set_dz_max)
-        self.dlns_max.editingFinished.connect(self.set_dlns_max)
-
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
-        self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
-        self.title.setText(self.plotting_options["Title"])
-        self.xlabel.setText(self.plotting_options["x label"])
-        self.ylabel.setText(self.plotting_options["y label"])
 
         self.save_btn.clicked.connect(self.save)
         self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
-
-    def set_temp(self):
-        temp = self.temp.text().replace(",", ".")
-        if valid_float_input(temp):
-            self.temp.setText(temp)
-        else:
-            self.temp.undo()
-
-    def set_p_max(self):
-        p_max = self.p_max.text().replace(",", ".")
-        if valid_float_input(p_max):
-            self.p_max.setText(p_max)
-        else:
-            self.p_max.undo()
-
-    def set_p_min(self):
-        p_min = self.p_min.text().replace(",", ".")
-        if valid_float_input(p_min):
-            self.p_min.setText(p_min)
-        else:
-            self.p_min.undo()
-
-    def set_dz_max(self):
-        dz_max = self.dz_max.text().replace(",", ".")
-        if valid_float_input(dz_max):
-            self.dz_max.setText(dz_max)
-        else:
-            self.dz_max.undo()
-
-    def set_dlns_max(self):
-        dlns_max = self.dlns_max.text().replace(",", ".")
-        if valid_float_input(dlns_max):
-            self.dlns_max.setText(dlns_max)
-        else:
-            self.dlns_max.undo()
 
     def set_line_color(self, color=None):
         """
@@ -454,9 +316,7 @@ class PRhoOptionsWindow(QDialog):
         self.setFocus()
 
         # Validators for input
-        float_validator = QDoubleValidator()
-        locale = QLocale(QLocale.English)
-        float_validator.setLocale(locale)
+        float_validator = FloatValidator()
 
         self.p_0.setValidator(float_validator)
         self.p_max.setValidator(float_validator)
@@ -468,71 +328,12 @@ class PRhoOptionsWindow(QDialog):
         self.crit_tol.setValidator(float_validator)
 
         # Action handling
-
-        self.p_0.editingFinished.connect(self.set_p_0)
-        self.p_max.editingFinished.connect(self.set_p_max)
-        self.t_min.editingFinished.connect(self.set_t_min)
-        self.step_size.editingFinished.connect(self.set_step_size)
-
-        self.crit_t.editingFinished.connect(self.set_crit_t)
-        self.crit_v.editingFinished.connect(self.set_crit_v)
-        self.crit_tol.editingFinished.connect(self.set_crit_tol)
-
         self.line_color_tool_btn.clicked.connect(self.set_line_color)
         self.point_color_tool_btn.clicked.connect(self.set_point_color)
 
         self.save_btn.clicked.connect(self.save)
         self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
-
-    def set_p_0(self):
-        p_0 = self.p_0.text().replace(",", ".")
-        if valid_float_input(p_0):
-            self.p_0.setText(p_0)
-        else:
-            self.p_0.undo()
-
-    def set_p_max(self):
-        p_max = self.p_max.text().replace(",", ".")
-        if valid_float_input(p_max):
-            self.p_max.setText(p_max)
-        else:
-            self.p_max.undo()
-
-    def set_t_min(self):
-        t_min = self.t_min.text().replace(",", ".")
-        if valid_float_input(t_min):
-            self.t_min.setText(t_min)
-        else:
-            self.t_min.undo()
-
-    def set_step_size(self):
-        step_size = self.step_size.text().replace(",", ".")
-        if valid_float_input(step_size):
-            self.step_size.setText(step_size)
-        else:
-            self.step_size.undo()
-
-    def set_crit_t(self):
-        crit_t = self.crit_t.text().replace(",", ".")
-        if valid_float_input(crit_t):
-            self.crit_t.setText(crit_t)
-        else:
-            self.crit_t.undo()
-
-    def set_crit_v(self):
-        crit_v = self.crit_v.text().replace(",", ".")
-        if valid_float_input(crit_v):
-            self.crit_v.setText(crit_v)
-        else:
-            self.crit_v.undo()
-
-    def set_crit_tol(self):
-        crit_tol = self.crit_tol.text().replace(",", ".")
-        if valid_float_input(crit_tol):
-            self.crit_tol.setText(crit_tol)
-        else:
-            self.crit_tol.undo()
 
     def set_line_color(self, color=None):
         """
@@ -659,7 +460,7 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.setFocus()
 
         # Validators for input
-        float_validator = QDoubleValidator()
+        float_validator = FloatValidator()
         locale = QLocale(QLocale.English)
         float_validator.setLocale(locale)
 
@@ -667,9 +468,6 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.t_min.setValidator(float_validator)
 
         # Action handling
-        self.p_min.editingFinished.connect(self.set_p_min)
-        self.t_min.editingFinished.connect(self.set_t_min)
-
         self.line_color_1_tool_btn.clicked.connect(self.set_line_color_1)
         self.line_color_2_tool_btn.clicked.connect(self.set_line_color_2)
         self.line_color_3_tool_btn.clicked.connect(self.set_line_color_3)
@@ -678,20 +476,6 @@ class GlobalBinaryOptionsWindow(QDialog):
         self.save_btn.clicked.connect(self.save)
         self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
-
-    def set_p_min(self):
-        p_min = self.p_min.text().replace(",", ".")
-        if valid_float_input(p_min):
-            self.p_min.setText(p_min)
-        else:
-            self.p_min.undo()
-
-    def set_t_min(self):
-        t_min = self.t_min.text().replace(",", ".")
-        if valid_float_input(t_min):
-            self.t_min.setText(t_min)
-        else:
-            self.t_min.undo()
 
     def set_line_color_1(self, color=None):
         """
