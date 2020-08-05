@@ -9,10 +9,11 @@ import os
 
 from gui.widgets.component_select_widget import ComponentSelectWidget, ComponentEditWidget
 from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
-from gui.widgets.go_to_plot_mode_popup import GoToPlotModeWidget, GoToCalcModeWidget
+from gui.widgets.change_mode import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.widgets.units_dialog import UnitsDialog
 
-from gui.utils import get_json_data, save_json_data
+from gui.utils import get_json_data, save_json_data, get_default_units
+
 
 # TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
 
@@ -62,27 +63,22 @@ class ThermopackGUIApp(QMainWindow):
         Creates a dict to store data
         """
         if not self.json_file:
-            self.data = {"Component lists": {},
-                         "Model setups": {},
-                         "Units": {
-                             "Selected": {
-                                 "Energy": "J",
-                                 "Temperature": "K",
-                                 "Pressure": "Pa",
-                                 "Volume": "m^3",
-                                 "Amount": "mol",
-                                 "Speed": "m/s"
-                             },
-                             "Choices": {
-                                 "Energy": ["J", "kJ", "MJ", "kcal"],
-                                 "Temperature": ["K", "C", "F", "R"],
-                                 "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
-                                 "Volume": ["m^3", "L", "mL"],
-                                 "Amount": ["mol", "g", "kg"],
-                                 "Speed": ["m/s", "mph"]
-                             }
-                         },
-                         }
+            self.data = {
+                "Component lists": {},
+                "Model setups": {},
+                "Units": {
+                    "Selected": get_default_units(),
+                    "Choices": {
+                        "Energy": ["J", "kJ", "MJ", "kcal"],
+                        "Temperature": ["K", "C", "F", "R"],
+                        "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
+                        "Volume": ["m ** 3", "L", "mL"],
+                        "Amount": ["mol", "g", "kg"],
+                        "Speed": ["m / s", "mph"]
+                    }
+                },
+                "Plotting preferences": {}
+            }
 
     def set_toolbar(self):
         """
@@ -249,7 +245,7 @@ class ThermopackGUIApp(QMainWindow):
         """
         Creates a popup where a component list and a model setup has to be chosen before plot mode is initiated
         """
-        self.dialog = GoToPlotModeWidget(self.data)
+        self.dialog = GoToPlotModeWidget(self.data, self.json_file)
         self.dialog.setModal(True)
         self.dialog.show()
 
@@ -257,7 +253,7 @@ class ThermopackGUIApp(QMainWindow):
         """
         Creates a popup where a component list and a model setup has to be chosen before calculation mode is initiated
         """
-        self.dialog = GoToCalcModeWidget(self.data)
+        self.dialog = GoToCalcModeWidget(self.data, self.json_file)
         self.dialog.setModal(True)
         self.dialog.show()
 
@@ -287,9 +283,13 @@ class ThermopackGUIApp(QMainWindow):
         loaded_data = get_json_data(file_path)
         loaded_component_data = loaded_data["Component lists"]
         loaded_model_setup_data = loaded_data["Model setups"]
+        loaded_units_data = loaded_data["Units"]
+        loaded_plotting_preferences = loaded_data["Plotting preferences"]
 
         self.data["Component lists"].update(loaded_component_data)
         self.data["Model setups"].update(loaded_model_setup_data)
+        self.data["Units"].update(loaded_units_data)
+        self.data["Plotting preferences"].update(loaded_plotting_preferences)
 
         self.json_file = file_path
         self.setWindowTitle(self.windowTitle() + " - " + self.json_file)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QValidator
 
 from gui.classes.component import Component
@@ -11,6 +11,20 @@ from saftvrmie import saftvrmie
 import json
 import os
 import re
+
+
+class MessageBox(QMessageBox):
+    """
+    Popup to display important information to the user
+    """
+
+    def __init__(self, window_title, message):
+        QMessageBox.__init__(self)
+        self.setWindowTitle(window_title)
+        self.setText(message)
+        self.setIcon(QMessageBox.Information)
+        self.setStandardButtons(QMessageBox.Close)
+        self.setDefaultButton(QMessageBox.Ignore)
 
 
 class FloatValidator(QValidator):
@@ -35,6 +49,17 @@ class FloatValidator(QValidator):
     def fixup(self, text):
         match = self._float_re.search(text)
         return match.groups()[0] if match else "0.0"
+
+
+def get_default_units():
+    return {
+        "Energy": "J",
+        "Temperature": "K",
+        "Pressure": "Pa",
+        "Volume": "m ** 3",
+        "Amount": "mol",
+        "Speed": "m / s"
+    }
 
 
 def get_json_data(file_name):

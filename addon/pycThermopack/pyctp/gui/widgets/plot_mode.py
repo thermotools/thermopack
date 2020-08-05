@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QRadioButton, QButtonGroup, QMessageBox, QCheckBox, QLineEdit, QLabel, \
-    QFileDialog
-from PyQt5.QtCore import QLocale
+    QFileDialog, QActionGroup
+from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.uic import loadUi
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
@@ -8,11 +8,12 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from gui.widgets.mpl_canvas import MplCanvas
 from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYOptionsWindow, PRhoOptionsWindow, \
     GlobalBinaryOptionsWindow
+from gui.widgets.units_dialog import UnitsDialog
+from gui.utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox
 
 import numpy as np
 import csv
 import os
-from gui.utils import get_thermopack, init_thermopack, FloatValidator
 
 
 # TODO: Handle enheter
@@ -26,31 +27,34 @@ class PlotMode(QMainWindow):
     When a plot is generated, the user may download a csv file containing the x and y data for each plotted line
     """
 
-    def __init__(self, component_data, component_list_name, settings, parent=None):
+    def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
         loadUi("widgets/layouts/plot_mode.ui", self)
-        self.setWindowTitle("Thermopack")
+        self.setWindowTitle("Thermopack - Plot Mode")
         self.showMaximized()
 
-        logo = QLabel("Thermopack    |    Plot Mode    ")
-        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px; "
-                           "border-bottom: 1px solid black;")
-        self.logo_layout.addWidget(logo)
+        self.data = data
+        self.json_file = json_file
 
-        self.component_data = component_data
+        self.component_data = self.data["Component lists"][component_list_name]
         self.comp_list_name = component_list_name
-        self.settings = settings
+        self.settings = self.data["Model setups"][model_settings_name]
+        self.units = self.data["Units"]
 
-        self.plotting_preferences = self.init_plotting_preferences()
+        self.set_toolbar()
+
+        if self.data["Plotting preferences"]:
+            self.plotting_preferences = self.data["Plotting preferences"]
+        else:
+            self.plotting_preferences = self.init_plotting_preferences()
+            self.data["Plotting preferences"] = self.plotting_preferences
+
+        # In case the user wants to reset settings
+        self.default_plotting_preferences = self.init_plotting_preferences()
 
         self.redraw = True
         self.redraw_checkbox.setChecked(self.redraw)
-
-        if not self.plotting_preferences:
-            self.plotting_preferences = self.init_plotting_preferences()
-        # In case the user wants to reset settings
-        self.default_plotting_preferences = self.init_plotting_preferences()
 
         self.init_plot_modes()
 
@@ -74,16 +78,55 @@ class PlotMode(QMainWindow):
 
         # Setup for plot window
         self.canvas = MplCanvas(self.component_data["Names"], self.plotting_preferences)
-        self.toolbar = NavigationToolbar2QT(self.canvas, self)
-        self.toolbar.hide()
+        self.mpl_toolbar = NavigationToolbar2QT(self.canvas, self)
+        self.mpl_toolbar.hide()
         self.canvas.hide()
-        self.plot_layout.addWidget(self.toolbar)
+        self.plot_layout.addWidget(self.mpl_toolbar)
         self.plot_layout.addWidget(self.canvas)
 
         self.init_isopleth_btns()
         self.redraw_checkbox.clicked.connect(self.toggle_redraw)
         self.plot_button.clicked.connect(self.plot)
         self.download_csv_btn.clicked.connect(self.export_csv)
+
+    def set_toolbar(self):
+        """
+        Creates the top toolbar
+        """
+        # Logo
+        logo = QLabel("Thermopack  |  Plot Mode  ")
+        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px;")
+
+        # Top toolbar
+        toolbar = self.addToolBar("Tool bar")
+        toolbar.setMovable(False)
+        toolbar.actionTriggered.connect(self.handle_toolbar_action)
+        toolbar.setStyleSheet("padding: 5px 10px 5px 10px;")
+        toolbar.addWidget(logo)
+        toolbar.addSeparator()
+
+        action_group = QActionGroup(self)
+        if self.json_file:
+            action_group.addAction(toolbar.addAction(QIcon("icons/save.png"), "Save"))
+            self.action_save = self.file_menu.addAction("Save", self.save_plot_settings, QKeySequence("Ctrl+S"))
+            self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
+
+        else:
+            self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
+
+        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
+        self.action_units.triggered.connect(self.open_units_window)
+
+    def handle_toolbar_action(self, action):
+        """
+        Calls the correct function depending on which tool icon was clicked
+        :param action: Type of tool clicked
+        """
+        action = action.text()
+        if action == "Save":
+            self.save_plot_settings()
+        elif action == "Units":
+            self.open_units_window()
 
     @staticmethod
     def init_plotting_preferences():
@@ -406,24 +449,24 @@ class PlotMode(QMainWindow):
         if plot_type == "Phase envelope":
             self.canvas.plot_envelope(self.tp, prim_vars, fractions)
             self.canvas.show()
-            self.toolbar.show()
+            self.mpl_toolbar.show()
             if self.plotting_preferences["Phase envelope"]["Isopleths"]["Number of isopleths"] > 0:
                 self.isopleth_btn_stack.show()
 
         elif plot_type == "Binary pxy":
             self.canvas.plot_binary_pxy(self.tp)
             self.canvas.show()
-            self.toolbar.show()
+            self.mpl_toolbar.show()
 
         elif plot_type == "Pressure density":
             self.canvas.plot_pressure_density(self.tp, fractions)
             self.canvas.show()
-            self.toolbar.show()
+            self.mpl_toolbar.show()
 
         elif plot_type == "Global binary":
             self.canvas.plot_global_binary(self.tp)
             self.canvas.show()
-            self.toolbar.show()
+            self.mpl_toolbar.show()
 
         else:
             pass
@@ -457,6 +500,22 @@ class PlotMode(QMainWindow):
                         y_list += list(line.get_ydata())
 
                         writer.writerows([x_list, y_list])
+
+    def open_units_window(self):
+        self.dialog = UnitsDialog(self.units)
+        self.dialog.show()
+
+    def save_plot_settings(self):
+        """
+        Saves data to the current JSON-file.
+        """
+        if self.json_file:
+            save_json_data(self.data, self.json_file)
+            self.msg = MessageBox("Success", "Data saved to %s." % self.json_file)
+        else:
+            self.msg = MessageBox("Failed", "Could not save data. No file is chosen.")
+
+        self.msg.exec()
 
 
 class MolarFractionsErrorMsg(QMessageBox):

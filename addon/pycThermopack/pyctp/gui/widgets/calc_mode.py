@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy, QLineEdit, QLabel
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QTextEdit, QSizePolicy, QLineEdit, QLabel, \
+    QActionGroup
+from PyQt5.QtGui import QIcon
 from PyQt5.uic import loadUi
 
 import csv
@@ -8,6 +10,7 @@ import numpy as np
 import pint
 
 from gui.widgets.plot_mode import MolarFractionsErrorMsg
+from gui.widgets.units_dialog import UnitsDialog
 from gui.utils import get_thermopack, init_thermopack, FloatValidator
 
 
@@ -16,27 +19,31 @@ from gui.utils import get_thermopack, init_thermopack, FloatValidator
 #  Alle inputs som har noe med enheter å gjøre, må endre labels 'Label' => 'Label [Unit]'
 #  value --> Quantity-objekt med unit_from --> Quantity-objekt med unit_to, set i tabell med str(quantity.magnitude)
 
+# TODO: Handle andre phase flags
+
 
 class CalcMode(QMainWindow):
     """
     Calculation mode: Own window to calculate, display and save flash data
     """
 
-    def __init__(self, component_data, component_list_name, settings, parent=None):
+    def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
         loadUi("widgets/layouts/calc_mode.ui", self)
-        self.setWindowTitle("Thermopack")
+        self.setWindowTitle("Thermopack - Calculation Mode")
         self.showMaximized()
 
-        logo = QLabel("Thermopack  |  Calculation Mode  ")
-        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px; "
-                           "border-bottom: 1px solid black;")
-        self.logo_layout.addWidget(logo)
+        self.set_toolbar()
 
-        self.component_data = component_data
+        self.data = data
+        self.json_file = json_file
+
+        self.component_data = self.data["Component lists"][component_list_name]
         self.comp_list_name = component_list_name
-        self.settings = settings
+        self.settings = self.data["Model setups"][model_settings_name]
+        self.units = self.data["Units"]
+
         self.tp = get_thermopack(category=self.settings["Model category"])
 
         self.input_stack_indices = {
@@ -78,12 +85,51 @@ class CalcMode(QMainWindow):
         self.calculate_btn.clicked.connect(self.calculate)
         self.download_csv_btn.clicked.connect(self.export_csv)
 
-        self.action_display_settings.triggered.connect(self.display_settings)
-
         self.ps_initial_guess.stateChanged.connect(self.toggle_initial_guess)
         self.ph_initial_guess.stateChanged.connect(self.toggle_initial_guess)
         self.uv_t_initial_guess.stateChanged.connect(self.toggle_initial_guess)
         self.uv_p_initial_guess.stateChanged.connect(self.toggle_initial_guess)
+
+    def set_toolbar(self):
+        """
+        Creates the top toolbar
+        """
+        # Logo
+        logo = QLabel("Thermopack  |  Calculation Mode  ")
+        logo.setStyleSheet("color: #FF8B06; font: 75 28pt 'Agency FB'; padding: 5px 10px 5px 10px;")
+
+        # Top toolbar
+        toolbar = self.addToolBar("Tool bar")
+        toolbar.setMovable(False)
+        toolbar.actionTriggered.connect(self.handle_toolbar_action)
+        toolbar.setStyleSheet("padding: 5px 10px 5px 10px;")
+        toolbar.addWidget(logo)
+        toolbar.addSeparator()
+
+        action_group = QActionGroup(self)
+        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
+
+        self.action_close.triggered.connect(self.close)
+        self.action_units.triggered.connect(self.open_units_window)
+        self.action_display_settings.triggered.connect(self.display_settings)
+
+
+    def handle_toolbar_action(self, action):
+        """
+        Calls the correct function depending on which tool icon was clicked
+        :param action: Type of tool clicked
+        """
+        action = action.text()
+        if action == "Units":
+            self.open_units_window()
+
+    def open_units_window(self):
+        """
+        Opens a dialog where the user can change default units for the application
+        """
+        units_data = self.data["Units"]
+        self.dialog = UnitsDialog(units_data)
+        self.dialog.show()
 
     def show_input_params(self, flash_mode="TP"):
         """

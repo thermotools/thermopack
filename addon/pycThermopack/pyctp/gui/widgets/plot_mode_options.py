@@ -16,10 +16,11 @@ class PhaseEnvelopeOptionsWindow(QDialog):
         loadUi("widgets/layouts/ph_env_options.ui", self)
         self.setWindowTitle("Phase envelope options")
 
-        self.calc_pvt_settings = plotting_preferences["Phase envelope"]["TPV"]
-        self.isopleth_settings = plotting_preferences["Phase envelope"]["Isopleths"]
-        self.crit_point_settings = plotting_preferences["Phase envelope"]["Critical"]
-        self.plotting_options = plotting_preferences["Phase envelope"]["Plotting"]
+        self.plotting_preferences = plotting_preferences
+        self.calc_pvt_settings = self.plotting_preferences["Phase envelope"]["TPV"]
+        self.isopleth_settings = self.plotting_preferences["Phase envelope"]["Isopleths"]
+        self.crit_point_settings = self.plotting_preferences["Phase envelope"]["Critical"]
+        self.plotting_options = self.plotting_preferences["Phase envelope"]["Plotting"]
 
         self.default = default
 

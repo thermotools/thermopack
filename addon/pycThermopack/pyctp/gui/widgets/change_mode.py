@@ -13,11 +13,12 @@ class ChangeModePopup(QDialog):
     Base class for popups 'Go to Plot Mode' and 'Go to Calc Mode'
     The user selects one component list, and one model setup before proceeding
     """
-    def __init__(self, data, parent=None):
+    def __init__(self, data, json_file, parent=None):
         super().__init__(parent=parent)
         loadUi("widgets/layouts/go_to_plot_mode_popup.ui", self)
         self.setWindowTitle("Thermopack")
 
+        self.json_file = json_file
         self.data = data
 
         self.init_composition_list()
@@ -75,8 +76,8 @@ class GoToPlotModeWidget(ChangeModePopup):
     Window popup beofre going to Plot Mode
     The user selects one component list, and one model setup before proceeding
     """
-    def __init__(self, data, parent=None):
-        ChangeModePopup.__init__(self, data, parent)
+    def __init__(self, data, json_file, parent=None):
+        ChangeModePopup.__init__(self, data, json_file, parent)
         self.go_btn.clicked.connect(self.go_to_plot_mode)
 
     def go_to_plot_mode(self):
@@ -86,10 +87,7 @@ class GoToPlotModeWidget(ChangeModePopup):
         component_list_name = self.composition_list.currentItem().text()
         model_settings_name = self.model_options_list.currentItem().text()
 
-        settings = self.data["Model setups"][model_settings_name]
-        component_data = self.data["Component lists"][component_list_name]
-
-        self.plot_window = PlotMode(component_data, component_list_name, settings)
+        self.plot_window = PlotMode(self.data, self.json_file, component_list_name, model_settings_name)
         self.plot_window.show()
         self.close()
 
@@ -99,8 +97,8 @@ class GoToCalcModeWidget(ChangeModePopup):
     Window popup beofre going to Calc Mode
     The user selects one component list, and one model setup before proceeding
     """
-    def __init__(self, data, parent=None):
-        ChangeModePopup.__init__(self, data, parent)
+    def __init__(self, data, json_file, parent=None):
+        ChangeModePopup.__init__(self, data, json_file, parent)
         self.go_btn.clicked.connect(self.go_to_calc_mode)
 
     def go_to_calc_mode(self):
@@ -110,9 +108,6 @@ class GoToCalcModeWidget(ChangeModePopup):
         component_list_name = self.composition_list.currentItem().text()
         model_settings_name = self.model_options_list.currentItem().text()
 
-        settings = self.data["Model setups"][model_settings_name]
-        component_data = self.data["Component lists"][component_list_name]
-
-        self.calc_window = CalcMode(component_data, component_list_name, settings)
+        self.calc_window = CalcMode(self.data, self.json_file, component_list_name, model_settings_name)
         self.calc_window.show()
         self.close()

@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.uic import loadUi
 
+from gui.utils import get_default_units
+
 
 class UnitsDialog(QWidget):
     """
@@ -13,14 +15,7 @@ class UnitsDialog(QWidget):
 
         self.units_data = units_data
 
-        self.default_units = {
-            "Temperature": "K",
-            "Volume": "m^3",
-            "Pressure": "Pa",
-            "Energy": "J",
-            "Amount": "mol",
-            "Speed": "m/s"
-        }
+        self.default_units = get_default_units()
 
         self.populate_widget()
 
