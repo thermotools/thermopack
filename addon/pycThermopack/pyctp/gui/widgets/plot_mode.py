@@ -17,7 +17,6 @@ import os
 
 
 # TODO: Handle enheter
-# TODO: Lage Toolbar
 
 
 class PlotMode(QMainWindow):
@@ -179,11 +178,11 @@ class PlotMode(QMainWindow):
                 }
             },
             "Pressure density": {
-                "TPV": {
-                    "Initial pressure": 100000,
-                    "Maximum pressure": 15000000,
-                    "Minimum temperature": None,
-                    "Step size": 0.1,
+                "Calc": {
+                    "Temperatures": [298.0],
+                    "Volume range start": 0.50,
+                    "Volume range end": 10.0,
+                    "Num points": 100,
                 },
                 "Critical": {
                     "Temperature": 0.0,
@@ -191,11 +190,16 @@ class PlotMode(QMainWindow):
                     "Error tolerance": 1.0e-7
                 },
                 "Plotting": {
-                    "Colors": ["#1f77b4", "#ff7f0e", "#ffd2d2", "#d5d3ff"],
                     "Grid on": False,
                     "Title": None,
                     "x label": None,
                     "y label": None
+                },
+                "TPV": {
+                    "Initial pressure": 100000.0,
+                    "Maximum pressure": 15000000.0,
+                    "Minimum temperature": None,
+                    "Step size": 0.1
                 }
             },
             "Global binary": {
@@ -439,7 +443,9 @@ class PlotMode(QMainWindow):
             mole_fraction_sum = np.sum(fractions)
 
             if abs(mole_fraction_sum - 1.00) > 1e-8:
-                msg = MolarFractionsErrorMsg(mole_fraction_sum)
+                msg_title = "Molar fractions error"
+                msg_text = "Molar fractions have to add up to 1.00. Currently the sum is %s." % mole_fraction_sum
+                msg = MessageBox(msg_title, msg_text)
                 msg.exec_()
                 return
             else:
@@ -516,17 +522,3 @@ class PlotMode(QMainWindow):
             self.msg = MessageBox("Failed", "Could not save data. No file is chosen.")
 
         self.msg.exec()
-
-
-class MolarFractionsErrorMsg(QMessageBox):
-    """
-    Alerts the user that the sum of the molar fractions don't add up to 1
-    """
-
-    def __init__(self, total):
-        QMessageBox.__init__(self)
-        self.setWindowTitle("Oups!")
-        self.setText("Molar fractions have to add up to 1.00. Currently the sum is %s." % total)
-        self.setIcon(QMessageBox.Information)
-        self.setStandardButtons(QMessageBox.Close)
-        self.setDefaultButton(QMessageBox.Ignore)

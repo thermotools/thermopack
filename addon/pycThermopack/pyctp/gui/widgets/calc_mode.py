@@ -9,7 +9,6 @@ import os
 import numpy as np
 import pint
 
-from gui.widgets.plot_mode import MolarFractionsErrorMsg
 from gui.widgets.units_dialog import UnitsDialog
 from gui.utils import get_thermopack, init_thermopack, FloatValidator
 
@@ -359,7 +358,7 @@ class CalcMode(QMainWindow):
             G_liq = H_liq - T * S_liq
 
             Cp_liq = dHdT_liq
-            # TODO: Calculate isochoric heat capacity. Default value is now -1
+            # TODO: Calculate isochoric heat capacity. Default value is now set to -1
             Cv_liq = -1
 
             mol_weight_liq = sum([x[i] * molecular_weights[i] for i in range(len(molecular_weights))])

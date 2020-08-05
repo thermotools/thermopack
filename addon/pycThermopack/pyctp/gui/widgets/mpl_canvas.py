@@ -536,40 +536,56 @@ class MplCanvas(FigureCanvasQTAgg):
         :param fractions: List of molar fractions
         """
 
-        # TODO: Velg en temperatur (isoterm). Velg en V-range: [~0, 0.10 * V_crit]
-        #  P = pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None)
-        #  Plot P (y-akse) mot rho(=1/V) (x-akse)
-
-        calc_settings = self.plotting_preferences["Pressure density"]["TPV"]
+        calc_settings = self.plotting_preferences["Pressure density"]["Calc"]
+        tpv_settings = self.plotting_preferences["Pressure density"]["TPV"]
         crit_settings = self.plotting_preferences["Pressure density"]["Critical"]
         plot_settings = self.plotting_preferences["Pressure density"]["Plotting"]
 
-        p_initial = calc_settings["Initial pressure"]
-        p_max = calc_settings["Maximum pressure"]
-        T_min = calc_settings["Minimum temperature"]
-        step_size = calc_settings["Step size"]
+        p_initial = tpv_settings["Initial pressure"]
+        t_min = tpv_settings["Minimum temperature"]
+        p_max = tpv_settings["Maximum pressure"]
+        step_size = tpv_settings["Step size"]
+
+        # Calculate T, P, V
+        T_ph_env, P_ph_env, V_ph_env = tp.get_envelope_twophase(initial_pressure=p_initial, z=fractions,
+                                                                maximum_pressure=p_max,
+                                                                minimum_temperature=t_min, step_size=step_size,
+                                                                calc_v=True)
 
         crit_t_guess = crit_settings["Temperature"]
         crit_v_guess = crit_settings["Volume"]
         crit_tol = crit_settings["Error tolerance"]
 
-        # Calculate T, P, V
-        T, P, V = tp.get_envelope_twophase(initial_pressure=p_initial, z=fractions, maximum_pressure=p_max,
-                                           minimum_temperature=T_min, step_size=step_size, calc_v=True)
+        # Calculate critical T, V, P
         T_c, V_c, P_c = tp.critical(n=fractions, temp=crit_t_guess, v=crit_v_guess, tol=crit_tol)
 
-        rho = 1 / V
-        rho_c = 1 / V_c
+        T_list = calc_settings["Temperatures"]
+        V_start = V_c * calc_settings["Volume range start"]
+        V_end = V_c * calc_settings["Volume range end"]
+        V_num_points = calc_settings["Num points"]
 
-        line_color = plot_settings["Colors"][0]
-        point_color = plot_settings["Colors"][1]
+        V_list = np.linspace(V_start, V_end, V_num_points)
+
+        P_lists = []
+        for T in T_list:
+            P_list = []
+            for V in V_list:
+                P, = tp.pressure_tv(temp=T, volume=V, n=fractions)
+                P_list.append(P)
+            P_lists.append(P_list)
+
+        rho_list = 1 / V_list
+
         title = plot_settings["Title"]
         grid_on = plot_settings["Grid on"]
         xlabel = plot_settings["x label"]
         ylabel = plot_settings["y label"]
 
-        self.axes.plot(rho, P, color=line_color, label="Pressure density")
-        self.axes.scatter([rho_c], [P_c], color=point_color, label="Critical point")
+        self.axes.plot([1 / v for v in V_ph_env], P_ph_env, label="Phase envelope")
+        self.axes.scatter([1 / V_c], [P_c], label="Critical point")
+
+        for i in range(len(P_lists)):
+            self.axes.plot(rho_list, P_lists[i], label=str(T_list[i]) + " K")
 
         self.axes.set_title(title)
         self.axes.grid(grid_on)

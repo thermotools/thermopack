@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QDialog, QColorDialog
+from PyQt5.QtWidgets import QDialog, QColorDialog, QLineEdit
 from PyQt5.uic import loadUi
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtGui import QIntValidator, QIcon
 from PyQt5.QtCore import QLocale
 
 from gui.utils import FloatValidator
@@ -290,25 +290,38 @@ class PRhoOptionsWindow(QDialog):
         loadUi("widgets/layouts/pressure_density_options.ui", self)
         self.setWindowTitle("Pressure density options")
 
-        self.calc_settings = plotting_preferences["Pressure density"]["TPV"]
+        self.new_temp_btn.setStyleSheet("padding: 3px 7px;")
+
+        self.calc_settings = plotting_preferences["Pressure density"]["Calc"]
+        self.tpv_settings = plotting_preferences["Pressure density"]["TPV"]
         self.crit_point_settings = plotting_preferences["Pressure density"]["Critical"]
         self.plotting_options = plotting_preferences["Pressure density"]["Plotting"]
 
         self.default = default
 
         # Set initial data
+        temperatures = self.calc_settings["Temperatures"]
+        self.float_validator = FloatValidator()
 
-        self.p_0.setText(str(self.calc_settings["Initial pressure"]))
-        self.p_max.setText(str(self.calc_settings["Maximum pressure"]))
-        self.t_min.setText(str(self.calc_settings["Minimum temperature"]))
-        self.step_size.setText(str(self.calc_settings["Step size"]))
+        for i in range(len(temperatures)):
+            line_edit = QLineEdit()
+            line_edit.setValidator(self.float_validator)
+            line_edit.setText(str(temperatures[i]))
+            self.isotherm_layout.addRow("Temperature " + str(i), line_edit)
+
+        self.v_start.setText(str(self.calc_settings["Volume range start"]))
+        self.v_end.setText(str(self.calc_settings["Volume range end"]))
+        self.v_num_points.setText(str(self.calc_settings["Num points"]))
+
+        self.p_0.setText(str(self.tpv_settings["Initial pressure"]))
+        self.p_max.setText(str(self.tpv_settings["Maximum pressure"]))
+        self.t_min.setText(str(self.tpv_settings["Minimum temperature"]))
+        self.step_size.setText(str(self.tpv_settings["Step size"]))
 
         self.crit_t.setText(str(self.crit_point_settings["Temperature"]))
         self.crit_v.setText(str(self.crit_point_settings["Volume"]))
         self.crit_tol.setText(str(self.crit_point_settings["Error tolerance"]))
 
-        self.set_line_color(self.plotting_options["Colors"][0])
-        self.set_point_color(self.plotting_options["Colors"][1])
         self.grid_checkbox.setChecked(self.plotting_options["Grid on"])
         self.title.setText(self.plotting_options["Title"])
         self.xlabel.setText(self.plotting_options["x label"])
@@ -316,47 +329,36 @@ class PRhoOptionsWindow(QDialog):
 
         self.setFocus()
 
-        # Validators for input
-        float_validator = FloatValidator()
+        # Setting validators for input
+        int_validator = QIntValidator()
 
-        self.p_0.setValidator(float_validator)
-        self.p_max.setValidator(float_validator)
-        self.t_min.setValidator(float_validator)
-        self.step_size.setValidator(float_validator)
+        self.v_start.setValidator(self.float_validator)
+        self.v_end.setValidator(self.float_validator)
+        self.v_num_points.setValidator(int_validator)
 
-        self.crit_t.setValidator(float_validator)
-        self.crit_v.setValidator(float_validator)
-        self.crit_tol.setValidator(float_validator)
+        self.p_0.setValidator(self.float_validator)
+        self.p_max.setValidator(self.float_validator)
+        self.t_min.setValidator(self.float_validator)
+        self.step_size.setValidator(self.float_validator)
+
+        self.crit_t.setValidator(self.float_validator)
+        self.crit_v.setValidator(self.float_validator)
+        self.crit_tol.setValidator(self.float_validator)
 
         # Action handling
-        self.line_color_tool_btn.clicked.connect(self.set_line_color)
-        self.point_color_tool_btn.clicked.connect(self.set_point_color)
-
+        self.new_temp_btn.clicked.connect(self.add_new_temperature)
         self.save_btn.clicked.connect(self.save)
         self.cancel_btn.clicked.connect(self.close)
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
-    def set_line_color(self, color=None):
-        """
-        Opens a color picker and sets line color for the plot if a color is not specified
-        """
-        if not color:
-            initial_color = self.line_color_preview.palette().window().color()
-            color = QColorDialog.getColor(initial_color).name()
-
-        style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
-        self.line_color_preview.setStyleSheet(style)
-
-    def set_point_color(self, color=None):
-        """
-        Opens a color picker and sets point color for the plot if a color is not specified
-        """
-        if not color:
-            initial_color = self.point_color_preview.palette().window().color()
-            color = QColorDialog.getColor(initial_color).name()
-
-        style = "background-color: %s; border-radius: 2px; border: 1px solid #124d77;" % color
-        self.point_color_preview.setStyleSheet(style)
+    def add_new_temperature(self):
+        temperature_number = self.isotherm_layout.rowCount() - 1
+        line_edit = QLineEdit()
+        line_edit.setValidator(self.float_validator)
+        line_edit.setText("298.0")
+        self.isotherm_layout.addRow("Temperature " + str(temperature_number), line_edit)
+        line_edit.selectAll()
+        line_edit.setFocus()
 
     def set_isopleth_1_color(self, color=None):
         """
@@ -381,22 +383,30 @@ class PRhoOptionsWindow(QDialog):
         self.isopleth_2_color_preview.setStyleSheet(style)
 
     def save(self):
-        self.calc_settings["Initial pressure"] = float(self.p_0.text())
-        self.calc_settings["Maximum pressure"] = float(self.p_max.text())
+        temperatures = []
+        col_count = 1
+        for row_count in range(1, self.isotherm_layout.rowCount()):
+            t_line_edit = self.isotherm_layout.itemAt(row_count, col_count).widget()
+            temperatures.append(float(t_line_edit.text()))
+        self.calc_settings["Temperatures"] = temperatures
+
+        self.calc_settings["Volume range start"] = float(self.v_start.text())
+        self.calc_settings["Volume range end"] = float(self.v_end.text())
+        self.calc_settings["Num points"] = int(self.v_num_points.text())
+
+        self.tpv_settings["Initial pressure"] = float(self.p_0.text())
+        self.tpv_settings["Maximum pressure"] = float(self.p_max.text())
 
         if self.t_min.text() != "None":
-            self.calc_settings["Minimum temperature"] = float(self.t_min.text())
+            self.tpv_settings["Minimum temperature"] = float(self.t_min.text())
         else:
-            self.calc_settings["Minimum temperature"] = None
+            self.tpv_settings["Minimum temperature"] = None
 
-        self.calc_settings["Step size"] = float(self.step_size.text())
+        self.tpv_settings["Step size"] = float(self.step_size.text())
 
         self.crit_point_settings["Temperature"] = float(self.crit_t.text())
         self.crit_point_settings["Volume"] = float(self.crit_v.text())
         self.crit_point_settings["Error tolerance"] = float(self.crit_tol.text())
-
-        self.plotting_options["Colors"][0] = self.line_color_preview.palette().window().color().name()
-        self.plotting_options["Colors"][1] = self.point_color_preview.palette().window().color().name()
 
         self.plotting_options["Title"] = self.title.text()
         self.plotting_options["x label"] = self.xlabel.text()
@@ -406,21 +416,31 @@ class PRhoOptionsWindow(QDialog):
         self.close()
 
     def restore_defaults(self):
-        calc_settings = self.default["Pressure density"]["TPV"]
+        calc_settings = self.default["Pressure density"]["Calc"]
+        tpv_settings = self.default["Pressure density"]["TPV"]
         crit_point_settings = self.default["Pressure density"]["Critical"]
         plotting_options = self.default["Pressure density"]["Plotting"]
 
-        self.p_0.setText(str(calc_settings["Initial pressure"]))
-        self.p_max.setText(str(calc_settings["Maximum pressure"]))
-        self.t_min.setText(str(calc_settings["Minimum temperature"]))
-        self.step_size.setText(str(calc_settings["Step size"]))
+        for row_count in range(self.isotherm_layout.rowCount() - 1, 0, -1):
+            t_line_edit = self.isotherm_layout.itemAt(row_count, 1).widget()
+            if row_count == 1:
+                t_line_edit.setText(str(calc_settings["Temperatures"][0]))
+            else:
+                self.isotherm_layout.removeRow(t_line_edit)
+
+        self.v_start.setText(str(calc_settings["Volume range start"]))
+        self.v_end.setText(str(calc_settings["Volume range end"]))
+        self.v_num_points.setText(str(calc_settings["Num points"]))
+
+        self.p_0.setText(str(tpv_settings["Initial pressure"]))
+        self.p_max.setText(str(tpv_settings["Maximum pressure"]))
+        self.t_min.setText(str(tpv_settings["Minimum temperature"]))
+        self.step_size.setText(str(tpv_settings["Step size"]))
 
         self.crit_t.setText(str(crit_point_settings["Temperature"]))
         self.crit_v.setText(str(crit_point_settings["Volume"]))
         self.crit_tol.setText(str(crit_point_settings["Error tolerance"]))
 
-        self.set_line_color(plotting_options["Colors"][0])
-        self.set_point_color(plotting_options["Colors"][1])
         self.grid_checkbox.setChecked(plotting_options["Grid on"])
         self.title.setText(plotting_options["Title"])
         self.xlabel.setText(plotting_options["x label"])
