@@ -10,7 +10,7 @@ import numpy as np
 import pint
 
 from gui.widgets.units_dialog import UnitsDialog
-from gui.utils import get_thermopack, init_thermopack, FloatValidator, MessageBox
+from gui.gui_utils import get_thermopack, init_thermopack, FloatValidator, MessageBox
 
 
 # TODO: ENHETER: Alltid lagre verdier som SI i JSON-fila. Bruke pint-biblioteket til å konvertere til ønskede enheter

@@ -30,7 +30,7 @@ class ThermopackGUIApp(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("main_layout.ui", self)
+        loadUi("layouts/main_layout.ui", self)
         self.setWindowTitle("Thermopack")
         self.showMaximized()
 

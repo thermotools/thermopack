@@ -9,7 +9,7 @@ from gui.widgets.mpl_canvas import MplCanvas
 from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYOptionsWindow, PRhoOptionsWindow, \
     GlobalBinaryOptionsWindow
 from gui.widgets.units_dialog import UnitsDialog
-from gui.utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox
+from gui.gui_utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox
 
 import numpy as np
 import csv

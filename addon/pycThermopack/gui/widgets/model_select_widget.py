@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem
-from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from gui.widgets.parameters import *
@@ -37,7 +36,7 @@ class ModelSelectWidget(QWidget):
     def __init__(self, data, name=None, parent=None):
         QWidget.__init__(self, parent)
 
-        loadUi("widgets/layouts/model_select_widget.ui", self)
+        loadUi("layouts/model_select_widget.ui", self)
 
         self.data = data
         if name:

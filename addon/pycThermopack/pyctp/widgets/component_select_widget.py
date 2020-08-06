@@ -3,7 +3,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
 from gui.widgets.component_info import ComponentInformationWindow
-from gui.utils import get_unique_name, get_fluids
+from gui.gui_utils import get_unique_name, get_fluids
 
 
 # TODO: Mulighet for å slette en lagret komposisjon

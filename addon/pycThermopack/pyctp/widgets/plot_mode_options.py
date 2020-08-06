@@ -3,7 +3,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIntValidator, QIcon
 from PyQt5.QtCore import QLocale
 
-from gui.utils import FloatValidator
+from gui.gui_utils import FloatValidator
 
 
 class PhaseEnvelopeOptionsWindow(QDialog):

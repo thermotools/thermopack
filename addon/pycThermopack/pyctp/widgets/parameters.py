@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
 
-from gui.utils import get_thermopack, init_thermopack, get_comp_id, FloatValidator
+from gui.gui_utils import get_thermopack, init_thermopack, get_comp_id, FloatValidator
 
 import numpy as np
 

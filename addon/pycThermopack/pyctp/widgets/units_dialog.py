@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.uic import loadUi
 
-from gui.utils import get_default_units
+from gui.gui_utils import get_default_units
 
 
 class UnitsDialog(QWidget):
