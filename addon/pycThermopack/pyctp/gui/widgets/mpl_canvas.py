@@ -1,6 +1,8 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+from gui.utils import MessageBox
+
 import numpy as np
 
 
@@ -129,7 +131,9 @@ class MplCanvas(FigureCanvasQTAgg):
             T_c, V_c, P_c = tp.critical(n=fractions, temp=temp, v=v, tol=tol)
             H_c = tp.enthalpy_tv(T_c, V_c, fractions)
             S_c = tp.entropy_tv(T_c, V_c, fractions)
-        except Exception:
+        except Exception as e:
+            msg = MessageBox("Error", str(e))
+            msg.exec_()
             T_c, V_c, P_c, H_c, S_c = None, None, None, None, None
 
         # Set global variables, so that they are accessible in all phase envelope plot functions
@@ -186,11 +190,17 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_ylabel(ylabel)
 
         # Sort entries in the legend
-        if n_isopleths > 0:
-            handles, labels = self.axes.get_legend_handles_labels()
-            self.axes.legend([handles[3], handles[2], handles[0], handles[1]],
-                             [labels[3], labels[2], labels[0], labels[1]],
-                             loc="best")
+        legend = True  # TODO: La brukeren huke av om legend skal vises eller ikke
+
+        if legend:
+            if n_isopleths > 0:
+                handles, labels = self.axes.get_legend_handles_labels()
+                self.axes.legend([handles[3], handles[2], handles[0], handles[1]],
+                                 [labels[3], labels[2], labels[0], labels[1]],
+                                 loc="best")
+            else:
+                self.axes.legend()
+
         self.draw()
 
     def plot_envelope_PT(self, tp, T, P, T_c, P_c, fractions):

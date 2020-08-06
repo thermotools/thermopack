@@ -65,6 +65,9 @@ class ComponentSelectWidget(QWidget):
         for component in self.fluids.values():
             self.insert_component(self.component_choices_table, component)
 
+        self.component_choices_table.resizeColumnsToContents()
+        self.component_choices_table.resizeRowsToContents()
+
     def choose_components(self):
         """
         Finds the selected components from the available components table, and inserts them to the table containing
@@ -80,6 +83,8 @@ class ComponentSelectWidget(QWidget):
                 if component.name not in self.selected_components:
                     self.selected_components.append(component.name)
                     self.insert_component(self.selected_components_table, component)
+                    self.selected_components_table.resizeColumnsToContents()
+                    self.selected_components_table.resizeRowsToContents()
 
     def insert_component(self, table, component):
         """

@@ -10,15 +10,13 @@ import numpy as np
 import pint
 
 from gui.widgets.units_dialog import UnitsDialog
-from gui.utils import get_thermopack, init_thermopack, FloatValidator
+from gui.utils import get_thermopack, init_thermopack, FloatValidator, MessageBox
 
 
 # TODO: ENHETER: Alltid lagre verdier som SI i JSON-fila. Bruke pint-biblioteket til å konvertere til ønskede enheter
 #  Kan egentlig flytte (/også ha) UnitDialog i CalcMode.
 #  Alle inputs som har noe med enheter å gjøre, må endre labels 'Label' => 'Label [Unit]'
 #  value --> Quantity-objekt med unit_from --> Quantity-objekt med unit_to, set i tabell med str(quantity.magnitude)
-
-# TODO: Handle andre phase flags
 
 
 class CalcMode(QMainWindow):
@@ -111,7 +109,6 @@ class CalcMode(QMainWindow):
         self.action_close.triggered.connect(self.close)
         self.action_units.triggered.connect(self.open_units_window)
         self.action_display_settings.triggered.connect(self.display_settings)
-
 
     def handle_toolbar_action(self, action):
         """
@@ -260,13 +257,14 @@ class CalcMode(QMainWindow):
         """
         self.table.clearContents()
         self.set_units()
-        self.download_csv_btn.setEnabled(True)
 
         fractions = np.array(self.component_data["Fractions"])
         mole_fraction_sum = np.sum(fractions)
 
         if abs(mole_fraction_sum - 1.00) > 1e-8:
-            msg = MolarFractionsErrorMsg(mole_fraction_sum)
+            msg_title = "Molar fractions error"
+            msg_text = "Molar fractions have to add up to 1.00. Currently the sum is %s." % mole_fraction_sum
+            msg = MessageBox(msg_title, msg_text)
             msg.exec_()
             return
         else:
@@ -282,6 +280,7 @@ class CalcMode(QMainWindow):
             T = float(self.tp_t_input.text())
             P = float(self.tp_p_input.text())
 
+            # TODO: Need an exception thrown in two_phase_tpflash() to be caught in case calculation fails
             x, y, beta_vap, beta_liq, phase = self.tp.two_phase_tpflash(T, P, fractions)
 
         elif flash_mode == "PS":
@@ -293,7 +292,12 @@ class CalcMode(QMainWindow):
             else:
                 T = None
 
-            T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_psflash(press=P, z=fractions, entropy=S, temp=T)
+            try:
+                T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_psflash(press=P, z=fractions, entropy=S, temp=T)
+            except Exception as error:
+                msg = MessageBox("Error", str(error))
+                msg.exec_()
+                return
 
         elif flash_mode == "PH":
             P = float(self.ph_p_input.text())
@@ -304,7 +308,12 @@ class CalcMode(QMainWindow):
             else:
                 T = None
 
-            T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_phflash(press=P, z=fractions, enthalpy=H, temp=T)
+            try:
+                T, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_phflash(press=P, z=fractions, enthalpy=H, temp=T)
+            except Exception as error:
+                msg = MessageBox("Error", str(error))
+                msg.exec_()
+                return
 
         elif flash_mode == "UV":
             U = float(self.uv_u_input.text())
@@ -320,45 +329,72 @@ class CalcMode(QMainWindow):
             else:
                 P = None
 
+            # TODO: Need an exception thrown in two_phase_uvflash() to be caught in case calculation fails
             T, P, x, y, beta_vap, beta_liq, phase = self.tp.two_phase_uvflash(z=fractions, specific_energy=U,
                                                                               specific_volume=V, temp=T, press=P)
 
         else:
             return
 
-        is_vap, is_liq = False, False
         phase_type = self.tp.get_phase_type(phase)
+        print(phase_type)
+        LIQUID, VAPOR = 1, 2
+
+        is_liq, is_vap = True, True
+
         if phase_type == "TWO_PHASE":
-            is_vap, is_liq = True, True
+            self.table.horizontalHeaderItem(1).setText("Vapor")
+            self.table.horizontalHeaderItem(2).setText("Liquid")
+            pass
+
         elif phase_type == "LIQUID":
-            is_liq = True
+            is_vap = False
+            self.table.horizontalHeaderItem(1).setText("Vapor")
+            self.table.horizontalHeaderItem(2).setText("Liquid")
+
         elif phase_type == "VAPOR":
-            is_vap = True
+            is_liq = False
+            self.table.horizontalHeaderItem(1).setText("Vapor")
+            self.table.horizontalHeaderItem(2).setText("Liquid")
 
-        # TODO: SINGLE => Endre kolonnenavn fra liq og vap til Single (liq og vap er jo basically det samme)
-        #  Sette samme verdi i begge kolonner
+        elif phase_type == "SINGLE":
+            self.table.horizontalHeaderItem(1).setText("Single")
+            self.table.horizontalHeaderItem(2).setText("Single")
+            pass
 
-        # TODO: MINIMUM_GIBBS => Endre kolonnenavn til Minimum Gibbs. Sett samme verdi i begge kolonner
+        elif phase_type == "MINIMUM_GIBBS":
+            self.table.horizontalHeaderItem(1).setText("Minimum Gibbs")
+            self.table.horizontalHeaderItem(2).setText("Minimum Gibbs")
+            pass
 
-        # TODO: FAKE / SOLID => Popup med melding om at resultatet ikke er kompatibelt med GUI-en enda
+        elif phase_type == "FAKE":
+            msg = MessageBox("Error", "Currently no functionality for phase " + phase_type)
+            msg.exec_()
+
+        elif phase_type == "SOLID":
+            msg = MessageBox("Error", "Currently no functionality for phase " + phase_type)
+            msg.exec_()
+
+        else:
+            return
 
         component_indices = [self.tp.getcompindex(comp) for comp in self.component_data["Identities"]]
         molecular_weights = [self.tp.compmoleweight(index) for index in component_indices]
 
-        # TODO: Ikke skriv phase=1 eller phase=2. Ha dem som indekser LIQ = 1, VAP = 2
-
         if is_liq:
-            V_liq, dVdT_liq, dVdn_liq = self.tp.specific_volume(T, P, x, phase=1, dvdt=True, dvdn=True)
-            H_liq, dHdT_liq, dHdP_liq, dHdn_liq = self.tp.enthalpy(T, P, x, phase=1, dhdt=True, dhdp=True, dhdn=True)
-            S_liq, dSdT_liq, dSdP_liq, dSdn_liq = self.tp.entropy(T, P, x, phase=1, dsdt=True, dsdp=True, dsdn=True)
+            V_liq, dVdT_liq, dVdn_liq = self.tp.specific_volume(T, P, x, phase=LIQUID, dvdt=True, dvdn=True)
+            H_liq, dHdT_liq, dHdP_liq, dHdn_liq = self.tp.enthalpy(T, P, x, phase=LIQUID, dhdt=True, dhdp=True,
+                                                                   dhdn=True)
+            S_liq, dSdT_liq, dSdP_liq, dSdn_liq = self.tp.entropy(T, P, x, phase=LIQUID, dsdt=True, dsdp=True,
+                                                                  dsdn=True)
 
-            sos_liq = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=1)
+            sos_liq = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=LIQUID)
 
             U_liq = H_liq - P * V_liq
             G_liq = H_liq - T * S_liq
 
             Cp_liq = dHdT_liq
-            # TODO: Calculate isochoric heat capacity. Default value is now set to -1
+            # TODO: Calculate isochoric heat capacity. As default, the value is now set to -1
             Cv_liq = -1
 
             mol_weight_liq = sum([x[i] * molecular_weights[i] for i in range(len(molecular_weights))])
@@ -377,11 +413,12 @@ class CalcMode(QMainWindow):
             self.set_table_value("Molecular weight", "Liq", "kg / mol", "kg / mol", mol_weight_liq)
 
         if is_vap:
-            V_vap, dVdT_vap, dVdP_vap, dVdn_vap = self.tp.specific_volume(T, P, x, phase=2, dvdt=True, dvdp=True,
+            V_vap, dVdT_vap, dVdP_vap, dVdn_vap = self.tp.specific_volume(T, P, x, phase=VAPOR, dvdt=True, dvdp=True,
                                                                           dvdn=True)
-            H_vap, dHdT_vap, dHdP_vap, dHdn_vap = self.tp.enthalpy(T, P, x, phase=2, dhdt=True, dhdp=True, dhdn=True)
-            S_vap, dSdT_vap, dSdP_vap, dSdn_vap = self.tp.entropy(T, P, x, phase=2, dsdt=True, dsdp=True, dsdn=True)
-            sos_vap = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=2)
+            H_vap, dHdT_vap, dHdP_vap, dHdn_vap = self.tp.enthalpy(T, P, x, phase=VAPOR, dhdt=True, dhdp=True,
+                                                                   dhdn=True)
+            S_vap, dSdT_vap, dSdP_vap, dSdn_vap = self.tp.entropy(T, P, x, phase=VAPOR, dsdt=True, dsdp=True, dsdn=True)
+            sos_vap = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=VAPOR)
 
             U_vap = H_vap - P * V_vap
             G_vap = H_vap - T * S_vap
@@ -456,6 +493,8 @@ class CalcMode(QMainWindow):
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
+
+        self.download_csv_btn.setEnabled(True)
 
     def export_csv(self):
         """
