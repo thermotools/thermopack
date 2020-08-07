@@ -8,7 +8,7 @@ module saftvrmie_interface
   use saftvrmie_containers, only: saftvrmie_zeta, saftvrmie_dhs, &
        saftvrmie_aij, saftvrmie_var, saftvrmie_param, init_saftvrmie_containers, &
        saftvrmie_param_container, saftvrmie_var_container, calc_DFeynHibbsij
-  use tpconst, only: kB_const
+  use thermopack_constants, only: kB_const
   use saftvrmie_options
   implicit none
   private
@@ -26,24 +26,23 @@ contains
   !! for model description
   !!
   !! \author Morten Hammer, February 2018
-  subroutine init_saftvrmie(nc,comp,cbeos,setno,mixing)
-    use compdata, only: gendata
-    use eosdata, only: eoscubic
-    use tpconst, only: set_constants, N_Avogadro, kB_const
+  subroutine init_saftvrmie(nc,comp,cbeos,ref,mixing)
+    use thermopack_var, only: gendata_pointer, base_eos_param
+    use cubic_eos, only: cb_eos
+    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
     integer, intent(in)           :: nc          !< Number of components.
-    type(gendata), intent(inout)  :: comp(nc)    !< Component vector.
-    type(eoscubic), intent(inout) :: cbeos       !< Underlying cubic equation of state.
-    integer, intent(in), optional :: setno(nc)   !< Parameter sets to use for components
+    type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
+    class(base_eos_param), intent(inout) :: cbeos       !< Underlying cubic equation of state.
+    character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
-    real :: Rgas
-    cbeos%name = "SAFT-VR-MIE"
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    !cbeos%name = "SAFT-VR-MIE"
+    call init_saftvrmie_containers(nc,comp,ref,mixing)
     ! Association is added in the saft_interface module
 
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
-    call set_constants(Rgas)
+    kRgas=1000.0*Rgas !< J/kmol/K
   end subroutine init_saftvrmie
 
   !> Calculate hypotetical pure fluid packing fraction
@@ -446,7 +445,7 @@ contains
   !! \author Morten Hammer, March 2018
   function deBoerParameter(i) result(LAMBDA)
     use saftvrmie_containers, only: saftvrmie_param
-    use tpconst, only: h_const, kB_const
+    use thermopack_constants, only: h_const, kB_const
     ! Input
     integer, intent(in) :: i !< Component number
     real :: LAMBDA !< de Boer parameter
@@ -497,7 +496,7 @@ contains
   !! Function intended for plotting in python
   !! \author Morten Hammer, Mai 2018
   function calc_alpha_saftvrmie(T) result(alpha)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use saftvrmie_hardsphere, only: calc_hardsphere_diameter, &
          calc_binary_effective_sigma, calc_binary_effective_eps_divk
     use saftvrmie_dispersion, only: calcAlpha
@@ -534,13 +533,12 @@ contains
 end module saftvrmie_interface
 
 subroutine testing()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   use saftvrmie_containers
   use saftvrmie_hardsphere
   use saftvrmie_dispersion
   use saftvrmie_interface
-  use tpvar, only: cbeos
   implicit none
   real :: n(nc),n0(nc)
   real :: ef,ef_e,ef_ee,ef_eee
@@ -566,7 +564,9 @@ subroutine testing()
   type(saftvrmie_zeta) :: zeta2
   type(saftvrmie_dhs) :: dhs
   integer :: ii,jj
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   lambda = 12.0
   eta = 10.0
   call calcEffEta(eta,lambda,ef,ef_e,ef_ee,ef_eee)
@@ -832,17 +832,18 @@ subroutine testing()
 end subroutine testing
 
 subroutine test_Khs_TVn()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_hardsphere
   use saftvrmie_dispersion
   use saftvrmie_interface
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   type(saftvrmie_zeta) :: khs,zeta2
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -916,13 +917,12 @@ subroutine test_Khs_TVn()
 end subroutine test_Khs_TVn
 
 subroutine test_A1ij()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_hardsphere
   use saftvrmie_dispersion
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   type(saftvrmie_var_container) :: s_vc
@@ -933,7 +933,9 @@ subroutine test_A1ij()
   real :: a1p,a1p_T,a1p_V,a1p_TT,a1p_VV,a1p_TV,a1p_VVV,a1p_VVT,a1p_VTT
   real, dimension(nc) :: a1p_n,a1p_Tn,a1p_Vn,a1p_VVn,a1p_VTn
   real, dimension(nc,nc) :: a1p_nn,a1p_Vnn
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -1132,12 +1134,11 @@ subroutine test_A1ij()
 end subroutine test_A1ij
 
 subroutine test_A1()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   integer :: i,j
@@ -1147,7 +1148,9 @@ subroutine test_A1()
   real :: a1p,a1p_T,a1p_V,a1p_TT,a1p_VV,a1p_TV,a1p_VVV,a1p_VVT,a1p_VTT
   real, dimension(nc) :: a1p_n,a1p_Tn,a1p_Vn,a1p_VVn,a1p_VTn
   real, dimension(nc,nc) :: a1p_nn,a1p_Vnn
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -1227,12 +1230,11 @@ subroutine test_A1()
 end subroutine test_A1
 
 subroutine test_A2_tilde()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc)
   real :: x0
@@ -1241,8 +1243,10 @@ subroutine test_A2_tilde()
   real :: a22,a22_e,a22_x,a22_ee,a22_xx,a22_ex,a22_eee,a22_eex,a22_exx
   real :: d,d_T,d_TT,V
   integer :: i,j
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
 
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -1289,12 +1293,11 @@ subroutine test_A2_tilde()
 end subroutine test_A2_tilde
 
 subroutine test_A2()
-  use parameters
-  use tpvar, only:comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   integer :: i,j
@@ -1304,8 +1307,10 @@ subroutine test_A2()
   real :: a1p,a1p_T,a1p_V,a1p_TT,a1p_VV,a1p_TV
   real, dimension(nc) :: a1p_n,a1p_Tn,a1p_Vn
   real, dimension(nc,nc) :: a1p_nn
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
 
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -1380,12 +1385,11 @@ subroutine test_A2()
 end subroutine test_A2
 
 subroutine test_A3()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   integer :: i,j
@@ -1397,7 +1401,9 @@ subroutine test_A3()
   real, dimension(nc,nc) :: a1p_nn
   real :: z,a3,a3_z,a3_zz,a32,a32_z,a32_zz
   real :: a3_a,a3_aa,a3_az,a32_a,a32_aa,a32_az
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   if (nc == 2) then
      n = (/0.2,1.2/)
   else
@@ -1499,12 +1505,11 @@ subroutine test_A3()
 end subroutine test_A3
 
 subroutine test_g0(Ti,Vi,ni,doInit,qc)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_chain
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -1520,6 +1525,8 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
   real, dimension(nc) :: g02,g02_T,g02_V,g02_TT,g02_VV,g02_TV
   real, dimension(nc,nc) :: g02_n,g02_Tn,g02_Vn
   real, dimension(nc,nc,nc) :: g02_nn
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
 
   if (present(qc)) then
      quantum_correction=qc
@@ -1532,11 +1539,7 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
      doInit_L = .true.
   endif
   if (doInit_L) then
-     if (nc == 2) then
-        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-     else
-        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-     endif
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -1626,13 +1629,12 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
 end subroutine test_g0
 
 subroutine test_g1(Ti,Vi,ni,doInit,qc)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_chain
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -1652,6 +1654,8 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   real, dimension(nc) :: a1_VVn,a1_VTn
   real, dimension(nc,nc) :: a1_Vnn
   type(saftvrmie_zeta) :: pf, pf2
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
 
   if (present(qc)) then
      quantum_correction=qc
@@ -1659,16 +1663,12 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
      quantum_correction=1
   endif
   if (present(doInit)) then
-     doInit_L = doInit
+    doInit_L = doInit
   else
-     doInit_L = .true.
+    doInit_L = .true.
   endif
   if (doInit_L) then
-     if (nc == 2) then
-        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-     else
-        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-     endif
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -1915,13 +1915,12 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
 end subroutine test_g1
 
 subroutine test_g2(Ti,Vi,ni,doInit,qc)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_chain
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -1938,6 +1937,8 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
   real, dimension(nc,nc) :: g12_n,g12_Tn,g12_Vn
   real, dimension(nc,nc,nc) :: g12_nn
   real, dimension(nc) :: g2_VVn,g2_Vn,g2p_Vn
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
   no_correction = .true.
   if (present(qc)) then
      quantum_correction=qc
@@ -1950,11 +1951,7 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
      doInit_L = .true.
   endif
   if (doInit_L) then
-     if (nc == 2) then
-        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-     else
-        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-     endif
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -2080,13 +2077,12 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
 end subroutine test_g2
 
 subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_dispersion
   use saftvrmie_interface
   use saftvrmie_chain
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -2104,7 +2100,8 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
   real ::  a1_VVV,a1_VVT,a1_VTT
   real, dimension(nc) :: a1_VVn,a1_VTn
   real, dimension(nc,nc) :: a1_Vnn
-
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
   if (present(qc)) then
      quantum_correction=qc
   else
@@ -2116,11 +2113,7 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
      doInit_L = .true.
   endif
   if (doInit_L) then
-     if (nc == 2) then
-        call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
-     else
-        call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
-     endif
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -2239,14 +2232,13 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
 end subroutine test_rdf_at_contact
 
 subroutine test_a_chain
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_chain
   use saftvrmie_hardsphere
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   integer :: i
@@ -2262,9 +2254,11 @@ subroutine test_a_chain
   real, dimension(nc) :: g12,g12_T,g12_V,g12_TT,g12_VV,g12_TV
   real, dimension(nc,nc) :: g12_n,g12_Tn,g12_Vn
   real, dimension(nc,nc,nc) :: g12_nn
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
 
   quantum_correction=1
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.2,1.2/)
   n0 = n
   V = 1.0e-4
@@ -2360,14 +2354,13 @@ subroutine test_a_chain
 end subroutine test_a_chain
 
 subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_chain
   use saftvrmie_hardsphere
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -2388,6 +2381,8 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   real, dimension(nc) :: g12,g12_T,g12_V,g12_TT,g12_VV,g12_TV
   real, dimension(nc,nc) :: g12_n,g12_Tn,g12_Vn
   real, dimension(nc,nc,nc) :: g12_nn
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
   return_F = .true.
   if (present(qc)) then
      quantum_correction=qc
@@ -2400,7 +2395,7 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
      doInit_L = .true.
   endif
   if (doInit_L) then
-     call init_saftvrmie(nc,comp,cbeos(1),(/1/),1)
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -2491,13 +2486,13 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
 end subroutine test_a_chain_pure
 
 subroutine test_fres(Ti,Vi,ni,doInit)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
+
   use saftvrmie_containers
   use saftvrmie_hardsphere
   use saftvrmie_interface
   use saftvrmie_options
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -2510,6 +2505,8 @@ subroutine test_fres(Ti,Vi,ni,doInit)
   real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(nc,nc) :: Fp_nn
   logical :: call_init
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
   !enable_chain = .false.
   quantum_correction=0
   if (present(doInit)) then
@@ -2518,7 +2515,7 @@ subroutine test_fres(Ti,Vi,ni,doInit)
      call_init = .true.
   endif
   if (call_init) then
-     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+    call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -2591,13 +2588,13 @@ subroutine test_fres(Ti,Vi,ni,doInit)
 end subroutine test_fres
 
 subroutine test_a1_quantum_corrections()
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
+
   use saftvrmie_containers
   use saftvrmie_dispersion
   use saftvrmie_hardsphere
   use saftvrmie_interface
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real :: n(nc),n0(nc),T,V,eps
   real :: F,F_T,F_V,F_TT,F_VV,F_TV
@@ -2618,10 +2615,13 @@ subroutine test_a1_quantum_corrections()
   real :: a1qqp,a1qqp_e,a1qqp_x,a1qqp_ee,a1qqp_xx,a1qqp_ex, a1qqp_eee,a1qqp_eex,a1qqp_exx
   real :: a1qqm,a1qqm_e,a1qqm_x,a1qqm_ee,a1qqm_xx,a1qqm_ex, a1qqm_eee,a1qqm_eex,a1qqm_exx
 
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+
   quantum_correction = 2
   quantum_correction_hs = 0
   quantum_correction_spec = 0
-  call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+  call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.4,0.8/) ! He, Ne mixture
   n0 = n
   V = 4.0e-4
@@ -2762,7 +2762,8 @@ subroutine test_a1_quantum_corrections()
 end subroutine test_a1_quantum_corrections
 
 subroutine test_IC
-  use parameters
+  use thermopack_constants
+  use thermopack_var
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_dispersion
@@ -2966,10 +2967,11 @@ subroutine test_IC
 end subroutine test_IC
 
 subroutine test_hard_sphere_diameter
-  use parameters
+  use thermopack_constants
   use saftvrmie_containers, only: saftvrmie_var
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_options
+  use thermopack_var
   implicit none
   real :: n(nc),T,V,eps
   integer :: i, j
@@ -2996,7 +2998,7 @@ subroutine test_hard_sphere_diameter
 end subroutine test_hard_sphere_diameter
 
 subroutine test_hard_sphere_Santos
-  use parameters
+  use thermopack_constants
   use saftvrmie_containers, only: saftvrmie_var, &
        allocate_saftvrmie_zeta, cleanup_saftvrmie_zeta, saftvrmie_zeta
   use saftvrmie_interface, only: preCalcSAFTVRMie
@@ -3005,6 +3007,7 @@ subroutine test_hard_sphere_Santos
        calc_hardsphere_virial_B2, calc_hardsphere_virial_B3, calc_hardsphere_virial_Bijk, &
        calc_Santos_F12_or_F22, calc_hardsphere_helmholtzenergy_santos
   use saftvrmie_options
+  use thermopack_var
   implicit none
   real :: n(nc),T,V,eps,n0(nc),eta
   real :: ahs,ahs_e,ahs_ee,ahs2,ahs2_e,ahs2_ee
@@ -3489,7 +3492,7 @@ subroutine test_hard_sphere_Santos
 end subroutine test_hard_sphere_Santos
 
 subroutine test_hardsphere_pure()
-  use parameters
+  use thermopack_constants
   use saftvrmie_containers, only: saftvrmie_var, saftvrmie_param, &
        allocate_saftvrmie_zeta, cleanup_saftvrmie_zeta, saftvrmie_zeta
   use saftvrmie_interface, only: preCalcSAFTVRMie
@@ -3497,6 +3500,7 @@ subroutine test_hardsphere_pure()
        calc_d_pure
   use saftvrmie_options
   use saftvrmie_dispersion, only: calcXDifferentialsPureHSRef
+  use thermopack_var
   implicit none
   real :: n(nc),T,V,eps,n0(nc)
   integer :: difflevel, i, j
@@ -3778,8 +3782,9 @@ subroutine test_hardsphere_pure()
 end subroutine test_hardsphere_pure
 
 subroutine test_zeta_zeta()
-  use parameters
+  use thermopack_constants
   use saftvrmie_options
+  use thermopack_var
   implicit none
   real :: n(nc),T,V,eps,n0(nc)
   real :: a, a_T,a_V,a_n(nc)
@@ -3903,11 +3908,12 @@ contains
 end subroutine test_zeta_zeta
 
 subroutine test_pure_fluid()
-  use parameters
+  use thermopack_constants
   use saftvrmie_options
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_dispersion, only: calcA1, saftvrmie_var
   use saftvrmie_containers, only: saftvrmie_var
+  use thermopack_var
   implicit none
   real :: n(nc),T,V,eps,n0(nc)
   real :: a, a_T,a_V,a_n(nc)
@@ -3961,11 +3967,12 @@ subroutine test_pure_fluid()
 end subroutine test_pure_fluid
 
 subroutine test_zeta()
-  use parameters
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_dispersion
   use saftvrmie_hardsphere
   use saftvrmie_interface
+  use thermopack_var
   implicit none
   real :: n(nc),n0(nc),eps,T,V
   type(saftvrmie_zeta) :: zeta2
@@ -4107,13 +4114,12 @@ subroutine test_zeta()
 end subroutine test_zeta
 
 subroutine test_delta_Ac(Ti,Vi,ni,doInit)
-  use parameters
-  use tpvar, only: comp
+  use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_dispersion
   use saftvrmie_interface
   use saftvrmie_options
-  use tpvar, only: cbeos
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
@@ -4126,6 +4132,8 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(nc,nc) :: Fp_nn
   logical :: call_init
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
 
   if (present(doInit)) then
      call_init = doInit
@@ -4133,7 +4141,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
      call_init = .true.
   endif
   if (call_init) then
-     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -4198,19 +4206,21 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
 end subroutine test_delta_Ac
 
 subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
-  use parameters
-  use tpvar, only: comp, cbeos
+  use thermopack_constants
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   use saftvrmie_containers
   use saftvrmie_hardsphere
   use saftvrmie_interface
   use saftvrmie_options
-  !use tpconst, only: Rgas
+  !use thermopack_constants, only: Rgas
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit
   ! Locals
   real :: n(nc),T,V,F,F_n(nc)
   logical :: call_init
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
   quantum_correction=0
   if (present(doInit)) then
      call_init = doInit
@@ -4218,7 +4228,7 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
      call_init = .true.
   endif
   if (call_init) then
-     call init_saftvrmie(nc,comp,cbeos(1),(/1,1/),1)
+      call init_saftvrmie(nc,p_act_eosc%comps,p_act_eosc%eos(1)%p_eos,"DEFAULT",1)
   endif
   if (present(ni)) then
      n = ni
@@ -4318,7 +4328,7 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
 end subroutine print_saftvrmie_model
 
 subroutine print_fres(T,V,n)
-  use parameters, only: nc
+  use thermopack_var, only: nc
   use saftvrmie_interface
   implicit none
   real, intent(in) :: T,V,n(nc)
@@ -4347,7 +4357,7 @@ subroutine print_fres(T,V,n)
 end subroutine print_fres
 
 subroutine print_a2chi(T,V,n)
-  use parameters, only: nc
+  use thermopack_var, only: nc
   use saftvrmie_interface
   use saftvrmie_containers
   implicit none
@@ -4387,7 +4397,7 @@ subroutine print_a2chi(T,V,n)
 end subroutine print_a2chi
 
 subroutine test_a2chi(T,V,n)
-  use parameters, only: nc
+  use thermopack_var, only: nc
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_containers
@@ -4458,7 +4468,7 @@ subroutine test_a2chi(T,V,n)
 end subroutine test_a2chi
 
 subroutine test_mixKhs(T,V,n)
-  use parameters, only: nc
+  use thermopack_var, only: nc
   use saftvrmie_interface
   use saftvrmie_dispersion
   use saftvrmie_containers

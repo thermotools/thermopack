@@ -10,9 +10,9 @@
 !-----------------------------------------------------------------------------
 
 module csp
-  use parameters
-  use compdata, only: gendata
-  use eosdata, only: eoscubic
+  use thermopack_constants
+  use compdata, only: gendata_pointer
+  use cubic_eos, only: cb_eos
   use tpmbwr, only: eosmbwr
   use multiparameter_c3, only: meos_C3
   use stringmod, only: str_eq
@@ -22,7 +22,7 @@ module csp
 
   integer :: refNc = 0                                 !< This is set to 1 in subroutine selectComp.
   real, parameter, dimension(1) :: zRef = 1.0          !< This is the vector of mole numbers if we're using a cubic reference equation
-  type(gendata), allocatable, dimension(:) :: refComp  !< Will be made to have length refNc=1 in subroutine selectComp.
+  type(gendata_pointer), allocatable, dimension(:) :: refComp  !< Will be made to have length refNc=1 in subroutine selectComp.
   integer, parameter :: cubic = 1, mbwr = 2, nist = 3
   integer :: refEosType                                !< Is set to either cubic or mbwr.
 
@@ -30,8 +30,8 @@ module csp
   real :: m0, bc0, ac0                                 !< Parameters for the cubic shape eos.
 
   !> Shape and rederence Eos data struct
-  type(eoscubic) :: shapeEos
-  type(eoscubic), allocatable, dimension(:) :: cbrefEos
+  class(cb_eos), pointer :: shapeEos => NULL()
+  class(cb_eos), allocatable, dimension(:) :: cbrefEos
   !> Multiparameter data struct
   type(eosmbwr), allocatable, dimension(:) :: mbwrRefEos
   class(meos_c3), allocatable, dimension(:) :: nistRefEos !< Should ideally be declared as an array of base class "meos", but pgf90 does not like this.
@@ -75,14 +75,15 @@ contains
   !> Init calculation for shape factors, by setting index of reference component
   !>
   !> \author MHA, 2013-11-27
-  !> \author Ailo 
+  !> \author Ailo
   !-----------------------------------------------------------------------------
   subroutine csp_init(refcomp_str,shEos,shMixRule,shAlpha,refEos,refAlpha) ! The input consists entirely of strings.
-    use tpselect, only: SelectComp, SelectEOS
-    use tpconst, only: kRgas
+    use cbselect, only: SelectCubicEOS, SelectMixingRules
+    use thermopack_constants, only: kRgas
     use tpmbwr, only: initializeMBWRmodel
     use eosdata
-    use tpvar, only: nce
+    use compdata, only: SelectComp
+    use thermopack_var, only: nce
     !$ use omp_lib, only: omp_get_max_threads
     implicit none
     character(len=*), intent(in) :: refcomp_str         !< Reference component
@@ -92,6 +93,7 @@ contains
     character(len=*), intent(in), optional :: refAlpha  !< Needed if refEos is a cubic eos. Should not be present if one want to use an mbwr reference eos.
     ! Locals
     integer :: nthreads, i, nMBWR, err
+    character(len=eosid_len) :: complist_ref(1)
     !
     nthreads = 1
     ! Create one instance of sd, cbrefEos and multiparameter EoS per thread
@@ -102,17 +104,17 @@ contains
     allocate(sd(nthreads),STAT=err);
     if (err /= 0) call stoperror('Not able to allocate shape_diff struct for csp model')
     !
-    call SelectComp(trim(refcomp_str),refNc,refComp)
+    complist_ref = trim(refcomp_str)
+    refNc = 1
+    call SelectComp(complist_ref,refNc,"DEFAULT",refComp,err)
     do i=1,nthreads
       call shape_diff_alloc(sd(i),nce)
     enddo
     ! Set reference component data
     shapeEos%eosid = trim(shEos) ! Has to be set here if getAlphaTWUparams is to find the parameters
-    call SelectEOS(refNc, refComp, shapeEos, trim(shEos), &
-         trim(shMixRule), trim(shAlpha)) ! Is only initialized to obtain m0, bc0 and ac0.
-
+    call get_eos_index(shEos,shapeEos%eosidx,shapeEos%subeosidx)
+    call SelectCubicEOS(refNc, refComp, shapeEos, trim(shAlpha), "DEFAULT") ! Is only initialized to obtain m0, bc0 and ac0.
     if (.not. (shapeEos%eosidx == cbSRK &
-         .or. shapeEos%eosidx == cbSRKGB &
          .or. shapeEos%eosidx == cbPR)) then
       print *,'Incorrect EOS, ', trim(shEos), &
            ', defined for shape factor calculation'
@@ -126,15 +128,17 @@ contains
         allocate(cbrefEos(nthreads),STAT=err);
         if (err /= 0) call stoperror('Not able to allocate cbrefEos for csp model')
         do i=1,nthreads
-          call SelectEOS(refNc, refComp, cbrefEos(i), trim(refEos), &
-               trim(shMixRule), trim(refAlpha))
+          cbrefEos(i)%eosid = trim(refEos)
+          call get_eos_index(refEos,cbrefEos(i)%eosidx,cbrefEos(i)%subeosidx)
+          call SelectCubicEOS(refNc, refComp, cbrefEos(i), trim(refAlpha), "DEFAULT")
+          call SelectMixingRules(refNc, refComp, cbrefEos(i), "VDW", "DEFAULT")
         enddo
       else
         call stoperror('csp_init: need to input refAlpha')
       end if
       ! Reference component data from database
-      Tc0 = refComp(1)%Tc
-      Pc0 = refComp(1)%Pc
+      Tc0 = refComp(1)%p_comp%Tc
+      Pc0 = refComp(1)%p_comp%Pc
 
     else if (str_eq(refEos(1:4),'mbwr')) then
       !MBWR reference equation
@@ -170,20 +174,19 @@ contains
        if (err /= 0) call stoperror('Not able to allocate C3 nistRefEos for csp model')
 
        do i=1,nthreads
-          call nistRefEos(i)%init()
+         call nistRefEos(i)%init()
        enddo
-       
+
        Tc0 = nistRefEos(1)%tc
        Pc0 = nistRefEos(1)%pc
-    
+
     else
-       print *, 'Selected reference equation: ',  refEos, ' is invalid'
-       print *, 'MBWR32, MBWR19, NIST_MEOS and SRK, SRKGB or PR are valid'
-       call stoperror('Unknown reference equation')
+      print *, 'Selected reference equation: ',  refEos, ' is invalid'
+      print *, 'MBWR32, MBWR19, NIST_MEOS and SRK or PR are valid'
+      call stoperror('Unknown reference equation')
     end if
 
-    m0 = shapeEos%alfa + shapeEos%beta*refComp(1)%acf&
-         - shapeEos%gamma*refComp(1)%acf**2
+    m0 = shapeEos%single(1)%alphaParams(1)
     bc0 = shapeEos%single(1)%omegaB*kRgas*Tc0/Pc0 !< constant bi in cubic eos
     ac0 = shapeEos%single(1)%omegaA*(kRgas*Tc0)**2/Pc0 !< constant ai in cubic eos
 
@@ -200,10 +203,10 @@ contains
   !> \author MHA, 2013-11-27
   !-----------------------------------------------------------------------------
   subroutine shape_factors(cbeos,H,F,T,n,sdiff)
-    use eosdata, only: eoscubic
-    use tpvar, only: nce
+    use cubic_eos, only: cb_eos
+    use thermopack_var, only: nce
     implicit none
-    type(eoscubic), intent(inout) :: cbeos !< Cubic equation for the shape factors
+    class(cb_eos), intent(inout) :: cbeos !< Cubic equation for the shape factors
     real, intent(out) :: H !< Volume shape factor [mol]
     real, intent(out) :: F !< Temperature shape [mol]
     real, intent(in) :: T !< Temperature [K]
@@ -215,7 +218,7 @@ contains
   end subroutine shape_factors
 
   function temperatureShapeFactorF(H,D,T,sumn) result(F)
-    use eosdata, only: cbAlphaTwuIdx, cbAlphaClassicIdx
+    use cubic_eos, only: cbAlphaTwuIdx, cbAlphaClassicIdx
     use nonlinear_solvers, only: newton_1d
     implicit none
     real, intent(in) :: H    !< the volume shape factor
@@ -297,10 +300,10 @@ contains
   !> \author MHA, 2013-11-28
   !-----------------------------------------------------------------------------
   subroutine cubic_shape_factors(cbeos,H,F,T,n,sdiff)
-    use eosdata, only: eoscubic
-    use tpvar, only: nce
+    use cubic_eos, only: cb_eos
+    use thermopack_var, only: nce
     implicit none
-    type(eoscubic), intent(inout) :: cbeos !< Cubic equation for shape factors.
+    class(cb_eos), intent(inout) :: cbeos !< Cubic equation for shape factors.
     real, intent(out) :: H !< Volume shape factor [mol]
     real, intent(out) :: F !< Temperature shape factor [mol]
     real, intent(in) :: T !< Temperature [K]
@@ -386,17 +389,17 @@ contains
   !-----------------------------------------------------------------------------
   subroutine mixture(cbeos,T,n,D,B,sdiff)
     !use optimizers, only: optimize, optim_param, setX
-    use tpvar, only: comp, nce
+    use thermopack_var, only: nce
     use tpcbmix, only: cbCalcMixtureParams
-    use eosdata, only: eoscubic
+    use cubic_eos, only: cb_eos
     implicit none
-    type(eoscubic), intent(inout) :: cbeos !< The cubic equation for the shape factors
+    class(cb_eos), intent(inout) :: cbeos !< The cubic equation for the shape factors
     real, intent(out) :: D !< Volume shape factor [mol]
     real, intent(out) :: B !< Temperature shape factor [mol]
     real, intent(in) ::  T !< Temperature [K]
     real, dimension(nce), intent(in) :: n !< Molar values [mol]
     type(shape_diff), optional, intent(inout) :: sdiff
-    call cbCalcMixtureParams(nce,comp,cbeos,t,n)
+    call cbCalcMixtureParams(nce,cbeos,t,n)
     D = cbeos%suma
     B = cbeos%sumb
     if (present(sdiff)) then
@@ -621,12 +624,12 @@ contains
   !> \author MH, 2013-11-27
   !-----------------------------------------------------------------------------
   subroutine csp_Zfac(cbeos,T,P,n,phase,zFac,dZdt,dZdp,dZdz)
-    use tpvar, only: nce
-    use tpconst, only: Rgas, kRgas
-    use eosdata, only: eoscubic
+    use thermopack_var, only: nce
+    use thermopack_constants, only: Rgas, kRgas
+    use cubic_eos, only: cb_eos
     !$ use omp_lib, only: omp_get_thread_num
     implicit none
-    type(eoscubic), intent(inout) :: cbeos !< Cubic eos for shape factor calculation.
+    class(cb_eos), intent(inout) :: cbeos !< Cubic eos for shape factor calculation.
     real, intent(in) :: P !< Volume shape factor [mol]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase
@@ -682,7 +685,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine calcRefEqDiff(T0,v0,sdiff,i_thread)
     use tpcubic, only: cbCalcDerivatives_svol
-    use tpconst, only: Rgas
+    use thermopack_constants, only: Rgas
     use tpmbwr_additional, only: alphar_derivatives
     use cbHelm
     implicit none
@@ -749,7 +752,7 @@ contains
   function solveRefEqZfac(T0,P0,phase,i_thread) result(zFac)
     use tpcubic
     use tpmbwr_additional, only: mbwr_volume
-    use tpconst, only: Rgas, kRgas
+    use thermopack_constants, only: Rgas, kRgas
     implicit none
     !input
     real, intent(in) :: P0 !< Pressure of the reference fluid [Pa]
@@ -762,7 +765,7 @@ contains
     real :: v0 ! specific volume [L/mol]
     real :: rho0 ! specific density (mol/m^3)
     if (refEosType .eq. cubic) then
-      call cbCalcZfac(refNc,refComp,cbrefEos(i_thread),T0,P0,zRef,phase,zFac,1)
+      call cbCalcZfac(refNc,cbrefEos(i_thread),T0,P0,zRef,phase,zFac,1)
     else if (refEosType .eq. mbwr) then
       v0 = mbwr_volume(T0,P0,nMoles=1.0,phase=phase,model=mbwrRefEos(i_thread))
       zFac = P0*v0/(kRgas*T0) ! Need to use kRgas here since V is calculated in litres.
@@ -781,8 +784,8 @@ contains
   !-----------------------------------------------------------------------------
   subroutine csp_refPressure(T0,v0,n,P0,dp0dv0,dp0dt0)
     use tpcubic
-    use tpvar, only: nce
-    use eosdata, only: eoscubic
+    use thermopack_var, only: nce
+    use cubic_eos, only: cb_eos
     use tpmbwr, only: makeParam, MBWR_pressure
     !$ use omp_lib, only: omp_get_thread_num
     implicit none
@@ -803,7 +806,7 @@ contains
     ! Evaluate reference equation
     if (refEosType .eq. cubic) then
        ! Only calculate what is strictly necessary. (Why is n input here?)
-       call cbCalcPressure(refNc,refComp,cbrefEos(i_thread),T0,v0,n,P0,dp0dv0,dp0dt0)
+       call cbCalcPressure(refNc,cbrefEos(i_thread),T0,v0,n,P0,dp0dv0,dp0dt0)
     else if (refEosType .eq. mbwr) then
        allocate(mbwrParameters(1+mbwrRefEos(1)%bplen+mbwrRefEos(1)%belen))
        ! Only calculate what is strictly necessary.
@@ -842,12 +845,12 @@ contains
   !> Ailo A, 2015-01
   !-----------------------------------------------------------------------------
   subroutine csp_mixtPressure(cbeos,T,v,n,P,dPdV,dPdT,dpdz)
-    use tpvar, only: nce
-    use tpconst, only: Rgas
+    use thermopack_var, only: nce
+    use thermopack_constants, only: Rgas
     !$ use omp_lib, only: omp_get_thread_num
     implicit none
     ! in/out
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     ! input
     real, intent(in) :: T                        !< Mixture temperature [K]
     real, intent(in) :: v                        !< Mixture molar volume [m3/mol]
@@ -886,18 +889,18 @@ contains
   end subroutine csp_mixtPressure
 
   subroutine checkStateFunctionDerivatives(StateFunction,cbeos,T,P,n,phase_in)
-    use tpvar, only: nce
-    use eosdata, only: eoscubic
+    use thermopack_var, only: nce
+    use cubic_eos, only: cb_eos
     implicit none
     !input
     interface
       subroutine StateFunction(cbeos,T,P,n,phase,G,dGdt,dGdp,dGdn)
         use tpcubic
-        use tpvar, only: nce
-        use eosdata, only: eoscubic
-        use tpconst, only: Rgas
+        use thermopack_var, only: nce
+        use cubic_eos, only: cb_eos
+        use thermopack_constants, only: Rgas
         implicit none
-        type(eoscubic), intent(inout) :: cbeos !< Cubic eos used for shape factor calculations.
+        class(cb_eos), intent(inout) :: cbeos !< Cubic eos used for shape factor calculations.
         real, intent(in) :: P !< Pressure [Pa]
         real, intent(in) :: T !< Temperature [K]
         integer, intent(in) :: phase !< Phase identifier [-]
@@ -907,7 +910,7 @@ contains
         real, dimension(nce), optional, intent(out) :: dGdn
       end subroutine StateFunction
     end interface
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T
     real, intent(in) :: P
     real, dimension(nce), intent(in) :: n
@@ -964,8 +967,8 @@ contains
   !> \author MH, 2013-12-01
   !-----------------------------------------------------------------------------
   subroutine calcCombinedDiff(T0,v0,n,sdiff)
-    use tpconst, only: Rgas
-    use tpvar, only: nce
+    use thermopack_constants, only: Rgas
+    use thermopack_var, only: nce
     implicit none
     real, intent(in) :: v0 !< Reference fluid specific volume [l/mol]
     real, intent(in) :: T0 !< Reference fluid temperatureature [K]
@@ -1031,9 +1034,12 @@ contains
   end subroutine calcCombinedDiff
 
   subroutine csp_mainTestRoutine()
-    use tpvar, only: nce, cbeos
+    use thermopack_var, only: nce, get_active_eos, base_eos_param
+    use cubic_eos, only: cb_eos
     implicit none
     real :: T, P, v, n(2)
+    class(base_eos_param), pointer :: p_act_eos
+    p_act_eos => get_active_eos()
     T = 350.0
     v = 0.85 ! L/mol
     P = 1.0e6
@@ -1047,8 +1053,10 @@ contains
     call csp_testPressure(T,v,n)
     print *,"*********CALLING CHECKSTATEFUNCTIONDERIVATIVES*********"
     print *,"********* ZFAC *********"
-    call checkStateFunctionDerivatives(csp_zFac,cbeos(1),T,P,n,2)
-
+    select type (p_eos => p_act_eos)
+    class is(cb_eos)
+      call checkStateFunctionDerivatives(csp_zFac,p_eos,T,P,n,2)
+    end select
     stop "TESTING FINISHED"
   end subroutine csp_mainTestRoutine
 
@@ -1059,9 +1067,10 @@ contains
   !> \author Ailo A, 2014-12-04
   !-----------------------------------------------------------------------------
   subroutine test_shape_factors(nce,T,P,n,phase)
-    use tpconst, only: Rgas, kRgas
+    use thermopack_constants, only: Rgas, kRgas
     use tpcubic, only: cbCalcPressure
-    use tpvar, only: cbeos             ! cbeos is a global array with the shape eos (one for each potential thread)
+    use thermopack_var, only: get_active_eos, base_eos_param
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nce !< Number of components
     real, intent(in) :: T !< Temperature [K]
@@ -1084,133 +1093,138 @@ contains
     real :: zfac_org, zfac
     real :: temp
     integer :: i_thread
+    class(base_eos_param), pointer :: p_act_eos
     i_thread = 1
+    p_act_eos => get_active_eos()
 
-    ! allocate sdiff structs
-    call shape_diff_alloc(sdiff,nce)
-    call shape_diff_alloc(sdiff_org,nce)
+    select type (p_eos => p_act_eos)
+    class is(cb_eos)
+      ! allocate sdiff structs
+      call shape_diff_alloc(sdiff,nce)
+      call shape_diff_alloc(sdiff_org,nce)
 
-    ! fill sdiff_org with derivatives of H, F, t0, v0, D, B
-    call shape_factors(cbeos(1),H0,F0,T,n,sdiff_org)
+      ! fill sdiff_org with derivatives of H, F, t0, v0, D, B
+      call shape_factors(p_eos,H0,F0,T,n,sdiff_org)
 
-    ! calculate zfac_org and volume
-    call csp_Zfac(cbeos(1),T,P,n,phase,zFac_org)
-    V = zFac_org*sum(n)*Rgas*T/P ! [m^3]
-    ! calculate T0, v0, P0
-    T0 = T*sum(n)/F0         ! [K]
-    v0 = V/H0*1000           ! [L/mol]
-    P0 = zFac_org*kRgas*T0/v0     ! [Pa]
-    print *, "p0 from zfac = ",p0
-    call csp_refPressure(T0,v0,n,p0)
-    print *, "p0 from csp_refPressure = ", p0
+      ! calculate zfac_org and volume
+      call csp_Zfac(p_eos,T,P,n,phase,zFac_org)
+      V = zFac_org*sum(n)*Rgas*T/P ! [m^3]
+      ! calculate T0, v0, P0
+      T0 = T*sum(n)/F0         ! [K]
+      v0 = V/H0*1000           ! [L/mol]
+      P0 = zFac_org*kRgas*T0/v0     ! [Pa]
+      print *, "p0 from zfac = ",p0
+      call csp_refPressure(T0,v0,n,p0)
+      print *, "p0 from csp_refPressure = ", p0
 
-    ! fill sdiff_org up with derivatives of M wrt t0 and v0
-    call calcRefEqDiff(T0,v0,sdiff_org,1)
+      ! fill sdiff_org up with derivatives of M wrt t0 and v0
+      call calcRefEqDiff(T0,v0,sdiff_org,1)
 
-    ! calculate the org Helmholtz energy derivatives (and org Mt)
-    call calcCombinedDiff(T0,v0,n,sdiff_org)
+      ! calculate the org Helmholtz energy derivatives (and org Mt)
+      call calcCombinedDiff(T0,v0,n,sdiff_org)
 
-    ! prepare for volume differentials
-    v01 = v0*(1+eps)
-    call csp_refPressure(T0,v01,n,p01)
-    Zfac = p01*v01/(kRgas*T0)
-    call shape_factors(cbeos(1),H,F,T,n,sdiff)
-    Vpert = v01*H/1000.0
-    call calcRefEqDiff(T0,v01,sdiff,1)
-    call calcCombinedDiff(T0,v01,n,sdiff)
-    print *,'VOLUME DIFFERENTIALS'
-    print *,'v0V   ',(v01-v0)/(Vpert-V),sdiff_org%v0V
-    print *,'Mv0:  ',(sdiff%M-sdiff_org%M)/(v0*eps),sdiff_org%Mv0, (sdiff%M-sdiff_org%M)/(v0*eps)/sdiff_org%Mv0
-    print *,'Mv0v0:',(sdiff%Mv0-sdiff_org%Mv0)/(v0*eps),sdiff_org%Mv0v0, (sdiff%Mv0-sdiff_org%Mv0)/(v0*eps)/sdiff_org%Mv0v0
-    print *,'MT0v0:',(sdiff%Mt0-sdiff_org%Mt0)/(v0*eps),sdiff_org%MT0v0, (sdiff%Mt0-sdiff_org%Mt0)/(v0*eps)/sdiff_org%MT0v0
-    !    print *,'*M_v:',(sdiff%M-sdiff_org%M)/(Vpert-V),sdiff_org%Mv
-    print *,'*FF_V:',(sdiff%FF-sdiff_org%FF)/(Vpert-V),sdiff_org%FF_V, (sdiff%FF-sdiff_org%FF)/(Vpert-V)/sdiff_org%FF_V
-    print *,'*FF_TV:',(sdiff%FF_T-sdiff_org%FF_T)/(Vpert-V),sdiff_org%FF_TV, (sdiff%FF_T-sdiff_org%FF_T)/(Vpert-V)/sdiff_org%FF_TV
-    print *,'*FF_VV:',(sdiff%FF_V-sdiff_org%FF_V)/(Vpert-V),sdiff_org%FF_VV, (sdiff%FF_V-sdiff_org%FF_V)/(Vpert-V)/sdiff_org%FF_VV
+      ! prepare for volume differentials
+      v01 = v0*(1+eps)
+      call csp_refPressure(T0,v01,n,p01)
+      Zfac = p01*v01/(kRgas*T0)
+      call shape_factors(p_eos,H,F,T,n,sdiff)
+      Vpert = v01*H/1000.0
+      call calcRefEqDiff(T0,v01,sdiff,1)
+      call calcCombinedDiff(T0,v01,n,sdiff)
+      print *,'VOLUME DIFFERENTIALS'
+      print *,'v0V   ',(v01-v0)/(Vpert-V),sdiff_org%v0V
+      print *,'Mv0:  ',(sdiff%M-sdiff_org%M)/(v0*eps),sdiff_org%Mv0, (sdiff%M-sdiff_org%M)/(v0*eps)/sdiff_org%Mv0
+      print *,'Mv0v0:',(sdiff%Mv0-sdiff_org%Mv0)/(v0*eps),sdiff_org%Mv0v0, (sdiff%Mv0-sdiff_org%Mv0)/(v0*eps)/sdiff_org%Mv0v0
+      print *,'MT0v0:',(sdiff%Mt0-sdiff_org%Mt0)/(v0*eps),sdiff_org%MT0v0, (sdiff%Mt0-sdiff_org%Mt0)/(v0*eps)/sdiff_org%MT0v0
+      !    print *,'*M_v:',(sdiff%M-sdiff_org%M)/(Vpert-V),sdiff_org%Mv
+      print *,'*FF_V:',(sdiff%FF-sdiff_org%FF)/(Vpert-V),sdiff_org%FF_V, (sdiff%FF-sdiff_org%FF)/(Vpert-V)/sdiff_org%FF_V
+      print *,'*FF_TV:',(sdiff%FF_T-sdiff_org%FF_T)/(Vpert-V),sdiff_org%FF_TV, (sdiff%FF_T-sdiff_org%FF_T)/(Vpert-V)/sdiff_org%FF_TV
+      print *,'*FF_VV:',(sdiff%FF_V-sdiff_org%FF_V)/(Vpert-V),sdiff_org%FF_VV, (sdiff%FF_V-sdiff_org%FF_V)/(Vpert-V)/sdiff_org%FF_VV
 
-    ! prepare for temperature differentials
-    Tpert = T*(1+eps)                                         ! perturbation of T
-    call shape_factors(cbeos(1),H,F,Tpert,n,sdiff)            ! this also calls the mixture routine, which stores derivatives of D and B
-    T01 = Tpert*sum(n)/F                                      ! corresponding perturbation of T0
-    call csp_refPressure(T01,v0,n,p01)                  ! csp_refPressure assumes the specific volume has units L/mol
-    zFac = P01*v0/(kRgas*T01)
-    v01 = zFac*kRgas*T01/P01
-    call calcRefEqDiff(T01,v01,sdiff,1)           ! fill up sdiff with derivatives of M wrt t0 and v0
-    call calcCombinedDiff(T01,v01,n,sdiff)               ! calculate the org Helmholtz energy derivatives (and Mt)
+      ! prepare for temperature differentials
+      Tpert = T*(1+eps)                                         ! perturbation of T
+      call shape_factors(p_eos,H,F,Tpert,n,sdiff)            ! this also calls the mixture routine, which stores derivatives of D and B
+      T01 = Tpert*sum(n)/F                                      ! corresponding perturbation of T0
+      call csp_refPressure(T01,v0,n,p01)                  ! csp_refPressure assumes the specific volume has units L/mol
+      zFac = P01*v0/(kRgas*T01)
+      v01 = zFac*kRgas*T01/P01
+      call calcRefEqDiff(T01,v01,sdiff,1)           ! fill up sdiff with derivatives of M wrt t0 and v0
+      call calcCombinedDiff(T01,v01,n,sdiff)               ! calculate the org Helmholtz energy derivatives (and Mt)
 
-    print *,'TEMPERATURE DIFFERENTIALS'
-    print *,'dDdT  ',(sdiff%D-sdiff_org%D)/(T*eps),sdiff%DT, (sdiff%D-sdiff_org%D)/(T*eps)/sdiff%DT
-    !print *,'*M_T',(sdiff%M-sdiff_org%M)/(T*eps),sdiff_org%Mt ! for debugging purposes
-    print *,'t0T   ',(T01-T0)/(T*eps),sdiff_org%t0T,(T01-T0)/(T*eps)/sdiff_org%t0T
-    print *,'FT    ',(F-F0)/(T*eps),sdiff_org%FT,(F-F0)/(T*eps)/sdiff_org%FT
-    print *,'FiT:  ',(sdiff%Fi(1)-sdiff_org%Fi(1))/(T*eps),sdiff%FiT(1), (sdiff%Fi(1)-sdiff_org%Fi(1))/(T*eps)/sdiff%FiT(1)
-    print *,'FTT:  ',(sdiff%FT-sdiff_org%FT)/(T*eps),sdiff%FTT, (sdiff%FT-sdiff_org%FT)/(T*eps)/sdiff%FTT
-    print *,'t0iT: ',(sdiff%t0i(1)-sdiff_org%t0i(1))/(T*eps), sdiff_org%t0Ti(1),&
-         ((sdiff%t0i(1)-sdiff_org%t0i(1))/(T*eps))/(sdiff_org%t0Ti(1))
-    print *,'*FF_T ',(sdiff%FF-sdiff_org%FF)/(T*eps),sdiff_org%FF_T, (sdiff%FF-sdiff_org%FF)/(T*eps)/sdiff_org%FF_T
-    print *,'*FF_TT',(sdiff%FF_T-sdiff_org%FF_T)/(T*eps),sdiff_org%FF_TT, (sdiff%FF_T-sdiff_org%FF_T)/(T*eps)/sdiff_org%FF_TT
-    print *,'*FF_VT',(sdiff%FF_V-sdiff_org%FF_V)/(T*eps),sdiff_org%FF_TV, (sdiff%FF_V-sdiff_org%FF_V)/(T*eps)/sdiff_org%FF_TV
+      print *,'TEMPERATURE DIFFERENTIALS'
+      print *,'dDdT  ',(sdiff%D-sdiff_org%D)/(T*eps),sdiff%DT, (sdiff%D-sdiff_org%D)/(T*eps)/sdiff%DT
+      !print *,'*M_T',(sdiff%M-sdiff_org%M)/(T*eps),sdiff_org%Mt ! for debugging purposes
+      print *,'t0T   ',(T01-T0)/(T*eps),sdiff_org%t0T,(T01-T0)/(T*eps)/sdiff_org%t0T
+      print *,'FT    ',(F-F0)/(T*eps),sdiff_org%FT,(F-F0)/(T*eps)/sdiff_org%FT
+      print *,'FiT:  ',(sdiff%Fi(1)-sdiff_org%Fi(1))/(T*eps),sdiff%FiT(1), (sdiff%Fi(1)-sdiff_org%Fi(1))/(T*eps)/sdiff%FiT(1)
+      print *,'FTT:  ',(sdiff%FT-sdiff_org%FT)/(T*eps),sdiff%FTT, (sdiff%FT-sdiff_org%FT)/(T*eps)/sdiff%FTT
+      print *,'t0iT: ',(sdiff%t0i(1)-sdiff_org%t0i(1))/(T*eps), sdiff_org%t0Ti(1),&
+           ((sdiff%t0i(1)-sdiff_org%t0i(1))/(T*eps))/(sdiff_org%t0Ti(1))
+      print *,'*FF_T ',(sdiff%FF-sdiff_org%FF)/(T*eps),sdiff_org%FF_T, (sdiff%FF-sdiff_org%FF)/(T*eps)/sdiff_org%FF_T
+      print *,'*FF_TT',(sdiff%FF_T-sdiff_org%FF_T)/(T*eps),sdiff_org%FF_TT, (sdiff%FF_T-sdiff_org%FF_T)/(T*eps)/sdiff_org%FF_TT
+      print *,'*FF_VT',(sdiff%FF_V-sdiff_org%FF_V)/(T*eps),sdiff_org%FF_TV, (sdiff%FF_V-sdiff_org%FF_V)/(T*eps)/sdiff_org%FF_TV
 
-    print *,'MT0:  ',(sdiff%M-sdiff_org%M)/(T01-T0),sdiff_org%MT0, (sdiff%M-sdiff_org%M)/(T01-T0)/sdiff_org%MT0
-    print *,'MT0T0:',(sdiff%MT0-sdiff_org%MT0)/(T01-T0),sdiff_org%MT0T0, (sdiff%MT0-sdiff_org%MT0)/(T01-T0)/sdiff_org%MT0T0
-    print *,'Mv0T0:',(sdiff%Mv0-sdiff_org%Mv0)/(T01-T0),sdiff_org%MT0v0, (sdiff%Mv0-sdiff_org%Mv0)/(T01-T0)/sdiff_org%MT0v0
+      print *,'MT0:  ',(sdiff%M-sdiff_org%M)/(T01-T0),sdiff_org%MT0, (sdiff%M-sdiff_org%M)/(T01-T0)/sdiff_org%MT0
+      print *,'MT0T0:',(sdiff%MT0-sdiff_org%MT0)/(T01-T0),sdiff_org%MT0T0, (sdiff%MT0-sdiff_org%MT0)/(T01-T0)/sdiff_org%MT0T0
+      print *,'Mv0T0:',(sdiff%Mv0-sdiff_org%Mv0)/(T01-T0),sdiff_org%MT0v0, (sdiff%Mv0-sdiff_org%Mv0)/(T01-T0)/sdiff_org%MT0v0
 
-    print *,'MOLE NUMBER DIFFERENTIALS'
-    do i=1,nce
-      print *, "COMP NUMBER", i
-      ! prepare for composition differentials
-      nn = n
-      nn(i) = nn(i) + eps
+      print *,'MOLE NUMBER DIFFERENTIALS'
+      do i=1,nce
+        print *, "COMP NUMBER", i
+        ! prepare for composition differentials
+        nn = n
+        nn(i) = nn(i) + eps
 
-      ! calculations when v0 = v0(nn,V), T0 = T0(nn,T)
-      call shape_factors(cbeos(1),H,F,T,nn,sdiff)
-      T01 = T*sum(nn)/F         ! [K]
-      v01 = V/H*1000.0         ! [L/mol]
-      !call csp_refPressure(T01,v01,nn,p01)
+        ! calculations when v0 = v0(nn,V), T0 = T0(nn,T)
+        call shape_factors(p_eos,H,F,T,nn,sdiff)
+        T01 = T*sum(nn)/F         ! [K]
+        v01 = V/H*1000.0         ! [L/mol]
+        !call csp_refPressure(T01,v01,nn,p01)
 
-      !zFac = p01*v01/(kRgas*T01)
+        !zFac = p01*v01/(kRgas*T01)
 
-      call calcRefEqDiff(T01,v01,sdiff,i_thread)
+        call calcRefEqDiff(T01,v01,sdiff,i_thread)
 
-      call calcCombinedDiff(T01,v01,nn,sdiff)
-      Mnn_temp = sdiff%M
+        call calcCombinedDiff(T01,v01,nn,sdiff)
+        Mnn_temp = sdiff%M
 
-      !print *,'*Mi:',(sdiff%M-sdiff_org%M)/(eps),sdiff_org%Mi(i)
-      temp = (sdiff%FF_T-sdiff_org%FF_T)/(eps)
-      print *,'*FF_Ti:',(sdiff%FF_T-sdiff_org%FF_T)/(eps*sdiff_org%FF_Ti(i))
-      print *,'*FF_i:',(sdiff%FF-sdiff_org%FF)/(eps*sdiff_org%FF_i(i))
+        !print *,'*Mi:',(sdiff%M-sdiff_org%M)/(eps),sdiff_org%Mi(i)
+        temp = (sdiff%FF_T-sdiff_org%FF_T)/(eps)
+        print *,'*FF_Ti:',(sdiff%FF_T-sdiff_org%FF_T)/(eps*sdiff_org%FF_Ti(i))
+        print *,'*FF_i:',(sdiff%FF-sdiff_org%FF)/(eps*sdiff_org%FF_i(i))
 
-      print *,'*FF_Vi:',(sdiff%FF_V-sdiff_org%FF_V)/(eps*sdiff_org%FF_Vi(i))
-      do j=1,nce
-        print *,'*FF_ij:',(sdiff%FF_i(j)-sdiff_org%FF_i(j))/(eps*sdiff_org%FF_ij(j,i))
+        print *,'*FF_Vi:',(sdiff%FF_V-sdiff_org%FF_V)/(eps*sdiff_org%FF_Vi(i))
+        do j=1,nce
+          print *,'*FF_ij:',(sdiff%FF_i(j)-sdiff_org%FF_i(j))/(eps*sdiff_org%FF_ij(j,i))
+        enddo
+
+        print *,'FiT:',(sdiff%FT-sdiff_org%FT)/(eps*sdiff%FiT(i))
+        print *,'Fi:',(F-F0)/(eps*sdiff_org%Fi(i))
+        do j=1,nce
+          print *,'Fij:',(sdiff%Fi(j)-sdiff_org%Fi(j))/(eps*sdiff_org%Fij(j,i))
+        enddo
+
+        print *,'Hi:',(H-H0)/(eps*sdiff_org%Hi(i))
+        print *,'Di:',(sdiff%D-sdiff_org%D)/(eps*sdiff_org%Di(i))
+        print *,'Bi:',(sdiff%B-sdiff_org%B)/(eps*sdiff_org%Bi(i))
+
+        print *,'t0Ti:',(sdiff%t0T-sdiff_org%t0T)/(eps*sdiff_org%t0Ti(i))
+        print *,'t0i:',(T01-T0)/(eps*sdiff_org%t0i(i))
+
+        print *,'v0Vi:',(sdiff%v0V-sdiff_org%v0V)/(eps*sdiff_org%v0Vi(i))
+        print *,'v0i:',(v01-v0)/(eps*sdiff_org%v0i(i))
+        do j=1,nce
+          print *,'v0ij:',(sdiff%v0i(j)-sdiff_org%v0i(j))/(eps*sdiff_org%v0ij(j,i))
+
+          print *,'t0ij:',(sdiff%t0i(j)-sdiff_org%t0i(j))/(eps*sdiff_org%t0ij(j,i))
+        enddo
       enddo
-
-      print *,'FiT:',(sdiff%FT-sdiff_org%FT)/(eps*sdiff%FiT(i))
-      print *,'Fi:',(F-F0)/(eps*sdiff_org%Fi(i))
-      do j=1,nce
-        print *,'Fij:',(sdiff%Fi(j)-sdiff_org%Fi(j))/(eps*sdiff_org%Fij(j,i))
-      enddo
-
-      print *,'Hi:',(H-H0)/(eps*sdiff_org%Hi(i))
-      print *,'Di:',(sdiff%D-sdiff_org%D)/(eps*sdiff_org%Di(i))
-      print *,'Bi:',(sdiff%B-sdiff_org%B)/(eps*sdiff_org%Bi(i))
-
-      print *,'t0Ti:',(sdiff%t0T-sdiff_org%t0T)/(eps*sdiff_org%t0Ti(i))
-      print *,'t0i:',(T01-T0)/(eps*sdiff_org%t0i(i))
-
-      print *,'v0Vi:',(sdiff%v0V-sdiff_org%v0V)/(eps*sdiff_org%v0Vi(i))
-      print *,'v0i:',(v01-v0)/(eps*sdiff_org%v0i(i))
-      do j=1,nce
-        print *,'v0ij:',(sdiff%v0i(j)-sdiff_org%v0i(j))/(eps*sdiff_org%v0ij(j,i))
-
-        print *,'t0ij:',(sdiff%t0i(j)-sdiff_org%t0i(j))/(eps*sdiff_org%t0ij(j,i))
-      enddo
-    enddo
+    end select
   end subroutine test_shape_factors
 
   subroutine csp_testPressure(T,v,n)
-    use tpvar, only: nce, cbeos
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermopack_var, only: nce, get_active_eos, base_eos_param
+    use cubic_eos, only: cb_eos
     implicit none
     ! input
     real, intent(in) :: T                        !< Mixture temperature [K]
@@ -1222,9 +1236,8 @@ contains
     real  :: sumn
     real :: dv, dt, dpdv_num, dpdt_num, p_pert, eps_v, eps_t
     real :: dPdn(nce), dn, dPdn_num(nce), eps_n(nce), nn(nce)
-    integer :: i_thread, i
-    i_thread = 1
-    !$ i_thread = 1 + omp_get_thread_num()
+    integer :: i
+    class(base_eos_param), pointer :: p_act_eos
     sumn = sum(n)
 
     dv = 1.0e-6*v
@@ -1246,31 +1259,35 @@ contains
     print *, eps_v, eps_v/abs(dpdv), dpdv, dpdv_num, "(dpdv)"
     print *, eps_t, eps_t/abs(dpdt), dpdt, dpdt_num,  "(dpdt)"
 
-    print *, "TESTING CSP_MIXTPRESSURE"
-    call csp_mixtPressure(cbeos(1),T,v,n,P,dPdV,dPdT,dPdn)
-    print *,'p',P
-    call csp_mixtPressure(cbeos(1),T,v+dv,n,P_pert)
-    dpdv_num = (p_pert-p)/dv
-    eps_v = abs(dpdv-dpdv_num)
+    p_act_eos => get_active_eos()
+    select type (p_eos => p_act_eos)
+    class is(cb_eos)
+      print *, "TESTING CSP_MIXTPRESSURE"
+      call csp_mixtPressure(p_eos,T,v,n,P,dPdV,dPdT,dPdn)
+      print *,'p',P
+      call csp_mixtPressure(p_eos,T,v+dv,n,P_pert)
+      dpdv_num = (p_pert-p)/dv
+      eps_v = abs(dpdv-dpdv_num)
 
-    call csp_mixtPressure(cbeos(1),T+dt,v,n,P_pert)
-    dpdt_num = (p_pert-p)/dt
-    eps_t = abs(dpdt-dpdt_num)
+      call csp_mixtPressure(p_eos,T+dt,v,n,P_pert)
+      dpdt_num = (p_pert-p)/dt
+      eps_t = abs(dpdt-dpdt_num)
 
-    do i=1,nce
-      nn = n
-      nn(i) = nn(i) + dn
-      call csp_mixtPressure(cbeos(1),T,v,nn,P_pert)
-      dpdn_num(i) = (p_pert-p)/dn
-      eps_n(i) = abs(dpdn(i)-dpdn_num(i))
-    enddo
+      do i=1,nce
+        nn = n
+        nn(i) = nn(i) + dn
+        call csp_mixtPressure(p_eos,T,v,nn,P_pert)
+        dpdn_num(i) = (p_pert-p)/dn
+        eps_n(i) = abs(dpdn(i)-dpdn_num(i))
+      enddo
 
-    print *, "eps,", " releps, ", "value, ", "num_value"
-    print *, eps_v, eps_v/abs(dpdv), dpdv, dpdv_num, "(dpdv)"
-    print *, eps_t, eps_t/abs(dpdt), dpdt, dpdt_num,  "(dpdt)"
-    do i=1,nce
-      print *, eps_n(i), eps_n(i)/abs(dpdn(i)), dpdn(i), dpdn_num(i),  "(dpdn)", i
-    enddo
+      print *, "eps,", " releps, ", "value, ", "num_value"
+      print *, eps_v, eps_v/abs(dpdv), dpdv, dpdv_num, "(dpdv)"
+      print *, eps_t, eps_t/abs(dpdt), dpdt, dpdt_num,  "(dpdt)"
+      do i=1,nce
+        print *, eps_n(i), eps_n(i)/abs(dpdn(i)), dpdn(i), dpdn_num(i),  "(dpdn)", i
+      enddo
+    end select
   end subroutine csp_testPressure
 
   !----------------------------------------------------------------------
@@ -1279,7 +1296,7 @@ contains
   !> \author MH, 2015-01
   !----------------------------------------------------------------------
   subroutine cleanup_csp()
-    use tpselect, only: deAllocateEosCubic
+    !use tpselect, only: deAllocateEosCubic
     use tpmbwr, only: deallocEosMbwr
     implicit none
     integer :: err, i
@@ -1292,13 +1309,13 @@ contains
       if (err /= 0) call stoperror('Not able to deallocate shape_diff struct for csp model')
     endif
 
-    if (allocated(cbrefEos)) then
-      do i=1,size(cbrefEos)
-        call deAllocateEosCubic(cbrefEos(i))
-      enddo
-      deallocate(cbrefEos,STAT=err);
-      if (err /= 0) call stoperror('Not able to deallocate cbrefEos struct for csp model')
-    endif
+    ! if (allocated(cbrefEos)) then
+    !   do i=1,size(cbrefEos)
+    !     call deAllocateEosCubic(cbrefEos(i))
+    !   enddo
+    !   deallocate(cbrefEos,STAT=err);
+    !   if (err /= 0) call stoperror('Not able to deallocate cbrefEos struct for csp model')
+    ! endif
 
     if (allocated(mbwrRefEos)) then
       do i=1,size(mbwrRefEos)
@@ -1319,11 +1336,11 @@ contains
   !> along with its derivatives.
   subroutine csp_calcFres(nce,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    use eosdata, only: eoscubic
+    use cubic_eos, only: cb_eos
     !$ use omp_lib, only: omp_get_thread_num
     ! Input.
     integer, intent(in) :: nce
-    type (eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T,V,n(nce)
     ! Output.
     real, optional, intent(out) :: F,F_T,F_V,F_n(nce)

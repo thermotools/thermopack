@@ -2,7 +2,7 @@ module tpcbmix
   implicit none
   save
 
-  public :: cbCalcParameters,cbCalcMixtureParams
+  public :: cbCalcMixtureParams
   public :: cbCalcM, setCubicm1m2, getCubicm1m2
   public :: calcBmixCubic
 
@@ -25,99 +25,48 @@ contains
   !! \author Geir Skaugen
   !! \date 2012-06-12
   !!
-  subroutine cbCalcParameters (nc, comp, cbeos, b_exponent)
-    use eosdata
-    use compdata, only: gendata
-    implicit none
-    integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
-    real, optional, intent(in) :: b_exponent
-    !
-    real :: b_exp
+  ! subroutine cbCalcParameters (nc, cbeos, b_exponent)
+  !   use eosdata
+  !   use cubic_eos, only: cb_eos
+  !   implicit none
+  !   integer, intent(in) :: nc
+  !   class(cb_eos), intent(inout) :: cbeos
+  !   real, optional, intent(in) :: b_exponent
+  !   !
+  !   real :: b_exp
 
-    cbconst: select case (cbeos%eosidx)
-    case (cbSRK, cspSRK, cpaSRK, eosLK) ! Use SRK to generate initial values for LK
-       cbeos%eosid = 'SRK'
-       cbeos%name = 'Soave Redlich Kwong'
-       cbeos%alfa = 0.48D+00
-       cbeos%beta = 1.574D+00
-       cbeos%delta =  0.0D+00
-       cbeos%gamma = 0.176D+00
+  !   select case (cbeos%eosidx)
+  !   case (cbSRK, cspSRK, cpaSRK, eosLK) ! Use SRK to generate initial values for LK
+  !     cbeos%delta =  0.0D+00
 
-    case (cbSRKGB,cspSRKGB)
-       cbeos%eosid = 'SRK'
-       cbeos%name = 'SRK Gabrowski'
-       cbeos%alfa = 0.48508D+00
-       cbeos%beta = 1.555171D+00
-       cbeos%delta =  0.0D+00
-       cbeos%gamma = 0.15613D+00
+  !   case (cbPR,cspPR,cpaPR)
+  !     cbeos%delta =  1.0D+00
 
-    case (cbPR,cspPR,cpaPR)
-       cbeos%eosid = 'PR'
-       cbeos%name = 'Peng-Robinson'
-       cbeos%alfa = 0.37464D+00
-       cbeos%beta = 1.54226D+00
-       cbeos%delta =  1.0D+00
-       cbeos%gamma = 0.26992D+00
+  !   case default
+  !     cbeos%delta =  -1.0D20
 
-    case (cbVdW)
-       cbeos%eosid = 'VdW'
-       cbeos%name = 'Van der Waals'
-       cbeos%alfa = -1.0D20
-       cbeos%beta = -1.0D20
-       cbeos%delta =  -1.0D20
-       cbeos%gamma = -1.0D20
+  !   end select
 
-    case (cbRK)
-       cbeos%eosid = 'RK'
-       cbeos%name = 'Redlich Kwong'
-       cbeos%alfa = -1.0D20
-       cbeos%beta = -1.0D20
-       cbeos%delta =  -1.0D20
-       cbeos%gamma = -1.0D20
+  !   if (cbeos%eosidx /= cbSW .and. cbeos%eosidx /= cbPT) then
+  !      call cbCalcM(cbeos)
 
-    case (cbSW)
-       cbeos%eosid = 'SW'
-       cbeos%name = 'Schmidt-Wensel' !< alfa,beta and gamma from eq. 13 in SW paper
-       cbeos%alfa = 0.465
-       cbeos%beta = 1.347
-       cbeos%delta =  -1.0D20
-       cbeos%gamma = 0.528
+  !      ! Initialze mixing rule for the C-parameter
+  !      cbeos%ci = 0.0
+  !      cbeos%sumc = 0.0
+  !      cbeos%cij = 0.0
+  !   endif
 
-    case (cbPT) ! Patel-Teja
-       ! Individual "S" called F by Patel-Teja, classic alpha-term.
-       ! Need to be initialized when
-       ! The general form is here:
-       cbeos%eosid = 'PT'
-       cbeos%name = 'Patel-Teja'
-       cbeos%alfa = 0.452413
-       cbeos%beta = 1.30982 !  Typo, from wrong eq in PT paper -0.076799
-       cbeos%delta = -1.0D20
-       cbeos%gamma = -0.295937
+  !   call cbCalcOmegaZc(nc,cbeos) !< Uses the calculated m1 and m2 for two-param eos
 
-    end select cbconst
+  !   if (present(b_exponent)) then
+  !     b_exp = b_exponent
+  !   else
+  !     b_exp = 1.0
+  !   endif
+  !   ! Select default set no 1 interaction paramteres
+  !   call cbCalcLowcasebij(nc,cbeos,b_exp)
 
-    if (cbeos%eosidx /= cbSW .and. cbeos%eosidx /= cbPT) then
-       call cbCalcM(cbeos)
-
-       ! Initialze mixing rule for the C-parameter
-       cbeos%ci = 0.0
-       cbeos%sumc = 0.0
-       cbeos%cij = 0.0
-    endif
-
-    call cbCalcOmegaZc(nc,comp,cbeos) !< Uses the calculated m1 and m2 for two-param eos
-
-    if (present(b_exponent)) then
-      b_exp = b_exponent
-    else
-      b_exp = 1.0
-    endif
-    ! Select default set no 1 interaction paramteres
-    call cbCalcLowcasebij(nc,cbeos,b_exp)
-
-  end subroutine cbCalcParameters
+  ! end subroutine cbCalcParameters
 
   !---------------------------------------------------------------------------------------
   !> Calculation of parameter m1 and m2 for the selected EOS
@@ -129,8 +78,9 @@ contains
   !
   subroutine cbCalcM (cbeos, cpar, bpar)
     use eosdata
+    use cubic_eos, only: cb_eos
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, optional, intent (in)  :: cpar,bpar
     real ::  sqterm,sw,acf,b,c
     real ::  sqterm2, t1,t2,t3,t4
@@ -156,120 +106,106 @@ contains
     cbeos%d2m1dBdC = 0.0D0
     cbeos%d2m2dBdC = 0.0D0
 
-    if (cbeos%eosidx == cbSRK .OR. &
-         cbeos%eosidx == cbSRKGB .OR. &
-         cbeos%eosidx == cbPR .OR. &
-         cbeos%eosidx == cspSRK .OR. &
-         cbeos%eosidx == cspSRKGB .OR. &
-         cbeos%eosidx == cpaSRK .OR. &
-         cbeos%eosidx == cspPR .OR. &
-         cbeos%eosidx == cpaPR .OR. &
-         cbeos%eosidx == eosLK) then
-       cbeos%m1 = (-(cbeos%delta + 1)+ sqrt(cbeos%delta**2 + 6.0*cbeos%delta + 1.0))/2.0
-       cbeos%m2 = (-(cbeos%delta + 1)- sqrt(cbeos%delta**2 + 6.0*cbeos%delta + 1.0))/2.0
-    else
-       select case (cbeos%eosidx)
-       case (cbVdW)
-          cbeos%m1 = 0.0D0
-          cbeos%m2 = 0.0D0
-       case (cbRK)
-          cbeos%m1 = -1.0D0
-          cbeos%m2 = 0.0D0
-       case (cbSW) !< For this EOS, the m1 and m2 are re-calculated after the mixing paramteres are calculated
-          acf = cpar
-          sw = 1.0+18.0*acf+9.0*acf*acf
-          sqterm = sqrt(sw)
-          cbeos%m1 = (-1.0 - 3.0*acf + sqterm)/2.0
-          cbeos%m2 = (-1.0 - 3.0*acf - sqterm)/2.0
+    select case (cbeos%subeosidx)
+    case (cbVdW)
+      cbeos%m1 = 0.0D0
+      cbeos%m2 = 0.0D0
+    case (cbSRK, cbPR, cspSRK, cpaSRK, cspPR, cpaPR, eosLK)
+      cbeos%m1 = (-(cbeos%delta + 1)+ sqrt(cbeos%delta**2 + 6.0*cbeos%delta + 1.0))/2.0
+      cbeos%m2 = (-(cbeos%delta + 1)- sqrt(cbeos%delta**2 + 6.0*cbeos%delta + 1.0))/2.0
+    case (cbSW) !< For this EOS, the m1 and m2 are re-calculated after the mixing paramteres are calculated
+      acf = cpar
+      sw = 1.0+18.0*acf+9.0*acf*acf
+      sqterm = sqrt(sw)
+      cbeos%m1 = (-1.0 - 3.0*acf + sqterm)/2.0
+      cbeos%m2 = (-1.0 - 3.0*acf - sqterm)/2.0
 
-          cbeos%dm1dc = -1.5 + 4.5*(1.0+acf)/sqterm
-          cbeos%dm2dc = -1.5 - 4.5*(1.0+acf)/sqterm
+      cbeos%dm1dc = -1.5 + 4.5*(1.0+acf)/sqterm
+      cbeos%dm2dc = -1.5 - 4.5*(1.0+acf)/sqterm
 
-          cbeos%d2m1dc2 = 4.5*(sw-9.0*(1.0+acf)**2)/(sw*sqterm)
-          cbeos%d2m2dc2 = -cbeos%d2m1dc2
+      cbeos%d2m1dc2 = 4.5*(sw-9.0*(1.0+acf)**2)/(sw*sqterm)
+      cbeos%d2m2dc2 = -cbeos%d2m1dc2
 
-       case (cbPT) !< The Patel-Teja 3 parameter cubic EOS
-          ! Need to calculated after mixing of b and c
-          c = cpar
-          b = bpar
-          sqterm2 = b*b+6*b*c+c*c
-          sqterm = sqrt(sqterm2)
+    case (cbPT) !< The Patel-Teja 3 parameter cubic EOS
+      ! Need to calculated after mixing of b and c
+      c = cpar
+      b = bpar
+      sqterm2 = b*b+6*b*c+c*c
+      sqterm = sqrt(sqterm2)
 
-          cbeos%m1 = (-b-c + sqterm)/(2*b)
-          cbeos%m2 = (-b-c - sqterm)/(2*b)
+      cbeos%m1 = (-b-c + sqterm)/(2*b)
+      cbeos%m2 = (-b-c - sqterm)/(2*b)
 
-          cbeos%dm1dB = -(c*(3*b-sqterm+c))/(2*sqterm*b*b)
-          cbeos%dm2dB =  (c*(3*b+sqterm+c))/(2*sqterm*b*b)
+      cbeos%dm1dB = -(c*(3*b-sqterm+c))/(2*sqterm*b*b)
+      cbeos%dm2dB =  (c*(3*b+sqterm+c))/(2*sqterm*b*b)
 
-          cbeos%dm1dC =  (3*b-sqterm+c)/(2*sqterm*b)
-          cbeos%dm2dC = -(3*b+sqterm+c)/(2*sqterm*b)
+      cbeos%dm1dC =  (3*b-sqterm+c)/(2*sqterm*b)
+      cbeos%dm2dC = -(3*b+sqterm+c)/(2*sqterm*b)
 
-          t2 = b*b + 5*b*c + 3*c*c
-          t3 = b*b*b*sqterm*sqterm2
-          t4 = c*c*c
-          cbeos%d2m1dB2 =   c*(3*b*t2 - sqterm*sqterm2 + t4) /t3
-          cbeos%d2m2dB2 = -(c*(3*b*t2 + sqterm*sqterm2 + t4))/t3
+      t2 = b*b + 5*b*c + 3*c*c
+      t3 = b*b*b*sqterm*sqterm2
+      t4 = c*c*c
+      cbeos%d2m1dB2 =   c*(3*b*t2 - sqterm*sqterm2 + t4) /t3
+      cbeos%d2m2dB2 = -(c*(3*b*t2 + sqterm*sqterm2 + t4))/t3
 
-          t1 = 3*b+c
-          cbeos%d2m1dC2 = -(t1*t1 - sqterm2)/(2*sqterm2*sqterm*b)
-          cbeos%d2m2dC2 = -cbeos%d2m1dC2
+      t1 = 3*b+c
+      cbeos%d2m1dC2 = -(t1*t1 - sqterm2)/(2*sqterm2*sqterm*b)
+      cbeos%d2m2dC2 = -cbeos%d2m1dC2
 
-          cbeos%d2m1dBdC = -((t1-sqterm)* (b*(b+3*c)-c*sqterm))/(2*sqterm*sqterm2*b*b)
-          cbeos%d2m2dBdC =  ((t1+sqterm)* (b*(b+3*c)+c*sqterm))/(2*sqterm*sqterm2*b*b)
+      cbeos%d2m1dBdC = -((t1-sqterm)* (b*(b+3*c)-c*sqterm))/(2*sqterm*sqterm2*b*b)
+      cbeos%d2m2dBdC =  ((t1+sqterm)* (b*(b+3*c)+c*sqterm))/(2*sqterm*sqterm2*b*b)
 
-          ! Test numerical:
-          if (cbeos%cubic_verbose) then
-             m1 = cbeos%m1
-             m2 = cbeos%m2
+      ! Test numerical:
+      if (cbeos%cubic_verbose) then
+        m1 = cbeos%m1
+        m2 = cbeos%m2
 
-             bdiff = 1.0E-5
-             cdiff = 1.0E-5
+        bdiff = 1.0E-5
+        cdiff = 1.0E-5
 
-             bplus = b+bdiff
-             cplus = c+cdiff
+        bplus = b+bdiff
+        cplus = c+cdiff
 
-             bminus = b-bdiff
-             cminus = c-cdiff
+        bminus = b-bdiff
+        cminus = c-cdiff
 
-             sqterm2_bplus = bplus*bplus+6*bplus*c+c*c
-             sqterm2_cplus = b*b+6*b*cplus+cplus*cplus
+        sqterm2_bplus = bplus*bplus+6*bplus*c+c*c
+        sqterm2_cplus = b*b+6*b*cplus+cplus*cplus
 
-             sqterm_bplus = sqrt(sqterm2_bplus)
-             sqterm_cplus = sqrt(sqterm2_cplus)
+        sqterm_bplus = sqrt(sqterm2_bplus)
+        sqterm_cplus = sqrt(sqterm2_cplus)
 
-             sqterm2_bminus = bminus*bminus+6*bminus*c+c*c
-             sqterm2_cminus = b*b+6*b*cminus+cminus*cminus
+        sqterm2_bminus = bminus*bminus+6*bminus*c+c*c
+        sqterm2_cminus = b*b+6*b*cminus+cminus*cminus
 
-             sqterm_bminus = sqrt(sqterm2_bminus)
-             sqterm_cminus = sqrt(sqterm2_cminus)
+        sqterm_bminus = sqrt(sqterm2_bminus)
+        sqterm_cminus = sqrt(sqterm2_cminus)
 
-             m1_bplus = (-bplus-c + sqterm_bplus)/(2*bplus)
-             m1_bminus = (-bminus-c + sqterm_bminus)/(2*bminus)
+        m1_bplus = (-bplus-c + sqterm_bplus)/(2*bplus)
+        m1_bminus = (-bminus-c + sqterm_bminus)/(2*bminus)
 
-             m1_cplus = (-b-cplus + sqterm_cplus)/(2*b)
-             m1_cminus = (-b-cminus + sqterm_cminus)/(2*b)
+        m1_cplus = (-b-cplus + sqterm_cplus)/(2*b)
+        m1_cminus = (-b-cminus + sqterm_cminus)/(2*b)
 
-             m2_bplus = (-bplus-c - sqterm_bplus)/(2*bplus)
-             m2_bminus = (-bminus-c - sqterm_bminus)/(2*bminus)
+        m2_bplus = (-bplus-c - sqterm_bplus)/(2*bplus)
+        m2_bminus = (-bminus-c - sqterm_bminus)/(2*bminus)
 
-             m2_cplus = (-b-cplus - sqterm_cplus)/(2*b)
-             m2_cminus = (-b-cminus - sqterm_cminus)/(2*b)
+        m2_cplus = (-b-cplus - sqterm_cplus)/(2*b)
+        m2_cminus = (-b-cminus - sqterm_cminus)/(2*b)
 
-             dm1db_num  = (m1_bplus - m1_bminus)/(2*bdiff)
-             dm1dc_num  = (m1_cplus - m1_cminus)/(2*cdiff)
+        dm1db_num  = (m1_bplus - m1_bminus)/(2*bdiff)
+        dm1dc_num  = (m1_cplus - m1_cminus)/(2*cdiff)
 
-             dm2db_num  = (m2_bplus - m2_bminus)/(2*bdiff)
-             dm2dc_num  = (m2_cplus - m2_cminus)/(2*cdiff)
+        dm2db_num  = (m2_bplus - m2_bminus)/(2*bdiff)
+        dm2dc_num  = (m2_cplus - m2_cminus)/(2*cdiff)
 
-             write (*,*) 'PT derivtest, analytical, numerical'
-             write (*,*) 'PT derivtest, dm1/db: ', cbeos%dm1db, dm1db_num, cbeos%dm1db - dm1db_num
-             write (*,*) 'PT derivtest, dm1/dc: ', cbeos%dm1dc, dm1dc_num, cbeos%dm1dc- dm1dc_num
-             write (*,*) 'PT derivtest, dm2/db: ', cbeos%dm2db, dm2db_num, cbeos%dm2db- dm2db_num
-             write (*,*) 'PT derivtest, dm2/dc: ', cbeos%dm2dc, dm2dc_num, cbeos%dm2dc- dm2dc_num
-          endif
-       end select
-    endif
-    return
+        write (*,*) 'PT derivtest, analytical, numerical'
+        write (*,*) 'PT derivtest, dm1/db: ', cbeos%dm1db, dm1db_num, cbeos%dm1db - dm1db_num
+        write (*,*) 'PT derivtest, dm1/dc: ', cbeos%dm1dc, dm1dc_num, cbeos%dm1dc- dm1dc_num
+        write (*,*) 'PT derivtest, dm2/db: ', cbeos%dm2db, dm2db_num, cbeos%dm2db- dm2db_num
+        write (*,*) 'PT derivtest, dm2/dc: ', cbeos%dm2dc, dm2dc_num, cbeos%dm2dc- dm2dc_num
+      endif
+    end select
   end subroutine cbCalcM
 
   !-----------------------------------------------------------------------------------------
@@ -288,13 +224,12 @@ contains
   !! Newton-Raphson method and converges normally after 3-4 iterations.
   !!
 
-  subroutine cbCalcOmegaZc(nc,comp,cbeos)
+  subroutine cbCalcOmegaZc(nc,cbeos)
     use eosdata
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, parameter  :: eps = 1.0E-10
     integer, parameter  :: maxiter = 10
     real :: n,n1,n2,zcomb,dzcomb,f,fd,fdd,argum
@@ -302,7 +237,7 @@ contains
     integer :: ic,i
     real :: bc,dbc,kc
     real :: acfi
-    if (cbeos%eosidx == cbSW) then !> For the Schmidt and Wenzel EOS
+    if (cbeos%subeosidx == cbSW) then !> For the Schmidt and Wenzel EOS
        do ic = 1,nc
           acfi = cbeos%single(ic)%acf
           bc = 0.25989 - 0.0217*acfi + 0.00375*acfi*acfi !< initial value critical compressibility
@@ -335,7 +270,7 @@ contains
           cbeos%single(ic)%zcrit = kc
           cbeos%single(ic)%omegaC = 0.0D0
        enddo
-    else if (cbeos%eosidx == cbPT) then
+    else if (cbeos%subeosidx == cbPT) then
        ! General term for zcrit
        do ic = 1,nc
           acfi = cbeos%single(ic)%acf
@@ -415,11 +350,11 @@ contains
   end subroutine cbCalcOmegaZc
 
   subroutine cbSingleCalcABC(nc,cbeos,i)
-    use eosdata, only: eoscubic
-    use tpconst, only: kRgas
+    use cubic_eos, only: cb_eos
+    use thermopack_constants, only: kRgas
     implicit none
     integer, intent(in) :: nc, i
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     ! Locals
     real :: tci,pci
 
@@ -439,11 +374,11 @@ contains
   !! \author Morten Hammer
   !! \todo Add lij mixing parameter
   subroutine cbCalcLowcasebij(nc,cbeos,s)
-    use eosdata
+    use cubic_eos, only: cb_eos
     use numconstants, only: small
     implicit none
     integer, intent(in) :: nc
-    type (eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: s
     ! Locals
     integer :: i,j !< Counters
@@ -491,13 +426,11 @@ contains
   !! yy = -2.0*s*(s+1.0)
 
 
-  subroutine cbCalcBmix (nc, comp, cbeos, zcomp)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+  subroutine cbCalcBmix (nc, cbeos, zcomp)
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent (in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in) :: zcomp(nc)
     ! Locals
     integer :: i,j
@@ -535,10 +468,10 @@ contains
 
   ! As cbCalcBmix, but not filling cbeos type
   function calcBmixCubic(nc, cbeos, z) result(Bmix)
-    use eosdata, only: eoscubic
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent (in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real, intent (in) :: z(nc)
     real :: Bmix
     ! Locals
@@ -566,13 +499,12 @@ contains
     endif
   end function calcBmixCubic
 
-  subroutine cbCalcCmix (nc, comp, cbeos, zcomp)
-    use eosdata, only: eoscubic, cbSW
-    use compdata, only: gendata
+  subroutine cbCalcCmix (nc, cbeos, zcomp)
+    use eosdata, only: cbSW
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent (in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: zcomp(nc)
     ! Locals
     integer :: low,high,i,j
@@ -587,7 +519,7 @@ contains
     do i=low,high
        acfi = cbeos%single(i)%acf !< Acentric factor component, i
 
-       if (cbeos%eosidx == cbSW) then !< Need intermediate sums
+       if (cbeos%subeosidx == cbSW) then !< Need intermediate sums
           bi07 =  cbeos%bi(i)**0.7 !< Assume the cbCalcBmix has been called
           sum1 = sum1 + zcomp(i)*acfi*bi07
           sum2 = sum2 + zcomp(i)*bi07
@@ -598,7 +530,7 @@ contains
        endif
     end do
 
-    if (cbeos%eosidx == cbSW) then
+    if (cbeos%subeosidx == cbSW) then
        cbeos%sumc = sum1 / sum2
        do i=1,nc
           bi07 = cbeos%bi(i)**0.7
@@ -606,7 +538,7 @@ contains
           do j=1,nc
              bj07 = cbeos%bi(j)**0.7
              cbeos%cij(i,j) = -(bi07*bj07/(sum2*sum2)) &
-                  * (cbeos%single(i)%acf + comp(j)%acf - 2*sum1/sum2)
+                  * (cbeos%single(i)%acf + cbeos%single(j)%acf - 2*sum1/sum2)
           end do
        end do
     endif
@@ -614,28 +546,28 @@ contains
   end subroutine cbCalcCmix
 
   !-------------------------------------------
-  subroutine cbCalcAmix (nc, comp, cbeos, t, zcomp)
-    use eosdata
-    use compdata, only: gendata
+  subroutine cbCalcAmix(nc, cbeos, t, zcomp)
+    use cubic_eos, only: cb_eos, cbMixVdW, cbMixVdWCPA, &
+         cbMixHuronVidal, cbMixHuronVidal2, cbMixNRTL, cbMixUNIFAC, &
+         cbMixHVCPA, cbMixHVCPA2, cbMixWongSandler, cbMixReid
     use wong_sandler, only : WongSandlerMix
     use excess_gibbs, only : ExcessGibbsMix
     use cbAlpha, only: cbCalcAlphaTerm
     implicit none
     integer, intent (in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, zcomp(nc)
 
     ! Common part for all mixing rules - actually the temperature dependent
     ! alpha(T) term in the EOS. ap = alpha(T)*ai
 
     ! Assign  alpha-terms including temperature derivatives
-    call cbCalcAlphaTerm(nc, comp, cbeos, T)
+    call cbCalcAlphaTerm(nc, cbeos, T)
 
     select case (cbeos%mruleidx)
 
-    case (cbMixClassic, cbMixClassicCPA)
-       call vanderWaalsMix(nc,comp,cbeos,t,zcomp)
+    case (cbMixVdW, cbMixVdWCPA)
+      call vanderWaalsMix(nc,cbeos,t,zcomp)
 
     case (cbMixHuronVidal, cbMixHuronVidal2, cbMixNRTL, cbMixUNIFAC, &
          cbMixHVCPA, cbMixHVCPA2)
@@ -651,14 +583,12 @@ contains
     cbeos%a = cbeos%suma
   end subroutine cbCalcAmix
 
-  subroutine vanderWaalsMix(nc,comp,cbeos,t,zcomp)
+  subroutine vanderWaalsMix(nc,cbeos,t,zcomp)
     use stringmod, only: str_eq
-    use eosdata
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, zcomp(nc)
     !
     ! Local variables
@@ -676,12 +606,12 @@ contains
     sum2 = 0.0D0
     sum3 = 0.0D0
     do i=low,high
-       afac(i) = sqrt(cbeos%single(i)%a*cbeos%single(i)%alpha)
-       sum1 = sum1 + afac(i)*zcomp(i)
-       if (cbeos%cubic_verbose) then
-          write(*,*) 'afac(,',i,') = ',afac(i)
-          write(*,*) 'sum1 = ',sum1
-       endif
+      afac(i) = sqrt(cbeos%single(i)%a*cbeos%single(i)%alpha)
+      sum1 = sum1 + afac(i)*zcomp(i)
+      if (cbeos%cubic_verbose) then
+        write(*,*) 'afac(,',i,') = ',afac(i)
+        write(*,*) 'sum1 = ',sum1
+      endif
     end do
     cbeos%suma = sum1*sum1
 
@@ -740,14 +670,13 @@ contains
     enddo
   end subroutine vanderWaalsMix
 
-  subroutine cbCalcMixtureParams(nc,comp,cbeos,t,zcomp)
+  subroutine cbCalcMixtureParams(nc,cbeos,t,zcomp)
     !> Update the parameters of the cubic EoS, such as a and b, given the state (t, zcomp).
-    use eosdata
-    use compdata, only: gendata
+    use eosdata, only: cbSW, cbPT
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc                         !< number of components
-    type (gendata), intent(in), dimension(nc) :: comp !< component data
-    type(eoscubic), intent(inout) :: cbeos            !< cubic eos instance
+    class(cb_eos), intent(inout) :: cbeos            !< cubic eos instance
     real, intent(in) :: t                             !< temperature (K)
     real, intent(in) :: zcomp(nc)                     !< mole numbers (mole)
 
@@ -763,41 +692,41 @@ contains
     cbeos%Bi = 0.0D+00
 
     ! Mixing rule for the B-parameter
-    call cbCalcBmix(nc,comp,cbeos,zcomp)
+    call cbCalcBmix(nc,cbeos,zcomp)
 
-    if (cbeos%eosidx == cbSW .or. cbeos%eosidx == cbPT) then
+    if (cbeos%subeosidx == cbSW .or. cbeos%subeosidx == cbPT) then
        ! Mixing rule for the C-parameter - need B-paramteter
-       call cbCalcCmix(nc,comp,cbeos,zcomp)
+       call cbCalcCmix(nc, cbeos, zcomp)
        call cbCalcM(cbeos, cbeos%sumc, cbeos%sumb)
     endif
 
     ! Mixing rule for the A-parameter - need B-paramters
-    call cbCalcAmix(nc,comp,cbeos,t,zcomp)
+    call cbCalcAmix(nc,cbeos,t,zcomp)
   end subroutine cbCalcMixtureParams
 
   !> For tuning of the parameters m1 and m2 in the cubic eos
-  subroutine setCubicm1m2(m1,m2)
-    use tpvar, only: nce, comp, cbeos
+  subroutine setCubicm1m2(cbeos, m1, m2)
+    use thermopack_var, only: nce
+    use cubic_eos, only: cb_eos
     implicit none
+    class(cb_eos), intent(inout) :: cbeos            !< cubic eos instance
     real, intent(in) :: m1, m2
     !
-    cbeos(1)%m1 = m1
-    cbeos(1)%m2 = m2
-    call cbCalcOmegaZc(nce,comp,cbeos(1)) !Uses the m1 and m2 for two-param eos
-    cbeos%alfa = -1.0D20
-    cbeos%beta = -1.0D20
+    cbeos%m1 = m1
+    cbeos%m2 = m2
+    call cbCalcOmegaZc(nce,cbeos) !Uses the m1 and m2 for two-param eos
     cbeos%delta = -1.0D20
-    cbeos%gamma = -1.0D20
   end subroutine setCubicm1m2
 
   !> For retrieval of the parameters m1 and m2 in the cubic eos
-  subroutine getCubicm1m2(m1,m2)
-    use tpvar, only: cbeos
+  subroutine getCubicm1m2(cbeos, m1,m2)
+    use cubic_eos, only: cb_eos
     implicit none
+    class(cb_eos), intent(inout) :: cbeos            !< cubic eos instance
     real, intent(out) :: m1, m2
     !
-    m1 = cbeos(1)%m1
-    m2 = cbeos(1)%m2
+    m1 = cbeos%m1
+    m2 = cbeos%m2
   end subroutine getCubicm1m2
 
 end module tpcbmix

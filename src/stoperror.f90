@@ -1,5 +1,5 @@
 module error
-  use parameters, only: cLen
+  use thermopack_constants, only: cLen
   implicit none
 
   integer :: err=1 !< Used in exit call: call exit(error)

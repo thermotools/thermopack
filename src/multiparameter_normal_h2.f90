@@ -236,7 +236,7 @@ contains
   end subroutine alphaResDerivs_NORMAL_H2
 
   function satDeltaEstimate_NORMAL_H2 (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH, SINGLEPH
+    use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
     class(meos_normal_h2) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase

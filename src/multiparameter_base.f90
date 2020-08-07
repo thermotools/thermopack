@@ -6,8 +6,8 @@
 !> alpha = A/(nRT)
 module multiparameter_base
   use numconstants, only: machine_prec
-  use parameters, only: LIQPH, VAPPH
-  use tpconst, only: Rgas_default
+  use thermopack_constants, only: LIQPH, VAPPH
+  use thermopack_constants, only: Rgas_default
   implicit none
   save
   public
@@ -97,6 +97,11 @@ module multiparameter_base
        real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
      end subroutine alpha0Derivs_intf
   end interface
+
+  ! Allow array of pointers to NIST meos
+  type :: nist_meos_ptr
+    class(meos), pointer :: meos
+  end type nist_meos_ptr
 
 contains
 
@@ -561,7 +566,7 @@ contains
   end subroutine alphaIdDerivs_Tv
 
   subroutine densitySolver(this, T_spec, p_spec, phase_spec, rho, phase_found)
-    use parameters
+    use thermopack_constants
     class(meos) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec !< Temperature (K) and pressure (Pa)
     integer, intent(in) :: phase_spec !< Phase flag.

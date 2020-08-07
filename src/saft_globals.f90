@@ -11,32 +11,49 @@ contains
   function assoc_covol(ic)
     use pc_saft_nonassoc, only: sigma_cube
     use saftvrmie_containers, only: saftvrmie_param
-    use tpconst, only: N_AVOGADRO
-    use tpvar, only: cbeos
+    use cubic_eos, only: cb_eos
+    use thermopack_constants, only: N_AVOGADRO
+    use thermopack_var, only: get_active_eos
     real :: assoc_covol
     integer, intent(in) :: ic !< Component number
+    ! Locals
+
     if (saft_model == eosPC_SAFT) then
-       assoc_covol = N_AVOGADRO*sigma_cube(ic,ic)
+      assoc_covol = N_AVOGADRO*sigma_cube(ic,ic)
     else if (saft_model == eosBH_pert) then
-       assoc_covol = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,ic)
+      assoc_covol = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,ic)
     else
-       assoc_covol = cbeos(1)%single(ic)%b/1000
+      select type ( p_eos => get_active_eos() )
+      class is ( cb_eos )
+        assoc_covol = p_eos%single(ic)%b/1000
+      class default
+        assoc_covol = 0
+        print *,"Not able to calculate assoc_covol. Not cubic."
+      end select
     end if
   end function assoc_covol
 
   function assoc_covol_binary(ic,jc)
     use pc_saft_nonassoc, only: sigma_cube
     use saftvrmie_containers, only: saftvrmie_param
-    use tpconst, only: N_AVOGADRO
-    use tpvar, only: cbeos
+    use thermopack_constants, only: N_AVOGADRO
+    use thermopack_var, only: get_active_eos
+    use cubic_eos, only: cb_eos
     real :: assoc_covol_binary
     integer, intent(in) :: ic, jc !< Component numbers
+    ! Locals
     if (saft_model == eosPC_SAFT) then
-       assoc_covol_binary = N_AVOGADRO*sigma_cube(ic,jc)
+      assoc_covol_binary = N_AVOGADRO*sigma_cube(ic,jc)
     else if (saft_model == eosBH_pert) then
-       assoc_covol_binary = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,jc)
+      assoc_covol_binary = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,jc)
     else
-       assoc_covol_binary = 0.5*(cbeos(1)%single(ic)%b + cbeos(1)%single(jc)%b)/1000.0
+      select type ( p_eos => get_active_eos() )
+      class is ( cb_eos )
+        assoc_covol_binary = 0.5*(p_eos%single(ic)%b + p_eos%single(jc)%b)/1000.0
+      class default
+        assoc_covol_binary = 0
+        print *,"Not able to calculate assoc_covol. Not cubic."
+      end select
     end if
   end function assoc_covol_binary
 

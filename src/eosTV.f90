@@ -3,9 +3,9 @@
 !!
 !! \author MH, 2015-02
 module eosTV
-  use tpvar, only: comp, cbeos
-  use parameters
-  use tpconst
+  use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
+       eos_container, get_active_eos_container
+  use thermopack_constants
   !
   implicit none
   save
@@ -31,7 +31,6 @@ contains
     use single_phase, only: TV_CalcPressure
     use cbHelm, only: cbPvv, cbPi
     use volume_shift, only: volumeShiftVolume, NOSHIFT
-    !$ use omp_lib
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -44,34 +43,24 @@ contains
     logical, optional, intent(in) :: recalculate !< flag for Thermopack: if true, recalculate cbeos-structure
     real :: p !< Pa - Pressure
     ! Locals
-    real :: d2Pdrho2, rho, dPdrho, v_local, c
-    integer :: i_cbeos, VSHIFTID
+    real :: d2Pdrho2, rho, dPdrho
+    !integer :: VSHIFTID
     logical :: recalculate_loc
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
     else
       recalculate_loc = .true.
     end if
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      VSHIFTID = cbeos(i_cbeos)%volumeShiftId ! Store volume shift information
-      v_local = v
-      if (VSHIFTID /= NOSHIFT) then
-        if (present(dpdv) .or. present(dpdt) .or. present(d2pdv2) .or. present(dpdn)) then
-          call stoperror("eosTV::pressure dpdv, dpdt, d2pdv2, dpdn not supported by pressure")
-        endif
-        c = 0
-        call volumeShiftVolume(nc,comp,cbeos(i_cbeos)%volumeShiftId,t,n,c)
-        v_local = v - c
-        cbeos(i_cbeos)%volumeShiftId = NOSHIFT ! Disable volume shift
-      endif
-      call TV_CalcPressure(nc,comp,cbeos(i_cbeos),T,v_local,n,p,&
+      p_act_eos => get_active_eos()
+      call TV_CalcPressure(nc,p_act_eosc%comps,p_act_eos,T,v,n,p,&
            dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc)
-      cbeos(i_cbeos)%volumeShiftId = VSHIFTID ! Re-store volume shift information
     case (TREND)
       ! TREND
       p = trend_pressure(n,t,v,dpdv,dpdt,dpdn)
@@ -86,7 +75,7 @@ contains
         d2pdv2 = rho**4*d2Pdrho2 + 2.0*rho**3*dPdrho
       endif
     case default
-      write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end function pressure
@@ -99,7 +88,6 @@ contains
   subroutine internal_energy(t,v,n,u,dudt,dudv,recalculate)
     use single_phase, only: TV_CalcInnerEnergy
     use eosdata
-    !$ use omp_lib
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -110,8 +98,9 @@ contains
     real, optional, intent(out) :: dudv !< J/m3 - Energy differential wrpt. specific volume
     logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
     ! Locals
-    integer :: i_cbeos
     logical :: recalculate_loc
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
@@ -119,18 +108,18 @@ contains
       recalculate_loc = .true.
     end if
 
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      u = TV_CalcInnerEnergy(nc,comp,cbeos(i_cbeos),T,v,n,dudt,dudv,&
+      p_act_eos => get_active_eos()
+      u = TV_CalcInnerEnergy(nc,p_act_eosc%comps,p_act_eos,T,v,n,dudt,dudv,&
            recalculate=recalculate_loc)
     case (TREND)
       ! TREND
       u = trend_internal_energy(n,t,v,dudv,dudt)
     case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end subroutine internal_energy
@@ -156,21 +145,21 @@ contains
     real, optional, intent(out) :: d2ydvdt !< J/(m3 K) - Helmholtz second differential wrpt. specific volume and temperature
     logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
     ! Locals
-    integer :: i_cbeos
     logical :: recalculate_loc
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
     else
       recalculate_loc = .true.
     end if
-
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      y = TV_CalcFreeEnergy(nc,comp,cbeos(i_cbeos),T,v,n,&
+      p_act_eos => get_active_eos()
+      y = TV_CalcFreeEnergy(nc,p_act_eosc%comps,p_act_eos,T,v,n,&
            dydt,dydv,recalculate=recalculate_loc)
       if (present(d2ydt2) .or. present(d2ydv2) .or. present(d2ydvdt)) then
         write(*,*) 'eos::free_energy: Differentials not implemented'
@@ -180,7 +169,7 @@ contains
       ! TREND
       y = trend_free_energy(n,t,v,dydv,dydt,d2ydt2,d2ydv2,d2ydvdt)
     case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end subroutine free_energy
@@ -191,8 +180,7 @@ contains
   !> \author MH, 2015-02
   !----------------------------------------------------------------------
   subroutine entropyTV(t,v,n,s,dsdt,dsdv,dsdn,residual)
-    !$ use omp_lib
-    use tpconst, only: Rgas
+    use thermopack_constants, only: Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -275,8 +263,7 @@ contains
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpyTV(t,v,n,h,dhdt,dhdv,dhdn,residual)
-    !$ use omp_lib
-    use tpconst, only: Rgas
+    use thermopack_constants, only: Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -375,20 +362,21 @@ contains
     real, optional, dimension(1:nc), intent(out)      :: lnphiv !< mol/m3 - Logarithm of fugasity differential wrpt. volume
     real, optional, dimension(1:nc,1:nc), intent(out) :: lnphin !< Logarithm of fugasity differential wrpt. mole numbers
     ! Locals
-    integer :: i_cbeos
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      call TV_CalcFugacity(nc,comp,cbeos(i_cbeos),T,v,n,lnphi,&
+      p_act_eos => get_active_eos()
+      call TV_CalcFugacity(nc,p_act_eosc%comps,p_act_eos,T,v,n,lnphi,&
            lnphiT,lnphiV,lnphin)
     case (TREND)
       ! TREND
       call trend_thermoTV(T,v,n,lnphi,lnphiT,lnphiV,lnphin)
     case default
-      write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end subroutine thermoTV
@@ -400,8 +388,7 @@ contains
   !----------------------------------------------------------------------
   subroutine Fres(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
     use single_phase, only: TV_CalcFres
-    use tpvar, only: nce, apparent_to_real_mole_numbers, real_to_apparent_differentials
-    !$ use omp_lib
+    use thermopack_var, only: nce, apparent_to_real_mole_numbers, real_to_apparent_differentials
     implicit none
     ! Transferred variables
     real, intent(in)                                  :: t !< K - Temperature
@@ -412,20 +399,21 @@ contains
     real, optional, dimension(1:nc,1:nc), intent(out) :: F_nn !<
     logical, optional, intent(in)                     :: recalculate
     ! Locals
-    integer :: i_cbeos
     real, dimension(nce) :: ne
     real, target, dimension(nce) :: F_ne, F_Tne, F_Vne
     real, target, dimension(nce,nce) :: F_nene
     real, pointer :: F_ne_p(:), F_Tne_p(:), F_Vne_p(:)
     real, pointer :: F_nene_p(:,:)
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !
     !--------------------------------------------------------------------
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      call apparent_to_real_mole_numbers(n,ne,nc)
+      p_act_eos => get_active_eos()
+      call apparent_to_real_mole_numbers(n,ne)
       if (present(F_n)) then
         F_ne_p => F_ne
       else
@@ -446,16 +434,17 @@ contains
       else
         F_nene_p => NULL()
       endif
-      call TV_CalcFres(nce,comp,cbeos(i_cbeos),T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
+      call TV_CalcFres(nce,p_act_eosc%comps,p_act_eos,&
+           T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tne_p,F_Vn=F_Vne_p,F_nn=F_nene_p,&
            F_VVV=F_VVV,recalculate=recalculate)
-      call real_to_apparent_differentials(nc,F_ne,F_Tne,F_Vne,F_nene,&
+      call real_to_apparent_differentials(F_ne,F_Tne,F_Vne,F_nene,&
            F_n,F_Tn,F_Vn,F_nn)
     case (TREND)
       ! TREND
       call trend_calcFres(T,v,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     case default
-      write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end subroutine Fres
@@ -467,8 +456,7 @@ contains
   !----------------------------------------------------------------------
   subroutine Fideal(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     use single_phase, only: TV_CalcFid
-    use tpvar, only: nce, apparent_to_real_mole_numbers, real_to_apparent_differentials
-    !$ use omp_lib
+    use thermopack_var, only: nce, apparent_to_real_mole_numbers, real_to_apparent_differentials
     implicit none
     ! Transferred variables
     real, intent(in)                                  :: t !< K - Temperature
@@ -478,20 +466,21 @@ contains
     real, optional, dimension(1:nc), intent(out)      :: F_n,F_Tn,F_Vn !<
     real, optional, dimension(1:nc,1:nc), intent(out) :: F_nn !<
     ! Locals
-    integer :: i_cbeos
     real, dimension(nce) :: ne
     real, target, dimension(nce) :: F_ne, F_Tne, F_Vne
     real, target, dimension(nce,nce) :: F_nene
     real, pointer :: F_ne_p(:), F_Tne_p(:), F_Vne_p(:)
     real, pointer :: F_nene_p(:,:)
+    class(base_eos_param), pointer :: p_act_eos
+    type(eos_container), pointer :: p_act_eosc
     !
     !--------------------------------------------------------------------
-    select case (EoSlib)
+    p_act_eosc => get_active_eos_container()
+    select case (p_act_eosc%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      call apparent_to_real_mole_numbers(n,ne,nc)
+      p_act_eos => get_active_eos()
+      call apparent_to_real_mole_numbers(n,ne)
       if (present(F_n)) then
         F_ne_p => F_ne
       else
@@ -512,15 +501,15 @@ contains
       else
         F_nene_p => NULL()
       endif
-      call TV_CalcFid(nce,comp,cbeos(i_cbeos),T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
+      call TV_CalcFid(nce,p_act_eosc%comps,p_act_eos,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tne_p,F_Vn=F_Vne_p,F_nn=F_nene_p)
-      call real_to_apparent_differentials(nc,F_ne,F_Tne,F_Vne,F_nene,&
+      call real_to_apparent_differentials(F_ne,F_Tne,F_Vne,F_nene,&
            F_n,F_Tn,F_Vn,F_nn)
     case (TREND)
       ! TREND
       call trend_CalcFid(T,V,n,F,F_T,F_V,F_TT,F_TV,F_VV,F_n,F_Tn,F_Vn,F_nn)
     case default
-      write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',EoSlib
+      write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',p_act_eosc%EoSlib
       call stoperror('')
     end select
   end subroutine Fideal
@@ -531,7 +520,6 @@ contains
   !----------------------------------------------------------------------
   subroutine virial_coefficients(T,n,B,C)
     use single_phase, only: TV_CalcFres
-    !$ use omp_lib
     implicit none
     ! Transferred variables
     real, intent(in)                      :: t !< Temperature [K]
@@ -655,7 +643,7 @@ contains
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
   subroutine chemical_potential(t, v, n, mu, dmudv, dmudt, dmudn)
-    use tpconst, only: rgas
+    use thermopack_constants, only: rgas
     implicit none
     real,                             intent(in)  :: t !< K - Temperature
     real,                             intent(in)  :: v !< m3 - Molar volume

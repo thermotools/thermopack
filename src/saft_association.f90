@@ -1,7 +1,7 @@
 !> This module handles all data and routines related to association.
 module saft_association
   use assocschemeutils, only: noSitesFlag, numAssocSites, comp_vs_sites, site_to_compidx, compidx_to_sites
-  use tpconst, only: Rgas => Rgas_default
+  use thermopack_constants, only: Rgas => Rgas_default
   implicit none
   save
 
@@ -1238,7 +1238,7 @@ contains
 
   !> Gives the association contribution to pressure.
   subroutine assoc_pressure(nc,T,V,n,X_k,P,dPdV,dPdT,dPdn)
-    use eosdata, only: eoscubic
+    use cubic_eos, only: cb_eos
     integer, intent(in) :: nc
     real, intent(in)  :: T
     real, intent(in)  :: V
@@ -1261,7 +1261,7 @@ contains
 
   !> The X-gradient of Q.
   subroutine fun(resid0,X,param)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     ! Output.
     real, dimension(numAssocSites), intent(out) :: resid0   !< the X-gradient of Q.
     ! Input.
@@ -1286,7 +1286,7 @@ contains
 
   !> The X-Hessian of Q, modified according to Michelsen.
   subroutine jac(J,X,param)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     ! Output.
     real, dimension(numAssocSites,numAssocSites), intent(out) :: J   !< the modified X-Hessian of Q
     ! Input.
@@ -1318,7 +1318,7 @@ contains
 
   !> Just a dummy function needed in nonlinear_solve.
   subroutine hess(Jinv,x,param)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     real, dimension(numAssocSites,numAssocSites) :: Jinv
     real, dimension(numAssocSites) :: x
     real, dimension(2+nce) :: param
@@ -1354,7 +1354,7 @@ contains
 
   !> Successive substitution method.
   subroutine fun_succ_subst (T,V,n,X)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     real, intent(inout)  :: X(numAssocSites)
     ! Locals.
     integer :: k,l

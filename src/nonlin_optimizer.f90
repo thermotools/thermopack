@@ -10,7 +10,7 @@ module optimizers
   ! 
   !
   use numconstants, only: machine_prec
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
   implicit none
   private
 

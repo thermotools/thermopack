@@ -18,20 +18,20 @@ contains
   !> Initialize the Barker-Henderson perturbation model
   !!
   !! \author Morten Hammer, March 2019
-  subroutine init_BH_pert_model(nc,comp,cbeos,setno,mixing)
+  subroutine init_BH_pert_model(nc,comp,cbeos,ref,mixing)
     use saftvrmie_interface, only: init_saftvrmie
-    use compdata, only: gendata
-    use eosdata, only: eoscubic
+    use thermopack_var, only: gendata_pointer, base_eos_param
+    use cubic_eos, only: cb_eos
     use saftvrmie_interface, only: init_saftvrmie
     integer, intent(in)           :: nc          !< Number of components.
-    type(gendata), intent(inout)  :: comp(nc)    !< Component vector.
-    type(eoscubic), intent(inout) :: cbeos       !< Underlying cubic equation of state.
-    integer, intent(in), optional :: setno(nc)   !< Parameter sets to use for components
+    type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
+    class(base_eos_param), intent(inout) :: cbeos       !< Underlying cubic equation of state.
+    character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     !
     bh_model = cbeos%subeosidx
     if (cbeos%subeosidx == eosSAFT_VR_MIE) then
-       call init_saftvrmie(nc,comp,cbeos,setno,mixing)
+       call init_saftvrmie(nc,comp,cbeos,ref,mixing)
     endif
   end subroutine init_BH_pert_model
 

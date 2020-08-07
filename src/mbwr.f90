@@ -1,7 +1,7 @@
 !> MBWR module
 module tpmbwr
-  use tpconst, only: Rgas ! [Rgas] has units Pa*m^3/(mol*K) = J/(mol*K)
-  use parameters, only: VAPPH, LIQPH
+  use thermopack_constants, only: Rgas ! [Rgas] has units Pa*m^3/(mol*K) = J/(mol*K)
+  use thermopack_constants, only: VAPPH, LIQPH
   implicit none
   save
   integer, parameter :: bplen19 = 6, belen19 = 2      !< the number of coefficients of the rho-powers in the polynomial part and exponential part of MBWR-19
@@ -113,6 +113,7 @@ contains
   subroutine readDbParameters(compId,model,nineteenOr32)
     use tpmbwrdata   ! For the correlated coefficients.
     use compdatadb   ! For component data. Module contained in tpinput.f90.
+    use compdata_init   ! For component data. Module contained in tpinput.f90.
     implicit none
     character(LEN=*), INTENT(IN) :: compId
     TYPE(eosmbwr), INTENT(INOUT) :: model

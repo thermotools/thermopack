@@ -9,8 +9,10 @@ module tp_solver
   !
   !
   use numconstants, only: machine_prec, small
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc
   use eos
+  use thermo_utils, only: wilsonK, phase_Is_fake
   use stability, only : stabcalc, stabilityLimit
   use utilities, only: safe_exp
   implicit none

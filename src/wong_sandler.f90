@@ -83,12 +83,12 @@ contains
 
   !-------------------------------------------
   subroutine WongSandlerMix(cbeos, T, zcomp)
-    use parameters, only : nc
-    use eosdata, only : eoscubic
-    use tpconst, only: kRgas
+    use thermopack_var, only : nc
+    use cubic_eos, only : cb_eos
+    use thermopack_constants, only: kRgas
     use excess_gibbs, only: gEinf, getInfinitLimitC, GetFraction
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T, zcomp(nc)
     ! Local variables:
     integer ::i,j, k

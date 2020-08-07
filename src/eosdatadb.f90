@@ -1,1468 +1,7444 @@
+!> Automatically generated to file mixdatadb.f90
+!! using utility python code pyUtils
+!! Time stamp: 2020-06-30T20:53:55.959631
 
- module eosdatadb
+module mixdatadb
+  use cubic_eos, only: kijdatadb, interGEdatadb
+  implicit none
+  public
 
-    type :: kijdatadb
-       character (len=10) :: eosid
-       character (len=12) :: mruleid
-       integer setno
-       character (len=8) :: uid1, uid2
-       real :: kijvalue
-    end type kijdatadb
+  type (kijdatadb), parameter :: vdw1 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2S", &
+      kijvalue = 0.10100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw2 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C2", &
+      kijvalue = -0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw3 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C2_1", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw4 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C3", &
+      kijvalue = 0.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw5 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "IC4", &
+      kijvalue = 0.02410000  &
+      )
+
+  type (kijdatadb), parameter :: vdw6 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC4", &
+      kijvalue = 0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw7 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC5", &
+      kijvalue = 0.01900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw8 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2S", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw9 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.01120000  &
+      )
+
+  type (kijdatadb), parameter :: vdw10 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "C3", &
+      kijvalue = -0.00220000  &
+      )
+
+  type (kijdatadb), parameter :: vdw11 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "IC4", &
+      kijvalue = -0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw12 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC4", &
+      kijvalue = 0.00670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw13 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC5", &
+      kijvalue = 0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw14 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "C2_1", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw15 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "IC4", &
+      kijvalue = -0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw16 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC5", &
+      kijvalue = 0.02300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw17 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC4", &
+      kijvalue = 0.00110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw18 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.02040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw19 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "C1", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw20 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "O2", &
+      kijvalue = 0.11800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw21 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw22 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw23 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw24 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "CO", &
+      kijvalue = -0.06800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw25 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.10600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw26 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw27 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw28 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw29 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.07400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw30 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw31 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw32 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw33 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC11", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw34 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw35 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw36 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2S", &
+      kijvalue = 0.09900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw37 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2", &
+      kijvalue = -0.04200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw38 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "AR", &
+      kijvalue = 0.09400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw39 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "SO2", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw40 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2", &
+      kijvalue = 0.10800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw41 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw42 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC5", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw43 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC6", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw44 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC7", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw45 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC8", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw46 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC9", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw47 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "CO2", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw48 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "H2O", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw49 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "C1", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw50 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEOH", &
+      uid2 = "CO2", &
+      kijvalue = 0.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw51 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C1", &
+      kijvalue = 0.04200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw52 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw53 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.07500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw54 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C3", &
+      kijvalue = 0.09000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw55 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC4", &
+      kijvalue = 0.11300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw56 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC5", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw57 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC10", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw58 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC11", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw59 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC4", &
+      kijvalue = 0.11300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw60 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC5", &
+      kijvalue = 0.14000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw61 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC6", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw62 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC7", &
+      kijvalue = 0.14200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw63 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC8", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw64 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC9", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw65 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "O2", &
+      kijvalue = -0.00800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw66 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.01100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw67 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R11", &
+      kijvalue = 0.00540000  &
+      )
+
+  type (kijdatadb), parameter :: vdw68 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R114", &
+      kijvalue = 0.00150000  &
+      )
+
+  type (kijdatadb), parameter :: vdw69 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R152a", &
+      kijvalue = 0.08670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw70 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R11", &
+      kijvalue = 0.02620000  &
+      )
+
+  type (kijdatadb), parameter :: vdw71 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R113", &
+      kijvalue = 0.02430000  &
+      )
+
+  type (kijdatadb), parameter :: vdw72 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R12", &
+      kijvalue = 0.02990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw73 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13B", &
+      uid2 = "R12", &
+      kijvalue = -0.00320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw74 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13B", &
+      uid2 = "R152a", &
+      kijvalue = 0.07990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw75 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R13", &
+      kijvalue = 0.03040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw76 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R23", &
+      kijvalue = 0.10080000  &
+      )
+
+  type (kijdatadb), parameter :: vdw77 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R11", &
+      kijvalue = 0.04660000  &
+      )
+
+  type (kijdatadb), parameter :: vdw78 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R114", &
+      kijvalue = 0.03990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw79 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R12", &
+      kijvalue = 0.05640000  &
+      )
+
+  type (kijdatadb), parameter :: vdw80 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R142b", &
+      kijvalue = 0.00570000  &
+      )
+
+  type (kijdatadb), parameter :: vdw81 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R115", &
+      kijvalue = 0.08900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw82 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R23", &
+      uid2 = "R13", &
+      kijvalue = 0.10320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw83 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R218", &
+      uid2 = "R152a", &
+      kijvalue = 0.12000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw84 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R143a", &
+      kijvalue = -0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw85 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R134a", &
+      kijvalue = -0.00240000  &
+      )
+
+  type (kijdatadb), parameter :: vdw86 = &
+      kijdatadb(eosid = "CSP-SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R143a", &
+      uid2 = "R134a", &
+      kijvalue = 0.00130000  &
+      )
+
+  type (kijdatadb), parameter :: vdw87 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "C2", &
+      kijvalue = 1.05200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw88 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "C2_1", &
+      kijvalue = 1.01400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw89 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "C3", &
+      kijvalue = 1.11300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw90 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "PRLN", &
+      kijvalue = 1.08900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw91 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "IC4", &
+      kijvalue = 1.15500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw92 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC4", &
+      kijvalue = 1.17100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw93 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC5", &
+      kijvalue = 1.24000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw94 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "IC5", &
+      kijvalue = 1.22800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw95 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC6", &
+      kijvalue = 1.30400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw96 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC7", &
+      kijvalue = 1.36700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw97 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC8", &
+      kijvalue = 1.42300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw98 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC9", &
+      kijvalue = 1.48400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw99 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "NC10", &
+      kijvalue = 1.53300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw100 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C1", &
+      uid2 = "BENZENE", &
+      kijvalue = 1.23400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw101 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.99100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw102 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "C3", &
+      kijvalue = 1.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw103 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "PRLN", &
+      kijvalue = 1.00200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw104 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "IC4", &
+      kijvalue = 1.03600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw105 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC4", &
+      kijvalue = 1.02900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw106 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC5", &
+      kijvalue = 1.06400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw107 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "IC5", &
+      kijvalue = 1.07000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw108 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC6", &
+      kijvalue = 1.10600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw109 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC7", &
+      kijvalue = 1.14300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw110 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC8", &
+      kijvalue = 1.16500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw111 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC9", &
+      kijvalue = 1.21400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw112 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "NC10", &
+      kijvalue = 1.23700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw113 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2", &
+      uid2 = "BENZENE", &
+      kijvalue = 1.06600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw114 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2_1", &
+      uid2 = "NC4", &
+      kijvalue = 0.99800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw115 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2_1", &
+      uid2 = "BENZENE", &
+      kijvalue = 1.09400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw116 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C2_1", &
+      uid2 = "NC7", &
+      kijvalue = 1.16300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw117 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "PRLN", &
+      kijvalue = 0.99200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw118 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC4", &
+      kijvalue = 1.00300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw119 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "IC4", &
+      kijvalue = 1.00300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw120 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC5", &
+      kijvalue = 1.00600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw121 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "IC5", &
+      kijvalue = 1.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw122 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC6", &
+      kijvalue = 1.04700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw123 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "BENZENE", &
+      kijvalue = 1.01100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw124 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC7", &
+      kijvalue = 1.06700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw125 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC8", &
+      kijvalue = 1.09000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw126 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC9", &
+      kijvalue = 1.01150000  &
+      )
+
+  type (kijdatadb), parameter :: vdw127 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "C3", &
+      uid2 = "NC10", &
+      kijvalue = 1.13900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw128 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "PRLN", &
+      uid2 = "NC4", &
+      kijvalue = 1.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw129 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "PRLN", &
+      uid2 = "IC4", &
+      kijvalue = 1.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw130 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "IC4", &
+      kijvalue = 1.00100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw131 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.99400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw132 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.99800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw133 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC6", &
+      kijvalue = 1.01800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw134 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.99900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw135 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC7", &
+      kijvalue = 1.02700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw136 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC8", &
+      kijvalue = 1.04600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw137 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC9", &
+      kijvalue = 1.06400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw138 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC4", &
+      uid2 = "NC10", &
+      kijvalue = 1.07800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw139 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "IC5", &
+      kijvalue = 0.98700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw140 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "NC6", &
+      kijvalue = 0.99600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw141 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.97700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw142 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "NC7", &
+      kijvalue = 1.00400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw143 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "NC8", &
+      kijvalue = 1.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw144 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "NC9", &
+      kijvalue = 1.03300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw145 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC5", &
+      uid2 = "NC10", &
+      kijvalue = 1.04500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw146 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC6", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.97800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw147 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC6", &
+      uid2 = "NC7", &
+      kijvalue = 1.00800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw148 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC6", &
+      uid2 = "NC8", &
+      kijvalue = 1.00500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw149 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC6", &
+      uid2 = "NC9", &
+      kijvalue = 1.01500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw150 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC6", &
+      uid2 = "NC10", &
+      kijvalue = 1.02500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw151 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "BENZENE", &
+      uid2 = "NC7", &
+      kijvalue = 0.98500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw152 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "BENZENE", &
+      uid2 = "NC8", &
+      kijvalue = 0.98700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw153 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "BENZENE", &
+      uid2 = "NC9", &
+      kijvalue = 1.03400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw154 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "BENZENE", &
+      uid2 = "NC10", &
+      kijvalue = 1.04700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw155 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC7", &
+      uid2 = "NC8", &
+      kijvalue = 0.99300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw156 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC7", &
+      uid2 = "NC9", &
+      kijvalue = 1.00200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw157 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC7", &
+      uid2 = "NC10", &
+      kijvalue = 1.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw158 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC8", &
+      uid2 = "NC9", &
+      kijvalue = 0.99300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw159 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC8", &
+      uid2 = "NC10", &
+      kijvalue = 0.99900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw160 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "NC9", &
+      uid2 = "NC10", &
+      kijvalue = 0.99100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw161 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "C1", &
+      kijvalue = 0.97700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw162 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "C2_1", &
+      kijvalue = 1.03200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw163 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "C2", &
+      kijvalue = 1.08200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw164 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "C3", &
+      kijvalue = 1.17700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw165 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "PRLN", &
+      kijvalue = 1.15100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw166 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "NC4", &
+      kijvalue = 1.27600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw167 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "NC5", &
+      kijvalue = 1.37200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw168 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "NC6", &
+      kijvalue = 1.44200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw169 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "O2", &
+      kijvalue = 0.99700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw170 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "CO", &
+      kijvalue = 0.98700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw171 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "H2S", &
+      kijvalue = 0.98300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw172 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "CO2", &
+      kijvalue = 1.11000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw173 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "N2O", &
+      kijvalue = 1.07300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw174 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2", &
+      uid2 = "NH3", &
+      kijvalue = 1.03300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw175 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.97500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw176 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.93800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw177 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.92500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw178 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.95500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw179 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.94600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw180 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 1.00200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw181 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC6", &
+      kijvalue = 1.01800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw182 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "BENZENE", &
+      kijvalue = 1.01800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw183 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC7", &
+      kijvalue = 1.05800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw184 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC8", &
+      kijvalue = 1.09000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw185 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC9", &
+      kijvalue = 1.12600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw186 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 1.16000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw187 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "H2S", &
+      kijvalue = 0.92200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw188 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "R12", &
+      kijvalue = 0.96900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw189 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO2", &
+      uid2 = "MEOH", &
+      kijvalue = 1.06900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw190 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "C1", &
+      kijvalue = 1.21600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw191 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "C2", &
+      kijvalue = 1.60400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw192 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "PRLN", &
+      kijvalue = 1.49800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw193 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "C3", &
+      kijvalue = 1.82600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw194 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "NC4", &
+      kijvalue = 2.09300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw195 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "NC5", &
+      kijvalue = 2.33500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw196 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "NC6", &
+      kijvalue = 2.45600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw197 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "NC7", &
+      kijvalue = 2.63400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw198 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "N2", &
+      kijvalue = 1.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw199 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "CO", &
+      kijvalue = 1.08500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw200 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2", &
+      uid2 = "CO2", &
+      kijvalue = 1.62400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw201 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "O2", &
+      uid2 = "N2O", &
+      kijvalue = 1.05700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw202 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "CO", &
+      uid2 = "C1", &
+      kijvalue = 0.97400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw203 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2S", &
+      uid2 = "IC4", &
+      kijvalue = 0.94700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw204 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "N2O", &
+      uid2 = "C1", &
+      kijvalue = 1.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw205 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2O", &
+      uid2 = "CO2", &
+      kijvalue = 0.92000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw206 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2O", &
+      uid2 = "NH3", &
+      kijvalue = 1.15200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw207 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.1021/i260067a020", &
+      uid1 = "H2O", &
+      uid2 = "MEOH", &
+      kijvalue = 0.97900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw208 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "10.3303/CET1332311", &
+      uid1 = "CO2", &
+      uid2 = "AR", &
+      kijvalue = 0.99200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw209 = &
+      kijdatadb(eosid = "LK", &
+      mruleid = "vdW", &
+      ref = "Plocker1982(+)", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "O2", &
+      kijvalue = 1.03200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw210 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2S", &
+      kijvalue = 0.09300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw211 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "O2", &
+      kijvalue = 0.10200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw212 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw213 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O", &
+      kijvalue = 0.00700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw214 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw215 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.09200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw216 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw217 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw218 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw219 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.07400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw220 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw221 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw222 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw223 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC11", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw224 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw225 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw226 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2S", &
+      kijvalue = 0.09900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw227 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2", &
+      kijvalue = -0.03600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw228 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "AR", &
+      kijvalue = 0.08600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw229 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "SO2", &
+      kijvalue = 0.07200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw230 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2", &
+      kijvalue = 0.10400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw231 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "CO", &
+      kijvalue = -0.06600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw232 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw233 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "CO2", &
+      kijvalue = -0.06500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw234 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw235 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw236 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC5", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw237 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC6", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw238 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC7", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw239 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC8", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw240 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC9", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw241 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEOH", &
+      uid2 = "CO2", &
+      kijvalue = 0.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw242 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C1", &
+      kijvalue = 0.03500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw243 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2", &
+      kijvalue = 0.04100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw244 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw245 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C3", &
+      kijvalue = 0.07600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw246 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC4", &
+      kijvalue = 0.09400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw247 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC5", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw248 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC10", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw249 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC11", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw250 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC4", &
+      kijvalue = 0.07000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw251 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC5", &
+      kijvalue = 0.08800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw252 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC6", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw253 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC7", &
+      kijvalue = 0.14200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw254 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC8", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw255 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC9", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw256 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "O2", &
+      kijvalue = -0.01400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw257 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R11", &
+      kijvalue = 0.00540000  &
+      )
+
+  type (kijdatadb), parameter :: vdw258 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R114", &
+      kijvalue = 0.00150000  &
+      )
+
+  type (kijdatadb), parameter :: vdw259 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R152a", &
+      kijvalue = 0.08670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw260 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R11", &
+      kijvalue = 0.02620000  &
+      )
+
+  type (kijdatadb), parameter :: vdw261 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R12", &
+      kijvalue = 0.02990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw262 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R13", &
+      kijvalue = 0.03040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw263 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R23", &
+      kijvalue = 0.10080000  &
+      )
+
+  type (kijdatadb), parameter :: vdw264 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R11", &
+      kijvalue = 0.04660000  &
+      )
+
+  type (kijdatadb), parameter :: vdw265 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R114", &
+      kijvalue = 0.03990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw266 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R12", &
+      kijvalue = 0.05640000  &
+      )
+
+  type (kijdatadb), parameter :: vdw267 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R142b", &
+      kijvalue = 0.00570000  &
+      )
+
+  type (kijdatadb), parameter :: vdw268 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R115", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw269 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R23", &
+      uid2 = "R13", &
+      kijvalue = 0.10320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw270 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R218", &
+      uid2 = "R152a", &
+      kijvalue = 0.12000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw271 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R143a", &
+      kijvalue = -0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw272 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R134a", &
+      kijvalue = -0.00240000  &
+      )
+
+  type (kijdatadb), parameter :: vdw273 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R143a", &
+      uid2 = "R134a", &
+      kijvalue = 0.00130000  &
+      )
+
+  type (kijdatadb), parameter :: vdw274 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R1234yf", &
+      uid2 = "R32", &
+      kijvalue = 0.03700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw275 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R1234yf", &
+      uid2 = "R125", &
+      kijvalue = 0.00400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw276 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R1234yf", &
+      uid2 = "R134a", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw277 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R1234yf", &
+      uid2 = "CO2", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw278 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C3", &
+      kijvalue = 0.01400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw279 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC6", &
+      kijvalue = 0.04220000  &
+      )
+
+  type (kijdatadb), parameter :: vdw280 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C2", &
+      kijvalue = -0.00260000  &
+      )
+
+  type (kijdatadb), parameter :: vdw281 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw282 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC4", &
+      kijvalue = 0.01330000  &
+      )
+
+  type (kijdatadb), parameter :: vdw283 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "IC4", &
+      kijvalue = 0.02560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw284 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC5", &
+      kijvalue = 0.02300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw285 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC7", &
+      kijvalue = 0.03520000  &
+      )
+
+  type (kijdatadb), parameter :: vdw286 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC8", &
+      kijvalue = 0.04960000  &
+      )
+
+  type (kijdatadb), parameter :: vdw287 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "IC5", &
+      kijvalue = -0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw288 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC6", &
+      kijvalue = 0.00070000  &
+      )
+
+  type (kijdatadb), parameter :: vdw289 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "C2", &
+      kijvalue = 0.00110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw290 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "H2S", &
+      kijvalue = 0.07500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw291 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "H2O", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw292 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC4", &
+      kijvalue = 0.00330000  &
+      )
+
+  type (kijdatadb), parameter :: vdw293 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "IC4", &
+      kijvalue = -0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw294 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC5", &
+      kijvalue = 0.02670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw295 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC7", &
+      kijvalue = 0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw296 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw297 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "IC5", &
+      kijvalue = 0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw298 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "C2", &
+      kijvalue = -0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw299 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "CO2", &
+      kijvalue = 0.11000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw300 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "H2O", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw301 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC4", &
+      kijvalue = -0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw302 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "IC4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw303 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw304 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC7", &
+      kijvalue = -0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw305 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw306 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw307 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "H2S", &
+      kijvalue = 0.08500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw308 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw309 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC4", &
+      kijvalue = 0.00960000  &
+      )
+
+  type (kijdatadb), parameter :: vdw310 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "IC4", &
+      kijvalue = -0.00670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw311 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC5", &
+      kijvalue = 0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw312 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC7", &
+      kijvalue = 0.00740000  &
+      )
+
+  type (kijdatadb), parameter :: vdw313 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC8", &
+      kijvalue = 0.01850000  &
+      )
+
+  type (kijdatadb), parameter :: vdw314 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw315 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC7", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw316 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC8", &
+      kijvalue = 0.10700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw317 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "H2O", &
+      kijvalue = 0.16400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw318 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "IC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw319 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "IC5", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw320 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC4", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw321 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "IC4", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw322 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC5", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw323 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC7", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw324 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC8", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw325 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "IC5", &
+      kijvalue = 0.48000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw326 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "IC4", &
+      kijvalue = -0.00040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw327 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.01740000  &
+      )
+
+  type (kijdatadb), parameter :: vdw328 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC7", &
+      kijvalue = 0.00330000  &
+      )
+
+  type (kijdatadb), parameter :: vdw329 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw330 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw331 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw332 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC7", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw333 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw334 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw335 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC7", &
+      kijvalue = 0.00740000  &
+      )
+
+  type (kijdatadb), parameter :: vdw336 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw337 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw338 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw339 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw340 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw341 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000123  &
+      )
+
+  type (kijdatadb), parameter :: vdw342 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC7", &
+      kijvalue = 0.00137330  &
+      )
+
+  type (kijdatadb), parameter :: vdw343 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC8", &
+      kijvalue = 0.00276186  &
+      )
+
+  type (kijdatadb), parameter :: vdw344 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.08060000  &
+      )
+
+  type (kijdatadb), parameter :: vdw345 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "TOLU", &
+      kijvalue = 0.09360000  &
+      )
+
+  type (kijdatadb), parameter :: vdw346 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "EBZN", &
+      kijvalue = 0.10100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw347 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "MXYL", &
+      kijvalue = 0.08790000  &
+      )
+
+  type (kijdatadb), parameter :: vdw348 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "OXYL", &
+      kijvalue = 0.09000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw349 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC9", &
+      kijvalue = 0.10100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw350 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "H2S", &
+      kijvalue = 0.16760000  &
+      )
+
+  type (kijdatadb), parameter :: vdw351 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.15970000  &
+      )
+
+  type (kijdatadb), parameter :: vdw352 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "TOLU", &
+      kijvalue = 0.19320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw353 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "EBZN", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw354 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "MXYL", &
+      kijvalue = 0.21690000  &
+      )
+
+  type (kijdatadb), parameter :: vdw355 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "OXYL", &
+      kijvalue = 0.21400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw356 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "H2O", &
+      kijvalue = -0.31560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw357 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C3_1", &
+      kijvalue = 0.06730000  &
+      )
+
+  type (kijdatadb), parameter :: vdw358 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw359 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00810000  &
+      )
+
+  type (kijdatadb), parameter :: vdw360 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "EBZN", &
+      kijvalue = 0.04500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw361 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "MXYL", &
+      kijvalue = 0.01710000  &
+      )
+
+  type (kijdatadb), parameter :: vdw362 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "OXYL", &
+      kijvalue = -0.02310000  &
+      )
+
+  type (kijdatadb), parameter :: vdw363 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC10", &
+      kijvalue = 0.04500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw364 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC11", &
+      kijvalue = 0.04500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw365 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw366 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "TOLU", &
+      kijvalue = 0.06490000  &
+      )
+
+  type (kijdatadb), parameter :: vdw367 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "EBZN", &
+      kijvalue = 0.02404000  &
+      )
+
+  type (kijdatadb), parameter :: vdw368 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "MXYL", &
+      kijvalue = 0.04910000  &
+      )
+
+  type (kijdatadb), parameter :: vdw369 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "OXYL", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw370 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC9", &
+      kijvalue = 0.03893000  &
+      )
+
+  type (kijdatadb), parameter :: vdw371 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC10", &
+      kijvalue = 0.04361000  &
+      )
+
+  type (kijdatadb), parameter :: vdw372 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC11", &
+      kijvalue = 0.04799000  &
+      )
+
+  type (kijdatadb), parameter :: vdw373 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw374 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "TOLU", &
+      kijvalue = 0.03440000  &
+      )
+
+  type (kijdatadb), parameter :: vdw375 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "EBZN", &
+      kijvalue = 0.01182000  &
+      )
+
+  type (kijdatadb), parameter :: vdw376 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "MXYL", &
+      kijvalue = 0.02950000  &
+      )
+
+  type (kijdatadb), parameter :: vdw377 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "OXYL", &
+      kijvalue = 0.03300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw378 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC9", &
+      kijvalue = 0.02302000  &
+      )
+
+  type (kijdatadb), parameter :: vdw379 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC10", &
+      kijvalue = 0.02673000  &
+      )
+
+  type (kijdatadb), parameter :: vdw380 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC11", &
+      kijvalue = 0.03026000  &
+      )
+
+  type (kijdatadb), parameter :: vdw381 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw382 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "TOLU", &
+      kijvalue = 0.03100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw383 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00542000  &
+      )
+
+  type (kijdatadb), parameter :: vdw384 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "MXYL", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw385 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "OXYL", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw386 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC9", &
+      kijvalue = 0.01370000  &
+      )
+
+  type (kijdatadb), parameter :: vdw387 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC10", &
+      kijvalue = 0.01663000  &
+      )
+
+  type (kijdatadb), parameter :: vdw388 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC11", &
+      kijvalue = 0.01948000  &
+      )
+
+  type (kijdatadb), parameter :: vdw389 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.00000180  &
+      )
+
+  type (kijdatadb), parameter :: vdw390 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00047000  &
+      )
+
+  type (kijdatadb), parameter :: vdw391 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00172000  &
+      )
+
+  type (kijdatadb), parameter :: vdw392 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00176000  &
+      )
+
+  type (kijdatadb), parameter :: vdw393 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00159000  &
+      )
+
+  type (kijdatadb), parameter :: vdw394 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC9", &
+      kijvalue = 0.00725000  &
+      )
+
+  type (kijdatadb), parameter :: vdw395 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC10", &
+      kijvalue = 0.00945000  &
+      )
+
+  type (kijdatadb), parameter :: vdw396 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC11", &
+      kijvalue = 0.01164000  &
+      )
+
+  type (kijdatadb), parameter :: vdw397 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.00001000  &
+      )
+
+  type (kijdatadb), parameter :: vdw398 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00064000  &
+      )
+
+  type (kijdatadb), parameter :: vdw399 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00203000  &
+      )
+
+  type (kijdatadb), parameter :: vdw400 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00208000  &
+      )
+
+  type (kijdatadb), parameter :: vdw401 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00190000  &
+      )
+
+  type (kijdatadb), parameter :: vdw402 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC9", &
+      kijvalue = 0.00788000  &
+      )
+
+  type (kijdatadb), parameter :: vdw403 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC10", &
+      kijvalue = 0.01016000  &
+      )
+
+  type (kijdatadb), parameter :: vdw404 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC11", &
+      kijvalue = 0.01243000  &
+      )
+
+  type (kijdatadb), parameter :: vdw405 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000130  &
+      )
+
+  type (kijdatadb), parameter :: vdw406 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.00040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw407 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00001000  &
+      )
+
+  type (kijdatadb), parameter :: vdw408 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00052000  &
+      )
+
+  type (kijdatadb), parameter :: vdw409 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00055000  &
+      )
+
+  type (kijdatadb), parameter :: vdw410 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00046000  &
+      )
+
+  type (kijdatadb), parameter :: vdw411 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "NC9", &
+      kijvalue = 0.00445000  &
+      )
+
+  type (kijdatadb), parameter :: vdw412 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "NC10", &
+      kijvalue = 0.00621000  &
+      )
+
+  type (kijdatadb), parameter :: vdw413 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC5", &
+      uid2 = "NC11", &
+      kijvalue = 0.00801000  &
+      )
+
+  type (kijdatadb), parameter :: vdw414 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.01600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw415 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00000360  &
+      )
+
+  type (kijdatadb), parameter :: vdw416 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00047000  &
+      )
+
+  type (kijdatadb), parameter :: vdw417 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00050000  &
+      )
+
+  type (kijdatadb), parameter :: vdw418 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00041000  &
+      )
+
+  type (kijdatadb), parameter :: vdw419 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC7", &
+      kijvalue = 0.00137000  &
+      )
+
+  type (kijdatadb), parameter :: vdw420 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC8", &
+      kijvalue = 0.00276000  &
+      )
+
+  type (kijdatadb), parameter :: vdw421 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC9", &
+      kijvalue = 0.00430000  &
+      )
+
+  type (kijdatadb), parameter :: vdw422 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC10", &
+      kijvalue = 0.00603000  &
+      )
+
+  type (kijdatadb), parameter :: vdw423 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC11", &
+      kijvalue = 0.00781000  &
+      )
+
+  type (kijdatadb), parameter :: vdw424 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "TOLU", &
+      kijvalue = 0.00053000  &
+      )
+
+  type (kijdatadb), parameter :: vdw425 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00183000  &
+      )
+
+  type (kijdatadb), parameter :: vdw426 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00188000  &
+      )
+
+  type (kijdatadb), parameter :: vdw427 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00170000  &
+      )
+
+  type (kijdatadb), parameter :: vdw428 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC6", &
+      kijvalue = 0.00700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw429 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC7", &
+      kijvalue = -0.00200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw430 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC8", &
+      kijvalue = 0.00300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw431 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC9", &
+      kijvalue = 0.00749000  &
+      )
+
+  type (kijdatadb), parameter :: vdw432 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC10", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw433 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "NC11", &
+      kijvalue = 0.01193000  &
+      )
+
+  type (kijdatadb), parameter :: vdw434 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "BENZENE", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw435 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "EBZN", &
+      kijvalue = 0.00039000  &
+      )
+
+  type (kijdatadb), parameter :: vdw436 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00042000  &
+      )
+
+  type (kijdatadb), parameter :: vdw437 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00034000  &
+      )
+
+  type (kijdatadb), parameter :: vdw438 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC6", &
+      kijvalue = 0.00032000  &
+      )
+
+  type (kijdatadb), parameter :: vdw439 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC7", &
+      kijvalue = 0.00600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw440 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC8", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw441 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC9", &
+      kijvalue = 0.00406000  &
+      )
+
+  type (kijdatadb), parameter :: vdw442 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC10", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw443 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "NC11", &
+      kijvalue = 0.00749000  &
+      )
+
+  type (kijdatadb), parameter :: vdw444 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "TOLU", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw445 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "MXYL", &
+      kijvalue = 0.00000020  &
+      )
+
+  type (kijdatadb), parameter :: vdw446 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00000020  &
+      )
+
+  type (kijdatadb), parameter :: vdw447 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC6", &
+      kijvalue = 0.00000400  &
+      )
+
+  type (kijdatadb), parameter :: vdw448 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC7", &
+      kijvalue = 0.00024000  &
+      )
+
+  type (kijdatadb), parameter :: vdw449 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC8", &
+      kijvalue = -0.00180000  &
+      )
+
+  type (kijdatadb), parameter :: vdw450 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC9", &
+      kijvalue = 0.00193000  &
+      )
+
+  type (kijdatadb), parameter :: vdw451 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC10", &
+      kijvalue = 0.00314000  &
+      )
+
+  type (kijdatadb), parameter :: vdw452 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "NC11", &
+      kijvalue = 0.00446000  &
+      )
+
+  type (kijdatadb), parameter :: vdw453 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "EBZN", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw454 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "OXYL", &
+      kijvalue = 0.00000400  &
+      )
+
+  type (kijdatadb), parameter :: vdw455 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC6", &
+      kijvalue = 0.00001000  &
+      )
+
+  type (kijdatadb), parameter :: vdw456 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC7", &
+      kijvalue = 0.00022000  &
+      )
+
+  type (kijdatadb), parameter :: vdw457 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC8", &
+      kijvalue = 0.00092000  &
+      )
+
+  type (kijdatadb), parameter :: vdw458 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC9", &
+      kijvalue = 0.00188000  &
+      )
+
+  type (kijdatadb), parameter :: vdw459 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC10", &
+      kijvalue = 0.00308000  &
+      )
+
+  type (kijdatadb), parameter :: vdw460 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "NC11", &
+      kijvalue = 0.00439000  &
+      )
+
+  type (kijdatadb), parameter :: vdw461 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MXYL", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw462 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC6", &
+      kijvalue = 0.00000020  &
+      )
+
+  type (kijdatadb), parameter :: vdw463 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC7", &
+      kijvalue = 0.00029000  &
+      )
+
+  type (kijdatadb), parameter :: vdw464 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC8", &
+      kijvalue = 0.00105000  &
+      )
+
+  type (kijdatadb), parameter :: vdw465 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC9", &
+      kijvalue = 0.00207000  &
+      )
+
+  type (kijdatadb), parameter :: vdw466 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC10", &
+      kijvalue = 0.00331000  &
+      )
+
+  type (kijdatadb), parameter :: vdw467 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "NC11", &
+      kijvalue = 0.00467000  &
+      )
+
+  type (kijdatadb), parameter :: vdw468 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "OXYL", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw469 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC9", &
+      kijvalue = 0.00210000  &
+      )
+
+  type (kijdatadb), parameter :: vdw470 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC10", &
+      kijvalue = 0.00335000  &
+      )
+
+  type (kijdatadb), parameter :: vdw471 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC11", &
+      kijvalue = 0.00472000  &
+      )
+
+  type (kijdatadb), parameter :: vdw472 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "NC9", &
+      kijvalue = 0.00082000  &
+      )
+
+  type (kijdatadb), parameter :: vdw473 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "NC10", &
+      kijvalue = 0.00166000  &
+      )
+
+  type (kijdatadb), parameter :: vdw474 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "NC11", &
+      kijvalue = 0.00266000  &
+      )
+
+  type (kijdatadb), parameter :: vdw475 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "NC9", &
+      kijvalue = 0.00017000  &
+      )
+
+  type (kijdatadb), parameter :: vdw476 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "NC10", &
+      kijvalue = 0.00064000  &
+      )
+
+  type (kijdatadb), parameter :: vdw477 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "NC11", &
+      kijvalue = 0.00130000  &
+      )
+
+  type (kijdatadb), parameter :: vdw478 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC9", &
+      uid2 = "NC10", &
+      kijvalue = 0.00130000  &
+      )
+
+  type (kijdatadb), parameter :: vdw479 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC9", &
+      uid2 = "NC11", &
+      kijvalue = 0.00053000  &
+      )
+
+  type (kijdatadb), parameter :: vdw480 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC9", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw481 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC10", &
+      uid2 = "NC11", &
+      kijvalue = 0.00012000  &
+      )
+
+  type (kijdatadb), parameter :: vdw482 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC10", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw483 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC11", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw484 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C2", &
+      kijvalue = -0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw485 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C2_1", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw486 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "C3", &
+      kijvalue = 0.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw487 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "IC4", &
+      kijvalue = 0.02410000  &
+      )
+
+  type (kijdatadb), parameter :: vdw488 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC4", &
+      kijvalue = 0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw489 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC5", &
+      kijvalue = 0.01900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw490 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2S", &
+      kijvalue = 0.09100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw491 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.01120000  &
+      )
+
+  type (kijdatadb), parameter :: vdw492 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "C3", &
+      kijvalue = -0.00220000  &
+      )
+
+  type (kijdatadb), parameter :: vdw493 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "IC4", &
+      kijvalue = -0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw494 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC4", &
+      kijvalue = 0.00670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw495 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC5", &
+      kijvalue = 0.00560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw496 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "C2_1", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw497 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "IC4", &
+      kijvalue = -0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw498 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC5", &
+      kijvalue = 0.02300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw499 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC4", &
+      kijvalue = 0.00110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw500 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.02040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw501 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "C1", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw502 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "MEG", &
+      kijvalue = -0.06300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw503 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "MEG", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw504 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "O2", &
+      kijvalue = 0.10400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw505 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw506 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O", &
+      kijvalue = 0.00400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw507 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw508 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "CO", &
+      kijvalue = -0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw509 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.09500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw510 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw511 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw512 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw513 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.07400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw514 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw515 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw516 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw517 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC11", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw518 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw519 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw520 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2S", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw521 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2", &
+      kijvalue = -0.05100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw522 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "AR", &
+      kijvalue = 0.08800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw523 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "SO2", &
+      kijvalue = 0.07100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw524 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2", &
+      kijvalue = 0.00900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw525 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw526 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC5", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw527 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC6", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw528 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC7", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw529 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC8", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw530 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC9", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw531 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEOH", &
+      uid2 = "CO2", &
+      kijvalue = 0.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw532 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C1", &
+      kijvalue = 0.03400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw533 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw534 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.07500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw535 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C3", &
+      kijvalue = 0.09000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw536 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC4", &
+      kijvalue = 0.11300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw537 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC5", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw538 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC10", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw539 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC11", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw540 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC4", &
+      kijvalue = 0.11300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw541 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC5", &
+      kijvalue = 0.14000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw542 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC6", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw543 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC7", &
+      kijvalue = 0.14200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw544 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC8", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw545 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC9", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw546 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "O2", &
+      kijvalue = -0.01100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw547 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R11", &
+      kijvalue = 0.00540000  &
+      )
+
+  type (kijdatadb), parameter :: vdw548 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R114", &
+      kijvalue = 0.00150000  &
+      )
+
+  type (kijdatadb), parameter :: vdw549 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R152a", &
+      kijvalue = 0.08670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw550 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R11", &
+      kijvalue = 0.02620000  &
+      )
+
+  type (kijdatadb), parameter :: vdw551 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R12", &
+      kijvalue = 0.02990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw552 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R13", &
+      kijvalue = 0.03040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw553 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R23", &
+      kijvalue = 0.10080000  &
+      )
+
+  type (kijdatadb), parameter :: vdw554 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R11", &
+      kijvalue = 0.04660000  &
+      )
+
+  type (kijdatadb), parameter :: vdw555 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R114", &
+      kijvalue = 0.03990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw556 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R12", &
+      kijvalue = 0.05640000  &
+      )
+
+  type (kijdatadb), parameter :: vdw557 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R142b", &
+      kijvalue = 0.00570000  &
+      )
+
+  type (kijdatadb), parameter :: vdw558 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R115", &
+      kijvalue = 0.08900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw559 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R23", &
+      uid2 = "R13", &
+      kijvalue = 0.10320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw560 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R218", &
+      uid2 = "R152a", &
+      kijvalue = 0.12000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw561 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R143a", &
+      kijvalue = -0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw562 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R134a", &
+      kijvalue = -0.00240000  &
+      )
+
+  type (kijdatadb), parameter :: vdw563 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R143a", &
+      uid2 = "R134a", &
+      kijvalue = 0.00130000  &
+      )
+
+  type (kijdatadb), parameter :: vdw564 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC6", &
+      kijvalue = 0.03740000  &
+      )
+
+  type (kijdatadb), parameter :: vdw565 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC7", &
+      kijvalue = 0.03070000  &
+      )
+
+  type (kijdatadb), parameter :: vdw566 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "NC8", &
+      kijvalue = 0.04480000  &
+      )
+
+  type (kijdatadb), parameter :: vdw567 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "IC5", &
+      kijvalue = -0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw568 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC6", &
+      kijvalue = -0.00220000  &
+      )
+
+  type (kijdatadb), parameter :: vdw569 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "H2S", &
+      kijvalue = 0.07600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw570 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "H2O", &
+      kijvalue = 0.53000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw571 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw572 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC7", &
+      kijvalue = 0.00440000  &
+      )
+
+  type (kijdatadb), parameter :: vdw573 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw574 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "IC5", &
+      kijvalue = 0.00780000  &
+      )
+
+  type (kijdatadb), parameter :: vdw575 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "C2", &
+      kijvalue = -0.01560000  &
+      )
+
+  type (kijdatadb), parameter :: vdw576 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "CO2", &
+      kijvalue = 0.11200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw577 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "H2O", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw578 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC4", &
+      kijvalue = -0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw579 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "IC4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw580 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw581 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC7", &
+      kijvalue = -0.00110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw582 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw583 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw584 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "H2S", &
+      kijvalue = 0.08500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw585 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "H2O", &
+      kijvalue = 0.55000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw586 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC7", &
+      kijvalue = 0.00410000  &
+      )
+
+  type (kijdatadb), parameter :: vdw587 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "NC8", &
+      kijvalue = 0.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw588 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C2", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw589 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC7", &
+      kijvalue = 0.11000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw590 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC8", &
+      kijvalue = 0.12000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw591 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "N2", &
+      kijvalue = 0.17000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw592 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "H2O", &
+      kijvalue = 0.13500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw593 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "IC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw594 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "IC5", &
+      kijvalue = 0.06500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw595 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "H2O", &
+      kijvalue = 0.53000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw596 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC4", &
+      kijvalue = 0.52000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw597 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "IC4", &
+      kijvalue = 0.52000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw598 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC5", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw599 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC7", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw600 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "NC8", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw601 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2O", &
+      uid2 = "IC5", &
+      kijvalue = 0.50000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw602 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC7", &
+      kijvalue = -0.00040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw603 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw604 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw605 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw606 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC7", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw607 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw608 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "IC4", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw609 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC7", &
+      kijvalue = 0.00190000  &
+      )
+
+  type (kijdatadb), parameter :: vdw610 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "NC8", &
+      kijvalue = -0.00220000  &
+      )
+
+  type (kijdatadb), parameter :: vdw611 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw612 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "NC8", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw613 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw614 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "IC5", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw615 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C1", &
+      uid2 = "C2", &
+      kijvalue = 0.00500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw616 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C1", &
+      uid2 = "IC4", &
+      kijvalue = -0.00800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw617 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C1", &
+      uid2 = "NC4", &
+      kijvalue = 0.01500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw618 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C1", &
+      uid2 = "NC5", &
+      kijvalue = 0.02000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw619 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C1", &
+      uid2 = "NC6", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw620 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2", &
+      uid2 = "C3", &
+      kijvalue = 0.00600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw621 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2", &
+      uid2 = "PRLN", &
+      kijvalue = 0.00400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw622 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2", &
+      uid2 = "NC4", &
+      kijvalue = 0.00100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw623 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2", &
+      uid2 = "NC5", &
+      kijvalue = -0.00100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw624 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2", &
+      uid2 = "NC7", &
+      kijvalue = -0.01500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw625 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2_1", &
+      uid2 = "C1", &
+      kijvalue = 0.02600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw626 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2_1", &
+      uid2 = "C2", &
+      kijvalue = 0.01800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw627 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2_1", &
+      uid2 = "C3", &
+      kijvalue = 0.01900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw628 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C2_1", &
+      uid2 = "NC4", &
+      kijvalue = 0.06200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw629 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C3", &
+      uid2 = "NC4", &
+      kijvalue = 0.01300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw630 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C3", &
+      uid2 = "NC5", &
+      kijvalue = 0.01300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw631 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "C3", &
+      uid2 = "IC5", &
+      kijvalue = 0.02100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw632 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "PRLN", &
+      uid2 = "C3", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw633 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "NC4", &
+      uid2 = "NC10", &
+      kijvalue = 0.00500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw634 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "IC4", &
+      uid2 = "NC4", &
+      kijvalue = -0.00300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw635 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.09300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw636 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.12800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw637 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.05700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw638 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.13100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw639 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.10900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw640 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.12700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw641 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 0.13500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw642 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "H2S", &
+      uid2 = "C1", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw643 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "H2S", &
+      uid2 = "C2", &
+      kijvalue = 0.08900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw644 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "H2S", &
+      uid2 = "IC4", &
+      kijvalue = 0.04600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw645 = &
+      kijdatadb(eosid = "PT", &
+      mruleid = "vdW", &
+      ref = "Patel1982", &
+      bib_ref = "10.1016/0009-2509(82)80099-7", &
+      uid1 = "H2S", &
+      uid2 = "NC7", &
+      kijvalue = 0.05300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw646 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "C1", &
+      uid2 = "H2S", &
+      kijvalue = 0.09500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw647 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "O2", &
+      kijvalue = 0.10900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw648 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw649 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O", &
+      kijvalue = 0.01000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw650 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2O4", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw651 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C1", &
+      kijvalue = 0.10000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw652 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw653 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw654 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "C3", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw655 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.07400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw656 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw657 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw658 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw659 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC11", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw660 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw661 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw662 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2S", &
+      kijvalue = 0.10200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw663 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "N2", &
+      kijvalue = -0.03600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw664 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "AR", &
+      kijvalue = 0.08800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw665 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "SO2", &
+      kijvalue = 0.07500000  &
+      )
+
+  type (kijdatadb), parameter :: vdw666 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2", &
+      kijvalue = 0.12100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw667 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "CO", &
+      kijvalue = -0.05900000  &
+      )
+
+  type (kijdatadb), parameter :: vdw668 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NH3", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw669 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw670 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC4", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw671 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC5", &
+      kijvalue = 0.06000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw672 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC6", &
+      kijvalue = 0.05000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw673 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC7", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw674 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC8", &
+      kijvalue = 0.04000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw675 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "H2S", &
+      uid2 = "NC9", &
+      kijvalue = 0.03000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw676 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "CO2", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw677 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "H2O", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw678 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEG", &
+      uid2 = "C1", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw679 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "MEOH", &
+      uid2 = "CO2", &
+      kijvalue = 0.01700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw680 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C1", &
+      kijvalue = 0.03800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw681 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2", &
+      kijvalue = 0.04100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw682 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C2_1", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw683 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "C3", &
+      kijvalue = 0.07600000  &
+      )
+
+  type (kijdatadb), parameter :: vdw684 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC4", &
+      kijvalue = 0.09400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw685 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "IC5", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw686 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC10", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw687 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC11", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw688 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC4", &
+      kijvalue = 0.07000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw689 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC5", &
+      kijvalue = 0.08800000  &
+      )
+
+  type (kijdatadb), parameter :: vdw690 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC6", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw691 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC7", &
+      kijvalue = 0.14200000  &
+      )
+
+  type (kijdatadb), parameter :: vdw692 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC8", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw693 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "NC9", &
+      kijvalue = 0.08000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw694 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "N2", &
+      uid2 = "O2", &
+      kijvalue = -0.01300000  &
+      )
+
+  type (kijdatadb), parameter :: vdw695 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "BENZENE", &
+      kijvalue = 0.01100000  &
+      )
+
+  type (kijdatadb), parameter :: vdw696 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R11", &
+      kijvalue = 0.00540000  &
+      )
+
+  type (kijdatadb), parameter :: vdw697 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R114", &
+      kijvalue = 0.00150000  &
+      )
+
+  type (kijdatadb), parameter :: vdw698 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R12", &
+      uid2 = "R152a", &
+      kijvalue = 0.08670000  &
+      )
+
+  type (kijdatadb), parameter :: vdw699 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R11", &
+      kijvalue = 0.02620000  &
+      )
+
+  type (kijdatadb), parameter :: vdw700 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R113", &
+      kijvalue = 0.02430000  &
+      )
+
+  type (kijdatadb), parameter :: vdw701 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13", &
+      uid2 = "R12", &
+      kijvalue = 0.02990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw702 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13B", &
+      uid2 = "R12", &
+      kijvalue = -0.00320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw703 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R13B", &
+      uid2 = "R152a", &
+      kijvalue = 0.07990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw704 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R13", &
+      kijvalue = 0.03040000  &
+      )
+
+  type (kijdatadb), parameter :: vdw705 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R14", &
+      uid2 = "R23", &
+      kijvalue = 0.10080000  &
+      )
+
+  type (kijdatadb), parameter :: vdw706 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R11", &
+      kijvalue = 0.04660000  &
+      )
+
+  type (kijdatadb), parameter :: vdw707 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R114", &
+      kijvalue = 0.03990000  &
+      )
+
+  type (kijdatadb), parameter :: vdw708 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R12", &
+      kijvalue = 0.05640000  &
+      )
+
+  type (kijdatadb), parameter :: vdw709 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R142b", &
+      kijvalue = 0.00570000  &
+      )
+
+  type (kijdatadb), parameter :: vdw710 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R22", &
+      uid2 = "R115", &
+      kijvalue = 0.08700000  &
+      )
+
+  type (kijdatadb), parameter :: vdw711 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R23", &
+      uid2 = "R13", &
+      kijvalue = 0.10320000  &
+      )
+
+  type (kijdatadb), parameter :: vdw712 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R218", &
+      uid2 = "R152a", &
+      kijvalue = 0.12000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw713 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R143a", &
+      kijvalue = -0.01110000  &
+      )
+
+  type (kijdatadb), parameter :: vdw714 = &
+      kijdatadb(eosid = "CSP-PR", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "R125", &
+      uid2 = "R134a", &
+      kijvalue = -0.00240000  &
+      )
+
+  type (interGEdatadb), parameter :: ge1 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV1", &
+      ref = "Default", &
+      bib_ref = "10.1205/cherd05023", &
+      uid1 = "C1", &
+      uid2 = "H2O", &
+      kijvalue = 0.52000000, &
+      correlation = 1, &
+      alphaijvalue = (/1.50000000e-01, 1.50000000e-01/), &
+      polyij = (/5.03570000e+03, -7.15000000e+00, 0.0/), &
+      polyji = (/-1.62800000e+02, 2.16000000e+00, 0.0/) &
+      )
+
+  type (interGEdatadb), parameter :: ge2 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default", &
+      bib_ref = "10.1205/cherd05023", &
+      uid1 = "C1", &
+      uid2 = "H2O", &
+      kijvalue = 0.52000000, &
+      correlation = 1, &
+      alphaijvalue = (/1.50000000e-01, 1.50000000e-01/), &
+      polyij = (/8.40400000e+03, -2.80310000e+01, 3.14200000e-02/), &
+      polyji = (/-1.14900000e+03, 8.01900000e+00, -8.61000000e-03/) &
+      )
+
+  type (interGEdatadb), parameter :: ge3 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV1", &
+      ref = "Default", &
+      bib_ref = "10.1016/j.fluid.2006.08.021", &
+      uid1 = "C1", &
+      uid2 = "MEG", &
+      kijvalue = 0.13400000, &
+      correlation = 1, &
+      alphaijvalue = (/7.00000000e-02, 7.00000000e-02/), &
+      polyij = (/2.27400000e+03, 0.00000000e+00, 0.0/), &
+      polyji = (/1.81000000e+02, 0.00000000e+00, 0.0/) &
+      )
+
+  type (interGEdatadb), parameter :: ge4 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default", &
+      bib_ref = "10.1016/j.fluid.2006.08.021", &
+      uid1 = "C1", &
+      uid2 = "MEG", &
+      kijvalue = 0.13400000, &
+      correlation = 1, &
+      alphaijvalue = (/7.00000000e-02, 7.00000000e-02/), &
+      polyij = (/2.27400000e+03, 0.00000000e+00, 0.00000000e+00/), &
+      polyji = (/1.81000000e+02, 0.00000000e+00, 0.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge5 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV1", &
+      ref = "Default", &
+      bib_ref = "10.1205/cherd05023", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.19300000, &
+      correlation = 1, &
+      alphaijvalue = (/3.00000000e-02, 3.00000000e-02/), &
+      polyij = (/6.56300000e+03, -5.12000000e+00, 0.0/), &
+      polyji = (/-3.74100000e+03, 1.55000000e+00, 0.0/) &
+      )
+
+  type (interGEdatadb), parameter :: ge6 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default", &
+      bib_ref = "10.1205/cherd05023", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.19300000, &
+      correlation = 1, &
+      alphaijvalue = (/3.00000000e-02, 3.00000000e-02/), &
+      polyij = (/5.85839000e+03, 2.41120000e+00, -1.71300000e-02/), &
+      polyji = (/-1.23741000e+03, -1.55058000e+01, 2.89600000e-02/) &
+      )
+
+  type (interGEdatadb), parameter :: ge7 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV1", &
+      ref = "Default", &
+      bib_ref = "10.1016/j.fluid.2006.08.021", &
+      uid1 = "H2O", &
+      uid2 = "MEG", &
+      kijvalue = -0.06300000, &
+      correlation = 1, &
+      alphaijvalue = (/9.50000000e-01, 9.50000000e-01/), &
+      polyij = (/5.90000000e+01, 0.00000000e+00, 0.0/), &
+      polyji = (/1.05000000e+02, 0.00000000e+00, 0.0/) &
+      )
+
+  type (interGEdatadb), parameter :: ge8 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default", &
+      bib_ref = "10.1016/j.fluid.2006.08.021", &
+      uid1 = "H2O", &
+      uid2 = "MEG", &
+      kijvalue = -0.06300000, &
+      correlation = 1, &
+      alphaijvalue = (/9.50000000e-01, 9.50000000e-01/), &
+      polyij = (/5.90000000e+01, 0.00000000e+00, 0.00000000e+00/), &
+      polyji = (/1.05000000e+02, 0.00000000e+00, 0.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge9 = &
+      interGEdatadb(eosid = "PR", &
+      mruleid = "HV1", &
+      ref = "Hemmingsen2011", &
+      bib_ref = "10.1016/j.fluid.2011.05.010", &
+      uid1 = "H2O", &
+      uid2 = "MEG", &
+      kijvalue = -0.06500000, &
+      correlation = 1, &
+      alphaijvalue = (/4.00000000e-01, 4.00000000e-01/), &
+      polyij = (/0.00000000e+00, 2.18300000e+02, 0.0/), &
+      polyji = (/0.00000000e+00, 7.20200000e+01, 0.0/) &
+      )
+
+  type (interGEdatadb), parameter :: ge10 = &
+      interGEdatadb(eosid = "PR", &
+      mruleid = "NRTL", &
+      ref = "Dicko2012", &
+      bib_ref = "10.1021/je300111m", &
+      uid1 = "H2S", &
+      uid2 = "C3", &
+      kijvalue = 0.07500000, &
+      correlation = 1, &
+      alphaijvalue = (/3.00000000e-01, 3.00000000e-01/), &
+      polyij = (/3.45712000e+02, 0.00000000e+00, 0.00000000e+00/), &
+      polyji = (/-2.93377000e+01, 0.00000000e+00, 0.00000000e+00/) &
+      )
 
 
-   integer, parameter :: maxkij = 419+31+78+239+91+78+212+4+17
-   ! 31 from Patel-Teja article
-   ! 78 SimSci TDM2.0 / ProII 9.1 (PR Set no 2)
-   ! 239 Hysys (PR set no 3) + 17 (Updated for N2)
-   ! 91 from SIMSCI/SRK (SRK Set no 2)
-   ! 78 from HSYS (SRK Set no 3)
-   ! 212 from SPUNG/SRK, SPUNG/SRKGB and SPUNG/PR from TPlib
-   ! 4 for mixtures with R1234yf (PR set 1) 
+  integer, parameter :: maxkij =714
+  type (kijdatadb), dimension(maxkij), parameter :: kijdb = (/&
+      vdw1,vdw2,vdw3,vdw4,vdw5, &
+      vdw6,vdw7,vdw8,vdw9,vdw10, &
+      vdw11,vdw12,vdw13,vdw14,vdw15, &
+      vdw16,vdw17,vdw18,vdw19,vdw20, &
+      vdw21,vdw22,vdw23,vdw24,vdw25, &
+      vdw26,vdw27,vdw28,vdw29,vdw30, &
+      vdw31,vdw32,vdw33,vdw34,vdw35, &
+      vdw36,vdw37,vdw38,vdw39,vdw40, &
+      vdw41,vdw42,vdw43,vdw44,vdw45, &
+      vdw46,vdw47,vdw48,vdw49,vdw50, &
+      vdw51,vdw52,vdw53,vdw54,vdw55, &
+      vdw56,vdw57,vdw58,vdw59,vdw60, &
+      vdw61,vdw62,vdw63,vdw64,vdw65, &
+      vdw66,vdw67,vdw68,vdw69,vdw70, &
+      vdw71,vdw72,vdw73,vdw74,vdw75, &
+      vdw76,vdw77,vdw78,vdw79,vdw80, &
+      vdw81,vdw82,vdw83,vdw84,vdw85, &
+      vdw86,vdw87,vdw88,vdw89,vdw90, &
+      vdw91,vdw92,vdw93,vdw94,vdw95, &
+      vdw96,vdw97,vdw98,vdw99,vdw100, &
+      vdw101,vdw102,vdw103,vdw104,vdw105, &
+      vdw106,vdw107,vdw108,vdw109,vdw110, &
+      vdw111,vdw112,vdw113,vdw114,vdw115, &
+      vdw116,vdw117,vdw118,vdw119,vdw120, &
+      vdw121,vdw122,vdw123,vdw124,vdw125, &
+      vdw126,vdw127,vdw128,vdw129,vdw130, &
+      vdw131,vdw132,vdw133,vdw134,vdw135, &
+      vdw136,vdw137,vdw138,vdw139,vdw140, &
+      vdw141,vdw142,vdw143,vdw144,vdw145, &
+      vdw146,vdw147,vdw148,vdw149,vdw150, &
+      vdw151,vdw152,vdw153,vdw154,vdw155, &
+      vdw156,vdw157,vdw158,vdw159,vdw160, &
+      vdw161,vdw162,vdw163,vdw164,vdw165, &
+      vdw166,vdw167,vdw168,vdw169,vdw170, &
+      vdw171,vdw172,vdw173,vdw174,vdw175, &
+      vdw176,vdw177,vdw178,vdw179,vdw180, &
+      vdw181,vdw182,vdw183,vdw184,vdw185, &
+      vdw186,vdw187,vdw188,vdw189,vdw190, &
+      vdw191,vdw192,vdw193,vdw194,vdw195, &
+      vdw196,vdw197,vdw198,vdw199,vdw200, &
+      vdw201,vdw202,vdw203,vdw204,vdw205, &
+      vdw206,vdw207,vdw208,vdw209,vdw210, &
+      vdw211,vdw212,vdw213,vdw214,vdw215, &
+      vdw216,vdw217,vdw218,vdw219,vdw220, &
+      vdw221,vdw222,vdw223,vdw224,vdw225, &
+      vdw226,vdw227,vdw228,vdw229,vdw230, &
+      vdw231,vdw232,vdw233,vdw234,vdw235, &
+      vdw236,vdw237,vdw238,vdw239,vdw240, &
+      vdw241,vdw242,vdw243,vdw244,vdw245, &
+      vdw246,vdw247,vdw248,vdw249,vdw250, &
+      vdw251,vdw252,vdw253,vdw254,vdw255, &
+      vdw256,vdw257,vdw258,vdw259,vdw260, &
+      vdw261,vdw262,vdw263,vdw264,vdw265, &
+      vdw266,vdw267,vdw268,vdw269,vdw270, &
+      vdw271,vdw272,vdw273,vdw274,vdw275, &
+      vdw276,vdw277,vdw278,vdw279,vdw280, &
+      vdw281,vdw282,vdw283,vdw284,vdw285, &
+      vdw286,vdw287,vdw288,vdw289,vdw290, &
+      vdw291,vdw292,vdw293,vdw294,vdw295, &
+      vdw296,vdw297,vdw298,vdw299,vdw300, &
+      vdw301,vdw302,vdw303,vdw304,vdw305, &
+      vdw306,vdw307,vdw308,vdw309,vdw310, &
+      vdw311,vdw312,vdw313,vdw314,vdw315, &
+      vdw316,vdw317,vdw318,vdw319,vdw320, &
+      vdw321,vdw322,vdw323,vdw324,vdw325, &
+      vdw326,vdw327,vdw328,vdw329,vdw330, &
+      vdw331,vdw332,vdw333,vdw334,vdw335, &
+      vdw336,vdw337,vdw338,vdw339,vdw340, &
+      vdw341,vdw342,vdw343,vdw344,vdw345, &
+      vdw346,vdw347,vdw348,vdw349,vdw350, &
+      vdw351,vdw352,vdw353,vdw354,vdw355, &
+      vdw356,vdw357,vdw358,vdw359,vdw360, &
+      vdw361,vdw362,vdw363,vdw364,vdw365, &
+      vdw366,vdw367,vdw368,vdw369,vdw370, &
+      vdw371,vdw372,vdw373,vdw374,vdw375, &
+      vdw376,vdw377,vdw378,vdw379,vdw380, &
+      vdw381,vdw382,vdw383,vdw384,vdw385, &
+      vdw386,vdw387,vdw388,vdw389,vdw390, &
+      vdw391,vdw392,vdw393,vdw394,vdw395, &
+      vdw396,vdw397,vdw398,vdw399,vdw400, &
+      vdw401,vdw402,vdw403,vdw404,vdw405, &
+      vdw406,vdw407,vdw408,vdw409,vdw410, &
+      vdw411,vdw412,vdw413,vdw414,vdw415, &
+      vdw416,vdw417,vdw418,vdw419,vdw420, &
+      vdw421,vdw422,vdw423,vdw424,vdw425, &
+      vdw426,vdw427,vdw428,vdw429,vdw430, &
+      vdw431,vdw432,vdw433,vdw434,vdw435, &
+      vdw436,vdw437,vdw438,vdw439,vdw440, &
+      vdw441,vdw442,vdw443,vdw444,vdw445, &
+      vdw446,vdw447,vdw448,vdw449,vdw450, &
+      vdw451,vdw452,vdw453,vdw454,vdw455, &
+      vdw456,vdw457,vdw458,vdw459,vdw460, &
+      vdw461,vdw462,vdw463,vdw464,vdw465, &
+      vdw466,vdw467,vdw468,vdw469,vdw470, &
+      vdw471,vdw472,vdw473,vdw474,vdw475, &
+      vdw476,vdw477,vdw478,vdw479,vdw480, &
+      vdw481,vdw482,vdw483,vdw484,vdw485, &
+      vdw486,vdw487,vdw488,vdw489,vdw490, &
+      vdw491,vdw492,vdw493,vdw494,vdw495, &
+      vdw496,vdw497,vdw498,vdw499,vdw500, &
+      vdw501,vdw502,vdw503,vdw504,vdw505, &
+      vdw506,vdw507,vdw508,vdw509,vdw510, &
+      vdw511,vdw512,vdw513,vdw514,vdw515, &
+      vdw516,vdw517,vdw518,vdw519,vdw520, &
+      vdw521,vdw522,vdw523,vdw524,vdw525, &
+      vdw526,vdw527,vdw528,vdw529,vdw530, &
+      vdw531,vdw532,vdw533,vdw534,vdw535, &
+      vdw536,vdw537,vdw538,vdw539,vdw540, &
+      vdw541,vdw542,vdw543,vdw544,vdw545, &
+      vdw546,vdw547,vdw548,vdw549,vdw550, &
+      vdw551,vdw552,vdw553,vdw554,vdw555, &
+      vdw556,vdw557,vdw558,vdw559,vdw560, &
+      vdw561,vdw562,vdw563,vdw564,vdw565, &
+      vdw566,vdw567,vdw568,vdw569,vdw570, &
+      vdw571,vdw572,vdw573,vdw574,vdw575, &
+      vdw576,vdw577,vdw578,vdw579,vdw580, &
+      vdw581,vdw582,vdw583,vdw584,vdw585, &
+      vdw586,vdw587,vdw588,vdw589,vdw590, &
+      vdw591,vdw592,vdw593,vdw594,vdw595, &
+      vdw596,vdw597,vdw598,vdw599,vdw600, &
+      vdw601,vdw602,vdw603,vdw604,vdw605, &
+      vdw606,vdw607,vdw608,vdw609,vdw610, &
+      vdw611,vdw612,vdw613,vdw614,vdw615, &
+      vdw616,vdw617,vdw618,vdw619,vdw620, &
+      vdw621,vdw622,vdw623,vdw624,vdw625, &
+      vdw626,vdw627,vdw628,vdw629,vdw630, &
+      vdw631,vdw632,vdw633,vdw634,vdw635, &
+      vdw636,vdw637,vdw638,vdw639,vdw640, &
+      vdw641,vdw642,vdw643,vdw644,vdw645, &
+      vdw646,vdw647,vdw648,vdw649,vdw650, &
+      vdw651,vdw652,vdw653,vdw654,vdw655, &
+      vdw656,vdw657,vdw658,vdw659,vdw660, &
+      vdw661,vdw662,vdw663,vdw664,vdw665, &
+      vdw666,vdw667,vdw668,vdw669,vdw670, &
+      vdw671,vdw672,vdw673,vdw674,vdw675, &
+      vdw676,vdw677,vdw678,vdw679,vdw680, &
+      vdw681,vdw682,vdw683,vdw684,vdw685, &
+      vdw686,vdw687,vdw688,vdw689,vdw690, &
+      vdw691,vdw692,vdw693,vdw694,vdw695, &
+      vdw696,vdw697,vdw698,vdw699,vdw700, &
+      vdw701,vdw702,vdw703,vdw704,vdw705, &
+      vdw706,vdw707,vdw708,vdw709,vdw710, &
+      vdw711,vdw712,vdw713,vdw714 &
+  /)
 
-   type (kijdatadb), dimension (maxkij), parameter :: kijdb = (/ &
-         kijdatadb("srk","classic", 1,"C1","C2", -0.0078), &
-         kijdatadb("srk","classic", 1,"C1","C2_1",  0.02), &
-         kijdatadb("srk","classic", 1,"C1","C3",  0.009), &
-         kijdatadb("srk","classic", 1,"C1","IC4",  0.0241), &
-         kijdatadb("srk","classic", 1,"C1","NC4",  0.0056), &
-         kijdatadb("srk","classic", 1,"C1","NC5",  0.019), &
-         kijdatadb("srk","classic", 1,"C1","H2S",  0.091), &
-         kijdatadb("srk","classic", 1,"C2","C2_1",  0.0112), &
-         kijdatadb("srk","classic", 1,"C2","C3", -0.0022), &
-         kijdatadb("srk","classic", 1,"C2","IC4", -0.01), &
-         kijdatadb("srk","classic", 1,"C2","NC4",  0.0067), &
-         kijdatadb("srk","classic", 1,"C2","NC5",  0.0056), &
-         kijdatadb("srk","classic", 1,"NC4","C2_1",  0.1), &
-         kijdatadb("srk","classic", 1,"C3","IC4", -0.01), &
-         kijdatadb("srk","classic", 1,"C3","NC5",  0.023), &
-         kijdatadb("srk","classic", 1,"IC4","NC4",  0.0011), &
-         kijdatadb("srk","classic", 1,"NC4","NC5",  0.0204), &
-         kijdatadb("srk","classic", 1,"H2O","C1",  0.), &
-         kijdatadb("srk","classic", 1,"H2O","MEG",  -0.063), &
-         kijdatadb("srk","classic", 1,"CO2","MEG",  0.05), &
-         kijdatadb("srk","classic", 1,"CO2","O2",  0.104), &
-         kijdatadb("srk","classic", 1,"CO2","NH3",  0.), &
-         kijdatadb("srk","classic", 1,"CO2","N2O",  0.004), &
-         kijdatadb("srk","classic", 1,"CO2","N2O4",  0.), &
-         kijdatadb("srk","classic", 1,"CO2","CO", -0.08), &
-         kijdatadb("srk","classic", 1,"CO2","C1",  0.095), &
-         kijdatadb("srk","classic", 1,"CO2","C2",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","C2_1",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","C3",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","H2O",  0.074), &
-         kijdatadb("srk","classic", 1,"CO2","IC4",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","IC5",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","NC10",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","NC11",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","NC4",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","NC5",  0.15), &
-         kijdatadb("srk","classic", 1,"CO2","H2S",  0.1), &
-         kijdatadb("srk","classic", 1,"CO2","N2", -0.051), &
-         kijdatadb("srk","classic", 1,"CO2","AR",  0.088), &
-         kijdatadb("srk","classic", 1,"CO2","SO2",  0.071), &
-         kijdatadb("srk","classic", 1,"CO2","H2",  0.009), &
-         kijdatadb("srk","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("srk","classic", 1,"H2S","NC5",  0.06), &
-         kijdatadb("srk","classic", 1,"H2S","NC6",  0.05), &
-         kijdatadb("srk","classic", 1,"H2S","NC7",  0.04), &
-         kijdatadb("srk","classic", 1,"H2S","NC8",  0.04), &
-         kijdatadb("srk","classic", 1,"H2S","NC9",  0.03), &
-         kijdatadb("srk","classic", 1,"MEOH","CO2",  0.017), &
-         kijdatadb("srk","classic", 1,"N2","C1",  0.034), &
-         kijdatadb("srk","classic", 1,"N2","C2",  0.06), &
-         kijdatadb("srk","classic", 1,"N2","C2_1",  0.075), &
-         kijdatadb("srk","classic", 1,"N2","C3",  0.09), &
-         kijdatadb("srk","classic", 1,"N2","IC4",  0.113), &
-         kijdatadb("srk","classic", 1,"N2","IC5",  0.087), &
-         kijdatadb("srk","classic", 1,"N2","NC10",  0.08), &
-         kijdatadb("srk","classic", 1,"N2","NC11",  0.08), &
-         kijdatadb("srk","classic", 1,"N2","NC4",  0.113), &
-         kijdatadb("srk","classic", 1,"N2","NC5",  0.14), &
-         kijdatadb("srk","classic", 1,"N2","NC6",  0.15), &
-         kijdatadb("srk","classic", 1,"N2","NC7",  0.142), &
-         kijdatadb("srk","classic", 1,"N2","NC8",  0.08), &
-         kijdatadb("srk","classic", 1,"N2","NC9",  0.08), &
-         kijdatadb("srk","classic", 1,"N2","O2", -0.011), &
-         kijdatadb("srk","classic", 1,"R12","R11",  0.0054), &
-         kijdatadb("srk","classic", 1,"R12","R114",  0.0015), &
-         kijdatadb("srk","classic", 1,"R12","R152a",  0.0867), &
-         kijdatadb("srk","classic", 1,"R13","R11",  0.0262), &
-         kijdatadb("srk","classic", 1,"R13","R12",  0.0299), &
-         kijdatadb("srk","classic", 1,"R14","R13",  0.0304), &
-         kijdatadb("srk","classic", 1,"R14","R23",  0.1008), &
-         kijdatadb("srk","classic", 1,"R22","R11",  0.0466), &
-         kijdatadb("srk","classic", 1,"R22","R114",  0.0399), &
-         kijdatadb("srk","classic", 1,"R22","R12",  0.0564), &
-         kijdatadb("srk","classic", 1,"R22","R142b",  0.0057), &
-         kijdatadb("srk","classic", 1,"R22","R115",  0.089), &
-         kijdatadb("srk","classic", 1,"R23","R13",  0.1032), &
-         kijdatadb("srk","classic", 1,"R218","R152a",  0.12), &
-         kijdatadb("srk","classic", 1,"R125","R143a", -0.0111), &
-         kijdatadb("srk","classic", 1,"R125","R134a", -0.0024), &
-         kijdatadb("srk","classic", 1,"R143a","R134a",  0.0013), &
+  integer, parameter :: maxinterGEij =10
+  type (interGEdatadb), dimension(maxinterGEij), parameter :: interGEdb = (/&
+      ge1,ge2,ge3,ge4,ge5, &
+      ge6,ge7,ge8,ge9,ge10 &
+  /)
 
-! Set 2: From SIMCSCI TDM2.0 / PROII 9.1 "?" replaced by 0.0
-         kijdatadb("srk","classic",2,"C1","C3",0.009), &
-         kijdatadb("srk","classic",2,"C1","NC6",0.0374), &
-         kijdatadb("srk","classic",2,"C1","C2",-0.0078), &
-         kijdatadb("srk","classic",2,"C1","CO2",0.0933), &
-         kijdatadb("srk","classic",2,"C1","H2S",0.09), &
-         kijdatadb("srk","classic",2,"C1","N2",0.03), &
-         kijdatadb("srk","classic",2,"C1","H2O",0.52), &
-         kijdatadb("srk","classic",2,"C1","NC4",0.0056), &
-         kijdatadb("srk","classic",2,"C1","IC4",0.0241), &
-         kijdatadb("srk","classic",2,"C1","NC5",0.019), &
-         kijdatadb("srk","classic",2,"C1","NC7",0.0307), &
-         kijdatadb("srk","classic",2,"C1","NC8",0.0448), &
-         kijdatadb("srk","classic",2,"C1","IC5",-0.0078), &
-         kijdatadb("srk","classic",2,"C3","NC6",-0.0022), &
-         kijdatadb("srk","classic",2,"C3","C2",-0.0022), &
-         kijdatadb("srk","classic",2,"C3","CO2",0.1289), &
-         kijdatadb("srk","classic",2,"C3","H2S",0.076), &
-         kijdatadb("srk","classic",2,"C3","N2",0.09), &
-         kijdatadb("srk","classic",2,"C3","H2O",0.53), &
-         kijdatadb("srk","classic",2,"C3","NC4",0), &
-         kijdatadb("srk","classic",2,"C3","IC4",-0.01), &
-         kijdatadb("srk","classic",2,"C3","NC5",0.0233), &
-         kijdatadb("srk","classic",2,"C3","NC7",0.0044), &
-         kijdatadb("srk","classic",2,"C3","NC8",0.0), &
-         kijdatadb("srk","classic",2,"C3","IC5",0.0078), &
-         kijdatadb("srk","classic",2,"NC6","C2",-0.0156), &
-         kijdatadb("srk","classic",2,"NC6","CO2",0.112), &
-         kijdatadb("srk","classic",2,"NC6","H2S",0.068), &
-         kijdatadb("srk","classic",2,"NC6","N2",0.166), &
-         kijdatadb("srk","classic",2,"NC6","H2O",0.5), &
-         kijdatadb("srk","classic",2,"NC6","NC4",-0.0111), &
-         kijdatadb("srk","classic",2,"NC6","IC4",0.0), &
-         kijdatadb("srk","classic",2,"NC6","NC5",0.0), &
-         kijdatadb("srk","classic",2,"NC6","NC7",-0.0011), &
-         kijdatadb("srk","classic",2,"NC6","NC8",0.0), &
-         kijdatadb("srk","classic",2,"NC6","IC5",0.0), &
-         kijdatadb("srk","classic",2,"C2","CO2",0.1363), &
-         kijdatadb("srk","classic",2,"C2","H2S",0.085), &
-         kijdatadb("srk","classic",2,"C2","N2",0.06), &
-         kijdatadb("srk","classic",2,"C2","H2O",0.55), &
-         kijdatadb("srk","classic",2,"C2","NC4",0.0067), &
-         kijdatadb("srk","classic",2,"C2","IC4",-0.01), &
-         kijdatadb("srk","classic",2,"C2","NC5",0.0056), &
-         kijdatadb("srk","classic",2,"C2","NC7",0.0041), &
-         kijdatadb("srk","classic",2,"C2","NC8",0.017), &
-         kijdatadb("srk","classic",2,"C2","IC5",0.0), &
-         kijdatadb("srk","classic",2,"CO2","H2S",0.1), &
-         kijdatadb("srk","classic",2,"CO2","N2",-0.03), &
-         kijdatadb("srk","classic",2,"CO2","H2O",0.23), &
-         kijdatadb("srk","classic",2,"CO2","NC4",0.143), &
-         kijdatadb("srk","classic",2,"CO2","IC4",0.1285), &
-         kijdatadb("srk","classic",2,"CO2","NC5",0.131), &
-         kijdatadb("srk","classic",2,"CO2","NC7",0.11), &
-         kijdatadb("srk","classic",2,"CO2","NC8",0.12), &
-         kijdatadb("srk","classic",2,"CO2","IC5",0.131), &
-         kijdatadb("srk","classic",2,"H2S","N2",0.17), &
-         kijdatadb("srk","classic",2,"H2S","H2O",0.135), &
-         kijdatadb("srk","classic",2,"H2S","NC4",0.06), &
-         kijdatadb("srk","classic",2,"H2S","IC4",0.06), &
-         kijdatadb("srk","classic",2,"H2S","NC5",0.068), &
-         kijdatadb("srk","classic",2,"H2S","NC7",0.068), &
-         kijdatadb("srk","classic",2,"H2S","NC8",0.06), &
-         kijdatadb("srk","classic",2,"H2S","IC5",0.065), &
-         kijdatadb("srk","classic",2,"N2","H2O",0.53), &
-         kijdatadb("srk","classic",2,"N2","NC4",0.113), &
-         kijdatadb("srk","classic",2,"N2","IC4",0.113), &
-         kijdatadb("srk","classic",2,"N2","NC5",0.14), &
-         kijdatadb("srk","classic",2,"N2","NC7",0.2), &
-         kijdatadb("srk","classic",2,"N2","NC8",0.0), &
-         kijdatadb("srk","classic",2,"N2","IC5",0.14), &
-         kijdatadb("srk","classic",2,"H2O","NC4",0.52), &
-         kijdatadb("srk","classic",2,"H2O","IC4",0.52), &
-         kijdatadb("srk","classic",2,"H2O","NC5",0.5), &
-         kijdatadb("srk","classic",2,"H2O","NC7",0.5), &
-         kijdatadb("srk","classic",2,"H2O","NC8",0.5), &
-         kijdatadb("srk","classic",2,"H2O","IC5",0.5), &
-         kijdatadb("srk","classic",2,"NC4","IC4",0.0011), &
-         kijdatadb("srk","classic",2,"NC4","NC5",0.0204), &
-         kijdatadb("srk","classic",2,"NC4","NC7",-0.0004), &
-         kijdatadb("srk","classic",2,"NC4","NC8",0.0), &
-         kijdatadb("srk","classic",2,"NC4","IC5",0.0), &
-         kijdatadb("srk","classic",2,"IC4","NC5",0.0), &
-         kijdatadb("srk","classic",2,"IC4","NC7",0.0), &
-         kijdatadb("srk","classic",2,"IC4","NC8",0.0), &
-         kijdatadb("srk","classic",2,"IC4","IC5",0.0), &
-         kijdatadb("srk","classic",2,"NC5","NC7",0.0019), &
-         kijdatadb("srk","classic",2,"NC5","NC8",-0.0022), &
-         kijdatadb("srk","classic",2,"NC5","IC5",0.0), &
-         kijdatadb("srk","classic",2,"NC7","NC8",0.0), &
-         kijdatadb("srk","classic",2,"NC7","IC5",0.0), &
-         kijdatadb("srk","classic",2,"NC8","IC5",0.0), &
-! From Hysys 
-         kijdatadb("srk","classic",3,"C1","C2",2.24E-03), &
-         kijdatadb("srk","classic",3,"C1","C3",6.83E-03), &
-         kijdatadb("srk","classic",3,"C1","IC4",1.31E-02), &
-         kijdatadb("srk","classic",3,"C1","NC4",1.23E-02), &
-         kijdatadb("srk","classic",3,"C1","IC5",1.76E-02), &
-         kijdatadb("srk","classic",3,"C1","NC5",1.79E-02), &
-         kijdatadb("srk","classic",3,"C1","NC6",2.35E-02), &
-         kijdatadb("srk","classic",3,"C1","NC7",2.89E-02), &
-         kijdatadb("srk","classic",3,"C1","NC8",3.42E-02), &
-         kijdatadb("srk","classic",3,"C1","H2S",8.88E-02), &
-         kijdatadb("srk","classic",3,"C1","H2O",0.5), &
-         kijdatadb("srk","classic",3,"C1","CO2",9.56E-02), &
-         kijdatadb("srk","classic",3,"C2","C3",1.26E-03), &
-         kijdatadb("srk","classic",3,"C2","IC4",4.57E-03), &
-         kijdatadb("srk","classic",3,"C2","NC4",4.10E-03), &
-         kijdatadb("srk","classic",3,"C2","IC5",7.41E-03), &
-         kijdatadb("srk","classic",3,"C2","NC5",7.61E-03), &
-         kijdatadb("srk","classic",3,"C2","NC6",1.14E-02), &
-         kijdatadb("srk","classic",3,"C2","NC7",1.53E-02), &
-         kijdatadb("srk","classic",3,"C2","NC8",1.93E-02), &
-         kijdatadb("srk","classic",3,"C2","H2S",8.62E-02), &
-         kijdatadb("srk","classic",3,"C2","H2O",0.5), &
-         kijdatadb("srk","classic",3,"C2","CO2",0.140100002), &
-         kijdatadb("srk","classic",3,"C3","IC4",1.04E-03), &
-         kijdatadb("srk","classic",3,"C3","NC4",8.19E-04), &
-         kijdatadb("srk","classic",3,"C3","IC5",2.58E-03), &
-         kijdatadb("srk","classic",3,"C3","NC5",2.70E-03), &
-         kijdatadb("srk","classic",3,"C3","NC6",5.14E-03), &
-         kijdatadb("srk","classic",3,"C3","NC7",7.89E-03), &
-         kijdatadb("srk","classic",3,"C3","NC8",1.09E-02), &
-         kijdatadb("srk","classic",3,"C3","H2S",9.25E-02), &
-         kijdatadb("srk","classic",3,"C3","H2O",0.481900007), &
-         kijdatadb("srk","classic",3,"C3","CO2",0.136800006), &
-         kijdatadb("srk","classic",3,"IC4","NC4",1.34E-05), &
-         kijdatadb("srk","classic",3,"IC4","IC5",3.46E-04), &
-         kijdatadb("srk","classic",3,"IC4","NC5",3.90E-04), &
-         kijdatadb("srk","classic",3,"IC4","NC6",1.57E-03), &
-         kijdatadb("srk","classic",3,"IC4","NC7",3.22E-03), &
-         kijdatadb("srk","classic",3,"IC4","NC8",5.21E-03), &
-         kijdatadb("srk","classic",3,"IC4","H2S",5.60E-02), &
-         kijdatadb("srk","classic",3,"IC4","H2O",0.518000007), &
-         kijdatadb("srk","classic",3,"IC4","CO2",0.136800006), &
-         kijdatadb("srk","classic",3,"NC4","IC5",4.95E-04), &
-         kijdatadb("srk","classic",3,"NC4","NC5",5.47E-04), &
-         kijdatadb("srk","classic",3,"NC4","NC6",1.87E-03), &
-         kijdatadb("srk","classic",3,"NC4","NC7",3.65E-03), &
-         kijdatadb("srk","classic",3,"NC4","NC8",5.75E-03), &
-         kijdatadb("srk","classic",3,"NC4","H2S",6.26E-02), &
-         kijdatadb("srk","classic",3,"NC4","H2O",0.518000007), &
-         kijdatadb("srk","classic",3,"NC4","CO2",0.141200006), &
-         kijdatadb("srk","classic",3,"IC5","NC5",1.23E-06), &
-         kijdatadb("srk","classic",3,"IC5","NC6",4.40E-04), &
-         kijdatadb("srk","classic",3,"IC5","NC7",1.46E-03), &
-         kijdatadb("srk","classic",3,"IC5","NC8",2.88E-03), &
-         kijdatadb("srk","classic",3,"IC5","H2S",6.50E-02), &
-         kijdatadb("srk","classic",3,"IC5","H2O",0.5), &
-         kijdatadb("srk","classic",3,"IC5","CO2",0.129700005), &
-         kijdatadb("srk","classic",3,"NC5","NC6",3.93E-04), &
-         kijdatadb("srk","classic",3,"NC5","NC7",1.37E-03), &
-         kijdatadb("srk","classic",3,"NC5","NC8",2.76E-03), &
-         kijdatadb("srk","classic",3,"NC5","H2S",7.09E-02), &
-         kijdatadb("srk","classic",3,"NC5","H2O",0.5), &
-         kijdatadb("srk","classic",3,"NC5","CO2",0.1347), &
-         kijdatadb("srk","classic",3,"NC6","NC7",2.97E-04), &
-         kijdatadb("srk","classic",3,"NC6","NC8",1.07E-03), &
-         kijdatadb("srk","classic",3,"NC6","H2S",5.70E-02), &
-         kijdatadb("srk","classic",3,"NC6","H2O",0.510900021), &
-         kijdatadb("srk","classic",3,"NC6","CO2",0.142000005), &
-         kijdatadb("srk","classic",3,"NC7","NC8",2.41E-04), &
-         kijdatadb("srk","classic",3,"NC7","H2S",7.87E-02), &
-         kijdatadb("srk","classic",3,"NC7","H2O",0.5), &
-         kijdatadb("srk","classic",3,"NC7","CO2",0.109200001), &
-         kijdatadb("srk","classic",3,"NC8","H2S",5.50E-02), &
-         kijdatadb("srk","classic",3,"NC8","H2O",0.5), &
-         kijdatadb("srk","classic",3,"NC8","CO2",0.135000005), &
-         kijdatadb("srk","classic",3,"H2S","H2O",8.30E-02), &
-         kijdatadb("srk","classic",3,"H2S","CO2",0.115000002), &
-         kijdatadb("srk","classic",3,"H2O","CO2",3.92E-02), &
-
-! From TPlib:
-         kijdatadb("gdsrk","classic", 1,"CO2","C1",  0.12), &
-         kijdatadb("gdsrk","classic", 1,"CO2","C2",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","C2_1",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","C3",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","H2O",  0.074), &
-         kijdatadb("gdsrk","classic", 1,"CO2","IC4",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","IC5",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","NC10",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","NC11",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","NC4",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","NC5",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"CO2","O2",  0.116), &
-         kijdatadb("gdsrk","classic", 1,"CO2","H2S",  0.106), &
-         kijdatadb("gdsrk","classic", 1,"CO2","N2", -0.014), &
-         kijdatadb("gdsrk","classic", 1,"CO2","AR",  0.18), &
-         kijdatadb("gdsrk","classic", 1,"CO2","SO2",  0.048), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC5",  0.06), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC6",  0.05), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC7",  0.04), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC8",  0.04), &
-         kijdatadb("gdsrk","classic", 1,"H2S","NC9",  0.03), &
-         kijdatadb("gdsrk","classic", 1,"MEOH","CO2",  0.017), &
-         kijdatadb("gdsrk","classic", 1,"N2","C1",  0.028), &
-         kijdatadb("gdsrk","classic", 1,"N2","C2",  0.041), &
-         kijdatadb("gdsrk","classic", 1,"N2","C2_1",  0.08), &
-         kijdatadb("gdsrk","classic", 1,"N2","C3",  0.076), &
-         kijdatadb("gdsrk","classic", 1,"N2","IC4",  0.094), &
-         kijdatadb("gdsrk","classic", 1,"N2","IC5",  0.087), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC10",  0.08), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC11",  0.08), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC4",  0.07), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC5",  0.088), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC6",  0.15), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC7",  0.142), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC8",  0.08), &
-         kijdatadb("gdsrk","classic", 1,"N2","NC9",  0.08), &
-         kijdatadb("gdsrk","classic", 1,"N2","O2", -0.01), &
-         kijdatadb("gdsrk","classic", 1,"R12","R11",  0.0054), &
-         kijdatadb("gdsrk","classic", 1,"R12","R114",  0.0015), &
-         kijdatadb("gdsrk","classic", 1,"R12","R152a",  0.0867), &
-         kijdatadb("gdsrk","classic", 1,"R13","R11",  0.0262), &
-         kijdatadb("gdsrk","classic", 1,"R13","R12",  0.0299), &
-         kijdatadb("gdsrk","classic", 1,"R14","R13",  0.0304), &
-         kijdatadb("gdsrk","classic", 1,"R14","R23",  0.1008), &
-         kijdatadb("gdsrk","classic", 1,"R22","R11",  0.0466), &
-         kijdatadb("gdsrk","classic", 1,"R22","R114",  0.0399), &
-         kijdatadb("gdsrk","classic", 1,"R22","R12",  0.0564), &
-         kijdatadb("gdsrk","classic", 1,"R22","R142b",  0.0057), &
-         kijdatadb("gdsrk","classic", 1,"R22","R115",  0.089), &
-         kijdatadb("gdsrk","classic", 1,"R23","R13",  0.1032), &
-         kijdatadb("gdsrk","classic", 1,"R218","R152a",  0.12), &
-         kijdatadb("gdsrk","classic", 1,"R125","R143a", -0.0111), &
-         kijdatadb("gdsrk","classic", 1,"R125","R134a", -0.0024), &
-         kijdatadb("gdsrk","classic", 1,"R143a","R134a",  0.0013), &
-         kijdatadb("pr","classic", 1,"C1","H2S",  0.093), &
-         kijdatadb("pr","classic", 1,"CO2","O2",  0.102), &
-         kijdatadb("pr","classic", 1,"CO2","NH3",  0.), &
-         kijdatadb("pr","classic", 1,"CO2","N2O",  0.007), &
-         kijdatadb("pr","classic", 1,"CO2","N2O4",  0.), &
-         kijdatadb("pr","classic", 1,"CO2","C1",  0.092), &
-         kijdatadb("pr","classic", 1,"CO2","C2",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","C2_1",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","C3",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","H2O",  0.074), &
-         kijdatadb("pr","classic", 1,"CO2","IC4",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","IC5",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","NC10",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","NC11",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","NC4",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","NC5",  0.15), &
-         kijdatadb("pr","classic", 1,"CO2","H2S",  0.099), &
-         kijdatadb("pr","classic", 1,"CO2","N2", -0.036), &
-         kijdatadb("pr","classic", 1,"CO2","AR",  0.086), &
-         kijdatadb("pr","classic", 1,"CO2","SO2",  0.072), &
-         kijdatadb("pr","classic", 1,"CO2","H2",  0.104), &
-         kijdatadb("pr","classic", 1,"CO2","CO", -0.066), &
-         kijdatadb("pr","classic", 1,"CO2","NH3",  0.), &
-         kijdatadb("pr","classic", 1,"H2O","CO2",  -0.065), &
-         kijdatadb("pr","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("pr","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("pr","classic", 1,"H2S","NC5",  0.06), &
-         kijdatadb("pr","classic", 1,"H2S","NC6",  0.05), &
-         kijdatadb("pr","classic", 1,"H2S","NC7",  0.04), &
-         kijdatadb("pr","classic", 1,"H2S","NC8",  0.04), &
-         kijdatadb("pr","classic", 1,"H2S","NC9",  0.03), &
-         kijdatadb("pr","classic", 1,"MEOH","CO2",  0.017), &
-         kijdatadb("pr","classic", 1,"N2","C1",  0.035), &
-         kijdatadb("pr","classic", 1,"N2","C2",  0.041), &
-         kijdatadb("pr","classic", 1,"N2","C2_1",  0.08), &
-         kijdatadb("pr","classic", 1,"N2","C3",  0.076), &
-         kijdatadb("pr","classic", 1,"N2","IC4",  0.094), &
-         kijdatadb("pr","classic", 1,"N2","IC5",  0.087), &
-         kijdatadb("pr","classic", 1,"N2","NC10",  0.08), &
-         kijdatadb("pr","classic", 1,"N2","NC11",  0.08), &
-         kijdatadb("pr","classic", 1,"N2","NC4",  0.07), &
-         kijdatadb("pr","classic", 1,"N2","NC5",  0.088), &
-         kijdatadb("pr","classic", 1,"N2","NC6",  0.15), &
-         kijdatadb("pr","classic", 1,"N2","NC7",  0.142), &
-         kijdatadb("pr","classic", 1,"N2","NC8",  0.08), &
-         kijdatadb("pr","classic", 1,"N2","NC9",  0.08), &
-         kijdatadb("pr","classic", 1,"N2","O2", -0.014), &
-         kijdatadb("pr","classic", 1,"R12","R11",  0.0054), &
-         kijdatadb("pr","classic", 1,"R12","R114",  0.0015), &
-         kijdatadb("pr","classic", 1,"R12","R152a",  0.0867), &
-         kijdatadb("pr","classic", 1,"R13","R11",  0.0262), &
-         kijdatadb("pr","classic", 1,"R13","R12",  0.0299), &
-         kijdatadb("pr","classic", 1,"R14","R13",  0.0304), &
-         kijdatadb("pr","classic", 1,"R14","R23",  0.1008), &
-         kijdatadb("pr","classic", 1,"R22","R11",  0.0466), &
-         kijdatadb("pr","classic", 1,"R22","R114",  0.0399), &
-         kijdatadb("pr","classic", 1,"R22","R12",  0.0564), &
-         kijdatadb("pr","classic", 1,"R22","R142b",  0.0057), &
-         kijdatadb("pr","classic", 1,"R22","R115",  0.087), &
-         kijdatadb("pr","classic", 1,"R23","R13",  0.1032), &
-         kijdatadb("pr","classic", 1,"R218","R152a",  0.12), &
-         kijdatadb("pr","classic", 1,"R125","R143a", -0.0111), &
-         kijdatadb("pr","classic", 1,"R125","R134a", -0.0024), &
-         kijdatadb("pr","classic", 1,"R143a","R134a",  0.0013), &
-! Some HFO-refrigerants R1234yf 
-         kijdatadb("pr","classic", 1,"R1234yf","R32",  0.037), &
-         kijdatadb("pr","classic", 1,"R1234yf","R125", 0.004), &
-         kijdatadb("pr","classic", 1,"R1234yf","R134a",0.02), &
-         kijdatadb("pr","classic", 1,"R1234yf","CO2", 0.020), &
-         
-! -- Set # 2: SIMSCI TDM 2.0 - Pro/II v9.1 Database - undefined valued '?' assigned to 0.0
-         kijdatadb("pr","Classic",2,"C1","C3",0.014), &
-         kijdatadb("pr","Classic",2,"C1","NC6",0.0422), &
-         kijdatadb("pr","Classic",2,"C1","C2",-0.0026), &
-         kijdatadb("pr","Classic",2,"C1","CO2",0.0919), &
-         kijdatadb("pr","Classic",2,"C1","H2S",0.085), &
-         kijdatadb("pr","Classic",2,"C1","H2O",0.5), &
-         kijdatadb("pr","Classic",2,"C1","NC4",0.0133), &
-         kijdatadb("pr","Classic",2,"C1","IC4",0.0256), &
-         kijdatadb("pr","Classic",2,"C1","NC5",0.023), &
-         kijdatadb("pr","Classic",2,"C1","NC7",0.0352), &
-         kijdatadb("pr","Classic",2,"C1","NC8",0.0496), &
-         kijdatadb("pr","Classic",2,"C1","IC5",-0.0056), &
-         kijdatadb("pr","Classic",2,"C3","NC6",0.0007), &
-         kijdatadb("pr","Classic",2,"C3","C2",0.0011), &
-         kijdatadb("pr","Classic",2,"C3","CO2",0.1241), &
-         kijdatadb("pr","Classic",2,"C3","H2S",0.075), &
-         kijdatadb("pr","Classic",2,"C3","H2O",0.48), &
-         kijdatadb("pr","Classic",2,"C3","NC4",0.0033), &
-         kijdatadb("pr","Classic",2,"C3","IC4",-0.0078), &
-         kijdatadb("pr","Classic",2,"C3","NC5",0.0267), &
-         kijdatadb("pr","Classic",2,"C3","NC7",0.0056), &
-         kijdatadb("pr","Classic",2,"C3","NC8",0.0), &
-         kijdatadb("pr","Classic",2,"C3","IC5",0.0111), &
-         kijdatadb("pr","Classic",2,"NC6","C2",-0.01), &
-         kijdatadb("pr","Classic",2,"NC6","CO2",0.11), &
-         kijdatadb("pr","Classic",2,"NC6","H2S",0.06), &
-         kijdatadb("pr","Classic",2,"NC6","H2O",0.48), &
-         kijdatadb("pr","Classic",2,"NC6","NC4",-0.0056), &
-         kijdatadb("pr","Classic",2,"NC6","IC4",0.0), &
-         kijdatadb("pr","Classic",2,"NC6","NC5",0.0), &
-         kijdatadb("pr","Classic",2,"NC6","NC7",-0.0078), &
-         kijdatadb("pr","Classic",2,"NC6","NC8",0.0), &
-         kijdatadb("pr","Classic",2,"NC6","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"C2","CO2",0.1322), &
-         kijdatadb("pr","Classic",2,"C2","H2S",0.085), &
-         kijdatadb("pr","Classic",2,"C2","H2O",0.5), &
-         kijdatadb("pr","Classic",2,"C2","NC4",0.0096), &
-         kijdatadb("pr","Classic",2,"C2","IC4",-0.0067), &
-         kijdatadb("pr","Classic",2,"C2","NC5",0.0078), &
-         kijdatadb("pr","Classic",2,"C2","NC7",0.0074), &
-         kijdatadb("pr","Classic",2,"C2","NC8",0.0185), &
-         kijdatadb("pr","Classic",2,"C2","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"CO2","H2S",0.1), &
-         kijdatadb("pr","Classic",2,"CO2","H2O",0.21), &
-         kijdatadb("pr","Classic",2,"CO2","NC4",0.1333), &
-         kijdatadb("pr","Classic",2,"CO2","IC4",0.12), &
-         kijdatadb("pr","Classic",2,"CO2","NC5",0.122), &
-         kijdatadb("pr","Classic",2,"CO2","NC7",0.1), &
-         kijdatadb("pr","Classic",2,"CO2","NC8",0.107), &
-         kijdatadb("pr","Classic",2,"CO2","IC5",0.122), &
-         kijdatadb("pr","Classic",2,"H2S","H2O",0.164), &
-         kijdatadb("pr","Classic",2,"H2S","NC4",0.06), &
-         kijdatadb("pr","Classic",2,"H2S","IC4",0.06), &
-         kijdatadb("pr","Classic",2,"H2S","NC5",0.06), &
-         kijdatadb("pr","Classic",2,"H2S","NC7",0.06), &
-         kijdatadb("pr","Classic",2,"H2S","NC8",0.05), &
-         kijdatadb("pr","Classic",2,"H2S","IC5",0.06), &
-         kijdatadb("pr","Classic",2,"H2O","NC4",0.48), &
-         kijdatadb("pr","Classic",2,"H2O","IC4",0.48), &
-         kijdatadb("pr","Classic",2,"H2O","NC5",0.48), &
-         kijdatadb("pr","Classic",2,"H2O","NC7",0.48), &
-         kijdatadb("pr","Classic",2,"H2O","NC8",0.48), &
-         kijdatadb("pr","Classic",2,"H2O","IC5",0.48), &
-         kijdatadb("pr","Classic",2,"NC4","IC4",-0.0004), &
-         kijdatadb("pr","Classic",2,"NC4","NC5",0.0174), &
-         kijdatadb("pr","Classic",2,"NC4","NC7",0.0033), &
-         kijdatadb("pr","Classic",2,"NC4","NC8",0.0), &
-         kijdatadb("pr","Classic",2,"NC4","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"IC4","NC5",0.0), &
-         kijdatadb("pr","Classic",2,"IC4","NC7",0.0), &
-         kijdatadb("pr","Classic",2,"IC4","NC8",0.0), &
-         kijdatadb("pr","Classic",2,"IC4","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"NC4","NC7",0.0074), &
-         kijdatadb("pr","Classic",2,"NC4","NC8",0), &
-         kijdatadb("pr","Classic",2,"NC4","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"NC7","NC8",0.0), &
-         kijdatadb("pr","Classic",2,"NC7","IC5",0.0), &
-         kijdatadb("pr","Classic",2,"NC8","IC5",0.0), &
-
-! -- Set # 3: Aspen HYSYS  
-         kijdatadb("pr","classic",3,"C1","C2",0.002241387), &
-         kijdatadb("pr","classic",3,"C1","C3",0.006828805), &
-         kijdatadb("pr","classic",3,"C1","IC4",0.013113427), &
-         kijdatadb("pr","classic",3,"C1","NC4",0.012304616), &
-         kijdatadb("pr","classic",3,"C1","IC5",0.017627502), &
-         kijdatadb("pr","classic",3,"C1","NC5",0.01792537), &
-         kijdatadb("pr","classic",3,"C1","NC6",0.023474067), &
-         kijdatadb("pr","classic",3,"C1","NC7",0.028864292), &
-         kijdatadb("pr","classic",3,"C1","NC8",0.034159049), &
-         kijdatadb("pr","classic",3,"C1","H2O",0.5), &
-         kijdatadb("pr","classic",3,"C1","H2S",0.085000001), &
-         kijdatadb("pr","classic",3,"C1","CO2",0.100000001), &
-         kijdatadb("pr","classic",3,"C2","C3",0.00125796), &
-         kijdatadb("pr","classic",3,"C2","IC4",0.004573491), &
-         kijdatadb("pr","classic",3,"C2","NC4",0.004096392), &
-         kijdatadb("pr","classic",3,"C2","IC5",0.007413303), &
-         kijdatadb("pr","classic",3,"C2","NC5",0.007609447), &
-         kijdatadb("pr","classic",3,"C2","NC6",0.011413809), &
-         kijdatadb("pr","classic",3,"C2","NC7",0.015324294), &
-         kijdatadb("pr","classic",3,"C2","NC8",0.019318692), &
-         kijdatadb("pr","classic",3,"C2","H2O",0.5), &
-         kijdatadb("pr","classic",3,"C2","H2S",0.083999), &
-         kijdatadb("pr","classic",3,"C2","CO2",0.129800007), &
-         kijdatadb("pr","classic",3,"C3","IC4",0.001040541), &
-         kijdatadb("pr","classic",3,"C3","NC4",0.000818964), &
-         kijdatadb("pr","classic",3,"C3","IC5",0.002583363), &
-         kijdatadb("pr","classic",3,"C3","NC5",0.002700525), &
-         kijdatadb("pr","classic",3,"C3","NC6",0.005141959), &
-         kijdatadb("pr","classic",3,"C3","NC7",0.007887419), &
-         kijdatadb("pr","classic",3,"C3","NC8",0.010850275), &
-         kijdatadb("pr","classic",3,"C3","H2O",0.5), &
-         kijdatadb("pr","classic",3,"C3","H2S",0.075000003), &
-         kijdatadb("pr","classic",3,"C3","CO2",0.135000005), &
-         kijdatadb("pr","classic",3,"IC4","NC4",1.3372E-05), &
-         kijdatadb("pr","classic",3,"IC4","IC5",0.000346209), &
-         kijdatadb("pr","classic",3,"IC4","NC5",0.000390038), &
-         kijdatadb("pr","classic",3,"IC4","NC6",0.001565269), &
-         kijdatadb("pr","classic",3,"IC4","NC7",0.003221282), &
-         kijdatadb("pr","classic",3,"IC4","NC8",0.00521418), &
-         kijdatadb("pr","classic",3,"IC4","H2O",0.5), &
-         kijdatadb("pr","classic",3,"IC4","H2S",0.050000001), &
-         kijdatadb("pr","classic",3,"IC4","CO2",0.129800007), &
-         kijdatadb("pr","classic",3,"NC4","IC5",0.000495155), &
-         kijdatadb("pr","classic",3,"NC4","NC5",0.000547225), &
-         kijdatadb("pr","classic",3,"NC4","NC6",0.001866333), &
-         kijdatadb("pr","classic",3,"NC4","NC7",0.003646394), &
-         kijdatadb("pr","classic",3,"NC4","NC8",0.005750192), &
-         kijdatadb("pr","classic",3,"NC4","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC4","H2S",0.059999), &
-         kijdatadb("pr","classic",3,"NC4","CO2",0.129800007), &
-         kijdatadb("pr","classic",3,"IC5","NC5",1.23366E-06), &
-         kijdatadb("pr","classic",3,"IC5","NC6",0.000439948), &
-         kijdatadb("pr","classic",3,"IC5","NC7",0.001459151), &
-         kijdatadb("pr","classic",3,"IC5","NC8",0.002882791), &
-         kijdatadb("pr","classic",3,"IC5","H2O",0.5), &
-         kijdatadb("pr","classic",3,"IC5","H2S",0.059999), &
-         kijdatadb("pr","classic",3,"IC5","CO2",0.125), &
-         kijdatadb("pr","classic",3,"NC5","NC6",0.000393425), &
-         kijdatadb("pr","classic",3,"NC5","NC7",0.001373304), &
-         kijdatadb("pr","classic",3,"NC5","NC8",0.002761862), &
-         kijdatadb("pr","classic",3,"NC5","H2O",0.479999989), &
-         kijdatadb("pr","classic",3,"NC5","H2S",0.064998001), &
-         kijdatadb("pr","classic",3,"NC5","CO2",0.125), &
-         kijdatadb("pr","classic",3,"NC6","NC7",0.000297245), &
-         kijdatadb("pr","classic",3,"NC6","NC8",0.001073321), &
-         kijdatadb("pr","classic",3,"NC6","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC6","H2S",0.059999), &
-         kijdatadb("pr","classic",3,"NC6","CO2",0.125), &
-         kijdatadb("pr","classic",3,"NC7","NC8",0.000241262), &
-         kijdatadb("pr","classic",3,"NC7","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC7","H2S",0.059999), &
-         kijdatadb("pr","classic",3,"NC7","CO2",0.119900003), &
-         kijdatadb("pr","classic",3,"NC8","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC8","H2S",0.054999001), &
-         kijdatadb("pr","classic",3,"NC8","CO2",0.115000002), &
-         kijdatadb("pr","classic",3,"H2O","H2S",0.081900001), &
-         kijdatadb("pr","classic",3,"H2O","CO2",0.044500001), &
-         kijdatadb("pr","classic",3,"H2S","CO2",0.100000001), &
-         kijdatadb("pr","classic",3,"CO2","BENZENE",0.0806), &
-         kijdatadb("pr","classic",3,"CO2","TOLU",0.0936), &
-         kijdatadb("pr","classic",3,"CO2","EBZN",0.101), &
-         kijdatadb("pr","classic",3,"CO2","MXYL",0.0879), &
-         kijdatadb("pr","classic",3,"CO2","OXYL",0.09), &
-         kijdatadb("pr","classic",3,"CO2","NC9",0.101), &
-         kijdatadb("pr","classic",3,"N2","H2S",0.1676), &
-         kijdatadb("pr","classic",3,"N2","BENZENE",0.1597), &
-         kijdatadb("pr","classic",3,"N2","TOLU",0.1932), &
-         kijdatadb("pr","classic",3,"N2","EBZN",0.1), &
-         kijdatadb("pr","classic",3,"N2","MXYL",0.2169), &
-         kijdatadb("pr","classic",3,"N2","OXYL",0.214), &
-         kijdatadb("pr","classic",3,"N2","H2O",-0.3156), &
-!++ Added 2019-08-22 (GS)
-         kijdatadb("pr","classic", 3,"N2","C1",  0.036), &
-         kijdatadb("pr","classic", 3,"N2","C2",  0.05), &
-         kijdatadb("pr","classic", 3,"N2","C2_1",  0.0722), &
-         kijdatadb("pr","classic", 3,"N2","C3",  0.080), &
-         kijdatadb("pr","classic", 3,"N2","C3_1",  0.0673), &
-         kijdatadb("pr","classic", 3,"N2","IC5",  0.095), &
-         kijdatadb("pr","classic", 3,"N2","IC4",  0.095), &
-         kijdatadb("pr","classic", 3,"N2","IC5",  0.095), &
-         kijdatadb("pr","classic", 3,"N2","NC4",  0.09), &
-         kijdatadb("pr","classic", 3,"N2","NC5",  0.10), &
-         kijdatadb("pr","classic", 3,"N2","NC6",  0.15), &
-         kijdatadb("pr","classic", 3,"N2","NC7",  0.142), &
-         kijdatadb("pr","classic", 3,"N2","NC8",  0.08), &
-         kijdatadb("pr","classic", 3,"N2","NC9",  0.08), &
-         kijdatadb("pr","classic", 3,"N2","NC10",  0.08), &
-         kijdatadb("pr","classic", 3,"N2","NC11",  0.08), &
-         kijdatadb("pr","classic", 3,"N2","O2", -0.014), &
-!--         
-
-         kijdatadb("pr","classic",3,"H2S","BENZENE",0.009), &
-         kijdatadb("pr","classic",3,"H2S","TOLU",0.0081), &
-         kijdatadb("pr","classic",3,"H2S","EBZN",0.045), &
-         kijdatadb("pr","classic",3,"H2S","MXYL",0.0171), &
-         kijdatadb("pr","classic",3,"H2S","OXYL",-0.0231), &
-         kijdatadb("pr","classic",3,"H2S","NC10",0.045), &
-         kijdatadb("pr","classic",3,"H2S","NC11",0.045), &
-         kijdatadb("pr","classic",3,"C1","BENZENE",0.04), &
-         kijdatadb("pr","classic",3,"C1","TOLU",0.0649), &
-         kijdatadb("pr","classic",3,"C1","EBZN",0.02404), &
-         kijdatadb("pr","classic",3,"C1","MXYL",0.0491), &
-         kijdatadb("pr","classic",3,"C1","OXYL",0.05), &
-         kijdatadb("pr","classic",3,"C1","NC9",0.03893), &
-         kijdatadb("pr","classic",3,"C1","NC10",0.04361), &
-         kijdatadb("pr","classic",3,"C1","NC11",0.04799), &
-
-         kijdatadb("pr","classic",3,"C2","IC5",0.00741), &
-         kijdatadb("pr","classic",3,"C2","BENZENE",0.02), &
-         kijdatadb("pr","classic",3,"C2","TOLU",0.0344), &
-         kijdatadb("pr","classic",3,"C2","EBZN",0.01182), &
-         kijdatadb("pr","classic",3,"C2","MXYL",0.0295), &
-         kijdatadb("pr","classic",3,"C2","OXYL",0.033), &
-         kijdatadb("pr","classic",3,"C2","NC9",0.02302), &
-         kijdatadb("pr","classic",3,"C2","NC10",0.02673), &
-         kijdatadb("pr","classic",3,"C2","NC11",0.03026), &
-         kijdatadb("pr","classic",3,"C3","BENZENE",0.02), &
-         kijdatadb("pr","classic",3,"C3","TOLU",0.031), &
-         kijdatadb("pr","classic",3,"C3","EBZN",0.00542), &
-         kijdatadb("pr","classic",3,"C3","MXYL",0.03), &
-         kijdatadb("pr","classic",3,"C3","OXYL",0.03), &
-         kijdatadb("pr","classic",3,"C3","NC8",0.01085), &
-         kijdatadb("pr","classic",3,"C3","NC9",0.0137), &
-         kijdatadb("pr","classic",3,"C3","NC10",0.01663), &
-         kijdatadb("pr","classic",3,"C3","NC11",0.01948), &
-         kijdatadb("pr","classic",3,"IC4","IC5",0.00035), &
-         kijdatadb("pr","classic",3,"IC4","NC5",0.00039), &
-         kijdatadb("pr","classic",3,"IC4","BENZENE",0.0000018), &
-         kijdatadb("pr","classic",3,"IC4","TOLU",0.00047), &
-         kijdatadb("pr","classic",3,"IC4","EBZN",0.00172), &
-         kijdatadb("pr","classic",3,"IC4","MXYL",0.00176), &
-         kijdatadb("pr","classic",3,"IC4","OXYL",0.00159), &
-         kijdatadb("pr","classic",3,"IC4","NC6",0.00157), &
-         kijdatadb("pr","classic",3,"IC4","NC7",0.00322), &
-         kijdatadb("pr","classic",3,"IC4","NC8",0.00521), &
-         kijdatadb("pr","classic",3,"IC4","NC9",0.00725), &
-         kijdatadb("pr","classic",3,"IC4","NC10",0.00945), &
-         kijdatadb("pr","classic",3,"IC4","NC11",0.01164), &
-         kijdatadb("pr","classic",3,"NC4","IC5",0.0005), &
-         kijdatadb("pr","classic",3,"NC4","NC5",0.00055), &
-         kijdatadb("pr","classic",3,"NC4","BENZENE",0.00001), &
-         kijdatadb("pr","classic",3,"NC4","TOLU",0.00064), &
-         kijdatadb("pr","classic",3,"NC4","EBZN",0.00203), &
-         kijdatadb("pr","classic",3,"NC4","MXYL",0.00208), &
-         kijdatadb("pr","classic",3,"NC4","OXYL",0.0019), &
-         kijdatadb("pr","classic",3,"NC4","NC6",0.00187), &
-         kijdatadb("pr","classic",3,"NC4","NC7",0.00365), &
-         kijdatadb("pr","classic",3,"NC4","NC8",0.00575), &
-         kijdatadb("pr","classic",3,"NC4","NC9",0.00788), &
-         kijdatadb("pr","classic",3,"NC4","NC10",0.01016), &
-         kijdatadb("pr","classic",3,"NC4","NC11",0.01243), &
-         kijdatadb("pr","classic",3,"IC5","NC5",0.0000013), &
-         kijdatadb("pr","classic",3,"IC5","BENZENE",0.0004), &
-         kijdatadb("pr","classic",3,"IC5","TOLU",0.00001), &
-         kijdatadb("pr","classic",3,"IC5","EBZN",0.00052), &
-         kijdatadb("pr","classic",3,"IC5","MXYL",0.00055), &
-         kijdatadb("pr","classic",3,"IC5","OXYL",0.00046), &
-         kijdatadb("pr","classic",3,"IC5","NC6",0.00044), &
-         kijdatadb("pr","classic",3,"IC5","NC7",0.00146), &
-         kijdatadb("pr","classic",3,"IC5","NC8",0.00288), &
-         kijdatadb("pr","classic",3,"IC5","NC9",0.00445), &
-         kijdatadb("pr","classic",3,"IC5","NC10",0.00621), &
-         kijdatadb("pr","classic",3,"IC5","NC11",0.00801), &
-         kijdatadb("pr","classic",3,"NC5","BENZENE",0.016), &
-         kijdatadb("pr","classic",3,"NC5","TOLU",0.0000036), &
-         kijdatadb("pr","classic",3,"NC5","EBZN",0.00047), &
-         kijdatadb("pr","classic",3,"NC5","MXYL",0.0005), &
-         kijdatadb("pr","classic",3,"NC5","OXYL",0.00041), &
-         kijdatadb("pr","classic",3,"NC5","NC6",0.00039), &
-         kijdatadb("pr","classic",3,"NC5","NC7",0.00137), &
-         kijdatadb("pr","classic",3,"NC5","NC8",0.00276), &
-         kijdatadb("pr","classic",3,"NC5","NC9",0.0043), &
-         kijdatadb("pr","classic",3,"NC5","NC10",0.00603), &
-         kijdatadb("pr","classic",3,"NC5","NC11",0.00781), &
-         kijdatadb("pr","classic",3,"BENZENE","TOLU",0.00053), &
-         kijdatadb("pr","classic",3,"BENZENE","EBZN",0.00183), &
-         kijdatadb("pr","classic",3,"BENZENE","MXYL",0.00188), &
-         kijdatadb("pr","classic",3,"BENZENE","OXYL",0.0017), &
-         kijdatadb("pr","classic",3,"BENZENE","NC6",0.007), &
-         kijdatadb("pr","classic",3,"BENZENE","NC7",-0.002), &
-         kijdatadb("pr","classic",3,"BENZENE","NC8",0.003), &
-         kijdatadb("pr","classic",3,"BENZENE","NC9",0.00749), &
-         kijdatadb("pr","classic",3,"BENZENE","NC10",0.01), &
-         kijdatadb("pr","classic",3,"BENZENE","NC11",0.01193), &
-         kijdatadb("pr","classic",3,"BENZENE","H2O",0.5), &
-         kijdatadb("pr","classic",3,"TOLU","EBZN",0.00039), &
-         kijdatadb("pr","classic",3,"TOLU","MXYL",0.00042), &
-         kijdatadb("pr","classic",3,"TOLU","OXYL",0.00034), &
-         kijdatadb("pr","classic",3,"TOLU","NC6",0.00032), &
-         kijdatadb("pr","classic",3,"TOLU","NC7",0.006), &
-         kijdatadb("pr","classic",3,"TOLU","NC8",0.01), &
-         kijdatadb("pr","classic",3,"TOLU","NC9",0.00406), &
-         kijdatadb("pr","classic",3,"TOLU","NC10",0.01), &
-         kijdatadb("pr","classic",3,"TOLU","NC11",0.00749), &
-         kijdatadb("pr","classic",3,"TOLU","H2O",0.5), &
-         kijdatadb("pr","classic",3,"EBZN","MXYL",0.0000002), &
-         kijdatadb("pr","classic",3,"EBZN","OXYL",0.0000002), &
-         kijdatadb("pr","classic",3,"EBZN","NC6",0.000004), &
-         kijdatadb("pr","classic",3,"EBZN","NC7",0.00024), &
-         kijdatadb("pr","classic",3,"EBZN","NC8",-0.0018), &
-         kijdatadb("pr","classic",3,"EBZN","NC9",0.00193), &
-         kijdatadb("pr","classic",3,"EBZN","NC10",0.00314), &
-         kijdatadb("pr","classic",3,"EBZN","NC11",0.00446), &
-         kijdatadb("pr","classic",3,"EBZN","H2O",0.5), &
-         kijdatadb("pr","classic",3,"MXYL","OXYL",0.000004), &
-         kijdatadb("pr","classic",3,"MXYL","NC6",0.00001), &
-         kijdatadb("pr","classic",3,"MXYL","NC7",0.00022), &
-         kijdatadb("pr","classic",3,"MXYL","NC8",0.00092), &
-         kijdatadb("pr","classic",3,"MXYL","NC9",0.00188), &
-         kijdatadb("pr","classic",3,"MXYL","NC10",0.00308), &
-         kijdatadb("pr","classic",3,"MXYL","NC11",0.00439), &
-         kijdatadb("pr","classic",3,"MXYL","H2O",0.5), &
-         kijdatadb("pr","classic",3,"OXYL","NC6",0.0000002), &
-         kijdatadb("pr","classic",3,"OXYL","NC7",0.00029), &
-         kijdatadb("pr","classic",3,"OXYL","NC8",0.00105), &
-         kijdatadb("pr","classic",3,"OXYL","NC9",0.00207), &
-         kijdatadb("pr","classic",3,"OXYL","NC10",0.00331), &
-         kijdatadb("pr","classic",3,"OXYL","NC11",0.00467), &
-         kijdatadb("pr","classic",3,"OXYL","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC6","NC7",0.0003), &
-         kijdatadb("pr","classic",3,"NC6","NC8",0.00107), &
-         kijdatadb("pr","classic",3,"NC6","NC9",0.0021), &
-         kijdatadb("pr","classic",3,"NC6","NC10",0.00335), &
-         kijdatadb("pr","classic",3,"NC6","NC11",0.00472), &
-         kijdatadb("pr","classic",3,"NC6","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC7","NC8",0.00024), &
-         kijdatadb("pr","classic",3,"NC7","NC9",0.00082), &
-         kijdatadb("pr","classic",3,"NC7","NC10",0.00166), &
-         kijdatadb("pr","classic",3,"NC7","NC11",0.00266), &
-         kijdatadb("pr","classic",3,"NC7","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC8","NC9",0.00017), &
-         kijdatadb("pr","classic",3,"NC8","NC10",0.00064), &
-         kijdatadb("pr","classic",3,"NC8","NC11",0.0013), &
-         kijdatadb("pr","classic",3,"NC8","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC9","NC10",0.0013), &
-         kijdatadb("pr","classic",3,"NC9","NC11",0.00053), &
-         kijdatadb("pr","classic",3,"NC9","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC10","NC11",0.00012), &
-         kijdatadb("pr","classic",3,"NC10","H2O",0.5), &
-         kijdatadb("pr","classic",3,"NC11","H2O",0.5), &
-
-! -- testing ...         
-         kijdatadb("srk","reid", 1,"C1","CO2", -0.0078), &
-         kijdatadb("srk","reid", 1,"CO2","C1",  0.02), &
-         kijdatadb("srk","reid", 1,"C1","N2",  0.009), &
-         kijdatadb("srk","reid", 1,"N2","C1",  0.0241), &
-         kijdatadb("srk","reid", 1,"CO2","N2",  0.0056), &
-         kijdatadb("srk","reid", 1,"N2","CO2",  0.019), &
-         kijdatadb("srk","classic", 2,"C1","CO2", 0.01), &
-         kijdatadb("srk","classic", 2,"C1","N2", 0.02), &
-         kijdatadb("srk","classic", 2,"CO2","N2",  0.03), &
-         kijdatadb("sw","classic", 1,"C1","CO2", 0.01), &
-         kijdatadb("sw","classic", 1,"C1","N2", 0.02), &
-         kijdatadb("sw","classic", 1,"CO2","N2",  0.03), &
-! -- just for testing
-         kijdatadb("vdw","classic", 1,"C1","CO2", 0.01), &
-         kijdatadb("vdw","classic", 1,"C1","N2", 0.02), &
-         kijdatadb("vdw","classic", 1,"CO2","N2",  0.03), &
-         kijdatadb("rk","classic", 1,"C1","CO2", 0.01), &
-         kijdatadb("rk","classic", 1,"C1","N2", 0.02), &
-         kijdatadb("rk","classic", 1,"CO2","N2",  0.03), &
-
-! --- copied from SRK for testing
-         kijdatadb("rk","classic", 1,"C1","C2", -0.0078), &
-         kijdatadb("rk","classic", 1,"C1","C2_1",  0.02), &
-         kijdatadb("rk","classic", 1,"C1","C3",  0.009), &
-         kijdatadb("rk","classic", 1,"C1","IC4",  0.0241), &
-         kijdatadb("rk","classic", 1,"C1","NC4",  0.0056), &
-         kijdatadb("rk","classic", 1,"C1","NC5",  0.019), &
-         kijdatadb("rk","classic", 1,"C1","H2S",  0.091), &
-         kijdatadb("rk","classic", 1,"C2","C2_1",  0.0112), &
-         kijdatadb("rk","classic", 1,"C2","C3", -0.0022), &
-         kijdatadb("rk","classic", 1,"C2","IC4", -0.01), &
-         kijdatadb("rk","classic", 1,"C2","NC4",  0.0067), &
-         kijdatadb("rk","classic", 1,"C2","NC5",  0.0056), &
-         kijdatadb("rk","classic", 1,"NC4","C2_1",  0.1), &
-         kijdatadb("rk","classic", 1,"C3","IC4", -0.01), &
-         kijdatadb("rk","classic", 1,"C3","NC5",  0.023), &
-         kijdatadb("rk","classic", 1,"IC4","NC4",  0.0011), &
-         kijdatadb("rk","classic", 1,"NC4","NC5",  0.0204), &
-         kijdatadb("rk","classic", 1,"H2O","C1",  0.), &
-         kijdatadb("rk","classic", 1,"CO2","O2",  0.104), &
-         kijdatadb("rk","classic", 1,"CO2","NH3",  0.), &
-         kijdatadb("rk","classic", 1,"CO2","N2O",  0.004), &
-         kijdatadb("rk","classic", 1,"CO2","N2O4",  0.), &
-         kijdatadb("rk","classic", 1,"CO2","CO", -0.08), &
-         kijdatadb("rk","classic", 1,"CO2","C1",  0.095), &
-         kijdatadb("rk","classic", 1,"CO2","C2",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","C2_1",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","C3",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","H2O",  0.074), &
-         kijdatadb("rk","classic", 1,"CO2","IC4",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","IC5",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","NC10",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","NC11",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","NC4",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","NC5",  0.15), &
-         kijdatadb("rk","classic", 1,"CO2","H2S",  0.1), &
-         kijdatadb("rk","classic", 1,"CO2","N2", -0.051), &
-         kijdatadb("rk","classic", 1,"CO2","AR",  0.088), &
-         kijdatadb("rk","classic", 1,"CO2","SO2",  0.071), &
-         kijdatadb("rk","classic", 1,"CO2","H2",  0.009), &
-         kijdatadb("rk","classic", 1,"H2S","NC4",  0.06), &
-         kijdatadb("rk","classic", 1,"H2S","NC5",  0.06), &
-         kijdatadb("rk","classic", 1,"H2S","NC6",  0.05), &
-         kijdatadb("rk","classic", 1,"H2S","NC7",  0.04), &
-         kijdatadb("rk","classic", 1,"H2S","NC8",  0.04), &
-         kijdatadb("rk","classic", 1,"H2S","NC9",  0.03), &
-         kijdatadb("rk","classic", 1,"MEOH","CO2",  0.017), &
-         kijdatadb("rk","classic", 1,"N2","C1",  0.034), &
-         kijdatadb("rk","classic", 1,"N2","C2",  0.06), &
-         kijdatadb("rk","classic", 1,"N2","C2_1",  0.075), &
-         kijdatadb("rk","classic", 1,"N2","C3",  0.09), &
-         kijdatadb("rk","classic", 1,"N2","IC4",  0.113), &
-         kijdatadb("rk","classic", 1,"N2","IC5",  0.087), &
-         kijdatadb("rk","classic", 1,"N2","NC10",  0.08), &
-         kijdatadb("rk","classic", 1,"N2","NC11",  0.08), &
-         kijdatadb("rk","classic", 1,"N2","NC4",  0.113), &
-         kijdatadb("rk","classic", 1,"N2","NC5",  0.14), &
-         kijdatadb("rk","classic", 1,"N2","NC6",  0.15), &
-         kijdatadb("rk","classic", 1,"N2","NC7",  0.142), &
-         kijdatadb("rk","classic", 1,"N2","NC8",  0.08), &
-         kijdatadb("rk","classic", 1,"N2","NC9",  0.08), &
-         kijdatadb("rk","classic", 1,"N2","O2", -0.011), &
-         kijdatadb("rk","classic", 1,"R12","R11",  0.0054), &
-         kijdatadb("rk","classic", 1,"R12","R114",  0.0015), &
-         kijdatadb("rk","classic", 1,"R12","R152a",  0.0867), &
-         kijdatadb("rk","classic", 1,"R13","R11",  0.0262), &
-         kijdatadb("rk","classic", 1,"R13","R12",  0.0299), &
-         kijdatadb("rk","classic", 1,"R14","R13",  0.0304), &
-         kijdatadb("rk","classic", 1,"R14","R23",  0.1008), &
-         kijdatadb("rk","classic", 1,"R22","R11",  0.0466), &
-         kijdatadb("rk","classic", 1,"R22","R114",  0.0399), &
-         kijdatadb("rk","classic", 1,"R22","R12",  0.0564), &
-         kijdatadb("rk","classic", 1,"R22","R142b",  0.0057), &
-         kijdatadb("rk","classic", 1,"R22","R115",  0.089), &
-         kijdatadb("rk","classic", 1,"R23","R13",  0.1032), &
-         kijdatadb("rk","classic", 1,"R218","R152a",  0.12), &
-         kijdatadb("rk","classic", 1,"R125","R143a", -0.0111), &
-         kijdatadb("rk","classic", 1,"R125","R134a", -0.0024), &
-         kijdatadb("rk","classic", 1,"R143a","R134a",  0.0013), &
-         
-! --- Default values for Patel-Teja from table 5 in 
-! --- "A new cubic equation of state for fluids and fluid mixtures"
-! --- Navin C. Patel and Amyn S. Teja. Obs: kij = 1 - ksi_ij
-! --- Chemical Engineering Science Vol 37 no 3, 1982         
-         kijdatadb("pt","classic", 1,"C1","C2",1.0-0.995), &
-         kijdatadb("pt","classic", 1,"C1","IC4",1.0-1.008),&
-         kijdatadb("pt","classic", 1,"C1","NC4",1.0-0.985),&
-         kijdatadb("pt","classic", 1,"C1","NC5",1.0-0.98),&
-         kijdatadb("pt","classic", 1,"C1","NC6",1.0- 0.990),&
-         kijdatadb("pt","classic", 1,"C2","C3",  1.0-0.994),&
-         kijdatadb("pt","classic", 1,"C2","PRLN",1.0- 0.996),&
-         kijdatadb("pt","classic", 1,"C2","NC4",1.0-  0.999),&
-         kijdatadb("pt","classic", 1,"C2","NC5",1.0-  1.001),&
-         kijdatadb("pt","classic", 1,"C2","NC7",1.0-  1.015),&
-         kijdatadb("pt","classic", 1,"C2_1","C1",1.0- 0.974),&
-         kijdatadb("pt","classic", 1,"C2_1","C2",1.0- 0.982),&
-         kijdatadb("pt","classic", 1,"C2_1","C3",1.0- 0.981),&
-         kijdatadb("pt","classic", 1,"C2_1","NC4",1.0-0.938),&
-         kijdatadb("pt","classic", 1,"C3","NC4",1.0-  0.987),&
-         kijdatadb("pt","classic", 1,"C3","NC5",1.0-  0.987),&
-         kijdatadb("pt","classic", 1,"C3","IC5",1.0-  0.979),&
-         kijdatadb("pt","classic", 1,"PRLN","C3",1.0- 0.970),&
-!      kijdatadb("pt","classic", 1,"PRLN","IC4_1",1.0-1.002),&
-         kijdatadb("pt","classic", 1,"NC4","NC10",1.0-0.995),&
-         kijdatadb("pt","classic", 1,"IC4","NC4",1.0- 1.003),&
-         kijdatadb("pt","classic", 1,"CO2","C1",1.0-  0.907),&
-         kijdatadb("pt","classic", 1,"CO2","C2",1.0-  0.872),&
-         kijdatadb("pt","classic", 1,"CO2","C2_1",1.0-0.943),&
-         kijdatadb("pt","classic", 1,"CO2","C3",1.0-  0.869),&
-         kijdatadb("pt","classic", 1,"CO2","NC4",1.0- 0.891),&
-         kijdatadb("pt","classic", 1,"CO2","IC4",1.0- 0.873),&
-         kijdatadb("pt","classic", 1,"CO2","NC5",1.0- 0.865),&
-         kijdatadb("pt","classic", 1,"H2S","C1",1.0-  0.920),&
-         kijdatadb("pt","classic", 1,"H2S","C2",1.0-  0.911),&
-         kijdatadb("pt","classic", 1,"H2S","IC4",1.0- 0.954),&
-         kijdatadb("pt","classic", 1,"H2S","NC7",1.0- 0.947),&
-! -- 213 values kij, retrieved from TPlib for the SPUNG EOS, 
-! -- One set each for SPUNG/SRK, SPUNG/SRKGB and SPUNG/PR
-! -- 
-         kijdatadb("csp-srk","classic",1,"C1", "H2S", 0.101), &
-         kijdatadb("csp-srk","classic",1,"C1", "C2",  -0.00780), &
-         kijdatadb("csp-srk","classic",1,"C1", "C2_1",  0.020), &
-         kijdatadb("csp-srk","classic",1,"C1", "C3",     0.0090), &
-         kijdatadb("csp-srk","classic",1,"C1", "IC4",    0.02410), &
-         kijdatadb("csp-srk","classic",1,"C1", "NC4",    0.00560), &
-         kijdatadb("csp-srk","classic",1,"C1", "NC5",    0.0190), &
-         kijdatadb("csp-srk","classic",1,"C1", "H2S",    0.0000), &
-         kijdatadb("csp-srk","classic",1,"C2", "C2_1",   0.0112), &
-         kijdatadb("csp-srk","classic",1,"C2", "C3",     -0.0022), &
-         kijdatadb("csp-srk","classic",1,"C2", "IC4",    -0.010), &
-         kijdatadb("csp-srk","classic",1,"C2", "NC4",    0.00670), &
-         kijdatadb("csp-srk","classic",1,"C2", "NC5",    0.0056), &
-         kijdatadb("csp-srk","classic",1,"NC4", "C2_1",   0.100), &
-         kijdatadb("csp-srk","classic",1,"C3", "IC4",    -0.010), &
-         kijdatadb("csp-srk","classic",1,"C3", "NC5",    0.0230), &
-         kijdatadb("csp-srk","classic",1,"IC4", "NC4",    0.00110), &
-         kijdatadb("csp-srk","classic",1,"NC4", "NC5",    0.0204), &
-         kijdatadb("csp-srk","classic",1,"H2O", "C1",     0.00), &
-         kijdatadb("csp-srk","classic",1,"CO2", "O2", 0.118), &
-         kijdatadb("csp-srk","classic",1,"CO2", "NH3", 0.000), &
-         kijdatadb("csp-srk","classic",1,"CO2", "N2O", 0.010), &
-         kijdatadb("csp-srk","classic",1,"CO2", "N2O4", 0.00), &
-         kijdatadb("csp-srk","classic",1,"CO2", "CO", -0.068), &
-         kijdatadb("csp-srk","classic",1,"CO2", "C1",     0.1060), &
-         kijdatadb("csp-srk","classic",1,"CO2", "C2",     0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "C2_1",   0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "C3",     0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "H2O",    0.074), &
-         kijdatadb("csp-srk","classic",1,"CO2", "IC4",    0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "IC5",    0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "NC10",   0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "NC11",   0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "NC4",    0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "NC5",    0.15), &
-         kijdatadb("csp-srk","classic",1,"CO2", "H2S",    0.099), &
-         kijdatadb("csp-srk","classic",1,"CO2", "N2",     -0.042), &
-         kijdatadb("csp-srk","classic",1,"CO2", "AR",     0.0940), &
-         kijdatadb("csp-srk","classic",1,"CO2", "SO2",    0.0800), &
-         kijdatadb("csp-srk","classic",1,"CO2", "H2",     0.1080), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC4",    0.06), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC5",    0.06), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC6",    0.05), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC7",    0.04), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC8",    0.04), &
-         kijdatadb("csp-srk","classic",1,"H2S", "NC9",    0.03), &
-         kijdatadb("csp-srk","classic",1,"MEG", "CO2",    0.0), &
-         kijdatadb("csp-srk","classic",1,"MEG", "H2O",    0.0), &
-         kijdatadb("csp-srk","classic",1,"MEG", "C1",     0.0), &
-         kijdatadb("csp-srk","classic",1,"MEOH", "CO2",    0.017), &
-         kijdatadb("csp-srk","classic",1,"N2", "C1",     0.042), &
-         kijdatadb("csp-srk","classic",1,"N2", "C2",     0.060), &
-         kijdatadb("csp-srk","classic",1,"N2", "C2_1",   0.075), &
-         kijdatadb("csp-srk","classic",1,"N2", "C3",     0.090), &
-         kijdatadb("csp-srk","classic",1,"N2", "IC4",    0.113), &
-         kijdatadb("csp-srk","classic",1,"N2", "IC5",    0.087), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC10",   0.08), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC11",   0.08), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC4",    0.113), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC5",    0.140), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC6",    0.150), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC7",    0.142), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC8",    0.08), &
-         kijdatadb("csp-srk","classic",1,"N2", "NC9",    0.08), &
-         kijdatadb("csp-srk","classic",1,"N2", "O2",    -0.008), &
-         kijdatadb("csp-srk","classic",1,"NC6", "BENZENE",   0.011), &
-         kijdatadb("csp-srk","classic",1,"R12", "R11",    0.0054), &
-         kijdatadb("csp-srk","classic",1,"R12", "R114",   0.0015), &
-         kijdatadb("csp-srk","classic",1,"R12", "R152a",  0.0867), &
-         kijdatadb("csp-srk","classic",1,"R13", "R11",    0.0262), &
-         kijdatadb("csp-srk","classic",1,"R13", "R113",   0.0243), &
-         kijdatadb("csp-srk","classic",1,"R13", "R12",    0.0299), &
-         kijdatadb("csp-srk","classic",1,"R13B", "R12",   -0.0032), &
-         kijdatadb("csp-srk","classic",1,"R13B", "R152a",  0.0799), &
-         kijdatadb("csp-srk","classic",1,"R14", "R13",    0.0304), &
-         kijdatadb("csp-srk","classic",1,"R14", "R23",    0.1008), &
-         kijdatadb("csp-srk","classic",1,"R22", "R11",    0.0466), &
-         kijdatadb("csp-srk","classic",1,"R22", "R114",   0.0399), &
-         kijdatadb("csp-srk","classic",1,"R22", "R12",    0.0564), &
-         kijdatadb("csp-srk","classic",1,"R22", "R142b",  0.0057), &
-         kijdatadb("csp-srk","classic",1,"R22", "R115",   0.0890), &
-         kijdatadb("csp-srk","classic",1,"R23", "R13",    0.1032), &
-         kijdatadb("csp-srk","classic",1,"R218", "R152a",  0.12), &
-         kijdatadb("csp-srk","classic",1,"R125", "R143a", -0.0111), &
-         kijdatadb("csp-srk","classic",1,"R125", "R134a", -0.0024), &
-         kijdatadb("csp-srk","classic",1,"R143a", "R134a",  0.0013),&
-         kijdatadb("csp-srkgb","classic",1,"CO2", "C1",     0.12), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "C2",     0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "C2_1",   0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "C3",     0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "H2O",    0.074), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "IC4",    0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "IC5",    0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "NC10",   0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "NC11",   0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "NC4",    0.15), &
-         kijdatadb("csp-srkgb","classic",1,"CO2", "NC5",    0.15), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC4",    0.06), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC5",    0.06), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC6",    0.05), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC7",    0.04), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC8",    0.04), &
-         kijdatadb("csp-srkgb","classic",1,"H2S", "NC9",    0.03), &
-         kijdatadb("csp-srkgb","classic",1,"MEG", "CO2",    0.0), &
-         kijdatadb("csp-srkgb","classic",1,"MEG", "H2O",    0.0), &
-         kijdatadb("csp-srkgb","classic",1,"MEG", "C1",     0.0), &
-         kijdatadb("csp-srkgb","classic",1,"MEOH", "CO2",    0.017), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "C1",     0.028), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "C2",     0.041), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "C2_1",   0.08), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "C3",     0.076), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "IC4",    0.094), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "IC5",    0.087), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC10",   0.08), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC11",   0.08), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC4",    0.070), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC5",    0.088), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC6",    0.150), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC7",    0.142), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC8",    0.08), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "NC9",    0.08), &
-         kijdatadb("csp-srkgb","classic",1,"N2", "O2",    -0.01), &
-         kijdatadb("csp-srkgb","classic",1,"NC6", "BENZENE",   0.011), &
-         kijdatadb("csp-srkgb","classic",1,"R12", "R11",    0.0054), &
-         kijdatadb("csp-srkgb","classic",1,"R12", "R114",   0.0015), &
-         kijdatadb("csp-srkgb","classic",1,"R12", "R152a",  0.0867), &
-         kijdatadb("csp-srkgb","classic",1,"R13", "R11",    0.0262), &
-         kijdatadb("csp-srkgb","classic",1,"R13", "R113",   0.0243), &
-         kijdatadb("csp-srkgb","classic",1,"R13", "R12",    0.0299), &
-         kijdatadb("csp-srkgb","classic",1,"R13B", "R12",   -0.0032), &
-         kijdatadb("csp-srkgb","classic",1,"R13B", "R152a",  0.0799), &
-         kijdatadb("csp-srkgb","classic",1,"R14", "R13",    0.0304), &
-         kijdatadb("csp-srkgb","classic",1,"R14", "R23",    0.1008), &
-         kijdatadb("csp-srkgb","classic",1,"R22", "R11",    0.0466), &
-         kijdatadb("csp-srkgb","classic",1,"R22", "R114",   0.0399), &
-         kijdatadb("csp-srkgb","classic",1,"R22", "R12",    0.0564), &
-         kijdatadb("csp-srkgb","classic",1,"R22", "R142b",  0.0057), &
-         kijdatadb("csp-srkgb","classic",1,"R22", "R115",   0.0890), &
-         kijdatadb("csp-srkgb","classic",1,"R23", "R13",    0.1032), &
-         kijdatadb("csp-srkgb","classic",1,"R218", "R152a",  0.12), &
-         kijdatadb("csp-srkgb","classic",1,"R125", "R143a", -0.0111), &
-         kijdatadb("csp-srkgb","classic",1,"R125", "R134a", -0.0024), &
-         kijdatadb("csp-srkgb","classic",1,"R143a", "R134a",  0.0013), &
-         kijdatadb("csp-pr","classic",1,"C1", "H2S", 0.095), &
-         kijdatadb("csp-pr","classic",1,"CO2", "O2", 0.1090), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NH3", 0.000), &
-         kijdatadb("csp-pr","classic",1,"CO2", "N2O", 0.010), &
-         kijdatadb("csp-pr","classic",1,"CO2", "N2O4", 0.00), &
-         kijdatadb("csp-pr","classic",1,"CO2", "C1",     0.100), &
-         kijdatadb("csp-pr","classic",1,"CO2", "C2",     0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "C2_1",   0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "C3",     0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "H2O",    0.074), &
-         kijdatadb("csp-pr","classic",1,"CO2", "IC4",    0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "IC5",    0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NC10",   0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NC11",   0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NC4",    0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NC5",    0.15), &
-         kijdatadb("csp-pr","classic",1,"CO2", "H2S",    0.1020), &
-         kijdatadb("csp-pr","classic",1,"CO2", "N2",     -0.0360), &
-         kijdatadb("csp-pr","classic",1,"CO2", "AR",     0.0880), &
-         kijdatadb("csp-pr","classic",1,"CO2", "SO2",    0.075), &
-         kijdatadb("csp-pr","classic",1,"CO2", "H2",    0.1210), &
-         kijdatadb("csp-pr","classic",1,"CO2", "CO",     -0.0590), &
-         kijdatadb("csp-pr","classic",1,"CO2", "NH3",    0.00), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC4",    0.06), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC4",    0.06), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC5",    0.06), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC6",    0.05), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC7",    0.04), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC8",    0.04), &
-         kijdatadb("csp-pr","classic",1,"H2S", "NC9",    0.03), &
-         kijdatadb("csp-pr","classic",1,"MEG", "CO2",    0.0), &
-         kijdatadb("csp-pr","classic",1,"MEG", "H2O",    0.0), &
-         kijdatadb("csp-pr","classic",1,"MEG", "C1",     0.0), &
-         kijdatadb("csp-pr","classic",1,"MEOH", "CO2",    0.017), &
-         kijdatadb("csp-pr","classic",1,"N2", "C1",     0.038), &
-         kijdatadb("csp-pr","classic",1,"N2", "C2",     0.041), &
-         kijdatadb("csp-pr","classic",1,"N2", "C2_1",   0.08), &
-         kijdatadb("csp-pr","classic",1,"N2", "C3",     0.076), &
-         kijdatadb("csp-pr","classic",1,"N2", "IC4",    0.094), &
-         kijdatadb("csp-pr","classic",1,"N2", "IC5",    0.087), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC10",   0.08), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC11",   0.08), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC4",    0.070), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC5",    0.088), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC6",    0.150), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC7",    0.142), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC8",    0.08), &
-         kijdatadb("csp-pr","classic",1,"N2", "NC9",    0.08), &
-         kijdatadb("csp-pr","classic",1,"N2", "O2",    -0.013), &
-         kijdatadb("csp-pr","classic",1,"NC6", "BENZENE",   0.011), &
-         kijdatadb("csp-pr","classic",1,"R12", "R11",    0.0054), &
-         kijdatadb("csp-pr","classic",1,"R12", "R114",   0.0015), &
-         kijdatadb("csp-pr","classic",1,"R12", "R152a",  0.0867), &
-         kijdatadb("csp-pr","classic",1,"R13", "R11",    0.0262), &
-         kijdatadb("csp-pr","classic",1,"R13", "R113",   0.0243), &
-         kijdatadb("csp-pr","classic",1,"R13", "R12",    0.0299), &
-         kijdatadb("csp-pr","classic",1,"R13B", "R12",   -0.0032), &
-         kijdatadb("csp-pr","classic",1,"R13B", "R152a",  0.0799), &
-         kijdatadb("csp-pr","classic",1,"R14", "R13",    0.0304), &
-         kijdatadb("csp-pr","classic",1,"R14", "R23",    0.1008), &
-         kijdatadb("csp-pr","classic",1,"R22", "R11",    0.0466), &
-         kijdatadb("csp-pr","classic",1,"R22", "R114",   0.0399), &
-         kijdatadb("csp-pr","classic",1,"R22", "R12",    0.0564), &
-         kijdatadb("csp-pr","classic",1,"R22", "R142b",  0.0057), &
-         kijdatadb("csp-pr","classic",1,"R22", "R115",   0.0870), &
-         kijdatadb("csp-pr","classic",1,"R23", "R13",    0.1032), &
-         kijdatadb("csp-pr","classic",1,"R218", "R152a",  0.12), &
-         kijdatadb("csp-pr","classic",1,"R125", "R143a", -0.0111), &
-         kijdatadb("csp-pr","classic",1,"R125", "R134a", -0.0024), &
-         
-! --- Default Lee-Kesler interaction is 1.0. Data taken from
-! --- Pl{\¨o}cker, Knapp and Prausnitz 1978
-         kijdatadb("lk","classic", 1,"C1","C2", 1.052), &
-         kijdatadb("lk","classic", 1,"C1","C2_1",  1.014), &
-         kijdatadb("lk","classic", 1,"C1","C3",  1.113), &
-         kijdatadb("lk","classic", 1,"C1","PRLN",  1.089), &
-         kijdatadb("lk","classic", 1,"C1","IC4",  1.155), &
-         kijdatadb("lk","classic", 1,"C1","NC4",  1.171), &
-         kijdatadb("lk","classic", 1,"C1","NC5",  1.240), &
-         kijdatadb("lk","classic", 1,"C1","IC5",  1.228), &
-         kijdatadb("lk","classic", 1,"C1","NC6",  1.304), &
-         kijdatadb("lk","classic", 1,"C1","NC7",  1.367), &
-         kijdatadb("lk","classic", 1,"C1","NC8",  1.423), &
-         kijdatadb("lk","classic", 1,"C1","NC9",  1.484), &
-         kijdatadb("lk","classic", 1,"C1","NC10",  1.533), &
-         kijdatadb("lk","classic", 1,"C1","BENZENE",  1.234), &
-         kijdatadb("lk","classic", 1,"C2","C2_1",  0.991), &
-         kijdatadb("lk","classic", 1,"C2","C3", 1.010), &
-         kijdatadb("lk","classic", 1,"C2","PRLN",  1.002), &
-         kijdatadb("lk","classic", 1,"C2","IC4", 1.036), &
-         kijdatadb("lk","classic", 1,"C2","NC4",  1.029), &
-         kijdatadb("lk","classic", 1,"C2","NC5",  1.064), &
-         kijdatadb("lk","classic", 1,"C2","IC5",  1.070), &
-         kijdatadb("lk","classic", 1,"C2","NC6",  1.106), &
-         kijdatadb("lk","classic", 1,"C2","NC7",  1.143), &
-         kijdatadb("lk","classic", 1,"C2","NC8",  1.165), &
-         kijdatadb("lk","classic", 1,"C2","NC9",  1.214), &
-         kijdatadb("lk","classic", 1,"C2","NC10",  1.237), &
-         kijdatadb("lk","classic", 1,"C2","BENZENE",  1.066), &
-         kijdatadb("lk","classic", 1,"C2_1","NC4",  0.998), &
-         kijdatadb("lk","classic", 1,"C2_1","BENZENE",  1.094), &
-         kijdatadb("lk","classic", 1,"C2_1","NC7",  1.163), &
-         kijdatadb("lk","classic", 1,"C3","PRLN", 0.992), &
-         kijdatadb("lk","classic", 1,"C3","NC4",  1.003), &
-         kijdatadb("lk","classic", 1,"C3","IC4", 1.003), &
-         kijdatadb("lk","classic", 1,"C3","NC5",  1.006), &
-         kijdatadb("lk","classic", 1,"C3","IC5", 1.009), &
-         kijdatadb("lk","classic", 1,"C3","NC6",  1.047), &
-         kijdatadb("lk","classic", 1,"C3","BENZENE", 1.011), &
-         kijdatadb("lk","classic", 1,"C3","NC7",  1.067), &
-         kijdatadb("lk","classic", 1,"C3","NC8",  1.090), &
-         kijdatadb("lk","classic", 1,"C3","NC9",  1.0115), &
-         kijdatadb("lk","classic", 1,"C3","NC10",  1.139), &
-         kijdatadb("lk","classic", 1,"PRLN","NC4",  1.010), &
-         kijdatadb("lk","classic", 1,"PRLN","IC4", 1.009), &
-         kijdatadb("lk","classic", 1,"NC4","IC4",  1.001), &
-         kijdatadb("lk","classic", 1,"NC4","NC5",  0.994), &
-         kijdatadb("lk","classic", 1,"NC4","IC5",  0.998), &
-         kijdatadb("lk","classic", 1,"NC4","NC6",  1.018), &
-         kijdatadb("lk","classic", 1,"NC4","BENZENE", 0.999), &
-         kijdatadb("lk","classic", 1,"NC4","NC7",  1.027), &
-         kijdatadb("lk","classic", 1,"NC4","NC8",  1.046), &
-         kijdatadb("lk","classic", 1,"NC4","NC9",  1.064), &
-         kijdatadb("lk","classic", 1,"NC4","NC10",  1.078), &
-         kijdatadb("lk","classic", 1,"NC5","IC5",  0.987), &
-         kijdatadb("lk","classic", 1,"NC5","NC6",  0.996), &
-         kijdatadb("lk","classic", 1,"NC5","BENZENE", 0.977), &
-         kijdatadb("lk","classic", 1,"NC5","NC7",  1.004), &
-         kijdatadb("lk","classic", 1,"NC5","NC8",  1.020), &
-         kijdatadb("lk","classic", 1,"NC5","NC9",  1.033), &
-         kijdatadb("lk","classic", 1,"NC5","NC10",  1.045), &
-         kijdatadb("lk","classic", 1,"NC6","BENZENE", 0.978), &
-         kijdatadb("lk","classic", 1,"NC6","NC7",  1.008), &
-         kijdatadb("lk","classic", 1,"NC6","NC8",  1.005), &
-         kijdatadb("lk","classic", 1,"NC6","NC9",  1.015), &
-         kijdatadb("lk","classic", 1,"NC6","NC10",  1.025), &
-         kijdatadb("lk","classic", 1,"BENZENE","NC7",  0.985), &
-         kijdatadb("lk","classic", 1,"BENZENE","NC8",  0.987), &
-         kijdatadb("lk","classic", 1,"BENZENE","NC9",  1.034), &
-         kijdatadb("lk","classic", 1,"BENZENE","NC10",  1.047), &
-         kijdatadb("lk","classic", 1,"NC7","NC8",  0.993), &
-         kijdatadb("lk","classic", 1,"NC7","NC9",  1.002), &
-         kijdatadb("lk","classic", 1,"NC7","NC10",  1.010), &
-         kijdatadb("lk","classic", 1,"NC8","NC9",  0.993), &
-         kijdatadb("lk","classic", 1,"NC8","NC10",  0.999), &
-         kijdatadb("lk","classic", 1,"NC9","NC10",  0.991), &
-         kijdatadb("lk","classic", 1,"N2","C1", 0.977), &
-         kijdatadb("lk","classic", 1,"N2","C2_1",  1.032), &
-         kijdatadb("lk","classic", 1,"N2","C2", 1.082), &
-         kijdatadb("lk","classic", 1,"N2","C3",  1.177), &
-         kijdatadb("lk","classic", 1,"N2","PRLN",  1.151), &
-         kijdatadb("lk","classic", 1,"N2","NC4",  1.276), &
-         kijdatadb("lk","classic", 1,"N2","NC5",  1.372), &
-         kijdatadb("lk","classic", 1,"N2","NC6",  1.442), &
-         kijdatadb("lk","classic", 1,"N2","O2",  0.997), &
-         kijdatadb("lk","classic", 1,"N2","CO",  0.987), &
-         kijdatadb("lk","classic", 1,"N2","H2S",  0.983), &
-         kijdatadb("lk","classic", 1,"N2","CO2",  1.110), &
-         kijdatadb("lk","classic", 1,"N2","N2O",  1.073), &
-         kijdatadb("lk","classic", 1,"N2","NH3",  1.033), &
-         kijdatadb("lk","classic", 1,"CO2","C1", 0.975), &
-         kijdatadb("lk","classic", 1,"CO2","C2", 0.938), &
-         kijdatadb("lk","classic", 1,"CO2","C3",  0.925), &
-         kijdatadb("lk","classic", 1,"CO2","NC4",  0.955), &
-         kijdatadb("lk","classic", 1,"CO2","IC4",  0.946), &
-         kijdatadb("lk","classic", 1,"CO2","NC5",  1.002), &
-         kijdatadb("lk","classic", 1,"CO2","NC6",  1.018), &
-         kijdatadb("lk","classic", 1,"CO2","BENZENE",  1.018), &
-         kijdatadb("lk","classic", 1,"CO2","NC7",  1.058), &
-         kijdatadb("lk","classic", 1,"CO2","NC8",  1.090), &
-         kijdatadb("lk","classic", 1,"CO2","NC9",  1.126), &
-         kijdatadb("lk","classic", 1,"CO2","NC10",  1.160), &
-         kijdatadb("lk","classic", 1,"CO2","H2S",  0.922), &
-         kijdatadb("lk","classic", 1,"CO2","R12",  0.969), &
-         kijdatadb("lk","classic", 1,"CO2","MEOH",  1.069), &
-         kijdatadb("lk","classic", 1,"H2","C1",  1.216), &
-         kijdatadb("lk","classic", 1,"H2","C2",  1.604), &
-         kijdatadb("lk","classic", 1,"H2","PRLN",  1.498), &
-         kijdatadb("lk","classic", 1,"H2","C3",  1.826), &
-         kijdatadb("lk","classic", 1,"H2","NC4", 2.093), &
-         kijdatadb("lk","classic", 1,"H2","NC5",  2.335), &
-         kijdatadb("lk","classic", 1,"H2","NC6",  2.456), &
-         kijdatadb("lk","classic", 1,"H2","NC7",  2.634), &
-         kijdatadb("lk","classic", 1,"H2","N2",  1.080), &
-         kijdatadb("lk","classic", 1,"H2","CO",  1.085), &
-         kijdatadb("lk","classic", 1,"H2","CO2",  1.624), &
-         kijdatadb("lk","classic", 1,"O2","N2O",  1.057), &
-         kijdatadb("lk","classic", 1,"CO","C1",  0.974), &
-         kijdatadb("lk","classic", 1,"H2S","IC4",  0.947), &
-         kijdatadb("lk","classic", 1,"N2O","C1",  1.017), &
-         kijdatadb("lk","classic", 1,"H2O","CO2",  0.920), &
-         kijdatadb("lk","classic", 1,"H2O","NH3",  1.152), &
-         kijdatadb("lk","classic", 1,"H2O","MEOH", 0.979), &
-         kijdatadb("lk","classic", 1,"CO2","AR", 0.992), & ! Mazzoccoli et. al. 2013, dx.doi.org/10.3303/CET1332311
-         kijdatadb("lk","classic", 1,"CO2","O2", 1.032) & ! Visually tuned 1.032
-        /)
-
-
-    type :: interGEdatadb
-       character (len=8) :: eosid
-       character (len=12) :: mruleid
-       integer setno
-       character (len=8) :: uid1, uid2
-       real :: kijvalue                   ! used if alpha_ij and alpha_ji = 0.0
-       integer :: correlation             ! 1: default, 2: Maribo-Mogensen (2015) - 10.1002/aic.14829
-       real :: alphaijvalue(2)            ! alpha_ij != alpha_ji
-       real :: polyij1(2),polyji1(2)    ! uid1 uid2: poly_ij != poly_ji
-       real :: polyij2(3),polyji2(3)    ! 1st and 2nd order polynominal for NRTL-model Gibbs energy interaction
-     end type interGEdatadb
-
-
-     ! eos     mrule    set   i    j      kij    alphaij/ji   poly1d_ji  polyid_ji      poly2d_ij       poly2d_ij
-     ! (g21-g11)/R = a1 + b1*T + c1*T*T  (= tau21*T)
-     ! (g12-g22)/R = a2 + b2*T + c1*T*T  (= tau12*T)
-
-   integer, parameter :: maxinterGEij =  13
-   type (interGEdatadb), dimension (maxinterGEij), parameter :: interGEdb = (/ &
-        interGEdatadb("srk","huronvidal", 1,"C1","H2O",&
-!        kij   alphaij,ji     a1      b1        a2    b2
-        0.52,1,(/0.15,0.15/),(/5035.7,-7.15/),(/-162.8,2.16/),&
-!         a1     b1      c1          a2     b2      c2
-        (/8404.0,-28.031,0.03142/),(/-1149.0,8.019,-0.00861/)), &
-        interGEdatadb("srk","huronvidal", 1,"C1","MEG", &
-        0.134,1,(/0.07,0.07/),(/2274.0,0.0/),(/181.0,0.0/),&
-        (/2274.0,0.0,0.0/),(/181.0,0.0,0.0/)), &
-        interGEdatadb("srk","huronvidal", 1,"CO2","H2O",&
-        0.193,1,(/0.03,0.03/),(/6563.0,-5.12/),(/-3741.0,1.55/),&
-        (/5858.39,2.4112,-0.01713/),(/-1237.41,-15.5058,0.02896/)), &
-        interGEdatadb("srk","huronvidal", 1,"CO2","MEG",&
-        0.000,0,(/0.0,0.0/),(/0.0,0.0/),(/0.0,0.0/),&
-        (/0.0,0.0,0.0/),(/0.0,0.0,0.0/)), &
-        interGEdatadb("srk","huronvidal", 1,"H2O","MEG",& ! From Folas
-        -0.063,1,(/0.95,0.95/),(/59.0,0.0/),(/105.0, 0.0/),&
-        (/59.0,0.0,0.0/),(/105.0,0.0,0.0/)), & ! From Folas (2006), kij from Hemmingsen (2012)
-!        -0.063,(/0.004,0.004/),(/-957.6,0.0/),(/2673.0, 0/),(/-957.6,0.0,0.0/),(/2673.0,0.0,0.0/)), & ! from Hemmingsen (2012)
-        interGEdatadb("pr","huronvidal", 1,"H2O","MEG",& ! From Hemmingsen et. al gij = polyjij(2)
-        -0.065,1,(/0.4,0.4/),(/0.0,218.3/),(/0.0,72.02/),&
-        (/0.0,0.0,0.0/),(/0.0,0.0,0.0/)), &
-        interGEdatadb("csp-srk","huronvidal", 1,"C1","H2O",&
-        0.52,1,(/0.15,0.15/),(/5035.7,-7.15/),(/-162.8,2.16/),&
-        (/8404.0,-28.031,0.03142/),(/-1149.0,8.019,-0.00861/)), &
-        interGEdatadb("csp-srk","huronvidal", 1,"C1","MEG", &
-        0.134,1,(/0.07,0.07/),(/2274.0,0.0/),(/181.0,0.0/),&
-        (/2274.0,0.0,0.0/),(/181.0,0.0,0.0/)), &
-        interGEdatadb("csp-srk","huronvidal", 1,"CO2","H2O",&
-        0.193,1,(/0.03,0.03/),(/6563.0,-5.12/),(/-3741.0,1.55/),&
-        (/5858.39,2.4112,-0.01713/),(/-1237.41,-15.5058,0.02896/)), &
-        interGEdatadb("csp-srk","huronvidal", 1,"CO2","MEG",&
-        0.000,0,(/0.0,0.0/),(/0.0,0.0/),(/0.0,0.0/),&
-        (/0.0,0.0,0.0/),(/0.0,0.0,0.0/)), &
-        interGEdatadb("csp-srk","huronvidal", 1,"H2O","MEG",& ! From Folas
-        -0.063,1,(/0.95,0.95/),(/59.0,0.0/),(/105.0, 0.0/),&
-        (/59.0,0.0,0.0/),(/105.0,0.0,0.0/)), & ! From Folas (2006), kij from Hemmingsen (2012)
-        interGEdatadb("csp-pr","huronvidal", 1,"H2O","MEG",& ! From Hemmingsen et. al gij = polyjij(2)
-        -0.065,1,(/0.4,0.4/),(/0.0,218.3/),(/0.0,72.02/),&
-        (/0.0,0.0,0.0/),(/0.0,0.0,0.0/)), &
-        interGEdatadb("pr","NRTL", 1,"H2S","C3",&
-        0.075,1,(/0.3,0.3/),(/345.712,0.0/),(/-29.3377,0.0/),&
-        (/345.712,0.0,0.0/),(/-29.3377,0.0,0.0/)) & ! Dicko, Coqulet, Theveneau, Mougin (2012)
-        /)
-
-    type :: alphaTWUdatadb
-       character (len=8) :: eosid
-       character (len=8) :: uid
-       integer :: setno
-       real :: coeff(3)
-    end type alphaTWUdatadb
-
-    type :: alphaMCdatadb ! Mathias-Copeman formulation for polar fluids H2O,MEG,...
-       character (len=8) :: eosid
-       character (len=8) :: uid
-       integer :: setno
-       real :: coeff(3)
-    end type alphaMCdatadb
-
-    type :: alphaGERGdatadb ! Gerg-Water, EOS (PR with special alpha corr
-       character (len=8) :: eosid
-       character (len=8) :: uid
-       real :: coeff(3)
-    end type alphaGERGdatadb
-
-    ! These pure data constants are fitted to the vapour pressure curve for the selected equation of state.
-    ! The values given below are for SRK.
-    ! TWU also has general parameters that scale linearly with the acentric factor.
-    ! One set for sub-critical and one set for super-critical region.
-    ! Should only be used for sub-critial conditions.
-
-    integer, parameter :: maxalphaTWUparam = 38
-    type (alphaTWUdatadb),dimension (maxalphaTWUparam), parameter :: alphaTWUdb = (/ &
-! ... old values ...
-         alphaTWUdatadb("SRK","CO2", 1, (/1.2341,1.3268,0.6499/)), &
-         alphaTWUdatadb("SRK","C1" , 1, (/0.5144,0.9903,1.0/)),    &
-         alphaTWUdatadb("SRK","H2S", 1, (/0.5039,0.8855,1.1161/)), &
-         alphaTWUdatadb("SRK","H2O", 1, (/0.3569,0.8743,2.4807/)),  &
-! ... Regressed for subcritical vapour pressure against the reference equations between the
-! triple point and critical point for SRK and PR EOS
-! By GS 2013-02-09
-!
-!         alphaTWUdatadb("SRK","CO2",(/1.022457,0.843957,1.049826/)), &
-!         alphaTWUdatadb("SRK","C1",(/0.746029,0.247115,0.627029/)), &
-!         alphaTWUdatadb("SRK","C3",(/0.973275,0.432097,0.87074/)), &
-!         alphaTWUdatadb("SRK","H2S",(/0.0,0.0,0.773518/)), &
-!         alphaTWUdatadb("SRK","H2O",(/1.443182,0.607805,1.424787/)), &
-!         alphaTWUdatadb("SRK","N2",(/0.0,0.0,0.586285/)), &
-!         alphaTWUdatadb("PR","CO2",(/0.0,0.0,0.651497/)), &
-!         alphaTWUdatadb("PR","C1",(/0.483727,0.084682,0.318364/)), &
-!         alphaTWUdatadb("PR","C3",(/0.0,0.0,0.542362/)), &
-!         alphaTWUdatadb("PR","H2S",(/0.0,0.0,0.464801/)), &
-!         alphaTWUdatadb("PR","H2O",(/0.0,0.0,1.385915/)), &
-!         alphaTWUdatadb("PR","N2",(/0.0,0.0,0.305595/)) &
-         ! Guennec 2016 (10.1016/j.fluid.2016.09.003)
-         alphaTWUdatadb("PR","C1", 2, (/0.1471,0.9074,1.8253/)),  &
-         alphaTWUdatadb("PR","C2", 2, (/0.1459,0.8780,2.1536/)),  &
-         alphaTWUdatadb("PR","C3", 2, (/0.1596,0.8681,2.2820/)),  &
-         alphaTWUdatadb("PR","N2", 2, (/0.1240,0.8897,2.0138/)),  &
-         alphaTWUdatadb("PR","H2", 2, (/1.5147,-3.7959,-0.1377/)),  &
-         alphaTWUdatadb("PR","CO2", 2, (/0.1783,0.8590,2.4107/)),  &
-         alphaTWUdatadb("PR","AR", 2, (/0.1228,0.9045,1.8539/)),  &
-         alphaTWUdatadb("PR","He", 2, (/0.0063,1.2175,1.0909/)),  &
-         alphaTWUdatadb("PR","Ne", 2, (/0.1887,0.9470,1.4698/)),  &
-         alphaTWUdatadb("PR","D2", 2, (/0.1486,0.9968,1.0587/)),  &
-         alphaTWUdatadb("PR","O2", 2, (/0.2129,0.8913,1.4005/)),  &
-         alphaTWUdatadb("PR","CO", 2, (/0.0983,0.8777,2.1568/)),  &
-         alphaTWUdatadb("PR","H2S", 2, (/0.1120,0.8688,2.2735/)),  &
-         alphaTWUdatadb("PR","NH3", 2, (/0.2274,0.8645,2.3320/)),  &
-         alphaTWUdatadb("PR","H2O", 2, (/0.3865,0.8720,1.9693/)),  &
-         alphaTWUdatadb("PR","SO2", 2, (/0.4184,0.8238,1.4068/)),  &
-         alphaTWUdatadb("PR","NO", 2, (/0.8815,0.9552,1.4047/)),  &
-         !
-         alphaTWUdatadb("SRK","C1", 2, (/0.2171,0.9082,1.8172/)),  &
-         alphaTWUdatadb("SRK","C2", 2, (/0.2240,0.8816,2.1090/)),  &
-         alphaTWUdatadb("SRK","C3", 2, (/0.2453,0.8737,2.2088/)),  &
-         alphaTWUdatadb("SRK","N2", 2, (/0.1902,0.8900,2.0106/)),  &
-         alphaTWUdatadb("SRK","H2", 2, (/0.9444,3.0087,0.1762/)),  &
-         alphaTWUdatadb("SRK","CO2", 2, (/0.2807,0.8685,2.2778/)),  &
-         alphaTWUdatadb("SRK","AR", 2, (/0.2023,0.9086,1.8129/)),  &
-         alphaTWUdatadb("SRK","He", 2, (/-0.0466,1.2473,0.5401/)),  &
-         alphaTWUdatadb("SRK","Ne", 2, (/0.3275,0.9699,1.2893/)),  &
-         alphaTWUdatadb("SRK","D2", 2, (/0.2150,0.9921,1.1079/)),  &
-         alphaTWUdatadb("SRK","O2", 2, (/0.2118,0.9020,1.8798/)),  &
-         alphaTWUdatadb("SRK","CO", 2, (/0.1625,0.8778,2.1562/)),  &
-         alphaTWUdatadb("SRK","H2S", 2, (/0.1749,0.8686,2.2761/)),  &
-         alphaTWUdatadb("SRK","NH3", 2, (/0.2981,0.8651,2.3245/)),  &
-         alphaTWUdatadb("SRK","H2O", 2, (/0.4163,0.8756,2.1842/)),  &
-         alphaTWUdatadb("SRK","SO2", 2, (/0.4014,0.8358,1.7355/)),  &
-         alphaTWUdatadb("SRK","NO", 2, (/0.8681,0.9320,1.5954/))  &
-
-! ... Regressed for subcritical vapour pressure against the reference equations between the
-! triple point and critical point for SRK and PR EOS
-! By GS 2013-02-09
-         /)
-
-    integer, parameter :: maxalphaMCparam = 25+40
-
-    type (alphaMCdatadb),dimension (maxalphaMCparam), parameter :: alphaMCdb = (/ &
-         alphaMCDatadb("PR","CO2", 1, (/0.704606, -0.314862, 1.89083/) ), &
-         alphaMCDatadb("PR","AR",  1, (/0.397483, -0.282393, 0.796288/) ),  &
-         !CO2, AR:Heidermann, Khalil Aiche J. 26 (1980) 769-779
-         alphaMCDatadb("PR","CO", 1, (/0.7050, -0.3185, 1.9012/) ), &
-         !O. Chiavone-Filho, P.G. Amaral http://dx.doi.org/10.1021/ie001134o   
-         !Ind. Eng. Chem. Res., 2001, 40 (26), pp 6240–6244
-         
-         !Written by Coquelet, Dieu, Richmin, Arpentiner & LockWood, Fluid PHase Equl. 293 (2008) 38-43
-!         alphaMCDatadb("PR","N2", (/0.5867, -0.4459, 0.8926/) ), &
-         alphaMCDatadb("PR","N2", 1, (/0.404606, 0.391057, -0.963495/) ), &
-         alphaMCDatadb("PR","C1", 1, (/0.5857, -0.7206, 1.2899/) ), &
-         alphaMCDatadb("PR","C2", 1, (/0.7178, -0.7644, 1.6396/) ), &
-         alphaMCDatadb("PR","C3", 1, (/0.7863, -0.7459, 1.8454/) ), &
-         alphaMCDatadb("PR","IC4", 1, (/0.8288, -0.8285, 2.3201/) ), &
-         alphaMCDatadb("PR","NC4", 1, (/0.8787, -0.9399, 2.2666/) ), &
-         alphaMCDatadb("PR","IC5", 1, (/0.8767, -0.6043, 1.4025/) ), &
-         alphaMCDatadb("PR","NC5", 1, (/0.9820, -1.1695, 2.7523/) ), &
-         alphaMCDatadb("PR","NC6", 1, (/1.0430, -1.1553, 2.9235/) ), &
-         alphaMCDatadb("PR","NC7", 1, (/1.2278, -1.5558, 3.9361/) ), &
-         alphaMCDatadb("PR","NC8", 1, (/1.2798, -1.3822, 3.3933/) ), &
-         alphaMCDatadb("SRK","N2", 1, (/0.5867, -0.4459, 0.8926/) ), &
-         alphaMCDatadb("SRK","C1", 1, (/0.5857, -0.7206, 1.2899/) ), &
-         alphaMCDatadb("SRK","C2", 1, (/0.7178, -0.7644, 1.6396/) ), &
-         alphaMCDatadb("SRK","C3", 1, (/0.7863, -0.7459, 1.8454/) ), &
-         alphaMCDatadb("SRK","IC4", 1, (/0.8288, -0.8285, 2.3201/) ), &
-         alphaMCDatadb("SRK","NC4", 1, (/0.8787, -0.9399, 2.2666/) ), &
-         alphaMCDatadb("SRK","IC5", 1, (/0.8767, -0.6043, 1.4025/) ), &
-         alphaMCDatadb("SRK","NC5", 1, (/0.9820, -1.1695, 2.7523/) ), &
-         alphaMCDatadb("SRK","NC6", 1, (/1.0430, -1.1553, 2.9235/) ), &
-         alphaMCDatadb("SRK","NC7", 1, (/1.2278, -1.5558, 3.9361/) ), &
-         alphaMCDatadb("SRK","NC8", 1, (/1.2798, -1.3822, 3.3933/) ), &
-         !For N2, C1,...NC8. Made for SRK, (called SRMC in article). Must use curve fitting with PR
-         !Ø Mørch et al, 2005, "Measurement and modeling of hydrocarbon dew points for five synthetic natural gas mixtures"
-         !Fluid Phase Equilibria 239 (2006) 138-145.
-
-         ! Set 2: Thesis by Antonin Chapoy (2005): Phase behaviour in water/hydrocarbon mixtures
-         ! involved in gas production systems.
-         ! Table 5.1, tuned agains DIPPR database.
-         alphaMCDatadb("SRK","H2", 2, (/0.161, -0.225, -0.232/) ), &
-         alphaMCDatadb("SRK","C1", 2, (/0.549, -0.409, 0.603/) ), &
-         alphaMCDatadb("SRK","O2", 2, (/0.545, -0.235, 0.292/) ), &
-         alphaMCDatadb("SRK","N2", 2, (/0.584, -0.396, 0.736/) ), &
-         alphaMCDatadb("SRK","C2_1", 2, (/0.652, -0.315, 0.563/) ), &
-         alphaMCDatadb("SRK","H2S", 2, (/0.641, -0.183, 0.513/) ), &
-         alphaMCDatadb("SRK","C2", 2, (/0.711, -0.573, 0.894/) ), &
-         alphaMCDatadb("SRK","C3", 2, (/0.775, -0.476, 0.815/) ), &
-         alphaMCDatadb("SRK","IC4", 2, (/0.807, -0.432, 0.91/) ), &
-         alphaMCDatadb("SRK","NC4", 2, (/0.823, -0.267, 0.402/) ), &
-         alphaMCDatadb("SRK","BENZENE", 2, (/0.84, -0.389, 0.917/) ), &
-         alphaMCDatadb("SRK","CO2", 2, (/0.867, -0.674, 2.471/) ), &
-         alphaMCDatadb("SRK","IC5", 2, (/0.876, -0.386, 0.66/) ), &
-         alphaMCDatadb("SRK","NC5", 2, (/0.901, -0.305, 0.542/) ), &
-         alphaMCDatadb("SRK","NH3", 2, (/0.916, -0.369, 0.417/) ), &
-         alphaMCDatadb("SRK","TOLU", 2, (/0.923, -0.301, 0.494/) ), &
-         alphaMCDatadb("SRK","NC6", 2, (/1.005, -0.591, 1.203/) ), &
-         alphaMCDatadb("SRK","H2O", 2, (/1.095, -0.678, 0.7/) ), &
-         alphaMCDatadb("SRK","NC7", 2, (/1.036, -0.258, 0.488/) ), &
-         alphaMCDatadb("SRK","NC8", 2, (/1.15, -0.587, 1.096/) ), &
-!
-         alphaMCDatadb("PR","H2", 2, (/0.095, -0.275, -0.029/) ), &
-         alphaMCDatadb("PR","C1", 2, (/0.416, -0.173, 0.348/) ), &
-         alphaMCDatadb("PR","O2", 2, (/0.413, -0.017, 0.092/) ), &
-         alphaMCDatadb("PR","N2", 2, (/0.448, -0.157, 0.469/) ), &
-         alphaMCDatadb("PR","C2_1", 2, (/0.512, -0.087, 0.349/) ), &
-         alphaMCDatadb("PR","H2S", 2, (/0.507, 0.008, 0.342/) ), &
-         alphaMCDatadb("PR","C2", 2, (/0.531, -0.062, 0.214/) ), &
-         alphaMCDatadb("PR","C3", 2, (/0.6, -0.006, 0.174/) ), &
-         alphaMCDatadb("PR","IC4", 2, (/0.652, -0.149, 0.599/) ), &
-         alphaMCDatadb("PR","NC4", 2, (/0.677, -0.081, 0.299/) ), &
-         alphaMCDatadb("PR","BENZENE", 2, (/0.701, -0.252, 0.976/) ), &
-         alphaMCDatadb("PR","CO2", 2, (/0.705, -0.315, 1.89/) ), &
-         alphaMCDatadb("PR","IC5", 2, (/0.724, -0.166, 0.515/) ), &
-         alphaMCDatadb("PR","NC5", 2, (/0.763, -0.224, 0.669/) ), &
-         alphaMCDatadb("PR","NH3", 2, (/0.748, -0.025, 0.001/) ), &
-         alphaMCDatadb("PR","TOLU", 2, (/0.762, -0.042, 0.271/) ), &
-         alphaMCDatadb("PR","NC6", 2, (/0.87, -0.588, 1.504/) ), &
-         alphaMCDatadb("PR","H2O", 2, (/0.919, -0.332, 0.317/) ), &
-         alphaMCDatadb("PR","NC7", 2, (/0.878, -0.031, 0.302/) ), &
-         alphaMCDatadb("PR","NC8", 2, (/0.958, -0.134, 0.487/) ) &
-         /)
-
-    type (alphaGERGdatadb) , parameter :: alphaGERGIcedb = alphaGERGDatadb("PR","H2O",(/0.106025,2.683845,-4.75638/)) ! Gerg-PR EOS over ice
-    type (alphaGERGdatadb) ,parameter :: alphaGERGWaterdb = alphaGERGDatadb ("PR","H2O",(/0.905436,-0.213781,0.26005/)) ! Gerg-PR EOS over water
-    
-
- end module eosdatadb
+end module mixdatadb

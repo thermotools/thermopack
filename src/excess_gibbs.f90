@@ -19,17 +19,18 @@ contains
   !< Get residual Helmholtz energy parameter C
   !! at the infinite pressure limit.
   function getInfinitLimitC(cbeos) result(C)
+    use cubic_eos, only: cb_eos
     use eosdata
     implicit none
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real :: C
     ! Locals
     real, parameter :: LN2 = log(2.0)
     real, parameter :: C_PR = -log(sqrt(2.0)-1.0)/sqrt(2.0)
-    select case (cbeos%eosidx)
+    select case (cbeos%subeosidx)
     case (cbVdW)
       C = 1.0
-    case (cbRK,cbSRK,cbSRKGB,cspSRK,cspSRKGB,cpaSRK)
+    case (cbSRK,cspSRK,cpaSRK)
       C = LN2
     case (cbPR,cspPR,cpaPR)
       C = C_PR
@@ -43,15 +44,16 @@ contains
   !< Get residual Helmholtz energy parameter C
   !! at the zero pressure limit.
   function getZeroLimitC(cbeos) result(C)
+    use cubic_eos, only: cb_eos
     use eosdata
     implicit none
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real :: C
     ! Locals
-    select case (cbeos%eosidx)
+    select case (cbeos%subeosidx)
     case (cbVdW)
       C = 0.55
-    case (cbRK,cbSRK,cbSRKGB,cspSRK,cspSRKGB)
+    case (cbSRK,cspSRK)
       C = 0.593
     case (cbPR,cspPR)
       C = 0.53087
@@ -62,19 +64,17 @@ contains
 
   !< Set up tau, C and alpha paramater for different models.
   subroutine getGeParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     use eosdata
+    use cubic_eos, only: cb_eos, isHVmixModel, cbMixNRTL, cbMixWongSandler
     implicit none
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
     real, intent(out) :: tau(nce,nce),dtaudT(nce,nce),d2taudT2(nce,nce)
     real, intent(out) :: alpha(nce,nce),Cij(nce,nce)
     ! Locals
 
-    if ( cbeos%mruleidx == cbMixHuronVidal .OR. &
-         cbeos%mruleidx == cbMixHuronVidal2 .OR. &
-         cbeos%mruleidx == cbMixHVCPA .OR. &
-         cbeos%mruleidx == cbMixHVCPA2 .OR. &
+    if ( isHVmixModel(cbeos%mruleidx) .OR. &
          cbeos%mruleidx == cbMixNRTL) then
       call getHvNRTLParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
     else if (cbeos%mruleidx == cbMixWongSandler) then
@@ -87,11 +87,12 @@ contains
 
   !< Set up tau, C and alpha paramater for Huron-Vidal or NRTL.
   subroutine getHvNRTLParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     use eosdata
-    use tpconst, only: kRgas
+    use cubic_eos, only: cb_eos, cbMixHuronVidal, cbMixNRTL
+    use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
     real, intent(out) :: tau(nce,nce),dtaudT(nce,nce),d2taudT2(nce,nce)
     real, intent(out) :: alpha(nce,nce),Cij(nce,nce)
@@ -220,7 +221,7 @@ contains
 
   !-----------------------------------------
   subroutine GetFraction(Frac, x, y, yd, ydd)
-    use eosdata, only: Fraction, nDegreePoly
+    use cubic_eos, only: Fraction, nDegreePoly
     type(Fraction), intent(in):: Frac
     real, intent(in) :: x
     real, intent(out):: y, yd, ydd  !<y and its derived
@@ -244,11 +245,12 @@ contains
   !-------------------------------------------------------------------------
   !< Set up tau, C and alpha paramater for Wong-Sandler.
   subroutine getWSParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
-    use tpvar, only: nce
+    use thermopack_var, only: nce
     use eosdata
-    !use tpconst, only: kRgas
+    use cubic_eos, only: cb_eos
+    !use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(in) :: cbeos
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
     real, intent(out) :: tau(nce,nce),dtaudT(nce,nce),d2taudT2(nce,nce)
     real, intent(out) :: alpha(nce,nce),Cij(nce,nce)
@@ -304,11 +306,12 @@ contains
   subroutine gExcess(cbeos,t,n,gExInf,dgExInfdT,d2gExinfdT2,&
        dGExInfdNi,d2GexInfdNidT,d2GExInfdNidNj)
     use eosdata
-    use tpvar, only: nce
+    use cubic_eos, only: cb_eos, cbMixUNIFAC
+    use thermopack_var, only: nce
     use unifac, only: Ge_UNIFAC_GH_SG, unifdb
-    !use tpconst, only: kRgas
+    !use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, n(nce)
     real, intent(out) :: gExInf, dgExInfdT, d2gExinfdT2
     real, intent(out) :: dGExInfdNi(nce), d2GexInfdNidT(nce), d2GExInfdNidNj(nce,nce)
@@ -365,10 +368,11 @@ contains
   subroutine gEinf(cbeos,t,zcomp,gExInf,dgExInfdT,d2gExinfdT2,&
        dGExInfdNi,d2GexInfdNidT,d2GExInfdNidNj)
     use eosdata
-    use tpconst, only: kRgas
-    use tpvar, only: nce
+    use cubic_eos, only: cb_eos, isHVmixModel
+    use thermopack_constants, only: kRgas
+    use thermopack_var, only: nce
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, zcomp(nce)
     real, intent(out) :: gExInf, dgExInfdT, d2gExinfdT2
     real, intent(out) :: dGExInfdNi(nce), d2GexInfdNidT(nce), d2GExInfdNidNj(nce,nce)
@@ -382,17 +386,12 @@ contains
     real :: sumi, sumj, sumij
     real :: bi,bj,b_array(nce),aa(nce),daadT(nce),d2aadT2(nce)
     integer :: ii, i, j
-    logical :: isHVmode
 
     ! Start by calculating the temperature dependent tauij and Cij
     call getGeParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
 
     ! Are we in HV or NRTL mode
-    isHVmode = (cbeos%mruleidx == cbMixHuronVidal .OR. &
-         cbeos%mruleidx == cbMixHuronVidal2 .OR. &
-         cbeos%mruleidx == cbMixHVCPA .OR. &
-         cbeos%mruleidx == cbMixHVCPA2)
-    if (isHVmode) then
+    if (isHVmixModel(cbeos%mruleidx)) then
       do i=1,nce
         b_array(i) = cbeos%single(i)%b
       enddo
@@ -586,10 +585,10 @@ contains
 
   !< Excess gibbs energy
   subroutine ExcessGibbsMix(cbeos,t,n)
-    use eosdata
-    use tpvar, only: nce
+    use cubic_eos, only: cb_eos, cbMixUNIFAC
+    use thermopack_var, only: nce
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, n(nce)
     ! Locals
     real :: gEx, dgExdT, d2gExdT2

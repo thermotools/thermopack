@@ -6,7 +6,8 @@
 
 module saftvrmie_testing
   use saftvrmie_containers
-  use tpconst, only: kB_const,N_AVOGADRO,h_const
+  use thermopack_constants, only: kB_const,N_AVOGADRO,h_const
+  use thermopack_var, only: nc, get_active_eos_container, eos_container
   use numconstants, only: pi
   use saftvrmie_hardsphere, only: calc_hardsphere_rdf_and_U
   use saftvrmie_dispersion
@@ -21,16 +22,16 @@ module saftvrmie_testing
 contains
 
   subroutine test_by_integration
-    use parameters
+    use thermopack_constants
     use saftvrmie_hardsphere
     use saftvrmie_containers, only: init_saftvrmie_containers, saftvrmie_var
     use saftvrmie_interface, only:  preCalcSAFTVRMie
-    use tpvar, only:comp
     implicit none
-    integer :: setno(nc), mixing
+    integer :: mixing
     real :: T, V, n(nc), Int_B, Int_B1, Int_B2
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
 
-    setno(1)=1
     mixing=1
     T=4.0
     V=1
@@ -39,7 +40,7 @@ contains
     ! No quantum corrections
     quantum_correction=0
     quantum_correction_hs=0
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    call init_saftvrmie_containers(nc,p_act_eosc%comps,"DEFAULT",mixing)
     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
     call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
     call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
@@ -49,7 +50,7 @@ contains
     ! First order quantum corrections
     quantum_correction=1
     quantum_correction_hs=1
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    call init_saftvrmie_containers(nc,p_act_eosc%comps,"DEFAULT",mixing)
     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
     call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
     call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
@@ -59,7 +60,7 @@ contains
     ! Second order quantum corrections
     quantum_correction=2
     quantum_correction_hs=2
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    call init_saftvrmie_containers(nc,p_act_eosc%comps,"DEFAULT",mixing)
     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
     call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
     call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
@@ -705,15 +706,14 @@ contains
   end subroutine get_FH_potential
 
   subroutine map_second_virial_coeff()
-    use parameters
     use saftvrmie_containers, only: init_saftvrmie_containers, saftvrmie_var
     use saftvrmie_interface, only:  preCalcSAFTVRMie
-    use tpvar, only:comp
     implicit none
-    integer :: setno(nc), mixing, nIter, i
+    integer :: mixing, nIter, i
     real :: T, V, n(nc), Int_B, Int_B1, Int_B2, Tmin, Tmax
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
 
-    setno(1)=1
     mixing=1
     T=4.0
     V=1.0
@@ -723,7 +723,7 @@ contains
     Tmax = 26.0
     open(unit=20,file="virial_B_int.dat")
     nIter = 100
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    call init_saftvrmie_containers(nc,p_act_eosc%comps,"DEFAULT",mixing)
     do i=1,nIter
        T = Tmin + (Tmax-Tmin)*real(i-1)/(nIter-1)
        quantum_correction=0

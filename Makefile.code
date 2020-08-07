@@ -111,14 +111,16 @@ OBJE = 	\
 	$(ODIR)/numconstants.o \
 	$(ODIR)/stringmod.o \
 	$(ODIR)/quadratures.o \
-	$(ODIR)/parameters.o \
+	$(ODIR)/thermopack_const.o \
 	$(ODIR)/stoperror.o \
 	$(ODIR)/nonlin_optimizer.o \
 	$(ODIR)/nonlinear_solvers.o \
-	$(ODIR)/thermopack_const.o \
 	$(ODIR)/utilities.o \
+	$(ODIR)/apparent_composition.o \
 	$(ODIR)/compdata.o \
+	$(ODIR)/thermopack_var.o \
 	$(ODIR)/compdatadb.o \
+	$(ODIR)/compdata_init.o \
 	$(ODIR)/multiparameter_base.o \
 	$(ODIR)/multiparameter_c3.o \
 	$(ODIR)/multiparameter_para_h2.o \
@@ -128,14 +130,16 @@ OBJE = 	\
 	$(ODIR)/mbwrdata.o \
 	$(ODIR)/mbwr.o \
 	$(ODIR)/mbwr_additional.o \
+	$(ODIR)/pets.o \
 	$(ODIR)/eosdata.o \
-	$(ODIR)/eosdatadb.o \
 	$(ODIR)/assocschemeutils.o \
 	$(ODIR)/pc_saft_parameters.o \
-	$(ODIR)/thermopack_var.o \
-	$(ODIR)/cbAlpha.o \
 	$(ODIR)/unifacdata.o \
 	$(ODIR)/unifac.o \
+	$(ODIR)/eos_parameters.o \
+	$(ODIR)/cubic_eos.o \
+	$(ODIR)/eosdatadb.o \
+	$(ODIR)/cbAlpha.o \
 	$(ODIR)/excess_gibbs.o \
 	$(ODIR)/wong_sandler.o \
 	$(ODIR)/cbmix.o \
@@ -145,7 +149,6 @@ OBJE = 	\
 	$(ODIR)/ideal.o \
 	$(ODIR)/cpa_parameters.o \
 	$(ODIR)/cbselect.o \
-	$(ODIR)/pets.o \
 	$(ODIR)/pc_saft_nonassoc.o \
 	$(ODIR)/saftvrmie_options.o \
 	$(ODIR)/saftvrmie_parameters.o \
@@ -164,10 +167,11 @@ OBJE = 	\
 	$(ODIR)/leekesler.o \
 	$(ODIR)/multiparameter_idealmix.o \
 	$(ODIR)/volume_shift.o \
-	$(ODIR)/single_component.o \
-	$(ODIR)/single_phase.o \
 	$(ODIR)/co2Gibbs.o \
 	$(ODIR)/h2oGibbs.o \
+	$(ODIR)/single_component.o \
+	$(ODIR)/eos_container.o \
+	$(ODIR)/single_phase.o \
 	$(ODIR)/eosTV.o \
 	$(ODIR)/trend_solver.o \
 	$(ODIR)/eos.o \
@@ -361,8 +365,11 @@ $(ODIR)/compdata.o: $(SRC)/compdata.f90
 	@$(call make_object,$(SRC)/compdata.f90)
 $(ODIR)/eosdata.o: $(SRC)/eosdata.f90
 	@$(call make_object,$(SRC)/eosdata.f90)
-$(ODIR)/compdatadb.o: $(SRC)/compdatadb.f90
+$(ODIR)/compdatadb.o: $(SRC)/compdatadb.f90 $(SRC)/compdata.f90
 	@$(call make_object,$(SRC)/compdatadb.f90)
+$(ODIR)/compdata_init.o: $(SRC)/compdata_init.f90 $(SRC)/compdatadb.f90 \
+	$(SRC)/compdata.f90
+	@$(call make_object,$(SRC)/compdata_init.f90)
 $(ODIR)/eosdatadb.o: $(SRC)/eosdatadb.f90
 	@$(call make_object,$(SRC)/eosdatadb.f90)
 $(ODIR)/utilities.o: $(SRC)/utilities.f90 $(SRC)/thermopack_const.f90
@@ -650,3 +657,11 @@ $(ODIR)/saftvrmie_testing.o: $(SRC)/saftvrmie_testing.f90 \
 	@$(call make_object,$(SRC)/saftvrmie_testing.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90
 	@$(call make_object,$(SRC)/thermopack.f90)
+$(ODIR)/eos_container.o: $(SRC)/eos_container.f90
+	@$(call make_object,$(SRC)/eos_container.f90)
+$(ODIR)/eos_parameters.o: $(SRC)/eos_parameters.f90
+	@$(call make_object,$(SRC)/eos_parameters.f90)
+$(ODIR)/cubic_eos.o: $(SRC)/cubic_eos.f90
+	@$(call make_object,$(SRC)/cubic_eos.f90)
+$(ODIR)/apparent_composition.o: $(SRC)/apparent_composition.f90
+	@$(call make_object,$(SRC)/apparent_composition.f90)

@@ -5,10 +5,12 @@
 !>
 !-------------------------------------------------------------------------
 module stability
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc, nph, complist
   use numconstants, only: machine_prec, small
   use utilities
-  use eos, only : wilsonK, thermo
+  use eos, only : thermo
+  use thermo_utils, only: wilsonK
   implicit none
   private
   save
@@ -151,7 +153,7 @@ contains
   !-------------------------------------------------------------------------
   function stabcalcW(nd,k,t,p,XX,W,phase,isTrivial,FUGZ,FUGW,preTermLim) result(tpd)
     use optimizers, only: optimize, optim_param, setX
-    use tpvar, only: ncsym
+    use thermopack_var, only: ncsym
     implicit none
     integer, intent(in) :: nd !< Dimension of compozition matrix
     integer, intent(in) :: k !< Index of Trial phase

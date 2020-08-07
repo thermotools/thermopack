@@ -3,7 +3,7 @@ program run_thermopack
   ! Morten Hammer, 2020-05.
   !----------------------------------------------------------------------
   use eoslibinit, only: init_thermo
-  use parameters
+  use thermopack_constants
   use critical, only: calcCriticalTV
   use eosTV, only: pressure
   implicit none
@@ -11,8 +11,7 @@ program run_thermopack
   real :: pc, Tc, vc
   integer :: ierr
 
-  call init_thermo('Thermopack', 'PR', 'VDW', 'CLASSIC', 5,&
-       "CO2,N2,H2S,C2,C1", 2)
+  call init_thermo('PR', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
   Tc = -1
   vc = -1
   Z = [0.94980650312939319, 4.9991460192386570E-003, &

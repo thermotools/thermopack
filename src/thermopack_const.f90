@@ -1,7 +1,9 @@
-module tpconst
+module thermopack_constants
   ! Constants.
   implicit none
   save
+  public
+
   real, parameter :: Tmax=2000.0 !< K
   real, parameter :: Tmin=50.0 !< K
   real, parameter :: kB_const=1.380649e-23 !< J/K (Boltzmanns const)
@@ -18,78 +20,99 @@ module tpconst
   real, parameter :: elEps = 1.0e-25
   !> Trace components, and zero components
   real, parameter :: traceEps = 1.0e-20
-  public
+  !< Minimum mol number for apparent composition
+  real, parameter :: min_mol_num = 1.0e-150
+  !> String length
+  integer, parameter :: clen=2048
+  !> Control output of debug information
+  logical :: verbose = .false.
+  !> Phase identifiers
+  integer, parameter :: TWOPH=0,LIQPH=1,VAPPH=2,MINGIBBSPH=3,&
+       SINGLEPH=4,SOLIDPH=5,FAKEPH=6,VAPSOLPH=7
+  !> Liquid phase type identifiers
+  integer, parameter :: NONWATER=-1, WATER=-2
+  !> Library used to solve EoS
+  integer, parameter :: THERMOPACK=1, TREND=2
+  !> Method to discriminate between liquid and vapor in the event of an
+  !> undefined single phase
+  integer, parameter :: PSEUDO_CRIT_ZFAC=1, PSEUDO_CRIT_MOLAR_VOLUME=2, &
+       VOLUME_COVOLUME_RATIO=3
+  !> Ignore components where z <= zLimit
+  real, parameter :: zLimit = 0.0
+  !> Continue on error?
+  logical :: continueOnError = .false.
+  !> Grid type option
+  integer, parameter :: TPGRID = 1, SPGRID = 2, HPGRID = 3, UVGRID = 4, SVGRID = 5
+  !> Test type
+  integer, parameter :: GRID = 1, ENVELOPE_PL = 2, &
+       BINARY_PL = 3, BINARY_VLLE_PL = 4, META_LIMIT_PL = 5, SOLIDENVELOPE_PL = 6
+  !> String lengths
+  integer, parameter :: uid_len = 20
+  integer, parameter :: ref_len = 40
+  integer, parameter :: bibref_len = 40
+  integer, parameter :: eosid_len = 20
+  integer, parameter :: mix_len = 20
+  integer, parameter :: eos_name_len = 30
+  integer, parameter :: short_label_len = 20
+  integer, parameter :: label_len = 100
 
 contains
 
-  subroutine set_constants(RgasIn)
-    use parameters, only: EosLib, TREND
+  subroutine set_Rgas(RgasIn)
     implicit none
-    real, optional, intent(in) :: RgasIn
-    if (.not. present(RgasIn)) then
-      Rgas = Rgas_default
-    else
-      Rgas = RgasIn
-    endif
+    real, intent(in) :: RgasIn
+    Rgas = RgasIn
     kRgas = 1000.0*Rgas
-    if (EosLib == TREND) then
-      tpTmin = 140.0
-    else
-      tpTmin = 80.0
-    endif
-  end subroutine set_constants
+  end subroutine set_Rgas
 
   !----------------------------------------------------------------------
-  subroutine get_eoslib_templimits(ieoslib, Tmin, Tmax)
+  subroutine get_templimits(Tmin, Tmax)
     !> Get EoSlib-specific max/min supported temperature
     !>
     !> \author EA, 2014-05
     implicit none
-    ! Input:
-    integer,  intent(in)  :: ieoslib !< EoSlib to get temp.-limits for
     ! Output:
     real,     intent(out) :: Tmin !< Minimum supported temperature (K)
     real,     intent(out) :: Tmax !< Maximum supported temperature (K)
 
     Tmin = tpTmin
     Tmax = tpTmax
-  end subroutine get_eoslib_templimits
+  end subroutine get_templimits
 
-  subroutine get_eoslib_presslimits(ieoslib, Pmin, Pmax)
+  subroutine get_presslimits(Pmin, Pmax)
     !> Get EoSlib-specific max/min supported pressure
     implicit none
-    ! Input:
-    integer,  intent(in)  :: ieoslib !< EoSlib to get temp.-limits for
     ! Output:
     real,     intent(out) :: Pmin !< Minimum supported temperature (Pa)
     real,     intent(out) :: Pmax !< Maximum supported temperature (Pa)
 
     Pmin = tpPmin
     Pmax = tpPmax
-  end subroutine get_eoslib_presslimits
+  end subroutine get_presslimits
 
-  function getRgas(z) result(R)
-    use parameters, only: EosLib, TREND, nc
-    implicit none
-    ! Include TREND interface
-    include 'trend_interface.f95'
-    real, intent(in) :: z(nc) !< Mole fractions
-    real :: R
+  !----------------------------------------------------------------------
+  subroutine phaseIntToName(phase,phaseName)
+    integer, intent(in) :: phase
+    character(len=*), intent(out) :: phaseName
     !
-    if (EosLib == TREND) then
-      R = trend_Rmix(z)
-    else
-      R = Rgas
+    if (len(phaseName) >= 10) then
+      select case(phase)
+      case (TWOPH)
+        phaseName = 'TWOPH'
+      case (LIQPH)
+        phaseName = 'LIQPH'
+      case (VAPPH)
+        phaseName = 'VAPPH'
+      case (MINGIBBSPH)
+        phaseName = 'MINGIBBSPH'
+      case (SINGLEPH)
+        phaseName = 'SINGLEPH'
+      case (SOLIDPH)
+        phaseName = 'SOLIDPH'
+      case (FAKEPH)
+        phaseName = 'FAKEPH'
+      end select
     endif
-  end function getRgas
+  end subroutine phaseIntToName
 
-  function getkRgas(z) result(kR)
-    use parameters, only: nc
-    implicit none
-    real, intent(in) :: z(nc) !< Mole fractions
-    real :: kR
-    !
-    kR = 1000.0*getRgas(z)
-  end function getkRgas
-
-end module tpconst
+end module thermopack_constants

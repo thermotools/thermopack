@@ -3,6 +3,8 @@
 !! \author MH, 2014-02
 module eoslibinit
   !
+  use thermopack_var, only: nce, get_active_eos_container, eos_container, &
+       get_active_alt_eos, base_eos_param, add_eos, active_eos_container_is_associated
   implicit none
   save
   !
@@ -13,8 +15,8 @@ module eoslibinit
   !
   private
   public :: init_thermo
-  public :: init_cubic
-  public :: cleanup_eos, silent_init
+  public :: init_cubic, silent_init
+  !public :: cleanup_eos
   public :: redefine_critical_parameters
   !
 contains
@@ -38,178 +40,284 @@ contains
 
 
   !----------------------------------------------------------------------
+  !> Set method to discriminate between liquid and vapor in case of an
+  !! undefined single phase
+  !!
+  !! \author MH, 2020-06
+  !----------------------------------------------------------------------
+  subroutine set_liq_vap_discr_method(liq_vap_discr_method)
+    ! Method information
+    integer, intent(in) :: liq_vap_discr_method !< Method to discriminate between liquid and vapor in case of an undefined single phase.
+    type(eos_container), pointer :: p_act_eos
+    p_act_eos => get_active_eos_container()
+
+    ! Method for discriminating between liquid/vapor when poorly defined
+    p_act_eos%liq_vap_discr_method = liq_vap_discr_method
+  end subroutine set_liq_vap_discr_method
+
+  !> Initialize volume translation
+  !>
+  !> \author MH, 2020
+  !----------------------------------------------------------------------
+  subroutine init_volume_translation(volume_trans_model, param_ref)
+    use volume_shift, only: InitVolumeShift
+    character(len=*), intent(in) :: volume_trans_model   !< String model for volume translation
+    character(len=*), intent(in) :: param_ref !< String defining parameter set
+    !
+    type(eos_container), pointer :: p_act_eosc
+    integer :: i
+    p_act_eosc => get_active_eos_container()
+
+    p_act_eosc%eos(1)%p_eos%volumeShiftId = &
+         InitVolumeShift(nce, p_act_eosc%comps, &
+         volume_trans_model, p_act_eosc%eos(1)%p_eos%eosid)
+
+    ! Distribute volumeShiftId
+    do i=2,size(p_act_eosc%eos)
+      p_act_eosc%eos(i)%p_eos%volumeShiftId = &
+           p_act_eosc%eos(1)%p_eos%volumeShiftId
+    enddo
+  end subroutine init_volume_translation
+
+  !----------------------------------------------------------------------
   !> Initialize thermo library
   !>
   !> \author MH, 2014-02
   !----------------------------------------------------------------------
-  subroutine init_thermo(eosLibrary,eos,mixing,alpha,ncomp,comp_string,nphases,&
-       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_setno,alpha_setno,&
-       saft_setno,b_exponent,TrendEosForCp,cptype,silent)
-    use parameters, only: clen, liq_vap_discr_method, initCompList_legacy, nc, TREND, &
-         eosLib, model, THERMOPACK
-    use tpselect,   only: SelectComp, SelectEOS
-    use tpvar,      only: comp, cbeos, cbeos_alternative, nce, ncsym
-    use stringmod,  only: uppercase
+  subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
+       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
+       saft_ref,b_exponent,TrendEosForCp,cptype,silent)
+    use thermopack_constants, only: clen, TREND, THERMOPACK
+    use cbselect,   only: SelectCubicEOS
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use stringmod,  only: uppercase, str_eq
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
+    use eos_containers, only: allocate_eos
     !$ use omp_lib, only: omp_get_max_threads
     ! Method information
-    character(len=*), intent(in) :: eosLibrary !< String defining eos library (TREND, ThermoPack)
     character(len=*), intent(in) :: eos    !< String defining equation of state
     character(len=*), intent(in) :: mixing !< String defining mixing rules
     character(len=*), intent(in) :: alpha  !< String defining alpha correlation
-    integer, intent(in) :: ncomp !< Number of components
     character(len=*), intent(in) :: comp_string    !< String defining components. Comma or white-space separated.
     integer, intent(in) :: nphases !< Number of phases
     integer, optional, intent(in) :: liq_vap_discr_method_in !< Method to discriminate between liquid and vapor in case of an undefined single phase. Will be set to none if absent.
     character(len=*), optional, intent(in) :: csp_eos !< Corrensponding state equation
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
-    integer, optional, intent(in) :: kij_setno, alpha_setno, saft_setno(ncomp) !< Data set numbers
+    character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set numbers
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
     character(len=*), optional, intent(in) :: TrendEosForCp !< Option to init trend for ideal gas properties.
-    integer, optional, intent(in) :: cptype(ncomp) !< Type numbers for Cp
+    integer, optional, intent(in) :: cptype !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
+    integer :: ncomp !< Number of components
     character(len=clen) :: message
-    integer             :: i, err, ncbeos
-    character(len=len_trim(comp_string)) :: comp_string_upper
-    character(len=len_trim(eosLibrary)) :: eosLibrary_cpy
-    logical             :: isSAFTmodel
-    real :: Tci, Pci, oi
+    integer             :: i, ierr, ncbeos, index
+    type(eos_container), pointer :: p_act_eosc
     if (present(silent)) then
       silent_init = silent
     endif
 
-    ! Store eos model information
-    model = trim(eos)
+    if (.not. active_eos_container_is_associated()) then
+      ! No eos_container have been allocated
+      index = add_eos()
+    endif
+    p_act_eosc => get_active_eos_container()
+
+    ! Component list.
+    call initCompList(trim(uppercase(comp_string)),ncomp,p_act_eosc%complist)
+    call allocate_eos(ncomp, eos)
 
     ! Method for discriminating between liquid/vapor when poorly defined
     if (present(liq_vap_discr_method_in)) then
-      liq_vap_discr_method = liq_vap_discr_method_in
+      p_act_eosc%liq_vap_discr_method = liq_vap_discr_method_in
     end if
 
-    ! Component list is always set, no matter the EoSlib.
-    comp_string_upper=trim(uppercase(comp_string))
-    call initCompList_legacy(ncomp,comp_string_upper)
+    ! Number of phases
+    p_act_eosc%nph = nphases
+
+    ! Assign active mode variables
     ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = p_act_eosc%nph
+    complist => p_act_eosc%complist
+    apparent => NULL()
+
     ! Initialize components
-    call SelectComp(trim(comp_string_upper),nce,comp)
+    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+
     ! Set cptype
     if (present(cptype)) then
       do i=1,nc
-        if (cptype(i) /= 0) then
-          comp(i)%cptype = cptype(i)
-        endif
+        p_act_eosc%comps(i)%p_comp%id_cp%cptype = cptype
       enddo
     endif
 
-    eosLibrary_cpy = trim(uppercase(eosLibrary))
-    if (nce /= nc .and. eosLibrary_cpy /= "THERMOPACK") then
-      write(message,*) 'EoS library: ', trim(eosLibrary), '. Does not yet support electrolytes!'
-      call stoperror(trim(message))
+    if (str_eq(eos, "EOSCG") .or. &
+         str_eq(eos, "EOS-CG") .or. &
+         str_eq(eos, "GERG2008") .or. &
+         str_eq(eos, "GERG-2008") .or. &
+         str_eq(eos, "EOSCG-GERG")) then
+      p_act_eosc%eosLib = TREND
+    else
+      p_act_eosc%eosLib = THERMOPACK
     endif
 
     ! Initialize the selected EoS-library
-    select case (eosLibrary_cpy)
-    case ("THERMOPACK")
+    select case (p_act_eosc%eosLib)
+    case (THERMOPACK)
       ! Initialize Thermopack
       call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
            trim(uppercase(alpha)), &
            nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
-           kij_setno,alpha_setno,saft_setno,&
+           kij_ref,Alpha_ref,saft_ref,&
            b_exponent)
       if (present(TrendEosForCp)) then
         ! Initialize Trend for ideal properties
         call init_trend(trim(uppercase(TrendEosForCp)),ncomp,nphases,.false.)
       endif
-    case ("TREND")
+    case (TREND)
       ! Initialize Trend
       call init_trend(trim(uppercase(eos)),ncomp,nphases,.true.)
     case default
-      write(message,*) 'EoS library: ', trim(uppercase(eosLibrary)), '. Is not yet implemented.'
+      write(message,*) 'Wrong EoS library'
       call stoperror(trim(message))
     end select
 
-    ! Initialize fallback-EoS (SRK from EoSlib Thermopack):
-    ! Alternate SRK EoS for generating initial values, etc.
-    ncbeos = 1
-    !$ ncbeos = omp_get_max_threads()
-    if (allocated(cbeos_alternative)) then
-      deallocate(cbeos_alternative,STAT=err);
-      if (err /= 0) call stoperror('Not able to deallocate cbeos_alternative')
-    endif
-    allocate(cbeos_alternative(ncbeos),STAT=err);
-    if (err /= 0) call stoperror('Not able to allocate cbeos_alternative')
-    ! Fill values of cbeos_alt according to standard SRK.
-    ! If possible modify to match critical point and saturation line at T=0.7Tc
-    if (EoSLib == TREND) then
+  end subroutine init_thermo
+
+  subroutine init_fallback_eos(silent)
+    use thermopack_constants, only: TREND, THERMOPACK
+    use thermopack_var, only: nce
+    use eosdata, only: isSAFTEOS
+    use cbselect, only: selectCubicEOS, SelectMixingRules
+    use cubic_eos, only: cb_eos
+    logical, intent(in) :: silent !< Option to disable init messages.
+    real :: Tci, Pci, oi
+    integer :: i
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
+
+    if (.not. p_act_eosc%need_alternative_eos) return
+
+    if (p_act_eosc%EoSLib == TREND) then
       ! Use TREND parameters to get better critical point in alternative model
       do i=1,nce
         call trend_getcrit(i,Tci,Pci,oi)
-        comp(i)%tc = Tci
-        comp(i)%pc = Pci
-        comp(i)%acf = oi
+        p_act_eosc%comps(i)%p_comp%tc = Tci
+        p_act_eosc%comps(i)%p_comp%pc = Pci
+        p_act_eosc%comps(i)%p_comp%acf = oi
       enddo
     endif
-    do i=1,ncbeos
-      call SelectEOS(nce,comp,cbeos_alternative(i),"SRK","CLASSIC","CLASSIC")
+
+    select type(p_eos => p_act_eosc%cubic_eos_alternative(1)%p_eos)
+    type is (cb_eos)
+      call SelectCubicEOS(nce, p_act_eosc%comps, p_eos, &
+           "CLASSIC", "DEFAULT")
+
+      call SelectMixingRules(nce, p_act_eosc%comps, p_eos, &
+         "VDW", "DEFAULT")
+    class default
+      call stoperror("init_cubic: Should be cubic EOS")
+    end select
+
+    ! Distribute parameters from redefined eos
+    do i=2,size(p_act_eosc%cubic_eos_alternative)
+      p_act_eosc%cubic_eos_alternative(i)%p_eos = &
+           p_act_eosc%cubic_eos_alternative(1)%p_eos
     enddo
 
-    if (EoSLib == THERMOPACK) then
-       isSAFTmodel = (cbeos(1)%eosidx == cpaSRK .OR. &
-            cbeos(1)%eosidx == cpaPR .OR. &
-            cbeos(1)%eosidx == eosPC_SAFT .OR. &
-            cbeos(1)%eosidx == eosPeTS .OR. &
-            cbeos(1)%eosidx == eosBH_pert)
-      if (isSAFTmodel .and. EoSLib == THERMOPACK) then
-        call redefine_critical_parameters(silent_init)
-      endif
+    if (p_act_eosc%EoSLib == THERMOPACK .and. &
+         isSAFTEOS(p_act_eosc%eos(1)%p_eos%eosidx)) then
+      call redefine_critical_parameters(silent)
     endif
-  end subroutine init_thermo
 
+  end subroutine init_fallback_eos
 
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
-  subroutine init_cubic(compstr,eos,mixing,alpha)
-    use parameters, only: initCompList
-    use tpselect,   only: SelectComp
-    use tpvar,      only: comp, nce, ncsym
+  subroutine init_cubic(compstr,eos,mixing,alpha,param_ref)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
+    use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    use eos_containers, only: allocate_eos
+    use cbselect, only: selectCubicEOS, SelectMixingRules
+    use cubic_eos, only: cb_eos
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos     !< Equation of state
     character(len=*), optional, intent(in) :: mixing !< Mixing rule
     character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
+    character(len=*), optional, intent(in) :: param_ref  !< Parameter reference
     ! Locals
-    integer                          :: ncomp
+    integer                          :: ncomp, i, index, ierr
     character(len=len_trim(compstr)) :: compstr_upper
-    character(len=100)               :: mixing_loc, alpha_loc
+    character(len=100)               :: mixing_loc, alpha_loc, param_ref_loc
+    type(eos_container), pointer     :: p_act_eosc
 
+    if (.not. active_eos_container_is_associated()) then
+      ! No eos_container have been allocated
+      index = add_eos()
+    endif
+    p_act_eosc => get_active_eos_container()
     ! Set component list
     compstr_upper=trim(uppercase(compstr))
-    call initCompList(compstr_upper,ncomp)
+    call initCompList(compstr_upper,ncomp,p_act_eosc%complist)
+    !
+    call allocate_eos(ncomp, eos)
+
+    ! Number of phases
+    p_act_eosc%nph = 3
+
+    ! Assign active mode variables
     ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = p_act_eosc%nph
+    complist => p_act_eosc%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    p_act_eosc%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(trim(compstr_upper),nce,comp)
+    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
 
     ! Initialize Thermopack
     alpha_loc = "Classic"
     mixing_loc = "Classic"
+    param_ref_loc = "Default"
     if (present(mixing)) mixing_loc = uppercase(mixing)
     if (present(alpha)) alpha_loc = uppercase(alpha)
-    call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
-         trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
+    if (present(param_ref)) param_ref_loc = uppercase(param_ref)
+
+    select type(p_eos => p_act_eosc%eos(1)%p_eos)
+    type is (cb_eos)
+      call SelectCubicEOS(nc, p_act_eosc%comps, &
+           p_eos, alpha_loc, param_ref_loc)
+
+      call SelectMixingRules(nc, p_act_eosc%comps, &
+           p_eos, mixing_loc, param_ref_loc)
+    class default
+      call stoperror("init_cubic: Should be cubic EOS")
+    end select
+    ! Distribute parameters from redefined eos
+    do i=2,size(p_act_eosc%eos)
+      p_act_eosc%eos(i)%p_eos = p_act_eosc%eos(1)%p_eos
+    enddo
 
   end subroutine init_cubic
 
   ! !----------------------------------------------------------------------------
-  ! !> Initialize corresponding state 
+  ! !> Initialize corresponding state
   ! !----------------------------------------------------------------------------
   ! subroutine init_(compstr,eos,mixing,alpha)
   !   use parameters, only: initCompList
   !   use tpselect,   only: SelectComp
-  !   use tpvar,      only: comp, nce, ncsym
+  !   use thermopack_var,      only: comp, nce, ncsym
   !   use stringmod,  only: uppercase
   !   !$ use omp_lib, only: omp_get_max_threads
   !   character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
@@ -248,12 +356,13 @@ contains
   !----------------------------------------------------------------------
   subroutine redefine_critical_parameters(silent_init)
     use tpcbmix,      only: cbSingleCalcABC
-    use tpvar,        only: comp, cbeos_alternative, nce
+    use thermopack_var, only: nce
     use eosTV,        only: pressure
     use critical,     only: calcCriticalTV
     use saturation,   only: acentricFactorEos
-    use tpconst,      only: tpTmin, Rgas
-    use cbAlpha,      only: getAlphaClassicParam
+    use thermopack_constants,      only: tpTmin, Rgas
+    use cbAlpha,      only: getAcentricAlphaParam
+    use cubic_eos,    only: cb_eos
     logical, intent(in) :: silent_init
     ! Locals
     integer :: i, j, ierr
@@ -263,6 +372,11 @@ contains
     real :: Pc  !< Specified critical pressure [Pa]
     real :: Acf !< Specified acentric factor [-]
     real :: Z(nce)
+    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: p_act_eos
+
+    p_act_eosc => get_active_eos_container()
+    p_act_eos => get_active_alt_eos()
     Tmin = tpTmin
     tpTmin = 2.0
     do i=1,nce
@@ -272,29 +386,40 @@ contains
       Vc = -1.0
       call calcCriticalTV(Tc,Vc,Z,ierr)
       if (ierr /= 0 .and. .not. silent_init) then
-        print *, 'Not able to redefine critical properties for component: ', trim(comp(i)%ident)
+        print *, 'Not able to redefine critical properties for component: ', &
+             trim(p_act_eosc%comps(i)%p_comp%ident)
       else
         Pc = pressure(Tc,Vc,Z)
-        cbeos_alternative(1)%single(i)%Tc = Tc
-        cbeos_alternative(1)%single(i)%Pc = Pc
-        call cbSingleCalcABC(nce,cbeos_alternative(1),i)
-        comp(i)%tc = Tc
-        comp(i)%pc = Pc
-        comp(i)%zc = Pc*Vc/(Tc*Rgas)
-        Acf = acentricFactorEos(i,ierr)
-        comp(i)%acf = Acf
-        cbeos_alternative(1)%single(i)%Acf = Acf
-        call getAlphaClassicParam(i, cbeos_alternative(1), &
-             cbeos_alternative(1)%single(i)%alphaParams)
-        ! Copy to others
-        do j=2,size(cbeos_alternative)
-          cbeos_alternative(j)%single(i)%Tc = cbeos_alternative(1)%single(i)%Tc
-          cbeos_alternative(j)%single(i)%Pc = cbeos_alternative(1)%single(i)%Pc
-          cbeos_alternative(j)%single(i)%Acf = cbeos_alternative(1)%single(i)%Acf
-          cbeos_alternative(j)%single(i)%alphaParams = &
-               cbeos_alternative(1)%single(i)%alphaParams
-          call cbSingleCalcABC(nce, cbeos_alternative(j), i)
-        enddo
+        select type (p_eos => p_act_eos)
+        class is (cb_eos)
+          p_eos%single(i)%Tc = Tc
+          p_eos%single(i)%Pc = Pc
+          call cbSingleCalcABC(nce,p_eos,i)
+          p_act_eosc%comps(i)%p_comp%tc = Tc
+          p_act_eosc%comps(i)%p_comp%pc = Pc
+          p_act_eosc%comps(i)%p_comp%zc = Pc*Vc/(Tc*Rgas)
+          Acf = acentricFactorEos(i,ierr)
+          p_act_eosc%comps(i)%p_comp%acf = Acf
+          p_eos%single(i)%Acf = Acf
+          call getAcentricAlphaParam(p_eos%single(i)%alphaMethod, Acf, &
+               p_eos%single(i)%alphaParams)
+
+          ! Copy to others
+          do j=2,size(p_act_eosc%cubic_eos_alternative)
+            select type (p_eos_j => p_act_eosc%cubic_eos_alternative(j)%p_eos)
+            class is (cb_eos)
+              p_eos_j%single(i)%Tc = p_eos%single(i)%Tc
+              p_eos_j%single(i)%Pc = p_eos%single(i)%Pc
+              p_eos_j%single(i)%Acf = p_eos%single(i)%Acf
+              p_eos_j%single(i)%alphaParams = p_eos%single(i)%alphaParams
+              call cbSingleCalcABC(nce, p_eos_j, i)
+            class default
+              print *,"Fallback eos should be cubic"
+            end select
+          enddo
+        class default
+          print *,"Fallback eos should be cubic"
+        end select
       endif
     enddo
     tpTmin = Tmin
@@ -305,21 +430,22 @@ contains
   !> \author MH, 2013-03-06
   !----------------------------------------------------------------------
   subroutine init_thermopack(eos,mixing,alpha,nphase,&
-       csp_eos,csp_ref_comp,kij_setno,alpha_setno,saft_setno,&
+       csp_eos,csp_ref_comp,kij_ref,alpha_ref,saft_ref,&
        b_exponent)
+    use eosdata, only: isSAFTEOS
     use stringmod, only: str_eq
-    use parameters, only: EoSLib, nph, THERMOPACK, &
-         complist, nc
-    use tpselect, only: SelectEOS, deAllocateEosCubic
-    use tpvar, only: nce, cbeos, comp
-    use tpconst, only: set_constants
+    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_var, only: nce, nc, nph, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
     use csp, only: csp_init
+    use cubic_eos, only: cb_eos
+    use cbselect, only: SelectCubicEOS, SelectMixingRules
     use saft_interface, only: saft_type_eos_init
     use cpa_parameters, only: mixHasSelfAssociatingComp
     use assocschemeutils, only: no_assoc
     use saft_association, only: numAssocSites
     use stringmod, only: uppercase
+    use eos_containers, only: allocate_eos
     !$ use omp_lib
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
@@ -328,62 +454,70 @@ contains
     integer, intent(in) :: nphase !< Number of phases
     character(len=*), optional, intent(in) :: csp_eos !< Corrensponding state equation
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
-    integer, optional, intent(in) :: kij_setno, alpha_setno, saft_setno(nc) !< Data set number
+    character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set number
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
     ! String containing components on TPLib format
     character(len=100) :: mixRule,csp_refEos,csp_refcomp_str
     character(len=len(eos)) :: eosLocal  !< Local copy of string defining equation of state
-    integer :: ncbeos, err, i, volumeShiftId
+    integer :: ncbeos, err, i, volumeShiftId, index
+    character(len=ref_len) :: kij_ref_local, alpha_ref_local, saft_ref_local
+    type(eos_container), pointer :: p_act_eosc
     !
-    ncbeos = 1
-    ! Create one instance of cbeos per thread
-    !$ ncbeos = omp_get_max_threads()
-    if (allocated(cbeos)) then
-      do i=1,size(cbeos)
-        call deAllocateEosCubic(cbeos(i))
-      enddo
-      deallocate(cbeos,STAT=err);
-      if (err /= 0) call stoperror('Not able to deallocate cbeos')
+    p_act_eosc => get_active_eos_container()
+
+    if (present(kij_ref)) then
+      kij_ref_local = trim(kij_ref)
+    else
+      kij_ref_local = "DEFAULT"
     endif
-    allocate(cbeos(ncbeos),STAT=err);
-    if (err /= 0) call stoperror('Not able to allocate cbeos')
+    if (present(alpha_ref)) then
+      alpha_ref_local = trim(alpha_ref)
+    else
+      alpha_ref_local = "DEFAULT"
+    endif
+    if (present(saft_ref)) then
+      saft_ref_local = trim(saft_ref)
+    else
+      saft_ref_local = "DEFAULT"
+    endif
+
+    ! if (.not. associated(p_act_eosc)) then
+    !   ! No eos_container have been allocated
+    !   index = add_eos()
+    !   p_act_eosc => get_active_eos_container()
+    ! endif
+    ! ! Component list.
+    ! call allocate_eos(nce, eos)
 
     ! Set parameters
-    EoSLib = THERMOPACK
-    nph = nphase
-    call set_constants() ! Depends on EoSLib
+    !p_act_eosc%EoSLib = THERMOPACK
+    !p_act_eosc%nph = nphase
     mixRule = trim(mixing)
-    if (trim(uppercase(mixRule)) == 'VDW') then
-      mixRule = 'Classic'
-    endif
     volumeShiftId = NOSHIFT
     eosLocal = eos
     numAssocSites = 0
     if (len(eos) >= 3) then
       if (eos(1:3) == 'CPA') then
         if ( .not. mixHasSelfAssociatingComp(nc,trim(eosLocal),&
-             complist,saft_setno)) then
+             complist,saft_ref)) then
           print *,'No self associating components. Initializing ',&
                eos(5:len(eos)),' instead of ',trim(eos)
           eosLocal = eos(5:len(eos))
           do i=1,nce
-            comp(i)%assoc_scheme = no_assoc
+            p_act_eosc%comps(i)%p_comp%assoc_scheme = no_assoc
           enddo
         endif
       endif
     endif
 
     if (trim(uppercase(eos)) == 'LK') then
-      mixRule = 'Classic'
+      mixRule = 'VDW'
     else if (trim(uppercase(eos)) == 'SRK-PENELOUX') then
       eosLocal = 'SRK'
-      volumeShiftId = InitVolumeShift(nc,comp,'Peneloux','SRK')
-    else if (trim(uppercase(eos)) == 'SRKGB-PENELOUX') then
-      eosLocal = 'SRKGB'
-      volumeShiftId = InitVolumeShift(nc,comp,'Peneloux','SRK')
+      volumeShiftId = InitVolumeShift(nc,p_act_eosc%comps,'Peneloux','SRK')
     else if (trim(uppercase(eos)) == 'PR-PENELOUX') then
       eosLocal = 'PR'
-      volumeShiftId = InitVolumeShift(nc,comp,'Peneloux','PR')
+      volumeShiftId = InitVolumeShift(nc,p_act_eosc%comps,'Peneloux','PR')
     else if (len(eos) >= 3) then
       if (uppercase(eos(1:3)) == 'CSP') then
         eosLocal = eos(5:len(trim(eos)))
@@ -408,25 +542,26 @@ contains
       end if
     end if
 
-    do i=1,ncbeos
-      call SelectEOS(nce,comp,cbeos(i),trim(eosLocal),trim(mixRule),&
-           trim(alpha),kij_setno,alpha_setno,b_exponent)
-      cbeos(i)%volumeShiftId = volumeShiftId
-      cbeos(i)%isElectrolyteEoS = .false.
-    enddo
+    p_act_eosc%eos(1)%p_eos%volumeShiftId = volumeShiftId
+    p_act_eosc%eos(1)%p_eos%isElectrolyteEoS = .false.
+    select type(p_eos => p_act_eosc%eos(1)%p_eos)
+    type is (cb_eos)
+      call SelectCubicEOS(nce,p_act_eosc%comps,p_eos,trim(alpha),&
+           alpha_ref_local)
+      call SelectMixingRules(nce,p_act_eosc%comps,p_eos,mixRule,&
+           kij_ref_local,b_exponent)
+    end select
 
     ! SAFT initialization must be done after cbeos initialization.
-    if (len(eos) >= 3) then
-       if ( str_eq(eosLocal,'PC-SAFT') .or. &
-            str_eq(eosLocal,'PETS') .or. &
-            eosLocal(1:3) == 'CPA' .or. &
-            str_eq(eosLocal,'SAFT-VR-MIE') .or. &
-            str_eq(eosLocal,'LJS')) then
-        do i=1,ncbeos
-          call saft_type_eos_init(nce,comp,cbeos(i),saft_setno,silent_init)
-        end do
-      end if
+    if (isSAFTEOS(p_act_eosc%eos(1)%p_eos%eosidx)) then
+      call saft_type_eos_init(nce,p_act_eosc%comps,&
+           p_act_eosc%eos(1)%p_eos,saft_ref_local,silent_init)
     end if
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      p_act_eosc%eos(i) = p_act_eosc%eos(1)
+    enddo
   end subroutine init_thermopack
 
   !----------------------------------------------------------------------
@@ -435,8 +570,8 @@ contains
   !> \author MH, 2013-04-10, EA 2014-02
   !----------------------------------------------------------------------
   subroutine init_trend(eos,ncomp,nphase,doFallbackInit)
-    use parameters, only: complist,TREND,nph,EoSLib,verbose
-    use tpconst, only: set_constants, Rgas
+    use thermopack_constants, only: Rgas,TREND,verbose
+    use thermopack_var, only: complist,nph
     use stringmod, only: chartoascii
     !use compname_translation, only: translate_compname
 #ifdef __INTEL_COMPILER
@@ -515,34 +650,32 @@ contains
   !>
   !> \author MH, 2013-03-06
   !----------------------------------------------------------------------
-  subroutine cleanup_eos()
-    use parameters, only: complist
-    use tpselect, only: deAllocateEosCubic
-    use tpvar, only: comp, cbeos, cbeos_alternative
-    use multiparameter_base, only: cleanup_meos
-    integer :: stat, i
-    !
-    stat = 0
-    if (allocated(complist)) deallocate(complist,STAT=stat)
-    if (stat /= 0) write(*,*) 'Error deallocating complist!'
-    if (allocated(comp)) deallocate(comp,STAT=stat)
-    if (stat /= 0) write(*,*) 'Error deallocating comp!'
-    if (allocated(cbeos)) then
-      do i=1,size(cbeos)
-        call deAllocateEosCubic(cbeos(i))
-      enddo
-      deallocate(cbeos,STAT=stat);
-      if (stat /= 0) call stoperror('Not able to deallocate cbeos')
-    endif
-    if (allocated(cbeos_alternative)) then
-      do i=1,size(cbeos_alternative)
-        call deAllocateEosCubic(cbeos_alternative(i))
-      enddo
-      deallocate(cbeos_alternative,STAT=stat);
-      if (stat /= 0) call stoperror('Not able to deallocate cbeos')
-    endif
+  ! subroutine cleanup_eos()
+  !   use thermopack_var, only: complist
+  !   use multiparameter_base, only: cleanup_meos
+  !   integer :: stat, i
+  !   !
+  !   stat = 0
+  !   if (allocated(complist)) deallocate(complist,STAT=stat)
+  !   if (stat /= 0) write(*,*) 'Error deallocating complist!'
+  !   if (allocated(comp)) deallocate(comp,STAT=stat)
+  !   if (stat /= 0) write(*,*) 'Error deallocating comp!'
+  !   if (allocated(cbeos)) then
+  !     do i=1,size(cbeos)
+  !       call deAllocateEosCubic(cbeos(i))
+  !     enddo
+  !     deallocate(cbeos,STAT=stat);
+  !     if (stat /= 0) call stoperror('Not able to deallocate cbeos')
+  !   endif
+  !   if (allocated(cbeos_alternative)) then
+  !     do i=1,size(cbeos_alternative)
+  !       call deAllocateEosCubic(cbeos_alternative(i))
+  !     enddo
+  !     deallocate(cbeos_alternative,STAT=stat);
+  !     if (stat /= 0) call stoperror('Not able to deallocate cbeos')
+  !   endif
 
-    call cleanup_meos() ! Clean up multiparameter EoS
-  end subroutine cleanup_eos
+  !   call cleanup_meos() ! Clean up multiparameter EoS
+  ! end subroutine cleanup_eos
 
 end module eoslibinit

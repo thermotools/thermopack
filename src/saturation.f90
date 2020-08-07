@@ -1,6 +1,7 @@
 module saturation
-  use eos, only: thermo, need_alternative_eos
-  use parameters, only: nc, clen, LIQPH, VAPPH, verbose, eosLib
+  use eos, only: thermo
+  use thermopack_constants, only: clen, LIQPH, VAPPH, verbose
+  use thermopack_var, only: nc, eos_container, get_active_eos
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -41,11 +42,9 @@ contains
     real :: Tbub !< K
     !
     real :: Pcpy
-    logical :: needalt
     Pcpy = P
     ! Initial temperature
-    needalt = need_alternative_eos()
-    call PureSat(Tbub,Pcpy,X,.true.,alternative_eos=needalt,ierr=ierr)
+    call PureSat(Tbub,Pcpy,X,.true.,ierr=ierr)
 
     ! Find real bubble point temperature
     Tbub = bubT(Tbub,Pcpy,X,Y,ierr)
@@ -65,11 +64,9 @@ contains
     real :: Pbub !< Pa
     !
     real :: Tcpy
-    logical :: needalt
     Tcpy = T
     ! Initial pressure
-    needalt = need_alternative_eos()
-    call PureSat(Tcpy,Pbub,X,.false.,alternative_eos=needalt,ierr=ierr)
+    call PureSat(Tcpy,Pbub,X,.false.,ierr=ierr)
 
     ! Find real bubble point temperature
     Pbub = bubP(Tcpy,Pbub,X,Y,ierr)
@@ -96,11 +93,9 @@ contains
     integer :: ierr_local, i
     integer, parameter :: n = 2
     real, parameter :: safe_rel_press = 0.02
-    logical :: needalt
     Pcpy = P
     ! Initial temperature
-    needalt = need_alternative_eos()
-    call PureSat(Tdew,Pcpy,Y,.true.,alternative_eos=needalt,ierr=ierr_local)
+    call PureSat(Tdew,Pcpy,Y,.true.,ierr=ierr_local)
     ! Find real bubble point temperature
     Tdew = dewT(Tdew,Pcpy,X,Y,ierr_local)
     if (ierr_local /= 0 .and. isSingleComp(Y)) then
@@ -109,7 +104,7 @@ contains
       if ((pci-p)/pci < safe_rel_press) then
         ! Reduce p and try controlled steps tovards critical point
         p_red = pci*(1.0-safe_rel_press)
-        call PureSat(Tdew,P_red,Y,.true.,alternative_eos=needalt,ierr=ierr_local)
+        call PureSat(Tdew,P_red,Y,.true.,ierr=ierr_local)
         Tdew = dewT(Tdew,P_red,X,Y,ierr_local)
         dP = pci*safe_rel_press/n
         do i=1,n
@@ -152,11 +147,9 @@ contains
     real :: Pdew !< Pa
     !
     real :: Tcpy
-    logical :: needalt
     Tcpy = T
     ! Initial pressure
-    needalt = need_alternative_eos()
-    call PureSat(Tcpy,Pdew,Y,.false.,alternative_eos=needalt,ierr=ierr)
+    call PureSat(Tcpy,Pdew,Y,.false.,ierr=ierr)
 
     ! Find real bubble point temperature
     Pdew = dewP(Tcpy,Pdew,X,Y,ierr)
@@ -260,7 +253,7 @@ contains
   !> \author MH, 2012, EA, 2014
   !-----------------------------------------------------------------------------
   subroutine sat(Z,Y,X,t,p,specification,doBubIn,ierr_out)
-    use tpconst, only: get_eoslib_templimits, tpPmin
+    use thermopack_constants, only: get_templimits, tpPmin
     use eos, only: getCriticalParam, specificVolume
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
@@ -304,7 +297,7 @@ contains
         T0 = T
         XX(1) = log(min(t,tci))
         xmax = log(tci)
-        call get_eoslib_templimits(eoslib,Tmin,Tmax)
+        call get_templimits(Tmin,Tmax)
         xmin = log(Tmin)
       else
         if (t > tci) then
@@ -483,7 +476,7 @@ contains
   !> \author MH
   !-----------------------------------------------------------------------------
   subroutine wilsonK_fun(Z,K,t,p,f,dfdt,dfdp,doBub)
-    use eos, only: wilsonK
+    use thermo_utils, only: wilsonK
     implicit none
     real, dimension(nc), intent(out) :: K
     real, dimension(nc), intent(in) :: Z
@@ -642,8 +635,8 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   function sat_newton(Z,K,t,p,beta,s,ln_s,ierr) result(iter)
-    use tpconst, only: tpPmax, tpPmin
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: tpPmax, tpPmin
+    use thermopack_constants, only: get_templimits
     use numconstants, only: expMax, expMin
     implicit none
     real, dimension(nc), intent(in) :: Z    ! total composition
@@ -677,7 +670,7 @@ contains
 
     Xmin = expMin
     Xmax = expMax
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     Xmin(nc+1) = log(Tmin) !Tmin
     Xmax(nc+1) = log(Tmax) !Tmax
     Xmin(nc+2) = log(tpPmin) !Pmin
@@ -760,7 +753,7 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   function sat_var_at_limit(Xvar,eps) result(atLimit)
-    use tpconst, only: tpPmax,tpPmin,get_eoslib_templimits
+    use thermopack_constants, only: tpPmax,tpPmin,get_templimits
     use numconstants, only: expMax, expMin
     implicit none
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
@@ -770,7 +763,7 @@ contains
     integer :: i
     real :: Tmin,Tmax,eps_local
     real :: lnMin(nc+2), lnMax(nc+2)
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     atLimit = .false.
     lnMin(1:nc) = expMin
     lnMax(1:nc) = expMax
@@ -868,8 +861,7 @@ contains
   !! \author MH
   !-----------------------------------------------------------------------------
   subroutine sat_successive(Z,K,t,p,specification,doBub,return_iter,ierr)
-    use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits
-    use parameters, only: EosLib
+    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, dimension(nc), intent(inout) :: K
@@ -896,7 +888,7 @@ contains
     endif
 
     if (specification == specP) then
-      call get_eoslib_templimits(EosLib, Tmin, Tmax)
+      call get_templimits(Tmin, Tmax)
     endif
 
     f = 1.0

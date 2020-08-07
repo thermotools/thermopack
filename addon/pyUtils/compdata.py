@@ -5,6 +5,7 @@ from sys import exit
 import os
 import math
 import json
+from datetime import datetime
 
 I = "  "
 N_TAGS_PER_LINE = 5
@@ -104,8 +105,8 @@ class component(object):
         code_lines - Code lines
         """
         code_lines = []
-        code_lines.append(I+"type (cpdatadb), parameter :: CPTAG" + " = &")
-        code_lines.append(3*I+"cpdatadb(uid = \"" + self.comp["ident"] + "\", &")
+        code_lines.append(I+"type (cpdata), parameter :: CPTAG" + " = &")
+        code_lines.append(3*I+"cpdata(cid = \"" + self.comp["ident"] + "\", &")
         code_lines.append(3*I+"ref = \"" + self.comp[tag]["ref"] + "\", &")
         code_lines.append(3*I+"bib_ref = \"" + self.comp[tag]["bib_reference"] + "\", &")
         code_lines.append(3*I + "cptype = " + str(self.comp[tag]["correlation"]) + ", &")
@@ -129,9 +130,9 @@ class component(object):
         """
         d = self.comp[eos][TWUtag]
         code_lines = []
-        code_lines.append(I+"type (alphaTWUdatadb), parameter :: TWUTAG = &")
-        code_lines.append(3*I+"alphaTWUdatadb(eosid=\"" + eos + "\", &")
-        code_lines.append(3*I+"uid=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(I+"type (alphadatadb), parameter :: TWUTAG = &")
+        code_lines.append(3*I+"alphadatadb(eosid=\"" + eos + "\", &")
+        code_lines.append(3*I+"cid=\"" + self.comp["ident"] + "\", &")
         code_lines.append(3*I+"ref=\"" + d["ref"] + "\", &")
         code_lines.append(3*I + 'coeff=(/{:.8e}, {:.8e}, {:.8e}/) &'.format(d["correlation"][0],d["correlation"][1],d["correlation"][2]))
         code_lines.append(3*I + ")")
@@ -148,7 +149,7 @@ class component(object):
         code_lines = []
         code_lines.append(I + "type (cidatadb), parameter :: VSTAG = &")
         code_lines.append(3*I + "cidatadb(eosid=\"" + eos + "\", &")
-        code_lines.append(3*I + "uid=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I + "cid=\"" + self.comp["ident"] + "\", &")
         code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
         code_lines.append(3*I + 'ci={:.8e} &'.format(d["ci"]))
         code_lines.append(3*I + ")")
@@ -226,12 +227,23 @@ class comp_list(object):
         Arguments:
         filename - path to folder
         """
+        code_lines = []
+        code_lines.append("!> Automatically generated to file compdatadb.f90")
+        code_lines.append("!! using utility python code pyUtils")
+        now = datetime.today().isoformat()
+        code_lines.append("!! Time stamp: " + now)
+        code_lines.append("")
+        code_lines.append("module compdatadb")
+        code_lines.append(I+"use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb")
+        code_lines.append(I+"implicit none")
+        code_lines.append(I+"public")
+        code_lines.append("")
+
         self.nComp = 1
         self.nCp = 1
         self.nTWU = 1
         self.nMC = 1
         self.nVS = 1
-        code_lines = []
         for comp in self.comp_list:
             comp_code_lines = comp.get_fortran_code()
             for il, line in enumerate(comp_code_lines):
@@ -269,6 +281,9 @@ class comp_list(object):
         for line in cl:
             code_lines.append(line)
 
+        code_lines.append("")
+        code_lines.append("end module compdatadb")
+
         with open(filename, "w") as f:
             for line in code_lines:
                 f.write(line)
@@ -282,7 +297,7 @@ class comp_list(object):
         code_lines = [""]
         code_lines.append(I+"integer, parameter :: maxncdb =" + str(self.nComp))
         code_lines.append(I+"type (gendatadb), dimension(maxncdb), parameter :: compdb = (/&")
-        code_lines = self.get_array_fortran_code(code_lines,self.nCp,self.get_comp_tag)
+        code_lines = self.get_array_fortran_code(code_lines,self.nComp,self.get_comp_tag)
         return code_lines
 
     def get_array_fortran_code(self,code_lines,nMax,get_tag):
@@ -313,7 +328,7 @@ class comp_list(object):
         """
         code_lines = [""]
         code_lines.append(I+"integer, parameter :: maxcpdb =" + str(self.nCp))
-        code_lines.append(I+"type (cpdatadb), dimension(maxcpdb), parameter :: cpdb = (/&")
+        code_lines.append(I+"type (cpdata), dimension(maxcpdb), parameter :: cpdb = (/&")
         code_lines = self.get_array_fortran_code(code_lines,self.nCp,self.get_cp_tag)
         return code_lines
 
@@ -335,7 +350,7 @@ class comp_list(object):
         """
         code_lines = [""]
         code_lines.append(I+"integer, parameter :: maxTWUdb =" + str(self.nTWU))
-        code_lines.append(I+"type (alphaTWUdatadb), dimension(maxTWUdb), parameter :: alphaTWUdb = (/&")
+        code_lines.append(I+"type (alphadatadb), dimension(maxTWUdb), parameter :: alphaTWUdb = (/&")
         code_lines = self.get_array_fortran_code(code_lines,self.nTWU,self.get_TWU_tag)
         return code_lines
 
@@ -346,7 +361,7 @@ class comp_list(object):
         """
         code_lines = [""]
         code_lines.append(I+"integer, parameter :: maxMCdb =" + str(self.nMC))
-        code_lines.append(I+"type (alphaMCdatadb), dimension(maxMCdb), parameter :: alphaMCdb = (/&")
+        code_lines.append(I+"type (alphadatadb), dimension(maxMCdb), parameter :: alphaMCdb = (/&")
         code_lines = self.get_array_fortran_code(code_lines,self.nMC,self.get_MC_tag)
         return code_lines
 

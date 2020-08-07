@@ -12,7 +12,7 @@ module saftvrmie_dispersion
   !      add_second_saftvrmieaij_to_first, calcFunAlpha, quantum_correction_hs
   use saftvrmie_utils, only: calc_a_zeta_product, convert_zeta_x_to_TVn, &
        calc_a0_a_product, calc_a0_plus_a1, convert_zeta_zeta_to_TVn
-  use tpconst, only: kB_const,N_AVOGADRO
+  use thermopack_constants, only: kB_const,N_AVOGADRO
   use numconstants, only: pi
   use saftvrmie_options
   implicit none

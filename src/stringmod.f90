@@ -1,6 +1,11 @@
 module stringmod
 
+  !> String length
+  integer, parameter :: clen=2048
+
+  public :: clen
   public  :: chartoascii, str_upcase, str_eq, count_substr
+  public  :: contains_space, space_delimited_to_comma_delimited
   private :: value_dr,value_sr,value_di,value_si
   private :: write_dr,write_sr,write_di,write_si
   private :: writeq_dr,writeq_sr,writeq_di,writeq_si
@@ -863,5 +868,79 @@ contains
     end do
   end function count_substr
 
+  !----------------------------------------------------------------------
+  logical function contains_space(in_string)
+    character(len=*), intent(in) :: in_string !< No leading or trailing spaces.
+    ! Locals
+    integer :: i
+
+    contains_space = .false.
+    do i = 1,len_trim(in_string)
+      if (in_string(i:i) == ' ') then
+        contains_space = .true.
+        exit
+      end if
+    end do
+
+  end function contains_space
+
+  !----------------------------------------------------------------------
+  function space_delimited_to_comma_delimited(in_string) result(out_string)
+    character(len=*), intent(in) :: in_string !< Space-separated component string
+    character(len=clen) :: out_string !< Comma-separated
+    ! Locals
+    integer :: i
+
+    out_string = ''
+    i = 1
+    do while (i < len_trim(in_string)) ! (length of in_string after removing trailing space)
+      if (in_string(i:i) == ' ') then
+        out_string(i:i) = ','
+        do while (in_string(i:i) == ' ' .and. i < len(in_string))
+          i = i+1
+        end do
+      else
+        out_string(i:i) = in_string(i:i)
+        i = i+1
+      end if
+    end do
+
+    out_string = trim(out_string) ! Remove trailing space.
+  end function space_delimited_to_comma_delimited
+
+  !> Look of for sub-string in string with entries separated by "/"
+  !! Ex.
+  !!  string = "HV/HV0/HV1/HV2"
+  !!  sub_string = "HV"
+  !----------------------------------------------------------------------
+  function string_match(sub_string,string) result(match)
+    character(len=*), intent(in) :: sub_string !< String possibly in string
+    character(len=*), intent(in) :: string !< String where entries are separated by "/"
+    logical :: match
+    ! Locals
+    integer :: istat
+    character(len=len_trim(sub_string)) :: sub_string_up !< String possibly in string
+    character(len=:), allocatable :: string_up, before
+    match = .false.
+
+    if (len_trim(string) > 0) then
+      sub_string_up = trim(sub_string)
+      call str_upcase(sub_string_up)
+      allocate(character(len=len_trim(string)) :: string_up, before, stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate string_up")
+      string_up = trim(string)
+      call str_upcase(string_up)
+      do
+        if(len_trim(string_up) == 0) exit
+        call split(string_up,"/",before)
+        if (index(trim(before), trim(sub_string_up)) > 0) then
+          match = .true.
+          exit
+        endif
+      enddo
+      deallocate(string_up,before, stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate string_up")
+    endif
+  end function string_match
 
 end module stringmod

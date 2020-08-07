@@ -23,9 +23,9 @@ module saftvrmie_hardsphere
        mie_c_factor, saftvrmie_var, get_DFeynHibbsPower,&
        saftvrmie_zeta, saftvrmie_dhs, &
        saftvrmie_var_container, saftvrmie_zeta_hs
-  use tpconst, only: h_const,kB_const,N_AVOGADRO
+  use thermopack_constants, only: h_const,kB_const,N_AVOGADRO
   use numconstants, only: pi
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
   use quadratures
   use saftvrmie_options
   implicit none
@@ -846,7 +846,7 @@ Contains
     !---------------------------------------------------------------------
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, limit_dx, &
          premReturn, setXv
-    use tpvar, only: comp
+    use thermopack_var, only: get_active_eos_container, eos_container
     integer, intent(in) :: nc                        !< Number of components
     real, intent(in) :: T                            !< Temperature [K]
     type(saftvrmie_var_container), intent(in) :: s_vc
@@ -860,6 +860,8 @@ Contains
     real, dimension(1) :: sigma_scaled, xmin, xmax
     integer :: i, j
     real :: U_divk_r, U_divk_Tr, U_divk_rr
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
 
     if (quantum_correction_hs==0) then ! With no quantum corrections
        sigma_eff=saftvrmie_param%sigma_ij
@@ -903,7 +905,7 @@ Contains
              if (solver%exitflag /= 0 .and. verbose) then
                 print *,"Not able to solve for effective sigma"
                 print *,"T = ",T
-                print *,"comp = ",trim(comp(i)%ident)
+                print *,"comp = ",trim(p_act_eosc%comps(i)%p_comp%ident)
                 print *,"lambda_r = ",saftvrmie_param%lambda_r_ij(i,j)
                 print *,"lambda_a = ",saftvrmie_param%lambda_a_ij(i,j)
                 print *,"sigma    = ",saftvrmie_param%sigma_ij(i,j)
@@ -2778,7 +2780,7 @@ end module saftvrmie_hardsphere
 
 !subroutine test_hardsphere_helmholtzenergy
 !  !use saftvrmie_hardsphere
-!  use parameters, only: nc
+!  use thermopack_var, only: nc
 !  use saftvrmie_containers, only: saftvrmie_dhs, &
 !       allocate_saftvrmie_dhs, cleanup_saftvrmie_dhs
 !  implicit none
@@ -2840,9 +2842,10 @@ end module saftvrmie_hardsphere
 !end subroutine test_hardsphere_helmholtzenergy
 
 subroutine test_effective_eps_divk()
-  use parameters
+  use thermopack_constants
   use saftvrmie_hardsphere
   use saftvrmie_containers
+  use thermopack_var
   implicit none
   integer :: i
   real :: T, eps_divk_eff(nc,nc),eps_divk_eff_T(nc,nc),eps_divk_eff_TT(nc,nc)

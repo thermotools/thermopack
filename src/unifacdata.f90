@@ -1,14 +1,15 @@
 module unifacdata
+  use thermopack_constants, only: ref_len, uid_len
   implicit none
   save
 
   type :: unifacprm
     integer :: subGrp
     integer :: mainGrp
-    character (len=20) :: formula
+    character (len=uid_len) :: formula
     real :: Rk
     real :: Qk
-    character (len=20) :: dataSource
+    character(len=ref_len) :: dataSource
   end type unifacprm
 
   integer, parameter :: nSubGroups = 117
@@ -270,7 +271,7 @@ module unifacdata
     real :: aij !< [K]
     real :: bij !< [-]
     real :: cij !< [1/K]
-    character (len=20) :: dataSource
+    character (len=ref_len) :: dataSource
   end type unifacUij
 
   integer, parameter :: nUnifacUij = 1603

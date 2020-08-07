@@ -7,8 +7,8 @@
 !> which has the same (3 or 5) pure-component parameters as PC-SAFT
 !> but is built upon a simpler and computationally faster mixing rule.
 module pc_saft_nonassoc
-  use tpvar, only: nce
-  use tpconst, only: N_AVOGADRO
+  use thermopack_var, only: nce, base_eos_param
+  use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: PI
   implicit none
   save
@@ -19,6 +19,17 @@ module pc_saft_nonassoc
   real, allocatable :: eps_depth_divk(:,:)  !< [K]
   real, allocatable :: sigma_cube(:,:)      !< [m^3]
 
+  type, extends(base_eos_param) :: PCSAFT_eos
+    ! All dimensions will be allocated to nce.
+    real, allocatable :: m(:)                 !< [-]
+    real, allocatable :: sigma(:,:)           !< [m]
+    real, allocatable :: eps_depth_divk(:,:)  !< [K]
+    real, allocatable :: sigma_cube(:,:)      !< [m^3]
+  contains
+    procedure, public :: allocate_and_init => pcsaft_allocate_and_init
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_pcsaft
+  end type PCSAFT_eos
 
   ! Universal model constants
   real, parameter, dimension(0:2,0:6) :: a_mat = reshape( (/ &
@@ -1430,5 +1441,42 @@ contains
     if (allocated(sigma_cube)) deallocate(sigma_cube)
     if (allocated(eps_depth_divk)) deallocate(eps_depth_divk)
   end subroutine cleanup_pc_saft_nonassoc
+
+  subroutine pcsaft_allocate_and_init(eos,nc,eos_label)
+    ! Passed object:
+    class(pcsaft_eos), intent(inout) :: eos
+    ! Input:
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+    if (allocated(eos%m)) deallocate(eos%m)
+    if (allocated(eos%sigma)) deallocate(eos%sigma)
+    if (allocated(eos%sigma_cube)) deallocate(eos%sigma_cube)
+    if (allocated(eos%eps_depth_divk)) deallocate(eos%eps_depth_divk)
+    allocate(eos%m(nc))
+    allocate(eos%sigma(nc,nc))
+    allocate(eos%sigma_cube(nc,nc))
+    allocate(eos%eps_depth_divk(nc,nc))
+  end subroutine pcsaft_allocate_and_init
+
+  subroutine assign_pcsaft(This, other)
+    class(PCSAFT_eos), intent(out) :: this
+    class(*), intent(in)           :: other
+    ! Locals
+    integer :: nc
+    select type (other)
+    class is (PCSAFT_eos)
+      if (allocated(other%m)) then
+        nc = size(other%m)
+        call this%allocate_and_init(nc,other%eosid)
+        this%m = other%m
+        if (allocated(other%sigma)) this%sigma = other%sigma
+        if (allocated(other%eps_depth_divk)) this%eps_depth_divk = other%eps_depth_divk
+        if (allocated(other%sigma_cube)) this%sigma_cube = other%sigma_cube
+      endif
+    class default
+      print *,"assign_pcsaft: Should not be here"
+    end select
+  end subroutine assign_pcsaft
 
 end module pc_saft_nonassoc

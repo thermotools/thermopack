@@ -3,13 +3,18 @@
 !> \author EA, 2014-05
 
 module thermo_utils
-  use parameters, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
-                        nc, WATER
+  use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
+       WATER, TREND
+  use thermopack_var, only: nc, eos_container, get_active_eos, base_eos_param, &
+       get_active_eos_container, get_active_alt_eos
 
   implicit none
-  public :: guessPhase, isWaterComponent, calcLnPhiOffset, waterComponentFraction
+  public :: guessPhase, isWaterComponent, waterComponentFraction
   public :: guessPhaseTV, get_n_solids
   public :: isSingleComp, maxComp, isTwoComp
+  public :: get_b_linear_mix
+  public :: phase_is_fake
+  public :: wilsonK, wilsonKdiff, wilsonKi, calcLnPhiOffset
 
   private
 
@@ -22,12 +27,9 @@ module thermo_utils
   !> Based on original code by MH, 2012-11-22
   !----------------------------------------------------------------------
   function guessPhase(T,P,z,T_comp,p_comp,vb_ratio)
-    use eos, only: thermo, pseudo_safe, zfac, need_alternative_eos,&
-                  specificVolume
-    use parameters, only: liq_vap_discr_method, PSEUDO_CRIT_ZFAC,&
+    use eos, only: thermo, pseudo_safe, zfac, specificVolume
+    use thermopack_constants, only: Rgas, PSEUDO_CRIT_ZFAC,&
                           PSEUDO_CRIT_MOLAR_VOLUME, VOLUME_COVOLUME_RATIO
-    use tpvar, only: cbeos, cbeos_alternative
-    use tpconst, only: Rgas
     implicit none
     ! Input:
     real, intent(in) :: T     !< Temperature (K)
@@ -40,8 +42,10 @@ module thermo_utils
     integer          :: guessPhase !< Best guess for phase (LIQPH or VAPPH)
     ! Internal:
     real             :: Tpc, Ppc, Zpc, vpc, Zf, v, lnfug(nc), vbr, b
-    integer          :: ophase, i
+    integer          :: ophase
+    type(eos_container), pointer :: p_act_eosc
 
+    p_act_eosc => get_active_eos_container()
     call thermo(T,P,z,MINGIBBSPH,lnfug,ophase=ophase)
     if (ophase == LIQPH .or. ophase == VAPPH) then
       ! If thermo() has a definite answer, just trust that.
@@ -50,7 +54,7 @@ module thermo_utils
       ! thermo() did not identify the phase.
       ! Identify phase based on method chosen in liq_vap_discr_method
 
-      if (liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
+      if (p_act_eosc%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
         if (present(T_comp) .and. present(p_comp)) then
           ! Use overridden T,p point
           call zfac(T_comp,p_comp,z,VAPPH,Zpc)
@@ -62,7 +66,7 @@ module thermo_utils
       endif
 
       ! Select based on chosen method
-      select case(liq_vap_discr_method)
+      select case(p_act_eosc%liq_vap_discr_method)
 
         case (PSEUDO_CRIT_ZFAC)
           call zfac(T,P,z,VAPPH,Zf)
@@ -88,16 +92,7 @@ module thermo_utils
             vbr = 1.75
           endif
           ! Get co-volume
-          b = 0.0
-          if (need_alternative_eos()) then
-            do i=1,nc
-              b = b + z(i)*cbeos_alternative(1)%single(i)%b
-            enddo
-          else
-            do i=1,nc
-              b = b + z(i)*cbeos(1)%single(i)%b
-            enddo
-          endif
+          b = get_b_linear_mix(z)
           if (v/b < vbr) then
             guessPhase = LIQPH
           else
@@ -114,12 +109,10 @@ module thermo_utils
   !> Based on guessPhase code
   !----------------------------------------------------------------------
   function guessPhaseTV(T,v,z,T_comp,v_comp,vb_ratio)
-    use eos, only: pseudo_safe, zfac, need_alternative_eos
+    use eos, only: pseudo_safe, zfac
     use eosTV, only: pressure
-    use parameters, only: liq_vap_discr_method, PSEUDO_CRIT_ZFAC,&
+    use thermopack_constants, only: Rgas, PSEUDO_CRIT_ZFAC,&
          PSEUDO_CRIT_MOLAR_VOLUME, VOLUME_COVOLUME_RATIO
-    use tpvar, only: cbeos, cbeos_alternative
-    use tpconst, only: Rgas
     implicit none
     ! Input:
     real, intent(in) :: T     !< Temperature (K)
@@ -132,10 +125,12 @@ module thermo_utils
     integer          :: guessPhaseTV !< Best guess for phase (LIQPH or VAPPH)
     ! Internal:
     real             :: Tpc, Ppc, Zpc, vpc, Zf, p, vbr, b
-    integer          :: i
+    type(eos_container), pointer :: p_act_eosc
+
+    p_act_eosc => get_active_eos_container()
 
     ! Identify phase based on method chosen in liq_vap_discr_method
-    if (liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
+    if (p_act_eosc%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
       if (present(T_comp) .and. present(v_comp)) then
         ! Use overridden T,v point
         p = pressure(T_comp,v_comp,z)
@@ -148,7 +143,7 @@ module thermo_utils
     endif
 
     ! Select based on chosen method
-    select case(liq_vap_discr_method)
+    select case(p_act_eosc%liq_vap_discr_method)
     case (PSEUDO_CRIT_ZFAC)
       p = pressure(T,v,z)
       Zf = v*p/(Rgas*T)
@@ -172,16 +167,8 @@ module thermo_utils
         vbr = 1.75
       endif
       ! Get co-volume
-      b = 0.0
-      if (need_alternative_eos()) then
-        do i=1,nc
-          b = b + z(i)*cbeos_alternative(1)%single(i)%b
-        enddo
-      else
-        do i=1,nc
-          b = b + z(i)*cbeos(1)%single(i)%b
-        enddo
-      endif
+      b = get_b_linear_mix(z)
+
       if (v/b < vbr) then
         guessPhaseTV = LIQPH
       else
@@ -192,7 +179,7 @@ module thermo_utils
 
   ! Return true if component is water or water soluble
   function isWaterComponent(i) result(isWComp)
-    use parameters, only: complist
+    use thermopack_var, only: complist
     implicit none
     integer, intent(in) :: i
     logical :: isWComp
@@ -246,13 +233,96 @@ module thermo_utils
     enddo
   end subroutine calcLnPhiOffset
 
+  !----------------------------------------------------------------------
+  !> Calculate Wilson K-values
+  !>
+  !> \author MH, 2013-03-06
+  !----------------------------------------------------------------------
+  subroutine wilsonK(t,p,K,dKdt,dKdp,liqType)
+    use eos, only: getCriticalParam
+    implicit none
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: p !< Pa - Pressure
+    real, dimension(nc), intent(out) :: K !< K-values
+    real, optional, dimension(nc), intent(out) :: dKdt !< 1/K - Differential of K-values wrpt. temperature
+    real, optional, dimension(nc), intent(out) :: dKdp !< 1/Pa - Differential of K-values wrpt. pressure
+    integer, optional, intent(in) :: liqType !< Type of liquid (WATER, NONWATER)
+    ! Locals
+    integer :: i
+    real :: tci, pci, oi
+    real, dimension(nc) :: lnPhi_offset !< -
+    if (present(liqType)) then
+      call calcLnPhiOffset(liqType, lnPhi_offset)
+    else
+      lnPhi_offset = 0.0
+    endif
+    do i=1,nc
+      call getCriticalParam(i,tci,pci,oi)
+      K(i) = (pci/p)*exp(5.373*(1+oi)*(1-tci/t) + lnPhi_offset(i))
+      if (present(dKdp)) then
+        dKdp(i) = -K(i)/p
+      endif
+      if (present(dKdt)) then
+        if (K(i) > 0.0) then
+          dKdt(i) = 5.373*(1+oi)*tci/t**2*K(i)
+        else
+          dKdt(i) = 0.0
+        endif
+      endif
+    enddo
+  end subroutine wilsonK
+
+  !----------------------------------------------------------------------
+  !> Calculate Wilson K-value for component i
+  !>
+  !> \author MH, 2013-03-06
+  !----------------------------------------------------------------------
+  subroutine wilsonKi(i,t,p,lnPhi_offset,K)
+    use eos, only: getCriticalParam
+    implicit none
+    integer, intent(in) :: i !< Component
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: p !< Pa - Pressure
+    real, intent(in) :: lnPhi_offset
+    real, intent(out) :: K !< K-value
+    ! Locals
+    real :: tci, pci, oi
+    call getCriticalParam(i,tci,pci,oi)
+    K = (pci/p)*exp(5.373*(1+oi)*(1-tci/t) + lnPhi_offset)
+  end subroutine wilsonKi
+
+  !----------------------------------------------------------------------
+  !> Calculate Wilson K-values with pressure and temperature differentials
+  !>
+  !> \author MH, 2013-03-06
+  !----------------------------------------------------------------------
+  subroutine wilsonKdiff(t,p,K,dKdp,dKdt)
+    use eos, only: getCriticalParam
+    implicit none
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: p !< Pa - Pressure
+    real, dimension(nc), intent(out) :: K !< K-values
+    real, dimension(nc), intent(out) :: dKdt !< 1/K - Differential of K-values wrpt. temperature
+    real, dimension(nc), intent(out) :: dKdp !< 1/Pa - Differential of K-values wrpt. pressure
+    ! Locals
+    integer :: i
+    real :: tci, pci, oi
+    do i=1,nc
+      call getCriticalParam(i,tci,pci,oi)
+      K(i) = (pci/p)*exp(5.373*(1+oi)*(1-tci/t))
+      dKdp(i) = -K(i)/p
+      dKdt(i) = 5.373*(1+oi)*tci/t**2*K(i)
+    enddo
+  end subroutine wilsonKdiff
+
   !-------------------------------------------------------------------------
   !> Get number of solids in a mixture
   !>
   !> \author MH, 2018-06
   !-------------------------------------------------------------------------
   function get_n_solids(nd,phaseVec) result(ns)
-    use parameters, only: nph, SOLIDPH
+    use thermopack_constants, only: SOLIDPH
+    use thermopack_var, only: nph
     implicit none
     integer :: nd !< Number of solids
     integer, intent(in) :: phaseVec(nph) !< Phases
@@ -270,7 +340,7 @@ module thermo_utils
   !> Is the "mixture" single component
   !> \author M. Hammer October 2014
   function isSingleComp(Z) result(isSingle)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(in) :: Z
     logical :: isSingle
@@ -287,7 +357,7 @@ module thermo_utils
   !> Is the "mixture" two component
   !> \author M. Hammer March 2016
   function isTwoComp(Z) result(isTwo)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(in) :: Z
     logical :: isTwo
@@ -314,7 +384,7 @@ module thermo_utils
   !> Return index of largest component fraction
   !> \author M. Hammer October 2014
   function maxComp(Z) result(index)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(in) :: Z
     integer :: index
@@ -330,7 +400,8 @@ module thermo_utils
   !> \author MH, 2016, 03
   !-------------------------------------------------------------------------
   subroutine phaseToPhaseVec(phase,nd,phaseVec,betaG,betaLS,betaVec,Y,X,XX)
-    use parameters, only: nc, nph, TWOPH, VAPPH, LIQPH, VAPSOLPH, SOLIDPH
+    use thermopack_var, only: nc, nph
+    use thermopack_constants, only: TWOPH, VAPPH, LIQPH, VAPSOLPH, SOLIDPH
     implicit none
     integer, intent(in) :: phase !< Phase identifier
     integer, dimension(nph), intent(out) :: phaseVec !< Phase identifiers
@@ -375,5 +446,75 @@ module thermo_utils
       XX(2,:) = X
     endif
   end subroutine phaseToPhaseVec
+
+  !-----------------------------------------------------------------------------
+  !> Get linear combination of b_i
+  !>
+  !> \author MH, 2020-07
+  !-----------------------------------------------------------------------------
+  function get_b_linear_mix(Z) result(b_mix)
+    use cubic_eos, only: cb_eos
+    use eosdata, only: eosCPA
+    implicit none
+    ! Input:
+    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
+    ! Output:
+    real                            :: b_mix          !< m3/mol
+    ! Locals
+    integer :: i
+    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: p_act_eos
+
+    p_act_eosc => get_active_eos_container()
+    b_mix = 0
+    if (p_act_eosc%need_alternative_eos .and. p_act_eosc%eosidx /= eosCPA) then
+      p_act_eos => get_active_alt_eos()
+      select type (p_eos => p_act_eos)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix (alt): Should not be here")
+      end select
+    else
+      p_act_eos => get_active_eos()
+      select type (p_eos => p_act_eos)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix: Should not be here")
+      end select
+    endif
+    b_mix = b_mix*1.0e-3 ! L/mol -> m3/mol
+  end function get_b_linear_mix
+
+  !-----------------------------------------------------------------------------
+  !> Is the solver returning FAKEPH solution
+  !>
+  !> \author MH, 2020-01
+  !-----------------------------------------------------------------------------
+  function phase_is_fake(T,P,Z,phase) result(isFake)
+    use trend_solver, only: trend_phase_is_fake
+    implicit none
+    ! Input:
+    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
+    real, intent(in)                :: T              !< Temperature [K]
+    real, intent(in)                :: P              !< Pressure [Pa]
+    integer, intent(in)             :: phase          !< Phase
+    ! Output:
+    logical                         :: isFake         !< Phase is FAKEPH
+    ! Locals
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
+
+    if (p_act_eosc%EoSLib == TREND) then
+      isFake = trend_phase_is_fake(T,P,Z,phase)
+    else
+      isFake = .false.
+    endif
+  end function phase_is_fake
 
 end module thermo_utils

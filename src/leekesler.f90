@@ -13,7 +13,7 @@
 
 
 module LeeKesler
-  use tpconst, only: Rgas
+  use thermopack_constants, only: Rgas
   implicit none
 
   real, parameter :: eta = 0.25
@@ -67,11 +67,12 @@ module LeeKesler
 
   subroutine mainLeeKesler(nc,comp,cbeos,T,P,nMoles,phase,z,Sdep,Hdep,lnphi)!,z0,z1,Sdep0,Sdep1,Hdep0,Hdep1)
     use eosdata
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in)    :: T, P, nMoles(nc)
     integer, intent(in) :: phase
     real, intent(out)   :: z, Sdep, Hdep, lnphi(nc)
@@ -153,11 +154,12 @@ module LeeKesler
   !! \author Morten H.
   subroutine lkCalcFug(nc,comp,cbeos,T,p,z,phase,lnfug,dlnfdt,dlnfdp,dlnfdz,v)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T !< Temperature [K]
     real, intent(in) :: P !< Pressure [Pa]
     real, dimension(nc), intent(in) :: Z !< The overall mole fraction [-]
@@ -299,11 +301,12 @@ module LeeKesler
   !! \author Morten H.
   subroutine lkCalcGdep(nc,comp,cbeos,T,P,nMoles,phase,g,dgdt,dgdp)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T !< Temperature [K]
     real, intent(in) :: P !< Pressure [Pa]
     real, dimension(nc), intent(in) :: nMoles !< Number of moles per component [mol]
@@ -358,11 +361,12 @@ module LeeKesler
   !! \author Morten H.
   subroutine lkCalcZfac(nc,comp,cbeos,T,p,z,phase,Zfac,dZdt,dZdp,dZdz)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T !< Temperature [K]
     real, intent(in) :: P !< Pressure [Pa]
     real, dimension(nc), intent(in) :: Z !< The overall mole fraction [-]
@@ -426,11 +430,12 @@ module LeeKesler
   !! \author Morten H.
   subroutine lkCalcEntropy(nc,comp,cbeos,T,p,Z,phase,entropy,dsdt,dsdp,dsdz)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T !< Temperature [K]
     real, intent(in) :: P !< Pressure [Pa]
     real, dimension(nc), intent(in) :: Z !< The overall mole fraction [-]
@@ -502,11 +507,12 @@ module LeeKesler
   !! \author Morten H.
   subroutine lkCalcEnthalpy(nc,comp,cbeos,T,p,Z,phase,enthalpy,dhdt,dhdp,dhdz)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T !< Temperature [K]
     real, intent(in) :: P !< Pressure [Pa]
     real, dimension(nc), intent(in) :: Z !< The overall mole fraction [-]
@@ -580,11 +586,12 @@ module LeeKesler
 
   subroutine thermProps(nc,comp,cbeos,Tr,Pr,vr,nMoles,TcM,vcM,PcM,zcM,wM,moles,z,S,H,lnphi,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in)    :: Tr, Pr, vr, nMoles(nc), TcM, vcM, PcM, zcM, wM, moles
     integer, intent(in) :: simpOrRef
     real, intent(out)   :: z, S, H, lnphi(nc)
@@ -635,11 +642,12 @@ module LeeKesler
   !----------------------------------------------------------------------
   subroutine mixRules(nc,comp,cbeos,TcM, vcM , PcM, zcM, wM, nMoles, moles)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: nMoles(nc), moles
     real, intent(out) :: vcM, TcM, wM, zcM, PcM
 
@@ -652,16 +660,16 @@ module LeeKesler
     molesInv = 1/moles
     do j = 1,nc
       do k = 1,nc
-        tcj = comp(j)%tc
-        tck = comp(k)%tc
-        vcj = Rgas*comp(j)%zc * tcj/comp(j)%pc
-        vck = Rgas*comp(k)%zc * tck/comp(k)%pc
+        tcj = comp(j)%p_comp%tc
+        tck = comp(k)%p_comp%tc
+        vcj = Rgas*comp(j)%p_comp%zc * tcj/comp(j)%p_comp%pc
+        vck = Rgas*comp(k)%p_comp%zc * tck/comp(k)%p_comp%pc
         vcjk = 0.125*(vcj**(1.0/3.0) + vck**(1.0/3.0))**3
         Tcjk = cbeos%kij(j,k)*((tcj*tck)**0.5)
         vcM = vcM + nMoles(j)*nMoles(k)*vcjk
         TcM = TcM + nMoles(j)*nMoles(k)*Tcjk*(vcjk**eta)
       end do
-      wM = wM + nMoles(j)*comp(j)%acf
+      wM = wM + nMoles(j)*comp(j)%p_comp%acf
     end do
 
     vcM = vcM*molesInv*molesInv
@@ -1142,11 +1150,12 @@ module LeeKesler
 
   function FDiffNi(nc,comp,cbeos,Tr,vr,TcM,vcM,PcM,zcM,wM,nMoles,moles,i,B,C,D,E,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: Tr, vr, TcM, vcM, PcM, zcM, wM, nMoles(nc), moles, B, C, D, E
     integer, intent(in) :: i, simpOrRef
     real :: FDiffNi
@@ -1181,11 +1190,12 @@ module LeeKesler
 
   function FDiff2NiNj(nc,comp,cbeos,Tr,vr,TcM,vcM,PcM,zcM,wM,nMoles,moles,i,j,B,C,D,E,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: Tr, vr, TcM, vcM, PcM, zcM, wM, nMoles(nc), moles, B, C, D, E
     integer, intent(in) :: i,j,simpOrRef
     real :: molesInv, F_NN, F_Tr, F_TrTr, F_TrN, Tr_j, Tr_i, Tr_ij, F_Vr, F_VrVr, F_VrN, vr_j, vr_i, vr_ij, F_TrVr
@@ -1311,11 +1321,12 @@ module LeeKesler
 
   function TrDiffNi(nc,comp,cbeos,Tr,TcM,vcM,nMoles,moles,i)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: Tr, TcM, vcM, nMoles(nc), moles
     integer, intent(in) :: i
     real :: TrDiffNi
@@ -1338,11 +1349,12 @@ module LeeKesler
   !----------------------------------------------------------------------
   function vrDiffNi(nc,comp,cbeos,vr,TcM,vcM,PcM,zcM,wM,nMoles,moles,i)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: vr, TcM, vcM, PcM, zcM, wM, nMoles(nc), moles
     integer, intent(in) :: i
     real :: vrDiffNi
@@ -1370,11 +1382,12 @@ module LeeKesler
 
   function TrDiff2NiNj(nc,comp,cbeos,Tr,TcM,vcM,nMoles,moles,i,j)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: Tr, TcM, vcM, nMoles(nc), moles
     integer, intent(in) :: i,j
     real :: TcMInv
@@ -1407,11 +1420,12 @@ module LeeKesler
   !----------------------------------------------------------------------
   function vrDiff2NiNj(nc,comp,cbeos,vr,TcM,vcM,PcM,zcM,wM,nMoles,moles,i,j)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: vr, TcM, vcM, PcM, zcM, wM, nMoles(nc), moles
     integer, intent(in) :: i,j
     real :: vr_i, vr_j, PcM_i, PcM_j, PcM_ij, TcM_i, TcM_j, TcM_ij, vrInv, PcMInv, TcMInv, molesInv
@@ -1451,11 +1465,12 @@ module LeeKesler
   !----------------------------------------------------------------------
   function TcMDiffNi(nc,comp,cbeos,TcM,vcM,nMoles,moles,i)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: TcM, vcM, nMoles(nc), moles
     integer, intent(in) :: i
     real :: vcMInv, molesInv, t1, t2, t3, vcil, Tcil, tci, tcl, vci, vcl
@@ -1469,11 +1484,11 @@ module LeeKesler
 
     t1 = -eta*TcM*vcMInv*vcMDiffNi(nc,comp,nMoles,vcM,moles,i)
 
-    tci = comp(i)%tc
-    vci = Rgas*comp(i)%zc * tci/comp(i)%pc
+    tci = comp(i)%p_comp%tc
+    vci = Rgas*comp(i)%p_comp%zc * tci/comp(i)%p_comp%pc
     do l = 1,nc
-      tcl = comp(l)%tc
-      vcl = Rgas*comp(l)%zc * tcl/comp(l)%pc
+      tcl = comp(l)%p_comp%tc
+      vcl = Rgas*comp(l)%p_comp%zc * tcl/comp(l)%p_comp%pc
       vcil = 0.125*(vci**(1.0/3.0) + vcl**(1.0/3.0))**3
       Tcil = (cbeos%kij(i,l))*(tci*tcl)**0.5
       t2 = t2 + nMoles(l)*(vcil**eta)*Tcil
@@ -1505,11 +1520,12 @@ module LeeKesler
 
   function TcMDiff2NiNj(nc,comp,cbeos,TcM,vcM,nMoles,moles,i,j)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: TcM, vcM, nMoles(nc), moles
     integer, intent(in) :: i,j
     real :: vcMInv, vcMInv2, molesInv, molesInv2, molesInv3, TcM_j, vcM_i, vcM_j, vcM_ij, compSum
@@ -1531,18 +1547,18 @@ module LeeKesler
 
     compSum = 0.0
 
-    tci = comp(i)%tc
-    vci = Rgas*comp(i)%zc * tci/comp(i)%pc
+    tci = comp(i)%p_comp%tc
+    vci = Rgas*comp(i)%p_comp%zc * tci/comp(i)%p_comp%pc
     do l = 1,nc
-      tcl = comp(l)%tc
-      vcl = Rgas*comp(l)%zc * tcl/comp(l)%pc
+      tcl = comp(l)%p_comp%tc
+      vcl = Rgas*comp(l)%p_comp%zc * tcl/comp(l)%p_comp%pc
       vcil = 0.125*(vci**(1.0/3.0) + vcl**(1.0/3.0))**3
       Tcil = (cbeos%kij(i,l))*(tci*tcl)**0.5
       compSum = compSum + nMoles(l)*(vcil**eta)*Tcil
     end do
 
-    tcj = comp(j)%tc
-    vcj = Rgas*comp(j)%zc * tcj/comp(j)%pc
+    tcj = comp(j)%p_comp%tc
+    vcj = Rgas*comp(j)%p_comp%zc * tcj/comp(j)%p_comp%pc
     Tcij = (cbeos%kij(i,j))*(tci*tcj)**0.5
     vcij = 0.125*(vci**(1.0/3.0) + vcj**(1.0/3.0))**3
 
@@ -1564,10 +1580,10 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function vcMDiffNi(nc,comp,nMoles,vcM,moles,i)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: nMoles(nc), vcM, moles
     integer, intent(in) :: i
     integer :: l
@@ -1576,9 +1592,9 @@ module LeeKesler
     molesInv = 1.0/moles
     v1 = 0.0
 
-    vci = Rgas*comp(i)%zc*comp(i)%tc/comp(i)%pc
+    vci = Rgas*comp(i)%p_comp%zc*comp(i)%p_comp%tc/comp(i)%p_comp%pc
     do l=1,nc
-      vcl = Rgas*comp(l)%zc*comp(l)%tc/comp(l)%pc
+      vcl = Rgas*comp(l)%p_comp%zc*comp(l)%p_comp%tc/comp(l)%p_comp%pc
       vcil = 0.125*(vci**(1.0/3.0) + vcl**(1.0/3.0))**3
       v1 = v1 + nMoles(l)*vcil
     end do
@@ -1600,10 +1616,11 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function vcMDiff2NiNj(nc,comp,nMoles,moles,vcM,i,j)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: nMoles(nc), vcM,moles
     integer, intent(in) :: i,j
     real :: vci, vcj, vcij, vcM_i, vcM_j, molesInv
@@ -1612,8 +1629,8 @@ module LeeKesler
 
     molesInv = 1.0/moles
 
-    vci = Rgas*comp(i)%zc*comp(i)%tc/comp(i)%pc
-    vcj = Rgas*comp(j)%zc *comp(j)%tc/comp(j)%pc
+    vci = Rgas*comp(i)%p_comp%zc*comp(i)%p_comp%tc/comp(i)%p_comp%pc
+    vcj = Rgas*comp(j)%p_comp%zc *comp(j)%p_comp%tc/comp(j)%p_comp%pc
     vcij = (0.125*(vci**(1.0/3.0) + vcj**(1.0/3.0))**3)
     vcM_i = vcMDiffNi(nc,comp,nMoles,vcM,moles,i)
     vcM_j = vcMDiffNi(nc,comp,nMoles,vcM,moles,j)
@@ -1638,11 +1655,12 @@ module LeeKesler
 
   function PcMDiffNi(nc,comp,cbeos,TcM,vcM,PcM,zcM,wM,nMoles,moles,i)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: TcM, vcM, PcM, zcM, wM, nMoles(nc), moles
     integer, intent(in) :: i
     real :: PcMDiffNi
@@ -1676,11 +1694,12 @@ module LeeKesler
 
   function PcMDiff2NiNj(nc,comp,cbeos,TcM,vcM,PcM,zcM,wM,nMoles,moles,i,j)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: TcM, vcM, PcM, zcM, wM, nMoles(nc), moles
     integer, intent(in) :: i, j
     real :: vcMInv, TcMInv, PcMInv, zcMInv, PcM_i, PcM_j, zcM_i, zcM_j, TcM_i, TcM_j, vcM_i, vcM_j, zcM_ij, TcM_ij, vcM_ij
@@ -1733,10 +1752,10 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function zcMDiffNi(nc,comp,moles,wM,i)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: moles, wM
     integer, intent(in) :: i
     real :: zcMDiffNi
@@ -1759,10 +1778,10 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function zcMDiff2NiNj(nc,comp,moles,wM,i,j)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: moles, wM
     integer, intent(in) :: i, j
     real :: zcMDiff2NiNj
@@ -1787,17 +1806,17 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function wMDiffNi(nc,comp,moles,wM,i)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: moles, wM
     integer, intent(in) :: i
     real :: wMDiffNi, molesInv
 
     molesInv = 1.0/moles
 
-    wMDiffNi = molesInv*(comp(i)%acf - wM)
+    wMDiffNi = molesInv*(comp(i)%p_comp%acf - wM)
 
   end function wMDiffNi
 
@@ -1814,10 +1833,10 @@ module LeeKesler
   !----------------------------------------------------------------------
 
   function wMDiff2NiNj(nc,comp,moles,wM,i,j)
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
+    type (gendata_pointer), dimension(nc) :: comp
     real, intent(in) :: moles, wM
     integer, intent(in) :: i, j
     real :: wMDiff2NiNj, molesInv
@@ -1895,11 +1914,12 @@ module LeeKesler
 
   function zDiffNi(nc,comp,cbeos,z,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: z, moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: zDiffNi, VInv
@@ -1982,11 +2002,12 @@ module LeeKesler
 
   function SDiffNi(nc,comp,cbeos,T,P,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,z,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T, P, moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc),z
     integer, intent(in) :: i, simpOrRef
     real :: SDiffNi
@@ -2069,11 +2090,12 @@ module LeeKesler
 
   function HDiffNi(nc,comp,cbeos,T,P,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T, P, moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: HDiffNi
@@ -2106,11 +2128,12 @@ module LeeKesler
 
   function lnphiDiffT(nc,comp,cbeos,T,P,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T, P, moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc)
     integer, intent (in) :: i, simpOrRef
     real :: lnphiDiffT, TInv
@@ -2137,11 +2160,12 @@ module LeeKesler
 
   function lnphiDiffP(nc,comp,cbeos,T,P,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: T, P, moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: lnphiDiffP
@@ -2166,11 +2190,12 @@ module LeeKesler
   function lnphiDiffNj(nc,comp,cbeos,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,&
        B,C,D,E,nMoles,i,j,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: moles, Tr, vr, TcM, vcM, PcM, zcM, wM, &
          B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, j, simpOrRef
@@ -2210,11 +2235,12 @@ module LeeKesler
 
   function FDiff2TNi(nc,comp,cbeos,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: moles, Tr, vr, TcM, vcM, PcM, zcM, wM, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: FDiff2TNi
@@ -2284,11 +2310,12 @@ module LeeKesler
 
   function FDiff2VNi(nc,comp,cbeos,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,nMoles,B,C,D,E,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: moles, Tr, vr, TcM, vcM, PcM, zcM, wM, nMoles(nc), B, C, D, E
     integer, intent(in) :: i, simpOrRef
     real :: FDiff2VNi
@@ -2322,11 +2349,12 @@ module LeeKesler
 
   function VDiffNi(nc,comp,cbeos,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: moles, Tr, vr, TcM, vcM, PcM, zcM, wM, B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: VDiffNi
@@ -2428,11 +2456,12 @@ module LeeKesler
 
   function PDiffNi(nc,comp,cbeos,moles,Tr,vr,TcM,vcM,PcM,zcM,wM,B,C,D,E,nMoles,i,simpOrRef)
      use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: moles, Tr, vr, TcM, vcM, PcM, zcM,wM, B, C, D, E, nMoles(nc)
     integer, intent(in) :: i, simpOrRef
     real :: PDiffNi
@@ -2675,7 +2704,7 @@ module LeeKesler
 
   subroutine zNewtRaps(Tr,Pr,phase,simpOrRef,vr,zInit,zMax,zMin)
     use numconstants, only: machine_prec
-    use parameters
+    use thermopack_constants
     implicit none
     real, intent(in)::Tr, Pr
     integer, intent(in) :: phase, simpOrRef
@@ -2800,7 +2829,7 @@ module LeeKesler
 
   subroutine zInitial(Tr,Pr,phase,simpOrRef,z,zmin,zmax,solved,hasPhase)
     use numconstants, only: machine_prec
-    use parameters
+    use thermopack_constants
     implicit none
     real, intent(in)::Tr, Pr
     integer, intent(in) :: phase, simpOrRef
@@ -3090,11 +3119,12 @@ module LeeKesler
   !----------------------------------------------------------------------
   subroutine testDiffLeeKesler(nc,comp,cbeos,Tin,Pin,Z,phase)
     use eosdata
-    use compdata, only: gendata
+    use compdata, only: gendata_pointer
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type (gendata), dimension(nc) :: comp
-    type(eoscubic), intent(in) :: cbeos
+    type (gendata_pointer), dimension(nc) :: comp
+    class(cb_eos), intent(in) :: cbeos
     real, intent(in)                :: Tin, Pin
     real, dimension(nc), intent(in) :: Z
     integer, intent(in) :: phase

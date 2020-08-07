@@ -70,21 +70,19 @@ end module C_interface_module
 !! \author MH, 2017-06
 !! Optional argument should be supplied as NULL pointers
 !-----------------------------------------------------------------!
-subroutine thermopack_init_c(eosLib,eos,mixing,alpha,ncomp,comp_string,&
-     nphases,liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_setno,alpha_setno,&
-     saft_setno,b_exponent) BIND(C)
+subroutine thermopack_init_c(eos,mixing,alpha,comp_string,&
+     nphases,liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
+     saft_ref,b_exponent) BIND(C)
 !-----------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
   use eoslibinit, only: init_thermo
   use C_interface_module, only: C_strlen_safe, C_char_to_character_string
-  use parameters, only: clen
+  use thermopack_constants, only: clen
   implicit none
   ! Required input
-  type(C_ptr), target, intent(in) :: eosLib !< String defining eos library (TREND, ThermoPack)
   type(C_ptr), target, intent(in) :: eos    !< String defining equation of state
   type(C_ptr), target, intent(in) :: mixing !< String defining mixing rules
   type(C_ptr), target, intent(in) :: alpha  !< String defining alpha correlation
-  integer(C_int), intent(in) :: ncomp !< Number of components
   type(C_ptr), target, intent(in) :: comp_string    !< String defining components. Comma or white-space separated.
   integer(C_int), intent(in) :: nphases !< Number of phases
 
@@ -92,12 +90,11 @@ subroutine thermopack_init_c(eosLib,eos,mixing,alpha,ncomp,comp_string,&
   integer(C_int), intent(in) :: liq_vap_discr_method_in !< Method to discriminate between liquid and vapor in case of an undefined single phase. Will be set to none if absent.
   type(C_ptr), target, intent(in) :: csp_eos !< Corrensponding state equation
   type(C_ptr), target, intent(in) :: csp_ref_comp !< CSP component
-  integer(C_int), intent(in) :: kij_setno, alpha_setno !< Data set numbers
-  integer(C_int), intent(in) :: saft_setno(ncomp) !< Data set numbers
+  type(C_ptr), target, intent(in) :: kij_ref, alpha_ref !< Data set numbers
+  type(C_ptr), target, intent(in) :: saft_ref !< Data set numbers
   real(C_double), intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
 
   ! Fortran representation of character strings
-  character(len=clen) :: eosLib_f
   character(len=clen) :: eos_f
   character(len=clen) :: mixing_f
   character(len=clen) :: alpha_f
@@ -106,11 +103,16 @@ subroutine thermopack_init_c(eosLib,eos,mixing,alpha,ncomp,comp_string,&
   character(len=:), pointer :: csp_ref_comp_pf
   character(len=clen), target :: csp_eos_f
   character(len=clen), target :: csp_ref_comp_f
+  character(len=clen), target :: kij_ref_f
+  character(len=clen), target :: alpha_ref_f
+  character(len=clen), target :: saft_ref_f
+  character(len=clen), pointer :: kij_ref_pf
+  character(len=clen), pointer :: alpha_ref_pf
+  character(len=clen), pointer :: saft_ref_pf
 
   ! Length variable
   integer(C_size_t) :: c_len
 
-  call C_char_to_character_string(eosLib, eosLib_f)
   call C_char_to_character_string(eos, eos_f)
   call C_char_to_character_string(mixing, mixing_f)
   call C_char_to_character_string(alpha, alpha_f)
@@ -130,36 +132,40 @@ subroutine thermopack_init_c(eosLib,eos,mixing,alpha,ncomp,comp_string,&
     call C_char_to_character_string(csp_ref_comp, csp_ref_comp_f)
     csp_ref_comp_pf => csp_ref_comp_f
   endif
+  !
+  c_len = C_strlen_safe(kij_ref)
+  if (c_len == 0) then
+    kij_ref_pf => NULL()
+  else
+    call C_char_to_character_string(kij_ref, kij_ref_f)
+    kij_ref_pf => kij_ref_f
+  endif
+  !
+  c_len = C_strlen_safe(alpha_ref)
+  if (c_len == 0) then
+    alpha_ref_pf => NULL()
+  else
+    call C_char_to_character_string(alpha_ref, alpha_ref_f)
+    alpha_ref_pf => alpha_ref_f
+  endif
+  !
+  c_len = C_strlen_safe(saft_ref)
+  if (c_len == 0) then
+    saft_ref_pf => NULL()
+  else
+    call C_char_to_character_string(saft_ref, saft_ref_f)
+    saft_ref_pf => saft_ref_f
+  endif
 
-  call init_thermo(eosLib_f,eos_f,mixing_f,alpha_f,ncomp,comp_string_f,nphases,&
-       liq_vap_discr_method_in,csp_eos_pf,csp_ref_comp_pf,kij_setno,alpha_setno,&
-       saft_setno,b_exponent)
+  call init_thermo(eos_f,mixing_f,alpha_f,comp_string_f,nphases,&
+       liq_vap_discr_method_in,csp_eos_pf,csp_ref_comp_pf,kij_ref_pf,alpha_ref_pf,&
+       saft_ref_pf,b_exponent)
 
 end subroutine thermopack_init_c
 
 
-!-----------------------------------------------------------------!
-subroutine thermopack_init(components,n_comp,strlen,eos_lib_str,eos_str,&
-     mixrule_str,alpha_str,ierr)
-!-----------------------------------------------------------------!
-  use parameters, only: liq_vap_discr_method
-  ! Input:
-  integer, intent(in)               :: n_comp,strlen
-  character(len=*), intent(in)      :: eos_lib_str
-  character(len=strlen), intent(in) :: components(n_comp)
-  character(len=strlen), intent(in) :: eos_str,mixrule_str,alpha_str
-  ! Output:
-  integer, intent(out)              :: ierr
-  ! Internal
-
-  call thermopack_init_liq_vap_discr(components,n_comp,strlen,eos_lib_str,&
-       eos_str,mixrule_str,alpha_str,ierr,liq_vap_discr_method)
-
-end subroutine thermopack_init
-
 !  !
 !  !-----------------------------------------------------------------!
-!  use parameters, only: getComp
 !  use stringmod, only:parse
 !  implicit none
 !  character(len=*),intent(in) :: components_in
@@ -182,7 +188,6 @@ subroutine thermopack_init_int_flags(components_in, n_comp, eos_lib_flag,&
   ! \author: HHU 2014-07-01, Ailo 2016-09-13
   !
   !-----------------------------------------------------------------!
-  use parameters, only: getComp
   use stringmod, only:parse
   implicit none
   character(len=*),intent(in) :: components_in
@@ -251,9 +256,8 @@ subroutine thermopack_init_liq_vap_discr(components,n_comp,strlen,&
 !
 ! Modelled after init.f90
 !
-  !use model, only: parseCompVector,getComp
   use eoslibinit, only: init_thermo
-  use parameters, only: clen
+  use thermopack_constants, only: clen
   !use error, only: stoperror
   implicit none
   ! Input:
@@ -282,7 +286,8 @@ subroutine thermopack_init_liq_vap_discr(components,n_comp,strlen,&
 
   nphases = n_comp + 1
 
-  call init_thermo(trim(eos_lib_str),eos_str,mixrule_str,alpha_str,n_comp,component_str,nphases,liq_vap_discr_method)
+  call init_thermo(eos_str,mixrule_str,alpha_str,&
+       component_str,nphases,liq_vap_discr_method)
 
   ! write(*,*) "--------------------------"
   ! write(*,*) "--------------------------"
@@ -292,9 +297,9 @@ end subroutine thermopack_init_liq_vap_discr
 !-----------------------------------------------------------------!
 subroutine thermopack_cleanup()
 !-----------------------------------------------------------------!
-  use eoslibinit, only: cleanup_eos
+  !use eoslibinit, only: cleanup_eos
   implicit none
-  call cleanup_eos()
+  !call cleanup_eos()
 
 end subroutine thermopack_cleanup
 !-----------------------------------------------------------------!
@@ -305,7 +310,7 @@ subroutine thermopack_TPflash(T,P,x_overall,beta,phase,comp_liquid,comp_vapor)
   !---------------------------------------------------------------!
 
   use tp_solver, only: twoPhaseTPflash
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, intent(in)          :: T,P,x_overall(nc)
@@ -339,7 +344,8 @@ subroutine thermopack_fugacity(T,P,x_phase,phaseflag,fug)
 ! phaseflag: LIQPH, VAPPH or SINGLEPH
 !
   use eos, only: thermo
-  use parameters, only: LIQPH,VAPPH,SINGLEPH,MINGIBBSPH,nc
+  use thermopack_constants, only: LIQPH,VAPPH,SINGLEPH,MINGIBBSPH
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, intent(in)          :: T,P,x_phase(nc)
@@ -375,7 +381,7 @@ function thermopack_bubble_pressure(T,P,x,y) result(pBub)
 !-----------------------------------------------------------------!
 !
   use saturation, only: bubP
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, intent(inout)                :: T,P
@@ -394,7 +400,7 @@ subroutine thermopack_phase_envelope(T,P,beta,cspec,z,Pmax,Ta,Pa,Ki,betai,nmax,n
 !-----------------------------------------------------------------!
 !
   use saturation_curve, only: envelopePlot
-  use parameters, only: nc
+  use thermopack_var, only: nc
   use stringmod, only: str_eq
   implicit none
   ! Input:
@@ -434,7 +440,7 @@ subroutine thermopack_density(t,p,z,iphase,rho)
   !> \author MAG, 2013-08-12
   !---------------------------------------------------------------!
   use eos, only: specificVolume
-  use parameters,   only: nc
+  use thermopack_var,   only: nc
   implicit none
   ! Arguments:
   real,                intent(in)  :: t      !< K      - Temperature
@@ -458,7 +464,7 @@ subroutine thermopack_pressure(t,rho,z,p)
   !---------------------------------------------------------------!
   !> \author MAG, 2013-08-13
   !---------------------------------------------------------------!
-  use parameters, only: eoslib,nc
+  use thermopack_var, only: nc
   use eosTV,      only: pressure
   implicit none
   include 'trend_interface.f95'
@@ -469,17 +475,8 @@ subroutine thermopack_pressure(t,rho,z,p)
   ! Output:
   real,                intent(out) :: p   !< Pa     - Pressure
   !---------------------------------------------------------------!
-  select case (eoslib)
-  case (3)
-    ! Thermopack
-    p=pressure(t,1.0/rho,z)
-  case (4)
-    ! TREND
-    p=trend_pressure(z,t,1.0/rho)
-  case default
-    call stoperror("Error in external.f90:thermopack_pressure:" // &
-         " The chosen EOS library has not been implemented.")
-  end select
+  ! Thermopack
+  p=pressure(t,1.0/rho,z)
 end subroutine thermopack_pressure
 !-----------------------------------------------------------------!
 
@@ -491,7 +488,7 @@ subroutine thermopack_specific_volume(t,p,x,iphase,v)
   !> \author MAG, 2013-09-05
   !---------------------------------------------------------------!
   use eos,        only: specificVolume
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   integer,             intent(in)  :: iphase !<          Phase flag
@@ -514,7 +511,7 @@ subroutine thermopack_internal_energy(t,v,x,u)
   !> \author MAG, 2013-09-05
   !---------------------------------------------------------------!
   use eosTV,      only: internal_energy
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real,                intent(in)  :: t    !< K -       Temperature
@@ -543,7 +540,7 @@ subroutine thermopack_UVflash(t,p,z,beta,x,y,uspec,vspec,iphase)
   !> \author MAG, 2013-09-05
   !---------------------------------------------------------------!
   use uv_solver,  only: twoPhaseUVflash,twoPhaseUVflashNested
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, dimension(nc), intent(in)    :: z      !< Composition
@@ -575,7 +572,7 @@ subroutine thermopack_objective(t,p,z,v,iobjective,of)
   !> \author MAG, 2013-09-11
   !---------------------------------------------------------------!
   use tp_solver,  only: tp_objective => objective
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real,                   intent(in)  :: t
@@ -616,7 +613,7 @@ subroutine thermopack_HPflash(t,p,Z,beta,betaL,X,Y,hspec,phase)
   !> \author HHU, 2014-06-19
   !----------------------------------------------------------------!
   use ph_solver,  only: twoPhasePHflash
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
@@ -653,7 +650,7 @@ subroutine thermopack_SPflash(t,p,Z,beta,betaL,X,Y,sspec,phase)
   !> \author HHU, 2014-06-19
   !----------------------------------------------------------------!
   use ps_solver,  only: twoPhasePSflash
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, intent(inout) :: beta !< Vapour phase molar fraction [-]
@@ -688,7 +685,7 @@ subroutine thermopack_bubT(P,X,Y,Tbub,ierr)
   !> \author HHU, 2014-06-20
   !--------------------------------------------------------------!
   use saturation
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, dimension(nc), intent(in) :: X
@@ -712,7 +709,7 @@ subroutine thermopack_bubP(T,X,Y,Pbub,ierr)
   !> \author HHU, 2014-06-20
   !--------------------------------------------------------------!
   use saturation
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
    real, dimension(nc), intent(in) :: X
@@ -736,7 +733,7 @@ subroutine thermopack_dewT(P,X,Y,Tdew,ierr)
   !> \author HHU, 2014-06-20
   !---------------------------------------------------------------!
   use saturation
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real, dimension(nc), intent(out) :: X
@@ -761,7 +758,7 @@ subroutine thermopack_dewP(T,X,Y,Pdew,ierr)
   !> \author HHU, 2014-06-20
   !---------------------------------------------------------------!
   use saturation
-  use parameters, only:nc
+  use thermopack_var, only:nc
   implicit none
   ! Input:
   real, dimension(nc), intent(out) :: X
@@ -786,7 +783,7 @@ subroutine thermopack_zfac(t,p,x,phase,z)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -810,7 +807,7 @@ subroutine thermopack_twophase_specific_volume(t,p,z,x,y,beta,phase,v)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -837,7 +834,7 @@ subroutine thermopack_enthalpy(t,p,x,phase,h,spec,dhdx,specflag,residual)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -901,7 +898,7 @@ subroutine thermopack_twophase_enthalpy(t,p,z,x,y,beta,phase,h)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -928,7 +925,7 @@ subroutine thermopack_entropy(t,p,x,phase,s)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -956,7 +953,7 @@ subroutine thermopack_twophase_entropy(t,p,z,x,y,beta,phase,s)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only:nc
+  use thermopack_var, only:nc
   implicit none
   !Input:
   integer, intent(in) :: phase !< Phase identifyer
@@ -975,7 +972,7 @@ end subroutine thermopack_twophase_entropy
 
 
 !-----------------------------------------------------------------!
-subroutine thermopack_pseudo(x,tpc,ppc,acfpc,zpc,vpc)
+subroutine thermopack_pseudo(x,tpc,ppc,zpc,vpc)
   !---------------------------------------------------------------!
   !> External interface for the pseudo critical point routine
   !> in eos.f90
@@ -983,8 +980,7 @@ subroutine thermopack_pseudo(x,tpc,ppc,acfpc,zpc,vpc)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
-  use tpvar, only: comp
+  use thermopack_var, only: nc
   use thermo_utils, only: issingleComp
   implicit none
   !Input:
@@ -993,15 +989,9 @@ subroutine thermopack_pseudo(x,tpc,ppc,acfpc,zpc,vpc)
   real, intent(out) :: vpc !< m3/mol - Pseudo critical molar volume
   real, intent(out) :: ppc !< Pa - Pseudo critical pressure
   real, intent(out) :: zpc !< - - Pseudo critical compressibillity
-  real, intent(out) :: acfpc !< Pseudo critical acentric factor
   !---------------------------------------------------------------!
-  real :: UNDEF = -1E10
+
   call pseudo_safe(x,tpc,ppc,zpc,vpc)
-  if (isSingleComp(x)) then
-     acfpc = comp(1)%acf
-  else
-     acfpc = UNDEF
-  endif
   !---------------------------------------------------------------!
 end subroutine thermopack_pseudo
 !-----------------------------------------------------------------!
@@ -1015,8 +1005,8 @@ subroutine thermopack_wilsonK(t,p,k)
   !> Notes:
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
-  use eos
-  use parameters, only: nc
+  use thermo_utils, only: wilsonK
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, intent(in) :: t !< K - Temperature
@@ -1036,8 +1026,8 @@ subroutine thermopack_wilsonKdiff(t,p,K,dKdp,dKdt)
   !> Notes:
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
-  use eos
-  use parameters, only: nc
+  use thermo_utils, only: wilsonK
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, intent(in) :: t !< K - Temperature
@@ -1149,7 +1139,7 @@ subroutine thermopack_residual_Gibbs(t,p,z,phase,gr)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !input:
   real, intent(in) :: t                    !< K - Temperature
@@ -1173,7 +1163,7 @@ subroutine thermopack_moleweight(z,mw)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, dimension(1:nc), intent(in) :: z !< Composition
@@ -1215,7 +1205,7 @@ subroutine thermopack_twophase_sound_velocity(t,p,X,Y,Z,betaV,betaL,phase,sos)
   !> \author HHU, 2014-06-23
   !---------------------------------------------------------------!
   use speed_of_sound
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real,                   intent(in) :: t     !< Temperature [K]
@@ -1243,7 +1233,7 @@ subroutine thermopack_cp (t,p,x,phase,cp)
   !> \author HHU, 2014-06-26
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, intent(in) :: t !< Temperature [K]
@@ -1267,7 +1257,7 @@ subroutine thermopack_cv (t,p,x,phase,cv)
   !> \author HHU, 2014-06-26
   !---------------------------------------------------------------!
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, intent(in) :: t !< Temperature [K]
@@ -1285,7 +1275,7 @@ end subroutine thermopack_cv
 
 subroutine themopack_exp_adiabatic (t,p,x,phase, beta_s)
   use eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real, intent(in) :: t !< Temperature [K]
@@ -1308,20 +1298,23 @@ subroutine thermopack_cp_ideal (i,t,cp_id)
   !> Get ideal cp for component i.
   !> \author Ailo
   !---------------------------------------------------------------!
-  use tpvar, only: nce,comp
+  use thermopack_var, only: nce, eos_container, get_active_eos_container
   use ideal, only: cpideal
   implicit none
   !Input:
   integer, intent(in) :: i !< Component number
   real, intent(in) :: t !< Temperature [K]
   real, intent(out) :: cp_id !< Ideal spec. heat capacity (J/mol*K)
+  type(eos_container), pointer :: p_act_eosc
+
+  p_act_eosc => get_active_eos_container()
 
   if (i<1 .or. i>nce) then
     print *, "index in thermopack_cp_ideal = ", i
     call stoperror("index out of range")
   end if
 
-  cp_id = cpideal(comp,i,t)
+  cp_id = cpideal(p_act_eosc%comps(i)%p_comp,i,t)
 
 end subroutine thermopack_cp_ideal
 
@@ -1334,7 +1327,7 @@ subroutine thermopack_twophase_dhdt(t,p,Z,X,Y,betaV,betaL,dhdt)
   !> \author HHU, 2014-07-08
   !---------------------------------------------------------------!
   use state_functions
-  use parameters, only:nc
+  use thermopack_var, only:nc
   implicit none
   real, intent(in) :: betaV !< Vapour phase molar fraction [-]
   real, intent(in) :: betaL !< Liquid phase molar fraction [-]
@@ -1353,7 +1346,7 @@ end subroutine thermopack_twophase_dhdt
 subroutine get_phase_flags(iTWOPH,iLIQPH,iVAPPH,iMINGIBBSPH,iSINGLEPH,iSOLIDPH,iFAKEPH)
   ! Get the internal integer flags for various phase states and
   ! specifications.
-  use parameters, only: TWOPH,LIQPH,VAPPH,MINGIBBSPH,SINGLEPH,SOLIDPH,FAKEPH
+  use thermopack_constants, only: TWOPH,LIQPH,VAPPH,MINGIBBSPH,SINGLEPH,SOLIDPH,FAKEPH
   implicit none
   ! Output:
   integer, intent(out) :: iTWOPH,iLIQPH,iVAPPH,iMINGIBBSPH,iSINGLEPH,iSOLIDPH,iFAKEPH
@@ -1377,7 +1370,7 @@ subroutine thermopack_entropy_tv_c(t,v,n,s) BIND(C)
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
   use eosTV, only: entropyTV
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real(C_double), intent(in) :: t !< K - Temperature
@@ -1398,7 +1391,7 @@ end subroutine thermopack_entropy_tv_c
 subroutine thermopack_enthalpy_c(t,p,x,phase,h,dhdt,dhdp,dhdx) BIND(C)
   use, intrinsic :: ISO_C_BINDING
   use eos, only: enthalpy
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Required input
   integer(C_int), intent(in) :: phase !< Phase identifyer
@@ -1419,25 +1412,22 @@ end subroutine thermopack_enthalpy_c
 subroutine thermopack_puresat_t_c(P,Z,T,ierr) BIND(C)
   use, intrinsic :: ISO_C_BINDING
   use puresaturation, only: puresat
-  use eos, only: need_alternative_eos
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   integer(C_int), intent(out) :: ierr !< Error flag
   real(C_double), intent(out) :: t !< K - Temperature
   real(C_double), intent(in) :: p !< Pa - Pressure
   real(C_double), intent(in) :: z(nc) !< Compozition
   ! Locals
-  logical :: need_alt_eos
   real :: Pcopy
-  need_alt_eos = need_alternative_eos()
   Pcopy = P
-  call PureSat(T,Pcopy,Z,.true.,need_alt_eos,ierr)
+  call PureSat(T,Pcopy,Z,.true.,ierr)
 end subroutine thermopack_puresat_t_c
 
 subroutine thermopack_guess_phase_c(T,P,Z,phase) BIND(C)
   use, intrinsic :: ISO_C_BINDING
   use thermo_utils, only: guessPhase
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   integer(C_int), intent(out) :: phase !< phase flag
   real(C_double), intent(in) :: t !< K - Temperature
@@ -1455,7 +1445,7 @@ subroutine thermopack_thermo_c(T,P,x,phase,lnfug,lnfugt,lnfugp,lnfugx,ophase) BI
 !
   use, intrinsic :: ISO_C_BINDING
   use eos, only: thermo
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   real(C_double), intent(in)          :: T,P,x(nc)
@@ -1482,7 +1472,7 @@ subroutine thermopack_moleweight_c(z,mw) BIND(C)
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
   use eos, only: moleWeight
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   !Input:
   real(C_double), dimension(1:nc), intent(in) :: z !< Composition
@@ -1502,7 +1492,7 @@ subroutine thermopack_specific_volume_c(t,p,x,iphase,v) BIND(C)
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
   use eos,        only: specificVolume
-  use parameters, only: nc
+  use thermopack_var, only: nc
   implicit none
   ! Input:
   integer(C_int),                intent(in)  :: iphase !<          Phase flag
@@ -1526,7 +1516,7 @@ subroutine thermopack_wilsonKi_c(i,t,p,lnPhi_offset,k) BIND(C)
   !> \author MH, 2019-04
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
-  use eos, only: wilsonKi
+  use thermo_utils, only: wilsonKi
   implicit none
   !Input:
   integer(C_int), intent(in) :: i !< Component index
@@ -1549,7 +1539,7 @@ subroutine thermopack_twophase_dhdt_c(t,p,Z,X,Y,betaV,betaL,dhdt) BIND(C)
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
   use state_functions, only: dhdt_twoPhase
-  use parameters, only:nc
+  use thermopack_var, only:nc
   implicit none
   real(C_double), intent(in) :: betaV !< Vapour phase molar fraction [-]
   real(C_double), intent(in) :: betaL !< Liquid phase molar fraction [-]

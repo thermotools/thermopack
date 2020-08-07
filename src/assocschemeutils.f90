@@ -1,7 +1,7 @@
 !> Functionality for working with association schemes. The work mostly consists
 !> of keeping track of indices.
 module AssocSchemeUtils
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
   implicit none
   save
 

@@ -1,5 +1,5 @@
 MODULE tpmbwr_additional
-  USE tpconst, ONLY: Rgas ! [Rgas] = Pa*m^3/(mol*K)
+  use thermopack_constants, ONLY: Rgas ! [Rgas] = Pa*m^3/(mol*K)
 CONTAINS
 
   SUBROUTINE alphar_deltaCoef(opt,Tr,deltaCoef,model)

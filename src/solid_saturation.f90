@@ -1,8 +1,9 @@
 module solid_saturation
   use saturation
   use saturation_curve
-  use eos, only: thermo, need_alternative_eos
-  use parameters, only: nc, clen, LIQPH, VAPPH, SOLIDPH, verbose, eosLib, nph
+  use eos, only: thermo
+  use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
+  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
   use nonlinear_solvers
   !use parameters
   !use nonlinear_solvers
@@ -91,7 +92,7 @@ contains
   !> \author MH, 2016-02
   !-----------------------------------------------------------------------------
   subroutine sat_fun_newton_threePh(G,Xvar,param)
-    use tpconst, only: tpPmax,tpPmin
+    use thermopack_constants, only: tpPmax,tpPmin
     use solideos, only: solid_thermo
     implicit none
     real, dimension(nc+3), intent(out) :: G !< Function values
@@ -320,7 +321,7 @@ contains
        mode,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits
+    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, dimension(nc), intent(inout) :: K !< Equilibrium constants
@@ -372,7 +373,7 @@ contains
     Xvar(1:nc) = log(K)
     Xvar(nc+1) = log(t)
     Xvar(nc+2) = log(p)
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     Xmin(1:nc) = -1.0e100
     Xmax(1:nc) = 1.0e100
     Xmin(nc+1) = log(Tmin) !Tmin
@@ -665,7 +666,7 @@ contains
        ln_spec,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits
+    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(inout) :: t !< Temperature
@@ -698,7 +699,7 @@ contains
     param(nc+4) = real(is)
     param(nc+5) = real(fluidPhase)
 
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     Xmin(1) = log(Tmin) !Tmin
     Xmax(1) = log(Tmax) !Tmax
     Xmin(2) = log(tpPmin) !Pmin
@@ -1304,8 +1305,7 @@ contains
   !> \author MH, 2016-03
   !-----------------------------------------------------------------------------
   subroutine solidFluidEqSingleComp(Z,Y,X,t,p,specification,phase,ierr,dTdP)
-    use tpconst, only: tpTmin, tpTmax, tpPmin, tpPmax
-    use tpvar, only: comp
+    use thermopack_constants, only: tpTmin, tpTmax, tpPmin, tpPmax
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
     real, dimension(nc), intent(in) :: Z     ! Total composition
@@ -1321,6 +1321,8 @@ contains
     real, dimension(5) :: param
     type(nonlinear_solver) :: solver
     real :: Tmin, Pmin, Tmax, Pmax, Jac(1,1)
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
 
     if (specification /= specT .and. specification /= specP) then
       print *,'sol_fluid_eq_single_comp: Only possible to call with spec=1 and spec=2'
@@ -1342,15 +1344,15 @@ contains
     param(4) = real(phase)
 
     if (phase == VAPPH) then
-      Tmax = comp(is)%ttr
+      Tmax = p_act_eosc%comps(is)%p_comp%ttr
       Tmin = tpTmin
-      Pmax = comp(is)%ptr
+      Pmax = p_act_eosc%comps(is)%p_comp%ptr
       Pmin = tpPmin
     else
       Tmax = tpTmax
-      Tmin = comp(is)%ttr
+      Tmin = p_act_eosc%comps(is)%p_comp%ttr
       Pmax = tpPmax
-      Pmin = comp(is)%ptr
+      Pmin = p_act_eosc%comps(is)%p_comp%ptr
     endif
 
     if (specification == specP) then
@@ -1416,7 +1418,8 @@ contains
           print *,'Specified temperature (K): ',T
         endif
         write(*,*) "Computed value for T/K or P/Pa", exp(XX(1))
-        write(*,*) "ttr, ptr=", comp(is)%ttr, comp(is)%ptr
+        write(*,*) "ttr, ptr=", p_act_eosc%comps(is)%p_comp%ttr, &
+             p_act_eosc%comps(is)%p_comp%ptr
         write(*,*) "Exit flag: ", solver%exitflag
         write(*,*) "Error on exit: ", solver%error_on_exit
         call stoperror('sol_fluid_eq_single_comp::sat did not converge')
@@ -1559,10 +1562,9 @@ contains
   !> Calculate point where gas-liquid saturation line meats
   !! triple line/area.
   subroutine tripleAreaEdge(Z,Ttr,Ptr,is,lower,ierr,Ktr)
-    use tpvar, only: comp
     use thermo_utils, only: isSingleComp
     use tp_solver, only: twoPhaseTPflash
-    use parameters, only: TWOPH
+    use thermopack_constants, only: TWOPH
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(out) :: Ttr !< Temperature
@@ -1575,8 +1577,10 @@ contains
     real, dimension(nc) :: X, Y, lnfugV, lnfugL, K
     real :: betaGas, betaSol, betaLiq
     integer :: iter, phase
+    type(eos_container), pointer :: p_act_eosc
     ! Locale triple points
-    Ttr = comp(is)%ttr
+    p_act_eosc => get_active_eos_container()
+    Ttr = p_act_eosc%comps(is)%p_comp%ttr
     if (isSingleComp(Z)) then
       if (Z(is) < 0.5) then
         ierr = 1
@@ -1585,7 +1589,7 @@ contains
           Ktr = 1.0
         endif
         ierr = 0
-        Ptr = comp(is)%Ptr
+        Ptr = p_act_eosc%comps(is)%p_comp%Ptr
       endif
       return
     endif
@@ -1632,7 +1636,7 @@ contains
   !> \author MH, 2016-03
   !-------------------------------------------------------------------------
   subroutine threePhaseLineTemperature(t,pspec,Z,X,Y,beta,is,isConverged)
-    use parameters, only: VAPPH, LIQPH, nc
+    use thermopack_constants, only: VAPPH, LIQPH
     use numconstants, only: machine_prec
     use eos, only: thermo
     implicit none

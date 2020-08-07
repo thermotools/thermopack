@@ -221,7 +221,7 @@ contains
   end subroutine alphaResDerivs_PARA_H2
 
   function satDeltaEstimate_PARA_H2 (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH, SINGLEPH
+    use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
     class(meos_para_h2) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase

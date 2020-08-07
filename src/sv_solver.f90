@@ -9,9 +9,9 @@
 module sv_solver
   !
   !
-  use tpconst
   use numconstants, only: machine_prec, small
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -1545,7 +1545,6 @@ contains
          premterm_at_dx_zero, setXv, limit_dx
     use thermo_utils, only: maxComp, isSingleComp
     use saturation, only: safe_dewP, dewP
-    use tpvar, only: comp
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(inout) :: betaL !< Liquid phase molar fraction [-]
@@ -1566,6 +1565,9 @@ contains
     type(nonlinear_solver) :: solver
     integer :: sphase, is, imax(1)
     logical :: testSpecVolume
+    type(eos_container), pointer :: p_act_eosc
+    !
+    p_act_eosc => get_active_eos_container()
     isConverged = .true.
     param(1) = sspec
     param(2) = vspec
@@ -1616,7 +1618,7 @@ contains
         if (isSingleComp(Z)) then
           imax = maxloc(Z)
           is = imax(1)
-          testSpecVolume = (abs((1.0 - t/comp(is)%tc)*(1.0 - p/comp(is)%pc)) > small)
+          testSpecVolume = (abs((1.0 - t/p_act_eosc%comps(is)%p_comp%tc)*(1.0 - p/p_act_eosc%comps(is)%p_comp%pc)) > small)
         else
           testSpecVolume = .true.
         endif

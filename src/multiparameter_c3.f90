@@ -189,7 +189,7 @@ contains
   end subroutine alphaResDerivs_C3
 
   function satDeltaEstimate_C3 (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     class(meos_c3) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase

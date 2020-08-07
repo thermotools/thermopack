@@ -1,6 +1,8 @@
 module saturation_curve
-  use eos, only: thermo, entropy, specificvolume, need_alternative_eos
-  use parameters, only: nc, clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose, eosLib
+  use eos, only: thermo, entropy, specificvolume
+  use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
+  use thermopack_var, only: nc, get_active_eos_container, eos_container, &
+       get_active_eos, base_eos_param
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
   use saturation
@@ -271,11 +273,10 @@ contains
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
        Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
        exitOnTriplePoint,Tme)
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
-    use tpvar, only: get_i_cbeos, cbeos
     use eosdata, only: eosLK
     implicit none
     ! Input:
@@ -309,14 +310,16 @@ contains
     real :: ln_spec,beta,lambda,lambda_old,lambda_min
     real :: dT,dP,dTold,dPold,dPdT,dTdP,dPdTold,dTdPold
     logical :: cricon, doBub,calcCrit
-    logical :: needalt,excessive_jump
+    logical :: excessive_jump
     logical :: have_switched_formulation
     logical :: should_switch_formulation
     logical :: recalculate
     logical :: exit_after_saving
     real, parameter :: maxdT = 25.0, maxdP = 10.0
     real :: dS_max, dS_min, v
-    integer :: n_crit, i_cbeos
+    integer :: n_crit
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
     ! Set initial guess for first point
     T = T_init
     p = p_init
@@ -373,7 +376,7 @@ contains
     sgn = 1.0
 
     ! Temperature limits
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     if (present(Tme)) Tmin = Tme
 
     ! Generate initial K values
@@ -382,14 +385,12 @@ contains
     else
       doBub = .false.
     endif
-    ! Do we need an alternative eos?
-    needalt = need_alternative_eos()
 
     ! Find temperature/pressure in correct range
     if (spec == specP) then
-      call PureSat(T,P,Z,.true.,alternative_eos=needalt)
+      call PureSat(T,P,Z,.true.)
     else
-      call PureSat(T,P,Z,.false.,alternative_eos=needalt)
+      call PureSat(T,P,Z,.false.)
     endif
     call thermo(t,p,z,VAPPH,lnfugG)
     call thermo(t,p,z,LIQPH,lnfugL)
@@ -750,8 +751,7 @@ contains
         T = -1.0
         v = -1.0
       endif
-      i_cbeos = get_i_cbeos()
-      if (ierr /= 0 .and. cbeos(i_cbeos)%eosidx /= eosLK) then
+      if (ierr /= 0 .and. p_act_eosc%eosidx /= eosLK) then
         ! MH: Should eventually use only this method for all models but eosLK
         call calcCriticalTV(t,v,Z,ierr,1.0e-8)
         if (ierr == 0) then

@@ -4,8 +4,8 @@
 ! Implemented by A. Aasen in May 2019.
 ! ------------------------------------------------------------------------------
 module pets
-  use tpvar, only: nce
-  use tpconst, only: N_AVOGADRO
+  use thermopack_var, only: nce
+  use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: PI
   implicit none
   save

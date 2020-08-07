@@ -109,7 +109,7 @@ unittests_all_openmp:
 #   variables named: <mode>_<OS>_flags.
 #
 ifeq ($(OS),Linux)
-  compilers += gfortran ifort
+  compilers += gfortran
 
   # Define gfortran flags
   debug_gfortran_flags   = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -g -fbounds-check -fbacktrace\
@@ -126,13 +126,16 @@ ifeq ($(OS),Linux)
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
-    compilers += ifort
-    omp_ifort = "-openmp"
-    ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
+    # Make script freeze when runnign "ifort --version" without contact to licence server
+    ifneq ($(shell timeout 0.11 ifort --version 2> /dev/null),)
+      compilers += ifort
+      omp_ifort = "-openmp"
+      ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
                            | grep -o "[0-9]\.[0-9]\.[0-9]" | tail -1` \
                            \>= 18.0.0 2>/dev/null)
-    ifeq ($(ifort_is_bleeding),1)
-      omp_ifort = "-qopenmp"
+      ifeq ($(ifort_is_bleeding),1)
+        omp_ifort = "-qopenmp"
+      endif
     endif
   endif
 
