@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTreeWidgetItem, QSplashScreen, QFileDialog, \
-    QActionGroup, QLabel
+from PyQt5.QtWidgets import QMainWindow, QApplication, QListWidgetItem, QSplashScreen, QFileDialog, QActionGroup, QLabel
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QCoreApplication, Qt, QTimer
@@ -8,19 +7,12 @@ import sys
 import os
 
 from gui.widgets.component_select_widget import ComponentSelectWidget, ComponentEditWidget
-from gui.widgets.model_select_widget import ModelListMenuItem, ModelSelectWidget
+from gui.widgets.model_select_widget import ModelSelectWidget
 from gui.widgets.change_mode import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.widgets.units_dialog import UnitsDialog
 
-from gui.utils import get_json_data, save_json_data, get_default_units
+from gui.utils import get_json_data, save_json_data, get_default_units, MessageBox
 
-
-# TODO: Ordne mer i menyen: PushButton for hovedmenyene med ikon for å lage ny
-
-# TODO: Notere i koden der funksjoner kalles som burde raise Exception hvis noe går galt så det kan handles.
-#  Kan også displayes for bruker i en ErrorMsgBox f eks
-
-# TODO: Endre litt på mappestruktur i prosjektet, så jeg ikke trenger å endre cubic.py, thermo.py, cpa.py, ...
 
 class ThermopackGUIApp(QMainWindow):
     """
@@ -39,11 +31,11 @@ class ThermopackGUIApp(QMainWindow):
         self.data = {}
         self.set_initial_data()
 
-        # Tree menu to the left
-        self.tree_menu.expandAll()
-        self.tree_menu.topLevelItem(0).setIcon(0, QIcon("icons/plus.png"))
-        self.tree_menu.topLevelItem(1).setIcon(0, QIcon("icons/plus.png"))
-        self.tree_menu.itemDoubleClicked.connect(self.menu_selection)
+        self.new_composition_btn.clicked.connect(self.add_new_composition)
+        self.new_model_btn.clicked.connect(self.add_new_model)
+
+        self.compositions_list.itemDoubleClicked.connect(self.open_composition)
+        self.models_list.itemDoubleClicked.connect(self.open_model)
 
         # Menu actions
         self.action_save.triggered.connect(self.save)
@@ -130,64 +122,71 @@ class ThermopackGUIApp(QMainWindow):
         self.dialog = UnitsDialog(units_data)
         self.dialog.show()
 
-    def menu_selection(self):
+    def add_new_composition(self):
+        self.tabs.show()
+
+        # If Select Components already is open, change to this tab instead of creating a new one
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i) == "Component Selection":
+                self.tabs.setCurrentIndex(i)
+                return
+
+        component_select_widget = ComponentSelectWidget(self.data, parent=self)
+        index = self.tabs.addTab(component_select_widget, "Component Selection")
+        component_select_widget.component_list_updated.connect(self.update_component_lists)
+
+        self.tabs.setCurrentIndex(index)
+
+    def add_new_model(self):
+        self.tabs.show()
+
+        model_select_widget = ModelSelectWidget(self.data, parent=self)
+        index = self.tabs.addTab(model_select_widget, "Model Setup - " + model_select_widget.name)
+        QListWidgetItem(model_select_widget.name, parent=self.models_list)
+        model_select_widget.model_name_changed.connect(self.update_model_lists)
+
+        self.tabs.setCurrentIndex(index)
+
+    def open_composition(self, item):
         """
-        Opens the correct widget (component selection or model setup) when a menu selection item is double clicked
+        Opens the correct component select widget when a menu selection item is double clicked
         """
-        item = self.tree_menu.currentItem()
-        parent = item.parent()
-        selection = item.text(0)
+        self.tabs.show()
+        widget = ComponentEditWidget(self.data, name=item.text(), parent=self)
+        widget.component_list_updated.connect(self.update_component_lists)
+        tab_text_prefix = "Edit Composition - "
+        index = self.tabs.currentIndex()
 
-        if selection:
-            self.tabs.show()
-            index = self.tabs.currentIndex()
+        tab_is_open = False
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i)[-len(widget.name):] == widget.name:
+                index = i
+                tab_is_open = True
 
-            if not parent:
-                # If the selected item has no parent, it is a top level item
+        if not tab_is_open:
+            index = self.tabs.addTab(widget, tab_text_prefix + widget.name)
 
-                if selection == "Select Components":
-                    # If Select Components already is open, change to this tab instead of creating a new one
-                    for i in range(self.tabs.count()):
-                        if self.tabs.tabText(i) == "Component Selection":
-                            self.tabs.setCurrentIndex(i)
-                            return
+        self.tabs.setCurrentIndex(index)
 
-                    component_select_widget = ComponentSelectWidget(self.data, parent=self)
-                    index = self.tabs.addTab(component_select_widget, "Component Selection")
-                    component_select_widget.component_list_updated.connect(self.update_component_lists)
+    def open_model(self, item):
+        """
+        Opens the correct model setup widget when a menu selection item is double clicked
+        """
+        self.tabs.show()
+        widget = ModelSelectWidget(self.data, name=item.text(), parent=self)
+        tab_text_prefix = "Model Setup - "
+        index = self.tabs.currentIndex()
 
-                elif selection == "Select Models":
-                    model_select_widget = ModelSelectWidget(self.data, parent=self)
-                    index = self.tabs.addTab(model_select_widget, "Settings- " + model_select_widget.name)
-                    model_select_widget.settings_updated.connect(self.update_model_lists)
-                    ModelListMenuItem(self.tree_menu.topLevelItem(1), model_select_widget.name, model_select_widget.id,
-                                      model_select_widget)
+        tab_is_open = False
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i)[-len(widget.name):] == widget.name:
+                index = i
+                tab_is_open = True
 
-            else:
-                # Open a tab displaying info
-                if parent.text(0) == "Select Components":
-                    widget = ComponentEditWidget(self.data, name=item.text(0), parent=self)
-                    widget.component_list_updated.connect(self.update_component_lists)
-                    tab_text_prefix = "Component Edit- "
+        if not tab_is_open:
+            index = self.tabs.addTab(widget, tab_text_prefix + widget.name)
 
-                elif parent.text(0) == "Select Models":
-                    widget = item.widget
-                    tab_text_prefix = "Settings- "
-
-                else:
-                    self.log("Widget doesn't exist")
-                    return
-
-                tab_is_open = False
-                for i in range(self.tabs.count()):
-                    if self.tabs.tabText(i)[-len(widget.name):] == widget.name:
-                        index = i
-                        tab_is_open = True
-
-                if not tab_is_open:
-                    index = self.tabs.addTab(widget, tab_text_prefix + widget.name)
-
-            self.tabs.setCurrentIndex(index)
+        self.tabs.setCurrentIndex(index)
 
     def update_component_lists(self, list_name, is_new, old_name):
         """
@@ -196,41 +195,38 @@ class ThermopackGUIApp(QMainWindow):
         :param is_new: True if this is a new component list
         :param old_name: Previous name of the component list, to be updated
         """
+        # Find correct tab and change its name
+        for index in range(self.tabs.count()):
+            if "Edit Composition" in self.tabs.tabText(index) and old_name in self.tabs.tabText(index):
+                self.tabs.setTabText(index, "Edit Composition - " + list_name)
+
         if is_new:
-            QTreeWidgetItem(self.tree_menu.topLevelItem(0), [list_name])
+            self.compositions_list.addItem(list_name)
+
         else:
-            root = self.tree_menu.topLevelItem(0)
+            for i in range(self.compositions_list.count()):
+                if self.compositions_list.item(i).text() == old_name:
+                    self.compositions_list.item(i).setText(list_name)
 
-            for index in range(root.childCount()):
-                if root.child(index).text(0) == old_name:
-                    root.child(index).setText(0, list_name)
-
-    def update_model_lists(self, list_name, data, id):
+    def update_model_lists(self, list_name, is_new, old_name):
         """
-        Creates/Updates a model setup menu item.
-        :param list_name: New name of the model setup list
-        :param is_new: True if this is a new model setup
-        :param id: id of the model setup. Used to find and rename model selection tab
+        Creates/Updates a model setup menu item. If the model setup already exists, the menu item is renamed
+        :param list_name: New name of the model setup
+        :param is_new: True if this is a model setup
+        :param old_name: Previous name of the model setup, to be updated
         """
         # Find correct tab and change its name
-        self.data = data
-
         for index in range(self.tabs.count()):
-            tab_widget = self.tabs.widget(index)
+            if "Model Setup" in self.tabs.tabText(index) and old_name in self.tabs.tabText(index):
+                self.tabs.setTabText(index, "Model Setup - " + list_name)
 
-            if "Settings" in self.tabs.tabText(index):
-                tab_id = tab_widget.data["Model setups"][tab_widget.name]["id"]
+        if is_new:
+            self.models_list.addItem(list_name)
 
-                if tab_id == self.data["Model setups"][list_name]["id"]:
-                    self.tabs.setTabText(index, "Settings- " + list_name)
-
-        # Find correct menu_item to rename
-        root = self.tree_menu.topLevelItem(1)
-        for index in range(root.childCount()):
-
-            if root.child(index).id == id:
-                root.child(index).setText(0, list_name)
-                return
+        else:
+            for i in range(self.models_list.count()):
+                if self.models_list.item(i).text() == old_name:
+                    self.models_list.item(i).setText(list_name)
 
     def close_tab(self, index):
         """
@@ -286,6 +282,26 @@ class ThermopackGUIApp(QMainWindow):
         loaded_units_data = loaded_data["Units"]
         loaded_plotting_preferences = loaded_data["Plotting preferences"]
 
+        # If loaded data contains names which currently exist, an error message will be displayed
+        loaded_data_is_compatible = True
+        for i in range(self.compositions_list.count()):
+            if self.compositions_list.item(i).text() in loaded_component_data.keys():
+                loaded_data_is_compatible = False
+                name = self.compositions_list.item(i).text()
+
+        for i in range(self.models_list.count()):
+            if self.models_list.item(i).text() in loaded_model_setup_data.keys():
+                loaded_data_is_compatible = False
+                name = self.models_list.item(i).text()
+
+        if not loaded_data_is_compatible:
+            error_msg = "Could not load data from %s. %s already exists. " \
+                        "Either change its name or delete it before trying to load again." \
+                        % (file_path, name)
+            msg = MessageBox("Error", error_msg)
+            msg.exec_()
+            return
+
         self.data["Component lists"].update(loaded_component_data)
         self.data["Model setups"].update(loaded_model_setup_data)
         self.data["Units"].update(loaded_units_data)
@@ -294,7 +310,7 @@ class ThermopackGUIApp(QMainWindow):
         self.json_file = file_path
         self.setWindowTitle(self.windowTitle() + " - " + self.json_file)
 
-        # Populate menu to the left
+        # Populate menus to the left
         self.log("Opened and loaded " + self.json_file + " successfully!")
         # Clear menu
         for list_name in loaded_component_data.keys():
@@ -302,9 +318,8 @@ class ThermopackGUIApp(QMainWindow):
 
         for list_name in loaded_model_setup_data.keys():
             model_select_widget = ModelSelectWidget(self.data, name=list_name, parent=self)
-            model_select_widget.settings_updated.connect(self.update_model_lists)
-            ModelListMenuItem(self.tree_menu.topLevelItem(1), model_select_widget.name, model_select_widget.id,
-                              model_select_widget)
+            model_select_widget.model_name_changed.connect(self.update_model_lists)
+            QListWidgetItem(list_name, parent=self.models_list)
 
         self.save()
 

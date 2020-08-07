@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from gui.widgets.parameters import *
@@ -6,19 +6,6 @@ from gui.widgets.parameters import *
 from gui.utils import get_unique_name, get_unique_id
 
 # TODO: Mulighet for å slette en model setup
-
-
-class ModelListMenuItem(QTreeWidgetItem):
-    """
-    A TreeWidgetItem which also contains an id and a widget.
-    This connects the menu item to the correct ModelSelectWidget, making it possible to open an edit tab corresponing
-    to the chosen model setting.
-    """
-
-    def __init__(self, parent, text, id, widget):
-        super().__init__(parent, [text])
-        self.id = id
-        self.widget = widget
 
 
 class ModelSelectWidget(QWidget):
@@ -50,10 +37,6 @@ class ModelSelectWidget(QWidget):
             self.data_init()
             self.init_bin_coeff_widgets()
 
-        self.id = self.data["Model setups"][self.name]["id"]
-
-        self.settings_updated.emit(self.name, self.data, self.id)
-
         self.model_category_list.currentItemChanged.connect(self.category_selected)
 
         # Cubic Action handling
@@ -75,7 +58,7 @@ class ModelSelectWidget(QWidget):
 
         self.name_edit.editingFinished.connect(self.change_name)
 
-    settings_updated = pyqtSignal(str, dict, int)
+    model_name_changed = pyqtSignal(str, bool, str)
 
     def populate_widget(self):
         """
@@ -147,7 +130,6 @@ class ModelSelectWidget(QWidget):
         if category == "Cubic" or category == "CPA":
             self.data["Model setups"][self.name] = {
                 "EOS": "PR",
-                "id": get_unique_id(self.data),
                 "Model category": category,
                 "Model options": {
                     "Alpha correlation": "Classic",
@@ -160,7 +142,6 @@ class ModelSelectWidget(QWidget):
 
         elif category == "PC-SAFT":
             self.data["Model setups"][self.name] = {
-                "id": get_unique_id(self.data),
                 "Model category": category,
                 "Model options": {
                     "Reference": "Default"
@@ -170,7 +151,6 @@ class ModelSelectWidget(QWidget):
 
         elif category == "SAFT-VR Mie":
             self.data["Model setups"][self.name] = {
-                "id": get_unique_id(self.data),
                 "Model options": {
                     "Hard sphere": True,
                     "A1": True,
@@ -254,26 +234,20 @@ class ModelSelectWidget(QWidget):
     # Handling changes in cubic model options
 
     def change_cubic_eos(self, eos_item):
-        eos = eos_item.text()
-        self.data["Model setups"][self.name]["EOS"] = eos
-        self.settings_updated.emit(self.name, self.data, self.id)
+        self.data["Model setups"][self.name]["EOS"] = eos_item.text()
 
     def change_cubic_alpha_corr(self, alpha_corr):
         self.data["Model setups"][self.name]["Model options"]["Alpha correlation"] = alpha_corr
-        self.settings_updated.emit(self.name, self.data, self.id)
 
     def change_cubic_mix_rule(self, mixing_rule):
         self.data["Model setups"][self.name]["Model options"]["Mixing rule"] = mixing_rule
-        self.settings_updated.emit(self.name, self.data, self.id)
         self.show_correct_coeff_widget()
 
     def change_cubic_vol_trans(self, vol_trans):
         self.data["Model setups"][self.name]["Model options"]["Volume translation"] = vol_trans
-        self.settings_updated.emit(self.name, self.data, self.id)
 
     def change_cubic_ref(self, ref):
         self.data["Model setups"][self.name]["Model options"]["Reference"] = ref
-        self.settings_updated.emit(self.name, self.data, self.id)
 
     # Handling changes in SAFT-VR Mie options
 
@@ -320,8 +294,9 @@ class ModelSelectWidget(QWidget):
 
         else:
             self.data["Model setups"][new_name] = self.data["Model setups"].pop(self.name)
+            old_name = self.name
             self.name = new_name
-            self.settings_updated.emit(self.name, self.data, self.id)
+            self.model_name_changed.emit(new_name, False, old_name)
 
 
 class SettingsExistMsg(QMessageBox):

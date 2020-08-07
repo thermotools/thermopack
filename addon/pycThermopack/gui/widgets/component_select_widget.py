@@ -1,13 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
 from gui.widgets.component_info import ComponentInformationWindow
-from gui.utils import get_unique_name, get_fluids
-
+from gui.utils import get_unique_name, get_fluids, MessageBox
 
 # TODO: Mulighet for å slette en lagret komposisjon
-# TODO: Resize table to fit contents
 
 
 class ComponentSelectWidget(QWidget):
@@ -16,6 +14,7 @@ class ComponentSelectWidget(QWidget):
     and a field for entering a name for the composition. When double-clicking on a component, a window displaying all
     the fluid data opens.
     """
+
     def __init__(self, data, parent=None):
         QWidget.__init__(self, parent)
 
@@ -153,16 +152,19 @@ class ComponentSelectWidget(QWidget):
 
                     self.set_component_list_placeholder_name()
                 else:
-                    msg = ListNameAlreadyExistsMessageBox(list_name)
-                    msg.exec_()
+                    error_msg = "A component list with this name (%s) already exists" % list_name
+                    msg = MessageBox("Error", error_msg)
                     self.set_name_edit.undo()
+                    msg.exec_()
 
             else:
-                msg = CompositionAlreadyExistsMessageBox(self.selected_components, self.final_compositions)
+                error_msg = "This composition is already stored as " + str(list(self.final_compositions.keys())[list(
+                    self.final_compositions.values()).index(self.selected_components)])
+                msg = MessageBox("Error", error_msg)
                 msg.exec_()
 
         else:
-            msg = NoComponentsChosenMessageBox()
+            msg = MessageBox("Error", "No components are chosen.")
             msg.exec_()
 
     def search(self, filter_text):
@@ -200,6 +202,7 @@ class ComponentEditWidget(ComponentSelectWidget):
     """
     Widget for editing a previously saved composition (looks the same as the ComponentSelectWidget)
     """
+
     def __init__(self, data, name, parent=None):
         ComponentSelectWidget.__init__(self, data, parent)
 
@@ -262,50 +265,11 @@ class ComponentEditWidget(ComponentSelectWidget):
                 self.name = list_name
 
             else:
-                msg = ListNameAlreadyExistsMessageBox(list_name)
+                error_msg = "A component list with this name (%s) already exists" % list_name
+                msg = MessageBox("Error", error_msg)
                 self.set_name_edit.undo()
                 msg.exec_()
 
         else:
-            msg = NoComponentsChosenMessageBox()
+            msg = MessageBox("Error", "No components are chosen.")
             msg.exec_()
-
-
-class NoComponentsChosenMessageBox(QMessageBox):
-    """
-    Showed when the user tries to save a composition with no components
-    """
-    def __init__(self):
-        QMessageBox.__init__(self)
-        self.setWindowTitle("Oups!")
-        self.setText("No components are chosen")
-        self.setIcon(QMessageBox.Information)
-        self.setStandardButtons(QMessageBox.Close)
-        self.setDefaultButton(QMessageBox.Ignore)
-
-
-class CompositionAlreadyExistsMessageBox(QMessageBox):
-    """
-    Showed when the user tries to save a composition which already exists
-    """
-    def __init__(self, selected_components, final_compositions):
-        QMessageBox.__init__(self)
-        self.setWindowTitle("Oups!")
-        self.setText("This composition is already stored as " + str(list(final_compositions.keys())[list(
-            final_compositions.values()).index(selected_components)]))
-        self.setIcon(QMessageBox.Information)
-        self.setStandardButtons(QMessageBox.Close)
-        self.setDefaultButton(QMessageBox.Ignore)
-
-
-class ListNameAlreadyExistsMessageBox(QMessageBox):
-    """
-    Showed when the user tries to save a composition with the name of another composition
-    """
-    def __init__(self, list_name):
-        QMessageBox.__init__(self)
-        self.setWindowTitle("Oups!")
-        self.setText("A component list with this name (%s) already exists" % list_name)
-        self.setIcon(QMessageBox.Information)
-        self.setStandardButtons(QMessageBox.Close)
-        self.setDefaultButton(QMessageBox.Ignore)
