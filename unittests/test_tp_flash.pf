@@ -1,6 +1,6 @@
 module test_tp_flash
   use eoslibinit, only: init_thermo
-  use parameters, only: continueOnError
+  use thermopack_constants, only: continueOnError
   use tp_solver
   use pfunit_mod
   implicit none
@@ -17,7 +17,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+    call init_thermo('PR', 'vdW', 'Classic',&
          "CO2,N2,O2,AR,CO,H2S,H2,C1", 9)
 
     z = (/0.98199899999065965, 6.0000000025901721E-003,&
@@ -52,7 +52,7 @@ contains
     real :: betaL, beta
     logical :: sloppy, solution
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
+    call init_thermo('PR', 'vdW', 'Classic',&
          "CO2,N2,H2S,C2,C1", 6)
 
     z = [0.95051094482832965, 4.8941962130007507E-003, &

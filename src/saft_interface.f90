@@ -483,10 +483,10 @@ contains
   !> and the association contribution. Only works for mixtures with association.
   subroutine saft_total_pressure_assoc_mix(nc,cbeos,T,V,n,P,&
        dPdV,dPdT,dPdn)
-    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: cbeos
     real, intent(in)  :: T                  !< Temperature [K]
     real, intent(in)  :: V                  !< Volume [m^3]
     real, intent(in)  :: n(nc)              !< Mole numbers [moles]
@@ -507,13 +507,12 @@ contains
 
   !> Front-end procedure giving the combined pressure of the cubic contribution
   !> and the association contribution.
-  subroutine saft_total_pressure(nc,comp,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
+  subroutine saft_total_pressure(nc,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
     use saft_association, only: numAssocSites
-    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     use compdata, only: gendata
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    class(cb_eos), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: cbeos
     real, intent(in)  :: T                  !< Temperature [K]
     real, intent(in)  :: V                  !< Volume [m^3]
     real, intent(in)  :: n(nc)              !< Mole numbers [moles]
@@ -535,12 +534,11 @@ contains
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 
   !> Calculate the compressibility and its derivatives.
-  subroutine saft_zfac(nc,comp,cbeos,phase,T,P,n,Z,dZdT,dZdP,dZdn)
+  subroutine saft_zfac(nc,cbeos,phase,T,P,n,Z,dZdT,dZdP,dZdn)
     use compdata, only: gendata_pointer
     use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata_pointer), dimension(nc), intent(in) :: comp
     class(base_eos_param), intent(inout) :: cbeos
     integer, intent(in) :: phase
     real, intent(in) :: T                               !< Temperature [K]
@@ -649,12 +647,11 @@ contains
   ! !>
   ! !> \author Ailo A, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidEntropy(nc,comp,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn)
+  subroutine saft_ResidEntropy(nc,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn)
     use compdata, only: gendata
-    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc !< Number of components in mixture.
-    type(gendata), intent(in) :: comp(nc) !< Component vector.
-    class(cb_eos), intent(inout) :: cbeos !< Cubic eos for
+    class(base_eos_param), intent(inout) :: cbeos !< Cubic eos for
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -706,12 +703,11 @@ contains
   ! !>
   ! !> \author Ailo A, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidEnthalpy(nc,comp,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn)
+  subroutine saft_ResidEnthalpy(nc,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn)
     use compdata, only: gendata
-    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    class(cb_eos), intent(inout) :: cbeos !< Cubic eos
+    class(base_eos_param), intent(inout) :: cbeos !< Cubic eos
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -760,12 +756,11 @@ contains
   ! !>
   ! !> \author Ailo, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidGibbs(nc,comp,cbeos,phase,T,P,n,G,dGdT,dGdP,dGdn)
+  subroutine saft_ResidGibbs(nc,cbeos,phase,T,P,n,G,dGdT,dGdP,dGdn)
     use compdata, only: gendata
-    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    class(cb_eos), intent(inout) :: cbeos !< Cubic eos.
+    class(base_eos_param), intent(inout) :: cbeos !< Cubic eos.
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -844,7 +839,6 @@ contains
   !> Routine for when we want to use PC-SAFT on a non-association mixture.
   subroutine pc_saft_nonassoc_volume_solver(nc,cbeos,T,P_spec,n,phase,V)
     use saft_association, only: numAssocSites
-    use cubic_eos, only: cb_eos
     use thermopack_var, only: base_eos_param
     use thermopack_constants, only: VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
@@ -986,8 +980,7 @@ contains
   !> (2006) "Robust and Efficient Solution Procedures for Association Models."
   subroutine saft_volume_solver (nc,cbeos,T,P_spec,n,phase,V)
     use thermopack_var, only: base_eos_param
-    use thermopack_constants, only: Rgas
-    use thermopack_constants, only: VAPPH, verbose
+    use thermopack_constants, only: Rgas, VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     ! Input.
@@ -1139,7 +1132,6 @@ contains
   !> contribution and the association contribution.
   subroutine saft_total_pressure_knowing_X_k(nc,cbeos,T,V,n,X_k,P,&
        dPdV,dPdT,dPdn)
-    use cubic_eos, only: cb_eos
     use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, numAssocSites, assoc_pressure
     integer, intent(in) :: nc

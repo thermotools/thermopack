@@ -2486,7 +2486,7 @@ contains
     use thermopack_constants, only: get_templimits, MINGIBBSPH
     use thermopack_var, only: nc
     use eosTV, only: pressure
-    use eos, only: specificVolume, thermo, pseudo
+    use eos, only: specificVolume, thermo, pseudo_safe
     use single_phase, only: TP_CalcPseudo
     use puresaturation, only: puresat
     use utilities, only: isXwithinBounds

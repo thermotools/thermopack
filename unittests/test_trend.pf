@@ -1,7 +1,7 @@
 module test_trend
   use eoslibinit, only: init_thermo
   use eos, only: residualGibbs, enthalpy, entropy, idealGibbsSingle
-  use tpconst, only: getRgas
+  use thermopack_constants, only: Rgas
   use pfunit_mod
   implicit none
   public
@@ -14,12 +14,11 @@ contains
     !
     ! MH, 2015-11-25
     integer, parameter :: ncomp = 2
-    real :: t, p, x(ncomp), g, gr, gid(ncomp), h, s, gmix, gidmix, Rgas
+    real :: t, p, x(ncomp), g, gr, gid(ncomp), h, s, gmix, gidmix
     integer :: i
     real, parameter :: tol = 1e-3
 
-    call init_thermo('TREND', 'EOSCG', 'vdW', 'Classic', ncomp,&
-         "CO2,H2O", 2)
+    call init_thermo('EOSCG', 'vdW', 'Classic', "CO2,H2O", 2)
     x = [0.5,0.5]
     t = 300.0
     p = 1.0e6
@@ -30,7 +29,6 @@ contains
     do i=1,ncomp
       call idealGibbsSingle(t,p,i,gid(i))
     enddo
-    Rgas = getRgas(x)
     gidmix = Rgas*T*sum(x*log(x))
     gmix = gr + sum(x*gid) + gidmix
 
@@ -41,7 +39,7 @@ contains
   subroutine test_trend_free_energy()
     use eosTV, only: free_energy
     use eos, only: specificvolume
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     ! Test Helmholtz free energy functions from TREND
     !
     ! MH, 2017-02
@@ -50,8 +48,7 @@ contains
     real :: t0,dt,v0,dv,p
     real, parameter :: tol = 1e-6, eps = 1.0e-7
 
-    call init_thermo('TREND', 'EOSCG', 'vdW', 'Classic', ncomp,&
-         "CO2,H2O", 2)
+    call init_thermo('EOSCG', 'vdW', 'Classic', "CO2,H2O", 2)
     x = [0.8,0.2]
     t0 = 250.0
     p = 1.0e6

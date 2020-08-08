@@ -95,6 +95,7 @@ contains
   !> \author MH, 2012-08-15
   !-------------------------------------------------------------------------
   subroutine twoPhaseUVflash_mc(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase)
+    use thermo_utils, only: wilsonK
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(out) :: betaL !< Liquid phase molar fraction [-]

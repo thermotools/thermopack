@@ -1,6 +1,6 @@
 module test_uv_flash
   use eoslibinit, only: init_thermo
-  use parameters, only: continueOnError, LIQPH, VAPPH, SINGLEPH, TWOPH
+  use thermopack_constants, only: continueOnError, LIQPH, VAPPH, SINGLEPH, TWOPH
   use uv_solver
   use pfunit_mod
   implicit none
@@ -23,8 +23,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
-         "CO2,C1", 3)
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,C1", 3)
 
     z = [1.0, 0.0]
     x = z
@@ -98,8 +97,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
-         "CO2,C1", 3)
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,C1", 3)
 
     z = [1.0, 0.0]
     x = z
@@ -165,8 +163,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
-         "CO2,N2,H2S,C2,C1", 6)
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,N2,H2S,C2,C1", 6)
 
     T = 298.09621346011721
     p = 7062289.7496999148
@@ -203,7 +200,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+    call init_thermo('PR', 'vdW', 'Classic', &
          "CO2,N2,O2,AR,NO,SO2,CO,NH3", 9)
 
     T = 301.11445826574317
@@ -238,7 +235,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 8,&
+    call init_thermo('PR', 'vdW', 'Classic',&
          "CO2,N2,O2,AR,NO,SO2,CO,NH3", 9)
 
     T = 186.06816554198198

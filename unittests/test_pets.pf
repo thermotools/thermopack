@@ -1,5 +1,5 @@
 module test_pets
-  use tpvar, only: nce, comp, cbeos
+  use thermopack_var, only: nce
   use pfunit_mod
   use eoslibinit, only: init_thermo
   use pets
@@ -182,12 +182,12 @@ contains
     use pets
     real :: rho,T,x(1)
     !real :: var, var2
-    integer :: i
+    !integer :: i
     logical, pointer :: verbose
     logical, target :: t_verbose
 
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PeTS',mixing='Classic',ncomp=1,&
-         comp_string="AR",nphases=2,saft_setno=(/1/))
+    call init_thermo(alpha='Classic',eos='PeTS',mixing='Classic',&
+         comp_string="AR",nphases=2,saft_ref="DEFAULT")
     !call pets_set_pure_params(1,(/1.0,1.0/))
     T=100; rho=3e4
     x = (/1.0/)

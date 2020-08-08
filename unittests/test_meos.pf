@@ -5,8 +5,8 @@ module test_meos
   !> 2. Computed property values are checked against numbers given in papers. Will detect if the numerical coefficients are correct.
   !> 3. Saturation properties are compared against numbers given in papers. Will detect if the density solver is correct.
   use pfunit_mod
-  use tpconst
-  use parameters
+  use thermopack_var
+  use thermopack_constants
   use multiparameter_base
   use multiparameter_c3
   use multiparameter_para_h2
@@ -706,7 +706,7 @@ contains
 
   @Test
   subroutine test_values_normal_h2()
-    use eoslibinit, only:init_thermo
+    use eoslibinit, only: init_thermo
     use eos, only: enthalpy
     ! This test ensures that all coefficients are correct.
     type(meos_normal_h2) :: m
@@ -723,7 +723,7 @@ contains
     real :: n(1) = (/1.0/)
     real, parameter :: releps = 4e-4 ! Paper gives numbers with 5 sig figs.
 
-    call init_thermo("thermopack","NIST_MEOS","Classic","Classic",1,"N-H2",2)
+    call init_thermo("NIST_MEOS","Classic","Classic","N-H2",2)
 
     call m%init()
     Rgas_meos = m%Rgas_fit

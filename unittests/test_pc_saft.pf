@@ -1,11 +1,11 @@
 module test_pc_saft
   use pfunit_mod
-  use tpvar
+  use thermopack_var
   use pc_saft_nonassoc
-  use eoslibinit, only: init_thermo, cleanup_eos
+  use eoslibinit, only: init_thermo
   use nonlinear_solvers, only: approximate_jacobian_2nd
   use saft_interface
-  use parameters
+  use thermopack_constants
   implicit none
   public
 
@@ -105,7 +105,6 @@ contains
   end subroutine test_1st_der_twoD
 
   subroutine test_1st_der_dim(rout,rho,T,x,dim,verbose)
-    use tpvar, only: nce
     interface
       subroutine rout(rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
         import nce
@@ -226,7 +225,6 @@ contains
   end subroutine test_1st_der_dim
 
   subroutine test_1st_der_opt(rout,rho,T,x,verbose)
-    use tpvar, only: nce
     interface
       subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
         import nce
@@ -255,7 +253,6 @@ contains
   end subroutine test_1st_der_opt
 
   subroutine test_1st_der(rout,rho,T,x,verbose)
-    use tpvar, only: nce
     interface
       subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
         import nce
@@ -487,8 +484,8 @@ contains
   subroutine test_der
     real :: rho,T,x(2)
 
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',mixing='Classic',ncomp=2,&
-         comp_string="C1,H2O",nphases=2,saft_setno=(/1,1/))
+    call init_thermo(alpha='Classic',eos='PC-SAFT',mixing='Classic',&
+         comp_string="C1,H2O",nphases=2,saft_ref="DEFAULT")
     rho = 4/5e-2
     T = 300
     x = (/2.0,1.2/)
@@ -515,7 +512,6 @@ contains
     call test_1st_der_opt(alpha_PC,rho,T,x)
     call test_1st_der_opt(F_PC_SAFT_TVn,rho=T,T=sum(x)/rho,x=x)
 
-    call cleanup_eos()
   end subroutine test_der
 
   @Test
@@ -523,36 +519,36 @@ contains
     real :: V, P, x(1)
     real :: rhoLiq, rhoVap
     integer :: nc
+    class(base_eos_param), pointer :: p_eos
 
     nc = 1
     x = (/1.0/)
 
     ! Should estimate the liquid and vapor density of propane to within 5 %.
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
-         mixing='Classic',ncomp=1,comp_string="C3",nphases=2,saft_setno=(/1/))
+    call init_thermo(alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',comp_string="C3",nphases=2,saft_ref="DEFAULT")
     P = 101325.0
+    p_eos => get_active_eos()
 
-    call saft_master_volume_solver(nc,comp,cbeos(1),T=298.0,P_spec=P,n=x,phase=LIQPH,V=V)
+    call saft_master_volume_solver(nc,p_eos,T=298.0,P_spec=P,n=x,phase=LIQPH,V=V)
     rhoLiq = (3*12+8*1.01)*1e-3/V
     @assertEqual(rhoLiq, 493.0, 493.0*0.05)
-    call saft_master_volume_solver(nc,comp,cbeos(1),T=273.0,P_spec=P,n=x,phase=VAPPH,V=V)
+    call saft_master_volume_solver(nc,p_eos,T=273.0,P_spec=P,n=x,phase=VAPPH,V=V)
     rhoVap = (3*12+8*1.01)*1e-3/V
     @assertEqual(rhoVap, 2.0098, 2.0098*0.05)
-    call cleanup_eos()
 
     ! Should estimate the liquid and vapor density of water to within 10 %.
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
-         mixing='Classic',ncomp=1,comp_string="H2O",nphases=2,saft_setno=(/1/))
+    call init_thermo(alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',comp_string="H2O",nphases=2,saft_ref="DEFAULT")
     P = 101325.0
 
-    call saft_master_volume_solver(nc,comp,cbeos(1),T=277.0,P_spec=P,n=x,phase=LIQPH,V=V)
+    call saft_master_volume_solver(nc,p_eos,T=277.0,P_spec=P,n=x,phase=LIQPH,V=V)
     rhoLiq = 18.02*1e-3/V
     @assertEqual(rhoLiq, 1000.0, 1000.0*0.1)
-    call saft_master_volume_solver(nc,comp,cbeos(1),T=298.0,P_spec=P,n=x,phase=VAPPH,V=V)
+    call saft_master_volume_solver(nc,p_eos,T=298.0,P_spec=P,n=x,phase=VAPPH,V=V)
     rhoVap = 18.02*1e-3/V
     @assertEqual(rhoVap, 0.804, 0.804*0.1)
 
-    call cleanup_eos()
   end subroutine test_pure_density_accuracy
 
   @Test
@@ -560,6 +556,7 @@ contains
     real :: V, T, P, x(3)
     real :: rhoVap
     integer :: nc
+    class(base_eos_param), pointer :: p_eos
 
     nc = 3
     x = (/0.78,0.21,0.01/)
@@ -567,16 +564,15 @@ contains
     P = 1e5
 
     ! Should estimate density of air at STP to within 1 %.
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PC-SAFT',&
-         mixing='Classic',ncomp=nc,comp_string="N2,O2,AR",nphases=2,saft_setno=(/1,1,1/))
+    call init_thermo(alpha='Classic',eos='PC-SAFT',&
+         mixing='Classic',comp_string="N2,O2,AR",nphases=2,saft_ref="DEFAULT")
+    p_eos => get_active_eos()
 
-
-    call saft_master_volume_solver(nc,comp,cbeos(1),T=T,P_spec=P,n=x,phase=VAPPH,V=V)
+    call saft_master_volume_solver(nc,p_eos,T=T,P_spec=P,n=x,phase=VAPPH,V=V)
     rhoVap = (28.9645)*1e-3/V
     @assertEqual(1.2754, rhoVap, 1.2754*0.01)
 
 
-    call cleanup_eos()
   end subroutine test_mixture_density_accuracy
 
 end module test_pc_saft

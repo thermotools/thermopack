@@ -1,5 +1,5 @@
 module test_saftvrmie
-  use eoslibinit, only: init_thermo, cleanup_eos
+  use eoslibinit, only: init_thermo
   use pfunit_mod
   use saft_interface
   use saftvrmie_interface
@@ -8,9 +8,8 @@ module test_saftvrmie
   use saftvrmie_chain
   use saftvrmie_hardsphere
   use saftvrmie_options
-  use tpvar, only: comp, nce, cbeos
-  use parameters, only: LIQPH, VAPPH
-  use tpconst, only: Rgas
+  use thermopack_var, only: nce, get_active_eos_container, eos_container
+  use thermopack_constants, only: LIQPH, VAPPH, Rgas
   use critical, only: calcCritical, calcCriticalTV
   use eostv, only: pressure, secondvirialcoeffmatrix
   use quadratures, only: GAUSS_10
@@ -34,8 +33,8 @@ contains
     compstr = "C1"
     Tc = 195.3
     Pc = 5.15e6
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     T=-1; v=-1 ! initial values
     call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
     P = pressure(t,v,z)
@@ -49,8 +48,8 @@ contains
     compstr = "C2"
     Tc = 311.38
     Pc = 5.49e6
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     T=-1; v=-1 ! initial values
     call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
     P = pressure(t,v,z)
@@ -64,8 +63,8 @@ contains
     compstr = "C3"
     Tc = 376.20
     Pc = 4.77e6
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     T=-1; v=-1 ! initial values
     call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
     P = pressure(t,v,z)
@@ -79,8 +78,8 @@ contains
     compstr = "NC10"
     Tc = 626.37
     Pc = 2.31e6
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     T=-1; v=-1 ! initial values
     call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
     P = pressure(t,v,z)
@@ -94,8 +93,8 @@ contains
     compstr = "CO2"
     Tc = 307.00
     Pc = 7.86e6
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     T=-1; v=-1 ! initial values
     call calcCriticalTV(T,v,z,ierr=ierr,tol=tol)
     P = pressure(t,v,z)
@@ -161,6 +160,7 @@ contains
     real, dimension(1) :: pach_n,pach_Tn,pach_Vn
     real, dimension(1,1) :: pach_nn
 
+    type(eos_container), pointer :: p_eosc
 
     T = 15.0
     kij = 0.5
@@ -169,8 +169,9 @@ contains
     !print *, "*** REAL MIXTURE ***"
     nc = 2
     compstr = "H2,HE"
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
+    p_eosc => get_active_eos_container()
     call set_saftvrmie_eps_kij(1,2,kij)
     call set_saftvrmie_lr_gammaij(1,2,gammaij)
     m = saftvrmie_param%ms
@@ -205,7 +206,7 @@ contains
          ach_VV=ach_VV,ach_TV=ach_TV,ach_Tn=ach_Tn,ach_Vn=ach_Vn,ach_nn=ach_nn,&
          returnF=.false.)
 
-    print *, "comps ", comp(1)%ident, comp(2)%ident
+    print *, "comps ", p_eosc%comps(1)%p_comp%ident, p_eosc%comps(2)%p_comp%ident
     print *, "m        ", m
     print *, "sigma    ", saftvrmie_param%sigma_ij
     print *, "eps      ", saftvrmie_param%eps_divk_ij
@@ -229,8 +230,8 @@ contains
     print *, "*** PSEUDO-COMPONENT ***"
     nc = 1
     compstr = "H2"
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
     call set_saftvrmie_pure_fluid_param(ic=1,m=1.0,sigma=sigma(1,2),&
          eps_depth_divk=eps(1,2),lambda_a=lambda_a(1,2),lambda_r=lambda_r(1,2))
     call secondvirialcoeffmatrix(T, Bmat1)
@@ -256,7 +257,7 @@ contains
          ach_VV=pach_VV,ach_TV=pach_TV,ach_Tn=pach_Tn,ach_Vn=pach_Vn,ach_nn=pach_nn,&
          returnF=.false.)
 
-    print *, "comps ", comp(1)%ident
+    print *, "comps ", p_eosc%comps(1)%p_comp%ident
     print *, "T, V, n", T, V, n1
     print *, "d_bh   ", saftvrmie_var(1)%dhs%d
     print *, "ahs    ", pahs
@@ -308,8 +309,8 @@ contains
     !print *, "*** REAL MIXTURE ***"
     nc = 2
     compstr = "C2,NC10"
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
-         ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
+         comp_string=compstr,nphases=2,silent=.true.)
 
     ! Set flags to make the eos correspond to Lafittes SAFT-VR Mie implementation
     quantum_correction = 0
@@ -427,8 +428,8 @@ contains
     n = (/0.1,0.2,0.3,0.4/)*1.3333
 
     compstr = "He,Ne,H2,C1"
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='SAFT-VR-MIE',&
-         mixing='Classic',ncomp=nc,comp_string=compstr,nphases=2,silent=.true.)
+    call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',&
+         mixing='Classic',comp_string=compstr,nphases=2,silent=.true.)
 
     t = 30.0
     p = 1.0e6

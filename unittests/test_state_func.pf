@@ -24,8 +24,7 @@ contains
     real                    :: dsdt_v,dsdp_v,dvdp_s,dvdt_s
     real                    :: dsdt_v_num,dsdp_v_num,dvdp_s_num,dvdt_s_num
 
-    call init_thermo("Thermopack","pr","classic","classic",ncomps, &
-         "CO2,N2,O2",nphases)
+    call init_thermo("pr","classic","classic", "CO2,N2,O2",nphases)
 
     z(1) = 0.90
     z(2) = 0.05

@@ -1,10 +1,10 @@
 module test_saft
-  use eoslibinit, only: init_thermo, cleanup_eos
+  use eoslibinit, only: init_thermo
   use pfunit_mod
   use saft_interface
   use saft_association
-  use tpvar, only: comp, nce, cbeos
-  use parameters, only: LIQPH, VAPPH
+  use thermopack_var, only: nce, base_eos_param, get_active_eos
+  use thermopack_constants, only: LIQPH, VAPPH
   use pc_saft_nonassoc
   implicit none
   save
@@ -31,13 +31,10 @@ contains
       end if
     end if
     !print *, eos, cmps
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos=eos,&
-         mixing='Classic',ncomp=nc,comp_string=cmps,nphases=2)
+    call init_thermo(alpha='Classic',eos=eos,&
+         mixing='Classic',comp_string=cmps,nphases=2)
 
   end subroutine init
-
-
-
 
 
   @Test
@@ -65,7 +62,9 @@ contains
     real :: eps
     real :: sumn
     real :: param(4), parampert(4)
+    class(base_eos_param), pointer :: p_eos
     call init()
+    p_eos => get_active_eos()
 
     if (numAssocSites > 0) then
 
@@ -82,7 +81,7 @@ contains
        allocate(X_k(numAssocSites))
        allocate(X_k_pert(numAssocSites))
 
-       call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+       call saft_total_pressure(nce,p_eos,T,V,n,P)
 
        X_k = 0.25
        call solve_for_X_k(nce,param,X_k)
@@ -217,69 +216,68 @@ contains
     eps = 1e-5
     sumn = sum(n)
 
-    call calcSaftFder_res(nce,comp,cbeos(1),T,V,n,FF,FF_T,FF_V,FF_n,FF_TT,FF_TV,FF_VV,FF_Tn,FF_Vn,FF_nn)
+    call calcSaftFder_res(nce,p_eos,T,V,n,FF,FF_T,FF_V,FF_n,FF_TT,FF_TV,FF_VV,FF_Tn,FF_Vn,FF_nn)
 
     ! Test FF_Tn.
     Tpert = T*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_n=FFpert_n)
+    call calcSaftFder_res(nce,p_eos,Tpert,V,n,F_n=FFpert_n)
     @assertTrue(norm2((FFpert_n-FF_n)/(T*eps) - FF_Tn ) < (1e-4*norm2(FF_Tn) + 1e-12 ) )
 
 
     ! Test FF_T.
     Tpert = T*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F=FFpert)
+    call calcSaftFder_res(nce,p_eos,Tpert,V,n,F=FFpert)
     @assertTrue(abs( (FFpert-FF)/(T*eps) - FF_T)<(1e-4*abs(FF_T) + 2e-12))
 
     ! Test FF_TT
     Tpert = T*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_T=FFpert_T)
+    call calcSaftFder_res(nce,p_eos,Tpert,V,n,F_T=FFpert_T)
     @assertTrue(abs( (FFpert-FF)/(T*eps) - FF_T)<(1e-4*abs(FF_T) + 1e-12))
 
     ! Test FF_TV.
     Tpert = T*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),Tpert,V,n,F_V=FFpert_V)
+    call calcSaftFder_res(nce,p_eos,Tpert,V,n,F_V=FFpert_V)
 
     ! Test FF_V.
     Vpert = V*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F=FFpert)
+    call calcSaftFder_res(nce,p_eos,T,Vpert,n,F=FFpert)
     @assertTrue(abs( (FFpert-FF)/(V*eps) - FF_V)<(1e-4*abs(FF_V) + 1e-12))
 
     ! Test FF_VV.
     Vpert = V*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F_V=FFpert_V)
+    call calcSaftFder_res(nce,p_eos,T,Vpert,n,F_V=FFpert_V)
     @assertTrue(abs( (FFpert_V-FF_V)/(V*eps) - FF_VV)<(5e-4*abs(FF_VV) + 1e-12))
 
     ! Test FF_n(1).
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call calcSaftFder_res(nce,comp,cbeos(1),T,V,npert,F=FFpert)
+    call calcSaftFder_res(nce,p_eos,T,V,npert,F=FFpert)
     @assertTrue(abs( (FFpert-FF)/(n(1)*eps) - FF_n(1))<(1e-4*abs(FF_n(1)) + 1e-12))
 
     ! Test FF_n(2).
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),T,V,npert,F=FFpert)
+    call calcSaftFder_res(nce,p_eos,T,V,npert,F=FFpert)
     @assertTrue(abs( (FFpert-FF)/(n(2)*eps) - FF_n(2))<(1e-4*abs(FF_n(2)) + 1e-12))
 
     ! Test FF_Vn.
     Vpert = V*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),T,Vpert,n,F_n=FFpert_n)
+    call calcSaftFder_res(nce,p_eos,T,Vpert,n,F_n=FFpert_n)
     @assertTrue(norm2((FFpert_n-FF_n)/(V*eps) - FF_Vn ) < (1e-4*norm2(FF_Vn) + 1e-12 ) )
 
 
     ! Test F_nn(1,1) and F_nn(1,2)
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call calcSaftFder_res(nce,comp,cbeos(1),T=T,V=V,n=npert,F_n=FFpert_n)
+    call calcSaftFder_res(nce,p_eos,T=T,V=V,n=npert,F_n=FFpert_n)
     @assertTrue(norm2((FFpert_n-FF_n)/(n(1)*eps) - FF_nn(1,:)) < (1e-4*norm2(FF_nn(1,:)) + 1e-12 ))
 
     ! Test F_nn(2,1) and F_nn(2,2)
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call calcSaftFder_res(nce,comp,cbeos(1),T=T,V=V,n=npert,F_n=FFpert_n)
+    call calcSaftFder_res(nce,p_eos,T=T,V=V,n=npert,F_n=FFpert_n)
     @assertTrue(norm2((FFpert_n-FF_n)/(n(2)*eps) - FF_nn(2,:)) < (1e-4*norm2(FF_nn(2,:)) + 1e-12 ))
 
-    call cleanup_eos()
   end subroutine test_Helmholtz_Derivatives
 
 
@@ -487,7 +485,6 @@ contains
     deallocate(Deltapert_V)
     deallocate(Deltapert_n)
 
-    call cleanup_eos()
   end subroutine test_Delta
 
 
@@ -739,14 +736,11 @@ contains
     deallocate(Q_XT_pert,Q_XV_pert)
     deallocate(Q_Xn_pert)
 
-
-    call cleanup_eos()
   end subroutine test_Q_derivatives
 
 
   @Test
   subroutine test_X_derivatives
-    use tpvar, only: nce
     implicit none
     real :: T,Tpert,V,Vpert,n(2),npert(2),sumn
     real :: param(4),parampert(4)
@@ -881,7 +875,6 @@ contains
     deallocate(X_Vn)
     deallocate(X_nn)
 
-    call cleanup_eos()
   end subroutine test_X_derivatives
 
   @Test
@@ -892,8 +885,10 @@ contains
     real, allocatable, dimension(:) :: X_k,Xnew
     real, allocatable :: dXdV(:)
     real :: P
+    class(base_eos_param), pointer :: p_eos
     !
     call init()
+    p_eos => get_active_eos()
 
     allocate(X_k(numAssocSites))
     allocate(Xnew(numAssocSites))
@@ -904,13 +899,13 @@ contains
     P_spec = 100000
 
     phase = VAPPH
-    call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V_vap)
-    call saft_total_pressure(nce,comp,cbeos(1),T,V_vap,n,P)
+    call saft_master_volume_solver(nce,p_eos,T,P_spec,n,phase,V_vap)
+    call saft_total_pressure(nce,p_eos,T,V_vap,n,P)
     @assertTrue(abs(P-P_spec) < 1e-6*P_spec)
 
     phase = LIQPH
-    call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V_liq)
-    call saft_total_pressure(nce,comp,cbeos(1),T,V_liq,n,P)
+    call saft_master_volume_solver (nce,p_eos,T,P_spec,n,phase,V_liq)
+    call saft_total_pressure(nce,p_eos,T,V_liq,n,P)
     @assertTrue(abs(P-P_spec) < 1e-6*P_spec)
 
     @assertTrue(V_vap >= V_liq)
@@ -918,7 +913,6 @@ contains
     deallocate(X_k)
     deallocate(Xnew)
     deallocate(dXdV)
-    call cleanup_eos()
   end subroutine test_volume_solver
 
 
@@ -936,9 +930,11 @@ contains
     real :: dPdT, dPdV, dPdn(2)
     real :: eps
     logical :: verbose
+    class(base_eos_param), pointer :: p_eos
     verbose = .false.
 
     call init()
+    p_eos => get_active_eos()
 
     T = 300
     V = 0.4
@@ -947,45 +943,45 @@ contains
     eps = 1e-6
     phase = VAPPH
 
-    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+    call saft_total_pressure(nce,p_eos,T,V,n,P)
 
     if (verbose) then
        !************* Start by testing the expressions for dPdT, dPdV, dPdn ***************
-       call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P,dPdV,dPdT)
+       call saft_total_pressure(nce,p_eos,T,V,n,P,dPdV,dPdT)
 
-       call calcSaftFder_res(nce,comp,cbeos(1),T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+       call calcSaftFder_res(nce,p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
        dPdT = P/T - Rgas*T*F_TV
        dPdV = -Rgas*T*(F_VV + sumn/V**2)
        dPdn = Rgas*T*(-F_Vn + 1/V)
 
        Tpert = T*(1+eps)
-       call saft_total_pressure(nce,comp,cbeos(1),Tpert,V,n,Ppert)
+       call saft_total_pressure(nce,p_eos,Tpert,V,n,Ppert)
        print *,"dPdT num", (Ppert-P)/(T*eps)
        print *,"dPdT    ", dPdT
 
        Vpert = V*(1+eps)
-       call saft_total_pressure(nce,comp,cbeos(1),T,Vpert,n,Ppert)
+       call saft_total_pressure(nce,p_eos,T,Vpert,n,Ppert)
        print *,"dPdV num", (Ppert-P)/(V*eps)
        print *,"dPdV    ", dPdV
 
        npert(1) = n(1)*(1+eps)
        npert(2) = n(2)
-       call saft_total_pressure(nce,comp,cbeos(1),T,V,npert,Ppert)
+       call saft_total_pressure(nce,p_eos,T,V,npert,Ppert)
        print *,"dPdn(1) num", (Ppert-P)/(n(1)*eps)
        print *,"dPdn(1)    ", dPdn(1)
 
        npert(1) = n(1)
        npert(2) = n(2)*(1+eps)
-       call saft_total_pressure(nce,comp,cbeos(1),T,V,npert,Ppert)
+       call saft_total_pressure(nce,p_eos,T,V,npert,Ppert)
        print *,"dPdn(2) num", (Ppert-P)/(n(2)*eps)
        print *,"dPdn(2)    ", dPdn(2)
     end if
 
-    call saft_zfac(nce,comp,cbeos(1),phase,T,P,n,Z,dZdT,dZdP,dZdn)
+    call saft_zfac(nce,p_eos,phase,T,P,n,Z,dZdT,dZdP,dZdn)
     @assertTrue(abs(Z-P*V/(sumn*Rgas*T)) < 1e-7)
 
     Tpert = (1+eps)*T
-    call saft_zfac(nce,comp,cbeos(1),phase,Tpert,P,n,Zpert)
+    call saft_zfac(nce,p_eos,phase,Tpert,P,n,Zpert)
     if (verbose) then
        print *,"dZdT num", (Zpert-Z)/(T*eps)
        print *,"dZdT    ", dZdT
@@ -993,7 +989,7 @@ contains
     @assertTrue(abs((Zpert-Z)/(T*eps)-dZdT) < (1e-5*abs(dZdT) + 1e-12))
 
     Ppert = (1+eps)*P
-    call saft_zfac(nce,comp,cbeos(1),phase,T,Ppert,n,Zpert)
+    call saft_zfac(nce,p_eos,phase,T,Ppert,n,Zpert)
     if (verbose) then
        print *,"dZdP num", (Zpert-Z)/(P*eps)
        print *,"dZdP    ", dZdP
@@ -1002,7 +998,7 @@ contains
 
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call saft_zfac(nce,comp,cbeos(1),phase,T,P,npert,Zpert)
+    call saft_zfac(nce,p_eos,phase,T,P,npert,Zpert)
     if (verbose) then
        print *,"dZdn(1) num", (Zpert-Z)/(n(1)*eps)
        print *,"dZdn(1)    ", dZdn(1)
@@ -1011,14 +1007,13 @@ contains
 
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call saft_zfac(nce,comp,cbeos(1),phase,T,P,npert,Zpert)
+    call saft_zfac(nce,p_eos,phase,T,P,npert,Zpert)
     if (verbose) then
        print *,"dZdn(2) num", (Zpert-Z)/(n(2)*eps)
        print *,"dZdn(2)    ", dZdn(2)
     end if
     @assertTrue(abs((Zpert-Z)/(n(2)*eps)-dZdn(2)) < (1e-5*abs(dZdn(2)) + 1e-12))
 
-    call cleanup_eos()
   end subroutine test_zFac
 
   @Test
@@ -1033,9 +1028,11 @@ contains
     real :: S,dSdT,dSdP,dSdn(2)
     real :: eps
     logical :: verbose
+    class(base_eos_param), pointer :: p_eos
     verbose = .false.
 
     call init()
+    p_eos => get_active_eos()
 
     T = 300
     V = 0.43
@@ -1044,11 +1041,11 @@ contains
     eps = 1e-6
     phase = LIQPH
 
-    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+    call saft_total_pressure(nce,p_eos,T,V,n,P)
 
-    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,n,S,dSdT,dSdP,dSdn)
+    call saft_ResidEntropy(nce,p_eos,phase,T,P,n,S,dSdT,dSdP,dSdn)
     Tpert = (1+eps)*T
-    call saft_ResidEntropy(nce,comp,cbeos(1),phase,Tpert,P,n,Spert)
+    call saft_ResidEntropy(nce,p_eos,phase,Tpert,P,n,Spert)
     if (verbose) then
        print *,"dSdT num", (Spert-S)/(T*eps)
        print *,"dSdT    ", dSdT
@@ -1056,7 +1053,7 @@ contains
     @assertTrue(abs((Spert-S)/(T*eps)-dSdT) < (5e-5*abs(dSdT) + 1e-12))
 
     Ppert = (1+eps)*P
-    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,Ppert,n,Spert)
+    call saft_ResidEntropy(nce,p_eos,phase,T,Ppert,n,Spert)
     if (verbose) then
        print *,"dSdP num", (Spert-S)/(P*eps)
        print *,"dSdP    ", dSdP
@@ -1065,7 +1062,7 @@ contains
 
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,npert,Spert)
+    call saft_ResidEntropy(nce,p_eos,phase,T,P,npert,Spert)
     if (verbose) then
        print *,"dSdn(1) num", (Spert-S)/(n(1)*eps)
        print *,"dSdn(1)    ", dSdn(1)
@@ -1074,14 +1071,13 @@ contains
 
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call saft_ResidEntropy(nce,comp,cbeos(1),phase,T,P,npert,Spert)
+    call saft_ResidEntropy(nce,p_eos,phase,T,P,npert,Spert)
     if (verbose) then
        print *,"dSdn(2) num", (Spert-S)/(n(2)*eps)
        print *,"dSdn(2)    ", dSdn(2)
        print *, Spert-S
     end if
     @assertTrue(abs((Spert-S)/(n(2)*eps)-dSdn(2)) < (1e-4*abs(dSdn(2)) + 1e-12))
-    call cleanup_eos()
   end subroutine test_Sres
 
   @Test
@@ -1096,9 +1092,11 @@ contains
     real :: G,dGdT,dGdP,dGdn(2)
     real :: eps
     logical :: verbose
+    class(base_eos_param), pointer :: p_eos
     verbose = .false.
 
     call init()
+    p_eos => get_active_eos()
 
     T = 300
     V = 0.43
@@ -1107,12 +1105,12 @@ contains
     eps = 1e-7
     phase = LIQPH
 
-    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+    call saft_total_pressure(nce,p_eos,T,V,n,P)
 
-    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,n,G,dGdT,dGdP,dGdn)
+    call saft_ResidGibbs(nce,p_eos,phase,T,P,n,G,dGdT,dGdP,dGdn)
 
     Tpert = (1+eps)*T
-    call saft_ResidGibbs(nce,comp,cbeos(1),phase,Tpert,P,n,Gpert)
+    call saft_ResidGibbs(nce,p_eos,phase,Tpert,P,n,Gpert)
     if (verbose) then
        print *,"dGdT num", (Gpert-G)/(T*eps)
        print *,"dGdT    ", dGdT
@@ -1120,7 +1118,7 @@ contains
     @assertTrue(abs((Gpert-G)/(T*eps)-dGdT) < (5e-5*abs(dGdT) + 1e-12))
 
     Ppert = (1+eps)*P
-    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,Ppert,n,Gpert)
+    call saft_ResidGibbs(nce,p_eos,phase,T,Ppert,n,Gpert)
     if (verbose) then
        print *,"dGdP num", (Gpert-G)/(P*eps)
        print *,"dGdP    ", dGdP
@@ -1129,7 +1127,7 @@ contains
 
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,npert,Gpert)
+    call saft_ResidGibbs(nce,p_eos,phase,T,P,npert,Gpert)
     if (verbose) then
        print *,"dGdn(1) num", (Gpert-G)/(n(1)*eps)
        print *,"dGdn(1)    ", dGdn(1)
@@ -1138,14 +1136,13 @@ contains
 
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call saft_ResidGibbs(nce,comp,cbeos(1),phase,T,P,npert,Gpert)
+    call saft_ResidGibbs(nce,p_eos,phase,T,P,npert,Gpert)
     if (verbose) then
        print *,"dGdn(2) num", (Gpert-G)/(n(2)*eps)
        print *,"dGdn(2)    ", dGdn(2)
     end if
     @assertTrue(abs((Gpert-G)/(n(2)*eps)-dGdn(2)) < (1e-5*abs(dGdn(2)) + 1e-12))
 
-    call cleanup_eos()
   end subroutine test_Gres
 
   @Test
@@ -1160,9 +1157,11 @@ contains
     real :: H,dHdT,dHdP,dHdn(2)
     real :: eps
     logical :: verbose
+    class(base_eos_param), pointer :: p_eos
     verbose = .false.
 
     call init()
+    p_eos => get_active_eos()
 
     T = 300
     V = 0.43
@@ -1171,12 +1170,12 @@ contains
     eps = 1e-6
     phase = LIQPH
 
-    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+    call saft_total_pressure(nce,p_eos,T,V,n,P)
 
-    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,n,H,dHdT,dHdP,dHdn)
+    call saft_ResidEnthalpy(nce,p_eos,phase,T,P,n,H,dHdT,dHdP,dHdn)
 
     Tpert = (1+eps)*T
-    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,Tpert,P,n,Hpert)
+    call saft_ResidEnthalpy(nce,p_eos,phase,Tpert,P,n,Hpert)
     if (verbose) then
        print *,"dHdT num", (Hpert-H)/(T*eps)
        print *,"dHdT    ", dHdT
@@ -1184,7 +1183,7 @@ contains
     @assertTrue(abs((Hpert-H)/(T*eps)-dHdT) < (1e-5*abs(dHdT) + 1e-12))
 
     Ppert = (1+eps)*P
-    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,Ppert,n,Hpert)
+    call saft_ResidEnthalpy(nce,p_eos,phase,T,Ppert,n,Hpert)
     if (verbose) then
        print *,"dHdP num", (Hpert-H)/(P*eps)
        print *,"dHdP    ", dHdP
@@ -1193,7 +1192,7 @@ contains
 
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,npert,Hpert)
+    call saft_ResidEnthalpy(nce,p_eos,phase,T,P,npert,Hpert)
     if (verbose) then
        print *,"dHdn(1) num", (Hpert-H)/(n(1)*eps)
        print *,"dHdn(1)    ", dHdn(1)
@@ -1202,14 +1201,13 @@ contains
 
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call saft_ResidEnthalpy(nce,comp,cbeos(1),phase,T,P,npert,Hpert)
+    call saft_ResidEnthalpy(nce,p_eos,phase,T,P,npert,Hpert)
     if (verbose) then
        print *,"dHdn(2) num", (Hpert-H)/(n(2)*eps)
        print *,"dHdn(2)    ", dHdn(2)
     end if
     @assertTrue(abs((Hpert-H)/(n(2)*eps)-dHdn(2)) < (1e-5*abs(dHdn(2)) + 1e-12))
 
-    call cleanup_eos()
   end subroutine test_Hres
 
   @Test
@@ -1224,9 +1222,11 @@ contains
     real :: LNPHI(2),dLNPHIdT(2),dLNPHIdP(2),dLNPHIdn(2,2)
     real :: eps
     logical :: verbose
+    class(base_eos_param), pointer :: p_eos
     verbose = .false.
 
     call init()
+    p_eos => get_active_eos()
 
     T = 360
     V = 0.43
@@ -1235,12 +1235,12 @@ contains
     eps = 1e-6
     phase = liqph
 
-    call saft_total_pressure(nce,comp,cbeos(1),T,V,n,P)
+    call saft_total_pressure(nce,p_eos,T,V,n,P)
 
-    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,n,lnphi,dlnphidT,dlnphidP,dlnphidn)
+    call saft_lnphi(nce,p_eos,phase,T,P,n,lnphi,dlnphidT,dlnphidP,dlnphidn)
 
     Tpert = (1+eps)*T
-    call saft_lnphi(nce,comp,cbeos(1),phase,Tpert,P,n,LNPHIpert)
+    call saft_lnphi(nce,p_eos,phase,Tpert,P,n,LNPHIpert)
     if (verbose) then
        print *,"dLNPHIdT num", (LNPHIpert-LNPHI)/(T*eps)
        print *,"dLNPHIdT    ", dLNPHIdT
@@ -1248,7 +1248,7 @@ contains
     @assertTrue(norm2((LNPHIpert-LNPHI)/(T*eps)-dLNPHIdT) < (1e-5*norm2(dLNPHIdT) + 1e-12))
 
     Ppert = (1+eps)*P
-    call saft_lnphi(nce,comp,cbeos(1),phase,T,Ppert,n,LNPHIpert)
+    call saft_lnphi(nce,p_eos,phase,T,Ppert,n,LNPHIpert)
     if (verbose) then
        print *,"dLNPHIdP num", (LNPHIpert-LNPHI)/(P*eps)
        print *,"dLNPHIdP    ", dLNPHIdP
@@ -1257,7 +1257,7 @@ contains
 
     npert(1) = n(1)*(1+eps)
     npert(2) = n(2)
-    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,npert,LNPHIpert)
+    call saft_lnphi(nce,p_eos,phase,T,P,npert,LNPHIpert)
     if (verbose) then
        print *,"dLNPHIdn(:,1) num", (LNPHIpert-LNPHI)/(n(1)*eps)
        print *,"dLNPHIdn(:,1)    ", dLNPHIdn(:,1)
@@ -1266,14 +1266,13 @@ contains
 
     npert(1) = n(1)
     npert(2) = n(2)*(1+eps)
-    call saft_lnphi(nce,comp,cbeos(1),phase,T,P,npert,LNPHIpert)
+    call saft_lnphi(nce,p_eos,phase,T,P,npert,LNPHIpert)
     if (verbose) then
        print *,"dLNPHIdn(:,2) num", (LNPHIpert-LNPHI)/(n(2)*eps)
        print *,"dLNPHIdn(:,2)    ", dLNPHIdn(:,2)
     end if
     @assertTrue(norm2((LNPHIpert-LNPHI)/(n(2)*eps)-dLNPHIdn(:,2)) < (1e-5*norm2(dLNPHIdn(:,2)) + 1e-12))
 
-    call cleanup_eos()
   end subroutine test_lnphi
 
 
@@ -1308,7 +1307,7 @@ contains
   !   sumn = sum(n)
   !   x = n/sumn
 
-  !   call saft_master_volume_solver (nce,comp,cbeos(1),T,P_spec,n,phase,V)
+  !   call saft_master_volume_solver (nce,comp,p_eos,T,P_spec,n,phase,V)
   !   print *, "Volume [m^3]", V
   !   print *, "LIQUID AT TEMPERATURE AND PRESSURE SAFT", T, P_spec
   !   print *, "Molar volume of mixture at STP for SAFT [m^3]:", 18.01528E-3/V
@@ -1319,12 +1318,12 @@ contains
   !   print *, "*********************************************PURE CUBIC EQUATION*********************************************"
 
   !   call init_thermo(eosLibrary='THERMOPACK',alpha='TWU',eos='PR',mixing='vdW',ncomp=2,comp_string="H2O,C1",nphases=2)
-  !   call cbCalcZfac(nce,comp,cbeos(1),T,P=P_spec,z=x,iphase=phase,zfac=zFactor,gflag_opt=1)
+  !   call cbCalcZfac(nce,comp,p_eos,T,P=P_spec,z=x,iphase=phase,zfac=zFactor,gflag_opt=1)
   !   V = zFactor*Rgas*T/P_spec
   !   print *, V
   !   print *, "LIQUID AT TEMPERATURE AND PRESSURE", T, P_spec
   !   print *, "Molar volume of mixture at STP for PR [m^3]:", 18.01528E-3/V
-  !   call TP_CalcPressure(nce,comp,cbeos(1),T,v*1000,x,p,p_v,p_t)
+  !   call TP_CalcPressure(nce,comp,p_eos,T,v*1000,x,p,p_v,p_t)
   !   print *, P
 
   !   call cleanup_eos()

@@ -2,7 +2,7 @@ module test_eos_consistency
   !> Test that the analytical derivatives equal numerical derivatives of the
   !> reduced, residual Helmholtz (F=A/RT), as well as the fulfilment of
   !> thermodynamic identities.
-  use eoslibinit, only: init_thermo, silent_init, cleanup_eos
+  use eoslibinit, only: init_thermo, silent_init
   use pfunit_mod
   implicit none
   public
@@ -182,7 +182,7 @@ contains
   subroutine eos_init(ncomp,eos,compstr,mixing, isCubic)
     use eos, only: specificvolume
     use eosTV, only: Fres
-    use parameters, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
@@ -191,16 +191,9 @@ contains
     logical, intent(out) :: isCubic
     ! Locals
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
-    call cleanup_eos()
 
     mixing_l = "vdW"
     if (present(mixing)) mixing_l = mixing
-
-    eoslib = "Thermopack"
-    if (str_eq(eos, "EOSCG") .OR. str_eq(eos, "EOSCG-GERG") .OR. str_eq(eos, "GERG2008")) then
-       eoslib = "TREND"
-    endif
 
     isCubic = .false.
     if ( str_eq(eos, "SRK") .or. str_eq(eos, "PR") ) isCubic = .true.
@@ -211,14 +204,14 @@ contains
 
 
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(eos), trim(mixing_l), 'Classic', ncomp,&
+    call init_thermo(trim(eos), trim(mixing_l), 'Classic',&
          trim(compstr), 1)
   end subroutine eos_init
 
   subroutine test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec,mixing)
     use eos, only: specificvolume
     use eosTV, only: Fres
-    use parameters, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
@@ -317,7 +310,7 @@ contains
     !> Verifies that a selection of thermodynamic identities are fulfilled.
     use eosTV, only: thermoTV, Fres
     use eos, only: specificvolume
-    use parameters, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
