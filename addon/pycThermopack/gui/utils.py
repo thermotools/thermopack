@@ -121,23 +121,6 @@ def get_unique_name(prefix, lst):
             i += 1
 
 
-def get_unique_id(data):
-    """
-    Returns a number (id) which is not an id for existing model setups in the current session data
-    :param data: Session data
-    :return: Unique id
-    """
-    all_ids = []
-    for settings in data["Model setups"].values():
-        all_ids.append(settings["id"])
-
-    id = 1
-    while id in all_ids:
-        id += 1
-
-    return id
-
-
 def get_fluids():
     """
     Opens the fluids folder, and returns a dict containing the data for the components

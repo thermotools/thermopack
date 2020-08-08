@@ -144,6 +144,7 @@ class ThermopackGUIApp(QMainWindow):
         index = self.tabs.addTab(model_select_widget, "Model Setup - " + model_select_widget.name)
         QListWidgetItem(model_select_widget.name, parent=self.models_list)
         model_select_widget.model_name_changed.connect(self.update_model_lists)
+        model_select_widget.model_setup_deleted.connect(self.delete_model_setup)
 
         self.tabs.setCurrentIndex(index)
 
@@ -154,6 +155,7 @@ class ThermopackGUIApp(QMainWindow):
         self.tabs.show()
         widget = ComponentEditWidget(self.data, name=item.text(), parent=self)
         widget.component_list_updated.connect(self.update_component_lists)
+        widget.component_list_deleted.connect(self.delete_component_list)
         tab_text_prefix = "Edit Composition - "
         index = self.tabs.currentIndex()
 
@@ -174,6 +176,8 @@ class ThermopackGUIApp(QMainWindow):
         """
         self.tabs.show()
         widget = ModelSelectWidget(self.data, name=item.text(), parent=self)
+        widget.model_name_changed.connect(self.update_model_lists)
+        widget.model_setup_deleted.connect(self.delete_model_setup)
         tab_text_prefix = "Model Setup - "
         index = self.tabs.currentIndex()
 
@@ -207,6 +211,56 @@ class ThermopackGUIApp(QMainWindow):
             for i in range(self.compositions_list.count()):
                 if self.compositions_list.item(i).text() == old_name:
                     self.compositions_list.item(i).setText(list_name)
+
+    def delete_component_list(self, name):
+        """
+        Deletes a composition
+        :param name: Name of composition to be deleted
+        """
+        # Deleting entry in the data dictionary
+        try:
+            del self.data["Component lists"][name]
+        except KeyError:
+            msg = MessageBox("Error", "Could not delete composition " + name)
+            msg.exec_()
+            return
+
+        # Closing the composition tab
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i)[-len(name):] == name:
+                self.tabs.removeTab(i)
+                break
+
+        # Removing name from the menu
+        for i in range(self.compositions_list.count()):
+            if self.compositions_list.item(i).text() == name:
+                self.compositions_list.takeItem(i)
+                break
+
+    def delete_model_setup(self, name):
+        """
+        Deletes a model setup
+        :param name: Name of model setup to be deleted
+        """
+        # Deleting entry in the data dictionary
+        try:
+            del self.data["Model setups"][name]
+        except KeyError:
+            msg = MessageBox("Error", "Could not delete model setup " + name)
+            msg.exec_()
+            return
+
+        # Closing the composition tab
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i)[-len(name):] == name:
+                self.tabs.removeTab(i)
+                break
+
+        # Removing name from the menu
+        for i in range(self.models_list.count()):
+            if self.models_list.item(i).text() == name:
+                self.models_list.takeItem(i)
+                break
 
     def update_model_lists(self, list_name, is_new, old_name):
         """
@@ -318,6 +372,7 @@ class ThermopackGUIApp(QMainWindow):
 
         for list_name in loaded_model_setup_data.keys():
             model_select_widget = ModelSelectWidget(self.data, name=list_name, parent=self)
+            model_select_widget.model_setup_deleted.connect(self.delete_model_setup)
             model_select_widget.model_name_changed.connect(self.update_model_lists)
             QListWidgetItem(list_name, parent=self.models_list)
 

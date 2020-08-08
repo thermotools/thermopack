@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 from PyQt5.uic import loadUi
 
-from widgets.plot_mode import PlotMode
-from widgets.calc_mode import CalcMode
+from gui.widgets.plot_mode import PlotMode
+from gui.widgets.calc_mode import CalcMode
 
 
 # TODO: Når du dobbelttrykker på en complist eller setting (ev. hover) --> Vise vindu med info (ev. et (?)-ikon)

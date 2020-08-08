@@ -3,7 +3,6 @@ from PyQt5.uic import loadUi
 
 
 # TODO: Spesifisere hva som skal stå i cellene, verdi for verdi...
-# TODO: Mulig å scrolle horisontalt også
 
 
 class ComponentInformationWindow(QWidget):
@@ -23,3 +22,5 @@ class ComponentInformationWindow(QWidget):
             self.table.setItem(row, 0, QTableWidgetItem(str(key)))
             self.table.setItem(row, 1, QTableWidgetItem(str(value)))
             row += 1
+
+        self.table.resizeColumnsToContents()

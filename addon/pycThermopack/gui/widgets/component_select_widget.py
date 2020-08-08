@@ -1,11 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QPushButton, QFrame, QVBoxLayout, QStyle
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
 from gui.widgets.component_info import ComponentInformationWindow
 from gui.utils import get_unique_name, get_fluids, MessageBox
-
-# TODO: Mulighet for å slette en lagret komposisjon
 
 
 class ComponentSelectWidget(QWidget):
@@ -203,6 +201,8 @@ class ComponentEditWidget(ComponentSelectWidget):
     Widget for editing a previously saved composition (looks the same as the ComponentSelectWidget)
     """
 
+    component_list_deleted = pyqtSignal(str)
+
     def __init__(self, data, name, parent=None):
         ComponentSelectWidget.__init__(self, data, parent)
 
@@ -218,6 +218,21 @@ class ComponentEditWidget(ComponentSelectWidget):
         """
         Sets up the widget for the given composition. Inserts components to the selected components table
         """
+
+        # Adding a button for deleting the composition
+        delete_btn = QPushButton(
+            icon=self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton')),
+            text="Delete composition")
+
+        delete_btn.clicked.connect(lambda: self.component_list_deleted.emit(self.name))
+
+        delete_frame = QFrame()
+        delete_layout = QVBoxLayout()
+        delete_frame.setLayout(delete_layout)
+        delete_layout.addWidget(delete_btn)
+
+        self.header_layout.addWidget(delete_frame)
+
         self.set_name_edit.setText(self.name)
         comp_list = [self.fluids[name] for name in self.data["Component lists"][self.name]["Names"]]
         for comp in comp_list:

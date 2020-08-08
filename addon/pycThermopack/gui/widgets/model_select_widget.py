@@ -1,11 +1,9 @@
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QStyle
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from gui.widgets.parameters import *
 
-from gui.utils import get_unique_name, get_unique_id
-
-# TODO: Mulighet for å slette en model setup
+from gui.utils import get_unique_name
 
 
 class ModelSelectWidget(QWidget):
@@ -39,6 +37,9 @@ class ModelSelectWidget(QWidget):
 
         self.model_category_list.currentItemChanged.connect(self.category_selected)
 
+        self.delete_btn.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton')))
+        self.delete_btn.clicked.connect(lambda: self.model_setup_deleted.emit(self.name))
+
         # Cubic Action handling
         self.cubic_eos_list.currentItemChanged.connect(self.change_cubic_eos)
 
@@ -59,6 +60,7 @@ class ModelSelectWidget(QWidget):
         self.name_edit.editingFinished.connect(self.change_name)
 
     model_name_changed = pyqtSignal(str, bool, str)
+    model_setup_deleted = pyqtSignal(str)
 
     def populate_widget(self):
         """

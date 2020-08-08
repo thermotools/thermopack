@@ -5,6 +5,8 @@ from gui.utils import MessageBox
 
 import numpy as np
 
+# TODO: La brukeren huke av om legend skal vises eller ikke
+
 
 class MplCanvas(FigureCanvasQTAgg):
     """
@@ -190,7 +192,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_ylabel(ylabel)
 
         # Sort entries in the legend
-        legend = True  # TODO: La brukeren huke av om legend skal vises eller ikke
+        legend = True
 
         if legend:
             if n_isopleths > 0:
