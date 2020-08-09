@@ -1,6 +1,6 @@
 !> Module responsible for radial distribution functions.
 module saft_rdf
-  use saft_globals, only: saft_model, eosPC_SAFT, cpaPR, cpaSRK, eosBH_pert
+  use eosdata, only: eosPC_SAFT, cpaPR, cpaSRK, eosBH_pert
   implicit none
   save
 
@@ -12,12 +12,14 @@ module saft_rdf
 
 contains
 
-  subroutine master_saft_rdf(nc,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+  subroutine master_saft_rdf(eos,nc,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !> Depends on component indices i,j only for eosBH_pert
-    use pc_saft_nonassoc, only: g_spc_saft_tvn
+    use pc_saft_nonassoc, only: g_spc_saft_tvn, PCSAFT_eos
     use saftvrmie_hardsphere, only: calc_gij_boublik
     use saftvrmie_containers, only: saftvrmie_var
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermopack_var, only: base_eos_param
+    use utilities, only: get_thread_index
+    class(base_eos_param), intent(in) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: T,V,n(nc)  !< [K], [m^3], [mol]
     integer, intent(in) :: i,j     !< component indices [-]
@@ -27,19 +29,23 @@ contains
     real, intent(out), optional :: g_TT,g_Tn(nc),g_nn(nc,nc)
     ! Locals
     integer :: iTh
-    if (saft_model == eosPC_SAFT) then
-      call g_spc_saft_TVn(T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-    else if (saft_model == eosBH_pert) then
-      iTh = 1
-      !$ iTh = omp_get_thread_num() + 1
+    if (eos%assoc%saft_model == eosBH_pert) then
+      iTh = get_thread_index()
       call calc_gij_boublik(nc,T,V,n,i,j,saftvrmie_var(iTh),g,g_T,g_V,g_n,&
            g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-    else
+    else if (eos%assoc%saft_model == cpaPR .or. eos%assoc%saft_model == cpaSRK) then
       call g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
       if (present(g_T)) g_T = 0.0
       if (present(g_TT)) g_TT = 0.0
       if (present(g_TV)) g_TV = 0.0
       if (present(g_Tn)) g_Tn = 0.0
+    else
+      select type ( p_eos => eos )
+      class is(PCSAFT_eos)
+        call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      class default
+        call stoperror("master_saft_rdf: Wrong eos...")
+      end select
     end if
 
   end subroutine master_saft_rdf

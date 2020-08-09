@@ -118,6 +118,7 @@ OBJE = 	\
 	$(ODIR)/utilities.o \
 	$(ODIR)/apparent_composition.o \
 	$(ODIR)/compdata.o \
+	$(ODIR)/association_var.o \
 	$(ODIR)/thermopack_var.o \
 	$(ODIR)/compdatadb.o \
 	$(ODIR)/compdata_init.o \
@@ -374,7 +375,8 @@ $(ODIR)/eosdatadb.o: $(SRC)/eosdatadb.f90
 	@$(call make_object,$(SRC)/eosdatadb.f90)
 $(ODIR)/utilities.o: $(SRC)/utilities.f90 $(SRC)/thermopack_const.f90
 	@$(call make_object,$(SRC)/utilities.f90)
-$(ODIR)/thermopack_var.o: $(SRC)/eosdata.f90 $(SRC)/compdata.f90
+$(ODIR)/thermopack_var.o: $(SRC)/eosdata.f90 $(SRC)/compdata.f90 \
+	$(SRC)/association_var.f90
 	@$(call make_object,$(SRC)/thermopack_var.f90)
 $(ODIR)/leekesler.o: $(SRC)/leekesler.f90 $(SRC)/compdata.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/thermopack_const.f90
@@ -665,3 +667,5 @@ $(ODIR)/cubic_eos.o: $(SRC)/cubic_eos.f90
 	@$(call make_object,$(SRC)/cubic_eos.f90)
 $(ODIR)/apparent_composition.o: $(SRC)/apparent_composition.f90
 	@$(call make_object,$(SRC)/apparent_composition.f90)
+$(ODIR)/association_var.o: $(SRC)/association_var.f90
+	@$(call make_object,$(SRC)/association_var.f90)

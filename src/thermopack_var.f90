@@ -6,6 +6,7 @@ module thermopack_var
   use apparent_compostion, only: apparent_container
   use compdata, only: gendata_pointer
   use utilities, only: get_thread_index
+  use association_var, only: association
   implicit none
   save
   !
@@ -19,6 +20,8 @@ module thermopack_var
   integer :: nce = 0
   !< Symmetrical upper left part of v_stoich
   integer :: ncsym = 0
+  !< Total number of associating sites.
+  integer :: numAssocSites = 0
 
   !> List of component names
   character (len=eosid_len), pointer :: complist(:)
@@ -33,6 +36,8 @@ module thermopack_var
     integer :: subeosidx !< Eos sub-index
     integer :: volumeShiftId = 0 !< 0: No volume shift, 1:Peneloux shift
     logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
+    !
+    type(association), pointer :: assoc => NULL()
 
   contains
     procedure(allocate_and_init_intf), deferred, public :: allocate_and_init

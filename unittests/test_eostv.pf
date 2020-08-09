@@ -269,7 +269,6 @@ contains
     real, dimension(ncomp) :: n, dn, x
     integer :: i, j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical :: isCubic
     if (present(mixing)) then
       mixing_l = mixing

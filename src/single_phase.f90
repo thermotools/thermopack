@@ -1147,7 +1147,7 @@ contains
       call calc_multiparameter_idealmix_zfac(nc, p_eos, T, p, ne, phase, &
            Zfac, dZdt, dZdp, dZdz)
     class default ! Saft eos
-      call saft_zfac(nce,comp,cbeos,phase,T,P,ne,Z=zfac,dZdT=dZdt,dZdP=dZdp,dZdn=dZdz)
+      call saft_zfac(nce,cbeos,phase,T,P,ne,Z=zfac,dZdT=dZdt,dZdP=dZdp,dZdn=dZdz)
     end select
 
     if (is_apparent_mode) then
