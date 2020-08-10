@@ -16,7 +16,7 @@ import csv
 import os
 
 
-# TODO: Handle enheter
+# TODO: Spesifisere enheter ved inputs
 
 
 class PlotMode(QMainWindow):

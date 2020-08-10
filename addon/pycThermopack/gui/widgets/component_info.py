@@ -2,9 +2,6 @@ from PyQt5.QtWidgets import QTableWidgetItem, QWidget
 from PyQt5.uic import loadUi
 
 
-# TODO: Spesifisere hva som skal stå i cellene, verdi for verdi...
-
-
 class ComponentInformationWindow(QWidget):
     """
     A window to show component data from the fluids-folder

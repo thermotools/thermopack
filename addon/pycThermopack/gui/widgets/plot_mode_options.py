@@ -5,6 +5,7 @@ from PyQt5.QtCore import QLocale
 
 from gui.utils import FloatValidator
 
+# TODO: Spesifisere enheter ved inputfelter
 
 class PhaseEnvelopeOptionsWindow(QDialog):
     """

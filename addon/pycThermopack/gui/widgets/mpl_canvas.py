@@ -5,8 +5,6 @@ from gui.utils import MessageBox
 
 import numpy as np
 
-# TODO: La brukeren huke av om legend skal vises eller ikke
-
 
 class MplCanvas(FigureCanvasQTAgg):
     """

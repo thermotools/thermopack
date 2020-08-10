@@ -93,6 +93,8 @@ class VdWParametersWidget(ParametersWidget):
         loadUi("layouts/vdw_bin_coeff_widget.ui", self)
 
         self.composition_list.currentItemChanged.connect(self.show_correct_matrix)
+
+        # The dict keeps track of the table's index in the stack
         self.stack_indices = {}
 
     def init_widget(self, data, settings_name):
@@ -119,13 +121,13 @@ class VdWParametersWidget(ParametersWidget):
 
             if "VDW K" not in existing_matrices:
                 # Create one table for each list in a stacked widget if it does not already exist
-                # The dict keeps track of the table's index in the stack
-
                 # Create table
                 self.calculate_matrix_data(name, settings_name)
-                table = self.get_table(name, "VDW K")
-                table.itemChanged.connect(lambda item: self.change_coeff(item, "VDW K"))
 
+            table = self.get_table(name, "VDW K")
+            table.itemChanged.connect(lambda item: self.change_coeff(item, "VDW K"))
+
+            if name not in self.stack_indices.keys():
                 # Keep track of table in stack
                 index = self.table_stack.addWidget(table)
                 self.stack_indices[name] = index
@@ -241,18 +243,19 @@ class HV1ParametersWidget(ParametersWidget):
                 # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
                 self.calculate_matrix_data(list_name)
 
-                self.alpha_table = self.get_table(list_name, "HV1 Alpha")
-                self.a_table = self.get_table(list_name, "HV1 A")
-                self.b_table = self.get_table(list_name, "HV1 B")
-                self.c_table = self.get_table(list_name, "HV1 C")
+            self.alpha_table = self.get_table(list_name, "HV1 Alpha")
+            self.a_table = self.get_table(list_name, "HV1 A")
+            self.b_table = self.get_table(list_name, "HV1 B")
+            self.c_table = self.get_table(list_name, "HV1 C")
 
-                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 Alpha"))
-                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 A"))
-                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 B"))
-                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 C"))
+            self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 Alpha"))
+            self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 A"))
+            self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 B"))
+            self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV1 C"))
 
-                tab_widget = HV1TabWidget(self.alpha_table, self.a_table, self.b_table)
+            tab_widget = HV1TabWidget(self.alpha_table, self.a_table, self.b_table)
 
+            if list_name not in self.tab_stack_indices.keys():
                 # Keep track of tabs in stack
                 index = self.tab_stack.addWidget(tab_widget)
                 self.tab_stack_indices[list_name] = index
@@ -383,18 +386,19 @@ class HV2ParametersWidget(ParametersWidget):
                 # Create one tab for each list in a tab widget. The dict keeps track of the tab's index
                 self.calculate_matrix_data(list_name)
 
-                self.alpha_table = self.get_table(list_name, "HV2 Alpha")
-                self.a_table = self.get_table(list_name, "HV2 A")
-                self.b_table = self.get_table(list_name, "HV2 B")
-                self.c_table = self.get_table(list_name, "HV2 C")
+            self.alpha_table = self.get_table(list_name, "HV2 Alpha")
+            self.a_table = self.get_table(list_name, "HV2 A")
+            self.b_table = self.get_table(list_name, "HV2 B")
+            self.c_table = self.get_table(list_name, "HV2 C")
 
-                self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 Alpha"))
-                self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 A"))
-                self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 B"))
-                self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 C"))
+            self.alpha_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 Alpha"))
+            self.a_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 A"))
+            self.b_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 B"))
+            self.c_table.itemChanged.connect(lambda item: self.change_coeff(item, "HV2 C"))
 
-                tab_widget = HV2TabWidget(self.alpha_table, self.a_table, self.b_table, self.c_table)
+            tab_widget = HV2TabWidget(self.alpha_table, self.a_table, self.b_table, self.c_table)
 
+            if list_name not in self.tab_stack_indices.keys():
                 # Keep track of tabs in stack
                 index = self.tab_stack.addWidget(tab_widget)
                 self.tab_stack_indices[list_name] = index
@@ -522,9 +526,11 @@ class PCSAFTParametersWidget(VdWParametersWidget):
 
                 # Create table
                 self.calculate_matrix_data(name, settings_name)
-                table = self.get_table(name, "PC-SAFT K")
-                table.itemChanged.connect(lambda item: self.change_coeff(item, "PC-SAFT K"))
 
+            table = self.get_table(name, "PC-SAFT K")
+            table.itemChanged.connect(lambda item: self.change_coeff(item, "PC-SAFT K"))
+
+            if name not in self.stack_indices.keys():
                 # Keep track of table in stack
                 index = self.table_stack.addWidget(table)
                 self.stack_indices[name] = index
@@ -633,19 +639,20 @@ class SAFTVRMieParametersWidget(ParametersWidget):
                 # Create one tab for each list in QTabWidget
                 self.calculate_matrix_data(list_name)
 
-                self.epsilon_table = self.get_table(list_name, "SAFT-VR Mie Epsilon")
-                self.sigma_table = self.get_table(list_name, "SAFT-VR Mie Sigma")
-                self.gamma_table = self.get_table(list_name, "SAFT-VR Mie Gamma")
+            self.epsilon_table = self.get_table(list_name, "SAFT-VR Mie Epsilon")
+            self.sigma_table = self.get_table(list_name, "SAFT-VR Mie Sigma")
+            self.gamma_table = self.get_table(list_name, "SAFT-VR Mie Gamma")
 
-                self.epsilon_table.itemChanged.connect(
-                    lambda item: self.change_coeff(item, "SAFT-VR Mie Epsilon"))
-                self.sigma_table.itemChanged.connect(
-                    lambda item: self.change_coeff(item, "SAFT-VR Mie Sigma"))
-                self.gamma_table.itemChanged.connect(
-                    lambda item: self.change_coeff(item, "SAFT-VR Mie Gamma"))
+            self.epsilon_table.itemChanged.connect(
+                lambda item: self.change_coeff(item, "SAFT-VR Mie Epsilon"))
+            self.sigma_table.itemChanged.connect(
+                lambda item: self.change_coeff(item, "SAFT-VR Mie Sigma"))
+            self.gamma_table.itemChanged.connect(
+                lambda item: self.change_coeff(item, "SAFT-VR Mie Gamma"))
 
-                tab_widget = SAFTVRMieTabWidget(self.epsilon_table, self.sigma_table, self.gamma_table)
+            tab_widget = SAFTVRMieTabWidget(self.epsilon_table, self.sigma_table, self.gamma_table)
 
+            if list_name not in self.tab_stack_indices.keys():
                 index = self.tab_stack.addWidget(tab_widget)
                 self.tab_stack_indices[list_name] = index
 

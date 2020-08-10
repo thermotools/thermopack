@@ -337,7 +337,6 @@ class CalcMode(QMainWindow):
             return
 
         phase_type = self.tp.get_phase_type(phase)
-        print(phase_type)
         LIQUID, VAPOR = 1, 2
 
         is_liq, is_vap = True, True
@@ -387,6 +386,7 @@ class CalcMode(QMainWindow):
                                                                    dhdn=True)
             S_liq, dSdT_liq, dSdP_liq, dSdn_liq = self.tp.entropy(T, P, x, phase=LIQUID, dsdt=True, dsdp=True,
                                                                   dsdn=True)
+            U_liq, dUdT_liq, dUdV_liq = self.tp.internal_energy_tv(T, V_liq, x, dedt=True, dedv=True)
 
             sos_liq = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=LIQUID)
 
@@ -394,8 +394,7 @@ class CalcMode(QMainWindow):
             G_liq = H_liq - T * S_liq
 
             Cp_liq = dHdT_liq
-            # TODO: Calculate isochoric heat capacity. As default, the value is now set to -1
-            Cv_liq = -1
+            Cv_liq = dUdT_liq
 
             mol_weight_liq = sum([x[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
@@ -418,13 +417,14 @@ class CalcMode(QMainWindow):
             H_vap, dHdT_vap, dHdP_vap, dHdn_vap = self.tp.enthalpy(T, P, x, phase=VAPOR, dhdt=True, dhdp=True,
                                                                    dhdn=True)
             S_vap, dSdT_vap, dSdP_vap, dSdn_vap = self.tp.entropy(T, P, x, phase=VAPOR, dsdt=True, dsdp=True, dsdn=True)
+            U_vap, dUdT_vap, dUdV_vap = self.tp.internal_energy_tv(T, V_vap, x, dedt=True, dedv=True)
             sos_vap = self.tp.speed_of_sound(T, P, x, y, fractions, beta_vap, beta_liq, phase=VAPOR)
 
             U_vap = H_vap - P * V_vap
             G_vap = H_vap - T * S_vap
 
             Cp_vap = dHdT_vap
-            Cv_vap = -1
+            Cv_vap = dUdT_vap
 
             mol_weight_vap = sum([y[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
