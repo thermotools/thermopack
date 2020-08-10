@@ -827,8 +827,15 @@
     </property>
     <addaction name="action_units"/>
    </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="action_about"/>
+   </widget>
    <addaction name="menu_file"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_save">
@@ -860,6 +867,11 @@
   <action name="action_units">
    <property name="text">
     <string>Units</string>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>About Thermopack</string>
    </property>
   </action>
  </widget>

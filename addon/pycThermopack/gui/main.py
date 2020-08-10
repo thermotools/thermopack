@@ -10,6 +10,7 @@ from gui.widgets.component_select_widget import ComponentSelectWidget, Component
 from gui.widgets.model_select_widget import ModelSelectWidget
 from gui.widgets.change_mode import GoToPlotModeWidget, GoToCalcModeWidget
 from gui.widgets.units_dialog import UnitsDialog
+from gui.widgets.about_window import AboutWindow
 
 from gui.utils import get_json_data, save_json_data, get_default_units, MessageBox
 
@@ -43,6 +44,7 @@ class ThermopackGUIApp(QMainWindow):
         self.action_open.triggered.connect(self.open_file)
         self.action_quit.triggered.connect(QCoreApplication.quit)
         self.action_units.triggered.connect(self.open_units_window)
+        self.action_about.triggered.connect(self.open_about_window)
 
         # Toolbar
         self.set_toolbar()
@@ -121,6 +123,13 @@ class ThermopackGUIApp(QMainWindow):
         units_data = self.data["Units"]
         self.dialog = UnitsDialog(units_data)
         self.dialog.show()
+
+    def open_about_window(self):
+        """
+        Opens a window where information about the Thermopack application is displayed
+        """
+        self.about_window = AboutWindow()
+        self.about_window.show()
 
     def add_new_composition(self):
         self.tabs.show()

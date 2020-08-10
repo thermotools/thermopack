@@ -7,6 +7,7 @@ from gui.utils import FloatValidator
 
 # TODO: Spesifisere enheter ved inputfelter
 
+
 class PhaseEnvelopeOptionsWindow(QDialog):
     """
     A window containing the parameters for the phase envelope plot
