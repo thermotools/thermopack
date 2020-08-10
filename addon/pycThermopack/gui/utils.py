@@ -65,7 +65,7 @@ class FloatValidator(QValidator):
 def get_default_units():
     return {
         "Energy": "J",
-        "Temperature": "K",
+        "Temperature": "degK",
         "Pressure": "Pa",
         "Volume": "m ** 3",
         "Amount": "mol",

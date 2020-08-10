@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.uic import loadUi
+from PyQt5.QtCore import pyqtSignal
 
 from gui.utils import get_default_units
 
@@ -8,6 +9,9 @@ class UnitsDialog(QWidget):
     """
     A window where the preferred units for the application can be set
     """
+
+    units_changed = pyqtSignal(dict)
+
     def __init__(self, units_data, parent=None):
         super().__init__(parent=parent)
         loadUi("layouts/units.ui", self)
@@ -79,6 +83,7 @@ class UnitsDialog(QWidget):
         self.units_data["Selected"]["Amount"] = amount_unit
         self.units_data["Selected"]["Speed"] = speed_unit
 
+        self.units_changed.emit(self.units_data)
         self.close()
 
     def restore_defaults(self):

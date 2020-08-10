@@ -39,7 +39,7 @@ class CalcMode(QMainWindow):
         self.component_data = self.data["Component lists"][component_list_name]
         self.comp_list_name = component_list_name
         self.settings = self.data["Model setups"][model_settings_name]
-        self.units = self.data["Units"]
+        self.units_data = self.data["Units"]
 
         self.tp = get_thermopack(category=self.settings["Model category"])
 
@@ -50,20 +50,8 @@ class CalcMode(QMainWindow):
             "UV": 3
         }
 
-        self.units = {
-            "Temperature": "K",
-            "Pressure": "Pa",
-            "Specific volume": "m ** 3 / mol",
-            "Internal energy": "J / mol",
-            "Enthalpy": "J / mol",
-            "Entropy": "J / (K * mol)",
-            "Gibbs energy": "J / mol",
-            "Isobar heat capacity": "J / (K * mol)",
-            "Isochor heat capacity": "J / (K * mol)",
-            "Speed of sound": "m / s",
-            "Molecular weight": "kg / mol",
-            "Phase fraction": "mol / mol"
-        }
+        self.set_units()
+        self.set_label_units()
 
         # Units registry from pint library
         self.ureg = pint.UnitRegistry()
@@ -125,6 +113,7 @@ class CalcMode(QMainWindow):
         """
         units_data = self.data["Units"]
         self.dialog = UnitsDialog(units_data)
+        self.dialog.units_changed.connect(self.update_units)
         self.dialog.show()
 
     def show_input_params(self, flash_mode="TP"):
@@ -134,6 +123,84 @@ class CalcMode(QMainWindow):
         """
         index = self.input_stack_indices[flash_mode]
         self.flash_input_stack.setCurrentIndex(index)
+
+    def set_units(self):
+        units = self.units_data["Selected"]
+
+        self.units = {
+            "Temperature": units["Temperature"],
+            "Pressure": units["Pressure"],
+            "Volume": units["Volume"],
+            "Specific volume": "%s / %s" % (units["Volume"], units["Amount"]),
+            "Internal energy": "%s / %s" % (units["Energy"], units["Amount"]),
+            "Enthalpy": "%s / %s" % (units["Energy"], units["Amount"]),
+            "Entropy": "%s / (%s * %s)" % (units["Energy"], units["Temperature"], units["Amount"]),
+            "Gibbs energy": "%s / %s" % (units["Energy"], units["Amount"]),
+            "Isobar heat capacity": "%s / (%s * %s)" % (units["Energy"], units["Temperature"], units["Amount"]),
+            "Isochor heat capacity": "%s / (%s * %s)" % (units["Energy"], units["Temperature"], units["Amount"]),
+            "Speed of sound": "%s" % (units["Speed"]),
+            "Molecular weight": "%s / %s" % ("kg", units["Amount"]),
+            "Phase fraction": "%s / %s" % (units["Amount"], units["Amount"]),
+        }
+
+    def set_label_units(self):
+        self.tp_t_label.setText(
+            self.tp_t_label.text()[:self.tp_t_label.text().find(' [')] + " [%s]" % self.units["Temperature"])
+        self.tp_p_label.setText(
+            self.tp_p_label.text()[:self.tp_p_label.text().find(' [')] + " [%s]" % self.units["Pressure"])
+
+        self.ps_p_label.setText(
+            self.ps_p_label.text()[:self.ps_p_label.text().find(' [')] + " [%s]" % self.units["Pressure"])
+        self.ps_s_label.setText(
+            self.ps_s_label.text()[:self.ps_s_label.text().find(' [')] + " [%s]" % self.units["Entropy"])
+        self.ps_t_guess_label.setText(
+            self.ps_t_guess_label.text()[:self.ps_t_guess_label.text().find(' [')] +
+            " [%s]" % self.units["Temperature"])
+
+        self.ph_p_label.setText(
+            self.ph_p_label.text()[:self.ph_p_label.text().find(' [')] + " [%s]" % self.units["Pressure"])
+        self.ph_h_label.setText(
+            self.ph_h_label.text()[:self.ph_h_label.text().find(' [')] + " [%s]" % self.units["Enthalpy"])
+        self.ph_t_guess_label.setText(
+            self.ph_t_guess_label.text()[:self.ph_t_guess_label.text().find(' [')] +
+            " [%s]" % self.units["Temperature"])
+
+        self.uv_u_label.setText(
+            self.uv_u_label.text()[:self.uv_u_label.text().find(' [')] + " [%s]" % self.units["Internal energy"])
+        self.uv_v_label.setText(
+            self.uv_v_label.text()[:self.uv_v_label.text().find(' [')] + " [%s]" % self.units["Volume"])
+        self.uv_t_guess_label.setText(
+            self.uv_t_guess_label.text()[:self.uv_t_guess_label.text().find(' [')] +
+            " [%s]" % self.units["Temperature"])
+        self.uv_p_guess_label.setText(
+            self.uv_p_guess_label.text()[:self.uv_p_guess_label.text().find(' [')] +
+            " [%s]" % self.units["Pressure"])
+
+    def set_input_placeholders(self):
+        """
+        Sets placeholders for temperature and pressure input fields to standard temperature and pressure
+        """
+        std_temp = 298 * self.ureg("K")
+        std_temp.ito(self.units["Temperature"])
+        T = str(std_temp.magnitude)
+
+        std_press = 100000 * self.ureg("Pa")
+        std_press.ito(self.units["Pressure"])
+        P = str(std_press.magnitude)
+
+        self.tp_t_input.setText(T)
+        self.tp_p_input.setText(P)
+        self.ps_p_input.setText(P)
+        self.ps_t_guess.setText(T)
+        self.ph_p_input.setText(P)
+        self.ph_t_guess.setText(T)
+        self.uv_t_guess.setText(T)
+        self.uv_p_guess.setText(P)
+
+    def update_units(self):
+        self.set_units()
+        self.set_label_units()
+        self.set_input_placeholders()
 
     def set_validators(self):
         """
@@ -171,13 +238,16 @@ class CalcMode(QMainWindow):
 
         return table_indices
 
-    def set_units(self):
+    def set_table_units(self):
         """
         Sets the preferred units into the Units column in the table
         """
         for property, unit in self.units.items():
-            row = self.table_indices[property]
-            self.table.setItem(row, 0, QTableWidgetItem(unit))
+            try:
+                row = self.table_indices[property]
+                self.table.setItem(row, 0, QTableWidgetItem(unit))
+            except KeyError:
+                pass
 
     def set_table_value(self, property, col_name, base_unit, to_unit, value):
         """
@@ -187,9 +257,8 @@ class CalcMode(QMainWindow):
         :param value: Value to be stored in the desired cell
         """
 
-        quantity = value * self.ureg(base_unit)
-        quantity.ito(to_unit)
-        converted_value = quantity.magnitude
+        quantity = self.ureg.Quantity(value, self.ureg(base_unit))
+        converted_value = quantity.to(to_unit).magnitude
 
         row = self.table_indices[property]
         col = self.table_indices[col_name]
@@ -255,9 +324,6 @@ class CalcMode(QMainWindow):
         """
         Calls thermopack's flash functions, and populates the table with the results
         """
-        self.table.clearContents()
-        self.set_units()
-
         fractions = np.array(self.component_data["Fractions"])
         mole_fraction_sum = np.sum(fractions)
 
@@ -271,6 +337,9 @@ class CalcMode(QMainWindow):
             # Setting the last mol fraction to 1 - the rest of them, to ensure that the total sum is exactly 1
             fractions[-1] = 1 - np.sum(fractions[:-1])
 
+        self.table.clearContents()
+        self.set_table_units()
+
         init_thermopack(self.tp, self.component_data, self.comp_list_name, self.settings)
 
         flash_mode = self.flash_mode_selection.currentText()
@@ -279,6 +348,13 @@ class CalcMode(QMainWindow):
         if flash_mode == "TP":
             T = float(self.tp_t_input.text())
             P = float(self.tp_p_input.text())
+
+            # Conversion to standard SI to be used in functions
+            temp = self.ureg.Quantity(T, self.units["Temperature"])
+            T = temp.to("degK").magnitude
+
+            press = P * self.ureg(self.units["Pressure"])
+            P = press.to("Pa").magnitude
 
             # TODO: Need an exception thrown in two_phase_tpflash() to be caught in case calculation fails
             x, y, beta_vap, beta_liq, phase = self.tp.two_phase_tpflash(T, P, fractions)
@@ -398,18 +474,20 @@ class CalcMode(QMainWindow):
 
             mol_weight_liq = sum([x[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
-            self.set_table_value("Temperature", "Liq", "degK", "degK", T)
-            self.set_table_value("Pressure", "Liq", "Pa", "Pa", P)
-            self.set_table_value("Specific volume", "Liq", "m**3 / mol", "m**3 / mol", V_liq)
-            self.set_table_value("Internal energy", "Liq", "J / mol", "J / mol", U_liq)
-            self.set_table_value("Enthalpy", "Liq", "J / mol", "J / mol", H_liq)
-            self.set_table_value("Entropy", "Liq", "J / (K * mol)", "J / (K * mol)", S_liq)
-            self.set_table_value("Gibbs energy", "Liq", "J / mol", "J / mol", G_liq)
-            self.set_table_value("Isobar heat capacity", "Liq", "J / (K * mol)", "J / (K * mol)", Cp_liq)
-            self.set_table_value("Isochor heat capacity", "Liq", "J / (K * mol)", "J / (K * mol)", Cv_liq)
-            self.set_table_value("Speed of sound", "Liq", "m / s", "m / s", sos_liq)
-            self.set_table_value("Phase fraction", "Liq", "mol / mol", "mol / mol", beta_liq)
-            self.set_table_value("Molecular weight", "Liq", "kg / mol", "kg / mol", mol_weight_liq)
+            self.set_table_value("Temperature", "Liq", "degK", self.units["Temperature"], T)
+            self.set_table_value("Pressure", "Liq", "Pa", self.units["Pressure"], P)
+            self.set_table_value("Specific volume", "Liq", "m ** 3 / mol", self.units["Specific volume"], V_liq)
+            self.set_table_value("Internal energy", "Liq", "J / mol", self.units["Internal energy"], U_liq)
+            self.set_table_value("Enthalpy", "Liq", "J / mol", self.units["Enthalpy"], H_liq)
+            self.set_table_value("Entropy", "Liq", "J / (K * mol)", self.units["Entropy"], S_liq)
+            self.set_table_value("Gibbs energy", "Liq", "J / mol", self.units["Gibbs energy"], G_liq)
+            self.set_table_value("Isobar heat capacity", "Liq", "J / (K * mol)",
+                                 self.units["Isobar heat capacity"], Cp_liq)
+            self.set_table_value("Isochor heat capacity", "Liq", "J / (K * mol)",
+                                 self.units["Isochor heat capacity"], Cv_liq)
+            self.set_table_value("Speed of sound", "Liq", "m / s", self.units["Speed of sound"], sos_liq)
+            self.set_table_value("Phase fraction", "Liq", "mol / mol", self.units["Phase fraction"], beta_liq)
+            self.set_table_value("Molecular weight", "Liq", "kg / mol", self.units["Molecular weight"], mol_weight_liq)
 
         if is_vap:
             V_vap, dVdT_vap, dVdP_vap, dVdn_vap = self.tp.specific_volume(T, P, x, phase=VAPOR, dvdt=True, dvdp=True,
@@ -428,18 +506,20 @@ class CalcMode(QMainWindow):
 
             mol_weight_vap = sum([y[i] * molecular_weights[i] for i in range(len(molecular_weights))])
 
-            self.set_table_value("Temperature", "Vap", "degK", "degK", T)
-            self.set_table_value("Pressure", "Vap", "Pa", "Pa", P)
-            self.set_table_value("Specific volume", "Vap", "m**3 / mol", "m**3 / mol", V_vap)
-            self.set_table_value("Internal energy", "Vap", "J / mol", "J / mol", U_vap)
-            self.set_table_value("Enthalpy", "Vap", "J / mol", "J / mol", H_vap)
-            self.set_table_value("Entropy", "Vap", "J / (K * mol)", "J / (K * mol)", S_vap)
-            self.set_table_value("Gibbs energy", "Vap", "J / mol", "J / mol", G_vap)
-            self.set_table_value("Isobar heat capacity", "Vap", "J / (K * mol)", "J / (K * mol)", Cp_vap)
-            self.set_table_value("Isochor heat capacity", "Vap", "J / (K * mol)", "J / (K * mol)", Cv_vap)
-            self.set_table_value("Speed of sound", "Vap", "m / s", "m / s", sos_vap)
-            self.set_table_value("Phase fraction", "Vap", "mol / mol", "mol / mol", beta_vap)
-            self.set_table_value("Molecular weight", "Vap", "kg / mol", "kg / mol", mol_weight_vap)
+            self.set_table_value("Temperature", "Vap", "degK", self.units["Temperature"], T)
+            self.set_table_value("Pressure", "Vap", "Pa", self.units["Pressure"], P)
+            self.set_table_value("Specific volume", "Vap", "m**3 / mol", self.units["Specific volume"], V_vap)
+            self.set_table_value("Internal energy", "Vap", "J / mol", self.units["Internal energy"], U_vap)
+            self.set_table_value("Enthalpy", "Vap", "J / mol", self.units["Enthalpy"], H_vap)
+            self.set_table_value("Entropy", "Vap", "J / (K * mol)", self.units["Entropy"], S_vap)
+            self.set_table_value("Gibbs energy", "Vap", "J / mol", self.units["Gibbs energy"], G_vap)
+            self.set_table_value("Isobar heat capacity", "Vap", "J / (K * mol)",
+                                 self.units["Isobar heat capacity"], Cp_vap)
+            self.set_table_value("Isochor heat capacity", "Vap", "J / (K * mol)",
+                                 self.units["Isochor heat capacity"], Cv_vap)
+            self.set_table_value("Speed of sound", "Vap", "m / s", self.units["Speed of sound"], sos_vap)
+            self.set_table_value("Phase fraction", "Vap", "mol / mol", self.units["Phase fraction"], beta_vap)
+            self.set_table_value("Molecular weight", "Vap", "kg / mol", self.units["Molecular weight"], mol_weight_vap)
 
         if is_liq and is_vap:
             V_overall = V_vap * beta_vap + V_liq * beta_liq
@@ -451,6 +531,7 @@ class CalcMode(QMainWindow):
             Cv_overall = Cv_vap * beta_vap + Cv_liq * beta_liq
             sos_overall = sos_vap * beta_vap + sos_liq * beta_liq
             frac_overall = beta_vap + beta_liq
+            # TODO: Dette blir feil ved SINGLE eller MINIMUM_GIBBS. Da er beta = -1..
             mol_weight_overall = mol_weight_vap * beta_vap + mol_weight_liq * beta_liq
 
         elif is_liq:
@@ -478,18 +559,21 @@ class CalcMode(QMainWindow):
             mol_weight_overall = mol_weight_vap
 
         if is_liq or is_vap:
-            self.set_table_value("Temperature", "Overall", "degK", "degK", T)
-            self.set_table_value("Pressure", "Overall", "Pa", "Pa", P)
-            self.set_table_value("Specific volume", "Overall", "m**3 / mol", "m**3 / mol", V_overall)
-            self.set_table_value("Internal energy", "Overall", "J / mol", "J / mol", U_overall)
-            self.set_table_value("Enthalpy", "Overall", "J / mol", "J / mol", H_overall)
-            self.set_table_value("Entropy", "Overall", "J / (K * mol)", "J / (K * mol)", S_overall)
-            self.set_table_value("Gibbs energy", "Overall", "J / mol", "J / mol", G_overall)
-            self.set_table_value("Isobar heat capacity", "Overall", "J / (K * mol)", "J / (K * mol)", Cp_overall)
-            self.set_table_value("Isochor heat capacity", "Overall", "J / (K * mol)", "J / (K * mol)", Cv_overall)
-            self.set_table_value("Speed of sound", "Overall", "m / s", "m / s", sos_overall)
-            self.set_table_value("Phase fraction", "Overall", "mol / mol", "mol / mol", frac_overall)
-            self.set_table_value("Molecular weight", "Overall", "kg / mol", "kg / mol", mol_weight_overall)
+            self.set_table_value("Temperature", "Overall", "degK", self.units["Temperature"], T)
+            self.set_table_value("Pressure", "Overall", "Pa", self.units["Pressure"], P)
+            self.set_table_value("Specific volume", "Overall", "m**3 / mol", self.units["Specific volume"], V_overall)
+            self.set_table_value("Internal energy", "Overall", "J / mol", self.units["Internal energy"], U_overall)
+            self.set_table_value("Enthalpy", "Overall", "J / mol", self.units["Enthalpy"], H_overall)
+            self.set_table_value("Entropy", "Overall", "J / (K * mol)", self.units["Entropy"], S_overall)
+            self.set_table_value("Gibbs energy", "Overall", "J / mol", self.units["Gibbs energy"], G_overall)
+            self.set_table_value("Isobar heat capacity", "Overall", "J / (K * mol)",
+                                 self.units["Isobar heat capacity"], Cp_overall)
+            self.set_table_value("Isochor heat capacity", "Overall", "J / (K * mol)",
+                                 self.units["Isochor heat capacity"], Cv_overall)
+            self.set_table_value("Speed of sound", "Overall", "m / s", self.units["Speed of sound"], sos_overall)
+            self.set_table_value("Phase fraction", "Overall", "mol / mol", self.units["Phase fraction"], frac_overall)
+            self.set_table_value("Molecular weight", "Overall", "kg / mol",
+                                 self.units["Molecular weight"], mol_weight_overall)
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()

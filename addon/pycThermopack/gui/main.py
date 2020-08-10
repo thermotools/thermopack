@@ -64,7 +64,7 @@ class ThermopackGUIApp(QMainWindow):
                     "Selected": get_default_units(),
                     "Choices": {
                         "Energy": ["J", "kJ", "MJ", "kcal"],
-                        "Temperature": ["K", "C", "F", "R"],
+                        "Temperature": ["degK", "degC", "degF", "degR"],
                         "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
                         "Volume": ["m ** 3", "L", "mL"],
                         "Amount": ["mol", "g", "kg"],
