@@ -76,3 +76,49 @@ class cpa(cubic.cubic):
                                  alpha_len,
                                  ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
+
+    def get_kij(self, c1, c2):
+        """Get attractive energy interaction parameter
+
+        Args:
+            c1 (int): Component one
+            c2 (int): Component two
+
+        Returns:
+            kij (array_like): i-j interaction parameter (2 parameters)
+        """
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        kij_c = (c_double * 2)(0.0)
+        self.s_get_kij.argtypes = [POINTER(c_int),
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
+
+        self.s_get_kij.restype = None
+
+        self.s_get_kij(byref(c1_c),
+                       byref(c2_c),
+                       kij_c)
+
+        return np.array(kij_c)
+
+    def set_kij(self, c1, c2, kij):
+        """Set attractive energy interaction parameter
+
+        Args:
+            c1 (int): Component one
+            c2 (int): Component two
+            kij (array_like): i-j interaction parameter (2 parameters)
+        """
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        kij_c = (c_double * 2)(*kij)
+        self.s_set_kij.argtypes = [POINTER(c_int),
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
+
+        self.s_set_kij.restype = None
+
+        self.s_set_kij(byref(c1_c),
+                       byref(c2_c),
+                       kij_c)
