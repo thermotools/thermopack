@@ -145,6 +145,7 @@ contains
     real :: vg, vl, sg, sl, hg, hl
     real :: tci,pci,oi,vci
 
+    na = n
     if (isSingleComp(z)) then
       i_pure = maxloc(z,dim=1)
       call getCriticalParam(i_pure,tci,pci,oi,vci)
