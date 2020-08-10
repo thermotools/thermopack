@@ -104,10 +104,11 @@ contains
 
   end subroutine test_1st_der_twoD
 
-  subroutine test_1st_der_dim(rout,rho,T,x,dim,verbose)
+  subroutine test_1st_der_dim(rout,eos,rho,T,x,dim,verbose)
     interface
-      subroutine rout(rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
-        import nce
+      subroutine rout(eos,rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
+        import nce, PCSAFT_eos
+        class(PCSAFT_eos), intent(in) :: eos
         real, intent(in)    :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
         real, intent(out)   :: z(0:3)        !< [m^(i-3)]
         real, intent(out), optional :: z_rho(0:3), z_T(0:3), z_n(0:3,nce)
@@ -115,6 +116,7 @@ contains
         real, intent(out), optional :: z_TT(0:3), z_Tn(0:3,nce), z_nn(0:3,nce,nce)
       END SUBROUTINE Rout
     end interface
+    class(PCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     integer, intent(in) :: dim
     logical, intent(in), optional :: verbose
@@ -131,7 +133,7 @@ contains
 
     eps = 5e-6
 
-    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    call rout(eos,rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
     if (present(verbose)) then
       print *, "v"
       print *, v
@@ -139,10 +141,10 @@ contains
 
     !Test rho-derivatives
     rhoeps = rho*eps
-    call rout(rho+rhoeps,T,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
-    call rout(rho-rhoeps,T,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+    call rout(eos,rho+rhoeps,T,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(eos,rho-rhoeps,T,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
 
-    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    call rout(eos,rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
     if (present(verbose)) then
       print *, "v_r"
       print *, (pluspert_v-minuspert_v)/(2*rhoeps)
@@ -167,10 +169,10 @@ contains
 
     !Test T-derivatives
     Teps = T*eps
-    call rout(rho,T+Teps,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
-    call rout(rho,T-Teps,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+    call rout(eos,rho,T+Teps,x,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(eos,rho,T-Teps,x,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
 
-    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    call rout(eos,rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
     if (present(verbose)) then
       print *, "v_t"
       print *, (pluspert_v-minuspert_v)/(2*Teps)
@@ -191,10 +193,10 @@ contains
     !Test x(1)-derivatives
     xeps = 0.0
     xeps(1) = x(1)*eps
-    call rout(rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
-    call rout(rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+    call rout(eos,rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(eos,rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
 
-    call rout(rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
+    call rout(eos,rho,T,x,v,v_r,v_t,v_x,v_rr,v_rt,v_rx,v_tt,v_tx,v_xx)
     if (present(verbose)) then
       print *, "v_x(:,1)"
       print *, (pluspert_v-minuspert_v)/(2*xeps(1))
@@ -210,8 +212,8 @@ contains
     !Test x(2)-derivatives
     xeps = 0.0
     xeps(2) = x(2)*eps
-    call rout(rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
-    call rout(rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
+    call rout(eos,rho,T,x+xeps,pluspert_v,pluspert_v_r,pluspert_v_t,pluspert_v_x)
+    call rout(eos,rho,T,x-xeps,minuspert_v,minuspert_v_r,minuspert_v_t,minuspert_v_x)
     if (present(verbose)) then
       print *, "v_x(2)"
       print *, (pluspert_v-minuspert_v)/(2*xeps(2))
@@ -224,10 +226,11 @@ contains
 
   end subroutine test_1st_der_dim
 
-  subroutine test_1st_der_opt(rout,rho,T,x,verbose)
+  subroutine test_1st_der_opt(rout,eos,rho,T,x,verbose)
     interface
-      subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-        import nce
+      subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+        import nce, PCSAFT_eos
+        class(PCSAFT_eos), intent(in) :: eos
         real, intent(in) :: rho, T, n(nce)
         real, intent(out), optional :: e
         real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -236,26 +239,29 @@ contains
       END SUBROUTINE Rout
     end interface
     !
+    class(PCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     logical, intent(in), optional :: verbose
     !
-    call test_1st_der(rout_nonopt,rho,T,x,verbose)
+    call test_1st_der(rout_nonopt,eos,rho,T,x,verbose)
   contains
-    subroutine rout_nonopt(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+    subroutine rout_nonopt(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+      class(PCSAFT_eos), intent(in) :: eos
       real, intent(in) :: rho, T, n(nce)
       real, intent(out) :: e
       real, intent(out), optional :: e_rho, e_T, e_n(nce)
       real, intent(out), optional :: e_rhorho, e_rhoT, e_rhon(nce)
       real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
-      call rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,&
+      call rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,&
            e_TT,e_Tn,e_nn)
     end subroutine rout_nonopt
   end subroutine test_1st_der_opt
 
-  subroutine test_1st_der(rout,rho,T,x,verbose)
+  subroutine test_1st_der(rout,eos,rho,T,x,verbose)
     interface
-      subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-        import nce
+      subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+        import nce, PCSAFT_eos
+        class(PCSAFT_eos), intent(in) :: eos
         real, intent(in) :: rho, T, n(nce)
         real, intent(out) :: e
         real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -263,6 +269,7 @@ contains
         real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
       END SUBROUTINE Rout
     end interface
+    class(PCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     logical, intent(in), optional :: verbose
     ! Locals
@@ -277,7 +284,7 @@ contains
 
     eps = 5e-6
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
       print *, "s"
       print *, s
@@ -285,10 +292,10 @@ contains
 
     !Test rho-derivatives
     rhoeps = rho*eps
-    call rout(rho+rhoeps,T,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho-rhoeps,T,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho+rhoeps,T,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho-rhoeps,T,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
       print *, "s_r"
       print *, (pluspert_s-minuspert_s)/(2*rhoeps)
@@ -313,10 +320,10 @@ contains
 
     !Test T-derivatives
     Teps = T*eps
-    call rout(rho,T+Teps,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho,T-Teps,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho,T+Teps,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho,T-Teps,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
       print *, "s_t"
       print *, (pluspert_s-minuspert_s)/(2*Teps)
@@ -337,10 +344,10 @@ contains
     !Test x(1)-derivatives
     xeps = 0.0
     xeps(1) = x(1)*eps
-    call rout(rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
       print *, "s_x(1)"
       print *, (pluspert_s-minuspert_s)/(2*xeps(1))
@@ -356,9 +363,9 @@ contains
     !Test x(2)-derivatives
     xeps = 0.0
     xeps(2) = x(2)*eps
-    call rout(rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
       print *, "s_x(2)"
       print *, (pluspert_s-minuspert_s)/(2*xeps(2))
@@ -483,9 +490,11 @@ contains
   @Test
   subroutine test_der
     real :: rho,T,x(2)
+    class(base_eos_param), pointer :: base_eos
 
     call init_thermo(alpha='Classic',eos='PC-SAFT',mixing='Classic',&
          comp_string="C1,H2O",nphases=2,saft_ref="DEFAULT")
+    base_eos => get_active_eos()
     rho = 4/5e-2
     T = 300
     x = (/2.0,1.2/)
@@ -499,19 +508,20 @@ contains
     ! call test_n_der(x,a_i)
     ! call test_Tn_der(T,x,m2e1s3_mean)
     ! call test_Tn_der(T,x,m2e2s3_mean)
-
-    call test_1st_der(eta,rho,T,x)
-    call test_1st_der_dim(zeta,rho,T,x,dim=4)
-    call test_1st_der(C_1,rho,T,x)
-    call test_1st_der(I_1,rho,T,x)
-    call test_1st_der(I_2,rho,T,x)
-    call test_1st_der(g_ij_spc_saft,rho,T,x)
-    call test_1st_der(alpha_spc_saft_hs,rho,T,x)
-    call test_1st_der_opt(alpha_disp,rho,T,x)
-    call test_1st_der_opt(alpha_spc_saft_hc,rho,T,x)
-    call test_1st_der_opt(alpha_PC,rho,T,x)
-    call test_1st_der_opt(F_PC_SAFT_TVn,rho=T,T=sum(x)/rho,x=x)
-
+    select type( eos => base_eos )
+    class is (PCSAFT_eos)
+      call test_1st_der(eta,eos,rho,T,x)
+      call test_1st_der_dim(zeta,eos,rho,T,x,dim=4)
+      call test_1st_der(C_1,eos,rho,T,x)
+      call test_1st_der(I_1,eos,rho,T,x)
+      call test_1st_der(I_2,eos,rho,T,x)
+      call test_1st_der(g_ij_spc_saft,eos,rho,T,x)
+      call test_1st_der(alpha_spc_saft_hs,eos,rho,T,x)
+      call test_1st_der_opt(alpha_disp,eos,rho,T,x)
+      call test_1st_der_opt(alpha_spc_saft_hc,eos,rho,T,x)
+      call test_1st_der_opt(alpha_PC,eos,rho,T,x)
+      call test_1st_der_opt(F_PC_SAFT_TVn,eos,rho=T,T=sum(x)/rho,x=x)
+    end select
   end subroutine test_der
 
   @Test
