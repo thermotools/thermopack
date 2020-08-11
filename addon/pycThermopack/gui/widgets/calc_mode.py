@@ -342,11 +342,8 @@ class CalcMode(QMainWindow):
             P = float(self.tp_p_input.text())
 
             # Conversion to standard SI to be used in functions
-            temp = self.ureg.Quantity(T, self.units["Temperature"])
-            T = temp.to("degK").magnitude
-
-            press = self.ureg.Quantity(P, self.units["Pressure"])
-            P = press.to("Pa").magnitude
+            T = self.ureg.Quantity(T, self.units["Temperature"]).to("degK").magnitude
+            P = self.ureg.Quantity(P, self.units["Pressure"]).to("Pa").magnitude
 
             # TODO: Need an exception thrown in two_phase_tpflash() to be caught in case calculation fails
             x, y, beta_vap, beta_liq, phase = self.tp.two_phase_tpflash(T, P, fractions)
@@ -355,8 +352,13 @@ class CalcMode(QMainWindow):
             P = float(self.ps_p_input.text())
             S = float(self.ps_s_input.text())
 
+            # Unit conversion
+            P = self.ureg.Quantity(P, self.units["Pressure"]).to("Pa").magnitude
+            S = self.ureg.Quantity(S, self.units["Entropy"]).to("J / (degK * mol)").magnitude
+
             if self.ps_initial_guess.isChecked():
                 T = float(self.ps_t_guess.text())
+                T = self.ureg.Quantity(T, self.units["Temperature"]).to("degK").magnitude
             else:
                 T = None
 
@@ -371,8 +373,13 @@ class CalcMode(QMainWindow):
             P = float(self.ph_p_input.text())
             H = float(self.ph_h_input.text())
 
+            # Convert units
+            P = self.ureg.Quantity(P, self.units["Pressure"]).to("Pa").magnitude
+            H = self.ureg.Quantity(H, self.units["Enthalpy"]).to("J / mol").magnitude
+
             if self.ph_initial_guess.isChecked():
                 T = float(self.ph_t_guess.text())
+                T = self.ureg.Quantity(T, self.units["Temperature"]).to("degK").magnitude
             else:
                 T = None
 
@@ -387,13 +394,19 @@ class CalcMode(QMainWindow):
             U = float(self.uv_u_input.text())
             V = float(self.uv_v_input.text())
 
+            # Unit conversion
+            U = self.ureg.Quantity(U, self.units["Internal energy"]).to("J / mol").magnitude
+            V = self.ureg.Quantity(V, self.units["Specific volume"]).to("m ** 3 / mol").magnitude
+
             if self.uv_t_initial_guess.isChecked():
                 T = float(self.uv_t_guess.text())
+                T = self.ureg(T, self.units["Temperature"]).to("degK").magnitude
             else:
                 T = None
 
             if self.uv_p_initial_guess.isChecked():
                 P = float(self.uv_p_guess.text())
+                P = self.ureg.Quantity(P, self.units["Pressure"]).to("Pa").magnitude
             else:
                 P = None
 
@@ -527,7 +540,13 @@ class CalcMode(QMainWindow):
             Cv_overall = Cv_vap * beta_vap + Cv_liq * beta_liq
             sos_overall = sos_vap * beta_vap + sos_liq * beta_liq
             frac_overall = beta_vap + beta_liq
-            mol_weight_overall = mol_weight_vap * beta_vap + mol_weight_liq * beta_liq
+
+            if mol_weight_liq == 0:
+                mol_weight_overall = mol_weight_vap
+            elif mol_weight_vap == 0:
+                mol_weight_overall = mol_weight_liq
+            else:
+                mol_weight_overall = mol_weight_vap * beta_vap + mol_weight_liq * beta_liq
 
         elif is_liq:
             V_overall = V_liq

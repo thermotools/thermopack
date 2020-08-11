@@ -6,9 +6,6 @@ from PyQt5.QtCore import QLocale
 from gui.utils import FloatValidator
 
 
-# TODO: Spesifisere enheter ved inputfelter
-
-
 class PhaseEnvelopeOptionsWindow(QDialog):
     """
     A window containing the parameters for the phase envelope plot
@@ -310,7 +307,7 @@ class PRhoOptionsWindow(QDialog):
             line_edit = QLineEdit()
             line_edit.setValidator(self.float_validator)
             line_edit.setText(str(temperatures[i]))
-            self.isotherm_layout.addRow("Temperature " + str(i), line_edit)
+            self.isotherm_layout.addRow("Temperature " + str(i + 1) + " [K]:", line_edit)
 
         self.v_start.setText(str(self.calc_settings["Volume range start"]))
         self.v_end.setText(str(self.calc_settings["Volume range end"]))
@@ -355,11 +352,11 @@ class PRhoOptionsWindow(QDialog):
         self.restore_defaults_btn.clicked.connect(self.restore_defaults)
 
     def add_new_temperature(self):
-        temperature_number = self.isotherm_layout.rowCount() - 1
+        temperature_number = self.isotherm_layout.rowCount()
         line_edit = QLineEdit()
         line_edit.setValidator(self.float_validator)
         line_edit.setText("298.0")
-        self.isotherm_layout.addRow("Temperature " + str(temperature_number), line_edit)
+        self.isotherm_layout.addRow("Temperature " + str(temperature_number) + " [K]:", line_edit)
         line_edit.selectAll()
         line_edit.setFocus()
 

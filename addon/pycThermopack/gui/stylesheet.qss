@@ -98,7 +98,7 @@ QComboBox QAbstractItemView {
 }
 
 QComboBox::down-arrow {
-    image: url(icons/down-arrow.png);
+    image: url(gui/icons/down-arrow.png);
 }
 
 QComboBox:disabled {

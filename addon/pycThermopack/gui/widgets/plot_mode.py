@@ -110,9 +110,6 @@ class PlotMode(QMainWindow):
         else:
             self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
 
-        action_group.addAction(toolbar.addAction(QIcon("gui/icons/settings.png"), "Units"))
-        self.action_units.triggered.connect(self.open_units_window)
-
     def handle_toolbar_action(self, action):
         """
         Calls the correct function depending on which tool icon was clicked
@@ -121,8 +118,6 @@ class PlotMode(QMainWindow):
         action = action.text()
         if action == "Save":
             self.save_plot_settings()
-        elif action == "Units":
-            self.open_units_window()
 
     @staticmethod
     def init_plotting_preferences():
@@ -503,10 +498,6 @@ class PlotMode(QMainWindow):
                         y_list += list(line.get_ydata())
 
                         writer.writerows([x_list, y_list])
-
-    def open_units_window(self):
-        self.dialog = UnitsDialog(self.units)
-        self.dialog.show()
 
     def save_plot_settings(self):
         """

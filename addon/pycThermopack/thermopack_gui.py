@@ -67,7 +67,7 @@ class ThermopackGUIApp(QMainWindow):
                         "Temperature": ["degK", "degC", "degF", "degR"],
                         "Pressure": ["Pa", "kPa", "MPa", "bar", "atm"],
                         "Volume": ["m ** 3", "L", "mL"],
-                        "Amount": ["mol", "g", "kg"],
+                        "Amount": ["mol"],
                         "Speed": ["m / s", "mph"]
                     }
                 },
