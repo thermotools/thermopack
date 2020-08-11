@@ -270,7 +270,6 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
                         tp.set_kij(index1, index2, matrix[row][col])
 
     elif category == "SAFT-VR Mie":
-        tp.init(comps=comps, parameter_reference=model_ref)
         a1 = settings["Model options"]["A1"]
         a2 = settings["Model options"]["A2"]
         a3 = settings["Model options"]["A3"]
@@ -282,6 +281,8 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
         tp.model_control_a3(a3)
         tp.model_control_hard_sphere(hard_sphere)
         tp.model_control_chain(chain)
+
+        tp.init(comps=comps, parameter_reference=model_ref)
 
         if parameters_exist:
             pure_fluid_parameters_exist = (

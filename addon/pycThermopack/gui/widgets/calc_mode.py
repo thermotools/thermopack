@@ -522,6 +522,10 @@ class CalcMode(QMainWindow):
             self.set_table_value("Molecular weight", "Vap", "kg / mol", self.units["Molecular weight"], mol_weight_vap)
 
         if is_liq and is_vap:
+
+            if beta_vap == -1 and beta_liq == -1:
+                beta_vap, beta_liq = 0.5, 0.5
+
             V_overall = V_vap * beta_vap + V_liq * beta_liq
             U_overall = U_vap * beta_vap + U_liq * beta_liq
             H_overall = H_vap * beta_vap + H_liq * beta_liq
@@ -531,7 +535,6 @@ class CalcMode(QMainWindow):
             Cv_overall = Cv_vap * beta_vap + Cv_liq * beta_liq
             sos_overall = sos_vap * beta_vap + sos_liq * beta_liq
             frac_overall = beta_vap + beta_liq
-            # TODO: Dette blir feil ved SINGLE eller MINIMUM_GIBBS. Da er beta = -1..
             mol_weight_overall = mol_weight_vap * beta_vap + mol_weight_liq * beta_liq
 
         elif is_liq:
