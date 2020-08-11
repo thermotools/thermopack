@@ -23,7 +23,7 @@ class ThermopackGUIApp(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("layouts/main_layout.ui", self)
+        loadUi("gui/layouts/main_layout.ui", self)
         self.setWindowTitle("Thermopack")
         self.showMaximized()
 
@@ -91,13 +91,13 @@ class ThermopackGUIApp(QMainWindow):
         toolbar.addSeparator()
 
         action_group = QActionGroup(self)
-        action_group.addAction(toolbar.addAction(QIcon("icons/open_file.png"), "Open file"))
-        action_group.addAction(toolbar.addAction(QIcon("icons/save.png"), "Save"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/open_file.png"), "Open file"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/save.png"), "Save"))
         toolbar.addSeparator()
-        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/settings.png"), "Units"))
         toolbar.addSeparator()
-        action_group.addAction(toolbar.addAction(QIcon("icons/curve.png"), "Plot mode"))
-        action_group.addAction(toolbar.addAction(QIcon("icons/calculator.png"), "Calculation mode"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/curve.png"), "Plot mode"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/calculator.png"), "Calculation mode"))
 
     def handle_toolbar_action(self, action):
         """
@@ -422,12 +422,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Load stylesheet
-    stylesheet = open("stylesheet.qss", "r")
+    stylesheet = open("gui/stylesheet.qss", "r")
     app.setStyleSheet(stylesheet.read())
     stylesheet.close()
 
     # Image shown when application is loading
-    splash = QSplashScreen(QPixmap("images/Thermopack logo.png"))
+    splash = QSplashScreen(QPixmap("gui/images/Thermopack logo.png"))
     splash.setWindowFlag(Qt.WindowStaysOnTopHint)
     splash.show()
     QTimer.singleShot(500, splash.close)

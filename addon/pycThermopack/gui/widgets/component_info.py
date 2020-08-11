@@ -8,7 +8,7 @@ class ComponentInformationWindow(QWidget):
     """
     def __init__(self, component, parent=None):
         super().__init__(parent=parent)
-        loadUi("layouts/component_info.ui", self)
+        loadUi("gui/layouts/component_info.ui", self)
         self.setWindowTitle(component.name)
 
         row = self.table.rowCount()

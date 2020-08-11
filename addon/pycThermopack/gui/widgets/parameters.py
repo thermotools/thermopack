@@ -90,7 +90,7 @@ class VdWParametersWidget(ParametersWidget):
     # Should be reinitiated every time opened, so that coefficients are correct if model is changed
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("layouts/vdw_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/vdw_bin_coeff_widget.ui", self)
 
         self.composition_list.currentItemChanged.connect(self.show_correct_matrix)
 
@@ -213,7 +213,7 @@ class HV1ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("layouts/hv1_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -355,7 +355,7 @@ class HV2ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("layouts/hv2_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv2_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -578,7 +578,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("layouts/saftvrmie_parameters.ui", self)
+        loadUi("gui/layouts/saftvrmie_parameters.ui", self)
         self.tab_stack_indices = {}
         self.list_name = None
         self.component_id = None

@@ -21,7 +21,7 @@ class ModelSelectWidget(QWidget):
     def __init__(self, data, name=None, parent=None):
         QWidget.__init__(self, parent)
 
-        loadUi("layouts/model_select_widget.ui", self)
+        loadUi("gui/layouts/model_select_widget.ui", self)
 
         self.data = data
         if name:

@@ -14,7 +14,7 @@ class UnitsDialog(QWidget):
 
     def __init__(self, units_data, parent=None):
         super().__init__(parent=parent)
-        loadUi("layouts/units.ui", self)
+        loadUi("gui/layouts/units.ui", self)
         self.setWindowTitle("Units")
 
         self.units_data = units_data

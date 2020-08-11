@@ -12,7 +12,7 @@ class ChangeModePopup(QDialog):
     """
     def __init__(self, data, json_file, parent=None):
         super().__init__(parent=parent)
-        loadUi("layouts/go_to_plot_mode_popup.ui", self)
+        loadUi("gui/layouts/go_to_plot_mode_popup.ui", self)
         self.setWindowTitle("Thermopack")
 
         self.json_file = json_file

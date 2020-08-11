@@ -27,7 +27,7 @@ class CalcMode(QMainWindow):
     def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("layouts/calc_mode.ui", self)
+        loadUi("gui/layouts/calc_mode.ui", self)
         self.setWindowTitle("Thermopack - Calculation Mode")
         self.showMaximized()
 

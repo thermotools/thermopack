@@ -16,9 +16,6 @@ import csv
 import os
 
 
-# TODO: Spesifisere enheter ved inputs
-
-
 class PlotMode(QMainWindow):
     """
     A window where different types of (matplotlib) plots can be shown for a given composition and model setup.
@@ -29,7 +26,7 @@ class PlotMode(QMainWindow):
     def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("layouts/plot_mode.ui", self)
+        loadUi("gui/layouts/plot_mode.ui", self)
         self.setWindowTitle("Thermopack - Plot Mode")
         self.showMaximized()
 

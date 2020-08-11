@@ -16,7 +16,7 @@ class ComponentSelectWidget(QWidget):
     def __init__(self, data, parent=None):
         QWidget.__init__(self, parent)
 
-        loadUi("layouts/component_select_widget.ui", self)
+        loadUi("gui/layouts/component_select_widget.ui", self)
 
         self.data = data
 

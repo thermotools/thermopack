@@ -128,7 +128,7 @@ def get_fluids():
     """
     fluids = {}
 
-    fluids_path = os.path.join("..", "..", "..", "fluids")
+    fluids_path = os.path.join("..", "..", "fluids")
 
     for root, dirs, files in os.walk(fluids_path):
         for file_name in files:
