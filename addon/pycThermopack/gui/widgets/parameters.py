@@ -7,10 +7,6 @@ from gui.utils import get_thermopack, init_thermopack, get_comp_id, FloatValidat
 import numpy as np
 
 
-# TODO: Når fanen byttes skal lista deselectes og table_stack --> page0 (tom)
-# TODO: Lage en bedre klassestruktur med arv.
-
-
 class ParametersWidget(QWidget):
     """
     Base class for the widgets for seeing and editing the interaction (and other) parameters.

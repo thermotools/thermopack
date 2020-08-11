@@ -6,6 +6,7 @@ class ComponentInformationWindow(QWidget):
     """
     A window to show component data from the fluids-folder
     """
+
     def __init__(self, component, parent=None):
         super().__init__(parent=parent)
         loadUi("gui/layouts/component_info.ui", self)

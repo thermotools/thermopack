@@ -7,6 +7,7 @@ class AboutWindow(QTextBrowser):
     A window to show information about the Thermopack application
     The displayed info is the HTML content in the about.html file
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle("About Thermopack")

@@ -63,3 +63,18 @@ To test pycThermopack, run one of
 python3 example.py
 python3 -m pytest
 ```
+
+# Thermopack GUI
+
+To run the GUI application:
+
+```sh
+python thermopack_gui.py
+```
+
+You will need to have installed the following Python packages:
+
+* `pyqt5` for the GUI framework
+* `pint` for managing units
+* `matplotlib`
+* `numpy` 

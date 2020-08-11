@@ -13,12 +13,6 @@ from gui.widgets.units_dialog import UnitsDialog
 from gui.utils import get_thermopack, init_thermopack, FloatValidator, MessageBox
 
 
-# TODO: ENHETER: Alltid lagre verdier som SI i JSON-fila. Bruke pint-biblioteket til å konvertere til ønskede enheter
-#  Kan egentlig flytte (/også ha) UnitDialog i CalcMode.
-#  Alle inputs som har noe med enheter å gjøre, må endre labels 'Label' => 'Label [Unit]'
-#  value --> Quantity-objekt med unit_from --> Quantity-objekt med unit_to, set i tabell med str(quantity.magnitude)
-
-
 class CalcMode(QMainWindow):
     """
     Calculation mode: Own window to calculate, display and save flash data
@@ -92,7 +86,7 @@ class CalcMode(QMainWindow):
         toolbar.addSeparator()
 
         action_group = QActionGroup(self)
-        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/settings.png"), "Units"))
 
         self.action_close.triggered.connect(self.close)
         self.action_units.triggered.connect(self.open_units_window)
@@ -180,13 +174,11 @@ class CalcMode(QMainWindow):
         """
         Sets placeholders for temperature and pressure input fields to standard temperature and pressure
         """
-        std_temp = 298 * self.ureg("K")
-        std_temp.ito(self.units["Temperature"])
-        T = str(std_temp.magnitude)
+        std_temp = self.ureg.Quantity(298.0, "degK")
+        T = str(std_temp.to(self.units["Temperature"]).magnitude)
 
-        std_press = 100000 * self.ureg("Pa")
-        std_press.ito(self.units["Pressure"])
-        P = str(std_press.magnitude)
+        std_press = self.ureg.Quantity(100000, "Pa")
+        P = str(std_press.to(self.units["Pressure"]).magnitude)
 
         self.tp_t_input.setText(T)
         self.tp_p_input.setText(P)
@@ -257,7 +249,7 @@ class CalcMode(QMainWindow):
         :param value: Value to be stored in the desired cell
         """
 
-        quantity = self.ureg.Quantity(value, self.ureg(base_unit))
+        quantity = self.ureg.Quantity(value, base_unit)
         converted_value = quantity.to(to_unit).magnitude
 
         row = self.table_indices[property]
@@ -353,7 +345,7 @@ class CalcMode(QMainWindow):
             temp = self.ureg.Quantity(T, self.units["Temperature"])
             T = temp.to("degK").magnitude
 
-            press = P * self.ureg(self.units["Pressure"])
+            press = self.ureg.Quantity(P, self.units["Pressure"])
             P = press.to("Pa").magnitude
 
             # TODO: Need an exception thrown in two_phase_tpflash() to be caught in case calculation fails

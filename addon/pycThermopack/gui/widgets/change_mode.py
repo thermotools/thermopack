@@ -10,6 +10,7 @@ class ChangeModePopup(QDialog):
     Base class for popups 'Go to Plot Mode' and 'Go to Calc Mode'
     The user selects one component list, and one model setup before proceeding
     """
+
     def __init__(self, data, json_file, parent=None):
         super().__init__(parent=parent)
         loadUi("gui/layouts/go_to_plot_mode_popup.ui", self)
@@ -73,6 +74,7 @@ class GoToPlotModeWidget(ChangeModePopup):
     Window popup beofre going to Plot Mode
     The user selects one component list, and one model setup before proceeding
     """
+
     def __init__(self, data, json_file, parent=None):
         ChangeModePopup.__init__(self, data, json_file, parent)
         self.go_btn.clicked.connect(self.go_to_plot_mode)
@@ -94,6 +96,7 @@ class GoToCalcModeWidget(ChangeModePopup):
     Window popup beofre going to Calc Mode
     The user selects one component list, and one model setup before proceeding
     """
+
     def __init__(self, data, json_file, parent=None):
         ChangeModePopup.__init__(self, data, json_file, parent)
         self.go_btn.clicked.connect(self.go_to_calc_mode)

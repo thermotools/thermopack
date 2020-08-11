@@ -103,14 +103,14 @@ class PlotMode(QMainWindow):
 
         action_group = QActionGroup(self)
         if self.json_file:
-            action_group.addAction(toolbar.addAction(QIcon("icons/save.png"), "Save"))
+            action_group.addAction(toolbar.addAction(QIcon("gui/icons/save.png"), "Save"))
             self.action_save = self.file_menu.addAction("Save", self.save_plot_settings, QKeySequence("Ctrl+S"))
             self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
 
         else:
             self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
 
-        action_group.addAction(toolbar.addAction(QIcon("icons/settings.png"), "Units"))
+        action_group.addAction(toolbar.addAction(QIcon("gui/icons/settings.png"), "Units"))
         self.action_units.triggered.connect(self.open_units_window)
 
     def handle_toolbar_action(self, action):
