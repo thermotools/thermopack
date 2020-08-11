@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QTextBrowser
 from gui.utils import MessageBox
 
+import os
+
 
 class AboutWindow(QTextBrowser):
     """
@@ -15,7 +17,7 @@ class AboutWindow(QTextBrowser):
         self.setOpenExternalLinks(True)
 
         try:
-            file = open("about.html", "r")
+            file = open(os.path.join(os.getcwd(), "gui", "about.html"), "r")
         except FileNotFoundError:
             msg = MessageBox("Error", "Could not open file containing the About Info")
             msg.exec_()
