@@ -321,7 +321,7 @@ contains
     character(len=*), optional, intent(in) :: mixing
     real :: n(ncomp), V, z(ncomp), n2(ncomp), lnf(ncomp), lnf2(ncomp), F, F2
     real, parameter :: tol1 = 1e-10, tol2 = 5e-8
-    integer :: index, i, j, ph, eos_idx
+    integer :: index, i, j, ph
     real :: factor
     ! Test variables
     real :: T, P, v0
