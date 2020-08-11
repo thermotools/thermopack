@@ -49,6 +49,7 @@ Module eos_parameters
     type(eosmbwr), allocatable :: mbwr_meos(:)
     type(nist_meos_ptr), allocatable :: nist(:)
   contains
+    procedure, public :: dealloc => single_eos_dealloc
     procedure, public :: allocate_and_init => single_eos_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_single_eos_set
@@ -93,11 +94,10 @@ contains
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
     integer :: istat
+    call eos%dealloc()
     istat = 0
     if (str_eq(eos_label,'MBWR19') .or. str_eq(eos_label,'MBWR32')) then
       if (nc /= 1) call stoperror("MBWR equation only for single component.")
-      if (allocated (eos%mbwr_meos)) deallocate (eos%mbwr_meos, STAT=istat)
-      if (istat /= 0) call stoperror('Error deallocating mbwr_meos')
       allocate(eos%mbwr_meos(1), stat=istat)
       if (istat /= 0) call stoperror('Error allocating mbwr_meos')
       if (str_eq(eos_label,'MBWR19')) then
@@ -109,15 +109,7 @@ contains
       if (str_eq(eos_label,'NIST_MEOS')) then
         if (nc /= 1) call stoperror("NIST_MEOS only implemented for pure components.")
       endif
-      if (allocated (eos%nist)) then
-        do i=1,size(eos%nist)
-          deallocate (eos%nist(i)%meos, STAT=istat)
-          if (istat /= 0) call stoperror('Error deallocating nist(i)%meos')
-        enddo
-        deallocate (eos%nist, STAT=istat)
-        if (istat /= 0) call stoperror('Error deallocating nist')
-      endif
-      allocate (eos%nist(nc), STAT=istat)
+      allocate(eos%nist(nc), STAT=istat)
       if (istat /= 0) call stoperror('Error allocating nist')
       do i=1,nc
         if (str_eq(complist(i), "C3")) then
@@ -140,6 +132,31 @@ contains
       call stoperror("Wrong input to single_eos_allocate_and_init")
     endif
   end subroutine single_eos_allocate_and_init
+
+  !! \author Morten H
+  subroutine single_eos_dealloc(eos)
+    use utilities, only: deallocate_real
+    ! Passed object:
+    class(single_eos), intent(inout) :: eos
+    ! Locals
+    integer :: i, istat
+    istat = 0
+    if (allocated(eos%mbwr_meos)) then
+      do i=1,size(eos%mbwr_meos)
+        call eos%mbwr_meos(i)%dealloc()
+      enddo
+      deallocate(eos%mbwr_meos, STAT=istat)
+      if (istat /= 0) call stoperror('Error deallocating mbwr_meos')
+    endif
+    if (allocated (eos%nist)) then
+      do i=1,size(eos%nist)
+        deallocate (eos%nist(i)%meos, STAT=istat)
+        if (istat /= 0) call stoperror('Error deallocating nist(i)%meos')
+      enddo
+      deallocate (eos%nist, STAT=istat)
+      if (istat /= 0) call stoperror('Error deallocating nist')
+    endif
+  end subroutine single_eos_dealloc
 
   !> Allocate memory for single eos
   function single_eos_constructor(nc, eos_label) result(s_eos)

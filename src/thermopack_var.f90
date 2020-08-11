@@ -41,6 +41,7 @@ module thermopack_var
 
   contains
     procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
+    procedure, public :: dealloc => eos_dealloc
     ! Assignment operator
     procedure(assign_intf), deferred, pass(This), public :: assign_eos
     generic, public :: assignment(=) => assign_eos
@@ -94,6 +95,7 @@ module thermopack_var
     logical :: need_alternative_eos
     type(eos_param_pointer), allocatable, dimension(:) :: cubic_eos_alternative
   contains
+    procedure, public :: dealloc => eos_container_dealloc
     procedure, public :: is_model_container
     !procedure :: assign_eos_container
     !generic, public :: assignment(=) => assign_eos_container
@@ -114,6 +116,7 @@ module thermopack_var
        get_active_alt_eos, active_eos_container_is_associated
   public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
        real_to_apparent_differentials, TP_lnfug_apparent
+  public :: update_global_variables_form_active_eos_container
 
 contains
 
@@ -178,23 +181,32 @@ contains
     do i=1,size(eos_conts)
       if (eos_conts(i)%p_eosc%is_model_container(index)) then
         p_active_eos_c => eos_conts(i)%p_eosc
-        nc = p_active_eos_c%nc
-        nph = p_active_eos_c%nph
-        complist => p_active_eos_c%complist
-        apparent => p_active_eos_c%apparent
-        if (associated(apparent)) then
-          nce = apparent%nce
-          ncsym = apparent%ncsym
-        else
-          nce = nc
-          ncsym = nc
-        endif
+        call update_global_variables_form_active_eos_container()
         return
       endif
     enddo
     write(index_str,"(I4)") index
     call stoperror("No eos matches label "//adjustl(trim(index_str)))
   end subroutine activate_model
+
+  subroutine update_global_variables_form_active_eos_container()
+    nc = p_active_eos_c%nc
+    nph = p_active_eos_c%nph
+    complist => p_active_eos_c%complist
+    apparent => p_active_eos_c%apparent
+    if (associated(apparent)) then
+      nce = apparent%nce
+      ncsym = apparent%ncsym
+    else
+      nce = nc
+      ncsym = nc
+    endif
+    if (associated(p_active_eos_c%eos(1)%p_eos%assoc)) then
+      numAssocSites = p_active_eos_c%eos(1)%p_eos%assoc%numAssocSites
+    else
+      numAssocSites = 0
+    endif
+  end subroutine update_global_variables_form_active_eos_container
 
   function add_eos() result(index)
     !type(eos_container), pointer, intent(in) :: eosc
@@ -243,6 +255,7 @@ contains
         if (p_active_eos_c%is_model_container(index)) then
           p_active_eos_c => NULL()
         endif
+        call eos_conts(i)%p_eosc%dealloc()
         deallocate(eos_conts(i)%p_eosc, stat=istat)
         if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_eosc")
       else
@@ -263,6 +276,50 @@ contains
       endif
     endif
   end subroutine delete_eos
+
+  subroutine eos_dealloc(eos)
+    ! Passed object:
+    class(base_eos_param), intent(inout) :: eos
+    ! Input:
+  end subroutine eos_dealloc
+
+  subroutine eos_container_dealloc(eosc)
+    ! Passed object:
+    class(eos_container), intent(inout) :: eosc
+    ! Locals
+    integer :: i, istat
+    do i=1,size(eosc%eos)
+      if (associated(eosc%eos(i)%p_eos)) then
+        call eosc%eos(i)%p_eos%dealloc()
+        deallocate(eosc%eos(i)%p_eos, stat=istat)
+        if (istat /= 0) print *,"Error deallocating eos"
+        eosc%eos(i)%p_eos => NULL()
+      endif
+      if (associated(eosc%cubic_eos_alternative(i)%p_eos)) then
+        call eosc%cubic_eos_alternative(i)%p_eos%dealloc()
+        deallocate(eosc%cubic_eos_alternative(i)%p_eos, stat=istat)
+        if (istat /= 0) print *,"Error deallocating cubic_eos_alternative"
+        eosc%cubic_eos_alternative(i)%p_eos => NULL()
+      endif
+    enddo
+
+    if (allocated(eosc%comps)) then
+      deallocate(eosc%comps, stat=istat)
+      if (istat /= 0) print *,"Error deallocating comps"
+    endif
+    if (allocated(eosc%complist)) then
+      deallocate(eosc%complist, stat=istat)
+      if (istat /= 0) print *,"Error deallocating complist"
+    endif
+    if (associated(eosc%apparent)) then
+      call eosc%apparent%dealloc()
+      deallocate(eosc%apparent, stat=istat)
+      if (istat /= 0) print *,"Error deallocating apparent class"
+      eosc%apparent => NULL()
+    endif
+
+  end subroutine eos_container_dealloc
+
 
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)

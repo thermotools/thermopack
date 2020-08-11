@@ -14,7 +14,7 @@ module utilities
   public :: safe_exp
   public :: rand_seed, random, newunit, linspace, is_numerically_equal
   public :: normalize, boolean, isXwithinBounds
-  public :: allocate_nc, allocate_nc_x_nc
+  public :: allocate_nc, allocate_nc_x_nc, deallocate_real, deallocate_real_2
   public :: get_thread_index
 
   !-----------------------------------------------------------------------------
@@ -225,6 +225,28 @@ contains
       call stoperror(errmess)
     endif
   end subroutine isXwithinBounds
+
+  !> deallocate real variable
+  subroutine deallocate_real(var,var_name)
+    real, allocatable, intent(inout) :: var(:)
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('deallocate_real: could not deallocate array: '//var_name)
+  end subroutine deallocate_real
+
+  !> deallocate real variable
+  subroutine deallocate_real_2(var,var_name)
+    real, allocatable, intent(inout) :: var(:,:)
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('deallocate_real: could not deallocate array: '//var_name)
+  end subroutine deallocate_real_2
 
   !> Allocate nc matrix
   subroutine allocate_nc(var,nc,var_name)

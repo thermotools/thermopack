@@ -237,6 +237,7 @@ contains
     if (allocated(p_active_eos_c%eos)) then
       do i=1,size(p_active_eos_c%eos)
         if (associated(p_active_eos_c%eos(i)%p_eos)) then
+          call p_active_eos_c%eos(i)%p_eos%dealloc()
           deallocate(p_active_eos_c%eos(i)%p_eos, stat=istat)
           if (istat /= 0) call stoperror("Not able to deallocate p_active_eos_c%eos(i)%p_eos")
         endif
@@ -247,6 +248,7 @@ contains
     if (allocated(p_active_eos_c%cubic_eos_alternative)) then
       do i=1,size(p_active_eos_c%cubic_eos_alternative)
         if (associated(p_active_eos_c%cubic_eos_alternative(i)%p_eos)) then
+          call p_active_eos_c%cubic_eos_alternative(i)%p_eos%dealloc()
           deallocate(p_active_eos_c%cubic_eos_alternative(i)%p_eos, stat=istat)
           if (istat /= 0) call stoperror("Not able to deallocate p_active_eos_c&cubic_eos_alternative(i)%p_eos")
         endif

@@ -20,6 +20,7 @@ module pc_saft_nonassoc
     real, allocatable :: eps_depth_divk(:,:)  !< [K]
     real, allocatable :: sigma_cube(:,:)      !< [m^3]
   contains
+    procedure, public :: dealloc => pcsaft_dealloc
     procedure, public :: allocate_and_init => pcsaft_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_pcsaft
@@ -1455,20 +1456,18 @@ contains
   ! end subroutine cleanup_pc_saft_nonassoc
 
   subroutine pcsaft_allocate_and_init(eos,nc,eos_label)
+    use utilities, only: allocate_nc_x_nc, allocate_nc
     ! Passed object:
     class(pcsaft_eos), intent(inout) :: eos
     ! Input:
     integer, intent(in) :: nc !< Number of components
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
-    if (allocated(eos%m)) deallocate(eos%m)
-    if (allocated(eos%sigma)) deallocate(eos%sigma)
-    if (allocated(eos%sigma_cube)) deallocate(eos%sigma_cube)
-    if (allocated(eos%eps_depth_divk)) deallocate(eos%eps_depth_divk)
-    allocate(eos%m(nc))
-    allocate(eos%sigma(nc,nc))
-    allocate(eos%sigma_cube(nc,nc))
-    allocate(eos%eps_depth_divk(nc,nc))
+    call eos%dealloc()
+    call allocate_nc(eos%m,nc,"eos%m")
+    call allocate_nc_x_nc(eos%sigma,nc,"eos%sigma")
+    call allocate_nc_x_nc(eos%sigma_cube,nc,"eos%sigma_cube")
+    call allocate_nc_x_nc(eos%eps_depth_divk,nc,"eos%eps_depth_divk")
   end subroutine pcsaft_allocate_and_init
 
   subroutine assign_pcsaft(This, other)
@@ -1490,5 +1489,17 @@ contains
       print *,"assign_pcsaft: Should not be here"
     end select
   end subroutine assign_pcsaft
+
+  !! \author Morten H
+  subroutine pcsaft_dealloc(eos)
+    use utilities, only: deallocate_real, deallocate_real_2
+    ! Passed object:
+    class(pcsaft_eos), intent(inout) :: eos
+    !
+    call deallocate_real(eos%m,"eos%m")
+    call deallocate_real_2(eos%sigma,"eos%sigma")
+    call deallocate_real_2(eos%sigma_cube,"eos%sigma_cube")
+    call deallocate_real_2(eos%eps_depth_divk,"eos%eps_depth_divk")
+  end subroutine pcsaft_dealloc
 
 end module pc_saft_nonassoc

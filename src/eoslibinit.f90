@@ -4,7 +4,8 @@
 module eoslibinit
   !
   use thermopack_var, only: nce, get_active_eos_container, eos_container, &
-       get_active_alt_eos, base_eos_param, add_eos, active_eos_container_is_associated
+       get_active_alt_eos, base_eos_param, add_eos, &
+       active_eos_container_is_associated, numAssocSites
   implicit none
   save
   !
@@ -143,6 +144,7 @@ contains
     nph = p_act_eosc%nph
     complist => p_act_eosc%complist
     apparent => NULL()
+    numAssocSites = 0
 
     ! Initialize components
     call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)

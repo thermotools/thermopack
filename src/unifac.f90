@@ -19,6 +19,7 @@ module unifac
     real, allocatable, dimension(:) :: qi !< [-] (nc) Combinatorial term param
     real, allocatable, dimension(:) :: ri !< [-] (nc) Combinatorial term param
   contains
+    procedure :: dealloc => unifacdb_dealloc
     procedure :: assign_unifacdb
     generic, public :: assignment(=) => assign_unifacdb
   end type unifacdb
@@ -637,5 +638,25 @@ contains
       u1%ri = u2%ri
     endif
   end subroutine assign_unifacdb
+
+  subroutine unifacdb_dealloc(u)
+    use utilities, only: deallocate_real, deallocate_real_2
+    class(unifacdb), intent(inout) :: u
+    ! Locals
+    integer :: ierr
+    ierr = 0
+    if (allocated(u%mainGroupMapping)) deallocate(u%mainGroupMapping, stat=ierr)
+    if (ierr /= 0) call stoperror("unifacdb_dealloc: Not able to deallocate u%mainGroupMapping")
+    if (allocated(u%vik)) deallocate(u%vik, stat=ierr)
+    if (ierr /= 0) call stoperror("unifacdb_dealloc: Not able to deallocate u%vik")
+
+    call deallocate_real_2(u%ajk,"u%ajk")
+    call deallocate_real_2(u%bjk,"u%bjk")
+    call deallocate_real_2(u%cjk,"u%cjk")
+    call deallocate_real(u%Qk,"u%Qk")
+    call deallocate_real(u%qi,"u%qi")
+    call deallocate_real(u%ri,"u%ri")
+
+  end subroutine unifacdb_dealloc
 
 end module unifac

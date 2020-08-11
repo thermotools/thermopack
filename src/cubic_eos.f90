@@ -137,6 +137,7 @@ module cubic_eos
     type(unifacdb), pointer :: unifdb => NULL()
 
   contains
+    procedure, public :: dealloc => cubic_eos_dealloc
     procedure, public  :: allocate_and_init => allocate_and_init_cubic_eos
     !procedure, public :: de_allocate_cubic_eos
     ! Assignment operator
@@ -692,63 +693,59 @@ contains
     eos%simple_covolmixing = .true.
   end subroutine allocate_and_init_cubic_eos
 
-  ! !> Free the memory allocated in SelectEOS
-  ! !!
-  ! !! \author Morten H
-  ! subroutine de_allocate_cubic_eos(cbeos)
-  !   implicit none
-  !   class(cb_eos), intent(inout) :: cbeos
-  !   !
+  !! \author Morten H
+  subroutine cubic_eos_dealloc(eos)
+    use utilities, only: deallocate_real, deallocate_real_2
+    ! Passed object:
+    class(cb_eos), intent(inout) :: eos
+    ! Loclas
+    integer :: stat
+    call deallocate_real(eos%ai,"eos%ai")
+    call deallocate_real(eos%ait,"eos%ait")
+    call deallocate_real(eos%bi,"eos%bi")
+    call deallocate_real(eos%bit,"eos%bit")
+    call deallocate_real(eos%bitt,"eos%bitt")
+    call deallocate_real(eos%ci,"eos%ci")
 
-  !   if (allocated (cbeos%kij)) deallocate (cbeos%kij,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating kij'
+    call deallocate_real_2(eos%aij,"eos%aij")
+    call deallocate_real_2(eos%bij,"eos%bij")
+    call deallocate_real_2(eos%cij,"eos%cij")
 
-  !   if (allocated (cbeos%ai)) deallocate (cbeos%ai, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating ai'
+    call deallocate_real_2(eos%kij,"eos%kij")
+    call deallocate_real_2(eos%lowcase_bij,"eos%lowcase_bij")
 
-  !   if (allocated (cbeos%ait)) deallocate (cbeos%ait, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating ait'
+    stat = 0
+    if (allocated(eos%single)) deallocate(eos%single, STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating single'
 
-  !   if (allocated (cbeos%bit)) deallocate (cbeos%bit, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating bit'
+    stat = 0
+    if (allocated(eos%mixGE%alpha)) deallocate(eos%mixGE%alpha,STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating mixGE%alpha'
 
-  !   if (allocated (cbeos%aij)) deallocate (cbeos%aij, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating aij'
+    stat = 0
+    if (allocated(eos%mixGE%aGE)) deallocate(eos%mixGE%aGE,STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating mixGE%aGE'
 
-  !   if (allocated (cbeos%bi)) deallocate (cbeos%bi, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating bi'
+    stat = 0
+    if (allocated(eos%mixGE%bGE)) deallocate(eos%mixGE%bGE,STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating mixGE%bGE'
 
-  !   if (allocated (cbeos%bij)) deallocate (cbeos%bij, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating bij'
+    stat = 0
+    if (allocated(eos%mixGE%cGE)) deallocate(eos%mixGE%cGE,STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating mixGE%cGE'
 
-  !   if (allocated (cbeos%lowcase_bij)) deallocate (cbeos%lowcase_bij, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating lowcase_bij'
+    stat = 0
+    if (allocated(eos%mixGE%correlation)) deallocate(eos%mixGE%correlation,STAT=stat)
+    if (stat /= 0) write (*,*) 'Error deallocating mixGE%correlation'
 
-  !   if (allocated (cbeos%ci)) deallocate (cbeos%ci, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating ci'
+    if (associated(eos%unifdb)) then
+      call eos%unifdb%dealloc()
+      stat = 0
+      deallocate(eos%unifdb,STAT=stat)
+      if (stat /= 0) write (*,*) 'Error deallocating unifdb'
+    endif
 
-  !   if (allocated (cbeos%cij)) deallocate (cbeos%cij, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating cij'
-
-  !   if (allocated (cbeos%single)) deallocate (cbeos%single, STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating single'
-
-  !   if (allocated (cbeos%mixGE%alpha)) deallocate (cbeos%mixGE%alpha,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating mixGE%alpha'
-
-  !   if (allocated (cbeos%mixGE%aGE)) deallocate (cbeos%mixGE%aGE,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating mixGE%aGE'
-
-  !   if (allocated (cbeos%mixGE%bGE)) deallocate (cbeos%mixGE%bGE,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating mixGE%bGE'
-
-  !   if (allocated (cbeos%mixGE%cGE)) deallocate (cbeos%mixGE%cGE,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating mixGE%cGE'
-
-  !   if (allocated (cbeos%mixGE%correlation)) deallocate (cbeos%mixGE%correlation,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating mixGE%correlation'
-
-  ! end subroutine de_allocate_cubic_eos
+  end subroutine cubic_eos_dealloc
 
   function isHVmixModel(mix_idx) result(isHV)
     integer, intent(in) :: mix_idx

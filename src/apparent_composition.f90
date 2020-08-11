@@ -20,6 +20,7 @@ module apparent_compostion
     procedure, public       :: getModFugacity
     procedure, public       :: update_v_sum
     procedure, public       :: set_v_stoich_ij
+    procedure, public       :: dealloc
   end type apparent_container
 
   public :: apparent_container
@@ -45,6 +46,20 @@ contains
     apparent%nc = nc
     apparent%nce = nce
   end function apparent_constructor
+
+  subroutine dealloc(apparent)
+    ! Input:
+    ! Created object:
+    class(apparent_container), intent(inout) :: apparent
+    ! Locals
+    integer :: ierr
+    ierr = 0
+    if (allocated(apparent%v_stoich)) deallocate(apparent%v_stoich,stat=ierr)
+    if (ierr /= 0) print *,'apparent: Not able to allocate v_stoich memory'
+    ierr = 0
+    if (allocated(apparent%v_sum)) deallocate(apparent%v_sum,stat=ierr)
+    if (ierr /= 0) print *,'apparent: Not able to allocate v_sum memory'
+  end subroutine dealloc
 
   subroutine set_v_stoich_ij(apparent,i,j,v)
     ! Passes object:

@@ -22,7 +22,6 @@ module tpmbwr
   ! A typical exponential term in the MBWR equations is  n*rho^i*T^j*exp(-gamma*rho^L)
   ! The NIJLarray keeps track of the connection between n,i,j and l.
   type :: NIJLarray
-    sequence
     integer :: len
     real, allocatable, dimension(:) :: N
     integer, allocatable, dimension(:) :: I
@@ -33,7 +32,6 @@ module tpmbwr
 
   !> MBWR model type for mbwr19 and mbwr32.
   type :: eosmbwr
-    sequence
     character (LEN=8) :: compId !< Is needed to associate the component to the parameters in MBWRdata
     character (LEN=8) :: eosid !< Not used per now.
     character (LEN=18) :: name !< Not used per now.
@@ -57,6 +55,8 @@ module tpmbwr
     real :: zc    !< Critical compressibility factor
     real :: acf   !< Acentric factor, used in the SRK initial value method in the density solver.
     real :: gamma !< The parameter gamma in the MBWR equation
+  contains
+    procedure, public :: dealloc => deallocEosMbwr
   end type eosmbwr
 
 contains
@@ -83,7 +83,7 @@ contains
 
   subroutine deallocEosMbwr(refEosMbwr)
     implicit none
-    TYPE(eosmbwr), INTENT(INOUT) :: refEosMbwr
+    class(eosmbwr), INTENT(INOUT) :: refEosMbwr
     call deallocNIJL(refEosMbwr%PCoeff_rhoT)
     call deallocNIJL(refEosMbwr%ZCoeff_redrhoInvredT)
     call deallocNIJL(refEosMbwr%redResHelmCoeff_redrhoT)

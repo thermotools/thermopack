@@ -19,7 +19,8 @@ module association_var
     !> Cached states
     real :: T_cache = 0.0
     real, allocatable, dimension(:,:) :: boltzmann_fac_cache !< Cached Delta_kl matrix
-!  contains
+  contains
+    procedure, public :: dealloc
 !    procedure, public :: allocate_and_init => association_allocate_and_init
   end type association
 
@@ -27,6 +28,21 @@ module association_var
   public :: association
 
 contains
+
+  subroutine dealloc(assoc)
+    use utilities, only: deallocate_real_2
+    ! Input:
+    ! Created object:
+    class(association), intent(inout) :: assoc
+    ! Locals
+    integer :: ierr
+    ierr = 0
+    if (allocated(assoc%comp_vs_sites)) deallocate(assoc%comp_vs_sites,stat=ierr)
+    if (ierr /= 0) print *,'association: Not able to allocate comp_vs_sites memory'
+    call deallocate_real_2(assoc%beta_kl,"assoc%beta_kl")
+    call deallocate_real_2(assoc%eps_kl,"assoc%eps_kl")
+    call deallocate_real_2(assoc%boltzmann_fac_cache,"assoc%boltzmann_fac_cache")
+  end subroutine dealloc
 
   ! subroutine association_allocate_and_init(numAssocSites)
   !   integer, intent(in) :: numAssocSites
