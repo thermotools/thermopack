@@ -48,9 +48,8 @@ contains
     use parameters, only: clen, liq_vap_discr_method, initCompList_legacy, nc, TREND, &
          eosLib, model, THERMOPACK
     use tpselect,   only: SelectComp, SelectEOS
-    use tpvar,      only: comp, cbeos, cbeos_alternative, nce, ncsym
+    use tpvar,      only: comp, cbeos, nce, ncsym
     use stringmod,  only: uppercase
-    use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
     !$ use omp_lib, only: omp_get_max_threads
     ! Method information
     character(len=*), intent(in) :: eosLibrary !< String defining eos library (TREND, ThermoPack)
@@ -73,8 +72,6 @@ contains
     integer             :: i, err, ncbeos
     character(len=len_trim(comp_string)) :: comp_string_upper
     character(len=len_trim(eosLibrary)) :: eosLibrary_cpy
-    logical             :: isSAFTmodel
-    real :: Tci, Pci, oi
     if (present(silent)) then
       silent_init = silent
     endif
@@ -129,6 +126,23 @@ contains
       call stoperror(trim(message))
     end select
 
+    call init_fallback_and_redefine_criticals(silent_init)
+  end subroutine init_thermo
+
+  !----------------------------------------------------------------------------
+  !> Initialize cubic fallback eos
+  !----------------------------------------------------------------------------
+  subroutine init_fallback_and_redefine_criticals(silent)
+    use parameters, only: TREND, eosLib, THERMOPACK
+    use tpselect,   only: SelectEOS
+    use tpvar,      only: comp, cbeos, cbeos_alternative, nce
+    use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
+    !$ use omp_lib, only: omp_get_max_threads
+    logical, intent(in) :: silent !< Option to disable init messages.
+    ! Locals
+    integer             :: err, ncbeos, i
+    logical             :: isSAFTmodel
+    real                :: Tci, Pci, oi
     ! Initialize fallback-EoS (SRK from EoSlib Thermopack):
     ! Alternate SRK EoS for generating initial values, etc.
     ncbeos = 1
@@ -164,8 +178,7 @@ contains
         call redefine_critical_parameters(silent_init)
       endif
     endif
-  end subroutine init_thermo
-
+  end subroutine init_fallback_and_redefine_criticals
 
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
@@ -572,6 +585,8 @@ contains
     ! Initialize Thermopack
     call init_thermopack("SAFT-VR-MIE", "Classic", "Classic", nphase=3)
 
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_saftvrmie
 
   !----------------------------------------------------------------------------
@@ -598,6 +613,9 @@ contains
 
     ! Initialize Thermopack
     call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3)
+
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
 
   end subroutine init_pcsaft
 
@@ -639,6 +657,8 @@ contains
     call init_thermopack("CPA-"//trim(eos_loc),trim(uppercase(mixing_loc)), &
          trim(uppercase(alpha_loc)), nphase=3, kij_setno=1,alpha_setno=1)
 
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_cpa
 
 end module eoslibinit
