@@ -1355,27 +1355,29 @@ contains
     ! Get cubic interaction parameter.
     aEps_kij_out(1) = cbeos(1)%kij(i,j)
 
-    ! Get the schemes and values of eps and beta for components i and j.
-    call getActiveAssocParams(i, eps_i, beta_i)
-    call getActiveAssocParams(j, eps_j, beta_j)
-    scheme_i = comp(i)%assoc_scheme
-    scheme_j = comp(j)%assoc_scheme
+    if (numAssocSites > 0) then
+      ! Get the schemes and values of eps and beta for components i and j.
+      call getActiveAssocParams(i, eps_i, beta_i)
+      call getActiveAssocParams(j, eps_j, beta_j)
+      scheme_i = comp(i)%assoc_scheme
+      scheme_j = comp(j)%assoc_scheme
 
-
-    call compidx_to_sites(i,k_first,k_last)
-    call compidx_to_sites(j,l_first,l_last)
-    do k=k_first,k_last
-       do l=l_first,l_last
+      call compidx_to_sites(i,k_first,k_last)
+      call compidx_to_sites(j,l_first,l_last)
+      do k=k_first,k_last
+        do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
 
-             denominator = applyCombiningRule(epsBetaCombRules(1), eps_i, eps_j)
-             aEps_kij_out(2) = 1 - eps_kl(k,l)/denominator
-             return
-
+            denominator = applyCombiningRule(epsBetaCombRules(1), eps_i, eps_j)
+            aEps_kij_out(2) = 1 - eps_kl(k,l)/denominator
+            return
           end if
-       end do
-    end do
+        end do
+      end do
+    else
+      aEps_kij_out(2) = 0
+    endif
 
   end subroutine cpa_get_kij
 
@@ -1406,25 +1408,27 @@ contains
     ! Set cubic interaction parameter.
     cbeos(1)%kij(i,j) = aEps_kij_in(1)
 
-    ! Get the schemes and values of eps and beta for components i and j.
-    scheme_i = comp(i)%assoc_scheme
-    scheme_j = comp(j)%assoc_scheme
-    call getActiveAssocParams(i, eps_i, beta_i)
-    call getActiveAssocParams(j, eps_j, beta_j)
+    if (numAssocSites > 0) then
+      ! Get the schemes and values of eps and beta for components i and j.
+      scheme_i = comp(i)%assoc_scheme
+      scheme_j = comp(j)%assoc_scheme
+      call getActiveAssocParams(i, eps_i, beta_i)
+      call getActiveAssocParams(j, eps_j, beta_j)
 
-    call compidx_to_sites(i,k_first,k_last)
-    call compidx_to_sites(j,l_first,l_last)
-    do k=k_first,k_last
-       do l=l_first,l_last
+      call compidx_to_sites(i,k_first,k_last)
+      call compidx_to_sites(j,l_first,l_last)
+      do k=k_first,k_last
+        do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
-             eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
-                  eps_i, eps_j) * (1-aEps_kij_in(2))
-             !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
-             !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
+            eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
+                 eps_i, eps_j) * (1-aEps_kij_in(2))
+            !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
+            !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
           end if
-       end do
-    end do
+        end do
+      end do
+    endif
 
   end subroutine cpa_set_kij
 
