@@ -37,6 +37,7 @@ class ParametersWidget(QWidget):
         :return: QTableWidget, table containing the correct parameters
         """
         composition = self.component_lists[list_name]["Names"]
+        print(self.settings["Parameters"][list_name]["Coefficient matrices"])
         matrix_data = self.settings["Parameters"][list_name]["Coefficient matrices"][table_name]
         size = len(composition)
 
@@ -66,8 +67,8 @@ class ParametersWidget(QWidget):
                 table.setItem(i, j, item)
                 table.blockSignals(False)
 
-                if table_name in ["VDW K", "PC-SAFT K", "SAFT-VR Mie Epsilon", "SAFT-VR Mie Sigma",
-                                  "SAFT-VR Mie Gamma"]:
+                if table_name in ["VDW K", "CPA K", "CPA Epsilon", "SAFT-VR Mie Epsilon",
+                                  "SAFT-VR Mie Sigma", "SAFT-VR Mie Gamma"]:
                     # Matrix is symmetric, so these items can't be edited
                     if i >= j:
                         item.setFlags(QtCore.Qt.NoItemFlags)
@@ -351,7 +352,7 @@ class HV2ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv2_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -484,6 +485,140 @@ class HV2ParametersWidget(ParametersWidget):
             return
 
         matrix[row][col] = value
+
+
+class CPAParametersWidget(ParametersWidget):
+    """
+    Widget for changing interaction coefficients for the CPA model
+    """
+
+    def __init__(self, data, settings_name, parent=None):
+        super().__init__(data, settings_name, parent)
+        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
+        self.tab_stack_indices = {}
+
+        self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
+
+    def init_widget(self, data, settings_name):
+        """
+        Populates the list with the available compositions, calculates interaction parameters, and creates a table
+        to display the matrix
+        :param data: Session data
+        :param settings_name: Name of the current model setup
+        :return:
+        """
+        self.settings = data["Model setups"][settings_name]
+        self.thermopack = get_thermopack(category=self.settings["Model category"])
+
+        list_names = []
+        for i in range(self.composition_list.count()):
+            list_names.append(self.composition_list.item(i).text())
+
+        for name in self.component_lists.keys():
+
+            if name not in self.settings["Parameters"].keys():
+                self.settings["Parameters"][name] = {"Coefficient matrices": {}}
+
+            existing_matrices = self.settings["Parameters"][name]["Coefficient matrices"].keys()
+
+            if "CPA K" not in existing_matrices:
+                # Create one table for each list in a stacked widget.
+                # The dict keeps track of the table's index in the stack
+
+                # Create table
+                self.calculate_matrix_data(name)
+
+            self.k_table = self.get_table(name, "CPA K")
+            self.k_table.itemChanged.connect(lambda item: self.change_coeff(item, "CPA K"))
+            self.eps_table = self.get_table(name, "CPA Epsilson")
+            self.eps_table.itemChanged.connect(lambda item: self.change_coeff(item, "CPA Epsilon"))
+
+            tab_widget = CPATabWidget(self.k_table, self.eps_table)
+
+            if name not in self.stack_indices.keys():
+                # Keep track of table in stack
+                index = self.table_stack.addWidget(tab_widget)
+                self.stack_indices[name] = index
+
+        self.init_composition_list()
+
+    def calculate_matrix_data(self, list_name):
+        """
+        Calculates binary coefficients for all composition lists and stores them
+        :param list_name: str, Name of component list
+        :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
+        """
+        component_list = self.component_lists[list_name]["Names"]
+        size = len(component_list)
+        k_matrix_data = np.zeros(shape=(size, size))
+        eps_matrix_data = np.zeros(shape=(size, size))
+
+        init_thermopack(self.thermopack, self.component_lists[list_name], list_name, self.settings)
+
+        for row in range(size - 1):
+            for col in range(row + 1, size):
+                id1 = self.component_lists[list_name]["Identities"][row]
+                id2 = self.component_lists[list_name]["Identities"][col]
+                index1 = self.thermopack.getcompindex(id1)
+                index2 = self.thermopack.getcompindex(id2)
+
+                vals = self.thermopack.get_kij(index1, index2)
+                print(vals)
+                k_ij, eps_kij = vals
+
+                # Symmetric matrices
+                k_matrix_data[row][col] = k_ij
+                k_matrix_data[col][row] = k_ij
+                eps_matrix_data[row][col] = eps_kij
+                eps_matrix_data[col][row] = eps_kij
+
+        for row in range(size):
+            k_matrix_data[row][row] = 0.0
+            eps_matrix_data[row][row] = 0.0
+
+        k_matrix_data = k_matrix_data.tolist()
+        eps_matrix_data = eps_matrix_data.tolist()
+
+        coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
+        coeff_matrices["CPA K"] = k_matrix_data
+        coeff_matrices["CPA Epsilon"] = eps_matrix_data
+
+        print(coeff_matrices)
+
+    def show_correct_tab_widget(self, list_item):
+        """
+        There is one QTabWidget for each composition. When a composition is chosen, the correct tab is shown
+        :param list_item: Name of composition
+        """
+        if not list_item:
+            return
+        index = self.tab_stack_indices[list_item.text()]
+        self.tab_stack.setCurrentIndex(index)
+
+    def change_coeff(self, item, table_name):
+        """
+        Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
+        thermopack works, all values have to be set simultaneously
+        :param item: New value
+        :param table_name: Name of coefficient matrix (VDW K, HV1 A, SAFT-VR Mie Sigma, ...)
+        """
+        # Item has to be changed in table and in self.data
+        row = item.row()
+        col = item.column()
+
+        component_list = self.composition_list.currentItem().text()
+        matrix = self.settings["Parameters"][component_list]["Coefficient matrices"][table_name]
+
+        try:
+            value = float(item.text().replace(",", "."))
+        except ValueError:
+            previous_value = matrix[row][col]
+            item.setText(str(previous_value))
+            return
+
+        matrix[row][col] = value
+        matrix[col][row] = value
+        item.tableWidget().item(col, row).setText(str(value))
 
 
 class PCSAFTParametersWidget(VdWParametersWidget):
@@ -731,7 +866,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
                 sigma_lij = self.thermopack.get_sigma_lij(index1, index2)
                 lr_gammaij = self.thermopack.get_lr_gammaij(index1, index2)
 
-                # Sytmmetric matrix
+                # Symmetric matrices
                 epsilon_matrix_data[row][col] = epsilon_kij
                 epsilon_matrix_data[col][row] = epsilon_kij
                 sigma_matrix_data[row][col] = sigma_lij
@@ -798,8 +933,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
     def change_coeff(self, item, table_name):
         """
-        Changes a value (interaction coefficient) in the given table. Due to the way the Python interface for
-        thermopack works, all values have to be set simultaneously
+        Changes a value (interaction coefficient) in the given table
         :param item: New value
         :param table_name: Name of coefficient matrix (VDW K, HV1 A, SAFT-VR Mie Sigma, ...)
         """
@@ -839,6 +973,17 @@ class HV2TabWidget(HV1TabWidget):
     def __init__(self, alpha_table, a_table, b_table, c_table, parent=None):
         HV1TabWidget.__init__(self, alpha_table, a_table, b_table, parent)
         self.addTab(c_table, "C")
+
+
+class CPATabWidget(QTabWidget):
+    """
+    Contains tabs for the three different interaction coefficient matrices for the PC-SAFT model
+    """
+
+    def __init__(self, k_table, eps_table, parent=None):
+        QTabWidget.__init__(self, parent)
+        self.addTab(k_table, "K")
+        self.addTab(eps_table, "\u03B5")
 
 
 class SAFTVRMieTabWidget(QTabWidget):

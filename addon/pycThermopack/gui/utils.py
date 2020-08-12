@@ -10,6 +10,8 @@ import json
 import os
 import re
 
+import numpy as np
+
 
 class Component:
     """
@@ -192,7 +194,7 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
         parameters_exist = False
 
     category = settings["Model category"]
-    if category in ["Cubic", "CPA"]:
+    if category == "Cubic":
 
         eos = settings["EOS"]
         mixing = settings["Model options"]["Mixing rule"]
@@ -251,6 +253,29 @@ def init_thermopack(tp, comp_data, comp_list_name, settings):
 
                             tp.set_hv_param(index1, index2, alpha_ij, alpha_ji,
                                             a_ij, a_ji, b_ij, b_ji, c_ij, c_ji)
+
+    elif category == "CPA":
+        eos = settings["EOS"]
+        mixing = settings["Model options"]["Mixing rule"]
+        alpha = settings["Model options"]["Alpha correlation"]
+        tp.init(comps, eos=eos, mixing=mixing, alpha=alpha, parameter_reference=model_ref)
+
+        if parameters_exist and "CPA K" in all_matrices.keys():
+            k_matrix = comp_data["Coefficient matrices"]["CPA K"]
+            eps_matrix = comp_data["Coefficient matrices"]["CPA Epsilon"]
+
+            for row in range(len(k_matrix)):
+                for col in range(len(k_matrix)):
+
+                    c1 = comp_list[row]
+                    c2 = comp_list[col]
+                    index1 = tp.getcompindex(c1)
+                    index2 = tp.getcompindex(c2)
+
+                    if row != col:
+                        k_ij = k_matrix[row][col]
+                        eps_kij = eps_matrix[row][col]
+                        tp.set_kij(index1, index2, np.array([k_ij, eps_kij]))
 
     elif category == "PC-SAFT":
         tp.init(comps=comps, parameter_reference=model_ref)

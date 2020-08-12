@@ -120,6 +120,7 @@ class ModelSelectWidget(QWidget):
         self.vdw_index = self.coeff_stack.addWidget(VdWParametersWidget(self.data, self.name))
         self.hv1_index = self.coeff_stack.addWidget(HV1ParametersWidget(self.data, self.name))
         self.hv2_index = self.coeff_stack.addWidget(HV2ParametersWidget(self.data, self.name))
+        self.cpa_index = self.coeff_stack.addWidget(CPAParametersWidget(self.data, self.name))
         self.pcsaft_index = self.coeff_stack.addWidget(PCSAFTParametersWidget(self.data, self.name))
         self.saftvrmie_index = self.coeff_stack.addWidget(SAFTVRMieParametersWidget(self.data, self.name))
         self.show_correct_coeff_widget()
@@ -169,7 +170,7 @@ class ModelSelectWidget(QWidget):
         Shows the correct widget for editing interaction (and other) parameters
         """
         category = self.data["Model setups"][self.name]["Model category"]
-        if category in ["Cubic", "CPA"]:
+        if category == "Cubic":
             mixing_rule = self.data["Model setups"][self.name]["Model options"]["Mixing rule"]
             if mixing_rule == "vdW":
                 index = self.vdw_index
@@ -180,6 +181,9 @@ class ModelSelectWidget(QWidget):
             else:
                 self.coeff_stack.setCurrentIndex(0)
                 return
+
+        elif category == "CPA":
+            index = self.cpa_index
 
         elif category == "PC-SAFT":
             index = self.pcsaft_index
