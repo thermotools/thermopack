@@ -8,11 +8,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from gui.widgets.mpl_canvas import MplCanvas
 from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYOptionsWindow, PRhoOptionsWindow, \
     GlobalBinaryOptionsWindow
-from gui.widgets.units_dialog import UnitsDialog
 from gui.utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox
 
 import numpy as np
-import csv
 import os
 
 
@@ -471,7 +469,12 @@ class PlotMode(QMainWindow):
 
     def export_csv(self):
         """
-        Creates and saves a csv file with the (x,y) data from all the currently plotted lines
+        Creates and saves a csv file with the (x,y) data from all the currently plotted lines.
+        |   Line 1 x-data   |   Line 1 y-data   |   Line 2 x-data   |   Line 2 y-data   |   ...
+        |         x         |         y         |        x          |          y        |   ...
+        |         .         |         .         |        .          |          .        |   ...
+        |         .         |         .         |        .          |          .        |   ...
+        |         .         |         .         |        .          |          .        |   ...
         """
         file_dialog = QFileDialog()
         file_dialog.setWindowTitle('Save File')
@@ -484,20 +487,29 @@ class PlotMode(QMainWindow):
             path = file_dialog.selectedFiles()[0]
 
             if path:
-                with open(path, mode="w", newline='', encoding='utf8') as csv_file:
 
-                    writer = csv.writer(csv_file)
-                    lines = self.canvas.axes.lines
+                lines = self.canvas.axes.lines
+                longest_line_length = 0
+                for line in lines:
+                    if len(line.get_xdata()) > longest_line_length:
+                        longest_line_length = len(line.get_xdata())
 
-                    for i in range(len(lines)):
-                        line = lines[i]
-                        x_list = [line.get_label() + " x"]
-                        y_list = [line.get_label() + " y"]
+                line_data = ()
+                for i in range(len(lines)):
+                    line = lines[i]
+                    x_data = list(line.get_xdata())
+                    y_data = list(line.get_ydata())
 
-                        x_list += list(line.get_xdata())
-                        y_list += list(line.get_ydata())
+                    while len(x_data) < longest_line_length:
+                        x_data.append(np.nan)
 
-                        writer.writerows([x_list, y_list])
+                    while len(y_data) < longest_line_length:
+                        y_data.append(np.nan)
+
+                    xy_data = (np.array(x_data), np.array(y_data))
+                    line_data += xy_data
+
+                np.savetxt(path, np.column_stack(line_data), delimiter=",")
 
     def save_plot_settings(self):
         """
