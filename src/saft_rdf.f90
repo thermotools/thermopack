@@ -16,7 +16,7 @@ contains
     !> Depends on component indices i,j only for eosBH_pert
     use pc_saft_nonassoc, only: g_spc_saft_tvn, PCSAFT_eos
     use saftvrmie_hardsphere, only: calc_gij_boublik
-    use saftvrmie_containers, only: saftvrmie_var
+    use saftvrmie_containers, only: saftvrmie_eos
     use thermopack_var, only: base_eos_param
     use utilities, only: get_thread_index
     class(base_eos_param), intent(in) :: eos
@@ -28,12 +28,7 @@ contains
     real, intent(out), optional :: g_VV,g_TV,g_Vn(nc)
     real, intent(out), optional :: g_TT,g_Tn(nc),g_nn(nc,nc)
     ! Locals
-    integer :: iTh
-    if (eos%assoc%saft_model == eosBH_pert) then
-      iTh = get_thread_index()
-      call calc_gij_boublik(nc,T,V,n,i,j,saftvrmie_var(iTh),g,g_T,g_V,g_n,&
-           g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-    else if (eos%assoc%saft_model == cpaPR .or. eos%assoc%saft_model == cpaSRK) then
+    if (eos%assoc%saft_model == cpaPR .or. eos%assoc%saft_model == cpaSRK) then
       call g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
       if (present(g_T)) g_T = 0.0
       if (present(g_TT)) g_TT = 0.0
@@ -43,6 +38,9 @@ contains
       select type ( p_eos => eos )
       class is(PCSAFT_eos)
         call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      class is(saftvrmie_eos)
+        call calc_gij_boublik(nc,T,V,n,i,j,p_eos%saftvrmie_var,g,g_T,g_V,g_n,&
+             g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
       class default
         call stoperror("master_saft_rdf: Wrong eos...")
       end select

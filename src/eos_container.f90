@@ -1,7 +1,6 @@
 !> The module eosdata contains the definitions of the equation of state, mixing
 !> rule and the interaction parameters.
 
-
 module eos_containers
   use compdata
   use eos_parameters
@@ -398,3 +397,34 @@ contains
   end subroutine assign_eos_container
 
 end module eos_containers
+
+subroutine update_global_variables_form_active_eos_container()
+  use thermopack_var, only: nc, nph, complist, apparent, nce, &
+       ncsym, numAssocSites, get_active_eos_container, &
+       eos_container
+  use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
+  type(eos_container), pointer :: p_act_eosc
+  p_act_eosc => get_active_eos_container()
+  nc = p_act_eosc%nc
+  nph = p_act_eosc%nph
+  complist => p_act_eosc%complist
+  apparent => p_act_eosc%apparent
+  if (associated(apparent)) then
+    nce = apparent%nce
+    ncsym = apparent%ncsym
+  else
+    nce = nc
+    ncsym = nc
+  endif
+  if (associated(p_act_eosc%eos(1)%p_eos%assoc)) then
+    numAssocSites = p_act_eosc%eos(1)%p_eos%assoc%numAssocSites
+  else
+    numAssocSites = 0
+  endif
+  select type (p_eos => p_act_eosc%eos(1)%p_eos)
+  class is (saftvrmie_eos)
+    saftvrmie_param => p_eos%saftvrmie_param
+  class default
+    saftvrmie_param => NULL()
+  end select
+end subroutine update_global_variables_form_active_eos_container

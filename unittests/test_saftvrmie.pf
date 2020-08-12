@@ -161,6 +161,7 @@ contains
     real, dimension(1,1) :: pach_nn
 
     type(eos_container), pointer :: p_eosc
+    type(saftvrmie_var_container), pointer :: svrm_var
 
     T = 15.0
     kij = 0.5
@@ -172,6 +173,8 @@ contains
     call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
          comp_string=compstr,nphases=2,silent=.true.)
     p_eosc => get_active_eos_container()
+    svrm_var => get_saftvrmie_var()
+
     call set_saftvrmie_eps_kij(1,2,kij)
     call set_saftvrmie_lr_gammaij(1,2,gammaij)
     m = saftvrmie_param%ms
@@ -186,22 +189,22 @@ contains
     V = 2E-5
     n(1) = 0.6
     n(2) = 1 - n(1)
-    call preCalcSAFTVRMie(nc,T,V,n,3,saftvrmie_var(1))
+    call preCalcSAFTVRMie(nc,T,V,n,3,svrm_var)
 
-    call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),&
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n,svrm_var,&
          ahs,a_T=ahs_T,a_V=ahs_V,a_n=ahs_n,&
          a_TT=ahs_TT,a_VV=ahs_VV,a_TV=ahs_TV,a_Tn=ahs_Tn,a_Vn=ahs_Vn,a_nn=ahs_nn)
 
-    call calcA1(nc,T,V,n,saftvrmie_var(1),&
+    call calcA1(nc,T,V,n,svrm_var,&
          a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn)
 
-    call calcA2(nc,T,V,n,saftvrmie_var(1),&
+    call calcA2(nc,T,V,n,svrm_var,&
          a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
 
-    call calcA3(nc,T,V,n,saftvrmie_var(1),&
+    call calcA3(nc,T,V,n,svrm_var,&
          a3,a3_T,a3_V,a3_n,a3_TT,a3_VV,a3_TV,a3_Tn,a3_Vn,a3_nn)
 
-    call calcAchain(nc,T,V,n,saftvrmie_var(1),&
+    call calcAchain(nc,T,V,n,svrm_var,&
          ach,ach_T=ach_T,ach_V=ach_V,ach_n=ach_n,ach_TT=ach_TT,&
          ach_VV=ach_VV,ach_TV=ach_TV,ach_Tn=ach_Tn,ach_Vn=ach_Vn,ach_nn=ach_nn,&
          returnF=.false.)
@@ -214,11 +217,11 @@ contains
     print *, "lambda_r ", saftvrmie_param%lambda_r_ij
     print *, "kij, gammaij ", kij, gammaij
     print *, "T, V, n ", T, V, n
-    print *, "d_bh    ", saftvrmie_var(1)%dhs%d
+    print *, "d_bh    ", svrm_var%dhs%d
     print *, "ahs     ", ahs
-    print *, "a1ij%am ", saftvrmie_var(1)%a1ij%am
-    print *, "a2ij%am ", saftvrmie_var(1)%a2ij%am
-    print *, "a3ij%am ", saftvrmie_var(1)%a3ij%am
+    print *, "a1ij%am ", svrm_var%a1ij%am
+    print *, "a2ij%am ", svrm_var%a2ij%am
+    print *, "a3ij%am ", svrm_var%a3ij%am
     print *, "ach     ", ach
 
     print *, "ahs ", ahs
@@ -237,29 +240,29 @@ contains
     call secondvirialcoeffmatrix(T, Bmat1)
 
     n1(1) = 1.0
-    call preCalcSAFTVRMie(nc,T,V,n1,3,saftvrmie_var(1))
+    call preCalcSAFTVRMie(nc,T,V,n1,3,svrm_var)
 
-    call calc_hardsphere_helmholtzenergy(nc,T,V,n1,saftvrmie_var(1),&
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n1,svrm_var,&
          pahs,a_T=pahs_T,a_V=pahs_V,a_n=pahs_n,&
          a_TT=pahs_TT,a_VV=pahs_VV,a_TV=pahs_TV,a_Tn=pahs_Tn,a_Vn=pahs_Vn,a_nn=pahs_nn)
 
-    call calcA1(nc,T,V,n1,saftvrmie_var(1),&
+    call calcA1(nc,T,V,n1,svrm_var,&
          pa1,pa1_T,pa1_V,pa1_n,pa1_TT,pa1_VV,pa1_TV,pa1_Tn,pa1_Vn,pa1_nn)
 
-    call calcA2(nc,T,V,n1,saftvrmie_var(1),&
+    call calcA2(nc,T,V,n1,svrm_var,&
          pa2,pa2_T,pa2_V,pa2_n,pa2_TT,pa2_VV,pa2_TV,pa2_Tn,pa2_Vn,pa2_nn)
 
-    call calcA3(nc,T,V,n1,saftvrmie_var(1),&
+    call calcA3(nc,T,V,n1,svrm_var,&
          pa3,pa3_T,pa3_V,pa3_n,pa3_TT,pa3_VV,pa3_TV,pa3_Tn,pa3_Vn,pa3_nn)
 
-    call calcAchain(nc,T,V,n1,saftvrmie_var(1),&
+    call calcAchain(nc,T,V,n1,svrm_var,&
          pach,ach_T=pach_T,ach_V=pach_V,ach_n=pach_n,ach_TT=pach_TT,&
          ach_VV=pach_VV,ach_TV=pach_TV,ach_Tn=pach_Tn,ach_Vn=pach_Vn,ach_nn=pach_nn,&
          returnF=.false.)
 
     print *, "comps ", p_eosc%comps(1)%p_comp%ident
     print *, "T, V, n", T, V, n1
-    print *, "d_bh   ", saftvrmie_var(1)%dhs%d
+    print *, "d_bh   ", svrm_var%dhs%d
     print *, "ahs    ", pahs
     print *, "a1     ", pa1
     print *, "a2     ", pa2
@@ -302,6 +305,8 @@ contains
     real, dimension(2) :: ach_n,ach_Tn,ach_Vn
     real, dimension(2,2) :: ach_nn
 
+    type(saftvrmie_var_container), pointer :: svrm_var
+
     T = 444.15
     kij = 0.7
     gammaij = 0.4
@@ -311,6 +316,7 @@ contains
     compstr = "C2,NC10"
     call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
          comp_string=compstr,nphases=2,silent=.true.)
+    svrm_var => get_saftvrmie_var()
 
     ! Set flags to make the eos correspond to Lafittes SAFT-VR Mie implementation
     quantum_correction = 0
@@ -337,22 +343,22 @@ contains
     V = 1.0/(1e4)
     n(1) = 0.6
     n(2) = 1 - n(1)
-    call preCalcSAFTVRMie(nc,T,V,n,3,saftvrmie_var(1))
+    call preCalcSAFTVRMie(nc,T,V,n,3,svrm_var)
 
-    call calc_hardsphere_helmholtzenergy(nc,T,V,n,saftvrmie_var(1),&
+    call calc_hardsphere_helmholtzenergy(nc,T,V,n,svrm_var,&
          ahs,a_T=ahs_T,a_V=ahs_V,a_n=ahs_n,&
          a_TT=ahs_TT,a_VV=ahs_VV,a_TV=ahs_TV,a_Tn=ahs_Tn,a_Vn=ahs_Vn,a_nn=ahs_nn)
 
-    call calcA1(nc,T,V,n,saftvrmie_var(1),&
+    call calcA1(nc,T,V,n,svrm_var,&
          a1,a1_T,a1_V,a1_n,a1_TT,a1_VV,a1_TV,a1_Tn,a1_Vn,a1_nn)
 
-    call calcA2(nc,T,V,n,saftvrmie_var(1),&
+    call calcA2(nc,T,V,n,svrm_var,&
          a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
 
-    call calcA3(nc,T,V,n,saftvrmie_var(1),&
+    call calcA3(nc,T,V,n,svrm_var,&
          a3,a3_T,a3_V,a3_n,a3_TT,a3_VV,a3_TV,a3_Tn,a3_Vn,a3_nn)
 
-    call calcAchain(nc,T,V,n,saftvrmie_var(1),&
+    call calcAchain(nc,T,V,n,svrm_var,&
          ach,ach_T=ach_T,ach_V=ach_V,ach_n=ach_n,ach_TT=ach_TT,&
          ach_VV=ach_VV,ach_TV=ach_TV,ach_Tn=ach_Tn,ach_Vn=ach_Vn,ach_nn=ach_nn,&
          returnF=.false.)
@@ -365,11 +371,11 @@ contains
     ! print *, "lambda_r ", saftvrmie_param%lambda_r_ij
     ! print *, "kij, gammaij ", kij, gammaij
     ! print *, "T, V, n ", T, V, n
-    ! print *, "d_bh    ", saftvrmie_var(1)%dhs%d
+    ! print *, "d_bh    ", svrm_var%dhs%d
     ! print *, "ahs     ", ahs
-    ! print *, "a1ij%am ", saftvrmie_var(1)%a1ij%am
-    ! print *, "a2ij%am ", saftvrmie_var(1)%a2ij%am
-    ! print *, "a3ij%am ", saftvrmie_var(1)%a3ij%am
+    ! print *, "a1ij%am ", svrm_var%a1ij%am
+    ! print *, "a2ij%am ", svrm_var%a2ij%am
+    ! print *, "a3ij%am ", svrm_var%a3ij%am
     ! print *, "ach     ", ach
 
     ! print *, "ahs ", ahs
@@ -379,29 +385,29 @@ contains
     ! print *, "ach ", ach
 
 
-    @assertEqual(saftvrmie_var(1)%dhs%d(1,1), 3.5599871084897326E-010, 1e-15)
-    @assertEqual(saftvrmie_var(1)%dhs%d(1,2), 4.0245754465724003E-010, 1e-15)
-    @assertEqual(saftvrmie_var(1)%dhs%d(1,2), saftvrmie_var(1)%dhs%d(2,1), 1e-20)
-    @assertEqual(saftvrmie_var(1)%dhs%d(2,2), 4.4891637846550675E-010, 1e-15)
+    @assertEqual(svrm_var%dhs%d(1,1), 3.5599871084897326E-010, 1e-15)
+    @assertEqual(svrm_var%dhs%d(1,2), 4.0245754465724003E-010, 1e-15)
+    @assertEqual(svrm_var%dhs%d(1,2), svrm_var%dhs%d(2,1), 1e-20)
+    @assertEqual(svrm_var%dhs%d(2,2), 4.4891637846550675E-010, 1e-15)
 
     @assertEqual(ahs, 4.1302831271753284, 1e-5)
 
-    @assertEqual(saftvrmie_var(1)%a1ij%am(1,1), -785.20347312673493, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a1ij%am(1,2), -514.43505583355773, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a1ij%am(1,2), saftvrmie_var(1)%a1ij%am(2,1), 1e-5)
-    @assertEqual(saftvrmie_var(1)%a1ij%am(2,2),-2571.9741088975175, 1e-5)
+    @assertEqual(svrm_var%a1ij%am(1,1), -785.20347312673493, 1e-5)
+    @assertEqual(svrm_var%a1ij%am(1,2), -514.43505583355773, 1e-5)
+    @assertEqual(svrm_var%a1ij%am(1,2), svrm_var%a1ij%am(2,1), 1e-5)
+    @assertEqual(svrm_var%a1ij%am(2,2),-2571.9741088975175, 1e-5)
     @assertEqual(a1, -1257.9397538111239, 1e-5)
 
-    @assertEqual(saftvrmie_var(1)%a2ij%am(1,1), -7188.0455508358191, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a2ij%am(1,2), -1771.9706106413332, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a2ij%am(1,2), saftvrmie_var(1)%a2ij%am(2,1), 1e-5)
-    @assertEqual(saftvrmie_var(1)%a2ij%am(2,2),  -49152.855593839347, 1e-5)
+    @assertEqual(svrm_var%a2ij%am(1,1), -7188.0455508358191, 1e-5)
+    @assertEqual(svrm_var%a2ij%am(1,2), -1771.9706106413332, 1e-5)
+    @assertEqual(svrm_var%a2ij%am(1,2), svrm_var%a2ij%am(2,1), 1e-5)
+    @assertEqual(svrm_var%a2ij%am(2,2),  -49152.855593839347, 1e-5)
     @assertEqual(a2, -18749.989508687075, 1e-5)
 
-    @assertEqual(saftvrmie_var(1)%a3ij%am(1,1), -17.727286086539227, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a3ij%am(1,2), -1.2522159051182933, 1e-5)
-    @assertEqual(saftvrmie_var(1)%a3ij%am(1,2), saftvrmie_var(1)%a3ij%am(2,1), 1e-5)
-    @assertEqual(saftvrmie_var(1)%a3ij%am(2,2), -121.41319990375690, 1e-5)
+    @assertEqual(svrm_var%a3ij%am(1,1), -17.727286086539227, 1e-5)
+    @assertEqual(svrm_var%a3ij%am(1,2), -1.2522159051182933, 1e-5)
+    @assertEqual(svrm_var%a3ij%am(1,2), svrm_var%a3ij%am(2,1), 1e-5)
+    @assertEqual(svrm_var%a3ij%am(2,2), -121.41319990375690, 1e-5)
     @assertEqual(a3, -44.789019294686113, 1e-5)
 
     @assertEqual(ach, -0.98440900757555994, 1e-8)

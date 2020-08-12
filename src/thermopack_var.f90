@@ -116,7 +116,7 @@ module thermopack_var
        get_active_alt_eos, active_eos_container_is_associated
   public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
        real_to_apparent_differentials, TP_lnfug_apparent
-  public :: update_global_variables_form_active_eos_container
+  !public :: update_global_variables_form_active_eos_container
 
 contains
 
@@ -188,25 +188,6 @@ contains
     write(index_str,"(I4)") index
     call stoperror("No eos matches label "//adjustl(trim(index_str)))
   end subroutine activate_model
-
-  subroutine update_global_variables_form_active_eos_container()
-    nc = p_active_eos_c%nc
-    nph = p_active_eos_c%nph
-    complist => p_active_eos_c%complist
-    apparent => p_active_eos_c%apparent
-    if (associated(apparent)) then
-      nce = apparent%nce
-      ncsym = apparent%ncsym
-    else
-      nce = nc
-      ncsym = nc
-    endif
-    if (associated(p_active_eos_c%eos(1)%p_eos%assoc)) then
-      numAssocSites = p_active_eos_c%eos(1)%p_eos%assoc%numAssocSites
-    else
-      numAssocSites = 0
-    endif
-  end subroutine update_global_variables_form_active_eos_container
 
   function add_eos() result(index)
     !type(eos_container), pointer, intent(in) :: eosc

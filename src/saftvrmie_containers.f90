@@ -7,7 +7,7 @@
 module saftvrmie_containers
   use saftvrmie_parameters, only: saftvrmie_data
   use saftvrmie_options
-  use thermopack_var, only: base_eos_param
+  use thermopack_var, only: base_eos_param, get_active_eos
   implicit none
   private
   save
@@ -51,6 +51,10 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:) :: Quantum_const_2a_ij
     !> Parameters in the quantum correction, second order - repulsive
     real, allocatable, dimension(:,:) :: Quantum_const_2r_ij
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_param_container
+    generic, public :: assignment(=) => assign_saftvrmie_param_container
   end type saftvrmie_param_container
 
   !> Container for a_ij and differentials
@@ -59,6 +63,10 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:) :: am_VVV,am_VVT,am_VTT
     real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
     real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_aij
+    generic, public :: assignment(=) => assign_saftvrmie_aij
   end type saftvrmie_aij
 
   !> Container for hard-sphere diameter and differentials
@@ -70,11 +78,14 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:) :: d_T
     !> Second temperature differential of hard sphere diameter
     real, allocatable, dimension(:,:) :: d_TT
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_dhs
+    generic, public :: assignment(=) => assign_saftvrmie_dhs
   end type saftvrmie_dhs
 
   !> Container for zeta and differentials (also used for functions of zeta)
   type :: saftvrmie_zeta
-    sequence
     !> Hypotetical pure fluid packing fraction
     real :: zx
     !> Temperature differential of hypotetical pure fluid packing fraction
@@ -107,11 +118,14 @@ module saftvrmie_containers
     real, allocatable, dimension(:) :: zx_VVn
     !> Volume and twice mol number and temperature differential of hypotetical pure fluid packing fraction
     real, allocatable, dimension(:,:) :: zx_Vnn
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_zeta
+    generic, public :: assignment(=) => assign_saftvrmie_zeta
   end type saftvrmie_zeta
 
   !> Container for mu and zeta's (2 and 3). These are moments of the number density (2,3) and mu (1)
   type :: saftvrmie_zeta_hs
-    sequence
     !> Moments of the number density and mu
     real, dimension(3) :: zet
     !> Temperature differential of the moments of the number density and mu
@@ -130,6 +144,10 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:) :: zet_Vn
     !> Mol number and temperature differential of the moments of the number density and mu
     real, allocatable, dimension(:,:) :: zet_Tn
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_zeta_hs
+    generic, public :: assignment(=) => assign_saftvrmie_zeta_hs
   end type saftvrmie_zeta_hs
 
   !> Container for SAFT-VR Mie common variables
@@ -175,19 +193,20 @@ module saftvrmie_containers
     type(saftvrmie_aij) :: a2ij
     !> A3_ij
     type(saftvrmie_aij) :: a3ij
+  contains
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_var_container
+    generic, public :: assignment(=) => assign_saftvrmie_var_container
   end type saftvrmie_var_container
 
-  type(saftvrmie_param_container) :: saftvrmie_param
-  type(saftvrmie_var_container), allocatable :: saftvrmie_var(:)
+  type(saftvrmie_param_container), pointer :: saftvrmie_param => NULL()
+  type(saftvrmie_var_container) :: svrmie_var ! ONLY USED FOR TESTING
 
   type, extends(base_eos_param) :: saftvrmie_eos
-
-    type(saftvrmie_param_container) :: saftvrmie_param
-    type(saftvrmie_var_container) :: saftvrmie_var
-
-  !   private
-
+    type(saftvrmie_param_container), pointer :: saftvrmie_param
+    type(saftvrmie_var_container), pointer :: saftvrmie_var
   contains
+    procedure, public :: dealloc => saftvrmie_dealloc
     procedure, public :: allocate_and_init => saftvrmie_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_saftvrmie_eos
@@ -195,7 +214,7 @@ module saftvrmie_containers
 
   public :: saftvrmie_param_container, saftvrmie_var_container
   public :: saftvrmie_zeta, saftvrmie_dhs, saftvrmie_aij
-  public :: saftvrmie_var, saftvrmie_param, saftvrmie_zeta_hs
+  public :: svrmie_var, saftvrmie_param, saftvrmie_zeta_hs
   public :: init_saftvrmie_containers
   public :: mie_c_factor
   public :: add_second_saftvrmieaij_to_first
@@ -212,7 +231,8 @@ module saftvrmie_containers
   public :: calcBinaryMieParmeters
   public :: cleanup_saftvrmie_param_container
   public :: allocate_saftvrmie_param_container
-  public :: saftvrmie_eos
+  public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
+
 Contains
 
   !> Add variables of Y to those of X
@@ -262,43 +282,29 @@ Contains
   !> Initialize the SAFT-VR Mie model
   !! See Lafitte 2013 (doi:10.1063/1.4819786)
   !! for model description
-  subroutine init_saftvrmie_containers(nc,comp,ref,mixing)
+  subroutine init_saftvrmie_containers(nc,comp,eos,ref,mixing)
     use eosdata, only: eosSAFT_VR_MIE
     use thermopack_var, only: gendata_pointer
     use saftvrmie_parameters, only: getMieKij_allComps,getSaftVrMieParams
-    !$ use omp_lib, only: omp_get_max_threads
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
+    class(saftvrmie_eos), intent(inout) :: eos
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
     integer :: fh_orders(nc), i, nthreads, err
 
-    nthreads = 1
-    !$ nthreads = omp_get_max_threads()
     ! Deallocate old memory
-    call cleanup_saftvrmie_param_container(saftvrmie_param)
-    if (allocated(saftvrmie_var)) then
-      do i=1,nthreads
-        call cleanup_saftvrmie_var_container(saftvrmie_var(i))
-      enddo
-      deallocate(saftvrmie_var,STAT=err);
-      if (err /= 0) call stoperror('Not able to deallocate saftvrmie_var')
-    endif
-    ! Allocte new memory
-    call allocate_saftvrmie_param_container(nc,saftvrmie_param)
-    allocate(saftvrmie_var(nthreads),STAT=err);
-    if (err /= 0) call stoperror('Not able to allocate saftvrmie_var')
-    do i=1,nthreads
-      call allocate_saftvrmie_var_container(nc,saftvrmie_var(i))
-    enddo
+    call eos%allocate_and_init(nc,"SAFT-VR Mie")
+    saftvrmie_param => eos%saftvrmie_param
+    call allocate_saftvrmie_var_container(nc,svrmie_var)
     ! Get interaction parameters
-    call getMieKij_allComps(nc,comp,eosSAFT_VR_MIE,saftvrmie_param%kij)
-    saftvrmie_param%gamma_ij = 0.0
-    saftvrmie_param%lij = 0.0
+    call getMieKij_allComps(nc,comp,eosSAFT_VR_MIE,eos%saftvrmie_param%kij)
+    eos%saftvrmie_param%gamma_ij = 0.0
+    eos%saftvrmie_param%lij = 0.0
     ! Get component data
     call getSaftVrMieParams(nc,comp,eosSAFT_VR_MIE,ref,&
-         saftvrmie_param%comp,fh_orders=fh_orders)
+         eos%saftvrmie_param%comp,fh_orders=fh_orders)
     ! Set the correct Feynman--Hibbs order for the quantum corrections
     do i = 1, nc-1
       if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
@@ -306,7 +312,7 @@ Contains
     quantum_correction = fh_orders(1)
     quantum_correction_hs = fh_orders(1)
     ! Calculate mix parameters
-    call calcBinaryMieParmeters(saftvrmie_param,mixing)
+    call calcBinaryMieParmeters(eos%saftvrmie_param,mixing)
     ! Add association.....
 
   end subroutine init_saftvrmie_containers
@@ -1364,19 +1370,194 @@ Contains
     integer, intent(in) :: nc
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
-    !integer :: err
+    integer :: stat
+    call eos%dealloc()
+    allocate(eos%saftvrmie_param,stat=stat)
+    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_param")
+    call allocate_saftvrmie_param_container(nc,eos%saftvrmie_param)
+    allocate(eos%saftvrmie_var,stat=stat)
+    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_var")
+    call allocate_saftvrmie_var_container(nc,eos%saftvrmie_var)
   end subroutine saftvrmie_allocate_and_init
+
+  subroutine saftvrmie_dealloc(eos)
+    class(saftvrmie_eos), intent(inout) :: eos
+    ! Locals
+    integer :: stat
+    if (associated(eos%saftvrmie_param)) then
+      call cleanup_saftvrmie_param_container(eos%saftvrmie_param)
+      deallocate(eos%saftvrmie_param,stat=stat)
+      if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_param")
+    endif
+    if (associated(eos%saftvrmie_var)) then
+      call cleanup_saftvrmie_var_container(eos%saftvrmie_var)
+      deallocate(eos%saftvrmie_var,stat=stat)
+      if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_var")
+    endif
+  end subroutine saftvrmie_dealloc
 
   subroutine assign_saftvrmie_eos(this,other)
     class(saftvrmie_eos), intent(out) :: this
     class(*), intent(in) :: other
     ! Locals
+    integer :: nc
     select type (other)
     class is (saftvrmie_eos)
+      if (allocated(other%saftvrmie_param%comp)) then
+        nc = size(other%saftvrmie_param%comp)
+      else
+        return
+      endif
+      call this%allocate_and_init(nc,"SAFT-VR Mie")
+      this%saftvrmie_param => other%saftvrmie_param
+      this%saftvrmie_var = other%saftvrmie_var
     class default
-      print *,"assign_saftvrmie_eos: Should not be here"
     end select
 
   end subroutine assign_saftvrmie_eos
+
+  subroutine assign_saftvrmie_param_container(this,other)
+    class(saftvrmie_param_container), intent(inout) :: this
+    class(saftvrmie_param_container), intent(in) :: other
+    !
+    this%comp = other%comp
+    this%kij = other%kij
+    this%gamma_ij = other%gamma_ij
+    this%lij = other%lij
+    this%alpha_ij = other%alpha_ij
+    this%f_alpha_ij = other%f_alpha_ij
+    this%lambda_a_ij = other%lambda_a_ij
+    this%lambda_r_ij = other%lambda_r_ij
+    this%sigma_ij = other%sigma_ij
+    this%eps_divk_ij = other%eps_divk_ij
+    this%Cij = other%Cij
+    this%DFeynHibbsParam_ij = other%DFeynHibbsParam_ij
+    this%ms = other%ms
+    this%sigma_ij_cube = other%sigma_ij_cube
+    this%Quantum_const_1a_ij = other%Quantum_const_1a_ij
+    this%Quantum_const_1r_ij = other%Quantum_const_1r_ij
+    this%Quantum_const_2a_ij = other%Quantum_const_2a_ij
+    this%Quantum_const_2r_ij = other%Quantum_const_2r_ij
+  end subroutine assign_saftvrmie_param_container
+
+  subroutine assign_saftvrmie_var_container(this,other)
+    class(saftvrmie_var_container), intent(inout) :: this
+    class(saftvrmie_var_container), intent(in) :: other
+    !
+    this%dhs = this%dhs
+    this%sigma_eff = this%sigma_eff
+    this%eps_divk_eff = this%eps_divk_eff
+    this%DFeynHibbsij = this%DFeynHibbsij
+    this%D2FeynHibbsij = this%D2FeynHibbsij
+    this%alpha = this%alpha
+    this%zeta_hs = this%zeta_hs
+    this%zeta = this%zeta
+    this%zeta_bar = this%zeta_bar
+    this%zeta_a3 = this%zeta_a3
+    this%Khs = this%Khs
+    this%eta_hs = this%eta_hs
+    this%d_pure = this%d_pure
+    this%rho_star = this%rho_star
+    this%a1ij = this%a1ij
+    this%a1ijQCorr = this%a1ijQCorr
+    this%a2chij = this%a2chij
+    this%a2chijQCorr = this%a2chijQCorr
+    this%a2ij = this%a2ij
+    this%a3ij = this%a3ij
+  end subroutine assign_saftvrmie_var_container
+
+  subroutine assign_saftvrmie_aij(this,other)
+    class(saftvrmie_aij), intent(inout) :: this
+    class(saftvrmie_aij), intent(in) :: other
+    !
+    this%am = other%am
+    this%am_T = other%am_T
+    this%am_V = other%am_V
+    this%am_TT = other%am_TT
+    this%am_VV = other%am_VV
+    this%am_TV = other%am_TV
+    this%am_VVV = other%am_VVV
+    this%am_VVT = other%am_VVT
+    this%am_VTT = other%am_VTT
+    this%am_n = other%am_n
+    this%am_Tn = other%am_Tn
+    this%am_Vn = other%am_Vn
+    this%am_VVn = other%am_VVn
+    this%am_VTn = other%am_VTn
+    this%am_nn = other%am_nn
+    this%am_Vnn = other%am_Vnn
+  end subroutine assign_saftvrmie_aij
+
+  subroutine assign_saftvrmie_dhs(this,other)
+    class(saftvrmie_dhs), intent(inout) :: this
+    class(saftvrmie_dhs), intent(in) :: other
+    !
+    this%d = other%d
+    this%d_T = other%d_T
+    this%d_TT = other%d_TT
+  end subroutine assign_saftvrmie_dhs
+
+  subroutine assign_saftvrmie_zeta(this,other)
+    class(saftvrmie_zeta), intent(inout) :: this
+    class(saftvrmie_zeta), intent(in) :: other
+    !
+    this%zx = other%zx
+    this%zx_T = other%zx_T
+    this%zx_TT = other%zx_TT
+    this%zx_V = other%zx_V
+    this%zx_VV = other%zx_VV
+    this%zx_TV = other%zx_TV
+    this%zx_n = other%zx_n
+    this%zx_Vn = other%zx_Vn
+    this%zx_Tn = other%zx_Tn
+    this%zx_nn = other%zx_nn
+    this%zx_VVV = other%zx_VVV
+    this%zx_VVT = other%zx_VVT
+    this%zx_VTT = other%zx_VTT
+    this%zx_VTn = other%zx_VTn
+    this%zx_VVn = other%zx_VVn
+    this%zx_Vnn = other%zx_Vnn
+  end subroutine assign_saftvrmie_zeta
+
+  subroutine assign_saftvrmie_zeta_hs(this,other)
+    class(saftvrmie_zeta_hs), intent(inout) :: this
+    class(saftvrmie_zeta_hs), intent(in) :: other
+    !
+    this%zet = other%zet
+    this%zet_T = other%zet_T
+    this%zet_TT = other%zet_TT
+    this%zet_V = other%zet_V
+    this%zet_VV = other%zet_VV
+    this%zet_TV = other%zet_TV
+    this%zet_n = other%zet_n
+    this%zet_Vn = other%zet_Vn
+    this%zet_Tn = other%zet_Tn
+  end subroutine assign_saftvrmie_zeta_hs
+
+  function get_saftvrmie_eos_pointer(base_eos) result(eos)
+    class(base_eos_param), pointer, intent(in) :: base_eos
+    class(saftvrmie_eos), pointer :: eos
+    eos => NULL()
+    if (.not. associated(base_eos)) return
+    select type(p_eos => base_eos)
+    type is (saftvrmie_eos)
+      eos => p_eos
+    class default
+      call stoperror("Error casting to saftvrmie_eos")
+    end select
+  end function get_saftvrmie_eos_pointer
+
+  function get_saftvrmie_var() result(svrm_var)
+    type(saftvrmie_var_container), pointer :: svrm_var
+    !
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type(p_eos => eos)
+    type is (saftvrmie_eos)
+      svrm_var => p_eos%saftvrmie_var
+    class default
+      svrm_var => NULL()
+    end select
+  end function get_saftvrmie_var
 
 end module saftvrmie_containers

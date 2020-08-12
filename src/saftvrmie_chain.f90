@@ -6,7 +6,7 @@
 
 module saftvrmie_chain
   use saftvrmie_containers, only: saftvrmie_zeta, saftvrmie_dhs, &
-       saftvrmie_aij, saftvrmie_var, saftvrmie_param, init_saftvrmie_containers, &
+       saftvrmie_aij, saftvrmie_param, init_saftvrmie_containers, &
        saftvrmie_param_container, saftvrmie_var_container, allocate_saftvrmie_zeta, &
        cleanup_saftvrmie_zeta
   use thermopack_constants, only: N_AVOGADRO

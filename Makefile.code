@@ -159,7 +159,6 @@ OBJE = 	\
 	$(ODIR)/saftvrmie_dispersion.o \
 	$(ODIR)/saftvrmie_chain.o \
 	$(ODIR)/saftvrmie_interface.o \
-	$(ODIR)/pt_interface.o \
 	$(ODIR)/saft_globals.o \
 	$(ODIR)/saft_rdf.o \
 	$(ODIR)/saft_association.o \
@@ -640,11 +639,6 @@ $(ODIR)/saftvrmie_chain.o: $(SRC)/saftvrmie_chain.f90 \
 	$(SRC)/saftvrmie_dispersion.f90 $(SRC)/parameters.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object,$(SRC)/saftvrmie_chain.f90)
-$(ODIR)/pt_interface.o: $(SRC)/pt_interface.f90 \
-	$(SRC)/thermopack_const.f90 $(SRC)/eosdata.f90 \
-	$(SRC)/parameters.f90 \
-	$(SRC)/saftvrmie_interface.f90 $(SRC)/compdata.f90
-	@$(call make_object,$(SRC)/pt_interface.f90)
 $(ODIR)/saftvrmie_interface.o: $(SRC)/saftvrmie_interface.f90 \
 	$(SRC)/thermopack_const.f90 $(SRC)/saftvrmie_containers.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/saftvrmie_hardsphere.f90 \
