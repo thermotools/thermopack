@@ -37,7 +37,6 @@ class ParametersWidget(QWidget):
         :return: QTableWidget, table containing the correct parameters
         """
         composition = self.component_lists[list_name]["Names"]
-        print(self.settings["Parameters"][list_name]["Coefficient matrices"])
         matrix_data = self.settings["Parameters"][list_name]["Coefficient matrices"][table_name]
         size = len(composition)
 
@@ -130,6 +129,7 @@ class VdWParametersWidget(ParametersWidget):
                 self.stack_indices[name] = index
 
         self.init_composition_list()
+        self.table_stack.setCurrentIndex(0)
 
     def calculate_matrix_data(self, list_name, reset=False):
         """
@@ -210,7 +210,7 @@ class HV1ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -258,6 +258,7 @@ class HV1ParametersWidget(ParametersWidget):
                 self.tab_stack_indices[list_name] = index
 
         self.init_composition_list()
+        self.tab_stack.setCurrentIndex(0)
 
     def calculate_matrix_data(self, list_name):
         """
@@ -352,7 +353,7 @@ class HV2ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -401,6 +402,7 @@ class HV2ParametersWidget(ParametersWidget):
                 self.tab_stack_indices[list_name] = index
 
         self.init_composition_list()
+        self.tab_stack.setCurrentIndex(0)
 
     def calculate_matrix_data(self, list_name):
         """
@@ -494,7 +496,7 @@ class CPAParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv1_bin_coeff_widget.ui", self)
+        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -530,23 +532,23 @@ class CPAParametersWidget(ParametersWidget):
 
             self.k_table = self.get_table(name, "CPA K")
             self.k_table.itemChanged.connect(lambda item: self.change_coeff(item, "CPA K"))
-            self.eps_table = self.get_table(name, "CPA Epsilson")
+            self.eps_table = self.get_table(name, "CPA Epsilon")
             self.eps_table.itemChanged.connect(lambda item: self.change_coeff(item, "CPA Epsilon"))
 
             tab_widget = CPATabWidget(self.k_table, self.eps_table)
 
-            if name not in self.stack_indices.keys():
+            if name not in self.tab_stack_indices.keys():
                 # Keep track of table in stack
-                index = self.table_stack.addWidget(tab_widget)
-                self.stack_indices[name] = index
+                index = self.tab_stack.addWidget(tab_widget)
+                self.tab_stack_indices[name] = index
 
         self.init_composition_list()
+        self.tab_stack.setCurrentIndex(0)
 
     def calculate_matrix_data(self, list_name):
         """
         Calculates binary coefficients for all composition lists and stores them
         :param list_name: str, Name of component list
-        :param reset: bool, If True, existing matrix data will be overloaded by thermopack's default values
         """
         component_list = self.component_lists[list_name]["Names"]
         size = len(component_list)
@@ -563,7 +565,6 @@ class CPAParametersWidget(ParametersWidget):
                 index2 = self.thermopack.getcompindex(id2)
 
                 vals = self.thermopack.get_kij(index1, index2)
-                print(vals)
                 k_ij, eps_kij = vals
 
                 # Symmetric matrices
@@ -582,8 +583,6 @@ class CPAParametersWidget(ParametersWidget):
         coeff_matrices = self.settings["Parameters"][list_name]["Coefficient matrices"]
         coeff_matrices["CPA K"] = k_matrix_data
         coeff_matrices["CPA Epsilon"] = eps_matrix_data
-
-        print(coeff_matrices)
 
     def show_correct_tab_widget(self, list_item):
         """
@@ -667,6 +666,7 @@ class PCSAFTParametersWidget(VdWParametersWidget):
                 self.stack_indices[name] = index
 
         self.init_composition_list()
+        self.table_stack.setCurrentIndex(0)
 
     def calculate_matrix_data(self, list_name, reset=False):
         """
@@ -788,6 +788,12 @@ class SAFTVRMieParametersWidget(ParametersWidget):
                 self.tab_stack_indices[list_name] = index
 
         self.init_composition_list()
+        self.tab_stack.setCurrentIndex(0)
+        self.pure_params_frame.hide()
+        for button in self.component_btngroup.buttons():
+            self.component_btngroup.removeButton(button)
+            self.component_btn_layout.removeWidget(button)
+            button.hide()
 
     def set_validators(self):
         """
