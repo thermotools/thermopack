@@ -420,6 +420,7 @@ class ThermopackGUIApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("gui/icons/thermopack_icon.ico"))
 
     # Load stylesheet
     stylesheet = open("gui/stylesheet.qss", "r")
