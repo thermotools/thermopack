@@ -4,14 +4,11 @@
 ! Implemented by A. Aasen in May 2019.
 ! ------------------------------------------------------------------------------
 module pets
-  use thermopack_var, only: nce
+  use thermopack_var, only: nce, base_eos_param
   use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: PI
   implicit none
   save
-
-  real :: SIGMA_PETS    !< [m]
-  real :: EPSDIVK_PETS  !< [K]
 
   real, parameter, dimension(0:6) :: a_vec = (/0.690603404, 1.189317012, &
        1.265604153, -24.34554201, 93.67300357, -157.8773415, 96.93736697 /)
@@ -19,13 +16,24 @@ module pets
   real, parameter, dimension(0:6) :: b_vec = (/0.664852128, 2.10733079, &
        -9.597951213, -17.37871193, 30.17506222, 209.3942909, -353.2743581/)
 
+  type, extends(base_eos_param) :: PETS_eos
+    real :: SIGMA_PETS    !< [m]
+    real :: EPSDIVK_PETS  !< [K]
+  contains
+    procedure, public :: allocate_and_init => pets_allocate_and_init
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_pets
+  end type PETS_eos
+
 contains
 
   !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
   !> coming from PETS' hard-sphere and dispersion contributions. All
   !> variables are in base SI units. F is defined by
   !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
-  subroutine F_PETS_TVn(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+  subroutine F_PETS_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    !
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
     ! Output.
     real, intent(out), optional :: F !< [mol]
@@ -48,13 +56,13 @@ contains
          present(F_VV) .or. present(F_Vn) .or. present(F_nn)
 
     if (sec_der_present) then
-       call alpha_PETS(rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n,&
+       call alpha_PETS(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n,&
             alp_rhorho=alp_rhorho,alp_rhoT=alp_rhoT,alp_rhon=alp_rhon,&
             alp_TT=alp_TT,alp_Tn=alp_Tn,alp_nn=alp_nn)
     else if (fir_der_present) then
-       call alpha_PETS(rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n)
+       call alpha_PETS(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n)
     else
-       call alpha_PETS(rho,T,n,alp=alp)
+       call alpha_PETS(eos,rho,T,n,alp=alp)
     end if
 
     if (present(F)) F = sumn*alp
@@ -73,8 +81,9 @@ contains
   end subroutine F_PETS_TVn
 
   !> alpha_PETS = alp^{hard_sphere} + alpha^{dispersion}
-  subroutine alpha_PETS(rho,T,n,alp,alp_rho,alp_T,alp_n, &
+  subroutine alpha_PETS(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce)  !< [mol/m^3], [K], [mol]
     real, intent(out), optional :: alp !< [-]
     real, intent(out), optional :: alp_rho, alp_T, alp_n(nce)
@@ -96,18 +105,18 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call alpha_pets_hs(rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n,&
+       call alpha_pets_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n,&
             alp_hs_rhorho,alp_hs_rhoT,alp_hs_rhon,&
             alp_hs_TT,alp_hs_Tn,alp_hs_nn)
-       call alpha_disp(rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
+       call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
             alp_d_rhorho,alp_d_rhoT,alp_d_rhon,&
             alp_d_TT,alp_d_Tn,alp_d_nn)
     else if (fir_der_present) then
-       call alpha_pets_hs(rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n)
-       call alpha_disp(rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
+       call alpha_pets_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n)
+       call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
     else
-       call alpha_pets_hs(rho,T,n,alp_hs)
-       call alpha_disp(rho,T,n,alp_d)
+       call alpha_pets_hs(eos,rho,T,n,alp_hs)
+       call alpha_disp(eos,rho,T,n,alp_d)
     end if
 
     if (present(alp)) then
@@ -154,8 +163,9 @@ contains
 
 
   !> The reduced, molar Helmholtz energy contribution from dispersion.
-  subroutine alpha_disp(rho,T,n,alp,alp_rho,alp_T,alp_n, &
+  subroutine alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce)  !< [mol/m^3], [K], [mol]
 
     real, intent(out), optional :: alp ! [-]
@@ -178,25 +188,25 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call I_1(rho,T,n,I1,I1_rho,I1_T,I1_n,I1_rhorho,I1_rhoT,I1_rhon,I1_TT,I1_Tn,I1_nn)
-       call I_2(rho,T,n,I2,I2_rho,I2_T,I2_n,I2_rhorho,I2_rhoT,I2_rhon,I2_TT,I2_Tn,I2_nn)
-       call C_1(rho,T,n,C1,C1_rho,C1_T,C1_n,&
+       call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n,I1_rhorho,I1_rhoT,I1_rhon,I1_TT,I1_Tn,I1_nn)
+       call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n,I2_rhorho,I2_rhoT,I2_rhon,I2_TT,I2_Tn,I2_nn)
+       call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n,&
             C1_rhorho,C1_rhoT,C1_rhon,C1_TT,C1_Tn,C1_nn)
     else if (fir_der_present) then
-       call I_1(rho,T,n,I1,I1_rho,I1_T,I1_n)
-       call I_2(rho,T,n,I2,I2_rho,I2_T,I2_n)
-       call C_1(rho,T,n,C1,C1_rho,C1_T,C1_n)
+       call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n)
+       call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n)
+       call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n)
     else
-       call I_1(rho,T,n,I1)
-       call I_2(rho,T,n,I2)
-       call C_1(rho,T,n,C1)
+       call I_1(eos,rho,T,n,I1)
+       call I_2(eos,rho,T,n,I2)
+       call C_1(eos,rho,T,n,C1)
     end if
 
-    m2e1s3 = epsdivk_pets/T * sigma_pets**3
+    m2e1s3 = eos%epsdivk_pets/T * eos%sigma_pets**3
     m2e1s3_T = -m2e1s3/T
     m2e1s3_TT = -2*m2e1s3_T/T
 
-    m2e2s3 = m2e1s3*epsdivk_pets/T
+    m2e2s3 = m2e1s3*eos%epsdivk_pets/T
     m2e2s3_T = -2*m2e2s3/T
     m2e2s3_TT = -3*m2e2s3_T/T
 
@@ -259,8 +269,9 @@ contains
   end subroutine alpha_disp
 
   ! Reduced molar Helmholtz free energy contribution from a hard-sphere fluid.
-  subroutine alpha_pets_hs(rho,T,n,alp,alp_rho,alp_T,alp_n, &
+  subroutine alpha_pets_hs(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: alp          !< [-]
     real, intent(out), optional :: alp_rho,alp_T,alp_n(nce)
@@ -277,11 +288,11 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call eta_pets(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+       call eta_pets(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
     else if (fir_der_present) then
-       call eta_pets(rho,T,n,e,e_rho,e_T,e_n)
+       call eta_pets(eos,rho,T,n,e,e_rho,e_T,e_n)
     else
-       call eta_pets(rho,T,n,e)
+       call eta_pets(eos,rho,T,n,e)
     end if
 
     alp = (4*e-3*e**2)/(1-e)**2
@@ -303,8 +314,9 @@ contains
 
 
   ! A power series approximation of a perturbation theory integral.
-  subroutine I_1(rho,T,n,i1,i1_rho,i1_t,i1_n,&
+  subroutine I_1(eos,rho,T,n,i1,i1_rho,i1_t,i1_n,&
        i1_rhorho,i1_rhoT,i1_rhon,i1_TT,i1_Tn,i1_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: i1           !< [-]
     real, intent(out), optional :: i1_rho,i1_T,i1_n(nce)
@@ -316,7 +328,7 @@ contains
     real :: e_rhorho,e_rhoT,e_rhon(nce),e_TT,e_Tn(nce),e_nn(nce,nce)
     real :: i1_eta, i1_etaeta
 
-    call eta_pets(rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
+    call eta_pets(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
          e_rhorho=e_rhorho,e_rhoT=e_rhoT,e_rhon=e_rhon,e_TT=e_TT,e_Tn=e_Tn,e_nn=e_nn)
 
     i1 = a_vec(0)
@@ -370,8 +382,9 @@ contains
   end subroutine I_1
 
   !> A power series approximation of a perturbation theory integral.
-  subroutine I_2(rho,T,n,i2,i2_rho,i2_t,i2_n,&
+  subroutine I_2(eos,rho,T,n,i2,i2_rho,i2_t,i2_n,&
        i2_rhorho,i2_rhoT,i2_rhon,i2_TT,i2_Tn,i2_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: i2           !< [-]
     real, intent(out), optional :: i2_rho,i2_T,i2_n(nce)
@@ -383,7 +396,7 @@ contains
     real :: e_rhorho,e_rhoT,e_rhon(nce),e_TT,e_Tn(nce),e_nn(nce,nce)
     real :: i2_eta, i2_etaeta
 
-    call eta_pets(rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
+    call eta_pets(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
          e_rhorho=e_rhorho,e_rhoT=e_rhoT,e_rhon=e_rhon,e_TT=e_TT,e_Tn=e_Tn,e_nn=e_nn)
 
     i2 = b_vec(0)
@@ -439,8 +452,9 @@ contains
 
   ! The compressibility term, defined as
   ! (1 + Z^{hs} + rho*dZ^{hs}/drho)^{-1}
-  subroutine C_1(rho,T,n,c1,c1_rho,c1_t,c1_n,&
+  subroutine C_1(eos,rho,T,n,c1,c1_rho,c1_t,c1_n,&
        c1_rhorho,c1_rhoT,c1_rhon,c1_TT,c1_Tn,c1_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: c1           !< [-]
     real, intent(out), optional :: c1_rho,c1_t,c1_n(nce)
@@ -462,12 +476,12 @@ contains
          present(c1_Tn) .or. present(c1_nn)
 
     if (sec_der_present) then
-       call eta_pets(rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
+       call eta_pets(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
             e_rhorho=e_rhorho,e_rhoT=e_rhoT,e_rhon=e_rhon,e_TT=e_TT,e_Tn=e_Tn,e_nn=e_nn)
     else if ( fir_der_present ) then
-       call eta_pets(rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n)
+       call eta_pets(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n)
     else
-       call eta_pets(rho,T,n,e=e)
+       call eta_pets(eos,rho,T,n,e=e)
     end if
 
     e2 = e*e
@@ -522,7 +536,8 @@ contains
   end subroutine C_1
 
   ! The packing fraction eta and its derivatives.
-  subroutine eta_pets(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+  subroutine eta_pets(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: e            !< [-]
     real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -532,7 +547,7 @@ contains
     real :: d(nce),d_T(nce),d_TT(nce)
     real :: e_div_rho
 
-    call calc_d_pets(T,d=d,d_T=d_T,d_TT=d_TT)
+    call calc_d_pets(eos,T,d=d,d_T=d_T,d_TT=d_TT)
 
     e_div_rho = (PI/6)*d(1)**3*N_AVOGADRO
     e = e_div_rho*rho
@@ -576,7 +591,8 @@ contains
 
 
   ! The Barker--Henderson diameter and its derivatives.
-  subroutine calc_d_pets(T,d,d_T,d_TT)
+  subroutine calc_d_pets(eos,T,d,d_T,d_TT)
+    class (PETS_eos), intent(in) :: eos
     real, intent(in) :: T            !< [mol/m^3], [K], [mol]
     real, intent(out) :: d(nce)       !< [m]
     real, intent(out), optional :: d_T(nce)
@@ -587,21 +603,55 @@ contains
     real, parameter :: c1 = 0.127112544
     real, parameter :: c2 = 3.052785558
     real :: c2scaled
-    c2scaled = c2*epsdivk_pets
+    c2scaled = c2*eos%epsdivk_pets
     Tinv = 1/T
     expo = -c1*exp(-c2scaled*Tinv)
-    d(1) = sigma_pets*(1+expo)
+    d(1) = eos%sigma_pets*(1+expo)
 
     if (present(d_T)) then
        Tinv2 = Tinv*Tinv
-       d_T(1) = sigma_pets*(expo*c2scaled*Tinv2)
+       d_T(1) = eos%sigma_pets*(expo*c2scaled*Tinv2)
     end if
 
     if (present(d_TT)) then
        Tinv3 = Tinv2*Tinv
-       d_TT(1) = sigma_pets*expo*((c2scaled*Tinv2)**2-c2scaled*2*Tinv3)
+       d_TT(1) = eos%sigma_pets*expo*((c2scaled*Tinv2)**2-c2scaled*2*Tinv3)
     end if
 
   end subroutine calc_d_pets
+
+  subroutine pets_allocate_and_init(eos,nc,eos_label)
+    ! Passed object:
+    class(pets_eos), intent(inout) :: eos
+    ! Input:
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+    eos%SIGMA_PETS = 0
+    eos%EPSDIVK_PETS = 0
+  end subroutine pets_allocate_and_init
+
+  !> Allocate memory for PETS eos
+  function pets_eos_constructor(nc, eos_label) result(p_eos)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(pets_eos) :: p_eos
+    !
+    call p_eos%allocate_and_init(nc, eos_label)
+  end function pets_eos_constructor
+
+  subroutine assign_pets(This, other)
+    class(PETS_eos), intent(out) :: this
+    class(*), intent(in)     :: other
+    select type( p_other => other )
+    class is (PETS_eos)
+      this%SIGMA_PETS = p_other%SIGMA_PETS
+      this%EPSDIVK_PETS = p_other%EPSDIVK_PETS
+    class default
+      call stoperror("assign_pets: Error....")
+    end select
+  end subroutine assign_pets
 
 end module pets

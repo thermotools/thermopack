@@ -58,7 +58,7 @@ contains
     use saftvrmie_interface, only: init_saftvrmie
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
-    use eos_parameters, only: base_eos_param
+    use pets, only: PETS_eos
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     class(base_eos_param), intent(inout) :: eos       !< Underlying cubic equation of state.
@@ -135,23 +135,21 @@ contains
     end if
 
     ! Set nonassoc parameters
-    if (eos%assoc%saft_model == eosPeTS) then
-      call pets_set_params(sigma_db,eps_depth_divk_db)
-    else
-      select type ( p_eos => eos )
-      class is ( cb_eos )
-        ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
-        call cpa_set_cubic_params(nc,comp,p_eos,a0_db,b_db,&
-             alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
-      class is(PCSAFT_eos)
-        call pcsaft_set_nonassoc_params(p_eos,nc,m_db,sigma_db,&
-             eps_depth_divk_db,kij_PCSAFT)
-      class is ( saftvrmie_eos )
-        call init_saftvrmie(nc,comp,p_eos,param_ref)
-      class default
-        call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
-      end select
-    end if
+    select type ( p_eos => eos )
+    class is ( cb_eos )
+      ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
+      call cpa_set_cubic_params(nc,comp,p_eos,a0_db,b_db,&
+           alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
+    class is(PCSAFT_eos)
+      call pcsaft_set_nonassoc_params(p_eos,nc,m_db,sigma_db,&
+           eps_depth_divk_db,kij_PCSAFT)
+    class is ( saftvrmie_eos )
+      call init_saftvrmie(nc,comp,p_eos,param_ref)
+    class is ( PETS_eos )
+      call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
+    class default
+      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+    end select
 
     ! Fill module variables in the module assocschemeutils, keeping track of
     ! associating components and association sites.
@@ -244,11 +242,12 @@ contains
   end subroutine pcsaft_set_nonassoc_params
 
   !> Set the molecular parameters in the PeTS equation of state
-  subroutine pets_set_params(sigma_in,eps_depth_divk_in)
-    use pets, only: sigma_pets, epsdivk_pets
+  subroutine pets_set_params(eos,sigma_in,eps_depth_divk_in)
+    use pets, only: PETS_eos
+    class (PETS_eos), intent(inout) :: eos
     real, intent(in) :: sigma_in(1),eps_depth_divk_in(1)
-    sigma_pets = sigma_in(1)
-    epsdivk_pets = eps_depth_divk_in(1)
+    eos%sigma_pets = sigma_in(1)
+    eos%epsdivk_pets = eps_depth_divk_in(1)
   end subroutine pets_set_params
 
   !> Set association parameters for PC-SAFT and SAFT-VR Mie
@@ -441,10 +440,9 @@ contains
     use tpcubic, only: calcCbFder_res_SI
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
-    use pets, only: F_PeTS_TVn
+    use pets, only: F_PeTS_TVn, PETS_eos
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use saftvrmie_containers, only: saftvrmie_eos
-    use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
@@ -455,28 +453,25 @@ contains
     ! Locals
     real :: Fl
     ! Calculate the non-association contribution.
-    if (eos%assoc%saft_model == eosPeTS) then
-      call F_PeTS_TVn(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-    else
-      select type ( p_eos => eos )
-      class is ( cb_eos )
-        call calcCbFder_res_SI(nc,p_eos,T,V,n,F,F_T,F_V,F_n,&
-             F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-        !call calcFder_nonassoc_cpa(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,&
-        !      F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-      class is ( PCSAFT_eos )
-        call F_PC_SAFT_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-      class is (saftvrmie_eos)
-        call calcFresSAFTVRMie(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-             F_VV,F_TV,F_Tn,F_Vn,F_nn)
-        if (present(F)) then
-          F = Fl
-        endif
-      class default
-        call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
-      end select
-    end if
-
+    select type ( p_eos => eos )
+    class is ( cb_eos )
+      call calcCbFder_res_SI(nc,p_eos,T,V,n,F,F_T,F_V,F_n,&
+           F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+      !call calcFder_nonassoc_cpa(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,&
+      !      F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    class is ( PCSAFT_eos )
+      call F_PC_SAFT_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class is (saftvrmie_eos)
+      call calcFresSAFTVRMie(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
+    class is ( PETS_eos )
+      call F_PeTS_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class default
+      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+    end select
 
   end subroutine calcSaftFder_res_nonassoc
 
@@ -935,7 +930,7 @@ contains
   !> Calculate conversion numerator for pressure solver
   function conversion_numerator(eos,nc,T,n) result(conv_num)
     use pc_saft_nonassoc, only: calc_d, PCSAFT_eos
-    use pets, only: eta_pets
+    use pets, only: eta_pets, PETS_eos
     use thermopack_constants, only: N_AVOGADRO
     use numconstants, only: PI
     use saftvrmie_interface, only: calc_saftvrmie_zeta
@@ -950,23 +945,21 @@ contains
     ! Locals.
     real :: prod_sum, diam(nc)
     integer :: i
-    if (eos%assoc%saft_model == eosPeTS) then
-      call eta_pets(rho=1.0,T=T,n=n, e=conv_num)
-    else
-      select type(p_eos => eos)
-      class is(PCSAFT_eos)
-        call calc_d(p_eos,T=T,d=diam)
-        prod_sum = 0.0
-        do i=1,nc
-          prod_sum = prod_sum + n(i)*p_eos%m(i)*diam(i)**3
-        end do
-        conv_num = N_AVOGADRO*(PI/6)*prod_sum/sum(n)
-      class is(saftvrmie_eos)
-        conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
-      class default
-        call stoperror("No such SAFT model")
-      end select
-    endif
+    select type(p_eos => eos)
+    class is(PCSAFT_eos)
+      call calc_d(p_eos,T=T,d=diam)
+      prod_sum = 0.0
+      do i=1,nc
+        prod_sum = prod_sum + n(i)*p_eos%m(i)*diam(i)**3
+      end do
+      conv_num = N_AVOGADRO*(PI/6)*prod_sum/sum(n)
+    class is(saftvrmie_eos)
+      conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
+    class is ( PETS_eos )
+      call eta_pets(p_eos, rho=1.0,T=T,n=n, e=conv_num)
+    class default
+      call stoperror("No such SAFT model")
+    end select
   end function conversion_numerator
 
   !> Volume solver for associating mixtures. Modeled after the paper: Michelsen
@@ -1161,7 +1154,7 @@ contains
     use cubic_eos, only: cb_eos
     use eos_parameters, only: base_eos_param
     use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
-    use pets, only: F_PETS_TVn
+    use pets, only: F_PETS_TVn, PETS_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_interface, only: calcFresSAFTVRMie
     integer, intent(in) :: nc
@@ -1175,36 +1168,34 @@ contains
     real :: F_V, F
     sumn = sum(n)
 
-    if (eos%assoc%saft_model == eosPeTS) then
-      call F_PETS_TVn(T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+    select type ( p_eos => eos )
+    class is ( cb_eos )
+      ! This routine takes in the volume in L/mole.
+      call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
+           dPdv,dPdT,dpdz=dPdn)
+    class is ( PCSAFT_eos )
+      call F_PC_SAFT_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
       P = -Rgas*T*F_V + sumn*Rgas*T/V
       if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
       if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
       if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
-    else
-      select type ( p_eos => eos )
-      class is ( cb_eos )
-        ! This routine takes in the volume in L/mole.
-        call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
-              dPdv,dPdT,dpdz=dPdn)
-      class is ( PCSAFT_eos )
-        call F_PC_SAFT_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-        P = -Rgas*T*F_V + sumn*Rgas*T/V
-        if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-        if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-        if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
-      class is ( saftvrmie_eos )
-        call calcFresSAFTVRMie(p_eos, nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-        if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-        if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-        if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
-      class default
-        call stoperror("nonassoc_pressure: Not able to call cbCalcPressure. Not cubic eos.")
-      end select
+    class is ( saftvrmie_eos )
+      call calcFresSAFTVRMie(p_eos, nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    class is ( PETS_eos )
+      call F_PETS_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    class default
+      call stoperror("nonassoc_pressure: Not able to call cbCalcPressure. Not cubic eos.")
+    end select
 
-      ! Convert to volume derivative from (specific volume)-derivative.
-      if (present(dPdV)) dPdV = 1000*dPdv/sumn
-    end if
+    ! Convert to volume derivative from (specific volume)-derivative.
+    if (present(dPdV)) dPdV = 1000*dPdv/sumn
   end subroutine nonassoc_pressure
 
 
@@ -1561,21 +1552,31 @@ contains
 
 
   subroutine pets_set_pure_params(ic,params)
-    use pets, only: sigma_pets, epsdivk_pets
+    use pets, only: PETS_eos
     integer, intent(in) :: ic
     real, intent(in) :: params(2) ! sigma/m, epsdivk/K
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
 
-    sigma_pets = params(1)
-    epsdivk_pets = params(2)
+    select type( p_eos => eos )
+    class is ( PETS_eos )
+      p_eos%sigma_pets = params(1)
+      p_eos%epsdivk_pets = params(2)
+    end select
   end subroutine pets_set_pure_params
 
   subroutine pets_get_pure_params(ic,params)
-    use pets, only: sigma_pets, epsdivk_pets
+    use pets, only: PETS_eos
     integer, intent(in) :: ic
     real, intent(out) :: params(2) ! sigma/m, epsdivk/K
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
 
-    params(1) = sigma_pets
-    params(2) = epsdivk_pets
+    select type( p_eos => eos )
+    class is ( PETS_eos )
+      params(1) = p_eos%sigma_pets
+      params(2) = p_eos%epsdivk_pets
+    end select
   end subroutine pets_get_pure_params
 
 

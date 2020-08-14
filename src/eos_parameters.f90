@@ -62,13 +62,6 @@ Module eos_parameters
 
   end type meos_mix
 
-  type, extends(base_eos_param) :: PETS_eos
-  contains
-    procedure, public :: allocate_and_init => pets_allocate_and_init
-    ! Assignment operator
-    procedure, pass(This), public :: assign_eos => assign_pets
-  end type PETS_eos
-
   ! type, extends(base_eos_param) :: saftvrmie_eos
 
   ! !   private
@@ -180,26 +173,6 @@ contains
     call meos%allocate_and_init(nc, eos_label)
   end function meos_mix_constructor
 
-  subroutine pets_allocate_and_init(eos,nc,eos_label)
-    ! Passed object:
-    class(pets_eos), intent(inout) :: eos
-    ! Input:
-    integer, intent(in) :: nc !< Number of components
-    character(len=*), intent(in) :: eos_label !< EOS label
-    ! Locals
-  end subroutine pets_allocate_and_init
-
-  !> Allocate memory for PETS eos
-  function pets_eos_constructor(nc, eos_label) result(p_eos)
-    ! Input:
-    integer, intent(in) :: nc
-    character(len=*), intent(in) :: eos_label
-    ! Created object:
-    type(pets_eos) :: p_eos
-    !
-    call p_eos%allocate_and_init(nc, eos_label)
-  end function pets_eos_constructor
-
   ! subroutine assign_single_eos_get(other, this)
   !   integer, intent(inout)       :: other
   !   class(myintprop), intent(in) :: this
@@ -238,10 +211,5 @@ contains
       print *,"assign_single_eos_set: Should not be here"
     end select
   end subroutine assign_single_eos_set
-
-  subroutine assign_pets(This, other)
-    class(PETS_eos), intent(out) :: this
-    class(*), intent(in)     :: other
-  end subroutine assign_pets
 
 end module eos_parameters

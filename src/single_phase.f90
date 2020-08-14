@@ -799,7 +799,8 @@ contains
     use volume_shift, only: NOSHIFT
     use single_component, only: Fres_single
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: single_eos, PETS_eos, meos_mix
+    !use pets, only: PETS_eos
+    use eos_parameters, only: single_eos, meos_mix
     use cubic_eos, only: cb_eos, csp_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
@@ -1099,7 +1100,8 @@ contains
     use single_component, only: Zfac_single
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_zfac
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, base_eos_param
-    use eos_parameters, only: single_eos, PETS_eos, meos_mix
+    use eos_parameters, only: single_eos, meos_mix
+    !use pets, only: PETS_eos
     use cubic_eos, only: cb_eos, csp_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos

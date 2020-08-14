@@ -290,6 +290,7 @@ contains
   end subroutine allocate_eos
 
   function allocate_p_eos(nc, eos_index, eos_subindex, eosstr) result(p_eos)
+    use pets, only: pets_eos_constructor
     integer, intent (in) :: nc
     integer, intent (in) :: eos_index, eos_subindex
     character (len=*), intent (in) :: eosstr
