@@ -43,9 +43,17 @@ libthermopack {
 	  themopack_exp_adiabatic_;
 	  thermopack_cp_ideal_;
 	  thermopack_twophase_dhdt_;
+	  thermopack_getkij_;
+          thermopack_setkijandji_;
+	  thermopack_gethvparam_;
+          thermopack_sethvparam_;
 	  #
 	  get_phase_flags_;
 	  *_init_thermo;
+	  *_init_cubic;
+	  *_init_cpa;
+  	  *_init_pcsaft;
+	  *_init_saftvrmie;
 	  *_solid_init;
 	  *_specificvolume;
 	  *_zfac;
@@ -55,7 +63,7 @@ libthermopack {
 	  *_compmoleweight;
 	  *_idealenthalpysingle;
 	  *_sound_velocity_2ph;
-	  *_getcomp;
+	  *_compindex;
 	  *_setphtolerance;
 	  *_twophasetpflash;
 	  *_twophasepsflash;
@@ -83,6 +91,29 @@ libthermopack {
           *_virial_coefficients;
 	  *_secondvirialcoeffmatrix;
           *_binarythirdvirialcoeffmatrix;
-
+	  *_isobar;
+	  *_isotherm;
+	  *_isenthalp;
+	  *_isentrope;
+          *_enable_hs;
+	  *_enable_a1;
+	  *_enable_a2;
+	  *_enable_a3;
+          *_enable_chain;
+	  *_get_saftvrmie_eps_kij;
+          *_set_saftvrmie_eps_kij;
+	  *_get_saftvrmie_sigma_lij;
+	  *_set_saftvrmie_sigma_lij;
+          *_get_saftvrmie_lr_gammaij;
+          *_set_saftvrmie_lr_gammaij;
+	  *_get_saftvrmie_pure_fluid_param;
+	  *_set_saftvrmie_pure_fluid_param;
+          *_cpa_get_kij;
+          *_cpa_set_kij;
+          *_pc_saft_get_kij;
+          *_pc_saft_set_kij_asym;
+	  *_global_binary_plot;
+	  *_get_bp_term;
+	  *_solidenvelopeplot;
   local: *;      # hide everything else
 };

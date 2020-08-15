@@ -1,0 +1,4 @@
+gui/.idea
+thermopack.dll
+gui/classes/models.py
+*json

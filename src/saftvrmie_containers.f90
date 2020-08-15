@@ -226,7 +226,7 @@ module saftvrmie_containers
   public :: get_saftvrmie_pure_fluid_deBoer, set_saftvrmie_pure_fluid_deBoer
   public :: get_saftvrmie_eps_kij, set_saftvrmie_eps_kij
   public :: get_saftvrmie_lr_gammaij, set_saftvrmie_lr_gammaij
-  public :: set_saftvrmie_sigma_lij
+  public :: set_saftvrmie_sigma_lij, get_saftvrmie_sigma_lij
   public :: calc_DFeynHibbsij, get_DFeynHibbsPower
   public :: calcBinaryMieParmeters
   public :: cleanup_saftvrmie_param_container
@@ -404,7 +404,6 @@ Contains
     kij = saftvrmie_param%kij(i,j)
   end subroutine get_saftvrmie_eps_kij
 
-
   !> Set the interaction parameter lij for the sigma combining rule
   subroutine set_saftvrmie_sigma_lij(i,j,lij)
     integer, intent(in) :: i,j !< Component indices
@@ -415,6 +414,13 @@ Contains
     call calcBinaryMieParmeters(saftvrmie_param,1)
   end subroutine set_saftvrmie_sigma_lij
 
+  !> Get the interaction parameter lij for the sigma combining rule
+  subroutine get_saftvrmie_sigma_lij(i,j,lij)
+    integer, intent(in) :: i,j !< Component indices
+    real, intent(out)    :: lij !< sigma interaction parameter [-]
+    ! Locals
+    lij = saftvrmie_param%lij(i,j)
+  end subroutine get_saftvrmie_sigma_lij
 
   !> Set the interaction parameter gammaij for the lambda_r combining rule
   !> \author Ailo Aasen, October 2018
@@ -433,8 +439,7 @@ Contains
     integer, intent(in) :: i,j     !< Component indices
     real, intent(out)   :: gammaij !< lambda_r interaction parameter [-]
     ! Locals
-    saftvrmie_param%gamma_ij(i,j) = gammaij
-    saftvrmie_param%gamma_ij(j,i) = saftvrmie_param%gamma_ij(i,j)
+    gammaij = saftvrmie_param%gamma_ij(i,j)
   end subroutine get_saftvrmie_lr_gammaij
 
   function mie_c_factor(lambda_r, lambda_a) result(C)

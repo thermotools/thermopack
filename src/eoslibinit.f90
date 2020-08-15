@@ -6,6 +6,7 @@ module eoslibinit
   use thermopack_var, only: nce, get_active_eos_container, eos_container, &
        get_active_alt_eos, base_eos_param, add_eos, &
        active_eos_container_is_associated, numAssocSites
+  use eos_containers, only: allocate_eos
   implicit none
   save
   !
@@ -16,7 +17,8 @@ module eoslibinit
   !
   private
   public :: init_thermo
-  public :: init_cubic, silent_init
+  public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft
+  public :: silent_init
   !public :: cleanup_eos
   public :: redefine_critical_parameters
   !
@@ -94,8 +96,6 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use stringmod,  only: uppercase, str_eq
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
-    use eos_containers, only: allocate_eos
-    !$ use omp_lib, only: omp_get_max_threads
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
     character(len=*), intent(in) :: mixing !< String defining mixing rules
@@ -113,7 +113,7 @@ contains
     ! Locals
     integer :: ncomp !< Number of components
     character(len=clen) :: message
-    integer             :: i, ierr, ncbeos, index
+    integer             :: i, ierr, index
     type(eos_container), pointer :: p_act_eosc
     if (present(silent)) then
       silent_init = silent
@@ -240,7 +240,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
-  subroutine init_cubic(compstr,eos,mixing,alpha,param_ref)
+  subroutine init_cubic(comps,eos,mixing,alpha,param_ref)
     use compdata,   only: SelectComp, initCompList
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
@@ -248,15 +248,14 @@ contains
     use eos_containers, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
-    !$ use omp_lib, only: omp_get_max_threads
-    character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos     !< Equation of state
     character(len=*), optional, intent(in) :: mixing !< Mixing rule
     character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
     character(len=*), optional, intent(in) :: param_ref  !< Parameter reference
     ! Locals
     integer                          :: ncomp, i, index, ierr
-    character(len=len_trim(compstr)) :: compstr_upper
+    character(len=len_trim(comps))   :: comps_upper
     character(len=100)               :: mixing_loc, alpha_loc, param_ref_loc
     type(eos_container), pointer     :: p_act_eosc
 
@@ -266,8 +265,8 @@ contains
     endif
     p_act_eosc => get_active_eos_container()
     ! Set component list
-    compstr_upper=trim(uppercase(compstr))
-    call initCompList(compstr_upper,ncomp,p_act_eosc%complist)
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
     !
     call allocate_eos(ncomp, eos)
 
@@ -314,15 +313,16 @@ contains
   end subroutine init_cubic
 
   ! !----------------------------------------------------------------------------
-  ! !> Initialize corresponding state
+  ! !> Initialize extended corresponding state EoS. Use: call init_extcsp
   ! !----------------------------------------------------------------------------
-  ! subroutine init_(compstr,eos,mixing,alpha)
+  ! subroutine init_extcsp(comps,eos,sh_eos,sh_mixing,sh_alpha,ref_eos,ref_comp)
   !   use parameters, only: initCompList
   !   use tpselect,   only: SelectComp
   !   use thermopack_var,      only: comp, nce, ncsym
   !   use stringmod,  only: uppercase
   !   !$ use omp_lib, only: omp_get_max_threads
-  !   character(len=*), intent(in) :: compstr !< Components. Comma or white-space separated
+  !   character(len=*), intent(in) :: comps !< Components. Comma or white-space
+  !   !separated
   !   character(len=*), intent(in) :: eos     !< Equation of state
   !   character(len=*), optional, intent(in) :: mixing !< Mixing rule
   !   character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
@@ -347,7 +347,7 @@ contains
   !   call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
   !        trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
 
-  ! end subroutine init_cubic
+  ! end subroutine init_extcsp
 
 
 
@@ -572,9 +572,9 @@ contains
   !> \author MH, 2013-04-10, EA 2014-02
   !----------------------------------------------------------------------
   subroutine init_trend(eos,ncomp,nphase,doFallbackInit)
-    use thermopack_constants, only: Rgas,TREND,verbose
-    use thermopack_var, only: complist,nph
-    use stringmod, only: chartoascii
+    !use thermopack_constants, only: Rgas,TREND,verbose
+    !use thermopack_var, only: complist,nph
+    !use stringmod, only: chartoascii
     !use compname_translation, only: translate_compname
 #ifdef __INTEL_COMPILER
     use ifport
@@ -588,7 +588,6 @@ contains
     integer                         :: i
     integer                         :: mix
     character (12)                  :: comps(ncomp)
-    character (12*ncomp)            :: char_comps
     character(len=255)              :: path,trendroot
     integer                         :: npath,int_path(255),int_comps(12*ncomp),ncomps
 
@@ -679,5 +678,166 @@ contains
 
   !   call cleanup_meos() ! Clean up multiparameter EoS
   ! end subroutine cleanup_eos
+
+  !----------------------------------------------------------------------------
+  !> Initialize SAFT-VR-MIE EoS. Use: call init_saftvrmie('CO2,N2')
+  !----------------------------------------------------------------------------
+  subroutine init_saftvrmie(comps,param_reference)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK
+    use stringmod,  only: uppercase
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), intent(in) :: param_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, index, ierr
+    character(len=len_trim(comps))   :: comps_upper
+    type(eos_container), pointer     :: p_act_eosc
+
+    if (.not. active_eos_container_is_associated()) then
+      ! No eos_container have been allocated
+      index = add_eos()
+    endif
+    p_act_eosc => get_active_eos_container()
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    !
+    call allocate_eos(ncomp, "SAFT-VR-MIE")
+
+    ! Number of phases
+    p_act_eosc%nph = 3
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = p_act_eosc%nph
+    complist => p_act_eosc%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    p_act_eosc%eosLib = THERMOPACK
+
+    ! Initialize components module
+    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+
+    ! Initialize Thermopack
+    call init_thermopack("SAFT-VR-MIE", "Classic", "Classic", nphase=3, &
+         saft_ref=param_reference)
+
+  end subroutine init_saftvrmie
+
+  !----------------------------------------------------------------------------
+  !> Initialize PC-SAFT EoS. Use: call init_pcsaft('CO2,N2')
+  !----------------------------------------------------------------------------
+  subroutine init_pcsaft(comps,param_reference)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK
+    use stringmod,  only: uppercase
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), intent(in) :: param_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, index, ierr
+    character(len=len_trim(comps))   :: comps_upper
+    type(eos_container), pointer     :: p_act_eosc
+
+    if (.not. active_eos_container_is_associated()) then
+      ! No eos_container have been allocated
+      index = add_eos()
+    endif
+    p_act_eosc => get_active_eos_container()
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    !
+    call allocate_eos(ncomp, "PC-SAFT")
+
+    ! Number of phases
+    p_act_eosc%nph = 3
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = p_act_eosc%nph
+    complist => p_act_eosc%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    p_act_eosc%eosLib = THERMOPACK
+
+    ! Initialize components module
+    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+
+    ! Initialize Thermopack
+    call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3,&
+         saft_ref=param_reference)
+
+  end subroutine init_pcsaft
+
+  !----------------------------------------------------------------------------
+  !> Initialize CPA EoS. Use: call init_cpa('CO2,N2','PR', alpha='TWU')
+  !----------------------------------------------------------------------------
+  subroutine init_cpa(comps,eos,mixing,alpha,param_reference)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK
+    use stringmod,  only: uppercase
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), optional, intent(in) :: eos    !< Equation of state
+    character(len=*), optional, intent(in) :: mixing !< Mixing rule
+    character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
+    character(len=*), optional, intent(in) :: param_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, index, ierr
+    character(len=len_trim(comps))   :: comps_upper
+    character(len=100)               :: mixing_loc, alpha_loc, eos_loc, param_ref_loc
+    type(eos_container), pointer     :: p_act_eosc
+
+    ! Initialize Thermopack
+    eos_loc = "SRK"
+    if (present(eos)) eos_loc = uppercase(eos)
+    !
+    if (.not. active_eos_container_is_associated()) then
+      ! No eos_container have been allocated
+      index = add_eos()
+    endif
+    p_act_eosc => get_active_eos_container()
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    !
+    call allocate_eos(ncomp, "CPA-"//trim(eos_loc))
+
+    ! Number of phases
+    p_act_eosc%nph = 3
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = p_act_eosc%nph
+    complist => p_act_eosc%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    p_act_eosc%eosLib = THERMOPACK
+
+    ! Initialize components module
+    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+
+    param_ref_loc = "Default"
+    alpha_loc = "Classic"
+    mixing_loc = "Classic"
+    if (present(param_reference)) param_ref_loc = uppercase(param_reference)
+    if (present(mixing)) mixing_loc = uppercase(mixing)
+    if (present(alpha)) alpha_loc = uppercase(alpha)
+
+    call init_thermopack("CPA-"//trim(eos_loc),trim(uppercase(mixing_loc)), &
+         trim(uppercase(alpha_loc)), nphase=3, saft_ref=param_ref_loc)
+
+  end subroutine init_cpa
 
 end module eoslibinit

@@ -8,21 +8,33 @@ import numpy as np
 from sys import platform, exit
 # Import os utils
 from os import path
+# Import plotting tools
+from . import plotutils
+# Import utils
+from . import utils
 
 # GNU FORTRAN
 G_PREFIX = "__"
 G_MODULE = "MOD"
 G_POSTFIX = ""
+G_POSTFIX_NM = "_"
 # INTEL FORTRAN (x64)
 I_PREFIX=""
 I_MODULE="mp"
 I_POSTFIX="_"
+I_POSTFIX_NM = "_"
+
+if utils.gcc_major_version_greater_than(7):
+    c_len_type = c_size_t # c_size_t on GCC > 7
+else:
+    c_len_type = c_int
 
 def get_platform_specifics():
     os_id = ""
     prefix = ""
     module = ""
     postfix = ""
+    postfix_no_module = ""
     dyn_lib = ""
     if platform == "linux" or platform == "linux2":
         # linux
@@ -30,6 +42,7 @@ def get_platform_specifics():
         prefix = G_PREFIX
         module = G_MODULE
         postfix = G_POSTFIX
+        postfix_no_module = G_POSTFIX_NM
         dyn_lib = "libthermopack.so"
         os_id = "linux"
     elif platform == "darwin":
@@ -42,6 +55,7 @@ def get_platform_specifics():
         prefix = I_PREFIX #"_"
         module = I_MODULE
         postfix = I_POSTFIX
+        postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
     elif platform == "win64":
@@ -50,9 +64,10 @@ def get_platform_specifics():
         prefix = I_PREFIX
         module = I_MODULE
         postfix = I_POSTFIX
+        postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
-    return prefix, module, postfix, dyn_lib, os_id
+    return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
 
 
 class thermopack(object):
@@ -63,7 +78,7 @@ class thermopack(object):
         """
         Load libthermopack.(so/dll) and initialize function pointers
         """
-        self.prefix, self.module, self.postfix, dyn_lib, os_id = get_platform_specifics()
+        self.prefix, self.module, self.postfix, self.postfix_nm, dyn_lib, os_id = get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
@@ -74,8 +89,8 @@ class thermopack(object):
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
         self.nc = None
-        self.Rgas = None
         self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
         self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
@@ -94,7 +109,7 @@ class thermopack(object):
         self.s_sos_sound_velocity_2ph = getattr(self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
 
         # Parameters
-        #self.parameters_getcomp = getattr(self.tp, self.get_export_name("parameters", "getcomp"))
+        self.s_parameters_compindex = getattr(self.tp, self.get_export_name("parameters", "compindex"))
 
         # Flashes
         self.s_set_ph_tolerance = getattr(self.tp, self.get_export_name("ph_solver", "setphtolerance"))
@@ -122,6 +137,13 @@ class thermopack(object):
         self.s_dew_p = getattr(self.tp, self.get_export_name("saturation", "safe_dewp"))
         self.s_envelope_plot = getattr(self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
         self.s_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
+        self.s_global_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
+        self.s_get_bp_term = getattr(self.tp, self.get_export_name("binaryplot", "get_bp_term"))
+        self.s_solid_envelope_plot = getattr(self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
+        self.s_isotherm = getattr(self.tp, self.get_export_name("isolines", "isotherm"))
+        self.s_isobar = getattr(self.tp, self.get_export_name("isolines", "isobar"))
+        self.s_isenthalp = getattr(self.tp, self.get_export_name("isolines", "isenthalp"))
+        self.s_isentrope = getattr(self.tp, self.get_export_name("isolines", "isentrope"))
         # Stability
         self.s_crit_tv = getattr(self.tp, self.get_export_name("critical", "calccriticaltv"))
 
@@ -151,7 +173,11 @@ class thermopack(object):
         Returns:
             str: Library export name
         """
-        return self.prefix + module + "_" + self.module + "_" + method + self.postfix
+        if len(module) > 0:
+            export_name = self.prefix + module + "_" + self.module + "_" + method + self.postfix
+        else:
+            export_name = method + self.postfix_nm
+        return export_name
 
     #################################
     # Init
@@ -167,17 +193,17 @@ class thermopack(object):
         """
         null_pointer = POINTER(c_int)()
 
-        eosLib_len = c_int(len(eosLib))
+        eosLib_len = c_len_type(len(eosLib))
         eosLib_c = c_char_p(eosLib.encode('ascii'))
         eos_c = c_char_p(eos.encode('ascii'))
-        eos_len = c_int(len(eos))
+        eos_len = c_len_type(len(eos))
         mixing_c = c_char_p(mixing.encode('ascii'))
-        mixing_len = c_int(len(mixing))
+        mixing_len = c_len_type(len(mixing))
         alpha_c = c_char_p(alpha.encode('ascii'))
-        alpha_len = c_int(len(alpha))
+        alpha_len = c_len_type(len(alpha))
         ncomp_c = c_int(ncomp)
         comp_string_c = c_char_p(comp_string.encode('ascii'))
-        comp_string_len = c_int(len(comp_string))
+        comp_string_len = c_len_type(len(comp_string))
         nphases_c = c_int(nphases)
         if liq_vap_discr_method is None:
             liq_vap_discr_method_c = null_pointer
@@ -185,16 +211,16 @@ class thermopack(object):
             liq_vap_discr_method_c = POINTER(c_int)(c_int(liq_vap_discr_method))
         if csp_eos is None:
             csp_eos_c = c_char_p()
-            csp_eos_len = c_int(0)
+            csp_eos_len = c_len_type(0)
         else:
             csp_eos_c = c_char_p(csp_eos.encode('ascii'))
-            csp_eos_len = c_int(len(csp_eos))
+            csp_eos_len = c_len_type(len(csp_eos))
         if csp_ref_comp is None:
             csp_ref_comp_c = c_char_p()
-            csp_ref_comp_len = c_int(0)
+            csp_ref_comp_len = c_len_type(0)
         else:
             csp_ref_comp_c = c_char_p(csp_ref_comp.encode('ascii'))
-            csp_ref_comp_len = c_int(len(csp_ref_comp))
+            csp_ref_comp_len = c_len_type(len(csp_ref_comp))
         if kij_setno is None:
             kij_setno_c = null_pointer
         else:
@@ -213,10 +239,10 @@ class thermopack(object):
             b_exponent_c = POINTER(c_double)(c_double(b_exponent))
         if TrendEosForCp is None:
             TrendEosForCp_c = c_char_p()
-            TrendEosForCp_len = c_int(0)
+            TrendEosForCp_len = c_len_type(0)
         else:
             TrendEosForCp_c = c_char_p(csp_eos.encode('ascii'))
-            TrendEosForCp_len = c_int(len(csp_eos))
+            TrendEosForCp_len = c_len_type(len(csp_eos))
         if cptype is None:
             cptype_c = null_pointer
         else:
@@ -244,10 +270,10 @@ class thermopack(object):
                                                 c_char_p,
                                                 POINTER( c_int ),
                                                 POINTER( c_int ),
-                                                c_int, c_int,
-                                                c_int, c_int,
-                                                c_int, c_int,
-                                                c_int, c_int]
+                                                c_len_type, c_len_type,
+                                                c_len_type, c_len_type,
+                                                c_len_type, c_len_type,
+                                                c_len_type, c_len_type]
 
 
         self.eoslibinit_init_thermo.restype = None
@@ -278,17 +304,20 @@ class thermopack(object):
                                     csp_ref_comp_len,
                                     TrendEosForCp_len)
         self.nc = ncomp
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
 
-    def init_solid(self,scomp):
+    #################################
+    # Solids
+    #################################
+
+    def init_solid(self, scomp):
         """Initialize pure solid
 
         Args:
             scomp (str): Component name
         """
         scomp_c = c_char_p(scomp.encode('ascii'))
-        scomp_len = c_int(len(scomp))
-        self.solideos_solid_init.argtypes = [c_char_p, c_int]
+        scomp_len = c_len_type(len(scomp))
+        self.solideos_solid_init.argtypes = [c_char_p, c_len_type]
         self.solideos_solid_init.restype = None
         self.solideos_solid_init(scomp_c, scomp_len)
 
@@ -296,7 +325,7 @@ class thermopack(object):
     # Utility
     #################################
 
-    def getcomp(self, comp):
+    def getcompindex(self, comp):
         """Get component index
 
         Args:
@@ -306,9 +335,10 @@ class thermopack(object):
             int: Component FORTRAN index
         """
         comp_c = c_char_p(comp.encode('ascii'))
-        self.parameters_getcomp.argtypes = [c_char_p]
-        self.parameters_getcomp.restype = c_int
-        idx = self.parameters_getcomp(comp_c, c_int)
+        comp_len = c_len_type(len(comp))
+        self.s_parameters_compindex.argtypes = [c_char_p, c_len_type]
+        self.s_parameters_compindex.restype = c_int
+        idx = self.s_parameters_compindex(comp_c, comp_len)
         return idx
 
     def compmoleweight(self, comp):
@@ -378,6 +408,10 @@ class thermopack(object):
     def set_tmin(self, temp):
         self.minimum_temperature_c.value = temp
 
+    def get_tmin(self):
+        temp = self.minimum_temperature_c.value
+        return temp
+
     def set_pmin(self, press):
         self.minimum_pressure_c.value = press
 
@@ -385,7 +419,7 @@ class thermopack(object):
     # Phase properties
     #################################
 
-    def specific_volume(self,temp,press,x,phase,dvdt=None,dvdp=None,dvdn=None):
+    def specific_volume(self, temp, press, x, phase, dvdt=None, dvdp=None, dvdn=None):
         """ Calculate single-phase specific volume
             Note that the order of the output match the default order of input for the differentials.
             Note further that dvdt, dvdp and dvdn only are flags to enable calculation.
@@ -958,7 +992,7 @@ class thermopack(object):
         betaV_c = c_double(0.0)
         betaL_c = c_double(0.0)
         phase_c = c_int(0)
-
+        ierr_c = c_int(0)
         self.s_psflash_twophase.argtypes = [POINTER( c_double ),
                                             POINTER( c_double ),
                                             POINTER( c_double ),
@@ -967,6 +1001,7 @@ class thermopack(object):
                                             POINTER( c_double ),
                                             POINTER( c_double ),
                                             POINTER( c_double ),
+                                            POINTER( c_int ),
                                             POINTER( c_int )]
 
         self.s_psflash_twophase.restype = None
@@ -979,7 +1014,11 @@ class thermopack(object):
                                 x_c,
                                 y_c,
                                 byref(s_c),
-                                byref(phase_c))
+                                byref(phase_c),
+                                byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("PS flash calclualtion failed")
 
         x = np.array(x_c)
         y = np.array(y_c)
@@ -1017,6 +1056,7 @@ class thermopack(object):
         betaV_c = c_double(0.0)
         betaL_c = c_double(0.0)
         phase_c = c_int(0)
+        ierr_c = c_int(0)
 
         self.s_phflash_twophase.argtypes = [POINTER( c_double ),
                                             POINTER( c_double ),
@@ -1026,6 +1066,7 @@ class thermopack(object):
                                             POINTER( c_double ),
                                             POINTER( c_double ),
                                             POINTER( c_double ),
+                                            POINTER( c_int ),
                                             POINTER( c_int )]
 
         self.s_phflash_twophase.restype = None
@@ -1038,7 +1079,11 @@ class thermopack(object):
                                 x_c,
                                 y_c,
                                 byref(h_c),
-                                byref(phase_c))
+                                byref(phase_c),
+                                byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("PH flash calclualtion failed")
 
         x = np.array(x_c)
         y = np.array(y_c)
@@ -1273,7 +1318,7 @@ class thermopack(object):
         else:
             dsdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        residual_c = POINTER(c_int)(c_int(0))
 
         self.s_entropy_tv.argtypes = [POINTER( c_double ),
                                       POINTER( c_double ),
@@ -1293,7 +1338,7 @@ class thermopack(object):
                           dsdt_c,
                           dsdv_c,
                           dsdn_c,
-                          recalculate_c)
+                          residual_c)
 
         return_tuple = (s_c.value, )
         if not dsdt is None:
@@ -1326,7 +1371,7 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        residual_c = POINTER(c_int)(c_int(0))
 
         self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1346,7 +1391,7 @@ class thermopack(object):
                            dhdt_c,
                            dhdv_c,
                            dhdn_c,
-                           recalculate_c)
+                           residual_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -1644,7 +1689,8 @@ class thermopack(object):
         return press, x
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
-                              minimum_temperature=None, step_size=None):
+                              minimum_temperature=None, step_size=None,
+                              calc_v=False):
         """Get the phase-envelope
 
         Args:
@@ -1653,10 +1699,11 @@ class thermopack(object):
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
             step_size (float , optional): Tune step size of envelope trace. Defaults to None.
-
+            calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
+            ndarray (optional): Specific volume (m3/mol)
         """
         nmax = 1000
         z_c = (c_double * len(z))(*z)
@@ -1722,10 +1769,22 @@ class thermopack(object):
                              exitOnTriplePoint_c,
                              tme_c)
 
-        Tvals = np.array(Ta_c[0:n_c.value])
-        Pvals = np.array(Pa_c[0:n_c.value])
+        t_vals = np.array(Ta_c[0:n_c.value])
+        p_vals = np.array(Pa_c[0:n_c.value])
 
-        return Tvals, Pvals
+        return_tuple = (t_vals, p_vals)
+
+        if calc_v:
+            v_vals = np.zeros_like(t_vals)
+            for i in range(n_c.value):
+                if beta_c[i] > 0.5:
+                    phase = self.VAPPH
+                else:
+                    phase = self.LIQPH
+                v_vals[i], = self.specific_volume(t_vals[i], p_vals[i], z, phase)
+            return_tuple += (v_vals, )
+
+        return return_tuple
 
     def get_binary_pxy(self,
                        temp,
@@ -1744,7 +1803,7 @@ class thermopack(object):
 
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
-        """                       
+        """
         # Redefinition of module parameter:
         nmax = 10000
         #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
@@ -1759,7 +1818,7 @@ class thermopack(object):
         dlns_max_c = c_double(maximum_dlns)
         filename = "binaryVLLE.dat"
         filename_c = c_char_p(filename.encode('ascii'))
-        filename_len = c_int(len(filename))
+        filename_len = c_len_type(len(filename))
         res_c = (c_double * (nmax*9))(0.0)
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
@@ -1776,7 +1835,7 @@ class thermopack(object):
                                        POINTER( c_int ),
                                        POINTER( c_int ),
                                        POINTER( c_double ),
-                                       c_int]
+                                       c_len_type]
 
         self.s_binary_plot.restype = None
 
@@ -1836,11 +1895,353 @@ class thermopack(object):
 
         return LLE, L1VE, L2VE
 
+    def get_bp_term(self,
+                    i_term):
+
+        message_len = 50
+        message_c = c_char_p(b" " * message_len)
+        message_len = c_len_type(message_len)
+        i_term_c = c_int(i_term)
+
+        self.s_get_bp_term.argtypes = [POINTER( c_int ),
+                                       c_char_p,
+                                       c_len_type]
+
+        self.s_get_bp_term.restype = None
+
+        self.s_get_bp_term(byref(i_term_c),
+                           message_c,
+                           message_len)
+        message = message_c.value.decode('ascii')
+        return message
+
+    def global_binary_plot(self,
+                           maximum_pressure=1.5e7,
+                           minimum_pressure=1.0e5,
+                           minimum_temperature=150.0,
+                           maximum_temperature=500.0,
+                           include_azeotropes=False):
+        """Calculate global binary phase envelope
+
+        Args:
+            maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
+            minimum_temperature (float, optional): Terminate phase line traceing at minimum temperature. Defaults to 150.0 K.
+            maximum_temperature (float, optional): Terminate phase line traceing at maximum temperature. Defaults to 500.0 K.
+            include_azeotropes (bool, optional): Include azeotropic lines. Defaults to False.
+
+        Returns:
+            tuple of arrays
+        """
+        max_press_c = c_double(maximum_pressure)
+        min_press_c = c_double(minimum_pressure)
+        max_temp_c = c_double(maximum_temperature)
+        min_temp_c = c_double(minimum_temperature)
+        az_bool_c = c_int(1 if include_azeotropes else 0)
+        filename = "global_binary.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_len_type(len(filename))
+        i_term_c = c_int(0)
+
+        self.s_global_binary_plot.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              c_char_p,
+                                              POINTER( c_int ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int ),
+                                              c_len_type]
+
+        self.s_global_binary_plot.restype = None
+
+        self.s_global_binary_plot(byref(min_press_c),
+                                  byref(max_press_c),
+                                  byref(min_temp_c),
+                                  filename_c,
+                                  byref(i_term_c),
+                                  byref(max_temp_c),
+                                  byref(az_bool_c),
+                                  filename_len)
+
+        if not i_term_c.value == 0:
+            message = self.get_bp_term(i_term_c.value)
+            print(message)
+
+        # Load file with filename and read into arrays
+        return plotutils.get_globa_binary_data(filename)
+
+    def solid_envelope_plot(self, initial_pressure, z, maximum_pressure=1.5e7,
+                            minimum_temperature=170.0, calc_esv=False):
+        """Calculate phase envelope including solid lines
+
+        Args:
+            initial_pressure (float): Start mapping from initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            calc_esv (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+
+        Returns:
+            tuple of arrays
+        """
+        z_c = (c_double * len(z))(*z)
+        temp_c = c_double(0.0)
+        press_c = c_double(initial_pressure)
+        max_press_c = c_double(maximum_pressure)
+        filename = "solid_envelope.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_len_type(len(filename))
+        i_spec_c = c_int(1)
+        esv_bool_c = c_int(1 if calc_esv else 0)
+
+        min_t = self.get_tmin()
+        self.set_tmin(minimum_temperature)
+
+        self.s_solid_envelope_plot.argtypes = [POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_int ),
+                                               POINTER( c_double ),
+                                               c_char_p,
+                                               POINTER( c_int ),
+                                               c_len_type]
+
+        self.s_solid_envelope_plot.restype = None
+
+        self.s_solid_envelope_plot(z_c,
+                                   byref(temp_c),
+                                   byref(press_c),
+                                   byref(i_spec_c),
+                                   byref(max_press_c),
+                                   filename_c,
+                                   byref(esv_bool_c),
+                                   filename_len)
+
+        self.set_tmin(min_t)
+
+        #if .not. i_term_c.value == 0:
+        #    message = self.get_bp_term(iTerm)
+        #    print(message)
+
+        # Load file with filename and read into lists....
+        return plotutils.get_solid_envelope_data(filename)
+
+    def get_isotherm(self,
+                     temp,
+                     z,
+                     minimum_pressure=1.0e5,
+                     maximum_pressure=1.5e7,
+                     nmax=100):
+
+        temp_c = c_double(temp)
+        minimum_pressure_c = c_double(minimum_pressure)
+        maximum_pressure_c = c_double(maximum_pressure)
+        z_c = (c_double * len(z))(*z)
+        va_c = (c_double * nmax)(0.0)
+        pa_c = (c_double * nmax)(0.0)
+        sa_c = (c_double * nmax)(0.0)
+        ha_c = (c_double * nmax)(0.0)
+        nmax_c = c_int(nmax)
+        na_c = c_int(0)
+
+        self.s_isotherm.argtypes = [POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_int ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_double ),
+                                    POINTER( c_int )]
+
+        self.s_isotherm.restype = None
+
+        self.s_isotherm(byref(temp_c),
+                        byref(minimum_pressure_c),
+                        byref(maximum_pressure_c),
+                        z_c,
+                        byref(nmax_c),
+                        pa_c,
+                        va_c,
+                        sa_c,
+                        ha_c,
+                        byref(na_c))
+
+        p_vals = np.array(pa_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        s_vals = np.array(sa_c[0:na_c.value])
+        h_vals = np.array(ha_c[0:na_c.value])
+
+        return p_vals, v_vals, s_vals, h_vals
+
+    def get_isobar(self,
+                   press,
+                   z,
+                   minimum_temperature=200.0,
+                   maximum_temperature=500.0,
+                   nmax=100):
+
+        press_c = c_double(press)
+        minimum_temperature_c = c_double(minimum_temperature)
+        maximum_temperature_c = c_double(maximum_temperature)
+        z_c = (c_double * len(z))(*z)
+        va_c = (c_double * nmax)(0.0)
+        ta_c = (c_double * nmax)(0.0)
+        sa_c = (c_double * nmax)(0.0)
+        ha_c = (c_double * nmax)(0.0)
+        nmax_c = c_int(nmax)
+        na_c = c_int(0)
+
+        self.s_isobar.argtypes = [POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_int ),
+                                  POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_double ),
+                                  POINTER( c_int )]
+
+        self.s_isobar.restype = None
+
+        self.s_isobar(byref(press_c),
+                      byref(minimum_temperature_c),
+                      byref(maximum_temperature_c),
+                      z_c,
+                      byref(nmax_c),
+                      ta_c,
+                      va_c,
+                      sa_c,
+                      ha_c,
+                      byref(na_c))
+
+        t_vals = np.array(ta_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        s_vals = np.array(sa_c[0:na_c.value])
+        h_vals = np.array(ha_c[0:na_c.value])
+
+        return t_vals, v_vals, s_vals, h_vals
+
+    def get_isenthalp(self,
+                      enthalpy,
+                      z,
+                      minimum_pressure=1.0e5,
+                      maximum_pressure=1.5e7,
+                      minimum_temperature=200.0,
+                      maximum_temperature=500.0,
+                      nmax=100):
+
+        enthalpy_c = c_double(enthalpy)
+        minimum_pressure_c = c_double(minimum_pressure)
+        maximum_pressure_c = c_double(maximum_pressure)
+        minimum_temperature_c = c_double(minimum_temperature)
+        maximum_temperature_c = c_double(maximum_temperature)
+        z_c = (c_double * len(z))(*z)
+        va_c = (c_double * nmax)(0.0)
+        ta_c = (c_double * nmax)(0.0)
+        sa_c = (c_double * nmax)(0.0)
+        pa_c = (c_double * nmax)(0.0)
+        nmax_c = c_int(nmax)
+        na_c = c_int(0)
+
+        self.s_isenthalp.argtypes = [POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_int ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_int )]
+
+        self.s_isenthalp.restype = None
+
+        self.s_isenthalp(byref(enthalpy_c),
+                         byref(minimum_pressure_c),
+                         byref(maximum_pressure_c),
+                         byref(minimum_temperature_c),
+                         byref(maximum_temperature_c),
+                         z_c,
+                         byref(nmax_c),
+                         pa_c,
+                         va_c,
+                         sa_c,
+                         ta_c,
+                         byref(na_c))
+
+        t_vals = np.array(ta_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        s_vals = np.array(sa_c[0:na_c.value])
+        p_vals = np.array(pa_c[0:na_c.value])
+
+        return t_vals, p_vals, v_vals, s_vals
+
+    def get_isentrope(self,
+                      entropy,
+                      z,
+                      minimum_pressure=1.0e5,
+                      maximum_pressure=1.5e7,
+                      minimum_temperature=200.0,
+                      maximum_temperature=500.0,
+                      nmax=100):
+
+        entropy_c = c_double(entropy)
+        minimum_pressure_c = c_double(minimum_pressure)
+        maximum_pressure_c = c_double(maximum_pressure)
+        minimum_temperature_c = c_double(minimum_temperature)
+        maximum_temperature_c = c_double(maximum_temperature)
+        z_c = (c_double * len(z))(*z)
+        va_c = (c_double * nmax)(0.0)
+        ta_c = (c_double * nmax)(0.0)
+        ha_c = (c_double * nmax)(0.0)
+        pa_c = (c_double * nmax)(0.0)
+        nmax_c = c_int(nmax)
+        na_c = c_int(0)
+
+        self.s_isentrope.argtypes = [POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_int ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_double ),
+                                     POINTER( c_int )]
+
+        self.s_isentrope.restype = None
+
+        self.s_isentrope(byref(entropy_c),
+                         byref(minimum_pressure_c),
+                         byref(maximum_pressure_c),
+                         byref(minimum_temperature_c),
+                         byref(maximum_temperature_c),
+                         z_c,
+                         byref(nmax_c),
+                         pa_c,
+                         va_c,
+                         ha_c,
+                         ta_c,
+                         byref(na_c))
+
+        t_vals = np.array(ta_c[0:na_c.value])
+        v_vals = np.array(va_c[0:na_c.value])
+        h_vals = np.array(ha_c[0:na_c.value])
+        p_vals = np.array(pa_c[0:na_c.value])
+
+        return t_vals, p_vals, v_vals, h_vals
+
     #################################
     # Stability interfaces
     #################################
 
-    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-8):
+    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-7):
         """Calculate critical point in variables T and V
 
         Args:
@@ -1856,7 +2257,7 @@ class thermopack(object):
             float: Temperature (K)
             float: Volume (m3)
             float: Pressure (Pa)
-        """        
+        """
         temp_c = c_double(temp)
         v_c = c_double(v)
         n_c = (c_double * len(n))(*n)

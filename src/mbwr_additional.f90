@@ -92,7 +92,7 @@ CONTAINS
   !  containing the computed derivatives
   ! INPUT
   !  t: temperature (K)
-  !  rho: density (mol/L)
+  !  rho: density (mol/m^3)
   !  nTderivs: number of t-derivatives (0,1 or 2)
   !  nRhoderivs: number of rho-derivatives (0,1 or 2)
   !  model: the mbwreos instance
@@ -100,13 +100,13 @@ CONTAINS
   !  Inputting nTderivs=m and nRhoDerivs=n computes
   !  deriv = [d_t^m alpha,...,d_t^m d_rho^n alpha],
   !  while deriv(n+1:2) is not initialized.
-  subroutine alphar_derivatives(deriv,t,rho,nTderivs,nRhoDerivs,model)
+  subroutine alphar_derivatives(deriv,t,rho_SI,nTderivs,nRhoDerivs,model)
     USE tpmbwr, ONLY: eosmbwr, nijlarray, allocNIJL
     implicit none
     !output variables
     real, dimension(0:2), intent(out) :: deriv
     !input variables
-    real,intent(in) :: t, rho
+    real,intent(in) :: t, rho_SI
     integer, intent(in) :: nTderivs, nRhoDerivs
     type(eosmbwr), intent(in) :: model
     !local variables
@@ -116,6 +116,9 @@ CONTAINS
     real :: gamma
     real :: pled, eled
     real :: rho_1, rho_2, exponential, twoGamma, twoGammaRho
+    real :: rho
+
+    rho = rho_SI*1e-3 !< MBWR backend is based on mol/L units
 
     if ((nTderivs .lt. 0 .or. nTderivs .gt. 2) .or. (nRhoDerivs .lt. 0 .or. nRhoDerivs .gt. 2)) then
       call stoperror("error in number of derivatives")
@@ -181,11 +184,11 @@ CONTAINS
     end if
 
     deriv(0) = poly(0) + expo(0)*exponential
-    if (nRhoDerivs .ge. 1) deriv(1) = poly(1)*rho_1 + expo(1)*exponential
-    if (nRhoDerivs .ge. 2) deriv(2) = poly(2)*rho_2 + expo(2)*exponential
+    if (nRhoDerivs .ge. 1) deriv(1) = (poly(1)*rho_1 + expo(1)*exponential)*1e-3
+    if (nRhoDerivs .ge. 2) deriv(2) = (poly(2)*rho_2 + expo(2)*exponential)*1e-6
   end subroutine alphar_derivatives
 
-  !> Outputs volume in cubic meters
+  !> Outputs volume in m^3/mol
   real function mbwr_volume(T,P,nMoles,phase,model)
     use tpmbwr, only: eosmbwr, makeParam, MBWR_density
     implicit none
@@ -203,6 +206,7 @@ CONTAINS
     call makeParam(parameters=param,T=T,model=model,nTderivatives=0)
     rho = MBWR_density(t=T,p=P,phase_in=phase,param=param,model=model,phase_found_out=phase_found_out)
 
+    rho = rho*1e3 ! mol/L -> mol/m^3
     mbwr_volume = nMoles/rho
   end function mbwr_volume
 

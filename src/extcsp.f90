@@ -712,7 +712,7 @@ contains
     else if (refEosType .eq. mbwr) then ! alpha is the reduced residual molar Helmholtz energy.
 
       rho = 1.0/v0
-      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho=rho,&
+      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho_SI=rho*1e3,&
            nTderivs=0,nRhoDerivs=2,model=mbwrRefEos(i_thread)) ! compute alpha, alpha_rho0, alpha_rho0rho0
       alpha = alphaDerivatives(0)
       DalphaDrho = alphaDerivatives(1)
@@ -721,16 +721,25 @@ contains
       sdiff%M = Rgas*T0*alpha
       sdiff%Mv0 = -Rgas*T0*DalphaDrho*rho**2
       sdiff%Mv0v0 = Rgas*T0*(D2alphaDrho2*rho**4 + 2*DalphaDrho*rho**3)
-      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho=rho,nTderivs=1,nRhoDerivs=1,model=mbwrRefEos(i_thread)) ! compute alpha_T0, alpha_T0rho0
+      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho_SI=rho*1e3,&
+           nTderivs=1,nRhoDerivs=1,model=mbwrRefEos(i_thread)) ! compute alpha_T0, alpha_T0rho0
       DalphaDT = alphaDerivatives(0)
       D2alphaDrhoDT = alphaDerivatives(1)
 
       sdiff%Mt0 = Rgas*(alpha + T0*DalphaDT)
       sdiff%Mt0v0 = -Rgas*(DalphaDrho + T0*D2alphaDrhoDT)*rho**2
-      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho=rho,nTderivs=2,nRhoDerivs=0,model=mbwrRefEos(i_thread)) ! compute alpha_T0T0
+      call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho_SI=rho*1e3, &
+           nTderivs=2,nRhoDerivs=0,model=mbwrRefEos(i_thread)) ! compute alpha_T0T0
       D2alphaDT2 = alphaDerivatives(0)
 
       sdiff%Mt0t0 = Rgas*(2*DalphaDT + T0*D2alphaDT2)
+
+      sdiff%M = alpr*(Rgas*T0)
+      sdiff%Mt0 = Rgas*(alpr + T0*alpr_T)
+      sdiff%Mt0t0 = Rgas*(2*alpr_T + T0*alpr_TT)
+      sdiff%Mt0v0 = Rgas*(alpr_v + T0*alpr_Tv)*1e-3
+      sdiff%Mv0 = Rgas*T0*alpr_v*1e-3
+      sdiff%Mv0v0 = Rgas*T0*alpr_vv*1e-6
     else if (refEosType .eq. nist) then ! this multiparameter EoS operates in SI units
        call nistRefEos(i_thread)%alphaResDerivs_Tv(T0,v0*1e-3,alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
        sdiff%M = alpr*(Rgas*T0)
@@ -768,7 +777,7 @@ contains
       call cbCalcZfac(refNc,cbrefEos(i_thread),T0,P0,zRef,phase,zFac,1)
     else if (refEosType .eq. mbwr) then
       v0 = mbwr_volume(T0,P0,nMoles=1.0,phase=phase,model=mbwrRefEos(i_thread))
-      zFac = P0*v0/(kRgas*T0) ! Need to use kRgas here since V is calculated in litres.
+      zFac = P0*v0/(Rgas*T0) ! Need to use kRgas here since V is calculated in litres.
     else if (refEosType .eq. nist) then
       call nistRefEos(i_thread)%densitySolver(T0,P0,phase,rho0)
       zFac = P0/(rho0*Rgas*T0) ! Need to use Rgas here since rho is calculated in mol/m^3..

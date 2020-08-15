@@ -3,6 +3,10 @@
 from __future__ import print_function
 # Importing pyThermopack
 from pyctp import thermo
+from pyctp import cubic
+from pyctp import saftvrmie
+from pyctp import cpa
+from pyctp import pcsaft
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -18,6 +22,7 @@ print(tp.get_phase_flags())
 print("calling thermo_init")
 tp.init_thermo("Thermopack","PR","Classic","Classic",2,"CO2,C1",2,liq_vap_discr_method=1,kij_setno=2,alpha_setno=1,b_exponent=2,csp_eos="SRK",csp_ref_comp="C3",saft_setno=[1,1])
 
+print("Done calling init")
 z = np.array([0.9,0.1])
 v, dvdt, dvdn = tp.specific_volume(270.0,1.0e6,z,1,dvdt=True,dvdn=True)
 print(v, dvdt, dvdn)
@@ -146,9 +151,21 @@ print(P, y)
 P, x = tp.dew_pressure(220.0,z)
 print(P, x)
 
-Tvals, Pvals = tp.get_envelope_twophase(1.0e5, z)
-print(Pvals)
+P = 1.0e6
+t_vals, v_vals, s_vals, h_vals = tp.get_isobar(P, z)
+plt.plot(t_vals, [P]*len(t_vals), label="Isobar")
+T = 250.0
+p_vals, v_vals, s_vals, h_vals = tp.get_isotherm(T, z)
+plt.plot([T]*len(p_vals), p_vals, label="Isotherm")
+t_vals, p_vals, v_vals, h_vals = tp.get_isentrope(s, z)
+plt.plot(t_vals, p_vals, label="Isentrope")
+t_vals, p_vals, v_vals, s_vals = tp.get_isenthalp(h, z)
+plt.plot(t_vals, p_vals, label="Isenthalp")
+Tvals, Pvals, v_vals = tp.get_envelope_twophase(1.0e5, z, calc_v=True)
+print(v_vals)
 plt.plot(Tvals, Pvals)
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
 plt.show()
 plt.clf()
 
@@ -162,5 +179,127 @@ if L1VE[0] is not None:
 if L2VE[0] is not None:
     plt.plot(L2VE[0], L2VE[2])
     plt.plot(L2VE[1], L2VE[2])
+plt.show()
+plt.clf()
+
+print("Cubic instance")
+
+# Instanciate cubic object
+cb = cubic.cubic()
+cb.init("CO2,C1","PR","Classic","Classic")
+print(cb.get_kij(1,2))
+cb.set_kij(1,2,0.1)
+print(cb.get_kij(2,1))
+
+cb.init("H2O,C1","SRK","HV","Classic")
+hvp = cb.get_hv_param(1, 2)
+alpha_12, alpha_21, a_12, a_21, b_12, b_21, c_12, c_21 = hvp
+print(hvp)
+alpha_12=0.16
+alpha_21=0.17
+cb.set_hv_param(1, 2, alpha_12, alpha_21, a_12, a_21, b_12, b_21, c_12, c_21)
+hvp = cb.get_hv_param(1, 2)
+print(hvp)
+
+# Instanciate saftvrmie object
+print("SAFT-VR Mie")
+svrm = saftvrmie.saftvrmie()
+svrm.init("CO2,C1")
+print("kij",svrm.get_eps_kij(1,2))
+svrm.set_eps_kij(1,2,0.012)
+print("kij",svrm.get_eps_kij(2,1))
+print("sigma",svrm.get_sigma_lij(1,2))
+svrm.set_sigma_lij(1,2,0.013)
+print("sigma",svrm.get_sigma_lij(2,1))
+print("gamma ij",svrm.get_lr_gammaij(1,2))
+svrm.set_lr_gammaij(1,2,0.014)
+print("gamma ij",svrm.get_lr_gammaij(2,1))
+svrm.model_control_chain(False)
+m, sigma, eps, lambda_a, lambda_r = svrm.get_pure_fluid_param(1)
+print("m, sigma, eps, lambda_a, lambda_r",m, sigma, eps, lambda_a, lambda_r)
+svrm.set_pure_fluid_param(1,m, sigma, eps, lambda_a, lambda_r)
+
+# Instanciate saftvrmie object
+print("PC-SAFT")
+pcs = pcsaft.pcsaft()
+pcs.init("CO2,C1")
+print("kij",pcs.get_kij(1,2))
+pcs.set_kij(1,2,0.012)
+print("kij",pcs.get_kij(2,1))
+
+# Instanciate saftvrmie object
+print("CPA")
+cpa_srk = cpa.cpa()
+cpa_srk.init("ETOH,H2O")
+#print("kij",cpa_srk.get_kij(1,2))
+#pcs.set_kij(1,2,0.012)
+#print("kij",pcs.get_kij(2,1))
+
+print(cpa_srk.getcompindex("H2O"))
+
+print("Solid plot")
+cb = cubic.cubic()
+cb.init("CO2,N2","PR","Classic","Classic")
+cb.init_solid("CO2")
+z = np.array([0.98,0.02])
+lines, crits = cb.solid_envelope_plot(1.0e5, z)
+for i in range(len(lines)):
+    plt.plot(lines[i][:,0], lines[i][:,1])
+label = "Critical"
+for i in range(len(crits)):
+    plt.plot(crits[i][0], crits[i][1], linestyle="None",
+             marker="o", color="k", label=label)
+    label = None
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
+plt.show()
+plt.clf()
+
+print("Global binary plot")
+cb = cubic.cubic()
+cb.init("Ne,H2","SRK","Classic","Classic")
+cb.set_kij(1,2,0.19)
+KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=2.0, include_azeotropes=True)
+colors = [ "black", "blue", "red", "green"]
+linestyles = [ "-", "--", ":", "-."]
+label = "VLE"
+for i in range(len(VLE)):
+    plt.plot(VLE[i][:,0], VLE[i][:,1], linestyle=linestyles[0],
+             color=colors[0], label=label)
+    label = None
+
+label = "VLLE"
+for i in range(len(LLVE)):
+    plt.plot(LLVE[i][:,0], LLVE[i][:,1], linestyle=linestyles[1],
+             color=colors[1], label=label)
+    label = None
+
+label = "Critical"
+for i in range(len(CRIT)):
+    plt.plot(CRIT[i][:,0], CRIT[i][:,1], linestyle=linestyles[2],
+             color=colors[2], label=label)
+    label = None
+
+label = "AZ"
+for i in range(len(AZ)):
+    plt.plot(AZ[i][:,0], AZ[i][:,1], linestyle=linestyles[3],
+             color=colors[3], label=label)
+    label = None
+
+if KSTYPE == 1:
+    ks_str = "I"
+elif KSTYPE == 2:
+    ks_str = "II"
+elif KSTYPE == 3:
+    ks_str = "III"
+elif KSTYPE == 4:
+    ks_str = "IV"
+elif KSTYPE == 5:
+    ks_str = "V"
+
+plt.title("van Konynenburg and Scott type: " + ks_str)
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
+plt.ylim([1.0e5,0.3e7])
 plt.show()
 plt.clf()

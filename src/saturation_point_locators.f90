@@ -1346,6 +1346,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine iso_cross_saturation_line(ts,ps,t,p,X,Y,Z,beta,&
        prop_spec,prop_specID,phase,ierr)
+    use stringmod, only: str_eq
     use eos, only: enthalpy, entropy
     use saturation_curve, only: extrapolate_to_saturation_line
     implicit none
@@ -1373,20 +1374,17 @@ contains
     real, dimension(nc) :: X_cpy, Y_cpy
     real :: tMax, tMin, pMax, pMin, t0, p0
     ! How to extrapolate?
-    if (prop_specID == "t" .or. prop_specID == "T") then
-      extrap = 2 ! isothermal
-    else if (prop_specID == "p" .or. prop_specID == "P") then
-      extrap = 1 ! isobaric
+    if (str_eq(prop_specID,"T")) then
+      extrap = ISO_T ! isothermal
+    else if (str_eq(prop_specID,"P")) then
+      extrap = ISO_P ! isobaric
+    else if (str_eq(prop_specID,"S")) then
+      extrap = ISO_S ! isentropic
+    else if (str_eq(prop_specID,"H")) then
+      extrap = ISO_H ! isenthalpic
     else
-      t0 = t
-      p0 = p
-      dlnP = abs(log(p)-log(ps))
-      dlnT = abs(log(t)-log(ts))
-      if (dlnP > dlnT) then
-        extrap = 4 ! isothermal - not exact
-      else
-        extrap = 3 ! isobaric - not exact
-      endif
+      print *,"Wrong extrapolation variable specified"
+      return
     endif
     X_cpy = X
     Y_cpy = Y

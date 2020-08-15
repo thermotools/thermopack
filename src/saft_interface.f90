@@ -40,7 +40,7 @@ module saft_interface
   public :: saft_zfac, saft_lnphi, saft_ResidEntropy, saft_ResidEnthalpy, saft_ResidGibbs
   public :: saft_setAssocParams, cpa_setAssocParams
   public :: pcsaft_set_nonassoc_params, cpa_set_cubic_params
-  public :: cpa_set_kij, cpa_get_pure_params, cpa_set_pure_params
+  public :: cpa_get_kij, cpa_set_kij, cpa_get_pure_params, cpa_set_pure_params
   public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
   public :: calcSaftFder_res_nonassoc
   public :: pets_get_pure_params, pets_set_pure_params
@@ -1453,8 +1453,8 @@ contains
     call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
     call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
 
-    call compidx_to_sites(p_assoc,1,k_first,k_last)
-    call compidx_to_sites(p_assoc,2,l_first,l_last)
+    call compidx_to_sites(p_assoc,i,k_first,k_last)
+    call compidx_to_sites(p_assoc,j,l_first,l_last)
     do k=k_first,k_last
        do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&

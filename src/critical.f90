@@ -2289,6 +2289,10 @@ contains
     X(1) = Zc(ic)
     X(2) = log(t)
     X(3) = log(vc)
+    if (minval(y) < 1.0e-35) then
+      ierr = 1
+      return
+    endif
     X(4:5) = log(y)
     X(6) = log(vy)
 
@@ -2342,7 +2346,10 @@ contains
     ! Incipient volume
     xmax(6) = xmax(3)
     call isXwithinBounds(6,X,Xmin,Xmax,"x,ln(T),ln(vx),ln(y(1:2)),ln(vy)",&
-         "calcCriticalEndPoint: Initial values not within bounds!!")
+         "calcCriticalEndPoint: Initial values not within bounds!!",ierr)
+    if (ierr /= 0) then
+      return
+    endif
     call nonlinear_solve(solver,critFunEnd,critJacEnd,critJacEnd,limit_dx,&
          premterm_at_dx_zero, setXv,x,xmin,xmax,param)
     ierr = solver%exitflag

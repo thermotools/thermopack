@@ -4,7 +4,12 @@ LIBRARY
 
 EXPORTS
 	get_phase_flags_
+	parameters_mp_compindex_
 	eoslibinit_mp_init_thermo_
+	eoslibinit_mp_init_cubic_
+	eoslibinit_mp_init_cpa_
+	eoslibinit_mp_init_pcsaft_
+	eoslibinit_mp_init_saftvrmie_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_
@@ -41,3 +46,31 @@ EXPORTS
 	eostv_mp_virial_coefficients_
 	eostv_mp_secondvirialcoeffmatrix_
 	eostv_mp_binarythirdvirialcoeffmatrix_
+	isolines_mp_isobar_
+	isolines_mp_isotherm_
+	isolines_mp_isenthalp_
+	isolines_mp_isentrope_
+	thermopack_getkij_
+	thermopack_setkijandji_
+	thermopack_gethvparam_
+	thermopack_sethvparam_
+	saftvrmie_options_mp_enable_hs_
+	saftvrmie_options_mp_enable_a1_
+	saftvrmie_options_mp_enable_a2_
+	saftvrmie_options_mp_enable_a3_
+	saftvrmie_options_mp_enable_chain_
+	saftvrmie_containers_mp_get_saftvrmie_eps_kij_
+	saftvrmie_containers_mp_set_saftvrmie_eps_kij_
+	saftvrmie_containers_mp_get_saftvrmie_sigma_lij_
+	saftvrmie_containers_mp_set_saftvrmie_sigma_lij_
+	saftvrmie_containers_mp_get_saftvrmie_lr_gammaij_
+	saftvrmie_containers_mp_set_saftvrmie_lr_gammaij_
+	saftvrmie_containers_mp_get_saftvrmie_pure_fluid_param_
+	saftvrmie_containers_mp_set_saftvrmie_pure_fluid_param_
+	saft_interface_mp_cpa_get_kij_
+	saft_interface_mp_cpa_set_kij_
+	saft_interface_mp_pc_saft_get_kij_
+	saft_interface_mp_pc_saft_set_kij_asym_
+	binaryplot_mp_global_binary_plot_
+	binaryplot_mp_get_bp_term_
+	solid_saturation_mp_solidenvelopeplot_

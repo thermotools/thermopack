@@ -11,6 +11,9 @@ module saturation_curve
   private
   save
 
+  integer, parameter :: ISO_P=1, ISO_T=2, ISO_S=3, ISO_H=4
+  character(len=1), parameter, dimension(4) :: ISO_LABEL = (/ "P", "T", "S", "H" /)
+
   integer, parameter :: AZ_NONE = 0, AZ_PAEP = 1, AZ_CAEP = 2, AZ_HAEP = 3
   ! Azeotropic end point
   type aep
@@ -34,6 +37,7 @@ module saturation_curve
   public :: newton_extrapolate, changeformulation
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
+  public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
 
 contains
 
@@ -136,6 +140,8 @@ contains
   !-----------------------------------------------------------------------------
   subroutine extrapolate_to_saturation_line(t,p,X,Y,Z,beta,extrap,ierr,dtds_sat,dpds_sat)
     use numconstants, only: machine_prec
+    use eos, only: twoPhaseEnthalpy, twoPhaseEntropy
+    use thermopack_constants, only: TWOPH
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, intent(inout) :: t, p, beta
@@ -149,16 +155,24 @@ contains
     integer :: s, i, smax(1)
     real, dimension(nc+2) :: Xvar, dXvardBeta, dXvardS, Xold
     real, dimension(nc) :: K
-
+    real :: hs
     p0 = p
     t0 = t
     ! How to extrapolate?
-    if (extrap == 1 .or. extrap == 3) then
-      s = nc+2
+    if (extrap == ISO_P) then
+      s = nc + 2
       ln_s = log(p)
-    else
-      s = nc+1
+    else if (extrap == ISO_T) then
+      s = nc + 1
       ln_s = log(t)
+    else if (extrap == ISO_S) then
+      s = nc + 3
+      hs = twoPhaseEntropy(t,p,z,x,y,beta,TWOPH)
+      ln_s = hs
+    else if (extrap == ISO_H) then
+      s = nc + 4
+      hs = twoPhaseEnthalpy(t,p,z,x,y,beta,TWOPH)
+      ln_s = hs
     endif
 
     ! Set variable vector
@@ -218,26 +232,42 @@ contains
         endif
       endif
     enddo
-    if (ierr == 0 .and. s <= nc .and. extrap < 3) then
+    if (ierr == 0 .and. s <= nc) then
       ! Try solving for T or P
       Xvar(1:nc) = log(K)
       Xvar(nc+1) = log(t)
       Xvar(nc+2) = log(p)
       Xold = Xvar
-      if (extrap == 1) then
-        s = nc+2
-        ln_s = log(p)
-      else
-        s = nc+1
-        ln_s = log(t)
-      endif
+      s = nc + extrap
+      ! if (extrap == ISO_P) then
+      !   s = nc+2
+      !   ln_s = log(p)
+      ! else if (extrap == ISO_T) then
+      !   s = nc+1
+      !   ln_s = log(t)
+      ! else if (extrap == ISO_S) then
+      !   s = nc+3
+      !   ln_s = hs
+      ! else if (extrap == ISO_H) then
+      !   s = nc+4
+      !   ln_s = hs
+      ! endif
       call newton_extrapolate(Z,Xvar,dXvardS,beta,s,ln_s)
-      if (extrap == 1) then
+      if (extrap == ISO_P) then
         ln_s = log(p0)
-      else
+        dS = ln_s - Xvar(s)
+      else if (extrap == ISO_T) then
         ln_s = log(t0)
+        dS = ln_s - Xvar(s)
+      else !ISO_S/ISO_H
+        ln_s = hs
+        if (extrap == ISO_S) then
+          hs = twoPhaseEntropy(t,p,z,x,y,beta,TWOPH)
+        else if (extrap == ISO_H) then
+          hs = twoPhaseEnthalpy(t,p,z,x,y,beta,TWOPH)
+        endif
+        dS = (ln_s - hs)/max(abs(ln_s),1.0)
       endif
-      dS = ln_s - Xvar(s)
       Xvar = Xvar + dXvardS*dS
       ! Solve for saturation point
       iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr)
@@ -1383,7 +1413,7 @@ contains
   !>
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
-  subroutine singleCompSaturation(Z,t,p,specification,Ta,Pa,nmax,n,maxDeltaP,paep)
+  subroutine singleCompSaturation(Z,t,p,specification,Ta,Pa,nmax,n,maxDeltaP,paep,log_linear)
     use eos, only: getCriticalParam
     use critical, only: calcCriticalTV
     use eosTV, only: pressure
@@ -1396,23 +1426,32 @@ contains
     integer, intent(out) :: n
     real, optional, intent(in) :: maxDeltaP !< Maximum Delta P between points
     type(aep), optional, intent(out) :: paep
+    logical, optional, intent(in) :: log_linear !< Distribute values lineary based on natural logarithm
     ! Locals
     integer, dimension(1) :: zmax
     real, dimension(nc) :: X,Y
     integer :: i_pure, iter, ierr, i_insip
     real :: f,dfdt,dfdp,tci,pci,oi,vci,dpdt,dP,dT,p0,t0
+    real :: dlnp, dlnT
+    logical :: log_linear_loc
     real, dimension(4) :: param
     real, dimension(1) :: XX,Xmax,Xmin
     type(nonlinear_solver) :: solver
     real, parameter   :: reltol_close_to_crit = 1e-2
-    real, parameter   :: maxdP = 0.5e5
+    real, parameter   :: maxdP = 0.2e5, max_dlnp = 0.02
     real              :: relerr_crit
     real              :: maxDelP
     real              :: lnfugl(nc), lnfugg(nc), dg_insip, dg_insip_old
     !
-    maxDelP = maxdP
+    if (present(log_linear)) then
+      log_linear_loc = log_linear
+    else
+      log_linear_loc = .false.
+    endif
     if (present(maxDeltaP)) then
       maxDelP = maxDeltaP
+    else
+      maxDelP = maxdP
     endif
     X = 0.0
     zmax = maxloc(Z)
@@ -1430,18 +1469,43 @@ contains
     ! Find initlal point
     if (specification == specP) then
       p0 = p
-      T = safe_bubT(P,X,Y)
-      n = min(int((pci-P)/maxDelP)+1,nmax)
-      dP = (pci-P)/n
+      T = safe_bubT(P,X,Y,ierr)
+      if (log_linear_loc) then
+        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        dlnp = (log(pci)-log(P))/n
+        do iter=1,n
+          pa(iter) = exp(log(p0) + dlnp*(iter-1))
+        enddo
+      else
+        n = min(int((pci-P)/maxDelP)+1,nmax)
+        dP = (pci-P)/n
+        do iter=1,n
+          pa(iter) = p0 + dP*(iter-1)
+        enddo
+      endif
       xmax = log(tci)
       xmin = log(t)
     else if (specification == specT) then
       T0 = T
-      P = safe_bubP(T,X,Y)
-      n = min(int((pci-P)/maxDelP)+1,nmax)
-      dT = (tci-T)/n
+      P = safe_bubP(T,X,Y,ierr)
+      if (log_linear_loc) then
+        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        dlnT = (log(tci)-log(T))/n
+        do iter=1,n
+          ta(iter) = exp(log(T0) + dlnT*(iter-1))
+        enddo
+      else
+        n = min(int((pci-P)/maxDelP)+1,nmax)
+        dT = (tci-T)/n
+        do iter=1,n
+          ta(iter) = T0 + dT*(iter-1)
+        enddo
+      endif
       xmax = log(pci)
       xmin = log(p)
+    endif
+    if (ierr /= 0) then
+      call stoperror('saturation_curve::singleCompSaturation solve for initial point')
     endif
     Ta(1) = t
     Pa(1) = p
@@ -1468,10 +1532,12 @@ contains
       param(1) = specification
       param(2) = i_pure
       if (specification == specP) then
-        param(3) = p0 + dP*(iter-1)
+        dP = pa(iter) - pa(iter-1)
+        param(3) = pa(iter)
         XX(1) = log(t+dP/dpdt)
       else
-        param(3) = T0 + dT*(iter-1)
+        dT = ta(iter) - ta(iter-1)
+        param(3) = ta(iter)
         XX(1) = log(p+dpdt*dT)
       endif
       ! Limit to bounds
@@ -1504,7 +1570,16 @@ contains
           Pa(n) = pci
           return
         else
-          call stoperror('saturation::singleCompSaturation could not invert J')
+          if (specification == specP) then
+            P = param(3)
+            T = safe_bubT(P,X,Y,ierr)
+          else if (specification == specT) then
+            T = param(3)
+            P = safe_bubP(T,X,Y,ierr)
+          endif
+          if (ierr /= 0) then
+            call stoperror('saturation::singleCompSaturation could not invert J')
+          endif
         endif
       else
         write(*,*) "Error flag: ",solver%exitflag
@@ -1523,10 +1598,14 @@ contains
               ! Solve for PAEP
               call solve_for_paep(Ta(iter-1),Pa(iter-1),t,p,i_pure,i_insip,paep,ierr)
               if (ierr == 0) then
-                paep%found = .true.
-                call thermo(paep%t,paep%p,x,LIQPH,lnfugl,v=paep%vl)
-                call thermo(paep%t,paep%p,x,VAPPH,lnfugg,v=paep%vg)
-                paep%x = x
+                ! Make sure paep is on saturation curve
+                if (abs(Ta(iter-1)-paep%t) < abs(Ta(iter)-paep%t)) then
+                  Ta(iter-1) = paep%t
+                  Pa(iter-1) = paep%p
+                else
+                  Ta(iter) = paep%t
+                  Pa(iter) = paep%p
+                endif
               endif
             endif
           endif
@@ -1534,7 +1613,6 @@ contains
         endif
       endif
     end do
-
   end subroutine singleCompSaturation
 
   !-----------------------------------------------------------------------------
@@ -1549,7 +1627,7 @@ contains
     real, intent(in) :: t0, p0            ! init. point has pressure p0
     real, intent(in) :: t1, p1            ! t and p
     integer, intent(in) :: i_pure,i_insip ! component indices
-    type(aep), intent(out) :: paep        ! pure fluid azeotrope end point
+    type(aep), intent(inout) :: paep        ! pure fluid azeotrope end point
     integer, intent(out) :: ierr          ! error flag
     ! Locals
     real :: T_guess, zpure(nc), y(nc), param(4), p, a, b
@@ -1573,6 +1651,7 @@ contains
     if (solver_cfg%exitflag /= 0) then
       if (verbose) write(*,*) "PAEP: Bracketing solver failed."
       ierr = solver_cfg%exitflag
+      paep%found = .false.
       return
     else
       ierr = 0
@@ -1583,6 +1662,8 @@ contains
     T_guess = a*p + b
     paep%t = bubT(T_guess,paep%p,zpure,y)
     paep%found = .true.
+    paep%type = AZ_PAEP
+    paep%x = zpure
     call thermo(paep%t,paep%p,zpure,LIQPH,lnfugl,v=paep%vl)
     call thermo(paep%t,paep%p,zpure,VAPPH,lnfugg,v=paep%vg)
   end subroutine solve_for_paep
@@ -1603,7 +1684,7 @@ contains
     real                  :: lnfugl(nc), lnfugg(nc), a, b
     ! Read from param
     i_pure = nint(param(1))
-    i_insip = nint(param(1))
+    i_insip = nint(param(2))
     a = param(3)
     b = param(4)
     ! Make pure composition vector

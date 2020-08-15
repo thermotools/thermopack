@@ -15,7 +15,19 @@ nCrit = getInteger("../global_binary.dat","#Number of critical lines:")
 nLLVE = getInteger("../global_binary.dat","#Number of LLVE lines:")
 nAZ = getInteger("../global_binary.dat","#Number of AZ lines:")
 comp1, comp2 = getBinary("../global_binary.dat","#Binary system:")
-title="Type " + str(diagram_type) + " binary: " + comp1 + " " + comp2
+
+if diagram_type == 1:
+    ks_str = "I"
+elif diagram_type == 2:
+    ks_str = "II"
+elif diagram_type == 3:
+    ks_str = "III"
+elif diagram_type == 4:
+    ks_str = "IV"
+elif diagram_type == 5:
+    ks_str = "V"
+
+title="van Konynenburg and Scott type " + ks_str + " binary: " + comp1 + " " + comp2
 base_filename = "global_binary_" + comp1 + "_" + comp2
 
 colors = [ "black", "blue", "red", "green", "grey", "cyan", "navy"]

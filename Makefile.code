@@ -192,6 +192,7 @@ OBJE = 	\
 	$(ODIR)/ps_solver.o \
 	$(ODIR)/uv_solver.o \
 	$(ODIR)/sv_solver.o \
+	$(ODIR)/isolines.o \
 	$(ODIR)/binaryplot.o \
 	$(ODIR)/speed_of_sound.o \
 	$(ODIR)/saftvrmie_testing.o \
@@ -359,6 +360,11 @@ $(ODIR)/puresaturation.o: $(SRC)/puresaturation.f90 $(SRC)/eos.f90 \
 	$(SRC)/single_phase.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/utilities.f90
 	@$(call make_object,$(SRC)/puresaturation.f90)
+$(ODIR)/isolines.o: $(SRC)/isolines.f90 $(SRC)/eos.f90 \
+	$(SRC)/thermopack_const.f90 $(SRC)/parameters.f90 $(SRC)/saturation.f90 \
+	$(SRC)/eosTV.f90 $(SRC)/ph_solver.f90 $(SRC)/ps_solver.f90 \
+	$(SRC)/tp_solver.f90 $(SRC)/thermo_utils.f90
+	@$(call make_object,$(SRC)/isolines.f90)
 $(ODIR)/parameters.o: $(SRC)/parameters.f90
 	@$(call make_object,$(SRC)/parameters.f90)
 $(ODIR)/compdata.o: $(SRC)/compdata.f90
