@@ -28,7 +28,8 @@ Global
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Debug|x64.ActiveCfg = Debug|x64
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|Win32.ActiveCfg = Release|Win32
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|Win32.Build.0 = Release|Win32
-		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|x64.ActiveCfg = Release|Win32
+		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|x64.ActiveCfg = Release|x64
+		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

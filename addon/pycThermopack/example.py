@@ -219,7 +219,7 @@ m, sigma, eps, lambda_a, lambda_r = svrm.get_pure_fluid_param(1)
 print("m, sigma, eps, lambda_a, lambda_r",m, sigma, eps, lambda_a, lambda_r)
 svrm.set_pure_fluid_param(1,m, sigma, eps, lambda_a, lambda_r)
 
-# Instanciate saftvrmie object
+# Instanciate PC-SAFT object
 print("PC-SAFT")
 pcs = pcsaft.pcsaft()
 pcs.init("CO2,C1")
@@ -227,13 +227,13 @@ print("kij",pcs.get_kij(1,2))
 pcs.set_kij(1,2,0.012)
 print("kij",pcs.get_kij(2,1))
 
-# Instanciate saftvrmie object
+# Instanciate CPA object
 print("CPA")
 cpa_srk = cpa.cpa()
 cpa_srk.init("ETOH,H2O")
-#print("kij",cpa_srk.get_kij(1,2))
-#pcs.set_kij(1,2,0.012)
-#print("kij",pcs.get_kij(2,1))
+print("kij",cpa_srk.get_kij(1,2))
+cpa_srk.set_kij(1,2,np.array([0.012, 0.1]))
+print("kij",cpa_srk.get_kij(1,2))
 
 print(cpa_srk.getcompindex("H2O"))
 

@@ -96,6 +96,7 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use stringmod,  only: uppercase, str_eq
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
+    !$ use omp_lib, only: omp_get_max_threads
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
     character(len=*), intent(in) :: mixing !< String defining mixing rules
@@ -113,7 +114,7 @@ contains
     ! Locals
     integer :: ncomp !< Number of components
     character(len=clen) :: message
-    integer             :: i, ierr, index
+    integer             :: i, ierr, index, ncbeos
     type(eos_container), pointer :: p_act_eosc
     if (present(silent)) then
       silent_init = silent
@@ -187,17 +188,25 @@ contains
       call stoperror(trim(message))
     end select
 
+    call init_fallback_and_redefine_criticals(silent_init)
   end subroutine init_thermo
 
-  subroutine init_fallback_eos(silent)
+  !----------------------------------------------------------------------------
+  !> Initialize cubic fallback eos
+  !----------------------------------------------------------------------------
+  subroutine init_fallback_and_redefine_criticals(silent)
     use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
+    !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
-    real :: Tci, Pci, oi
-    integer :: i
+    ! Locals
+    integer             :: err, ncbeos, i
+    logical             :: isSAFTmodel
+    real                :: Tci, Pci, oi
+
     type(eos_container), pointer :: p_act_eosc
     p_act_eosc => get_active_eos_container()
 
@@ -234,8 +243,7 @@ contains
          isSAFTEOS(p_act_eosc%eos(1)%p_eos%eosidx)) then
       call redefine_critical_parameters(silent)
     endif
-
-  end subroutine init_fallback_eos
+  end subroutine init_fallback_and_redefine_criticals
 
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
@@ -726,6 +734,8 @@ contains
     call init_thermopack("SAFT-VR-MIE", "Classic", "Classic", nphase=3, &
          saft_ref=param_reference)
 
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_saftvrmie
 
   !----------------------------------------------------------------------------
@@ -774,6 +784,9 @@ contains
     ! Initialize Thermopack
     call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3,&
          saft_ref=param_reference)
+
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
 
   end subroutine init_pcsaft
 
@@ -838,6 +851,8 @@ contains
     call init_thermopack("CPA-"//trim(eos_loc),trim(uppercase(mixing_loc)), &
          trim(uppercase(alpha_loc)), nphase=3, saft_ref=param_ref_loc)
 
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_cpa
 
 end module eoslibinit
