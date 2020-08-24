@@ -8,6 +8,7 @@ module eos_containers
   use thermopack_var
   use saftvrmie_containers, only: saftvrmie_eos
   use pc_saft_nonassoc, only: PCSAFT_eos
+  use csp, only: extcsp_eos
   ! type eos_container
   !   integer :: eosc_idx !< Container index
   !   ! From parameters
@@ -305,7 +306,7 @@ contains
       allocate(p_eos, &
            source=cubic_eos_constructor(nc, eosstr), stat=istat)
     case(eosCSP)
-      allocate(csp_eos :: p_eos, stat=istat)
+      allocate(extcsp_eos :: p_eos, stat=istat)
     case(eosCPA)
       allocate(cpa_eos :: p_eos, stat=istat)
     case(eosPC_SAFT)

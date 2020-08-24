@@ -447,7 +447,7 @@ contains
     use thermopack_constants, only: THERMOPACK, ref_len
     use thermopack_var, only: nce, nc, nph, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
-    use csp, only: csp_init
+    use csp, only: csp_init, extcsp_eos
     use cubic_eos, only: cb_eos
     use cbselect, only: SelectCubicEOS, SelectMixingRules
     use saft_interface, only: saft_type_eos_init
@@ -545,9 +545,9 @@ contains
           if (.not. silent_init) &
                print *,'init_thermopack: CSP reference component defaulted to C3'
         endif
-        call csp_init(refcomp_str=trim(csp_refcomp_str),shEos=trim(eosLocal),&
-             shMixRule=trim(mixRule),shAlpha=trim(alpha),&
-             refEos=trim(csp_refEos),refAlpha=trim(alpha))
+        ! call csp_init(refcomp_str=trim(csp_refcomp_str),shEos=trim(eosLocal),&
+        !      shMixRule=trim(mixRule),shAlpha=trim(alpha),&
+        !      refEos=trim(csp_refEos),refAlpha=trim(alpha))
         eosLocal = uppercase(eos)
       end if
     end if
@@ -560,6 +560,11 @@ contains
            alpha_ref_local)
       call SelectMixingRules(nce,p_act_eosc%comps,p_eos,mixRule,&
            kij_ref_local,b_exponent)
+    type is (extcsp_eos)
+      call csp_init(p_eos,nce,p_act_eosc%comps,refcomp_str=trim(csp_refcomp_str),&
+           shEos=trim(eosLocal),&
+           shMixRule=trim(mixRule),shAlpha=trim(alpha),&
+           refEos=trim(csp_refEos),refAlpha=trim(alpha))
     end select
 
     ! SAFT initialization must be done after cbeos initialization.

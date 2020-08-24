@@ -168,7 +168,7 @@ submodule (compdata) comp_init
      if (cidx < 1 .or. cidx > maxncdb) then
        call stoperror("Component "//trim(cname)//" not found in database")
      endif
-     call c%assign_to_gendatadb(compdb(cidx))
+     c = compdb(cidx)
      ! Set Cp
      cpidx = getCpDBindex(cname, ref)
      c%id_cp = cpdb(cpidx)

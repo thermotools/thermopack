@@ -158,13 +158,6 @@ module cubic_eos
   ! contains
   end type cpa_eos
 
-  type, extends(cb_eos) :: csp_eos
-
-  !   private
-
-  ! contains
-  end type csp_eos
-
   integer, parameter :: cbMixClassicGroup = 1 !< Classic kij type mixing
   integer, parameter :: cbMixVdW = 11 !< Classic vdW mixing rule for am and bm - using k_ij == k_ji
   integer, parameter :: cbMixVdWCPA = 12 !< CPA mixing rule (same as cbMixVdW, but kij from another db)

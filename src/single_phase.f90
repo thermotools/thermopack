@@ -793,7 +793,7 @@ contains
        F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
     use tpcubic, only: calcCbFder_res_SI
     use eosdata
-    use csp, only: csp_calcFres
+    use csp, only: csp_calcFres, extcsp_eos
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
     use volume_shift, only: NOSHIFT
@@ -801,7 +801,7 @@ contains
     use thermopack_var, only: base_eos_param
     !use pets, only: PETS_eos
     use eos_parameters, only: single_eos, meos_mix
-    use cubic_eos, only: cb_eos, csp_eos, cpa_eos, lk_eos
+    use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
     implicit none
@@ -835,7 +835,7 @@ contains
            F_TV,F_VV,F_Tn,F_Vn,F_nn)
     type is ( meos_mix )
       call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
-    type is ( csp_eos ) ! Corresponding State Principle
+    type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_calcFres(nc,p_eos,T,v,n,F,F_T,F_V,F_n,F_TT,&
            F_TV,F_VV,F_Tn,F_Vn,F_nn)
     class default ! Saft eos
@@ -1092,7 +1092,7 @@ contains
        dZdt,dZdp,dZdz) result (Zfac)
     use tpcubic, only: cbCalcZfac
     use LeeKesler, only: lkCalcZfac
-    use csp, only: csp_zfac
+    use csp, only: csp_zfac, extcsp_eos
     use saft_interface, only: saft_zfac
     use eosdata
     use compdata, only: gendata_pointer
@@ -1102,7 +1102,7 @@ contains
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, base_eos_param
     use eos_parameters, only: single_eos, meos_mix
     !use pets, only: PETS_eos
-    use cubic_eos, only: cb_eos, csp_eos, cpa_eos, lk_eos
+    use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
     implicit none
@@ -1141,7 +1141,7 @@ contains
       call cbCalcZfac(nce,p_eos,T,p,ne,phase,Zfac,gflag_opt_local,dZdt,dZdp,dZdz)
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
-    type is ( csp_eos ) ! Corresponding State Principle
+    type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
       call lkCalcZfac(nce,comp,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)

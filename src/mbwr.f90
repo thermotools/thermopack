@@ -10,11 +10,6 @@ module tpmbwr
   integer, parameter :: Ipol32 = 19, Iexp32 = 13      !< the number of fitted parameters in the polynomial part and exponential part of MBWR-32 (not counting gamma)
   real, parameter    :: PI = 4.e0*ATAN(1.0)
 
-  ! these are used in the initial liquid density guesser
-  real :: b_SRK
-  real :: m_SRK
-  real :: a0_SRK
-
   ! a debug variable for additional output from the density solver
   logical :: verbose = .false.
 
@@ -55,6 +50,14 @@ module tpmbwr
     real :: zc    !< Critical compressibility factor
     real :: acf   !< Acentric factor, used in the SRK initial value method in the density solver.
     real :: gamma !< The parameter gamma in the MBWR equation
+
+    ! these are used in the initial liquid density guesser
+    real :: b_SRK
+    real :: m_SRK
+    real :: a0_SRK
+
+    real, allocatable :: mbwrParameters(:)
+
   contains
     procedure, public :: dealloc => deallocEosMbwr
   end type eosmbwr
@@ -104,9 +107,19 @@ contains
     character(LEN=*), INTENT(IN) :: compId !< e.g. C3
     TYPE(eosmbwr), INTENT(INOUT) :: model
     integer, intent(in) :: nineteenor32   !< 19 or 32
+    ! Locals
+    integer :: stat
     CALL readDbParameters(compId,model,nineteenOr32)
     CALL computeZCoeff(model)
     CALL computeHelmCoeff(model) ! Must be computed after Z-coefficients.
+    stat = 0
+    if (allocated(model%mbwrParameters)) then
+      deallocate(model%mbwrParameters, stat=stat)
+      if (stat /= 0) print *,"Error dallocating mbwrParameters"
+    endif
+    stat = 0
+    allocate(model%mbwrParameters(1+model%bplen+model%belen), stat=stat)
+    if (stat /= 0) print *,"Error allocating mbwrParameters"
   end subroutine initializeMBWRmodel
 
   ! Read parameters for component compId from the module tpmbwrdata
@@ -227,9 +240,9 @@ contains
 
 
     ! precalculate some constants in the SRK initial density finder
-    b_SRK = 0.08664*KRGAS*model%tc/model%pc
-    m_SRK = 0.480+1.547*model%acf-0.176*(model%acf)**2
-    a0_SRK = 0.42747*(KRGAS*model%tc)**2/model%pc
+    model%b_SRK = 0.08664*KRGAS*model%tc/model%pc
+    model%m_SRK = 0.480+1.547*model%acf-0.176*(model%acf)**2
+    model%a0_SRK = 0.42747*(KRGAS*model%tc)**2/model%pc
   end subroutine readDbParameters
 
   ! This function encodes the order of the parameters in the data module tpmbwrdata.
@@ -1369,9 +1382,9 @@ contains
 
     ! For subcritical temperatures, use the SRK equation.
     ! First calculate some characteristic SRK-parameters:
-    a = a0_SRK*( 1+m_SRK*(1-sqrt(redt)) )**2
+    a = model%a0_SRK*( 1+model%m_SRK*(1-sqrt(redt)) )**2
     bigA = a*p/(KRGAS*T)**2
-    bigB = b_SRK*p/(KRGAS*T)
+    bigB = model%b_SRK*p/(KRGAS*T)
 
     ! Solve SRK for translated compressibility y = z-1/3
     r = (bigA-bigB-bigB**2)-1.e0/3.e0

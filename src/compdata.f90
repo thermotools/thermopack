@@ -122,9 +122,10 @@ module compdata
     real :: tantmin !< Vapour pressure correlation lower temperature limit [K]
     real :: tantmax !< Vapour pressure correlation upper temperature limit [K]
     real :: zra !< Rackett compressibility factor
-  !contains
-  !  procedure :: assign_gendatadb
-  !  generic, public :: assignment(=) => assign_gendatadb
+  contains
+    ! Assignment operator
+    procedure, pass(This), public :: assign_comp => assign_gendatadb
+    generic, public :: assignment(=) => assign_comp
   end type gendatadb
 
   type, extends(gendatadb) :: gendata
@@ -133,9 +134,8 @@ module compdata
     integer :: assoc_scheme        !< Association scheme for use in the SAFT model. The various schemes are defined in saft_parameters_db.f90.
   contains
     procedure, public :: init_from_name => gendata_init_from_name
-    procedure :: assign_to_gendatadb
-    !procedure :: assign_gendata
-    !generic, public :: assignment(=) => assign_gendata
+    ! Assignment operator
+    procedure, pass(This), public :: assign_comp => assign_gendata
   end type gendata
 
   interface
@@ -152,8 +152,8 @@ module compdata
   end type gendata_pointer
 
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
-  public :: getComp, compIndex
-  public :: parseCompVector, initCompList
+  public :: getComp, compIndex, copy_comp
+  public :: parseCompVector, initCompList, deallocate_comp
 
 contains
 
@@ -201,86 +201,61 @@ contains
   !---------------------------------------------------------------------- >
   !> Assignment operator for gendatadb
   !!
-  ! subroutine assign_gendatadb(c1,c2)
-  !   implicit none
-  !   class(gendatadb), intent(inout) :: c1
-  !   class(gendatadb), intent(in) :: c2
+  subroutine assign_gendatadb(this,cmp)
+    implicit none
+    class(gendatadb), intent(inout) :: this
+    class(*), intent(in) :: cmp
 
-  !   c1%cid = c2%cid
-  !   c1%formula = c2%formula
-  !   c1%name = c2%name
+    select type (pc => cmp)
+    class is (gendatadb)
+      this%ident = pc%ident
+      this%formula = pc%formula
+      this%name = pc%name
 
-  !   c1%mw = c2%mw
-  !   c1%tc = c2%tc
-  !   c1%pc = c2%pc
-  !   c1%zc = c2%zc
-  !   c1%acf = c2%acf
-  !   c1%tb = c2%tb
+      this%mw = pc%mw
+      this%tc = pc%tc
+      this%pc = pc%pc
+      this%zc = pc%zc
+      this%acf = pc%acf
+      this%tb = pc%tb
 
-  !   c1%psatcode = c2%psatcode
-  !   c1%ant = c2%ant
-  !   c1%tantmin = c2%tantmin
-  !   c1%tantmax = c2%tantmax
+      this%psatcode = pc%psatcode
+      this%ant = pc%ant
+      this%tantmin = pc%tantmin
+      this%tantmax = pc%tantmax
 
-  !   c1%zra = c2%zra
+      this%zra = pc%zra
 
-  !   c1%ttr = c2%ttr
-  !   c1%ptr = c2%ptr
-  !   c1%href = c2%href
-  !   c1%sref = c2%sref
-  !   c1%DfH = c2%DfH
-  !   c1%DfG = c2%DfG
-
-  ! end subroutine assign_gendatadb
+      this%ttr = pc%ttr
+      this%ptr = pc%ptr
+      this%href = pc%href
+      this%sref = pc%sref
+      this%DfH = pc%DfH
+      this%DfG = pc%DfG
+    end select
+  end subroutine assign_gendatadb
 
   !---------------------------------------------------------------------- >
   !> Assignment operator for gendata
   !!
-  subroutine assign_to_gendatadb(c1,c2)
+  subroutine assign_gendata(this,cmp)
     implicit none
-    class(gendata), intent(inout) :: c1
-    class(gendatadb), intent(in) :: c2
+    class(gendata), intent(inout) :: this
+    class(*), intent(in) :: cmp
 
-    c1%ident = c2%ident
-    c1%formula = c2%formula
-    c1%name = c2%name
+    select type (pc => cmp)
+    class is (gendata)
+      call assign_gendatadb(this, pc)
+      this%ci = pc%ci
+      this%id_cp = pc%id_cp
+      this%assoc_scheme = pc%assoc_scheme
 
-    c1%mw = c2%mw
-    c1%tc = c2%tc
-    c1%pc = c2%pc
-    c1%zc = c2%zc
-    c1%acf = c2%acf
-    c1%tb = c2%tb
+    class is (gendatadb)
+      call assign_gendatadb(this, pc)
 
-    c1%psatcode = c2%psatcode
-    c1%ant = c2%ant
-    c1%tantmin = c2%tantmin
-    c1%tantmax = c2%tantmax
+    end select
+  end subroutine assign_gendata
 
-    c1%zra = c2%zra
-
-    c1%ttr = c2%ttr
-    c1%ptr = c2%ptr
-    c1%href = c2%href
-    c1%sref = c2%sref
-    c1%DfH = c2%DfH
-    c1%DfG = c2%DfG
-
-  end subroutine assign_to_gendatadb
-
-  !   !---------------------------------------------------------------------- >
-  ! !> Assignment operator for gendata
-  ! !!
-  ! subroutine assign_gendata(c1,c2)
-  !   implicit none
-  !   class(gendata), intent(inout) :: c1
-  !   class(gendata), intent(in) :: c2
-
-  !   call assign_gendatadb(c1, c2)
-  !   c1%ci = c2%ci
-  !   c1%id_cp = c2%id_cp
-  !   c1%assoc_scheme = c2%assoc_scheme
-  ! end subroutine assign_gendata
 
   ! !---------------------------------------------------------------------- >
   ! !> Assignment operator cpdata
@@ -423,15 +398,7 @@ contains
     integer, intent(out) :: ierr
     ! Loclas
     integer :: i, stat
-    stat = 0
-    if (allocated(comp)) then
-      do i=1,size(comp)
-        if (associated(comp(i)%p_comp)) deallocate (comp(i)%p_comp,STAT=stat)
-        if (stat /= 0) write (*,*) 'Error deallocating p_comp'
-      enddo
-      deallocate (comp,STAT=stat)
-      if (stat /= 0) write (*,*) 'Error deallocating comp'
-    endif
+    call deallocate_comp(comp)
     allocate (comp(nc),STAT=stat)
     if (stat /= 0) write (*,*) 'Error allocating comp'
     do i=1,nc
@@ -467,5 +434,52 @@ contains
 
   ! end subroutine DeSelectComp
 
+  subroutine deallocate_comp(comp)
+    implicit none
+    type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp
+    ! Loclas
+    integer :: stat, i
+    stat = 0
+    if (allocated(comp)) then
+      do i=1,size(comp)
+        if (associated(comp(i)%p_comp)) deallocate (comp(i)%p_comp,STAT=stat)
+        if (stat /= 0) write (*,*) 'Error deallocating p_comp'
+      enddo
+      deallocate (comp,STAT=stat)
+      if (stat /= 0) write (*,*) 'Error deallocating comp'
+    endif
+  end subroutine deallocate_comp
+
+  subroutine copy_comp(comp_cpy, comp)
+    implicit none
+    type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp_cpy
+    type(gendata_pointer), allocatable, dimension(:), intent(in) :: comp
+    ! Loclas
+    integer :: stat, i
+    if (allocated(comp)) then
+      stat = 0
+      if (allocated(comp_cpy)) then
+        if (size(comp_cpy) /= size(comp)) then
+          call deallocate_comp(comp_cpy)
+        else
+          allocate(comp_cpy(size(comp)), stat=stat)
+        endif
+      else
+        allocate(comp_cpy(size(comp)), stat=stat)
+      endif
+      if (stat /= 0) write (*,*) 'Error allocating comp'
+      do i=1,size(comp)
+        if (associated(comp(i)%p_comp)) then
+          if (.not. associated(comp_cpy(i)%p_comp)) then
+            allocate (comp_cpy(i)%p_comp,STAT=stat)
+            if (stat /= 0) write (*,*) 'Error allocating p_comp'
+          endif
+          comp_cpy(i)%p_comp = comp(i)%p_comp
+        endif
+      enddo
+    else
+      call deallocate_comp(comp_cpy)
+    endif
+  end subroutine copy_comp
 
 end module compdata
