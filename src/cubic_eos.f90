@@ -830,4 +830,18 @@ contains
     enddo
   end function eos_to_classic_alpha_db_idx
 
+  function is_classic_alpha(alphaidx) result(is_classic)
+    integer, intent(in) :: alphaidx
+    logical :: is_classic
+    !
+    is_classic = (&
+         alphaidx == cbAlphaClassicFitIdx .OR. &
+         alphaidx == cbAlphaSoaveIdx .OR. &
+         alphaidx == cbAlphaPRIdx .OR. &
+         alphaidx == cbAlphaPTIdx .OR. &
+         alphaidx == cbAlphaSWIdx .OR. &
+         alphaidx == cbAlphaVDWIdx)
+
+  end function is_classic_alpha
+
 end module cubic_eos

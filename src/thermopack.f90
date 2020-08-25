@@ -11,8 +11,11 @@ program run_thermopack
   real :: pc, Tc, vc
   integer :: ierr
 
-  call init_thermo('PC-SAFT', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
-  !call init_thermo('PR', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
+  !call init_thermo('PC-SAFT', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
+  call init_thermo('PR', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
+  !call init_thermo('CSP-SRK', 'VDW', 'CLASSIC', "CO2,N2,H2S,C2,C1", 2)
+  !call init_thermo('SAFTVRMIE', 'VDW', 'CLASSIC', "CO2,N2", 2)
+  !call init_thermo('CPA-SRK', 'VDW', 'CLASSIC', "CO2,H2O", 2)
   Tc = -1
   vc = -1
   Z = [0.94980650312939319, 4.9991460192386570E-003, &

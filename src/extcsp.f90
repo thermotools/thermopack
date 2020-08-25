@@ -149,7 +149,9 @@ contains
     complist_ref = trim(refcomp_str)
     eos%refNc = 1
     call SelectComp(complist_ref,eos%refNc,"DEFAULT",eos%refComp,err)
-
+    !
+    call get_eos_index("CSP-"//trim(shEos),eos%eosidx,eos%subeosidx)
+    !
     ! Set reference component data
     eos%shapeEosRef%eosid = trim(shEos) ! Has to be set here if getAlphaTWUparams is to find the parameters
     call get_eos_index(shEos,eos%shapeEosRef%eosidx,eos%shapeEosRef%subeosidx)
@@ -166,6 +168,8 @@ contains
     eos%shapeEos%subeosidx = eos%shapeEosRef%subeosidx
     call SelectCubicEOS(nce, comps, eos%shapeEos, &
          trim(shAlpha), "DEFAULT")
+    call SelectMixingRules(nce, comps, eos%shapeEos, &
+         trim(shMixRule), "DEFAULT")
 
     if (eos%refEosType == cubic) then
       !Cubic reference equation
@@ -208,7 +212,7 @@ contains
   end subroutine shape_factors
 
   function temperatureShapeFactorF(eos,H,D,T,sumn) result(F)
-    use cubic_eos, only: cbAlphaTwuIdx, cbAlphaClassicIdx
+    use cubic_eos, only: cbAlphaTwuIdx, is_classic_alpha
     use nonlinear_solvers, only: newton_1d
     implicit none
     class(extcsp_eos), intent(inout) :: eos !< CSP eos container
@@ -223,7 +227,7 @@ contains
     param = (/H,D,T,sumn/)
 
     ! are we using the classical alpha corralation?
-    if (eos%shapeEosRef%single(1)%alphamethod .eq. cbAlphaClassicIdx) then
+    if (is_classic_alpha(eos%shapeEosRef%single(1)%alphamethod)) then
       ! compute the temperature shape factor using the classical alpha formulation
       F = ((eos%m0*sqrt(T*sumn/eos%Tc0) + sqrt(D/(H*eos%ac0)))/(1.0 + eos%m0))**2
       !    print *,"F in temperatureShapeFactorF equals ", F
@@ -315,7 +319,7 @@ contains
 
     ! Fluid
     call mixture(eos%shapeEos,T,n,D,B,sdiff)
-    H = B/eos%bc0                                 ! does not depend on alpha formulation
+    H = B/eos%bc0                                ! does not depend on alpha formulation
     F = temperatureShapeFactorF(eos,H,D,T,sumn)   ! depends on alpha formulation
 
     ! H differentials
@@ -1389,7 +1393,9 @@ contains
     character(len=len_trim(eos_label)) :: eos_l !< EOS label
     character(len=len_trim(eos_label)) :: comp_l !< Comp label
     call eos%dealloc()
-    !call allocate_and_init_cubic_eos(eos,nc,"SRK")
+
+    call eos%shapeEos%allocate_and_init(nc,"SRK")
+    call eos%shapeEosRef%allocate_and_init(1,"SRK")
     ipos=index(eos_label,":")
     if (ipos > 0) then
       eos_l = eos_label(1:ipos-1)
@@ -1399,7 +1405,7 @@ contains
            "Wrong format on input string eos_label")
     endif
     istat = 0
-    if (str_eq(eos_l,'MBWR19') .or. str_eq(eos_l,'MBWR32')) then
+    if (eos%refEosType == mbwr) then
       allocate(eos%mbwrRefEos, stat=istat)
       if (istat /= 0) call stoperror('Error allocating mbwrRefEos')
       if (str_eq(eos_label,'MBWR19')) then
@@ -1409,7 +1415,7 @@ contains
       endif
       eos%Tc0 = eos%mbwrRefEos%tc
       eos%Pc0 = eos%mbwrRefEos%pc
-    else if (str_eq(eos_l,'NIST')) then
+    else if (eos%refEosType == nist) then
       if (str_eq(comp_l, "C3")) then
         allocate(meos_c3 :: eos%nistRefEos, stat=istat)
       else
@@ -1419,6 +1425,10 @@ contains
       call eos%nistRefEos%init()
       eos%Tc0 = eos%nistRefEos%tc
       eos%Pc0 = eos%nistRefEos%pc
+    else if (eos%refEosType == cubic) then
+      call eos%cbrefEos%allocate_and_init(nc,eos_label)
+      eos%Tc0 = 0 ! Set elswhere
+      eos%Pc0 = 0
     else
       call stoperror("Wrong input to extcsp_eos_allocate_and_init")
     endif
@@ -1426,9 +1436,6 @@ contains
 
     eos%refNc = 0
     !eos%refComp
-    eos%refEosType = -1
-    eos%Tc0 = 0
-    eos%Pc0 = 0
     eos%m0 = 0
     eos%bc0 = 0
     eos%ac0 = 0

@@ -641,7 +641,7 @@ contains
   !> \author EA, 2015-01
   !----------------------------------------------------------------------
   subroutine pseudo_safe(x,tpc,ppc,zpc,vpc)
-    use thermopack_var, only: nc
+    use thermopack_var, only: nc, get_active_alt_eos
     use single_phase, only: TP_CalcPseudo
     use cubic_eos, only: cb_eos
     implicit none
@@ -658,8 +658,9 @@ contains
     class(base_eos_param), pointer :: p_act_eos
 
     p_act_eosc => get_active_eos_container()
+
     if (p_act_eosc%need_alternative_eos) then
-      p_act_eos => get_active_eos()
+      p_act_eos => get_active_alt_eos()
       select type(p_eos => p_act_eos)
       class is (cb_eos)
         call TP_CalcPseudo(nc,p_act_eosc%comps,p_eos,x,tpc,ppc,zpc,vpc)

@@ -578,6 +578,8 @@ contains
 
     case (cbMixReid) !< Un-symmetric - need to be developed
       call stoperror ("Reid mixing rule not yet implemented")
+    case default
+      call stoperror ("Unknown mixing rules")
     end select
 
     cbeos%a = cbeos%suma

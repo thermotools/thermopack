@@ -548,7 +548,7 @@ contains
         ! call csp_init(refcomp_str=trim(csp_refcomp_str),shEos=trim(eosLocal),&
         !      shMixRule=trim(mixRule),shAlpha=trim(alpha),&
         !      refEos=trim(csp_refEos),refAlpha=trim(alpha))
-        eosLocal = uppercase(eos)
+        !eosLocal = uppercase(eos)
       end if
     end if
 
