@@ -275,7 +275,7 @@ contains
       !call p_active_eos_c%eos(i)%p_eos%allocate_and_init(nc,eosstr)
       if (istat /= 0) call stoperror("Not able to allocate p_active_eos_c%eos(i)")
       p_active_eos_c%eos(i)%p_eos%eosid = eosstr
-      p_active_eos_c%eos(i)%p_eos%eosidx = eos_idx
+      p_active_eos_c%eos(i)%p_eos%eosidx = eos_index
       p_active_eos_c%eos(i)%p_eos%subeosidx = eos_subindex
       if (eos_label_db(idx_db)%need_alternative_eos) then
         allocate(p_active_eos_c%cubic_eos_alternative(i)%p_eos, &
