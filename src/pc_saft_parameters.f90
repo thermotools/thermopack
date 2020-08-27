@@ -80,7 +80,7 @@ module pc_saft_parameters
 
   ! Grenner et al. 2006. doi 10.1021/ie0605332. DeltaP 0.93, DeltaRho=2.62 for T>323K.
   type(pc_saft_data), parameter :: PCcx18 = pc_saft_data(eosPC_SAFT,"H2O", &
-       1.50, 2.6273E-10, 180.3, 1804.22*Rgas, 0.0942, assoc_scheme_4C,"Deafult/Grenner2006")
+       1.50, 2.6273E-10, 180.3, 1804.22*Rgas, 0.0942, assoc_scheme_4C,"Default/Grenner2006")
 
   type(pc_saft_data), parameter :: PCcx19 = pc_saft_data(eosPC_SAFT,"H2O", &
        1.0656, 3.0007E-10, 366.51, 2500.7*Rgas, 0.034868,  assoc_scheme_2B,"Kontogeorgis_Folas2001") ! [1]
@@ -131,7 +131,7 @@ module pc_saft_parameters
        9.7548, 3.9931E-10, 254.9091, 0.0, 0.0, no_assoc,"Default/Kontogeorgis_Folas2001")
 
   type(pc_saft_data), parameter :: PCcx39 = pc_saft_data(eosPC_SAFT,"NH3", & ! [0] ammonia (AAD(P,liqv)=(2.0,0.61))
-       2.25807 , 2.37802e-10 ,1.26868e+02 , 1.10326e+04, 2.04790e-01, assoc_scheme_3B,"Deafault/InHouse")
+       2.25807 , 2.37802e-10 ,1.26868e+02 , 1.10326e+04, 2.04790e-01, assoc_scheme_3B,"Default/InHouse")
 
   type(pc_saft_data), parameter :: PCcx40 = pc_saft_data(eosPC_SAFT,"IC4", &
        2.2616, 3.7574E-10, 216.53, 0.0, 0.0, no_assoc,"Default/Kontogeorgis_Folas2001") ! [1]
@@ -180,7 +180,7 @@ module pc_saft_parameters
        3.5146, 3.6735E-10, 262.32, 2538.9*Rgas, 0.005747, assoc_scheme_2B,"Tang_Gross2010")
 
   type(pc_saft_data), parameter :: PCcx54 = pc_saft_data(eosPeTS,"AR", &
-       1.000, 3.42E-10, 136.0, 0.0, 0.0, no_assoc,"Deadult")
+       1.000, 3.42E-10, 136.0, 0.0, 0.0, no_assoc,"Default")
 
   integer, parameter :: nPCmodels = 54
   type(pc_saft_data), dimension(nPCmodels), parameter :: PCarray = (/ &

@@ -83,6 +83,8 @@ contains
       silent = .false.
     endif
 
+    allocate(eos%assoc)
+
     ! Set the model index.
     eos%assoc%saft_model = eos%subeosidx
 
@@ -118,8 +120,7 @@ contains
           ! Allow ions:
           l = len_trim(comp(ic)%p_comp%ident)
           if (comp(ic)%p_comp%ident(l:l) /= "+" .and. comp(ic)%p_comp%ident(l:l) /= "-") then
-            print *, "MISSING COMPONENT: ", comp(ic)%p_comp%ident
-            print *,"The above component is not in the saft database."
+            print *, "Component not in database: ", comp(ic)%p_comp%ident
           end if
         end if
       end do
@@ -156,6 +157,7 @@ contains
     call assocIndices_bookkeeping(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db)
 
     numAssocSites = eos%assoc%numAssocSites
+
     ! Set the association parameters.
     if (allocated(eos%assoc%beta_kl)) deallocate(eos%assoc%beta_kl)
     allocate(eos%assoc%beta_kl(numAssocSites,numAssocSites))
