@@ -5,7 +5,7 @@
 module eos
   use thermopack_constants
   use thermopack_var, only: nc, get_active_eos_container, eos_container, &
-       get_active_eos, base_eos_param
+       get_active_eos, get_active_alt_eos, base_eos_param
   !
   implicit none
   save
@@ -660,10 +660,10 @@ contains
     p_act_eosc => get_active_eos_container()
 
     if (p_act_eosc%need_alternative_eos) then
-      p_act_eos => get_active_alt_eos()
+       p_act_eos => get_active_alt_eos()
       select type(p_eos => p_act_eos)
       class is (cb_eos)
-        call TP_CalcPseudo(nc,p_act_eosc%comps,p_eos,x,tpc,ppc,zpc,vpc)
+         call TP_CalcPseudo(nc,p_act_eosc%comps,p_eos,x,tpc,ppc,zpc,vpc)
       class default
         call stoperror("pseudo_safe error")
       end select
@@ -994,47 +994,5 @@ contains
       call stoperror('')
     end select
   end function PsatEstPure
-
-  !----------------------------------------------------------------------
-  !> Returns true if a fallback-EoS is sometimes needed due to incomplete
-  !> features, slow speed, or other reasons.
-  !>
-  !> Will return false for the full-featured cubic EoS in EoSlib THERMOPACK
-  !>
-  !> \author EA, 2014-08
-  !----------------------------------------------------------------------
-  ! function need_alternative_eos() result(needalt)
-  !   use thermopack_constants, only: THERMOPACK
-  !   use eosdata
-  !   !$ use omp_lib, only: omp_get_thread_num
-  !   implicit none
-  !   ! Output:
-  !   logical         :: needalt
-  !   ! Internal
-  !   integer         ::  i_cbeos
-
-  !   needalt = .false.
-  !   if (p_act_eos%EosLib == THERMOPACK) then
-  !     i_cbeos = 1
-  !     !$ i_cbeos = 1 + omp_get_thread_num()
-  !     if (cbeos(i_cbeos)%eosidx == eosLK .OR. &
-  !          cbeos(i_cbeos)%eosidx == cpaSRK .OR. &
-  !          cbeos(i_cbeos)%eosidx == cpaPR .OR. &
-  !          cbeos(i_cbeos)%eosidx == cspSRK .OR. &
-  !          cbeos(i_cbeos)%eosidx == cspSRKGB .OR. &
-  !          cbeos(i_cbeos)%eosidx == cspPR .OR. &
-  !          cbeos(i_cbeos)%eosidx == eosPC_SAFT .OR. &
-  !          cbeos(i_cbeos)%eosidx == eosPeTS .OR. &
-  !          cbeos(i_cbeos)%eosidx == eosBH_pert .OR. &
-  !          cbeos(i_cbeos)%eosidx == meosNist_mix .OR. &
-  !          cbeos(i_cbeos)%eosidx == eos_single) then
-  !       ! Lee Kesler is not cubic, and lacks some features.
-  !       needalt = .true.
-  !     endif
-  !   else
-  !     ! Not Thermopack
-  !     needalt = .true.
-  !   endif
-  ! end function need_alternative_eos
 
 end module eos
