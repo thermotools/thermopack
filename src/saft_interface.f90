@@ -1171,10 +1171,6 @@ contains
     sumn = sum(n)
 
     select type ( p_eos => eos )
-    class is ( cb_eos )
-      ! This routine takes in the volume in L/mole.
-      call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
-           dPdv,dPdT,dpdz=dPdn)
     class is ( PCSAFT_eos )
       call F_PC_SAFT_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
       P = -Rgas*T*F_V + sumn*Rgas*T/V
@@ -1192,12 +1188,17 @@ contains
       if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
       if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
       if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+   class is ( cb_eos )
+      ! This routine takes in the volume in L/mole.
+      call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
+           dPdv,dPdT,dpdz=dPdn)
+
+      ! Convert to volume derivative from (specific volume)-derivative.
+      if (present(dPdV)) dPdV = 1000*dPdv/sumn
     class default
       call stoperror("nonassoc_pressure: Not able to call cbCalcPressure. Not cubic eos.")
     end select
 
-    ! Convert to volume derivative from (specific volume)-derivative.
-    if (present(dPdV)) dPdV = 1000*dPdv/sumn
   end subroutine nonassoc_pressure
 
 

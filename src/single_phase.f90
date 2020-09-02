@@ -814,39 +814,82 @@ contains
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
     logical, optional, intent(in) :: recalculate
     ! Locals
-    logical :: isCubic
-
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call stoperror("TV_CalcFres volume shift not supported for this function")
-    endif
+    real :: eF,eF_T,eF_V,eF_n(nc), eF_VVV
+    real :: eF_TT,eF_TV,eF_Tn(nc),eF_VV,eF_Vn(nc),eF_nn(nc,nc)
+    logical :: isCubic, do_all_derivs
+    real :: v_eos
     isCubic = .false.
 
-    !---------------------------------------------------------------------
-    !-------- Specific for each equation of state ------------------------
-    select type ( p_eos => cbeos )
-    type is ( cb_eos ) ! cubic equations of state
-      call calcCbFder_res_SI(nc,p_eos,T,v,n,F,F_T,F_V,F_n,F_TT,&
-           F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
-      isCubic = .true.
-    type is ( lk_eos ) ! Lee-Kesler equations of state
-      call stoperror('Lee-Kesler model does not support TV_CalcFres')
-    type is ( single_eos )
-      call Fres_single(nc,p_eos,T,v,n,F,F_T,F_V,F_n,F_TT,&
-           F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    type is ( meos_mix )
-      call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
-    type is ( extcsp_eos ) ! Corresponding State Principle
-      call csp_calcFres(nc,p_eos,T,v,n,F,F_T,F_V,F_n,F_TT,&
-           F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    class default ! Saft eos
-      call calcSaftFder_res(nc,cbeos,T,v,n,F,F_T,F_V,F_n,F_TT,&
-           F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    end select
+    if (cbeos%volumeShiftId == NOSHIFT) then
+       v_eos = v
+    else
+       call stoperror("TV_CalcFres volume shift not supported for this function")
+    end if
 
-    if (present(F_VVV) .and. .not. isCubic) then
-      call stoperror('F_VVV only supported for pure cubical models')
-    endif
+    isCubic = .false.
+
+    do_all_derivs = present(F_TT) .or. present(F_TV) .or. present(F_Tn) .or. &
+         present(F_VV) .or. present(F_Vn) .or. present(F_nn) .or. present(F_VVV)
+
+    if (do_all_derivs) then
+       call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+    else
+       call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
+    end if
+
+    ! ! Correct the F from the individual models according to the volume shift
+    ! if (cbeos%volumeShiftId /= NOSHIFT) then
+    !    call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+    !         eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+    ! end if
+
+    if (present(F)) F = eF
+    if (present(F_T)) F_T = eF_T
+    if (present(F_V)) F_V = eF_V
+    if (present(F_n)) F_n = eF_n
+    if (present(F_TT)) F_TT = eF_TT
+    if (present(F_TV)) F_TV = eF_TV
+    if (present(F_Tn)) F_Tn = eF_Tn
+    if (present(F_Vn)) F_Vn = eF_Vn
+    if (present(F_VV)) F_VV = eF_VV
+    if (present(F_VVV)) F_VVV = eF_VVV
+    if (present(F_nn)) F_nn = eF_nn
+
+  contains
+    subroutine get_eos_F(veos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+      real, intent(in) :: veos
+      real, optional, intent(out) :: eF,eF_T,eF_V,eF_n(nc), eF_VVV
+      real, optional, intent(out) :: eF_TT,eF_TV,eF_Tn(nc),eF_VV,eF_Vn(nc),eF_nn(nc,nc)
+      if (cbeos%isElectrolyteEoS) then
+         call stoperror("TV_CalcFres::electrolyteeos not yet implemented")
+      else
+         select type ( p_eos => cbeos )
+         type is ( cb_eos ) ! cubic equations of state
+            call calcCbFder_res_SI(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV,recalculate)
+            isCubic = .true.
+         type is ( lk_eos ) ! Lee-Kesler equations of state
+            call stoperror('Lee-Kesler model does not support TV_CalcFres')
+         type is ( single_eos )
+            call Fres_single(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+         type is ( meos_mix )
+            call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
+         type is ( extcsp_eos ) ! Corresponding State Principle
+            call csp_calcFres(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+         class default ! Saft eos
+            call calcSaftFder_res(nc,cbeos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+         end select
+      end if
+      if (present(F_VVV) .and. .not. isCubic) then
+         call stoperror('F_VVV only supported for pure cubical models')
+      endif
+    end subroutine get_eos_F
+
   end subroutine TV_CalcFres
+
 
   !-----------------------------------------------------------------------------
   !> Calculate the logarithmic fugacity and its derivatives.
