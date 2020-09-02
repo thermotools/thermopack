@@ -422,6 +422,21 @@ contains
 
   end function cubic_eos_constructor
 
+
+  !> Allocate memory for CPA eos
+  function cpa_eos_constructor(nc,eos_label) result(cpa)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(cpa_eos) :: cpa
+    ! Locals
+
+    call cpa%cb_eos%allocate_and_init(nc,eos_label)
+
+  end function cpa_eos_constructor
+
+
   subroutine assign_cubic_eos(this,other)
     use utilities, only: allocate_nc, allocate_nc_x_nc
     class(cb_eos), intent(out) :: this

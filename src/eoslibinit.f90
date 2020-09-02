@@ -555,7 +555,7 @@ contains
     p_act_eosc%eos(1)%p_eos%volumeShiftId = volumeShiftId
     p_act_eosc%eos(1)%p_eos%isElectrolyteEoS = .false.
     select type(p_eos => p_act_eosc%eos(1)%p_eos)
-    type is (cb_eos)
+    class is (cb_eos)
       call SelectCubicEOS(nce,p_act_eosc%comps,p_eos,trim(alpha),&
            alpha_ref_local)
       call SelectMixingRules(nce,p_act_eosc%comps,p_eos,mixRule,&

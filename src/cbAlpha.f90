@@ -171,7 +171,7 @@ contains
 
   !> Calculates the alpha term for all components.
   subroutine cbCalcAlphaTerm (nc,cbeos,T)
-    use cubic_eos, only: cb_eos, cbAlphaVDWIdx, cbAlphaClassicFitIdx, &
+    use cubic_eos, only: cb_eos, cbAlphaVDWIdx, cbAlphaClassicIdx, cbAlphaClassicFitIdx, &
          cbAlphaGBIdx, cbAlphaRKIdx, cbAlphaSoaveIdx, cbAlphaPRIdx, &
          cbAlphaPTIdx, cbAlphaVDWIdx, cbAlphaRKIdx, cbAlphaTwuIdx, &
          cbAlphaMCIdx, cbAlphaSWIdx, cbAlphaGergIdx, cbAlphaRKIdx
@@ -212,7 +212,8 @@ contains
         call calcAlpha_twu(cbeos, i, T,tci)
       case (cbAlphaMCIdx)
         call calcAlpha_MC(cbeos, i, T, Tci)
-      case (cbAlphaClassicFitIdx, &
+     case (cbAlphaClassicIdx, &
+          cbAlphaClassicFitIdx, &
            cbAlphaGBIdx, &
            cbAlphaSoaveIdx, &
            cbAlphaPRIdx, &
@@ -222,7 +223,8 @@ contains
         call calcAlpha_SW(cbeos, i,T, tci, acfi)
       case (cbAlphaGergIdx)
         call stoperror("Don't know what to do for GERG alpha method")
-      case default
+     case default
+        print *, 
         call stoperror("Don't know what to do for alpha method "//&
              trim(cbeos%single(i)%alphaCorrName))
       end select

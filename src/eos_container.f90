@@ -309,7 +309,7 @@ contains
     case(eosCSP)
       allocate(extcsp_eos :: p_eos, stat=istat)
     case(eosCPA)
-      allocate(cpa_eos :: p_eos, stat=istat)
+       allocate(p_eos, source=cpa_eos_constructor(nc, eosstr), stat=istat)
     case(eosPC_SAFT)
       allocate(PCSAFT_eos :: p_eos, stat=istat)
       call p_eos%allocate_and_init(nc,eosstr)
