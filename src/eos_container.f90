@@ -260,6 +260,7 @@ contains
     ! Set container data
     p_active_eos_c%need_alternative_eos = eos_label_db(idx_db)%need_alternative_eos
     p_active_eos_c%model = eos_label_db(idx_db)%label
+    p_active_eos_c%eosidx = eos_index
 
     ! Number of threads
     neos = 1
@@ -286,7 +287,7 @@ contains
         p_active_eos_c%cubic_eos_alternative(i)%p_eos%subeosidx = cbSRK
         !p_active_eos_c%cubic_eos_alternative(i)%p_eos%allocate_and_init(nc,"SRK")
       endif
-    enddo
+   enddo
 
   end subroutine allocate_eos
 
