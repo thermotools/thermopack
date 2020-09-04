@@ -69,8 +69,9 @@ module multiparameter_C3
 
 contains
 
-  subroutine init_C3 (this)
+  subroutine init_C3 (this, use_Rgas_fit)
     class(meos_c3) :: this
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%tau_cache = 0.0
 
@@ -89,6 +90,12 @@ contains
 
     this%maxT = 650.0 ! (T)
     this%maxP = 1000e6 ! (Pa)
+
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
 
   end subroutine init_C3
 

@@ -120,8 +120,9 @@ module multiparameter_normal_h2
 
 contains
 
-  subroutine init_NORMAL_H2 (this)
+  subroutine init_NORMAL_H2 (this, use_Rgas_fit)
     class(meos_normal_h2) :: this
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%compName = "normal_h2"
     this%tau_cache = 0.0
@@ -140,6 +141,12 @@ contains
     this%p_triple = 7360.0      !< (Pa)
     this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
     this%rhoVap_triple = 0.12985/this%molarMass !< (mol/m^3)
+
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
 
   end subroutine init_NORMAL_H2
 

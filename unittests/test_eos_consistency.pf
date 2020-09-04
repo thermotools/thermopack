@@ -7,7 +7,7 @@ module test_eos_consistency
   implicit none
   public
 
-  logical :: VERBOSE = .false.
+  logical :: VERBOSE = .False.
 
 contains
 
@@ -100,7 +100,7 @@ contains
   @Test
   subroutine test_fres_tv_MBWR19()
     integer, parameter :: ncomp = 1
-    character(len=*), parameter :: eos="MBWR32"
+    character(len=*), parameter :: eos="MBWR19"
     character(len=*), parameter :: compstr="C3"
     real :: T0, P0, V0, n0(ncomp)
 

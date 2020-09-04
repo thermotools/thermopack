@@ -116,8 +116,9 @@ module multiparameter_ortho_h2
 
 contains
 
-  subroutine init_ORTHO_H2 (this)
+  subroutine init_ORTHO_H2 (this, use_Rgas_fit)
     class(meos_ortho_h2) :: this
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%compName = "ortho_h2"
     this%tau_cache = 0.0
@@ -137,6 +138,11 @@ contains
     this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
     this%rhoVap_triple = 0.12985/this%molarMass !< (mol/m^3)
 
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
   end subroutine init_ORTHO_H2
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,

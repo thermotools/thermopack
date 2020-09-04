@@ -56,9 +56,9 @@ module multiparameter_r134a
 
 contains
 
-  subroutine init_r134a (this)
+  subroutine init_r134a (this, use_Rgas_fit)
     class(meos_r134a) :: this
-
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%compName = "R134A"
     this%tc = 374.21  !< (K)
@@ -74,6 +74,12 @@ contains
 
     this%maxT = 455.0 ! (T)
     this%maxP = 70.0e6 ! (Pa)
+
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
 
   end subroutine init_r134a
 
