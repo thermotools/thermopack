@@ -4,8 +4,8 @@
 !! \author MH, 2013-03-05.
 module solideos
   use thermopack_constants, only: Rgas, LIQPH, verbose, VAPPH, SINGLEPH
-  use thermopack_var, only: nc, nph, eos_container, &
-       get_active_eos_container, complist
+  use thermopack_var, only: nc, nph, thermo_model, &
+       get_active_thermo_model, complist
   use co2Gibbs
   use h2oGibbs
   !
@@ -570,8 +570,8 @@ contains
     integer :: iCO2
     real :: sl_tr, gl_tr, T_tr, P_tr, hl_tr
     real, dimension(nc) :: x,y
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
     T_tr = 216.592
     P_tr = 5.1795e5
     iCO2 = compIndex(complist, "CO2")
@@ -588,8 +588,8 @@ contains
     call sco2init(sl_tr, gl_tr, T_tr, P_tr)
     ! Locate exact triple point and store result
     call calc_single_comp_triple_point(CO2GIBBSMODEL, T_tr, P_tr)
-    p_act_eosc%comps(CO2GIBBSMODEL)%p_comp%ttr = T_tr
-    p_act_eosc%comps(CO2GIBBSMODEL)%p_comp%ptr = P_tr
+    act_mod_ptr%comps(CO2GIBBSMODEL)%p_comp%ttr = T_tr
+    act_mod_ptr%comps(CO2GIBBSMODEL)%p_comp%ptr = P_tr
     if (verbose) then
       print *,'Triple point of CO2 after combining models'
       print *,'Temperature (K): ',t_tr

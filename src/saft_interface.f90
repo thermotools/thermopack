@@ -28,7 +28,7 @@ module saft_interface
   use compdata, only: gendata
   use saft_globals, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, eosBH_pert
   use thermopack_constants, only: Rgas => Rgas_default
-  use thermopack_var, only: nce, get_active_eos_container, eos_container, &
+  use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
   use association_var, only: association
   implicit none
@@ -1353,7 +1353,7 @@ contains
     use saft_association, only: compidx_to_sites
     use AssocSchemeUtils
     use cpa_parameters, only: getCpaKij_epsBeta
-    use thermopack_var, only: get_active_eos_container, eos_container
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     use cubic_eos, only: cb_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(out) :: aEps_kij_out(2) !< Binary interaction parameters.
@@ -1364,10 +1364,10 @@ contains
     integer :: scheme_i, scheme_j
     integer :: epsBetaCombRules(2)
     logical :: found
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: p_assoc
-    p_act_eosc => get_active_eos_container()
-    p_assoc => p_act_eosc%eos(1)%p_eos%assoc
+    act_mod_ptr => get_active_thermo_model()
+    p_assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     aEps_kij_out = -1e10 ! Make sure things crash if this function fails.
 
@@ -1377,12 +1377,12 @@ contains
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
-    call getCPAkij_epsbeta (p_assoc%saft_model,p_act_eosc%comps(i)%p_comp%ident,&
-         p_act_eosc%comps(j)%p_comp%ident,param_ref="DEFAULT",&
+    call getCPAkij_epsbeta (p_assoc%saft_model,act_mod_ptr%comps(i)%p_comp%ident,&
+         act_mod_ptr%comps(j)%p_comp%ident,param_ref="DEFAULT",&
          found=found,epsBetaCombRules=epsBetaCombRules, kijepsbeta=dummy)
 
     ! Get cubic interaction parameter.
-    select type ( p_eos => p_act_eosc%eos(1)%p_eos )
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
     class is ( cb_eos )
       aEps_kij_out(1) = p_eos%kij(i,j)
     class default
@@ -1395,8 +1395,8 @@ contains
       ! Get the schemes and values of eps and beta for components i and j.
       call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
       call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
-      scheme_i = p_act_eosc%comps(i)%p_comp%assoc_scheme
-      scheme_j = p_act_eosc%comps(j)%p_comp%assoc_scheme
+      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
 
       call compidx_to_sites(p_assoc,i,k_first,k_last)
       call compidx_to_sites(p_assoc,j,l_first,l_last)
@@ -1431,21 +1431,21 @@ contains
     integer :: k,l,k_first,k_last,l_first,l_last
     real :: dummy(3,nce,nce)
     integer :: scheme_i, scheme_j, epsbeta_combrules(2,nce,nce)
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: p_assoc
-    p_act_eosc => get_active_eos_container()
-    p_assoc => p_act_eosc%eos(1)%p_eos%assoc
+    act_mod_ptr => get_active_thermo_model()
+    p_assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     if (i == j) then
        call stoperror("Trying to set interaction parameter between a component and itself!")
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
-    call getCpaKijAndCombRules_allComps(nce,p_act_eosc%comps,p_assoc%saft_model,dummy,&
+    call getCpaKijAndCombRules_allComps(nce,act_mod_ptr%comps,p_assoc%saft_model,dummy,&
          epsbeta_combrules)
 
     ! Set cubic interaction parameter.
-    select type ( p_eos => p_act_eosc%eos(1)%p_eos )
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
     class is ( cb_eos )
       p_eos%kij(i,j) = aEps_kij_in(1)
     class default
@@ -1454,8 +1454,8 @@ contains
 
     if (numAssocSites > 0) then
       ! Get the schemes and values of eps and beta for components i and j.
-      scheme_i = p_act_eosc%comps(i)%p_comp%assoc_scheme
-      scheme_j = p_act_eosc%comps(j)%p_comp%assoc_scheme
+      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
       call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
       call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
 
@@ -1482,10 +1482,10 @@ contains
     use cubic_eos, only: cb_eos
     integer, intent(in) :: ic
     real, intent(in) :: params(5) !< a0, b, beta, eps, c1
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    select type ( p_eos => p_act_eosc%eos(1)%p_eos )
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
     class is ( cb_eos )
       p_eos%single(ic)%a = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
       p_eos%single(ic)%b = params(2) !< Covolume b. [b] = L/mol.
@@ -1501,10 +1501,10 @@ contains
     use cubic_eos, only: cb_eos
     integer, intent(in) :: ic
     real, intent(out) :: params(5) !< a0, b, beta, eps, c1
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    select type ( p_eos => p_act_eosc%eos(1)%p_eos )
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
     class is ( cb_eos )
       params(1) = p_eos%single(ic)%a !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
       params(2) = p_eos%single(ic)%b !< Covolume b. [b] = L/mol.
@@ -1649,10 +1649,10 @@ contains
     real :: params1(5), params2(5)
     real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
     logical :: found
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: assoc
-    p_act_eosc => get_active_eos_container()
-    assoc => p_act_eosc%eos(1)%p_eos%assoc
+    act_mod_ptr => get_active_thermo_model()
+    assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     if (assoc%saft_model == eosPC_SAFT) then
        print *, "Model: PC-SAFT"
@@ -1671,15 +1671,15 @@ contains
 
     if ( nce == 1 ) then
        if (verbose) then
-          print *,"Component:", p_act_eosc%comps(1)%p_comp%ident
-          print *,"Association scheme:",p_act_eosc%comps(1)%p_comp%assoc_scheme
+          print *,"Component:", act_mod_ptr%comps(1)%p_comp%ident
+          print *,"Association scheme:",act_mod_ptr%comps(1)%p_comp%assoc_scheme
        endif
     else if ( nce == 2 ) then
        if (verbose) then
-         print *,"Component 1, scheme:", p_act_eosc%comps(1)%p_comp%ident, &
-              p_act_eosc%comps(1)%p_comp%assoc_scheme
-         print *,"Component 2, scheme:", p_act_eosc%comps(2)%p_comp%ident, &
-              p_act_eosc%comps(2)%p_comp%assoc_scheme
+         print *,"Component 1, scheme:", act_mod_ptr%comps(1)%p_comp%ident, &
+              act_mod_ptr%comps(1)%p_comp%assoc_scheme
+         print *,"Component 2, scheme:", act_mod_ptr%comps(2)%p_comp%ident, &
+              act_mod_ptr%comps(2)%p_comp%assoc_scheme
           write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
           write(*,'(A, 5ES11.3)') "Component 2 pure params:", params2
        endif
@@ -1693,8 +1693,8 @@ contains
 
        if ( assoc%saft_model /= eosPC_SAFT ) then
          call getCPAkij_epsbeta (eosidx=assoc%saft_model,&
-              uid1=p_act_eosc%comps(1)%p_comp%ident,&
-              uid2=p_act_eosc%comps(2)%p_comp%ident,&
+              uid1=act_mod_ptr%comps(1)%p_comp%ident,&
+              uid2=act_mod_ptr%comps(2)%p_comp%ident,&
               param_ref="DEFAULT",found=found,epsBetaCombRules=rules,&
               kijepsbeta=cpa_kijepsbeta_db)
           if (verbose) print *, "Eps/beta combining rules:", rules

@@ -844,7 +844,7 @@ Contains
     !---------------------------------------------------------------------
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, limit_dx, &
          premReturn, setXv
-    use thermopack_var, only: get_active_eos_container, eos_container
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     integer, intent(in) :: nc                        !< Number of components
     real, intent(in) :: T                            !< Temperature [K]
     type(saftvrmie_var_container), intent(in) :: s_vc
@@ -858,8 +858,8 @@ Contains
     real, dimension(1) :: sigma_scaled, xmin, xmax
     integer :: i, j
     real :: U_divk_r, U_divk_Tr, U_divk_rr
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (quantum_correction_hs==0) then ! With no quantum corrections
        sigma_eff=saftvrmie_param%sigma_ij
@@ -903,7 +903,7 @@ Contains
              if (solver%exitflag /= 0 .and. verbose) then
                 print *,"Not able to solve for effective sigma"
                 print *,"T = ",T
-                print *,"comp = ",trim(p_act_eosc%comps(i)%p_comp%ident)
+                print *,"comp = ",trim(act_mod_ptr%comps(i)%p_comp%ident)
                 print *,"lambda_r = ",saftvrmie_param%lambda_r_ij(i,j)
                 print *,"lambda_a = ",saftvrmie_param%lambda_a_ij(i,j)
                 print *,"sigma    = ",saftvrmie_param%sigma_ij(i,j)

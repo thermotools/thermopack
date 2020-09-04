@@ -4,7 +4,7 @@
 !! \author MH, 2012-01-25
 module eos
   use thermopack_constants
-  use thermopack_var, only: nc, get_active_eos_container, eos_container, &
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
        get_active_eos, get_active_alt_eos, base_eos_param
   !
   implicit none
@@ -55,8 +55,8 @@ contains
     real :: gLiq, gVap, rho, v2, rhoLiq, rhoVap
     integer :: gflag_opt, ph
     integer :: phase_found_liq, phase_found_vap
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
     !--------------------------------------------------------------------
     x = z(1:nc)/sum(z(1:nc))
@@ -66,11 +66,11 @@ contains
       ph = LIQPH
     endif
 
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
+      act_eos_ptr => get_active_eos()
       gflag_opt = 1
       if (present(metaExtremum)) then
         if (metaExtremum) then
@@ -78,10 +78,10 @@ contains
         endif
       endif
       if (ph == LIQPH .OR. ph == VAPPH) then
-        call TP_CalcFugacity(nc,p_act_eosc%comps,p_act_eos,&
+        call TP_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,&
              t,p,x,ph,tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
       else if (ph == MINGIBBSPH) then
-        call TP_CalcFugacity(nc,p_act_eosc%comps,p_act_eos,&
+        call TP_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,&
              t,p,x,LIQPH,g_tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
         if (present(lnfugt)) then
           lnfugt2 = lnfugt
@@ -95,7 +95,7 @@ contains
         if (present(v)) then
           v2 = v
         endif
-        call TP_CalcFugacity(nc,p_act_eosc%comps,p_act_eos,&
+        call TP_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,&
              t,p,x,VAPPH,tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
 
         gVap = sum(x*tp_fug(1:nc))
@@ -194,7 +194,7 @@ contains
         endif
       endif
     case default
-      write(*,*) 'EoSlib error in eos::thermo: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::thermo: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine thermo
@@ -221,24 +221,24 @@ contains
     ! Locals
     real, dimension(1:nc) :: xx
     real                  :: rho
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
     !--------------------------------------------------------------------
     xx = x(1:nc)/sum(x(1:nc))
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-       p_act_eos => get_active_eos()
-      z = TP_CalcZfac(nc,p_act_eosc%comps,p_act_eos,&
+       act_eos_ptr => get_active_eos()
+      z = TP_CalcZfac(nc,act_mod_ptr%comps,act_eos_ptr,&
            t,p,xx,phase,1,dzdt,dzdp,dzdx)
     case (TREND)
       ! TREND
       call trend_density(T, p, xx, phase, rho)
       call trend_zfac(T, rho, xx, z, dzdt, dzdp, dzdx)
     case default
-      write(*,*) 'EoSlib error in eos::zfac: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::zfac: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine zfac
@@ -266,22 +266,22 @@ contains
     real, dimension(1:nc) :: xx
     real :: rho, z
     integer :: ph
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
     !--------------------------------------------------------------------
     xx = x(1:nc)/sum(x(1:nc))
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ph = phase
     if (ph == SINGLEPH) then
       ph = LIQPH
     endif
 
-    select case (p_act_eosc%EosLib)
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      z = TP_CalcZfac(nc,p_act_eosc%comps,p_act_eos,&
+      act_eos_ptr => get_active_eos()
+      z = TP_CalcZfac(nc,act_mod_ptr%comps,act_eos_ptr,&
            t,p,xx,ph,1,dvdt,dvdp,dvdx)
       v = z*Rgas*t/p
       if (present(dvdt)) then
@@ -299,7 +299,7 @@ contains
       v = 1.0/rho
       call trend_specificVolume(t,xx,v,dvdt,dvdp,dvdx)
     case default
-      write(*,*) 'EoSlib error in eos::specificVolume: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::specificVolume: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine specificVolume
@@ -368,8 +368,8 @@ contains
     real :: rho
     integer :: ph
     logical :: res
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
     !--------------------------------------------------------------------
     res = .false.
@@ -377,16 +377,16 @@ contains
       res = residual
     endif
     xx = x(1:nc)/sum(x(1:nc))
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ph = phase
     if (ph == SINGLEPH) then
       ph = LIQPH
     endif
-    select case (p_act_eosc%EosLib)
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      h = TP_CalcEnthalpy(nc,p_act_eosc%comps,p_act_eos,&
+      act_eos_ptr => get_active_eos()
+      h = TP_CalcEnthalpy(nc,act_mod_ptr%comps,act_eos_ptr,&
            t,p,xx,ph,res,dhdt,dhdp,dhdx)
     case (TREND)
       ! TREND
@@ -397,7 +397,7 @@ contains
         call trend_enthalpy(t,rho,xx,h,dhdt,dhdp,dhdx)
       endif
     case default
-      write(*,*) 'EoSlib error in eos::enthalpy: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::enthalpy: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine enthalpy
@@ -466,8 +466,8 @@ contains
     real :: rho
     integer :: ph
     logical :: res
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
     !--------------------------------------------------------------------
     res = .false.
@@ -475,17 +475,17 @@ contains
       res = residual
     endif
     xx = x(1:nc)/sum(x(1:nc))
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ph = phase
     if (ph == SINGLEPH) then
       ph = LIQPH
     endif
 
-    select case (p_act_eosc%EosLib)
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      s = TP_CalcEntropy(nc,p_act_eosc%comps,p_act_eos,&
+      act_eos_ptr => get_active_eos()
+      s = TP_CalcEntropy(nc,act_mod_ptr%comps,act_eos_ptr,&
            t,p,xx,ph,res,dsdt,dsdp,dsdx)
     case (TREND)
       ! TREND
@@ -496,7 +496,7 @@ contains
         call trend_entropy(t,rho,xx,s,dsdt,dsdp,dsdx)
       endif
     case default
-      write(*,*) 'EoSlib error in eos::entropy: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::entropy: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine entropy
@@ -606,19 +606,19 @@ contains
     ! Locals
     real, dimension(1:nc) :: xx
     real :: acfpc
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !--------------------------------------------------------------------
     xx = x(1:nc)/sum(x(1:nc))
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
       ! Note! SRK is used for LK
-      p_act_eos => get_active_eos()
-      select type(p_eos => p_act_eos)
+      act_eos_ptr => get_active_eos()
+      select type(p_eos => act_eos_ptr)
       class is (cb_eos)
-        call TP_CalcPseudo(nc,p_act_eosc%comps,p_eos,xx,tpc,ppc,zpc,vpc)
+        call TP_CalcPseudo(nc,act_mod_ptr%comps,p_eos,xx,tpc,ppc,zpc,vpc)
       class default
         call stoperror("pseudo error")
       end select
@@ -629,7 +629,7 @@ contains
       write(*,*) 'eos::pseudo: TREND not implemented'
       call stoperror('')
     case default
-      write(*,*) 'EoSlib error in eos::pseudo: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::pseudo: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine pseudo
@@ -654,16 +654,16 @@ contains
     real, intent(out) :: zpc !< - - Pseudo critical compressibillity
     ! Locals
     real              :: acfpc
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
 
-    if (p_act_eosc%need_alternative_eos) then
-       p_act_eos => get_active_alt_eos()
-      select type(p_eos => p_act_eos)
+    if (act_mod_ptr%need_alternative_eos) then
+       act_eos_ptr => get_active_alt_eos()
+      select type(p_eos => act_eos_ptr)
       class is (cb_eos)
-         call TP_CalcPseudo(nc,p_act_eosc%comps,p_eos,x,tpc,ppc,zpc,vpc)
+         call TP_CalcPseudo(nc,act_mod_ptr%comps,p_eos,x,tpc,ppc,zpc,vpc)
       class default
         call stoperror("pseudo_safe error")
       end select
@@ -690,30 +690,30 @@ contains
     real, intent(out), optional :: vci  !< m3/mol - Critical volume
     real, intent(out), optional :: tnbi !< Normal boiling point  (gs)
     ! Locals
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
-    if ( present(vci) .and. p_act_eosc%EosLib /= THERMOPACK .and. p_act_eosc%EosLib /= TREND) then
-       print *, "Current EoSlib: ", p_act_eosc%EosLib
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
+    if ( present(vci) .and. act_mod_ptr%EosLib /= THERMOPACK .and. act_mod_ptr%EosLib /= TREND) then
+       print *, "Current EoSlib: ", act_mod_ptr%EosLib
        call stoperror("Can only get vc if ThermoPack or TREND library is active.")
     end if
     ! Locals
-    select case (p_act_eosc%EosLib)
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      tci = p_act_eosc%comps(i)%p_comp%tc
-      pci = p_act_eosc%comps(i)%p_comp%pc
-      oi = p_act_eosc%comps(i)%p_comp%acf
+      tci = act_mod_ptr%comps(i)%p_comp%tc
+      pci = act_mod_ptr%comps(i)%p_comp%pc
+      oi = act_mod_ptr%comps(i)%p_comp%acf
       if (present(tnbi)) then
-        tnbi = p_act_eosc%comps(i)%p_comp%tb
+        tnbi = act_mod_ptr%comps(i)%p_comp%tb
       endif
       if (present(vci)) then
-        vci = (p_act_eosc%comps(i)%p_comp%zc)*Rgas*tci/pci
+        vci = (act_mod_ptr%comps(i)%p_comp%zc)*Rgas*tci/pci
       end if
     case (TREND)
       ! TREND
       call trend_getcrit(i,tci,pci,oi,vci,tnbi)
     case default
-      write(*,*) 'eos::getCriticalParam: EoSlib error: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'eos::getCriticalParam: EoSlib error: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
 
@@ -737,25 +737,25 @@ contains
     real, optional, intent(out) :: dgdp     !< J/mol/Pa - Pressure differential of ideal Gibbs energy
     ! Locals
     real :: s, h, z(nc)
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     !
     s = 0.0
     h = 0.0
     z = 0.0
     z(j) = 1.0
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      h = Hideal_apparent(p_act_eosc%comps,j,T)
-      call TP_Sideal_apparent(p_act_eosc%comps, j, T, P, s)
+      h = Hideal_apparent(act_mod_ptr%comps,j,T)
+      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
     case (TREND)
       ! TREND
       h = trend_ideal_enthalpy(T,j)
       s = trend_ideal_entropy(T,P,j)
     case default
-      write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
     g = h - T*s
@@ -785,17 +785,17 @@ contains
     real, optional, intent(out) :: dsdp     !< J/mol/Pa - Pressure differential of ideal entopy
     ! Locals
     real :: z(nc)
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     !
     z = 0.0
     z(j) = 1.0
     s = 0.0
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      call TP_Sideal_apparent(p_act_eosc%comps, j, T, P, s, dsdt)
+      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
     case (TREND)
       ! TREND
       s = trend_ideal_entropy(T,P,j)
@@ -803,7 +803,7 @@ contains
         dsdt = trend_ideal_Cp(T,j) / T ! J/mol/K^2
       end if
     case default
-      write(*,*) 'EoSlib error in eos::idealEntropySingle: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
     if (present(dsdp)) then
@@ -828,14 +828,14 @@ contains
     real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
     real, optional, intent(out) :: dhdp     !< J/mol/Pa - Pressure differential of ideal enthalpy
     ! Locals
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     !
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      h = Hideal_apparent(p_act_eosc%comps,j,T)
+      h = Hideal_apparent(act_mod_ptr%comps,j,T)
     case (TREND)
       ! TREND
       h = trend_ideal_enthalpy(T,j)
@@ -843,7 +843,7 @@ contains
         dhdt = trend_ideal_Cp(T,j) ! J/mol/K^2
       end if
     case default
-      write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
     if (present(dhdp)) then
@@ -875,23 +875,23 @@ contains
     integer :: gflag
     real, dimension(nc) :: xx
     real                :: rho
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !--------------------------------------------------------------------
     !
     xx = z(1:nc)/sum(z(1:nc))
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
+      act_eos_ptr => get_active_eos()
       gflag = 1
       if (present(metaExtremum)) then
         if (metaExtremum) then
           gflag = 2
         endif
       endif
-      call TP_CalcGibbs(nc,p_act_eosc%comps,p_act_eos,&
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
            T,P,xx,phase,.true.,gr,dgrdt,dgrdp,dgrdn,gflag)
     case (TREND)
       ! TREND
@@ -902,7 +902,7 @@ contains
       call trend_density(T, p, xx, phase, rho)
       call trend_residualgibbs_tp(T, P, rho, xx, gr, dgrdt, dgrdp)
     case default
-      write(*,*) 'EoSlib error in eos::residualGibbs: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::residualGibbs: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine residualGibbs
@@ -920,19 +920,19 @@ contains
     real, dimension(1:nc), intent(in) :: z !< Composition
     real :: mw !< g/mol - Mole weight
     ! Locals
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     ! External
     !--------------------------------------------------------------------
     !
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      mw = TP_CalcMw(nc,p_act_eosc%comps,z)
+      mw = TP_CalcMw(nc,act_mod_ptr%comps,z)
     case (TREND)
       mw = trend_moleWeight(z)
     case default
-      write(*,*) 'EoSlib error in eos::moleWeight: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::moleWeight: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end function moleWeight
@@ -949,18 +949,18 @@ contains
     integer, intent(in) :: j !< Component index
     real :: mw !< g/mol - Mole weight
     ! Locals
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     !
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      mw = p_act_eosc%comps(j)%p_comp%mw
+      mw = act_mod_ptr%comps(j)%p_comp%mw
     case (TREND)
       mw = trend_compMoleWeight(j)
     case default
-      write(*,*) 'EoSlib error in eos::compMoleWeight: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::compMoleWeight: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end function compMoleWeight
@@ -978,19 +978,19 @@ contains
     integer, intent(in) :: j !< Component index
     real, intent(in) :: T !< K - Temperature
     real :: psat !< Pa - Estimated saturation pressure
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     !
     psat = 0.0
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EosLib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      psat = EstPsat(p_act_eosc%comps,j,T)
+      psat = EstPsat(act_mod_ptr%comps,j,T)
     case (TREND)
       write(*,*) 'eos::PsatEstPure: TREND not implemented'
     case default
-      write(*,*) 'EoSlib error in eos::PsatEstPure: No such EoS libray:',p_act_eosc%EosLib
+      write(*,*) 'EoSlib error in eos::PsatEstPure: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end function PsatEstPure

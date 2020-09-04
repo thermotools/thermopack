@@ -1,7 +1,7 @@
 !> The module eosdata contains the definitions of the equation of state, mixing
 !> rule and the interaction parameters.
 
-module eos_containers
+module thermo_models
   use compdata
   use eos_parameters
   use cubic_eos
@@ -9,7 +9,7 @@ module eos_containers
   use saftvrmie_containers, only: saftvrmie_eos
   use pc_saft_nonassoc, only: PCSAFT_eos
   use csp, only: extcsp_eos
-  ! type eos_container
+  ! type thermo_model
   !   integer :: eosc_idx !< Container index
   !   ! From parameters
   !   integer, target :: nph=3
@@ -33,25 +33,25 @@ module eos_containers
   !   type(eos_data_pointer), allocatable, dimension(:) :: cubic_eos_alternative
   ! contains
   !   procedure, public :: is_model_container
-  !   !procedure :: assign_eos_container
-  !   !generic, public :: assignment(=) => assign_eos_container
-  ! end type eos_container
+  !   !procedure :: assign_thermo_model
+  !   !generic, public :: assignment(=) => assign_thermo_model
+  ! end type thermo_model
 
-  ! type :: eos_container_pointer
-  !   type(eos_container), pointer :: eosc => NULL()
-  ! end type eos_container_pointer
+  ! type :: thermo_model_pointer
+  !   type(thermo_model), pointer :: eosc => NULL()
+  ! end type thermo_model_pointer
 
   ! ! Index used for naming
   ! integer :: eos_idx = 0
   ! ! Active model
-  ! type(eos_container), pointer :: p_active_eos = NULL()
+  ! type(thermo_model), pointer :: p_active_eos = NULL()
   ! ! Multiple model support
   ! type(eos_data_pointer), allocatable, dimension(:) :: eos
 
 contains
 
   ! function is_model_container(eosc, index) result(isC)
-  !   class(eos_container), intent(in) :: eosc
+  !   class(thermo_model), intent(in) :: eosc
   !   integer, intent(in) :: index
   !   logical :: isC
   !   isC = (eosc(i)%eosc_idx == index)
@@ -79,12 +79,12 @@ contains
   ! end subroutine activate_model
 
   ! function add_eos() result(index)
-  !   !type(eos_container), pointer, intent(in) :: eosc
+  !   !type(thermo_model), pointer, intent(in) :: eosc
   !   integer :: index
   !   ! Locals
   !   integer :: i, istat, n
   !   type(eos_data_pointer), allocatable, dimension(:) :: eos_copy
-  !   type(eos_container), allocatable :: eosc
+  !   type(thermo_model), allocatable :: eosc
   !   allocate(eosc, stat=istat)
   !   if (istat /= 0) call stoperror("Not able to allocate new eos")
   !   n = 1
@@ -146,9 +146,9 @@ contains
   !   endif
   ! end subroutine add_eos
 
-  ! subroutine assign_eos_container(c1, c2)
-  !   class(eos_container), intent(inout) :: eos_c1
-  !   class(eos_container), intent(in) :: eos_c2
+  ! subroutine assign_thermo_model(c1, c2)
+  !   class(thermo_model), intent(inout) :: eos_c1
+  !   class(thermo_model), intent(in) :: eos_c2
   !   ! Locals
   !   eos_c1%nph = eos_c2%nph
   !   eos_c1%nc = eos_c2%nc
@@ -203,7 +203,7 @@ contains
   !     endif
   !   endif
 
-  ! end subroutine assign_eos_container
+  ! end subroutine assign_thermo_model
 
   ! ! Functions for allocate statement:
   ! function cpaeos_constructor(....) result(cpa_eos)
@@ -337,9 +337,9 @@ contains
     endif
   end function allocate_p_eos
 
-  subroutine assign_eos_container(eos_c1, eos_c2)
-    class(eos_container), intent(inout) :: eos_c1
-    class(eos_container), intent(in) :: eos_c2
+  subroutine assign_thermo_model(eos_c1, eos_c2)
+    class(thermo_model), intent(inout) :: eos_c1
+    class(thermo_model), intent(in) :: eos_c2
     ! Locals
     eos_c1%nph = eos_c2%nph
     eos_c1%nc = eos_c2%nc
@@ -397,21 +397,21 @@ contains
       endif
     endif
 
-  end subroutine assign_eos_container
+  end subroutine assign_thermo_model
 
-end module eos_containers
+end module thermo_models
 
-subroutine update_global_variables_form_active_eos_container()
+subroutine update_global_variables_form_active_thermo_model()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
-       ncsym, numAssocSites, get_active_eos_container, &
-       eos_container
+       ncsym, numAssocSites, get_active_thermo_model, &
+       thermo_model
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
-  type(eos_container), pointer :: p_act_eosc
-  p_act_eosc => get_active_eos_container()
-  nc = p_act_eosc%nc
-  nph = p_act_eosc%nph
-  complist => p_act_eosc%complist
-  apparent => p_act_eosc%apparent
+  type(thermo_model), pointer :: act_mod_ptr
+  act_mod_ptr => get_active_thermo_model()
+  nc = act_mod_ptr%nc
+  nph = act_mod_ptr%nph
+  complist => act_mod_ptr%complist
+  apparent => act_mod_ptr%apparent
   if (associated(apparent)) then
     nce = apparent%nce
     ncsym = apparent%ncsym
@@ -419,15 +419,15 @@ subroutine update_global_variables_form_active_eos_container()
     nce = nc
     ncsym = nc
   endif
-  if (associated(p_act_eosc%eos(1)%p_eos%assoc)) then
-    numAssocSites = p_act_eosc%eos(1)%p_eos%assoc%numAssocSites
+  if (associated(act_mod_ptr%eos(1)%p_eos%assoc)) then
+    numAssocSites = act_mod_ptr%eos(1)%p_eos%assoc%numAssocSites
   else
     numAssocSites = 0
   endif
-  select type (p_eos => p_act_eosc%eos(1)%p_eos)
+  select type (p_eos => act_mod_ptr%eos(1)%p_eos)
   class is (saftvrmie_eos)
     saftvrmie_param => p_eos%saftvrmie_param
   class default
     saftvrmie_param => NULL()
   end select
-end subroutine update_global_variables_form_active_eos_container
+end subroutine update_global_variables_form_active_thermo_model

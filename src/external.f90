@@ -1298,23 +1298,23 @@ subroutine thermopack_cp_ideal (i,t,cp_id)
   !> Get ideal cp for component i.
   !> \author Ailo
   !---------------------------------------------------------------!
-  use thermopack_var, only: nce, eos_container, get_active_eos_container
+  use thermopack_var, only: nce, thermo_model, get_active_thermo_model
   use ideal, only: cpideal
   implicit none
   !Input:
   integer, intent(in) :: i !< Component number
   real, intent(in) :: t !< Temperature [K]
   real, intent(out) :: cp_id !< Ideal spec. heat capacity (J/mol*K)
-  type(eos_container), pointer :: p_act_eosc
+  type(thermo_model), pointer :: act_mod_ptr
 
-  p_act_eosc => get_active_eos_container()
+  act_mod_ptr => get_active_thermo_model()
 
   if (i<1 .or. i>nce) then
     print *, "index in thermopack_cp_ideal = ", i
     call stoperror("index out of range")
   end if
 
-  cp_id = cpideal(p_act_eosc%comps(i)%p_comp,i,t)
+  cp_id = cpideal(act_mod_ptr%comps(i)%p_comp,i,t)
 
 end subroutine thermopack_cp_ideal
 

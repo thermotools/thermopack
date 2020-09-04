@@ -11,7 +11,7 @@ module saturation_point_locators ! Give a more descriptive name..
   use solid_saturation
   use eos, only: thermo, entropy, specificVolume
   use thermopack_constants
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -837,11 +837,11 @@ contains
     real :: Ta(n_max), pa(n_max), Ki(n_max,nc)
     real :: betai(n_max)
     real :: crit(2)
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ! Locate critical point and set property at critical point
-    if (p_act_eosc%EoSlib /= TREND) then
+    if (act_mod_ptr%EoSlib /= TREND) then
       t_c = 0.0
       v_c = 0.0
       call calcCriticalTV(t_c,v_c,Z,ierr,tol=1.0e-7,p=p_c)

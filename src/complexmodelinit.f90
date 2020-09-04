@@ -7,7 +7,7 @@
 module complexmodelinit
   !
   use eoslibinit, only: init_thermo
-  use thermopack_var, only: nce, get_active_eos_container, eos_container
+  use thermopack_var, only: nce, get_active_thermo_model, thermo_model
   implicit none
   save
   !
@@ -36,8 +36,8 @@ contains
     character(len=clen) :: alpha  !< String defining alpha correlation
     integer :: ic, volumeShiftId, ncbeos
     real :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     eos = 'PR'
     mixing = 'VTPR'
@@ -49,10 +49,10 @@ contains
        kij_ref=kij_ref,alpha_ref=alpha_ref,b_exponent=b_exponent)
 
     ! Enable volume-shift
-    volumeShiftId = InitVolumeShift(ncomp,p_act_eosc%comps,'Peneloux','PR')
-    ncbeos = size(p_act_eosc%eos)
+    volumeShiftId = InitVolumeShift(ncomp,act_mod_ptr%comps,'Peneloux','PR')
+    ncbeos = size(act_mod_ptr%eos)
     do ic=1,ncbeos
-      p_act_eosc%eos(ic)%p_eos%volumeShiftId = volumeShiftId
+      act_mod_ptr%eos(ic)%p_eos%volumeShiftId = volumeShiftId
     enddo
 
     print *, 'Warning! Should add VTPR specific UNIFAC parameterters...'
@@ -79,8 +79,8 @@ contains
     character(len=clen) :: alpha  !< String defining alpha correlation
     integer :: ic, volumeShiftId, ncbeos
     real :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     eos = 'PR'
     mixing = 'UMR'
@@ -94,10 +94,10 @@ contains
        kij_ref=kij_ref,alpha_ref=alpha_ref,b_exponent=b_exponent)
 
     ! Enable volume-shift
-    volumeShiftId = InitVolumeShift(ncomp,p_act_eosc%comps,'Peneloux','PR')
-    ncbeos = size(p_act_eosc%eos)
+    volumeShiftId = InitVolumeShift(ncomp,act_mod_ptr%comps,'Peneloux','PR')
+    ncbeos = size(act_mod_ptr%eos)
     do ic=1,ncbeos
-      p_act_eosc%eos(ic)%p_eos%volumeShiftId = volumeShiftId
+      act_mod_ptr%eos(ic)%p_eos%volumeShiftId = volumeShiftId
     enddo
 
   end subroutine init_UMR

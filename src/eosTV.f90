@@ -4,7 +4,7 @@
 !! \author MH, 2015-02
 module eosTV
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
-       eos_container, get_active_eos_container
+       thermo_model, get_active_thermo_model
   use thermopack_constants
   !
   implicit none
@@ -46,20 +46,20 @@ contains
     real :: d2Pdrho2, rho, dPdrho
     !integer :: VSHIFTID
     logical :: recalculate_loc
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
     else
       recalculate_loc = .true.
     end if
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      call TV_CalcPressure(nc,p_act_eosc%comps,p_act_eos,T,v,n,p,&
+      act_eos_ptr => get_active_eos()
+      call TV_CalcPressure(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,p,&
            dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc)
     case (TREND)
       ! TREND
@@ -75,7 +75,7 @@ contains
         d2pdv2 = rho**4*d2Pdrho2 + 2.0*rho**3*dPdrho
       endif
     case default
-      write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end function pressure
@@ -99,8 +99,8 @@ contains
     logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
     ! Locals
     logical :: recalculate_loc
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
@@ -108,18 +108,18 @@ contains
       recalculate_loc = .true.
     end if
 
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      u = TV_CalcInnerEnergy(nc,p_act_eosc%comps,p_act_eos,T,v,n,dudt,dudv,&
+      act_eos_ptr => get_active_eos()
+      u = TV_CalcInnerEnergy(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,dudt,dudv,&
            recalculate=recalculate_loc)
     case (TREND)
       ! TREND
       u = trend_internal_energy(n,t,v,dudv,dudt)
     case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end subroutine internal_energy
@@ -146,20 +146,20 @@ contains
     logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
     ! Locals
     logical :: recalculate_loc
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
     if (present(recalculate)) then
       recalculate_loc = recalculate
     else
       recalculate_loc = .true.
     end if
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      y = TV_CalcFreeEnergy(nc,p_act_eosc%comps,p_act_eos,T,v,n,&
+      act_eos_ptr => get_active_eos()
+      y = TV_CalcFreeEnergy(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,&
            dydt,dydv,recalculate=recalculate_loc)
       if (present(d2ydt2) .or. present(d2ydv2) .or. present(d2ydvdt)) then
         write(*,*) 'eos::free_energy: Differentials not implemented'
@@ -169,7 +169,7 @@ contains
       ! TREND
       y = trend_free_energy(n,t,v,dydv,dydt,d2ydt2,d2ydv2,d2ydvdt)
     case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end subroutine free_energy
@@ -362,21 +362,21 @@ contains
     real, optional, dimension(1:nc), intent(out)      :: lnphiv !< mol/m3 - Logarithm of fugasity differential wrpt. volume
     real, optional, dimension(1:nc,1:nc), intent(out) :: lnphin !< Logarithm of fugasity differential wrpt. mole numbers
     ! Locals
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
-      call TV_CalcFugacity(nc,p_act_eosc%comps,p_act_eos,T,v,n,lnphi,&
+      act_eos_ptr => get_active_eos()
+      call TV_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,lnphi,&
            lnphiT,lnphiV,lnphin)
     case (TREND)
       ! TREND
       call trend_thermoTV(T,v,n,lnphi,lnphiT,lnphiV,lnphin)
     case default
-      write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end subroutine thermoTV
@@ -404,15 +404,15 @@ contains
     real, target, dimension(nce,nce) :: F_nene
     real, pointer :: F_ne_p(:), F_Tne_p(:), F_Vne_p(:)
     real, pointer :: F_nene_p(:,:)
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !
     !--------------------------------------------------------------------
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
+      act_eos_ptr => get_active_eos()
       call apparent_to_real_mole_numbers(n,ne)
       if (present(F_n)) then
         F_ne_p => F_ne
@@ -434,7 +434,7 @@ contains
       else
         F_nene_p => NULL()
       endif
-      call TV_CalcFres(nce,p_act_eosc%comps,p_act_eos,&
+      call TV_CalcFres(nce,act_mod_ptr%comps,act_eos_ptr,&
            T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tne_p,F_Vn=F_Vne_p,F_nn=F_nene_p,&
            F_VVV=F_VVV,recalculate=recalculate)
@@ -444,7 +444,7 @@ contains
       ! TREND
       call trend_calcFres(T,v,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     case default
-      write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end subroutine Fres
@@ -471,15 +471,15 @@ contains
     real, target, dimension(nce,nce) :: F_nene
     real, pointer :: F_ne_p(:), F_Tne_p(:), F_Vne_p(:)
     real, pointer :: F_nene_p(:,:)
-    class(base_eos_param), pointer :: p_act_eos
-    type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
     !
     !--------------------------------------------------------------------
-    p_act_eosc => get_active_eos_container()
-    select case (p_act_eosc%EoSlib)
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EoSlib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eos => get_active_eos()
+      act_eos_ptr => get_active_eos()
       call apparent_to_real_mole_numbers(n,ne)
       if (present(F_n)) then
         F_ne_p => F_ne
@@ -501,7 +501,7 @@ contains
       else
         F_nene_p => NULL()
       endif
-      call TV_CalcFid(nce,p_act_eosc%comps,p_act_eos,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
+      call TV_CalcFid(nce,act_mod_ptr%comps,act_eos_ptr,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tne_p,F_Vn=F_Vne_p,F_nn=F_nene_p)
       call real_to_apparent_differentials(F_ne,F_Tne,F_Vne,F_nene,&
            F_n,F_Tn,F_Vn,F_nn)
@@ -509,7 +509,7 @@ contains
       ! TREND
       call trend_CalcFid(T,V,n,F,F_T,F_V,F_TT,F_TV,F_VV,F_n,F_Tn,F_Vn,F_nn)
     case default
-      write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',p_act_eosc%EoSlib
+      write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
   end subroutine Fideal

@@ -3,10 +3,10 @@
 !! \author MH, 2014-02
 module eoslibinit
   !
-  use thermopack_var, only: nce, get_active_eos, eos_container, &
-       get_active_eos_container, get_active_alt_eos, base_eos_param, add_eos, &
-       active_eos_container_is_associated, numAssocSites
-  use eos_containers, only: allocate_eos
+  use thermopack_var, only: nce, get_active_eos, thermo_model, &
+       get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
+       active_thermo_model_is_associated, numAssocSites
+  use thermo_models, only: allocate_eos
   implicit none
   save
   !
@@ -51,11 +51,11 @@ contains
   subroutine set_liq_vap_discr_method(liq_vap_discr_method)
     ! Method information
     integer, intent(in) :: liq_vap_discr_method !< Method to discriminate between liquid and vapor in case of an undefined single phase.
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     ! Method for discriminating between liquid/vapor when poorly defined
-    p_act_eosc%liq_vap_discr_method = liq_vap_discr_method
+    act_mod_ptr%liq_vap_discr_method = liq_vap_discr_method
   end subroutine set_liq_vap_discr_method
 
   !> Initialize volume translation
@@ -67,18 +67,18 @@ contains
     character(len=*), intent(in) :: volume_trans_model   !< String model for volume translation
     character(len=*), intent(in) :: param_ref !< String defining parameter set
     !
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     integer :: i
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
 
-    p_act_eosc%eos(1)%p_eos%volumeShiftId = &
-         InitVolumeShift(nce, p_act_eosc%comps, &
-         volume_trans_model, p_act_eosc%eos(1)%p_eos%eosid)
+    act_mod_ptr%eos(1)%p_eos%volumeShiftId = &
+         InitVolumeShift(nce, act_mod_ptr%comps, &
+         volume_trans_model, act_mod_ptr%eos(1)%p_eos%eosid)
 
     ! Distribute volumeShiftId
-    do i=2,size(p_act_eosc%eos)
-      p_act_eosc%eos(i)%p_eos%volumeShiftId = &
-           p_act_eosc%eos(1)%p_eos%volumeShiftId
+    do i=2,size(act_mod_ptr%eos)
+      act_mod_ptr%eos(i)%p_eos%volumeShiftId = &
+           act_mod_ptr%eos(1)%p_eos%volumeShiftId
     enddo
   end subroutine init_volume_translation
 
@@ -115,47 +115,47 @@ contains
     integer :: ncomp !< Number of components
     character(len=clen) :: message
     integer             :: i, ierr, index, ncbeos
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     if (present(silent)) then
       silent_init = silent
     endif
 
-    if (.not. active_eos_container_is_associated()) then
-      ! No eos_container have been allocated
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
       index = add_eos()
     endif
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
 
     ! Component list.
-    call initCompList(trim(uppercase(comp_string)),ncomp,p_act_eosc%complist)
-    allocate(complist, source=p_act_eosc%complist)
+    call initCompList(trim(uppercase(comp_string)),ncomp,act_mod_ptr%complist)
+    allocate(complist, source=act_mod_ptr%complist)
 
     call allocate_eos(ncomp, eos)
 
     ! Method for discriminating between liquid/vapor when poorly defined
     if (present(liq_vap_discr_method_in)) then
-      p_act_eosc%liq_vap_discr_method = liq_vap_discr_method_in
+      act_mod_ptr%liq_vap_discr_method = liq_vap_discr_method_in
     end if
 
     ! Number of phases
-    p_act_eosc%nph = nphases
+    act_mod_ptr%nph = nphases
 
     ! Assign active mode variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
-    nph = p_act_eosc%nph
-    complist => p_act_eosc%complist
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
     apparent => NULL()
     numAssocSites = 0
 
     ! Initialize components
-    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Set cptype
     if (present(cptype)) then
       do i=1,nc
-        p_act_eosc%comps(i)%p_comp%id_cp%cptype = cptype
+        act_mod_ptr%comps(i)%p_comp%id_cp%cptype = cptype
       enddo
     endif
 
@@ -164,13 +164,13 @@ contains
          str_eq(eos, "GERG2008") .or. &
          str_eq(eos, "GERG-2008") .or. &
          str_eq(eos, "EOSCG-GERG")) then
-      p_act_eosc%eosLib = TREND
+      act_mod_ptr%eosLib = TREND
     else
-      p_act_eosc%eosLib = THERMOPACK
+      act_mod_ptr%eosLib = THERMOPACK
     endif
 
     ! Initialize the selected EoS-library
-    select case (p_act_eosc%eosLib)
+    select case (act_mod_ptr%eosLib)
     case (THERMOPACK)
       ! Initialize Thermopack
       call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
@@ -209,40 +209,40 @@ contains
     logical             :: isSAFTmodel
     real                :: Tci, Pci, oi
 
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    if (.not. p_act_eosc%need_alternative_eos) return
+    if (.not. act_mod_ptr%need_alternative_eos) return
 
-    if (p_act_eosc%EoSLib == TREND) then
+    if (act_mod_ptr%EoSLib == TREND) then
       ! Use TREND parameters to get better critical point in alternative model
       do i=1,nce
         call trend_getcrit(i,Tci,Pci,oi)
-        p_act_eosc%comps(i)%p_comp%tc = Tci
-        p_act_eosc%comps(i)%p_comp%pc = Pci
-        p_act_eosc%comps(i)%p_comp%acf = oi
+        act_mod_ptr%comps(i)%p_comp%tc = Tci
+        act_mod_ptr%comps(i)%p_comp%pc = Pci
+        act_mod_ptr%comps(i)%p_comp%acf = oi
       enddo
     endif
 
-    select type(p_eos => p_act_eosc%cubic_eos_alternative(1)%p_eos)
+    select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
-      call SelectCubicEOS(nce, p_act_eosc%comps, p_eos, &
+      call SelectCubicEOS(nce, act_mod_ptr%comps, p_eos, &
            "CLASSIC", "DEFAULT")
 
-      call SelectMixingRules(nce, p_act_eosc%comps, p_eos, &
+      call SelectMixingRules(nce, act_mod_ptr%comps, p_eos, &
          "VDW", "DEFAULT")
     class default
       call stoperror("init_cubic: Should be cubic EOS")
     end select
 
     ! Distribute parameters from redefined eos
-    do i=2,size(p_act_eosc%cubic_eos_alternative)
-      p_act_eosc%cubic_eos_alternative(i)%p_eos = &
-           p_act_eosc%cubic_eos_alternative(1)%p_eos
+    do i=2,size(act_mod_ptr%cubic_eos_alternative)
+      act_mod_ptr%cubic_eos_alternative(i)%p_eos = &
+           act_mod_ptr%cubic_eos_alternative(1)%p_eos
     enddo
 
-    if (p_act_eosc%EoSLib == THERMOPACK .and. &
-         isSAFTEOS(p_act_eosc%eos(1)%p_eos%eosidx)) then
+    if (act_mod_ptr%EoSLib == THERMOPACK .and. &
+         isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)) then
       call redefine_critical_parameters(silent)
     endif
   end subroutine init_fallback_and_redefine_criticals
@@ -255,7 +255,7 @@ contains
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
-    use eos_containers, only: allocate_eos
+    use thermo_models, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
@@ -267,35 +267,35 @@ contains
     integer                          :: ncomp, i, index, ierr
     character(len=len_trim(comps))   :: comps_upper
     character(len=100)               :: mixing_loc, alpha_loc, param_ref_loc
-    type(eos_container), pointer     :: p_act_eosc
+    type(thermo_model), pointer     :: act_mod_ptr
 
-    if (.not. active_eos_container_is_associated()) then
-      ! No eos_container have been allocated
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
       index = add_eos()
     endif
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ! Set component list
     comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     call allocate_eos(ncomp, eos)
 
     ! Number of phases
-    p_act_eosc%nph = 3
+    act_mod_ptr%nph = 3
 
     ! Assign active mode variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
-    nph = p_act_eosc%nph
-    complist => p_act_eosc%complist
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
     apparent => NULL()
 
     ! Set eos library identifyer
-    p_act_eosc%eosLib = THERMOPACK
+    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Initialize Thermopack
     alpha_loc = "Classic"
@@ -305,19 +305,19 @@ contains
     if (present(alpha)) alpha_loc = uppercase(alpha)
     if (present(param_ref)) param_ref_loc = uppercase(param_ref)
 
-    select type(p_eos => p_act_eosc%eos(1)%p_eos)
+    select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     type is (cb_eos)
-      call SelectCubicEOS(nc, p_act_eosc%comps, &
+      call SelectCubicEOS(nc, act_mod_ptr%comps, &
            p_eos, alpha_loc, param_ref_loc)
 
-      call SelectMixingRules(nc, p_act_eosc%comps, &
+      call SelectMixingRules(nc, act_mod_ptr%comps, &
            p_eos, mixing_loc, param_ref_loc)
     class default
       call stoperror("init_cubic: Should be cubic EOS")
     end select
     ! Distribute parameters from redefined eos
-    do i=2,size(p_act_eosc%eos)
-      p_act_eosc%eos(i)%p_eos = p_act_eosc%eos(1)%p_eos
+    do i=2,size(act_mod_ptr%eos)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
   end subroutine init_cubic
@@ -384,11 +384,11 @@ contains
     real :: Pc  !< Specified critical pressure [Pa]
     real :: Acf !< Specified acentric factor [-]
     real :: Z(nce)
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
-    p_act_eosc => get_active_eos_container()
-    p_act_eos => get_active_alt_eos()
+    act_mod_ptr => get_active_thermo_model()
+    act_eos_ptr => get_active_alt_eos()
     Tmin = tpTmin
     tpTmin = 2.0
     do i=1,nce
@@ -399,26 +399,26 @@ contains
       call calcCriticalTV(Tc,Vc,Z,ierr)
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
-             trim(p_act_eosc%comps(i)%p_comp%ident)
+             trim(act_mod_ptr%comps(i)%p_comp%ident)
       else
         Pc = pressure(Tc,Vc,Z)
-        select type (p_eos => p_act_eos)
+        select type (p_eos => act_eos_ptr)
         class is (cb_eos)
           p_eos%single(i)%Tc = Tc
           p_eos%single(i)%Pc = Pc
           call cbSingleCalcABC(nce,p_eos,i)
-          p_act_eosc%comps(i)%p_comp%tc = Tc
-          p_act_eosc%comps(i)%p_comp%pc = Pc
-          p_act_eosc%comps(i)%p_comp%zc = Pc*Vc/(Tc*Rgas)
+          act_mod_ptr%comps(i)%p_comp%tc = Tc
+          act_mod_ptr%comps(i)%p_comp%pc = Pc
+          act_mod_ptr%comps(i)%p_comp%zc = Pc*Vc/(Tc*Rgas)
           Acf = acentricFactorEos(i,ierr)
-          p_act_eosc%comps(i)%p_comp%acf = Acf
+          act_mod_ptr%comps(i)%p_comp%acf = Acf
           p_eos%single(i)%Acf = Acf
           call getAcentricAlphaParam(p_eos%single(i)%alphaMethod, Acf, &
                p_eos%single(i)%alphaParams)
 
           ! Copy to others
-          do j=2,size(p_act_eosc%cubic_eos_alternative)
-            select type (p_eos_j => p_act_eosc%cubic_eos_alternative(j)%p_eos)
+          do j=2,size(act_mod_ptr%cubic_eos_alternative)
+            select type (p_eos_j => act_mod_ptr%cubic_eos_alternative(j)%p_eos)
             class is (cb_eos)
               p_eos_j%single(i)%Tc = p_eos%single(i)%Tc
               p_eos_j%single(i)%Pc = p_eos%single(i)%Pc
@@ -457,7 +457,7 @@ contains
     use assocschemeutils, only: no_assoc
     use saft_association, only: numAssocSites
     use stringmod, only: uppercase
-    use eos_containers, only: allocate_eos
+    use thermo_models, only: allocate_eos
     !$ use omp_lib
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
@@ -473,11 +473,11 @@ contains
     character(len=len(eos)) :: eosLocal  !< Local copy of string defining equation of state
     integer :: ncbeos, err, i, volumeShiftId, index
     character(len=ref_len) :: kij_ref_local, alpha_ref_local, saft_ref_local
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
     !
-    p_act_eosc => get_active_eos_container()
-    p_act_eos => get_active_eos()
+    act_mod_ptr => get_active_thermo_model()
+    act_eos_ptr => get_active_eos()
 
     if (present(kij_ref)) then
       kij_ref_local = trim(kij_ref)
@@ -495,17 +495,17 @@ contains
       saft_ref_local = "DEFAULT"
     endif
 
-    ! if (.not. associated(p_act_eosc)) then
-    !   ! No eos_container have been allocated
+    ! if (.not. associated(act_mod_ptr)) then
+    !   ! No thermo_model have been allocated
     !   index = add_eos()
-    !   p_act_eosc => get_active_eos_container()
+    !   act_mod_ptr => get_active_thermo_model()
     ! endif
     ! ! Component list.
     ! call allocate_eos(nce, eos)
 
     ! Set parameters
-    !p_act_eosc%EoSLib = THERMOPACK
-    !p_act_eosc%nph = nphase
+    !act_mod_ptr%EoSLib = THERMOPACK
+    !act_mod_ptr%nph = nphase
     mixRule = trim(mixing)
     volumeShiftId = NOSHIFT
     eosLocal = eos
@@ -518,7 +518,7 @@ contains
                eos(5:len(eos)),' instead of ',trim(eos)
           eosLocal = eos(5:len(eos))
           do i=1,nce
-            p_act_eosc%comps(i)%p_comp%assoc_scheme = no_assoc
+            act_mod_ptr%comps(i)%p_comp%assoc_scheme = no_assoc
           enddo
         endif
       endif
@@ -528,10 +528,10 @@ contains
       mixRule = 'VDW'
     else if (trim(uppercase(eos)) == 'SRK-PENELOUX') then
       eosLocal = 'SRK'
-      volumeShiftId = InitVolumeShift(nc,p_act_eosc%comps,'Peneloux','SRK')
+      volumeShiftId = InitVolumeShift(nc,act_mod_ptr%comps,'Peneloux','SRK')
     else if (trim(uppercase(eos)) == 'PR-PENELOUX') then
       eosLocal = 'PR'
-      volumeShiftId = InitVolumeShift(nc,p_act_eosc%comps,'Peneloux','PR')
+      volumeShiftId = InitVolumeShift(nc,act_mod_ptr%comps,'Peneloux','PR')
     else if (len(eos) >= 3) then
       if (uppercase(eos(1:3)) == 'CSP') then
         eosLocal = eos(5:len(trim(eos)))
@@ -556,30 +556,30 @@ contains
       end if
     end if
 
-    p_act_eos%volumeShiftId = volumeShiftId
-    p_act_eos%isElectrolyteEoS = .false.
-    select type(p_eos => p_act_eos)
+    act_eos_ptr%volumeShiftId = volumeShiftId
+    act_eos_ptr%isElectrolyteEoS = .false.
+    select type(p_eos => act_eos_ptr)
     class is (cb_eos)
-      call SelectCubicEOS(nce,p_act_eosc%comps,p_eos,trim(alpha),&
+      call SelectCubicEOS(nce,act_mod_ptr%comps,p_eos,trim(alpha),&
            alpha_ref_local)
-      call SelectMixingRules(nce,p_act_eosc%comps,p_eos,mixRule,&
+      call SelectMixingRules(nce,act_mod_ptr%comps,p_eos,mixRule,&
            kij_ref_local,b_exponent)
     type is (extcsp_eos)
-      call csp_init(p_eos,nce,p_act_eosc%comps,refcomp_str=trim(csp_refcomp_str),&
+      call csp_init(p_eos,nce,act_mod_ptr%comps,refcomp_str=trim(csp_refcomp_str),&
            shEos=trim(eosLocal),&
            shMixRule=trim(mixRule),shAlpha=trim(alpha),&
            refEos=trim(csp_refEos),refAlpha=trim(alpha))
    end select
 
     ! SAFT initialization must be done after cbeos initialization.
-    if (isSAFTEOS(p_act_eos%eosidx)) then
-       call saft_type_eos_init(nce,p_act_eosc%comps,&
-            p_act_eos,saft_ref_local,silent_init)
+    if (isSAFTEOS(act_eos_ptr%eosidx)) then
+       call saft_type_eos_init(nce,act_mod_ptr%comps,&
+            act_eos_ptr,saft_ref_local,silent_init)
     end if
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
-      p_act_eosc%eos(i) = p_act_eosc%eos(1)
+      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
     enddo
   end subroutine init_thermopack
 
@@ -709,35 +709,35 @@ contains
     ! Locals
     integer                          :: ncomp, index, ierr
     character(len=len_trim(comps))   :: comps_upper
-    type(eos_container), pointer     :: p_act_eosc
+    type(thermo_model), pointer     :: act_mod_ptr
 
-    if (.not. active_eos_container_is_associated()) then
-      ! No eos_container have been allocated
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
       index = add_eos()
     endif
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ! Set component list
     comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
 
     call allocate_eos(ncomp, "SAFT-VR-MIE")
 
     ! Number of phases
-    p_act_eosc%nph = 3
+    act_mod_ptr%nph = 3
 
     ! Assign active mode variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
-    nph = p_act_eosc%nph
-    complist => p_act_eosc%complist
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
     apparent => NULL()
 
     ! Set eos library identifyer
-    p_act_eosc%eosLib = THERMOPACK
+    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Initialize Thermopack
     call init_thermopack("SAFT-VR-MIE", "Classic", "Classic", nphase=3, &
@@ -760,35 +760,35 @@ contains
     ! Locals
     integer                          :: ncomp, index, ierr
     character(len=len_trim(comps))   :: comps_upper
-    type(eos_container), pointer     :: p_act_eosc
+    type(thermo_model), pointer     :: act_mod_ptr
 
-    if (.not. active_eos_container_is_associated()) then
-      ! No eos_container have been allocated
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
       index = add_eos()
     endif
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ! Set component list
     comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     call allocate_eos(ncomp, "PC-SAFT")
 
     ! Number of phases
-    p_act_eosc%nph = 3
+    act_mod_ptr%nph = 3
 
     ! Assign active mode variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
-    nph = p_act_eosc%nph
-    complist => p_act_eosc%complist
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
     apparent => NULL()
 
     ! Set eos library identifyer
-    p_act_eosc%eosLib = THERMOPACK
+    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Initialize Thermopack
     call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3,&
@@ -816,39 +816,39 @@ contains
     integer                          :: ncomp, index, ierr
     character(len=len_trim(comps))   :: comps_upper
     character(len=100)               :: mixing_loc, alpha_loc, eos_loc, param_ref_loc
-    type(eos_container), pointer     :: p_act_eosc
+    type(thermo_model), pointer     :: act_mod_ptr
 
     ! Initialize Thermopack
     eos_loc = "SRK"
     if (present(eos)) eos_loc = uppercase(eos)
     !
-    if (.not. active_eos_container_is_associated()) then
-      ! No eos_container have been allocated
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
       index = add_eos()
     endif
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     ! Set component list
     comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,p_act_eosc%complist)
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     call allocate_eos(ncomp, "CPA-"//trim(eos_loc))
 
     ! Number of phases
-    p_act_eosc%nph = 3
+    act_mod_ptr%nph = 3
 
     ! Assign active mode variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
-    nph = p_act_eosc%nph
-    complist => p_act_eosc%complist
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
     apparent => NULL()
 
     ! Set eos library identifyer
-    p_act_eosc%eosLib = THERMOPACK
+    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",p_act_eosc%comps,ierr)
+    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     param_ref_loc = "Default"
     alpha_loc = "Classic"

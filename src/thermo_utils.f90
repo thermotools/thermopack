@@ -5,8 +5,8 @@
 module thermo_utils
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
        WATER, TREND
-  use thermopack_var, only: nc, eos_container, get_active_eos, base_eos_param, &
-       get_active_eos_container, get_active_alt_eos
+  use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
+       get_active_thermo_model, get_active_alt_eos
 
   implicit none
   public :: guessPhase, isWaterComponent, waterComponentFraction
@@ -43,9 +43,9 @@ module thermo_utils
     ! Internal:
     real             :: Tpc, Ppc, Zpc, vpc, Zf, v, lnfug(nc), vbr, b
     integer          :: ophase
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     call thermo(T,P,z,MINGIBBSPH,lnfug,ophase=ophase)
     if (ophase == LIQPH .or. ophase == VAPPH) then
       ! If thermo() has a definite answer, just trust that.
@@ -54,7 +54,7 @@ module thermo_utils
       ! thermo() did not identify the phase.
       ! Identify phase based on method chosen in liq_vap_discr_method
 
-      if (p_act_eosc%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
+      if (act_mod_ptr%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
         if (present(T_comp) .and. present(p_comp)) then
           ! Use overridden T,p point
           call zfac(T_comp,p_comp,z,VAPPH,Zpc)
@@ -66,7 +66,7 @@ module thermo_utils
       endif
 
       ! Select based on chosen method
-      select case(p_act_eosc%liq_vap_discr_method)
+      select case(act_mod_ptr%liq_vap_discr_method)
 
         case (PSEUDO_CRIT_ZFAC)
           call zfac(T,P,z,VAPPH,Zf)
@@ -125,12 +125,12 @@ module thermo_utils
     integer          :: guessPhaseTV !< Best guess for phase (LIQPH or VAPPH)
     ! Internal:
     real             :: Tpc, Ppc, Zpc, vpc, Zf, p, vbr, b
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
 
     ! Identify phase based on method chosen in liq_vap_discr_method
-    if (p_act_eosc%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
+    if (act_mod_ptr%liq_vap_discr_method /= VOLUME_COVOLUME_RATIO) then
       if (present(T_comp) .and. present(v_comp)) then
         ! Use overridden T,v point
         p = pressure(T_comp,v_comp,z)
@@ -143,7 +143,7 @@ module thermo_utils
     endif
 
     ! Select based on chosen method
-    select case(p_act_eosc%liq_vap_discr_method)
+    select case(act_mod_ptr%liq_vap_discr_method)
     case (PSEUDO_CRIT_ZFAC)
       p = pressure(T,v,z)
       Zf = v*p/(Rgas*T)
@@ -462,14 +462,14 @@ module thermo_utils
     real                            :: b_mix          !< m3/mol
     ! Locals
     integer :: i
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     b_mix = 0
-    if (p_act_eosc%need_alternative_eos .and. p_act_eosc%eosidx /= eosCPA) then
-      p_act_eos => get_active_alt_eos()
-      select type (p_eos => p_act_eos)
+    if (act_mod_ptr%need_alternative_eos .and. act_mod_ptr%eosidx /= eosCPA) then
+      act_eos_ptr => get_active_alt_eos()
+      select type (p_eos => act_eos_ptr)
       class is (cb_eos)
         do i=1,nc
           b_mix = b_mix + z(i)*p_eos%single(i)%b
@@ -478,8 +478,8 @@ module thermo_utils
         call stoperror("get_b_linear_mix (alt): Should not be here")
       end select
     else
-      p_act_eos => get_active_eos()
-      select type (p_eos => p_act_eos)
+      act_eos_ptr => get_active_eos()
+      select type (p_eos => act_eos_ptr)
       class is (cb_eos)
         do i=1,nc
           b_mix = b_mix + z(i)*p_eos%single(i)%b
@@ -507,10 +507,10 @@ module thermo_utils
     ! Output:
     logical                         :: isFake         !< Phase is FAKEPH
     ! Locals
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    if (p_act_eosc%EoSLib == TREND) then
+    if (act_mod_ptr%EoSLib == TREND) then
       isFake = trend_phase_is_fake(T,P,Z,phase)
     else
       isFake = .false.

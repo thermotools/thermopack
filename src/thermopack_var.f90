@@ -1,5 +1,5 @@
-!> This is global variables for ThermoPack library. The variables are controlled form
-!! eos_container.f90
+!> Global variables for ThermoPack. They are initialized in the thermo_model
+!> module.
 module thermopack_var
   use thermopack_constants, only: eosid_len, label_len, &
        PSEUDO_CRIT_MOLAR_VOLUME
@@ -29,8 +29,8 @@ module thermopack_var
   type(apparent_container), pointer :: apparent
 
   type, abstract :: base_eos_param
-    ! Base class for holding eos-data
-    character (len=eosid_len) :: eosid !< Eos identefyer
+    ! Base class for holding parameters unique to an EoS.
+    character (len=eosid_len) :: eosid !< Eos identefier
     !character (len=eos_name_len) :: label !< Name of EOS
     integer :: eosidx !< Eos group index
     integer :: subeosidx !< Eos sub-index
@@ -47,6 +47,15 @@ module thermopack_var
     generic, public :: assignment(=) => assign_eos
   end type base_eos_param
 
+
+  type :: eos_param_pointer
+     !> A trivial type that only contains a pointer to base_eos_param. This type
+     !> is needed because gfortran does not allow arrays of pointer to
+     !> base_eos_param, whereas arrays of the eos_param_pointer type is allowed.
+     class(base_eos_param), pointer :: p_eos
+  end type eos_param_pointer
+
+
   abstract interface
     subroutine allocate_and_init_intf(eos,nc,eos_label)
       import base_eos_param
@@ -58,6 +67,7 @@ module thermopack_var
     end subroutine allocate_and_init_intf
   end interface
 
+
   abstract interface
     subroutine assign_intf(This, other)
       import base_eos_param
@@ -67,11 +77,9 @@ module thermopack_var
     end subroutine assign_intf
   end interface
 
-  type :: eos_param_pointer
-    class(base_eos_param), pointer :: p_eos
-  end type eos_param_pointer
-
-  type eos_container
+  type thermo_model
+     !> A complete ThermoPack model. Holds information about the EoS, the
+     !> mixture, and the computational solver options
     integer :: eosc_idx !< Container index
     ! From parameters
     integer :: nph=3
@@ -95,48 +103,53 @@ module thermopack_var
     logical :: need_alternative_eos
     type(eos_param_pointer), allocatable, dimension(:) :: cubic_eos_alternative
   contains
-    procedure, public :: dealloc => eos_container_dealloc
+    procedure, public :: dealloc => thermo_model_dealloc
     procedure, public :: is_model_container
-    !procedure :: assign_eos_container
-    !generic, public :: assignment(=) => assign_eos_container
-  end type eos_container
+    !procedure :: assign_thermo_model
+    !generic, public :: assignment(=) => assign_thermo_model
+  end type thermo_model
 
-  type :: eos_container_pointer
-    type(eos_container), pointer :: p_eosc => NULL()
-  end type eos_container_pointer
+
+  type :: thermo_model_pointer
+     !> A trivial type that only contains a pointer to thermo_model. This type
+     !> is needed because gfortran does not allow arrays of pointer to
+     !> base_eos_param, whereas arrays of the thermo_model_pointer type is
+     !> allowed.
+    type(thermo_model), pointer :: p_eosc => NULL()
+  end type thermo_model_pointer
+
 
   ! Index used for naming
   integer :: eos_idx = 0
   ! Active model
-  type(eos_container), pointer :: p_active_eos_c => NULL()
+  type(thermo_model), pointer :: p_active_eos_c => NULL()
   ! ! Multiple model support
-  type(eos_container_pointer), allocatable, dimension(:) :: eos_conts
+  type(thermo_model_pointer), allocatable, dimension(:) :: eos_conts
 
-  public :: get_active_eos, get_active_eos_container, &
-       get_active_alt_eos, active_eos_container_is_associated
+  public :: get_active_eos, get_active_thermo_model, &
+       get_active_alt_eos, active_thermo_model_is_associated
   public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
        real_to_apparent_differentials, TP_lnfug_apparent
-  !public :: update_global_variables_form_active_eos_container
 
 contains
 
-  function get_active_eos_container() result(p_eos)
-    type(eos_container), pointer :: p_eos
-    if (.not. associated(p_active_eos_c)) call stoperror("get_active_eos_container: No active eos found")
+  function get_active_thermo_model() result(p_eos)
+    type(thermo_model), pointer :: p_eos
+    if (.not. associated(p_active_eos_c)) call stoperror("get_active_thermo_model: No active eos found")
     p_eos => p_active_eos_c
-  end function get_active_eos_container
+  end function get_active_thermo_model
 
-  function active_eos_container_is_associated() result(is_assoc)
+  function active_thermo_model_is_associated() result(is_assoc)
     logical :: is_assoc
     is_assoc = associated(p_active_eos_c)
-  end function active_eos_container_is_associated
+  end function active_thermo_model_is_associated
 
   function get_active_eos() result(p_eos)
     class(base_eos_param), pointer :: p_eos
     ! Locals
-    type(eos_container), pointer :: p_eos_cont
+    type(thermo_model), pointer :: p_eos_cont
     integer :: i_eos
-    p_eos_cont => get_active_eos_container()
+    p_eos_cont => get_active_thermo_model()
 
     if (.not. allocated(p_eos_cont%eos)) call stoperror("get_active_eos: eos array not allocted found")
     i_eos = get_thread_index()
@@ -147,9 +160,9 @@ contains
   function get_active_alt_eos() result(p_eos)
     class(base_eos_param), pointer :: p_eos
     ! Locals
-    type(eos_container), pointer :: p_eos_cont
+    type(thermo_model), pointer :: p_eos_cont
     integer :: i_eos
-    p_eos_cont => get_active_eos_container()
+    p_eos_cont => get_active_thermo_model()
 
     if (.not. allocated(p_eos_cont%eos)) call stoperror("get_active_alt_eos: eos array not allocted found")
     i_eos = get_thread_index()
@@ -160,13 +173,13 @@ contains
   function get_active_comps() result(p_comps)
     type(gendata_pointer), pointer :: p_comps(:)
     ! Locals
-    type(eos_container), pointer :: p_eos_cont
-    p_eos_cont => get_active_eos_container()
+    type(thermo_model), pointer :: p_eos_cont
+    p_eos_cont => get_active_thermo_model()
     p_comps => p_eos_cont%comps
   end function get_active_comps
 
   function is_model_container(eosc, index) result(isC)
-    class(eos_container), intent(in) :: eosc
+    class(thermo_model), intent(in) :: eosc
     integer, intent(in) :: index
     logical :: isC
     isC = (eosc%eosc_idx == index)
@@ -181,7 +194,7 @@ contains
     do i=1,size(eos_conts)
       if (eos_conts(i)%p_eosc%is_model_container(index)) then
         p_active_eos_c => eos_conts(i)%p_eosc
-        call update_global_variables_form_active_eos_container()
+        call update_global_variables_form_active_thermo_model()
         return
       endif
     enddo
@@ -190,12 +203,12 @@ contains
   end subroutine activate_model
 
   function add_eos() result(index)
-    !type(eos_container), pointer, intent(in) :: eosc
+    !type(thermo_model), pointer, intent(in) :: eosc
     integer :: index
     ! Locals
     integer :: i, istat, n
-    type(eos_container_pointer), allocatable, dimension(:) :: eos_copy
-    type(eos_container), pointer :: eosc
+    type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
+    type(thermo_model), pointer :: eosc
     allocate(eosc, stat=istat)
     if (istat /= 0) call stoperror("Not able to allocate new eos")
     n = 1
@@ -225,7 +238,7 @@ contains
     integer, intent(in) :: index
     ! Locals
     integer :: i, istat, n, nr
-    type(eos_container_pointer), allocatable, dimension(:) :: eos_copy
+    type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
     if (.not. allocated(eos_conts)) call stoperror("Not able to delete model. No models exists....")
     n = size(eos_conts)
     allocate(eos_copy(n-1), stat=istat)
@@ -264,9 +277,9 @@ contains
     ! Input:
   end subroutine eos_dealloc
 
-  subroutine eos_container_dealloc(eosc)
+  subroutine thermo_model_dealloc(eosc)
     ! Passed object:
-    class(eos_container), intent(inout) :: eosc
+    class(thermo_model), intent(inout) :: eosc
     ! Locals
     integer :: i, istat
     do i=1,size(eosc%eos)
@@ -299,7 +312,7 @@ contains
       eosc%apparent => NULL()
     endif
 
-  end subroutine eos_container_dealloc
+  end subroutine thermo_model_dealloc
 
 
   subroutine apparent_to_real_mole_numbers(n,ne)

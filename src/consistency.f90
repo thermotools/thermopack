@@ -161,12 +161,12 @@ subroutine testCubicModel(t,p,n,phase)
   real :: ci0(nc), cij0(nc,nc), bi0(nc), bij0(nc,nc), ai0(nc), aij0(nc,nc)
   real :: m10, m20, dm1dc0, dm2dc0, d2m1dc20, d2m2dc20, dm1db0, dm2db0, d2m1db20
   real :: d2m2db20, d2m1dbdc0, d2m2dbdc0
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   print *,'nc=', nc
 
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
 
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
     class is(cb_eos)
       nn = n/sum(n)
       call zfac(t,p,nn,phase,Z)

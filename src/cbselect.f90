@@ -339,7 +339,7 @@ contains
   !
   !> \author Morten Hammer
   subroutine redefine_TcPcAcf_comp_cubic(j,TcSpec, PcSpec, AcfSpec, ierr)
-    use thermopack_var, only: nce, get_active_eos_container, eos_container
+    use thermopack_var, only: nce, get_active_thermo_model, thermo_model
     !use tpcbmix, only: cbCalcParameters
     use eosdata, only: eosCubic
     use cubic_eos, only: cb_eos
@@ -351,10 +351,10 @@ contains
     real, intent(in) :: AcfSpec !< Specified acentric factor [-]
     ! Locals
     integer :: i, ncbeos
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !
-    p_act_eosc => get_active_eos_container()
-    if ( p_act_eosc%eosidx /= eosCubic ) then
+    act_mod_ptr => get_active_thermo_model()
+    if ( act_mod_ptr%eosidx /= eosCubic ) then
       print *,"Not able to redefine component. Returning."
       ierr = 1
       return
@@ -362,14 +362,14 @@ contains
       ierr = 0
     endif
 
-    p_act_eosc%comps(j)%p_comp%tc = TcSpec
-    p_act_eosc%comps(j)%p_comp%pc = PcSpec
-    p_act_eosc%comps(j)%p_comp%Acf = AcfSpec
+    act_mod_ptr%comps(j)%p_comp%tc = TcSpec
+    act_mod_ptr%comps(j)%p_comp%pc = PcSpec
+    act_mod_ptr%comps(j)%p_comp%Acf = AcfSpec
     !
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=1,ncbeos
-      select type ( p_eos => p_act_eosc%eos(i)%p_eos )
+      select type ( p_eos => act_mod_ptr%eos(i)%p_eos )
       class is ( cb_eos )
         ierr = 0
         p_eos%single(j)%Tc = TcSpec
@@ -420,7 +420,7 @@ contains
   !
   !> \author Ailo Aasen
   subroutine redefine_fallback_TcPcAcf(TcSpec, PcSpec, AcfSpec)
-    use thermopack_var, only: nce, get_active_eos_container, eos_container
+    use thermopack_var, only: nce, get_active_thermo_model, thermo_model
     use eosdata, only: eosCubic
     use cubic_eos, only: cb_eos
     !$ use omp_lib, only: omp_get_max_threads
@@ -429,14 +429,14 @@ contains
     real, intent(in), optional :: AcfSpec(nce) !< Specified acentric factor [-]
     ! Locals
     integer :: i, ncbeos
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=1,ncbeos
-      select type ( p_eos => p_act_eosc%cubic_eos_alternative(i)%p_eos )
+      select type ( p_eos => act_mod_ptr%cubic_eos_alternative(i)%p_eos )
       class is ( cb_eos )
-        call initCubicTcPcAcf(nce, p_act_eosc%comps, p_eos, TcSpec, PcSpec, AcfSpec)
+        call initCubicTcPcAcf(nce, act_mod_ptr%comps, p_eos, TcSpec, PcSpec, AcfSpec)
         call cbCalcParameters(nce, p_eos)
       class default
         call stoperror("Fallback not cubic?")

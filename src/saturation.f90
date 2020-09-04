@@ -1,7 +1,7 @@
 module saturation
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, verbose
-  use thermopack_var, only: nc, eos_container, get_active_eos
+  use thermopack_var, only: nc, thermo_model, get_active_eos
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat

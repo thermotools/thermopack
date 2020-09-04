@@ -9,7 +9,7 @@ module speed_of_sound
   !
   use thermopack_constants, only: VAPPH,LIQPH,SOLIDPH, &
        Rgas, TREND
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   implicit none
   private
   save
@@ -39,10 +39,10 @@ contains
     real :: v,dvdt,dvdp
     real :: s,dsdt,dsdp,dtdp
     real :: rho_trend
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
-    p_act_eosc => get_active_eos_container()
-    select case(p_act_eosc%eoslib)
+    act_mod_ptr => get_active_thermo_model()
+    select case(act_mod_ptr%eoslib)
       case(TREND)
         call trend_density(T,p,z,phase,rho_trend)
         sos = trend_speedofsound(T,rho_trend,z)

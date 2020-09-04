@@ -8,7 +8,7 @@ module ps_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use thermopack_constants, only: get_templimits, LIQPH, VAPPH, continueOnError, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use tp_solver, only: twoPhaseTPflash
@@ -365,9 +365,9 @@ contains
     real                  :: Tmin, Tmax, sl, sg, ptr, plocal
     real                  :: tci,pci,oi
     logical               :: lookForSolid
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     call get_templimits(Tmin,Tmax)
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
@@ -386,7 +386,7 @@ contains
       if (nSolid == 1) then
         if (solidComp(1) == maxComp(Z)) then
           lookForSolid = .true.
-          ptr = p_act_eosc%comps(maxComp(Z))%p_comp%ptr
+          ptr = act_mod_ptr%comps(maxComp(Z))%p_comp%ptr
         endif
       else
         ptr = 0.0

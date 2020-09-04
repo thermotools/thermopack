@@ -98,7 +98,7 @@ contains
     use eosdata
     use compdata, only: SelectComp
     use stringmod, only: str_upcase
-    !use thermopack_var, only: nce, get_active_eos_container, eos_container
+    !use thermopack_var, only: nce, get_active_thermo_model, thermo_model
     implicit none
     class(extcsp_eos), intent(inout) :: eos
     integer, intent(in) :: nce
@@ -1056,8 +1056,8 @@ contains
     use thermopack_var, only: nce, get_active_eos, base_eos_param
     implicit none
     real :: T, P, v, n(2)
-    class(base_eos_param), pointer :: p_act_eos
-    p_act_eos => get_active_eos()
+    class(base_eos_param), pointer :: act_eos_ptr
+    act_eos_ptr => get_active_eos()
     T = 350.0
     v = 0.85 ! L/mol
     P = 1.0e6
@@ -1071,7 +1071,7 @@ contains
     call csp_testPressure(T,v,n)
     print *,"*********CALLING CHECKSTATEFUNCTIONDERIVATIVES*********"
     print *,"********* ZFAC *********"
-    select type (p_eos => p_act_eos)
+    select type (p_eos => act_eos_ptr)
     class is(extcsp_eos)
       call checkStateFunctionDerivatives(csp_zFac,p_eos,T,P,n,2)
     end select
@@ -1109,10 +1109,10 @@ contains
     real :: P0, P01
     real :: zfac_org, zfac
     real :: temp
-    class(base_eos_param), pointer :: p_act_eos
-    p_act_eos => get_active_eos()
+    class(base_eos_param), pointer :: act_eos_ptr
+    act_eos_ptr => get_active_eos()
 
-    select type (p_eos => p_act_eos)
+    select type (p_eos => act_eos_ptr)
     class is(extcsp_eos)
       ! allocate sdiff structs
       call shape_diff_alloc(sdiff,nce)
@@ -1251,15 +1251,15 @@ contains
     real :: dv, dt, dpdv_num, dpdt_num, p_pert, eps_v, eps_t
     real :: dPdn(nce), dn, dPdn_num(nce), eps_n(nce), nn(nce)
     integer :: i
-    class(base_eos_param), pointer :: p_act_eos
+    class(base_eos_param), pointer :: act_eos_ptr
     sumn = sum(n)
 
     dv = 1.0e-6*v
     dt = 1.0e-6*T
     dn = 1.0e-6
 
-    p_act_eos => get_active_eos()
-    select type (p_eos => p_act_eos)
+    act_eos_ptr => get_active_eos()
+    select type (p_eos => act_eos_ptr)
     class is(extcsp_eos)
       print *, "TESTING CSP_REFPRESSURE"
       call csp_refPressure(p_eos,T,v,n,P,dPdV,dPdT)

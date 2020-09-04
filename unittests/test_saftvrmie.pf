@@ -8,7 +8,7 @@ module test_saftvrmie
   use saftvrmie_chain
   use saftvrmie_hardsphere
   use saftvrmie_options
-  use thermopack_var, only: nce, get_active_eos_container, eos_container
+  use thermopack_var, only: nce, get_active_thermo_model, thermo_model
   use thermopack_constants, only: LIQPH, VAPPH, Rgas
   use critical, only: calcCritical, calcCriticalTV
   use eostv, only: pressure, secondvirialcoeffmatrix
@@ -160,7 +160,7 @@ contains
     real, dimension(1) :: pach_n,pach_Tn,pach_Vn
     real, dimension(1,1) :: pach_nn
 
-    type(eos_container), pointer :: p_eosc
+    type(thermo_model), pointer :: p_eosc
     type(saftvrmie_var_container), pointer :: svrm_var
 
     T = 15.0
@@ -172,7 +172,7 @@ contains
     compstr = "H2,HE"
     call init_thermo(alpha='Classic',eos='SAFT-VR-MIE',mixing='Classic',&
          comp_string=compstr,nphases=2,silent=.true.)
-    p_eosc => get_active_eos_container()
+    p_eosc => get_active_thermo_model()
     svrm_var => get_saftvrmie_var()
 
     call set_saftvrmie_eps_kij(1,2,kij)

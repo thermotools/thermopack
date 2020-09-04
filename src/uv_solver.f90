@@ -12,7 +12,7 @@ module uv_solver
        LIQPH, VAPPH, continueOnError, zLimit, FAKEPH, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use numconstants, only: machine_prec, small
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -1148,15 +1148,15 @@ contains
     real :: t0, p0, beta0, betaL0, Tmax, Tmin
     integer :: phaseVec(2), i, imax(1)
     logical :: isConverged
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     if (present(ierr)) then
       ierr = 0
     endif
     call get_templimits( Tmin, Tmax)
     imax = maxloc(Z)
-    Tmin = max(p_act_eosc%comps(imax(1))%p_comp%ttr, Tmin) ! Limit to triple point
+    Tmin = max(act_mod_ptr%comps(imax(1))%p_comp%ttr, Tmin) ! Limit to triple point
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif

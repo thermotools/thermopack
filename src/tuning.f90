@@ -5,10 +5,10 @@ subroutine thermopack_getHVparam(i,j,alpha_ij,alpha_ji,aGE_ij,aGE_ji,bGE_ij,bGE_
   implicit none
   integer, intent(in) :: i,j
   real, intent(out) :: alpha_ij,alpha_ji,aGE_ij,aGE_ji,bGE_ij,bGE_ji,cGE_ij,cGE_ji
-  class(base_eos_param), pointer :: p_act_eos
-  p_act_eos => get_active_eos()
+  class(base_eos_param), pointer :: act_eos_ptr
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     if (.not. allocated(p_eos%mixGE%alpha)) then
       call stoperror('p_eos%mixGEalpha not allocated')
@@ -43,10 +43,10 @@ subroutine thermopack_setHVparam(i,j,alpha_ij,alpha_ji,aGE_ij,aGE_ji,bGE_ij,bGE_
   integer, intent(in) :: i,j
   real, intent(in) :: alpha_ij,alpha_ji,aGE_ij,aGE_ji,bGE_ij,bGE_ji,cGE_ij,cGE_ji
   !
-  class(base_eos_param), pointer :: p_act_eos
-  p_act_eos => get_active_eos()
+  class(base_eos_param), pointer :: act_eos_ptr
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     if (.not. allocated(p_eos%mixGE%alpha)) then
       call stoperror('p_eos%mixGE%alpha not allocated')
@@ -82,11 +82,11 @@ subroutine thermopack_getTWUparam(i,c_1,c_2,c_3)
   implicit none
   integer, intent(in) :: i
   real, intent(out) :: c_1,c_2,c_3
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     c_1 = p_eos%single(i)%alphaParams(1)
     c_2 = p_eos%single(i)%alphaParams(2)
@@ -105,11 +105,11 @@ subroutine thermopack_setTWUparam(i,c_1,c_2,c_3)
   implicit none
   integer, intent(in) :: i
   real, intent(in) :: c_1,c_2,c_3
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     call setSingleAlphaCorr(i, p_eos, alphaIdx=cbAlphaTwuIdx, alphaParams=(/c_1,c_2,c_3/))
   class default
@@ -125,11 +125,11 @@ subroutine thermopack_getMCparam(i,c_1,c_2,c_3)
   integer, intent(in) :: i
   real, intent(out) :: c_1,c_2,c_3
   !
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     c_1 = p_eos%single(i)%alphaParams(1)
     c_2 = p_eos%single(i)%alphaParams(2)
@@ -148,11 +148,11 @@ subroutine thermopack_setMCparam(i,c_1,c_2,c_3)
   implicit none
   integer, intent(in) :: i
   real, intent(in) :: c_1,c_2,c_3
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     call setSingleAlphaCorr(i, p_eos, alphaIdx=cbAlphaMCIdx, alphaParams=(/c_1,c_2,c_3/))
   class default
@@ -169,11 +169,11 @@ subroutine thermopack_setClassicFitparam(i,c_1)
   real, intent(in) :: c_1
   ! Locals
   integer :: alphaIdx
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     alphaIdx = p_eos%single(i)%alphaMethod
     call setSingleAlphaCorr(i, p_eos, alphaIdx=alphaIdx, alphaParams=(/c_1/))
@@ -189,11 +189,11 @@ subroutine thermopack_getkij(i,j,kij)
   implicit none
   integer, intent(in) :: i,j
   real, intent(out) :: kij
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     kij = p_eos%kij(i,j)
   class default
@@ -208,11 +208,11 @@ subroutine thermopack_setkij(i,j,kij)
   implicit none
   integer, intent(in) :: i,j
   real, intent(in) :: kij
-  class(base_eos_param), pointer :: p_act_eos
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eos => get_active_eos()
+  act_eos_ptr => get_active_eos()
   !
-  select type(p_eos => p_act_eos)
+  select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     p_eos%kij(i,j) = kij
   class default
@@ -231,12 +231,12 @@ subroutine thermopack_setkijandji(i,j,kij)
   implicit none
   integer, intent(in) :: i,j
   real, intent(in) :: kij
-  type(eos_container), pointer :: p_act_eosc
-  class(base_eos_param), pointer :: p_act_eos
+  type(thermo_model), pointer :: act_mod_ptr
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eosc => get_active_eos_container()
-  p_act_eos => get_active_eos()
-  select type (p_eos => p_act_eos)
+  act_mod_ptr => get_active_thermo_model()
+  act_eos_ptr => get_active_eos()
+  select type (p_eos => act_eos_ptr)
   class is (cb_eos)
     p_eos%kij(i,j) = kij
     p_eos%kij(j,i) = kij
@@ -265,12 +265,12 @@ subroutine thermopack_setlijandji(i,j,lij)
   implicit none
   integer, intent(in) :: i,j
   real, intent(in) :: lij
-  type(eos_container), pointer :: p_act_eosc
-  class(base_eos_param), pointer :: p_act_eos
+  type(thermo_model), pointer :: act_mod_ptr
+  class(base_eos_param), pointer :: act_eos_ptr
   !
-  p_act_eosc => get_active_eos_container()
-  p_act_eos => get_active_eos()
-  select type (p_eos => p_act_eos)
+  act_mod_ptr => get_active_thermo_model()
+  act_eos_ptr => get_active_eos()
+  select type (p_eos => act_eos_ptr)
   class is (cb_eos)
     call stoperror("Not able to set binary lij for Cubic eos.")
   type is(cpa_eos)

@@ -1,7 +1,7 @@
 module saturation_curve
   use eos, only: thermo, entropy, specificvolume
   use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
-  use thermopack_var, only: nc, get_active_eos_container, eos_container, &
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -348,8 +348,8 @@ contains
     real, parameter :: maxdT = 25.0, maxdP = 10.0
     real :: dS_max, dS_min, v
     integer :: n_crit
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
     ! Set initial guess for first point
     T = T_init
     p = p_init
@@ -781,7 +781,7 @@ contains
         T = -1.0
         v = -1.0
       endif
-      if (ierr /= 0 .and. p_act_eosc%eosidx /= eosLK) then
+      if (ierr /= 0 .and. act_mod_ptr%eosidx /= eosLK) then
         ! MH: Should eventually use only this method for all models but eosLK
         call calcCriticalTV(t,v,Z,ierr,1.0e-8)
         if (ierr == 0) then

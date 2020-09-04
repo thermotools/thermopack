@@ -11,7 +11,7 @@ module sv_solver
   !
   use numconstants, only: machine_prec, small
   use thermopack_constants
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -1566,9 +1566,9 @@ contains
     type(nonlinear_solver) :: solver
     integer :: sphase, is, imax(1)
     logical :: testSpecVolume
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     !
-    p_act_eosc => get_active_eos_container()
+    act_mod_ptr => get_active_thermo_model()
     isConverged = .true.
     param(1) = sspec
     param(2) = vspec
@@ -1619,7 +1619,7 @@ contains
         if (isSingleComp(Z)) then
           imax = maxloc(Z)
           is = imax(1)
-          testSpecVolume = (abs((1.0 - t/p_act_eosc%comps(is)%p_comp%tc)*(1.0 - p/p_act_eosc%comps(is)%p_comp%pc)) > small)
+          testSpecVolume = (abs((1.0 - t/act_mod_ptr%comps(is)%p_comp%tc)*(1.0 - p/act_mod_ptr%comps(is)%p_comp%pc)) > small)
         else
           testSpecVolume = .true.
         endif

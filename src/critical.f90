@@ -8,7 +8,7 @@
 !-------------------------------------------------------------------------
 module critical
   use thermopack_constants, only: verbose, VAPPH, LIQPH, Rgas
-  use thermopack_var, only: nc, eos_container, get_active_eos_container
+  use thermopack_var, only: nc, thermo_model, get_active_thermo_model
   use eos, only : thermo, pseudo_safe
   use eosTV, only : thermoTV, pressure
   implicit none
@@ -1658,8 +1658,8 @@ contains
     type(nonlinear_solver) :: solver
     real :: tpc,ppc,zpc,vpc,b
     logical :: needalt, isCPA
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     ierr = 0
     v0 = v
@@ -1667,8 +1667,8 @@ contains
     param(1:nc) = z
     param(nc+1:2*nc) = sqrt(z)
 
-    needalt = p_act_eosc%need_alternative_eos
-    isCPA = (p_act_eosc%eosidx == eosCPA)
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     ! Calculate co-volume
     b = get_b_linear_mix(z)
     if (v <= 0.0) then
@@ -1925,8 +1925,8 @@ contains
     type(nonlinear_solver) :: solver
     integer :: ic
     logical :: needalt, isCPA
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (nc == 1 .or. nc > 2) then
       call stoperror("calcCriticalZ: Only two components can be active.")
@@ -1994,8 +1994,8 @@ contains
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
     call get_templimits(xmin(2), xmax(2))
-    needalt = p_act_eosc%need_alternative_eos
-    isCPA = (p_act_eosc%eosidx == eosCPA)
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
       xmin(3) = 1.0e-8
     else
@@ -2263,8 +2263,8 @@ contains
     type(nonlinear_solver) :: solver
     integer :: ic
     logical :: needalt, isCPA
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (.not. nc == 2) then
       call stoperror("calcCriticalEndPoint: Only two components can be active.")
@@ -2322,8 +2322,8 @@ contains
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
     call get_templimits(xmin(2), xmax(2))
-    needalt = p_act_eosc%need_alternative_eos
-    isCPA = (p_act_eosc%eosidx == eosCPA)
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
       xmin(3) = 1.0e-8
       xmin(6) = log(xmin(3))
@@ -2565,12 +2565,12 @@ end module critical
     integer :: s, ierr
     real :: ds, X(4), X0(4), dXds(4)
     real :: Zc(2), Pc, Tc, vc
-    class(base_eos_param), pointer :: p_act_eos
-    p_act_eos => get_active_eos()
+    class(base_eos_param), pointer :: act_eos_ptr
+    act_eos_ptr => get_active_eos()
 
     print *,"Testing critical sensitivity calculation"
     !call init_thermo("Thermopack","SRK","Classic","Classic",2,"CO2,NC14",2)
-    select type(p_eos => p_act_eos)
+    select type(p_eos => act_eos_ptr)
       class is (cb_eos)
         p_eos%kij(1,2) = 0.09
         p_eos%kij(2,1) = 0.09

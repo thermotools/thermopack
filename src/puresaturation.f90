@@ -1,6 +1,6 @@
 module puresaturation
   use nonlinear_solvers
-  use thermopack_var, only: nc, get_active_eos_container, eos_container, &
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
        base_eos_param, get_active_alt_eos
 !  use utilities, only: get_thread_index
   implicit none
@@ -36,12 +36,12 @@ contains
     real, dimension(1) :: X, Xmin, Xmax, dFdX
     type(nonlinear_solver) :: solver
     logical :: alt_eos
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
     if (present(ierr)) ierr = 0
 
-    p_act_eosc => get_active_eos_container()
-    alt_eos = p_act_eosc%need_alternative_eos
+    act_mod_ptr => get_active_thermo_model()
+    alt_eos = act_mod_ptr%need_alternative_eos
 
     ! Start with establishment of pseudocritical properties
     if (present(pseudo_crit_TP)) then
@@ -139,8 +139,8 @@ contains
     real :: P, T, gL, gG
     real, dimension(nc) :: Z
     integer :: gflag_opt
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
     alt_eos = boolean(param(nc+3))
     tempIsVar = boolean(param(nc+2))
@@ -161,12 +161,12 @@ contains
     endif
 
     if (alt_eos) then
-      p_act_eosc => get_active_eos_container()
-      p_act_eos => get_active_alt_eos()
+      act_mod_ptr => get_active_thermo_model()
+      act_eos_ptr => get_active_alt_eos()
       !
-      call TP_CalcGibbs(nc,p_act_eosc%comps,p_act_eos,&
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
            T,P,Z,VAPPH,residual=.true.,g=gG,gflag_opt=gflag_opt)
-      call TP_CalcGibbs(nc,p_act_eosc%comps,p_act_eos,&
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
            T,P,Z,LIQPH,residual=.true.,g=gL,gflag_opt=gflag_opt)
     else
       call residualGibbs(t,p,z,VAPPH,gG,metaExtremum=meta)
@@ -189,8 +189,8 @@ contains
     real :: P, T, gG, gL, dgL, dgG, dgrdt_G, dgrdt_L, dgrdp_G, dgrdp_L
     real, dimension(nc) :: Z
     integer :: gflag_opt
-    type(eos_container), pointer :: p_act_eosc
-    class(base_eos_param), pointer :: p_act_eos
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
     alt_eos = boolean(param(nc+3))
     tempIsVar = boolean(param(nc+2))
@@ -211,12 +211,12 @@ contains
     endif
 
     if (alt_eos) then
-      p_act_eosc => get_active_eos_container()
-      p_act_eos => get_active_alt_eos()
+      act_mod_ptr => get_active_thermo_model()
+      act_eos_ptr => get_active_alt_eos()
       !
-      call TP_CalcGibbs(nc,p_act_eosc%comps,p_act_eos,&
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
            T,P,Z,VAPPH,residual=.true.,g=gG,dgdt=dgrdt_G,dgdp=dgrdp_G,gflag_opt=gflag_opt)
-      call TP_CalcGibbs(nc,p_act_eosc%comps,p_act_eos,&
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
            T,P,Z,LIQPH,residual=.true.,g=gL,dgdt=dgrdt_L,dgdp=dgrdp_L,gflag_opt=gflag_opt)
     else
       call residualGibbs(t,p,z,VAPPH,gG,dgrdt_G,dgrdp_G,metaExtremum=meta)

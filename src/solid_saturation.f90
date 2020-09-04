@@ -3,7 +3,7 @@ module solid_saturation
   use saturation_curve
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use nonlinear_solvers
   !use nonlinear_solvers
   !use numconstants, only: machine_prec
@@ -1493,8 +1493,8 @@ contains
     real, dimension(5) :: param
     type(nonlinear_solver) :: solver
     real :: Tmin, Pmin, Tmax, Pmax, Jac(1,1)
-    type(eos_container), pointer :: p_act_eosc
-    p_act_eosc => get_active_eos_container()
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (specification /= specT .and. specification /= specP) then
       print *,'sol_fluid_eq_single_comp: Only possible to call with spec=1 and spec=2'
@@ -1516,15 +1516,15 @@ contains
     param(4) = real(phase)
 
     if (phase == VAPPH) then
-      Tmax = p_act_eosc%comps(is)%p_comp%ttr
+      Tmax = act_mod_ptr%comps(is)%p_comp%ttr
       Tmin = tpTmin
-      Pmax = p_act_eosc%comps(is)%p_comp%ptr
+      Pmax = act_mod_ptr%comps(is)%p_comp%ptr
       Pmin = tpPmin
     else
       Tmax = tpTmax
-      Tmin = p_act_eosc%comps(is)%p_comp%ttr
+      Tmin = act_mod_ptr%comps(is)%p_comp%ttr
       Pmax = tpPmax
-      Pmin = p_act_eosc%comps(is)%p_comp%ptr
+      Pmin = act_mod_ptr%comps(is)%p_comp%ptr
     endif
 
     if (specification == specP) then
@@ -1590,8 +1590,8 @@ contains
           print *,'Specified temperature (K): ',T
         endif
         write(*,*) "Computed value for T/K or P/Pa", exp(XX(1))
-        write(*,*) "ttr, ptr=", p_act_eosc%comps(is)%p_comp%ttr, &
-             p_act_eosc%comps(is)%p_comp%ptr
+        write(*,*) "ttr, ptr=", act_mod_ptr%comps(is)%p_comp%ttr, &
+             act_mod_ptr%comps(is)%p_comp%ptr
         write(*,*) "Exit flag: ", solver%exitflag
         write(*,*) "Error on exit: ", solver%error_on_exit
         call stoperror('sol_fluid_eq_single_comp::sat did not converge')
@@ -1749,10 +1749,10 @@ contains
     real, dimension(nc) :: X, Y, lnfugV, lnfugL, K
     real :: betaGas, betaSol, betaLiq
     integer :: iter, phase
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
     ! Locale triple points
-    p_act_eosc => get_active_eos_container()
-    Ttr = p_act_eosc%comps(is)%p_comp%ttr
+    act_mod_ptr => get_active_thermo_model()
+    Ttr = act_mod_ptr%comps(is)%p_comp%ttr
     if (isSingleComp(Z)) then
       if (Z(is) < 0.5) then
         ierr = 1
@@ -1761,7 +1761,7 @@ contains
           Ktr = 1.0
         endif
         ierr = 0
-        Ptr = p_act_eosc%comps(is)%p_comp%Ptr
+        Ptr = act_mod_ptr%comps(is)%p_comp%Ptr
       endif
       return
     endif

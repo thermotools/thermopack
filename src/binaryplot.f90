@@ -6,7 +6,7 @@ module binaryPlot
   !
   !
   use thermopack_constants, only: verbose, LIQPH, VAPPH
-  use thermopack_var, only: nc, nph, get_active_eos_container, eos_container
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   implicit none
   save
   !
@@ -3911,8 +3911,8 @@ contains
       character(len=*), parameter :: nod = 'NaN'
       character(len=*), parameter :: empty = nod // sep // nod // sep // nod // sep // nod
       character(len=2) :: n_str
-      type(eos_container), pointer :: p_act_eosc
-      p_act_eosc => get_active_eos_container()
+      type(thermo_model), pointer :: act_mod_ptr
+      act_mod_ptr => get_active_thermo_model()
       nLines = max(n1,n2)
       nCols = 8
       nCritLines = 0
@@ -3974,7 +3974,7 @@ contains
       ! Dump data to file
       ifile = newunit()
       open(unit=ifile,file=trim(filename))
-      write(ifile,'(A)') "#Binary system: "//trim(p_act_eosc%comps(1)%p_comp%ident)//" "//trim(p_act_eosc%comps(2)%p_comp%ident)
+      write(ifile,'(A)') "#Binary system: "//trim(act_mod_ptr%comps(1)%p_comp%ident)//" "//trim(act_mod_ptr%comps(2)%p_comp%ident)
       write(ifile,'(A,I2)') "#Global phase diagram of type: ", type
       write(ifile,'(A,I2)') "#Number of critical lines: ", nCritLines
       write(ifile,'(A,I2)') "#Number of LLVE lines: ", nLLVE
@@ -4913,14 +4913,14 @@ contains
     type(nonlinear_solver) :: solver
     integer :: ic
     logical :: needalt, isCPA
-    type(eos_container), pointer :: p_act_eosc
+    type(thermo_model), pointer :: act_mod_ptr
 
     if (nc == 1 .or. nc > 2) then
       call stoperror("calcAzeotropicPoint: Only two components can be active.")
     endif
-    p_act_eosc => get_active_eos_container()
-    needalt = p_act_eosc%need_alternative_eos
-    isCPA = (p_act_eosc%eosidx == eosCPA)
+    act_mod_ptr => get_active_thermo_model()
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
 
     ierr = 0
     vg0 = vg
