@@ -360,7 +360,7 @@ contains
         mixGE%cGE(i,j) = 0.0
         mixGE%correlation(i,j) = 0
       enddo
-    enddo
+   enddo
   end subroutine excess_gibbs_allocate_and_init
 
   subroutine assign_excess_gibbs_mix(mixGE1,mixGE2)
@@ -583,6 +583,7 @@ contains
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
     integer :: err
+    err = 0 ! needs initialization due to if clauses below
 
     call allocate_nc(eos%ai,nc,"eos%ai")
     call allocate_nc(eos%ait,nc,"eos%ait")
@@ -602,14 +603,6 @@ contains
     if (err /= 0) call stoperror('allocate_cbeos: could not deallocate single')
     allocate (eos%single(nc), STAT=err)
     if (err /= 0) call stoperror('allocate_cbeos: could not allocate single')
-    ! Allocate for mixing rules
-    ! if (isHVmixModel(eos%mruleidx) .or. eos%mruleidx == cbMixNRTL) then
-    !   call eos%mixGE%excess_gibbs_allocate_and_init(nc)
-    ! else if (eos%mruleidx == cbMixWongSandler ) then
-    !   call eos%mixWS%WS_allocate_and_init(nc)
-    ! else if (eos%mruleidx == cbMixClassic) then
-    !   call allaocate_nc(eos%kij,nc,"eos%kij")
-    ! endif
 
     eos%eosid = ""
     eos%mruleid = ""

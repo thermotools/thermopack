@@ -175,7 +175,7 @@ contains
   !! \author Geir S
   !! \author Morten Hammer
   subroutine SelectMixingRules(nc, comp, cbeos, mrulestr, param_reference, b_exponent)
-    use cubic_eos, only: cb_eos, cbMixUNIFAC
+    use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixNRTL, isHVmixModel
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
     use tpcbmix, only: cbCalcLowcasebij
@@ -269,9 +269,17 @@ contains
    !   Call StopError ('Unknown EOS')
    ! endif
 
+
     call get_mixing_rule_index(cbeos%eosidx, mrulestr, mruleidx)
     cbeos%mruleidx = mruleidx
     cbeos%mruleid = trim(mrulestr)
+
+    if (isHVmixModel(cbeos%mruleidx) .or. cbeos%mruleidx == cbMixNRTL) then
+       call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
+    else if (cbeos%mruleidx == cbMixWongSandler ) then
+       call cbeos%mixWS%WS_allocate_and_init(nc)
+    endif
+
     if (cbeos%mruleidx == cbMixUNIFAC) then
       call init_unifac(unifdb, mrulestr)
     else
