@@ -3,8 +3,8 @@
 !! \author MH, 2014-02
 module eoslibinit
   !
-  use thermopack_var, only: nce, get_active_eos_container, eos_container, &
-       get_active_alt_eos, base_eos_param, add_eos, &
+  use thermopack_var, only: nce, get_active_eos, eos_container, &
+       get_active_eos_container, get_active_alt_eos, base_eos_param, add_eos, &
        active_eos_container_is_associated, numAssocSites
   use eos_containers, only: allocate_eos
   implicit none
@@ -51,11 +51,11 @@ contains
   subroutine set_liq_vap_discr_method(liq_vap_discr_method)
     ! Method information
     integer, intent(in) :: liq_vap_discr_method !< Method to discriminate between liquid and vapor in case of an undefined single phase.
-    type(eos_container), pointer :: p_act_eos
-    p_act_eos => get_active_eos_container()
+    type(eos_container), pointer :: p_act_eosc
+    p_act_eosc => get_active_eos_container()
 
     ! Method for discriminating between liquid/vapor when poorly defined
-    p_act_eos%liq_vap_discr_method = liq_vap_discr_method
+    p_act_eosc%liq_vap_discr_method = liq_vap_discr_method
   end subroutine set_liq_vap_discr_method
 
   !> Initialize volume translation
@@ -128,6 +128,8 @@ contains
 
     ! Component list.
     call initCompList(trim(uppercase(comp_string)),ncomp,p_act_eosc%complist)
+    allocate(complist, source=p_act_eosc%complist)
+
     call allocate_eos(ncomp, eos)
 
     ! Method for discriminating between liquid/vapor when poorly defined
@@ -472,8 +474,10 @@ contains
     integer :: ncbeos, err, i, volumeShiftId, index
     character(len=ref_len) :: kij_ref_local, alpha_ref_local, saft_ref_local
     type(eos_container), pointer :: p_act_eosc
+    class(base_eos_param), pointer :: p_act_eos
     !
     p_act_eosc => get_active_eos_container()
+    p_act_eos => get_active_eos()
 
     if (present(kij_ref)) then
       kij_ref_local = trim(kij_ref)
@@ -552,9 +556,9 @@ contains
       end if
     end if
 
-    p_act_eosc%eos(1)%p_eos%volumeShiftId = volumeShiftId
-    p_act_eosc%eos(1)%p_eos%isElectrolyteEoS = .false.
-    select type(p_eos => p_act_eosc%eos(1)%p_eos)
+    p_act_eos%volumeShiftId = volumeShiftId
+    p_act_eos%isElectrolyteEoS = .false.
+    select type(p_eos => p_act_eos)
     class is (cb_eos)
       call SelectCubicEOS(nce,p_act_eosc%comps,p_eos,trim(alpha),&
            alpha_ref_local)
@@ -565,12 +569,12 @@ contains
            shEos=trim(eosLocal),&
            shMixRule=trim(mixRule),shAlpha=trim(alpha),&
            refEos=trim(csp_refEos),refAlpha=trim(alpha))
-    end select
+   end select
 
     ! SAFT initialization must be done after cbeos initialization.
-    if (isSAFTEOS(p_act_eosc%eos(1)%p_eos%eosidx)) then
-      call saft_type_eos_init(nce,p_act_eosc%comps,&
-           p_act_eosc%eos(1)%p_eos,saft_ref_local,silent_init)
+    if (isSAFTEOS(p_act_eos%eosidx)) then
+       call saft_type_eos_init(nce,p_act_eosc%comps,&
+            p_act_eos,saft_ref_local,silent_init)
     end if
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
@@ -715,7 +719,7 @@ contains
     ! Set component list
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,p_act_eosc%complist)
-    !
+
     call allocate_eos(ncomp, "SAFT-VR-MIE")
 
     ! Number of phases

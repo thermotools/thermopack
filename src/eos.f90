@@ -230,7 +230,7 @@ contains
     select case (p_act_eosc%EosLib)
     case (THERMOPACK)
       ! Thermopack
-      p_act_eosc => get_active_eos_container()
+       p_act_eos => get_active_eos()
       z = TP_CalcZfac(nc,p_act_eosc%comps,p_act_eos,&
            t,p,xx,phase,1,dzdt,dzdp,dzdx)
     case (TREND)
