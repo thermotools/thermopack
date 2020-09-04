@@ -316,9 +316,8 @@ contains
          elseif (string_match("DEFAULT", CPAarray(idx)%ref)) then
            idx_default = idx
          endif
-       else
-          idx = idx + 1
-       endif
+      endif
+      idx = idx + 1
     enddo
 
     if (.not. found) then

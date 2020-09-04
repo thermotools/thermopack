@@ -325,15 +325,8 @@ contains
 
     if (.not. found) then
       if (verbose) then
-        print *, "No CPA parameters for compName, ref ", compName, trim(param_ref)
+        print *, "No PC-SAFT parameters for compName, ref ", compName, trim(param_ref)
       endif
-      if (idx_default > 0) then
-        idx = idx_default
-        print *, "Using default parameter set for "//trim(compName)
-      endif
-    end if
-
-    if (.not. found) then
       if (idx_default > 0) then
         idx = idx_default
         print *, "Using default parameter set for "//trim(compName)
