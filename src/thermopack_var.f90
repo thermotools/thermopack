@@ -120,7 +120,7 @@ module thermopack_var
 
 
   ! Index that indicates the active model
-  integer :: activated_model_idx = 0
+  integer, private :: activated_model_idx = 0
   ! Pointer to active model
   type(thermo_model), pointer :: p_active_model => NULL()
   ! Multiple model support
