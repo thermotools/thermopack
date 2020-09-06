@@ -6,7 +6,7 @@ module eoslibinit
   use thermopack_var, only: nce, get_active_eos, thermo_model, &
        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
        active_thermo_model_is_associated, numAssocSites
-  use thermo_models, only: allocate_eos
+  use eos_container, only: allocate_eos
   implicit none
   save
   !
@@ -255,7 +255,7 @@ contains
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
-    use thermo_models, only: allocate_eos
+    use eos_container, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
@@ -457,7 +457,7 @@ contains
     use assocschemeutils, only: no_assoc
     use saft_association, only: numAssocSites
     use stringmod, only: uppercase
-    use thermo_models, only: allocate_eos
+    use eos_container, only: allocate_eos
     !$ use omp_lib
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state

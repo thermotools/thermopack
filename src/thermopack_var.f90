@@ -30,7 +30,7 @@ module thermopack_var
 
   type, abstract :: base_eos_param
     ! Base class for holding parameters unique to an EoS.
-    character (len=eosid_len) :: eosid !< Eos identefier
+    character (len=eosid_len) :: eosid !< Eos identifier
     !character (len=eos_name_len) :: label !< Name of EOS
     integer :: eosidx !< Eos group index
     integer :: subeosidx !< Eos sub-index
@@ -80,13 +80,13 @@ module thermopack_var
   type thermo_model
      !> A complete ThermoPack model. Holds information about the EoS, the
      !> mixture, and the computational solver options
-    integer :: eosc_idx !< Container index
+    integer :: model_idx !< Model is active if this equals activated_model_idx
     ! From parameters
     integer :: nph=3
     integer :: nc=0
     integer :: EoSlib=0
     integer :: eosidx=0
-    character(len=label_len) :: model
+    character(len=label_len) :: label
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
 
     ! Apparent composition
@@ -115,16 +115,16 @@ module thermopack_var
      !> is needed because gfortran does not allow arrays of pointer to
      !> base_eos_param, whereas arrays of the thermo_model_pointer type is
      !> allowed.
-    type(thermo_model), pointer :: p_eosc => NULL()
+    type(thermo_model), pointer :: p_model => NULL()
   end type thermo_model_pointer
 
 
-  ! Index used for naming
-  integer :: eos_idx = 0
-  ! Active model
-  type(thermo_model), pointer :: p_active_eos_c => NULL()
-  ! ! Multiple model support
-  type(thermo_model_pointer), allocatable, dimension(:) :: eos_conts
+  ! Index that indicates the active model
+  integer :: activated_model_idx = 0
+  ! Pointer to active model
+  type(thermo_model), pointer :: p_active_model => NULL()
+  ! Multiple model support
+  type(thermo_model_pointer), allocatable, dimension(:) :: thermo_models
 
   public :: get_active_eos, get_active_thermo_model, &
        get_active_alt_eos, active_thermo_model_is_associated
@@ -135,13 +135,13 @@ contains
 
   function get_active_thermo_model() result(p_eos)
     type(thermo_model), pointer :: p_eos
-    if (.not. associated(p_active_eos_c)) call stoperror("get_active_thermo_model: No active eos found")
-    p_eos => p_active_eos_c
+    if (.not. associated(p_active_model)) call stoperror("get_active_thermo_model: No active eos found")
+    p_eos => p_active_model
   end function get_active_thermo_model
 
   function active_thermo_model_is_associated() result(is_assoc)
     logical :: is_assoc
-    is_assoc = associated(p_active_eos_c)
+    is_assoc = associated(p_active_model)
   end function active_thermo_model_is_associated
 
   function get_active_eos() result(p_eos)
@@ -178,11 +178,11 @@ contains
     p_comps => p_eos_cont%comps
   end function get_active_comps
 
-  function is_model_container(eosc, index) result(isC)
-    class(thermo_model), intent(in) :: eosc
+  function is_model_container(model, index) result(isC)
+    class(thermo_model), intent(in) :: model
     integer, intent(in) :: index
     logical :: isC
-    isC = (eosc%eosc_idx == index)
+    isC = (model%model_idx == index)
   end function is_model_container
 
   subroutine activate_model(index)
@@ -190,10 +190,10 @@ contains
     ! Locals
     integer :: i
     character(len=4) :: index_str
-    if (.not. allocated(eos_conts)) call stoperror("No eos exists....")
-    do i=1,size(eos_conts)
-      if (eos_conts(i)%p_eosc%is_model_container(index)) then
-        p_active_eos_c => eos_conts(i)%p_eosc
+    if (.not. allocated(thermo_models)) call stoperror("No eos exists....")
+    do i=1,size(thermo_models)
+      if (thermo_models(i)%p_model%is_model_container(index)) then
+        p_active_model => thermo_models(i)%p_model
         call update_global_variables_form_active_thermo_model()
         return
       endif
@@ -203,35 +203,35 @@ contains
   end subroutine activate_model
 
   function add_eos() result(index)
-    !type(thermo_model), pointer, intent(in) :: eosc
+    !type(thermo_model), pointer, intent(in) :: model
     integer :: index
     ! Locals
     integer :: i, istat, n
     type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
-    type(thermo_model), pointer :: eosc
-    allocate(eosc, stat=istat)
+    type(thermo_model), pointer :: model
+    allocate(model, stat=istat)
     if (istat /= 0) call stoperror("Not able to allocate new eos")
     n = 1
-    if (allocated(eos_conts)) n = n + size(eos_conts)
+    if (allocated(thermo_models)) n = n + size(thermo_models)
     allocate(eos_copy(n), stat=istat)
     if (istat /= 0) call stoperror("Not able to allocate eos_copy")
     do i=1,n-1
-      eos_copy(i)%p_eosc => eos_conts(i)%p_eosc
+      eos_copy(i)%p_model => thermo_models(i)%p_model
     enddo
-    if (allocated(eos_conts)) deallocate(eos_conts, stat=istat)
-    if (istat /= 0) call stoperror("Not able to deallocate eos_conts")
-    allocate(eos_conts(n), stat=istat)
-    if (istat /= 0) call stoperror("Not able to allocate eos_conts")
+    if (allocated(thermo_models)) deallocate(thermo_models, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
+    allocate(thermo_models(n), stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate thermo_models")
     do i=1,n-1
-      eos_conts(i)%p_eosc => eos_copy(i)%p_eosc
+      thermo_models(i)%p_model => eos_copy(i)%p_model
     enddo
-    eos_conts(n)%p_eosc => eosc
+    thermo_models(n)%p_model => model
     deallocate(eos_copy, stat=istat)
     if (istat /= 0) call stoperror("Not able to deallocate eos_copy")
-    p_active_eos_c => eosc
-    eos_idx = eos_idx + 1
-    index = eos_idx
-    p_active_eos_c%eosc_idx = index
+    p_active_model => model
+    activated_model_idx = activated_model_idx + 1
+    index = activated_model_idx
+    p_active_model%model_idx = index
   end function add_eos
 
   subroutine delete_eos(index)
@@ -239,34 +239,34 @@ contains
     ! Locals
     integer :: i, istat, n, nr
     type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
-    if (.not. allocated(eos_conts)) call stoperror("Not able to delete model. No models exists....")
-    n = size(eos_conts)
+    if (.not. allocated(thermo_models)) call stoperror("Not able to delete model. No models exists....")
+    n = size(thermo_models)
     allocate(eos_copy(n-1), stat=istat)
     if (istat /= 0) call stoperror("Not able to allocate eos_copy")
     nr = 0
     do i=1,n
-      if (eos_conts(i)%p_eosc%is_model_container(index)) then
-        if (p_active_eos_c%is_model_container(index)) then
-          p_active_eos_c => NULL()
+      if (thermo_models(i)%p_model%is_model_container(index)) then
+        if (p_active_model%is_model_container(index)) then
+          p_active_model => NULL()
         endif
-        call eos_conts(i)%p_eosc%dealloc()
-        deallocate(eos_conts(i)%p_eosc, stat=istat)
-        if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_eosc")
+        call thermo_models(i)%p_model%dealloc()
+        deallocate(thermo_models(i)%p_model, stat=istat)
+        if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_model")
       else
         nr = nr + 1
-        eos_copy(nr)%p_eosc => eos_conts(i)%p_eosc
+        eos_copy(nr)%p_model => thermo_models(i)%p_model
       endif
     enddo
-    deallocate(eos_conts, stat=istat)
-    if (istat /= 0) call stoperror("Not able to deallocate eos_conts")
+    deallocate(thermo_models, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
     if (nr > 0) then
-      allocate(eos_conts(n-1), stat=istat)
-      if (istat /= 0) call stoperror("Not able to allocate eos_conts")
+      allocate(thermo_models(n-1), stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate thermo_models")
       do i=1,n-1
-        eos_conts(i)%p_eosc => eos_copy(i)%p_eosc
+        thermo_models(i)%p_model => eos_copy(i)%p_model
       enddo
-      if (.not. associated(p_active_eos_c)) then
-        p_active_eos_c => eos_conts(1)%p_eosc
+      if (.not. associated(p_active_model)) then
+        p_active_model => thermo_models(1)%p_model
       endif
     endif
   end subroutine delete_eos
@@ -277,39 +277,39 @@ contains
     ! Input:
   end subroutine eos_dealloc
 
-  subroutine thermo_model_dealloc(eosc)
+  subroutine thermo_model_dealloc(model)
     ! Passed object:
-    class(thermo_model), intent(inout) :: eosc
+    class(thermo_model), intent(inout) :: model
     ! Locals
     integer :: i, istat
-    do i=1,size(eosc%eos)
-      if (associated(eosc%eos(i)%p_eos)) then
-        call eosc%eos(i)%p_eos%dealloc()
-        deallocate(eosc%eos(i)%p_eos, stat=istat)
+    do i=1,size(model%eos)
+      if (associated(model%eos(i)%p_eos)) then
+        call model%eos(i)%p_eos%dealloc()
+        deallocate(model%eos(i)%p_eos, stat=istat)
         if (istat /= 0) print *,"Error deallocating eos"
-        eosc%eos(i)%p_eos => NULL()
+        model%eos(i)%p_eos => NULL()
       endif
-      if (associated(eosc%cubic_eos_alternative(i)%p_eos)) then
-        call eosc%cubic_eos_alternative(i)%p_eos%dealloc()
-        deallocate(eosc%cubic_eos_alternative(i)%p_eos, stat=istat)
+      if (associated(model%cubic_eos_alternative(i)%p_eos)) then
+        call model%cubic_eos_alternative(i)%p_eos%dealloc()
+        deallocate(model%cubic_eos_alternative(i)%p_eos, stat=istat)
         if (istat /= 0) print *,"Error deallocating cubic_eos_alternative"
-        eosc%cubic_eos_alternative(i)%p_eos => NULL()
+        model%cubic_eos_alternative(i)%p_eos => NULL()
       endif
     enddo
 
-    if (allocated(eosc%comps)) then
-      deallocate(eosc%comps, stat=istat)
+    if (allocated(model%comps)) then
+      deallocate(model%comps, stat=istat)
       if (istat /= 0) print *,"Error deallocating comps"
     endif
-    if (allocated(eosc%complist)) then
-      deallocate(eosc%complist, stat=istat)
+    if (allocated(model%complist)) then
+      deallocate(model%complist, stat=istat)
       if (istat /= 0) print *,"Error deallocating complist"
     endif
-    if (associated(eosc%apparent)) then
-      call eosc%apparent%dealloc()
-      deallocate(eosc%apparent, stat=istat)
+    if (associated(model%apparent)) then
+      call model%apparent%dealloc()
+      deallocate(model%apparent, stat=istat)
       if (istat /= 0) print *,"Error deallocating apparent class"
-      eosc%apparent => NULL()
+      model%apparent => NULL()
     endif
 
   end subroutine thermo_model_dealloc
