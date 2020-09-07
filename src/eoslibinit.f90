@@ -367,7 +367,7 @@ contains
   !> \author MH, 2019-03
   !----------------------------------------------------------------------
   subroutine redefine_critical_parameters(silent_init)
-    use tpcbmix,      only: cbSingleCalcABC
+    use cbmix,      only: cbSingleCalcABC
     use thermopack_var, only: nce
     use eosTV,        only: pressure
     use critical,     only: calcCriticalTV
@@ -449,7 +449,7 @@ contains
     use thermopack_constants, only: THERMOPACK, ref_len
     use thermopack_var, only: nce, nc, nph, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
-    use csp, only: csp_init, extcsp_eos
+    use extcsp, only: csp_init, extcsp_eos
     use cubic_eos, only: cb_eos
     use cbselect, only: SelectCubicEOS, SelectMixingRules
     use saft_interface, only: saft_type_eos_init

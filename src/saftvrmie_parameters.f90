@@ -180,7 +180,7 @@ module saftvrmie_parameters
   type(saftvrmie_data), parameter :: Miecx61 = saftvrmie_data(eosSAFT_VR_MIE,"H2", &
        1.0000, 3.0459E-10, 33.434, 6, 12.0, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "TREJOS2013") ! Trejos et al. 2013, doi: 10.1063/1.4829769
 
-  ! MÃ¼ller's mystery parameters for methane and decane where SAFT-VR Mie fails
+  ! Müller's mystery parameters for methane and decane where SAFT-VR Mie fails
   type(saftvrmie_data), parameter :: Miecx62 = saftvrmie_data(eosSAFT_VR_MIE,"C1", &
        1.0, 3.752E-10, 170.75, 6, 16.39, 0.0, 0.0, 0.0, no_assoc, 0, "Muller")
   type(saftvrmie_data), parameter :: Miecx63 = saftvrmie_data(eosSAFT_VR_MIE,"NC10", &

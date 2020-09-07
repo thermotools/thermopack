@@ -11,7 +11,7 @@ Module eos_parameters
   use multiparameter_para_h2, only: meos_para_h2
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
-  use tpmbwr, only: eosmbwr, initializeMBWRmodel
+  use mbwr, only: eosmbwr, initializeMBWRmodel
 
   ! type, abstract :: base_eos_param
   !   ! Base class for holding eos-data

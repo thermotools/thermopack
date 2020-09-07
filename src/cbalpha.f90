@@ -224,7 +224,6 @@ contains
       case (cbAlphaGergIdx)
         call stoperror("Don't know what to do for GERG alpha method")
      case default
-        print *, 
         call stoperror("Don't know what to do for alpha method "//&
              trim(cbeos%single(i)%alphaCorrName))
       end select
@@ -325,7 +324,7 @@ contains
 
     yf = 1.0 - sqrt(tr)
     yfT = - 0.5 / (sqrt(tr)*Tci)  !dyf/dT
-    yfTT = 0.25/((Tr**1.5)*Tci*Tci) !dÂ²yf/dTÂ²
+    yfTT = 0.25/((Tr**1.5)*Tci*Tci) !d²yf/dT²
 
     ! Alhpa = xx**nPot
     xx = 1 + a * yf + b * yf**2 + c * yf**3

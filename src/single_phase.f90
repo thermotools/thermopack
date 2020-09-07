@@ -103,7 +103,7 @@ contains
   !! \author Oivind W
   function TP_CalcEnthalpy(nc,comp,cbeos,T,P,n,phase,residual,&
        dhdt,dhdp,dhdz,gflag_opt) result (enthalpy)
-    use tpcubic
+    use cubic
     use ideal
     use stringmod, only: str_eq
     use LeeKesler, only: lkCalcEnthalpy
@@ -204,7 +204,7 @@ contains
   !! \author Oivind W
   function TP_CalcEntropy(nc,comp,cbeos,T,P,n,phase,residual,&
        dsdt,dsdp,dsdz,gflag_opt) result (entropy)
-    use tpcubic
+    use cubic
     use ideal
     use stringmod, only: str_eq
     use LeeKesler, only: lkCalcEntropy
@@ -377,11 +377,11 @@ contains
   !! \author GL, 22-01-2015
   function TV_CalcFreeEnergy(nc,comp,cbeos,T,v,n,&
        dYdt,dYdv,dYdn,recalculate) result (Y)
-    use tpcubic
+    use cubic
     use ideal
     use stringmod, only: str_eq
     use eosdata
-    use csp, only: csp_calcFres
+    use extcsp, only: csp_calcFres
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
@@ -466,7 +466,7 @@ contains
   !! \author Oivind W
   subroutine TP_CalcFugacity(nc,comp,cbeos,T,P,Z,phase,lnfug,&
        dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v)
-    use tpcubic
+    use cubic
     use LeeKesler, only: lkCalcFug
     use eosdata
     use compdata, only: gendata_pointer
@@ -518,7 +518,7 @@ contains
   !! \author Morten H.
   subroutine TP_CalcGibbs(nc,comp,cbeos,T,P,n,phase,residual,g,&
        dgdt,dgdp,dgdn,gflag_opt,recalculate)
-    use tpcubic
+    use cubic
     use ideal
     use LeeKesler, only: lkCalcGdep
     use eosdata
@@ -638,7 +638,7 @@ contains
   !!
   subroutine TV_CalcPressure(nc,comp,cbeos,T,v,n,p,&
        dpdv,dpdt,d2pdv2,dpdn,recalculate)
-    use tpcubic
+    use cubic
     use eosdata
     use compdata, only: gendata_pointer
     use volume_shift, only: volumeShiftVolume, NOSHIFT
@@ -689,7 +689,7 @@ contains
 
   !> Calculate pseudo critical properties.
   subroutine TP_CalcPseudo(nc,comp,cbeos,n,tpc,ppc,zpc,vpc)
-    use tpcubic, only: cbCalcPseudo
+    use cubic, only: cbCalcPseudo
     use cubic_eos, only: cb_eos
     use compdata, only: gendata_pointer
     use thermopack_var, only: nce, apparent_to_real_mole_numbers
@@ -791,9 +791,9 @@ contains
   !! \param n - Mole numbers [mol]
   subroutine TV_CalcFres(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
-    use tpcubic, only: calcCbFder_res_SI
+    use cubic, only: calcCbFder_res_SI
     use eosdata
-    use csp, only: csp_calcFres, extcsp_eos
+    use extcsp, only: csp_calcFres, extcsp_eos
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
     use volume_shift, only: NOSHIFT
@@ -1133,9 +1133,9 @@ contains
   !! \author Morten Hammer
   function fork_Zfac_calculation(nc,comp,cbeos,T,P,n,phase,gflag_opt,&
        dZdt,dZdp,dZdz) result (Zfac)
-    use tpcubic, only: cbCalcZfac
+    use cubic, only: cbCalcZfac
     use LeeKesler, only: lkCalcZfac
-    use csp, only: csp_zfac, extcsp_eos
+    use extcsp, only: csp_zfac, extcsp_eos
     use saft_interface, only: saft_zfac
     use eosdata
     use compdata, only: gendata_pointer
@@ -1229,7 +1229,7 @@ contains
   !! \author M. Hammer
   function TV_CalcEntropy(nc,comp,cbeos,T,V,n,residual,&
        dsdt,dsdv,dsdn) result (s)
-    use tpcubic
+    use cubic
     use ideal
     use stringmod, only: str_eq
     use LeeKesler, only: lkCalcEntropy

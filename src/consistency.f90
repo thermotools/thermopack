@@ -134,8 +134,8 @@ subroutine testCubicModel(t,p,n,phase)
   use thermopack_var, only: nc, get_active_eos, base_eos_param
   use thermopack_constants, only: kRgas
   use cubic_eos
-  use tpcubic
-  use tpcbmix
+  use cubic
+  use cbmix
   use cbhelm
   use eosdata, only: cbSW, cbPT
   implicit none

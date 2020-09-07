@@ -2018,7 +2018,7 @@ contains
             a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
             a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     endif
-    ! Multiply a22 with 0.5*eps*CÂ²
+    ! Multiply a22 with 0.5*eps*C²
     prefactor = 0.5*saftvrmie_param%eps_divk_ij(i,j)*saftvrmie_param%Cij(i,j)**2
     a2 = prefactor*a2
     if (present(a2_T)) then
@@ -2067,7 +2067,7 @@ contains
        a2_VVn = prefactor*a2_VVn
     endif
 
-    ! Multiply 0.5*eps*CÂ²*a22 with Khs
+    ! Multiply 0.5*eps*C²*a22 with Khs
     call calc_a_zeta_product(nc,s_vc%Khs,a2,a2_T,a2_V,a2_n,&
          a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
          a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
@@ -2113,7 +2113,7 @@ contains
             a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)
     endif
 
-    ! Multiply a22 with 0.5*eps*CÂ²
+    ! Multiply a22 with 0.5*eps*C²
     prefactor = 0.5*saftvrmie_param%eps_divk_ij(i,j)*saftvrmie_param%Cij(i,j)**2
     a2 = prefactor*a2
     if (present(a2_T)) then
@@ -2162,7 +2162,7 @@ contains
        a2_VVn = prefactor*a2_VVn
     endif
 
-    ! Multiply 0.5*eps*CÂ²*a22 with Khs
+    ! Multiply 0.5*eps*C²*a22 with Khs
     call calc_a_zeta_product(nc,s_vc%Khs,a2,a2_T,a2_V,a2_n,&
          a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
          a2_VVV,a2_VVT,a2_VTT,a2_VVn,a2_Vnn,a2_VTn)

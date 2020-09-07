@@ -95,7 +95,7 @@ contains
     use cubic_eos
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
-    !use tpcbmix, only: cbCalcParameters
+    !use cbmix, only: cbCalcParameters
     !use unifac, only: init_unifac, unifdb
     use cbAlpha, only: tpInitAlphaCorr
     implicit none
@@ -133,7 +133,7 @@ contains
   subroutine cbCalcParameters (nc, cbeos)
     use eosdata
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcM, cbCalcOmegaZc
+    use cbmix, only: cbCalcM, cbCalcOmegaZc
     implicit none
     integer, intent(in) :: nc
     class(cb_eos), intent(inout) :: cbeos
@@ -178,7 +178,7 @@ contains
     use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixNRTL, isHVmixModel
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
-    use tpcbmix, only: cbCalcLowcasebij
+    use cbmix, only: cbCalcLowcasebij
     use unifac, only: init_unifac, unifdb
     implicit none
     integer, intent(in) :: nc
@@ -340,7 +340,7 @@ contains
   !> \author Morten Hammer
   subroutine redefine_TcPcAcf_comp_cubic(j,TcSpec, PcSpec, AcfSpec, ierr)
     use thermopack_var, only: nce, get_active_thermo_model, thermo_model
-    !use tpcbmix, only: cbCalcParameters
+    !use cbmix, only: cbCalcParameters
     use eosdata, only: eosCubic
     use cubic_eos, only: cb_eos
     !$ use omp_lib, only: omp_get_max_threads

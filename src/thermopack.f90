@@ -2,7 +2,7 @@ program run_thermopack
   ! Program to call the thermopack code
   ! Morten Hammer, 2020-05.
   !----------------------------------------------------------------------
-  use eoslibinit, only: init_thermo
+  use eoslibinit, only: init_thermo, init_saftvrmie
   use thermopack_constants
   use critical, only: calcCriticalTV
   use eosTV, only: pressure
@@ -13,9 +13,10 @@ program run_thermopack
 
   !call init_thermo('PC-SAFT', 'VDW', 'CLASSIC', "CO2,H2O", 2)
   !call init_thermo('PR', 'VDW', 'CLASSIC', "CO2,H2O", 2)
-  call init_thermo('CPA-SRK', 'VDW', 'CLASSIC', "H2O,ETOH", 2)
+  !call init_thermo('CPA-SRK', 'VDW', 'CLASSIC', "H2O,ETOH", 2)
   !call init_thermo('PR', 'HV1', 'CLASSIC', "CO2,H2O", 2)
-  Tc = 290.0
+  call init_saftvrmie("CO2,NE","DEFAULT")
+  Tc = -1 !290.0
   vc = -1!1.0/(50.5e3)
   Z = [0.99,0.01]
   !print *, z

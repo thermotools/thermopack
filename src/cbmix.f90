@@ -1,4 +1,4 @@
-module tpcbmix
+module cbmix
   implicit none
   save
 
@@ -731,4 +731,4 @@ contains
     m2 = cbeos%m2
   end subroutine getCubicm1m2
 
-end module tpcbmix
+end module cbmix

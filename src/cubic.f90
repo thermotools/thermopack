@@ -8,7 +8,7 @@
 !!   SW    - Schmidt and Wenzel
 !!   PT    - Patel-Teja
 
-module tpcubic
+module cubic
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
   implicit none
   save
@@ -364,7 +364,7 @@ contains
   !
   subroutine cbCalcPressure (nc,cbeos,T,v,z,p,dpdv,dpdt,d2pdv2,dpdz,recalculate)
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbPress, cbPrst, cbPv, cbPvv, cbPi
     implicit none
     integer, intent(in) :: nc
@@ -746,7 +746,7 @@ contains
   subroutine cbCalcZfac(nc,cbeos,T,p,z,iphase,zfac,gflag_opt,dZdt,dZdp,dZdz,minGphase)
     use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
     class(cb_eos), intent(inout) :: cbeos
@@ -1248,7 +1248,7 @@ contains
   subroutine cbCalcInnerEnergy(nc,cbeos,T,v,Z,u,dudt,dudv,recalculate)
     use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbFtt, cbFvt, cbFt
     implicit none
     integer, intent(in) :: nc
@@ -1307,7 +1307,7 @@ contains
     use thermopack_constants, only: kRgas
     use eosdata
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
     class(cb_eos), intent(inout) :: cbeos
@@ -1604,7 +1604,7 @@ contains
   subroutine cbCalcFreeEnergy(nc,cbeos,T,v,Z,Y,dYdt,dYdv,recalculate)
     use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbFt
     implicit none
     integer, intent(in) :: nc
@@ -1658,7 +1658,7 @@ contains
     use cubic_eos, only: cb_eos
     use cbHelm, only: cbF, cbFv, cbFvv, cbFt, cbFtt, cbFvt, &
          cbFi, cbFij, cbFiv, cbFit
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
     real, intent(in) :: T,V,n(nc)
@@ -1698,7 +1698,7 @@ contains
        F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
     use cbhelm, only: cbF, cbFv, cbFvv, cbFt, cbFtt, cbFvt, cbFvvv, &
          cbFi, cbFij, cbFiv, cbFit
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     use cubic_eos, only: cb_eos
     ! Input
     integer, intent(in) :: nc
@@ -1743,4 +1743,4 @@ contains
     end if
   end subroutine calcCbFder_res_SI
 
-end module tpcubic
+end module cubic

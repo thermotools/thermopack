@@ -106,7 +106,7 @@ contains
   !!                   Shomate eq. Data from NIST for CO2 (Geir S, Sep 2016)  *
   !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
   !!                               CP(4)*T**3 + CP(5)/T**2           (kJ/kgK) *
-  !!             - 6 : CHEN, BENDER (PETTER NEKSÃ…)                            *
+  !!             - 6 : CHEN, BENDER (PETTER NEKSÅ)                            *
   !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
   !!                               CP(4)*T**3+ CP(5)*T**4        (kJ/kg K)    *
   !!             - 7 : AIChE, Daubert and Danner, DIPPR-databasen             *

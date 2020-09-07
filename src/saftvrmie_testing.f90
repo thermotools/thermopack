@@ -277,11 +277,11 @@ contains
     print *, " True a2 (from s_eff to inf)    : ", Int_a2_true*prefactor
     print *, " Our value of a2                : ", a2
     print *, " -------------------- "
-    print *, " Part a2 (Mie^2 from s to inf)  : ", (Int_a2_Mie)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (Dpart from s to inf)  : ", (2*Int_a2_Dpart)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (D2part from s to inf) : ", (Int_a2_q1)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (FH1 from s to inf)    : ", (Int_a2_FH1)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (FH2 from s to inf)    : ", (Int_a2_FH2)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (Mie^2 from s to inf)  : ", (Int_a2_Mie)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (Dpart from s to inf)  : ", (2*Int_a2_Dpart)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (D2part from s to inf) : ", (Int_a2_q1)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (FH1 from s to inf)    : ", (Int_a2_FH1)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (FH2 from s to inf)    : ", (Int_a2_FH2)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
 
     print *, " Part a2 (Int. s to inf)        : ", Int_a2*prefactor
     print *, " Part a2 (Mie, Int s_eff to inf): ", Int_a2_trueMie*prefactor

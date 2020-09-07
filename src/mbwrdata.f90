@@ -1,4 +1,4 @@
-MODULE tpmbwrdata
+MODULE mbwrdata
   use stringmod, only: str_eq
   IMPLICIT NONE
   SAVE
@@ -1607,4 +1607,4 @@ CONTAINS
     end select
   end function getMBWR32critPropIndex
 
-END MODULE tpmbwrdata
+END MODULE mbwrdata

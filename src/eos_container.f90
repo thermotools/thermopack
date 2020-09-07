@@ -8,7 +8,7 @@ module eos_container
   use thermopack_var
   use saftvrmie_containers, only: saftvrmie_eos
   use pc_saft_nonassoc, only: PCSAFT_eos
-  use csp, only: extcsp_eos
+  use extcsp, only: extcsp_eos
 
 contains
 

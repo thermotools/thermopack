@@ -9,12 +9,12 @@
 !> SI units, with the exception of density [mol/L] and molar volume [L/mol].
 !-----------------------------------------------------------------------------
 
-module csp
+module extcsp
   use thermopack_constants
   use compdata, only: gendata_pointer
   use cubic_eos, only: cb_eos, cubic_eos_dealloc, assign_cubic_eos, &
        allocate_and_init_cubic_eos
-  use tpmbwr, only: eosmbwr, initializembwrmodel
+  use mbwr, only: eosmbwr, initializembwrmodel
   use multiparameter_c3, only: meos_C3
   use stringmod, only: str_eq
   use multiparameter_base, only: meos
@@ -24,7 +24,7 @@ module csp
   save
 
   real, parameter, dimension(1) :: zRef = 1.0          !< This is the vector of mole numbers if we're using a cubic reference equation
-  integer, parameter :: cubic = 1, mbwr = 2, nist = 3
+  integer, parameter :: c_u_b_i_c = 1, m_b_w_r = 2, nist = 3
 
   type shape_diff                                      !< Derivatives. Uses the notation on pages 115-120 in Michelsen & Mollerup.
     ! Shape factors
@@ -94,7 +94,7 @@ contains
   subroutine csp_init(eos,nce,comps,refcomp_str,shEos,shMixRule,shAlpha,refEos,refAlpha) ! The input consists entirely of strings.
     use cbselect, only: SelectCubicEOS, SelectMixingRules
     use thermopack_constants, only: kRgas
-    use tpmbwr, only: initializeMBWRmodel
+    use mbwr, only: initializeMBWRmodel
     use eosdata
     use compdata, only: SelectComp
     use stringmod, only: str_upcase
@@ -122,7 +122,7 @@ contains
       end if
     else if (refEos_upcase(1:4) == 'MBWR' .or. refEos_upcase == 'BENDER') then
       !MBWR reference equation
-      eos%refEosType = mbwr
+      eos%refEosType = m_b_w_r
       select case(refEos_upcase)
       case ("MBWR19","MBWR20","BENDER")
         refEos_upcase = "MBWR19"
@@ -171,7 +171,7 @@ contains
     call SelectMixingRules(nce, comps, eos%shapeEos, &
          trim(shMixRule), "DEFAULT")
 
-    if (eos%refEosType == cubic) then
+    if (eos%refEosType == c_u_b_i_c) then
       !Cubic reference equation
       eos%cbrefEos%eosid = trim(refEos)
       call get_eos_index(refEos,eos%cbrefEos%eosidx,eos%cbrefEos%subeosidx)
@@ -391,7 +391,7 @@ contains
   subroutine mixture(cbeos,T,n,D,B,sdiff)
     !use optimizers, only: optimize, optim_param, setX
     use thermopack_var, only: nce
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     use cubic_eos, only: cb_eos
     implicit none
     class(cb_eos), intent(inout) :: cbeos !< The cubic equation for the shape factors
@@ -430,7 +430,7 @@ contains
   !> \author MH, 2013-11-28
   !-----------------------------------------------------------------------------
   subroutine a0_diff(eos,T0,a0,a0T0,a0T0T0)
-    !    use tpcbmix, only: cbCalcAlphaTerm
+    !    use cbmix, only: cbCalcAlphaTerm
     implicit none
     class(extcsp_eos), intent(in) :: eos !< CSP eos container
     real, intent(out) :: a0,a0T0,a0T0T0 !< Differentials of a0
@@ -703,9 +703,9 @@ contains
   !> \author Ailo A, 2014-12
   !-----------------------------------------------------------------------------
   subroutine calcRefEqDiff(eos,T0,v0,sdiff)
-    use tpcubic, only: cbCalcDerivatives_svol
+    use cubic, only: cbCalcDerivatives_svol
     use thermopack_constants, only: Rgas
-    use tpmbwr_additional, only: alphar_derivatives
+    use mbwr_additional, only: alphar_derivatives
     use cbHelm
     implicit none
     class(extcsp_eos), intent(inout) :: eos
@@ -720,7 +720,7 @@ contains
     real :: D2alphaDT2
     real :: alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv
 
-    if (eos%refEosType .eq. cubic) then
+    if (eos%refEosType .eq. c_u_b_i_c) then
       call cbCalcDerivatives_svol(eos%refNc,eos%cbrefEos,T0,v0)
       sdiff%M = cbF(eos%cbrefEos)*(Rgas*T0)
       sdiff%Mt0 = Rgas*(cbF(eos%cbrefEos) + T0*cbFT(eos%cbrefEos))
@@ -728,7 +728,7 @@ contains
       sdiff%Mt0v0 = Rgas*(cbFV(eos%cbrefEos) + T0*cbFVT(eos%cbrefEos))
       sdiff%Mv0 = Rgas*T0*cbFV(eos%cbrefEos)
       sdiff%Mv0v0 = Rgas*T0*cbFVV(eos%cbrefEos)
-    else if (eos%refEosType .eq. mbwr) then ! alpha is the reduced residual molar Helmholtz energy.
+    else if (eos%refEosType .eq. m_b_w_r) then ! alpha is the reduced residual molar Helmholtz energy.
 
       rho = 1.0/v0
       call alphar_derivatives(deriv=alphaDerivatives,t=T0,rho_SI=rho*1e3,&
@@ -778,8 +778,8 @@ contains
   !> \author MH, 2013-11-27
   !-----------------------------------------------------------------------------
   function solveRefEqZfac(eos,T0,P0,phase) result(zFac)
-    use tpcubic
-    use tpmbwr_additional, only: mbwr_volume
+    use cubic
+    use mbwr_additional, only: mbwr_volume
     use thermopack_constants, only: Rgas
     implicit none
     !input
@@ -792,9 +792,9 @@ contains
     !locals
     real :: v0 ! specific volume [L/mol]
     real :: rho0 ! specific density (mol/m^3)
-    if (eos%refEosType .eq. cubic) then
+    if (eos%refEosType .eq. c_u_b_i_c) then
       call cbCalcZfac(eos%refNc,eos%cbrefEos,T0,P0,zRef,phase,zFac,1)
-    else if (eos%refEosType .eq. mbwr) then
+    else if (eos%refEosType .eq. m_b_w_r) then
       v0 = mbwr_volume(T0,P0,nMoles=1.0,phase=phase,model=eos%mbwrRefEos)
       zFac = P0*v0/(Rgas*T0) ! Need to use kRgas here since V is calculated in litres.
     else if (eos%refEosType .eq. nist) then
@@ -811,9 +811,9 @@ contains
   !> \author MH, 2013-11-27
   !-----------------------------------------------------------------------------
   subroutine csp_refPressure(eos,T0,v0,n,P0,dp0dv0,dp0dt0)
-    use tpcubic
+    use cubic
     use thermopack_var, only: nce
-    use tpmbwr, only: makeParam, MBWR_pressure
+    use mbwr, only: makeParam, MBWR_pressure
     implicit none
     ! input
     class(extcsp_eos), intent(inout) :: eos !< CSP eos
@@ -827,10 +827,10 @@ contains
     real :: rho0, dp0drho0
 
     ! Evaluate reference equation
-    if (eos%refEosType .eq. cubic) then
+    if (eos%refEosType .eq. c_u_b_i_c) then
       ! Only calculate what is strictly necessary. (Why is n input here?)
       call cbCalcPressure(eos%refNc,eos%cbrefEos,T0,v0,n,P0,dp0dv0,dp0dt0)
-    else if (eos%refEosType .eq. mbwr) then
+    else if (eos%refEosType .eq. m_b_w_r) then
       ! Only calculate what is strictly necessary.
       if (.not. (present(dp0dv0) .or. present(dp0dt0))) then
         call makeParam(parameters=eos%mbwrRefEos%mbwrParameters,&
@@ -1086,7 +1086,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine test_shape_factors(nce,T,P,n,phase)
     use thermopack_constants, only: Rgas, kRgas
-    use tpcubic, only: cbCalcPressure
+    use cubic, only: cbCalcPressure
     use thermopack_var, only: get_active_eos, base_eos_param
     implicit none
     integer, intent(in) :: nce !< Number of components
@@ -1405,7 +1405,7 @@ contains
            "Wrong format on input string eos_label")
     endif
     istat = 0
-    if (eos%refEosType == mbwr) then
+    if (eos%refEosType == m_b_w_r) then
       allocate(eos%mbwrRefEos, stat=istat)
       if (istat /= 0) call stoperror('Error allocating mbwrRefEos')
       if (str_eq(eos_label,'MBWR19')) then
@@ -1425,7 +1425,7 @@ contains
       call eos%nistRefEos%init()
       eos%Tc0 = eos%nistRefEos%tc
       eos%Pc0 = eos%nistRefEos%pc
-    else if (eos%refEosType == cubic) then
+    else if (eos%refEosType == c_u_b_i_c) then
       call eos%cbrefEos%allocate_and_init(nc,eos_label)
       eos%Tc0 = 0 ! Set elswhere
       eos%Pc0 = 0
@@ -1469,4 +1469,4 @@ contains
     call deallocate_comp(eos%refComp)
   end subroutine extcsp_eos_dealloc
 
-end module csp
+end module extcsp

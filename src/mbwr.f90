@@ -1,5 +1,5 @@
 !> MBWR module
-module tpmbwr
+module mbwr
   use thermopack_constants, only: kRgas ! [KRGAS] has units Pa*L/(mol*K) = 1e-3 J/(mol*K) = J/(mol*K)
   use thermopack_constants, only: VAPPH, LIQPH
   implicit none
@@ -122,9 +122,9 @@ contains
     if (stat /= 0) print *,"Error allocating mbwrParameters"
   end subroutine initializeMBWRmodel
 
-  ! Read parameters for component compId from the module tpmbwrdata
+  ! Read parameters for component compId from the module mbwrdata
   subroutine readDbParameters(compId,model,nineteenOr32)
-    use tpmbwrdata   ! For the correlated coefficients.
+    use mbwrdata   ! For the correlated coefficients.
     use compdatadb   ! For component data. Module contained in tpinput.f90.
     use compdata_init   ! For component data. Module contained in tpinput.f90.
     implicit none
@@ -197,7 +197,7 @@ contains
     ! Get the critical parameters as according to the actual MBWR equation
     if (nineteenOr32 .eq. 19) then
       compDbIdx_mbwrcrit = getMBWR19critPropIndex(compId)
-      if (compDbIdx_mbwrcrit .gt. 0) then ! equals 0 if the critical parameters aren't in tpmbwrdata
+      if (compDbIdx_mbwrcrit .gt. 0) then ! equals 0 if the critical parameters aren't in mbwrdata
         tc_mbwr = tc19_computed(compDbIdx_mbwrcrit)
         pc_mbwr = pc19_computed(compDbIdx_mbwrcrit)
         rc_mbwr = rc19_computed(compDbIdx_mbwrcrit)
@@ -211,7 +211,7 @@ contains
       end if
     elseif (nineteenOr32 .eq. 32) then
       compDbIdx_mbwrcrit = getMBWR32critPropIndex(compId)
-      if (compDbIdx_mbwrcrit .gt. 0) then ! equals 0 if the critical parameters aren't in tpmbwrdata
+      if (compDbIdx_mbwrcrit .gt. 0) then ! equals 0 if the critical parameters aren't in mbwrdata
         tc_mbwr = tc32_computed(compDbIdx_mbwrcrit)
         pc_mbwr = pc32_computed(compDbIdx_mbwrcrit)
         rc_mbwr = rc32_computed(compDbIdx_mbwrcrit)
@@ -245,7 +245,7 @@ contains
     model%a0_SRK = 0.42747*(KRGAS*model%tc)**2/model%pc
   end subroutine readDbParameters
 
-  ! This function encodes the order of the parameters in the data module tpmbwrdata.
+  ! This function encodes the order of the parameters in the data module mbwrdata.
   ! The N coefficient is the coefficient in front of the term.
   ! The I coefficient is the power of the density.
   ! The J coefficient is the power of the temperature.
@@ -1697,4 +1697,4 @@ contains
     barenewton = xnew
   end function barenewton
 
-END MODULE tpmbwr
+end module mbwr

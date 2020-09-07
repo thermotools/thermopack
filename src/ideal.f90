@@ -28,7 +28,7 @@ contains
   function EstPsat(comp, i, T) result (Psat)
     use thermopack_constants
     use compdata
-    use tpidealh2, only: lnpvapred_H2
+    use idealh2, only: lnpvapred_H2
 
     implicit none
     type(gendata_pointer), dimension(:), intent(in) :: comp
@@ -152,7 +152,7 @@ contains
        CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
        CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
     use thermopack_constants, only: verbose
-    use tpidealh2, only: cpideal_h2
+    use idealh2, only: cpideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
@@ -282,7 +282,7 @@ contains
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
     use thermopack_constants, only: verbose
-    use tpidealh2, only: hideal_h2
+    use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
@@ -393,7 +393,7 @@ contains
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
     use thermopack_constants, only: verbose
-    use tpidealh2, only: sideal_h2
+    use idealh2, only: sideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T

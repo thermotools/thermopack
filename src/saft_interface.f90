@@ -439,7 +439,7 @@ contains
   !> derivatives.
   subroutine calcSaftFder_res_nonassoc(nc,eos,T,V,n,F,F_T,&
        F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    use tpcubic, only: calcCbFder_res_SI
+    use cubic, only: calcCbFder_res_SI
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
     use pets, only: F_PeTS_TVn, PETS_eos
@@ -1152,7 +1152,7 @@ contains
 
   !> The pressure contribution not coming from association.
   subroutine nonassoc_pressure(nc,eos,T,V,n,P,dPdV,dPdT,dPdn)
-    use tpcubic, only: cbCalcPressure
+    use cubic, only: cbCalcPressure
     use cubic_eos, only: cb_eos
     use eos_parameters, only: base_eos_param
     use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
@@ -1205,8 +1205,8 @@ contains
   !> Calculates the contibution to the reduced residual Helmholtz energy F
   !> coming from the non-association part, along with its derivatives.
   subroutine calcFder_nonassoc_cpa(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    use tpcubic, only: cbCalcDerivatives_svol
-    use tpcbmix, only: cbCalcMixtureParams
+    use cubic, only: cbCalcDerivatives_svol
+    use cbmix, only: cbCalcMixtureParams
     use cubic_eos, only: cb_eos
     !use eos_parameters, only: base_eos_param
     use cbhelm

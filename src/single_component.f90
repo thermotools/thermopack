@@ -26,7 +26,7 @@ contains
   !! \author MH
   subroutine Zfac_single(nc,seos,T,P,Z,phase,Zfac,dZdt,dZdp,dZdz)
     use eosdata
-    use tpmbwr_additional, only: mbwr_zfac, mbwr_volume
+    use mbwr_additional, only: mbwr_zfac, mbwr_volume
     implicit none
     integer, intent(in) :: nc
     class(single_eos), intent(inout) :: seos
@@ -68,7 +68,7 @@ contains
        enthalpy,dhdt,dhdp,dhdz)
     use eosdata
     use compdata, only: gendata_pointer
-    use tpmbwr_additional, only: mbwr_hres, mbwr_volume
+    use mbwr_additional, only: mbwr_hres, mbwr_volume
     use ideal, only: Hideal_mix
     implicit none
     integer, intent(in) :: nc
@@ -127,7 +127,7 @@ contains
        entropy,dsdt,dsdp,dsdz)
     use eosdata
     use compdata, only: gendata_pointer
-    use tpmbwr_additional, only: mbwr_sres, mbwr_volume
+    use mbwr_additional, only: mbwr_sres, mbwr_volume
     use ideal, only: TP_Sideal_mix
     implicit none
     integer, intent(in) :: nc
@@ -185,7 +185,7 @@ contains
   !! \author MH
   subroutine lnfugCoeff_single(nc,seos,T,P,Z,phase,lnfug,dlnfdt,dlnfdp,dlnfdz)
     use eosdata
-    use tpmbwr_additional, only: mbwr_lnphi, mbwr_volume
+    use mbwr_additional, only: mbwr_lnphi, mbwr_volume
     implicit none
     integer, intent(in) :: nc
     class(single_eos), intent(inout) :: seos
@@ -224,7 +224,7 @@ contains
   !! \author Morten H.
   subroutine Gres_single(nc,seos,T,P,Z,phase,gr,dgrdt,dgrdp)
     use eosdata
-    use tpmbwr_additional, only: MBWR_volume, MBWR_Gres
+    use mbwr_additional, only: MBWR_volume, MBWR_Gres
     implicit none
     integer, intent(in) :: nc
     class(single_eos), intent(inout) :: seos
@@ -256,7 +256,7 @@ contains
   !!
   subroutine pressure_single(nc,seos,T,v,n,p,dpdv,dpdt,dpdz)
     use eosdata
-    use tpmbwr_additional, only: MBWR_press
+    use mbwr_additional, only: MBWR_press
     implicit none
     integer, intent(in) :: nc
     class(single_eos), intent(inout) :: seos
@@ -291,7 +291,7 @@ contains
   subroutine Fres_single(nc,seos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn)
     use eosdata
-    use tpmbwr_additional, only: MBWR_Fres
+    use mbwr_additional, only: MBWR_Fres
     implicit none
     integer, intent(in) :: nc
     real, intent(in) :: T,V,n(nc)

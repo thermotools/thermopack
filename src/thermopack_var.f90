@@ -90,7 +90,7 @@ module thermopack_var
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
 
     ! Apparent composition
-    type(apparent_container), pointer :: apparent
+    type(apparent_container), pointer :: apparent => NULL()
 
     ! Component data
     type(gendata_pointer), allocatable :: comps(:)
@@ -120,7 +120,7 @@ module thermopack_var
 
 
   ! Index that indicates the active model
-  integer, private :: activated_model_idx = 0
+  integer, private :: thermo_model_idx_counter = 0
   ! Pointer to active model
   type(thermo_model), pointer :: p_active_model => NULL()
   ! Multiple model support
@@ -229,9 +229,10 @@ contains
     deallocate(eos_copy, stat=istat)
     if (istat /= 0) call stoperror("Not able to deallocate eos_copy")
     p_active_model => model
-    activated_model_idx = activated_model_idx + 1
-    index = activated_model_idx
+    thermo_model_idx_counter = thermo_model_idx_counter + 1
+    index = thermo_model_idx_counter
     p_active_model%model_idx = index
+    call update_global_variables_form_active_thermo_model()
   end function add_eos
 
   subroutine delete_eos(index)
@@ -313,7 +314,6 @@ contains
     endif
 
   end subroutine thermo_model_dealloc
-
 
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)
