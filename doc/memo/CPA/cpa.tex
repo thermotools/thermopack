@@ -1,9 +1,8 @@
-\documentclass[10pt, a4paper]{article}
+\documentclass[english]{../thermomemo/thermomemo}
 
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
-\usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage[utf8]{inputenc}
@@ -12,6 +11,14 @@
 \usepackage{url}
 \usepackage{enumerate}
 \usepackage[font=small,labelfont=bf]{caption}
+
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
 
 % For appendices
 \usepackage[toc,page]{appendix}
@@ -42,7 +49,8 @@
 \author{Ailo Aasen}
 \date{\today}
 \begin{document}
-\maketitle
+\frontmatter
+\tableofcontents
 \section{Introduction to CPA}
 CPA is an equation of state which is suitable for modeling associating mixtures, i.e. where hydrogen bonds occur. CPA stands for Cubic Plus Association, which refers to the fact that association is modeled as an additive contribution to the Helmholtz energy of a cubic equation of state. If one uses SRK as the underlying cubic equation of state -- which is the most common choice -- then one in other words has
 \begin{equation}

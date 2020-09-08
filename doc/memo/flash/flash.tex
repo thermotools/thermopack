@@ -1,29 +1,15 @@
 %
-\documentclass[english,sintefheadings,12pt]{sintefmemo}
-% Tilgjengelige opsjoner til sintefmemo:
-%
-% norsk, nynorsk, english, 
-% twoside, (for tosidig utskrift)
-% sintefheadings, (logo i toppteksten)
-% sintefcolour (logo i farge),
-% lucida (font; finest),
-% times (font; likest Word-malene),
-% (norsk,  ikke-twoside, ikke-sintefheadings,
-% ikke-sintefcolour, ikke-lucida og ikke-times er default).
-%
-% Svend Tollak Munkejord, svend.t.munkejord@sintef.no, 2002-07-03
+\documentclass[english]{../thermomemo/thermomemo}
 
 \usepackage{textcomp}
-\usepackage{listings}
-\usepackage{babel}
 \usepackage{natbib}
 \usepackage{amsmath}
-\usepackage{pslatex}
+%\usepackage{pslatex}
 %\usepackage{bm}% better \boldsymbol
 \usepackage{array}% improves tabular environment.
 \usepackage{dcolumn}% also improves tabular environment, with decimal centring.
 \usepackage{lastpage}
-\usepackage{listings}
+%\usepackage{listings}
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{cleveref}
@@ -47,6 +33,14 @@
 \usepackage{siunitx}
 \usepackage{todonotes}
 \presetkeys{todonotes}{inline}{}
+
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
 
 \newcommand*{\checked}{\ding{51}}
 \graphicspath{{data/}}
@@ -246,31 +240,11 @@
 
 \graphicspath{{gfx/}}
 
-\memooverskrift{MEMO}
-\gjelder{DA1202: Thermodynamic equilibrium algorithms - Reimplemented
+\title{Thermodynamic equilibrium algorithms - Reimplemented
   in a new framework.}
-\forfatter{Morten Hammer}
-\filnavn{thermopack.tex}
-\gaartili{Svend Tollak Munkejord}{\checked}{\checked}{}{\checked}
-\gaartilii{\O ivind Wilhelmsen}{\checked}{\checked}{}{}
-\gaartiliii{Members of the \coto~Dynamics project}{}{}{\checked}{}
-% \gaartiliii{Hermansen}{X}{}{}{}
-% \gaartiliv{Harald V}{}{}{X}{}
-% \gaartilv{Meg selv}{}{X}{}{}
-% \gaartilvi{Julenissen}{X}{X}{}{}
-% \gaartilvii{Jess!}{X}{X}{X}{X}
-\prosjektnummer{16X86302}
+\author{Morten Hammer}
 \usepackage{isodate}
-\isodate
-\dato{\today}
-%  (de utkommenterte kommandoene under har «default-verdi»
-%\filnavn{}
-%\gradering{Restricted}
-\sidetall{\pageref{LastPage}}
-\avdeling{Gas Technology}
-\avdelingfot{Gas Technology}
-\besoeksadresse{Kolbjørn Hejes vei 1A}
-%\lokalfax{}
+\date{\today}
 
 % Nomenclature groups
 \RequirePackage{ifthen}
@@ -289,7 +263,7 @@
 
 
 \begin{document}
-\forside
+\frontmatter
 \tableofcontents
 \printnomenclature
 
@@ -852,7 +826,7 @@ and $Q$ is the objective function for the minimization of the Gibbs energy
 \end{equation}
 
 However, as discussed by \cite{Michelsen2007}, the choice
-\eqref{eq:basic_variable_reduction} 
+\eqref{eq:basic_variable_reduction}
 might lead to numerical difficulties in
 round-off when the reference phase $F$ is present only in very small 
 quantities. As an alternative, one can choose a component-specific reference

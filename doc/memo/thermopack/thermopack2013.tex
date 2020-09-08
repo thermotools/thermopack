@@ -1,14 +1,4 @@
-\documentclass[a4paper, 12pt, english, sintefheadings, sintefcolour]{sintefmemo}
-% Tilgjengelige opsjoner til sintefmemo:
-%
-% norsk, nynorsk, english, 
-% twoside, (for tosidig utskrift)
-% sintefheadings, (logo i toppteksten)
-% sintefcolour (logo i farge),
-% lucida (font; finest),
-% times (font; likest Word-malene)
-% (norsk, ikke-twoside, ikke-sintefheadings,tab
-% ikke-sintefcolour, ikke-lucida og ikke-times er default).
+\documentclass[english]{../thermomemo/thermomemo}
 %
 \usepackage{lastpage}
 \usepackage{amsmath, amssymb, amsthm}
@@ -20,57 +10,22 @@
 \usepackage{ae, aecompl}
 \usepackage[british]{babel}
 \usepackage{appendix}
-\usepackage[headings]{fullpage}
 \usepackage{cite}
-\usepackage{fancyvrb, relsize}
-\usepackage{fancyhdr}
-\usepackage{fullpage}
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
 \newcommand*{\X}{\ding{51}}
-\memooverskrift{PROJECT MEMO}
-\gjelder{Flexible thermodynamic workbench for CCS thermodynamics - Update 2013 \\
- Deliverable: DA1301}
-\forfatter{\O{ivind} Wilhelmsen, Geir Skaugen and Morten Hammer} 
-\gaartili{CO$_2$ Dynamics project members}{\X}{\X}{\X}{\X}
-\prosjektnummer{16X863.02}
-\dato{2012-09-01}
-\dato{Updated 2013-11-20}
-% (de utkommenterte kommandoene under har default-verdi
-\filnavn{-}
-%\gradering{Restricted}
-\sidetall{\pageref{LastPage}}
-%\avdeling{}
-% %\avdelingfot{}
-%\besoeksadresse{}
-\lokalfax{+47 73 59 41 33}
+\title{Flexible thermodynamic workbench for CCS thermodynamics}
+\author{\O{ivind} Wilhelmsen, Geir Skaugen and Morten Hammer}
+\date{2013-11-20}
 \begin{document}
-\abovedisplayskip=6pt
-\belowdisplayskip=10pt
-\fancypagestyle{plain}
-{
-\fancyhf{} % clear all header and footer fields
-\fancyfoot[R]{\small \text{\thepage}} % new chapter starts on odd page,
-% place page number to the right
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-}
-\pagestyle{fancy}
-\renewcommand{\sectionmark}[1]
-{
-\markright{\thesection.\ #1}
-}
-\forside
+
+\frontmatter
 \tableofcontents
-%\pagestyle{fancy}
-%\fancyhead{} % clear all fields
-%\fancyfoot{}
-%\fancyhead[RE,RO]{} 
-%\fancyfoot[LE,RO]{} \fancyfoot[CO,CE]{\small \text{\thepage}}
-\pagestyle{fancy}
-%\fancyhead{} % clear all fields
-%\fancyfoot{}
-%\fancyhead[LE,RO]{\small \text{\leftmark}} \fancyfoot[LE,RO]{\small \text{\thepage}} \fancyfoot[CO,CE]{} \renewcommand{\headrulewidth}{0.4pt}
-\fancyhead[RE,RO]{} \fancyfoot[CO,CE]{}\fancyfoot[RE,RO]{\small \text{\thepage}} 
-\setlength{\parindent}{0pt}
 
 \graphicspath{{gfx/}}
 
@@ -187,12 +142,12 @@ can be described as follows:
   and so on.
 \end{description}
 
-\begin{figure}[ht]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.70\textwidth]{eos_structure1.png}
 \caption{Description of routine layers}
 \label{fig:eos_structure1}
-\end{figure}   
+\end{figure}
 
 The layers: \textbf{Data base layer, Internal data storage structure, initialization and
   selection structure and Driver routines} will be treated in more detail in
@@ -218,12 +173,12 @@ such that each equation of state may be coupled to the available mixing rules
 transparent program, a keyword-based data library has been chosen. An example
 is shown below:
 
-\begin{figure}[Htb]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.70\textwidth]{eos_structure2.png}
 \caption{Description of equation of state structure}
 \label{fig:eos_structure2}
-\end{figure}   
+\end{figure}
 
 \clearpage
 
@@ -308,12 +263,12 @@ high accuracy for robust solution, the necessary functions must be supplied
 with analytical derivatives. How this is taken care of by the driver routines
 is illustrated in Fig. \ref{fig:Driver}.
 
-\begin{figure}[Htb]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.70\textwidth]{driver_routines.png}
 \caption{Description of the concept behind the driver routines exemplified for EoS}
 \label{fig:Driver}
-\end{figure}   
+\end{figure}
 
 
 In the functions called from the core-routines (i.e: flash-calculations,

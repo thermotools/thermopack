@@ -1,5 +1,5 @@
 % Created: 2013-09-24
-\documentclass[english]{sintefmemo2012}
+\documentclass[english]{../thermomemo/thermomemo}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{siunitx}
@@ -62,10 +62,9 @@
 \crefname{subfigure}{Figure}{Figures}
 \crefname{table}{Table}{Tables}
 
-\title{Documentation of the binary-XY code in thermopack} 
+\title{Documentation of the binary-XY code in thermopack}
 \author{Morten Hammer}
 \date{\today}
-\recipient[information]{Thermopack users} \project{COCATE}
 
 \graphicspath{{gfx/}}
 
@@ -253,16 +252,6 @@ See Figure \ref{fig:srk_0}, \ref{fig:srk_opt}, \ref{fig:pr_0} and \ref{fig:pr_op
   \caption{Mole fraction of \no~in an\coto-\no~mixture with PR and $k_{ij}=-0.105$.}
   \label{fig:pr_opt}
 \end{figure}
-
-\section{Further improvements}
-Currently only the basic functions are implemented in order to produce
-the Txy-plot for \coto-\no. There is remaining work related to the initiation and termination of the binary plots. 
-\begin{enumerate}
-\item Extend to include a search for two liquid phases.
-\item Automate initiation and search direction.
-\item Extend to Pxy plot.
-\item Do testing of difficult systems.
-\end{enumerate}
 
 \appendix
 
