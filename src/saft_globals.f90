@@ -1,5 +1,5 @@
 module saft_globals
-  use eosdata, only: cpaPR, cpaSRK, eosPC_SAFT, eosPeTS, eosBH_pert, eosSAFT_VR_MIE
+  use eosdata, only: cpaPR, cpaSRK, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE
   implicit none
   save
   public
@@ -17,7 +17,7 @@ contains
     ! Locals
     class(base_eos_param), pointer :: eos
     eos => get_active_eos()
-    if (eos%assoc%saft_model == eosBH_pert) then
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
       assoc_covol = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,ic)
     else
       select type ( p_eos => eos )
@@ -43,7 +43,7 @@ contains
     ! Locals
     class(base_eos_param), pointer :: eos
     eos => get_active_eos()
-    if (eos%assoc%saft_model == eosBH_pert) then
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
       assoc_covol_binary = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,jc)
     else
       select type ( p_eos => eos )

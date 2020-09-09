@@ -26,7 +26,7 @@
 module saft_interface
   use thermopack_constants, only: verbose
   use compdata, only: gendata
-  use saft_globals, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, eosBH_pert
+  use saft_globals, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
@@ -89,7 +89,7 @@ contains
     eos%assoc%saft_model = eos%subeosidx
 
     ! Fetch parameters from the database.
-    if (eos%assoc%saft_model == eosBH_pert) then
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
       call getSaftVrMieAssocParams_allComps(nc,comp,eos%subeosidx,param_ref,&
            compinDB,eps_db,beta_db,assocSchemes_db)
     else if (eos%assoc%saft_model == eosPC_SAFT) then
@@ -126,7 +126,7 @@ contains
       end do
     end if
     ! Fetch interaction params from the database (defaults to 0 if not present).
-    if (eos%assoc%saft_model == eosBH_pert .or. eos%assoc%saft_model == eosPeTS) then
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%assoc%saft_model == eosPeTS) then
       !....
     else if (eos%assoc%saft_model == eosPC_SAFT) then
        call getPcSaftKij_allComps(nc,comp,eos%assoc%saft_model,kij_PCSAFT)
@@ -167,7 +167,7 @@ contains
     allocate(eos%assoc%boltzmann_fac_cache(numAssocSites,numAssocSites))
     eos%assoc%T_cache = -1.0 ! to ensure a new init recalculates any cached variables
 
-    if (eos%assoc%saft_model == eosBH_pert .or. eos%assoc%saft_model == eosPC_SAFT) then
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%assoc%saft_model == eosPC_SAFT) then
        call saft_setAssocParams(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)
     else
        call cpa_setAssocParams(eos%assoc,nc,assocSchemes_db,eps_db,beta_db,&
@@ -299,7 +299,7 @@ contains
                 sigj = sigmaVal(jc)
                 assoc%eps_kl(k,l) = (epsi+epsj)/2
                 assoc%beta_kl(k,l) = sqrt(betai*betaj)*( 2*sqrt(sigi*sigj)/(sigi+sigj) )**3
-                if (saft_model==eosBH_pert) then
+                if (saft_model==eosSAFT_VR_MIE) then
                    print *, "NB: USING AN ARBITRARY COMBINING RULE FOR BONDING-VOLUME"
                    print *, "CONSIDER SETTING BONDING VOLUME EXPLICITLY"
                 end if
@@ -997,7 +997,7 @@ contains
 
     ! Compute conversion numerator and initialize the reduced density zeta.
     if (eos%assoc%saft_model == eosPC_SAFT .or. &
-         eos%assoc%saft_model == eosBH_pert) then
+         eos%assoc%saft_model == eosSAFT_VR_MIE) then
        conv_num = conversion_numerator(eos,nc,T,n)
        if (phase .eq. VAPPH) then
           zeta = 1e-10

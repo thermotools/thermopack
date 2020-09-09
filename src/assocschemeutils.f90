@@ -32,7 +32,8 @@ module AssocSchemeUtils
 contains
 
   subroutine assocIndices_bookkeeping (assoc, nc, saft_model, assocSchemes_db)
-    use eosdata, only: eosPC_SAFT, eosBH_pert, eosPeTS
+    use eosdata, only: eosPC_SAFT, eosSAFT_VR_MIE, eosPeTS, &
+         get_eos_short_label_from_subidx
     type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
@@ -79,12 +80,13 @@ contains
 
     if (assoc%numAssocSites .eq. 0) then
        ! No associating components: exit routine.
-       if (saft_model == eosPC_SAFT .or. saft_model == eosBH_pert .or. saft_model == eosPeTS) then
-          if (verbose) print *, "Using PC-SAFT with no associating components."
-          return
-       else
-          call stoperror("At least one CPA-component must self-associate.")
-       end if
+      if (saft_model == eosPC_SAFT .or. saft_model == eosSAFT_VR_MIE .or. saft_model == eosPeTS) then
+        if (verbose) print *, "Using " // get_eos_short_label_from_subidx(saft_model) &
+             // " with no associating components."
+        return
+      else
+        call stoperror("At least one CPA-component must self-associate.")
+      end if
     end if
 
   end subroutine assocIndices_bookkeeping

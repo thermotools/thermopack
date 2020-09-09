@@ -39,7 +39,7 @@ contains
 
   @Test
   subroutine test_Helmholtz_Derivatives
-    use tpcubic, only: cbCalcPressure
+    use cubic, only: cbCalcPressure
     implicit none
     real :: T, V, n(2), P
     real :: Tpert, Vpert,npert(2)
@@ -1288,7 +1288,7 @@ contains
   !   use parameters, only: LIQPH, VAPPH
   !   use tpconst, only: Rgas
   !   use cbhelm
-  !   use tpcubic, only: cbCalcDerivatives, cbCalcPressure, cbCalcZfac, cbCalcDerivatives_svol
+  !   use cubic, only: cbCalcDerivatives, cbCalcPressure, cbCalcZfac, cbCalcDerivatives_svol
   !   use eosTV, only: pressure
   !   use tpsingle, only: TP_CalcPressure
   !   implicit none

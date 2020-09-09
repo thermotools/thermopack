@@ -203,8 +203,8 @@ module saftvrmie_containers
   type(saftvrmie_var_container) :: svrmie_var ! ONLY USED FOR TESTING
 
   type, extends(base_eos_param) :: saftvrmie_eos
-    type(saftvrmie_param_container), pointer :: saftvrmie_param
-    type(saftvrmie_var_container), pointer :: saftvrmie_var
+    type(saftvrmie_param_container), pointer :: saftvrmie_param => NULL()
+    type(saftvrmie_var_container), pointer :: saftvrmie_var => NULL()
   contains
     procedure, public :: dealloc => saftvrmie_dealloc
     procedure, public :: allocate_and_init => saftvrmie_allocate_and_init
@@ -297,6 +297,7 @@ Contains
     ! Deallocate old memory
     call eos%allocate_and_init(nc,"SAFT-VR Mie")
     saftvrmie_param => eos%saftvrmie_param
+    call cleanup_saftvrmie_var_container(svrmie_var)
     call allocate_saftvrmie_var_container(nc,svrmie_var)
     ! Get interaction parameters
     call getMieKij_allComps(nc,comp,eosSAFT_VR_MIE,eos%saftvrmie_param%kij)
@@ -1393,11 +1394,13 @@ Contains
       call cleanup_saftvrmie_param_container(eos%saftvrmie_param)
       deallocate(eos%saftvrmie_param,stat=stat)
       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_param")
+      eos%saftvrmie_param => NULL()
     endif
     if (associated(eos%saftvrmie_var)) then
       call cleanup_saftvrmie_var_container(eos%saftvrmie_var)
       deallocate(eos%saftvrmie_var,stat=stat)
       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_var")
+      eos%saftvrmie_var => NULL()
     endif
   end subroutine saftvrmie_dealloc
 

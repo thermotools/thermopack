@@ -704,12 +704,16 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    use volume_shift, only: NOSHIFT
+    use saft_interface, only: saft_type_eos_init
+    !$ use omp_lib
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: param_reference !< Data set reference
     ! Locals
-    integer                          :: ncomp, index, ierr
+    integer                          :: ncomp, index, ierr, i, ncbeos
     character(len=len_trim(comps))   :: comps_upper
-    type(thermo_model), pointer     :: act_mod_ptr
+    type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
 
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
@@ -721,18 +725,14 @@ contains
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
 
     call allocate_eos(ncomp, "SAFT-VR-MIE")
+    act_mod_ptr%need_alternative_eos = .true.
 
     ! Number of phases
     act_mod_ptr%nph = 3
-
     ! Assign active mode variables
-    ncsym = ncomp
+    act_mod_ptr%nc = ncomp
     nce = ncomp
-    nc = ncomp
-    nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
-    apparent => NULL()
-
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
 
@@ -740,11 +740,25 @@ contains
     call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Initialize Thermopack
-    call init_thermopack("SAFT-VR-MIE", "Classic", "Classic", nphase=3, &
-         saft_ref=param_reference)
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+
+    ! SAFT initialization must be done after cbeos initialization.
+    call saft_type_eos_init(nce,act_mod_ptr%comps,&
+         act_eos_ptr,param_reference,silent_init=.true.)
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+    enddo
+
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
 
     ! Initialize fallback eos
     call init_fallback_and_redefine_criticals(silent=.true.)
+
   end subroutine init_saftvrmie
 
   !----------------------------------------------------------------------------

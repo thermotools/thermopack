@@ -267,4 +267,23 @@ contains
     eos_subindex = eos_label_db(idx_db)%eos_subidx
   end subroutine get_eos_index
 
+  function get_eos_short_label_from_subidx(subidx) result(short_label)
+    character(len=short_label_len) :: short_label
+    integer :: subidx
+    ! Locals
+    integer :: i, idx
+    idx = -1
+    do i=1,max_n_eos
+      if (subidx == eos_label_db(i)%eos_subidx) then
+        idx = i
+        exit
+      endif
+    enddo
+    if (idx > 0) then
+      short_label = eos_label_db(idx)%short_label
+    else
+      short_label = ""
+    endif
+  end function get_eos_short_label_from_subidx
+
 end module eosdata

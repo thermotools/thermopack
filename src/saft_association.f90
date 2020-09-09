@@ -38,7 +38,7 @@ contains
   !> even be cached for a given T.
   subroutine Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
-    use saft_globals, only: assoc_covol_binary, eosBH_pert
+    use saft_globals, only: assoc_covol_binary, eosSAFT_VR_MIE
     use saft_rdf
     ! Input.
     class(base_eos_param), intent(in) :: eos
@@ -109,7 +109,7 @@ contains
 
     call calc_boltzmann_fac(assoc, T, boltzmann_fac)
 
-    if (assoc%saft_model/=eosBH_pert) then
+    if (assoc%saft_model/=eosSAFT_VR_MIE) then
        call master_saft_rdf(eos,nc,T,V,n,1,1,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     end if
 
@@ -119,7 +119,7 @@ contains
           ic = site_to_compidx(assoc,k)
           jc = site_to_compidx(assoc,l)
           if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
-          if (assoc%saft_model==eosBH_pert) then
+          if (assoc%saft_model==eosSAFT_VR_MIE) then
              call master_saft_rdf(eos,nc,T,V,n,ic,jc,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
           end if
 

@@ -232,7 +232,6 @@ contains
     thermo_model_idx_counter = thermo_model_idx_counter + 1
     index = thermo_model_idx_counter
     p_active_model%model_idx = index
-    call update_global_variables_form_active_thermo_model()
   end function add_eos
 
   subroutine delete_eos(index)
