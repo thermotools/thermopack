@@ -307,6 +307,7 @@ contains
     ZeroFraction%pDen = 0.0
     ZeroFraction%pDen(1) = 1.0
     !
+    err = 0
     if (allocated(mixWS%f_kij)) deallocate (mixWS%f_kij, stat=err)
     if (err /= 0) call stoperror('WS_allocate_and_init: could not deallocate array: mixWS%f_kij')
     allocate (mixWS%f_kij(nc,nc), stat=err)
