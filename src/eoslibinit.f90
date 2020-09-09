@@ -18,6 +18,7 @@ module eoslibinit
   private
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft
+  public :: init_extcsp
   public :: silent_init
   !public :: cleanup_eos
   public :: redefine_critical_parameters
@@ -144,6 +145,7 @@ contains
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
+    act_mod_ptr%nc = ncomp
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
@@ -288,6 +290,7 @@ contains
     nce = ncomp
     nc = ncomp
     nph = act_mod_ptr%nph
+    act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
 
@@ -322,44 +325,99 @@ contains
 
   end subroutine init_cubic
 
-  ! !----------------------------------------------------------------------------
-  ! !> Initialize extended corresponding state EoS. Use: call init_extcsp
-  ! !----------------------------------------------------------------------------
-  ! subroutine init_extcsp(comps,eos,sh_eos,sh_mixing,sh_alpha,ref_eos,ref_comp)
-  !   use parameters, only: initCompList
-  !   use tpselect,   only: SelectComp
-  !   use thermopack_var,      only: comp, nce, ncsym
-  !   use stringmod,  only: uppercase
-  !   !$ use omp_lib, only: omp_get_max_threads
-  !   character(len=*), intent(in) :: comps !< Components. Comma or white-space
-  !   !separated
-  !   character(len=*), intent(in) :: eos     !< Equation of state
-  !   character(len=*), optional, intent(in) :: mixing !< Mixing rule
-  !   character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
-  !   ! Locals
-  !   integer                          :: ncomp
-  !   character(len=len_trim(compstr)) :: compstr_upper
-  !   character(len=100)               :: mixing_loc, alpha_loc
+  !----------------------------------------------------------------------------
+  !> Initialize extended corresponding state EoS. Use: call init_extcsp
+  !----------------------------------------------------------------------------
+  subroutine init_extcsp(comps,sh_eos,sh_mixing,sh_alpha,&
+       ref_eos,ref_comp,ref_alpha,&
+       parameter_ref)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
+    use thermopack_constants, only: THERMOPACK, ref_len
+    use stringmod,  only: uppercase
+    use eos_container, only: allocate_eos
+    use extcsp, only: extcsp_eos, csp_init
+    use volume_shift, only: NOSHIFT
+    !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space
+    !separated
+    character(len=*), intent(in) :: sh_eos      !< Shape factor equation of state
+    character(len=*), intent(in) :: sh_alpha    !< Shape factor alpha
+    character(len=*), intent(in) :: sh_mixing   !< Shape factor mixing rules
+    character(len=*), intent(in) :: ref_eos     !< Reference equation of state
+    character(len=*), intent(in) :: ref_comp    !< Reference component
+    character(len=*), intent(in), optional :: ref_alpha  !< Needed if refEos is a cubic eos. Should not be present if one want to use an mbwr reference eos.
+    character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
 
-  !   ! Set component list
-  !   compstr_upper=trim(uppercase(compstr))
-  !   call initCompList(compstr_upper,ncomp)
-  !   ncsym = ncomp
+    ! Locals
+    integer                          :: ncomp, i, index, ierr, ncbeos
+    character(len=len_trim(comps))   :: comps_upper
+    type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
+    character(len=ref_len)           :: param_ref
 
-  !   ! Initialize components module
-  !   call SelectComp(trim(compstr_upper),nce,comp)
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
+      index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    !
+    call allocate_eos(ncomp, "CSP-"//trim(sh_eos))
 
-  !   ! Initialize Thermopack
-  !   alpha_loc = "Classic"
-  !   mixing_loc = "Classic"
-  !   if (present(mixing)) mixing_loc = uppercase(mixing)
-  !   if (present(alpha)) alpha_loc = uppercase(alpha)
-  !   call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing_loc)), &
-  !        trim(uppercase(alpha_loc)), nphase=2, kij_setno=1,alpha_setno=1)
+    ! Number of phases
+    act_mod_ptr%nph = 3
 
-  ! end subroutine init_extcsp
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = act_mod_ptr%nph
+    act_mod_ptr%nc = ncomp
+    complist => act_mod_ptr%complist
+    apparent => NULL()
 
+    ! Set eos library identifyer
+    act_mod_ptr%eosLib = THERMOPACK
 
+    ! Set local variable for parameter reference
+    if (present(parameter_ref)) then
+      param_ref = parameter_ref
+    else
+      param_ref = "DEFAULT"
+    endif
+
+    ! Initialize components module
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+    select type(p_eos => act_eos_ptr)
+    type is (extcsp_eos)
+      call csp_init(p_eos,nce,act_mod_ptr%comps,&
+           refcomp_str=trim(ref_comp),&
+           shEos=trim(sh_eos),&
+           shMixRule=trim(sh_mixing),shAlpha=trim(sh_alpha),&
+           refEos=trim(ref_eos),refAlpha=ref_alpha,&
+           parameter_ref=parameter_ref)
+   end select
+
+   ncbeos = 1
+   !$ ncbeos = omp_get_max_threads()
+   do i=2,ncbeos
+     act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+   enddo
+
+   ! Set globals
+   call update_global_variables_form_active_thermo_model()
+
+   ! Initialize fallback eos
+   call init_fallback_and_redefine_criticals(silent=.true.)
+
+  end subroutine init_extcsp
 
   !----------------------------------------------------------------------
   !> Set critical parameters to represent actual model
@@ -795,6 +853,7 @@ contains
     nce = ncomp
     nc = ncomp
     nph = act_mod_ptr%nph
+    act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
 
@@ -807,6 +866,9 @@ contains
     ! Initialize Thermopack
     call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3,&
          saft_ref=param_reference)
+
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
 
     ! Initialize fallback eos
     call init_fallback_and_redefine_criticals(silent=.true.)
@@ -854,6 +916,7 @@ contains
     ncsym = ncomp
     nce = ncomp
     nc = ncomp
+    act_mod_ptr%nc = ncomp
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
@@ -874,7 +937,11 @@ contains
     call init_thermopack("CPA-"//trim(eos_loc),trim(uppercase(mixing_loc)), &
          trim(uppercase(alpha_loc)), nphase=3, saft_ref=param_ref_loc)
 
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
+
     ! Initialize fallback eos
+    act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_cpa
 

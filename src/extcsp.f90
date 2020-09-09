@@ -91,7 +91,8 @@ contains
   !> \author MHA, 2013-11-27
   !> \author Ailo
   !-----------------------------------------------------------------------------
-  subroutine csp_init(eos,nce,comps,refcomp_str,shEos,shMixRule,shAlpha,refEos,refAlpha) ! The input consists entirely of strings.
+  subroutine csp_init(eos,nce,comps,refcomp_str,shEos,shMixRule,shAlpha,&
+    refEos,refAlpha,parameter_ref) ! The input consists entirely of strings.
     use cbselect, only: SelectCubicEOS, SelectMixingRules
     use thermopack_constants, only: kRgas
     use mbwr, only: initializeMBWRmodel
@@ -108,10 +109,19 @@ contains
     character(len=*), intent(in) :: shMixRule
     character(len=*), intent(in) :: shAlpha
     character(len=*), intent(in), optional :: refAlpha  !< Needed if refEos is a cubic eos. Should not be present if one want to use an mbwr reference eos.
+    character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     ! Locals
     integer :: err
     character(len=eosid_len) :: complist_ref(1)
     character(len=len_trim(refEos)) :: refEos_upcase
+    character(len=ref_len) :: param_ref
+    !
+    ! Set local variable for parameter reference
+    if (present(parameter_ref)) then
+      param_ref = parameter_ref
+    else
+      param_ref = "DEFAULT"
+    endif
     !
     refEos_upcase = trim(refEos)
     call str_upcase(refEos_upcase)
@@ -148,14 +158,15 @@ contains
     call eos%allocate_and_init(nce,refEos_upcase//":"//trim(refcomp_str))
     complist_ref = trim(refcomp_str)
     eos%refNc = 1
-    call SelectComp(complist_ref,eos%refNc,"DEFAULT",eos%refComp,err)
+    call SelectComp(complist_ref,eos%refNc,param_ref,eos%refComp,err)
     !
     call get_eos_index("CSP-"//trim(shEos),eos%eosidx,eos%subeosidx)
     !
     ! Set reference component data
     eos%shapeEosRef%eosid = trim(shEos) ! Has to be set here if getAlphaTWUparams is to find the parameters
     call get_eos_index(shEos,eos%shapeEosRef%eosidx,eos%shapeEosRef%subeosidx)
-    call SelectCubicEOS(eos%refNc, eos%refComp, eos%shapeEosRef, trim(shAlpha), "DEFAULT") ! Is only initialized to obtain m0, bc0 and ac0.
+    call SelectCubicEOS(eos%refNc, eos%refComp, &
+         eos%shapeEosRef, trim(shAlpha), param_ref) ! Is only initialized to obtain m0, bc0 and ac0.
     if (.not. (eos%shapeEosRef%subeosidx == cbSRK &
          .or. eos%shapeEosRef%subeosidx == cbPR)) then
       print *,'Incorrect EOS, ', trim(shEos), &
@@ -167,16 +178,16 @@ contains
     eos%shapeEos%eosidx = eos%shapeEosRef%eosidx
     eos%shapeEos%subeosidx = eos%shapeEosRef%subeosidx
     call SelectCubicEOS(nce, comps, eos%shapeEos, &
-         trim(shAlpha), "DEFAULT")
+         trim(shAlpha), param_ref)
     call SelectMixingRules(nce, comps, eos%shapeEos, &
-         trim(shMixRule), "DEFAULT")
+         trim(shMixRule), param_ref)
 
     if (eos%refEosType == c_u_b_i_c) then
       !Cubic reference equation
       eos%cbrefEos%eosid = trim(refEos)
       call get_eos_index(refEos,eos%cbrefEos%eosidx,eos%cbrefEos%subeosidx)
-      call SelectCubicEOS(eos%refNc, eos%refComp, eos%cbRefEos, trim(refAlpha), "DEFAULT")
-      call SelectMixingRules(eos%refNc, eos%refComp, eos%cbRefEos, "VDW", "DEFAULT")
+      call SelectCubicEOS(eos%refNc, eos%refComp, eos%cbRefEos, trim(refAlpha), param_ref)
+      call SelectMixingRules(eos%refNc, eos%refComp, eos%cbRefEos, "VDW", param_ref)
       ! Reference component data from database
       eos%Tc0 = eos%refComp(1)%p_comp%Tc
       eos%Pc0 = eos%refComp(1)%p_comp%Pc
