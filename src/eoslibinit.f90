@@ -971,7 +971,7 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
-    call allocate_eos(ncomp, "LEEKESLER")
+    call allocate_eos(ncomp, "LK")
 
     ! Number of phases
     act_mod_ptr%nph = 3
@@ -998,7 +998,7 @@ contains
     ! Initialize components module
     call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
 
-    call init_thermopack("LEEKESLER","CLASSIC", &
+    call init_thermopack("LK","CLASSIC", &
          "CLASSIC", nphase=3, kij_ref=param_ref)
 
     ! Set globals

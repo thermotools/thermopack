@@ -153,6 +153,22 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,v_spec=V0)
   end subroutine test_fres_tv_NIST
 
+  @Test
+  subroutine test_leekesler()
+    integer, parameter :: ncomp = 6
+    character(len=*), parameter :: eos="LK"
+    character(len=*), parameter :: compstr="C1,C2,C3,CO2,H2O,H2S"
+    real :: T0, P0, n0(ncomp)
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+
+    n0(1:ncomp) = (/0.05,0.05,0.05,0.75,0.05,0.05/)
+    P0 = 2e+06
+    T0 = 300.0
+
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,test_extensive=.false.)
+  end subroutine test_leekesler
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! The following routines are model-independent
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -306,9 +322,9 @@ contains
 
 
 
-  subroutine test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing,v_spec)
+  subroutine test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing,v_spec,test_extensive)
     !> Verifies that a selection of thermodynamic identities are fulfilled.
-    use eosTV, only: thermoTV, Fres
+    use eosTV, only: thermoTV, Fres, pressure
     use eos, only: specificvolume
     use thermopack_constants, only: LIQPH, VAPPH
     use stringmod, only: str_eq
@@ -318,6 +334,8 @@ contains
     real, intent(in) :: T0, P0
     real, dimension(ncomp), intent(in) :: n0
     real, optional, intent(in) :: v_spec ! if present(v_spec) then P0 is ignored
+    logical, optional, intent(in) :: test_extensive
+    !
     character(len=*), optional, intent(in) :: mixing
     real :: n(ncomp), V, z(ncomp), n2(ncomp), lnf(ncomp), lnf2(ncomp), F, F2
     real, parameter :: tol1 = 1e-10, tol2 = 5e-8
@@ -329,16 +347,25 @@ contains
     real, dimension(ncomp) :: gd,phi,phinumP,phinumT
     real, dimension(ncomp*ncomp) :: phinumX
     real, dimension((ncomp*ncomp-ncomp)/2) :: phisym
-    logical :: isCubic
+    logical :: isCubic, test_ext
+
+    ! Test extensive properties
+    if (present(test_extensive)) then
+      test_ext = test_extensive
+    else
+      test_ext = .true.
+    endif
 
     call eos_init(ncomp,eos,compstr,mixing,isCubic)
 
     ! Calculate initial point
     if (present(v_spec)) then
-       v0 = v_spec
+      v0 = v_spec
+      p = pressure(t0,v0,n0)
     else
-       call specificvolume(T0,p0,n0/sum(n0),LIQPH,v0)
-       v0 = v0*sum(n0)
+      call specificvolume(T0,p0,n0/sum(n0),LIQPH,v0)
+      v0 = v0*sum(n0)
+      p = p0
     end if
     t = t0
     v = v0
@@ -391,19 +418,21 @@ contains
           enddo
        enddo
 
-       ! Verify that NVT functions are extensive
-       call specificvolume(t,p,z,ph,v)
-       call thermoTV(t,v,z,lnf)
-       call Fres(t,1000*v,z,F)
-       factor = 1.2345
-       n2 = z*factor
-       v = v*factor
-       call Fres(t,1000*v,n2,F2)
-       @assertEqual(0.0,F*factor-F2,0.1*tol1)
-       call thermoTV(t,v,n2,lnf2)
-       do i=1,ncomp
-          @assertEqual(0.0,lnf(i)-lnf2(i),0.1*tol1)
-       enddo
+       if (test_ext) then
+         ! Verify that NVT functions are extensive
+         call specificvolume(t,p,z,ph,v)
+         call thermoTV(t,v,z,lnf)
+         call Fres(t,1000*v,z,F)
+         factor = 1.2345
+         n2 = z*factor
+         v = v*factor
+         call Fres(t,1000*v,n2,F2)
+         @assertEqual(0.0,F*factor-F2,0.1*tol1)
+         call thermoTV(t,v,n2,lnf2)
+         do i=1,ncomp
+           @assertEqual(0.0,lnf(i)-lnf2(i),0.1*tol1)
+         enddo
+       endif
     end do
   end subroutine test_consistency
 
