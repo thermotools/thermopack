@@ -22,7 +22,7 @@ subroutine consistency(t,p,n,phase,gi,phiP,phiT,gd,phi,phisym,phinumP,phinumT,ph
   integer :: i, j, index
   logical, parameter :: printRes = .false.
 
- call thermo(t,p,n,phase,lnfug,lnfugt,lnfugp,lnfugx)
+  call thermo(t,p,n,phase,lnfug,lnfugt,lnfugp,lnfugx)
   call zfac(t,p,n,phase,Z)
   call enthalpy(t,p,n,phase,Hr,residual=.true.)
   call residualGibbs(t,p,n,phase,Gr)

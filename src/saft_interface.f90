@@ -1179,6 +1179,7 @@ contains
       if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
     class is ( saftvrmie_eos )
       call calcFresSAFTVRMie(p_eos, nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
       if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
       if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
       if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
