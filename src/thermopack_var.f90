@@ -26,7 +26,7 @@ module thermopack_var
   !> List of component names
   character (len=eosid_len), pointer :: complist(:)
   ! Apparent composition
-  type(apparent_container), pointer :: apparent
+  type(apparent_container), pointer :: apparent => NULL()
 
   type, abstract :: base_eos_param
     ! Base class for holding parameters unique to an EoS.
@@ -195,6 +195,7 @@ contains
       if (thermo_models(i)%p_model%is_model_container(index)) then
         p_active_model => thermo_models(i)%p_model
         call update_global_variables_form_active_thermo_model()
+        !call print_globals()
         return
       endif
     enddo

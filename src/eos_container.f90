@@ -206,6 +206,7 @@ subroutine update_global_variables_form_active_thermo_model()
        ncsym, numAssocSites, get_active_thermo_model, &
        thermo_model
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
+  implicit none
   type(thermo_model), pointer :: act_mod_ptr
   act_mod_ptr => get_active_thermo_model()
   nc = act_mod_ptr%nc
@@ -231,3 +232,20 @@ subroutine update_global_variables_form_active_thermo_model()
     saftvrmie_param => NULL()
   end select
 end subroutine update_global_variables_form_active_thermo_model
+
+subroutine print_globals()
+  use thermopack_var, only: nc, nph, complist, apparent, nce, &
+       ncsym, numAssocSites
+  implicit none
+  integer :: i
+  print *,"nph",nph
+  print *,"nc",nc
+  print *,"nce",nce
+  print *,"ncsym",ncsym
+  print *,"numAssocSites",numAssocSites
+  print *,"complist:"
+  do i=1,nc
+    print *," ",trim(complist(i))
+  enddo
+  print *,"associated(apparent)",associated(apparent)
+end subroutine print_globals
