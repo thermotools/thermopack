@@ -60,6 +60,71 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
   end subroutine test_fres_tv_PRHV
 
+  @Test
+  subroutine test_fres_tv_PRWS()
+    integer, parameter :: ncomp = 2
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="CO2,AR"
+    character(len=*), parameter :: mixing="WS"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.9,0.15]
+    P0 = 5.0e6
+    T0 = 300.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+  end subroutine test_fres_tv_PRWS
+
+  @Test
+  subroutine test_fres_tv_PR_unifac()
+    integer, parameter :: ncomp = 2
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="ACETONE,NC5"
+    character(len=*), parameter :: mixing="UNIFAC"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.047,0.953]*1.333
+    P0 = 5.0e6
+    T0 = 300.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+  end subroutine test_fres_tv_PR_unifac
+
+  @Test
+  subroutine test_fres_tv_PT()
+    integer, parameter :: ncomp = 6
+    character(len=*), parameter :: eos="PT"
+    character(len=*), parameter :: compstr="C1,C2,C3,CO2,H2O,H2S"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.05,0.05,0.05,0.75,0.05,0.05]*1.333
+    P0 = 5.0e6
+    T0 = 250.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_PT
+
+  @Test
+  subroutine test_fres_tv_SW()
+    integer, parameter :: ncomp = 6
+    character(len=*), parameter :: eos="SW"
+    character(len=*), parameter :: compstr="C1,C2,C3,CO2,H2O,H2S"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.05,0.05,0.05,0.75,0.05,0.05]*1.333
+    P0 = 5.0e6
+    T0 = 250.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_SW
 
   @Test
   subroutine test_fres_tv_CPA_SRK()
@@ -168,6 +233,58 @@ contains
 
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,test_extensive=.false.)
   end subroutine test_leekesler
+
+  @Test
+  subroutine test_fres_tv_csp_NIST()
+    integer, parameter :: ncomp = 6
+    character(len=*), parameter :: eos="CSP-SRK"
+    character(len=*), parameter :: compstr="C1,C2,C3,CO2,H2O,H2S"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.05,0.05,0.05,0.75,0.05,0.05]*1.333
+    P0 = 5.0e6
+    T0 = 250.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_csp_NIST
+
+  @Test
+  subroutine test_fres_tv_saftvrmie()
+    use saftvrmie_options, only: saftvrmieaij_model_options, LAFITTE
+    integer, parameter :: ncomp = 3
+    character(len=*), parameter :: eos="SAFT-VR-MIE"
+    character(len=*), parameter :: compstr="C1,C2,C3"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.5,0.2,0.3]*1.333
+    P0 = 2.0e6
+    T0 = 300.0
+
+    call saftvrmieaij_model_options(LAFITTE)
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_saftvrmie
+
+  @Test
+  subroutine test_fres_tv_qsaftvrmie()
+    use saftvrmie_options, only: saftvrmieaij_model_options, QSAFT_FH1
+    integer, parameter :: ncomp = 3
+    character(len=*), parameter :: eos="SAFT-VR-MIE"
+    character(len=*), parameter :: compstr="He,Ne,H2"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.1,0.1,0.8]*1.333
+    P0 = 1.0e6
+    T0 = 25.0
+
+    call saftvrmieaij_model_options(QSAFT_FH1)
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_tv_qsaftvrmie
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! The following routines are model-independent
