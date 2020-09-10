@@ -1525,20 +1525,17 @@ subroutine test_A3()
   stop
 end subroutine test_A3
 
-subroutine test_g0(Ti,Vi,ni,doInit,qc)
+subroutine test_g0(Ti,Vi,ni)
   use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
   use saftvrmie_chain
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   implicit none
-  real, optional, intent(in) :: Ti,Vi,ni(nc)
-  logical, optional, intent(in) :: doInit
-  integer, optional, intent(in) :: qc
+  real, intent(in) :: Ti,Vi,ni(nc)
   ! Locals
   real :: n(nc),n0(nc),T,V,eps
   integer :: i
-  logical :: doInit_L
   real :: x0,eta,g,g_e,g_x,g_ee,g_xx,g_ex,g2,g2_e,g2_x,g2_ee,g2_xx,g2_ex
   real, dimension(nc) :: g0,g0_T,g0_V,g0_TT,g0_VV,g0_TV
   real, dimension(nc,nc) :: g0_n,g0_Tn,g0_Vn
@@ -1550,39 +1547,10 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
 
-  if (present(qc)) then
-     quantum_correction=qc
-  else
-     quantum_correction=1
-  endif
-  if (present(doInit)) then
-     doInit_L = doInit
-  else
-     doInit_L = .true.
-  endif
-  if (doInit_L) then
-      call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
-  endif
-  if (present(ni)) then
-     n = ni
-  else
-     if (nc == 2) then
-        n = (/0.2,1.2/)
-     else
-        n = 0.9
-     endif
-  endif
+  n = ni
   n0 = n
-  if (present(Vi)) then
-     V = Vi
-  else
-     V = 1.0e-4
-  endif
-  if (present(Ti)) then
-     T = Ti
-  else
-     T = 5.0
-  endif
+  V = Vi
+  T = Ti
   eps = 1.0e-8
   i = 1
   svrm_var => get_saftvrmie_var()
@@ -1651,7 +1619,7 @@ subroutine test_g0(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_g0
 
-subroutine test_g1(Ti,Vi,ni,doInit,qc)
+subroutine test_g1(Ti,Vi,ni)
   use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
@@ -1659,11 +1627,8 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   use saftvrmie_chain
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   implicit none
-  real, optional, intent(in) :: Ti,Vi,ni(nc)
-  logical, optional, intent(in) :: doInit
-  integer, optional, intent(in) :: qc
+  real, intent(in) :: Ti,Vi,ni(nc)
   ! Locals
-  logical :: doInit_L
   real :: n(nc),n0(nc),T,V,eps
   integer :: i
   real :: x0,eta,g,g_e,g_x,g_ee,g_xx,g_ex,g2,g2_e,g2_x,g2_ee,g2_xx,g2_ex
@@ -1681,39 +1646,10 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
 
-  if (present(qc)) then
-     quantum_correction=qc
-  else
-     quantum_correction=1
-  endif
-  if (present(doInit)) then
-    doInit_L = doInit
-  else
-    doInit_L = .true.
-  endif
-  if (doInit_L) then
-      call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
-  endif
-  if (present(ni)) then
-     n = ni
-  else
-     if (nc == 2) then
-        n = (/0.2,1.2/)
-     else
-        n = 0.9
-     endif
-  endif
+  n = ni
   n0 = n
-  if (present(Vi)) then
-     V = Vi
-  else
-     V = 1.0e-4
-  endif
-  if (present(Ti)) then
-     T = Ti
-  else
-     T = 5.0
-  endif
+  V = Vi
+  T = Ti
   eps = 1.0e-5
   i = 1
   svrm_var => get_saftvrmie_var()
@@ -1939,7 +1875,7 @@ subroutine test_g1(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_g1
 
-subroutine test_g2(Ti,Vi,ni,doInit,qc)
+subroutine test_g2(Ti,Vi,ni)
   use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
@@ -1947,11 +1883,9 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
   use saftvrmie_chain
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   implicit none
-  real, optional, intent(in) :: Ti,Vi,ni(nc)
-  logical, optional, intent(in) :: doInit
-  integer, optional, intent(in) :: qc
+  real, intent(in) :: Ti,Vi,ni(nc)
   ! Locals
-  logical :: doInit_L, no_correction
+  logical :: no_correction
   real :: n(nc),n0(nc),T,V,eps
   integer :: i
   real :: x0,eta,g,g_e,g_x,g_ee,g_xx,g_ex,g2,g2_e,g2_x,g2_ee,g2_xx,g2_ex
@@ -1966,39 +1900,10 @@ subroutine test_g2(Ti,Vi,ni,doInit,qc)
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
   no_correction = .true.
-  if (present(qc)) then
-     quantum_correction=qc
-  else
-     quantum_correction=1
-  endif
-  if (present(doInit)) then
-     doInit_L = doInit
-  else
-     doInit_L = .true.
-  endif
-  if (doInit_L) then
-      call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
-  endif
-  if (present(ni)) then
-     n = ni
-  else
-     if (nc == 2) then
-        n = (/0.2,1.2/)
-     else
-        n = 0.9
-     endif
-  endif
-  n0 = n
-  if (present(Vi)) then
-     V = Vi
-  else
-     V = 1.0e-4
-  endif
-  if (present(Ti)) then
-     T = Ti
-  else
-     T = 5.0
-  endif
+  n0 = ni
+  n = n0
+  V = Vi
+  T = Ti
   eps = 1.0e-5
   i = 1
   svrm_var => get_saftvrmie_var()
@@ -2260,7 +2165,7 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_rdf_at_contact
 
-subroutine test_a_chain
+subroutine test_a_chain(T,V,n0)
   use thermopack_constants
   use saftvrmie_containers
   use saftvrmie_interface
@@ -2269,7 +2174,9 @@ subroutine test_a_chain
   use saftvrmie_hardsphere
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   implicit none
-  real :: n(nc),n0(nc),T,V,eps
+  real, intent(in) :: n0(nc),T,V
+  !
+  real :: n(nc),eps
   integer :: i
   real :: ach,ach_T,ach_V,ach_TT,ach_VV,ach_TV
   real, dimension(nc) :: ach_n,ach_Tn,ach_Vn
@@ -2287,13 +2194,8 @@ subroutine test_a_chain
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
 
-  quantum_correction=1
-  call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
   svrm_var => get_saftvrmie_var()
-  n = (/0.2,1.2/)
-  n0 = n
-  V = 1.0e-4
-  T = 5.0
+  n = n0
   eps = 1.0e-8
   i = 2
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
@@ -2518,7 +2420,7 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_a_chain_pure
 
-subroutine test_fres(Ti,Vi,ni,doInit)
+subroutine test_fres(Ti,Vi,ni)
   use thermopack_constants
 
   use saftvrmie_containers
@@ -2527,8 +2429,7 @@ subroutine test_fres(Ti,Vi,ni,doInit)
   use saftvrmie_options
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   implicit none
-  real, optional, intent(in) :: Ti,Vi,ni(nc)
-  logical, optional, intent(in) :: doInit
+  real, intent(in) :: Ti,Vi,ni(nc)
   ! Locals
   real :: n(nc),n0(nc),T,V,eps
   real :: F,F_T,F_V,F_TT,F_VV,F_TV
@@ -2543,36 +2444,11 @@ subroutine test_fres(Ti,Vi,ni,doInit)
   act_mod_ptr => get_active_thermo_model()
   eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
   !enable_chain = .false.
-  quantum_correction=0
-  if (present(doInit)) then
-     call_init = doInit
-  else
-     call_init = .true.
-  endif
-  if (call_init) then
-    call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
-  endif
-  if (present(ni)) then
-     n = ni
-  else
-     if (nc == 2) then
-        n = (/0.2,1.2/)
-     else
-        n = 0.9
-     endif
-  endif
+  n = ni
   n0 = n
-  if (present(Vi)) then
-     V = Vi
-  else
-     V = 1.0e-4
-  endif
-  if (present(Ti)) then
-     T = Ti
-  else
-     T = 5.0
-  endif
-
+  V = Vi
+  T = Ti
+  
   eps = 1.0e-8
 
   call calcFresSAFTVRMie(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&

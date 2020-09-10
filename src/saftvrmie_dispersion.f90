@@ -172,7 +172,7 @@ contains
             sum(saftvrmie_param%ms*n*dhs%d(:,i)**3)
     enddo
     zeta%zx = prefactor*zeta%zx
-    if (difflevel > 0) then
+    if (difflevel >= 0) then
        zeta%zx_T = 0.0
        do i=1,nc
           zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*&
@@ -187,7 +187,7 @@ contains
                - zeta%zx/ns)
        enddo
     endif
-    if (difflevel > 1) then
+    if (difflevel >= 1) then
        zeta%zx_TT = 0.0
        do i=1,nc
           zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&

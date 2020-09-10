@@ -265,7 +265,7 @@ contains
     call saftvrmieaij_model_options(LAFITTE)
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
     call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
-    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+    !call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_saftvrmie
 
   @Test

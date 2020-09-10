@@ -435,7 +435,7 @@ contains
         F_nene_p => NULL()
       endif
       call TV_CalcFres(nce,act_mod_ptr%comps,act_eos_ptr,&
-           T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne,&
+           T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_ne_p,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tne_p,F_Vn=F_Vne_p,F_nn=F_nene_p,&
            F_VVV=F_VVV,recalculate=recalculate)
       call real_to_apparent_differentials(F_ne,F_Tne,F_Vne,F_nene,&
