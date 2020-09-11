@@ -1,0 +1,217 @@
+module test_flash_tpgrid
+  use eoslibinit, only: init_thermo
+  use thermopack_constants, only: continueOnError
+  use ps_solver
+  use pfunit_mod
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine sp_flash_co2n2c1()
+    ! Test SP flash
+    character(len=*), parameter :: flash = "SP"
+    character(len=*), parameter :: model = "PR"
+    character(len=*), parameter :: compstr = "co2,n2,c1"
+    integer, parameter :: ngrid = 10
+    real, parameter :: tmax = 350.0
+    real, parameter :: tmin = 200.0
+    real, parameter :: pmax = 1.2e+07
+    real, parameter :: pmin = 1.0e+05
+    real, dimension(3), parameter :: z = (/0.96,0.01,0.03/)
+
+    call eos_init(model,compstr)
+    call loop_flash_on_tp_grid(flash,z,tmin,tmax,pmin,pmax,ngrid)
+
+  end subroutine sp_flash_co2n2c1
+
+  @Test
+  subroutine hp_flash_co2n2c1()
+    ! Test HP flash
+    character(len=*), parameter :: flash = "HP"
+    character(len=*), parameter :: model = "PR"
+    character(len=*), parameter :: compstr = "co2,n2,c1"
+    integer, parameter :: ngrid = 10
+    real, parameter :: tmax = 350.0
+    real, parameter :: tmin = 200.0
+    real, parameter :: pmax = 1.2e+07
+    real, parameter :: pmin = 1.0e+05
+    real, dimension(3), parameter :: z = (/0.96,0.01,0.03/)
+
+    call eos_init(model,compstr)
+    call loop_flash_on_tp_grid(flash,z,tmin,tmax,pmin,pmax,ngrid)
+
+  end subroutine hp_flash_co2n2c1
+
+  @Test
+  subroutine uv_flash_co2n2()
+    !Test UV flash
+    character(len=*), parameter :: flash = "UV"
+    character(len=*), parameter :: model = "PR"
+    character(len=*), parameter :: compstr = "co2,n2"
+    integer, parameter :: ngrid = 10
+    real, parameter :: tmax = 350.0
+    real, parameter :: tmin = 250.0
+    real, parameter :: pmax = 1.0e+07
+    real, parameter :: pmin = 2.0e+06
+    real, dimension(2), parameter :: z = (/0.95,0.05/)
+
+    call eos_init(model,compstr)
+    call loop_flash_on_tp_grid(flash,z,tmin,tmax,pmin,pmax,ngrid)
+
+  end subroutine uv_flash_co2n2
+
+  @Test
+  subroutine sv_flash_co2n2()
+    !Test UV flash
+    character(len=*), parameter :: flash = "SV"
+    character(len=*), parameter :: model = "PR"
+    character(len=*), parameter :: compstr = "co2,n2"
+    integer, parameter :: ngrid = 10
+    real, parameter :: tmax = 350.0
+    real, parameter :: tmin = 250.0
+    real, parameter :: pmax = 1.0e+07
+    real, parameter :: pmin = 2.0e+06
+    real, dimension(2), parameter :: z = (/0.95,0.05/)
+
+    call eos_init(model,compstr)
+    call loop_flash_on_tp_grid(flash,z,tmin,tmax,pmin,pmax,ngrid)
+
+  end subroutine sv_flash_co2n2
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! The following routines are test-independent
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine eos_init(model,compstr,mixing)
+    use eoslibinit, only: silent_init, init_thermo
+    character(len=*), intent(in) :: model
+    character(len=*), intent(in) :: compstr
+    character(len=*), optional, intent(in) :: mixing
+    ! Locals
+    character(len=100) :: mixing_l
+
+    mixing_l = "vdW"
+    if (present(mixing)) mixing_l = mixing
+
+    silent_init = .true.
+    call init_thermo(trim(model), trim(mixing_l), 'Classic',&
+         trim(compstr), 1)
+  end subroutine eos_init
+
+  subroutine generate_random_numbers(n,r1,r2)
+    integer, intent(in) :: n
+    real, intent(out) :: r1(n,n)
+    real, optional, intent(out) :: r2(n,n)
+    !
+    integer, allocatable, dimension(:) :: k
+    integer :: i, j, m, stat
+
+    call random_seed(size=m)
+    allocate(k(m),STAT=stat)
+    if (stat /= 0) write(*,*) 'Error allocating seed k!'
+    k = 1
+    call random_seed(put=k(1:m))
+    deallocate(k,STAT=stat)
+    if (stat /= 0) write(*,*) 'Error deallocating seed k!'
+    do i=1,n
+      do j=1,n
+        call random_number(r1(i,j))
+        if (present(r2)) then
+          call random_number(r2(i,j))
+        endif
+      enddo
+    enddo
+  end subroutine generate_random_numbers
+
+  subroutine loop_flash_on_tp_grid(flash,z,tmin,tmax,pmin,pmax,ngrid)
+    use thermopack_var, only: nc
+    use thermopack_constants, only: continueOnError,tpTmax,&
+         tpTmin,tpPmin,SINGLEPH,TWOPH
+    use tp_solver, only: twoPhaseTPflash
+    use eos, only: twoPhaseEntropy, twoPhaseEnthalpy, twoPhaseSpecificVolume
+    use ps_solver, only: twoPhasePSflash
+    use ph_solver, only: twoPhasePHflash
+    use uv_solver, only: twoPhaseUVflash
+    use sv_solver, only: twoPhaseSVflash
+    real, intent(in), dimension(nc) :: z
+    character(len=*), intent(in) :: flash
+    integer, intent(in) :: ngrid
+    real, intent(in) :: tmax
+    real, intent(in) :: tmin
+    real, intent(in) :: pmax
+    real, intent(in) :: pmin
+    ! Locals
+    real :: rt(ngrid,ngrid), rp(ngrid,ngrid)
+    integer :: i, j, k
+    real, dimension(nc) :: x, y
+    real :: p, T, betaL, beta
+    integer :: phase
+    real :: s, h, v, u
+    real, dimension(nc) :: x_f, y_f
+    real :: p_f, T_f, betaL_f, beta_f
+    integer :: phase_f
+    real, parameter :: tolerance = 1.0e-6
+    !
+    continueOnError = .true.
+    call generate_random_numbers(ngrid,rt,rp)
+
+    do i=1,ngrid
+      p = pmin + (i-1)*(pmax - pmin)/(ngrid-1)
+      do j=1,ngrid
+        t = tmin + (j-1)*(tmax - tmin)/(ngrid-1)
+        call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+        select case(flash)
+        case("SP")
+          s = twoPhaseEntropy(t,p,z,x,y,beta,phase)
+          t_f = (rt(i,j)*(tpTmax-tpTmin))+tpTmin
+          call twoPhasePSflash(t_f,p,Z,beta_f,betaL_f,X_f,Y_f,s,phase_f)
+          p_f = p
+        case("HP")
+          h = twoPhaseEnthalpy(t,p,z,x,y,beta,phase)
+          t_f = (rt(i,j)*(tpTmax-tpTmin))+tpTmin
+          call twoPhasePHflash(t_f,p,Z,beta_f,betaL_f,X_f,Y_f,h,phase_f)
+          p_f = p
+        case("UV")
+          h = twoPhaseEnthalpy(t,p,z,x,y,beta,phase)
+          v = twoPhaseSpecificVolume(t,p,z,x,y,beta,phase)
+          u = h - p*v
+          t_f = t + (rt(i,j) - 0.5)*50.0
+          p_f = max(tpPmin,p + (rp(i,j) - 0.5)*20.0e5)
+          !
+          ! Consistent state:
+          call twoPhaseTPflash(t_f,p_f,Z,beta_f,betaL_f,phase_f,X_f,Y_f)
+          !
+          call twoPhaseUVflash(t_f,p_f,Z,beta_f,betaL_f,X_f,Y_f,u,v,phase_f)
+        case("SV")
+          s = twoPhaseEntropy(t,p,z,x,y,beta,phase)
+          v = twoPhaseSpecificVolume(t,p,z,x,y,beta,phase)
+          t_f = t + (rt(i,j) - 0.5)*50.0
+          p_f = max(tpPmin,p + (rp(i,j) - 0.5)*20.0e5)
+          !
+          ! Consistent state:
+          call twoPhaseTPflash(t_f,p_f,Z,beta_f,betaL_f,phase_f,X_f,Y_f)
+          !
+          call twoPhaseSVflash(t_f,p_f,Z,beta_f,betaL_f,X_f,Y_f,s,v,phase_f)
+        case default
+          call stoperror("loop_flash_on_tp_grid: Wrong flash")
+        end select
+        if (phase /= SINGLEPH .and. phase_f /= SINGLEPH) then
+          @assertTrue(phase == phase_f)
+        endif
+        @assertEqual(t, t_f, tolerance*t)
+        @assertEqual(p, p_f, tolerance*p)
+        if (phase == TWOPH) then
+          @assertEqual(beta, beta_f, tolerance*beta)
+          @assertEqual(betaL, betaL_f, tolerance*betaL)
+          do k=1,nc
+            @assertEqual(X(k),X_f(k),tolerance*X(k))
+            @assertEqual(Y(k),Y_f(k),tolerance*Y(k))
+          enddo
+        endif
+      enddo
+    enddo
+  end subroutine loop_flash_on_tp_grid
+
+end module test_flash_tpgrid
