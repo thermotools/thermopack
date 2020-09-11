@@ -28,4 +28,92 @@ contains
 
   end subroutine test_safe_bubp_dewp
 
+  @Test
+  subroutine test_vlle_binary()
+    ! Assert that VLLE binary code performs as before
+    use binaryplot, only: maxPoints, VLLEBinaryXY, TSPEC
+    real :: T, P
+    !
+    real, dimension(maxpoints) :: xLLE,wLLE,pLLE
+    real, dimension(maxpoints) :: xL1VE,yL1VE,pL1VE
+    real, dimension(maxpoints) :: xL2VE,yL2VE,pL2VE
+    integer :: nLLE, nL1VE, nL2VE
+    character(len=*), parameter :: filename = 'binary.dat'
+    real :: res(9,maxpoints)
+    integer :: i, nRes(3)
+
+    continueOnError = .true.
+    call init_thermo('CPA-SRK', 'vdW', 'Classic', "CO2,H2O", 3)
+
+    P = -1
+    T = 288
+    call VLLEBinaryXY(T=T,P=P,ispec=TSPEC,Tmin=100.0,Pmax=2.0e7,dzmax=0.01,&
+         filename=filename,dlns_max=0.01,res=res,nRes=nRes,Pmin=1.0e5)
+
+    nLLE = nRes(1)
+    nL1VE = nRes(2)
+    nL2VE = nRes(3)
+
+    do i=1,nLLE
+      xLLE(i) = res(1,i)
+      wLLE(i) = res(2,i)
+      pLLE(i) = res(3,i)
+    enddo
+    do i=1,nL1VE
+      xL1VE(i) = res(4,i)
+      yL1VE(i) = res(5,i)
+      pL1VE(i) = res(6,i)
+    enddo
+    do i=1,nL2VE
+      xL2VE(i) = res(7,i)
+      yL2VE(i) = res(8,i)
+      pL2VE(i) = res(9,i)
+    enddo
+
+    @assertEqual(xLLE(1), 8.3983073148142483E-003, 1e-8)
+    @assertEqual(xLLE(nLLE), 9.3659759851368284E-003, 1e-8)
+    @assertEqual(wLLE(nLLE), 0.99984018618472281, 1e-8)
+    @assertEqual(xL1VE(1), 8.3983073148142483E-003, 1e-8)
+    @assertEqual(yL1VE(1), 0.99969765693143653, 1e-8)
+    @assertEqual(xL2VE(1), 0.99981195241106813, 1e-8)
+    @assertEqual(yL2VE(1), 0.99969765693143653, 1e-8)
+    @assertEqual(pLLE(1), 5103721.7270745458, 1e-8)
+    @assertEqual(pL1VE(nL1VE), 1455.3507414351843, 1e-8)
+    @assertEqual(pL2VE(nL2VE), 5102431.3866153369, 1e-8)
+
+  end subroutine test_vlle_binary
+
+  @Test
+  subroutine test_envelope_plot()
+    ! Assert that phase envelope code performs as before
+    use saturation_curve, only: envelopePlot
+    use saturation, only: specP
+    !
+    integer, parameter :: nmax = 1000
+    real, dimension(nmax) :: Ta,Pa,betai
+    real :: Ki(nmax,3)
+    character(len=*), parameter :: filename = 'envelope.dat'
+    integer :: n, i
+    real, dimension(3) :: z = (/0.96,0.01,0.03/)
+    real, dimension(3) :: K
+
+    continueOnError = .true.
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,N2,C1", 3)
+
+    call envelopePlot(Z=z,T_init=-1.0,p_init=1.0e5,&
+         spec=specP,beta_in=1.0,Pmax=1.2e7,nmax=nmax,&
+         Ta=Ta,Pa=Pa,Ki=Ki,betai=betai,n=n)
+
+    @assertEqual(Ta(1), 184.03687384190874, 1e-6)
+    @assertEqual(Ta(n), 82.053031610297836, 1e-6)
+    K = (/0.96019023955499416, 534.51893992689304, 167.20680960839289/)
+    do i=1,3
+      @assertEqual(Ki(1,i), K(i), 1e-8*K(i))
+    enddo
+    K = (/1.3786921514152098E-007, 77.253992206185089, 7.5819981861693826/)
+    do i=1,3
+      @assertEqual(Ki(n,i), K(i), 1e-8*K(i))
+    enddo
+  end subroutine test_envelope_plot
+
 end module test_saturation
