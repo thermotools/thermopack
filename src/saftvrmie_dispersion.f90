@@ -137,11 +137,11 @@ contains
     ! For the zeta_x parameter (Lafitte Eq. (A13)), we allow different definitions
     select case(zeta_mixing_rule)
     case(ZETA_LAFITTE)
-       call calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta)
+       call calcZetaX_vdW(nc,T,V,n,difflevel+1,dhs,zeta)
     case(ZETA_LINEAR)
-       call calcZetaX_linear(nc,T,V,n,difflevel,dhs,zeta)
+       call calcZetaX_linear(nc,T,V,n,difflevel+1,dhs,zeta)
     case(ZETA_LEONARD)
-       call calcZetaX_leonard(nc,T,V,n,difflevel,dhs,zeta)
+       call calcZetaX_leonard(nc,T,V,n,difflevel+1,dhs,zeta)
     case default
        call stoperror("Wrong mixing rule for packing fraction")
     end select
@@ -172,7 +172,7 @@ contains
             sum(saftvrmie_param%ms*n*dhs%d(:,i)**3)
     enddo
     zeta%zx = prefactor*zeta%zx
-    if (difflevel >= 0) then
+    if (difflevel > 0) then
        zeta%zx_T = 0.0
        do i=1,nc
           zeta%zx_T = zeta%zx_T + saftvrmie_param%ms(i)*n(i)*&
@@ -187,7 +187,7 @@ contains
                - zeta%zx/ns)
        enddo
     endif
-    if (difflevel >= 1) then
+    if (difflevel > 1) then
        zeta%zx_TT = 0.0
        do i=1,nc
           zeta%zx_TT = zeta%zx_TT + prefactor*saftvrmie_param%ms(i)*n(i)*(&
