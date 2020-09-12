@@ -1017,6 +1017,7 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos !< Equation of state
     ! Locals
@@ -1076,6 +1077,7 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    !$ use omp_lib, only: omp_get_max_threads
     ! Locals
     integer                          :: ncomp, ncbeos, i, ierr, index
     character(len=3)                 :: comps_upper
