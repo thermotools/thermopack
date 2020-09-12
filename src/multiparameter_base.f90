@@ -54,9 +54,9 @@ module multiparameter_base
      procedure, public :: speed_of_sound !< [m/s]
 
      ! Private methods
-     procedure(satDeltaEstimate_intf), private, deferred :: satDeltaEstimate !< An estimate delta_sat(tau_sat) for use in density solver.
-     procedure(alpha0Derivs_intf), private, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
-     procedure(alphaResDerivs_intf), private, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
+     procedure(satDeltaEstimate_intf), public, deferred :: satDeltaEstimate !< An estimate delta_sat(tau_sat) for use in density solver.
+     procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
+     procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
 
   end type meos
 
