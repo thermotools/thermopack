@@ -647,6 +647,7 @@ contains
     class(*), intent(in)     :: other
     select type( p_other => other )
     class is (PETS_eos)
+      call this%assign_base_eos_param(p_other)
       this%SIGMA_PETS = p_other%SIGMA_PETS
       this%EPSDIVK_PETS = p_other%EPSDIVK_PETS
     class default

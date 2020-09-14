@@ -58,7 +58,21 @@ module multiparameter_base
      procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
      procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
 
+     procedure, public :: assign_meos_base
+     ! Assignment operator
+     procedure(assign_meos_intf), deferred, pass(This), public :: assign_meos
+     generic, public :: assignment(=) => assign_meos
+
   end type meos
+
+  abstract interface
+    subroutine assign_meos_intf(This, other)
+      import meos
+      ! Passed object:
+      class(meos), intent(inout) :: This
+      class(*), intent(in) :: other
+    end subroutine assign_meos_intf
+  end interface
 
   abstract interface
      subroutine init_intf (this, use_Rgas_fit)
@@ -718,5 +732,27 @@ contains
        p_T = this%Rgas_meos*rho*(1 + alpr(1,0) - alpr(1,1))
     end if
   end subroutine mp_pressure
+
+  subroutine assign_meos_base(this,other)
+    class(meos), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos)
+      this%compName = other%compName
+      this%tc = other%tc
+      this%pc = other%pc
+      this%rc = other%rc
+      this%t_triple = other%t_triple
+      this%p_triple = other%p_triple
+      this%rhoLiq_triple = other%rhoLiq_triple
+      this%rhoVap_triple = other%rhoVap_triple
+      this%molarMass = other%molarMass
+      this%maxT = other%maxT
+      this%maxP = other%maxP
+      this%Rgas_meos = other%Rgas_meos
+      this%Rgas_fit = other%Rgas_fit
+    end select
+  end subroutine assign_meos_base
 
 end module multiparameter_base

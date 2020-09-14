@@ -65,6 +65,9 @@ module multiparameter_C3
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_C3
 
+     ! Assignment operator
+     procedure, pass(This), public :: assign_meos => assign_meos_c3
+
   end type meos_c3
 
 contains
@@ -214,5 +217,25 @@ contains
     end if
 
   end function satDeltaEstimate_C3
+
+  subroutine assign_meos_c3(this,other)
+    class(meos_c3), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos_c3)
+      call this%assign_meos_base(other)
+
+      this%tau_cache = other%tau_cache
+      this%deltaSatLiq_cache = other%deltaSatLiq_cache
+      this%deltaSatVap_cache = other%deltaSatVap_cache
+      this%prefactors_pol_cache = other%prefactors_pol_cache
+      this%prefactors_exp_cache = other%prefactors_exp_cache
+      this%prefactors_expexp_cache = other%prefactors_expexp_cache
+
+    class default
+      call stoperror("assign_meos_c3: Should not be here....")
+    end select
+  end subroutine assign_meos_c3
 
 end module multiparameter_C3

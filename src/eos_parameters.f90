@@ -12,6 +12,7 @@ Module eos_parameters
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
   use mbwr, only: eosmbwr, initializeMBWRmodel
+  implicit none
 
   ! type, abstract :: base_eos_param
   !   ! Base class for holding eos-data
@@ -86,7 +87,7 @@ contains
     integer, intent(in) :: nc !< Number of components
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
-    integer :: istat
+    integer :: istat, i
     call eos%dealloc()
     istat = 0
     if (str_eq(eos_label,'MBWR19') .or. str_eq(eos_label,'MBWR32')) then
@@ -105,26 +106,37 @@ contains
       allocate(eos%nist(nc), STAT=istat)
       if (istat /= 0) call stoperror('Error allocating nist')
       do i=1,nc
-        if (str_eq(complist(i), "C3")) then
-          allocate(meos_c3 :: eos%nist(i)%meos, stat=istat)
-        elseif (str_eq(complist(i),"N-H2")) then
-          allocate(meos_normal_h2 :: eos%nist(i)%meos, stat=istat)
-        elseif (str_eq(complist(i),"O-H2")) then
-          allocate(meos_ortho_h2 :: eos%nist(i)%meos, stat=istat)
-        elseif (str_eq(complist(i),"P-H2")) then
-          allocate(meos_para_h2 :: eos%nist(i)%meos, stat=istat)
-        elseif (str_eq(complist(i),"R134A")) then
-          allocate(meos_r134a :: eos%nist(i)%meos, stat=istat)
-        else
-          call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
-        end if
-        if (istat /= 0) call stoperror("Not able to allocate eos%nist(1)%meos")
+        call single_eos_alloc(complist(i),eos%nist(i)%meos)
         call eos%nist(i)%meos%init()
       enddo
     else
       call stoperror("Wrong input to single_eos_allocate_and_init")
     endif
   end subroutine single_eos_allocate_and_init
+
+  ! \author Morten H
+  subroutine single_eos_alloc(comp,meos_ptr)
+    ! Passed object:
+    class(meos), pointer, intent(inout) :: meos_ptr
+    character(len=*), intent(in) :: comp
+    ! Locals
+    integer :: istat
+    istat = 0
+    if (str_eq(comp, "C3")) then
+      allocate(meos_c3 :: meos_ptr, stat=istat)
+    elseif (str_eq(comp,"N-H2")) then
+      allocate(meos_normal_h2 :: meos_ptr, stat=istat)
+    elseif (str_eq(comp,"O-H2")) then
+      allocate(meos_ortho_h2 :: meos_ptr, stat=istat)
+    elseif (str_eq(comp,"P-H2")) then
+      allocate(meos_para_h2 :: meos_ptr, stat=istat)
+    elseif (str_eq(comp,"R134A")) then
+      allocate(meos_r134a :: meos_ptr, stat=istat)
+    else
+      call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+    end if
+    if (istat /= 0) call stoperror("Not able to allocate meos_ptr")
+  end subroutine single_eos_alloc
 
   !! \author Morten H
   subroutine single_eos_dealloc(eos)
@@ -184,11 +196,12 @@ contains
     class(single_eos), intent(out) :: this
     class(*), intent(in)           :: other
     ! Locals
-    integer :: i, stat
+    integer :: i, istat
     select type (other)
     class is (single_eos)
+      call this%assign_base_eos_param(other)
       if (allocated(other%mbwr_meos)) then
-        stat = 0
+        istat = 0
         if (allocated(this%mbwr_meos)) deallocate(this%mbwr_meos, stat=istat)
         if (istat /= 0) call stoperror("Not able to deallocate this%mbwr_meos")
         allocate(this%mbwr_meos(size(other%mbwr_meos)), stat=istat)
@@ -198,13 +211,31 @@ contains
         enddo
       endif
       if (allocated(other%nist)) then
-        stat = 0
+        istat = 0
         if (allocated(this%nist)) deallocate(this%nist, stat=istat)
         if (istat /= 0) call stoperror("Not able to deallocate this%nist")
         allocate(this%nist(size(other%nist)), stat=istat)
         if (istat /= 0) call stoperror("Not able to allocate this%nist")
         do i=1,size(other%nist)
-          this%nist(i) = other%nist(i)
+          if (associated(other%nist(i)%meos)) then
+            istat = 0
+            select type (p_meos => other%nist(i)%meos)
+            class is (meos_c3)
+              allocate(meos_c3 :: this%nist(i)%meos, stat=istat)
+            class is (meos_normal_h2)
+              allocate(meos_normal_h2 :: this%nist(i)%meos, stat=istat)
+            class is (meos_ortho_h2)
+              allocate(meos_ortho_h2 :: this%nist(i)%meos, stat=istat)
+            class is (meos_para_h2)
+              allocate(meos_para_h2 :: this%nist(i)%meos, stat=istat)
+            class is (meos_r134a)
+              allocate(meos_r134a :: this%nist(i)%meos, stat=istat)
+            class default
+              call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+            end select
+            if (istat /= 0) call stoperror("Not able to allocate this%nist(i)%meos")
+            this%nist(i)%meos = other%nist(i)%meos
+          endif
         enddo
       endif
     class default

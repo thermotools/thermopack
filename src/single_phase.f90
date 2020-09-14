@@ -868,9 +868,9 @@ contains
             call calcCbFder_res_SI(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV,recalculate)
             isCubic = .true.
-         type is ( lk_eos ) ! Lee-Kesler equations of state
+          type is ( lk_eos ) ! Lee-Kesler equations of state
             call stoperror('Lee-Kesler model does not support TV_CalcFres')
-         type is ( single_eos )
+          type is ( single_eos )
             call Fres_single(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
          type is ( meos_mix )

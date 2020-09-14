@@ -423,6 +423,18 @@ contains
 
   end function cubic_eos_constructor
 
+  !> Allocate memory for LK eos
+  function lk_eos_constructor(nc,eos_label) result(lk)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(lk_eos) :: lk
+    !
+    call lk%cb_eos%allocate_and_init(nc,eos_label)
+
+  end function lk_eos_constructor
+
 
   !> Allocate memory for CPA eos
   function cpa_eos_constructor(nc,eos_label) result(cpa)
@@ -443,8 +455,10 @@ contains
     class(cb_eos), intent(out) :: this
     class(*), intent(in) :: other
     ! Locals
+    integer :: istat
     select type (other)
     class is (cb_eos)
+      call this%assign_base_eos_param(other)
       this%eosid = other%eosid
       this%mruleid = other%mruleid
       this%name = other%name
@@ -557,7 +571,12 @@ contains
       this%nextrm = other%nextrm
       this%nzfac = other%nzfac
 
-      this%single = other%single
+      if (allocated(other%single)) then
+        this%single = other%single
+      else if (allocated(this%single)) then
+        deallocate(this%single, stat=istat)
+        if (istat /= 0) call stoperror("cubic_eos: Not able to deallocate single")
+      endif
 
       if (allocated(other%kij)) then
         call allocate_nc_x_nc(this%kij,size(other%kij,dim=1),"kij")
@@ -570,7 +589,13 @@ contains
       this%simple_covolmixing = other%simple_covolmixing
       this%mixGE = other%mixGE
       this%mixWS = other%mixWS
-      this%unifdb = other%unifdb
+      if (associated(other%unifdb)) then
+        if (.not. associated(this%unifdb)) then
+          allocate(unifacdb :: this%unifdb, stat=istat)
+          if (istat /= 0) call stoperror("cubic_eos: Not able to allocate unifacdb")
+        endif
+        this%unifdb = other%unifdb
+      endif
     class default
       print *,"assign_cubic_eos: Should not be here"
     end select

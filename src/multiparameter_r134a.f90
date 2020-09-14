@@ -52,6 +52,9 @@ module multiparameter_r134a
      procedure, public :: satDeltaEstimate => satDeltaEstimate_r134a
      procedure, public :: init => init_r134a
 
+     ! Assignment operator
+     procedure, pass(This), public :: assign_meos => assign_meos_r134a
+
   end type meos_r134a
 
 contains
@@ -165,5 +168,17 @@ contains
     end if
 
   end function satDeltaEstimate_r134a
+
+  subroutine assign_meos_r134a(this,other)
+    class(meos_r134a), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos_r134a)
+      call this%assign_meos_base(other)
+    class default
+      call stoperror("assign_meos_r134a: Should not be here....")
+    end select
+  end subroutine assign_meos_r134a
 
 end module multiparameter_r134a

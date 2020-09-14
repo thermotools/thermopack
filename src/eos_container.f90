@@ -105,7 +105,7 @@ contains
            source=cubic_eos_constructor(nc, eosstr), stat=istat)
     case(eosLK)
       allocate(p_eos, &
-           source=cubic_eos_constructor(nc, eosstr), stat=istat)
+           source=lk_eos_constructor(nc, eosstr), stat=istat)
     case(eosCSP)
       allocate(extcsp_eos :: p_eos, stat=istat)
     case(eosCPA)

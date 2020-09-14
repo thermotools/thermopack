@@ -45,6 +45,8 @@ module thermopack_var
     ! Assignment operator
     procedure(assign_intf), deferred, pass(This), public :: assign_eos
     generic, public :: assignment(=) => assign_eos
+
+    procedure, public :: assign_base_eos_param
   end type base_eos_param
 
 
@@ -277,6 +279,28 @@ contains
     class(base_eos_param), intent(inout) :: eos
     ! Input:
   end subroutine eos_dealloc
+
+  subroutine assign_base_eos_param(this, other)
+    ! Passed object:
+    class(base_eos_param), intent(inout) :: this
+    class(base_eos_param), intent(in) :: other
+    ! Locals
+    integer :: istat
+    this%eosid = other%eosid
+    this%eosidx = other%eosidx
+    this%subeosidx = other%subeosidx
+    this%volumeShiftId = other%volumeShiftId
+    this%isElectrolyteEoS = other%isElectrolyteEoS
+    !
+    if (associated(other%assoc)) then
+      if (.not. associated(this%assoc)) then
+        allocate(this%assoc, stat=istat)
+        if (istat /= 0) print *,"Error allocating assoc"
+      endif
+      this%assoc = other%assoc
+    endif
+
+  end subroutine assign_base_eos_param
 
   subroutine thermo_model_dealloc(model)
     ! Passed object:

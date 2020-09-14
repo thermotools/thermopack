@@ -1035,6 +1035,7 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
+    complist => act_mod_ptr%complist
     call allocate_eos(ncomp, eos)
 
     ! Number of phases
@@ -1046,7 +1047,6 @@ contains
     nc = ncomp
     act_mod_ptr%nc = ncomp
     nph = act_mod_ptr%nph
-    complist => act_mod_ptr%complist
     apparent => NULL()
 
     ! Set eos library identifyer

@@ -112,6 +112,9 @@ module multiparameter_ortho_h2
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_ORTHO_H2
 
+     ! Assignment operator
+     procedure, pass(This), public :: assign_meos => assign_meos_ortho_h2
+
   end type meos_ortho_h2
 
 contains
@@ -254,5 +257,25 @@ contains
     end if
 
   end function satDeltaEstimate_ORTHO_H2
+
+  subroutine assign_meos_ortho_h2(this,other)
+    class(meos_ortho_h2), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos_ortho_h2)
+      call this%assign_meos_base(other)
+
+      this%tau_cache = other%tau_cache
+      this%deltaSatLiq_cache = other%deltaSatLiq_cache
+      this%deltaSatVap_cache = other%deltaSatVap_cache
+      this%prefactors_pol_cache = other%prefactors_pol_cache
+      this%prefactors_exp_cache = other%prefactors_exp_cache
+      this%prefactors_expexp_cache = other%prefactors_expexp_cache
+
+    class default
+      call stoperror("assign_meos_ortho_h2: Should not be here....")
+    end select
+  end subroutine assign_meos_ortho_h2
 
 end module multiparameter_ORTHO_H2

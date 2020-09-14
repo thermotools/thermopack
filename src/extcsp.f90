@@ -1359,8 +1359,11 @@ contains
     integer :: istat
     select type (p_o => other)
     class is (extcsp_eos)
+      call this%assign_base_eos_param(p_o)
       !call assign_cubic_eos(this, p_o)
       this%shapeEos = p_o%shapeEos
+      this%cbRefEos = p_o%cbRefEos
+      this%shapeEosRef = p_o%shapeEosRef
       if (associated(p_o%mbwrRefEos)) then
         if (.not. associated(this%mbwrRefEos)) then
           istat = 0
@@ -1375,7 +1378,7 @@ contains
           allocate(meos_c3 :: this%nistRefEos, stat=istat)
           if (istat /= 0) call stoperror('Error allocating nistRefEos')
         endif
-        !this%nistRefEos = p_o%nistRefEos
+        this%nistRefEos = p_o%nistRefEos
       endif
       this%sd = p_o%sd
       if (allocated(p_o%refComp)) then

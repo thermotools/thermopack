@@ -1411,6 +1411,7 @@ Contains
     integer :: nc
     select type (other)
     class is (saftvrmie_eos)
+      call this%assign_base_eos_param(other)
       if (allocated(other%saftvrmie_param%comp)) then
         nc = size(other%saftvrmie_param%comp)
       else

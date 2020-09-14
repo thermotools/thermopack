@@ -1477,6 +1477,7 @@ contains
     integer :: nc
     select type (other)
     class is (PCSAFT_eos)
+      call this%assign_base_eos_param(other)
       if (allocated(other%m)) then
         nc = size(other%m)
         call this%allocate_and_init(nc,other%eosid)
