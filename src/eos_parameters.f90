@@ -145,6 +145,7 @@ contains
     class(single_eos), intent(inout) :: eos
     ! Locals
     integer :: i, istat
+    call base_eos_dealloc(eos)
     istat = 0
     if (allocated(eos%mbwr_meos)) then
       do i=1,size(eos%mbwr_meos)
@@ -171,7 +172,6 @@ contains
     ! Created object:
     type(single_eos) :: s_eos
     !
-    call base_eos_dealloc(eos)
     call s_eos%allocate_and_init(nc, eos_label)
   end function single_eos_constructor
 
