@@ -18,7 +18,7 @@ module extcsp
   use multiparameter_c3, only: meos_C3
   use stringmod, only: str_eq
   use multiparameter_base, only: meos
-  use thermopack_var, only: base_eos_param, get_active_eos
+  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   implicit none
   private
   save
@@ -1463,7 +1463,7 @@ contains
     class(extcsp_eos), intent(inout) :: eos
     ! Locals
     integer :: istat
-    !call cubic_eos_dealloc(eos)
+    call base_eos_dealloc(eos)
     call eos%shapeEos%dealloc()
     if (associated(eos%mbwrRefEos)) then
       call eos%mbwrRefEos%dealloc()

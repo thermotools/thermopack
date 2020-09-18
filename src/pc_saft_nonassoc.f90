@@ -7,7 +7,7 @@
 !> which has the same (3 or 5) pure-component parameters as PC-SAFT
 !> but is built upon a simpler and computationally faster mixing rule.
 module pc_saft_nonassoc
-  use thermopack_var, only: nce, base_eos_param
+  use thermopack_var, only: nce, base_eos_param, base_eos_dealloc
   use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: PI
   implicit none
@@ -1497,6 +1497,7 @@ contains
     ! Passed object:
     class(pcsaft_eos), intent(inout) :: eos
     !
+    call base_eos_dealloc(eos)
     call deallocate_real(eos%m,"eos%m")
     call deallocate_real_2(eos%sigma,"eos%sigma")
     call deallocate_real_2(eos%sigma_cube,"eos%sigma_cube")

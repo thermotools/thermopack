@@ -509,7 +509,7 @@ contains
     use eosdata, only: isSAFTEOS
     use stringmod, only: str_eq
     use thermopack_constants, only: THERMOPACK, ref_len
-    use thermopack_var, only: nce, nc, nph, complist
+    use thermopack_var, only: nce, nc, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
     use extcsp, only: csp_init, extcsp_eos
     use cubic_eos, only: cb_eos
@@ -650,11 +650,11 @@ contains
     integer, intent(in)             :: nphase         !< Number of phases
     logical, intent(in)             :: doFallbackInit !< Init thermopack as fallback
     !Internal:
-    integer                         :: i
-    integer                         :: mix
-    character (12)                  :: comps(ncomp)
-    character(len=255)              :: path,trendroot
-    integer                         :: npath,int_path(255),int_comps(12*ncomp),ncomps
+    ! integer                         :: i
+    ! integer                         :: mix
+    ! character (12)                  :: comps(ncomp)
+    ! character(len=255)              :: path,trendroot
+    ! integer                         :: npath,int_path(255),int_comps(12*ncomp),ncomps
 
     ! if (doFallbackInit) then
     !   ! Also initialize Thermopack cubic EoS, to be used for initial estimates.

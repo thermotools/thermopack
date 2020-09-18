@@ -1364,7 +1364,7 @@ contains
     integer, intent(out) :: ierr !< Error indicator, zero on success
     ! Locals
     real :: dpds_sat, dtds_sat, h, dhdt, dhdp, s, dsdt, dsdp
-    real :: dtdp, dpdt, dh, ds, dT, dP, dlnP, dlnT, sgn
+    real :: dtdp, dpdt, dh, ds, dT, dP, sgn
     integer :: extrap ! 1 = isobaric, 2 = isothermal
     integer :: spec, propflag
     integer, parameter :: n_grid = 1
@@ -1372,7 +1372,7 @@ contains
     real :: wi_grid(nc,n_grid)
     integer :: phase_grid(n_grid), n_grid_found
     real, dimension(nc) :: X_cpy, Y_cpy
-    real :: tMax, tMin, pMax, pMin, t0, p0
+    real :: tMax, tMin, pMax, pMin
     ! How to extrapolate?
     if (str_eq(prop_specID,"T")) then
       extrap = ISO_T ! isothermal
@@ -1454,10 +1454,10 @@ contains
       endif
       ! Search for property on envelope
       prop_grid = prop_spec
-      tMax = max(ts,t0) + 5.0
-      tMin = min(ts,t0) - 5.0
-      pMax = max(ps,p0) + 5.0e5
-      pMin = max(min(ps,p0) - 5.0e5, 1.0e5)
+      tMax = ts + 5.0
+      tMin = ts - 5.0
+      pMax = ps + 5.0e5
+      pMin = max(ps - 5.0e5, 1.0e5)
       call sat_points_based_on_prop(Z,T,P,X_cpy,Y_cpy,n_grid,&
            propflag,prop_grid,T_grid,P_grid,phase_grid,&
            wi_grid,n_grid_found,&

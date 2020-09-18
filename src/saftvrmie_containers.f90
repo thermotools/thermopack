@@ -7,7 +7,7 @@
 module saftvrmie_containers
   use saftvrmie_parameters, only: saftvrmie_data
   use saftvrmie_options
-  use thermopack_var, only: base_eos_param, get_active_eos
+  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   implicit none
   private
   save
@@ -292,7 +292,7 @@ Contains
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
-    integer :: fh_orders(nc), i, nthreads, err
+    integer :: fh_orders(nc), i
 
     ! Deallocate old memory
     call eos%allocate_and_init(nc,"SAFT-VR Mie")
@@ -1390,6 +1390,7 @@ Contains
     class(saftvrmie_eos), intent(inout) :: eos
     ! Locals
     integer :: stat
+    call base_eos_dealloc(eos)
     if (associated(eos%saftvrmie_param)) then
       call cleanup_saftvrmie_param_container(eos%saftvrmie_param)
       deallocate(eos%saftvrmie_param,stat=stat)

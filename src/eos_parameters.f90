@@ -4,7 +4,7 @@
 Module eos_parameters
   use compdata
   use eosdata
-  use thermopack_var, only: complist, base_eos_param
+  use thermopack_var, only: complist, base_eos_param, base_eos_dealloc
   Use multiparameter_base, only: meos, nist_meos_ptr
   use multiparameter_c3, only: meos_c3
   use multiparameter_ortho_h2, only: meos_ortho_h2
@@ -171,6 +171,7 @@ contains
     ! Created object:
     type(single_eos) :: s_eos
     !
+    call base_eos_dealloc(eos)
     call s_eos%allocate_and_init(nc, eos_label)
   end function single_eos_constructor
 
