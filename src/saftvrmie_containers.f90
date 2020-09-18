@@ -1405,7 +1405,7 @@ Contains
   end subroutine saftvrmie_dealloc
 
   subroutine assign_saftvrmie_eos(this,other)
-    class(saftvrmie_eos), intent(out) :: this
+    class(saftvrmie_eos), intent(inout) :: this
     class(*), intent(in) :: other
     ! Locals
     integer :: nc

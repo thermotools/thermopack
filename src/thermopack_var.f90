@@ -41,7 +41,7 @@ module thermopack_var
 
   contains
     procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
-    procedure, public :: dealloc => eos_dealloc
+    procedure, public :: dealloc => base_eos_dealloc
     ! Assignment operator
     procedure(assign_intf), deferred, pass(This), public :: assign_eos
     generic, public :: assignment(=) => assign_eos
@@ -74,7 +74,7 @@ module thermopack_var
     subroutine assign_intf(This, other)
       import base_eos_param
       ! Passed object:
-      class(base_eos_param), intent(out) :: This
+      class(base_eos_param), intent(inout) :: This
       class(*), intent(in) :: other
     end subroutine assign_intf
   end interface
@@ -132,6 +132,7 @@ module thermopack_var
        get_active_alt_eos, active_thermo_model_is_associated
   public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
        real_to_apparent_differentials, TP_lnfug_apparent
+  public :: base_eos_dealloc, delete_all_eos
 
 contains
 
@@ -206,7 +207,6 @@ contains
   end subroutine activate_model
 
   function add_eos() result(index)
-    !type(thermo_model), pointer, intent(in) :: model
     integer :: index
     ! Locals
     integer :: i, istat, n
@@ -216,21 +216,25 @@ contains
     if (istat /= 0) call stoperror("Not able to allocate new eos")
     n = 1
     if (allocated(thermo_models)) n = n + size(thermo_models)
-    allocate(eos_copy(n), stat=istat)
-    if (istat /= 0) call stoperror("Not able to allocate eos_copy")
-    do i=1,n-1
-      eos_copy(i)%p_model => thermo_models(i)%p_model
-    enddo
+    if (n > 1) then
+      allocate(eos_copy(n), stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate eos_copy")
+      do i=1,n-1
+        eos_copy(i)%p_model => thermo_models(i)%p_model
+      enddo
+    endif
     if (allocated(thermo_models)) deallocate(thermo_models, stat=istat)
     if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
     allocate(thermo_models(n), stat=istat)
     if (istat /= 0) call stoperror("Not able to allocate thermo_models")
-    do i=1,n-1
-      thermo_models(i)%p_model => eos_copy(i)%p_model
-    enddo
+    if (n > 1) then
+      do i=1,n-1
+        thermo_models(i)%p_model => eos_copy(i)%p_model
+      enddo
+      deallocate(eos_copy, stat=istat)
+      if (istat /= 0) call stoperror("Not able to deallocate eos_copy")
+    endif
     thermo_models(n)%p_model => model
-    deallocate(eos_copy, stat=istat)
-    if (istat /= 0) call stoperror("Not able to deallocate eos_copy")
     p_active_model => model
     thermo_model_idx_counter = thermo_model_idx_counter + 1
     index = thermo_model_idx_counter
@@ -274,11 +278,16 @@ contains
     endif
   end subroutine delete_eos
 
-  subroutine eos_dealloc(eos)
+  subroutine base_eos_dealloc(eos)
     ! Passed object:
     class(base_eos_param), intent(inout) :: eos
-    ! Input:
-  end subroutine eos_dealloc
+    ! Locals
+    integer :: istat
+    if (associated(eos%assoc)) then
+      deallocate(eos%assoc, stat=istat)
+      if (istat /= 0) print *,"Error deallocating eos%assoc"
+    endif
+  end subroutine base_eos_dealloc
 
   subroutine assign_base_eos_param(this, other)
     ! Passed object:
@@ -323,6 +332,12 @@ contains
     enddo
 
     if (allocated(model%comps)) then
+      do i=1,size(model%comps)
+        if (associated(model%comps(i)%p_comp)) then
+          deallocate(model%comps(i)%p_comp, stat=istat)
+          if (istat /= 0) print *,"Error deallocating comps%p_comp"
+        endif
+      enddo
       deallocate(model%comps, stat=istat)
       if (istat /= 0) print *,"Error deallocating comps"
     endif
@@ -338,6 +353,28 @@ contains
     endif
 
   end subroutine thermo_model_dealloc
+
+  subroutine delete_all_eos()
+    ! Locals
+    integer :: i, istat
+    if (allocated(thermo_models)) then
+      do i=1,size(thermo_models)
+        call thermo_models(i)%p_model%dealloc()
+        deallocate(thermo_models(i)%p_model, stat=istat)
+        if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_model")
+      enddo
+      deallocate(thermo_models, stat=istat)
+      if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
+      p_active_model => NULL()
+      complist => NULL()
+      apparent => NULL()
+      nph = 0
+      nc = 0
+      nce = 0
+      ncsym = 0
+      numAssocSites = 0
+    endif
+  end subroutine delete_all_eos
 
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)

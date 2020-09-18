@@ -617,7 +617,6 @@ contains
        Tinv3 = Tinv2*Tinv
        d_TT(1) = eos%sigma_pets*expo*((c2scaled*Tinv2)**2-c2scaled*2*Tinv3)
     end if
-
   end subroutine calc_d_pets
 
   subroutine pets_allocate_and_init(eos,nc,eos_label)
@@ -643,7 +642,7 @@ contains
   end function pets_eos_constructor
 
   subroutine assign_pets(This, other)
-    class(PETS_eos), intent(out) :: this
+    class(PETS_eos), intent(inout) :: this
     class(*), intent(in)     :: other
     select type( p_other => other )
     class is (PETS_eos)

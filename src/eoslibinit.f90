@@ -412,7 +412,7 @@ contains
    ncbeos = 1
    !$ ncbeos = omp_get_max_threads()
    do i=2,ncbeos
-     act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+     act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
    enddo
 
    ! Set globals
@@ -627,7 +627,7 @@ contains
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
-      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
   end subroutine init_thermopack
 
@@ -773,7 +773,7 @@ contains
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
-      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
     ! Set globals
@@ -1061,7 +1061,7 @@ contains
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
-      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
     ! Initialize fallback eos
@@ -1072,16 +1072,21 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize Pets EoS.
   !----------------------------------------------------------------------------
-  subroutine init_pets()
+  subroutine init_pets(parameter_reference)
     use compdata, only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK
+    use thermopack_constants, only: THERMOPACK, ref_len
     use stringmod,  only: uppercase
+    use volume_shift, only: NOSHIFT
+    use saft_interface, only: saft_type_eos_init
     !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
     integer                          :: ncomp, ncbeos, i, ierr, index
     character(len=3)                 :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
+    character(len=ref_len)           :: param_ref
 
     ! Initialize Pets eos
     if (.not. active_thermo_model_is_associated()) then
@@ -1090,7 +1095,7 @@ contains
     endif
     act_mod_ptr => get_active_thermo_model()
     ! Set component list
-    comps_upper="LJF"
+    comps_upper="AR"
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     call allocate_eos(ncomp, "PETS")
@@ -1110,8 +1115,23 @@ contains
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
 
+    ! Set local variable for parameter reference
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "DEFAULT"
+    endif
+
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+
+    ! Initialize Thermopack
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+
+    call saft_type_eos_init(nce,act_mod_ptr%comps,&
+         act_eos_ptr,param_ref,silent_init=.true.)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
@@ -1119,7 +1139,7 @@ contains
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
-      act_mod_ptr%eos(i) = act_mod_ptr%eos(1)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
     ! Initialize fallback eos

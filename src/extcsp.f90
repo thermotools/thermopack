@@ -1353,7 +1353,7 @@ contains
 
   subroutine assign_extcsp_eos_set(This, other)
     use compdata, only: copy_comp
-    class(extcsp_eos), intent(out) :: this
+    class(extcsp_eos), intent(inout) :: this
     class(*), intent(in)           :: other
     ! Locals
     integer :: istat

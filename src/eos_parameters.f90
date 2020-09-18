@@ -193,7 +193,7 @@ contains
   ! end subroutine assign_single_eos_get
 
   subroutine assign_single_eos_set(This, other)
-    class(single_eos), intent(out) :: this
+    class(single_eos), intent(inout) :: this
     class(*), intent(in)           :: other
     ! Locals
     integer :: i, istat

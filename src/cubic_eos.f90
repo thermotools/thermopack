@@ -4,7 +4,7 @@
 module cubic_eos
   use eosdata
   use thermopack_constants, only: eosid_len, bibref_len, ref_len, uid_len, mix_len
-  use eos_parameters, only: base_eos_param
+  use thermopack_var, only: base_eos_param, base_eos_dealloc
   use unifac, only: unifacdb
   implicit none
 
@@ -452,7 +452,7 @@ contains
 
   subroutine assign_cubic_eos(this,other)
     use utilities, only: allocate_nc, allocate_nc_x_nc
-    class(cb_eos), intent(out) :: this
+    class(cb_eos), intent(inout) :: this
     class(*), intent(in) :: other
     ! Locals
     integer :: istat
@@ -727,6 +727,8 @@ contains
     class(cb_eos), intent(inout) :: eos
     ! Loclas
     integer :: stat
+    call base_eos_dealloc(eos)
+
     call deallocate_real(eos%ai,"eos%ai")
     call deallocate_real(eos%ait,"eos%ait")
     call deallocate_real(eos%bi,"eos%bi")

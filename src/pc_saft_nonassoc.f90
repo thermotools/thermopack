@@ -1471,7 +1471,7 @@ contains
   end subroutine pcsaft_allocate_and_init
 
   subroutine assign_pcsaft(This, other)
-    class(PCSAFT_eos), intent(out) :: this
+    class(PCSAFT_eos), intent(inout) :: this
     class(*), intent(in)           :: other
     ! Locals
     integer :: nc
