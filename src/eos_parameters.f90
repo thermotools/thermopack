@@ -156,8 +156,10 @@ contains
     endif
     if (allocated (eos%nist)) then
       do i=1,size(eos%nist)
-        deallocate (eos%nist(i)%meos, STAT=istat)
-        if (istat /= 0) call stoperror('Error deallocating nist(i)%meos')
+        if (associated(eos%nist(i)%meos)) then
+          deallocate (eos%nist(i)%meos, STAT=istat)
+          if (istat /= 0) call stoperror('Error deallocating nist(i)%meos')
+        endif
       enddo
       deallocate (eos%nist, STAT=istat)
       if (istat /= 0) call stoperror('Error deallocating nist')
@@ -213,8 +215,16 @@ contains
       endif
       if (allocated(other%nist)) then
         istat = 0
-        if (allocated(this%nist)) deallocate(this%nist, stat=istat)
-        if (istat /= 0) call stoperror("Not able to deallocate this%nist")
+        if (allocated(this%nist)) then
+          do i=1,size(this%nist)
+            if (associated(this%nist(i)%meos)) then
+              deallocate (this%nist(i)%meos, STAT=istat)
+              if (istat /= 0) call stoperror('Error deallocating nist(i)%meos')
+            endif
+          enddo
+          deallocate(this%nist, stat=istat)
+          if (istat /= 0) call stoperror("Not able to deallocate this%nist")
+        endif
         allocate(this%nist(size(other%nist)), stat=istat)
         if (istat /= 0) call stoperror("Not able to allocate this%nist")
         do i=1,size(other%nist)
