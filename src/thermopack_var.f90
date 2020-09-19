@@ -323,11 +323,13 @@ contains
         if (istat /= 0) print *,"Error deallocating eos"
         model%eos(i)%p_eos => NULL()
       endif
-      if (associated(model%cubic_eos_alternative(i)%p_eos)) then
-        call model%cubic_eos_alternative(i)%p_eos%dealloc()
-        deallocate(model%cubic_eos_alternative(i)%p_eos, stat=istat)
-        if (istat /= 0) print *,"Error deallocating cubic_eos_alternative"
-        model%cubic_eos_alternative(i)%p_eos => NULL()
+      if (allocated(model%cubic_eos_alternative)) then
+        if (associated(model%cubic_eos_alternative(i)%p_eos)) then
+          call model%cubic_eos_alternative(i)%p_eos%dealloc()
+          deallocate(model%cubic_eos_alternative(i)%p_eos, stat=istat)
+          if (istat /= 0) print *,"Error deallocating cubic_eos_alternative"
+          model%cubic_eos_alternative(i)%p_eos => NULL()
+        endif
       endif
     enddo
 
