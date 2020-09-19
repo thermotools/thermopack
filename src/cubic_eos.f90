@@ -44,6 +44,7 @@ module cubic_eos
     ! tau is dimensionless
     ! TODO: General NRTL form: tau = a + b/T + c/T^2 + d ln(T) + e T^f
   contains
+    procedure, public :: dealloc => excess_gibbs_deallocate
     procedure, public :: excess_gibbs_allocate_and_init
     ! Assignment operator
     procedure  :: assign_excess_gibbs_mix
@@ -62,6 +63,7 @@ module cubic_eos
     real, allocatable, dimension(:,:) :: alphaij
     type(Fraction), allocatable, dimension(:,:) :: f_kij, f_tauij
   contains
+    procedure, public :: dealloc => WS_deallocate
     procedure, public :: WS_allocate_and_init
     ! Assignment operator
     procedure  :: assign_WS_mix
@@ -296,6 +298,22 @@ module cubic_eos
 
 contains
 
+  subroutine WS_deallocate(mixWS)
+    class(mixWongSandler), intent(inout) :: mixWS
+    ! Locals
+    integer :: err
+    !
+    err = 0
+    if (allocated(mixWS%f_kij)) deallocate (mixWS%f_kij, stat=err)
+    if (err /= 0) call stoperror('WS_deallocate: could not deallocate array: mixWS%f_kij')
+    !
+    if (allocated(mixWS%f_tauij)) deallocate (mixWS%f_tauij, stat=err)
+    if (err /= 0) call stoperror('WS_deallocate: could not deallocate array: mixWS%f_tauij')
+    if (allocated(mixWS%alphaij)) deallocate (mixWS%alphaij, stat=err)
+    if (err /= 0) call stoperror('WS_deallocate: could not allocate array: mixWS%alphaij')
+
+  end subroutine WS_deallocate
+
   subroutine WS_allocate_and_init(mixWS,nc)
     use utilities, only: allocate_nc_x_nc
     class(mixWongSandler), intent(inout) :: mixWS
@@ -308,13 +326,9 @@ contains
     ZeroFraction%pDen(1) = 1.0
     !
     err = 0
-    if (allocated(mixWS%f_kij)) deallocate (mixWS%f_kij, stat=err)
-    if (err /= 0) call stoperror('WS_allocate_and_init: could not deallocate array: mixWS%f_kij')
+    call mixWS%dealloc()
     allocate (mixWS%f_kij(nc,nc), stat=err)
     if (err /= 0) call stoperror('WS_allocate_and_init: could not allocate array: mixWS%f_kij')
-    !
-    if (allocated(mixWS%f_tauij)) deallocate (mixWS%f_tauij, stat=err)
-    if (err /= 0) call stoperror('WS_allocate_and_init: could not deallocate array: mixWS%f_tauij')
     allocate (mixWS%f_tauij(nc,nc), stat=err)
     if (err /= 0) call stoperror('WS_allocate_and_init: could not allocate array: mixWS%f_tauij')
     call allocate_nc_x_nc(mixWS%Alphaij,nc,"mixWS%Alphaij")
@@ -338,16 +352,23 @@ contains
     endif
   end subroutine assign_WS_mix
 
-  subroutine excess_gibbs_allocate_and_init(mixGE,nc)
+  subroutine excess_gibbs_deallocate(mixGE)
     class(mixExcessGibbs), intent(inout) :: mixGE
-    integer, intent(in) :: nc
     ! Locals
-    integer :: err, i, j
+    integer :: err
     if (allocated (mixGE%alpha)) deallocate (mixGE%alpha, STAT=err)
     if (allocated (mixGE%aGE)) deallocate (mixGE%aGE, STAT=err)
     if (allocated (mixGE%bGE)) deallocate (mixGE%bGE, STAT=err)
     if (allocated (mixGE%cGE)) deallocate (mixGE%cGE, STAT=err)
     if (allocated (mixGE%correlation)) deallocate (mixGE%correlation, STAT=err)
+  end subroutine excess_gibbs_deallocate
+
+  subroutine excess_gibbs_allocate_and_init(mixGE,nc)
+    class(mixExcessGibbs), intent(inout) :: mixGE
+    integer, intent(in) :: nc
+    ! Locals
+    integer :: i, j
+    call mixGE%dealloc()
     allocate (mixGE%alpha(nc,nc))
     allocate (mixGE%aGE(nc,nc))
     allocate (mixGE%bGE(nc,nc))
@@ -747,26 +768,8 @@ contains
     if (allocated(eos%single)) deallocate(eos%single, STAT=stat)
     if (stat /= 0) write (*,*) 'Error deallocating single'
 
-    stat = 0
-    if (allocated(eos%mixGE%alpha)) deallocate(eos%mixGE%alpha,STAT=stat)
-    if (stat /= 0) write (*,*) 'Error deallocating mixGE%alpha'
-
-    stat = 0
-    if (allocated(eos%mixGE%aGE)) deallocate(eos%mixGE%aGE,STAT=stat)
-    if (stat /= 0) write (*,*) 'Error deallocating mixGE%aGE'
-
-    stat = 0
-    if (allocated(eos%mixGE%bGE)) deallocate(eos%mixGE%bGE,STAT=stat)
-    if (stat /= 0) write (*,*) 'Error deallocating mixGE%bGE'
-
-    stat = 0
-    if (allocated(eos%mixGE%cGE)) deallocate(eos%mixGE%cGE,STAT=stat)
-    if (stat /= 0) write (*,*) 'Error deallocating mixGE%cGE'
-
-    stat = 0
-    if (allocated(eos%mixGE%correlation)) deallocate(eos%mixGE%correlation,STAT=stat)
-    if (stat /= 0) write (*,*) 'Error deallocating mixGE%correlation'
-
+    call eos%mixGE%dealloc()
+    call eos%mixWS%dealloc()
     if (associated(eos%unifdb)) then
       call eos%unifdb%dealloc()
       stat = 0
