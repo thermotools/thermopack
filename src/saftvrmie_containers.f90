@@ -203,6 +203,7 @@ module saftvrmie_containers
   type(saftvrmie_var_container) :: svrmie_var ! ONLY USED FOR TESTING
 
   type, extends(base_eos_param) :: saftvrmie_eos
+    logical :: ovner_of_saftvrmie_param = .false. ! Perform deallocation on saftvrmie_param?
     type(saftvrmie_param_container), pointer :: saftvrmie_param => NULL()
     type(saftvrmie_var_container), pointer :: saftvrmie_var => NULL()
   contains
@@ -1380,6 +1381,7 @@ Contains
     call eos%dealloc()
     allocate(eos%saftvrmie_param,stat=stat)
     if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_param")
+    eos%ovner_of_saftvrmie_param = .true.
     call allocate_saftvrmie_param_container(nc,eos%saftvrmie_param)
     allocate(eos%saftvrmie_var,stat=stat)
     if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_var")
@@ -1391,7 +1393,9 @@ Contains
     ! Locals
     integer :: stat
     call base_eos_dealloc(eos)
-    if (associated(eos%saftvrmie_param)) then
+    if (eos%ovner_of_saftvrmie_param .and. &
+         associated(eos%saftvrmie_param)) then
+      eos%ovner_of_saftvrmie_param = .false.
       call cleanup_saftvrmie_param_container(eos%saftvrmie_param)
       deallocate(eos%saftvrmie_param,stat=stat)
       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_param")
@@ -1409,16 +1413,14 @@ Contains
     class(saftvrmie_eos), intent(inout) :: this
     class(*), intent(in) :: other
     ! Locals
-    integer :: nc
+    integer :: nc, stat
     select type (other)
     class is (saftvrmie_eos)
       call this%assign_base_eos_param(other)
-      if (allocated(other%saftvrmie_param%comp)) then
-        nc = size(other%saftvrmie_param%comp)
-      else
-        return
+      if (.not. associated(this%saftvrmie_var)) then
+        allocate(this%saftvrmie_var,stat=stat)
+        if (stat /= 0) call stoperror("assign_saftvrmie_eos: Not able to allocate saftvrmie_var")
       endif
-      call this%allocate_and_init(nc,"SAFT-VR Mie")
       this%saftvrmie_param => other%saftvrmie_param
       this%saftvrmie_var = other%saftvrmie_var
     class default

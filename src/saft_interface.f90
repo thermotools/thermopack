@@ -76,6 +76,7 @@ contains
     logical :: compInDB(nc) ! is the component in the db?
     integer :: alpharCorrIdx_db(nc), assocSchemes_db(nc)
     logical :: silent
+    type(association), pointer :: assoc => NULL()
 
     if (present(silent_init)) then
       silent = silent_init
@@ -83,26 +84,26 @@ contains
       silent = .false.
     endif
 
-    allocate(eos%assoc)
+    allocate(assoc)
 
     ! Set the model index.
-    eos%assoc%saft_model = eos%subeosidx
+    assoc%saft_model = eos%subeosidx
 
     ! Fetch parameters from the database.
-    if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
+    if (assoc%saft_model == eosSAFT_VR_MIE) then
       call getSaftVrMieAssocParams_allComps(nc,comp,eos%subeosidx,param_ref,&
            compinDB,eps_db,beta_db,assocSchemes_db)
-    else if (eos%assoc%saft_model == eosPC_SAFT) then
+    else if (assoc%saft_model == eosPC_SAFT) then
       !cbeos%name = "PC-SAFT"
-      call getPcSaftPureParams_allComps(nc,comp,eos%assoc%saft_model,param_ref,compInDB,&
+      call getPcSaftPureParams_allComps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
-    else if (eos%assoc%saft_model == eosPeTS) then
+    else if (assoc%saft_model == eosPeTS) then
       !cbeos%name = "PeTS"
-      call getPcSaftPureParams_allComps(nc,comp,eos%assoc%saft_model,param_ref,compInDB,&
+      call getPcSaftPureParams_allComps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
     else
       assocSchemes_db = no_assoc
-      call getCpaPureParams_allcomps(nc,comp,eos%assoc%saft_model,param_ref,compInDB,&
+      call getCpaPureParams_allcomps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            a0_db,b_db,alphaParams_db,eps_db,beta_db,alpharCorrIdx_db,&
            assocSchemes_db)
     end if
@@ -126,12 +127,12 @@ contains
       end do
     end if
     ! Fetch interaction params from the database (defaults to 0 if not present).
-    if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%assoc%saft_model == eosPeTS) then
+    if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosPeTS) then
       !....
-    else if (eos%assoc%saft_model == eosPC_SAFT) then
-       call getPcSaftKij_allComps(nc,comp,eos%assoc%saft_model,kij_PCSAFT)
+    else if (assoc%saft_model == eosPC_SAFT) then
+       call getPcSaftKij_allComps(nc,comp,assoc%saft_model,kij_PCSAFT)
     else
-       call getCpaKijAndCombRules_allComps(nc,comp,eos%assoc%saft_model,kij_aEpsBeta_CPA,&
+       call getCpaKijAndCombRules_allComps(nc,comp,assoc%saft_model,kij_aEpsBeta_CPA,&
             epsbeta_combrules_CPA)
     end if
 
@@ -152,10 +153,12 @@ contains
       call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
     end select
 
+    ! Init calls above will clean eos class memory before init
+    ! Therefore the assoc pointer is assigned after init
+    eos%assoc => assoc
     ! Fill module variables in the module assocschemeutils, keeping track of
     ! associating components and association sites.
     call assocIndices_bookkeeping(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db)
-
     numAssocSites = eos%assoc%numAssocSites
 
     ! Set the association parameters.
