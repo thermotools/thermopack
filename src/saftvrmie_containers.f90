@@ -1416,11 +1416,21 @@ Contains
     integer :: nc, stat
     select type (other)
     class is (saftvrmie_eos)
+      if (associated(other%saftvrmie_param)) then
+        if (allocated(other%saftvrmie_param%comp)) then
+          nc = size(other%saftvrmie_param%comp)
+        else
+          return
+        endif
+      else
+        return
+      endif
       call this%assign_base_eos_param(other)
       if (.not. associated(this%saftvrmie_var)) then
         allocate(this%saftvrmie_var,stat=stat)
         if (stat /= 0) call stoperror("assign_saftvrmie_eos: Not able to allocate saftvrmie_var")
       endif
+      call allocate_saftvrmie_var_container(nc,this%saftvrmie_var)
       this%saftvrmie_param => other%saftvrmie_param
       this%saftvrmie_var = other%saftvrmie_var
     class default
