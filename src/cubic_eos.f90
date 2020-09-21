@@ -470,7 +470,6 @@ contains
 
   end function cpa_eos_constructor
 
-
   subroutine assign_cubic_eos(this,other)
     use utilities, only: allocate_nc, allocate_nc_x_nc
     class(cb_eos), intent(inout) :: this
