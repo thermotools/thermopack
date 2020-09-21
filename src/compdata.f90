@@ -148,7 +148,7 @@ module compdata
   end interface
 
   type gendata_pointer
-    class(gendata), pointer :: p_comp
+    class(gendata), pointer :: p_comp => NULL()
   end type gendata_pointer
 
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
@@ -459,11 +459,8 @@ contains
     if (allocated(comp)) then
       stat = 0
       if (allocated(comp_cpy)) then
-        if (size(comp_cpy) /= size(comp)) then
-          call deallocate_comp(comp_cpy)
-        else
-          allocate(comp_cpy(size(comp)), stat=stat)
-        endif
+        call deallocate_comp(comp_cpy)
+        allocate(comp_cpy(size(comp)), stat=stat)
       else
         allocate(comp_cpy(size(comp)), stat=stat)
       endif
