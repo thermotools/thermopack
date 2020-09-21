@@ -286,6 +286,7 @@ contains
     if (associated(eos%assoc)) then
       deallocate(eos%assoc, stat=istat)
       if (istat /= 0) print *,"Error deallocating eos%assoc"
+      eos%assoc => NULL()
     endif
   end subroutine base_eos_dealloc
 

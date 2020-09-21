@@ -551,6 +551,7 @@ contains
     call init_thermo(alpha='Classic',eos='PC-SAFT',&
          mixing='Classic',comp_string="H2O",nphases=2,saft_ref="DEFAULT")
     P = 101325.0
+    p_eos => get_active_eos()
 
     call saft_master_volume_solver(nc,p_eos,T=277.0,P_spec=P,n=x,phase=LIQPH,V=V)
     rhoLiq = 18.02*1e-3/V

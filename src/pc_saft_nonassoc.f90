@@ -1477,10 +1477,10 @@ contains
     integer :: nc
     select type (other)
     class is (PCSAFT_eos)
-      call this%assign_base_eos_param(other)
       if (allocated(other%m)) then
         nc = size(other%m)
         call this%allocate_and_init(nc,other%eosid)
+        call this%assign_base_eos_param(other)
         this%m = other%m
         if (allocated(other%sigma)) this%sigma = other%sigma
         if (allocated(other%eps_depth_divk)) this%eps_depth_divk = other%eps_depth_divk
