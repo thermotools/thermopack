@@ -53,6 +53,8 @@ contains
         end if
         x = z
         y = z
+        e_gas = 0
+        e_liq = 0
         if(beta > 0.0) then
           call specificVolume(T, p, x, VAPPH, vol_gas)
           call enthalpy(T, p, x, VAPPH, h_gas)

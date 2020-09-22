@@ -302,13 +302,12 @@ $(foreach mode,$(modes),$(foreach comp,$(compilers),\
   $(eval $(call create_target,$(OS),$(mode),$(comp)))))
 
 # Similar for test targets
-$(foreach mode,$(modes),\
-  $(eval $(call create_phony_test_targets,$(mode),dummy)))
-$(foreach mode,$(modes),\
-  $(eval $(call create_phony_test_targets,$(mode),gfortran)))
+$(foreach mode,$(modes),$(foreach comp,$(compilers),\
+  $(eval $(call create_phony_test_targets,$(mode),$(comp)))))
+#
+$(foreach mode,$(modes),$(foreach comp,$(compilers),\
+  $(eval $(call create_test_target,$(OS),$(mode),$(comp)))))
 
-$(foreach mode,$(modes),\
-  $(eval $(call create_test_target,$(OS),$(mode),gfortran)))
 
 # Create list of filtered targets for the "all" family of targets
 targets_filtered := $(filter-out %_pgf90, $(filter-out %_Linux, $(targets)))

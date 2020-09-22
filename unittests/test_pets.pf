@@ -146,21 +146,29 @@ contains
 
   end subroutine test_1st_der
 
-  ! Assumes rout is a subroutine on the form
-  ! rout(eos,T,s,s_T,s_TT)
-  subroutine test_T_der (eos,T,rout,verbose)
-    external :: rout
+  subroutine test_T_der(eos,T,rout,verbose)
+    interface
+      subroutine rout(eos,T,d,d_T,d_TT)
+        import nce
+        import PETS_eos
+        class (PETS_eos), intent(in) :: eos
+        real, intent(in) :: T
+        real, intent(out) :: d(nce)
+        real, intent(out), optional :: d_T(nce)
+        real, intent(out), optional :: d_TT(nce)
+      end subroutine rout
+    end interface
     class(PETS_eos), intent(in) :: eos
     real, intent(in) :: T
     logical, intent(in), optional :: verbose
     ! Locals
-    real :: s
-    real :: s_t
-    real :: s_tt
-    real :: pluspert_s,minuspert_s
-    real :: pluspert_s_t
-    real :: minuspert_s_t
-    real :: s_TT_dummy
+    real :: s(1)
+    real :: s_t(1)
+    real :: s_tt(1)
+    real :: pluspert_s(1),minuspert_s(1)
+    real :: pluspert_s_t(1)
+    real :: minuspert_s_t(1)
+    real :: s_TT_dummy(1)
     real :: eps,Teps
 
     call rout(eos,T,s,s_T,s_TT)
@@ -188,7 +196,7 @@ contains
   @Test
   subroutine test_der_pets
     use pets
-    use thermopack_var, only: get_active_eos, base_eos_param
+    use thermopack_var, only: get_active_eos, base_eos_param, nce
     real :: rho,T,x(1)
     !real :: var, var2
     !integer :: i
@@ -230,17 +238,17 @@ contains
     ! call nonassoc_pressure(nce,comp,cbeos(1),T,1/rho,x,var)
     ! print *, var/1e5
     select type ( p_eos => eos )
-      class is ( PETS_eos )
-        call test_T_der(p_eos,T, calc_d_pets, verbose)
-        call test_1st_der(eta_pets,p_eos,rho,T,x,verbose)
-        call test_1st_der(C_1,p_eos,rho,T,x, verbose)
-        call test_1st_der(I_1,p_eos,rho,T,x, verbose)
-        call test_1st_der(I_2,p_eos,rho,T,x, verbose)
-        call test_1st_der(alpha_pets_hs,p_eos,rho,T,x, verbose)
+    class is ( PETS_eos )
+      call test_T_der(p_eos,T, calc_d_pets, verbose)
+      call test_1st_der(eta_pets,p_eos,rho,T,x,verbose)
+      call test_1st_der(C_1,p_eos,rho,T,x, verbose)
+      call test_1st_der(I_1,p_eos,rho,T,x, verbose)
+      call test_1st_der(I_2,p_eos,rho,T,x, verbose)
+      call test_1st_der(alpha_pets_hs,p_eos,rho,T,x, verbose)
         !call test_1st_der_opt(alpha_disp,rho,T,x, verbose)
         !call test_1st_der_opt(alpha_PETS,rho,T,x, verbose)
         !call test_1st_der_opt(F_PETS_TVn,rho=T,T=sum(x)/rho,x=x, verbose=verbose)
-      end select
+    end select
   end subroutine test_der_pets
 
 end module test_pets

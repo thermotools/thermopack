@@ -3,6 +3,7 @@ module test_eos_consistency
   !> reduced, residual Helmholtz (F=A/RT), as well as the fulfilment of
   !> thermodynamic identities.
   use eoslibinit, only: init_thermo, silent_init
+  use eos, only: specificvolume
   use pfunit_mod
   implicit none
   public
@@ -23,7 +24,7 @@ contains
 
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
     call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
-    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+    !call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_SRK
 
 
@@ -312,12 +313,8 @@ contains
     @assertEqual(dy,(y_plus-y_minus)/(2*dx), reltol*abs(dy))
   end subroutine test_numder
 
-  subroutine eos_init(ncomp,eos,compstr,mixing, isCubic)
-    use eos, only: specificvolume
-    use eosTV, only: Fres
-    use thermopack_constants, only: LIQPH, VAPPH
+  subroutine eos_init(eos,compstr,mixing, isCubic)
     use stringmod, only: str_eq
-    integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
     character(len=*), intent(in) :: compstr
     character(len=*), optional, intent(in) :: mixing
@@ -342,9 +339,8 @@ contains
   end subroutine eos_init
 
   subroutine test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,v_spec,mixing)
-    use eos, only: specificvolume
     use eosTV, only: Fres
-    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
@@ -364,7 +360,7 @@ contains
     integer :: i, j
     logical :: isCubic
 
-    call eos_init(ncomp,eos,compstr,mixing,isCubic)
+    call eos_init(eos,compstr,mixing,isCubic)
 
     ! Calculate initial point
     if (present(v_spec)) then
@@ -437,13 +433,10 @@ contains
 
   end subroutine test_fres_tv_model
 
-
-
   subroutine test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing,v_spec,test_extensive)
     !> Verifies that a selection of thermodynamic identities are fulfilled.
     use eosTV, only: thermoTV, Fres, pressure
-    use eos, only: specificvolume
-    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: eos
@@ -473,7 +466,7 @@ contains
       test_ext = .true.
     endif
 
-    call eos_init(ncomp,eos,compstr,mixing,isCubic)
+    call eos_init(eos,compstr,mixing,isCubic)
 
     ! Calculate initial point
     if (present(v_spec)) then
