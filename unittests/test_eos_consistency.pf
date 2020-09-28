@@ -2,7 +2,7 @@ module test_eos_consistency
   !> Test that the analytical derivatives equal numerical derivatives of the
   !> reduced, residual Helmholtz (F=A/RT), as well as the fulfilment of
   !> thermodynamic identities.
-  use eoslibinit, only: init_thermo, silent_init
+  use eoslibinit, only: init_thermo, init_tcPR, silent_init
   use eos, only: specificvolume
   use pfunit_mod
   implicit none
@@ -94,6 +94,24 @@ contains
     call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
   end subroutine test_fres_tv_PR_unifac
+
+  @Test
+  subroutine test_fres_tv_tcPR()
+    integer, parameter :: ncomp = 2
+    character(len=*), parameter :: eos="tcPR"
+    character(len=*), parameter :: compstr="CO2,H2O"
+    character(len=*), parameter :: mixing="HV1"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [0.9,0.15]
+    P0 = 5.0e6
+    T0 = 300.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
+  end subroutine test_fres_tv_tcPR
+
 
   @Test
   subroutine test_fres_tv_PT()
@@ -321,6 +339,11 @@ contains
     logical, intent(out) :: isCubic
     ! Locals
     character(len=100) :: mixing_l
+
+    if (str_eq(eos, "tcPR")) then
+       call init_tcPR(compstr, mixing)
+       return
+    end if
 
     mixing_l = "vdW"
     if (present(mixing)) mixing_l = mixing

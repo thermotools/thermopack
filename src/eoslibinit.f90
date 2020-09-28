@@ -17,7 +17,7 @@ module eoslibinit
   !
   private
   public :: init_thermo
-  public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft
+  public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
   public :: init_multiparameter, init_pets
   public :: silent_init
@@ -328,6 +328,84 @@ contains
     enddo
 
   end subroutine init_cubic
+
+  !----------------------------------------------------------------------------
+  !> Initialize translated and consistent cubic EoS by le Guennec et al.
+  ! (10.1016/j.fluid.2016.09.003)
+  !> Use: call init_tcPR('CO2,C1,N2')
+  !----------------------------------------------------------------------------
+  subroutine init_tcPR(comps, mixing)
+    use compdata,   only: SelectComp, initCompList
+    use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
+    use thermopack_constants, only: THERMOPACK
+    use stringmod,  only: uppercase
+    use eos_container, only: allocate_eos
+    use cbselect, only: selectCubicEOS, SelectMixingRules
+    use cubic_eos, only: cb_eos
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), intent(in), optional :: mixing !< Mixing rule
+    ! Locals
+    character(len=4) :: eos     !< Equation of state
+    character(len=3) :: alpha  !< Alpha correlation
+    integer                          :: ncomp, i, index, ierr
+    character(len=len_trim(comps))   :: comps_upper
+    character(len=100)               :: mixing_loc, param_ref
+    type(thermo_model), pointer     :: act_mod_ptr
+
+    eos = "PR"
+    alpha = "TWU"
+    param_ref = "tcPR"
+    if (.not. active_thermo_model_is_associated()) then
+       ! No thermo_model have been allocated
+       index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    !
+    call allocate_eos(ncomp, eos)
+
+    ! Number of phases
+    act_mod_ptr%nph = 3
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = act_mod_ptr%nph
+    act_mod_ptr%nc = ncomp
+    complist => act_mod_ptr%complist
+    apparent => NULL()
+
+    ! Set eos library identifier
+    act_mod_ptr%eosLib = THERMOPACK
+
+    ! Initialize components module
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+
+    ! Initialize Thermopack
+    mixing_loc = "Classic"
+    if (present(mixing)) mixing_loc = uppercase(mixing)
+
+    select type(p_eos => act_mod_ptr%eos(1)%p_eos)
+    type is (cb_eos)
+       call SelectCubicEOS(nc, act_mod_ptr%comps, &
+            p_eos, alpha, param_ref)
+
+       call SelectMixingRules(nc, act_mod_ptr%comps, &
+            p_eos, mixing_loc, param_ref)
+       class default
+       call stoperror("init_cubic: Should be cubic EOS")
+    end select
+
+    ! Distribute parameters from redefined eos
+    do i=2,size(act_mod_ptr%eos)
+       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+  end subroutine init_tcPR
+
 
   !----------------------------------------------------------------------------
   !> Initialize extended corresponding state EoS. Use: call init_extcsp
