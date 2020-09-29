@@ -73,6 +73,7 @@ module compdata
        CP_H2_KMOL=10, &
        CP_TREND_SI=11
 
+  !> Ideal heat capacity at constant pressure
   type :: cpdata
     character (len=uid_len) :: cid !< The component ID
     character (len=ref_len) :: ref !< Data group reference
@@ -86,6 +87,7 @@ module compdata
   !  generic, public :: assignment(=) => assign_cpdata
   end type cpdata
 
+  !> Alpha correlation for cubic EoS
   type :: alphadatadb
     character (len=uid_len) :: cid !< The component ID
     character (len=ref_len) :: ref !< Data group reference
@@ -93,6 +95,7 @@ module compdata
     real :: coeff(3)
   end type alphadatadb
 
+  !> Volume shift parameter
   type :: cidatadb
     character (len=uid_len) :: cid !< The component ID
     character (len=ref_len) :: ref !< Data group reference

@@ -109,7 +109,6 @@ contains
     use LeeKesler, only: lkCalcEnthalpy
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: volumeShiftEnthalpy, NOSHIFT
     use thermopack_var, only: nce, apparent_to_real_mole_numbers
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_enthalpy
     use single_component, only: enthalpy_single
@@ -162,11 +161,6 @@ contains
             dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
      end select
 
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call volumeShiftEnthalpy(nc,comp,cbeos%volumeShiftId,T,P,n,phase,&
-           enthalpy,dhdt,dhdp,dhdz)
-    endif
-
     ! Add ideal gas contributions
     if (.not. residual) then
       enthalpy=enthalpy+H_ideal_mix
@@ -210,7 +204,6 @@ contains
     use LeeKesler, only: lkCalcEntropy
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: volumeShiftEntropy, NOSHIFT
     use thermopack_var, only: nce, apparent_to_real_mole_numbers
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_entropy
     use single_component, only: entropy_single
@@ -260,10 +253,6 @@ contains
     class default
       call TP_ResidEntropy(nce,comp,cbeos,phase,T,P,ne,entropy,dSdt,dSdp,dSdz,gflag_opt)
     end select
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call volumeShiftEntropy(nce,comp,cbeos%volumeShiftId,T,P,ne,phase,&
-           entropy,dsdt,dsdp,dsdz)
-    endif
 
     if (.not. residual) then
       ! Add ideal gas contributions
@@ -299,7 +288,6 @@ contains
     use ideal
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: NOSHIFT
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
     implicit none
@@ -317,10 +305,6 @@ contains
     real, target :: F_TT_l, F_TV_l, F_Tn_l(nce)
     real, dimension(nce) :: ne
     call apparent_to_real_mole_numbers(n,ne)
-
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call stoperror("TV_CalcInnerEnergy volume shift not supported for this function")
-    endif
 
     if (present(dudt)) then
       F_TT_p => F_TT_l
@@ -385,7 +369,6 @@ contains
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
-    use volume_shift, only: NOSHIFT
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
     implicit none
@@ -403,10 +386,6 @@ contains
     real, target :: F_T_l, F_V_l, F_n_l(nce)
     real, dimension(nce) :: ne
     call apparent_to_real_mole_numbers(n,ne)
-
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call stoperror("TV_CalcFreeEnergy volume shift not supported for this function")
-    endif
 
     if (present(dYdT)) then
       F_T_p => F_T_l
@@ -523,7 +502,6 @@ contains
     use LeeKesler, only: lkCalcGdep
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: volumeShiftGibbs, NOSHIFT
     use thermopack_constants, only: Rgas
     use single_component, only: Gres_single
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
@@ -548,7 +526,7 @@ contains
     real, target :: F_T_l, F_n_l(nce)
     real :: Zfac, v, sumne, vid
     real :: F, logZfac, F_n(nc)
-    integer :: VSHIFTID, i
+    integer :: i
     real, dimension(nce) :: ne
     call apparent_to_real_mole_numbers(n,ne)
 
@@ -577,8 +555,6 @@ contains
       endif
     class default
       sumne = sum(ne)
-      VSHIFTID = cbeos%volumeShiftId
-      cbeos%volumeShiftId = NOSHIFT ! Disable volume shift
       zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ne/sumne,phase,gflag_opt)
       v = zFac*sumne*Rgas*T/P
 
@@ -604,10 +580,6 @@ contains
         call real_to_apparent_diff(F_n_l,dGdn)
       endif
 
-      cbeos%volumeShiftId = VSHIFTID ! Reset volume shift flag
-      if (cbeos%volumeShiftId /= NOSHIFT) then
-        call volumeShiftGibbs(nce,comp,cbeos%volumeShiftId,T,P,ne,phase,g,dgdt,dgdp)
-      endif
     end select
 
     ! Add ideal contribution
@@ -641,7 +613,6 @@ contains
     use cubic
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: volumeShiftVolume, NOSHIFT
     use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
@@ -655,7 +626,6 @@ contains
     real, dimension(nc), optional, intent(out) :: dpdn
     logical, optional, intent(in) :: recalculate
     ! Locals
-    real :: vshift
     real :: sumne
     real :: F_V
     real, dimension(nce) :: ne
@@ -668,13 +638,8 @@ contains
     endif
     call apparent_to_real_mole_numbers(n,ne)
     sumne = sum(ne)
-    vshift = 0.0
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call volumeShiftVolume(nce,comp,cbeos%volumeShiftId,t,ne,vshift)
-    endif
-    vshift = v - vshift
 
-    call TV_CalcFres(nce,comp,cbeos,T,vshift,ne,F_V=F_V,F_TV=dpdt,&
+    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_TV=dpdt,&
          F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2,recalculate=recalculate)
 
     P = -Rgas*T*F_V + sumne*Rgas*T/V
@@ -714,7 +679,6 @@ contains
        lnphiT,lnphiV,lnphin,recalculate)
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: volumeShiftVolume, NOSHIFT
     use ideal, only: Sideal_Vn
     use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
@@ -731,7 +695,6 @@ contains
     real :: Sid, Fid_n(nce), Fid_Vn, Fid_Tn, Fid_nn(nce), F_n(nce)
     real, target :: F_Tn(nce),F_Vn(nce),F_nn(nce,nce)
     real, pointer :: F_Tn_p(:), F_Vn_p(:), F_nn_p(:,:)
-    real :: vshift
     integer :: i
     real :: ne(nce), sumne
     !
@@ -752,14 +715,10 @@ contains
     else
       F_nn_p => NULL()
     endif
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call stoperror("TV_CalcFugacity volume shift not supported for this function")
-    endif
     call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_n=F_n,F_Tn=F_Tn_p,&
          F_Vn=F_Vn_p,F_nn=F_nn_p,recalculate=recalculate)
     ! Ideal contribution
-    vshift = v
-    call Sideal_Vn(nce, ne, T, vshift, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
+    call Sideal_Vn(nce, ne, T, v, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
          d2sdndV=Fid_Vn, d2sdn2=Fid_nn)
     Fid_n = -Fid_n/Rgas
     Fid_Tn = -Fid_Tn/Rgas
@@ -796,7 +755,7 @@ contains
     use extcsp, only: csp_calcFres, extcsp_eos
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
-    use volume_shift, only: NOSHIFT
+    use volume_shift, only: NOSHIFT, vshift_F_terms, eosVolumeFromShiftedVolume
     use single_component, only: Fres_single
     use thermopack_var, only: base_eos_param
     !use pets, only: PETS_eos
@@ -820,11 +779,8 @@ contains
     real :: v_eos
     isCubic = .false.
 
-    if (cbeos%volumeShiftId == NOSHIFT) then
-       v_eos = v
-    else
-       call stoperror("TV_CalcFres volume shift not supported for this function")
-    end if
+    ! Calculate EoS volume to evaluate F from individual models
+    v_eos = eosVolumeFromShiftedVolume(nc,comp,cbeos%volumeShiftId,t,v,n)
 
     isCubic = .false.
 
@@ -837,11 +793,11 @@ contains
        call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
     end if
 
-    ! ! Correct the F from the individual models according to the volume shift
-    ! if (cbeos%volumeShiftId /= NOSHIFT) then
-    !    call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-    !         eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
-    ! end if
+    ! Correct the F from the individual models according to the volume shift
+    if (cbeos%volumeShiftId /= NOSHIFT) then
+       call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+            eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+    end if
 
     if (present(F)) F = eF
     if (present(F_T)) F_T = eF_T
@@ -865,21 +821,21 @@ contains
       else
          select type ( p_eos => cbeos )
          type is ( cb_eos ) ! cubic equations of state
-            call calcCbFder_res_SI(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+            call calcCbFder_res_SI(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV,recalculate)
             isCubic = .true.
           type is ( lk_eos ) ! Lee-Kesler equations of state
             call stoperror('Lee-Kesler model does not support TV_CalcFres')
           type is ( single_eos )
-            call Fres_single(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+            call Fres_single(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
          type is ( meos_mix )
             call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
          type is ( extcsp_eos ) ! Corresponding State Principle
-            call csp_calcFres(nc,p_eos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+            call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
          class default ! Saft eos
-            call calcSaftFder_res(nc,cbeos,T,v,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+            call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                  eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
          end select
       end if
@@ -901,7 +857,6 @@ contains
        gflag_opt,v_out)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
-    use volume_shift, only: volumeShiftFugacity, NOSHIFT, volumeShiftVolume
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          TP_lnfug_apparent, base_eos_param
     ! Input.
@@ -926,19 +881,15 @@ contains
     real :: dVdn(nce)
     real :: ne(nce), lnfug_real(nce), ze(nce)
     real :: dlnfugdt_real(nce), dlnfugdp_real(nce), dlnfugdn_real(nce,nce)
-    integer :: i,j,VSHIFTID
+    integer :: i,j
 
     call apparent_to_real_mole_numbers(n,ne)
     sumne = sum(ne)
-
-    VSHIFTID = cbeos%volumeShiftId
-    cbeos%volumeShiftId = NOSHIFT ! Disable volume shift
     ze = ne/sumne
     zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ze,phase,gflag_opt)
     V = zFac*sumne*Rgas*T/P
     if (present(v_out)) then
       v_out = v
-      call volumeShiftVolume(nce,comp,VSHIFTID,T,ze,v_out)
     endif
 
     if (present(dlnfugdt) .or. present(dlnfugdp) .or. present(dlnfugdn)) then
@@ -973,12 +924,6 @@ contains
     call TP_lnfug_apparent(nc,ne,n,P,lnfug_real,lnfug,dlnfugdt_real,&
        dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
 
-    cbeos%volumeShiftId = VSHIFTID ! Reset volume shift flag
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call volumeShiftFugacity(nc,comp,cbeos%volumeShiftId,T,P,n,phase,&
-           lnfug,dlnfugdt,dlnfugdp,dlnfugdn)
-    endif
-
   end subroutine TP_lnfug
 
   !-----------------------------------------------------------------------------
@@ -990,7 +935,6 @@ contains
   subroutine TP_ResidEntropy(nc,comp,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn,gflag_opt)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
-    use volume_shift, only: NOSHIFT
     use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc !< Number of components in mixture.
     type(gendata_pointer), intent(in) :: comp(nc) !< Component vector.
@@ -1009,11 +953,8 @@ contains
     real :: sumn
     real :: zFac
     real :: F,F_T,F_TT,F_n(nc),F_Tn(nc),F_TV,F_VV,F_Vn(nc)
-    integer :: VSHIFTID
     sumn = sum(n)
 
-    VSHIFTID = cbeos%volumeShiftId
-    cbeos%volumeShiftId = NOSHIFT ! Disable volume shift
     zFac = TP_CalcZfac(nc,comp,cbeos,T,P,n/sumn,phase,gflag_opt)
     V = zFac*sumn*Rgas*T/P
 
@@ -1043,7 +984,6 @@ contains
       dSdn = dVdn*dPdt - Rgas*(F_n + T*F_Tn + 1 - log(zFac))
     endif
 
-    cbeos%volumeShiftId = VSHIFTID ! Reset volume shift flag
   end subroutine TP_ResidEntropy
 
   !-----------------------------------------------------------------------------
@@ -1055,7 +995,6 @@ contains
   subroutine TP_ResidEnthalpy(nc,comp,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn,gflag_opt)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
-    use volume_shift, only: NOSHIFT
     use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
@@ -1074,11 +1013,8 @@ contains
     real, dimension(nc) ::  dPdn, dVdn
     real :: F_T,F_VV,F_TV,F_TT,F_Vn(nc),F_Tn(nc)
     real :: sumn
-    integer :: VSHIFTID
     sumn = sum(n)
 
-    VSHIFTID = cbeos%volumeShiftId
-    cbeos%volumeShiftId = NOSHIFT ! Disable volume shift
     zFac = TP_CalcZfac(nc,comp,cbeos,T,P,n/sumn,phase,gflag_opt)
     V = zFac*sumn*Rgas*T/P
 
@@ -1108,7 +1044,6 @@ contains
       dHdn = T*(dVdn*dPdt - Rgas*(F_Tn*T + 1))
     endif
 
-    cbeos%volumeShiftId = VSHIFTID ! Reset volume shift flag
   end subroutine TP_ResidEnthalpy
 
   !---------------------------------------------------------------------- >
@@ -1208,7 +1143,7 @@ contains
 
     ! Apply volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-      call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
+       call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
     endif
 
   end function fork_Zfac_Calculation
@@ -1235,7 +1170,6 @@ contains
     use LeeKesler, only: lkCalcEntropy
     use eosdata
     use compdata, only: gendata_pointer
-    use volume_shift, only: NOSHIFT
     use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
@@ -1252,15 +1186,10 @@ contains
     ! Locals
     real :: S_ideal_mix, dsdt_ideal_mix, dsdv_ideal_mix
     real :: F, F_n(nc), F_T, F_TV, F_TT, F_Tn(nc), F_V
-    real :: vshift
     real, dimension(nc) :: dsdn_ideal_mix
     real, dimension(nce) :: ne, dsdne, F_ne(nce), F_Tne(nce)
 
     call apparent_to_real_mole_numbers(n,ne)
-
-    if (cbeos%volumeShiftId /= NOSHIFT) then
-      call stoperror("TV_CalcEntropy volume shift not supported for this function")
-    endif
 
     ! Ideal gas entropy
     if (residual) then
@@ -1269,8 +1198,7 @@ contains
       dsdv_ideal_mix=0.0
       dsdn_ideal_mix=0.0
     else
-      vshift = v
-      call TV_Sideal_mix(nce, comp, T, vshift, ne, s_ideal_mix, &
+      call TV_Sideal_mix(nce, comp, T, v, ne, s_ideal_mix, &
            dsdt_ideal_mix=dsdt_ideal_mix, dsdv_ideal_mix=dsdv_ideal_mix, &
            dsdz_ideal_mix=dsdne)
       if(present(dsdn)) then ! Composition derivative,
