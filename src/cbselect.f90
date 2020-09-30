@@ -90,7 +90,7 @@ contains
   !!
   !! \author Geir S
   !! \author Morten Hammer
-  subroutine SelectCubicEOS(nc, comp, cbeos, alphastr, alpha_reference)
+  subroutine SelectCubicEOS(nc, comp, cbeos, alphastr, alpha_reference, betastr)
     use eosdata
     use cubic_eos
     use stringmod, only: str_eq
@@ -98,12 +98,14 @@ contains
     !use cbmix, only: cbCalcParameters
     !use unifac, only: init_unifac, unifdb
     use cbAlpha, only: tpInitAlphaCorr
+    use cbBeta, only: tpInitBetaCorr
     implicit none
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(:)
     class(cb_eos), intent(inout) :: cbeos
     character (len=*), intent (in) :: alphastr
     character (len=*), intent(in) :: alpha_reference
+    character (len=*), intent (in), optional :: betastr
     ! Locals
     integer :: err
 
@@ -121,6 +123,13 @@ contains
 
     ! Set alpha correlation
     call tpInitAlphaCorr(nc, comp, cbeos, alphastr, alpha_reference)
+
+    ! Set beta correlation (CLASSIC means the regular cubic b parameter)
+    if (present(betastr)) then
+       call tpInitBetaCorr(nc, comp, cbeos, betastr)
+    else
+       call tpInitBetaCorr(nc, comp, cbeos, "CLASSIC")
+    end if
 
   end subroutine SelectCubicEOS
 

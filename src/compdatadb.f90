@@ -6485,6 +6485,61 @@ module compdatadb
       )
 
 
+  !****************************** Quantum cubic ******************************!
+  type (cidatadb), parameter :: c177 = &
+       cidatadb(eosid="PR", &
+       cid="H2", &
+       ref="QuantumCubic", &
+       ci=-3.8139e-06 &
+       )
+
+  type (alphadatadb), parameter :: twu177 = &
+       alphadatadb(eosid="PR", &
+       cid="H2", &
+       ref="QuantumCubic", &
+       coeff=(/156.21, -0.0062072, 5.047/) &
+       )
+
+  type (cidatadb), parameter :: c178 = &
+       cidatadb(eosid="PR", &
+       cid="HE", &
+       ref="QuantumCubic", &
+       ci=-3.1791e-06 &
+       )
+  type (alphadatadb), parameter :: twu178 = &
+       alphadatadb(eosid="PR", &
+       cid="HE", &
+       ref="QuantumCubic", &
+       coeff=(/0.48558, 1.7173, 0.30271/) &
+       )
+
+  type (cidatadb), parameter :: c179 = &
+       cidatadb(eosid="PR", &
+       cid="NE", &
+       ref="QuantumCubic", &
+       ci=-2.4665e-06 &
+       )
+  type (alphadatadb), parameter :: twu179 = &
+       alphadatadb(eosid="PR", &
+       cid="NE", &
+       ref="QuantumCubic", &
+       coeff=(/0.40453, 0.95861, 0.8396/) &
+       )
+
+  type (cidatadb), parameter :: c180 = &
+       cidatadb(eosid="PR", &
+       cid="D2", &
+       ref="QuantumCubic", &
+       ci=-3.8718e-06 &
+       )
+  type (alphadatadb), parameter :: twu180 = &
+       alphadatadb(eosid="PR", &
+       cid="D2", &
+       ref="QuantumCubic", &
+       coeff=(/55.007, -0.016981, 3.1621 /) &
+       )
+  !***************************************************************************!
+
   integer, parameter :: maxncdb =104
   type (gendatadb), dimension(maxncdb), parameter :: compdb = (/&
       cx1,cx2,cx3,cx4,cx5, &
@@ -6536,44 +6591,44 @@ module compdatadb
       cp106 &
   /)
 
-  integer, parameter :: maxTWUdb =176
+  integer, parameter :: maxTWUdb =180
   type (alphadatadb), dimension(maxTWUdb), parameter :: alphaTWUdb = (/&
-      twu1,twu2,twu3,twu4,twu5, &
-      twu6,twu7,twu8,twu9,twu10, &
-      twu11,twu12,twu13,twu14,twu15, &
-      twu16,twu17,twu18,twu19,twu20, &
-      twu21,twu22,twu23,twu24,twu25, &
-      twu26,twu27,twu28,twu29,twu30, &
-      twu31,twu32,twu33,twu34,twu35, &
-      twu36,twu37,twu38,twu39,twu40, &
-      twu41,twu42,twu43,twu44,twu45, &
-      twu46,twu47,twu48,twu49,twu50, &
-      twu51,twu52,twu53,twu54,twu55, &
-      twu56,twu57,twu58,twu59,twu60, &
-      twu61,twu62,twu63,twu64,twu65, &
-      twu66,twu67,twu68,twu69,twu70, &
-      twu71,twu72,twu73,twu74,twu75, &
-      twu76,twu77,twu78,twu79,twu80, &
-      twu81,twu82,twu83,twu84,twu85, &
-      twu86,twu87,twu88,twu89,twu90, &
-      twu91,twu92,twu93,twu94,twu95, &
-      twu96,twu97,twu98,twu99,twu100, &
-      twu101,twu102,twu103,twu104,twu105, &
-      twu106,twu107,twu108,twu109,twu110, &
-      twu111,twu112,twu113,twu114,twu115, &
-      twu116,twu117,twu118,twu119,twu120, &
-      twu121,twu122,twu123,twu124,twu125, &
-      twu126,twu127,twu128,twu129,twu130, &
-      twu131,twu132,twu133,twu134,twu135, &
-      twu136,twu137,twu138,twu139,twu140, &
-      twu141,twu142,twu143,twu144,twu145, &
-      twu146,twu147,twu148,twu149,twu150, &
-      twu151,twu152,twu153,twu154,twu155, &
-      twu156,twu157,twu158,twu159,twu160, &
-      twu161,twu162,twu163,twu164,twu165, &
-      twu166,twu167,twu168,twu169,twu170, &
-      twu171,twu172,twu173,twu174,twu175, &
-      twu176 &
+       twu1,twu2,twu3,twu4,twu5, &
+       twu6,twu7,twu8,twu9,twu10, &
+       twu11,twu12,twu13,twu14,twu15, &
+       twu16,twu17,twu18,twu19,twu20, &
+       twu21,twu22,twu23,twu24,twu25, &
+       twu26,twu27,twu28,twu29,twu30, &
+       twu31,twu32,twu33,twu34,twu35, &
+       twu36,twu37,twu38,twu39,twu40, &
+       twu41,twu42,twu43,twu44,twu45, &
+       twu46,twu47,twu48,twu49,twu50, &
+       twu51,twu52,twu53,twu54,twu55, &
+       twu56,twu57,twu58,twu59,twu60, &
+       twu61,twu62,twu63,twu64,twu65, &
+       twu66,twu67,twu68,twu69,twu70, &
+       twu71,twu72,twu73,twu74,twu75, &
+       twu76,twu77,twu78,twu79,twu80, &
+       twu81,twu82,twu83,twu84,twu85, &
+       twu86,twu87,twu88,twu89,twu90, &
+       twu91,twu92,twu93,twu94,twu95, &
+       twu96,twu97,twu98,twu99,twu100, &
+       twu101,twu102,twu103,twu104,twu105, &
+       twu106,twu107,twu108,twu109,twu110, &
+       twu111,twu112,twu113,twu114,twu115, &
+       twu116,twu117,twu118,twu119,twu120, &
+       twu121,twu122,twu123,twu124,twu125, &
+       twu126,twu127,twu128,twu129,twu130, &
+       twu131,twu132,twu133,twu134,twu135, &
+       twu136,twu137,twu138,twu139,twu140, &
+       twu141,twu142,twu143,twu144,twu145, &
+       twu146,twu147,twu148,twu149,twu150, &
+       twu151,twu152,twu153,twu154,twu155, &
+       twu156,twu157,twu158,twu159,twu160, &
+       twu161,twu162,twu163,twu164,twu165, &
+       twu166,twu167,twu168,twu169,twu170, &
+       twu171,twu172,twu173,twu174,twu175, &
+       twu176,twu177,twu178,twu179,twu180 &
   /)
 
   integer, parameter :: maxMCdb =65
@@ -6593,44 +6648,45 @@ module compdatadb
       mc61,mc62,mc63,mc64,mc65 &
   /)
 
-  integer, parameter :: maxcidb =176
+  integer, parameter :: maxcidb =180
   type (cidatadb), dimension(maxcidb), parameter :: cidb = (/&
-      c1,c2,c3,c4,c5, &
-      c6,c7,c8,c9,c10, &
-      c11,c12,c13,c14,c15, &
-      c16,c17,c18,c19,c20, &
-      c21,c22,c23,c24,c25, &
-      c26,c27,c28,c29,c30, &
-      c31,c32,c33,c34,c35, &
-      c36,c37,c38,c39,c40, &
-      c41,c42,c43,c44,c45, &
-      c46,c47,c48,c49,c50, &
-      c51,c52,c53,c54,c55, &
-      c56,c57,c58,c59,c60, &
-      c61,c62,c63,c64,c65, &
-      c66,c67,c68,c69,c70, &
-      c71,c72,c73,c74,c75, &
-      c76,c77,c78,c79,c80, &
-      c81,c82,c83,c84,c85, &
-      c86,c87,c88,c89,c90, &
-      c91,c92,c93,c94,c95, &
-      c96,c97,c98,c99,c100, &
-      c101,c102,c103,c104,c105, &
-      c106,c107,c108,c109,c110, &
-      c111,c112,c113,c114,c115, &
-      c116,c117,c118,c119,c120, &
-      c121,c122,c123,c124,c125, &
-      c126,c127,c128,c129,c130, &
-      c131,c132,c133,c134,c135, &
-      c136,c137,c138,c139,c140, &
-      c141,c142,c143,c144,c145, &
-      c146,c147,c148,c149,c150, &
-      c151,c152,c153,c154,c155, &
-      c156,c157,c158,c159,c160, &
-      c161,c162,c163,c164,c165, &
-      c166,c167,c168,c169,c170, &
-      c171,c172,c173,c174,c175, &
-      c176 &
+       c1,c2,c3,c4,c5, &
+       c6,c7,c8,c9,c10, &
+       c11,c12,c13,c14,c15, &
+       c16,c17,c18,c19,c20, &
+       c21,c22,c23,c24,c25, &
+       c26,c27,c28,c29,c30, &
+       c31,c32,c33,c34,c35, &
+       c36,c37,c38,c39,c40, &
+       c41,c42,c43,c44,c45, &
+       c46,c47,c48,c49,c50, &
+       c51,c52,c53,c54,c55, &
+       c56,c57,c58,c59,c60, &
+       c61,c62,c63,c64,c65, &
+       c66,c67,c68,c69,c70, &
+       c71,c72,c73,c74,c75, &
+       c76,c77,c78,c79,c80, &
+       c81,c82,c83,c84,c85, &
+       c86,c87,c88,c89,c90, &
+       c91,c92,c93,c94,c95, &
+       c96,c97,c98,c99,c100, &
+       c101,c102,c103,c104,c105, &
+       c106,c107,c108,c109,c110, &
+       c111,c112,c113,c114,c115, &
+       c116,c117,c118,c119,c120, &
+       c121,c122,c123,c124,c125, &
+       c126,c127,c128,c129,c130, &
+       c131,c132,c133,c134,c135, &
+       c136,c137,c138,c139,c140, &
+       c141,c142,c143,c144,c145, &
+       c146,c147,c148,c149,c150, &
+       c151,c152,c153,c154,c155, &
+       c156,c157,c158,c159,c160, &
+       c161,c162,c163,c164,c165, &
+       c166,c167,c168,c169,c170, &
+       c171,c172,c173,c174,c175, &
+       c176,c177,c178,c179,c180 &
   /)
+
 
 end module compdatadb

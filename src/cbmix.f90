@@ -426,44 +426,83 @@ contains
   !! yy = -2.0*s*(s+1.0)
 
 
-  subroutine cbCalcBmix (nc, cbeos, zcomp)
+  subroutine cbCalcBmix (nc, cbeos, T, zcomp)
+    !> Calculate covolume parameter, which can depend on both composition and
+    !> temperature.
+    !> \author Ailo, Jan 2020
     use cubic_eos, only: cb_eos
-    implicit none
+    use cbBeta, only: cbCalcBetaTerm
     integer, intent (in) :: nc
     class(cb_eos), intent(inout) :: cbeos
+    real, intent(in) :: T
     real, intent (in) :: zcomp(nc)
     ! Locals
-    integer :: i,j
+    integer :: i, j
+    real :: bii, biiT, biiTT
+    real :: bjj, bjjT, bjjTT
+    real :: bij, bijT, bijTT, lijfac, biTT(nc)
     real :: sumn
 
+    call cbCalcBetaTerm(nc, cbeos, T)
+    cbeos%b = 0.0
+    cbeos%bT = 0.0
+    cbeos%bTT = 0.0
+
     if (cbeos%simple_covolmixing) then
-      cbeos%sumb = 0.0
-      do i=1,nc
-        cbeos%bi(i) = cbeos%single(i)%b !< constant bi in cubic eos
-        cbeos%bij(i,1:nc) = 0.0D00
-        cbeos%sumb = cbeos%sumb + zcomp(i)*cbeos%bi(i)
-      end do
-      cbeos%b = cbeos%sumb
+       do i=1,nc
+          cbeos%bi(i) = cbeos%single(i)%b * cbeos%single(i)%beta
+          cbeos%biT(i) = cbeos%single(i)%b * cbeos%single(i)%dbetadT
+          cbeos%bij(i,1:nc) = 0.0 ! d^2b/(dni*dnj) = 0
+
+          cbeos%b = cbeos%b + zcomp(i)*cbeos%bi(i)
+          cbeos%bT = cbeos%bT + zcomp(i)*cbeos%biT(i)
+          cbeos%bTT = cbeos%bTT + zcomp(i)*cbeos%single(i)%b*cbeos%single(i)%d2betadT2
+       end do
+       cbeos%sumb = cbeos%b
     else
-      ! Michelsen approach for general mixing of covolume
-      sumn = sum(zcomp)
-      cbeos%sumb = 0.0
-      do i=1,nc
-        cbeos%bi(i) = 0.0
-        do j=1,nc
-          cbeos%bi(i) = cbeos%bi(i) + zcomp(j)*cbeos%lowcase_bij(i,j)
-        enddo
-        cbeos%sumb = cbeos%sumb + zcomp(i)*cbeos%bi(i)
-      enddo
-      cbeos%sumb = cbeos%sumb/sumn
-      cbeos%b = cbeos%sumb
-      cbeos%bi = (2.0*cbeos%bi - cbeos%sumb)/sumn
-      do i=1,nc
-        do j=1,nc
-          cbeos%bij(i,j) = (2.0*cbeos%lowcase_bij(i,j) - cbeos%bi(i) - cbeos%bi(j))/sumn
-        enddo
-      enddo
-    endif
+       ! Michelsen approach for general mixing of covolume
+       sumn = sum(zcomp)
+       do i=1,nc
+          cbeos%bi(i) = 0.0
+          cbeos%biT(i) = 0.0
+          biTT(i) = 0.0
+          bii = cbeos%single(i)%b * cbeos%single(i)%beta
+          biiT = cbeos%single(i)%b * cbeos%single(i)%dbetadT
+          biiTT = cbeos%single(i)%b * cbeos%single(i)%d2betadT2
+          do j=1,nc
+             bjj = cbeos%single(j)%b * cbeos%single(j)%beta
+             bjjT = cbeos%single(j)%b * cbeos%single(j)%dbetadT
+             bjjTT = cbeos%single(j)%b * cbeos%single(j)%d2betadT2
+
+             lijfac = 1-cbeos%lij(i,j)
+
+             bij = lijfac*(bii+bjj)/2.0
+             bijT = lijfac*(biiT+bjjT)/2.0
+             bijTT = lijfac*(biiTT+bjjTT)/2.0
+             cbeos%bi(i)  = cbeos%bi(i)  + zcomp(j)*bij
+             cbeos%biT(i) = cbeos%biT(i) + zcomp(j)*bijT
+             biTT(i) = biTT(i) + zcomp(j)*bijTT
+          enddo
+          cbeos%b  = cbeos%b  + zcomp(i)*cbeos%bi(i)/sumn
+          cbeos%bT = cbeos%bT + zcomp(i)*cbeos%biT(i)/sumn
+          cbeos%bTT = cbeos%bTT + zcomp(i)*biTT(i)/sumn
+       enddo
+
+       cbeos%bi  = (2.0*cbeos%bi  - cbeos%b)/sumn
+       cbeos%biT = (2.0*cbeos%biT - cbeos%bT)/sumn
+
+       do i=1,nc
+          bii = cbeos%single(i)%b * cbeos%single(i)%beta
+          do j=1,nc
+             bjj = cbeos%single(j)%b * cbeos%single(j)%beta
+             lijfac = 1-cbeos%lij(i,j)
+             bij = lijfac*(bii+bjj)/2.0
+             cbeos%bij(i,j) = (2*bij - cbeos%bi(i) - cbeos%bi(j))/sumn
+          enddo
+       enddo
+       cbeos%sumb = cbeos%b
+    end if
+
   end subroutine cbCalcBmix
 
   ! As cbCalcBmix, but not filling cbeos type
@@ -694,7 +733,7 @@ contains
     cbeos%Bi = 0.0D+00
 
     ! Mixing rule for the B-parameter
-    call cbCalcBmix(nc,cbeos,zcomp)
+    call cbCalcBmix(nc,cbeos,t,zcomp)
 
     if (cbeos%subeosidx == cbSW .or. cbeos%subeosidx == cbPT) then
        ! Mixing rule for the C-parameter - need B-paramteter

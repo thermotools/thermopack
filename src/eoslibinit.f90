@@ -7,6 +7,7 @@ module eoslibinit
        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
        active_thermo_model_is_associated, numAssocSites
   use eos_container, only: allocate_eos
+  use stringmod,  only: uppercase, str_eq, string_match
   implicit none
   save
   !
@@ -17,31 +18,13 @@ module eoslibinit
   !
   private
   public :: init_thermo
-  public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR
+  public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
   public :: init_multiparameter, init_pets
   public :: silent_init
   public :: redefine_critical_parameters
   !
 contains
-
-  ! EOSLIBINIT.F90
-  ! init_cubic(compstr, eos, mixrule, alpha)
-  ! init_cpa(comp_string)
-  ! init_quantum_cubic(comp_string)
-  ! init_corresponding_states(comp_string, ref_comp, ref_eos, shape_eos)
-  ! init_multiparameter(comp_string, eos)
-  ! init_pcsaft(comp_string)
-  ! init_saftvrmie(comp_string)
-  ! init_quantum_saftvrmie(comp_string)
-  ! init_leekesler(comp_string)
-  ! init_solid
-  ! init_legacy_interface -> init_thermo
-  !
-  ! TUNING.F90
-  ! set_cubic_kij()
-  ! ...
-
 
   !----------------------------------------------------------------------
   !> Set method to discriminate between liquid and vapor in case of an
@@ -84,7 +67,7 @@ contains
   end subroutine init_volume_translation
 
   !----------------------------------------------------------------------
-  !> Initialize thermo library
+  !> Initialize thermodynamics library (legacy interface)
   !>
   !> \author MH, 2014-02
   !----------------------------------------------------------------------
@@ -95,7 +78,6 @@ contains
     use cbselect,   only: SelectCubicEOS
     use compdata,   only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use stringmod,  only: uppercase, str_eq
     use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
     !$ use omp_lib, only: omp_get_max_threads
     ! Method information
@@ -107,12 +89,13 @@ contains
     integer, optional, intent(in) :: liq_vap_discr_method_in !< Method to discriminate between liquid and vapor in case of an undefined single phase. Will be set to none if absent.
     character(len=*), optional, intent(in) :: csp_eos !< Corrensponding state equation
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
-    character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set numbers
+    character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set identifiers
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
     character(len=*), optional, intent(in) :: TrendEosForCp !< Option to init trend for ideal gas properties.
     integer, optional, intent(in) :: cptype !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
+    character(len=len(eos)) :: eosLocal  !< Local copy of string defining equation of state
     integer :: ncomp !< Number of components
     character(len=clen) :: message
     integer             :: i, ierr, index
@@ -131,6 +114,8 @@ contains
     call initCompList(trim(uppercase(comp_string)),ncomp,act_mod_ptr%complist)
     allocate(complist, source=act_mod_ptr%complist)
 
+
+    ! Equation of state
     call allocate_eos(ncomp, eos)
 
     ! Method for discriminating between liquid/vapor when poorly defined
@@ -251,7 +236,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
-  subroutine init_cubic(comps,eos,mixing,alpha,parameter_reference)
+  subroutine init_cubic(comps,eos,mixing,alpha,parameter_reference,vol_shift)
     use compdata,   only: SelectComp, initCompList
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
@@ -259,111 +244,30 @@ contains
     use eos_container, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
+    use volume_shift, only: InitVolumeShift
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos     !< Equation of state
     character(len=*), optional, intent(in) :: mixing !< Mixing rule
     character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
     character(len=*), optional, intent(in) :: parameter_reference  !< Parameter reference
+    logical, optional, intent(in) :: vol_shift  !< Volume shift
     ! Locals
-    integer                          :: ncomp, i, index, ierr
+    integer                          :: ncomp, i, index, ierr, volumeShiftId
     character(len=len_trim(comps))   :: comps_upper
-    character(len=100)               :: mixing_loc, alpha_loc, param_ref
-    type(thermo_model), pointer     :: act_mod_ptr
+    character(len=100)               :: mixing_loc, alpha_loc, paramref_loc, beta_loc
+    logical                          :: volshift_loc
+    type(thermo_model), pointer      :: act_mod_ptr
 
+    ! Get a pointer to the active thermodynamics model
     if (.not. active_thermo_model_is_associated()) then
-      ! No thermo_model have been allocated
+      ! No thermo_model has been allocated
       index = add_eos()
     endif
     act_mod_ptr => get_active_thermo_model()
+
     ! Set component list
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
-    !
-    call allocate_eos(ncomp, eos)
-
-    ! Number of phases
-    act_mod_ptr%nph = 3
-
-    ! Assign active mode variables
-    ncsym = ncomp
-    nce = ncomp
-    nc = ncomp
-    nph = act_mod_ptr%nph
-    act_mod_ptr%nc = ncomp
-    complist => act_mod_ptr%complist
-    apparent => NULL()
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
-    ! Set local variable for parameter reference
-    if (present(parameter_reference)) then
-      param_ref = parameter_reference
-    else
-      param_ref = "DEFAULT"
-    endif
-
-    ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
-
-    ! Initialize Thermopack
-    alpha_loc = "Classic"
-    mixing_loc = "Classic"
-    if (present(mixing)) mixing_loc = uppercase(mixing)
-    if (present(alpha)) alpha_loc = uppercase(alpha)
-
-    select type(p_eos => act_mod_ptr%eos(1)%p_eos)
-    type is (cb_eos)
-      call SelectCubicEOS(nc, act_mod_ptr%comps, &
-           p_eos, alpha_loc, param_ref)
-
-      call SelectMixingRules(nc, act_mod_ptr%comps, &
-           p_eos, mixing_loc, param_ref)
-    class default
-      call stoperror("init_cubic: Should be cubic EOS")
-    end select
-    ! Distribute parameters from redefined eos
-    do i=2,size(act_mod_ptr%eos)
-      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
-    enddo
-
-  end subroutine init_cubic
-
-  !----------------------------------------------------------------------------
-  !> Initialize translated and consistent cubic EoS by le Guennec et al.
-  ! (10.1016/j.fluid.2016.09.003)
-  !> Use: call init_tcPR('CO2,C1,N2')
-  !----------------------------------------------------------------------------
-  subroutine init_tcPR(comps, mixing)
-    use compdata,   only: SelectComp, initCompList
-    use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK
-    use stringmod,  only: uppercase
-    use eos_container, only: allocate_eos
-    use cbselect, only: selectCubicEOS, SelectMixingRules
-    use cubic_eos, only: cb_eos
-    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
-    character(len=*), intent(in), optional :: mixing !< Mixing rule
-    ! Locals
-    character(len=4) :: eos     !< Equation of state
-    character(len=3) :: alpha  !< Alpha correlation
-    integer                          :: ncomp, i, index, ierr
-    character(len=len_trim(comps))   :: comps_upper
-    character(len=100)               :: mixing_loc, param_ref
-    type(thermo_model), pointer     :: act_mod_ptr
-
-    eos = "PR"
-    alpha = "TWU"
-    param_ref = "tcPR"
-    if (.not. active_thermo_model_is_associated()) then
-       ! No thermo_model have been allocated
-       index = add_eos()
-    endif
-    act_mod_ptr => get_active_thermo_model()
-    ! Set component list
-    comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
-    !
     call allocate_eos(ncomp, eos)
 
     ! Number of phases
@@ -381,31 +285,79 @@ contains
     ! Set eos library identifier
     act_mod_ptr%eosLib = THERMOPACK
 
+    ! Set local variables inputs that are optional
+    mixing_loc = "Classic"
+    alpha_loc = "Classic"
+    paramref_loc = "DEFAULT"
+    volshift_loc = .False.
+    beta_loc = "Classic"
+    if (present(mixing)) mixing_loc = uppercase(mixing)
+    if (present(alpha)) alpha_loc = uppercase(alpha)
+    if (present(parameter_reference)) paramref_loc = parameter_reference
+    if (present(vol_shift)) volshift_loc = vol_shift
+
+    ! Special handling of translated-consistent Peng--Robinson EoS by le Guennec
+    ! et al. (10.1016/j.fluid.2016.09.003)
+    if (string_match("tcPR", paramref_loc)) then
+       alpha_loc = "TWU"
+       volshift_loc = .True.
+    end if
+
+    ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
+    ! et al. (10.1016/j.fluid.2020.112790)
+    if (string_match("QuantumCubic", string=paramref_loc)) then
+       alpha_loc = "TWU"
+       volshift_loc = .True.
+       beta_loc = "Quantum"
+    end if
+
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call SelectComp(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
+
+    ! Initialize volume shift
+    if (volshift_loc) then
+       volumeShiftId = InitVolumeShift(nc,act_mod_ptr%comps,'Peneloux',eos, param_ref=paramref_loc)
+       act_mod_ptr%eos(1)%p_eos%volumeShiftId = volumeShiftId
+    end if
 
     ! Initialize Thermopack
-    mixing_loc = "Classic"
-    if (present(mixing)) mixing_loc = uppercase(mixing)
-
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     type is (cb_eos)
-       call SelectCubicEOS(nc, act_mod_ptr%comps, &
-            p_eos, alpha, param_ref)
+      call SelectCubicEOS(nc, act_mod_ptr%comps, &
+           p_eos, alpha_loc, paramref_loc, betastr=beta_loc)
 
-       call SelectMixingRules(nc, act_mod_ptr%comps, &
-            p_eos, mixing_loc, param_ref)
-       class default
-       call stoperror("init_cubic: Should be cubic EOS")
-    end select
+      call SelectMixingRules(nc, act_mod_ptr%comps, &
+           p_eos, mixing_loc, paramref_loc)
+    class default
+      call stoperror("init_cubic: Should be cubic EOS")
+   end select
 
     ! Distribute parameters from redefined eos
     do i=2,size(act_mod_ptr%eos)
-       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
+  end subroutine init_cubic
+
+  !----------------------------------------------------------------------------
+  !> Initialize translated and consistent cubic EoS by le Guennec et al.
+  ! (10.1016/j.fluid.2016.09.003)
+  !----------------------------------------------------------------------------
+  subroutine init_tcPR(comps, mixing)
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), intent(in), optional :: mixing !< Mixing rule
+    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="tcPR")
   end subroutine init_tcPR
 
+  !----------------------------------------------------------------------------
+  !> Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
+  !> (10.1016/j.fluid.2020.112790)
+  !----------------------------------------------------------------------------
+  subroutine init_quantum_cubic(comps, mixing)
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), intent(in), optional :: mixing !< Mixing rule
+    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="QuantumCubic/tcPR")
+  end subroutine init_quantum_cubic
 
   !----------------------------------------------------------------------------
   !> Initialize extended corresponding state EoS. Use: call init_extcsp
@@ -474,7 +426,7 @@ contains
     ! Initialize components module
     call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
 
-    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr => get_active_eos()
     act_eos_ptr%volumeShiftId = NOSHIFT
     act_eos_ptr%isElectrolyteEoS = .false.
     select type(p_eos => act_eos_ptr)

@@ -86,6 +86,12 @@ module cubic_eos
      character (len=short_label_len) :: alphaCorrName
      real :: alpha, dalphadt, d2alphadt2 !< alpha is dimensionless
      real :: alphaParams(3)=-1e10 ! Fitted coeffs in correlation. Max 3.
+
+     ! Beta correlations for b factor
+     integer :: betaMethod=1
+     character (len=12) :: betaCorrName = "Classic     "
+     real :: beta, dbetadt, d2betadt2 !< beta is dimensionless
+     real :: betaParams(3)=-1e10 ! Fitted coeffs in correlation. Max 3.
   end type singleData
 
   type, extends(base_eos_param) :: cb_eos
@@ -131,7 +137,8 @@ module cubic_eos
     type(singleData), allocatable :: single(:)
 
     ! Mixing parameters
-    real, allocatable, dimension(:,:) :: kij
+    real, allocatable, dimension(:,:) :: kij ! interaction parameter for energy
+    real, allocatable, dimension(:,:) :: lij ! interaction parameter for size
     real, allocatable, dimension(:,:) :: lowcase_bij
     logical :: simple_covolmixing
     type(mixExcessGibbs) :: mixGE
@@ -296,6 +303,15 @@ module cubic_eos
        classic_for_eos_idx=cbVDW) &
        /)
 
+  ! Beta correlations for cubic EoS "b" parameter. To add new correlations, add
+  ! it below and update module cbBeta.
+  integer, parameter :: nBetaCorrs = 2
+  integer, parameter :: cbBetaClassicIdx = 1 !< Classic beta-correlation yielding the classic, temperature-independent covolume
+  integer, parameter :: cbBetaQuantumIdx = 2 !< Beta-correlation for quantum fluids He, Ne, H2, D2
+  character(len=11), dimension(nBetaCorrs), parameter :: betaCorrNames = (/ &
+       "CLASSIC    ", "QUANTUM    " /)
+  integer, parameter, dimension(nBetaCorrs) :: betaCorrNumParams = (/0,2/)
+
 contains
 
   subroutine WS_deallocate(mixWS)
@@ -398,30 +414,6 @@ contains
     endif
   end subroutine assign_excess_gibbs_mix
 
-  ! subroutine assign_single(single1,single2)
-  !   class(singleData), intent(inout) :: single1
-  !   class(singleData), intent(in) :: single2
-  !   !
-  !   single1%omegaA = single2%omegaA
-  !   single1%omegaB = single2%omegaB
-  !   single1%omegaC = single2%omegaC
-  !   single1%zcrit = single2%zcrit
-  !   single1%a = single2%a
-  !   single1%b = single2%b
-  !   single1%c = single2%c
-
-  !   single1%acf = single2%acf
-  !   single1%tc = single2%tc
-  !   single1%pc = single2%pc
-
-  !   single1%alphaMethod = single2%alphaMethod
-  !   single1%alphaCorrName = single2%alphaCorrName
-  !   single1%alpha = single2%alpha
-  !   single1%dalphadt = single2%dalphadt
-  !   single1%d2alphadt2 = single2%d2alphadt2
-  !   single1%alphaParams = single2%alphaParams
-  !  end subroutine assign_single
-
   !> Allocate memory for cubic eos
   function cubic_eos_constructor(nc,eos_label) result(cb)
     ! Input:
@@ -432,15 +424,6 @@ contains
     ! Locals
 
     call cb%allocate_and_init(nc,eos_label)
-
-    ! eosidx,subeosidx,mixidx,alphaidx
-    ! cb%eosid = cubicEosShortNames(eosidx-10*eosCubic)
-    ! cb%mruleid = mixRuleNames(mixidx)
-    ! cb%name = cubicEosNames(eosidx-10*eosCubic)
-    ! cb%eosidx = eosidx
-    ! cb%mruleidx = mruleidx
-    ! cb%subeosidx = subeosidx
-    ! cb%cubic_verbose = .false.
 
   end function cubic_eos_constructor
 
@@ -602,6 +585,10 @@ contains
         call allocate_nc_x_nc(this%kij,size(other%kij,dim=1),"kij")
         this%kij = other%kij
       endif
+      if (allocated(other%lij)) then
+         call allocate_nc_x_nc(this%lij,size(other%lij,dim=1),"lij")
+         this%lij = other%lij
+      endif
       if (allocated(other%lowcase_bij)) then
         call allocate_nc_x_nc(this%lowcase_bij,size(other%lowcase_bij,dim=1),"lowcase_bij")
         this%lowcase_bij = other%lowcase_bij
@@ -643,6 +630,7 @@ contains
     call allocate_nc_x_nc(eos%cij,nc,"eos%cij")
 
     call allocate_nc_x_nc(eos%kij,nc,"eos%kij")
+    call allocate_nc_x_nc(eos%lij,nc,"eos%lij")
     call allocate_nc_x_nc(eos%lowcase_bij,nc,"eos%lowcase_bij")
 
     if (allocated (eos%single)) deallocate(eos%single, STAT=err)
@@ -736,6 +724,7 @@ contains
     eos%nzfac  = 0
 
     eos%kij = 0
+    eos%lij = 0
     eos%lowcase_bij = 0
     eos%simple_covolmixing = .true.
   end subroutine allocate_and_init_cubic_eos
@@ -761,6 +750,7 @@ contains
     call deallocate_real_2(eos%cij,"eos%cij")
 
     call deallocate_real_2(eos%kij,"eos%kij")
+    call deallocate_real_2(eos%lij,"eos%lij")
     call deallocate_real_2(eos%lowcase_bij,"eos%lowcase_bij")
 
     stat = 0
