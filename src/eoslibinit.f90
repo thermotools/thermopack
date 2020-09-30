@@ -291,8 +291,13 @@ contains
     paramref_loc = "DEFAULT"
     volshift_loc = .False.
     beta_loc = "Classic"
-    if (present(mixing)) mixing_loc = uppercase(mixing)
-    if (present(alpha)) alpha_loc = uppercase(alpha)
+plist
+    apparent => NULL()
+
+    ! Set eos library identifier
+    act_mod_ptr%eosLib = THERMOPACK
+
+    ! Set local variables inputs t    if (present(alpha)) alpha_loc = uppercase(alpha)
     if (present(parameter_reference)) paramref_loc = parameter_reference
     if (present(vol_shift)) volshift_loc = vol_shift
 
