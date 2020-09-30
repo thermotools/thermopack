@@ -7147,6 +7147,63 @@ module mixdatadb
       kijvalue = -0.00240000  &
       )
 
+  !****************************** Quantum cubic ******************************!
+  type (kijdatadb), parameter :: vdw715 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "H2", &
+      uid2 = "D2", &
+      kijvalue = 0.0  &
+      )
+  type (kijdatadb), parameter :: vdw716 = &
+       kijdatadb(eosid = "PR", &
+       mruleid = "vdW", &
+       ref = "QuantumCubic", &
+       bib_ref = "10.1016/j.fluid.2020.112790", &
+       uid1 = "H2", &
+       uid2 = "NE", &
+       kijvalue = 0.18  &
+       )
+  type (kijdatadb), parameter :: vdw717 = &
+       kijdatadb(eosid = "PR", &
+       mruleid = "vdW", &
+       ref = "QuantumCubic", &
+       bib_ref = "10.1016/j.fluid.2020.112790", &
+       uid1 = "H2", &
+       uid2 = "HE", &
+       kijvalue = 0.17  &
+       )
+  type (kijdatadb), parameter :: vdw718 = &
+       kijdatadb(eosid = "PR", &
+       mruleid = "vdW", &
+       ref = "QuantumCubic", &
+       bib_ref = "10.1016/j.fluid.2020.112790", &
+       uid1 = "HE", &
+       uid2 = "NE", &
+       kijvalue = -0.17  &
+       )
+  type (kijdatadb), parameter :: vdw719 = &
+       kijdatadb(eosid = "PR", &
+       mruleid = "vdW", &
+       ref = "QuantumCubic", &
+       bib_ref = "10.1016/j.fluid.2020.112790", &
+       uid1 = "HE", &
+       uid2 = "D2", &
+       kijvalue = 0.45  &
+       )
+  type (kijdatadb), parameter :: vdw720 = &
+       kijdatadb(eosid = "PR", &
+       mruleid = "vdW", &
+       ref = "QuantumCubic", &
+       bib_ref = "10.1016/j.fluid.2020.112790", &
+       uid1 = "NE", &
+       uid2 = "D2", &
+       kijvalue = 0.18  &
+       )
+  !***************************************************************************!
+
   type (interGEdatadb), parameter :: ge1 = &
       interGEdatadb(eosid = "SRK", &
       mruleid = "HV1", &
@@ -7288,7 +7345,7 @@ module mixdatadb
       )
 
 
-  integer, parameter :: maxkij =714
+  integer, parameter :: maxkij =720
   type (kijdatadb), dimension(maxkij), parameter :: kijdb = (/&
       vdw1,vdw2,vdw3,vdw4,vdw5, &
       vdw6,vdw7,vdw8,vdw9,vdw10, &
@@ -7432,7 +7489,8 @@ module mixdatadb
       vdw696,vdw697,vdw698,vdw699,vdw700, &
       vdw701,vdw702,vdw703,vdw704,vdw705, &
       vdw706,vdw707,vdw708,vdw709,vdw710, &
-      vdw711,vdw712,vdw713,vdw714 &
+      vdw711,vdw712,vdw713,vdw714,vdw715, &
+      vdw716,vdw717,vdw718,vdw719,vdw720  &
   /)
 
   integer, parameter :: maxinterGEij =10

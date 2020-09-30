@@ -7,7 +7,7 @@ module eoslibinit
        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
        active_thermo_model_is_associated, numAssocSites
   use eos_container, only: allocate_eos
-  use stringmod,  only: uppercase, str_eq, string_match
+  use stringmod,  only: uppercase, str_eq, string_match, string_match_val
   implicit none
   save
   !
@@ -240,7 +240,6 @@ contains
     use compdata,   only: SelectComp, initCompList
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
-    use stringmod,  only: uppercase
     use eos_container, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
@@ -257,7 +256,8 @@ contains
     character(len=100)               :: mixing_loc, alpha_loc, paramref_loc, beta_loc
     logical                          :: volshift_loc
     type(thermo_model), pointer      :: act_mod_ptr
-
+    logical                          :: found_tcPR, found_QuantumCubic
+    integer                          :: matchval_tcPR, matchval_QuantumCubic
     ! Get a pointer to the active thermodynamics model
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model has been allocated
@@ -286,31 +286,31 @@ contains
     act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variables inputs that are optional
-    mixing_loc = "Classic"
+    mixing_loc = "vdW"
     alpha_loc = "Classic"
     paramref_loc = "DEFAULT"
     volshift_loc = .False.
     beta_loc = "Classic"
-plist
-    apparent => NULL()
-
-    ! Set eos library identifier
-    act_mod_ptr%eosLib = THERMOPACK
-
-    ! Set local variables inputs t    if (present(alpha)) alpha_loc = uppercase(alpha)
+    if (present(mixing)) then
+       mixing_loc = uppercase(mixing)
+       if (str_eq(mixing_loc, "Classic")) mixing_loc = "VDW"
+    end if
+    if (present(alpha)) alpha_loc = uppercase(alpha)
     if (present(parameter_reference)) paramref_loc = parameter_reference
     if (present(vol_shift)) volshift_loc = vol_shift
 
     ! Special handling of translated-consistent Peng--Robinson EoS by le Guennec
     ! et al. (10.1016/j.fluid.2016.09.003)
-    if (string_match("tcPR", paramref_loc)) then
+    call string_match_val("tcPR", paramref_loc, found_tcPR, matchval_tcPR)
+    if (found_tcPR) then
        alpha_loc = "TWU"
        volshift_loc = .True.
     end if
 
     ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
     ! et al. (10.1016/j.fluid.2020.112790)
-    if (string_match("QuantumCubic", string=paramref_loc)) then
+    call string_match_val("QuantumCubic", paramref_loc, found_QuantumCubic, matchval_QuantumCubic)
+    if (found_QuantumCubic) then
        alpha_loc = "TWU"
        volshift_loc = .True.
        beta_loc = "Quantum"

@@ -12,30 +12,6 @@ module cbselect
 contains
 
   !----------------------------------------------------------------------
-  !> Map EOS string to integer index
-  !! \param eosstr The equation of state as a character string e.g 'SRK' og 'PR'
-  !! The character strings are case-insensitive
-  !! \retval eosidx,subeosidx Indices defining selected EOS
-  !! \author Geir Skaugen
-  !! \author Morten Hammer
-  ! subroutine get_eos_index(eosstr,eosidx,subeosidx)
-  !   use eosdata
-  !   use stringmod, only: str_eq
-  !   implicit none
-  !   character (len=*), intent (in) :: eosstr
-  !   integer, intent(out) :: eosidx
-  !   integer, intent(out) :: subeosidx
-  !   ! Locals
-  !   integer :: idx_db
-  !   idx_db = get_eos_db_idx(eosstr)
-  !   if (idx_db < 0) then
-  !     call stoperror('unknown eos')
-  !   endif
-  !   subeosidx = eos_label_db(i)%
-
-  ! end subroutine get_eos_index
-
-  !----------------------------------------------------------------------
   !> From mixing rule string get mixing rule index
   !! \param eosidx Index of EOS
   !! \param mrulestr The mixing rule as a character string e.g 'Classic'
@@ -199,85 +175,6 @@ contains
     ! Locals
     integer :: mruleidx
     real :: b_exp
-   !  cbeos%cubic_verbose = .false.
-   ! elseif (str_eq(eosstr,'MBWR19')) then
-   !   if (nc /= 1) call stoperror("MBWR equation only for single component.")
-   !   cbeos%eosidx = eos_single
-   !   cbeos%subeosidx = meosMbwr19
-   !   if (allocated(cbeos%mbwr_meos)) deallocate(cbeos%mbwr_meos)
-   !   allocate(cbeos%mbwr_meos(1))
-   !   call initializeMBWRmodel(comp(1)%ident, cbeos%mbwr_meos(1), 19)
-   !   return
-   ! elseif (str_eq(eosstr,'MBWR32')) then
-   !   if (nc /= 1) call stoperror("MBWR equation only for single component.")
-   !   if (allocated(cbeos%mbwr_meos)) deallocate(cbeos%mbwr_meos)
-   !   allocate(cbeos%mbwr_meos(1))
-   !   cbeos%eosidx = eos_single
-   !   cbeos%subeosidx = meosMbwr32
-   !   call initializeMBWRmodel(comp(1)%ident, cbeos%mbwr_meos(1), 32)
-   !   return
-   ! elseif (str_eq(eosstr,'NIST_MEOS')) then
-   !   if (nc /= 1) call stoperror("NIST_MEOS only implemented for pure components.")
-   !   cbeos%eosidx = eos_single
-   !   if (allocated(cbeos%nist)) then
-   !     do i=1,nc
-   !       deallocate(cbeos%nist(i)%meos, stat=err)
-   !       if (err /= 0) call stoperror("Not able to deallocate cbeos%nist(i)")
-   !     enddo
-   !     deallocate(cbeos%nist, stat=err)
-   !     if (err /= 0) call stoperror("Not able to deallocate cbeos%nist")
-   !   endif
-   !   allocate(cbeos%nist(nc), stat=err)
-   !   cbeos%subeosidx = meosNist
-   !   if (str_eq(comp(1)%ident, "C3")) then
-   !     allocate(meos_c3 :: cbeos%nist(1)%meos, stat=err)
-   !   elseif (str_eq(comp(1)%ident,"N-H2")) then
-   !     allocate(meos_normal_h2 :: cbeos%nist(1)%meos, stat=err)
-   !   elseif (str_eq(comp(1)%ident,"O-H2")) then
-   !     allocate(meos_ortho_h2 :: cbeos%nist(1)%meos, stat=err)
-   !   elseif (str_eq(comp(1)%ident,"P-H2")) then
-   !     allocate(meos_para_h2 :: cbeos%nist(1)%meos, stat=err)
-   !   elseif (str_eq(comp(1)%ident,"R134A")) then
-   !     allocate(meos_r134a :: cbeos%nist(1)%meos, stat=err)
-   !   else
-   !     call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
-   !   end if
-   !   if (err /= 0) call stoperror("Not able to allocate cbeos%nist(1)%meos")
-   !   call cbeos%nist(1)%meos%init()
-   !   !Rgas_meos = cbeos%nist(1)%Rgas_fit ! use fitting value of Rgas
-   !   return
-   ! elseif (str_eq(eosstr,'NIST_MEOS_MIX')) then
-   !   cbeos%eosidx = meosNist_mix
-   !   if (allocated(cbeos%nist)) then
-   !     do i=1,nc
-   !       deallocate(cbeos%nist(i)%meos, stat=err)
-   !       if (err /= 0) call stoperror("Not able to deallocate cbeos%nist(i), mix")
-   !     enddo
-   !     deallocate(cbeos%nist, stat=err)
-   !     if (err /= 0) call stoperror("Not able to deallocate cbeos%nist(i), mix")
-   !   endif
-   !   allocate(cbeos%nist(nc), stat=err)
-   !   !< Loop through components and search components with multiparameter EoS
-   !   ! available
-   !   do iz=1,nc
-   !     if (str_eq(comp(1)%ident, "C3")) then
-   !       allocate(meos_c3 :: cbeos%nist(iz)%meos, stat=err)
-   !     elseif (str_eq(comp(iz)%ident,"O-H2")) then
-   !       allocate(meos_ortho_h2 :: cbeos%nist(iz)%meos, stat=err)
-   !     elseif (str_eq(comp(iz)%ident,"P-H2")) then
-   !       allocate(meos_para_h2 :: cbeos%nist(iz)%meos, stat=err)
-   !     else
-   !       call stoperror("Only possible to use NIST MIX MEOS with these components for now: O/P-H2 or C3")
-   !     end if
-   !     call cbeos%nist(iz)%meos%init()
-   !   enddo
-   !   if (err /= 0) call stoperror("Not able to allocate cbeos%nist_Mix(iz)%meos")
-   !    !Rgas_meos = cbeos%nist(1)%Rgas_fit ! use fitting value of Rgas
-   !   return
-   ! else
-   !   Call StopError ('Unknown EOS')
-   ! endif
-
 
     call get_mixing_rule_index(cbeos%eosidx, mrulestr, mruleidx)
     cbeos%mruleidx = mruleidx
@@ -391,36 +288,7 @@ contains
         ierr = 1
         exit
       end select
-
-      ! ierr = redefine_TcPcAcf_comp_cubic_inner(p_active_eos_c%eos(i)%p_eos, j, &
-      !      TcSpec, PcSpec, AcfSpec)
-      ! if (ierr /= 0) then
-      !   print *,"Not able to redefine component. Not cubic."
-      !   ierr = 1
-      !   exit
-      ! endif
     enddo
-  ! contains
-  !   function redefine_TcPcAcf_comp_cubic_inner(p_eos, j, TcSpec, PcSpec, AcfSpec) result(ierr)
-  !     use thermopack_var, only: nce, base_eos_param
-  !     use cubic_eos, only: cb_eos
-  !     class(base_eos_param), intent(inout) :: p_eos
-  !     integer, intent(in) :: j !< Component index
-  !     real, intent(in) :: TcSpec !< Specified critical temperature [K]
-  !     real, intent(in) :: PcSpec !< Specified critical pressure [Pa]
-  !     real, intent(in) :: AcfSpec !< Specified acentric factor [-]
-  !     integer :: ierr
-  !     select type ( p_eos )
-  !     class is ( cb_eos )
-  !       ierr = 0
-  !       p_eos%single(j)%Tc = TcSpec
-  !       p_eos%single(j)%Pc = PcSpec
-  !       p_eos%single(j)%Acf = AcfSpec
-  !       call cbCalcParameters(nce, p_eos)
-  !     class default
-  !       ierr = 1
-  !     end select
-  !   end function redefine_TcPcAcf_comp_cubic_inner
   end subroutine redefine_TcPcAcf_comp_cubic
 
   !> Redefine the critical temperature, critical pressure, and acentric factor
@@ -497,13 +365,16 @@ contains
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,cbeos%mruleid,&
                param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
           cbeos%kij(j,i) = cbeos%kij(i,j)
+          cbeos%lij(i,j) = getlij(cbeos,cbeos%eosid,cbeos%mruleid,&
+               param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
+          cbeos%lij(j,i) = cbeos%lij(i,j)
+          if (cbeos%lij(i,j)/=0) cbeos%simple_covolmixing = .false.
         case (cbMixHuronVidal, cbmixHuronVidal2, cbmixNRTL)
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,"Classic",&
                param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident) !< First get the kij for vdW
           cbeos%kij(j,i) = cbeos%kij(i,j)
           call getInterDataGEij(cbeos%mixGE,cbeos%eosid,param_reference,&
                comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found_ge) !< get both  the ij- and ji-pair
-          !if (found_int == 0) print *, "WARNING: HV parameters for binary ",comp(i)%p_comp%ident,comp(j)%p_comp%ident," not in database." ! This generates too much output. Should be uncommented when debugging.
         case (cbMixVdWCPA,cbMixHVCPA,cbMixHVCPA2)
           cbeos%kij(i,j) = getCPAkij_a(cbeos%subeosidx,comp(i)%p_comp%ident,&
                comp(j)%p_comp%ident,found=found)
@@ -559,34 +430,6 @@ contains
     return
   end function getCompindex
 
-  !---------------------------------------------------------------------- >
-  !< Copy the parameters from the database in tpinput.f90 go the current cubic equation of state
-  !! \param cbdb The database element
-  !! \param cb The current cubic eos -- treated as a local variable here .
-  !!
-  !!
-  !!
-  !! \author Geir S
-
-!  subroutine copyEOSdataDB (cbdb,cb)
-!    use eosdatadb
-!    use eosdata
-!
-!    implicit none
-!
-!    type (eoscubicdb), intent (in) :: cbdb
-!    type (eoscubic), intent (inout) :: cb
-!
-!    cb%eosid = cbdb%eosid
-!    cb%name = cbdb%name
-!
-!    cb%delta = cbdb%delta
-!    cb%alfa = cbdb%alfa
-!    cb%beta = cbdb%beta
-!    cb%gamma = cbdb%gamma
-!
-!  end subroutine copyEOSdataDB
-
   !----------------------------------------------------------------------
   !< Retrive the interaction paramtere for the pair uid1 and uid2
   !! \param eosid String variable for eos
@@ -609,49 +452,70 @@ contains
   function getkij (cbeos, eosid, mruleid, ref, uid1, uid2) result(kijvalue)
     use mixdatadb
     use eosdata
-    use stringmod, only: str_eq, string_match
+    use stringmod, only: str_eq, string_match_val
     use cubic_eos, only: cb_eos
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     character(len=*), intent(in) :: eosid, mruleid, uid1, uid2, ref
     real :: kijvalue
     ! Locals
-    integer :: idx, idx_default
-    logical :: found
+    integer :: i, idx_lowest, match_val
+    logical :: found, candidate_found, ref_match
     character(len=max(len(eosid),2)) :: eosid_local
 
-    idx_default = -1
-    idx = 1
     found = .false.
     eosid_local = eosid
     if (cbeos%eosidx == eosLK) then
-      eosid_local = 'LK'
-      kijvalue = 1.0 !< Default value - no interaction
+       eosid_local = 'LK'
+       kijvalue = 1.0 !< Default value - no interaction
     else
-      kijvalue = 0.0 !< Default value - no interaction
+       kijvalue = 0.0 !< Default value - no interaction
     endif
 
-    do while (idx <= maxkij .and. .not. found)
-       if ( str_eq (eosid_local,kijdb(idx)%eosid) &
-            .and. str_eq(mruleid,kijdb(idx)%mruleid) &
-            .and. ((str_eq(uid1,kijdb(idx)%uid1) &
-            .and. str_eq(uid2,kijdb(idx)%uid2)) &
-            .or. ( str_eq(uid1,kijdb(idx)%uid2) &
-            .and. str_eq(uid2,kijdb(idx)%uid1)))) then
-         if (string_match(ref,kijdb(idx)%ref)) then
-           found = .true.
-           kijvalue = kijdb(idx)%kijvalue
-           exit
-         elseif (str_eq(kijdb(idx)%ref, "DEFAULT")) then
-           idx_default = idx
-         endif
-       endif
-       idx = idx + 1
+    found = .false.
+    kijvalue = 0
+    idx_lowest = 100000
+    do i=1,maxkij
+       candidate_found = str_eq (eosid_local,kijdb(i)%eosid) .and. str_eq(mruleid,kijdb(i)%mruleid) &
+            .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
+            .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
+       if (candidate_found) then
+          if (.not. found) then ! we at least found one match
+             kijvalue = kijdb(i)%kijvalue
+          end if
+          found = .true.
+
+          call string_match_val(ref,kijdb(i)%ref,ref_match,match_val)
+          if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
+             idx_lowest = match_val
+             kijvalue = kijdb(i)%kijvalue
+          end if
+       end if
     enddo
-    if (.not. found .and. idx_default > 0) then
-      kijvalue = kijdb(idx_default)%kijvalue
-    endif
   end function getkij
+
+  function getlij (cbeos, eosid, mruleid, ref, uid1, uid2) result(lijvalue)
+    use mixdatadb
+    use eosdata
+    use stringmod, only: str_eq, string_match_val
+    use cubic_eos, only: cb_eos
+    implicit none
+    class(cb_eos), intent(inout) :: cbeos
+    character(len=*), intent(in) :: eosid, mruleid, uid1, uid2, ref
+    logical :: ref_match
+    integer :: match_val
+    real :: lijvalue
+    lijvalue = 0.0
+
+    ! lijvalue nonzero only for the He-H2 binary with Quantum PR
+    if (str_eq(eosid,"PR") .and. str_eq(mruleid,"vdw")  &
+         .and. ((str_eq(uid1,"HE") .and. str_eq(uid2,"H2")) &
+         .or.  ( str_eq(uid1,"H2") .and. str_eq(uid2,"HE")))) then
+       call string_match_val("QuantumCubic", ref, ref_match, match_val)
+       if (ref_match) lijvalue = -0.16
+    end if
+  end function getlij
+
 
   subroutine getInterDataGEij(mGE, eosid, ref, uid1, uid2, &
        indxi, indxj, found)

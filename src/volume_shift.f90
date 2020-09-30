@@ -203,9 +203,10 @@ contains
     character(len=*), intent(in) :: cid !< Component
     real, intent(out) :: ci !< Volume shift
     character(len=*), optional, intent(in) :: ref !< Reference string
-    logical :: found_ci, match
-    integer :: idx, idx_lowest, match_val
+    logical :: found_ci
     ! Locals
+    logical :: ref_match
+    integer :: idx, idx_lowest, match_val
     integer :: i
     found_ci = .false.
     ci = 0
@@ -218,8 +219,8 @@ contains
           found_ci = .true.
 
           if (present(ref)) then ! check if there is a match with the ref
-             call string_match_val(ref,cidb(i)%ref,match,match_val)
-             if (match .and. match_val<idx_lowest) then ! the match takes precedence
+             call string_match_val(ref,cidb(i)%ref,ref_match,match_val)
+             if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
                 idx_lowest = match_val
                 ci = cidb(i)%ci
              end if

@@ -8,66 +8,6 @@ module cbmix
 
 contains
 
-  !> Calculates constants for the various EOS
-  !!
-  !! Using temperature, composition as input and the selected cubic
-  !! EOS the constants m1 and m2 is calculated. For some EOS's the m1 and m2 can
-  !! have temperature and composition dependencies.  Next, the critical
-  !! compressibility and the Ohmega-term in the EOS is solved, using a mixing
-  !! rule for the acentric factor if necessary. Finally - the mixing rules are
-  !! applied on the A-term and the B-term in the EOS are calculated along with
-  !! the temperature derivatives.
-  !!
-  !!
-  !! The variable cbeos from the tpvar module is the selected cubic equation of state
-  !!
-  !!
-  !! \author Geir Skaugen
-  !! \date 2012-06-12
-  !!
-  ! subroutine cbCalcParameters (nc, cbeos, b_exponent)
-  !   use eosdata
-  !   use cubic_eos, only: cb_eos
-  !   implicit none
-  !   integer, intent(in) :: nc
-  !   class(cb_eos), intent(inout) :: cbeos
-  !   real, optional, intent(in) :: b_exponent
-  !   !
-  !   real :: b_exp
-
-  !   select case (cbeos%eosidx)
-  !   case (cbSRK, cspSRK, cpaSRK, eosLK) ! Use SRK to generate initial values for LK
-  !     cbeos%delta =  0.0D+00
-
-  !   case (cbPR,cspPR,cpaPR)
-  !     cbeos%delta =  1.0D+00
-
-  !   case default
-  !     cbeos%delta =  -1.0D20
-
-  !   end select
-
-  !   if (cbeos%eosidx /= cbSW .and. cbeos%eosidx /= cbPT) then
-  !      call cbCalcM(cbeos)
-
-  !      ! Initialze mixing rule for the C-parameter
-  !      cbeos%ci = 0.0
-  !      cbeos%sumc = 0.0
-  !      cbeos%cij = 0.0
-  !   endif
-
-  !   call cbCalcOmegaZc(nc,cbeos) !< Uses the calculated m1 and m2 for two-param eos
-
-  !   if (present(b_exponent)) then
-  !     b_exp = b_exponent
-  !   else
-  !     b_exp = 1.0
-  !   endif
-  !   ! Select default set no 1 interaction paramteres
-  !   call cbCalcLowcasebij(nc,cbeos,b_exp)
-
-  ! end subroutine cbCalcParameters
-
   !---------------------------------------------------------------------------------------
   !> Calculation of parameter m1 and m2 for the selected EOS
   ! \param acf -  Ascentric factor (used for Schmidth/Wenzel
@@ -384,9 +324,7 @@ contains
     integer :: i,j !< Counters
     real :: inv_s
 
-    if (abs(s-1.0) < small) then
-      cbeos%simple_covolmixing = .true.
-    else
+    if (abs(s-1.0) >= small) then
       cbeos%simple_covolmixing = .false.
 
       if (allocated (cbeos%lowcase_bij) .eqv. .false. ) call StopError('CalcLowcasebij: Equation of state are not selected')
@@ -447,7 +385,6 @@ contains
     cbeos%b = 0.0
     cbeos%bT = 0.0
     cbeos%bTT = 0.0
-
     if (cbeos%simple_covolmixing) then
        do i=1,nc
           cbeos%bi(i) = cbeos%single(i)%b * cbeos%single(i)%beta
@@ -475,7 +412,6 @@ contains
              bjjTT = cbeos%single(j)%b * cbeos%single(j)%d2betadT2
 
              lijfac = 1-cbeos%lij(i,j)
-
              bij = lijfac*(bii+bjj)/2.0
              bijT = lijfac*(biiT+bjjT)/2.0
              bijTT = lijfac*(biiTT+bjjTT)/2.0
