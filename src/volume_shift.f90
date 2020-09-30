@@ -4,7 +4,7 @@
 
 module volume_shift
   use compdata, only: gendata_pointer
-  use stringmod, only: str_eq, uppercase
+  use stringmod, only: str_eq, uppercase, string_match, string_match_val
   use thermopack_constants, only: Rgas
   implicit none
   save
@@ -195,7 +195,7 @@ contains
   !----------------------------------------------------------------------
   !> Look for volume-shift parameters in data-base
   !>
-  !> \author MH, June 2020-05
+  !> \author Ailo, Sep 2020
   !----------------------------------------------------------------------
   function get_database_ci(cid,eos,ci,ref) result (found_ci)
     use compdatadb, only: cidb, maxcidb
@@ -203,18 +203,28 @@ contains
     character(len=*), intent(in) :: cid !< Component
     real, intent(out) :: ci !< Volume shift
     character(len=*), optional, intent(in) :: ref !< Reference string
-    logical :: found_ci
+    logical :: found_ci, match
+    integer :: idx, idx_lowest, match_val
     ! Locals
     integer :: i
     found_ci = .false.
     ci = 0
+    idx_lowest = 100000
     do i=1,maxcidb
        if (str_eq(cidb(i)%eosid, eos) .and. str_eq(cidb(i)%cid, cid)) then
-          if (present(ref)) then
-             if (.not. str_eq(cidb(i)%ref, ref)) cycle
-          endif
-          ci = cidb(i)%ci
+          if (.not. found_ci) then ! we at least found one match
+             ci = cidb(i)%ci
+          end if
           found_ci = .true.
+
+          if (present(ref)) then ! check if there is a match with the ref
+             call string_match_val(ref,cidb(i)%ref,match,match_val)
+             if (match .and. match_val<idx_lowest) then ! the match takes precedence
+                idx_lowest = match_val
+                ci = cidb(i)%ci
+             end if
+          end if
+
        endif
     enddo
   end function get_database_ci

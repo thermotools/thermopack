@@ -2,6 +2,7 @@
 !> EoS.
 !!
 module cbAlpha
+  use stringmod, only: str_eq, string_match_val
   implicit none
   private
   save
@@ -85,7 +86,6 @@ contains
          eos_to_classic_alpha_db_idx, cbAlphaTwuIdx, cbAlphaMcIdx, &
          cbAlphaUMRIdx, cbAlphaGergIdx, cbAlphaClassicIdx
     use compdata, only: gendata_pointer
-    use stringmod, only: str_eq
     implicit none
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
@@ -96,6 +96,7 @@ contains
     integer :: i, ierror, idx_db, istat, corr_idx, idx_db_classic
     real :: params(3)
     character(len=:), allocatable :: alpha_ref
+    logical :: inDB
     if (present(alpha_reference)) then
       allocate(character(len=len_trim(alpha_reference)) :: alpha_ref, stat=istat)
       if (istat /= 0) call stoperror("Not able to allocate alpha_ref")
@@ -125,22 +126,25 @@ contains
       select case(corr_idx)
       case(cbAlphaTwuIdx)
         ! If 'MC' or 'TWU', try to find parameters in the database.
-        call getAlphaTwuParamsFromDb(comp(i)%p_comp, cbeos, twuParams=params, &
-             ref=alpha_reference, ierror=ierror)
+         inDB = getAlphaTwuParamsFromDb(comp(i)%p_comp%ident,cbeos%eosid, twuParams=params, &
+              ref=alpha_reference)
+         if (.not. inDB) ierror = 1
         if (params(1) == 0.0 .and. params(2) == 0.0 .and. params(3) == 0.0) then
           ierror = 1
         endif
       case(cbAlphaMcIdx)
-        call getAlphaMcParamsFromDb(comp(i)%p_comp, cbeos, mcParams=params,&
-             ref=alpha_reference, ierror = ierror)
+         inDB = getAlphaTwuParamsFromDb(comp(i)%p_comp%ident,cbeos%eosid, twuParams=params, &
+              ref=alpha_reference)
+         if (.not. inDB) ierror = 1
         if (params(1) == 0.0 .and. params(2) == 0.0 .and. params(3) == 0.0) then
           ierror = 1
         endif
       case(cbAlphaUMRIdx)
         if (str_eq(comp(i)%p_comp%ident,"H2O")) then
           corr_idx = cbAlphaMcIdx
-          call getAlphaMcParamsFromDb(comp(i)%p_comp, cbeos, mcParams=params,&
-               ref=alpha_reference, ierror = ierror)
+          inDB = getAlphaMCParamsFromDb(comp(i)%p_comp%ident,cbeos%eosid, mcParams=params, &
+               ref=alpha_reference)
+          if (.not. inDB) ierror = 1
           if (params(1) == 0.0 .and. params(2) == 0.0 .and. params(3) == 0.0) then
             ierror = 1
           endif
@@ -376,99 +380,71 @@ contains
     cbeos%single(ic)%dalphadt = dalphadtr*dtrdt
     cbeos%single(ic)%d2alphadt2 = d2alphadtr2*dtrdt**2
   end subroutine calcAlpha_SW
-
-  !> Retrieve TWU parameters from database.
-  !> \author GS, Ailo
-  subroutine getAlphaTwuParamsFromDb(comp, cbeos, twuParams, ref, ierror)
-    use cubic_eos, only: cb_eos
-    use compdata, only: gendata
+  function getAlphaTwuParamsFromDb(cid,eos,TWUparams,ref) result(found_TWU)
     use compdatadb, only: alphaTWUdb, maxTWUdb
-    use stringmod, only: string_match, str_eq
-    implicit none
-    ! Input:
-    type (gendata), intent(in) :: comp
-    class(cb_eos), intent(inout) :: cbeos
-    character(len=*), intent(in) :: ref !< Reference
-    ! Output:
-    real, intent(out) :: twuParams(3)
-    integer, optional, intent(out) :: ierror
+    character(len=*), intent(in) :: eos !< Eos string
+    character(len=*), intent(in) :: cid !< Component
+    real, intent(out) :: TWUparams(3)
+    character(len=*), optional, intent(in) :: ref !< Reference string
+    logical :: found_TWU, match
+    integer :: idx, idx_lowest, match_val
     ! Locals
-    logical :: found
-    integer :: idx, idx_default
+    integer :: i
+    found_TWU = .false.
+    TWUparams = 0.0
+    idx_lowest = 1000000
+    do i=1,maxTWUdb
+       if (str_eq(alphaTWUdb(i)%eosid, eos) .and. str_eq(alphaTWUdb(i)%cid, cid)) then
+          if (.not. found_TWU) then ! we at least found one match
+             TWUparams = alphaTWUdb(i)%coeff
+          end if
+          found_TWU = .true.
 
-    idx_default = -1
-    idx = 1
-    found = .false.
-    do while ( idx <= maxTWUdb .and. (.not. found) )
-       if  (str_eq(comp%ident,alphaTWUdb(idx)%cid) .and.  &
-            str_eq(cbeos%eosid,alphaTWUdb(idx)%eosid)) then
-         if (string_match(ref,alphaTWUdb(idx)%ref)) then
-           found = .true.
-           twuParams(1:3) = alphaTWUdb(idx)%coeff(1:3)
-         else if (str_eq(alphaTWUdb(idx)%ref, "DEFAULT")) then
-           idx_default = idx
-         endif
+          call string_match_val(ref,alphaTWUdb(i)%ref,match,match_val)
+          if (present(ref)) then ! check if there is a match with the ref
+             call string_match_val(ref,alphaTWUdb(i)%ref,match,match_val)
+             if (match .and. match_val<idx_lowest) then ! the match takes precedence
+                idx_lowest = match_val
+                TWUparams = alphaTWUdb(i)%coeff
+             end if
+          end if
        endif
-       idx = idx+1
-    end do
+    enddo
+  end function getAlphaTwuParamsFromDb
 
-    if (.not. found .and. idx_default > 0) then
-      found = .true.
-      twuParams(1:3) = alphaTWUdb(idx_default)%coeff(1:3)
-    endif
-    ierror = 0
-    if (.not. found) then
-       ierror = 1
-    end if
-
-  end subroutine getAlphaTwuParamsFromDb
-
-
-  !> Retrieve MC alpha parameters from database.
-  !> \author GS, Ailo
-  subroutine getAlphaMcParamsFromDb(comp, cbeos, mcParams, ref, ierror)
-    use cubic_eos, only: cb_eos
-    use compdata, only: gendata
+  function getAlphaMCParamsFromDb(cid,eos,MCparams,ref) result(found_MC)
     use compdatadb, only: alphaMCdb, maxMCdb
-    use stringmod, only: string_match, str_eq
-    implicit none
-    ! Input:
-    type (gendata), intent(in) :: comp
-    class(cb_eos), intent(inout) :: cbeos
-    character(len=*), intent(in) :: ref !< Reference
-    ! Output:
-    real, intent(out) :: mcParams(3)
-    integer, optional, intent(out) :: ierror
+    character(len=*), intent(in) :: eos !< Eos string
+    character(len=*), intent(in) :: cid !< Component
+    real, intent(out) :: MCparams(3)
+    character(len=*), optional, intent(in) :: ref !< Reference string
+    logical :: found_MC, match
+    integer :: idx, idx_lowest, match_val
     ! Locals
-    logical :: found
-    integer :: idx, idx_default
+    integer :: i
+    found_MC = .false.
+    MCparams = 0.0
+    idx_lowest = 1000000
+    do i=1,maxMCdb
+       if (str_eq(alphaMCdb(i)%eosid, eos) .and. str_eq(alphaMCdb(i)%cid, cid)) then
+          if (.not. found_MC) then ! we at least found one match
+             MCparams = alphaMCdb(i)%coeff
+          end if
+          found_MC = .true.
 
-    idx_default = -1
-    idx = 1
-    found = .false.
-    do while ( idx <= maxMCdb .and. (.not. found) )
-       if (str_eq(comp%ident,alphaMCdb(idx)%cid) .and.  &
-            str_eq(cbeos%eosid,alphaMCdb(idx)%eosid)) then
-         if (string_match(ref,alphaMCdb(idx)%ref)) then
-           found = .true.
-           mcParams(1:3) = alphaMCdb(idx)%coeff(1:3)
-         else if (str_eq(alphaMCdb(idx)%ref, "DEFAULT")) then
-           idx_default = idx
-         endif
+          call string_match_val(ref,alphaMCdb(i)%ref,match,match_val)
+          if (present(ref)) then ! check if there is a match with the ref
+             call string_match_val(ref,alphaMCdb(i)%ref,match,match_val)
+             if (match .and. match_val<idx_lowest) then ! the match takes precedence
+                idx_lowest = match_val
+                MCparams = alphaMCdb(i)%coeff
+             end if
+          end if
        endif
-       idx = idx+1
-    end do
+    enddo
+  end function getAlphaMCParamsFromDb
 
-    if (.not. found .and. idx_default > 0) then
-      found = .true.
-      mcParams(1:3) = alphaMCdb(idx_default)%coeff(1:3)
-    endif
-    ierror = 0
-    if (.not. found) then
-       ierror = 1
-    end if
 
-  end subroutine getAlphaMcParamsFromDb
 
   !> S = a + b * w + c * w**2 + d * w**3 + e * w**4
   !! alpha = (1 + S(1-Tr**(1/2)))**2

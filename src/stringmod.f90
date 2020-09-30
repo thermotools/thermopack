@@ -939,8 +939,42 @@ contains
         endif
       enddo
       deallocate(string_up,before, stat=istat)
-      if (istat /= 0) call stoperror("Not able to allocate string_up")
+      if (istat /= 0) call stoperror("Not able to deallocate string_up")
     endif
   end function string_match
+
+  !> Search for matches of sub_string in string, where both of these strings can
+  !> have multiple delimiters '/'. Return match=.true. if there is a match, and
+  !> an integer match_val whose value equals the quality of the match (lower
+  !> values indicate a better match).
+  subroutine string_match_val(sub_string, string, match, match_val)
+    character(len=*), intent(in) :: sub_string !< String possibly in string
+    character(len=*), intent(in) :: string !< String where entries are separated by "/"
+    logical, intent(out) :: match
+    integer, intent(out) :: match_val
+    ! Locals
+    integer :: istat, substrlen
+    character(len=:), allocatable :: substr_before, substr_up
+    logical :: found
+    match_val = 0
+    match = .false.
+
+    allocate(character(len=len_trim(sub_string)) :: substr_before, substr_up, stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate substr_before, substr_up")
+    substr_up = trim(sub_string)
+    substrlen = len_trim(sub_string)
+    do while ((.not. match) .and. (len_trim(substr_up)>0))
+       call split(substr_up,"/",before=substr_before)
+       if (string_match(substr_before, string)) then
+          match_val = match_val + index(substr_before, string)
+          match = .true.
+       else
+          match_val = match_val + len_trim(substr_before)
+       end if
+    end do
+    deallocate(substr_before, substr_up, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate substr_before, substr_up")
+
+  end subroutine string_match_val
 
 end module stringmod
