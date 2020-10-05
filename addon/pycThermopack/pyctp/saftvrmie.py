@@ -49,8 +49,11 @@ class saftvrmie(thermo.thermopack):
     #################################
 
     def init(self, comps, parameter_reference="Default"):
-        """
-        Initialize SAFT-VR Mie model in thermopack
+        """Initialize SAFT-VR Mie model in thermopack
+
+        Args:
+            comps (str): Comma separated list of component names
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
