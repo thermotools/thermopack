@@ -95,7 +95,6 @@ contains
     integer, optional, intent(in) :: cptype !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
-    character(len=len(eos)) :: eosLocal  !< Local copy of string defining equation of state
     integer :: ncomp !< Number of components
     character(len=clen) :: message
     integer             :: i, ierr, index

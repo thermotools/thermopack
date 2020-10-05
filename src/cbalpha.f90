@@ -387,7 +387,7 @@ contains
     real, intent(out) :: TWUparams(3)
     character(len=*), optional, intent(in) :: ref !< Reference string
     logical :: found_TWU, match
-    integer :: idx, idx_lowest, match_val
+    integer :: idx_lowest, match_val
     ! Locals
     integer :: i
     found_TWU = .false.
@@ -419,7 +419,7 @@ contains
     real, intent(out) :: MCparams(3)
     character(len=*), optional, intent(in) :: ref !< Reference string
     logical :: found_MC, match
-    integer :: idx, idx_lowest, match_val
+    integer :: idx_lowest, match_val
     ! Locals
     integer :: i
     found_MC = .false.

@@ -206,7 +206,7 @@ contains
     logical :: found_ci
     ! Locals
     logical :: ref_match
-    integer :: idx, idx_lowest, match_val
+    integer :: idx_lowest, match_val
     integer :: i
     found_ci = .false.
     ci = 0
