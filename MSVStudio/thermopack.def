@@ -10,6 +10,13 @@ EXPORTS
 	eoslibinit_mp_init_cpa_
 	eoslibinit_mp_init_pcsaft_
 	eoslibinit_mp_init_saftvrmie_
+	eoslibinit_mp_init_quantum_cubic_
+	eoslibinit_mp_init_tcpr_
+	eoslibinit_mp_init_quantum_saftvrmie_
+	eoslibinit_mp_init_extcsp_
+	eoslibinit_mp_init_lee_kesler_
+  	eoslibinit_mp_init_multiparameter_
+	eoslibinit_mp_init_pets_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_

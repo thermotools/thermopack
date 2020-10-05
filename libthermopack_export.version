@@ -51,6 +51,14 @@ libthermopack {
 	  get_phase_flags_;
 	  *_init_thermo;
 	  *_init_cubic;
+	  *_init_quantum_cubic;
+	  *_init_quantum_cubic;
+	  *_init_tcpr;
+	  *_init_quantum_saftvrmie;
+	  *_init_extcsp;
+	  *_init_lee_kesler;
+  	  *_init_multiparameter;
+	  *_init_pets;
 	  *_init_cpa;
   	  *_init_pcsaft;
 	  *_init_saftvrmie;

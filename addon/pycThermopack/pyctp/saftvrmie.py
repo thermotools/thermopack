@@ -15,7 +15,7 @@ c_len_type = thermo.c_len_type
 
 class saftvrmie(thermo.thermopack):
     """
-    Interface to cubic
+    Interface to SAFT-VR Mie
     """
     def __init__(self):
         """

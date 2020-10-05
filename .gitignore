@@ -40,3 +40,4 @@ run_unittests
 *\#
 .cache
 src/*.bck
+*suite__genmod.f90

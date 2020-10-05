@@ -16,7 +16,7 @@ c_len_type = thermo.c_len_type
 
 class cpa(cubic.cubic):
     """
-    Interface to cubic
+    Interface to cubic plus association model
     """
     def __init__(self):
         """

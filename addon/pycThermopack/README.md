@@ -4,6 +4,8 @@ pycThermopack: Python interface for Thermopack
 
 For examples on how to use, see `example.py`, and `../pyExamples/`
 
+Note that the files **../../libthermopack_export.version** (Linux) and **../../MSVStudio/thermopack.def** (Windows) define what symbols are exported from the dynamic thermopack library.
+
 # Prerequisites
 
 Before you build (and possibly install) pycThermopack, make sure that

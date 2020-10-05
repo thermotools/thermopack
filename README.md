@@ -54,7 +54,7 @@ Thermopack have been developed through many projects, that have produced many ar
 - Quantum cubic:  
 [Accurate quantum-corrected cubic equations of state for helium, neon, hydrogen, deuterium and their mixtures](doi.org/10.1016/j.fluid.2020.112790)
 
-- SAFT-VR Mie:  
+- SAFT-VR Mie and SAFT-VRQ Mie:  
 [Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium](doi.org/10.1063/1.5111364)  
 [Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium](doi.org/10.1063/1.5136079)  
 [Choice of reference, the influence of non-additivity and challenges in thermodynamic perturbation theory for mixtures](doi.org/10.1063/1.5142771)
