@@ -635,7 +635,7 @@ contains
     real, dimension(nc) :: FUGZ, FUGL, FUGG, K, L
     integer :: minGphase, nov, i
     real :: g_feed, tpd, g_mix
-    logical :: liq_stab_negative, gas_stab_negative, isTrivialL, isTrivialV
+    logical :: liq_stab_negative, gas_stab_negative
     !
     converged = .false.
     if (t > tpTmax .OR. t < tpTmin) then
@@ -705,10 +705,10 @@ contains
           endif
         else
           if (minGphase == phase .OR. minGphase == SINGLEPH) then
-            tpd = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGL)
-            liq_stab_negative = (.not. isTrivialL .and. tpd < stabilityLimit)
-            tpd = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGG)
-            gas_stab_negative = (.not. isTrivialV .and. tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,LIQPH,FUGZ,FUGL)
+            liq_stab_negative = (tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,VAPPH,FUGZ,FUGG)
+            gas_stab_negative = (tpd < stabilityLimit)
             ! Do we need to try another phase?
             if (liq_stab_negative .or. gas_stab_negative) then
               if (liq_stab_negative .and. gas_stab_negative) then
@@ -1175,7 +1175,7 @@ contains
     logical :: isStable
     ! Locals
     real :: tpd
-    logical :: phase_stab_negative,isTrivial
+    logical :: phase_stab_negative
     real, dimension(nc) :: K,FUG,W
     integer, parameter :: nd = 1, j = 1
     real, dimension(nd,nc) :: XX
@@ -1183,8 +1183,8 @@ contains
     if (doCustomStabCheck) then
       XX(1,:) = Z
       W = wInitial
-      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,isTrivial,FUGZ,FUG)
-      phase_stab_negative = (.not. isTrivial .and. tpd < stabilityLimit)
+      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,FUGZ,FUG)
+      phase_stab_negative = (tpd < stabilityLimit)
       ! Do we need to introduce another phase?
       if (phase_stab_negative) then
         if (custumPhase == VAPPH) then

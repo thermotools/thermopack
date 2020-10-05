@@ -106,7 +106,6 @@ contains
     real, dimension(nc)   :: FUGZ, FUGL, FUGG, K
     real                  :: tpd
     logical               :: gas_stab_negative, liq_stab_negative
-    logical               :: isTrivialL, isTrivialV
     integer :: ophase
     ! Run full solver for two-phase
     ierr = 0
@@ -124,10 +123,10 @@ contains
         ! endif
         ! K = exp(FUGL-FUGG)
       else
-        tpd = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGL)
-        liq_stab_negative = (.not. isTrivialL .and. tpd < stabilityLimit)
-        tpd = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGG)
-        gas_stab_negative = (.not. isTrivialV .and. tpd < stabilityLimit)
+        tpd = stabcalc(t,p,Z,LIQPH,FUGZ,FUGL)
+        liq_stab_negative = (tpd < stabilityLimit)
+        tpd = stabcalc(t,p,Z,VAPPH,FUGZ,FUGG)
+        gas_stab_negative = (tpd < stabilityLimit)
         if (liq_stab_negative .or. gas_stab_negative) then
           if (liq_stab_negative .and. gas_stab_negative) then
             K = exp(FUGL-FUGG)

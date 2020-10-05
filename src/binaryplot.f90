@@ -633,7 +633,6 @@ contains
     real, dimension(nc) :: w
     real :: xx(nc), yy(nc)
     real :: lnFUGx(nc), lnFUGw(nc), tpd, Xvec(2,nc)
-    logical :: isTrivial
     real, parameter :: stabLimit = 1.0e-8
     logical :: isStable1, isStable2
     ! Set reference phase
@@ -644,24 +643,24 @@ contains
       w = y
       ! Look for vapour phase
       yy = (/1.0,0.0/)
-      tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,isTrivial,lnFUGx,lnFUGw)
-      isStable = .not. (.not. isTrivial .and. tpd < stabLimit)
+      tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,lnFUGx,lnFUGw)
+      isStable = .not. (tpd < stabLimit)
       if (isStable) then
         yy = (/0.0,1.0/)
-        tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,isTrivial,lnFUGx,lnFUGw)
-        isStable = .not. (.not. isTrivial .and. tpd < stabLimit)
+        tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,lnFUGx,lnFUGw)
+        isStable = .not. (tpd < stabLimit)
       endif
     else
       yy = y
       ! Look for liquid phase
       w = (/1.0,0.0/)
-      tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,isTrivial,lnFUGx,lnFUGw)
-      isStable1 = .not. (.not. isTrivial .and. tpd < stabLimit)
+      tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,lnFUGx,lnFUGw)
+      isStable1 = .not. (tpd < stabLimit)
       xx = w
       if (isStable1 .or. present(xx_tpl)) then
         w = (/0.0,1.0/)
-        tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,isTrivial,lnFUGx,lnFUGw)
-        isStable2 = .not. (.not. isTrivial .and. tpd < stabLimit)
+        tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,lnFUGx,lnFUGw)
+        isStable2 = .not. (tpd < stabLimit)
       else
         isStable2 = .true.
       endif
@@ -1206,7 +1205,7 @@ contains
     real :: T,P,XX(neq),dXds(neq),Xvec(2,nc),FUGZ(nc),FUGW(nc)
     real :: dzmax,Pmax,Tmin,tpd
     integer :: iter,ierr,iss
-    logical :: isTrivial, stab_negative
+    logical :: stab_negative
     T = T0
     P = P0
     x = x0
@@ -1229,8 +1228,8 @@ contains
         Xvec(1,:) = x
         Xvec(2,:) = y
         call thermo(t,p,x,LIQPH,FUGZ)
-        tpd = stabcalcW(2,1,t,p,Xvec,W,LIQPH,isTrivial,FUGZ,FUGW)
-        stab_negative = (.not. isTrivial .and. tpd < stabilityLimit)
+        tpd = stabcalcW(2,1,t,p,Xvec,W,LIQPH,FUGZ,FUGW)
+        stab_negative = (tpd < stabilityLimit)
         if (stab_negative) then
           dlns = -0.001
         else
@@ -2873,7 +2872,6 @@ contains
     integer, parameter :: n = 51
     real, parameter :: dz = 0.02
     real :: D(nc), lnFugZ(nc), lnFugY(nc), tpd_min
-    logical :: isTrivial
     real, dimension(1,nc) :: XX
     real, parameter :: eps = 1.0e-8
     isStable = .true.
@@ -2903,7 +2901,7 @@ contains
 
     ! Perform minimization determine stability and to get best possible starting values
     XX(1,:) = Z
-    tpd = stabcalcW(1,1,T,P,XX,y,phase,isTrivial,lnFugZ,lnFugY,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,y,phase,lnFugZ,lnFugY,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
     endif
@@ -4832,7 +4830,6 @@ contains
     !
     real :: tpd
     real :: lnFugZ(nc), lnFugX(nc)
-    logical :: isTrivial
     real, dimension(1,nc) :: XX
 
     call thermo(t,p,Z,VAPPH,lnFugZ)
@@ -4842,7 +4839,7 @@ contains
     ! Perform minimization determine stability and to get best possible starting values
     x = 0
     x(1) = 1
-    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,lnFugZ,lnFugX,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
       call specificvolume(T,P,x,LIQPH,v)
@@ -4851,7 +4848,7 @@ contains
 
     x = 0
     x(2) = 1
-    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,lnFugZ,lnFugX,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
       call specificvolume(T,P,x,LIQPH,v)

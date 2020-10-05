@@ -45,7 +45,7 @@ contains
     integer, intent(out) :: new_phase
     ! Locals
     real :: tpd, LNPHIZ(nc), LNPHIV(nc), LNPHIL(nc), LNPHIO(nc)
-    logical :: isTrivial, vaporIsMostStable
+    logical :: vaporIsMostStable
 
     call thermo(t,p,Z,VAPPH,LNPHIV)
     call thermo(t,p,Z,LIQPH,LNPHIL)
@@ -59,8 +59,8 @@ contains
       new_phase = VAPPH
     end if
 
-    tpd = stabcalc(t,p,Z,new_phase,isTrivial,LNPHIZ,LNPHIO,Wsol)
-    isStable = isTrivial .or. tpd > stabilityLimit
+    tpd = stabcalc(t,p,Z,new_phase,LNPHIZ,LNPHIO,Wsol)
+    isStable = tpd > stabilityLimit
     if (.not. isStable) return
 
     ! Have to check the possibility of the other phase then..
@@ -70,8 +70,8 @@ contains
       new_phase = LIQPH
     end if
 
-    tpd = stabcalc(t,p,Z,new_phase,isTrivial,LNPHIZ,LNPHIO,Wsol)
-    isStable = isTrivial .or. tpd > stabilityLimit
+    tpd = stabcalc(t,p,Z,new_phase,LNPHIZ,LNPHIO,Wsol)
+    isStable = tpd > stabilityLimit
 
   end subroutine checkVLEstability
 
@@ -85,9 +85,8 @@ contains
   !>
   !> \author MHA, 2012-01-30
   !-------------------------------------------------------------------------
-  function stabcalc(t,p,Z,phase,isTrivial,FUGZ,FUG,Wsol,preTermLim) result(tpd)
+  function stabcalc(t,p,Z,phase,FUGZ,FUG,Wsol,preTermLim) result(tpd)
     implicit none
-    logical, intent(out) :: isTrivial !< Is the solution trivial? (That is; W == Z)
     integer, intent(in) :: phase !< Phase flag for compozition initiation (the
                                  !phase to search for). Initiate a vapour
                                  !compzition or a liquid composition.
@@ -128,7 +127,7 @@ contains
     endif
 
     XX(1,:) = Z
-    tpd = stabcalcW(nd,j,t,p,XX,W,ph,isTrivial,FUGZ,FUG,preTermLim)
+    tpd = stabcalcW(nd,j,t,p,XX,W,ph,FUGZ,FUG,preTermLim)
     if (present(Wsol)) then
       Wsol = W
     endif
@@ -151,13 +150,12 @@ contains
   !!
   !! \author MHA, 2012-01-30
   !-------------------------------------------------------------------------
-  function stabcalcW(nd,k,t,p,XX,W,phase,isTrivial,FUGZ,FUGW,preTermLim) result(tpd)
+  function stabcalcW(nd,k,t,p,XX,W,phase,FUGZ,FUGW,preTermLim) result(tpd)
     use optimizers, only: optimize, optim_param, setX
     use thermopack_var, only: ncsym
     implicit none
     integer, intent(in) :: nd !< Dimension of compozition matrix
     integer, intent(in) :: k !< Index of Trial phase
-    logical, intent(out) :: isTrivial !< Is the solution trivial? (That is; W == Z)
     integer, intent(in) :: phase !< Phase flag. Determine what root we are calculating in the eos.
     real, dimension(nd,nc), intent(in) :: XX !< All phases in equilibrium
     real, dimension(nc), intent(inout) :: W !< Inital guess
@@ -290,15 +288,9 @@ contains
       call normalize(Z)
       wz_error = min(wz_error, maxval(abs(Z-W)))
     enddo
-    if(wz_error < rel_tol*1.0e5) then
-      isTrivial = .true.
-    else
-      isTrivial = .false.
-    endif
     if (verbose) then
       write(*,*) "Exiting stabcalcW. W =",W
       write(*,*) "FUGW =",FUGW
-      if (isTrivial) write(*,*) "Trivial solution!"
     endif
 
   end function stabcalcW
