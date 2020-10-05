@@ -2,13 +2,13 @@
 
 pycThermopack: Python interface for Thermopack
 
-For examples on how to use, see `example.py`.
+For examples on how to use, see `example.py`, and `../pyExamples/`
 
 # Prerequisites
 
 Before you build (and possibly install) pycThermopack, make sure that
 you have compiled thermopack using the provides Makefiles or Visual
-Studio solution files. Compiling using GNU (Linux) or Intel (Windows)
+Studio solution files. Compiling using GNU/Intel (Linux) or Intel (Windows)
 FORTRAN should be straight forward. If you prefer another compiler,
 you will need to tweake the get_platform_specifics method in thermo.py
 to get the module exports correct. These exports are compiler
@@ -52,7 +52,7 @@ python setup.py install
 
 ## Windows:
 
-.....
+Compile using Microsoft Visual Studio solution file (requires Intel Fortran license) in ../../MSVStudio, and a libthermopack.dll will be copied to the pyctp folder.
 
 
 # Testing
@@ -77,4 +77,4 @@ You will need to have installed the following Python packages:
 * `pyqt5` for the GUI framework
 * `pint` for managing units
 * `matplotlib`
-* `numpy` 
+* `numpy`

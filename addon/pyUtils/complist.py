@@ -7,4 +7,4 @@ import os
 
 
 compl = comp_list()
-compl.save_fortran_file("test.f90")
+compl.save_fortran_file("compdatadb.f90")

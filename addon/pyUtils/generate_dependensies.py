@@ -1,4 +1,3 @@
-"""Module for calculating Mie potential."""
 from __future__ import print_function
 import numpy as np
 from sys import exit
