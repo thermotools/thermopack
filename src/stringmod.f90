@@ -1,5 +1,5 @@
 module stringmod
-
+  implicit none
   !> String length
   integer, parameter :: clen=2048
 
@@ -72,7 +72,7 @@ contains
     character(len=*) :: str,delims
     character(len=len_trim(str)) :: strsav
     character(len=*),dimension(:) :: args
-
+    integer :: nargs, na, i, lenstr, k
     strsav=str
     call compact(str)
     na=size(args)
@@ -104,6 +104,7 @@ contains
     character(len=*):: str
     character(len=1):: ch
     character(len=len_trim(str)):: outstr
+    integer :: i, k, lenstr, isp, ich
 
     str=adjustl(str)
     lenstr=len_trim(str)
@@ -145,8 +146,8 @@ contains
 
     character(len=*):: str
     character(len=1):: ch
-    character(len=len_trim(str))::outstr
-
+    character(len=len_trim(str)) :: outstr
+    integer :: k, lenstr, i, ich
     str=adjustl(str)
     lenstr=len_trim(str)
     outstr=' '
@@ -176,7 +177,7 @@ contains
 
     character(len=*)::str
     real(kr8)::rnum
-    integer :: ios
+    integer :: ios, ilen, ipos
 
     ilen=len_trim(str)
     ipos=scan(str,'Ee')
@@ -197,7 +198,7 @@ contains
     character(len=*)::str
     real(kr4) :: rnum
     real(kr8) :: rnumd
-
+    integer :: ios
     call value_dr(str,rnumd,ios)
     if( abs(rnumd) > huge(rnum) ) then
       ios=15
@@ -217,7 +218,7 @@ contains
     character(len=*)::str
     integer(ki8) :: inum
     real(kr8) :: rnum
-
+    integer :: ios
     call value_dr(str,rnum,ios)
     if(abs(rnum)>huge(inum)) then
       ios=15
@@ -236,7 +237,7 @@ contains
     character(len=*)::str
     integer(ki4) :: inum
     real(kr8) :: rnum
-
+    integer :: ios
     call value_dr(str,rnum,ios)
     if(abs(rnum)>huge(inum)) then
       ios=15
@@ -256,6 +257,7 @@ contains
     ! are replaced by spaces.
 
     character(len=*):: str
+    integer :: n, lenstr, nabs
 
     lenstr=len(str)
     nabs=iabs(n)
@@ -280,7 +282,7 @@ contains
 
     character(len=*):: str,strins
     character(len=len(str))::tempstr
-
+    integer :: loc, lenstrins
     lenstrins=len_trim(strins)
     tempstr=str(loc:)
     call shiftstr(tempstr,lenstrins)
@@ -299,6 +301,7 @@ contains
     ! not considered part of 'substr'.
 
     character(len=*):: str,substr
+    integer :: lensubstr, ipos
 
     lensubstr=len_trim(substr)
     ipos=index(str,substr)
@@ -320,7 +323,7 @@ contains
     ! shifts characters left to fill holes.
 
     character(len=*):: str,substr
-
+    integer :: lensubstr, ipos
     lensubstr=len_trim(substr)
     do
       ipos=index(str,substr)
@@ -343,7 +346,7 @@ contains
 
     character (len=*):: str
     character (len=len_trim(str)):: ucstr
-
+    integer :: ilen, ioffset, iquote, iav, iqc, i
     ilen=len_trim(str)
     ioffset=iachar('A')-iachar('a')
     iquote=0
@@ -378,6 +381,7 @@ contains
 
     character (len=*):: str
     character (len=len_trim(str)):: lcstr
+    integer :: ilen, ioffset, iquote, iav, iqc, i
 
     ilen=len_trim(str)
     ioffset=iachar('A')-iachar('a')
@@ -413,6 +417,7 @@ contains
     ! and deleting comments beginning with an exclamation point(!)
 
     character (len=*):: line
+    integer :: ios, nunitr, ipos
 
     do
       read(nunitr,'(a)', iostat=ios) line      ! read input line
@@ -436,6 +441,7 @@ contains
 
     character(len=*) :: str
     character :: delim1,delim2,ch
+    integer :: ipos, imatch, lenstr, iend, inc, istart, idelim2, isum, i
 
     lenstr=len_trim(str)
     delim1=str(ipos:ipos)
@@ -562,7 +568,7 @@ contains
     character(len=*) :: str
     character :: ch
     character(len=10) :: exp
-
+    integer :: ipos, lstr, i
     ipos=scan(str,'eE')
     if(ipos>0) then
       exp=str(ipos:)
@@ -704,7 +710,7 @@ contains
     character,optional :: sep
     logical :: pres
     character :: ch,cha
-
+    integer :: lenstr, k, ibsl, i, iposa, ipos
     pres=present(sep)
     str=adjustl(str)
     call compact(str)
@@ -766,7 +772,7 @@ contains
     character(len=*):: str
     character(len=1):: ch
     character(len=len_trim(str))::outstr
-
+    integer :: k, ibsl, lenstr, i
     str=adjustl(str)
     lenstr=len_trim(str)
     outstr=' '
@@ -955,7 +961,6 @@ contains
     ! Locals
     integer :: istat, substrlen
     character(len=:), allocatable :: substr_before, substr_up
-    logical :: found
     match_val = 0
     match = .false.
 
