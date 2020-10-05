@@ -94,6 +94,7 @@ class thermopack(object):
         self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
         self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
+        self.eoslibinit_init_volume_translation = getattr(self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
 
         # Eos interface
         self.s_eos_specificvolume = getattr(self.tp, self.get_export_name("eos", "specificvolume"))
@@ -183,43 +184,43 @@ class thermopack(object):
     # Init
     #################################
 
-    def init_thermo(self, eosLib, eos, mixing, alpha, ncomp, comp_string, nphases,
+      subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
+       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
+       saft_ref,b_exponent,TrendEosForCp,cptype,silent)
+
+    def init_thermo(self, eos, mixing, alpha, comp_string, nphases,
                     liq_vap_discr_method=None, csp_eos=None, csp_ref_comp=None,
-                    kij_setno=None, alpha_setno=None, saft_setno=None,
+                    kij_ref="Default", alpha_ref="Default", saft_ref="Default",
                     b_exponent=None, TrendEosForCp=None, cptype=None,
                     silent=None):
         """Initialize thermopack
 
         Args:
-            eosLib (str): 
             eos (str): Equation of state
             mixing (str): Mixture model for cubic eos
             alpha (str): Alpha formulations for cubic EOS
-            ncomp (int): Number of components
             comp_str (string): Comma separated list of components
             nphases (int): Maximum number of phases considered during multi-phase flash calculations
-            liq_vap_discr_method (int, optional): [description]. Defaults to None.
-            csp_eos (str, optional): [description]. Defaults to None.
-            csp_ref_comp (str, optional): [description]. Defaults to None.
-            kij_setno (int, optional): [description]. Defaults to None.
-            alpha_setno (int, optional): [description]. Defaults to None.
-            saft_setno (int, optional): . Defaults to None.
+            liq_vap_discr_method (int, optional): Method to discriminate between liquid and vapor in case of an undefined single phase. Defaults to None.
+            csp_eos (str, optional): Corrensponding state equation. Defaults to None.
+            csp_ref_comp (str, optional): CSP reference component. Defaults to None.
+            kij_ref (str, optional): Data set identifiers. Defaults to "Default".
+            alpha_ref (str, optional): Data set identifiers. Defaults to "Default".
+            saft_ref (str, optional): Data set identifiers. Defaults to "Default".
             b_exponent (float, optional): Exponent used in co-volume mixing. Defaults to None.
-            TrendEosForCp ([type], optional): [description]. Defaults to None.
-            cptype (int, optional): [description]. Defaults to None.
-            silent (bolean, optional): Supress messages during init?. Defaults to None.
+            TrendEosForCp (str, optional): Option to init trend for ideal gas properties. Defaults to None.
+            cptype (int array, optional): Equation type number for Cp. Defaults to None.
+            silent (bool, optional): Supress messages during init?. Defaults to None.
         """
-        null_pointer = POINTER(c_int)()
+        self.nc = max(len(comps.split(" ")), len(comps.split(",")))
 
-        eosLib_len = c_len_type(len(eosLib))
-        eosLib_c = c_char_p(eosLib.encode('ascii'))
+        null_pointer = POINTER(c_int)()
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))
         mixing_c = c_char_p(mixing.encode('ascii'))
         mixing_len = c_len_type(len(mixing))
         alpha_c = c_char_p(alpha.encode('ascii'))
         alpha_len = c_len_type(len(alpha))
-        ncomp_c = c_int(ncomp)
         comp_string_c = c_char_p(comp_string.encode('ascii'))
         comp_string_len = c_len_type(len(comp_string))
         nphases_c = c_int(nphases)
@@ -239,18 +240,12 @@ class thermopack(object):
         else:
             csp_ref_comp_c = c_char_p(csp_ref_comp.encode('ascii'))
             csp_ref_comp_len = c_len_type(len(csp_ref_comp))
-        if kij_setno is None:
-            kij_setno_c = null_pointer
-        else:
-            kij_setno_c = POINTER(c_int)(c_int(kij_setno))
-        if alpha_setno is None:
-            alpha_setno_c = null_pointer
-        else:
-            alpha_setno_c = POINTER(c_int)(c_int(alpha_setno))
-        if saft_setno is None:
-            saft_setno_c = null_pointer
-        else:
-            saft_setno_c = (c_int * ncomp)(*saft_setno)
+        kij_ref_len = c_len_type(len(kij_ref))
+        kij_ref_c = c_char_p(kij_ref.encode('ascii'))
+        alpha_ref_len = c_len_type(len(alpha_ref))
+        alpha_ref_c = c_char_p(alpha_ref.encode('ascii'))
+        saft_ref_len = c_len_type(len(saft_ref))
+        saft_ref_c = c_char_p(saft_ref.encode('ascii'))
         if b_exponent is None:
             b_exponent_c = POINTER(c_double)()
         else:
@@ -259,12 +254,12 @@ class thermopack(object):
             TrendEosForCp_c = c_char_p()
             TrendEosForCp_len = c_len_type(0)
         else:
-            TrendEosForCp_c = c_char_p(csp_eos.encode('ascii'))
-            TrendEosForCp_len = c_len_type(len(csp_eos))
+            TrendEosForCp_c = c_char_p(TrendEosForCp.encode('ascii'))
+            TrendEosForCp_len = c_len_type(len(TrendEosForCp))
         if cptype is None:
             cptype_c = null_pointer
         else:
-            cptype_c = (c_int * ncomp)(*cptype)
+            cptype_c = (c_int * self.nc)(*cptype)
 
         if silent is None:
             silent_c = null_pointer
@@ -276,18 +271,17 @@ class thermopack(object):
                                                 c_char_p,
                                                 c_char_p,
                                                 POINTER( c_int ),
-                                                c_char_p,
-                                                POINTER( c_int ),
                                                 POINTER( c_int ),
                                                 c_char_p,
                                                 c_char_p,
-                                                POINTER( c_int ),
-                                                POINTER( c_int ),
-                                                POINTER( c_int ),
+                                                c_char_p,
+                                                c_char_p,
+                                                c_char_p,
                                                 POINTER( c_double ),
                                                 c_char_p,
                                                 POINTER( c_int ),
                                                 POINTER( c_int ),
+                                                c_len_type, c_len_type,
                                                 c_len_type, c_len_type,
                                                 c_len_type, c_len_type,
                                                 c_len_type, c_len_type,
@@ -296,32 +290,54 @@ class thermopack(object):
 
         self.eoslibinit_init_thermo.restype = None
 
-        self.eoslibinit_init_thermo(eosLib_c,
-                                    eos_c,
+        self.eoslibinit_init_thermo(eos_c,
                                     mixing_c,
                                     alpha_c,
-                                    byref(ncomp_c),
                                     comp_string_c,
                                     byref(nphases_c),
                                     liq_vap_discr_method_c,
                                     csp_eos_c,
                                     csp_ref_comp_c,
-                                    kij_setno_c,
-                                    alpha_setno_c,
-                                    saft_setno_c,
+                                    kij_ref_c,
+                                    alpha_ref_c,
+                                    saft_ref_c,
                                     b_exponent_c,
                                     TrendEosForCp_c,
                                     cptype_c,
                                     silent_c,
-                                    eosLib_len,
                                     eos_len,
                                     mixing_len,
                                     alpha_len,
                                     comp_string_len,
                                     csp_eos_len,
                                     csp_ref_comp_len,
+                                    kij_ref_len,
+                                    alpha_ref_len,
+                                    saft_ref_len,
                                     TrendEosForCp_len)
-        self.nc = ncomp
+
+    def init_peneloux_volume_translation(self, parameter_reference="Default"):
+        """Initialialize Peneloux volume translations
+
+        Args:
+            parameter_reference (str): String defining parameter set, Defaults to "Default"
+        """
+        volume_trans_model = "PENELOUX"
+        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
+        volume_trans_model_len = c_len_type(len(volume_trans_model))
+        ref_string_c = c_char_p(parameter_reference.encode('ascii'))
+        ref_string_len = c_len_type(len(parameter_reference))
+        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
+                                                            c_char_p,
+                                                            c_len_type,
+                                                            c_len_type]
+
+        self.eoslibinit_init_volume_translation.restype = None
+
+        self.eoslibinit_init_volume_translation(volume_trans_model_c,
+                                                ref_string_c,
+                                                volume_trans_model_len,
+                                                ref_string_len)
 
     #################################
     # Solids

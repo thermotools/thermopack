@@ -63,6 +63,7 @@ libthermopack {
   	  *_init_pcsaft;
 	  *_init_saftvrmie;
 	  *_solid_init;
+	  *_init_volume_translation;
 	  *_specificvolume;
 	  *_zfac;
 	  *_thermo;

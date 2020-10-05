@@ -23,6 +23,7 @@ module eoslibinit
   public :: init_multiparameter, init_pets
   public :: silent_init
   public :: redefine_critical_parameters
+  public :: init_volume_translation
   !
 contains
 

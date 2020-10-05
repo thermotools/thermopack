@@ -17,6 +17,7 @@ EXPORTS
 	eoslibinit_mp_init_lee_kesler_
   	eoslibinit_mp_init_multiparameter_
 	eoslibinit_mp_init_pets_
+	eoslibinit_mp_init_volume_translation_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_
