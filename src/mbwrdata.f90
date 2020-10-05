@@ -4,7 +4,6 @@ MODULE mbwrdata
   SAVE
 
   TYPE :: mbwr32Data
-     SEQUENCE
      INTEGER :: EqNo
      CHARACTER (LEN=10) :: ComId
      INTEGER :: SetNo, LowProp, HighProp, Ndata
@@ -12,7 +11,6 @@ MODULE mbwrdata
   END TYPE mbwr32Data
 
   TYPE :: mbwr19Data
-     SEQUENCE
      INTEGER :: EqNo
      CHARACTER (LEN=10) :: ComId
      INTEGER :: SetNo, LowProp, HighProp, Ndata
