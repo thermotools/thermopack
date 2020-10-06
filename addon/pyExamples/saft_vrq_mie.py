@@ -11,7 +11,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init PeTS object
+# Instanciate and init SAFT-VRQ Mie object
 qSAFT = saftvrqmie.saftvrqmie()
 qSAFT.init("He,H2,Ne")
 qSAFT.set_tmin(temp=2.0)
