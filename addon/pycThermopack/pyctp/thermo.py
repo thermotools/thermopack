@@ -95,6 +95,7 @@ class thermopack(object):
         self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
+        self.eoslibinit_redefine_critical_parameters = getattr(self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
 
         # Eos interface
         self.s_eos_specificvolume = getattr(self.tp, self.get_export_name("eos", "specificvolume"))
@@ -338,6 +339,24 @@ class thermopack(object):
                                                 ref_string_c,
                                                 volume_trans_model_len,
                                                 ref_string_len)
+
+    def redefine_critical_parameters(self, silent=True):
+        """Recalculate critical properties of pure fluids
+
+        Args:
+            silent (bool): Ignore warnings? Defaults to True
+        """
+        if silent:
+            silent_c = c_int(1)
+        else:
+            silent_c = c_int(0)
+
+        self.eoslibinit_redefine_critical_parameters.argtypes = [ POINTER( c_int ) ]
+
+        self.eoslibinit_redefine_critical_parameters.restype = None
+
+        self.eoslibinit_redefine_critical_parameters(byref(silent_c))
+
 
     #################################
     # Solids
