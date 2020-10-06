@@ -64,7 +64,7 @@ class cubic(thermo.thermopack):
             vol_shift_c = c_int(1)
         else:
             vol_shift_c = c_int(0)
- 
+
         self.eoslibinit_init_cubic.argtypes = [c_char_p,
                                                c_char_p,
                                                c_char_p,

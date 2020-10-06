@@ -2,9 +2,21 @@
 
 This folder example pyhton code running pycThermopack.
 
-**./binary_plot.py**: .  
+**./cpa.py**: .  
   
-**./binary_plot.py**: .  
+**./ext_csp.py**: .  
   
-**./binary_plot.py**: .  
+**./global_binary.py**: .  
+  
+**./nist_propane.py**: .  
+  
+**./pets.py**: .  
+  
+**./quantum_cubic.py**: .  
+  
+**./saft_vrq_mie.py**: .  
+  
+**./solid_cubic.py**: .  
+  
+**./tcPR.py**: .  
   

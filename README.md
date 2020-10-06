@@ -72,6 +72,9 @@ Thermopack have been developed through many projects, that have produced many ar
 [The spinodal of single-and multi-component fluids and its role in the development of modern equations of state](doi.org/10.1016/j.fluid.2016.12.018)  
 [Predicting triggering and consequence of delayed LNG RPT](doi.org/10.1016/j.jlp.2018.06.001)
 
+## Contribution
+
+
 
 ## Authors and contact persons
 Morten Hammer (Morten.Hammer@sintef.no), Ailo Aasen (Ailo.Aasen@sintef.no), Øivind Wilhelmsen (Oivind.Wilhelmsen@sintef.no)
