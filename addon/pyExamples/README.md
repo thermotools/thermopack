@@ -2,21 +2,25 @@
 
 This folder example pyhton code running pycThermopack.
 
-**./cpa.py**: .  
+**./cpa.py**: Plot binary Pxy for carbon dioxide-water.  
   
-**./ext_csp.py**: .  
+**./ext_csp.py**: Extended corrensponding state phase diagram for LNG-like composition.  
   
-**./global_binary.py**: .  
+**./global_binary.py**: Global binary phase diagram for neon and hydrogen, plotted using SRK EOS.  
   
-**./nist_propane.py**: .  
+**./nist_propane.py**: Temperature-density phase diagram for NIST propane EOS.  
   
-**./pets.py**: .  
+**./pets.py**: LJ-fluid cut-off 2.5 temperature-density phase envelope.  
   
-**./quantum_cubic.py**: .  
+**./PC-SAFT.py**: CO2-CH4 temperature-pressure phase envelope.  
   
-**./saft_vrq_mie.py**: .  
+**./quantum_cubic.py**: Quantum fluid (helium-hydrogen-neon) phase envelope.  
   
-**./solid_cubic.py**: .  
+**./saft_vr_mie.py**: Redused density-pressure plots for hydrogen and LJ-fluid.  
   
-**./tcPR.py**: .  
+**./saft_vrq_mie.py**: Quantum fluid (helium-hydrogen-neon) phase envelope".  
+  
+**./solid_cubic.py**: Carbon dioxide - nitrogen phase envelope including dry-ice.  
+  
+**./tcPR.py**: Translated and consistent cubic EoS. Phase envelope plotted for carbon dioxide-nitrogen.  
   

@@ -11,9 +11,9 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init PeTS object
+# Instanciate and init multiparameter object
 nist = multiparameter.multiparam()
-nist.init("C3","NIST_MEOS")
+nist.init("C3", "NIST_MEOS")
 
 # Plot phase envelope
 z = np.array([1.0])

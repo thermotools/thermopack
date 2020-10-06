@@ -11,7 +11,8 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init PeTS object
+# Instanciate and init tcPR object. Translated and consistent cubic EoS by le Guennec et al. (10.1016/j.fluid.2016.09.003)
+
 tc_pr = tcPR.tcPR()
 tc_pr.init("CO2,N2")
 
