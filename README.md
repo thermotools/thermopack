@@ -72,8 +72,8 @@ Thermopack have been developed through many projects, that have produced many ar
 [The spinodal of single-and multi-component fluids and its role in the development of modern equations of state](doi.org/10.1016/j.fluid.2016.12.018)  
 [Predicting triggering and consequence of delayed LNG RPT](doi.org/10.1016/j.jlp.2018.06.001)
 
-## Contribution
-
+## Contributions
+Input needed from Karl-Yngve.
 
 
 ## Authors and contact persons
@@ -104,7 +104,3 @@ Brief description of file structure:
 - `thermopack/addon/pycThermopack/`: Python interface
 - `thermopack/addon/pyUtils/`: Python utilitties for generating fortran code and makefile input.
 - `thermopack/addon/trend_interface/`: Interface for working with the TREND/EOSCG library developed by Roland Span ant Ruhr-Universität Bochum
-
-# For discussion
-1. Should we aim for a generic unittest of F functions, and then simply run it for all model combos?
-2. Should molar mass be given in g/mol or kg/mol (SI)?
