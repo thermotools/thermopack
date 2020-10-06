@@ -48,7 +48,7 @@ libthermopack {
 	  thermopack_gethvparam_;
           thermopack_sethvparam_;
 	  #
-	  get_phase_flags_;
+	  get_phase_flags_c;
 	  *_init_thermo;
 	  *_init_cubic;
 	  *_init_quantum_cubic;
@@ -72,7 +72,7 @@ libthermopack {
 	  *_compmoleweight;
 	  *_idealenthalpysingle;
 	  *_sound_velocity_2ph;
-	  *_compindex;
+	  *_comp_index_active;
 	  *_setphtolerance;
 	  *_twophasetpflash;
 	  *_twophasepsflash;

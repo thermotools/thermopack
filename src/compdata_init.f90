@@ -177,4 +177,13 @@ submodule (compdata) comp_init
      c%assoc_scheme = 0
    end subroutine gendata_init_from_name
 
+   function comp_index_active(compName) result(index)
+    use thermopack_var, only: complist
+    implicit none
+    character(len=*), intent(in) :: compName
+    integer :: index
+    !
+    index = compIndex(complist, compName)
+  end function comp_index_active
+
 end submodule comp_init

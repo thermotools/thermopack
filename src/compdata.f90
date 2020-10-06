@@ -41,24 +41,6 @@ module compdata
   save
   public
 
-  ! type, abstract :: basecomp
-  !   character (len=uid_len) :: cid !< The component ID
-  ! contains
-  !   procedure, public :: isComponent
-  ! end type basecomp
-
-  ! type, extends(basecomp), abstract :: basecompref
-  !   character (len=ref_len) :: ref !< Data group reference
-  ! contains
-  !   procedure, public :: isRef
-  ! end type basecompref
-
-  ! type, extends(basecompref), abstract :: basecompref_eos
-  !   character (len=eosid_len) :: eosid !< EOS identifyer
-  ! contains
-  !   procedure, public :: isEOS
-  ! end type basecompref_eos
-
   ! Correlations for ideal-gas heat-capacity calculation
   integer, parameter :: &
        CP_POLY3_CAL=1, &
@@ -150,12 +132,19 @@ module compdata
     end subroutine
   end interface
 
+  interface
+    module function comp_index_active(compName) result(index)
+      character(len=*), intent(in) :: compName
+      integer :: index
+    end function comp_index_active
+  end interface
+
   type gendata_pointer
     class(gendata), pointer :: p_comp => NULL()
   end type gendata_pointer
 
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
-  public :: getComp, compIndex, copy_comp
+  public :: getComp, compIndex, copy_comp, comp_index_active
   public :: parseCompVector, initCompList, deallocate_comp
 
 contains
@@ -258,23 +247,6 @@ contains
 
     end select
   end subroutine assign_gendata
-
-
-  ! !---------------------------------------------------------------------- >
-  ! !> Assignment operator cpdata
-  ! !!
-  ! subroutine assign_cpdata(cp1,cp2)
-  !   implicit none
-  !   class(cpdata), intent(inout) :: cp1
-  !   class(cpdata), intent(in) :: cp2
-  !   cp1%cid = cp2%cid
-  !   cp1%ref = cp2%ref
-  !   cp1%bib_ref = cp2%bib_ref
-  !   cp1%cptype = cp2%cptype
-  !   cp1%cp = cp2%cp
-  !   cp1%tcpmin = cp2%tcpmin
-  !   cp1%tcpmax = cp2%tcpmax
-  ! end subroutine assign_cpdata
 
   function compIndex(complist, compName) result(index)
     character (len=*), intent(in) :: complist(:)
@@ -410,32 +382,6 @@ contains
       call comp(i)%p_comp%init_from_name(complist(i),ref,ierr)
     enddo
   end subroutine SelectComp
-
-  !> Free the memory allocated after initializing components, compositions and
-  !! equation of state
-  !!
-  !! \todo Need to check if this should be called prior to initializing.  From
-  !! for instance excel and other non-sequantial 'look-up' type interfaces where
-  !! the library need to initialized for each call.
-  !!
-  !! \author Geir S
-
-  ! subroutine DeSelectComp(comp,cbeos)
-  !   use thermopack_var, only: complist
-  !   implicit none
-  !   type (gendata), allocatable, dimension(:), intent(inout) :: comp
-  !   type (eoscubic), intent(inout) :: cbeos
-  !   integer :: stat = 0
-
-  !   if (allocated (complist)) deallocate (complist,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating complist'
-
-  !   if (allocated (comp)) deallocate (comp,STAT=stat)
-  !   if (stat /= 0) write (*,*) 'Error deallocating comp'
-
-  !   call deAllocateEosCubic(cbeos)
-
-  ! end subroutine DeSelectComp
 
   subroutine deallocate_comp(comp)
     implicit none

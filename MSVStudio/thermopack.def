@@ -3,8 +3,8 @@
 LIBRARY
 
 EXPORTS
-	get_phase_flags_
-	parameters_mp_compindex_
+	get_phase_flags_c
+	compdata_mp_comp_index_active_
 	eoslibinit_mp_init_thermo_
 	eoslibinit_mp_init_cubic_
 	eoslibinit_mp_init_cpa_

@@ -84,15 +84,15 @@ class thermopack(object):
 
         self.model_id = None
         # Set phase flags
-        self.s_get_phase_flags = self.tp.get_phase_flags_
+        self.s_get_phase_flags = self.tp.get_phase_flags_c
         self.get_phase_flags()
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("tpconst", "rgas")).value
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "rgas")).value
         self.nc = None
-        self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tptmin"))
-        self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("tpconst", "tppmin"))
+        self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "tptmin"))
+        self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "tppmin"))
         self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
 
@@ -110,7 +110,7 @@ class thermopack(object):
         self.s_sos_sound_velocity_2ph = getattr(self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
 
         # Parameters
-        self.s_parameters_compindex = getattr(self.tp, self.get_export_name("parameters", "compindex"))
+        self.s_parameters_compindex = getattr(self.tp, self.get_export_name("compdata", "comp_index_active"))
 
         # Flashes
         self.s_set_ph_tolerance = getattr(self.tp, self.get_export_name("ph_solver", "setphtolerance"))
@@ -183,10 +183,6 @@ class thermopack(object):
     #################################
     # Init
     #################################
-
-      subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
-       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
-       saft_ref,b_exponent,TrendEosForCp,cptype,silent)
 
     def init_thermo(self, eos, mixing, alpha, comp_string, nphases,
                     liq_vap_discr_method=None, csp_eos=None, csp_ref_comp=None,
@@ -1942,14 +1938,28 @@ class thermopack(object):
         return_tuple = (t_vals, p_vals)
 
         if calc_v:
-            v_vals = np.zeros_like(t_vals)
-            for i in range(n_c.value):
-                if beta_c[i] > 0.5:
-                    phase = self.VAPPH
-                else:
-                    phase = self.LIQPH
-                v_vals[i], = self.specific_volume(t_vals[i], p_vals[i], z, phase)
-            return_tuple += (v_vals, )
+            # Special treatment for single phase
+            if np.amax(z) == 1:
+                t_vals_single = np.zeros(2*np.shape(t_vals)[0])
+                p_vals_single = np.zeros(2*np.shape(t_vals)[0])
+                v_vals_single = np.zeros_like(t_vals_single)
+                for i in range(n_c.value):
+                    t_vals_single[i] = t_vals[i]
+                    t_vals_single[-i-1] = t_vals[i]
+                    p_vals_single[i] = p_vals[i]
+                    p_vals_single[-i-1] = p_vals[i]
+                    v_vals_single[i], = self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH)
+                    v_vals_single[-i-1], = self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH)
+                return_tuple = (t_vals_single, p_vals_single, v_vals_single)
+            else:
+                v_vals = np.zeros_like(t_vals)
+                for i in range(n_c.value):
+                    if beta_c[i] > 0.5:
+                        phase = self.VAPPH
+                    else:
+                        phase = self.LIQPH
+                    v_vals[i], = self.specific_volume(t_vals[i], p_vals[i], z, phase)
+                return_tuple += (v_vals, )
 
         return return_tuple
 
