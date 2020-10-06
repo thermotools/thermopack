@@ -662,9 +662,9 @@ $(ODIR)/compdata_init.o: $(SRC)/compdata_init.f90 \
 	$(SRC)/stringmod.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/compdata_init.f90
 	@$(call make_object, $(SRC)/compdata_init.f90)
-$(ODIR)/eosdatadb.o: $(SRC)/eosdatadb.f90 \
+$(ODIR)/eosdatadb.o: $(SRC)/mixdatadb.f90 \
 	$(SRC)/cubic_eos.f90
-	@$(call make_object, $(SRC)/eosdatadb.f90)
+	@$(call make_object, $(SRC)/mixdatadb.f90)
 $(ODIR)/cbmix.o: $(SRC)/cbmix.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/cubic_eos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90 \
