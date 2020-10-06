@@ -39,7 +39,7 @@ class cubic(thermo.thermopack):
     #################################
 
     def init(self, comps, eos, mixing="vdW", alpha="Classic",
-             parameter_reference="Default"):
+             parameter_reference="Default", volume_shift=False):
         """Initialize cubic model in thermopack
 
         Args:
@@ -60,11 +60,17 @@ class cubic(thermo.thermopack):
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
+        if volume_shift:
+            vol_shift_c = c_int(1)
+        else:
+            vol_shift_c = c_int(0)
+ 
         self.eoslibinit_init_cubic.argtypes = [c_char_p,
                                                c_char_p,
                                                c_char_p,
                                                c_char_p,
                                                c_char_p,
+                                               POINTER (c_int),
                                                c_len_type,
                                                c_len_type,
                                                c_len_type,
@@ -78,6 +84,7 @@ class cubic(thermo.thermopack):
                                    mixing_c,
                                    alpha_c,
                                    ref_string_c,
+                                   byref(vol_shift_c),
                                    comp_string_len,
                                    eos_len,
                                    mixing_len,

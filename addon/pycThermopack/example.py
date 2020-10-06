@@ -20,7 +20,9 @@ print("calling get_phase_flags")
 print(tp.get_phase_flags())
 
 print("calling thermo_init")
-tp.init_thermo("Thermopack","PR","Classic","Classic",2,"CO2,C1",2,liq_vap_discr_method=1,kij_setno=2,alpha_setno=1,b_exponent=2,csp_eos="SRK",csp_ref_comp="C3",saft_setno=[1,1])
+tp.init_thermo("PR","Classic","Classic","CO2,C1",2,liq_vap_discr_method=1,
+               kij_ref="Default",alpha_ref="Default",b_exponent=2,csp_eos="SRK",
+               csp_ref_comp="C3",saft_ref="Default")
 
 print("Done calling init")
 z = np.array([0.9,0.1])

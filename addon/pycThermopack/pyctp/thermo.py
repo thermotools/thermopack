@@ -184,7 +184,7 @@ class thermopack(object):
     # Init
     #################################
 
-    def init_thermo(self, eos, mixing, alpha, comp_string, nphases,
+    def init_thermo(self, eos, mixing, alpha, comps, nphases,
                     liq_vap_discr_method=None, csp_eos=None, csp_ref_comp=None,
                     kij_ref="Default", alpha_ref="Default", saft_ref="Default",
                     b_exponent=None, TrendEosForCp=None, cptype=None,
@@ -195,7 +195,7 @@ class thermopack(object):
             eos (str): Equation of state
             mixing (str): Mixture model for cubic eos
             alpha (str): Alpha formulations for cubic EOS
-            comp_str (string): Comma separated list of components
+            comps (string): Comma separated list of components
             nphases (int): Maximum number of phases considered during multi-phase flash calculations
             liq_vap_discr_method (int, optional): Method to discriminate between liquid and vapor in case of an undefined single phase. Defaults to None.
             csp_eos (str, optional): Corrensponding state equation. Defaults to None.
@@ -217,8 +217,8 @@ class thermopack(object):
         mixing_len = c_len_type(len(mixing))
         alpha_c = c_char_p(alpha.encode('ascii'))
         alpha_len = c_len_type(len(alpha))
-        comp_string_c = c_char_p(comp_string.encode('ascii'))
-        comp_string_len = c_len_type(len(comp_string))
+        comp_string_c = c_char_p(comps.encode('ascii'))
+        comp_string_len = c_len_type(len(comps))
         nphases_c = c_int(nphases)
         if liq_vap_discr_method is None:
             liq_vap_discr_method_c = null_pointer
@@ -260,7 +260,11 @@ class thermopack(object):
         if silent is None:
             silent_c = null_pointer
         else:
-            silent_c = c_int(silent)
+            if silent:
+                silent_int = 1
+            else:
+                silent_int = 0
+            silent_c = POINTER(c_int)(c_int(silent_int))
 
         self.eoslibinit_init_thermo.argtypes = [c_char_p,
                                                 c_char_p,
