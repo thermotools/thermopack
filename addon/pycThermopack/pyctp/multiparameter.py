@@ -10,53 +10,49 @@ from sys import platform, exit
 from os import path
 # Import thermo
 from . import thermo
-# Import thermo
-from . import cubic
 
 c_len_type = thermo.c_len_type
 
-class tcPR(cubic.cubic):
+class multiparam(thermo.thermopack):
     """
-    Interface to tc-PR
+    Interface to multiparameter EOS
     """
     def __init__(self):
         """
-        Initialize tcPR specific function pointers
+        Initialize multiparameter EOS specific function pointers
         """
         # Load dll/so
-        super(tcPR, self).__init__()
+        super(multiparam, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_tcpr = getattr(self.tp, self.get_export_name("eoslibinit", "init_tcpr"))
-
+        self.eoslibinit_init_multiparameter = getattr(self.tp, self.get_export_name("eoslibinit", "init_multiparameter"))
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, mixing="vdW"):
-        """Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
-        (10.1016/j.fluid.2016.09.003)
+    def init(self, comps, eos):
+        """Initialize multiparameter EOS
 
         Args:
             comps (str): Comma separated list of component names
-            mixing (str, optional): Mixture model. Defaults to "vdW".
+            eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
         """
-        mixing_c = c_char_p(mixing.encode('ascii'))
-        mixing_len = c_len_type(len(mixing))
+        eos_c = c_char_p(eos.encode('ascii'))
+        eos_len = c_len_type(len(eos))
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
 
-        self.eoslibinit_init_tcpr.argtypes = [c_char_p,
-                                              c_char_p,
-                                              c_len_type,
-                                              c_len_type]
+        self.eoslibinit_init_multiparameter.argtypes = [c_char_p,
+                                                        c_char_p,
+                                                        c_len_type,
+                                                        c_len_type]
 
-        self.eoslibinit_init_tcpr.restype = None
+        self.eoslibinit_init_multiparameter.restype = None
 
-        self.eoslibinit_init_tcpr(comp_string_c,
-                                  mixing_c,
-                                  comp_string_len,
-                                  mixing_len)
+        self.eoslibinit_init_multiparameter(comp_string_c,
+                                            eos_c,
+                                            comp_string_len,
+                                            eos_len)
 
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
