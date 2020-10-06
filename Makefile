@@ -127,7 +127,7 @@ ifeq ($(OS),Linux)
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
     # Make script freeze when runnign "ifort --version" without contact to licence server
-    ifneq ($(shell timeout 0.11 ifort --version 2> /dev/null),)
+    ifneq ($(shell timeout 0.2 ifort --version 2> /dev/null),)
       compilers += ifort
       omp_ifort = "-openmp"
       ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
