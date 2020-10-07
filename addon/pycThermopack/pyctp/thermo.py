@@ -1963,8 +1963,8 @@ class thermopack(object):
         if calc_v:
             # Special treatment for single phase
             if np.amax(z) == 1:
-                t_vals_single = np.zeros(2*np.shape(t_vals)[0])
-                p_vals_single = np.zeros(2*np.shape(t_vals)[0])
+                t_vals_single = np.zeros(2*n_c.value)
+                p_vals_single = np.zeros(2*n_c.value)
                 v_vals_single = np.zeros_like(t_vals_single)
                 for i in range(n_c.value):
                     t_vals_single[i] = t_vals[i]

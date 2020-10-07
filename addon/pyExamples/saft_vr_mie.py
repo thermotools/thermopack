@@ -63,7 +63,7 @@ svrm.redefine_critical_parameters(False)
 
 # Plot phase envelope
 z = np.array([1.0])
-T, P, v = svrm.get_envelope_twophase(5.0e2, z, maximum_pressure=1.5e7, calc_v=True)
+T, P, v = svrm.get_envelope_twophase(1.0e3, z, maximum_pressure=1.5e7, calc_v=True)
 T_s = calc_reduced_T(T, eps)
 rho_s = calc_reduced_rho(1.0/v, sigma)
 Tc, vc, Pc = svrm.critical(z)
