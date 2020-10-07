@@ -11,6 +11,18 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
+def phase_name(th, ph):
+    phase = ""
+    if ph == th.VAPPH:
+        phase = "Vapor"
+    elif ph == th.LIQPH:
+        phase = "Liquid"
+    elif ph == th.SINGLEPH:
+        phase = "Single"
+    elif ph == th.TWOPH:
+        phase = "Vapor-Liquid"
+    return phase
+
 # Instanciate and init tcPR object.
 
 tc_pr = tcPR.tcPR()
@@ -41,7 +53,14 @@ temp, x, y, beta_g, beta_l, phase = tc_pr.two_phase_phflash(P, z, h, temp=None)
 print(u"Temperature from enthalpy-pressure flash: {} (\N{DEGREE SIGN}C)".format(temp - 273.15))
 
 e = h - P*v
-P = P*0.75
+p = P*0.75
 T = T*2.0
 temp, press, x, y, betaV, betaL, phase = tc_pr.two_phase_uvflash(z, e, v, temp=T, press=P)
 print(u"Temperature from energy-volume flash: {} (\N{DEGREE SIGN}C)".format(temp - 273.15))
+
+# Supercritical temperature:
+T = 273.15 + 500.0 # K
+x, y, beta_g, beta_l, phase = tc_pr.two_phase_tpflash(T, P, z)
+print("Supercritical phase: {}".format(phase_name(tc_pr, phase)))
+phase = tc_pr.guess_phase(T, P, z)
+print("Guessing supercritical phase: {}".format(phase_name(tc_pr, phase)))
