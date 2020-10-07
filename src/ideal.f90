@@ -146,12 +146,11 @@ contains
   !! \param T The temperature [K]
   !! \retval Cp The ideal gas heat capacity [J/mol K]
   function CPideal(comp, i, T) result (Cp_id)
-    use thermopack_constants
     use compdata, only: gendata, CP_POLY3_CAL, &
        CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
        CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
        CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
-    use thermopack_constants, only: verbose
+    use thermopack_constants, only: verbose, Rgas
     use idealh2, only: cpideal_h2
     implicit none
     type(gendata), intent(in) :: comp
@@ -276,12 +275,11 @@ contains
   !!
   !! \author Oivind W
   function Hideal(comp, i, T) result (H_id)
-    use thermopack_constants
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
-    use thermopack_constants, only: verbose
+    use thermopack_constants, only: verbose, Rgas
     use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
@@ -387,12 +385,11 @@ contains
   !! \author Oivind W
 
   function Sideal_T(comp, i, T) result (S_id)
-    use thermopack_constants
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
-    use thermopack_constants, only: verbose
+    use thermopack_constants, only: verbose, Rgas
     use idealh2, only: sideal_h2
     implicit none
     type(gendata), intent(in) :: comp

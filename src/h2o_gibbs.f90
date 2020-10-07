@@ -10,7 +10,7 @@
 !! Volume(Number): 35(2)
 !! doi: http://dx.doi.org/10.1063/1.2183324
 !!
-module h2oGibbs
+module h2o_gibbs
   implicit none
   private
   save
@@ -381,4 +381,4 @@ contains
   !   c = 0.0 ! MH TODO - implement
   ! end function sh2o_sound_velocity
 
-end module h2oGibbs
+end module h2o_gibbs

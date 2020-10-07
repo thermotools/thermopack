@@ -164,6 +164,7 @@ submodule (compdata) comp_init
      integer, intent(out) :: ierr
      ! Locals
      integer :: cidx, cpidx
+     ierr = 0
      cidx = getCompDBindex(cname)
      if (cidx < 1 .or. cidx > maxncdb) then
        call stoperror("Component "//trim(cname)//" not found in database")
@@ -177,7 +178,7 @@ submodule (compdata) comp_init
      c%assoc_scheme = 0
    end subroutine gendata_init_from_name
 
-   function comp_index_active(compName) result(index)
+   module function comp_index_active(compName) result(index)
     use thermopack_var, only: complist
     implicit none
     character(len=*), intent(in) :: compName

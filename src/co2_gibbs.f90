@@ -10,7 +10,7 @@
 !! Number 57
 !!
 !!
-module co2Gibbs
+module co2_gibbs
   !use co2_properties_sw, only: mwco2
   implicit none
   private
@@ -390,4 +390,4 @@ contains
     c = v/sqrt(-denum/mwco2/1.0e3)
   end function sco2_speed_of_sound
 
-end module co2Gibbs
+end module co2_gibbs

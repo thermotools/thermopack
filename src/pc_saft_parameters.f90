@@ -19,7 +19,6 @@ module pc_saft_parameters
   !> equation of state.
   ! ---------------------------------------------------------------------------
   type :: pc_saft_data
-     sequence
      integer :: eosidx
      character (len=uid_len) :: compName
      ! Pure component fitted parameters.

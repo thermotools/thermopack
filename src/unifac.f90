@@ -148,7 +148,7 @@ contains
   !> Set interaction parameters for tunig
   subroutine getUNIFACgroupInteraction(UFdb,i,j,aij,bij,cij)
     !
-    type (unifacdb), intent(out) :: UFdb
+    type (unifacdb), intent(in) :: UFdb
     integer, intent(in) :: i,j ! Main group indices
     real, intent(out) :: aij,bij,cij
     !

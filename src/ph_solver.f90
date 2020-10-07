@@ -5,11 +5,10 @@ module ph_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_constants
   use thermopack_var, only: nc
   use tp_solver, only: twoPhaseTPflash
   use state_functions
-  use thermopack_constants, only: get_templimits
+  use thermopack_constants, only: get_templimits, VAPPH, LIQPH, TWOPH, SINGLEPH
   use thermo_utils, only: isSingleComp, maxComp
   use eos, only: enthalpy, getcriticalparam, pseudo_safe, twophaseenthalpy
   use saturation, only: safe_dewT

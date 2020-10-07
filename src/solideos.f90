@@ -6,8 +6,8 @@ module solideos
   use thermopack_constants, only: Rgas, LIQPH, verbose, VAPPH, SINGLEPH
   use thermopack_var, only: nc, nph, thermo_model, &
        get_active_thermo_model, complist
-  use co2Gibbs
-  use h2oGibbs
+  use co2_gibbs
+  use h2o_gibbs
   !
   implicit none
   save

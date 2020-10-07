@@ -14,7 +14,6 @@ MODULE CPA_parameters
   !> CPA-PR equations of state.
   !------------------------------------------------------------------------------------------------
   type :: CPAdata
-     sequence
      integer :: eosidx
      character (len=10) :: compName
      ! SRK fitted parameters.
@@ -130,7 +129,6 @@ MODULE CPA_parameters
   !> each component only has one scheme stored in the database.)
   ! ------------------------------------------------------------------------------------------------
   type :: CPAkijdata
-     sequence
      integer:: eosidx ! EoS identifier index
      character (len=uid_len) :: uid1, uid2 ! Component names
      character(len=ref_len) :: ref ! Set reference

@@ -35,9 +35,9 @@ EXPORTS
 	ph_solver_mp_twophasephflash_
 	sv_solver_mp_twophasesvflash_
 	thermo_utils_mp_guessphase_
-	tpconst_mp_rgas_
-	tpconst_mp_tptmin_
-	tpconst_mp_tppmin_
+	thermopack_constants_mp_rgas_
+	thermopack_constants_mp_tptmin_
+	thermopack_constants_mp_tppmin_
 	eostv_mp_internal_energy_
 	eostv_mp_entropytv_
 	eostv_mp_pressure_

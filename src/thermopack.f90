@@ -16,10 +16,9 @@ program run_thermopack
   !call init_thermo('CPA-SRK', 'VDW', 'CLASSIC', "H2O,ETOH", 2)
   !call init_thermo('PR', 'HV1', 'CLASSIC', "CO2,H2O", 2)
   call init_saftvrmie("CO2,NE","DEFAULT")
-  Tc = -1 !290.0
-  vc = -1!1.0/(50.5e3)
+  Tc = -1
+  vc = -1
   Z = [0.99,0.01]
-  !print *, z
   call calcCriticalTV(Tc, vc, z, ierr)
   pc = pressure(Tc, vc, z)
   print *,"Tc, vc, pc",Tc, vc, pc

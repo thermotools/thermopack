@@ -4885,11 +4885,11 @@ contains
   !-------------------------------------------------------------------------
   subroutine calcAzeotropicPoint(t,vg,vl,P,Z,s,ierr,tol,free_comp,iter)
     use thermopack_constants, only: get_templimits
-    use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use nonlinear_solvers, only: nonlinear_solver
+    use nonlinear_solvers, only: nonlinear_solver, limit_dx,&
+         premterm_at_dx_zero, setXv, nonlinear_solve
     use eosTV, only: pressure
     use thermo_utils, only: get_b_linear_mix
     implicit none
