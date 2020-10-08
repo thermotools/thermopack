@@ -38,45 +38,45 @@ contains
 
     method_psat: select case (comp(i)%p_comp%psatcode)
     case (1) ! Antoine vapour-pressure calculation
-       write(*,*) ' Tmax:  ', comp(i)%p_comp%tantmax, '  Tmin ', comp(i)%p_comp%tantmin
+      write(*,*) ' Tmax:  ', comp(i)%p_comp%tantmax, '  Tmin ', comp(i)%p_comp%tantmin
 
-       if(T>comp(i)%p_comp%tantmin .AND. T<comp(i)%p_comp%tantmax) then
-          Psat=exp(comp(i)%p_comp%ant(1)-comp(i)%p_comp%ant(2)/(T+comp(i)%p_comp%ant(3)))
-          Psat=Psat*133.3224 ! Input in K, output in Pa. Ant-coeffcients give psat in mmHg
-          ! psat = [mmHG] * [rhoHg * gGrav / 1000.0]
-       else
-          Psat=comp(i)%p_comp%pc*exp(5.42*(1.0-comp(i)%p_comp%tc/T))
-          if(Psat<1.0E-6) then
-             Psat=1.0E-6
-          endif
-       endif
+      if(T>comp(i)%p_comp%tantmin .AND. T<comp(i)%p_comp%tantmax) then
+        Psat=exp(comp(i)%p_comp%ant(1)-comp(i)%p_comp%ant(2)/(T+comp(i)%p_comp%ant(3)))
+        Psat=Psat*133.3224 ! Input in K, output in Pa. Ant-coeffcients give psat in mmHg
+        ! psat = [mmHG] * [rhoHg * gGrav / 1000.0]
+      else
+        Psat=comp(i)%p_comp%pc*exp(5.42*(1.0-comp(i)%p_comp%tc/T))
+        if(Psat<1.0E-6) then
+          Psat=1.0E-6
+        endif
+      endif
     case (2)  ! Michelsen approach
-       Psat=comp(i)%p_comp%pc*exp(5.42*(1.0-comp(i)%p_comp%tc/T))
-       if(Psat<1.0D-6) then
-          Psat=1.0D-6
-       endif
+      Psat=comp(i)%p_comp%pc*exp(5.42*(1.0-comp(i)%p_comp%tc/T))
+      if(Psat<1.0D-6) then
+        Psat=1.0D-6
+      endif
     case (3)   ! Starling approach
-       if( T .LE. comp(i)%p_comp%tc ) then
-          Psat=(4.92*comp(i)%p_comp%acf+5.81)*LOG(T/comp(i)%p_comp%tc) - &
-               0.0838*(4.92*comp(i)%p_comp%acf+2.06)*(36.0/(T/comp(i)%p_comp%tc)-&
-               35.0-(T/comp(i)%p_comp%tc)**6+42.0*LOG(T/comp(i)%p_comp%Tc))
-       else
-          Term=-8.68*((T/comp(i)%p_comp%tc)-1.8+6.2*comp(i)%p_comp%zc)**2
-          if (Term .GT. -30.0) then
-             Term = 10.0**Term
-          else
-             Term = 0.0
-          end if
+      if( T .LE. comp(i)%p_comp%tc ) then
+        Psat=(4.92*comp(i)%p_comp%acf+5.81)*LOG(T/comp(i)%p_comp%tc) - &
+             0.0838*(4.92*comp(i)%p_comp%acf+2.06)*(36.0/(T/comp(i)%p_comp%tc)-&
+             35.0-(T/comp(i)%p_comp%tc)**6+42.0*LOG(T/comp(i)%p_comp%Tc))
+      else
+        Term=-8.68*((T/comp(i)%p_comp%tc)-1.8+6.2*comp(i)%p_comp%zc)**2
+        if (Term .GT. -30.0) then
+          Term = 10.0**Term
+        else
+          Term = 0.0
+        end if
 
-          Psat= -(16.26-73.85*comp(i)%p_comp%zc+90.0*comp(i)%p_comp%zc**2)*&
-               (1.0-(T/comp(i)%p_comp%tc))/(T/comp(i)%p_comp%tc) - Term
-       end if
+        Psat= -(16.26-73.85*comp(i)%p_comp%zc+90.0*comp(i)%p_comp%zc**2)*&
+             (1.0-(T/comp(i)%p_comp%tc))/(T/comp(i)%p_comp%tc) - Term
+      end if
 
-       Psat = comp(i)%p_comp%pc*EXP(Psat)
+      Psat = comp(i)%p_comp%pc*EXP(Psat)
 
     case (10) ! Leachman ancillary equation for pvap for P-H2, N-H2 and O-H2
-       Psat = lnpvapred_H2(comp(i)%p_comp%ident, T/comp(i)%p_comp%tc) ! Returns ln(psat/pcrit)
-       psat = exp(psat)*comp(i)%p_comp%pc
+      Psat = lnpvapred_H2(comp(i)%p_comp%ident, T/comp(i)%p_comp%tc) ! Returns ln(psat/pcrit)
+      psat = exp(psat)*comp(i)%p_comp%pc
 
     end select method_psat
   end function EstPsat
@@ -102,7 +102,7 @@ contains
     integer :: i
 
     do i=1,nc
-       K(i)=EstPsat(comp,i,T)/P
+      K(i)=EstPsat(comp,i,T)/P
     end do
 
   end subroutine TP_Kideal
@@ -127,14 +127,14 @@ contains
     ! Locals
     integer :: j
     if (i <= ncsym) then
-       Cp_id = CPideal(comp(i)%p_comp, i, T)
+      Cp_id = CPideal(comp(i)%p_comp, i, T)
     else
-       Cp_id = 0.0
-       do j=ncsym+1,nce
-          if (apparent%v_stoich(i,j) > 0.0) then
-             Cp_id = Cp_id + CPideal(comp(j)%p_comp, j, T)*apparent%v_stoich(i,j)
-          endif
-       enddo
+      Cp_id = 0.0
+      do j=ncsym+1,nce
+        if (apparent%v_stoich(i,j) > 0.0) then
+          Cp_id = Cp_id + CPideal(comp(j)%p_comp, j, T)*apparent%v_stoich(i,j)
+        endif
+      enddo
     endif
   end function CPideal_apparent
 
@@ -147,9 +147,9 @@ contains
   !! \retval Cp The ideal gas heat capacity [J/mol K]
   function CPideal(comp, i, T) result (Cp_id)
     use compdata, only: gendata, CP_POLY3_CAL, &
-       CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
-       CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-       CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
+         CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
+         CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: cpideal_h2
     implicit none
@@ -163,74 +163,74 @@ contains
     method_Cp: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree poynomial
 
-       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3
-       Cp_id=Cp_id*4.1868
+      Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3
+      Cp_id=Cp_id*4.1868
 
     case (CP_API44_MASS) ! API-project 44
 
-       Cp_id = comp%id_cp%cp(2) + T*(2.0*comp%id_cp%cp(3)+ T*(3.0*comp%id_cp%cp(4)+ &
-            T*(4.0*comp%id_cp%cp(5)+ T*5.0*comp%id_cp%cp(6))))
-       Cp_id = Cp_id*comp%mw
+      Cp_id = comp%id_cp%cp(2) + T*(2.0*comp%id_cp%cp(3)+ T*(3.0*comp%id_cp%cp(4)+ &
+           T*(4.0*comp%id_cp%cp(5)+ T*5.0*comp%id_cp%cp(6))))
+      Cp_id = Cp_id*comp%mw
 
-       TminCp = comp%id_cp%tcpmin + 273.15
-       TmaxCp = comp%id_cp%tcpmax + 273.15
+      TminCp = comp%id_cp%tcpmin + 273.15
+      TmaxCp = comp%id_cp%tcpmax + 273.15
 
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperaure range for component ', trim(comp%ident)
-          endif
-       end if
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperaure range for component ', trim(comp%ident)
+        endif
+      end if
 
     case (CP_HYPOTETIC_MASS) ! Hypotetic components
 
-       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T*1.8+comp%id_cp%cp(3)*(T*1.8)**2
-       Cp_id=Cp_id*4.1868*comp%mw
+      Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T*1.8+comp%id_cp%cp(3)*(T*1.8)**2
+      Cp_id=Cp_id*4.1868*comp%mw
 
     case (CP_POLY3_SI) ! Third degree polynomial (different units)
 
-       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3
-       Cp_id=Cp_id
+      Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3
+      Cp_id=Cp_id
 
     case (CP_ICI_MASS) ! Third degree polynomial + 1/T**2 term
 
-       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3+ &
-            comp%id_cp%cp(5)/(T**2)
-       Cp_id=Cp_id*comp%mw
+      Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T+comp%id_cp%cp(3)*T**2+comp%id_cp%cp(4)*T**3+ &
+           comp%id_cp%cp(5)/(T**2)
+      Cp_id=Cp_id*comp%mw
 
     case (CP_CHEN_BENDER_MASS) ! Fourth degree polynomial
 
-       Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)*T**2 + comp%id_cp%cp(4)*T**3 + &
-            comp%id_cp%cp(5)*T**4
-       Cp_id=Cp_id*comp%mw
+      Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)*T**2 + comp%id_cp%cp(4)*T**3 + &
+           comp%id_cp%cp(5)*T**4
+      Cp_id=Cp_id*comp%mw
 
     case (CP_DIPPR_KMOL) ! DIPPR-database
 
-       Cp_id = comp%id_cp%cp(1)+ &
-            comp%id_cp%cp(2)*(( comp%id_cp%cp(3)/T)/sinh( comp%id_cp%cp(3)/T))**2 +&
-            comp%id_cp%cp(4)*(( comp%id_cp%cp(5)/T)/cosh( comp%id_cp%cp(5)/T))**2
-       Cp_id = 1.0e-3*Cp_id ! J/kmol/K -> J/mol/K
-       TminCp = comp%id_cp%tcpmin
-       TmaxCp = comp%id_cp%tcpmax
+      Cp_id = comp%id_cp%cp(1)+ &
+           comp%id_cp%cp(2)*(( comp%id_cp%cp(3)/T)/sinh( comp%id_cp%cp(3)/T))**2 +&
+           comp%id_cp%cp(4)*(( comp%id_cp%cp(5)/T)/cosh( comp%id_cp%cp(5)/T))**2
+      Cp_id = 1.0e-3*Cp_id ! J/kmol/K -> J/mol/K
+      TminCp = comp%id_cp%tcpmin
+      TmaxCp = comp%id_cp%tcpmax
 
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
-          endif
-       end if
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
+        endif
+      end if
 
     case (CP_POLY4_SI) ! Fourth degree polynomial (different units).
-       Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)*T**2 + comp%id_cp%cp(4)*T**3 + &
-            comp%id_cp%cp(5)*T**4
-       Cp_id=Cp_id*rgas
+      Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)*T**2 + comp%id_cp%cp(4)*T**3 + &
+           comp%id_cp%cp(5)*T**4
+      Cp_id=Cp_id*rgas
 
     case (CP_MOGENSEN_SI) ! Linear function and fraction (J/mol/K).
-       Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)/(T + comp%id_cp%cp(4))
+      Cp_id=comp%id_cp%cp(1) + comp%id_cp%cp(2)*T + comp%id_cp%cp(3)/(T + comp%id_cp%cp(4))
 
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
-       Cp_id = CPideal_H2(comp%ident, T)
+      Cp_id = CPideal_H2(comp%ident, T)
 
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-       call trend_ideal(T,i,Cp=Cp_id)
+      call trend_ideal(T,i,Cp=Cp_id)
 
     end select method_Cp
   end function CPideal
@@ -255,14 +255,14 @@ contains
     ! Locals
     integer :: j
     if (i <= ncsym) then
-       H_id = Hideal(comp(i)%p_comp, i, T)
+      H_id = Hideal(comp(i)%p_comp, i, T)
     else
-       H_id = 0.0
-       do j=ncsym+1,nce
-          if (apparent%v_stoich(i,j) > 0.0) then
-             H_id = H_id + Hideal(comp(j)%p_comp, j, T)*apparent%v_stoich(i,j)
-          endif
-       enddo
+      H_id = 0.0
+      do j=ncsym+1,nce
+        if (apparent%v_stoich(i,j) > 0.0) then
+          H_id = H_id + Hideal(comp(j)%p_comp, j, T)*apparent%v_stoich(i,j)
+        endif
+      enddo
     endif
   end function Hideal_apparent
 
@@ -290,88 +290,88 @@ contains
     method_H: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
 
-       H_id=comp%id_cp%cp(1)*T+0.5*comp%id_cp%cp(2)*T**2+comp%id_cp%cp(3)*T**3/3.0+&
-            0.25*comp%id_cp%cp(4)*T**4
-       H_id=H_id*4.1868+comp%href
+      H_id=comp%id_cp%cp(1)*T+0.5*comp%id_cp%cp(2)*T**2+comp%id_cp%cp(3)*T**3/3.0+&
+           0.25*comp%id_cp%cp(4)*T**4
+      H_id=H_id*4.1868+comp%href
 
     case (CP_API44_MASS) ! API-project 44
 
-       H_id = comp%id_cp%cp(1)+T*(comp%id_cp%cp(2)+T*(comp%id_cp%cp(3)+&
-            T*(comp%id_cp%cp(4)+T*(comp%id_cp%cp(5)+T*comp%id_cp%cp(6)))))
-       H_id = H_id*comp%mw+comp%href
+      H_id = comp%id_cp%cp(1)+T*(comp%id_cp%cp(2)+T*(comp%id_cp%cp(3)+&
+           T*(comp%id_cp%cp(4)+T*(comp%id_cp%cp(5)+T*comp%id_cp%cp(6)))))
+      H_id = H_id*comp%mw+comp%href
 
-       TminCp = comp%id_cp%tcpmin + 273.15
-       TmaxCp = comp%id_cp%tcpmax + 273.15
+      TminCp = comp%id_cp%tcpmin + 273.15
+      TmaxCp = comp%id_cp%tcpmax + 273.15
 
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperaure range for component ', trim(comp%ident)
-          endif
-       end if
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperaure range for component ', trim(comp%ident)
+        endif
+      end if
 
     case (CP_HYPOTETIC_MASS) ! Hypotetic components
 
-       H_id=comp%id_cp%cp(1)*T*1.8+comp%id_cp%cp(2)*(T*1.8)**2/2.0+&
-            comp%id_cp%cp(3)*(T*1.8)**3/3.0
-       H_id=H_id*(4.1868/1.8)*comp%mw+comp%href
+      H_id=comp%id_cp%cp(1)*T*1.8+comp%id_cp%cp(2)*(T*1.8)**2/2.0+&
+           comp%id_cp%cp(3)*(T*1.8)**3/3.0
+      H_id=H_id*(4.1868/1.8)*comp%mw+comp%href
 
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
 
-       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2/2.0+&
-            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0
-       H_id=H_id+comp%href
+      H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2/2.0+&
+           comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0
+      H_id=H_id+comp%href
 
     case (CP_ICI_MASS) ! Third degree polynomial + 1/T**2 term
 
-       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
-            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 - &
-            comp%id_cp%cp(5)/T
-       H_id=H_id*comp%mw+comp%href
+      H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
+           comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 - &
+           comp%id_cp%cp(5)/T
+      H_id=H_id*comp%mw+comp%href
 
     case (CP_CHEN_BENDER_MASS) ! Fourth degree Cp-polynomial
 
-       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
-            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
-            comp%id_cp%cp(5)*T**5/5.0
-       H_id=H_id*comp%mw+comp%href
+      H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
+           comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
+           comp%id_cp%cp(5)*T**5/5.0
+      H_id=H_id*comp%mw+comp%href
 
     case (CP_DIPPR_KMOL) ! DIPPR-database
 
-       H_id = comp%id_cp%cp(1)*T+&
-            (cosh(comp%id_cp%cp(3)/T)*comp%id_cp%cp(3)*comp%id_cp%cp(2))/(sinh(comp%id_cp%cp(3)/T))-&
-            (sinh(comp%id_cp%cp(5)/T)*comp%id_cp%cp(5)*comp%id_cp%cp(4))/(cosh(comp%id_cp%cp(5)/T))
-       H_id=1.0e-3*H_id+comp%href
+      H_id = comp%id_cp%cp(1)*T+&
+           (cosh(comp%id_cp%cp(3)/T)*comp%id_cp%cp(3)*comp%id_cp%cp(2))/(sinh(comp%id_cp%cp(3)/T))-&
+           (sinh(comp%id_cp%cp(5)/T)*comp%id_cp%cp(5)*comp%id_cp%cp(4))/(cosh(comp%id_cp%cp(5)/T))
+      H_id=1.0e-3*H_id+comp%href
 
 
-       TminCp = comp%id_cp%tcpmin
-       TmaxCp = comp%id_cp%tcpmax
+      TminCp = comp%id_cp%tcpmin
+      TmaxCp = comp%id_cp%tcpmax
 
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
-          endif
-       end if
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
+        endif
+      end if
 
     case (CP_POLY4_SI) ! Fourth degree Cp-polynomial (different units)
 
-       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
-            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
-            comp%id_cp%cp(5)*T**5/5.0
-       H_id=H_id*rgas+comp%href
+      H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
+           comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
+           comp%id_cp%cp(5)*T**5/5.0
+      H_id=H_id*rgas+comp%href
 
     case (CP_MOGENSEN_SI) ! Linear function and fraction (J/mol).
-       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
-            comp%id_cp%cp(3)*log(T+comp%id_cp%cp(4))
-       H_id=H_id + comp%href
+      H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
+           comp%id_cp%cp(3)*log(T+comp%id_cp%cp(4))
+      H_id=H_id + comp%href
 
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
-       H_id = Hideal_H2 (comp%ident, T) + comp%href
+      H_id = Hideal_H2 (comp%ident, T) + comp%href
 
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-       call trend_ideal(T,i,h=H_id)
-       H_id = H_id
+      call trend_ideal(T,i,h=H_id)
+      H_id = H_id
 
-     end select method_H
+    end select method_H
   end function Hideal
 
   !---------------------------------------------------------------------- >
@@ -400,84 +400,84 @@ contains
 
     method_S: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T + &
-            comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3.0/3.0
-       S_id = S_id*4.1868
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T + &
+           comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3.0/3.0
+      S_id = S_id*4.1868
+      S_id = S_id + comp%sref
     case (CP_API44_MASS) ! API-project 44
-       S_id = comp%id_cp%cp(2)*log(T)+2.0*comp%id_cp%cp(3)*T+&
-            3.0/2.0*comp%id_cp%cp(4)*T**2+4.0/3.0*comp%id_cp%cp(5)*T**3+&
-            5.0/4.0*comp%id_cp%cp(6)*T**4
-       S_id = S_id*comp%mw
-       S_id = S_id + comp%sref
-       TminCp = comp%id_cp%tcpmin + 273.15
-       TmaxCp = comp%id_cp%tcpmax + 273.15
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
-          endif
-       end if
+      S_id = comp%id_cp%cp(2)*log(T)+2.0*comp%id_cp%cp(3)*T+&
+           3.0/2.0*comp%id_cp%cp(4)*T**2+4.0/3.0*comp%id_cp%cp(5)*T**3+&
+           5.0/4.0*comp%id_cp%cp(6)*T**4
+      S_id = S_id*comp%mw
+      S_id = S_id + comp%sref
+      TminCp = comp%id_cp%tcpmin + 273.15
+      TmaxCp = comp%id_cp%tcpmax + 273.15
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
+        endif
+      end if
     case (CP_HYPOTETIC_MASS) ! Hypotetic components
-       S_id = comp%id_cp%cp(1)*log(T*1.8)+comp%id_cp%cp(2)*T*1.8 +&
-            comp%id_cp%cp(3)*(T*1.8)**2/2.0
-       S_id = S_id*(4.1868)*comp%mw
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T*1.8)+comp%id_cp%cp(2)*T*1.8 +&
+           comp%id_cp%cp(3)*(T*1.8)**2/2.0
+      S_id = S_id*(4.1868)*comp%mw
+      S_id = S_id + comp%sref
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
-            comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3/3.0
-       S_id = S_id
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
+           comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3/3.0
+      S_id = S_id
+      S_id = S_id + comp%sref
     case (CP_ICI_MASS) ! Third degree polynomial + 1/T**2 term
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T +&
-            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0-&
-            comp%id_cp%cp(5)/(2.0*T**2)
-       S_id = S_id*comp%mw
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T +&
+           comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0-&
+           comp%id_cp%cp(5)/(2.0*T**2)
+      S_id = S_id*comp%mw
+      S_id = S_id + comp%sref
     case (CP_CHEN_BENDER_MASS) ! Fourth degree Cp-polynomial
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
-            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
-            comp%id_cp%cp(5)*T**4/4.0
-       S_id = S_id*comp%mw
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
+           comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
+           comp%id_cp%cp(5)*T**4/4.0
+      S_id = S_id*comp%mw
+      S_id = S_id + comp%sref
 
-     case (CP_DIPPR_KMOL) ! DIPPR-database
-       S_id = comp%id_cp%cp(1)*log(T)+2*comp%id_cp%cp(3)/T*comp%id_cp%cp(2)+&
-            2*comp%id_cp%cp(3)/T*comp%id_cp%cp(2)/(exp(comp%id_cp%cp(3)/T)**2-1)-&
-            comp%id_cp%cp(2)*log(exp(comp%id_cp%cp(3)/T)**2-1)-&
-            2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)+2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)/&
-            (exp(comp%id_cp%cp(5)/T)**2+1)+comp%id_cp%cp(4)*log(exp(comp%id_cp%cp(5)/T)**2+1)
-       S_id = 1.0e-3*S_id + comp%sref
+    case (CP_DIPPR_KMOL) ! DIPPR-database
+      S_id = comp%id_cp%cp(1)*log(T)+2*comp%id_cp%cp(3)/T*comp%id_cp%cp(2)+&
+           2*comp%id_cp%cp(3)/T*comp%id_cp%cp(2)/(exp(comp%id_cp%cp(3)/T)**2-1)-&
+           comp%id_cp%cp(2)*log(exp(comp%id_cp%cp(3)/T)**2-1)-&
+           2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)+2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)/&
+           (exp(comp%id_cp%cp(5)/T)**2+1)+comp%id_cp%cp(4)*log(exp(comp%id_cp%cp(5)/T)**2+1)
+      S_id = 1.0e-3*S_id + comp%sref
 
-       TminCp = comp%id_cp%tcpmin
-       TmaxCp = comp%id_cp%tcpmax
+      TminCp = comp%id_cp%tcpmin
+      TmaxCp = comp%id_cp%tcpmax
 
-       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
-          if (verbose) then
-             write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
-          endif
-       end if
+      if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
+        if (verbose) then
+          write(*,*) 'Ideal gas Cp-polynomial out of temperature range for component ', trim(comp%ident)
+        endif
+      end if
     case (CP_POLY4_SI) ! Fourth degree Cp-polynomial (different units)
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
-            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
-            comp%id_cp%cp(5)*T**4/4.0
-       S_id = S_id*rgas
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
+           comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
+           comp%id_cp%cp(5)*T**4/4.0
+      S_id = S_id*rgas
+      S_id = S_id + comp%sref
 
     case (CP_MOGENSEN_SI) ! Linear function and fraction (J/mol/K).
-       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T
-       if (comp%id_cp%cp(4) == 0.0) then
-          S_id = S_id-comp%id_cp%cp(3)/T
-       else
-          S_id = S_id+(comp%id_cp%cp(3)/comp%id_cp%cp(4))*(log(T)-log(T+comp%id_cp%cp(4)))
-       endif
-       S_id = S_id + comp%sref
+      S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T
+      if (comp%id_cp%cp(4) == 0.0) then
+        S_id = S_id-comp%id_cp%cp(3)/T
+      else
+        S_id = S_id+(comp%id_cp%cp(3)/comp%id_cp%cp(4))*(log(T)-log(T+comp%id_cp%cp(4)))
+      endif
+      S_id = S_id + comp%sref
 
     case (CP_H2_KMOL) !   ! Leachman (NIST) and Valenti expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
-       S_id = sideal_H2 (comp%ident, T) + comp%sref  ! + rgas * log(rho*T/ rho0*T0)
+      S_id = sideal_H2 (comp%ident, T) + comp%sref  ! + rgas * log(rho*T/ rho0*T0)
 
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-       call trend_ideal(T,i,s=S_id)
-       S_id = S_id
+      call trend_ideal(T,i,s=S_id)
+      S_id = S_id
     end select method_S
   end function Sideal_T
 
@@ -513,20 +513,20 @@ contains
     z = n/sumn
     sn = 0.0
     do i=1,nc
-       if(abs(z(i)) .LT. logCutOff) then
-          logZi = log(logCutOff)
-       else
-          logZi = log(z(i))
-       end if
-       sn = sn - rgas*n(i)*logZi
-       if(present(dsdn)) then  ! composition derivative
-          dsdn(i)=-rgas*(logZi + logp)
-       end if
+      if(abs(z(i)) .LT. logCutOff) then
+        logZi = log(logCutOff)
+      else
+        logZi = log(z(i))
+      end if
+      sn = sn - rgas*n(i)*logZi
+      if(present(dsdn)) then  ! composition derivative
+        dsdn(i)=-rgas*(logZi + logp)
+      end if
     end do
     s = -sumn*rgas*logp + sn
 
     if (present(dsdP)) then
-       dsdP = -sumn*rgas/P
+      dsdP = -sumn*rgas/P
     endif
 
   end subroutine Sideal_Pn
@@ -567,46 +567,46 @@ contains
     sv = log(V/(rgas*T))
     sn = 0.0
     do i=1,nc
-       if(abs(n(i)) .LT. logCutOff) then
-          logni = log(logCutOff)
-       else
-          logni = log(n(i))
-       end if
-       sn = sn - n(i)*logni
-       if(present(dsdn)) then  ! composition derivative
-          dsdn(i) = rgas*(sv - 1.0 - logni)
-       end if
-       if(present(d2sdn2)) then  ! second composition derivative
-          if (n(i) > 0.0) then
-             d2sdn2(i) = - rgas/n(i)
-          else
-             d2sdn2(i) = 0.0
-          endif
-       end if
+      if(abs(n(i)) .LT. logCutOff) then
+        logni = log(logCutOff)
+      else
+        logni = log(n(i))
+      end if
+      sn = sn - n(i)*logni
+      if(present(dsdn)) then  ! composition derivative
+        dsdn(i) = rgas*(sv - 1.0 - logni)
+      end if
+      if(present(d2sdn2)) then  ! second composition derivative
+        if (n(i) > 0.0) then
+          d2sdn2(i) = - rgas/n(i)
+        else
+          d2sdn2(i) = 0.0
+        endif
+      end if
     end do
     ! Add volume and composition contribution
     s = rgas*(sumn*sv + sn)
     if(present(dsdt)) then
-       dsdt = -sumn*rgas/T
+      dsdt = -sumn*rgas/T
     end if
     if(present(d2sdt2)) then
-       d2sdt2 = sumn*rgas/T**2
+      d2sdt2 = sumn*rgas/T**2
     end if
 
     if(present(dsdv)) then
-       dsdv = sumn*rgas/V
+      dsdv = sumn*rgas/V
     end if
 
     if(present(d2sdv2)) then
-       d2sdv2 = -sumn*rgas/V**2
+      d2sdv2 = -sumn*rgas/V**2
     end if
 
     if(present(d2sdndv)) then
-       d2sdndv = rgas/V
+      d2sdndv = rgas/V
     end if
 
     if(present(d2sdndT)) then
-       d2sdndT = -rgas/T
+      d2sdndT = -rgas/T
     end if
   end subroutine Sideal_Vn
 
@@ -633,7 +633,7 @@ contains
     Cpid_mix=0.0
 
     do i=1,nc
-       Cpid_mix=Cpid_mix+Z(i)*CPideal(comp(i)%p_comp,i,T)
+      Cpid_mix=Cpid_mix+Z(i)*CPideal(comp(i)%p_comp,i,T)
     end do
   end function CPideal_mix
 
@@ -668,19 +668,19 @@ contains
     H_ideal_mix=0.0
 
     do i=1,nc
-       h=Hideal(comp(i)%p_comp,i,T)
-       H_ideal_mix=H_ideal_mix+h*Z(i)
-       if(present(dhdz_ideal_mix)) then  ! composition derivative
-          dhdz_ideal_mix(i)=h
-       end if
+      h=Hideal(comp(i)%p_comp,i,T)
+      H_ideal_mix=H_ideal_mix+h*Z(i)
+      if(present(dhdz_ideal_mix)) then  ! composition derivative
+        dhdz_ideal_mix(i)=h
+      end if
     end do
 
     if(present(dhdt_ideal_mix)) then
-       dhdt_ideal_mix=Cpideal_mix(nc,comp,T,Z)
+      dhdt_ideal_mix=Cpideal_mix(nc,comp,T,Z)
     end if
 
     if(present(dhdp_ideal_mix)) then
-       dhdp_ideal_mix=0.0
+      dhdp_ideal_mix=0.0
     end if
 
   end subroutine Hideal_mix
@@ -717,15 +717,15 @@ contains
     call Sideal_Pn(nc, z, P, S_ideal_mix, dsdp_ideal_mix, dsdz_ideal_mix)
 
     do i=1,nc
-       s = Sideal_T(comp(i)%p_comp, i, T)
-       S_ideal_mix = S_ideal_mix + Z(i)*s
-       if(present(dsdz_ideal_mix)) then  ! composition derivative
-          dsdz_ideal_mix(i) = dsdz_ideal_mix(i) + s
-       end if
+      s = Sideal_T(comp(i)%p_comp, i, T)
+      S_ideal_mix = S_ideal_mix + Z(i)*s
+      if(present(dsdz_ideal_mix)) then  ! composition derivative
+        dsdz_ideal_mix(i) = dsdz_ideal_mix(i) + s
+      end if
     end do
 
     if(present(dsdt_ideal_mix)) then
-       dsdt_ideal_mix = Cpideal_mix(nc,comp,T,Z)/T
+      dsdt_ideal_mix = Cpideal_mix(nc,comp,T,Z)/T
     end if
 
   end subroutine TP_Sideal_mix
@@ -757,28 +757,28 @@ contains
     integer :: j
     real :: z(nce)
     if (i <= ncsym) then
-       z = 0.0
-       z(i) = 1.0
-       call TP_Sideal_mix(nce, comp, T, P, Z, S_ideal_mix, &
-            dsdt_ideal_mix, dsdp_ideal_mix)
+      z = 0.0
+      z(i) = 1.0
+      call TP_Sideal_mix(nce, comp, T, P, Z, S_ideal_mix, &
+           dsdt_ideal_mix, dsdp_ideal_mix)
     else
-       ! Calculate apparent component ideal entropy
-       S_ideal_mix = 0.0
-       if (present(dsdt_ideal_mix)) then
-          dsdt_ideal_mix = 0.0
-        endif
-       do j=ncsym+1,nce
-          if (apparent%v_stoich(i,j) > 0.0) then
-             S_ideal_mix = S_ideal_mix + apparent%v_stoich(i,j)*Sideal_T(comp(j)%p_comp, j, T)
-             if (present(dsdt_ideal_mix)) then
-                dsdt_ideal_mix = dsdt_ideal_mix + apparent%v_stoich(i,j)*Cpideal(comp(j)%p_comp,j,T)/T
-             endif
+      ! Calculate apparent component ideal entropy
+      S_ideal_mix = 0.0
+      if (present(dsdt_ideal_mix)) then
+        dsdt_ideal_mix = 0.0
+      endif
+      do j=ncsym+1,nce
+        if (apparent%v_stoich(i,j) > 0.0) then
+          S_ideal_mix = S_ideal_mix + apparent%v_stoich(i,j)*Sideal_T(comp(j)%p_comp, j, T)
+          if (present(dsdt_ideal_mix)) then
+            dsdt_ideal_mix = dsdt_ideal_mix + apparent%v_stoich(i,j)*Cpideal(comp(j)%p_comp,j,T)/T
           endif
-       enddo
-       S_ideal_mix = S_ideal_mix - apparent%v_sum(i)*rgas*log(p)
-       if (present(dsdp_ideal_mix)) then
-          dsdp_ideal_mix = - apparent%v_sum(i)*rgas/P
-       endif
+        endif
+      enddo
+      S_ideal_mix = S_ideal_mix - apparent%v_sum(i)*rgas*log(p)
+      if (present(dsdp_ideal_mix)) then
+        dsdp_ideal_mix = - apparent%v_sum(i)*rgas/P
+      endif
     endif
   end subroutine TP_Sideal_apparent
 
@@ -815,15 +815,15 @@ contains
     call Sideal_Vn(nc, Z, T, V, S_ideal_mix, dsdT=dsdt_ideal_mix, &
          dsdV=dsdv_ideal_mix, dsdn=dsdz_ideal_mix)
     do i = 1,nc
-       s = Sideal_T(comp(i)%p_comp, i, T)
-       S_ideal_mix = S_ideal_mix + Z(i)*s
-       if(present(dsdz_ideal_mix)) then  ! composition derivative
-          dsdz_ideal_mix(i) = dsdz_ideal_mix(i) + s
-       end if
+      s = Sideal_T(comp(i)%p_comp, i, T)
+      S_ideal_mix = S_ideal_mix + Z(i)*s
+      if(present(dsdz_ideal_mix)) then  ! composition derivative
+        dsdz_ideal_mix(i) = dsdz_ideal_mix(i) + s
+      end if
     end do
 
     if(present(dsdt_ideal_mix)) then
-       dsdt_ideal_mix = dsdt_ideal_mix + Cpideal_mix(nc,comp,T,Z)/T
+      dsdt_ideal_mix = dsdt_ideal_mix + Cpideal_mix(nc,comp,T,Z)/T
     end if
 
   end subroutine TV_Sideal_mix
@@ -872,16 +872,16 @@ contains
     Y_ideal_mix = H_ideal_mix - T*S_ideal_mix - sumz*T*rgas
 
     if(present(dYdt_ideal_mix)) then
-       dYdt_ideal_mix = dhdt_ideal_mix - S_ideal_mix &
-            - sumz*rgas - T*dsdt_ideal_mix
+      dYdt_ideal_mix = dhdt_ideal_mix - S_ideal_mix &
+           - sumz*rgas - T*dsdt_ideal_mix
     end if
 
     if(present(dYdv_ideal_mix)) then
-       dYdv_ideal_mix = -T*dsdv_ideal_mix
+      dYdv_ideal_mix = -T*dsdv_ideal_mix
     end if
 
     if (present(dYdz_ideal_mix)) then
-       dYdz_ideal_mix = dhdz_ideal_mix - T*dsdz_ideal_mix - T*rgas
+      dYdz_ideal_mix = dhdz_ideal_mix - T*dsdz_ideal_mix - T*rgas
     end if
 
   end subroutine TV_Yideal_mix
@@ -928,47 +928,47 @@ contains
          d2sdT2=s_TT)
 
     do i = 1,nc
-       s_i = Sideal_T(comp(i)%p_comp, i, T)
-       s = s + n(i)*s_i
-       s_n(i) = s_n(i) + s_i
+      s_i = Sideal_T(comp(i)%p_comp, i, T)
+      s = s + n(i)*s_i
+      s_n(i) = s_n(i) + s_i
     end do
 
     if(present(Fid)) then
-       sumn = sum(n)
-       Fid = h/(T*rgas) - s/rgas - sumn
+      sumn = sum(n)
+      Fid = h/(T*rgas) - s/rgas - sumn
     endif
     if(present(Fid_T)) then
-       Fid_T = - h/(T**2*rgas) - s_T/rgas
+      Fid_T = - h/(T**2*rgas) - s_T/rgas
     end if
     if(present(Fid_TT)) then
-       Fid_TT = (2.0*h/T - h_T)/(T**2*rgas) - s_TT/rgas
+      Fid_TT = (2.0*h/T - h_T)/(T**2*rgas) - s_TT/rgas
     end if
     if(present(Fid_v)) then
-       Fid_v = -s_v/rgas
-       Fid_v = Fid_v
+      Fid_v = -s_v/rgas
+      Fid_v = Fid_v
     end if
     if(present(Fid_vv)) then
-       Fid_vv = -s_vv/rgas
-       Fid_vv = Fid_vv
+      Fid_vv = -s_vv/rgas
+      Fid_vv = Fid_vv
     end if
     if(present(Fid_Tv)) then
-       Fid_Tv = 0.0
+      Fid_Tv = 0.0
     end if
     if (present(Fid_n)) then
-       Fid_n = h_n/(T*rgas) - s_n/rgas - 1.0
+      Fid_n = h_n/(T*rgas) - s_n/rgas - 1.0
     end if
     if (present(Fid_nn)) then
-       Fid_nn = 0.0
-       do i = 1, nc
-          Fid_nn(i, i) = -s_nn(i)/rgas
-       end do
+      Fid_nn = 0.0
+      do i = 1, nc
+        Fid_nn(i, i) = -s_nn(i)/rgas
+      end do
     end if
     if (present(Fid_Tn)) then
-       Fid_Tn = - h_n/(T**2*rgas) - s_Tn/rgas
+      Fid_Tn = - h_n/(T**2*rgas) - s_Tn/rgas
     end if
     if (present(Fid_vn)) then
-       Fid_vn = -s_vn/rgas
-       Fid_vn = Fid_vn
+      Fid_vn = -s_vn/rgas
+      Fid_vn = Fid_vn
     end if
 
   end subroutine Fideal_mix_SI
