@@ -187,4 +187,15 @@ submodule (compdata) comp_init
     index = compIndex(complist, compName)
   end function comp_index_active
 
+  module subroutine comp_name_active(index, comp_name)
+    use thermopack_var, only: get_active_comps
+    implicit none
+    integer, intent(in) :: index
+    character(len=*), intent(out) :: comp_name
+    !
+    type(gendata_pointer), pointer :: p_comps(:)
+    p_comps => get_active_comps()
+    comp_name = trim(p_comps(index)%p_comp%name)
+  end subroutine
+
 end submodule comp_init

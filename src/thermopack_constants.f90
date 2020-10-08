@@ -49,6 +49,8 @@ module thermopack_constants
   !> String lengths
   integer, parameter :: uid_len = 20
   integer, parameter :: ref_len = 40
+  integer, parameter :: comp_name_len = 40
+  integer, parameter :: formula_len = 20
   integer, parameter :: bibref_len = 40
   integer, parameter :: eosid_len = 20
   integer, parameter :: mix_len = 20

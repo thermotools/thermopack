@@ -36,7 +36,8 @@
 !! \endverbatim
 !!
 module compdata
-  use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen
+  use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen, &
+       comp_name_len, formula_len
   implicit none
   save
   public
@@ -88,8 +89,8 @@ module compdata
 
   type :: gendatadb
     character (len=uid_len) :: ident !< The component ID
-    character (len=12) :: formula !< Chemical formula
-    character (len=40) :: name !< The component name
+    character (len=formula_len) :: formula !< Chemical formula
+    character (len=comp_name_len) :: name !< The component name
     real :: mw !< Mole weight[g/mol]
     real :: tc !< Critical temperature [K]
     real :: pc !< Critical pressure [Pa]
@@ -139,12 +140,19 @@ module compdata
     end function comp_index_active
   end interface
 
+  interface
+    module subroutine comp_name_active(index, comp_name)
+      integer, intent(in) :: index
+      character(len=*), intent(out) :: comp_name
+    end subroutine
+  end interface
+
   type gendata_pointer
     class(gendata), pointer :: p_comp => NULL()
   end type gendata_pointer
 
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
-  public :: getComp, compIndex, copy_comp, comp_index_active
+  public :: getComp, compIndex, copy_comp, comp_index_active, comp_name_active
   public :: parseCompVector, initCompList, deallocate_comp
 
 contains
