@@ -38,8 +38,8 @@ s_l, = tc_pr.entropy(T, P, x, tc_pr.LIQPH)
 s_g, = tc_pr.entropy(T, P, y, tc_pr.VAPPH)
 s = s_g*beta_g + s_l*beta_l
 
-h_l, = tc_pr.entropy(T, P, x, tc_pr.LIQPH)
-h_g, = tc_pr.entropy(T, P, y, tc_pr.VAPPH)
+h_l, = tc_pr.enthalpy(T, P, x, tc_pr.LIQPH)
+h_g, = tc_pr.enthalpy(T, P, y, tc_pr.VAPPH)
 h = h_g*beta_g + h_l*beta_l
 
 v_l, = tc_pr.specific_volume(T, P, x, tc_pr.LIQPH)
