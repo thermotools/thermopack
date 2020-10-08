@@ -17,13 +17,11 @@ srk.init("C1,C2,C3", "SRK")
 srk.set_tmin(50.0)
 
 print("Rgas = {} (J/K/mol)".format(srk.Rgas))
-mw = np.zeros((3))
+mw = np.zeros((srk.nc))
 for i in(range(len(mw))):
     mw[i] = srk.compmoleweight(i+1)*1.0e-3 # g/mol -> kg/mol
-
-print("Molar weight methane: {} (kg/mol)".format(mw[0]))
-print("Molar weight ethane: {} (kg/mol)".format(mw[1]))
-print("Molar weight propane: {} (kg/mol)".format(mw[2]))
+    comp_name = srk.get_comp_name(i+1).lower()
+    print("Molar weight {}: {} (kg/mol)".format(comp_name, mw[i]))
 
 z = np.array([0.85, 0.1, 0.05])
 mw_z = np.matmul(z, mw)
