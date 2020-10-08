@@ -110,8 +110,9 @@ class thermopack(object):
         #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
         self.s_sos_sound_velocity_2ph = getattr(self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
 
-        # Parameters
-        self.s_parameters_compindex = getattr(self.tp, self.get_export_name("compdata", "comp_index_active"))
+        # Component info
+        self.s_compdata_compindex = getattr(self.tp, self.get_export_name("compdata", "comp_index_active"))
+        self.s_compdata_compname = getattr(self.tp, self.get_export_name("compdata", "comp_name_active"))
 
         # Flashes
         self.s_set_ph_tolerance = getattr(self.tp, self.get_export_name("ph_solver", "setphtolerance"))
@@ -389,10 +390,29 @@ class thermopack(object):
         """
         comp_c = c_char_p(comp.encode('ascii'))
         comp_len = c_len_type(len(comp))
-        self.s_parameters_compindex.argtypes = [c_char_p, c_len_type]
-        self.s_parameters_compindex.restype = c_int
-        idx = self.s_parameters_compindex(comp_c, comp_len)
+        self.s_compdata_compindex.argtypes = [c_char_p, c_len_type]
+        self.s_compdata_compindex.restype = c_int
+        idx = self.s_compdata_compindex(comp_c, comp_len)
         return idx
+
+    def get_comp_name(self, index):
+        """Get component name
+
+        Args:
+            int: Component FORTRAN index
+
+        Returns:
+            comp (str): Component name
+        """
+        comp_len = 40
+        comp_c = c_char_p(b" " * comp_len)
+        comp_len_c = c_len_type(comp_len)
+        index_c = c_int(index)
+        self.s_compdata_compname.argtypes = [POINTER(c_int), c_char_p, c_len_type]
+        self.s_compdata_compname.restype = None
+        self.s_compdata_compname(byref(index_c), comp_c, comp_len_c)
+        compname = comp_c.value.decode('ascii').strip()
+        return compname
 
     def compmoleweight(self, comp):
         """Get component mole weight (g/mol)
