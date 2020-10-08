@@ -19,7 +19,7 @@ Thermopack source code can be compiled with the [GNU Fortran compiler](https://g
 ### Initial setup
 The Thermopack source code is downloaded by cloning the library to your local
 computer. The following commands assume that you have a local installation of
-[GIT](https://git-scm.com/), gfortran and python3. To compile using Intel
+[GIT](https://git-scm.com/), gfortran and Python 3. To compile using Intel
 FORTRAN, use make optim_ifort.
 
 ```bash
