@@ -74,6 +74,7 @@ libthermopack {
 	  *_idealenthalpysingle;
 	  *_sound_velocity_2ph;
 	  *_comp_index_active;
+	  *_comp_name_active;
 	  *_setphtolerance;
 	  *_twophasetpflash;
 	  *_twophasepsflash;
