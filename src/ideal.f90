@@ -184,7 +184,7 @@ contains
     case (CP_HYPOTETIC_MASS) ! Hypotetic components
 
        Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*T*1.8+comp%id_cp%cp(3)*(T*1.8)**2
-       Cp_id=Cp_id*4.1868E03*comp%mw
+       Cp_id=Cp_id*4.1868*comp%mw
 
     case (CP_POLY3_SI) ! Third degree polynomial (different units)
 
@@ -208,7 +208,7 @@ contains
        Cp_id = comp%id_cp%cp(1)+ &
             comp%id_cp%cp(2)*(( comp%id_cp%cp(3)/T)/sinh( comp%id_cp%cp(3)/T))**2 +&
             comp%id_cp%cp(4)*(( comp%id_cp%cp(5)/T)/cosh( comp%id_cp%cp(5)/T))**2
-
+       Cp_id = 1.0e-3*Cp_id ! J/kmol/K -> J/mol/K
        TminCp = comp%id_cp%tcpmin
        TmaxCp = comp%id_cp%tcpmax
 
@@ -313,7 +313,7 @@ contains
 
        H_id=comp%id_cp%cp(1)*T*1.8+comp%id_cp%cp(2)*(T*1.8)**2/2.0+&
             comp%id_cp%cp(3)*(T*1.8)**3/3.0
-       H_id=H_id*(4.1868E03/1.8)*comp%mw+comp%href
+       H_id=H_id*(4.1868/1.8)*comp%mw+comp%href
 
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
 
@@ -340,7 +340,7 @@ contains
        H_id = comp%id_cp%cp(1)*T+&
             (cosh(comp%id_cp%cp(3)/T)*comp%id_cp%cp(3)*comp%id_cp%cp(2))/(sinh(comp%id_cp%cp(3)/T))-&
             (sinh(comp%id_cp%cp(5)/T)*comp%id_cp%cp(5)*comp%id_cp%cp(4))/(cosh(comp%id_cp%cp(5)/T))
-       H_id=H_id+comp%href
+       H_id=1.0e-3*H_id+comp%href
 
 
        TminCp = comp%id_cp%tcpmin
@@ -420,7 +420,7 @@ contains
     case (CP_HYPOTETIC_MASS) ! Hypotetic components
        S_id = comp%id_cp%cp(1)*log(T*1.8)+comp%id_cp%cp(2)*T*1.8 +&
             comp%id_cp%cp(3)*(T*1.8)**2/2.0
-       S_id = S_id*(4.1868E03)*comp%mw
+       S_id = S_id*(4.1868)*comp%mw
        S_id = S_id + comp%sref
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
        S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
@@ -446,7 +446,7 @@ contains
             comp%id_cp%cp(2)*log(exp(comp%id_cp%cp(3)/T)**2-1)-&
             2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)+2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)/&
             (exp(comp%id_cp%cp(5)/T)**2+1)+comp%id_cp%cp(4)*log(exp(comp%id_cp%cp(5)/T)**2+1)
-       S_id = S_id + comp%sref
+       S_id = 1.0e-3*S_id + comp%sref
 
        TminCp = comp%id_cp%tcpmin
        TmaxCp = comp%id_cp%tcpmax

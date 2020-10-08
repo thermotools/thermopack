@@ -143,7 +143,7 @@ contains
       dhdp_ideal_mix=0.0
       dhdz_ideal_mix=0.0
     else
-       call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, dhdz_ideal_mix)
+      call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, dhdz_ideal_mix)
     endif
 
     select type ( p_eos => cbeos )

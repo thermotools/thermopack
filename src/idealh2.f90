@@ -151,7 +151,7 @@ contains
     real, intent(in) :: T ! Temperature [K]
 
     real :: vr, expvr,cp0
-    real :: CP_Id ! J / kmol K
+    real :: CP_Id ! J / mol K
     integer :: idx,k, kstp
 
     !integer :: geth2index
@@ -174,7 +174,7 @@ contains
        expvr = exp(vr)
        cp0 = cp0 + uk(idx,k) * vr*vr * expvr /((expvr-1)*(expvr-1))
     enddo
-    CP_id = 1000 * cp0 * rgas ! J/mol K -> J/kmol K
+    CP_id = cp0 * rgas ! J/mol K
 
   end function CPIdeal_H2
 
@@ -186,7 +186,7 @@ contains
     real, intent(in) :: T ! Temperature [K]
 
     real :: vr,expvr,h0
-    real :: H_Id ! J /kmol
+    real :: H_Id ! J/mol
     integer :: idx,k, kstp
 
 !    integer :: geth2index
@@ -204,7 +204,7 @@ contains
        expvr = exp(vr)
        h0 =  h0 + uk(idx,k) * vk(idx,k)/(expvr-1)
     enddo
-    H_id = 1000.0 * h0_ref(idx)+1000.0 * h0 * rgas !  J/mol -> J/kmol
+    H_id = h0_ref(idx)+1000.0 * h0 * rgas !  J/mol
   end function HIdeal_H2
 
   function SIdeal_H2 (ident, T) result (s_id)
@@ -214,7 +214,7 @@ contains
     real, intent(in) :: T ! Temperature [K]
 
     real :: vr,expvr,s0
-    real :: S_Id ! J/ kmol K
+    real :: S_Id ! J/ mol K
     integer :: idx,k, kstp
 
 !    integer :: geth2index
@@ -232,7 +232,7 @@ contains
        expvr = exp(vr)
        s0 = s0 + uk(idx,k) * (vr * expvr / (expvr-1)  -  log(expvr-1)) ! Without the reference volume term ...
     enddo
-    s_id = 1000.0 * s0_ref(idx)+1000.0 * rgas * s0 ! log(v*T/(v0*T0))! J/mol K -> J/kmol K
+    s_id = s0_ref(idx)+1000.0 * rgas * s0 ! log(v*T/(v0*T0))! J/mol K
     ! .. in calling procedure: need to add the term: rgas*ln( (t*rho) / t0*rho0))
   end function SIdeal_H2
 
