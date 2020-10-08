@@ -1,7 +1,7 @@
 module test_critical
   use eoslibinit, only: init_thermo
   use critical, only: calcCritical, calcCriticalTV
-  use parameters, only: VAPPH
+  use thermopack_constants, only: VAPPH
   use eosTV, only: pressure
   use pfunit_mod
   implicit none
@@ -16,8 +16,7 @@ contains
     real :: p, T, v, tol
     integer :: ierr
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2,&
-         "CO2,N2", 2)
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,N2", 2)
 
     z = [0.8, &
          0.2]
@@ -49,7 +48,7 @@ contains
     real :: p, T, v, tol
     integer :: ierr
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 5,&
+    call init_thermo('PR', 'vdW', 'Classic',&
          "CO2,H2,N2,O2,C1", 2)
 
     z = [0.9103,&
@@ -63,8 +62,8 @@ contains
 
     call calcCritical(t,p,Z,VAPPH,ierr)
     @assertTrue(ierr == 0)
-    @assertEqual(298.06410414442928, T, 1e-06)
-    @assertEqual(86.085396202597171e5 , p, 1e-01)
+    @assertEqual(298.06403290820242, T, 1e-06)
+    @assertEqual(8608562.1947590690 , p, 1e-01)
 
     T = -1.0
     v = -1.0
@@ -72,9 +71,9 @@ contains
     call calcCriticalTV(t,v,Z,ierr,tol)
     @assertTrue(ierr == 0)
     p = pressure(T,v,Z)
-    @assertEqual(9.7353991443E-005, v, 1e-10)
-    @assertEqual(298.064104, T, 5e-06)
-    @assertEqual(8608539.7, p, 1.0)
+    @assertEqual(9.7353925540043384E-005, v, 1e-10)
+    @assertEqual(298.06404227591383, T, 1e-05)
+    @assertEqual(8608562.1708822846, p, 1.0)
 
   end subroutine test_critical_point_mix
 
@@ -85,8 +84,8 @@ contains
     real :: p, T, v, tol
     integer :: ierr
 
-    call init_thermo('Thermopack', 'PC-SAFT', 'vdW', 'Classic', 1,&
-         "CO2", 2,saft_setno=(/1/))
+    call init_thermo('PC-SAFT', 'vdW', 'Classic',&
+         "CO2", 2,saft_ref="DEFAULT")
     zs = 1.0
     T = -1.0
     v = -1.0

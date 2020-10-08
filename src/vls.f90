@@ -2,7 +2,8 @@
 !!
 !! \author MH, 2016-06.
 module vls
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc, nph
   use solideos
   use eos
   !
@@ -41,7 +42,7 @@ contains
   subroutine vlsThermo(t,p,z,phase,lnfug,lnfugt,lnfugp,lnfugx,ophase,metaExtremum)
     use eos, only: thermo
     use solideos, only: solid_thermo
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     ! Transferred variables
     integer, intent(in)                               :: phase !< Phase identifyer
     integer, optional, intent(out)                    :: ophase !< Phase identifyer for MINGIBBSPH
@@ -93,7 +94,7 @@ contains
   subroutine vlsSpecificVolume(t,p,z,phase,v,dvdt,dvdp,dvdx)
     use eos, only: specificVolume
     use solideos, only: solid_specificVolume
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     ! Transferred variables
     integer, intent(in) :: phase !< Phase identifyer
     real, intent(in) :: t !< K - Temperature
@@ -130,7 +131,7 @@ contains
   subroutine vlsEnthalpy(t,p,z,phase,h,dhdt,dhdp,dhdx)
     use eos, only: enthalpy
     use solideos, only: solid_enthalpy
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     ! Transferred variables
     integer, intent(in) :: phase !< Phase identifyer
     real, intent(in) :: t !< K - Temperature
@@ -167,7 +168,7 @@ contains
   subroutine vlsEntropy(t,p,z,phase,s,dsdt,dsdp,dsdx)
     use eos, only: entropy
     use solideos, only: solid_entropy
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     ! Transferred variables
     integer, intent(in) :: phase !< Phase identifyer
     real, intent(in) :: t !< K - Temperature
@@ -203,7 +204,7 @@ contains
   !--------------------------------------------------------------------------
   function mpEntropy(nd,t,p,beta,xx,phase) result(s)
     use eos, only: entropy
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     use solideos, only: solid_entropy
     implicit none
     ! Transferred variables
@@ -237,7 +238,7 @@ contains
   !--------------------------------------------------------------------------
   function mpEnthalpy(nd,t,p,beta,xx,phase) result(h)
     use eos, only: enthalpy
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     use solideos, only: solid_enthalpy
     implicit none
     ! Transferred variables
@@ -271,7 +272,7 @@ contains
   !--------------------------------------------------------------------------
   function mpSpecificVolume(nd,t,p,beta,xx,phase) result(v)
     use eos, only: specificVolume
-    use parameters, only: SOLIDPH
+    use thermopack_constants, only: SOLIDPH
     use solideos, only: solid_specificVolume
     implicit none
     ! Transferred variables

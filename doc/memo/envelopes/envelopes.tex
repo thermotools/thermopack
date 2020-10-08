@@ -1,4 +1,4 @@
-\documentclass[internal,english]{sintefmemo2012}
+\documentclass[english]{../thermomemo/thermomemo}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{array}% improves tabular environment.
@@ -16,7 +16,13 @@
 \usepackage{mhchem}
 \usepackage{siunitx}
 %
-% Egendefinerte
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
 %
 % Kolonnetyper for array.sty:
 \newcolumntype{C}{>{$}c<{$}}
@@ -152,9 +158,6 @@
 
 \title{Phase envelope modelling}
 \author{Morten Hammer}
-\project{502000339-5 BIGCCS Task 2.1}
-
-\recipient[information]{Thermopack users}
 
 \graphicspath{{gfx/}}
 
@@ -414,8 +417,8 @@ Applying the same rule to pure \ce{CO2}, no degree of freedom is seen
 for the three-phase region, giving a triple point in
 temperature-pressure space.
 
-\clearpage
-\bibliographystyle{plain}
-\bibliography{../thermopack}
+% \clearpage
+% \bibliographystyle{plain}
+% \bibliography{../thermopack}
 
 \end{document}

@@ -7,8 +7,8 @@
 module state_functions
   !
   !
-  use tpconst
-  use parameters
+  use thermopack_var, only: nc
+  use thermopack_constants
   use eos
   use numconstants, only: almost_zero, machine_prec
   implicit none

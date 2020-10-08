@@ -5,6 +5,7 @@ from sys import exit
 import os
 import math
 import json
+from datetime import datetime
 
 I = "  "
 N_TAGS_PER_LINE = 5
@@ -78,14 +79,14 @@ class binaries(object):
             ge.append(gei)
         if len(ge) == 2:
             ge.append("0.0")
-        code_lines.append(3*I + "polyij = (/" + ge[0] + ge[1] + ge[2] + "/), &")
+        code_lines.append(3*I + "polyij = (/" + ge[0] + ", " + ge[1] + ", " + ge[2] + "/), &")
         ge = []
         for numbers in self.bins[tag]["polyji"]:
             gei = '{:.8e}'.format(numbers)
             ge.append(gei)
         if len(ge) == 2:
             ge.append("0.0")
-        code_lines.append(3*I + "polyji = (/" + ge[0] + ge[1] + ge[2] + "/) &")
+        code_lines.append(3*I + "polyji = (/" + ge[0] + ", " + ge[1] + ", " + ge[2] + "/) &")
         code_lines.append(3*I + ")")
         code_lines.append("")
         return code_lines
@@ -135,6 +136,18 @@ class binary_list(object):
         Arguments:
         filename - path to folder
         """
+        header = []
+        header.append("!> Automatically generated to file mixdatadb.f90")
+        header.append("!! using utility python code pyUtils")
+        now = datetime.today().isoformat()
+        header.append("!! Time stamp: " + now)
+        header.append("")
+        header.append("module mixdatadb")
+        header.append(I+"use cubic_eos, only: kijdatadb, interGEdatadb")
+        header.append(I+"implicit none")
+        header.append(I+"public")
+        header.append("")
+
         self.nVDW = 1
         self.nGE = 1
         code_lines_vdW = []
@@ -153,7 +166,7 @@ class binary_list(object):
         self.nGE -= 1
 
         # Combine lists
-        code_lines = code_lines_vdW + code_lines_GE
+        code_lines = header + code_lines_vdW + code_lines_GE
 
         cl = self.get_VDW_array_fortran_code()
         for line in cl:
@@ -162,6 +175,9 @@ class binary_list(object):
         cl = self.get_GE_array_fortran_code()
         for line in cl:
             code_lines.append(line)
+
+        code_lines.append("")
+        code_lines.append("end module mixdatadb")
 
         with open(filename, "w") as f:
             for line in code_lines:

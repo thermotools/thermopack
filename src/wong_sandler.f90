@@ -4,7 +4,7 @@
 !!
 !! See: Wong, D. S. H. and Sandler, S. I. (1992).
 !! "A theoretically correct mixing rule for cubic equations of state".
-!! AIChE Journal 38: 671–680. doi: 10.1002/aic.690380505.
+!! AIChE Journal 38: 671-680. doi: 10.1002/aic.690380505.
 !!
 !! Equation reference in this module is to appendix equations A1 etc. of the
 !! Wong-Sandler paper.
@@ -83,12 +83,12 @@ contains
 
   !-------------------------------------------
   subroutine WongSandlerMix(cbeos, T, zcomp)
-    use parameters, only : nc
-    use eosdata, only : eoscubic
-    use tpconst, only: kRgas
+    use thermopack_var, only : nc
+    use cubic_eos, only : cb_eos
+    use thermopack_constants, only: kRgas
     use excess_gibbs, only: gEinf, getInfinitLimitC, GetFraction
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T, zcomp(nc)
     ! Local variables:
     integer ::i,j, k
@@ -103,7 +103,7 @@ contains
    ! Variables
     !  Used(f)      df/dt,      df/dni   Variable
     !  zSum         0.0           1.0       sum(zComp) is genrally not 1
-    !  aa(i)        aat(i)        0.0       a_i=0.46*(RT)²/Pc* Alpha
+    !  aa(i)        aat(i)        0.0       a_i=0.46*(RT)�/Pc* Alpha
     !  bb(i)        0.0           0.0       b_i
     !  rr(i)        rrt(i)        0.0       b_i - a_i/(R*T)
     !  kWS(i,j)     kWSt(i,j)     0.0       kij: Binary parameter

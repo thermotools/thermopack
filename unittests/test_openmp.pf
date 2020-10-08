@@ -1,0 +1,307 @@
+module test_openmp
+  !> Test that the OpenMP yields the same results as non-parallel execution
+  use eoslibinit, only: init_cubic, silent_init, init_cpa, init_saftvrmie, &
+       init_pcsaft, init_extcsp, init_lee_kesler, init_multiparameter
+  use pfunit_mod
+  implicit none
+  public
+
+  logical :: VERBOSE = .False.
+
+contains
+
+  @Test
+  subroutine test_openmp_cubic()
+    integer, parameter :: ncomp = 3
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="CO2,N2,C1"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_cubic(trim(compstr),trim(eos))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_cubic
+
+  @Test
+  subroutine test_openmp_csp()
+    integer, parameter :: ncomp = 3
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="SRK"
+    character(len=*), parameter :: compstr="CO2,N2,C1"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 230.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_extcsp(trim(compstr),trim(eos),"vdW","Classic","NIST_MEOS","C3")
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_csp
+
+  @Test
+  subroutine test_openmp_pc_saft()
+    integer, parameter :: ncomp = 2
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="PC-SAFT"
+    character(len=*), parameter :: compstr="CO2,H2O"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.7,0.3]
+    P0 = 1.0e6
+    T0 = 230.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_pcsaft(trim(compstr))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_pc_saft
+
+  @Test
+  subroutine test_openmp_cpa()
+    integer, parameter :: ncomp = 2
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="SRK"
+    character(len=*), parameter :: compstr="CO2,H2O"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.1,0.9]
+    P0 = 1.0e6
+    T0 = 230.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_cpa(trim(compstr), trim(eos))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_cpa
+
+  @Test
+  subroutine test_openmp_saftvrmie()
+    integer, parameter :: ncomp = 3
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="SAFT-VR-MIE"
+    character(len=*), parameter :: compstr="C1,C2,C3"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.5,0.2,0.3]
+    P0 = 1.0e6
+    T0 = 120.0
+    P1 = 1.0e7
+    T1 = 250.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_saftvrmie(trim(compstr))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_saftvrmie
+
+  @Test
+  subroutine test_openmp_leekesler()
+    integer, parameter :: ncomp = 6
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="SAFT-VR-MIE"
+    character(len=*), parameter :: compstr="C1,C2,C3,CO2,H2O,H2S"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.05,0.05,0.05,0.75,0.05,0.05]
+    P0 = 1.0e6
+    T0 = 200.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_lee_kesler(trim(compstr))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_leekesler
+
+  @Test
+  subroutine test_openmp_nist()
+    integer, parameter :: ncomp = 1
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="NIST_MEOS"
+    character(len=*), parameter :: compstr="C3"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [1.0]
+    P0 = 1.0e6
+    T0 = 200.0
+    P1 = 6.0e6
+    T1 = 350.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_multiparameter(trim(compstr),trim(eos))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_nist
+
+  @Test
+  subroutine test_openmp_mbwr32()
+    integer, parameter :: ncomp = 1
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="MBWR32"
+    character(len=*), parameter :: compstr="C3"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [1.0]
+    P0 = 1.0e6
+    T0 = 200.0
+    P1 = 6.0e6
+    T1 = 350.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_multiparameter(trim(compstr),trim(eos))
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_mbwr32
+
+  @Test
+  subroutine test_openmp_unifac()
+    integer, parameter :: ncomp = 2
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="ACETONE,NC5"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.047,0.953]
+    P0 = 1.0e6
+    T0 = 250.0
+    P1 = 1.0e7
+    T1 = 350.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_cubic(trim(compstr),trim(eos), mixing="UNIFAC")
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_unifac
+
+  @Test
+  subroutine test_openmp_hv()
+    integer, parameter :: ncomp = 3
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="CO2,H2O,MEG"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.7,0.15,0.15]
+    P0 = 1.0e6
+    T0 = 250.0
+    P1 = 1.0e7
+    T1 = 350.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_cubic(trim(compstr),trim(eos), mixing="HV1")
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_hv
+
+  @Test
+  subroutine test_openmp_WS()
+    integer, parameter :: ncomp = 2
+    integer, parameter :: ngrid = 5
+    character(len=*), parameter :: eos="PR"
+    character(len=*), parameter :: compstr="CO2,AR"
+    real :: T0, P0, z0(ncomp), T1, P1
+    z0 = [0.85,0.15]
+    P0 = 1.0e6
+    T0 = 250.0
+    P1 = 1.0e7
+    T1 = 300.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    silent_init = .true.
+    call init_cubic(trim(compstr),trim(eos), mixing="WS")
+    call test_openmp_specificvolume(ngrid,z0,T0,P0,T1,P1)
+    call test_openmp_tp_flash(ngrid,z0,T0,P0,T1,P1)
+  end subroutine test_openmp_WS
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! The following routines are model-independent
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine test_openmp_specificvolume(ngrid,z,T0,P0,T1,P1)
+    use eos, only: specificvolume
+    use thermopack_constants, only: LIQPH, VAPPH
+    integer, intent(in) :: ngrid
+    real, intent(in) :: T0, P0, T1, P1
+    real, dimension(:), intent(in) :: z
+    !
+    real, parameter :: rel_tol = 1.0e-10
+    integer :: i, j, ii, jj
+    real :: T, P
+    real, dimension(ngrid,ngrid) :: v_res_vapph, v_res_liqph
+    real, dimension(ngrid,ngrid) :: v_res_vapph_p, v_res_liqph_p
+
+    do i=1,ngrid
+      T = T0 + (T1-T0)*real(i - 1)/real(ngrid - 1)
+      do j=1,ngrid
+        P = P0 + (P1-P0)*real(j - 1)/real(ngrid - 1)
+        call specificvolume(T,p,z,LIQPH,v_res_liqph(i,j))
+        call specificvolume(T,p,z,VAPPH,v_res_vapph(i,j))
+      enddo
+    enddo
+
+    !$omp parallel do private(ii,jj,T,P)
+    do i=0,ngrid*ngrid-1
+      ii = i/ngrid + 1
+      jj = mod(i, ngrid) + 1
+      T = T0 + (T1-T0)*real(ii - 1)/real(ngrid - 1)
+      P = P0 + (P1-P0)*real(jj - 1)/real(ngrid - 1)
+      call specificvolume(T,p,z,LIQPH,v_res_liqph_p(ii,jj))
+      call specificvolume(T,p,z,VAPPH,v_res_vapph_p(ii,jj))
+    enddo
+
+    do i=1,ngrid
+      do j=1,ngrid
+        @assertEqual(v_res_vapph_p(i,j),v_res_vapph(i,j),rel_tol*v_res_vapph(i,j))
+        @assertEqual(v_res_liqph_p(i,j),v_res_liqph(i,j),rel_tol*v_res_liqph(i,j))
+      enddo
+    enddo
+
+  end subroutine test_openmp_specificvolume
+
+  subroutine test_openmp_tp_flash(ngrid,z,T0,P0,T1,P1)
+    use tp_solver, only: twoPhaseTPflash
+    integer, intent(in) :: ngrid
+    real, intent(in) :: T0, P0, T1, P1
+    real, dimension(:), intent(in) :: z
+    !
+    real, parameter :: rel_tol = 1.0e-10
+    integer :: i, j, ii, jj, phase
+    real :: T, P
+    real, dimension(ngrid,ngrid) :: beta_res
+    real, dimension(ngrid,ngrid) :: beta_res_p
+    real :: beta,betaL,X(size(z)),Y(size(z))
+    do i=1,ngrid
+      T = T0 + (T1-T0)*real(i - 1)/real(ngrid - 1)
+      do j=1,ngrid
+        P = P0 + (P1-P0)*real(j - 1)/real(ngrid - 1)
+        call twoPhaseTPflash(t,p,z,beta,betaL,phase,X,Y)
+        beta_res(i,j) = beta
+      enddo
+    enddo
+
+    !$omp parallel do private(ii,jj,T,P,beta,betaL,X,Y,phase)
+    do i=0,ngrid*ngrid-1
+      ii = i/ngrid + 1
+      jj = mod(i, ngrid) + 1
+      T = T0 + (T1-T0)*real(ii - 1)/real(ngrid - 1)
+      P = P0 + (P1-P0)*real(jj - 1)/real(ngrid - 1)
+      call twoPhaseTPflash(t,p,z,beta,betaL,phase,X,Y)
+      beta_res_p(ii,jj) = beta
+    enddo
+
+    do i=1,ngrid
+      do j=1,ngrid
+        @assertEqual(beta_res_p(i,j),beta_res(i,j),rel_tol*beta_res(i,j))
+      enddo
+    enddo
+
+  end subroutine test_openmp_tp_flash
+
+end module test_openmp

@@ -6,9 +6,8 @@
 !-----------------------------------------------------------------------------
 
 module multiparameter_idealmix
-  use parameters
-  use compdata, only: gendata
-  use eosdata, only: eoscubic
+  use thermopack_constants
+  use eos_parameters, only: meos_mix
 
   public :: calc_multiparameter_idealmix_zfac
   public :: calc_multiparameter_idealmix_entropy
@@ -40,11 +39,11 @@ contains
   !!
   !! Author: OW, date: 2018-10-02
   !> --------------------------------------------------------------------------
-  subroutine calc_multiparameter_idealmix_zfac(nc, cbeos, T, P, Z, phase, &
+  subroutine calc_multiparameter_idealmix_zfac(nc, meos, T, P, Z, phase, &
        Zfac, dZdt, dZdp, dZdz)
 
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(meos_mix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -80,7 +79,7 @@ contains
 
     !< Loop through and compute quantities
     do iz=1,nc
-       call cbeos%nist(iz)%meos%calc_zfac(T,P,(/1.0/),phase, Zfac_comp, &
+       call meos%nist(iz)%meos%calc_zfac(T,P,(/1.0/),phase, Zfac_comp, &
            dZdt_comp, dZdp_comp, dZdz_comp)
 
       Zfac=Zfac+Zfac_comp*Z(iz)
@@ -113,11 +112,11 @@ contains
   !!
   !! Author: OW, date: 2018-10-02
   !> --------------------------------------------------------------------------
-  subroutine calc_multiparameter_idealmix_enthalpy(nc, cbeos, T, P, Z, phase, &
+  subroutine calc_multiparameter_idealmix_enthalpy(nc, meos, T, P, Z, phase, &
        h, dhdt, dhdp, dhdz)
 
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(meos_mix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -157,7 +156,7 @@ contains
 
     !< Loop through and compute quantities
     do iz=1,nc
-       call cbeos%nist(iz)%meos%calc_enthalpy(T, P, (/1.0/),phase, h_comp, &
+       call meos%nist(iz)%meos%calc_enthalpy(T, P, (/1.0/),phase, h_comp, &
            dhdt_comp, dhdp_comp, dhdz_comp, residual=residual)
 
       h=h+h_comp*Z(iz)
@@ -191,11 +190,11 @@ contains
   !!
   !! Author: OW, date: 2018-10-09
   !> --------------------------------------------------------------------------
-    subroutine calc_multiparameter_idealmix_entropy(nc, cbeos, T, P, Z, phase, &
+    subroutine calc_multiparameter_idealmix_entropy(nc, meos, T, P, Z, phase, &
        s, dsdt, dsdp, dsdz)
 
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(meos_mix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -235,7 +234,7 @@ contains
 
     !< Loop through and compute quantities
     do iz=1,nc
-       call cbeos%nist(iz)%meos%calc_entropy(T, P, (/1.0/),phase, s_comp, &
+       call meos%nist(iz)%meos%calc_entropy(T, P, (/1.0/),phase, s_comp, &
            dsdt_comp, dsdp_comp, dsdz_comp, residual=residual)
 
       s=s+s_comp*Z(iz)
@@ -268,11 +267,11 @@ contains
   !!
   !! Author: OW, date: 2018-10-09
   !> --------------------------------------------------------------------------
-  subroutine calc_multiparameter_idealmix_fugacity(nc, cbeos, T, p, Z, phase, &
+  subroutine calc_multiparameter_idealmix_fugacity(nc, meos, T, p, Z, phase, &
        fug,dlnfdt,dlnfdp,dlnfdz)
 
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(meos_mix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -305,7 +304,7 @@ contains
     end if
 
     do iz=1,nc
-       call cbeos%nist(iz)%meos%calc_lnphi(T, P, (/1.0/),phase, &
+       call meos%nist(iz)%meos%calc_lnphi(T, P, (/1.0/),phase, &
            lnphi, lnphi_t, lnphi_p, lnphi_n)
 
       fug(iz)=exp(lnphi(1))
@@ -336,11 +335,11 @@ contains
   !!
   !! Author: OW, date: 2018-10-09
   !> --------------------------------------------------------------------------
-  subroutine calc_multiparameter_idealmix_Gres(nc, cbeos, T, P, Z, phase, &
+  subroutine calc_multiparameter_idealmix_Gres(nc, meos, T, P, Z, phase, &
        gr, dgrdt, dgrdp)
 
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cbeos
+    class(meos_mix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -371,7 +370,7 @@ contains
 
     !< Loop through and compute quantities
     do iz=1,nc
-      call cbeos%nist(iz)%meos%calc_resgibbs(T, P, (/1.0/), phase, gr_comp, &
+      call meos%nist(iz)%meos%calc_resgibbs(T, P, (/1.0/), phase, gr_comp, &
            dgrdt_comp, dgrdp_comp)
 
       gr=gr+gr_comp*Z(iz)

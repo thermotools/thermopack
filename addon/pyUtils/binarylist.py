@@ -7,4 +7,4 @@ import os
 
 
 binl = binary_list()
-binl.save_fortran_file("bin.f90")
+binl.save_fortran_file("mixdatadb.f90")

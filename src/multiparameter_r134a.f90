@@ -52,13 +52,16 @@ module multiparameter_r134a
      procedure, public :: satDeltaEstimate => satDeltaEstimate_r134a
      procedure, public :: init => init_r134a
 
+     ! Assignment operator
+     procedure, pass(This), public :: assign_meos => assign_meos_r134a
+
   end type meos_r134a
 
 contains
 
-  subroutine init_r134a (this)
+  subroutine init_r134a (this, use_Rgas_fit)
     class(meos_r134a) :: this
-
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%compName = "R134A"
     this%tc = 374.21  !< (K)
@@ -74,6 +77,12 @@ contains
 
     this%maxT = 455.0 ! (T)
     this%maxP = 70.0e6 ! (Pa)
+
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
 
   end subroutine init_r134a
 
@@ -141,7 +150,7 @@ contains
   end subroutine alphaResDerivs_r134a
 
   function satDeltaEstimate_r134a (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     class(meos_r134a) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase
@@ -159,5 +168,17 @@ contains
     end if
 
   end function satDeltaEstimate_r134a
+
+  subroutine assign_meos_r134a(this,other)
+    class(meos_r134a), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos_r134a)
+      call this%assign_meos_base(other)
+    class default
+      call stoperror("assign_meos_r134a: Should not be here....")
+    end select
+  end subroutine assign_meos_r134a
 
 end module multiparameter_r134a

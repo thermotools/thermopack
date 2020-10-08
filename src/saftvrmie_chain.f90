@@ -6,10 +6,10 @@
 
 module saftvrmie_chain
   use saftvrmie_containers, only: saftvrmie_zeta, saftvrmie_dhs, &
-       saftvrmie_aij, saftvrmie_var, saftvrmie_param, init_saftvrmie_containers, &
+       saftvrmie_aij, saftvrmie_param, init_saftvrmie_containers, &
        saftvrmie_param_container, saftvrmie_var_container, allocate_saftvrmie_zeta, &
        cleanup_saftvrmie_zeta
-  use tpconst, only: N_AVOGADRO
+  use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: pi, machine_prec
   use saftvrmie_dispersion, only: calcA1Sutherland, calcBTilde, &
        calcXDifferentials, calcXDifferentialsPureHSRef
@@ -133,18 +133,18 @@ contains
        ach_VV = sum(n*(saftvrmie_param%ms-1.0)*((g_V/g)**2-g_VV/g))/nsum
     endif
     if (present(ach_TV)) then
-       ach_TV = sum(n*(saftvrmie_param%ms-1.0)*(g_V*g_T/g**2-g_TV/g))/nsum
+       ach_TV = sum(n*(saftvrmie_param%ms-1.0)*((g_V/g)*(g_T/g)-g_TV/g))/nsum
     endif
     if (present(ach_Tn)) then
        do k=1,nc
-          temp_sum = sum(n*(saftvrmie_param%ms-1.0)*(g_n(k,:)*g_T/g**2-g_Tn(k,:)/g))
+          temp_sum = sum(n*(saftvrmie_param%ms-1.0)*((g_n(k,:)/g)*(g_T/g)-g_Tn(k,:)/g))
           ach_Tn(k) = (-(saftvrmie_param%ms(k)-1.0)*g_T(k)/g(k) + &
                temp_sum - factor*ach_T_l)/nsum
        enddo
     endif
     if (present(ach_Vn)) then
        do k=1,nc
-          temp_sum = sum(n*(saftvrmie_param%ms-1.0)*(g_n(k,:)*g_V/g**2-g_Vn(k,:)/g))
+          temp_sum = sum(n*(saftvrmie_param%ms-1.0)*((g_n(k,:)/g)*(g_V/g)-g_Vn(k,:)/g))
           ach_Vn(k) = (-(saftvrmie_param%ms(k)-1.0)*g_V(k)/g(k) + &
                temp_sum - factor*ach_V_l)/nsum
        enddo
@@ -152,7 +152,7 @@ contains
     if (present(ach_nn)) then
        do k=1,nc
           do l=1,nc
-             temp_sum = sum(n*(saftvrmie_param%ms-1.0)*(g_n(k,:)*g_n(l,:)/g**2 - g_nn(k,l,:)/g))
+             temp_sum = sum(n*(saftvrmie_param%ms-1.0)*((g_n(k,:)/g)*(g_n(l,:)/g) - g_nn(k,l,:)/g))
              ach_nn(k,l) = (-(saftvrmie_param%ms(k)-1.0)*g_n(l,k)/g(k) &
                   -(saftvrmie_param%ms(l)-1.0)*g_n(k,l)/g(l) &
                   + temp_sum - factor*ach_n_l(l) &
@@ -168,6 +168,7 @@ contains
   subroutine rdf_at_contact(nc,T,V,n,saftvrmie_vc,&
        g,g_T,g_V,g_n,g_TT,g_VV,g_TV,g_Tn,g_Vn,g_nn,&
        order)
+    use numconstants, only: expMax
     ! Input
     integer, intent(in) :: nc !< Number of components
     real, intent(in) :: T !< Temperature [K]
@@ -194,6 +195,7 @@ contains
     real, dimension(nc,nc) :: w_n,w_Tn,w_Vn
     real, dimension(nc,nc,nc) :: w_nn
     real, dimension(nc) :: beta_eps
+    real, parameter :: w_lim = 0.9*expMax
     integer :: i,k,l,difflevel
     logical :: no_correction
     no_correction = .false.
@@ -230,8 +232,8 @@ contains
        call rdf_at_contact_zeroth_order_TVn(nc,T,V,n,saftvrmie_vc,gd)
        call rdf_at_contact_first_order_TVn(nc,T,V,n,saftvrmie_vc,g1)
        call rdf_at_contact_second_order_TVn(nc,T,V,n,saftvrmie_vc,no_correction,g2)
-    endif
-    w = (beta_eps*g1 + beta_eps**2*g2)/gd
+     endif
+     w = (beta_eps*g1 + beta_eps**2*g2)/gd
     if (difflevel > 0) then
        w_T = (-w*gd_T + beta_eps*(-g1/T + g1_T) + beta_eps**2*(-2.0*g2/T + g2_T))/gd
        w_V = (-w*gd_V + beta_eps*g1_V + beta_eps**2*g2_V)/gd
@@ -277,8 +279,10 @@ contains
           enddo
        endif
     endif
-
-    g = gd*exp(w)
+    do i=1,nc
+      w(i) = min(max(-w_lim,w(i)),w_lim)
+      g(i) = gd(i)*exp(w(i))
+    enddo
     if (present(g_V)) then
        g_V = g*(gd_V/gd+w_V)
     endif
@@ -806,7 +810,7 @@ contains
           else
              call calcG22MCA_TVn(nc,T,V,n,i,saftvrmie_vc,g22)
              call calcG21_if(nc,T,V,n,i,saftvrmie_vc,g(i))
-          endif
+           endif
           ! Add g21 and g22
           g(i) = g(i) + g22
           if (present(g_TT)) then

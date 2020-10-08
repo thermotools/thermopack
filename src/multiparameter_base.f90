@@ -6,8 +6,8 @@
 !> alpha = A/(nRT)
 module multiparameter_base
   use numconstants, only: machine_prec
-  use parameters, only: LIQPH, VAPPH
-  use tpconst, only: Rgas_default
+  use thermopack_constants, only: LIQPH, VAPPH
+  use thermopack_constants, only: Rgas_default
   implicit none
   save
   public
@@ -16,22 +16,21 @@ module multiparameter_base
   real, parameter :: releps_p = machine_prec*1e8
   real, parameter :: releps_rho = machine_prec*1e6
 
-  ! When a MEoS is used with Thermopack, Rgas_meos must have the same value as
-  ! in Thermopack. When a MEoS is used on its own, one should set
-  ! Rgas_meos=meos%Rgas_fit. This is because different multiparameter EoS use
-  ! slightly different values of the gas constant.
-  real :: Rgas_meos = Rgas_default
-
   !> Base class for multiparameter equations of state
   type, abstract :: meos
-     private
-
      !> Parameters in SI units. These are set in the deferred init routine.
      character(LEN=20), public :: compName
      real, public :: tc, pc, rc
      real, public :: t_triple, p_triple, rhoLiq_triple, rhoVap_triple
      real, public :: molarMass !< (kg/mol)
      real, public :: maxT, maxP !< (K), (Pa)
+
+
+     ! When a MEoS is used with Thermopack, Rgas_meos must have the same value as
+     ! in Thermopack. When a MEoS is used on its own, one should set
+     ! Rgas_meos=meos%Rgas_fit. This is because different multiparameter EoS use
+     ! slightly different values of the gas constant.
+     real, public :: Rgas_meos = Rgas_default
      real, public :: Rgas_fit ! Rgas used when the equation was fitted (J/(mol*K))
    contains
 
@@ -59,12 +58,27 @@ module multiparameter_base
      procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
      procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
 
+     procedure, public :: assign_meos_base
+     ! Assignment operator
+     procedure(assign_meos_intf), deferred, pass(This), public :: assign_meos
+     generic, public :: assignment(=) => assign_meos
+
   end type meos
 
   abstract interface
-     subroutine init_intf (this)
+    subroutine assign_meos_intf(This, other)
+      import meos
+      ! Passed object:
+      class(meos), intent(inout) :: This
+      class(*), intent(in) :: other
+    end subroutine assign_meos_intf
+  end interface
+
+  abstract interface
+     subroutine init_intf (this, use_Rgas_fit)
        import meos
        class(meos) :: this
+       logical, optional, intent(in) :: use_Rgas_fit
      end subroutine init_intf
   end interface
 
@@ -98,6 +112,11 @@ module multiparameter_base
      end subroutine alpha0Derivs_intf
   end interface
 
+  ! Allow array of pointers to NIST meos
+  type :: nist_meos_ptr
+    class(meos), pointer :: meos
+  end type nist_meos_ptr
+
 contains
 
   !> Isochoric heat capacity
@@ -115,7 +134,7 @@ contains
     call this%alphaResDerivs_taudelta(delta, tau, alpr)
     call this%alpha0Derivs_taudelta(delta, tau, alp0)
 
-    cv = -Rgas_meos * (alp0(0,2) + alpr(0,2))
+    cv = -this%Rgas_meos * (alp0(0,2) + alpr(0,2))
 
   end function cv
 
@@ -136,7 +155,7 @@ contains
     call this%alphaResDerivs_taudelta(delta, tau, alpr)
     call this%alpha0Derivs_taudelta(delta, tau, alp0)
 
-    cp = this%cv(T,v) + Rgas_meos* ( 1+alpr(1,0)-alpr(1,1) )**2/( 1+2*alpr(1,0)+alpr(2,0) )
+    cp = this%cv(T,v) + this%Rgas_meos* ( 1+alpr(1,0)-alpr(1,1) )**2/( 1+2*alpr(1,0)+alpr(2,0) )
 
   end function cp
 
@@ -159,7 +178,7 @@ contains
 
     adim_temp = 1 + 2*alpr(1,0) + alpr(2,0) - ( 1 + alpr(1,0) - alpr(1,1) )**2/( alp0(0,2) + alpr(0,2))
 
-    speed_of_sound = sqrt(adim_temp*Rgas_meos*T/this%molarMass)
+    speed_of_sound = sqrt(adim_temp*this%Rgas_meos*T/this%molarMass)
 
   end function speed_of_sound
 
@@ -196,16 +215,16 @@ contains
     ! Necessary alpha-derivatives
     call this%densitySolver(t, p, phase, rho, phase_found)
     v = 1/rho
-    Z = p/(rho*Rgas_meos*T)
+    Z = p/(rho*this%Rgas_meos*T)
 
     if (present(Z_t) .or. present(Z_p)) then
        call this%alphaResDerivs_Tv(t, v, alpr,alpr_T,alpr_v,alpr_TT,alpr_Tv,alpr_vv)
 
-       dPdV = -Rgas_meos*T*(alpr_VV + 1/V**2)
+       dPdV = -this%Rgas_meos*T*(alpr_VV + 1/V**2)
     end if
 
     if (present(Z_t)) then
-       dPdT = P/T - Rgas_meos*T*alpr_TV
+       dPdT = P/T - this%Rgas_meos*T*alpr_TV
        dVdT = -dPdT/dPdV
        Z_t = -Z*(1.0/T - dVdT/V)
     end if
@@ -246,22 +265,22 @@ contains
     ! Necessary alpha-derivatives
     call this%densitySolver(t, p, phase, rho, phase_found)
     V = sumn/rho
-    zfac = p/(rho*Rgas_meos*T)
+    zfac = p/(rho*this%Rgas_meos*T)
 
     call this%calc_F(T, V, n, F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
 
     lnphi = F_n - log(zfac)
-    dPdV = -Rgas_meos*T*(F_VV + sumn/V**2)
-    dPdn = Rgas_meos*T*(-F_Vn(1) + 1/V)
+    dPdV = -this%Rgas_meos*T*(F_VV + sumn/V**2)
+    dPdn = this%Rgas_meos*T*(-F_Vn(1) + 1/V)
     dVdn = -dPdn/dPdV
 
     if (present(lnphi_t)) then
-       dPdT = P/T-Rgas_meos*T*F_TV
-       lnphi_t = F_Tn + (1 - dVdn*dPdT/Rgas_meos)/T
+       dPdT = P/T-this%Rgas_meos*T*F_TV
+       lnphi_t = F_Tn + (1 - dVdn*dPdT/this%Rgas_meos)/T
     endif
 
     if (present(lnphi_p)) then
-       lnphi_p = dVdn/(Rgas_meos*T)-1/P
+       lnphi_p = dVdn/(this%Rgas_meos*T)-1/P
     endif
 
     if (present(lnphi_n)) then
@@ -297,24 +316,24 @@ contains
 
     call this%densitySolver(t, p, phase, rho, phase_found)
     V = sumn/rho
-    zfac = p/(rho*Rgas_meos*T)
+    zfac = p/(rho*this%Rgas_meos*T)
     call this%alphaDerivs_Tv(t, 1.0/rho, alp, alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual=residual)
-    dPdV = -Rgas_meos*T*(alp_vv)/sumn
-    if (res_loc) dPdV = dPdV -Rgas_meos*T*sumn/V**2
-    dPdT = P/T-Rgas_Meos*T*alp_TV
+    dPdV = -this%Rgas_meos*T*(alp_vv)/sumn
+    if (res_loc) dPdV = dPdV -this%Rgas_meos*T*sumn/V**2
+    dPdT = P/T-This%Rgas_Meos*T*alp_TV
     dVdT = -dPdT/dPdV
 
-    S = -sumn*Rgas_meos*(alp + t*alp_t)
-    if (res_loc) S = S + sumn*Rgas_meos*log(zfac)
+    S = -sumn*this%Rgas_meos*(alp + t*alp_t)
+    if (res_loc) S = S + sumn*this%Rgas_meos*log(zfac)
 
     if (present(S_t)) then
-       S_t = dVdt*dPdt - sumn*Rgas_Meos*(2*alp_T + T*alp_TT)
-       if (res_loc) S_t = S_t - sumn*Rgas_meos/T
+       S_t = dVdt*dPdt - sumn*This%Rgas_Meos*(2*alp_T + T*alp_TT)
+       if (res_loc) S_t = S_t - sumn*this%Rgas_meos/T
     endif
 
     if (present(S_p)) then
        S_p = -dVdT
-       if (res_loc) S_p = S_p + sumn*Rgas_Meos/P
+       if (res_loc) S_p = S_p + sumn*This%Rgas_Meos/P
     endif
 
     if (present(S_n)) then
@@ -353,17 +372,17 @@ contains
     V = sumn/rho
 
     call this%alphaDerivs_Tv(t, v/sumn, alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual=residual)
-    dPdV = -Rgas_meos*T*(alp_vv)/sumn
-    if (res_loc) dPdV = dPdV -Rgas_meos*T*sumn/V**2
-    dPdT = P/T-Rgas_Meos*T*alp_TV
+    dPdV = -this%Rgas_meos*T*(alp_vv)/sumn
+    if (res_loc) dPdV = dPdV -this%Rgas_meos*T*sumn/V**2
+    dPdT = P/T-This%Rgas_Meos*T*alp_TV
     dVdT = -dPdT/dPdV
 
-    H = -sumn*Rgas_Meos*T*T*alp_T + P*V
-    if (res_loc) h = h-sumn*Rgas_meos*T
+    H = -sumn*This%Rgas_Meos*T*T*alp_T + P*V
+    if (res_loc) h = h-sumn*this%Rgas_meos*T
 
     if (present(h_t)) then
-       h_t = T*(dVdT*dPdT - sumn*Rgas_Meos*(2*alp_T + T*alp_TT + 1/T))
-       if (.not. res_loc) h_t = h_t + sumn*Rgas_meos
+       h_t = T*(dVdT*dPdT - sumn*This%Rgas_Meos*(2*alp_T + T*alp_TT + 1/T))
+       if (.not. res_loc) h_t = h_t + sumn*this%Rgas_meos
     endif
 
     if (present(h_p)) then
@@ -430,22 +449,22 @@ contains
     ! Necessary alpha-derivatives
     call this%densitySolver(t, p, phase, rho, phase_found)
     V = sumn/rho
-    zfac = p/(rho*Rgas_meos*T)
+    zfac = p/(rho*this%Rgas_meos*T)
 
     call this%calc_F(T, V, n, F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
 
-    G = Rgas_meos*T*F + P*V - sumn*Rgas_meos*T*(1+log(zFac))
+    G = this%Rgas_meos*T*F + P*V - sumn*this%Rgas_meos*T*(1+log(zFac))
 
     if (present(G_P)) then
        G_p = V*(1-1/zFac)
     endif
 
     if (present(G_T)) then
-       dPdV = -Rgas_meos*T*(F_VV + sumn/V**2)
-       dPdT = P/T-Rgas_meos*T*F_TV
+       dPdV = -this%Rgas_meos*T*(F_VV + sumn/V**2)
+       dPdT = P/T-this%Rgas_meos*T*F_TV
        dVdT = -dPdT/dPdV
-       G_T =  Rgas_meos*(F + T*F_T - sumn*log(zfac)) &
-            + (P-P/zfac+Rgas_meos*T*F_V)*dVdT
+       G_T =  this%Rgas_meos*(F + T*F_T - sumn*log(zfac)) &
+            + (P-P/zfac+this%Rgas_meos*T*F_V)*dVdT
     end if
 
     if (present(G_n)) then
@@ -561,7 +580,7 @@ contains
   end subroutine alphaIdDerivs_Tv
 
   subroutine densitySolver(this, T_spec, p_spec, phase_spec, rho, phase_found)
-    use parameters
+    use thermopack_constants
     class(meos) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec !< Temperature (K) and pressure (Pa)
     integer, intent(in) :: phase_spec !< Phase flag.
@@ -646,12 +665,12 @@ contains
 
       if ( t_spec > this%tc ) then ! Supercritical fluid. Start at ideal gas density.
          curvatureSign = 0
-         rho = p_spec/(T_spec*Rgas_meos)
+         rho = p_spec/(T_spec*this%Rgas_meos)
          call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
 
       else if( currentPhase == VAPPH) then ! Subcritical vapor. Start at ideal gas density.
          curvatureSign = -1
-         rho = p_spec/(T_spec*Rgas_meos)
+         rho = p_spec/(T_spec*this%Rgas_meos)
          call this%mp_pressure(rho, T_spec, p, p_rho=dpdrho)
       else ! Subcritical liquid. Start at saturated liquid density, with five percent margin.
          curvatureSign = 1
@@ -703,21 +722,37 @@ contains
     tau = this%tc/T
 
     call this%alphaResDerivs_taudelta(delta,tau,alpr)
-    p = rho*Rgas_meos*T*(1+alpr(1,0))
+    p = rho*this%Rgas_meos*T*(1+alpr(1,0))
 
     if ( present(p_rho) ) then
-       p_rho = Rgas_meos*T*(1 + 2*alpr(1,0) + alpr(2,0))
+       p_rho = this%Rgas_meos*T*(1 + 2*alpr(1,0) + alpr(2,0))
     end if
 
     if ( present(p_T) ) then
-       p_T = Rgas_meos*rho*(1 + alpr(1,0) - alpr(1,1))
+       p_T = this%Rgas_meos*rho*(1 + alpr(1,0) - alpr(1,1))
     end if
   end subroutine mp_pressure
 
-
-  !> Clean up MEoS
-  subroutine cleanup_meos ()
-    Rgas_meos = Rgas_default ! Revert any redefinition of Rgas_meos
-  end subroutine cleanup_meos
+  subroutine assign_meos_base(this,other)
+    class(meos), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos)
+      this%compName = other%compName
+      this%tc = other%tc
+      this%pc = other%pc
+      this%rc = other%rc
+      this%t_triple = other%t_triple
+      this%p_triple = other%p_triple
+      this%rhoLiq_triple = other%rhoLiq_triple
+      this%rhoVap_triple = other%rhoVap_triple
+      this%molarMass = other%molarMass
+      this%maxT = other%maxT
+      this%maxP = other%maxP
+      this%Rgas_meos = other%Rgas_meos
+      this%Rgas_fit = other%Rgas_fit
+    end select
+  end subroutine assign_meos_base
 
 end module multiparameter_base

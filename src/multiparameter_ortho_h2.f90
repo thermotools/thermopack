@@ -112,12 +112,16 @@ module multiparameter_ortho_h2
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_ORTHO_H2
 
+     ! Assignment operator
+     procedure, pass(This), public :: assign_meos => assign_meos_ortho_h2
+
   end type meos_ortho_h2
 
 contains
 
-  subroutine init_ORTHO_H2 (this)
+  subroutine init_ORTHO_H2 (this, use_Rgas_fit)
     class(meos_ortho_h2) :: this
+    logical, optional, intent(in) :: use_Rgas_fit
 
     this%compName = "ortho_h2"
     this%tau_cache = 0.0
@@ -137,6 +141,11 @@ contains
     this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
     this%rhoVap_triple = 0.12985/this%molarMass !< (mol/m^3)
 
+    if (present(use_Rgas_fit)) then
+       if (use_Rgas_fit) then
+          this%Rgas_meos = this%Rgas_fit
+       end if
+    end if
   end subroutine init_ORTHO_H2
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
@@ -232,7 +241,7 @@ contains
   end subroutine alphaResDerivs_ORTHO_H2
 
   function satDeltaEstimate_ORTHO_H2 (this,tau,phase) result(deltaSat)
-    use parameters, only: LIQPH, VAPPH, SINGLEPH
+    use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
     class(meos_ortho_h2) :: this
     real, intent(in) :: tau
     integer, intent(in) :: phase
@@ -248,5 +257,25 @@ contains
     end if
 
   end function satDeltaEstimate_ORTHO_H2
+
+  subroutine assign_meos_ortho_h2(this,other)
+    class(meos_ortho_h2), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (meos_ortho_h2)
+      call this%assign_meos_base(other)
+
+      this%tau_cache = other%tau_cache
+      this%deltaSatLiq_cache = other%deltaSatLiq_cache
+      this%deltaSatVap_cache = other%deltaSatVap_cache
+      this%prefactors_pol_cache = other%prefactors_pol_cache
+      this%prefactors_exp_cache = other%prefactors_exp_cache
+      this%prefactors_expexp_cache = other%prefactors_expexp_cache
+
+    class default
+      call stoperror("assign_meos_ortho_h2: Should not be here....")
+    end select
+  end subroutine assign_meos_ortho_h2
 
 end module multiparameter_ORTHO_H2

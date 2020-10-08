@@ -6,10 +6,26 @@ import math
 import os
 
 def file_exists(filename):
+    """Test if file exist
+
+    Args:
+        filename (str): File path
+
+    Returns:
+        bool: Does file with filename exist?
+    """
     exists = os.path.isfile(filename)
     return exists
 
 def loadFile(filename):
+    """Load data from file
+
+    Args:
+        filename (str): File path
+
+    Returns:
+        ndarray: Data stored in file
+    """
     file = open(filename, 'r')
     # Parse header
     nlines = 0
@@ -22,7 +38,16 @@ def loadFile(filename):
     data = np.loadtxt(filename, skiprows=nlines)
     return data
 
-def getBinary(filename,pointLabel):
+def getBinary(filename, pointLabel):
+    """Get last two words on line identefied by pointLabel.
+
+    Args:
+        filename (str): File path
+        pointLabel (str): Searchable string
+
+    Returns:
+        str: Last two entries on line containg pointLabel
+    """
     file = open(filename, 'r')
     # Parse header
     comp1 = ""
@@ -37,7 +62,16 @@ def getBinary(filename,pointLabel):
             break
     return comp1, comp2
 
-def getFloat(filename,pointLabel):
+def getFloat(filename, pointLabel):
+    """Get float from line identefied by pointLabel. Last entry on line covetered to float.
+
+    Args:
+        filename (str): File path
+        pointLabel (str): Searchable string
+
+    Returns:
+        float: Last entry on line containg pointLabel
+    """
     file = open(filename, 'r')
     # Parse header
     T = 0.0
@@ -50,7 +84,16 @@ def getFloat(filename,pointLabel):
             break
     return T
 
-def getInteger(filename,pointLabel):
+def getInteger(filename, pointLabel):
+    """Get integer from line identefied by pointLabel. Last word on line covetered to int.
+
+    Args:
+        filename (str): File path
+        pointLabel (str): Searchable string
+
+    Returns:
+        int: Last entry on line containg pointLabel
+    """
     file = open(filename, 'r')
     # Parse header
     n = 0
@@ -63,7 +106,16 @@ def getInteger(filename,pointLabel):
             break
     return n
 
-def getPoint(filename,pointLabel):
+def getPoint(filename, pointLabel):
+    """Get point (T,P) from line identefied by pointLabel. Last two words on line covetered to floats.
+
+    Args:
+        filename (str): File path
+        pointLabel (str): Searchable string
+
+    Returns:
+        float: Last two entries on line containg pointLabel
+    """
     file = open(filename, 'r')
     # Parse header
     T = 0.0
@@ -79,6 +131,14 @@ def getPoint(filename,pointLabel):
     return T, P
 
 def getNaNindices(data):
+    """Get location of NaNs in data arrays
+
+    Args:
+        data (ndarray): Data containing NaNs
+
+    Returns:
+        array_like: Column indices giving first apperance of NaN
+    """
     n = np.shape(data)[0]
     m = np.shape(data)[1]
     nans = [n]*m
@@ -90,6 +150,14 @@ def getNaNindices(data):
     return nans
 
 def get_solid_envelope_data(filename):
+    """Read data from solid envelope data.
+
+    Args:
+        filename (str): File path
+
+    Returns:
+        lists: Lists of phase lines and critical points
+    """
     lines = []
     crits = []
     if file_exists(filename):
@@ -118,6 +186,14 @@ def get_solid_envelope_data(filename):
     return lines, crits
 
 def get_globa_binary_data(filename):
+    """[summary]
+
+    Args:
+        filename (str): File path
+
+    Returns:
+        [type]: [description]
+    """
     VLE = []
     VLLE = []
     CRIT = []

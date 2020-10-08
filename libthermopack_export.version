@@ -48,13 +48,23 @@ libthermopack {
 	  thermopack_gethvparam_;
           thermopack_sethvparam_;
 	  #
-	  get_phase_flags_;
+	  get_phase_flags_c;
 	  *_init_thermo;
 	  *_init_cubic;
+	  *_init_quantum_cubic;
+	  *_init_quantum_cubic;
+	  *_init_tcpr;
+	  *_init_quantum_saftvrmie;
+	  *_init_extcsp;
+	  *_init_lee_kesler;
+  	  *_init_multiparameter;
+	  *_init_pets;
 	  *_init_cpa;
   	  *_init_pcsaft;
 	  *_init_saftvrmie;
 	  *_solid_init;
+	  *_init_volume_translation;
+	  *_redefine_critical_parameters;
 	  *_specificvolume;
 	  *_zfac;
 	  *_thermo;
@@ -63,7 +73,8 @@ libthermopack {
 	  *_compmoleweight;
 	  *_idealenthalpysingle;
 	  *_sound_velocity_2ph;
-	  *_compindex;
+	  *_comp_index_active;
+	  *_comp_name_active;
 	  *_setphtolerance;
 	  *_twophasetpflash;
 	  *_twophasepsflash;

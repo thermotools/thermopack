@@ -9,9 +9,9 @@
 module sv_solver
   !
   !
-  use tpconst
   use numconstants, only: machine_prec, small
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -99,6 +99,7 @@ contains
   !> \author MH, 2012-08-15
   !-----------------------------------------------------------------------------
   subroutine twoPhaseSVflash_mc(t,p,Z,beta,betaL,X,Y,sspec,vspec,phase,ierr)
+    use thermo_utils, only: wilsonK
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(out) :: betaL !< Liquid phase molar fraction [-]
@@ -634,7 +635,7 @@ contains
     real, dimension(nc) :: FUGZ, FUGL, FUGG, K, L
     integer :: minGphase, nov, i
     real :: g_feed, tpd, g_mix
-    logical :: liq_stab_negative, gas_stab_negative, isTrivialL, isTrivialV
+    logical :: liq_stab_negative, gas_stab_negative
     !
     converged = .false.
     if (t > tpTmax .OR. t < tpTmin) then
@@ -704,10 +705,10 @@ contains
           endif
         else
           if (minGphase == phase .OR. minGphase == SINGLEPH) then
-            tpd = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGL)
-            liq_stab_negative = (.not. isTrivialL .and. tpd < stabilityLimit)
-            tpd = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGG)
-            gas_stab_negative = (.not. isTrivialV .and. tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,LIQPH,FUGZ,FUGL)
+            liq_stab_negative = (tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,VAPPH,FUGZ,FUGG)
+            gas_stab_negative = (tpd < stabilityLimit)
             ! Do we need to try another phase?
             if (liq_stab_negative .or. gas_stab_negative) then
               if (liq_stab_negative .and. gas_stab_negative) then
@@ -1174,7 +1175,7 @@ contains
     logical :: isStable
     ! Locals
     real :: tpd
-    logical :: phase_stab_negative,isTrivial
+    logical :: phase_stab_negative
     real, dimension(nc) :: K,FUG,W
     integer, parameter :: nd = 1, j = 1
     real, dimension(nd,nc) :: XX
@@ -1182,8 +1183,8 @@ contains
     if (doCustomStabCheck) then
       XX(1,:) = Z
       W = wInitial
-      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,isTrivial,FUGZ,FUG)
-      phase_stab_negative = (.not. isTrivial .and. tpd < stabilityLimit)
+      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,FUGZ,FUG)
+      phase_stab_negative = (tpd < stabilityLimit)
       ! Do we need to introduce another phase?
       if (phase_stab_negative) then
         if (custumPhase == VAPPH) then
@@ -1545,7 +1546,6 @@ contains
          premterm_at_dx_zero, setXv, limit_dx
     use thermo_utils, only: maxComp, isSingleComp
     use saturation, only: safe_dewP, dewP
-    use tpvar, only: comp
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(inout) :: betaL !< Liquid phase molar fraction [-]
@@ -1566,6 +1566,9 @@ contains
     type(nonlinear_solver) :: solver
     integer :: sphase, is, imax(1)
     logical :: testSpecVolume
+    type(thermo_model), pointer :: act_mod_ptr
+    !
+    act_mod_ptr => get_active_thermo_model()
     isConverged = .true.
     param(1) = sspec
     param(2) = vspec
@@ -1616,7 +1619,7 @@ contains
         if (isSingleComp(Z)) then
           imax = maxloc(Z)
           is = imax(1)
-          testSpecVolume = (abs((1.0 - t/comp(is)%tc)*(1.0 - p/comp(is)%pc)) > small)
+          testSpecVolume = (abs((1.0 - t/act_mod_ptr%comps(is)%p_comp%tc)*(1.0 - p/act_mod_ptr%comps(is)%p_comp%pc)) > small)
         else
           testSpecVolume = .true.
         endif

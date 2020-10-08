@@ -5,10 +5,10 @@ module ph_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use parameters
+  use thermopack_var, only: nc
   use tp_solver, only: twoPhaseTPflash
   use state_functions
-  use tpconst, only: get_eoslib_templimits
+  use thermopack_constants, only: get_templimits, VAPPH, LIQPH, TWOPH, SINGLEPH
   use thermo_utils, only: isSingleComp, maxComp
   use eos, only: enthalpy, getcriticalparam, pseudo_safe, twophaseenthalpy
   use saturation, only: safe_dewT
@@ -42,7 +42,6 @@ contains
   !-----------------------------------------------------------------------------
   subroutine twoPhasePHflash(t,p,Z,beta,betaL,X,Y,hspec,phase,ierr_out)
     use thermo_utils, only: isSingleComp
-    use eos, only: need_alternative_eos
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(out) :: betaL !< Liquid phase molar fraction [-]
@@ -61,7 +60,7 @@ contains
     real :: p_inout
 
     integer :: new_phase, ierr, initial_phase
-    logical :: isStable,alt_eos
+    logical :: isStable
     real :: Wsol(nc)
     ! Initialize error flag
     if (present(ierr_out)) then
@@ -69,7 +68,7 @@ contains
     endif
     isStable=.true.
     tInitial = t
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -98,9 +97,8 @@ contains
       end if
     else
       p_inout = p ! puresat uses an inout variable for pressure
-      alt_eos = (need_alternative_eos())
       call PureSat(Tpuresat,p_inout,Z,solveForT=.true.,&
-           alternative_eos=alt_eos,ierr=ierr) ! puresat accurate enough?
+           ierr=ierr) ! puresat accurate enough?
       call enthalpy(Tpuresat,p,Z,phase=LIQPH,h=hliq_puresat)
       if (hspec < hliq_puresat) then
         phase = LIQPH
@@ -164,7 +162,7 @@ contains
     end if
 
     if (ierr/=0) then
-      call get_eoslib_templimits(eoslib,Tmin,Tmax)
+      call get_templimits(Tmin,Tmax)
       if (t > Tmax .OR. t < Tmin .OR. T /= T) then
         t = 0.5*(Tmax+Tmin)
       endif
@@ -458,7 +456,7 @@ contains
     real, dimension(n), intent(inout) :: dTv !< Calculated change in temperature [K]
     !
     real :: tMax, tMin
-    call get_eoslib_templimits(eoslib,tMin,tMax)
+    call get_templimits(tMin,tMax)
     tMin = max(tMin,param(nc+3))
     tMax = min(tMax,param(nc+4))
     if (Tv(1) + dTv(1) < tMin) then
@@ -483,7 +481,7 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - hspec > 0
       doReturn = .true.
@@ -832,7 +830,7 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - hspec > 0
       doReturn = .true.

@@ -6,7 +6,8 @@
 
 module saftvrmie_testing
   use saftvrmie_containers
-  use tpconst, only: kB_const,N_AVOGADRO,h_const
+  use thermopack_constants, only: kB_const,N_AVOGADRO,h_const
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model
   use numconstants, only: pi
   use saftvrmie_hardsphere, only: calc_hardsphere_rdf_and_U
   use saftvrmie_dispersion
@@ -21,16 +22,18 @@ module saftvrmie_testing
 contains
 
   subroutine test_by_integration
-    use parameters
+    use thermopack_constants
     use saftvrmie_hardsphere
-    use saftvrmie_containers, only: init_saftvrmie_containers, saftvrmie_var
+    use saftvrmie_containers, only: init_saftvrmie_containers
     use saftvrmie_interface, only:  preCalcSAFTVRMie
-    use tpvar, only:comp
     implicit none
-    integer :: setno(nc), mixing
+    integer :: mixing
     real :: T, V, n(nc), Int_B, Int_B1, Int_B2
+    type(thermo_model), pointer :: act_mod_ptr
+    type(saftvrmie_var_container), pointer :: saftvrmie_var
+    type(saftvrmie_eos), pointer :: eos
+    act_mod_ptr => get_active_thermo_model()
 
-    setno(1)=1
     mixing=1
     T=4.0
     V=1
@@ -39,32 +42,35 @@ contains
     ! No quantum corrections
     quantum_correction=0
     quantum_correction_hs=0
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_alpha_a3_integration(nc,T,saftvrmie_var(1))
-    call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B)
+    eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+    saftvrmie_var => eos%saftvrmie_var
+    call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,&
+         "DEFAULT",mixing)
+    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+    call test_a1_integration(nc,T,V,n,saftvrmie_var)
+    call test_a2_integration(nc,T,V,n,saftvrmie_var)
+    call test_alpha_a3_integration(nc,T,saftvrmie_var)
+    call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B)
 
     ! First order quantum corrections
     quantum_correction=1
     quantum_correction_hs=1
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_alpha_a3_integration(nc,T,saftvrmie_var(1))
-    call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B1)
+    call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,"DEFAULT",mixing)
+    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+    call test_a1_integration(nc,T,V,n,saftvrmie_var)
+    call test_a2_integration(nc,T,V,n,saftvrmie_var)
+    call test_alpha_a3_integration(nc,T,saftvrmie_var)
+    call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B1)
 
     ! Second order quantum corrections
     quantum_correction=2
     quantum_correction_hs=2
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
-    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-    call test_a1_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_a2_integration(nc,T,V,n,saftvrmie_var(1))
-    call test_alpha_a3_integration(nc,T,saftvrmie_var(1))
-    call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B2)
+    call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,"DEFAULT",mixing)
+    call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+    call test_a1_integration(nc,T,V,n,saftvrmie_var)
+    call test_a2_integration(nc,T,V,n,saftvrmie_var)
+    call test_alpha_a3_integration(nc,T,saftvrmie_var)
+    call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B2)
     stop
 
   end subroutine test_by_integration
@@ -148,6 +154,8 @@ contains
     real :: alpha
     integer :: Nr
     real :: Int_alpha, Int_alpha_true, a_1B, Int_alpha_trueMie
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
 
     ! Check for more than one component
     if (nc>1) then
@@ -160,7 +168,7 @@ contains
     if (quantum_correction_hs == 0) then
        alpha = saftvrmie_param%alpha_ij(1,1)
     else
-       call calcAlpha(nc,s_vc%sigma_eff,s_vc%eps_divk_eff,T,saftvrmie_var(1),alph)
+       call calcAlpha(nc,s_vc%sigma_eff,s_vc%eps_divk_eff,T,svrm_var,alph)
        alpha = alph(1)
     endif
 
@@ -269,11 +277,11 @@ contains
     print *, " True a2 (from s_eff to inf)    : ", Int_a2_true*prefactor
     print *, " Our value of a2                : ", a2
     print *, " -------------------- "
-    print *, " Part a2 (Mie^2 from s to inf)  : ", (Int_a2_Mie)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (Dpart from s to inf)  : ", (2*Int_a2_Dpart)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (D2part from s to inf) : ", (Int_a2_q1)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (FH1 from s to inf)    : ", (Int_a2_FH1)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
-    print *, " Part a2 (FH2 from s to inf)    : ", (Int_a2_FH2)*prefactor!ยง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (Mie^2 from s to inf)  : ", (Int_a2_Mie)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (Dpart from s to inf)  : ", (2*Int_a2_Dpart)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (D2part from s to inf) : ", (Int_a2_q1)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (FH1 from s to inf)    : ", (Int_a2_FH1)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
+    print *, " Part a2 (FH2 from s to inf)    : ", (Int_a2_FH2)*prefactor!ง+2.0*Int_a2_Dpart+Int_a2_q1)*prefactor
 
     print *, " Part a2 (Int. s to inf)        : ", Int_a2*prefactor
     print *, " Part a2 (Mie, Int s_eff to inf): ", Int_a2_trueMie*prefactor
@@ -365,7 +373,7 @@ contains
 
     print *, " Epsilon_eff/Epsilon: ", &
          Minimum/saftvrmie_param%comp(1)%eps_depth_divk
-    !print *, " x0 ", saftvrmie_vc%sigma_eff%d(1,1)/saftvrmie_var(1)%dhs%d(1,1)
+    !print *, " x0 ", saftvrmie_vc%sigma_eff%d(1,1)/saftvrmie_var%dhs%d(1,1)
 
     print *, " --------- Testing of a1 terms -------------- "
     print *, " -- s=sigma, s_eff=sigma_eff, Int=Integral -- "
@@ -489,8 +497,10 @@ contains
     real, intent(in) :: T, V, n(nc), r
     real, intent(out) :: out_var
     real :: g, U_divk
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
 
-    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,saftvrmie_var(1),g,U_divk)
+    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,svrm_var,g,U_divk)
     out_var=U_divk
   end subroutine testing_U
 
@@ -500,8 +510,10 @@ contains
     real, intent(in) :: T, V, n(nc), r
     real, intent(out) :: out_var
     real :: g, U_divk
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
 
-    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,saftvrmie_var(1),g,U_divk)
+    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,svrm_var,g,U_divk)
     out_var=g*U_divk*r**2
   end subroutine testing_a1_term
   subroutine testing_a2_term(nc,T,V,n,r,out_var)
@@ -510,8 +522,10 @@ contains
     real, intent(in) :: T, V, n(nc), r
     real, intent(out) :: out_var
     real :: g, U_divk
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
 
-    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,saftvrmie_var(1),g,U_divk)
+    call calc_hardsphere_rdf_and_U(nc,T,n,V,r,svrm_var,g,U_divk)
     out_var=g*(U_divk**2)*r**2
   end subroutine testing_a2_term
 
@@ -705,15 +719,16 @@ contains
   end subroutine get_FH_potential
 
   subroutine map_second_virial_coeff()
-    use parameters
-    use saftvrmie_containers, only: init_saftvrmie_containers, saftvrmie_var
+    use saftvrmie_containers, only: init_saftvrmie_containers, get_saftvrmie_eos_pointer
     use saftvrmie_interface, only:  preCalcSAFTVRMie
-    use tpvar, only:comp
     implicit none
-    integer :: setno(nc), mixing, nIter, i
+    integer :: mixing, nIter, i
     real :: T, V, n(nc), Int_B, Int_B1, Int_B2, Tmin, Tmax
+    type(thermo_model), pointer :: act_mod_ptr
+    type(saftvrmie_var_container), pointer :: saftvrmie_var
+    type(saftvrmie_eos), pointer :: eos
+    act_mod_ptr => get_active_thermo_model()
 
-    setno(1)=1
     mixing=1
     T=4.0
     V=1.0
@@ -723,21 +738,24 @@ contains
     Tmax = 26.0
     open(unit=20,file="virial_B_int.dat")
     nIter = 100
-    call init_saftvrmie_containers(nc,comp,setno,mixing)
+    eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+    saftvrmie_var => eos%saftvrmie_var
+    call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,&
+         "DEFAULT",mixing)
     do i=1,nIter
        T = Tmin + (Tmax-Tmin)*real(i-1)/(nIter-1)
        quantum_correction=0
        quantum_correction_hs=0
-       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B,.false.)
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B,.false.)
        quantum_correction=1
        quantum_correction_hs=1
-       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B1,.false.)
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B1,.false.)
        quantum_correction=2
        quantum_correction_hs=2
-       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var(1))
-       call calc_virial_B_by_integration(nc,T,saftvrmie_var(1),Int_B2,.false.)
+       call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
+       call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B2,.false.)
        write(20,*) T, Int_B, Int_B1, Int_B2
     enddo
     close(20)

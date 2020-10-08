@@ -7,10 +7,10 @@
 !!
 !-------------------------------------------------------------------------
 module critical
-  use parameters, only: nc, verbose, eoslib, VAPPH, LIQPH
-  use eos, only : thermo, need_alternative_eos, pseudo
+  use thermopack_constants, only: verbose, VAPPH, LIQPH, Rgas
+  use thermopack_var, only: nc, thermo_model, get_active_thermo_model
+  use eos, only : thermo, pseudo_safe
   use eosTV, only : thermoTV, pressure
-  use tpconst, only: Rgas
   implicit none
   private
   save
@@ -36,7 +36,7 @@ contains
   !> \author MH, 2014-11
   !-------------------------------------------------------------------------
   subroutine calcCritical(t,p,Z,phase,ierr,tol)
-    use tpconst, only: tpPmin, tpPmax, get_eoslib_templimits
+    use thermopack_constants, only: tpPmin, tpPmax, get_templimits
     use nonlinear_solvers
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
@@ -84,7 +84,7 @@ contains
       solver%abs_tol = tol
     endif
     solver%rel_tol = 1.0e-20
-    call get_eoslib_templimits(eoslib, xmin(1), xmax(1))
+    call get_templimits(xmin(1), xmax(1))
     xmin(2) = tpPmin*1.0e-5
     xmax(2) = tpPmax*1.0e-5
     call nonlinear_solve(solver,critFun,critJac,critJac,limit_dx,&
@@ -649,7 +649,7 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   subroutine solveStabLimitTV(T,v,z,ierr)
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     implicit none
@@ -661,8 +661,7 @@ contains
     real :: Tmin, Tmax, param(nc+1)
     type(nonlinear_solver) :: solver
     real, dimension(1) :: x,xmin,xmax
-
-    call get_eoslib_templimits(EosLib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     solver%abs_tol = 1.0e-8
     param(1:nc) = z
     param(nc+1) = v
@@ -683,7 +682,7 @@ contains
   !--------------------------------------------------------------------------
   subroutine initialStablimitPoint(P,z,v,T,phase,ierr)
     use puresaturation, only: puresat
-    use eos, only: need_alternative_eos, specificVolume
+    use eos, only: specificVolume
     use thermo_utils, only: isSingleComp
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall compozition
@@ -693,12 +692,10 @@ contains
     real, intent(out) :: v !< Specific volume [m3/mol]
     integer, intent(out) :: ierr !< Error flag
     ! Local
-    logical :: need_alt_eos
     real :: Pcpy, TsatPure
     if (isSingleComp(z)) then
-      need_alt_eos = need_alternative_eos()
       Pcpy = P
-      call PureSat(TsatPure,Pcpy,Z,.true.,need_alt_eos)
+      call PureSat(TsatPure,Pcpy,Z,.true.)
       ! Do nested loop: P(T(v),v) = P
       T = TsatPure
       call nestedLoopVTSingle(P,z,T,v,phase,ierr)
@@ -715,7 +712,6 @@ contains
   !--------------------------------------------------------------------------
   subroutine initialStablimitPointMC(P,z,v,T,phase,ierr)
     use puresaturation, only: puresat
-    use eos, only: need_alternative_eos
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall compozition
     real, intent(in) :: P !< Pressure [Pa]
@@ -724,12 +720,10 @@ contains
     real, intent(out) :: v !< Specific volume [m3/mol]
     integer, intent(out) :: ierr !< Error flag
     ! Local
-    logical :: need_alt_eos
     real :: Pcpy, TsatPure
     !
-    need_alt_eos = need_alternative_eos()
     Pcpy = P
-    call PureSat(TsatPure,Pcpy,Z,.true.,need_alt_eos)
+    call PureSat(TsatPure,Pcpy,Z,.true.)
     if (phase == VAPPH) then
       T = TsatPure - 0.1
     else
@@ -738,7 +732,7 @@ contains
     call nestedLoopVT(P,z,T,v,phase,ierr)
     if (ierr /= 0 .and. phase == LIQPH) then
       Pcpy = P
-      call PureSat(TsatPure,Pcpy,Z,.true.,need_alt_eos)
+      call PureSat(TsatPure,Pcpy,Z,.true.)
       T = TsatPure + 0.1
       call liquidNestedLoopVT(P,z,T,v,ierr)
     end if
@@ -1117,9 +1111,9 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   subroutine mapMetaStabilityLimit(P0,z,Tmin,Tl,Pl,vl,nl,ierr,dlnv_override)
-    use eos, only: need_alternative_eos, specificVolume
+    use eos, only: specificVolume
     use eosTV, only: pressure
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use thermo_utils, only: isSingleComp
@@ -1213,7 +1207,6 @@ contains
        TaGas,VaGas,PaGas)
     use eos, only: specificVolume, getCriticalParam
     use eosTV, only: pressure
-    use tpvar, only: cbeos
     use eosdata, only: eosPC_SAFT, cpaSRK, cpaPR, eosLK
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall compozition
@@ -1226,13 +1219,13 @@ contains
     real :: tc, pc, omega
     integer :: i, ierr
 
-    ! Critical point
-    if (cbeos(1)%eosidx == eosPC_SAFT .OR. &
-         cbeos(1)%eosidx == cpaSRK .OR. &
-         cbeos(1)%eosidx == cpaPR .OR. &
-         cbeos(1)%eosidx == eosLK) then
-      call stoperror('singleCompStabilityLimit: Need critical point solver.')
-    endif
+    ! ! Critical point
+    ! if (cbeos(1)%eosidx == eosPC_SAFT .OR. &
+    !      cbeos(1)%eosidx == cpaSRK .OR. &
+    !      cbeos(1)%eosidx == cpaPR .OR. &
+    !      cbeos(1)%eosidx == eosLK) then
+    !   call stoperror('singleCompStabilityLimit: Need critical point solver.')
+    ! endif
     call getCriticalParam(1,tc,pc,omega)
 
     ! Liquid line
@@ -1355,7 +1348,7 @@ contains
   !--------------------------------------------------------------------------
   subroutine stablimitPointSingleComp(T,z,v,ierr)
     use eos, only: specificVolume
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use eosTV, only: pressure
@@ -1470,8 +1463,8 @@ contains
   !> \author Ailo 2016-01
   !-------------------------------------------------------------------------
   function rhomax_PR (x)
-    use tpvar, only: nce
-    use tpconst, only: Rgas
+    use thermopack_var, only: nce
+    use thermopack_constants, only: Rgas
     use eos, only: getCriticalParam
     ! Input:
     real :: x(nce)      !< Composition (needn't be normalized)
@@ -1502,9 +1495,9 @@ contains
   !> \author Ailo 2016-01
   !-------------------------------------------------------------------------
   function rho_of_meta_extremum (T,x,phase,rho_init_in)
-    use eosdata, only: eoscubic
-    use tpvar, only: nce
-    use parameters, only: LIQPH, VAPPH, verbose
+    use cubic_eos, only: cb_eos
+    use thermopack_var, only: nce
+    use thermopack_constants, only: LIQPH, VAPPH, verbose
     use numconstants, only: machine_prec
     ! Input:
     real, intent(in) :: T                          !< Temperature [K]
@@ -1644,15 +1637,12 @@ contains
   !! \author MH, 2016-01
   !-------------------------------------------------------------------------
   subroutine calcCriticalTV(t,v,Z,ierr,tol,p)
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
-    use tpvar, only: cbeos, comp, cbeos_alternative
-    use single_phase, only: TP_CalcPseudo
-    use eosdata, only: cpaSRK, cpaPR
+    use eosdata, only: eosCPA
     use numconstants, only: Small
-    use thermo_utils, only: isSingleComp
+    use thermo_utils, only: isSingleComp, get_b_linear_mix
     use eosTV, only: pressure
-    !$ use omp_lib, only: omp_get_thread_num
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -1666,40 +1656,27 @@ contains
     real, dimension(2) :: X, xmax, xmin
     !real :: Fun(2), dF(2,2), Fun2(2), numJac(2,2)
     type(nonlinear_solver) :: solver
-    integer :: i_cbeos, i
-    real :: tpc,ppc,acfpc,zpc,vpc,b
+    real :: tpc,ppc,zpc,vpc,b
     logical :: needalt, isCPA
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    i_cbeos = 1
-    !$ i_cbeos = 1 + omp_get_thread_num()
     ierr = 0
     v0 = v
     t0 = t
     param(1:nc) = z
     param(nc+1:2*nc) = sqrt(z)
 
-    needalt = need_alternative_eos()
-    isCPA = (cbeos(i_cbeos)%eosidx == cpaSRK .OR. cbeos(i_cbeos)%eosidx == cpaPR)
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     ! Calculate co-volume
-    b = 0.0
-    do i=1,nc
-      if (needalt .and. .not. isCPA) then
-        b = b + z(i)*cbeos_alternative(i_cbeos)%single(i)%b
-      else
-        b = b + z(i)*cbeos(i_cbeos)%single(i)%b
-      endif
-    enddo
+    b = get_b_linear_mix(z)
     if (v <= 0.0) then
-      v = 4.0 * b * 1.0e-3 ! m3/mol
+      v = 4.0 * b ! m3/mol
     endif
     if (t <= 0.0) then
       ! Use pseudocritical temperature
-      if (needalt) then
-        ! Bypass straight to alternative cubic EoS.
-        call TP_CalcPseudo(nc,comp,cbeos_alternative(i_cbeos),z,tpc,ppc,zpc,vpc)
-      else
-        call pseudo(z,tpc,ppc,acfpc,zpc,vpc)
-      endif
+      call pseudo_safe(z,tpc,ppc,zpc,vpc)
       t = tpc
     endif
     X(1) = t
@@ -1732,11 +1709,11 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_eoslib_templimits(eoslib, xmin(1), xmax(1))
+    call get_templimits(xmin(1), xmax(1))
     if (needalt .and. .not. isCPA) then
       xmin(2) = 1.0e-8
     else
-      xmin(2) = b*1.0e-3 + Small ! m3/mol
+      xmin(2) = b + Small ! m3/mol
     endif
     xmax(2) = 100.0
     solver%ls_max_it = 3
@@ -1924,13 +1901,12 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalZ(t,v,P,Z,s,ierr,tol,free_comp,iter)
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
-    use tpvar, only: cbeos
-    use eosdata, only: cpaSRK, cpaPR
+    use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -1947,8 +1923,10 @@ contains
     real, dimension(4) :: X, xmax, xmin
     !real :: Fun(4), dF(4,4), Fun2(4), numJac(4,4), X1(4)
     type(nonlinear_solver) :: solver
-    integer :: i_cbeos, ic, i
+    integer :: ic
     logical :: needalt, isCPA
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (nc == 1 .or. nc > 2) then
       call stoperror("calcCriticalZ: Only two components can be active.")
@@ -2015,20 +1993,15 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_eoslib_templimits(eoslib, xmin(2), xmax(2))
-    needalt = need_alternative_eos()
-    i_cbeos = 1
-    !$ i_cbeos = 1 + omp_get_thread_num()
-    isCPA = (cbeos(i_cbeos)%eosidx == cpaSRK .OR. cbeos(i_cbeos)%eosidx == cpaPR)
+    call get_templimits(xmin(2), xmax(2))
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
       xmin(3) = 1.0e-8
     else
       ! Calculate co-volume
-      b = 0.0
-      do i=1,nc
-        b = b + z(i)*cbeos(i_cbeos)%single(i)%b
-      enddo
-      xmin(3) = b*1.0e-3 + Small ! m3/mol
+      b = get_b_linear_mix(z)
+      xmin(3) = b + Small ! m3/mol
     endif
     xmax(3) = 100.0
     ! Convert to logartimic values
@@ -2267,13 +2240,12 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalEndPoint(t,vc,Zc,y,vy,ierr,tol,free_comp)
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
-    use tpvar, only: cbeos
-    use eosdata, only: cpaSRK, cpaPR
+    use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Zc !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -2289,8 +2261,10 @@ contains
     real, dimension(6) :: X, xmax, xmin
     !real :: Fun(6), dF(6,6), Fun2(6), X1(6)
     type(nonlinear_solver) :: solver
-    integer :: i_cbeos, ic, i
+    integer :: ic
     logical :: needalt, isCPA
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (.not. nc == 2) then
       call stoperror("calcCriticalEndPoint: Only two components can be active.")
@@ -2347,24 +2321,18 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_eoslib_templimits(eoslib, xmin(2), xmax(2))
-    needalt = need_alternative_eos()
-    i_cbeos = 1
-    !$ i_cbeos = 1 + omp_get_thread_num()
-    isCPA = (cbeos(i_cbeos)%eosidx == cpaSRK .OR. cbeos(i_cbeos)%eosidx == cpaPR)
+    call get_templimits(xmin(2), xmax(2))
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
       xmin(3) = 1.0e-8
       xmin(6) = log(xmin(3))
     else
       ! Calculate co-volume
-      bc = 0.0
-      by = 0.0
-      do i=1,nc
-        bc = bc + zc(i)*cbeos(i_cbeos)%single(i)%b
-        by = by + y(i)*cbeos(i_cbeos)%single(i)%b
-      enddo
-      xmin(3) = bc*1.0e-3 + Small ! m3/mol
-      xmin(6) = log(by*1.0e-3 + Small) ! m3/mol
+      bc = get_b_linear_mix(zc)
+      by = get_b_linear_mix(y)
+      xmin(3) = bc + Small ! m3/mol
+      xmin(6) = log(by + Small) ! m3/mol
     endif
     xmax(3) = 100.0
     ! Convert to logartimic values
@@ -2588,19 +2556,28 @@ end module critical
     use critical, only: calcCriticalZ, critZsensitivity, &
          calcCriticalTV, calcCriticalEndPoint
     use eosTV, only: pressure
+    use thermopack_var, only: base_eos_param, get_active_eos
+    use cubic_eos, only: cb_eos
     !use eoslibinit, only: init_thermo
-    use tpvar, only: cbeos
     implicit none
     ! Locals
     real, parameter :: tol = 1.0e-8
     integer :: s, ierr
     real :: ds, X(4), X0(4), dXds(4)
     real :: Zc(2), Pc, Tc, vc
+    class(base_eos_param), pointer :: act_eos_ptr
+    act_eos_ptr => get_active_eos()
 
     print *,"Testing critical sensitivity calculation"
     !call init_thermo("Thermopack","SRK","Classic","Classic",2,"CO2,NC14",2)
-    cbeos(1)%kij(1,2) = 0.09
-    cbeos(1)%kij(2,1) = 0.09
+    select type(p_eos => act_eos_ptr)
+      class is (cb_eos)
+        p_eos%kij(1,2) = 0.09
+        p_eos%kij(2,1) = 0.09
+      class default
+        print *,"Intended for SRK"
+        return
+      end select
 
     Tc=355.88390802375659
     vc=9.5639809221576924E-005

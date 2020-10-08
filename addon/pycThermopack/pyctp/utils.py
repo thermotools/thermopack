@@ -2,7 +2,14 @@
 import sys
 
 def gcc_major_version_greater_than(version):
-    "Returns gcc major version, or False if no GCC."
+    """Returns if GCC major version number is greater than specefied version
+
+    Args:
+        version (int): Major GCC version
+
+    Returns:
+        bool: GCC version is greater than specified version
+    """
     is_gt = False
     sys_arr_gcc = sys.version.split("GCC")
     if len(sys_arr_gcc) > 1:

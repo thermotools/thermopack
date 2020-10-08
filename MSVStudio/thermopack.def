@@ -3,13 +3,23 @@
 LIBRARY
 
 EXPORTS
-	get_phase_flags_
-	parameters_mp_compindex_
+	get_phase_flags_c
+	compdata_mp_comp_index_active_
+	compdata_mp__comp_name_active_
 	eoslibinit_mp_init_thermo_
 	eoslibinit_mp_init_cubic_
 	eoslibinit_mp_init_cpa_
 	eoslibinit_mp_init_pcsaft_
 	eoslibinit_mp_init_saftvrmie_
+	eoslibinit_mp_init_quantum_cubic_
+	eoslibinit_mp_init_tcpr_
+	eoslibinit_mp_init_quantum_saftvrmie_
+	eoslibinit_mp_init_extcsp_
+	eoslibinit_mp_init_lee_kesler_
+  	eoslibinit_mp_init_multiparameter_
+	eoslibinit_mp_init_pets_
+	eoslibinit_mp_init_volume_translation_
+	eoslibinit_mp_redefine_critical_parameters_
 	solideos_mp_solid_init_
 	eos_mp_specificvolume_
 	eos_mp_zfac_
@@ -26,9 +36,9 @@ EXPORTS
 	ph_solver_mp_twophasephflash_
 	sv_solver_mp_twophasesvflash_
 	thermo_utils_mp_guessphase_
-	tpconst_mp_rgas_
-	tpconst_mp_tptmin_
-	tpconst_mp_tppmin_
+	thermopack_constants_mp_rgas_
+	thermopack_constants_mp_tptmin_
+	thermopack_constants_mp_tppmin_
 	eostv_mp_internal_energy_
 	eostv_mp_entropytv_
 	eostv_mp_pressure_

@@ -1,5 +1,5 @@
 module test_pets
-  use tpvar, only: nce, comp, cbeos
+  use thermopack_var, only: nce
   use pfunit_mod
   use eoslibinit, only: init_thermo
   use pets
@@ -8,10 +8,12 @@ module test_pets
   public
 contains
 
-  subroutine test_1st_der_opt(rout,rho,T,x,verbose)
+  subroutine test_1st_der_opt(rout,eos,rho,T,x,verbose)
     interface
-       subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+       subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
          import nce
+         import PETS_eos
+         class(PETS_eos), intent(in) :: eos
          real, intent(in) :: rho, T, n(nce)
          real, intent(out), optional :: e
          real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -20,26 +22,30 @@ contains
        END SUBROUTINE Rout
     end interface
     !
+    class(PETS_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     logical, intent(in), optional :: verbose
     !
-    call test_1st_der(rout_nonopt,rho,T,x,verbose)
+    call test_1st_der(rout_nonopt,eos,rho,T,x,verbose)
   contains
-    subroutine rout_nonopt(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+    subroutine rout_nonopt(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+      class(PETS_eos), intent(in) :: eos
       real, intent(in) :: rho, T, n(nce)
       real, intent(out) :: e
       real, intent(out), optional :: e_rho, e_T, e_n(nce)
       real, intent(out), optional :: e_rhorho, e_rhoT, e_rhon(nce)
       real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
-      call rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,&
+      call rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,&
            e_TT,e_Tn,e_nn)
     end subroutine rout_nonopt
   end subroutine test_1st_der_opt
 
-  subroutine test_1st_der(rout,rho,T,x,verbose)
+  subroutine test_1st_der(rout,eos,rho,T,x,verbose)
     interface
-       subroutine rout(rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+       subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
          import nce
+         import PETS_eos
+         class(PETS_eos), intent(in) :: eos
          real, intent(in) :: rho, T, n(nce)
          real, intent(out) :: e
          real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -47,6 +53,7 @@ contains
          real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
        END SUBROUTINE Rout
     end interface
+    class(PETS_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(1)
     logical, intent(in), optional :: verbose
     ! Locals
@@ -61,7 +68,7 @@ contains
 
     eps = 5e-6
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
        print *, "s"
        print *, s
@@ -69,10 +76,10 @@ contains
 
     !Test rho-derivatives
     rhoeps = rho*eps
-    call rout(rho+rhoeps,T,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho-rhoeps,T,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho+rhoeps,T,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho-rhoeps,T,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
        print *, "s_r"
        print *, (pluspert_s-minuspert_s)/(2*rhoeps)
@@ -97,10 +104,10 @@ contains
 
     !Test T-derivatives
     Teps = T*eps
-    call rout(rho,T+Teps,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho,T-Teps,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho,T+Teps,x,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho,T-Teps,x,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
        print *, "s_t"
        print *, (pluspert_s-minuspert_s)/(2*Teps)
@@ -121,10 +128,10 @@ contains
     !Test x(1)-derivatives
     xeps = 0.0
     xeps(1) = x(1)*eps
-    call rout(rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
-    call rout(rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
+    call rout(eos,rho,T,x+xeps,pluspert_s,pluspert_s_r,pluspert_s_t,pluspert_s_x)
+    call rout(eos,rho,T,x-xeps,minuspert_s,minuspert_s_r,minuspert_s_t,minuspert_s_x)
 
-    call rout(rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
+    call rout(eos,rho,T,x,s,s_r,s_t,s_x,s_rr,s_rt,s_rx,s_tt,s_tx,s_xx)
     if (present(verbose)) then
        print *, "s_x(1)"
        print *, (pluspert_s-minuspert_s)/(2*xeps(1))
@@ -139,31 +146,40 @@ contains
 
   end subroutine test_1st_der
 
-  ! Assumes rout is a subroutine on the form
-  ! rout(T,s,s_T,s_TT)
-  subroutine test_T_der (T,rout,verbose)
-    external :: rout
+  subroutine test_T_der(eos,T,rout,verbose)
+    interface
+      subroutine rout(eos,T,d,d_T,d_TT)
+        import nce
+        import PETS_eos
+        class (PETS_eos), intent(in) :: eos
+        real, intent(in) :: T
+        real, intent(out) :: d(nce)
+        real, intent(out), optional :: d_T(nce)
+        real, intent(out), optional :: d_TT(nce)
+      end subroutine rout
+    end interface
+    class(PETS_eos), intent(in) :: eos
     real, intent(in) :: T
     logical, intent(in), optional :: verbose
     ! Locals
-    real :: s
-    real :: s_t
-    real :: s_tt
-    real :: pluspert_s,minuspert_s
-    real :: pluspert_s_t
-    real :: minuspert_s_t
-    real :: s_TT_dummy
+    real :: s(1)
+    real :: s_t(1)
+    real :: s_tt(1)
+    real :: pluspert_s(1),minuspert_s(1)
+    real :: pluspert_s_t(1)
+    real :: minuspert_s_t(1)
+    real :: s_TT_dummy(1)
     real :: eps,Teps
 
-    call rout(T,s,s_T,s_TT)
+    call rout(eos,T,s,s_T,s_TT)
 
     eps = 1e-5
 
     Teps = T*eps
-    call rout(T+Teps,pluspert_s,pluspert_s_t,s_TT_dummy)
-    call rout(T-Teps,minuspert_s,minuspert_s_t,s_TT_dummy)
+    call rout(eos,T+Teps,pluspert_s,pluspert_s_t,s_TT_dummy)
+    call rout(eos,T-Teps,minuspert_s,minuspert_s_t,s_TT_dummy)
 
-    call rout(T,s,s_t,s_tt)
+    call rout(eos,T,s,s_t,s_tt)
     if (present(verbose)) then
       print *, "s_t"
       print *, (pluspert_s-minuspert_s)/(2*Teps)
@@ -180,14 +196,17 @@ contains
   @Test
   subroutine test_der_pets
     use pets
+    use thermopack_var, only: get_active_eos, base_eos_param, nce
     real :: rho,T,x(1)
     !real :: var, var2
-    integer :: i
+    !integer :: i
     logical, pointer :: verbose
     logical, target :: t_verbose
+    class(base_eos_param), pointer :: eos
 
-    call init_thermo(eosLibrary='THERMOPACK',alpha='Classic',eos='PeTS',mixing='Classic',ncomp=1,&
-         comp_string="AR",nphases=2,saft_setno=(/1/))
+    call init_thermo(alpha='Classic',eos='PeTS',mixing='Classic',&
+         comp_string="AR",nphases=2,saft_ref="DEFAULT")
+    eos => get_active_eos()
     !call pets_set_pure_params(1,(/1.0,1.0/))
     T=100; rho=3e4
     x = (/1.0/)
@@ -218,16 +237,18 @@ contains
     ! print *, "P(bar)", 8.314*T*(rho + -var2)/1e5
     ! call nonassoc_pressure(nce,comp,cbeos(1),T,1/rho,x,var)
     ! print *, var/1e5
-    call test_T_der(T, calc_d_pets, verbose)
-    call test_1st_der(eta_pets,rho,T,x,verbose)
-    call test_1st_der(C_1,rho,T,x, verbose)
-    call test_1st_der(I_1,rho,T,x, verbose)
-    call test_1st_der(I_2,rho,T,x, verbose)
-    call test_1st_der(alpha_pets_hs,rho,T,x, verbose)
-    !call test_1st_der_opt(alpha_disp,rho,T,x, verbose)
-    !call test_1st_der_opt(alpha_PETS,rho,T,x, verbose)
-    !call test_1st_der_opt(F_PETS_TVn,rho=T,T=sum(x)/rho,x=x, verbose=verbose)
-
+    select type ( p_eos => eos )
+    class is ( PETS_eos )
+      call test_T_der(p_eos,T, calc_d_pets, verbose)
+      call test_1st_der(eta_pets,p_eos,rho,T,x,verbose)
+      call test_1st_der(C_1,p_eos,rho,T,x, verbose)
+      call test_1st_der(I_1,p_eos,rho,T,x, verbose)
+      call test_1st_der(I_2,p_eos,rho,T,x, verbose)
+      call test_1st_der(alpha_pets_hs,p_eos,rho,T,x, verbose)
+        !call test_1st_der_opt(alpha_disp,rho,T,x, verbose)
+        !call test_1st_der_opt(alpha_PETS,rho,T,x, verbose)
+        !call test_1st_der_opt(F_PETS_TVn,rho=T,T=sum(x)/rho,x=x, verbose=verbose)
+    end select
   end subroutine test_der_pets
 
 end module test_pets

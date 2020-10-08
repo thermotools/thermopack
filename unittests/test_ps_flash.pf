@@ -1,6 +1,6 @@
 module test_ps_flash
   use eoslibinit, only: init_thermo
-  use parameters, only: continueOnError
+  use thermopack_constants, only: continueOnError
   use ps_solver
   use pfunit_mod
   implicit none
@@ -17,7 +17,7 @@ contains
 
     continueOnError = .true.
 
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 3,&
+    call init_thermo('PR', 'vdW', 'Classic',&
          "CO2,N2,C1", 2)
 
     z = [0.90736542122980968, &

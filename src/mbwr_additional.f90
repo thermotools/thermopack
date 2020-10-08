@@ -1,9 +1,9 @@
-MODULE tpmbwr_additional
-  USE tpconst, ONLY: Rgas ! [Rgas] = Pa*m^3/(mol*K)
+MODULE mbwr_additional
+  use thermopack_constants, ONLY: Rgas ! [Rgas] = Pa*m^3/(mol*K)
 CONTAINS
 
   SUBROUTINE alphar_deltaCoef(opt,Tr,deltaCoef,model)
-    USE tpmbwr, ONLY: eosmbwr, nijlarray, allocNIJL
+    USE mbwr, ONLY: eosmbwr, nijlarray, allocNIJL
     implicit none
     !input variables
     integer, intent(in) :: opt
@@ -36,7 +36,7 @@ CONTAINS
 
 
   SUBROUTINE alphar_deltaDerivatives(deriv,nRhoDerivs,t,tDependentCoef,model)
-    USE tpmbwr, ONLY: eosmbwr, nijlarray, allocNIJL
+    USE mbwr, ONLY: eosmbwr, nijlarray, allocNIJL
     implicit none
     !input variables
     REAL, INTENT(IN) :: t
@@ -101,7 +101,7 @@ CONTAINS
   !  deriv = [d_t^m alpha,...,d_t^m d_rho^n alpha],
   !  while deriv(n+1:2) is not initialized.
   subroutine alphar_derivatives(deriv,t,rho_SI,nTderivs,nRhoDerivs,model)
-    USE tpmbwr, ONLY: eosmbwr, nijlarray, allocNIJL
+    USE mbwr, ONLY: eosmbwr, nijlarray, allocNIJL
     implicit none
     !output variables
     real, dimension(0:2), intent(out) :: deriv
@@ -190,7 +190,7 @@ CONTAINS
 
   !> Outputs volume in m^3/mol
   real function mbwr_volume(T,P,nMoles,phase,model)
-    use tpmbwr, only: eosmbwr, makeParam, MBWR_density
+    use mbwr, only: eosmbwr, makeParam, MBWR_density
     implicit none
     !input variables
     real, intent(in) :: T !< temperature [K]
@@ -213,7 +213,7 @@ CONTAINS
 
   !> Solves for the density having lowest (residual) Gibbs energy.
   real function MBWR_stableDensity(T,P,model)
-    use tpmbwr, only: eosmbwr, makeParam, MBWR_density
+    use mbwr, only: eosmbwr, makeParam, MBWR_density
     implicit none
     !input
     real, intent(in) :: T, P
@@ -242,7 +242,7 @@ CONTAINS
   end function MBWR_stableDensity
 
   subroutine MBWR_Gres(model, T, P, V, nMoles, Gres)!, dgresdt, dgresdp, dgresdn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T ! [K]
@@ -268,7 +268,7 @@ CONTAINS
 
   !> Residual entropy [kJ/mol].
   subroutine MBWR_Sres(model, T, P, V, nMoles, Sres, DSresDt, DSresDp, DSresDn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -325,7 +325,7 @@ CONTAINS
   !> Residual reduced Helmholtz energy.
   subroutine MBWR_Fres(model, T, V, nMoles, Fr, F_T, F_v, F_TT, F_Tv, F_vv, &
        F_n, F_Tn, F_vn, F_nn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -401,7 +401,7 @@ CONTAINS
 
   !********************* Derivatives of pressure *********************
   subroutine MBWR_press(model, T, v, nMoles, p, dpdv, dpdt)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -444,7 +444,7 @@ CONTAINS
 
   !********************* Derivatives of Hres *********************
   subroutine MBWR_Hres(model, T, P, V, nMoles, Hres, DHresDT, DHresDP, DHresDn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -500,7 +500,7 @@ CONTAINS
 
   !********************* Derivatives of z *********************
   subroutine MBWR_zfac(model, T, P, V, nMoles, z, DzDt, DzDp, DzDn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -545,7 +545,7 @@ CONTAINS
 
   !********************* Derivatives of lnphi ********************
   subroutine MBWR_lnphi(model, T, P, V, nMoles, lnphi, DlnphiDT, DlnphiDP, DlnphiDn)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -592,12 +592,12 @@ CONTAINS
   !***************************************************************
 
   subroutine checkStateFunctionDerivatives(StateFunction,T,P,V,nMoles,model,phase)
-    use tpmbwr, only : eosmbwr, MBWR_coef, MBWR_density, makeParam
+    use mbwr, only : eosmbwr, MBWR_coef, MBWR_density, makeParam
     implicit none
     !input
     interface
        subroutine StateFunction(model, T, P, V, nMoles, lnphi, DlnphiDT, DlnphiDP, DlnphiDn)
-         use tpmbwr, only: eosmbwr
+         use mbwr, only: eosmbwr
          implicit none
          !input
          real, intent(in) :: T
@@ -664,7 +664,7 @@ CONTAINS
 
 
   subroutine CheckModelConsistency(T,P,V,nMoles,model)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -746,7 +746,7 @@ CONTAINS
   end subroutine CheckModelConsistency
 
   subroutine checkFderivatives(T,V,nMoles,model)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -880,7 +880,7 @@ CONTAINS
 
 
   real function F(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -894,7 +894,7 @@ CONTAINS
   end function F
 
   real function DFDT(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -908,7 +908,7 @@ CONTAINS
   end function DFDT
 
   real function D2FDT2(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -922,7 +922,7 @@ CONTAINS
   end function D2FDT2
 
   real function DFDV(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -936,7 +936,7 @@ CONTAINS
   end function DFDV
 
   real function D2FDV2(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -951,7 +951,7 @@ CONTAINS
   end function D2FDV2
 
   real function DFDn(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -966,7 +966,7 @@ CONTAINS
   end function DFDn
 
   real function D2FDn2(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -981,7 +981,7 @@ CONTAINS
   end function D2FDn2
 
   real function D2FDTDV(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -995,7 +995,7 @@ CONTAINS
   end function D2FDTDV
 
   real function D2FDTDn(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -1010,7 +1010,7 @@ CONTAINS
   end function D2FDTDn
 
   real function D2FDVDn(T,V,nMoles,alphaDerivatives)
-    use tpmbwr, only: eosmbwr
+    use mbwr, only: eosmbwr
     implicit none
     !input
     real, intent(in) :: T
@@ -1024,4 +1024,4 @@ CONTAINS
     D2FDVDn = -(nMoles/(V*V))*(2*DalphaDdelta + nMoles/(V)*D2alphaDdelta2)
   end function D2FDVDn
 
-end module tpmbwr_additional
+end module mbwr_additional

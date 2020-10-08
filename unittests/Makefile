@@ -10,12 +10,11 @@ endif
 SRCS = $(wildcard *.pf)
 OBJS = $(SRCS:.pf=$(OBJ_EXT))
 OBJ_DIR = ../$(ODIR)
-LIBNUM_DIR = ../libnum
 
 # To avoid deletion of intermediate files:
 .SECONDARY: $(SRCS:.pf=.F90)
 
-EXTRA_FLAGS = -I$(OBJ_DIR) $(INCDIR) -I$(PFUNIT)/mod -I$(LIBNUM_DIR)/objects/$(TARGET)
+EXTRA_FLAGS = -I$(OBJ_DIR) $(INCDIR) -I$(PFUNIT)/mod
 ifeq ($(FC),nagfor)
    EXTRA_FLAGS += -fpp
 endif

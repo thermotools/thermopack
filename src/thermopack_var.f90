@@ -1,129 +1,419 @@
-!> This is global variables for ThermoPack library when the component vector, the EOS/mixing rule
-!! including interaction parameters and ideal gas CP-correlation
-!! \author GS, 2012-04-13.
-module tpvar
-  use compdata, only: gendata
-  use eosdata, only: eoscubic
+!> Global variables for ThermoPack. They are initialized in the thermo_model
+!> module.
+module thermopack_var
+  use thermopack_constants, only: eosid_len, label_len, &
+       PSEUDO_CRIT_MOLAR_VOLUME
+  use apparent_compostion, only: apparent_container
+  use compdata, only: gendata_pointer
+  use utilities, only: get_thread_index
+  use association_var, only: association
   implicit none
   save
   !
-  integer :: nce=0 !< Number of real components, to support apparent composition mode. Always have: nce >= nc
-  real, parameter :: min_mol_num = 1.0e-150
+  public
 
-  !< Stoichiometric matrix. Need to have dimension (nc,nce),
-  !! and map relation between apparent and real components
-  !! Currently used only for electrolytes. See electrolytes.f90
-  real, allocatable, dimension(:,:)           :: v_stoich
-  real, allocatable, dimension(:)             :: v_sum
-  integer :: ncsym=0 !< Symmetrical upper left part of v_stoich
+  !> Number of phases:
+  integer :: nph = 0
+  !> Number of apparent components:
+  integer :: nc = 0
+  !< Number of real components, to support apparent composition mode. Always have: nce >= nc
+  integer :: nce = 0
+  !< Symmetrical upper left part of v_stoich
+  integer :: ncsym = 0
+  !< Total number of associating sites.
+  integer :: numAssocSites = 0
 
-  type (gendata), allocatable, dimension(:)   :: comp !< Active component array
-  type (eoscubic), allocatable, dimension(:)  :: cbeos !> Global variable for current selected cubic EOS
-  type (eoscubic), allocatable, dimension(:)  :: cbeos_alternative !> Global variable for alternate cubic EOS
+  !> List of component names
+  character (len=eosid_len), pointer :: complist(:)
+  ! Apparent composition
+  type(apparent_container), pointer :: apparent => NULL()
 
-  public :: TP_lnfug_apparent, apparent_to_real_mole_numbers
-  public :: real_to_apparent_differentials, real_to_apparent_diff
-  public :: getModFugacity
-  public :: get_i_cbeos
+  type, abstract :: base_eos_param
+    ! Base class for holding parameters unique to an EoS.
+    character (len=eosid_len) :: eosid !< Eos identifier
+    !character (len=eos_name_len) :: label !< Name of EOS
+    integer :: eosidx !< Eos group index
+    integer :: subeosidx !< Eos sub-index
+    integer :: volumeShiftId = 0 !< 0: No volume shift, 1:Peneloux shift
+    logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
+    !
+    type(association), pointer :: assoc => NULL()
+
+  contains
+    procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
+    procedure, public :: dealloc => base_eos_dealloc
+    ! Assignment operator
+    procedure(assign_intf), deferred, pass(This), public :: assign_eos
+    generic, public :: assignment(=) => assign_eos
+
+    procedure, public :: assign_base_eos_param
+  end type base_eos_param
+
+
+  type :: eos_param_pointer
+     !> A trivial type that only contains a pointer to base_eos_param. This type
+     !> is needed because gfortran does not allow arrays of pointer to
+     !> base_eos_param, whereas arrays of the eos_param_pointer type is allowed.
+     class(base_eos_param), pointer :: p_eos
+  end type eos_param_pointer
+
+
+  abstract interface
+    subroutine allocate_and_init_intf(eos,nc,eos_label)
+      import base_eos_param
+      ! Passed object:
+      class(base_eos_param), intent(inout) :: eos
+      ! Input:
+      integer, intent(in) :: nc !< Number of components
+      character(len=*), intent(in) :: eos_label !< EOS label
+    end subroutine allocate_and_init_intf
+  end interface
+
+
+  abstract interface
+    subroutine assign_intf(This, other)
+      import base_eos_param
+      ! Passed object:
+      class(base_eos_param), intent(inout) :: This
+      class(*), intent(in) :: other
+    end subroutine assign_intf
+  end interface
+
+  type thermo_model
+     !> A complete ThermoPack model. Holds information about the EoS, the
+     !> mixture, and the computational solver options
+    integer :: model_idx !< Model is active if this equals activated_model_idx
+    ! From parameters
+    integer :: nph=3
+    integer :: nc=0
+    integer :: EoSlib=0
+    integer :: eosidx=0
+    character(len=label_len) :: label
+    integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
+
+    ! Apparent composition
+    type(apparent_container), pointer :: apparent => NULL()
+
+    ! Component data
+    type(gendata_pointer), allocatable :: comps(:)
+    character(len=eosid_len), allocatable :: complist(:)
+
+    ! Need to be list for OMP support
+    type(eos_param_pointer), allocatable, dimension(:) :: eos
+
+    ! Alternative EOS used to generate initial values
+    logical :: need_alternative_eos
+    type(eos_param_pointer), allocatable, dimension(:) :: cubic_eos_alternative
+  contains
+    procedure, public :: dealloc => thermo_model_dealloc
+    procedure, public :: is_model_container
+    !procedure :: assign_thermo_model
+    !generic, public :: assignment(=) => assign_thermo_model
+  end type thermo_model
+
+
+  type :: thermo_model_pointer
+     !> A trivial type that only contains a pointer to thermo_model. This type
+     !> is needed because gfortran does not allow arrays of pointer to
+     !> base_eos_param, whereas arrays of the thermo_model_pointer type is
+     !> allowed.
+    type(thermo_model), pointer :: p_model => NULL()
+  end type thermo_model_pointer
+
+
+  ! Index that indicates the active model
+  integer, private :: thermo_model_idx_counter = 0
+  ! Pointer to active model
+  type(thermo_model), pointer :: p_active_model => NULL()
+  ! Multiple model support
+  type(thermo_model_pointer), allocatable, dimension(:) :: thermo_models
+
+  public :: get_active_eos, get_active_thermo_model, &
+       get_active_alt_eos, active_thermo_model_is_associated
+  public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
+       real_to_apparent_differentials, TP_lnfug_apparent
+  public :: base_eos_dealloc, delete_all_eos
 
 contains
 
-  !----------------------------------------------------------------------
-  !> Map apparent mole numbers to real mole numbers used by model
-  subroutine apparent_to_real_mole_numbers(n,ne,nc)
-    integer, intent(in) :: nc
+  function get_active_thermo_model() result(p_eos)
+    type(thermo_model), pointer :: p_eos
+    if (.not. associated(p_active_model)) call stoperror("get_active_thermo_model: No active eos found")
+    p_eos => p_active_model
+  end function get_active_thermo_model
+
+  function active_thermo_model_is_associated() result(is_assoc)
+    logical :: is_assoc
+    is_assoc = associated(p_active_model)
+  end function active_thermo_model_is_associated
+
+  function get_active_eos() result(p_eos)
+    class(base_eos_param), pointer :: p_eos
+    ! Locals
+    type(thermo_model), pointer :: p_eos_cont
+    integer :: i_eos
+    p_eos_cont => get_active_thermo_model()
+
+    if (.not. allocated(p_eos_cont%eos)) call stoperror("get_active_eos: eos array not allocted found")
+    i_eos = get_thread_index()
+    if (.not. associated(p_eos_cont%eos(i_eos)%p_eos)) call stoperror("get_active_eos: eos not acociated")
+    p_eos => p_eos_cont%eos(i_eos)%p_eos
+  end function get_active_eos
+
+  function get_active_alt_eos() result(p_eos)
+    class(base_eos_param), pointer :: p_eos
+    ! Locals
+    type(thermo_model), pointer :: p_eos_cont
+    integer :: i_eos
+    p_eos_cont => get_active_thermo_model()
+
+    if (.not. allocated(p_eos_cont%eos)) call stoperror("get_active_alt_eos: eos array not allocted found")
+    i_eos = get_thread_index()
+    if (.not. associated(p_eos_cont%cubic_eos_alternative(i_eos)%p_eos)) call stoperror("get_active_alt_eos: eos not acociated")
+    p_eos => p_eos_cont%cubic_eos_alternative(i_eos)%p_eos
+  end function get_active_alt_eos
+
+  function get_active_comps() result(p_comps)
+    type(gendata_pointer), pointer :: p_comps(:)
+    ! Locals
+    type(thermo_model), pointer :: p_eos_cont
+    p_eos_cont => get_active_thermo_model()
+    p_comps => p_eos_cont%comps
+  end function get_active_comps
+
+  function is_model_container(model, index) result(isC)
+    class(thermo_model), intent(in) :: model
+    integer, intent(in) :: index
+    logical :: isC
+    isC = (model%model_idx == index)
+  end function is_model_container
+
+  subroutine activate_model(index)
+    integer, intent(in) :: index
+    ! Locals
+    integer :: i
+    character(len=4) :: index_str
+    if (.not. allocated(thermo_models)) call stoperror("No eos exists....")
+    do i=1,size(thermo_models)
+      if (thermo_models(i)%p_model%is_model_container(index)) then
+        p_active_model => thermo_models(i)%p_model
+        call update_global_variables_form_active_thermo_model()
+        !call print_globals()
+        return
+      endif
+    enddo
+    write(index_str,"(I4)") index
+    call stoperror("No eos matches label "//adjustl(trim(index_str)))
+  end subroutine activate_model
+
+  function add_eos() result(index)
+    integer :: index
+    ! Locals
+    integer :: i, istat, n
+    type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
+    type(thermo_model), pointer :: model
+    allocate(model, stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate new eos")
+    n = 1
+    if (allocated(thermo_models)) n = n + size(thermo_models)
+    if (n > 1) then
+      allocate(eos_copy(n), stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate eos_copy")
+      do i=1,n-1
+        eos_copy(i)%p_model => thermo_models(i)%p_model
+      enddo
+    endif
+    if (allocated(thermo_models)) deallocate(thermo_models, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
+    allocate(thermo_models(n), stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate thermo_models")
+    if (n > 1) then
+      do i=1,n-1
+        thermo_models(i)%p_model => eos_copy(i)%p_model
+      enddo
+      deallocate(eos_copy, stat=istat)
+      if (istat /= 0) call stoperror("Not able to deallocate eos_copy")
+    endif
+    thermo_models(n)%p_model => model
+    p_active_model => model
+    thermo_model_idx_counter = thermo_model_idx_counter + 1
+    index = thermo_model_idx_counter
+    p_active_model%model_idx = index
+  end function add_eos
+
+  subroutine delete_eos(index)
+    integer, intent(in) :: index
+    ! Locals
+    integer :: i, istat, n, nr
+    type(thermo_model_pointer), allocatable, dimension(:) :: eos_copy
+    if (.not. allocated(thermo_models)) call stoperror("Not able to delete model. No models exists....")
+    n = size(thermo_models)
+    allocate(eos_copy(n-1), stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate eos_copy")
+    nr = 0
+    do i=1,n
+      if (thermo_models(i)%p_model%is_model_container(index)) then
+        if (p_active_model%is_model_container(index)) then
+          p_active_model => NULL()
+        endif
+        call thermo_models(i)%p_model%dealloc()
+        deallocate(thermo_models(i)%p_model, stat=istat)
+        if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_model")
+      else
+        nr = nr + 1
+        eos_copy(nr)%p_model => thermo_models(i)%p_model
+      endif
+    enddo
+    deallocate(thermo_models, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
+    if (nr > 0) then
+      allocate(thermo_models(n-1), stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate thermo_models")
+      do i=1,n-1
+        thermo_models(i)%p_model => eos_copy(i)%p_model
+      enddo
+      if (.not. associated(p_active_model)) then
+        p_active_model => thermo_models(1)%p_model
+      endif
+    endif
+  end subroutine delete_eos
+
+  subroutine base_eos_dealloc(eos)
+    ! Passed object:
+    class(base_eos_param), intent(inout) :: eos
+    ! Locals
+    integer :: istat
+    if (associated(eos%assoc)) then
+      deallocate(eos%assoc, stat=istat)
+      if (istat /= 0) print *,"Error deallocating eos%assoc"
+      eos%assoc => NULL()
+    endif
+  end subroutine base_eos_dealloc
+
+  subroutine assign_base_eos_param(this, other)
+    ! Passed object:
+    class(base_eos_param), intent(inout) :: this
+    class(base_eos_param), intent(in) :: other
+    ! Locals
+    integer :: istat
+    this%eosid = other%eosid
+    this%eosidx = other%eosidx
+    this%subeosidx = other%subeosidx
+    this%volumeShiftId = other%volumeShiftId
+    this%isElectrolyteEoS = other%isElectrolyteEoS
+    !
+    if (associated(other%assoc)) then
+      if (.not. associated(this%assoc)) then
+        allocate(this%assoc, stat=istat)
+        if (istat /= 0) print *,"Error allocating assoc"
+      endif
+      this%assoc = other%assoc
+    endif
+
+  end subroutine assign_base_eos_param
+
+  subroutine thermo_model_dealloc(model)
+    ! Passed object:
+    class(thermo_model), intent(inout) :: model
+    ! Locals
+    integer :: i, istat
+    do i=1,size(model%eos)
+      if (associated(model%eos(i)%p_eos)) then
+        call model%eos(i)%p_eos%dealloc()
+        deallocate(model%eos(i)%p_eos, stat=istat)
+        if (istat /= 0) print *,"Error deallocating eos"
+        model%eos(i)%p_eos => NULL()
+      endif
+      if (allocated(model%cubic_eos_alternative)) then
+        if (associated(model%cubic_eos_alternative(i)%p_eos)) then
+          call model%cubic_eos_alternative(i)%p_eos%dealloc()
+          deallocate(model%cubic_eos_alternative(i)%p_eos, stat=istat)
+          if (istat /= 0) print *,"Error deallocating cubic_eos_alternative"
+          model%cubic_eos_alternative(i)%p_eos => NULL()
+        endif
+      endif
+    enddo
+
+    if (allocated(model%comps)) then
+      do i=1,size(model%comps)
+        if (associated(model%comps(i)%p_comp)) then
+          deallocate(model%comps(i)%p_comp, stat=istat)
+          if (istat /= 0) print *,"Error deallocating comps%p_comp"
+        endif
+      enddo
+      deallocate(model%comps, stat=istat)
+      if (istat /= 0) print *,"Error deallocating comps"
+    endif
+    if (allocated(model%complist)) then
+      deallocate(model%complist, stat=istat)
+      if (istat /= 0) print *,"Error deallocating complist"
+    endif
+    if (associated(model%apparent)) then
+      call model%apparent%dealloc()
+      deallocate(model%apparent, stat=istat)
+      if (istat /= 0) print *,"Error deallocating apparent class"
+      model%apparent => NULL()
+    endif
+
+  end subroutine thermo_model_dealloc
+
+  subroutine delete_all_eos()
+    ! Locals
+    integer :: i, istat
+    if (allocated(thermo_models)) then
+      do i=1,size(thermo_models)
+        call thermo_models(i)%p_model%dealloc()
+        deallocate(thermo_models(i)%p_model, stat=istat)
+        if (istat /= 0) call stoperror("Not able to deallocate eos(i)%p_model")
+      enddo
+      deallocate(thermo_models, stat=istat)
+      if (istat /= 0) call stoperror("Not able to deallocate thermo_models")
+      p_active_model => NULL()
+      complist => NULL()
+      apparent => NULL()
+      nph = 0
+      nc = 0
+      nce = 0
+      ncsym = 0
+      numAssocSites = 0
+    endif
+  end subroutine delete_all_eos
+
+  subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)
     real, intent(out) :: ne(nce)
-    ! Locals
-    integer :: i, j
-    if (nc == nce) then
-      ne = n
+    if (associated(apparent)) then
+      call apparent%apparent_to_real_mole_numbers(n,ne)
     else
-      ne(1:ncsym) = n(1:ncsym)
-      ne(ncsym+1:nce) = 0.0
-      do i=ncsym+1,nce
-        do j=ncsym+1,nc
-          ne(i) = ne(i) + v_stoich(j,i)*n(j)
-        enddo
-      enddo
+      ne = n
     endif
   end subroutine apparent_to_real_mole_numbers
 
-  !----------------------------------------------------------------------
-  !> Map from real mole number differentials to apparent mole number
-  !! differentials
-  subroutine real_to_apparent_differentials(nc,Fe_n,Fe_Tn,Fe_Vn,Fe_nn,&
-       F_n,F_Tn,F_Vn,F_nn)
-    integer, intent(in) :: nc
-    real, intent(in) :: Fe_n(nce),Fe_Tn(nce),Fe_Vn(nce),Fe_nn(nce,nce)
-    real, optional, intent(out) :: F_n(nc),F_Tn(nc),F_Vn(nc),F_nn(nc,nc)
-    ! Locals
-    integer :: i, j, k, l
-    if (present(F_n)) then
-      call real_to_apparent_diff(Fe_n,F_n,nc)
-    endif
-    if (present(F_Tn)) then
-      call real_to_apparent_diff(Fe_Tn,F_Tn,nc)
-    endif
-    if (present(F_Vn)) then
-      call real_to_apparent_diff(Fe_Vn,F_Vn,nc)
-    endif
-    if (present(F_nn)) then
-      if (nc == nce) then
-        F_nn = Fe_nn
-      else
-        F_nn = 0.0
-        F_nn(1:ncsym,1:ncsym) = Fe_nn(1:ncsym,1:ncsym)
-        ! Solvent-salt differentials
-        do k=1,ncsym ! Solvent
-          do i=ncsym+1,nc ! Salt
-            do j=ncsym+1,nce ! Ion
-              F_nn(k,i) = F_nn(k,i) + Fe_nn(k,j)*v_stoich(i,j)
-              F_nn(i,k) = F_nn(i,k) + Fe_nn(j,k)*v_stoich(i,j)
-            enddo
-          enddo
-        enddo
-        ! Salt-salt differentials
-        do k=ncsym+1,nc ! Salt1
-          do i=ncsym+1,nc ! Salt2
-            do j=ncsym+1,nce ! Ions of salt 1
-              do l=ncsym+1,nce ! Ions of salt 2
-                F_nn(k,i) = F_nn(k,i) + Fe_nn(l,j)*v_stoich(k,j)*v_stoich(i,l)
-              enddo
-            enddo
-          enddo
-        enddo
-      endif
-    endif
-  end subroutine real_to_apparent_differentials
-
-  !----------------------------------------------------------------------
-  !> Map from real mole number differential to apparent mole number
-  !! differentials
-  subroutine real_to_apparent_diff(Fe_n,F_n,nc)
-    integer, intent(in) :: nc
+  subroutine real_to_apparent_diff(Fe_n,F_n)
     real, intent(in) :: Fe_n(nce)
     real, intent(out) :: F_n(nc)
-    ! Locals
-    integer :: i, j
-    if (nc == nce) then
-      F_n = Fe_n
+    if (associated(apparent)) then
+      call apparent%real_to_apparent_diff(Fe_n,F_n)
     else
-      F_n(1:ncsym) = Fe_n(1:ncsym)
-      F_n(ncsym+1:nc) = 0.0
-      do i=ncsym+1,nc ! Salt
-        do j=ncsym+1,nce ! Ion
-          F_n(i) = F_n(i) + Fe_n(j)*v_stoich(i,j)
-        enddo
-      enddo
+      F_n = Fe_n
     endif
   end subroutine real_to_apparent_diff
 
-  !-----------------------------------------------------------------------------
-  !> Convert logarithmic fugacity coefficient from real to apparent composition
-  !!
-  !! \author Morten Hammer, 2017-03
-  !-----------------------------------------------------------------------------
+  subroutine real_to_apparent_differentials(Fe_n,Fe_Tn,Fe_Vn,Fe_nn,&
+       F_n,F_Tn,F_Vn,F_nn)
+    real, intent(in) :: Fe_n(nce),Fe_Tn(nce),Fe_Vn(nce),Fe_nn(nce,nce)
+    real, optional, intent(out) :: F_n(nc),F_Tn(nc),F_Vn(nc),F_nn(nc,nc)
+    if (associated(apparent)) then
+      call apparent%real_to_apparent_differentials(Fe_n,Fe_Tn,Fe_Vn,Fe_nn,&
+           F_n,F_Tn,F_Vn,F_nn)
+    else
+      if (present(F_n)) F_n = Fe_n
+      if (present(F_Tn)) F_Tn = Fe_Tn
+      if (present(F_Vn)) F_Vn = Fe_Vn
+      if (present(F_nn)) F_nn = Fe_nn
+    endif
+  end subroutine real_to_apparent_differentials
+
   subroutine TP_lnfug_apparent(nc,ne,n,P,lnfug_real,lnfug,dlnfugdt_real,&
        dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
     ! Input.
@@ -137,134 +427,15 @@ contains
     ! Output
     real, intent(out) :: lnfug(nc)                      !< Log of apparent fugacity
     real, optional, intent(out) :: dlnfugdt(nc), dlnfugdp(nc), dlnfugdn(nc,nc)
-    ! Locals.
-    real :: sumn, sumne  !< Total mole number in mixture [mol]
-    real :: dik
-    real :: xe(nce), x(nc), logP
-    integer :: i,j,k,l
-    if (nc == nce) then
-      ! Apparent is real composition
-      lnfug = lnfug_real
-      if (present(dlnfugdt)) then
-        dlnfugdt = dlnfugdt_real
-      endif
-      if (present(dlnfugdp)) then
-        dlnfugdp = dlnfugdp_real
-      endif
-      if (present(dlnfugdn)) then
-        dlnfugdn = dlnfugdn_real
-      endif
+
+    if (associated(apparent)) then
+      call apparent%TP_lnfug_apparent(nc,ne,n,P,lnfug_real,lnfug,dlnfugdt_real,&
+           dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
     else
-      sumn = sum(n)
-      x = n/sumn
-      sumne = sum(ne)
-      xe = ne/sumne
-      logP = log(P)
-
-      lnfug(1:ncsym) = lnfug_real(1:ncsym)  + log(sumn/sumne)
-      do i=ncsym+1,nc
-        if (x(i) > 0.0) then
-          lnfug(i) = 0.0
-          do j=ncsym+1,nce
-            lnfug(i) = lnfug(i) + v_stoich(i,j)*(log(xe(j)) + lnfug_real(j))
-          enddo
-          lnfug(i) = lnfug(i) - log(x(i))
-        else
-          lnfug(i) = 0.0
-        endif
-      enddo
-
-      if (present(dlnfugdt)) then
-        call real_to_apparent_diff(dlnfugdt_real,dlnfugdt,nc)
-      endif
-      if (present(dlnfugdp)) then
-        call real_to_apparent_diff(dlnfugdp_real,dlnfugdp,nc)
-      endif
-      if (present(dlnfugdn)) then
-        dlnfugdn = 0.0
-        ! Upper left matrix (ncsym)x(ncsym)
-        do i=1,ncsym
-          do j=1,ncsym
-            dlnfugdn(i,j) = dlnfugdn_real(i,j) - 1.0/sumne + 1.0/sumn
-          end do
-        end do
-        ! Lower right matrix (nc-ncsym)x(nc-ncsym)
-        do k=ncsym+1,nc ! App k
-          do i=ncsym+1,nc ! App i
-            do j=ncsym+1,nce ! Real j
-              do l=ncsym+1,nce ! Real l
-                dlnfugdn(k,i) = dlnfugdn(k,i) + dlnfugdn_real(l,j)*v_stoich(k,j)*v_stoich(i,l)
-              enddo
-            enddo
-            if (i == k) then
-              if (n(k) > 0.0) then
-                dik = 1.0/max(n(k),min_mol_num)
-              else
-                dik = 0.0
-              endif
-            else
-              dik = 0.0
-            endif
-            dlnfugdn(k,i) = dlnfugdn(k,i) + 1.0/sumn - dik - v_sum(k)*v_sum(i)/sumne
-            do j=ncsym+1,nce ! Real j
-              if (ne(j) > 0.0) then
-                dlnfugdn(k,i) = dlnfugdn(k,i) + v_stoich(k,j)*v_stoich(i,j)/max(ne(j),min_mol_num)
-              endif
-            enddo
-          enddo
-        enddo
-
-        ! Lower and left and upper right (ncsym)x(nc-ncsym) and (nc-ncsym)x(ncsym)
-        do k=1,ncsym ! App k
-          do i=ncsym+1,nc ! App i
-            do j=ncsym+1,nce ! Real j
-              dlnfugdn(k,i) = dlnfugdn(k,i) + dlnfugdn_real(k,j)*v_stoich(i,j)
-              dlnfugdn(i,k) = dlnfugdn(i,k) + dlnfugdn_real(j,k)*v_stoich(i,j)
-            enddo
-            dlnfugdn(k,i) = dlnfugdn(k,i) + 1.0/sumn - v_sum(i)/sumne
-            dlnfugdn(i,k) = dlnfugdn(i,k) + 1.0/sumn - v_sum(i)/sumne
-          enddo
-        enddo
-      endif
+      lnfug = lnfug_real
+      if (present(dlnfugdt)) dlnfugdt = dlnfugdt_real
+      if (present(dlnfugdp)) dlnfugdp = dlnfugdp_real
+      if (present(dlnfugdn)) dlnfugdn = dlnfugdn_real
     endif
   end subroutine TP_lnfug_apparent
-
-  !---------------------------------------------------------------------------
-  !> Back calculate logaritm of fugacity coefficient, by removing
-  !! dependency of log(x) and log(xe)
-  !!
-  !! \author MH, 2017-05
-  !---------------------------------------------------------------------------
-  subroutine getModFugacity(t,p,X,lnfug,sumne)
-    use parameters, only: nc
-    implicit none
-    real, intent(in) :: t !< Temperature (K)
-    real, intent(in) :: p !< Pressure (Pa)
-    real, dimension(nc), intent(in) :: X !< Phase compozition
-    real, intent(inout) :: lnfug(nc)
-    real, intent(out) :: sumne
-    ! Locals
-    integer :: i, k
-    real :: Xe(nce)
-    call apparent_to_real_mole_numbers(X,Xe,nc)
-    sumne = sum(Xe)
-    Xe = Xe/sumne
-    do i=ncsym+1,nc
-      lnfug(i) = lnfug(i) + log(X(i))
-      do k=ncsym+1,nce
-        if (v_stoich(i,k) > 0) then
-          lnfug(i) = lnfug(i) - v_stoich(i,k)*log(xe(k))
-          lnfug(i) = lnfug(i) + v_stoich(i,k)*log(v_stoich(i,k))
-        endif
-      enddo
-    enddo
-  end subroutine getModFugacity
-
-  function get_i_cbeos() result(i_cbeos)
-    !$ use omp_lib, only: omp_get_thread_num
-    integer :: i_cbeos
-    i_cbeos = 1
-    !$ i_cbeos = 1 + omp_get_thread_num()
-  end function get_i_cbeos
-
-end module tpvar
+end module thermopack_var

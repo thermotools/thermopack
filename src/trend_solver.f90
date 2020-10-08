@@ -7,7 +7,8 @@
 module trend_solver
   !
   !
-  use parameters, only: nc,verbose,LIQPH,VAPPH,SINGLEPH,FAKEPH,MINGIBBSPH
+  use thermopack_constants, only: verbose,LIQPH,VAPPH,SINGLEPH,FAKEPH,MINGIBBSPH
+  use thermopack_var, only: nc
   use numconstants, only: machine_prec
   implicit none
   integer, parameter :: TREND_LIQ=1,TREND_VAP=2

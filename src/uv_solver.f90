@@ -8,9 +8,11 @@
 module uv_solver
   !
   !
-  use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits, Rgas
+  use thermopack_constants, only: tpPmax, tpPmin, get_templimits, Rgas, &
+       LIQPH, VAPPH, continueOnError, zLimit, FAKEPH, &
+       SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use numconstants, only: machine_prec, small
-  use parameters
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -93,6 +95,7 @@ contains
   !> \author MH, 2012-08-15
   !-------------------------------------------------------------------------
   subroutine twoPhaseUVflash_mc(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase)
+    use thermo_utils, only: wilsonK
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(out) :: betaL !< Liquid phase molar fraction [-]
@@ -230,7 +233,7 @@ contains
     if (present(isConverged)) then
       isConverged = .true.
     endif
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits(Tmin, Tmax)
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -408,7 +411,7 @@ contains
     real, parameter :: maxstep_p = 5.0e5
     real :: factor, T0, P0, T1, P1, Tmin, Tmax
     real, dimension(2) :: dvar_tp
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits(Tmin, Tmax)
     if (var(1) + dvar(1) > 0.99*expMax) then
       factor = 1.0/dvar(1)
       dvar(1) = 0.99*expMax - var(1)
@@ -547,10 +550,10 @@ contains
     real, dimension(nc) :: FUGZ, FUGL, FUGG, K, L
     integer :: minGphase, nov, i
     real :: g_feed, tpd, g_mix, Tmin, Tmax
-    logical :: liq_stab_negative, gas_stab_negative, isTrivialL, isTrivialV
+    logical :: liq_stab_negative, gas_stab_negative
     !
     converged = .false.
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits(Tmin, Tmax)
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -618,10 +621,10 @@ contains
           endif
         else
           if (minGphase == phase .OR. minGphase == SINGLEPH) then
-            tpd = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGL)
-            liq_stab_negative = (.not. isTrivialL .and. tpd < stabilityLimit)
-            tpd = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGG)
-            gas_stab_negative = (.not. isTrivialV .and. tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,LIQPH,FUGZ,FUGL)
+            liq_stab_negative = (tpd < stabilityLimit)
+            tpd = stabcalc(t,p,Z,VAPPH,FUGZ,FUGG)
+            gas_stab_negative = (tpd < stabilityLimit)
             ! Do we need to try another phase?
             if (liq_stab_negative .or. gas_stab_negative) then
               if (liq_stab_negative .and. gas_stab_negative) then
@@ -1090,7 +1093,7 @@ contains
     logical :: isStable
     ! Locals
     real :: tpd
-    logical :: phase_stab_negative,isTrivial
+    logical :: phase_stab_negative
     real, dimension(nc) :: K,FUG,W
     integer, parameter :: nd = 1, j = 1
     real, dimension(nd,nc) :: XX
@@ -1098,8 +1101,8 @@ contains
     if (doCustomStabCheck) then
       XX(1,:) = Z
       W = wInitial
-      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,isTrivial,FUGZ,FUG)
-      phase_stab_negative = (.not. isTrivial .and. tpd < stabilityLimit)
+      tpd = stabcalcW(nd,j,t,p,XX,W,custumPhase,FUGZ,FUG)
+      phase_stab_negative = (tpd < stabilityLimit)
       ! Do we need to introduce another phase?
       if (phase_stab_negative) then
         if (custumPhase == VAPPH) then
@@ -1129,7 +1132,6 @@ contains
   subroutine twoPhaseUVsingleComp(t,p,Z,beta,betaL,X,Y,uspec,vspec,&
        phase,ierr)
     use thermo_utils, only: maxComp
-    use tpvar, only: comp
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
     real, intent(inout) :: betaL !< Liquid phase molar fraction [-]
@@ -1146,13 +1148,15 @@ contains
     real :: t0, p0, beta0, betaL0, Tmax, Tmin
     integer :: phaseVec(2), i, imax(1)
     logical :: isConverged
+    type(thermo_model), pointer :: act_mod_ptr
     !
+    act_mod_ptr => get_active_thermo_model()
     if (present(ierr)) then
       ierr = 0
     endif
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits( Tmin, Tmax)
     imax = maxloc(Z)
-    Tmin = max(comp(imax(1))%ttr, Tmin) ! Limit to triple point
+    Tmin = max(act_mod_ptr%comps(imax(1))%p_comp%ttr, Tmin) ! Limit to triple point
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -1246,7 +1250,7 @@ contains
     call getCriticalParam(maxComp(Z),tci,pci,oi)
     param(nc+3) = pci
     param(nc+4) = tci
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits( Tmin, Tmax)
     !t = max(min(t, tci - 20.0), tpTmin + 50.0)
     if (t > tci - 5.0 .OR. t < Tmin + 10.0) then
       t = (tci + Tmin + 50.0)*0.5
@@ -1536,7 +1540,7 @@ contains
     solver%ls_max_it = singleuv_line_searches
     solver%max_it = singleuv_nmax
 
-    call get_eoslib_templimits(EosLib, xmin(1), xmax(1))
+    call get_templimits( xmin(1), xmax(1))
     call nonlinear_solve(solver,fun_Tv_single,jac_Tv_single,jac_Tv_single,limit_dx,&
          premterm_at_dx_zero,setXv,var,xmin,xmax,param)
 

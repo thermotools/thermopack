@@ -5,8 +5,8 @@ module test_meos
   !> 2. Computed property values are checked against numbers given in papers. Will detect if the numerical coefficients are correct.
   !> 3. Saturation properties are compared against numbers given in papers. Will detect if the density solver is correct.
   use pfunit_mod
-  use tpconst
-  use parameters
+  use thermopack_var
+  use thermopack_constants
   use multiparameter_base
   use multiparameter_c3
   use multiparameter_para_h2
@@ -464,8 +464,7 @@ contains
     w = (/ 1381.9552, 958.40520, 221.88959, 194.65847, 130.89800/)
 
     ! Initialize regular variable
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
     do i=1,5
        ! Test various expressions for pressure
@@ -474,9 +473,9 @@ contains
        call m%alphaResDerivs_Tv(T=T(i),v=1/rho(i),alpr_v=alpr_v)
        call m%alphaResDerivs_taudelta(rho(i)/m%rc, m%tc/T(i), alpr=alpr_deltatau)
        @assertEqual(pCalc, p(i), releps*p(i))
-       @assertEqual(rho(i)*Rgas_meos*T(i)*(1+alpr_deltatau(1,0)), pCalc, releps*abs(pCalc))
-       @assertEqual(-Rgas_meos*T(i)*alp_v, pCalc, releps*abs(pCalc))
-       @assertEqual(Rgas_meos*T(i)*(rho(i) - alpr_v), pCalc, releps*abs(pCalc))
+       @assertEqual(rho(i)*m%Rgas_meos*T(i)*(1+alpr_deltatau(1,0)), pCalc, releps*abs(pCalc))
+       @assertEqual(-m%Rgas_meos*T(i)*alp_v, pCalc, releps*abs(pCalc))
+       @assertEqual(m%Rgas_meos*T(i)*(rho(i) - alpr_v), pCalc, releps*abs(pCalc))
 
        ! Test cv, cp, speed of sound
        cvCalc = m%cv(T(i),1/rho(i))
@@ -502,8 +501,7 @@ contains
     real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
     real, parameter :: releps = 2e-4 ! Paper gives numbers with 5 sig figs.
 
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
     T = (/13.8033,14.0,15.0,16.0,17.0,18.0,19.0,20.0,20.271,21.0,22.0,23.0,&
          24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,32.938/)
@@ -636,8 +634,7 @@ contains
     real :: rhoLiq_mod, rhoVap_mod
     real :: releps
 
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
     T = (/13.8033,14.0,15.0,16.0,17.0,18.0,19.0,20.0,20.271,21.0,22.0,23.0,&
          24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,32.938/)
@@ -674,8 +671,7 @@ contains
     real :: rhoLiq_mod, rhoVap_mod
     real :: releps
 
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
     T = (/14.008, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 20.38, 21.0, 22.0, 23.0,&
          24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 33.22 /)
@@ -706,7 +702,7 @@ contains
 
   @Test
   subroutine test_values_normal_h2()
-    use eoslibinit, only:init_thermo
+    use eoslibinit, only: init_thermo
     use eos, only: enthalpy
     ! This test ensures that all coefficients are correct.
     type(meos_normal_h2) :: m
@@ -721,12 +717,11 @@ contains
     real :: hVap_mod, hVap_mod_t
     real :: sosLiq(np), sosVap(np), sosLiq_mod, sosVap_mod
     real :: n(1) = (/1.0/)
-    real, parameter :: releps = 4e-4 ! Paper gives numbers with 5 sig figs.
+    real, parameter :: releps = 1e-4 ! Paper gives numbers with 5 sig figs.
 
-    call init_thermo("thermopack","NIST_MEOS","Classic","Classic",1,"N-H2",2)
+    call init_thermo("NIST_MEOS","Classic","Classic","N-H2",2)
 
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
 
     T = (/13.957, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 20.369, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, &
@@ -865,8 +860,7 @@ contains
     real :: rhoLiq_mod, rhoVap_mod
     real :: releps
 
-    call m_r134a%init()
-    Rgas_meos = m_r134a%Rgas_fit
+    call m_r134a%init(use_Rgas_fit=.true.)
 
 
     T = (/170.0, 300.0, 330.0, 350.0, 370.0, 374.21/)
@@ -911,8 +905,7 @@ contains
     real :: rhoLiq_mod, rhoVap_mod
     real :: releps
 
-    call m%init()
-    Rgas_meos = m%Rgas_fit
+    call m%init(use_Rgas_fit=.true.)
 
     T = (/-1.87625E+02,-1.85000E+02,-1.80000E+02,-1.75000E+02,-1.70000E+02,&
          -1.65000E+02,-1.60000E+02,-1.55000E+02,-1.50000E+02,-1.45000E+02,&

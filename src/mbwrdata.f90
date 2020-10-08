@@ -1,9 +1,9 @@
-MODULE tpmbwrdata
+MODULE mbwrdata
+  use stringmod, only: str_eq
   IMPLICIT NONE
   SAVE
 
   TYPE :: mbwr32Data
-     SEQUENCE
      INTEGER :: EqNo
      CHARACTER (LEN=10) :: ComId
      INTEGER :: SetNo, LowProp, HighProp, Ndata
@@ -11,7 +11,6 @@ MODULE tpmbwrdata
   END TYPE mbwr32Data
 
   TYPE :: mbwr19Data
-     SEQUENCE
      INTEGER :: EqNo
      CHARACTER (LEN=10) :: ComId
      INTEGER :: SetNo, LowProp, HighProp, Ndata
@@ -1481,10 +1480,10 @@ CONTAINS
     idx = 1
     found = .false.
     do while (idx <= nMbwr19Models .and. .not. found)
-       if (trim(compid) /= trim(mbwr19Array(idx)%ComId) ) then
-          idx = idx + 1
-       else
+       if (str_eq(compid, mbwr19Array(idx)%ComId) ) then
           found = .true.
+       else
+          idx = idx + 1
        endif
     enddo
     if (.not. found) then
@@ -1502,10 +1501,10 @@ CONTAINS
     idx = 1
     found = .false.
     do while (idx <= nMbwr32Models .and. .not. found)
-       if (trim(compid) /= trim(mbwr32Array(idx)%ComId) ) then
-          idx = idx + 1
-       else
+       if (str_eq(compid, mbwr32Array(idx)%ComId) ) then
           found = .true.
+       else
+          idx = idx + 1
        endif
     enddo
     if (.not. found) then
@@ -1606,4 +1605,4 @@ CONTAINS
     end select
   end function getMBWR32critPropIndex
 
-END MODULE tpmbwrdata
+END MODULE mbwrdata

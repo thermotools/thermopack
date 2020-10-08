@@ -1,4 +1,4 @@
-module tpidealh2
+module idealh2
   implicit none
   save
 
@@ -26,15 +26,15 @@ module tpidealh2
   !
   ! Data from Table 3 in Leachman et.al
   ! "Fundamental Equations of State for Parahydrogen, Normal Hydrogen, and Orthohydrogen" doi:10.1063/1.3160306
-  
-  ! For equilibrium Hydrogen: Table 2 in 
+
+  ! For equilibrium Hydrogen: Table 2 in
   ! "The influence of the thermodynamic model of equilibriumhydrogen on the
   ! simulation of its liquefaction" Gianluca Valenti*, Ennio Macchi, Samuele
   ! Brioschi
 
   ! Array order P-H2, N-H2, O-H2, E-H2
   integer, parameter, dimension (4) :: Nk = (/7, 5, 4, 7/)
-  
+
   real, parameter, dimension(4,7) :: uk = reshape( (/ &
        4.30256, 13.0289, -47.7365, 50.0013, -18.6261, 0.993973, 0.53678, & ! P-H2
        1.616,   -0.4117, -0.792,     0.758,   1.217,  0.0,      0.0, & ! N-H2
@@ -77,24 +77,24 @@ module tpidealh2
 
   public :: CPIdeal_H2, HIdeal_H2, SIdeal_H2 !, seth2refstate
   public :: lnpvapred_H2
-  
+
   interface h2func
      module procedure geth2index
   end interface h2func
-  
+
 ! ... make this public ...
 !  interface h2subs
 !     module procedure seth2refstate
 !  end interface h2subs
-       
+
 contains
 
   integer function geth2index (ident) result (idx)
     use stringmod, only: str_eq
     implicit none
-    
+
     character (len=*), intent(in) :: ident
-    
+
     if (str_eq(ident,'P-H2')) then
        idx = 1
     elseif (str_eq(ident,'N-H2')) then
@@ -109,23 +109,23 @@ contains
     endif
   end function geth2index
 
-!  ! 
+!  !
 !  !
 !  ! The reference state for H2 is to assign h0=0, s0=0 at saturated liquid at
 !  ! the normal boiling point of 1.01325E5 Pa
 !  !
 !  subroutine seth2refstate (t0, p0, rho0, h0, s0)
 !    use eos, only: specificVolume, getcriticalparam
-!    
+!
 !    implicit none
 !    real, intent(inout) :: t0,p0,rho0,h0,s0
-!    
+!
 !    real, dimension(1) :: z0
 !    real :: tc,pc,acf,vc,tnb
-!    
+!
 !    real :: v0
 !    integer :: phase
-!    
+!
 !    z0(1) = 1.0
 !
 !    h0 = 0.0
@@ -134,35 +134,35 @@ contains
 !
 !    call getCriticalParam(1,tc,pc,acf,vc,tnb)
 !    t0 = tnb
-!    
+!
 !    ! .. or for consistancy ??
 !    !   solveForT = .true.
 !    !   call puresat(t0,p0,z0,solveForT);
 !    phase = 1.0
 !    call specificVolume(t0,p0,z0,phase,v0)
-!    rho0 = 1.0/v0    
+!    rho0 = 1.0/v0
 !  end subroutine seth2refstate
-  
-    
+
+
   function CPIdeal_H2 (ident, T) result (Cp_id)
     implicit none
-    
+
     character (len=*), intent(in) :: ident
     real, intent(in) :: T ! Temperature [K]
-    
+
     real :: vr, expvr,cp0
-    real :: CP_Id ! J / kmol K
+    real :: CP_Id ! J / mol K
     integer :: idx,k, kstp
 
     !integer :: geth2index
-    
+
     idx = geth2index(ident)
-    
+
     cp0 = 2.5
 
     ! Below 30 K the exp(v(k)/T) becomes too large - the resulting term approaches zero, so for the lowest temperaures
     ! these are omitted
-    ! 
+    !
     if (T > 30) then
        kstp = Nk(idx)
     else
@@ -174,24 +174,24 @@ contains
        expvr = exp(vr)
        cp0 = cp0 + uk(idx,k) * vr*vr * expvr /((expvr-1)*(expvr-1))
     enddo
-    CP_id = 1000 * cp0 * rgas ! J/mol K -> J/kmol K
+    CP_id = cp0 * rgas ! J/mol K
 
   end function CPIdeal_H2
-       
+
 
   function HIdeal_H2 (ident, T) result (H_id)
     implicit none
-    
+
     character (len=*), intent(in) :: ident
     real, intent(in) :: T ! Temperature [K]
-    
+
     real :: vr,expvr,h0
-    real :: H_Id ! J /kmol 
+    real :: H_Id ! J/mol
     integer :: idx,k, kstp
 
 !    integer :: geth2index
     idx = geth2index(ident)
-    
+
     if (T > 30) then
        kstp = Nk(idx)
     else
@@ -204,22 +204,22 @@ contains
        expvr = exp(vr)
        h0 =  h0 + uk(idx,k) * vk(idx,k)/(expvr-1)
     enddo
-    H_id = 1000.0 * h0_ref(idx)+1000.0 * h0 * rgas !  J/mol -> J/kmol
+    H_id = h0_ref(idx)+1000.0 * h0 * rgas !  J/mol
   end function HIdeal_H2
 
   function SIdeal_H2 (ident, T) result (s_id)
     implicit none
-    
+
     character (len=*), intent(in) :: ident
     real, intent(in) :: T ! Temperature [K]
-    
+
     real :: vr,expvr,s0
-    real :: S_Id ! J/ kmol K
+    real :: S_Id ! J/ mol K
     integer :: idx,k, kstp
 
 !    integer :: geth2index
     idx = geth2index(ident)
-    
+
     if (T > 30) then
        kstp = Nk(idx)
     else
@@ -232,33 +232,33 @@ contains
        expvr = exp(vr)
        s0 = s0 + uk(idx,k) * (vr * expvr / (expvr-1)  -  log(expvr-1)) ! Without the reference volume term ...
     enddo
-    s_id = 1000.0 * s0_ref(idx)+1000.0 * rgas * s0 ! log(v*T/(v0*T0))! J/mol K -> J/kmol K
+    s_id = s0_ref(idx)+1000.0 * rgas * s0 ! log(v*T/(v0*T0))! J/mol K
     ! .. in calling procedure: need to add the term: rgas*ln( (t*rho) / t0*rho0))
   end function SIdeal_H2
 
 
   ! The ancillary equation for satturated vapour pressure from Leachman
   ! (eq. 33, with coefficients from Table 8)
-  
+
   function lnpvapred_H2 (ident, Tr) result (lnpvapr)
     implicit none
-    
+
     character (len=*), intent(in) :: ident
     real, intent(in) :: Tr ! Reduced temperature T/Tc
-    
+
     real :: teta
     integer :: idx,k
     real :: lnpvapr
-    
+
     idx = geth2index(ident)
     teta = 1.0 - Tr
-    
+
     lnpvapr = 0.0
     do k=1,4
        lnpvapr = lnpvapr + Nvap(idx,k)*teta**kvap(idx,k)
     end do
     lnpvapr = Tr * lnpvapr ! ln(psat/pcrit)
   end function lnpvapred_H2
-  
-  end module tpidealh2
-  
+
+end module idealh2
+

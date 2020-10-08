@@ -1,4 +1,4 @@
-\documentclass[internal,english]{sintefmemo2012}
+\documentclass[english]{../thermomemo/thermomemo}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{array}% improves tabular environment.
@@ -12,7 +12,13 @@
 \usetikzlibrary{snakes}
 \usepackage{verbatim}
 \usepackage{hyperref}
-
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
 %
 % Egendefinerte
 %
@@ -148,9 +154,6 @@
 
 \title{UNIFAC excess gibbs mixing rules}
 \author{Morten Hammer}
-\project{502001113}
-
-\recipient[information]{Thermopack users}
 
 \graphicspath{{gfx/}}
 
@@ -387,8 +390,6 @@ The zero pressure limit is used when including the excess Gibbs energy into the 
   \frac{a}{RTb} = \underset{i}{\sum} x_i \frac{a_i}{RTb_i} - \frac{1}{h(\beta_0)}\left(\underset{i}{\sum} x_i \ln \frac{b}{b_i} + \frac{G^\excess}{RT} \right),
 \end{equation}
 where $h(\beta_0)$ is a constant that depend on the EOS. We have $h_{\text{PR}}(\beta_0) = 0.53$.
-
-\todo[inline]{Implement terms additional to the infinite pressure terms? - Or ignore?}
 
 The linear mixing of the covolume is used in PSRK,
 \begin{equation}

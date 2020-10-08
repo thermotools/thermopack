@@ -109,7 +109,7 @@ unittests_all_openmp:
 #   variables named: <mode>_<OS>_flags.
 #
 ifeq ($(OS),Linux)
-  compilers += gfortran ifort
+  compilers += gfortran
 
   # Define gfortran flags
   debug_gfortran_flags   = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -g -fbounds-check -fbacktrace\
@@ -126,13 +126,16 @@ ifeq ($(OS),Linux)
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
-    compilers += ifort
-    omp_ifort = "-openmp"
-    ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
+    # Make script freeze when runnign "ifort --version" without contact to licence server
+    ifneq ($(shell timeout 0.2 ifort --version 2> /dev/null),)
+      compilers += ifort
+      omp_ifort = "-openmp"
+      ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
                            | grep -o "[0-9]\.[0-9]\.[0-9]" | tail -1` \
                            \>= 18.0.0 2>/dev/null)
-    ifeq ($(ifort_is_bleeding),1)
-      omp_ifort = "-qopenmp"
+      ifeq ($(ifort_is_bleeding),1)
+        omp_ifort = "-qopenmp"
+      endif
     endif
   endif
 
@@ -299,13 +302,12 @@ $(foreach mode,$(modes),$(foreach comp,$(compilers),\
   $(eval $(call create_target,$(OS),$(mode),$(comp)))))
 
 # Similar for test targets
-$(foreach mode,$(modes),\
-  $(eval $(call create_phony_test_targets,$(mode),dummy)))
-$(foreach mode,$(modes),\
-  $(eval $(call create_phony_test_targets,$(mode),gfortran)))
+$(foreach mode,$(modes),$(foreach comp,$(compilers),\
+  $(eval $(call create_phony_test_targets,$(mode),$(comp)))))
+#
+$(foreach mode,$(modes),$(foreach comp,$(compilers),\
+  $(eval $(call create_test_target,$(OS),$(mode),$(comp)))))
 
-$(foreach mode,$(modes),\
-  $(eval $(call create_test_target,$(OS),$(mode),gfortran)))
 
 # Create list of filtered targets for the "all" family of targets
 targets_filtered := $(filter-out %_pgf90, $(filter-out %_Linux, $(targets)))

@@ -5,7 +5,8 @@ module binaryPlot
   ! MHA, 2012-01-27.
   !
   !
-  use parameters, only: verbose, nc, LIQPH, VAPPH
+  use thermopack_constants, only: verbose, LIQPH, VAPPH
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   implicit none
   save
   !
@@ -122,7 +123,7 @@ contains
     ! Routine assumes minimum T or minimum P of the envelope is given
     ! Steps upward in T or P
     ! ispec = 1:T is specified, 2:P is specified
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     use saturation, only: bubT,bubP
     use eos, only: specificvolume
     implicit none
@@ -219,7 +220,7 @@ contains
        xL1VE,yL1VE,tpL1VE,nL1VE,xL2VE,yL2VE,tpL2VE,nL2VE,&
        x_tpl,y_tpl,w_tpl)
     use utilities, only: newunit
-    use parameters, only: clen
+    use thermopack_constants, only: clen
     integer, intent(in) :: ispec
     character(len=*), intent(in) :: filename
     real, intent(in) :: T,P
@@ -285,11 +286,11 @@ contains
     ! Routine assumes minimum T or minimum P of the envelope is given
     ! Steps upward in T or P
     ! ispec = 1:T is specified, 2:P is specified
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     use saturation, only: bubT,bubP
     use critical, only: calcStabMinEig, calcCriticalZ
     use eos, only: specificvolume
-    use tpconst, only: tpTmin
+    use thermopack_constants, only: tpTmin
     implicit none
     integer, intent(in) :: ispec
     real, intent(in) :: T,P,Tmin,Pmax,dzmax
@@ -632,7 +633,6 @@ contains
     real, dimension(nc) :: w
     real :: xx(nc), yy(nc)
     real :: lnFUGx(nc), lnFUGw(nc), tpd, Xvec(2,nc)
-    logical :: isTrivial
     real, parameter :: stabLimit = 1.0e-8
     logical :: isStable1, isStable2
     ! Set reference phase
@@ -643,24 +643,24 @@ contains
       w = y
       ! Look for vapour phase
       yy = (/1.0,0.0/)
-      tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,isTrivial,lnFUGx,lnFUGw)
-      isStable = .not. (.not. isTrivial .and. tpd < stabLimit)
+      tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,lnFUGx,lnFUGw)
+      isStable = .not. (tpd < stabLimit)
       if (isStable) then
         yy = (/0.0,1.0/)
-        tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,isTrivial,lnFUGx,lnFUGw)
-        isStable = .not. (.not. isTrivial .and. tpd < stabLimit)
+        tpd = stabcalcW(2,2,t,p,Xvec,yy,VAPPH,lnFUGx,lnFUGw)
+        isStable = .not. (tpd < stabLimit)
       endif
     else
       yy = y
       ! Look for liquid phase
       w = (/1.0,0.0/)
-      tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,isTrivial,lnFUGx,lnFUGw)
-      isStable1 = .not. (.not. isTrivial .and. tpd < stabLimit)
+      tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,lnFUGx,lnFUGw)
+      isStable1 = .not. (tpd < stabLimit)
       xx = w
       if (isStable1 .or. present(xx_tpl)) then
         w = (/0.0,1.0/)
-        tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,isTrivial,lnFUGx,lnFUGw)
-        isStable2 = .not. (.not. isTrivial .and. tpd < stabLimit)
+        tpd = stabcalcW(2,2,t,p,Xvec,W,LIQPH,lnFUGx,lnFUGw)
+        isStable2 = .not. (tpd < stabLimit)
       else
         isStable2 = .true.
       endif
@@ -730,7 +730,7 @@ contains
   subroutine binaryXYfun(XX,T,P,x,y,ispec,ispecStep,ln_spec,&
        FUN,JAC,phase)
     use eos, only: thermo
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     implicit none
     integer, intent(in) :: ispec,ispecStep
     real, intent(inout) :: T,P
@@ -814,7 +814,7 @@ contains
   subroutine fillX(XX,T,P,x,y,ispec,phase)
     ! Set up variable vector XX for the given specification
     use eos, only: thermo
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
     implicit none
     integer, intent(in) :: ispec
     real, intent(inout) :: T,P
@@ -852,7 +852,6 @@ contains
   !----------------------------------------------------------------------
   subroutine readX(XX,T,P,x,y,ispec)
     ! Set up T,P,x,y from variable vector XX
-    use parameters, only: nc
     implicit none
     integer, intent(in) :: ispec
     real, intent(inout) :: T,P
@@ -879,8 +878,8 @@ contains
   !-------------------------------------------------------------------
   subroutine VLLEBinaryXY(T,P,ispec,Tmin,Pmax,dzmax,filename,dlns_max,&
        res,nRes,writeSingleFile,Pmin)
-    use tpconst, only: tpTmin
-    use parameters, only: nc, LIQPH, clen, VAPPH
+    use thermopack_constants, only: tpTmin, LIQPH, clen, VAPPH
+    use thermopack_var, only: nc
     implicit none
     integer, intent(in) :: ispec
     real, intent(inout) :: T,P
@@ -1106,7 +1105,7 @@ contains
        xL1VE,yL1VE,tpL1VE,nL1VE,&
        xL2VE,yL2VE,tpL2VE,nL2VE,&
        writeSingleFile)
-    use parameters, only: clen
+    use thermopack_constants, only: clen
     use utilities, only: newunit
     integer, intent(in) :: ispec
     real, intent(in) :: T,P
@@ -1191,7 +1190,8 @@ contains
   !! \author MH, 2015-09
   !-------------------------------------------------------------------
   function initialStep(T0,P0,x0,y0,w0,ispec,ispecStep,phase) result(dlns)
-    use parameters, only: nc, LIQPH
+    use thermopack_constants, only: LIQPH
+    use thermopack_var, only: nc
     use stability, only: stabcalcW, stabilityLimit
     use eos, only: thermo
     implicit none
@@ -1205,7 +1205,7 @@ contains
     real :: T,P,XX(neq),dXds(neq),Xvec(2,nc),FUGZ(nc),FUGW(nc)
     real :: dzmax,Pmax,Tmin,tpd
     integer :: iter,ierr,iss
-    logical :: isTrivial, stab_negative
+    logical :: stab_negative
     T = T0
     P = P0
     x = x0
@@ -1228,8 +1228,8 @@ contains
         Xvec(1,:) = x
         Xvec(2,:) = y
         call thermo(t,p,x,LIQPH,FUGZ)
-        tpd = stabcalcW(2,1,t,p,Xvec,W,LIQPH,isTrivial,FUGZ,FUGW)
-        stab_negative = (.not. isTrivial .and. tpd < stabilityLimit)
+        tpd = stabcalcW(2,1,t,p,Xvec,W,LIQPH,FUGZ,FUGW)
+        stab_negative = (tpd < stabilityLimit)
         if (stab_negative) then
           dlns = -0.001
         else
@@ -1253,7 +1253,8 @@ contains
        ispec,Tmin,Pmax,Pmin)
     ! Search for LLV line in binary plot
     ! ispec = 1:T is specified, 2:P is specified
-    use parameters, only: nc, LIQPH
+    use thermopack_constants, only: LIQPH
+    use thermopack_var, only: nc
     implicit none
     integer, intent(in) :: ispec
     real, intent(inout) :: T,P
@@ -1343,12 +1344,12 @@ contains
   !! \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine initialLLtp(T,P,ispec,ierr)
-    use parameters, only: nc, eoslib
-    use eos, only: thermo, getCriticalParam, need_alternative_eos
+    use thermopack_var, only: nc
+    use eos, only: thermo, getCriticalParam
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
                                  NS_PEGASUS
     use saturation, only: safe_bubP
-    use tpconst, only: get_eoslib_templimits
+    use thermopack_constants, only: get_templimits
     use puresaturation, only: PureSat
     implicit none
     real, intent(inout) :: T,P
@@ -1361,7 +1362,6 @@ contains
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat
     integer :: ierrBub
-    logical :: needalt
 
     ierr = 0
     call getCriticalParam(1,tci(1),pci(1),oi(1))
@@ -1376,8 +1376,7 @@ contains
         P1 = safe_bubP(T,x,y,ierrBub)
         if (ierrBub /= 0 .and. ierrBub /= 2) then
           ! Use PureSat as an approximation
-          needalt = need_alternative_eos()
-          call PureSat(T,P1,x,.false.,alternative_eos=needalt,ierr=ierrBub)
+          call PureSat(T,P1,x,.false.,ierr=ierrBub)
           if (ierrBub /= 0) then
             call stoperror("initialLLtp failed to converge safe_bubP")
           endif
@@ -1385,8 +1384,7 @@ contains
         P2 = safe_bubP(T,w,y,ierrBub)
         if (ierrBub /= 0 .and. ierrBub /= 2) then
           ! Use PureSat as an approximation
-          needalt = need_alternative_eos()
-          call PureSat(T,P2,w,.false.,alternative_eos=needalt,ierr=ierrBub)
+          call PureSat(T,P2,w,.false.,ierr=ierrBub)
           if (ierrBub /= 0) then
             call stoperror("initialLLtp failed to converge safe_bubP")
           endif
@@ -1413,7 +1411,7 @@ contains
         solver_psat%isolver = NS_PEGASUS
         ! Set the constant parameters of the objective function.
         param(1) = P
-        call get_eoslib_templimits(eoslib,Tmin,Tmax)
+        call get_templimits(Tmin,Tmax)
         ! Find f=0 inside the bracket.
         call bracketing_solver(Tmin,Tmax,fun_psat,T,solver_psat,param)
         ! Check for successful convergence
@@ -1427,7 +1425,7 @@ contains
   function fun_psat(T,param) result(f)
     ! Objective function for P = Psat_1(T) + Psat_2(T)
     !
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use saturation, only: safe_bubP
     implicit none
     ! Input:
@@ -1450,7 +1448,8 @@ contains
   !! \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine initialComposition(T,P,x,w,isTrivial,isSolved,useDefaultInit)
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     use numconstants, only: machine_prec
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
@@ -1546,7 +1545,8 @@ contains
   !> \author MH, 2015-09-05
   !-------------------------------------------------------------------
   subroutine LLComp_fun_newton(G,XX,param)
-    use parameters, only: nc, LIQPH
+    use thermopack_constants, only: LIQPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(4), intent(out) :: G !< Function values
@@ -1575,7 +1575,8 @@ contains
   !> \author MH, 2015-09-05
   !-------------------------------------------------------------------
   subroutine LLComp_diff_newton(Jac,XX,param)
-    use parameters, only: nc, LIQPH
+    use thermopack_constants, only: LIQPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(4,4), intent(out) :: Jac !< Function values
@@ -1628,10 +1629,10 @@ contains
   !-------------------------------------------------------------------
   function binaryStep(XX,T,P,x,w,ispec,ispecStep,dlns,&
        dzmax,Pmax,Tmin,phase,dXdS,ierr,Pmin) result(iter)
-    use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits
+    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use parameters, only: nc, eoslib
+    use thermopack_var, only: nc
     implicit none
     integer, intent(in) :: ispec
     integer, intent(inout) :: ispecStep
@@ -1716,7 +1717,7 @@ contains
       endif
       XXmax(neq) = log(min(tpPmax,Pmax)) !Pmax
     else
-      call get_eoslib_templimits(eoslib,XXmin(neq),XXmax(neq))
+      call get_templimits(XXmin(neq),XXmax(neq))
       XXmin(neq) = log(max(XXmin(neq),Tmin)) !Tmin
       XXmax(neq) = log(XXmax(neq)) !Tmax
     endif
@@ -1819,7 +1820,7 @@ contains
   !> \author MH, 2012-03-05
   !-------------------------------------------------------------------
   subroutine binary_fun_newton(G,XX,param)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     real, dimension(neq), intent(out) :: G !< Function values
     real, dimension(neq), intent(in) :: XX !< Variable vector
@@ -1851,7 +1852,7 @@ contains
   !> \author MH, 2012-03-05
   !-------------------------------------------------------------------
   subroutine binary_diff_newton(Jac,XX,param)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     real, dimension(neq), intent(in) :: XX !< Variable vector
     real, dimension(neq,neq), intent(out) :: Jac !< Function differentials
@@ -1936,7 +1937,8 @@ contains
     use numconstants, only: machine_prec
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(out) :: y !< Vapor composition
     real, dimension(nc), intent(in) :: x !< Liquid composition
@@ -2012,7 +2014,8 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine vapor_fun_newton(G,y,param)
-    use parameters, only: nc, VAPPH
+    use thermopack_constants, only: VAPPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(nc), intent(out) :: G !< Function values
@@ -2037,7 +2040,8 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine vapor_diff_newton(Jac,Y,param)
-    use parameters, only: nc, VAPPH
+    use thermopack_constants, only: VAPPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(nc), intent(in) :: Y !< Variable vector
@@ -2062,7 +2066,8 @@ contains
   !-------------------------------------------------------------------
   function vaporTpd(T,P,x,y) result(tpd)
     use eos, only: thermo
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(in) :: y !< Vapor composition
     real, dimension(nc), intent(in) :: x !< Liquid composition
@@ -2086,8 +2091,8 @@ contains
     use numconstants, only: machine_prec
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use tpconst, only: tpPmax, tpPmin, get_eoslib_templimits
-    use parameters, only: nc, eoslib
+    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
+    use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(inout) :: x,y,w !< Phase compositions
     real, intent(inout) :: T,P !<
@@ -2114,7 +2119,7 @@ contains
       XX(3*nc+1) = log(P)
     else ! PSPEC
       param(1) = P
-      call get_eoslib_templimits(eoslib,XXmin(3*nc+1),XXmax(3*nc+1))
+      call get_templimits(XXmin(3*nc+1),XXmax(3*nc+1))
       XX(3*nc+1) = log(T)
       XXmin(3*nc+1) = log(XXmin(3*nc+1))
       XXmax(3*nc+1) = log(XXmax(3*nc+1))
@@ -2157,7 +2162,8 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine llve_fun_newton(G,XX,param)
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(3*nc+1), intent(out) :: G !< Function values
@@ -2200,7 +2206,8 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine llve_diff_newton(Jac,XX,param)
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     use eos, only: thermo
     implicit none
     real, dimension(3*nc+1), intent(in) :: XX !< Variable vector
@@ -2272,7 +2279,8 @@ contains
   !-----------------------------------------------------------------!
     use eos, only: getCriticalParam
     use saturation, only: safe_bubP, safe_bubT
-    use parameters, only: nc, clen, BINARY_PL
+    use thermopack_constants, only: clen, BINARY_PL
+    use thermopack_var, only: nc
     implicit none
     !
     real, intent(in)                          :: T0       !< Temperature (K)
@@ -2378,7 +2386,7 @@ contains
   !-----------------------------------------------------------------!
     use eos, only: getCriticalParam
     use saturation, only: safe_bubP, safe_bubT
-    use parameters, only: nc
+    use thermopack_var, only: nc
     implicit none
     !
     real, intent(inout)                       :: T       !< Temperature (K)
@@ -2489,12 +2497,11 @@ contains
   subroutine LLVEpointTV(P,T,vx,vw,vy,x,w,y,ispec,ierr,iter)
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use tpconst, only: get_eoslib_templimits
-    use parameters, only: nc, eoslib, MINGIBBSPH
+    use thermopack_constants, only: get_templimits, MINGIBBSPH
+    use thermopack_var, only: nc
     use eosTV, only: pressure
-    use eos, only: specificVolume, thermo, pseudo, need_alternative_eos
+    use eos, only: specificVolume, thermo, pseudo_safe
     use single_phase, only: TP_CalcPseudo
-    use tpvar, only: comp, cbeos_alternative
     use puresaturation, only: puresat
     use utilities, only: isXwithinBounds
     !$ use omp_lib, only: omp_get_thread_num
@@ -2512,9 +2519,7 @@ contains
     integer :: phase
     type(nonlinear_solver) :: solver
     integer :: i
-    real :: tpc,ppc,acfpc,zpc,vpc
-    logical   :: alt_eos
-    integer   :: i_cbeos
+    real :: tpc,ppc,zpc,vpc
     ! Test
     !real :: G(10), G2(10), Jac(10,10), XX1(10)
 
@@ -2529,7 +2534,7 @@ contains
     XXmax(1:6) = log(5.0)
     XXmin(7:9) = log(1.0e-8)
     XXmax(7:9) = log(100.0)
-    call get_eoslib_templimits(eoslib,XXmin(10),XXmax(10))
+    call get_templimits(XXmin(10),XXmax(10))
     XXmin(10) = log(XXmin(10))
     XXmax(10) = log(XXmax(10))
     param(1) = max(1.0e5, p)
@@ -2558,20 +2563,12 @@ contains
       ! The incipient phase is probably in a solid state
       ! Get saturation state at reduced pressure (0.995*Pc)
       ! Start with establishment of pseudocritical properties
-      alt_eos = need_alternative_eos()
-      if (alt_eos) then
-        ! Bypass straight to alternative cubic EoS.
-        i_cbeos = 1
-        !$ i_cbeos = 1 + omp_get_thread_num()
-        call TP_CalcPseudo(nc,comp,cbeos_alternative(i_cbeos),y,tpc,ppc,zpc,vpc)
-      else
-        call pseudo(y,tpc,ppc,acfpc,zpc,vpc)
-      endif
+      call pseudo_safe(y,tpc,ppc,zpc,vpc)
       P = ppc
       delta = 0
       do i=1,10
         P = P*0.995
-        call PureSat(T,P,y,.true.,alt_eos,ierr)
+        call PureSat(T,P,y,.true.,ierr)
         if (ierr ==0) then
           ! Calculate liquid and vapor state
           call specificVolume(T,P,x,LIQPH,vx)
@@ -2646,7 +2643,7 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine llve_TV_fun_newton(G,XX,param)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eosTV, only: thermoTV, pressure
     implicit none
     real, dimension(10), intent(out) :: G !< Function values
@@ -2709,7 +2706,7 @@ contains
   !> \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine llve_TV_diff_newton(Jac,XX,param)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eosTV, only: thermoTV, pressure
     implicit none
     real, dimension(10), intent(in) :: XX !< Variable vector
@@ -2859,7 +2856,7 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   function binary_is_stable_phase(T,P,z,y,phase,tpd) result(isStable)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eos, only: thermo
     use stability, only: tpd_fun, stabilityLimit, stabcalcW
     implicit none
@@ -2875,7 +2872,6 @@ contains
     integer, parameter :: n = 51
     real, parameter :: dz = 0.02
     real :: D(nc), lnFugZ(nc), lnFugY(nc), tpd_min
-    logical :: isTrivial
     real, dimension(1,nc) :: XX
     real, parameter :: eps = 1.0e-8
     isStable = .true.
@@ -2905,7 +2901,7 @@ contains
 
     ! Perform minimization determine stability and to get best possible starting values
     XX(1,:) = Z
-    tpd = stabcalcW(1,1,T,P,XX,y,phase,isTrivial,lnFugZ,lnFugY,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,y,phase,lnFugZ,lnFugY,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
     endif
@@ -2917,7 +2913,8 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   function binary_is_stable(T,P,z,y,vy) result(isStable)
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     use eos, only: specificvolume
     implicit none
     real, dimension(nc), intent(in) :: z !< Phase compositions
@@ -2949,8 +2946,8 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   function high_pressure_critical_point(Pc,Tc,Zc,Tmin,Tmax) result(found)
-    use tpconst, only: tpTmin, tpTmax
-    use parameters, only: nc
+    use thermopack_constants, only: tpTmin, tpTmax
+    use thermopack_var, only: nc
     use eos, only: specificvolume, thermo
     use critical, only: calcCriticalZ, calcCriticalTV
     use eosTV, only: pressure
@@ -3017,7 +3014,7 @@ contains
   !-------------------------------------------------------------------
   function solve_for_lambda_zero(Pc,Tc,Zc) result(found)
     use optimizers, only: optimize, optim_param, setX, prematureReturn
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     implicit none
@@ -3152,8 +3149,7 @@ contains
   !> \author MH, 2019-04
   !-----------------------------------------------------------------------------
   subroutine limitDeltaTemp(T,param,dT)
-    use tpconst, only: get_eoslib_templimits
-    use parameters, only: eoslib
+    use thermopack_constants, only: get_templimits
     implicit none
     real, dimension(1), intent(in)    :: T !< Variable
     real, dimension(2), intent(in) :: param !< Parameter vector
@@ -3161,7 +3157,7 @@ contains
     ! Locals
     real, parameter :: maxstep_t = 50.0
     real :: T0, T1, Tmin, Tmax
-    call get_eoslib_templimits(EosLib, Tmin, Tmax)
+    call get_templimits(Tmin, Tmax)
 
     T0 = T(1)
     T1 = T(1) + dT(1)
@@ -3201,7 +3197,7 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   subroutine loop_critical_line(Pmin,Pmax,Tmin,P0,T0,Z0,v0,initCritLine,iTermination,critline,y,vy,caep)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eos, only: getCriticalParam
     use critical, only: calcCriticalEndPoint, calcCriticalZ, critZsensitivity, &
          calcCriticalTV
@@ -3647,12 +3643,11 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   subroutine global_binary_plot(Pmin,Pmax,Tmin,filename,iTermination,Tmax,includeAZ)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eos, only: specificvolume
     use saturation, only: specP
     use saturation_curve, only: singleCompSaturation, aep
-    use tpconst, only: tpTmin
-    use tpvar, only: comp
+    use thermopack_constants, only: tpTmin
     implicit none
     real, intent(in) :: Pmin, Pmax !<
     real, intent(in) :: Tmin !<
@@ -3906,7 +3901,7 @@ contains
 
     subroutine dump_global_plot_to_file()
       use utilities, only: newunit
-      use parameters, only: clen
+      use thermopack_constants, only: clen
       !
       integer :: i, k, nLines, ifile, nCols, nCritLines, nLLVE, nAZ
       character(len=clen) :: binaryline, mergedline
@@ -3914,6 +3909,8 @@ contains
       character(len=*), parameter :: nod = 'NaN'
       character(len=*), parameter :: empty = nod // sep // nod // sep // nod // sep // nod
       character(len=2) :: n_str
+      type(thermo_model), pointer :: act_mod_ptr
+      act_mod_ptr => get_active_thermo_model()
       nLines = max(n1,n2)
       nCols = 8
       nCritLines = 0
@@ -3975,7 +3972,7 @@ contains
       ! Dump data to file
       ifile = newunit()
       open(unit=ifile,file=trim(filename))
-      write(ifile,'(A)') "#Binary system: "//trim(comp(1)%ident)//" "//trim(comp(2)%ident)
+      write(ifile,'(A)') "#Binary system: "//trim(act_mod_ptr%comps(1)%p_comp%ident)//" "//trim(act_mod_ptr%comps(2)%p_comp%ident)
       write(ifile,'(A,I2)') "#Global phase diagram of type: ", type
       write(ifile,'(A,I2)') "#Number of critical lines: ", nCritLines
       write(ifile,'(A,I2)') "#Number of LLVE lines: ", nLLVE
@@ -4620,7 +4617,7 @@ contains
   !> \author MH, 2019-10
   !-------------------------------------------------------------------
   subroutine loop_azeotropic_line(Pmin,Pmax,Tmin,xaep,iTermination,azline)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     use eos, only: getCriticalParam
     use critical, only: calcCriticalEndPoint, calcCriticalZ, critZsensitivity, &
          calcCriticalTV
@@ -4819,7 +4816,8 @@ contains
   !> \author MH, 2019-10
   !-------------------------------------------------------------------
   function az_is_stable(T,P,z,x,v) result(isStable)
-    use parameters, only: nc, LIQPH, VAPPH
+    use thermopack_constants, only: LIQPH, VAPPH
+    use thermopack_var, only: nc
     use eos, only: specificvolume, thermo
     use stability, only: stabilityLimit, stabcalcW
     implicit none
@@ -4832,7 +4830,6 @@ contains
     !
     real :: tpd
     real :: lnFugZ(nc), lnFugX(nc)
-    logical :: isTrivial
     real, dimension(1,nc) :: XX
 
     call thermo(t,p,Z,VAPPH,lnFugZ)
@@ -4842,7 +4839,7 @@ contains
     ! Perform minimization determine stability and to get best possible starting values
     x = 0
     x(1) = 1
-    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,lnFugZ,lnFugX,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
       call specificvolume(T,P,x,LIQPH,v)
@@ -4851,7 +4848,7 @@ contains
 
     x = 0
     x(2) = 1
-    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,isTrivial,lnFugZ,lnFugX,preTermLim=-1000.0)
+    tpd = stabcalcW(1,1,T,P,XX,x,LIQPH,lnFugZ,lnFugX,preTermLim=-1000.0)
     if (tpd < stabilityLimit*1000.0) then
       isStable = .false.
       call specificvolume(T,P,x,LIQPH,v)
@@ -4887,17 +4884,14 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcAzeotropicPoint(t,vg,vl,P,Z,s,ierr,tol,free_comp,iter)
-    use tpconst, only: get_eoslib_templimits
-    use nonlinear_solvers
-    use tpvar, only: cbeos
-    use eosdata, only: cpaSRK, cpaPR
+    use thermopack_constants, only: get_templimits
+    use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use parameters, only: eoslib
-    use nonlinear_solvers, only: nonlinear_solver
+    use nonlinear_solvers, only: nonlinear_solver, limit_dx,&
+         premterm_at_dx_zero, setXv, nonlinear_solve
     use eosTV, only: pressure
-    use eos, only: need_alternative_eos
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -4914,12 +4908,16 @@ contains
     real, dimension(4) :: X, xmax, xmin
     !real :: Fun(4), dF(4,4), Fun2(4), numJac(4,4), X1(4), eps
     type(nonlinear_solver) :: solver
-    integer :: i_cbeos, ic, i
+    integer :: ic
     logical :: needalt, isCPA
+    type(thermo_model), pointer :: act_mod_ptr
 
     if (nc == 1 .or. nc > 2) then
       call stoperror("calcAzeotropicPoint: Only two components can be active.")
     endif
+    act_mod_ptr => get_active_thermo_model()
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
 
     ierr = 0
     vg0 = vg
@@ -4984,23 +4982,16 @@ contains
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
     ! Temperature
-    call get_eoslib_templimits(eoslib, xmin(1), xmax(1))
+    call get_templimits(xmin(1), xmax(1))
     xmin(1) = log(xmin(1))
     xmax(1) = log(xmax(1))
     ! Volumes
-    needalt = need_alternative_eos()
-    i_cbeos = 1
-    !$ i_cbeos = 1 + omp_get_thread_num()
-    isCPA = (cbeos(i_cbeos)%eosidx == cpaSRK .OR. cbeos(i_cbeos)%eosidx == cpaPR)
     if (needalt .and. .not. isCPA) then
       xmin(3:4) = log(1.0e-8)
     else
       ! Calculate co-volume
-      b = 0.0
-      do i=1,nc
-        b = b + z(i)*cbeos(i_cbeos)%single(i)%b
-      enddo
-      xmin(3) = b*1.0e-3 + Small ! m3/mol
+      b = get_b_linear_mix(z)
+      xmin(3) = b + Small ! m3/mol
       xmin(3:4)= log(xmin(3))
     endif
     xmax(3:4) = 100.0

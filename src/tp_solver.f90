@@ -9,8 +9,10 @@ module tp_solver
   !
   !
   use numconstants, only: machine_prec, small
-  use parameters
+  use thermopack_constants
+  use thermopack_var, only: nc
   use eos
+  use thermo_utils, only: wilsonK, phase_Is_fake
   use stability, only : stabcalc, stabilityLimit
   use utilities, only: safe_exp
   implicit none
@@ -420,19 +422,18 @@ contains
     real, optional, intent(out) :: Wg(nc),Wl(nc)
     ! Internal:
     real                    :: tpdl,tpdg,FUGLs(nc),FUGVs(nc)
-    logical                 :: isTrivialL,isTrivialV
     logical                 :: liq_stab_negative,gas_stab_negative
     !---------------------------------------------------------------------------
-    ! Tangent plane analysis with "liquid-like" initial W. (Output: isTrivialL,FUGLs,tpdl)
+    ! Tangent plane analysis with "liquid-like" initial W. (Output: FUGLs,tpdl)
     if (verbose) write(*,*) "Stability analysis (liquid-like initial W)"
-    tpdl = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGLs,Wl)
-    liq_stab_negative = (.not. isTrivialL .and. &
-         tpdl < stabilityLimit .and. .not. phase_Is_fake(T,P,Wl,LIQPH))
-    ! Tangent plane analysis with "vapor-like" initial W. (Output: isTrivialV,FUGVs,tpdg)
+    tpdl = stabcalc(t,p,Z,LIQPH,FUGZ,FUGLs,Wl)
+    liq_stab_negative = (tpdl < stabilityLimit .and. &
+         .not. phase_Is_fake(T,P,Wl,LIQPH))
+    ! Tangent plane analysis with "vapor-like" initial W. (Output: FUGVs,tpdg)
     if (verbose) write(*,*) "Stability analysis (vapor-like initial W)"
-    tpdg = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGVs,Wg)
-    gas_stab_negative = (.not. isTrivialV .and. &
-         tpdg < stabilityLimit .and. .not. phase_Is_fake(T,P,Wg,VAPPH))
+    tpdg = stabcalc(t,p,Z,VAPPH,FUGZ,FUGVs,Wg)
+    gas_stab_negative = (tpdg < stabilityLimit .and. &
+         .not. phase_Is_fake(T,P,Wg,VAPPH))
     !
     ! Do we need to restart?
     if (liq_stab_negative .or. gas_stab_negative) then

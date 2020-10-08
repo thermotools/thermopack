@@ -8,8 +8,9 @@ module ps_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use parameters
-  use tpconst, only: get_eoslib_templimits
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_constants, only: get_templimits, LIQPH, VAPPH, continueOnError, &
+       SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use tp_solver, only: twoPhaseTPflash
   use state_functions
   implicit none
@@ -105,7 +106,6 @@ contains
     real, dimension(nc)   :: FUGZ, FUGL, FUGG, K
     real                  :: tpd
     logical               :: gas_stab_negative, liq_stab_negative
-    logical               :: isTrivialL, isTrivialV
     integer :: ophase
     ! Run full solver for two-phase
     ierr = 0
@@ -123,10 +123,10 @@ contains
         ! endif
         ! K = exp(FUGL-FUGG)
       else
-        tpd = stabcalc(t,p,Z,LIQPH,isTrivialL,FUGZ,FUGL)
-        liq_stab_negative = (.not. isTrivialL .and. tpd < stabilityLimit)
-        tpd = stabcalc(t,p,Z,VAPPH,isTrivialV,FUGZ,FUGG)
-        gas_stab_negative = (.not. isTrivialV .and. tpd < stabilityLimit)
+        tpd = stabcalc(t,p,Z,LIQPH,FUGZ,FUGL)
+        liq_stab_negative = (tpd < stabilityLimit)
+        tpd = stabcalc(t,p,Z,VAPPH,FUGZ,FUGG)
+        gas_stab_negative = (tpd < stabilityLimit)
         if (liq_stab_negative .or. gas_stab_negative) then
           if (liq_stab_negative .and. gas_stab_negative) then
             K = exp(FUGL-FUGG)
@@ -174,7 +174,7 @@ contains
     real, dimension(nc+5) :: param
 
     ierr = 0
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -294,7 +294,7 @@ contains
     real, dimension(n), intent(inout) :: dTv !< Calculated change in temperature [K]
     !
     real :: tMax, tMin
-    call get_eoslib_templimits(eoslib,tMin,tMax)
+    call get_templimits(tMin,tMax)
     tMin = max(tMin,param(nc+3))
     tMax = min(tMax,param(nc+4))
     if (Tv(1) + dTv(1) < tMin) then
@@ -319,7 +319,7 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    call get_templimits(Tmin,Tmax)
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.
@@ -344,7 +344,6 @@ contains
     use solid_saturation, only: solidFluidEqSingleComp
     use eos, only: entropy, getCriticalParam
     use thermo_utils, only: maxComp
-    use tpvar, only: comp
     use solideos, only: nsolid, solidComp, solid_entropy
     implicit none
     real, intent(inout) :: beta !< Vapour phase molar fraction [-]
@@ -365,8 +364,10 @@ contains
     real                  :: Tmin, Tmax, sl, sg, ptr, plocal
     real                  :: tci,pci,oi
     logical               :: lookForSolid
+    type(thermo_model), pointer :: act_mod_ptr
 
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    act_mod_ptr => get_active_thermo_model()
+    call get_templimits(Tmin,Tmax)
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -384,7 +385,7 @@ contains
       if (nSolid == 1) then
         if (solidComp(1) == maxComp(Z)) then
           lookForSolid = .true.
-          ptr = comp(maxComp(Z))%ptr
+          ptr = act_mod_ptr%comps(maxComp(Z))%p_comp%ptr
         endif
       else
         ptr = 0.0
@@ -562,8 +563,8 @@ contains
     real, dimension(n), intent(in)    :: dTv !< Differential of objective function
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
-    real                              :: Tmin,Tmax 
-    call get_eoslib_templimits(eoslib,Tmin,Tmax)
+    real                              :: Tmin,Tmax
+    call get_templimits(Tmin,Tmax)
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.

@@ -7,9 +7,9 @@
 module speed_of_sound
   !
   !
-  use parameters, only: nc, VAPPH,LIQPH,SOLIDPH, &
-                        eoslib, TREND, nph
-  use tpconst, only: Rgas
+  use thermopack_constants, only: VAPPH,LIQPH,SOLIDPH, &
+       Rgas, TREND
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   implicit none
   private
   save
@@ -39,8 +39,10 @@ contains
     real :: v,dvdt,dvdp
     real :: s,dsdt,dsdp,dtdp
     real :: rho_trend
+    type(thermo_model), pointer :: act_mod_ptr
 
-    select case(eoslib)
+    act_mod_ptr => get_active_thermo_model()
+    select case(act_mod_ptr%eoslib)
       case(TREND)
         call trend_density(T,p,z,phase,rho_trend)
         sos = trend_speedofsound(T,rho_trend,z)
@@ -224,7 +226,7 @@ contains
   !! \author MH, 2014-05
   !-----------------------------------------------------------------------------
   function sound_velocity_2ph(t,p,X,Y,Z,betaV,betaL,phase,ph) result(sos)
-    use parameters, only: TWOPH,VAPPH,LIQPH,SINGLEPH
+    use thermopack_constants, only: TWOPH,VAPPH,LIQPH,SINGLEPH
     implicit none
     real,                   intent(in) :: t     !< Temperature [K]
     real,                   intent(in) :: p     !< Pressure [Pa]

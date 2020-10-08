@@ -3,10 +3,11 @@
 !!
 !! \author MH, 2013-03-05.
 module solideos
-  use parameters
-  use tpconst, only: Rgas
-  use co2Gibbs
-  use h2oGibbs
+  use thermopack_constants, only: Rgas, LIQPH, verbose, VAPPH, SINGLEPH
+  use thermopack_var, only: nc, nph, thermo_model, &
+       get_active_thermo_model, complist
+  use co2_gibbs
+  use h2o_gibbs
   !
   implicit none
   save
@@ -30,17 +31,18 @@ contains
   !> \author MH, 2013-03-05
   !--------------------------------------------------------------------------
   subroutine solid_init(comp)
+    use compdata, only: compIndex
     implicit none
     ! Transferred variables
     character(len=*), intent(in) :: comp !< Component name string
     !
     select case(trim(comp))
     case('CO2')
-      CO2GIBBSMODEL = compIndex(trim(comp))
+      CO2GIBBSMODEL = compIndex(complist, trim(comp))
       call addSolid(CO2GIBBSMODEL)
       call initDryIce()
     case('H2O')
-      H2OGIBBSMODEL = compIndex(trim(comp))
+      H2OGIBBSMODEL = compIndex(complist, trim(comp))
       call addSolid(H2OGIBBSMODEL)
       call initIce()
     case default
@@ -369,7 +371,7 @@ contains
   subroutine calc_single_comp_triple_point(j,ttr,ptr)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use tpconst, only: tpPmax, tpPmin, tpTmin, tpTmax
+    use thermopack_constants, only: tpPmax, tpPmin, tpTmin, tpTmax
     implicit none
     integer, intent(in) :: j !< Solid component index
     real, intent(inout) :: ttr !< Triple point temperature (K)
@@ -538,11 +540,12 @@ contains
   !--------------------------------------------------------------------------
   subroutine initIce()
     use eos, only: enthalpy, entropy
+    use compdata, only: compIndex
     implicit none
     ! Locals
     integer :: iH2O
     real :: x(nc), sl, hl, gl
-    iH2O = compIndex(trim("H2O"))
+    iH2O = compIndex(complist, trim("H2O"))
     H2OGIBBSMODEL = iH2O
     x = 0.0
     x(iH2O) = 1.0
@@ -561,15 +564,17 @@ contains
   subroutine initDryIce()
     use saturation, only: bubP
     use eos, only: enthalpy, entropy
-    use tpvar, only: comp
+    use compdata, only: compIndex
     implicit none
     ! Locals
     integer :: iCO2
     real :: sl_tr, gl_tr, T_tr, P_tr, hl_tr
     real, dimension(nc) :: x,y
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
     T_tr = 216.592
     P_tr = 5.1795e5
-    iCO2 = compIndex("CO2")
+    iCO2 = compIndex(complist, "CO2")
     CO2GIBBSMODEL = iCO2
     x = 0.0
     x(iCO2) = 1.0
@@ -583,8 +588,8 @@ contains
     call sco2init(sl_tr, gl_tr, T_tr, P_tr)
     ! Locate exact triple point and store result
     call calc_single_comp_triple_point(CO2GIBBSMODEL, T_tr, P_tr)
-    comp(CO2GIBBSMODEL)%ttr = T_tr
-    comp(CO2GIBBSMODEL)%ptr = P_tr
+    act_mod_ptr%comps(CO2GIBBSMODEL)%p_comp%ttr = T_tr
+    act_mod_ptr%comps(CO2GIBBSMODEL)%p_comp%ptr = P_tr
     if (verbose) then
       print *,'Triple point of CO2 after combining models'
       print *,'Temperature (K): ',t_tr

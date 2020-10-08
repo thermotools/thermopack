@@ -1,0 +1,75 @@
+module test_active_model
+  use eoslibinit, only: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_extcsp
+  use pfunit_mod
+  use thermopack_var, only: add_eos, activate_model, delete_eos
+  use critical, only: calcCriticalTV
+  implicit none
+  save
+
+  real, parameter :: tol = 1e-10
+
+contains
+
+  subroutine init_models(idx, Tc)
+    integer, intent(out) :: idx(4)
+    real, intent(out) :: Tc(4)
+    !
+    integer :: ierr
+    real :: z(1), vc
+    z = 1
+    Tc = -1
+
+    idx(1) = add_eos()
+    call init_cubic("CO2","PR")
+    vc=-1 ! initial value
+    call calcCriticalTV(Tc(1),vc,z,ierr=ierr,tol=tol)
+
+    idx(2) = add_eos()
+    call init_pcsaft("C3", "DEFAULT")
+    vc=-1 ! initial value
+    call calcCriticalTV(Tc(2),vc,z,ierr=ierr,tol=tol)
+
+    idx(3) = add_eos()
+    call init_saftvrmie("NE","DEFAULT")
+    vc=-1 ! initial value
+    call calcCriticalTV(Tc(3),vc,z,ierr=ierr,tol=tol)
+
+    idx(4) = add_eos()
+    call init_cpa("H2O")
+    vc=-1 ! initial value
+    call calcCriticalTV(Tc(4),vc,z,ierr=ierr,tol=tol)
+
+  end subroutine init_models
+
+  @Test
+  subroutine test_model_activation()
+    integer :: idx(4), ierr, i
+    real :: Tc(4), T, v, Z(1), Z2(2)
+    !
+    Z = 1
+    call init_models(idx, Tc)
+    do i=1,size(idx)
+      call activate_model(idx(i))
+      T = -1
+      v = -1
+      call calcCriticalTV(T, v, z, ierr, tol = tol)
+      @assertEqual(T,Tc(i),100*tol*Tc(i))
+    enddo
+
+    ! Delete active eos
+    call delete_eos(idx(4))
+    idx(4) = add_eos()
+    call init_extcsp("CO2,N2","SRK","vdW","Classic","NIST_MEOS","C3","DEFAULT")
+    Tc(4)=-1; v=-1 ! initial value
+    Z2 = [0.99,0.01]
+    call calcCriticalTV(Tc(4),v,z2,ierr=ierr,tol=tol)
+
+    call activate_model(idx(1))
+    call activate_model(idx(4))
+    T=-1; v=-1 ! initial value
+    call calcCriticalTV(T,v,z2,ierr=ierr,tol=tol)
+    @assertEqual(T,Tc(4),100*tol*Tc(4))
+
+  end subroutine test_model_activation
+
+end module test_active_model

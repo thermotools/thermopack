@@ -2,15 +2,14 @@
 !! eos's are formulated using the m1 and the m2.
 !! Suppoerted cubic EOS's
 !!   SRK - Soave-Redlich-Kwong
-!!   SRKGB - Soave-Redlich-Kwong with Grabowski formulations
 !!   PR    - Peng Robinson
 !!   VdW   - Van Der Waals
 !!   RK    - Redlich-Kwong
 !!   SW    - Schmidt and Wenzel
 !!   PT    - Patel-Teja
 
-module tpcubic
-  use parameters, only: LIQPH, VAPPH, SINGLEPH
+module cubic
+  use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
   implicit none
   save
 
@@ -27,11 +26,11 @@ module tpcubic
 contains
 
   subroutine cbCalcDerivatives(nc,cbeos,T,p,Zfac)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T,p,Zfac
     real :: v
     ! General part all cubic EOS
@@ -41,11 +40,12 @@ contains
 
   ! Calculate derivatives given temperature [K] and specific volume [L/mol].
   subroutine cbCalcDerivatives_svol(nc,cbeos,T,v)
-    use tpconst, only: kRgas
+    use thermopack_constants, only: kRgas
     use eosdata
+    use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T, v
     ! Locals
     real :: n0,n1,n2,den,lnn, m, sumn
@@ -94,7 +94,7 @@ contains
           call StopError("Expression v/n <= 0 in selected cubic EOS")
        else
 
-          select case (cbeos%eosidx)
+          select case (cbeos%subeosidx)
           case (cbVDW) !< Where m1 = m2 = 0.0
              DD = cbeos%suma/(krGas*T)
              cbeos%ffn = log(cbeos%ffn)
@@ -124,7 +124,7 @@ contains
              cbeos%ffvb = -sumn/(n0*n0) + DD*cbeos%m1/(n1*n1*n1)
 
              !          else !< Rest of the cubic EOS family
-          case (cbRK,cbSRK,cbSRKGB,cbPR,cbSW,cbPT,eosLK,cspSRK,cspSRKGB,cspPR,cpaSRK,cpaPR)  ! 2 and 3 paramter eos
+          case (cbSRK,cbPR,cbSW,cbPT,eosLK,cspSRK,cspPR,cpaSRK,cpaPR)  ! 2 and 3 paramter eos
                                                          ! LK added when SRK is used to
                                                          ! generate initial values ....
 
@@ -176,7 +176,7 @@ contains
 
 ! Derivatives of helper functions
 
-             if (cbeos%eosidx == cbPT .or. cbeos%eosidx == cbSW) then
+             if (cbeos%subeosidx == cbPT .or. cbeos%subeosidx == cbSW) then
 ! 1.st derivatives
                 m1B = cbeos%dm1dB
                 m2B = cbeos%dm2dB
@@ -362,15 +362,13 @@ contains
   ! \param v - Specific volume [m3/kmol] (you read correctly, it is not SI)
   !
   !
-  subroutine cbCalcPressure (nc,comp,cbeos,T,v,z,p,dpdv,dpdt,d2pdv2,dpdz,recalculate)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use tpcbmix, only: cbCalcMixtureParams
+  subroutine cbCalcPressure (nc,cbeos,T,v,z,p,dpdv,dpdt,d2pdv2,dpdz,recalculate)
+    use cubic_eos, only: cb_eos
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbPress, cbPrst, cbPv, cbPvv, cbPi
     implicit none
     integer, intent(in) :: nc
-    type(gendata), dimension(nc), intent(in) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, v
     real, intent(in), dimension(nc) :: z
     real, intent(out) :: p
@@ -387,7 +385,7 @@ contains
     end if
 
     if (recalculate_loc) then
-      call cbCalcMixtureParams(nc,comp,cbeos,t,z)
+      call cbCalcMixtureParams(nc,cbeos,t,z)
       call cbCalcDerivatives_svol(nc, cbeos, T, v)
     end if
 
@@ -678,9 +676,9 @@ contains
 
 
   subroutine cbSolveCubicZfacMinimumGibb (cbeos, T, p, pp, qq, rr, big, zfac, ifail, phase)
-    use eosdata, only: eoscubic
+    use cubic_eos, only: cb_eos
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in) :: T, p
     real, intent (in) :: pp, qq, rr
     type(cbBig), intent(in) :: big
@@ -745,15 +743,13 @@ contains
   !! argum = (2p)^2-12q
   !! if argum <= 0; The cubic equation will only have one root.
   !!
-  subroutine cbCalcZfac(nc,comp,cbeos,T,p,z,iphase,zfac,gflag_opt,dZdt,dZdp,dZdz,minGphase)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use tpcbmix, only: cbCalcMixtureParams
+  subroutine cbCalcZfac(nc,cbeos,T,p,z,iphase,zfac,gflag_opt,dZdt,dZdp,dZdz,minGphase)
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,P,z(:)
     real, intent (out) :: zfac
     integer, intent(in) :: iphase, gflag_opt
@@ -770,7 +766,7 @@ contains
     !logical :: lconverged
 
     ! Calculate first the mixing rules
-    call cbCalcMixtureParams (nc,comp,cbeos,T,Z)
+    call cbCalcMixtureParams (nc,cbeos,T,Z)
 
     ! Common for all cubic eos ?
     Big%A = cbeos%suma*p/(T*kRgas*t*kRgas)
@@ -916,12 +912,12 @@ contains
   !!
   !!
   subroutine cbCalcZfacDiff(nc,cbeos,T,p,zfac,dZdt,dZdp,dZdz)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbPi,cbPrst
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,P
     real, intent (in) :: zfac
     real, intent(out),optional :: dZdt,dZdp
@@ -964,11 +960,11 @@ contains
   !! \param dgrdp - The residual Gibbs free energy pressure differential
   !!
   subroutine cbGres(cbeos, T, p, zfac, gr, dgrdt, dgrdp)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbFt
     implicit none
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t,p,zfac
     real, intent(out) :: gr
     real, optional, intent(out) :: dgrdt, dgrdp
@@ -1038,12 +1034,12 @@ contains
   !! \date 2012-06-13
 
   subroutine cbCalcFug(nc,cbeos,T,p,Zfac,res_fug,dlnfdt,dlnfdp,dlnfdz)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbFt, cbFit, cbPrst, cbPi, cbFij, cbFi
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,P,Zfac   ! Only compressibility without derivatives
     real, dimension(nc), intent (out) :: res_fug
     real, dimension(nc), optional, intent (out) :: dlnfdt, dlnfdp
@@ -1108,15 +1104,13 @@ contains
   !! \author Oivind Wilhelmsen
   !! \date 2012-06-13
 
-  subroutine cbCalcEntropy(nc,comp,cbeos,T,p,Z,phase,res_entropy,gflag_opt,dsdt,dsdp,dsdz)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+  subroutine cbCalcEntropy(nc,cbeos,T,p,Z,phase,res_entropy,gflag_opt,dsdt,dsdp,dsdz)
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbFtt, cbFit, cbPrst, cbFt, cbPi, cbFi
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,P
     real, dimension(nc), intent (in)  :: Z
     real, intent (out) :: res_entropy
@@ -1129,7 +1123,7 @@ contains
     integer :: i
     real :: Zfac
 
-    call cbCalcZfac(nc,comp,cbeos,T,P,Z,phase,Zfac,gflag_opt)
+    call cbCalcZfac(nc,cbeos,T,P,Z,phase,Zfac,gflag_opt)
     dpdt=cbPrst(cbeos)
     dfdt=cbFt(cbeos)
     res_entropy=(-kRgas)*(T*dfdt+cbeos%ff-log(abs(Zfac)))
@@ -1179,15 +1173,13 @@ contains
   !! \author Oivind Wilhelmsen
   !! \date 2012-06-14
 
-  subroutine cbCalcEnthalpy(nc,comp,cbeos,T,p,Z,phase,res_enthalpy,gflag_opt,dhdt,dhdp,dhdz)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+  subroutine cbCalcEnthalpy(nc,cbeos,T,p,Z,phase,res_enthalpy,gflag_opt,dhdt,dhdp,dhdz)
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbFt, cbFtt, cbFit, cbPrst, cbPi
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,P
     real, dimension(nc), intent (in)  :: Z
     integer, intent(in) :: gflag_opt
@@ -1201,7 +1193,7 @@ contains
          d2fdnidt(nc)
     real :: Zfac
 
-    call cbCalcZfac(nc,comp,cbeos,T,P,Z,phase,Zfac,gflag_opt)
+    call cbCalcZfac(nc,cbeos,T,P,Z,phase,Zfac,gflag_opt)
 
     dfdt = cbFt(cbeos)
     Ares = kRgas*T*(cbeos%ff-log(abs(Zfac)))
@@ -1253,16 +1245,14 @@ contains
   !! \retval energy The internal energy with derivatives [-]
   !!
   !! \author Morten Hammer
-  subroutine cbCalcInnerEnergy(nc,comp,cbeos,T,v,Z,u,dudt,dudv,recalculate)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use tpcbmix, only: cbCalcMixtureParams
+  subroutine cbCalcInnerEnergy(nc,cbeos,T,v,Z,u,dudt,dudv,recalculate)
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbFtt, cbFvt, cbFt
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T,v,Z(1:nc)
     real, intent (out) :: u
     real, optional, intent(out) :: dudt, dudv
@@ -1280,7 +1270,7 @@ contains
     end if
 
     if (recalculate_loc) then
-      call cbCalcMixtureParams(nc,comp,cbeos,T,Z)
+      call cbCalcMixtureParams(nc,cbeos,T,Z)
       call cbCalcDerivatives_svol(nc,cbeos,T,v)
     end if
 
@@ -1313,15 +1303,14 @@ contains
   !!
   !! \author Oivind Wilhelmsen
   !! \date 2012-06-14
-  subroutine cbCalcPseudo(nc,comp,cbeos,Z,Tpc,Ppc,Zpc,Vpc)
-    use tpconst, only: kRgas
+  subroutine cbCalcPseudo(nc,cbeos,Z,Tpc,Ppc,Zpc,Vpc)
+    use thermopack_constants, only: kRgas
     use eosdata
-    use compdata, only: gendata
-    use tpcbmix, only: cbCalcMixtureParams
+    use cubic_eos, only: cb_eos
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: Z(1:nc)
     real, intent (out) :: Tpc, Ppc, Zpc, Vpc
 
@@ -1352,7 +1341,7 @@ contains
     ! (dP/dV)=(d2P/dV2)=0 in a critical point. This is not necessary for three-
     ! parameter cubic EoS because m1 and m2 do not depend on composition
 
-    if (cbeos%eosidx == cbSW) then !> For the Schmidt and Wenzel EOS
+    if (cbeos%subeosidx == cbSW) then !> For the Schmidt and Wenzel EOS
       do while (iter < maxiter .and. abs(dzcomb) > eps)
         n  = zcomb - 1.0
         n1 = zcomb - cbeos%m1
@@ -1380,7 +1369,7 @@ contains
       omegaB_mix = (1.0-argum1)/(zcomb-1.0)
       zcrit_mix = omegaB_mix*zcomb
       omegaA_mix = omegaB_mix*(1.0/n-omegaB_mix)*n1*n2
-    elseif (cbeos%eosidx == cbPT) then
+    elseif (cbeos%subeosidx == cbPT) then
        ! for now
       omegaA_mix=cbeos%single(1)%omegaA
       omegaB_mix=cbeos%single(1)%omegaB
@@ -1400,8 +1389,7 @@ contains
 
     do while(iter<Maxiter .AND. abs(dTpc)>Eps)
       iter=iter+1
-
-      call cbCalcMixtureParams(nc,comp,cbeos,Tpc,Z)
+      call cbCalcMixtureParams(nc,cbeos,Tpc,Z)
       ft=cbeos%suma-omegaA_mix/omegaB_mix*kRgas*Tpc*cbeos%sumb
       dft=cbeos%at-omegaA_mix/omegaB_mix*kRgas* ( cbeos%sumb + Tpc * cbeos%bt)
       ddft=cbeos%att
@@ -1410,7 +1398,6 @@ contains
       Argum=sqrt(Argum)
       dTpc=(-ft)/dft*2.0/(1.0+Argum)
       Tpc=Tpc+dTpc
-
     end do
 
     if(iter.GE.Maxiter) then
@@ -1429,12 +1416,12 @@ contains
 !! ":"-delimited text-output with all data from the current EOS
 !!
   subroutine cbDumpEosData(nc,cbeos,T, P, zfac)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbFi, cbFit
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
 
     real, intent(in) :: T,P, zfac
     integer :: i,j
@@ -1614,16 +1601,14 @@ contains
   !! \retval Y Free energy with derivatives [-]
   !!
   !! \author GL, 2015-01-22
-  subroutine cbCalcFreeEnergy(nc,comp,cbeos,T,v,Z,Y,dYdt,dYdv,recalculate)
-    use tpconst, only: kRgas
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use tpcbmix, only: cbCalcMixtureParams
+  subroutine cbCalcFreeEnergy(nc,cbeos,T,v,Z,Y,dYdt,dYdv,recalculate)
+    use thermopack_constants, only: kRgas
+    use cubic_eos, only: cb_eos
+    use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbFt
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent (in)  :: T, v, Z(1:nc)
     real, intent (out) :: Y
     real, optional, intent(out) :: dYdt, dYdv
@@ -1639,7 +1624,7 @@ contains
     end if
 
     if (recalculate_loc) then
-      call cbCalcMixtureParams(nc, comp, cbeos, T, Z)
+      call cbCalcMixtureParams(nc, cbeos, T, Z)
       call cbCalcDerivatives_svol(nc, cbeos, T, v)
     end if
 
@@ -1668,19 +1653,17 @@ contains
   !!
   !! \author Morten Hammer
   !! \date 2015-09
-  subroutine cbCalcFres(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
+  subroutine cbCalcFres(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn,recalculate)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
     use cbHelm, only: cbF, cbFv, cbFvv, cbFt, cbFtt, cbFvt, &
          cbFi, cbFij, cbFiv, cbFit
-    use tpcbmix, only: cbCalcMixtureParams
+    use cbmix, only: cbCalcMixtureParams
     implicit none
     integer, intent(in) :: nc
-    type (gendata), intent(in), dimension(nc) :: comp
     real, intent(in) :: T,V,n(nc)
     ! Output.
-    type(eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
     logical, optional, intent(in) :: recalculate
@@ -1692,7 +1675,7 @@ contains
       recalculate_loc = .true.
     endif
     if (recalculate_loc) then
-      call cbCalcMixtureParams(nc,comp,cbeos,t,n)
+      call cbCalcMixtureParams(nc,cbeos,t,n)
       call cbCalcDerivatives_svol(nc, cbeos, T, v)
     endif
 
@@ -1711,17 +1694,15 @@ contains
     !> Calculates the contibution to the reduced residual Helmholtz energy F
   !> coming from the cubic eos, along with its derivatives.
   !> Note!!! Input and output in SI units
-  subroutine calcCbFder_res_SI(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
+  subroutine calcCbFder_res_SI(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
     use cbhelm, only: cbF, cbFv, cbFvv, cbFt, cbFtt, cbFvt, cbFvvv, &
          cbFi, cbFij, cbFiv, cbFit
-    use tpcbmix, only: cbCalcMixtureParams
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    ! Input.
+    use cbmix, only: cbCalcMixtureParams
+    use cubic_eos, only: cb_eos
+    ! Input
     integer, intent(in) :: nc
-    type (gendata), intent(in) :: comp(nc)
-    type (eoscubic), intent(inout) :: cbeos
+    type(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T,V,n(nc)
     ! Output.
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc),F_VVV
@@ -1739,7 +1720,7 @@ contains
     endif
     if (recalculate_loc) then
       ! Calculate contributions from the non-association part.
-      call cbCalcMixtureParams(nc,comp,cbeos,T,n/sumn)
+      call cbCalcMixtureParams(nc,cbeos,T,n/sumn)
       call cbCalcDerivatives_svol(nc,cbeos,T,1000*V/sumn)
     endif
 
@@ -1762,4 +1743,4 @@ contains
     end if
   end subroutine calcCbFder_res_SI
 
-end module tpcubic
+end module cubic

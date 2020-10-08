@@ -18,9 +18,13 @@ module unifac
     real, allocatable, dimension(:) :: Qk !< (ng) [] Molecyle group surface area
     real, allocatable, dimension(:) :: qi !< [-] (nc) Combinatorial term param
     real, allocatable, dimension(:) :: ri !< [-] (nc) Combinatorial term param
+  contains
+    procedure :: dealloc => unifacdb_dealloc
+    procedure :: assign_unifacdb
+    generic, public :: assignment(=) => assign_unifacdb
   end type unifacdb
 
-  type (unifacdb) :: unifdb !< Active unifac parameters
+  type(unifacdb) :: unifdb !< Active unifac parameters
 
   public :: init_unifac, cleanup_unifac
   public :: GeFloryHuggins, GeStavermanGuggenheim
@@ -31,9 +35,9 @@ module unifac
 contains
 
   !> Initiate unifac model
-  !! 
+  !!
   subroutine init_unifac(UFdb,mrulestr)
-    use parameters, only: complist, nc
+    use thermopack_var, only: complist, nc
     use stringmod, only: str_eq
     !
     type (unifacdb), intent(out) :: UFdb
@@ -47,7 +51,7 @@ contains
     if ( str_eq(mrulestr,"UMR") ) then
 !       print *,"USING UMR MIXING RULE"
        UFdb%FloryHuggins = .false.
-       UFdb%StavermanGuggenheim = .true.   
+       UFdb%StavermanGuggenheim = .true.
     else if ( str_eq(mrulestr,"VTPR") ) then
 !       print *,"USING VTPR MIXING RULE"
        UFdb%FloryHuggins = .false.
@@ -58,7 +62,6 @@ contains
     else
        call stoperror("Invalid unifac mixing rule.")
     end if
-
 
     ! Find componets in database
     do i=1,nc
@@ -145,7 +148,7 @@ contains
   !> Set interaction parameters for tunig
   subroutine getUNIFACgroupInteraction(UFdb,i,j,aij,bij,cij)
     !
-    type (unifacdb), intent(out) :: UFdb
+    type (unifacdb), intent(in) :: UFdb
     integer, intent(in) :: i,j ! Main group indices
     real, intent(out) :: aij,bij,cij
     !
@@ -234,7 +237,7 @@ contains
   !> Calculate Flory Huggins combinatorial term
   !! \author MH, 2015
   subroutine GeFloryHuggins(n,UFdb,Ge,dGedn,d2Gedn2)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     !
     real, dimension(nc), intent(in) :: n
     type (unifacdb), intent(in) :: UFdb
@@ -274,7 +277,7 @@ contains
   !> Calculate Staverman-Guggenheim combinatorial term
   !! \author MH, 2015
   subroutine GeStavermanGuggenheim(n,UFdb,Ge,dGedn,d2Gedn2)
-    use parameters, only: nc
+    use thermopack_var, only: nc
     !
     real, dimension(nc), intent(in) :: n
     type (unifacdb), intent(in) :: UFdb
@@ -321,8 +324,8 @@ contains
   !> Calculate UNIFAC Ge (Ae)
   !! \author MH, 2015
   subroutine GeUNIFAC(n,T,UFdb,Ge,dGedT,d2GedT2,dGedn,d2GedndT,d2Gedn2)
-    use parameters, only: nc
-    use tpconst, only: kRgas
+    use thermopack_var, only: nc
+    use thermopack_constants, only: kRgas
     !
     real, dimension(nc), intent(in) :: n
     real, intent(in) :: T
@@ -512,8 +515,8 @@ contains
   !! Flory-Huggins
   !! \author MH, 2015
   subroutine Ge_UNIFAC_GH_SG(n,T,UFdb,Ge,dGedT,d2GedT2,dGedn,d2GedndT,d2Gedn2)
-    use parameters, only: nc
-    use tpconst, only: kRgas
+    use thermopack_var, only: nc
+    use thermopack_constants, only: kRgas
     !
     real, dimension(nc), intent(in) :: n
     real, intent(in) :: T
@@ -554,5 +557,106 @@ contains
     endif
 
   end subroutine Ge_UNIFAC_GH_SG
+
+  subroutine assign_unifacdb(u1,u2)
+    class(unifacdb), intent(inout) :: u1
+    class(unifacdb), intent(in) :: u2
+    ! Locals
+    integer :: ierr
+    u1%FloryHuggins = u2%FloryHuggins
+    u1%StavermanGuggenheim = u2%StavermanGuggenheim
+    if (allocated(u2%mainGroupMapping)) then
+      if (allocated(u1%mainGroupMapping)) then
+        deallocate(u1%mainGroupMapping, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%mainGroupMapping")
+      endif
+      allocate(u1%mainGroupMapping(size(u2%mainGroupMapping,dim=1)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%mainGroupMapping")
+      u1%mainGroupMapping = u2%mainGroupMapping
+    endif
+    if (allocated(u2%vik)) then
+      if (allocated(u1%vik)) then
+        deallocate(u1%vik, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%vik")
+      endif
+      allocate(u1%vik(size(u2%vik,dim=1),size(u2%vik,dim=2)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%vik")
+      u1%vik = u2%vik
+    endif
+    if (allocated(u2%ajk)) then
+      if (allocated(u1%ajk)) then
+        deallocate(u1%ajk, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%ajk")
+      endif
+      allocate(u1%ajk(size(u2%ajk,dim=1),size(u2%ajk,dim=2)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%ajk")
+      u1%ajk = u2%ajk
+    endif
+    if (allocated(u2%bjk)) then
+      if (allocated(u1%bjk)) then
+        deallocate(u1%bjk, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%bjk")
+      endif
+      allocate(u1%bjk(size(u2%bjk,dim=1),size(u2%bjk,dim=2)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%bjk")
+      u1%bjk = u2%bjk
+    endif
+    if (allocated(u2%cjk)) then
+      if (allocated(u1%cjk)) then
+        deallocate(u1%cjk, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%cjk")
+      endif
+      allocate(u1%cjk(size(u2%cjk,dim=1),size(u2%cjk,dim=2)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%cjk")
+      u1%cjk = u2%cjk
+    endif
+    if (allocated(u2%Qk)) then
+      if (allocated(u1%Qk)) then
+        deallocate(u1%Qk, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%Qk")
+      endif
+      allocate(u1%Qk(size(u2%Qk,dim=1)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%Qk")
+      u1%Qk = u2%Qk
+    endif
+    if (allocated(u2%qi)) then
+      if (allocated(u1%qi)) then
+        deallocate(u1%qi, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%qi")
+      endif
+      allocate(u1%qi(size(u2%qi,dim=1)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%qi")
+      u1%qi = u2%qi
+    endif
+    if (allocated(u2%ri)) then
+      if (allocated(u1%ri)) then
+        deallocate(u1%ri, stat=ierr)
+        if (ierr /= 0) call stoperror("Not able to deallocate u1%ri")
+      endif
+      allocate(u1%ri(size(u2%ri,dim=1)), stat=ierr)
+      if (ierr /= 0) call stoperror("Not able to allocate u1%ri")
+      u1%ri = u2%ri
+    endif
+  end subroutine assign_unifacdb
+
+  subroutine unifacdb_dealloc(u)
+    use utilities, only: deallocate_real, deallocate_real_2
+    class(unifacdb), intent(inout) :: u
+    ! Locals
+    integer :: ierr
+    ierr = 0
+    if (allocated(u%mainGroupMapping)) deallocate(u%mainGroupMapping, stat=ierr)
+    if (ierr /= 0) call stoperror("unifacdb_dealloc: Not able to deallocate u%mainGroupMapping")
+    if (allocated(u%vik)) deallocate(u%vik, stat=ierr)
+    if (ierr /= 0) call stoperror("unifacdb_dealloc: Not able to deallocate u%vik")
+
+    call deallocate_real_2(u%ajk,"u%ajk")
+    call deallocate_real_2(u%bjk,"u%bjk")
+    call deallocate_real_2(u%cjk,"u%cjk")
+    call deallocate_real(u%Qk,"u%Qk")
+    call deallocate_real(u%qi,"u%qi")
+    call deallocate_real(u%ri,"u%ri")
+
+  end subroutine unifacdb_dealloc
 
 end module unifac

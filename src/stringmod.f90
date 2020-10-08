@@ -1,6 +1,11 @@
 module stringmod
+  implicit none
+  !> String length
+  integer, parameter :: clen=2048
 
+  public :: clen
   public  :: chartoascii, str_upcase, str_eq, count_substr
+  public  :: contains_space, space_delimited_to_comma_delimited
   private :: value_dr,value_sr,value_di,value_si
   private :: write_dr,write_sr,write_di,write_si
   private :: writeq_dr,writeq_sr,writeq_di,writeq_si
@@ -67,7 +72,7 @@ contains
     character(len=*) :: str,delims
     character(len=len_trim(str)) :: strsav
     character(len=*),dimension(:) :: args
-
+    integer :: nargs, na, i, lenstr, k
     strsav=str
     call compact(str)
     na=size(args)
@@ -99,6 +104,7 @@ contains
     character(len=*):: str
     character(len=1):: ch
     character(len=len_trim(str)):: outstr
+    integer :: i, k, lenstr, isp, ich
 
     str=adjustl(str)
     lenstr=len_trim(str)
@@ -140,8 +146,8 @@ contains
 
     character(len=*):: str
     character(len=1):: ch
-    character(len=len_trim(str))::outstr
-
+    character(len=len_trim(str)) :: outstr
+    integer :: k, lenstr, i, ich
     str=adjustl(str)
     lenstr=len_trim(str)
     outstr=' '
@@ -171,7 +177,7 @@ contains
 
     character(len=*)::str
     real(kr8)::rnum
-    integer :: ios
+    integer :: ios, ilen, ipos
 
     ilen=len_trim(str)
     ipos=scan(str,'Ee')
@@ -192,7 +198,7 @@ contains
     character(len=*)::str
     real(kr4) :: rnum
     real(kr8) :: rnumd
-
+    integer :: ios
     call value_dr(str,rnumd,ios)
     if( abs(rnumd) > huge(rnum) ) then
       ios=15
@@ -212,7 +218,7 @@ contains
     character(len=*)::str
     integer(ki8) :: inum
     real(kr8) :: rnum
-
+    integer :: ios
     call value_dr(str,rnum,ios)
     if(abs(rnum)>huge(inum)) then
       ios=15
@@ -231,7 +237,7 @@ contains
     character(len=*)::str
     integer(ki4) :: inum
     real(kr8) :: rnum
-
+    integer :: ios
     call value_dr(str,rnum,ios)
     if(abs(rnum)>huge(inum)) then
       ios=15
@@ -251,6 +257,7 @@ contains
     ! are replaced by spaces.
 
     character(len=*):: str
+    integer :: n, lenstr, nabs
 
     lenstr=len(str)
     nabs=iabs(n)
@@ -275,7 +282,7 @@ contains
 
     character(len=*):: str,strins
     character(len=len(str))::tempstr
-
+    integer :: loc, lenstrins
     lenstrins=len_trim(strins)
     tempstr=str(loc:)
     call shiftstr(tempstr,lenstrins)
@@ -294,6 +301,7 @@ contains
     ! not considered part of 'substr'.
 
     character(len=*):: str,substr
+    integer :: lensubstr, ipos
 
     lensubstr=len_trim(substr)
     ipos=index(str,substr)
@@ -315,7 +323,7 @@ contains
     ! shifts characters left to fill holes.
 
     character(len=*):: str,substr
-
+    integer :: lensubstr, ipos
     lensubstr=len_trim(substr)
     do
       ipos=index(str,substr)
@@ -338,7 +346,7 @@ contains
 
     character (len=*):: str
     character (len=len_trim(str)):: ucstr
-
+    integer :: ilen, ioffset, iquote, iav, iqc, i
     ilen=len_trim(str)
     ioffset=iachar('A')-iachar('a')
     iquote=0
@@ -373,6 +381,7 @@ contains
 
     character (len=*):: str
     character (len=len_trim(str)):: lcstr
+    integer :: ilen, ioffset, iquote, iav, iqc, i
 
     ilen=len_trim(str)
     ioffset=iachar('A')-iachar('a')
@@ -408,6 +417,7 @@ contains
     ! and deleting comments beginning with an exclamation point(!)
 
     character (len=*):: line
+    integer :: ios, nunitr, ipos
 
     do
       read(nunitr,'(a)', iostat=ios) line      ! read input line
@@ -431,6 +441,7 @@ contains
 
     character(len=*) :: str
     character :: delim1,delim2,ch
+    integer :: ipos, imatch, lenstr, iend, inc, istart, idelim2, isum, i
 
     lenstr=len_trim(str)
     delim1=str(ipos:ipos)
@@ -557,7 +568,7 @@ contains
     character(len=*) :: str
     character :: ch
     character(len=10) :: exp
-
+    integer :: ipos, lstr, i
     ipos=scan(str,'eE')
     if(ipos>0) then
       exp=str(ipos:)
@@ -699,7 +710,7 @@ contains
     character,optional :: sep
     logical :: pres
     character :: ch,cha
-
+    integer :: lenstr, k, ibsl, i, iposa, ipos
     pres=present(sep)
     str=adjustl(str)
     call compact(str)
@@ -761,7 +772,7 @@ contains
     character(len=*):: str
     character(len=1):: ch
     character(len=len_trim(str))::outstr
-
+    integer :: k, ibsl, lenstr, i
     str=adjustl(str)
     lenstr=len_trim(str)
     outstr=' '
@@ -863,5 +874,112 @@ contains
     end do
   end function count_substr
 
+  !----------------------------------------------------------------------
+  logical function contains_space(in_string)
+    character(len=*), intent(in) :: in_string !< No leading or trailing spaces.
+    ! Locals
+    integer :: i
+
+    contains_space = .false.
+    do i = 1,len_trim(in_string)
+      if (in_string(i:i) == ' ') then
+        contains_space = .true.
+        exit
+      end if
+    end do
+
+  end function contains_space
+
+  !----------------------------------------------------------------------
+  function space_delimited_to_comma_delimited(in_string) result(out_string)
+    character(len=*), intent(in) :: in_string !< Space-separated component string
+    character(len=clen) :: out_string !< Comma-separated
+    ! Locals
+    integer :: i
+
+    out_string = ''
+    i = 1
+    do while (i < len_trim(in_string)) ! (length of in_string after removing trailing space)
+      if (in_string(i:i) == ' ') then
+        out_string(i:i) = ','
+        do while (in_string(i:i) == ' ' .and. i < len(in_string))
+          i = i+1
+        end do
+      else
+        out_string(i:i) = in_string(i:i)
+        i = i+1
+      end if
+    end do
+
+    out_string = trim(out_string) ! Remove trailing space.
+  end function space_delimited_to_comma_delimited
+
+  !> Look of for sub-string in string with entries separated by "/"
+  !! Ex.
+  !!  string = "HV/HV0/HV1/HV2"
+  !!  sub_string = "HV"
+  !----------------------------------------------------------------------
+  function string_match(sub_string,string) result(match)
+    character(len=*), intent(in) :: sub_string !< String possibly in string
+    character(len=*), intent(in) :: string !< String where entries are separated by "/"
+    logical :: match
+    ! Locals
+    integer :: istat
+    character(len=len_trim(sub_string)) :: sub_string_up !< String possibly in string
+    character(len=:), allocatable :: string_up, before
+    match = .false.
+
+    if (len_trim(string) > 0) then
+      sub_string_up = trim(sub_string)
+      call str_upcase(sub_string_up)
+      allocate(character(len=len_trim(string)) :: string_up, before, stat=istat)
+      if (istat /= 0) call stoperror("Not able to allocate string_up")
+      string_up = trim(string)
+      call str_upcase(string_up)
+      do
+        if(len_trim(string_up) == 0) exit
+        call split(string_up,"/",before)
+        if (index(trim(before), trim(sub_string_up)) > 0) then
+          match = .true.
+          exit
+        endif
+      enddo
+      deallocate(string_up,before, stat=istat)
+      if (istat /= 0) call stoperror("Not able to deallocate string_up")
+    endif
+  end function string_match
+
+  !> Search for matches of sub_string in string, where both of these strings can
+  !> have multiple delimiters '/'. Return match=.true. if there is a match, and
+  !> an integer match_val whose value equals the quality of the match (lower
+  !> values indicate a better match).
+  subroutine string_match_val(sub_string, string, match, match_val)
+    character(len=*), intent(in) :: sub_string !< String possibly in string
+    character(len=*), intent(in) :: string !< String where entries are separated by "/"
+    logical, intent(out) :: match
+    integer, intent(out) :: match_val
+    ! Locals
+    integer :: istat, substrlen
+    character(len=:), allocatable :: substr_before, substr_up
+    match_val = 0
+    match = .false.
+
+    allocate(character(len=len_trim(sub_string)) :: substr_before, substr_up, stat=istat)
+    if (istat /= 0) call stoperror("Not able to allocate substr_before, substr_up")
+    substr_up = trim(sub_string)
+    substrlen = len_trim(sub_string)
+    do while ((.not. match) .and. (len_trim(substr_up)>0))
+       call split(substr_up,"/",before=substr_before)
+       if (string_match(substr_before, string)) then
+          match_val = match_val + index(substr_before, string)
+          match = .true.
+       else
+          match_val = match_val + len_trim(substr_before)
+       end if
+    end do
+    deallocate(substr_before, substr_up, stat=istat)
+    if (istat /= 0) call stoperror("Not able to deallocate substr_before, substr_up")
+
+  end subroutine string_match_val
 
 end module stringmod

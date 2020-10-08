@@ -20,7 +20,8 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isotherm(T,Pmin,Pmax,z,n,pa,va,sa,ha,na)
-    use parameters, only: nc, TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_var, only: nc
     use eosTV, only: entropyTV, enthalpyTV, pressure
     use eos, only: specificvolume, getCriticalParam
     use thermo_utils, only: isSingleComp
@@ -124,7 +125,8 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isobar(P,Tmin,Tmax,z,n,ta,va,sa,ha,na)
-    use parameters, only: nc, TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_var, only: nc
     use eosTV, only: entropyTV, enthalpyTV
     use eos, only: specificvolume, getCriticalParam
     use thermo_utils, only: isSingleComp
@@ -204,8 +206,9 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isenthalp(h,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,sa,ta,na)
-    use tpconst, only: tpTmin, tpTmax
-    use parameters, only: nc, TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
+         tpTmin, tpTmax
+    use thermopack_var, only: nc
     use eosTV, only: entropyTV
     use eos, only: specificvolume
     use ph_solver, only: twoPhasePHflash
@@ -276,8 +279,9 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isentrope(s,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,ha,ta,na)
-    use tpconst, only: tpTmin, tpTmax
-    use parameters, only: nc, TWOPH, SINGLEPH, VAPPH, LIQPH
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
+         tpTmin, tpTmax
+    use thermopack_var, only: nc
     use eosTV, only: enthalpyTV
     use eos, only: specificvolume
     use ps_solver, only: twoPhasePSflash
@@ -383,7 +387,8 @@ contains
   function phase_transition(ta,pa,phase,beta,betaL,Z,X,Y,n,na,istart,&
        iso_variable,iso_prop,tsat,vsat) result(hasTransition)
     use eos, only: specificvolume
-    use parameters, only: nc, TWOPH
+    use thermopack_constants, only: TWOPH
+    use thermopack_var, only: nc
     real, intent(in) :: ta(n),pa(n),beta(n),betaL(n)
     real, intent(in) :: Z(nc),X(n,nc),Y(n,nc),iso_prop
     integer, intent(in) :: n,na,iso_variable,phase(n)

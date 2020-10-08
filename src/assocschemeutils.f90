@@ -1,7 +1,8 @@
 !> Functionality for working with association schemes. The work mostly consists
 !> of keeping track of indices.
 module AssocSchemeUtils
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
+  use association_var, only: association
   implicit none
   save
 
@@ -26,17 +27,14 @@ module AssocSchemeUtils
   integer, parameter :: ariComb = 1 !< Arithmetic mean combining rule.
   integer, parameter :: geoComb = 0 !< Geometric mean combining rule.
 
-  integer :: numAssocSites !< Total number of associating sites.
-
-  !> comp_vs_sites is an (nc)x2-matrix. Row i holds information on component number i.
-  !> Column 1 and column 2 both equal the integer noSitesFlag if the component does not self-associate.
-  !> If the component does self-associate, the rows hold the first and last association site number.
-  integer, allocatable, dimension(:,:) :: comp_vs_sites
   integer, parameter :: noSitesFlag = -1
+
 contains
 
-  subroutine assocIndices_bookkeeping (nc, saft_model, assocSchemes_db)
-    use eosdata, only: eosPC_SAFT, eosBH_pert, eosPeTS
+  subroutine assocIndices_bookkeeping (assoc, nc, saft_model, assocSchemes_db)
+    use eosdata, only: eosPC_SAFT, eosSAFT_VR_MIE, eosPeTS, &
+         get_eos_short_label_from_subidx
+    type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
     integer, intent(in) :: assocSchemes_db(nc)
@@ -44,12 +42,13 @@ contains
     integer :: numAssocComps
     integer :: ic
 
-    allocate(comp_vs_sites(nc,2))
+    if (allocated(assoc%comp_vs_sites)) deallocate(assoc%comp_vs_sites)
+    allocate(assoc%comp_vs_sites(nc,2))
 
     ! Iterate through the components, count the number of self-associating ones,
     ! as well as the total number of association sites.
     numAssocComps = 0
-    numAssocSites = 0
+    assoc%numAssocSites = 0
     do ic=1,nc
        ! Count numAssocComps.
        if (assocSchemes_db(ic) .ne. no_assoc) then
@@ -59,47 +58,49 @@ contains
        ! indices to site numbers.
        select case (assocSchemes_db(ic))
        case (assoc_scheme_1)
-          numAssocSites = numAssocSites + 1
-          comp_vs_sites(ic,1) = numAssocSites
-          comp_vs_sites(ic,2) = numAssocSites
+          assoc%numAssocSites = assoc%numAssocSites + 1
+          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites
+          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
        case (assoc_scheme_2A,assoc_scheme_2B,assoc_scheme_2C)
-          numAssocSites = numAssocSites + 2
-          comp_vs_sites(ic,1) = numAssocSites - 1
-          comp_vs_sites(ic,2) = numAssocSites
+          assoc%numAssocSites = assoc%numAssocSites + 2
+          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 1
+          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
        case (assoc_scheme_3A,assoc_scheme_3B)
-          numAssocSites = numAssocSites + 3
-          comp_vs_sites(ic,1) = numAssocSites - 2
-          comp_vs_sites(ic,2) = numAssocSites
+          assoc%numAssocSites = assoc%numAssocSites + 3
+          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 2
+          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
        case (assoc_scheme_4A,assoc_scheme_4B,assoc_scheme_4C)
-          numAssocSites = numAssocSites + 4
-          comp_vs_sites(ic,1) = numAssocSites - 3
-          comp_vs_sites(ic,2) = numAssocSites
+          assoc%numAssocSites = assoc%numAssocSites + 4
+          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 3
+          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
        case (no_assoc)
-          comp_vs_sites(ic,:) = noSitesFlag
+          assoc%comp_vs_sites(ic,:) = noSitesFlag
        end select
     end do
 
-    if (numAssocSites .eq. 0) then
+    if (assoc%numAssocSites .eq. 0) then
        ! No associating components: exit routine.
-       if (saft_model == eosPC_SAFT .or. saft_model == eosBH_pert .or. saft_model == eosPeTS) then
-          if (verbose) print *, "Using PC-SAFT with no associating components."
-          return
-       else
-          call stoperror("At least one CPA-component must self-associate.")
-       end if
+      if (saft_model == eosPC_SAFT .or. saft_model == eosSAFT_VR_MIE .or. saft_model == eosPeTS) then
+        if (verbose) print *, "Using " // get_eos_short_label_from_subidx(saft_model) &
+             // " with no associating components."
+        return
+      else
+        call stoperror("At least one CPA-component must self-associate.")
+      end if
     end if
 
   end subroutine assocIndices_bookkeeping
 
   !*************************** INDEX FUNCTIONS ***************************!
   !> Gives the component number ic to which association site number k belongs.
-  INTEGER FUNCTION site_to_compidx(k)
+  INTEGER FUNCTION site_to_compidx(assoc,k)
+    type(association), intent(in) :: assoc
     integer, intent(in)  :: k !< the association site number
     integer :: ic
 
     ic = 1
     do while (.true.)
-       if (comp_vs_sites(ic,2) >= k .and. k >= comp_vs_sites(ic,1)) then
+       if (assoc%comp_vs_sites(ic,2) >= k .and. k >= assoc%comp_vs_sites(ic,1)) then
           site_to_compidx = ic
           return
        end if
@@ -108,13 +109,14 @@ contains
   end FUNCTION site_to_compidx
 
   !> Gives the first and last association sites, k_first and k_last, for comp i.
-  subroutine compidx_to_sites(ic,k_first,k_last)
+  subroutine compidx_to_sites(assoc,ic,k_first,k_last)
+    type(association), intent(in) :: assoc
     integer, intent(in)  :: ic  !< the original component index
     integer, intent(out) :: k_first !< the first association site number for comp i
     integer, intent(out) :: k_last  !< the last association site number for comp i
 
-    k_first = comp_vs_sites(ic,1)
-    k_last = comp_vs_sites(ic,2)
+    k_first = assoc%comp_vs_sites(ic,1)
+    k_last = assoc%comp_vs_sites(ic,2)
   end subroutine compidx_to_sites
 
   !> Implements the combining rules for eps and beta seen in CPA models.

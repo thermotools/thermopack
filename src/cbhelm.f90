@@ -9,7 +9,7 @@
 module cbHelm
   !
   !
-  use eosdata, only: eoscubic
+  use cubic_eos, only: cb_eos
   implicit none
   private
   save
@@ -26,7 +26,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbF(cubiceos) result(F)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: F
     ! Locals
     F = cubiceos%ff
@@ -41,7 +41,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbFv(cubiceos) result(Fv)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: Fv
     ! Locals
     Fv = cubiceos%ffv
@@ -56,7 +56,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbFvv(cubiceos) result(Fvv)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: Fvv
     ! Locals
     Fvv = cubiceos%ffvv
@@ -70,9 +70,9 @@ contains
   !> \author MH, 2015-10
   !-----------------------------------------------------------------------------
   function cbFvvv(cubiceos,T,V) result(Fvvv)
-    use tpconst, only: kRgas
+    use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V
     real :: Fvvv
     ! Locals
@@ -92,7 +92,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbFt(cubiceos) result(Ft)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: Ft
     ! Locals
     Ft = cubiceos%fft + cubiceos%ffa*cubiceos%at  &
@@ -108,7 +108,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbFtt(cubiceos) result(Ftt)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: Ftt
     ! Locals:
     Ftt = cubiceos%fftt + 2.0*cubiceos%ffat*cubiceos%at  &
@@ -130,7 +130,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbFvt(cubiceos) result(Fvt)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: Fvt
     ! Locals
     Fvt = cubiceos%ffvt + cubiceos%ffva*cubiceos%at + cubiceos%ffvb * cubiceos%bt
@@ -146,7 +146,7 @@ contains
   subroutine cbFi(nc,cubiceos,Fi)
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, dimension(nc), intent(out) :: Fi
     ! Locals
     Fi = cubiceos%ffn + cubiceos%ffa*cubiceos%ai &
@@ -164,7 +164,7 @@ contains
   subroutine cbFij(nc,cubiceos,Fij)
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, dimension(nc,nc), intent(out) :: Fij
     ! Locals
     integer :: i,j
@@ -198,7 +198,7 @@ contains
   subroutine cbFiT(nc,cubiceos,FiT)
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, dimension(nc), intent(out) :: FiT
     ! Locals
     FiT = (cubiceos%ffat + cubiceos%ffaa*cubiceos%at)*cubiceos%ai &
@@ -225,7 +225,7 @@ contains
   subroutine cbFiv(nc,cubiceos,Fiv)
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, dimension(nc), intent(out) :: Fiv
     ! Locals
     Fiv = cubiceos%ffnv&
@@ -240,9 +240,9 @@ contains
   !> \author MH, 2014-04
   !-----------------------------------------------------------------------------
   function cbPress(cubiceos,T,V) result(p)
-    use tpconst, only: kRgas
+    use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V
     real :: p
     ! Locals
@@ -258,7 +258,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbPv(cubiceos) result(pv)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: pv
     ! Locals
     pv = cubiceos%pv
@@ -270,9 +270,9 @@ contains
   !> \author MH, 2015-02
   !-----------------------------------------------------------------------------
   function cbPvv(cubiceos,T,V) result(pvv)
-    use tpconst, only: kRgas
+    use thermopack_constants, only: kRgas
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V
     real :: pvv
     ! Locals
@@ -295,7 +295,7 @@ contains
   !-----------------------------------------------------------------------------
   function cbPrst(cubiceos) result(pt)
     implicit none
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real :: pt
     ! Locals
     pt = cubiceos%pt+cubiceos%pa*cubiceos%at + &
@@ -311,7 +311,7 @@ contains
   subroutine cbPi(nc,cubiceos,Pi)
     implicit none
     integer, intent(in) :: nc
-    type(eoscubic), intent(in) :: cubiceos
+    class(cb_eos), intent(in) :: cubiceos
     real, dimension(nc), intent(out) :: Pi
     ! Locals
     Pi=cubiceos%pn+cubiceos%pa*cubiceos%ai &

@@ -14,6 +14,8 @@ module utilities
   public :: safe_exp
   public :: rand_seed, random, newunit, linspace, is_numerically_equal
   public :: normalize, boolean, isXwithinBounds
+  public :: allocate_nc, allocate_nc_x_nc, deallocate_real, deallocate_real_2
+  public :: get_thread_index
 
   !-----------------------------------------------------------------------------
   !> Exponential function which will return "huge" instead of overflowing.
@@ -232,5 +234,63 @@ contains
       endif
     endif
   end subroutine isXwithinBounds
+
+  !> deallocate real variable
+  subroutine deallocate_real(var,var_name)
+    real, allocatable, intent(inout) :: var(:)
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('deallocate_real: could not deallocate array: '//var_name)
+  end subroutine deallocate_real
+
+  !> deallocate real variable
+  subroutine deallocate_real_2(var,var_name)
+    real, allocatable, intent(inout) :: var(:,:)
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('deallocate_real: could not deallocate array: '//var_name)
+  end subroutine deallocate_real_2
+
+  !> Allocate nc matrix
+  subroutine allocate_nc(var,nc,var_name)
+    real, allocatable, intent(inout) :: var(:)
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('allocate_nc: could not deallocate array: '//var_name)
+    allocate (var(nc), stat=err)
+    if (err /= 0) call stoperror('allocate_nc: could not allocate array: '//var_name)
+  end subroutine allocate_nc
+
+  !> Allocate nc x nc matrix
+  subroutine allocate_nc_x_nc(var,nc,var_name)
+    real, allocatable, intent(inout) :: var(:,:)
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: var_name
+    ! Locals
+    integer :: err
+    err = 0
+    if (allocated (var)) deallocate (var, stat=err)
+    if (err /= 0) call stoperror('allocate_nc_x_nc: could not deallocate array: '//var_name)
+    allocate (var(nc,nc), stat=err)
+    if (err /= 0) call stoperror('allocate_nc_x_nc: could not allocate array: '//var_name)
+  end subroutine allocate_nc_x_nc
+
+  !< Get thread index when performing OpenMP parallel code execution
+  function get_thread_index() result(i_thread)
+    !$ use omp_lib, only: omp_get_thread_num
+    integer :: i_thread
+    i_thread = 1
+    !$ i_thread = 1 + omp_get_thread_num()
+  end function get_thread_index
 
 end module utilities

@@ -252,7 +252,7 @@ contains
     ! MH, 2017-02
     use eos, only: specificvolume
     use eosTV, only: Fres
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
@@ -269,18 +269,11 @@ contains
     real, dimension(ncomp) :: n, dn, x
     integer :: i, j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical :: isCubic
     if (present(mixing)) then
       mixing_l = mixing
     else
       mixing_l = "vdW"
-    endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
     endif
     if ( str_eq(model, "SRK").OR. &
          str_eq(model, "PR") ) then
@@ -293,7 +286,7 @@ contains
     ! Test model
     silent_init = .true.
 
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), 'Classic', ncomp,&
+    call init_thermo(trim(model), trim(mixing_l), 'Classic',&
          trim(components), 1)
     call specificvolume(T0,p0,x,LIQPH,v0)
 
@@ -378,7 +371,7 @@ contains
     ! MH, 2017-02
     use eosTV, only: pressure
     use eos, only: specificvolume
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
@@ -393,7 +386,6 @@ contains
     real, dimension(ncomp) :: n, dn, x
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .true.
 
     if (present(mixing)) then
@@ -401,17 +393,11 @@ contains
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
 
     sumn = sum(n0)
     x = n0/sumn
@@ -463,8 +449,7 @@ contains
     real :: dmudz_num
     integer :: it, iv, nt, nv
     !
-    call init_thermo('Thermopack', 'PR', 'vdW', 'Classic', 2, &
-         "CO2,N2", 1)
+    call init_thermo('PR', 'vdW', 'Classic', "CO2,N2", 1)
     !
     tmin = 200 ! K
     tmax = 400 ! K

@@ -20,12 +20,12 @@
 !---------------------------------------------------------------------------------
 module saftvrmie_hardsphere
   use saftvrmie_containers, only: saftvrmie_dhs, saftvrmie_param,&
-       mie_c_factor, saftvrmie_var, get_DFeynHibbsPower,&
+       mie_c_factor, get_DFeynHibbsPower,&
        saftvrmie_zeta, saftvrmie_dhs, &
        saftvrmie_var_container, saftvrmie_zeta_hs
-  use tpconst, only: h_const,kB_const,N_AVOGADRO
+  use thermopack_constants, only: h_const,kB_const,N_AVOGADRO
   use numconstants, only: pi
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
   use quadratures
   use saftvrmie_options
   implicit none
@@ -805,8 +805,7 @@ Contains
 
   subroutine zero_integrand(rs,f,param,dfdr,d2fdr2)
     use numconstants, only: machine_prec
-    use saftvrmie_containers, only: saftvrmie_var
-    !$ use omp_lib, only: omp_get_thread_num
+    use saftvrmie_containers, only: saftvrmie_var_container, get_saftvrmie_var
     real, intent(in) :: rs
     real, intent(in) :: param(4)
     real, intent(out) :: f,dfdr,d2fdr2
@@ -814,15 +813,14 @@ Contains
     integer :: j,k
     real :: U_divk,U_divk_T,U_divk_TT,U_divk_r,U_divk_Tr,U_divk_rr
     real :: T, sigma_eff, r
-    integer :: iTh
-    iTh = 1
-    !$ iTh = omp_get_thread_num() + 1
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
     j = int(param(1))
     k = int(param(2))
     T = param(3)
     sigma_eff = param(4)
     r = rs*sigma_eff
-    call calc_mie_potential_quantumcorrected(j,k,saftvrmie_var(iTh),&
+    call calc_mie_potential_quantumcorrected(j,k,svrm_var,&
          saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
          saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
          saftvrmie_param%Cij(j,k),&
@@ -846,7 +844,7 @@ Contains
     !---------------------------------------------------------------------
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, limit_dx, &
          premReturn, setXv
-    use tpvar, only: comp
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     integer, intent(in) :: nc                        !< Number of components
     real, intent(in) :: T                            !< Temperature [K]
     type(saftvrmie_var_container), intent(in) :: s_vc
@@ -860,6 +858,8 @@ Contains
     real, dimension(1) :: sigma_scaled, xmin, xmax
     integer :: i, j
     real :: U_divk_r, U_divk_Tr, U_divk_rr
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
     if (quantum_correction_hs==0) then ! With no quantum corrections
        sigma_eff=saftvrmie_param%sigma_ij
@@ -903,7 +903,7 @@ Contains
              if (solver%exitflag /= 0 .and. verbose) then
                 print *,"Not able to solve for effective sigma"
                 print *,"T = ",T
-                print *,"comp = ",trim(comp(i)%ident)
+                print *,"comp = ",trim(act_mod_ptr%comps(i)%p_comp%ident)
                 print *,"lambda_r = ",saftvrmie_param%lambda_r_ij(i,j)
                 print *,"lambda_a = ",saftvrmie_param%lambda_a_ij(i,j)
                 print *,"sigma    = ",saftvrmie_param%sigma_ij(i,j)
@@ -2778,7 +2778,7 @@ end module saftvrmie_hardsphere
 
 !subroutine test_hardsphere_helmholtzenergy
 !  !use saftvrmie_hardsphere
-!  use parameters, only: nc
+!  use thermopack_var, only: nc
 !  use saftvrmie_containers, only: saftvrmie_dhs, &
 !       allocate_saftvrmie_dhs, cleanup_saftvrmie_dhs
 !  implicit none
@@ -2840,9 +2840,10 @@ end module saftvrmie_hardsphere
 !end subroutine test_hardsphere_helmholtzenergy
 
 subroutine test_effective_eps_divk()
-  use parameters
+  use thermopack_constants
   use saftvrmie_hardsphere
   use saftvrmie_containers
+  use thermopack_var
   implicit none
   integer :: i
   real :: T, eps_divk_eff(nc,nc),eps_divk_eff_T(nc,nc),eps_divk_eff_TT(nc,nc)
@@ -2853,10 +2854,10 @@ subroutine test_effective_eps_divk()
   real :: U2,U2_T,U2_TT,U2_r,U2_Tr,U2_rr,U2_rrr,U2_Trr,U2_TTr
   T = 10.0
   i=1
-  call update_temp_variables(nc,T,saftvrmie_var(1))
+  call update_temp_variables(nc,T,svrmie_var)
   ! Obtain the quantum-parameters
-  call get_DFeynHibbsPower(i,i,D,D_T,D_TT,saftvrmie_var(1),power_in=1,divideBySigmaMie=.true.)
-  call get_DFeynHibbsPower(i,i,D2,D2_T,D2_TT,saftvrmie_var(1),power_in=2,divideBySigmaMie=.true.)
+  call get_DFeynHibbsPower(i,i,D,D_T,D_TT,svrmie_var,power_in=1,divideBySigmaMie=.true.)
+  call get_DFeynHibbsPower(i,i,D2,D2_T,D2_TT,svrmie_var,power_in=2,divideBySigmaMie=.true.)
 
   ! Construct the parameter-file
   param(1)=saftvrmie_param%comp(i)%lambda_r
@@ -2881,7 +2882,7 @@ subroutine test_effective_eps_divk()
 
 
   r=4.0105664157835918E-010*0.95
-  call calc_mie_potential_quantumcorrected(i,i,saftvrmie_var(1),&
+  call calc_mie_potential_quantumcorrected(i,i,svrmie_var,&
        saftvrmie_param%comp(i)%sigma,saftvrmie_param%comp(i)%eps_depth_divk,&
        saftvrmie_param%comp(i)%lambda_a,saftvrmie_param%comp(i)%lambda_r,&
        saftvrmie_param%Cij(i,i),&
@@ -2894,7 +2895,7 @@ subroutine test_effective_eps_divk()
        U_divk_rr=U_rr,U_divk_rrr=U_rrr,&
        U_divk_Trr=U_Trr,U_divk_TTr=U_TTr)
   r2=r+r*eps
-  call calc_mie_potential_quantumcorrected(i,i,saftvrmie_var(1),&
+  call calc_mie_potential_quantumcorrected(i,i,svrmie_var,&
        saftvrmie_param%comp(i)%sigma,saftvrmie_param%comp(i)%eps_depth_divk,&
        saftvrmie_param%comp(i)%lambda_a,saftvrmie_param%comp(i)%lambda_r,&
        saftvrmie_param%Cij(i,i),&
@@ -2914,8 +2915,8 @@ subroutine test_effective_eps_divk()
   print *,U_Trr,(U2_Tr-U_Tr)/(r*eps)
   print *,U_TTr,(U2_TT-U_TT)/(r*eps)
 
-  call update_temp_variables(nc,T+T*eps,saftvrmie_var(1))
-  call calc_mie_potential_quantumcorrected(i,i,saftvrmie_var(1),&
+  call update_temp_variables(nc,T+T*eps,svrmie_var)
+  call calc_mie_potential_quantumcorrected(i,i,svrmie_var,&
        saftvrmie_param%comp(i)%sigma,saftvrmie_param%comp(i)%eps_depth_divk,&
        saftvrmie_param%comp(i)%lambda_a,saftvrmie_param%comp(i)%lambda_r,&
        saftvrmie_param%Cij(i,i),&
@@ -2935,12 +2936,12 @@ subroutine test_effective_eps_divk()
   print *,U_Trr,(U2_rr-U_rr)/(T*eps)
 
   print *,"Test eps_divk differentials"
-  call update_temp_variables(nc,T,saftvrmie_var(1))
-  call calc_binary_effective_eps_divk(nc,T,saftvrmie_var(1),eps_divk_eff,eps_divk_eff_T,eps_divk_eff_TT)
+  call update_temp_variables(nc,T,svrmie_var)
+  call calc_binary_effective_eps_divk(nc,T,svrmie_var,eps_divk_eff,eps_divk_eff_T,eps_divk_eff_TT)
   print *,eps_divk_eff,eps_divk_eff/saftvrmie_param%comp(i)%eps_depth_divk
 
-  call update_temp_variables(nc,T+T*eps,saftvrmie_var(1))
-  call calc_binary_effective_eps_divk(nc,T+T*eps,saftvrmie_var(1),eps_divk_eff2,eps_divk_eff2_T,eps_divk_eff2_TT)
+  call update_temp_variables(nc,T+T*eps,svrmie_var)
+  call calc_binary_effective_eps_divk(nc,T+T*eps,svrmie_var,eps_divk_eff2,eps_divk_eff2_T,eps_divk_eff2_TT)
   print *,eps_divk_eff_T,(eps_divk_eff2-eps_divk_eff)/(T*eps)
   print *,eps_divk_eff_TT,(eps_divk_eff2_T-eps_divk_eff_T)/(T*eps)
 

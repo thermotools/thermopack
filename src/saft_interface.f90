@@ -24,14 +24,17 @@
 !> comply with the units in eoscubic type.
 !------------------------------------------------------------------------------
 module saft_interface
-  use parameters, only: verbose
+  use thermopack_constants, only: verbose
   use compdata, only: gendata
-  use saft_globals, only: saft_model, cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, eosBH_pert
-  use tpconst, only: Rgas => Rgas_default
+  use saft_globals, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE
+  use thermopack_constants, only: Rgas => Rgas_default
+  use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
+       get_active_eos, base_eos_param, numassocsites
+  use association_var, only: association
   implicit none
   save
 
-  public :: saft_type_eos_init, cleanup_saft
+  public :: saft_type_eos_init
   public :: saft_master_volume_solver
   public :: calcSaftFder_res, saft_total_pressure
   public :: saft_zfac, saft_lnphi, saft_ResidEntropy, saft_ResidEnthalpy, saft_ResidGibbs
@@ -45,19 +48,21 @@ module saft_interface
 contains
 
   !> Called from routine init_thermopack in eoslibinit.f90.
-  subroutine saft_type_eos_init(nc,comp,cbeos,setno,silent_init)
-    use assocschemeutils, only: no_assoc,assocIndices_bookkeeping, numassocsites
-    use saft_association, only: beta_kl, eps_kl, boltzmann_fac_cache, T_cache
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+  subroutine saft_type_eos_init(nc,comp,eos,param_ref,silent_init)
+    use assocschemeutils, only: no_assoc,assocIndices_bookkeeping
+    use cubic_eos, only: cb_eos
+    use compdata, only: gendata_pointer
     use CPA_parameters, only: getCpaPureParams_allcomps, getCpaKijAndCombRules_allComps
     use PC_SAFT_parameters, only: getPcSaftPureParams_allComps, getPcSaftKij_allComps
-    use bh_interface, only: init_BH_pert_model
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use saftvrmie_interface, only: init_saftvrmie
+    use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
+    use pets, only: PETS_eos
     integer, intent(in)           :: nc          !< Number of components.
-    type(gendata), intent(inout)  :: comp(nc)    !< Component vector.
-    type(eoscubic), intent(inout) :: cbeos       !< Underlying cubic equation of state.
-    integer, intent(in), optional :: setno(nc)   !< Parameter sets to use for components
+    type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
+    class(base_eos_param), intent(inout) :: eos       !< Underlying cubic equation of state.
+    character(len=*), intent(in) :: param_ref   !< Parameter sets to use for components
     logical, intent(in), optional :: silent_init !< Print no varnings during init
     ! Index variables.
     integer :: ic, l
@@ -70,8 +75,8 @@ contains
     integer :: epsbeta_combrules_CPA(2,nc,nc) ! arithm. or geom. CPA comb rules
     logical :: compInDB(nc) ! is the component in the db?
     integer :: alpharCorrIdx_db(nc), assocSchemes_db(nc)
-    integer :: setno_loc(nc)
     logical :: silent
+    type(association), pointer :: assoc => NULL()
 
     if (present(silent_init)) then
       silent = silent_init
@@ -79,30 +84,26 @@ contains
       silent = .false.
     endif
 
-    setno_loc = 1
-    if (present(setno)) setno_loc = setno
+    allocate(assoc)
 
     ! Set the model index.
-    saft_model = cbeos%eosidx
-
-    ! Free previously allocated memory.
-    call cleanup_saft()
+    assoc%saft_model = eos%subeosidx
 
     ! Fetch parameters from the database.
-    if (saft_model == eosBH_pert) then
-      call getSaftVrMieAssocParams_allComps(nc,comp,cbeos%subeosidx,setno_loc,&
+    if (assoc%saft_model == eosSAFT_VR_MIE) then
+      call getSaftVrMieAssocParams_allComps(nc,comp,eos%subeosidx,param_ref,&
            compinDB,eps_db,beta_db,assocSchemes_db)
-    else if (saft_model == eosPC_SAFT) then
-      cbeos%name = "PC-SAFT"
-      call getPcSaftPureParams_allComps(nc,comp,saft_model,setno_loc,compInDB,&
+    else if (assoc%saft_model == eosPC_SAFT) then
+      !cbeos%name = "PC-SAFT"
+      call getPcSaftPureParams_allComps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
-    else if (saft_model == eosPeTS) then
-      cbeos%name = "PeTS"
-      call getPcSaftPureParams_allComps(nc,comp,saft_model,setno_loc,compInDB,&
+    else if (assoc%saft_model == eosPeTS) then
+      !cbeos%name = "PeTS"
+      call getPcSaftPureParams_allComps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
     else
       assocSchemes_db = no_assoc
-      call getCpaPureParams_allcomps(nc,comp,saft_model,setno_loc,compInDB,&
+      call getCpaPureParams_allcomps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            a0_db,b_db,alphaParams_db,eps_db,beta_db,alpharCorrIdx_db,&
            assocSchemes_db)
     end if
@@ -110,7 +111,7 @@ contains
     ! Set association scheme components. Must be done before setting cubic
     ! params, because we use standard parameters if not self-associating.
     do ic=1,nc
-      comp(ic)%assoc_scheme = assocSchemes_db(ic)
+      comp(ic)%p_comp%assoc_scheme = assocSchemes_db(ic)
     end do
 
     if (.not. silent) then
@@ -118,51 +119,61 @@ contains
       do ic=1,nc
         if ( .not. compInDB(ic) ) then
           ! Allow ions:
-          l = len_trim(comp(ic)%ident)
-          if (comp(ic)%ident(l:l) /= "+" .and. comp(ic)%ident(l:l) /= "-") then
-            print *, "MISSING COMPONENT: ", comp(ic)%ident
-            print *,"The above component is not in the saft database."
+          l = len_trim(comp(ic)%p_comp%ident)
+          if (comp(ic)%p_comp%ident(l:l) /= "+" .and. comp(ic)%p_comp%ident(l:l) /= "-") then
+            print *, "Component not in database: ", comp(ic)%p_comp%ident
           end if
         end if
       end do
     end if
     ! Fetch interaction params from the database (defaults to 0 if not present).
-    if (saft_model == eosBH_pert .or. saft_model == eosPeTS) then
+    if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosPeTS) then
       !....
-    else if (saft_model == eosPC_SAFT) then
-       call getPcSaftKij_allComps(nc,comp,saft_model,kij_PCSAFT)
+    else if (assoc%saft_model == eosPC_SAFT) then
+       call getPcSaftKij_allComps(nc,comp,assoc%saft_model,kij_PCSAFT)
     else
-       call getCpaKijAndCombRules_allComps(nc,comp,saft_model,kij_aEpsBeta_CPA,&
+       call getCpaKijAndCombRules_allComps(nc,comp,assoc%saft_model,kij_aEpsBeta_CPA,&
             epsbeta_combrules_CPA)
     end if
 
     ! Set nonassoc parameters
-    if (saft_model == eosBH_pert) then
-       call init_BH_pert_model(nc,comp,cbeos,setno)
-    else if (saft_model == eosPC_SAFT) then
-       call pcsaft_set_nonassoc_params(nc,m_db,sigma_db,&
-            eps_depth_divk_db,kij_PCSAFT)
-    else if (saft_model == eosPeTS) then
-       call pets_set_params(sigma_db,eps_depth_divk_db)
-    else
-       ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
-       call cpa_set_cubic_params(nc,comp,cbeos,a0_db,b_db,&
-            alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
-    end if
+    select type ( p_eos => eos )
+    class is ( cb_eos )
+      ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
+      call cpa_set_cubic_params(nc,comp,p_eos,a0_db,b_db,&
+           alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
+    class is(PCSAFT_eos)
+      call pcsaft_set_nonassoc_params(p_eos,nc,m_db,sigma_db,&
+           eps_depth_divk_db,kij_PCSAFT)
+    class is ( saftvrmie_eos )
+      call init_saftvrmie(nc,comp,p_eos,param_ref)
+    class is ( PETS_eos )
+      call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
+    class default
+      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+    end select
 
+    ! Init calls above will clean eos class memory before init
+    ! Therefore the assoc pointer is assigned after init
+    eos%assoc => assoc
     ! Fill module variables in the module assocschemeutils, keeping track of
     ! associating components and association sites.
-    call assocIndices_bookkeeping(nc,saft_model,assocSchemes_db)
+    call assocIndices_bookkeeping(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db)
+    numAssocSites = eos%assoc%numAssocSites
 
     ! Set the association parameters.
-    allocate(beta_kl(numAssocSites,numAssocSites))
-    allocate(eps_kl(numAssocSites,numAssocSites))
-    allocate(boltzmann_fac_cache(numAssocSites,numAssocSites))
-    T_cache = -1.0 ! to ensure a new init recalculates any cached variables
-    if (saft_model == eosBH_pert .or. saft_model == eosPC_SAFT) then
-       call saft_setAssocParams(nc,saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)
+    if (allocated(eos%assoc%beta_kl)) deallocate(eos%assoc%beta_kl)
+    allocate(eos%assoc%beta_kl(numAssocSites,numAssocSites))
+    if (allocated(eos%assoc%eps_kl)) deallocate(eos%assoc%eps_kl)
+    allocate(eos%assoc%eps_kl(numAssocSites,numAssocSites))
+    if (allocated(eos%assoc%boltzmann_fac_cache)) deallocate(eos%assoc%boltzmann_fac_cache)
+    allocate(eos%assoc%boltzmann_fac_cache(numAssocSites,numAssocSites))
+    eos%assoc%T_cache = -1.0 ! to ensure a new init recalculates any cached variables
+
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%assoc%saft_model == eosPC_SAFT) then
+       call saft_setAssocParams(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)
     else
-       call cpa_setAssocParams(nc,assocSchemes_db,eps_db,beta_db,&
+       call cpa_setAssocParams(eos%assoc,nc,assocSchemes_db,eps_db,beta_db,&
             epsbeta_combrules_CPA,kij_aEpsBeta_CPA(2:3,:,:))
     end if
 
@@ -172,12 +183,11 @@ contains
   subroutine cpa_set_cubic_params(nc,comp,cbeos,a0_in,b_in,alphaParams_in,alphaCorrIdx_in,kij_in)
     use cbAlpha, only: setSingleAlphaCorr
     use CPA_parameters, only: no_assoc
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use eosdata, only: alphaCorrNames
+    use cubic_eos, only: cb_eos
+    use compdata, only: gendata_pointer
     integer, intent(in) :: nc                   !< Number of components.
-    type(gendata), intent(inout) :: comp(nc)    !< Component vector.
-    type(eoscubic), intent(inout) :: cbeos      !< The underlying cubic equation of state.
+    type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector.
+    class(cb_eos), intent(inout) :: cbeos      !< The underlying cubic equation of state.
     integer, intent(in) :: alphaCorrIdx_in(nc)
     real, intent(in) :: a0_in(nc),b_in(nc),alphaParams_in(3,nc),kij_in(nc,nc)
     integer :: ic,jc
@@ -185,7 +195,7 @@ contains
     do ic = 1,nc
 
        ! If component not self-associating: use standard cubic parameters.
-       if (comp(ic)%assoc_scheme==no_assoc) cycle
+       if (comp(ic)%p_comp%assoc_scheme==no_assoc) cycle
 
        ! Set cubic a and b parameters. Database parameters have same units as
        ! those in cbeos%single.
@@ -194,7 +204,7 @@ contains
 
        ! Set alpha correlation. Only classic_fit correlation tested.
        call setSingleAlphaCorr(i=ic, cbeos=cbeos, &
-            corrName=alphaCorrNames(alphaCorrIdx_in(ic)), &
+            alphaIdx=alphaCorrIdx_in(ic), &
             alphaParams=alphaParams_in(1:3,ic))
 
        do jc = (ic+1),nc
@@ -207,55 +217,50 @@ contains
 
 
   !> Sets the fitted parameters in the non-association part of PC-SAFT.
-  subroutine pcsaft_set_nonassoc_params(nc,m_in,sigma_in,eps_depth_divk_in,kij_in)
-    use pc_saft_nonassoc, only: m, sigma, sigma_cube, eps_depth_divk
-    use compdata, only: gendata
+  subroutine pcsaft_set_nonassoc_params(eos,nc,m_in,sigma_in,eps_depth_divk_in,kij_in)
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    class(PCSAFT_eos), intent(inout) :: eos
     integer, intent(in) :: nc                   !< Number of components.
     real, intent(in) :: m_in(nc),sigma_in(nc),eps_depth_divk_in(nc),kij_in(nc,nc)
     integer ::  ic, jc
 
-    if (allocated(m)) deallocate(m)
-    if (allocated(sigma)) deallocate(sigma)
-    if (allocated(sigma_cube)) deallocate(sigma_cube)
-    if (allocated(eps_depth_divk)) deallocate(eps_depth_divk)
-    allocate(m(nc))
-    allocate(sigma(nc,nc))
-    allocate(sigma_cube(nc,nc))
-    allocate(eps_depth_divk(nc,nc))
+    call eos%allocate_and_init(nc,"PC-SAFT")
 
     do ic = 1,nc
       ! Set pure-component nonassoc parameters, and scheme.
-      m(ic) = m_in(ic)
-      sigma(ic,ic) = sigma_in(ic)
-      eps_depth_divk(ic,ic) = eps_depth_divk_in(ic)
+      eos%m(ic) = m_in(ic)
+      eos%sigma(ic,ic) = sigma_in(ic)
+      eos%eps_depth_divk(ic,ic) = eps_depth_divk_in(ic)
       ! Compute the cross-component parameters.
       do jc = (ic+1),nc
-        sigma(ic,jc) = (sigma_in(ic)+sigma_in(jc))/2.0
-        sigma(jc,ic) =  sigma(ic,jc)
+        eos%sigma(ic,jc) = (sigma_in(ic)+sigma_in(jc))/2.0
+        eos%sigma(jc,ic) =  eos%sigma(ic,jc)
 
         ! eps_depth_divk is the only pc-saft parameter with an interaction parameter kij.
-        eps_depth_divk(ic,jc) = &
+        eos%eps_depth_divk(ic,jc) = &
              sqrt(eps_depth_divk_in(ic)*eps_depth_divk_in(jc))*&
              (1-kij_in(ic,jc))
-        eps_depth_divk(jc,ic) = eps_depth_divk(ic,jc)
+        eos%eps_depth_divk(jc,ic) = eos%eps_depth_divk(ic,jc)
       end do
     end do
-    sigma_cube = sigma**3
+    eos%sigma_cube = eos%sigma**3
   end subroutine pcsaft_set_nonassoc_params
 
   !> Set the molecular parameters in the PeTS equation of state
-  subroutine pets_set_params(sigma_in,eps_depth_divk_in)
-    use pets, only: sigma_pets, epsdivk_pets
+  subroutine pets_set_params(eos,sigma_in,eps_depth_divk_in)
+    use pets, only: PETS_eos
+    class (PETS_eos), intent(inout) :: eos
     real, intent(in) :: sigma_in(1),eps_depth_divk_in(1)
-    sigma_pets = sigma_in(1)
-    epsdivk_pets = eps_depth_divk_in(1)
+    eos%sigma_pets = sigma_in(1)
+    eos%epsdivk_pets = eps_depth_divk_in(1)
   end subroutine pets_set_params
 
   !> Set association parameters for PC-SAFT and SAFT-VR Mie
-  subroutine saft_setAssocParams(nc,saft_model,assoc_scheme,epsVal,betaVal,sigmaVal)
-    use saft_association, only: numAssocSites, eps_kl, beta_kl, compidx_to_sites, site_to_compidx
+  subroutine saft_setAssocParams(assoc,nc,saft_model,assoc_scheme,epsVal,betaVal,sigmaVal)
+    use saft_association, only: numAssocSites, compidx_to_sites, site_to_compidx
     use AssocSchemeUtils, only: site_interaction_internal, cross_site_interaction
     ! Input.
+    type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
     integer, intent(in) :: assoc_scheme(nc)
@@ -265,28 +270,28 @@ contains
     real :: epsi,epsj, betai,betaj, sigi, sigj
 
     ! All elements not explicitly set should be zero.
-    eps_kl  = 0.0
-    beta_kl = 0.0
+    assoc%eps_kl  = 0.0
+    assoc%beta_kl = 0.0
 
     do k=1,numAssocSites
        do l=1,numAssocSites
 
           ! Get component indices.
-          ic = site_to_compidx(k)
-          jc = site_to_compidx(l)
+          ic = site_to_compidx(assoc,k)
+          jc = site_to_compidx(assoc,l)
 
           if (ic == jc) then
              ! Association between like molecules.
-             call compidx_to_sites(ic,k_first,k_last)
+             call compidx_to_sites(assoc,ic,k_first,k_last)
              if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
-                eps_kl(k,l) = epsVal(ic)
-                beta_kl(k,l) = betaVal(ic)
+                assoc%eps_kl(k,l) = epsVal(ic)
+                assoc%beta_kl(k,l) = betaVal(ic)
              end if
           else
              ! Cross-association between unlike molecules. (Would also work for
              ! like molecules.)
-             call compidx_to_sites(ic,k_first,k_last)
-             call compidx_to_sites(jc,l_first,l_last)
+             call compidx_to_sites(assoc,ic,k_first,k_last)
+             call compidx_to_sites(assoc,jc,l_first,l_last)
              if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                   assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
                 epsi = epsVal(ic)
@@ -295,9 +300,9 @@ contains
                 epsj = epsVal(jc)
                 betaj = betaVal(jc)
                 sigj = sigmaVal(jc)
-                eps_kl(k,l) = (epsi+epsj)/2
-                beta_kl(k,l) = sqrt(betai*betaj)*( 2*sqrt(sigi*sigj)/(sigi+sigj) )**3
-                if (saft_model==eosBH_pert) then
+                assoc%eps_kl(k,l) = (epsi+epsj)/2
+                assoc%beta_kl(k,l) = sqrt(betai*betaj)*( 2*sqrt(sigi*sigj)/(sigi+sigj) )**3
+                if (saft_model==eosSAFT_VR_MIE) then
                    print *, "NB: USING AN ARBITRARY COMBINING RULE FOR BONDING-VOLUME"
                    print *, "CONSIDER SETTING BONDING VOLUME EXPLICITLY"
                 end if
@@ -308,10 +313,11 @@ contains
     end do
   end subroutine saft_setAssocParams
 
-  subroutine cpa_setAssocParams(nc,assoc_scheme,epsVal,betaVal,epsBetaCombRules,epsBetaKij)
-    use saft_association, only: numAssocSites, eps_kl, beta_kl, compidx_to_sites, site_to_compidx
+  subroutine cpa_setAssocParams(assoc,nc,assoc_scheme,epsVal,betaVal,epsBetaCombRules,epsBetaKij)
+    use saft_association, only: numAssocSites, compidx_to_sites, site_to_compidx
     use AssocSchemeUtils, only: applyCombiningRule, site_interaction_internal, cross_site_interaction
     ! Input.
+    type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: assoc_scheme(nc)
     real, intent(in) :: epsVal(nc), betaVal(nc)
@@ -322,36 +328,36 @@ contains
     real :: kij_eps,kij_beta
 
     ! All elements not explicitly set should be zero.
-    eps_kl  = 0.0
-    beta_kl = 0.0
+    assoc%eps_kl  = 0.0
+    assoc%beta_kl = 0.0
 
     do k=1,numAssocSites
        do l=1,numAssocSites
 
           ! Get component indices.
-          ic = site_to_compidx(k)
-          jc = site_to_compidx(l)
+          ic = site_to_compidx(assoc, k)
+          jc = site_to_compidx(assoc, l)
 
           if (ic == jc) then
              ! Association between like molecules.
-             call compidx_to_sites(ic,k_first,k_last)
+             call compidx_to_sites(assoc, ic,k_first,k_last)
              if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
-                eps_kl(k,l) = epsVal(ic)
-                beta_kl(k,l) = betaVal(ic)
+                assoc%eps_kl(k,l) = epsVal(ic)
+                assoc%beta_kl(k,l) = betaVal(ic)
              end if
           else
              ! Cross-association between unlike molecules. (Would also work for
              ! like molecules.)
-             call compidx_to_sites(ic,k_first,k_last)
-             call compidx_to_sites(jc,l_first,l_last)
+             call compidx_to_sites(assoc,ic,k_first,k_last)
+             call compidx_to_sites(assoc,jc,l_first,l_last)
              if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                   assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
 
                 kij_eps = epsBetaKij(1,ic,jc)
                 kij_beta = epsBetaKij(2,ic,jc)
-                eps_kl(k,l) = applyCombiningRule (epsBetaCombRules(1,ic,jc), &
+                assoc%eps_kl(k,l) = applyCombiningRule (epsBetaCombRules(1,ic,jc), &
                      epsVal(ic), epsVal(jc)) * (1-kij_eps)
-                beta_kl(k,l) = applyCombiningRule(epsBetaCombRules(2,ic,jc), &
+                assoc%beta_kl(k,l) = applyCombiningRule(epsBetaCombRules(2,ic,jc), &
                      betaVal(ic), betaVal(jc)) * (1-kij_beta)
              end if
           end if
@@ -363,18 +369,17 @@ contains
   !> Calculates the reduced residual Helmholtz energy F (both the association
   !> contribution and the underlying equation (e.g. SRK)), together with its
   !> derivatives.
-  subroutine calcSaftFder_res(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
+  subroutine calcSaftFder_res(nc,eos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn,Xk)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, &
          calcFder_assoc, assemble_param
     use saft_association, only: numAssocSites, solve_for_X_k, calcFder_assoc
+    use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type (gendata), intent(in) :: comp(nc)
-    type (eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T,V,n(nc)
     ! Output.
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
@@ -388,7 +393,7 @@ contains
     real :: X_k(numAssocSites)
 
     ! Calculate the non-association contribution.
-    call calcSaftFder_res_nonassoc(nc,comp,cbeos,T,V,n,F,F_T,&
+    call calcSaftFder_res_nonassoc(nc,eos,T,V,n,F,F_T,&
          F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
 
     if (numAssocSites > 0) then
@@ -407,11 +412,11 @@ contains
       ! Calculate the association contribution.
       param = assemble_param(T,V,n,nc)
       X_k = 0.2 ! Initial guess.
-      call solve_for_X_k(nc,param,X_k,tol=10**5*machine_prec)
+      call solve_for_X_k(eos,nc,param,X_k,tol=10**5*machine_prec)
       if (present(Xk)) then
         Xk = X_k ! Return X_k
       endif
-      call calcFder_assoc(nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+      call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
 
       ! Add the non-association and association contribution.
@@ -435,18 +440,17 @@ contains
   !> Calculates the reduced residual Helmholtz energy F
   !> for the non-associationg part, together with its
   !> derivatives.
-  subroutine calcSaftFder_res_nonassoc(nc,comp,cbeos,T,V,n,F,F_T,&
+  subroutine calcSaftFder_res_nonassoc(nc,eos,T,V,n,F,F_T,&
        F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    use tpcubic, only: calcCbFder_res_SI
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use pc_saft_nonassoc, only: F_PC_SAFT_TVn
-    use pets, only: F_PeTS_TVn
-    use bh_interface, only: calcFresBH
+    use cubic, only: calcCbFder_res_SI
+    use cubic_eos, only: cb_eos
+    use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
+    use pets, only: F_PeTS_TVn, PETS_eos
+    use saftvrmie_interface, only: calcFresSAFTVRMie
+    use saftvrmie_containers, only: saftvrmie_eos
     ! Input.
     integer, intent(in) :: nc
-    type (gendata), intent(in) :: comp(nc)
-    type (eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T,V,n(nc)
     ! Output.
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
@@ -454,36 +458,36 @@ contains
     ! Locals
     real :: Fl
     ! Calculate the non-association contribution.
-    if (saft_model == eosPC_SAFT) then
-       call F_PC_SAFT_TVn(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-    else if (saft_model == eosPeTS) then
-       call F_PeTS_TVn(T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-    else if (saft_model == eosBH_pert) then
-       call calcFresBH(nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-            F_VV,F_TV,F_Tn,F_Vn,F_nn)
-       if (present(F)) then
-          F = Fl
-       endif
-    else
-      call calcCbFder_res_SI(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,&
+    select type ( p_eos => eos )
+    class is ( cb_eos )
+      call calcCbFder_res_SI(nc,p_eos,T,V,n,F,F_T,F_V,F_n,&
            F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
       !call calcFder_nonassoc_cpa(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,&
       !      F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    end if
-
+    class is ( PCSAFT_eos )
+      call F_PC_SAFT_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class is (saftvrmie_eos)
+      call calcFresSAFTVRMie(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
+    class is ( PETS_eos )
+      call F_PeTS_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class default
+      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+    end select
 
   end subroutine calcSaftFder_res_nonassoc
 
   !> Front-end procedure giving the combined pressure of the cubic contribution
   !> and the association contribution. Only works for mixtures with association.
-  subroutine saft_total_pressure_assoc_mix(nc,comp,cbeos,T,V,n,P,&
+  subroutine saft_total_pressure_assoc_mix(nc,eos,T,V,n,P,&
        dPdV,dPdT,dPdn)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+    use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in)  :: T                  !< Temperature [K]
     real, intent(in)  :: V                  !< Volume [m^3]
     real, intent(in)  :: n(nc)              !< Mole numbers [moles]
@@ -496,21 +500,20 @@ contains
     if (numAssocSites == 0) call stoperror("For associating mixtures only.")
     param = assemble_param(T,V,n,nc)
     X_k = 0.2 ! Initial guess.
-    call solve_for_X_k(nc,param,X_k)
-    call saft_total_pressure_knowing_X_k(nc,comp,cbeos,T,V,n,X_k,P,&
+    call solve_for_X_k(eos,nc,param,X_k)
+    call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
          dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
 
   end subroutine saft_total_pressure_assoc_mix
 
   !> Front-end procedure giving the combined pressure of the cubic contribution
   !> and the association contribution.
-  subroutine saft_total_pressure(nc,comp,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
+  subroutine saft_total_pressure(nc,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
     use saft_association, only: numAssocSites
-    use eosdata, only: eoscubic
+    use thermopack_var, only: base_eos_param
     use compdata, only: gendata
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: cbeos
     real, intent(in)  :: T                  !< Temperature [K]
     real, intent(in)  :: V                  !< Volume [m^3]
     real, intent(in)  :: n(nc)              !< Mole numbers [moles]
@@ -519,10 +522,10 @@ contains
     real, intent(out), optional :: dpdn(nc)
 
     if (numAssocSites > 0) then
-      call saft_total_pressure_assoc_mix(nc,comp,cbeos,T,V,n,P,&
+      call saft_total_pressure_assoc_mix(nc,cbeos,T,V,n,P,&
            dPdV,dPdT,dPdn)
     else
-      call nonassoc_pressure(nc,comp,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
+      call nonassoc_pressure(nc,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
     end if
 
   end subroutine saft_total_pressure
@@ -532,13 +535,11 @@ contains
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 
   !> Calculate the compressibility and its derivatives.
-  subroutine saft_zfac(nc,comp,cbeos,phase,T,P,n,Z,dZdT,dZdP,dZdn)
-    use compdata, only: gendata
-    use eosdata, only: eoscubic
+  subroutine saft_zfac(nc,eos,phase,T,P,n,Z,dZdT,dZdP,dZdn)
+    use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), dimension(nc), intent(in) :: comp
-    type (eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: phase
     real, intent(in) :: T                               !< Temperature [K]
     real, intent(in) :: P                               !< Pressure [Pa]
@@ -557,11 +558,11 @@ contains
 
     sumn = sum(n)
 
-    call saft_master_volume_solver (nc,comp,cbeos,T,P,n,phase,V)
+    call saft_master_volume_solver (nc,eos,T,P,n,phase,V)
     Z = P*V/(sumn*Rgas*T)
 
     if (present(dZdT) .or. present(dZdP) .or. present(dZdn)) then
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F_VV=F_VV,F_TV=F_TV,F_Vn=F_Vn)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F_VV=F_VV,F_TV=F_TV,F_Vn=F_Vn)
       dPdV = -Rgas*T*(F_VV + sumn/V**2)
     end if
 
@@ -584,13 +585,11 @@ contains
   end subroutine saft_zfac
 
   !> Calculate the logarithmic fugacity and its derivatives.
-  subroutine saft_lnphi(nc,comp,cbeos,phase,T,P,n,lnphi,dlnphidT,dlnphidP,dlnphidn)
-    use compdata, only: gendata
-    use eosdata, only: eoscubic
+  subroutine saft_lnphi(nc,eos,phase,T,P,n,lnphi,dlnphidT,dlnphidP,dlnphidn)
+    use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), dimension(nc), intent(in) :: comp
-    type (eoscubic), intent(inout) :: cbeos
+    class (base_eos_param), intent(inout) :: eos
     integer, intent(in) :: phase
     real, intent(in) :: T                               !< Temperature [K]
     real, intent(in) :: P                               !< Pressure [Pa]
@@ -608,17 +607,17 @@ contains
     integer :: i,j
     sumn = sum(n)
 
-    call saft_master_volume_solver(nc,comp,cbeos,T,P,n,phase,V)
+    call saft_master_volume_solver(nc,eos,T,P,n,phase,V)
 
     zFac = P*V/(sumn*Rgas*T)
 
     if (present(dlnphidt) .or. present(dlnphidp) .or. present(dlnphidn)) then
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F_n=F_n,F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F_n=F_n,F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
       dPdV = -Rgas*T*(F_VV + sumn/V**2)
       dPdn = Rgas*T*(-F_Vn + 1/V)
       dVdn = -dPdn/dPdV
     else
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F_n=F_n)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F_n=F_n)
     end if
 
     lnphi = F_n - log(zFac)
@@ -648,12 +647,11 @@ contains
   ! !>
   ! !> \author Ailo A, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidEntropy(nc,comp,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn)
+  subroutine saft_ResidEntropy(nc,eos,phase,T,P,n,S,dSdt,dSdp,dSdn)
     use compdata, only: gendata
-    use eosdata, only: eoscubic
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc !< Number of components in mixture.
-    type(gendata), intent(in) :: comp(nc) !< Component vector.
-    type(eoscubic), intent(inout) :: cbeos !< Cubic eos for
+    class(base_eos_param), intent(inout) :: eos !< Cubic eos for
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -669,17 +667,17 @@ contains
     real :: F,F_T,F_TT,F_n(nc),F_Tn(nc),F_TV,F_VV,F_Vn(nc)
     sumn = sum(n)
 
-    call saft_master_volume_solver(nc,comp,cbeos,T,P,n,phase,V)
+    call saft_master_volume_solver(nc,eos,T,P,n,phase,V)
     zFac = P*V/(sumn*Rgas*T)
 
     if (present(dSdt) .or. present(dSdp) .or. present(dSdn)) then
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F=F,F_n=F_n,F_T=F_T, &
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F=F,F_n=F_n,F_T=F_T, &
            F_VV=F_VV,F_TV=F_TV,F_TT=F_TT,F_Vn=F_Vn,F_Tn=F_Tn)
       dPdV = -Rgas*T*(F_VV + sumn/V**2)
       dPdT = P/T-Rgas*T*F_TV
       dVdT = -dPdT/dPdV
     else
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F=F,F_T=F_T)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F=F,F_T=F_T)
     end if
 
     S = Rgas*(-F - T*F_T + sumn*log(zFac))
@@ -705,12 +703,11 @@ contains
   ! !>
   ! !> \author Ailo A, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidEnthalpy(nc,comp,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn)
+  subroutine saft_ResidEnthalpy(nc,eos,phase,T,P,n,H,dHdT,dHdP,dHdn)
     use compdata, only: gendata
-    use eosdata, only: eoscubic
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos !< Cubic eos
+    class(base_eos_param), intent(inout) :: eos !< Cubic eos
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -726,15 +723,15 @@ contains
     real :: sumn
     sumn = sum(n)
 
-    call saft_master_volume_solver(nc,comp,cbeos,T,P,n,phase,V)
+    call saft_master_volume_solver(nc,eos,T,P,n,phase,V)
 
     if (present(dHdt) .or. present(dHdp) .or. present(dHdn)) then
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F_T=F_T,F_VV=F_VV,F_TV=F_TV,F_TT=F_TT,F_Vn=F_Vn,F_Tn=F_Tn)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F_T=F_T,F_VV=F_VV,F_TV=F_TV,F_TT=F_TT,F_Vn=F_Vn,F_Tn=F_Tn)
       dPdV = -Rgas*T*(F_VV + sumn/V**2)
       dPdT = P/T-Rgas*T*F_TV
       dVdT = -dPdT/dPdV
     else
-      call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F_T=F_T)
+      call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F_T=F_T)
     end if
 
     H = -Rgas*T*T*F_T + P*V - sumn*Rgas*T
@@ -759,12 +756,11 @@ contains
   ! !>
   ! !> \author Ailo, 2015-04
   ! !-----------------------------------------------------------------------------
-  subroutine saft_ResidGibbs(nc,comp,cbeos,phase,T,P,n,G,dGdT,dGdP,dGdn)
+  subroutine saft_ResidGibbs(nc,eos,phase,T,P,n,G,dGdT,dGdP,dGdn)
     use compdata, only: gendata
-    use eosdata, only: eoscubic
+    use thermopack_var, only: base_eos_param
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos !< Cubic eos.
+    class(base_eos_param), intent(inout) :: eos !< Cubic eos.
     real, intent(in) :: P !< Pressure [Pa]
     real, intent(in) :: T !< Temperature [K]
     integer, intent(in) :: phase !< Phase identifier [-]
@@ -780,10 +776,10 @@ contains
     real :: sumn
     sumn = sum(n)
 
-    call saft_master_volume_solver(nc,comp,cbeos,T,P,n,phase,V)
+    call saft_master_volume_solver(nc,eos,T,P,n,phase,V)
     zFac = P*V/(sumn*Rgas*T)
 
-    call calcSaftFder_res(nc=nc,comp=comp,cbeos=cbeos,T=T,V=V,n=n,F=F,F_VV=F_VV,F_TV=F_TV,F_T=F_T,F_V=F_V,F_n=F_n)
+    call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F=F,F_VV=F_VV,F_TV=F_TV,F_T=F_T,F_V=F_V,F_n=F_n)
     G = Rgas*T*F + P*V - sumn*Rgas*T*(1+log(zFac))
 
     if (present(dGdP)) then
@@ -806,25 +802,12 @@ contains
 
   end subroutine saft_ResidGibbs
 
-  !> Clean up memory used by saft models.
-  subroutine cleanup_saft()
-    use saft_association, only: eps_kl, beta_kl, boltzmann_fac_cache
-    use assocschemeutils, only: comp_vs_sites
-    use pc_saft_nonassoc, only: cleanup_pc_saft_nonassoc
-    call cleanup_pc_saft_nonassoc()
-    if (allocated(comp_vs_sites)) deallocate(comp_vs_sites)
-    if (allocated(eps_kl)) deallocate(eps_kl)
-    if (allocated(beta_kl)) deallocate(beta_kl)
-    if (allocated(boltzmann_fac_cache)) deallocate(boltzmann_fac_cache)
-  end subroutine cleanup_saft
-
-  subroutine saft_master_volume_solver(nc,comp,cbeos,T,P_spec,n,phase,V)
+  subroutine saft_master_volume_solver(nc,cbeos,T,P_spec,n,phase,V)
     use saft_association, only: numAssocSites
-    use eosdata, only: eoscubic
+    use eos_parameters, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: cbeos
     real, intent(in) :: T
     real, intent(in) :: P_spec
     real, intent(in) :: n(nc)
@@ -833,24 +816,23 @@ contains
     real, intent(out) :: V
 
     if (numAssocSites > 0) then
-      call saft_volume_solver(nc,comp,cbeos,T,P_spec,n,phase,V)
+      call saft_volume_solver(nc,cbeos,T,P_spec,n,phase,V)
     else
-      call pc_saft_nonassoc_volume_solver(nc,comp,cbeos,T,P_spec,n,phase,V)
+      call pc_saft_nonassoc_volume_solver(nc,cbeos,T,P_spec,n,phase,V)
     end if
 
   end subroutine saft_master_volume_solver
 
 
   !> Routine for when we want to use PC-SAFT on a non-association mixture.
-  subroutine pc_saft_nonassoc_volume_solver(nc,comp,cbeos,T,P_spec,n,phase,V)
+  subroutine pc_saft_nonassoc_volume_solver(nc,cbeos,T,P_spec,n,phase,V)
     use saft_association, only: numAssocSites
-    use eosdata, only: eoscubic
-    use parameters, only: VAPPH, verbose
+    use thermopack_var, only: base_eos_param
+    use thermopack_constants, only: VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: cbeos
     real, intent(in) :: T ! [K]
     real, intent(in) :: P_spec ! [Pa]
     real, intent(in) :: n(nc) ! [mol]
@@ -872,7 +854,7 @@ contains
     end if
 
     ! Compute "conversion numerator".
-    conv_num = conversion_numerator(nc,T,n)
+    conv_num = conversion_numerator(cbeos,nc,T,n)
 
     ! Initialize the reduced density zeta.
     if (phase .eq. VAPPH) then
@@ -889,7 +871,7 @@ contains
     zetaMax = 0.75 ! Higher values entails unphysically close packing of segments (Gross&Sadowski 2001).
 
     ! Compute the pressure P.
-    call nonassoc_pressure(nc,comp,cbeos,T,V,n,P=P,dPdV=P_V)
+    call nonassoc_pressure(nc,cbeos,T,V,n,P=P,dPdV=P_V)
 
     ! Initialize iteration variables and objective function.
     maxiter = 40
@@ -915,7 +897,7 @@ contains
       V = conv_num/zeta
 
       ! Compute P and P_V at the new V, as well as the value of F.
-      call nonassoc_pressure(nc,comp,cbeos,T,V,n,P=P,dPdV=P_V)
+      call nonassoc_pressure(nc,cbeos,T,V,n,P=P,dPdV=P_V)
       F = (1-zeta)*(P-P_spec)
 
       ! Convergence?
@@ -951,13 +933,15 @@ contains
   end subroutine pc_saft_nonassoc_volume_solver
 
   !> Calculate conversion numerator for pressure solver
-  function conversion_numerator(nc,T,n) result(conv_num)
-    use pc_saft_nonassoc, only: calc_d, m
-    use pets, only: eta_pets
-    use tpconst, only: N_AVOGADRO
+  function conversion_numerator(eos,nc,T,n) result(conv_num)
+    use pc_saft_nonassoc, only: calc_d, PCSAFT_eos
+    use pets, only: eta_pets, PETS_eos
+    use thermopack_constants, only: N_AVOGADRO
     use numconstants, only: PI
-    use bh_interface, only: calc_bh_zeta
+    use saftvrmie_interface, only: calc_saftvrmie_zeta
+    use saftvrmie_containers, only: saftvrmie_eos
     ! Input.
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: T
     real, intent(in) :: n(nc)
@@ -966,34 +950,33 @@ contains
     ! Locals.
     real :: prod_sum, diam(nc)
     integer :: i
-    if (saft_model == eosPC_SAFT) then
-      call calc_d(T=T,d=diam)
+    select type(p_eos => eos)
+    class is(PCSAFT_eos)
+      call calc_d(p_eos,T=T,d=diam)
       prod_sum = 0.0
       do i=1,nc
-        prod_sum = prod_sum + n(i)*m(i)*diam(i)**3
+        prod_sum = prod_sum + n(i)*p_eos%m(i)*diam(i)**3
       end do
       conv_num = N_AVOGADRO*(PI/6)*prod_sum/sum(n)
-   else if (saft_model == eosPeTS) then
-      call eta_pets(rho=1.0,T=T,n=n, e=conv_num)
-    else if (saft_model == eosBH_pert) then
-      conv_num = calc_bh_zeta(nc,T,1.0,n)
-    else
+    class is(saftvrmie_eos)
+      conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
+    class is ( PETS_eos )
+      call eta_pets(p_eos, rho=1.0,T=T,n=n, e=conv_num)
+    class default
       call stoperror("No such SAFT model")
-    endif
+    end select
   end function conversion_numerator
 
   !> Volume solver for associating mixtures. Modeled after the paper: Michelsen
   !> (2006) "Robust and Efficient Solution Procedures for Association Models."
-  subroutine saft_volume_solver (nc,comp,cbeos,T,P_spec,n,phase,V)
-    use eosdata, only: eoscubic
-    use tpconst, only: Rgas
-    use parameters, only: VAPPH, verbose
+  subroutine saft_volume_solver (nc,eos,T,P_spec,n,phase,V)
+    use thermopack_var, only: base_eos_param
+    use thermopack_constants, only: Rgas, VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T ! [K]
     real, intent(in) :: P_spec ! [Pa]
     real, intent(in) :: n(nc) ! [mol]
@@ -1016,8 +999,9 @@ contains
     sumn = sum(n)
 
     ! Compute conversion numerator and initialize the reduced density zeta.
-    if (saft_model == eosPC_SAFT .or. saft_model == eosBH_pert) then
-       conv_num = conversion_numerator(nc,T,n)
+    if (eos%assoc%saft_model == eosPC_SAFT .or. &
+         eos%assoc%saft_model == eosSAFT_VR_MIE) then
+       conv_num = conversion_numerator(eos,nc,T,n)
        if (phase .eq. VAPPH) then
           zeta = 1e-10
        else
@@ -1027,7 +1011,7 @@ contains
        zetaMin = 1e-10
        zetaMax = 0.75
     else
-       b_mix = dot_product(cbeos%single%b/1000,n)/sumn
+       b_mix = get_bmix(nc, eos, n)
        conv_num = b_mix*sumn
 
        if (phase .eq. VAPPH) then
@@ -1046,11 +1030,11 @@ contains
 
     ! Initialize all X_k components to 0.2, and then converge X_k exactly.
     X_k = 0.2
-    call solve_for_X_k(nc,param,X_k,maxit=10,tol=machine_prec*1e9)
+    call solve_for_X_k(eos,nc,param,X_k,maxit=10,tol=machine_prec*1e9)
 
     ! Having obtained the correct value of X_k, compute the corresponding
     ! pressure P.
-    call saft_total_pressure_knowing_X_k(nc,comp,cbeos,T,V,n,X_k,P)
+    call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P)
 
     ! Initialize iteration variables and objective function.
     V_has_converged = .false.
@@ -1062,7 +1046,7 @@ contains
     ! zeta, and the corresponding param, X_k and F.
     do
       ! Compute X_V and P_V at V.
-      call compute_dxdv_and_dpdv (nc,comp,cbeos,X_k,param,X_V,P_V)
+      call compute_dxdv_and_dpdv (nc,eos,X_k,param,X_V,P_V)
 
       ! Perform a Newton iteration to get a new zeta.
       dFdzeta = P_spec - P - ((1-zeta)/zeta)*P_V*V
@@ -1082,10 +1066,10 @@ contains
       ! Update param. Solve for X_k given the current volume.
       param(2) = V
       X_k = X_k + X_V*(V-Vold)
-      call solve_for_X_k(nc,param,X_k,maxit=10,tol=machine_prec*1e8)
+      call solve_for_X_k(eos,nc,param,X_k,maxit=10,tol=machine_prec*1e8)
 
       ! Compute the pressure P at V, and the value of F.
-      call saft_total_pressure_knowing_X_k(nc,comp,cbeos,T,V,n,X_k,P)
+      call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P)
       F = (1-zeta)*(P-P_spec)
 
       ! Convergence?
@@ -1118,19 +1102,32 @@ contains
 
     ! Get V from zeta, and then exit.
     V = conv_num/(zeta)
+  contains
+    function get_bmix(nc, cbeos, n) result(bm)
+      use cubic_eos, only: cb_eos
+      integer, intent(in) :: nc
+      real, intent(in) :: n(nc) ! [mol]
+      class(base_eos_param), intent(inout) :: cbeos
+      real :: bm
+      ! Locals
+      select type ( p_eos => cbeos )
+      class is ( cb_eos )
+        bm = dot_product(p_eos%single%b/1000,n)/sum(n)
+      class default
+        bm = 0
+      end select
+    end function get_bmix
   end subroutine saft_volume_solver
 
 
   !> A back-end procedure giving the combined pressure of the cubic
   !> contribution and the association contribution.
-  subroutine saft_total_pressure_knowing_X_k(nc,comp,cbeos,T,V,n,X_k,P,&
+  subroutine saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
        dPdV,dPdT,dPdn)
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+    use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, numAssocSites, assoc_pressure
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in)  :: T !< Temperature [K]
     real, intent(in)  :: V !< Volume [m^3]
     real, intent(in)  :: n(nc)
@@ -1141,11 +1138,11 @@ contains
     real :: P_nonassoc, P_assoc
     real :: temp_v, temp_t, temp_n(nc)
 
-    call assoc_pressure(nc,T,V,n,X_k,P_assoc,dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
+    call assoc_pressure(eos,nc,T,V,n,X_k,P_assoc,dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
     if (present(dPdV)) temp_v = dPdV
     if (present(dPdT)) temp_t = dPdT
     if (present(dPdn)) temp_n = dPdn
-    call nonassoc_pressure(nc,comp,cbeos,T,V,n,P_nonassoc,&
+    call nonassoc_pressure(nc,eos,T,V,n,P_nonassoc,&
          dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
 
     P = P_nonassoc + P_assoc
@@ -1157,16 +1154,16 @@ contains
 
 
   !> The pressure contribution not coming from association.
-  subroutine nonassoc_pressure(nc,comp,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
-    use tpcubic, only: cbCalcPressure
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
-    use pc_saft_nonassoc, only: F_PC_SAFT_TVn
-    use pets, only: F_PETS_TVn
-    use bh_interface, only: calcFresBH
+  subroutine nonassoc_pressure(nc,eos,T,V,n,P,dPdV,dPdT,dPdn)
+    use cubic, only: cbCalcPressure
+    use cubic_eos, only: cb_eos
+    use eos_parameters, only: base_eos_param
+    use pc_saft_nonassoc, only: F_PC_SAFT_TVn, PCSAFT_eos
+    use pets, only: F_PETS_TVn, PETS_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use saftvrmie_interface, only: calcFresSAFTVRMie
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T, V
     real, intent(in), dimension(nc) :: n
     real, intent(out) :: P
@@ -1176,41 +1173,50 @@ contains
     real :: F_V, F
     sumn = sum(n)
 
-    if (saft_model == eosPC_SAFT .or. saft_model == eosBH_pert .or. saft_model == eosPeTS) then
-       if (saft_model == eosBH_pert) then
-          call calcFresBH(nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-       else if (saft_model == eosPC_SAFT) then
-          call F_PC_SAFT_TVn(T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-       else if (saft_model == eosPeTS) then
-          call F_PETS_TVn(T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-       endif
-       P = -Rgas*T*F_V + sumn*Rgas*T/V
-       if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-       if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-       if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
-    else
-       ! This routine takes in the volume in L/mole.
-       call cbCalcPressure(nc,comp,cbeos,T,1000*V/sumn,n/sumn,P,&
-            dPdv,dPdT,dpdz=dPdn)
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      call F_PC_SAFT_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    class is ( saftvrmie_eos )
+      call calcFresSAFTVRMie(p_eos, nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    class is ( PETS_eos )
+      call F_PETS_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+   class is ( cb_eos )
+      ! This routine takes in the volume in L/mole.
+      call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
+           dPdv,dPdT,dpdz=dPdn)
 
-       ! Convert to volume derivative from (specific volume)-derivative.
-       if (present(dPdV)) dPdV = 1000*dPdv/sumn
-    end if
+      ! Convert to volume derivative from (specific volume)-derivative.
+      if (present(dPdV)) dPdV = 1000*dPdv/sumn
+    class default
+      call stoperror("nonassoc_pressure: Not able to call cbCalcPressure. Not cubic eos.")
+    end select
+
   end subroutine nonassoc_pressure
 
 
   !> Calculates the contibution to the reduced residual Helmholtz energy F
   !> coming from the non-association part, along with its derivatives.
-  subroutine calcFder_nonassoc_cpa(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    use tpcubic, only: cbCalcDerivatives_svol
-    use tpcbmix, only: cbCalcMixtureParams
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+  subroutine calcFder_nonassoc_cpa(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    use cubic, only: cbCalcDerivatives_svol
+    use cbmix, only: cbCalcMixtureParams
+    use cubic_eos, only: cb_eos
+    !use eos_parameters, only: base_eos_param
     use cbhelm
     ! Input.
     integer, intent(in) :: nc
-    type (gendata), intent(in) :: comp(nc)
-    type (eoscubic), intent(inout) :: cbeos
+    class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T,V,n(nc)
     ! Output.
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
@@ -1220,7 +1226,7 @@ contains
     sumn = sum(n)
 
     ! Calculate contributions from the non-association part.
-    call cbCalcMixtureParams(nc,comp,cbeos,T,n/sumn)
+    call cbCalcMixtureParams(nc,cbeos,T,n/sumn)
     call cbCalcDerivatives_svol(nc,cbeos,T,1000*V/sumn)
     if (present(F)) F = sumn*cbF(cbeos)
     if (present(F_T)) F_T = sumn*cbFt(cbeos)
@@ -1243,14 +1249,13 @@ contains
 
   !> Special routine for computing the derivatives needed in the Newton
   !> iteration of volume_solver.
-  subroutine compute_dXdV_and_dPdV(nc,comp,cbeos,X_k,param,X_V,P_V)
+  subroutine compute_dXdV_and_dPdV(nc,eos,X_k,param,X_V,P_V)
     use saft_association, only: numAssocSites,X_derivatives_knowing_X, Q_derivatives_knowing_X
-    use eosdata, only: eoscubic
-    use compdata, only: gendata
+    use cubic_eos, only: cb_eos
+    use thermopack_var, only: base_eos_param
     ! Input.
     integer, intent(in) :: nc
-    type(gendata), intent(in) :: comp(nc)
-    type(eoscubic), intent(inout) :: cbeos
+    class(base_eos_param), intent(inout) :: eos
     real, dimension(numAssocSites), intent(in) :: X_k
     real, dimension(nc+2), intent(in) :: param
     ! Output.
@@ -1266,11 +1271,11 @@ contains
     n = param(3:(nc+2))
 
     ! Calculate X_V.
-    call X_derivatives_knowing_X (nc=nc,T=T,V=V,n=n,X=X_k,X_V=X_V)
+    call X_derivatives_knowing_X (eos,nc=nc,T=T,V=V,n=n,X=X_k,X_V=X_V)
 
     ! Efficient calculation of P_V.
-    call nonassoc_pressure(nc,comp,cbeos,T,V,n,P,dPdV=P_V)
-    call Q_derivatives_knowing_X(nc,T,V,n,X_k,Q_VV=Q_VV,Q_XV=Q_XV,X_calculated=.true.)
+    call nonassoc_pressure(nc,eos,T,V,n,P,dPdV=P_V)
+    call Q_derivatives_knowing_X(eos,nc,T,V,n,X_k,Q_VV=Q_VV,Q_XV=Q_XV,X_calculated=.true.)
     P_V = P_V - Rgas*T*(Q_VV + dot_product(Q_XV,X_V))
   end subroutine compute_dXdV_and_dPdV
 
@@ -1279,58 +1284,81 @@ contains
 
   !> Routine useful when fitting binary interaction parameters.
   subroutine pc_saft_get_kij(i,j,kij)
-    use pc_saft_nonassoc, only: eps_depth_divk
+    use pc_saft_nonassoc, only: PCSAFT_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(out) :: kij    !< Binary interaction parameter.
+    class(base_eos_param), pointer :: eos
 
     if (i == j) then
       kij = 0.0
       return
     end if
 
-    kij = 1 - eps_depth_divk(i,j)/sqrt(eps_depth_divk(i,i)*eps_depth_divk(j,j))
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      kij = 1 - p_eos%eps_depth_divk(i,j)/sqrt(p_eos%eps_depth_divk(i,i)*&
+           p_eos%eps_depth_divk(j,j))
+    class default
+      call stoperror("pc_saft_get_kij: Wrong type.")
+    end select
+
   end subroutine pc_saft_get_kij
 
 
   !> Routine useful when fitting binary interaction parameters.
   subroutine pc_saft_set_kij(i,j,kij)
-    use pc_saft_nonassoc, only: eps_depth_divk
+    use pc_saft_nonassoc, only: PCSAFT_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(in) :: kij    !< Binary interaction parameter.
+    class(base_eos_param), pointer :: eos
 
     if (i == j) then
       call stoperror("Trying to set interaction parameter between a component and itself!")
     end if
 
-    ! eps_depth_div is the only pc-saft parameter with an interaction parameter kij.
-    eps_depth_divk(i,j) = sqrt(eps_depth_divk(i,i)*eps_depth_divk(j,j))*(1-kij)
-    eps_depth_divk(j,i) = eps_depth_divk(i,j)
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      ! eps_depth_div is the only pc-saft parameter with an interaction parameter kij.
+      p_eos%eps_depth_divk(i,j) = sqrt(p_eos%eps_depth_divk(i,i)*p_eos%eps_depth_divk(j,j))*(1-kij)
+      p_eos%eps_depth_divk(j,i) = p_eos%eps_depth_divk(i,j)
+    class default
+      call stoperror("pc_saft_set_kij: Wrong type.")
+    end select
 
   end subroutine pc_saft_set_kij
 
   !> Routine useful when fitting binary interaction parameters. For the cases when kij/=kji.
   subroutine pc_saft_set_kij_asym(i,j,kij)
-    use pc_saft_nonassoc, only: eps_depth_divk
+    use pc_saft_nonassoc, only: PCSAFT_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(in) :: kij    !< Binary interaction parameter.
+    class(base_eos_param), pointer :: eos
 
     if (i == j) then
       call stoperror("Trying to set interaction parameter between a component and itself!")
     end if
 
-    ! eps_depth_div is the only pc-saft parameter with an interaction parameter kij.
-    eps_depth_divk(i,j) = sqrt(eps_depth_divk(i,i)*eps_depth_divk(j,j))*(1-kij)
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      ! eps_depth_div is the only pc-saft parameter with an interaction parameter kij.
+      p_eos%eps_depth_divk(i,j) = sqrt(p_eos%eps_depth_divk(i,i)*p_eos%eps_depth_divk(j,j))*(1-kij)
+    class default
+      call stoperror("pc_saft_set_kij_asym: Wrong type.")
+    end select
 
   end subroutine pc_saft_set_kij_asym
 
 
   !> Routine useful when fitting binary interaction parameters.
   subroutine cpa_get_kij(i,j,aEps_kij_out)
-    use saft_association, only: compidx_to_sites, eps_kl !, beta_kl
+    use saft_association, only: compidx_to_sites
     use AssocSchemeUtils
     use cpa_parameters, only: getCpaKij_epsBeta
-    use tpvar, only: cbeos, comp
-    use saft_globals, only: saft_model
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use cubic_eos, only: cb_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(out) :: aEps_kij_out(2) !< Binary interaction parameters.
     ! Locals
@@ -1340,6 +1368,10 @@ contains
     integer :: scheme_i, scheme_j
     integer :: epsBetaCombRules(2)
     logical :: found
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: p_assoc
+    act_mod_ptr => get_active_thermo_model()
+    p_assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     aEps_kij_out = -1e10 ! Make sure things crash if this function fails.
 
@@ -1349,28 +1381,36 @@ contains
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
-    call getCPAkij_epsbeta (saft_model,comp(i)%ident,comp(j)%ident,setno=1,&
+    call getCPAkij_epsbeta (p_assoc%saft_model,act_mod_ptr%comps(i)%p_comp%ident,&
+         act_mod_ptr%comps(j)%p_comp%ident,param_ref="DEFAULT",&
          found=found,epsBetaCombRules=epsBetaCombRules, kijepsbeta=dummy)
 
     ! Get cubic interaction parameter.
-    aEps_kij_out(1) = cbeos(1)%kij(i,j)
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
+    class is ( cb_eos )
+      aEps_kij_out(1) = p_eos%kij(i,j)
+    class default
+      aEps_kij_out(1) = 0
+      print *,"Not able to calculate assoc_covol. Not cubic."
+      stop
+    end select
 
     if (numAssocSites > 0) then
       ! Get the schemes and values of eps and beta for components i and j.
-      call getActiveAssocParams(i, eps_i, beta_i)
-      call getActiveAssocParams(j, eps_j, beta_j)
-      scheme_i = comp(i)%assoc_scheme
-      scheme_j = comp(j)%assoc_scheme
+      call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
+      call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
+      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
 
-      call compidx_to_sites(i,k_first,k_last)
-      call compidx_to_sites(j,l_first,l_last)
+      call compidx_to_sites(p_assoc,i,k_first,k_last)
+      call compidx_to_sites(p_assoc,j,l_first,l_last)
       do k=k_first,k_last
         do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
 
             denominator = applyCombiningRule(epsBetaCombRules(1), eps_i, eps_j)
-            aEps_kij_out(2) = 1 - eps_kl(k,l)/denominator
+            aEps_kij_out(2) = 1 - p_assoc%eps_kl(k,l)/denominator
             return
           end if
         end do
@@ -1384,11 +1424,10 @@ contains
 
   !> Routine useful when fitting binary interaction parameters.
   subroutine cpa_set_kij(i,j,aEps_kij_in)
-    use saft_association, only: compidx_to_sites, eps_kl !, beta_kl
+    use saft_association, only: compidx_to_sites
     use AssocSchemeUtils
     use cpa_parameters, only: getCpaKijAndCombRules_allComps
-    use tpvar, only: nce, cbeos, comp
-    use saft_globals, only: saft_model
+    use cubic_eos, only: cb_eos
     integer, intent(in) :: i,j !< Component indices.
     real, intent(in) :: aEps_kij_in(2) !< Binary interaction parameters.
     ! Locals
@@ -1396,35 +1435,44 @@ contains
     integer :: k,l,k_first,k_last,l_first,l_last
     real :: dummy(3,nce,nce)
     integer :: scheme_i, scheme_j, epsbeta_combrules(2,nce,nce)
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: p_assoc
+    act_mod_ptr => get_active_thermo_model()
+    p_assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     if (i == j) then
        call stoperror("Trying to set interaction parameter between a component and itself!")
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
-    call getCpaKijAndCombRules_allComps(nce,comp,saft_model,dummy,&
+    call getCpaKijAndCombRules_allComps(nce,act_mod_ptr%comps,p_assoc%saft_model,dummy,&
          epsbeta_combrules)
 
     ! Set cubic interaction parameter.
-    cbeos(1)%kij(i,j) = aEps_kij_in(1)
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
+    class is ( cb_eos )
+      p_eos%kij(i,j) = aEps_kij_in(1)
+    class default
+      call stoperror("Not able to set cubic interaction parameter. Eos not cubic.")
+    end select
 
     if (numAssocSites > 0) then
       ! Get the schemes and values of eps and beta for components i and j.
-      scheme_i = comp(i)%assoc_scheme
-      scheme_j = comp(j)%assoc_scheme
-      call getActiveAssocParams(i, eps_i, beta_i)
-      call getActiveAssocParams(j, eps_j, beta_j)
+      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
+      call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
+      call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
 
-      call compidx_to_sites(i,k_first,k_last)
-      call compidx_to_sites(j,l_first,l_last)
+      call compidx_to_sites(p_assoc,i,k_first,k_last)
+      call compidx_to_sites(p_assoc,j,l_first,l_last)
       do k=k_first,k_last
         do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
-            eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
-                 eps_i, eps_j) * (1-aEps_kij_in(2))
-            !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
-            !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
+             p_assoc%eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
+                  eps_i, eps_j) * (1-aEps_kij_in(2))
+             !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
+             !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
           end if
         end do
       end do
@@ -1435,86 +1483,124 @@ contains
   !> Input a0, b in their conventional (non-SI) units,
   !> beta and eps in SI units, c1 dimensionless.
   subroutine cpa_set_pure_params(ic,params)
-    use tpvar, only: cbeos
+    use cubic_eos, only: cb_eos
     integer, intent(in) :: ic
     real, intent(in) :: params(5) !< a0, b, beta, eps, c1
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    cbeos(1)%single(ic)%a = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-    cbeos(1)%single(ic)%b = params(2) !< Covolume b. [b] = L/mol.
-    call setActiveAssocParams(ic, eps=params(3), beta=params(4))
-    cbeos(1)%single(ic)%alphaParams(1) = params(5)
-
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
+    class is ( cb_eos )
+      p_eos%single(ic)%a = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+      p_eos%single(ic)%b = params(2) !< Covolume b. [b] = L/mol.
+      call setActiveAssocParams(p_eos%assoc, ic, eps=params(3), beta=params(4))
+      p_eos%single(ic)%alphaParams(1) = params(5)
+    class default
+      call stoperror("cpa_set_pure_params: Not able to set pure cpa parameters. Eos not cubic.")
+    end select
   end subroutine cpa_set_pure_params
 
 
   subroutine cpa_get_pure_params(ic,params)
-    use tpvar, only: cbeos
+    use cubic_eos, only: cb_eos
     integer, intent(in) :: ic
     real, intent(out) :: params(5) !< a0, b, beta, eps, c1
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
 
-    params(1) = cbeos(1)%single(ic)%a !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-    params(2) = cbeos(1)%single(ic)%b !< Covolume b. [b] = L/mol.
-    call getActiveAssocParams(ic, eps=params(3), beta=params(4))
-    params(5) = cbeos(1)%single(ic)%alphaParams(1)
+    select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
+    class is ( cb_eos )
+      params(1) = p_eos%single(ic)%a !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+      params(2) = p_eos%single(ic)%b !< Covolume b. [b] = L/mol.
+      call getActiveAssocParams(p_eos%assoc, ic, eps=params(3), beta=params(4))
+      params(5) = p_eos%single(ic)%alphaParams(1)
+    class default
+      call stoperror("cpa_get_pure_params: Not able to set pure cpa parameters. Eos not cubic.")
+    end select
 
   end subroutine cpa_get_pure_params
 
 
   subroutine pc_saft_set_pure_params(ic,params)
-    use pc_saft_nonassoc, only: m, sigma, eps_depth_divk
+    use pc_saft_nonassoc, only: PCSAFT_eos
     integer, intent(in) :: ic
     real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, beta, eps/(J/mol)
+    class(base_eos_param), pointer :: eos
 
-    m(ic) = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-    sigma(ic,ic) = params(2) !< Covolume b. [b] = L/mol.
-    eps_depth_divk(ic,ic) = params(3) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+        p_eos%m(ic) = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+        p_eos%sigma(ic,ic) = params(2) !< Covolume b. [b] = L/mol.
+        p_eos%eps_depth_divk(ic,ic) = params(3) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+    class default
+      call stoperror("pc_saft_set_pure_params: Wrong type.")
+    end select
 
-    call setActiveAssocParams(ic, eps=params(4), beta=params(5))
+    call setActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
 
   end subroutine pc_saft_set_pure_params
 
   subroutine pc_saft_get_pure_params(ic,params)
-    use pc_saft_nonassoc, only: m, sigma, eps_depth_divk
+    use pc_saft_nonassoc, only: PCSAFT_eos
     integer, intent(in) :: ic
     real, intent(out) :: params(5) ! m, sigma/m, eps_depth_divk/K, beta, eps/(J/mol)
+    class(base_eos_param), pointer :: eos
 
-    params(1) = m(ic) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-    params(2) = sigma(ic,ic) !< Covolume b. [b] = L/mol.
-    params(3) = eps_depth_divk(ic,ic) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+        params(1) = p_eos%m(ic) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+        params(2) = p_eos%sigma(ic,ic) !< Covolume b. [b] = L/mol.
+        params(3) = p_eos%eps_depth_divk(ic,ic) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+    class default
+      call stoperror("pc_saft_get_pure_params: Wrong type.")
+    end select
 
-    call getActiveAssocParams(ic, eps=params(4), beta=params(5))
+    call getActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
 
   end subroutine pc_saft_get_pure_params
 
 
   subroutine pets_set_pure_params(ic,params)
-    use pets, only: sigma_pets, epsdivk_pets
+    use pets, only: PETS_eos
     integer, intent(in) :: ic
     real, intent(in) :: params(2) ! sigma/m, epsdivk/K
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
 
-    sigma_pets = params(1)
-    epsdivk_pets = params(2)
+    select type( p_eos => eos )
+    class is ( PETS_eos )
+      p_eos%sigma_pets = params(1)
+      p_eos%epsdivk_pets = params(2)
+    end select
   end subroutine pets_set_pure_params
 
   subroutine pets_get_pure_params(ic,params)
-    use pets, only: sigma_pets, epsdivk_pets
+    use pets, only: PETS_eos
     integer, intent(in) :: ic
     real, intent(out) :: params(2) ! sigma/m, epsdivk/K
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
 
-    params(1) = sigma_pets
-    params(2) = epsdivk_pets
+    select type( p_eos => eos )
+    class is ( PETS_eos )
+      params(1) = p_eos%sigma_pets
+      params(2) = p_eos%epsdivk_pets
+    end select
   end subroutine pets_get_pure_params
 
 
   ! Returns eps=-1.0, beta=-1.0 if component ic is not self-associating.
-  subroutine getActiveAssocParams(ic, eps, beta)
-    use saft_association, only: compidx_to_sites, noSitesFlag, beta_kl, eps_kl
+  subroutine getActiveAssocParams(assoc, ic, eps, beta)
+    use saft_association, only: compidx_to_sites, noSitesFlag
+    type(association), intent(in) :: assoc
     integer, intent(in) :: ic
     real, intent(out) :: eps, beta
     ! Locals
     integer :: k, l, firstSiteIdx, lastSiteIdx
 
-    call compidx_to_sites(ic,firstSiteIdx, lastSiteIdx)
+    call compidx_to_sites(assoc, ic,firstSiteIdx, lastSiteIdx)
 
     if ( firstSiteIdx == noSitesFlag  ) then
        eps = -1.0
@@ -1524,9 +1610,9 @@ contains
 
     do k=firstSiteIdx, lastSiteIdx
        do l=firstSiteIdx, lastSiteIdx
-          if (abs(beta_kl(k,l)) > 1e-20) then
-             eps = eps_kl(k,l)
-             beta = beta_kl(k,l)
+          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+             eps = assoc%eps_kl(k,l)
+             beta = assoc%beta_kl(k,l)
              return
           end if
        end do
@@ -1534,23 +1620,24 @@ contains
 
   end subroutine getActiveAssocParams
 
-  subroutine setActiveAssocParams(ic, eps, beta)
-    use saft_association, only: compidx_to_sites, noSitesFlag, beta_kl, eps_kl
+  subroutine setActiveAssocParams(assoc, ic, eps, beta)
+    use saft_association, only: compidx_to_sites, noSitesFlag
+    type(association), intent(inout) :: assoc
     integer, intent(in) :: ic
     real, intent(in) :: eps, beta
     ! Locals
     integer :: k, l, firstSiteIdx, lastSiteIdx
 
-    call compidx_to_sites(ic,firstSiteIdx, lastSiteIdx)
+    call compidx_to_sites(assoc,ic,firstSiteIdx, lastSiteIdx)
     if ( firstSiteIdx == noSitesFlag  .and. (eps>0.0 .or. beta>0.0) ) then
        call stoperror("Trying to set association parameters for non-associating component.")
     end if
 
     do k=firstSiteIdx, lastSiteIdx
        do l=firstSiteIdx, lastSiteIdx
-          if (abs(beta_kl(k,l)) > 1e-20) then
-             eps_kl(k,l) = eps
-             beta_kl(k,l) = beta
+          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+             assoc%eps_kl(k,l) = eps
+             assoc%beta_kl(k,l) = beta
           end if
        end do
     end do
@@ -1561,14 +1648,17 @@ contains
   subroutine printBinaryMixtureReportSaft()
     use cpa_parameters, only: getCPAkij_epsbeta
     use saft_globals
-    use tpvar, only: nce, comp
-    use parameters, only: verbose
+    use thermopack_constants, only: verbose
     integer :: rules(2)
     real :: params1(5), params2(5)
     real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
     logical :: found
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: assoc
+    act_mod_ptr => get_active_thermo_model()
+    assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
-    if (saft_model == eosPC_SAFT) then
+    if (assoc%saft_model == eosPC_SAFT) then
        print *, "Model: PC-SAFT"
        call pc_saft_get_pure_params(ic=1,params=params1)
        call pc_saft_get_pure_params(ic=2,params=params2)
@@ -1576,26 +1666,28 @@ contains
        call cpa_get_pure_params(ic=1,params=params1)
        call cpa_get_pure_params(ic=2,params=params2)
 
-       if (saft_model == cpaSRK) then
+       if (assoc%saft_model == cpaSRK) then
           if (verbose) print *, "Model: CPA-SRK"
-       elseif (saft_model == cpaPR) then
+       elseif (assoc%saft_model == cpaPR) then
           if (verbose) print *, "Model: CPA-PR"
        end if
     end if
 
     if ( nce == 1 ) then
        if (verbose) then
-          print *,"Component:", comp(1)%ident
-          print *,"Association scheme:",comp(1)%assoc_scheme
+          print *,"Component:", act_mod_ptr%comps(1)%p_comp%ident
+          print *,"Association scheme:",act_mod_ptr%comps(1)%p_comp%assoc_scheme
        endif
     else if ( nce == 2 ) then
        if (verbose) then
-          print *,"Component 1, scheme:", comp(1)%ident, comp(1)%assoc_scheme
-          print *,"Component 2, scheme:", comp(2)%ident, comp(2)%assoc_scheme
+         print *,"Component 1, scheme:", act_mod_ptr%comps(1)%p_comp%ident, &
+              act_mod_ptr%comps(1)%p_comp%assoc_scheme
+         print *,"Component 2, scheme:", act_mod_ptr%comps(2)%p_comp%ident, &
+              act_mod_ptr%comps(2)%p_comp%assoc_scheme
           write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
           write(*,'(A, 5ES11.3)') "Component 2 pure params:", params2
        endif
-       if (saft_model == eosPC_SAFT) then
+       if (assoc%saft_model == eosPC_SAFT) then
           call pc_saft_get_kij(1,2,pcSaft_kij)
           if (verbose) write(*,'(A, ES11.3)') "kij", pcSaft_kij
        else
@@ -1603,9 +1695,12 @@ contains
           if (verbose) write(*,'(A, 2ES11.3)') "kij a_cubic, eps_assoc: ", cpa_aEps_kij
        end if
 
-       if ( saft_model /= eosPC_SAFT ) then
-          call getCPAkij_epsbeta (eosidx=saft_model,uid1=comp(1)%ident,uid2=comp(2)%ident,&
-               setno=1,found=found,epsBetaCombRules=rules,kijepsbeta=cpa_kijepsbeta_db)
+       if ( assoc%saft_model /= eosPC_SAFT ) then
+         call getCPAkij_epsbeta (eosidx=assoc%saft_model,&
+              uid1=act_mod_ptr%comps(1)%p_comp%ident,&
+              uid2=act_mod_ptr%comps(2)%p_comp%ident,&
+              param_ref="DEFAULT",found=found,epsBetaCombRules=rules,&
+              kijepsbeta=cpa_kijepsbeta_db)
           if (verbose) print *, "Eps/beta combining rules:", rules
        end if
 

@@ -1,5 +1,8 @@
 module test_eos
   use eoslibinit, only: init_thermo, silent_init
+  use thermopack_var, only: nce, base_eos_param, get_active_eos, &
+       get_active_comps
+  use compdata, only: gendata_pointer
   use pfunit_mod
   implicit none
   public
@@ -29,9 +32,8 @@ contains
     !
     ! MH, 2017-02
     use single_phase, only: TP_CalcGibbs
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
-    use tpvar, only: comp, cbeos
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
     character(len=*), intent(in) :: components
@@ -45,25 +47,22 @@ contains
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .false.
+    type(gendata_pointer), pointer :: p_comps(:)
+    class(base_eos_param), pointer :: p_eos
 
     if (present(mixing)) then
       mixing_l = mixing
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
+    p_comps => get_active_comps()
+    p_eos => get_active_eos()
 
     dp = p0*eps
     dt = t0*eps
@@ -72,21 +71,21 @@ contains
     t = t0
     p = p0
     n = x0
-    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g,&
+    call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g,&
          dgdt,dgdp,dgdn)
 
     ! Temperature differentials
     t = t0 + dt
     n = x0
     p = p0
-    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+    call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
     @assertEqual(dgdt,(g2-g)/dt,10.0*eps*abs(dgdt))
 
     ! Pressure differentials
     t = t0
     n = x0
     p = p0 + dp
-    call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+    call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
     @assertEqual(dgdp,(g2-g)/dp,10.0*eps*abs(dgdp))
 
     ! Mole number differentials
@@ -95,7 +94,7 @@ contains
     do j=1,ncomp
       n = x0
       n(j) = x0(j) + dn(j)
-      call TP_CalcGibbs(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,g2)
+      call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
       @assertEqual(dgdn(j),(g2-g)/dn(j),10.0*eps*abs(dgdn(j)))
     enddo
 
@@ -124,9 +123,8 @@ contains
     !
     ! MH, 2017-02
     use single_phase, only: TP_CalcEntropy
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
-    use tpvar, only: comp, cbeos
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
     character(len=*), intent(in) :: components
@@ -140,25 +138,22 @@ contains
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .true.
+    type(gendata_pointer), pointer :: p_comps(:)
+    class(base_eos_param), pointer :: p_eos
 
     if (present(mixing)) then
       mixing_l = mixing
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
+    p_comps => get_active_comps()
+    p_eos => get_active_eos()
 
     dp = p0*eps
     dt = t0*eps
@@ -167,21 +162,21 @@ contains
     t = t0
     p = p0
     n = x0
-    s = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,&
+    s = TP_CalcEntropy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,&
          dsdt,dsdp,dsdn)
 
     ! Temperature differentials
     t = t0 + dt
     n = x0
     p = p0
-    s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    s2 = TP_CalcEntropy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
     @assertEqual(dsdt,(s2-s)/dt,10.0*eps*abs(dsdt))
 
     ! Pressure differentials
     t = t0
     n = x0
     p = p0 + dp
-    s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    s2 = TP_CalcEntropy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
     @assertEqual(dsdp,(s2-s)/dp,10.0*eps*abs(dsdp))
 
     ! Mole number differentials
@@ -190,7 +185,7 @@ contains
     do j=1,ncomp
       n = x0
       n(j) = x0(j) + dn(j)
-      s2 = TP_CalcEntropy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+      s2 = TP_CalcEntropy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
       @assertEqual(dsdn(j),(s2-s)/dn(j),10.0*eps*abs(dsdn(j)))
     enddo
 
@@ -219,9 +214,8 @@ contains
     !
     ! MH, 2017-02
     use single_phase, only: TP_CalcEnthalpy
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
-    use tpvar, only: comp, cbeos
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
     character(len=*), intent(in) :: components
@@ -235,25 +229,23 @@ contains
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .true.
+    type(gendata_pointer), pointer :: p_comps(:)
+    class(base_eos_param), pointer :: p_eos
 
     if (present(mixing)) then
       mixing_l = mixing
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
+
+    p_comps => get_active_comps()
+    p_eos => get_active_eos()
 
     dp = p0*eps
     dt = t0*eps
@@ -262,21 +254,21 @@ contains
     t = t0
     p = p0
     n = x0
-    h = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual,&
+    h = TP_CalcEnthalpy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,&
          dhdt,dhdp,dhdn)
 
     ! Temperature differentials
     t = t0 + dt
     n = x0
     p = p0
-    h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    h2 = TP_CalcEnthalpy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
     @assertEqual(dhdt,(h2-h)/dt,10.0*eps*abs(dhdt))
 
     ! Pressure differentials
     t = t0
     n = x0
     p = p0 + dp
-    h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+    h2 = TP_CalcEnthalpy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
     @assertEqual(dhdp,(h2-h)/dp,10.0*eps*abs(dhdp))
 
     ! Mole number differentials
@@ -285,7 +277,7 @@ contains
     do j=1,ncomp
       n = x0
       n(j) = x0(j) + dn(j)
-      h2 = TP_CalcEnthalpy(ncomp,comp,cbeos(1),T,P,n,LIQPH,residual)
+      h2 = TP_CalcEnthalpy(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual)
       @assertEqual(dhdn(j),(h2-h)/dn(j),10.0*eps*abs(dhdn(j)))
     enddo
 
@@ -314,7 +306,7 @@ contains
     !
     ! MH, 2017-02
     use eos, only: specificvolume
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
@@ -329,7 +321,6 @@ contains
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .true.
 
     if (present(mixing)) then
@@ -337,17 +328,11 @@ contains
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
 
     dp = p0*eps
     dt = t0*eps
@@ -427,7 +412,7 @@ contains
     !
     ! MH, 2017-02
     use eos, only: zfac
-    use parameters, only: LIQPH
+    use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
     character(len=*), intent(in) :: model
@@ -442,7 +427,6 @@ contains
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
-    character(len=10) :: eoslib
     logical, parameter :: residual = .true.
 
     if (present(mixing)) then
@@ -450,17 +434,11 @@ contains
     else
       mixing_l = "vdW"
     endif
-    eoslib = "Thermopack"
-    if ( str_eq(model, "EOSCG") .OR. &
-         str_eq(model, "EOSCG-GERG") .OR. &
-         str_eq(model, "GERG2008") ) then
-      eoslib = "TREND"
-    endif
 
     ! Test model
     silent_init = .true.
-    call init_thermo(trim(eoslib), trim(model), trim(mixing_l), &
-         'Classic', ncomp, trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), &
+         'Classic', trim(components), 1)
 
     dp = p0*eps
     dt = t0*eps

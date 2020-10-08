@@ -1,5 +1,8 @@
 module puresaturation
   use nonlinear_solvers
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
+       base_eos_param, get_active_alt_eos
+!  use utilities, only: get_thread_index
   implicit none
   private
   save
@@ -15,39 +18,30 @@ contains
   !!
   !! \author MH, 2013-10-17
   !-----------------------------------------------------------------------------
-  subroutine PureSat(T,P,Z,solveForT,alternative_eos,ierr,meta,pseudo_crit_TP)
-    use eos, only: pseudo
+  subroutine PureSat(T,P,Z,solveForT,ierr,meta,pseudo_crit_TP)
+    use eos, only: pseudo_safe
     use single_phase, only: TP_CalcPseudo
-    use parameters, only: nc
-    use tpvar, only: comp, cbeos_alternative
-    use tpconst, only: tpTmin
+    use thermopack_constants, only: tpTmin
     use numconstants, only: Small
-    !$ use omp_lib, only: omp_get_thread_num
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, intent(inout) :: P, T
     logical, intent(in) :: solveForT
-    logical, intent(in), optional :: alternative_eos !< Use alt/fallback EoS?
     integer, optional, intent(out) :: ierr
     logical, optional, intent(in) :: meta !< Use meta-stable minimum when solving for sat. point
     real, optional, intent(in) :: pseudo_crit_TP(2) !< Override pseudo critical point
     ! Locals
-    real :: tpc,ppc,acfpc,zpc,vpc
+    real :: tpc,ppc,zpc,vpc
     real, dimension(nc+4) :: param
     real, dimension(1) :: X, Xmin, Xmax, dFdX
     type(nonlinear_solver) :: solver
-    logical   :: alt_eos
-    integer   :: i_cbeos
+    logical :: alt_eos
+    type(thermo_model), pointer :: act_mod_ptr
 
     if (present(ierr)) ierr = 0
 
-    if (present(alternative_eos)) then
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
-      alt_eos = alternative_eos
-    else
-      alt_eos = .false.
-    endif
+    act_mod_ptr => get_active_thermo_model()
+    alt_eos = act_mod_ptr%need_alternative_eos
 
     ! Start with establishment of pseudocritical properties
     if (present(pseudo_crit_TP)) then
@@ -55,12 +49,7 @@ contains
       Ppc = pseudo_crit_TP(2)
       Tpc = pseudo_crit_TP(1)
     else
-      if (alt_eos) then
-        ! Bypass straight to alternative cubic EoS.
-        call TP_CalcPseudo(nc,comp,cbeos_alternative(i_cbeos),z,tpc,ppc,zpc,vpc)
-      else
-        call pseudo(z,tpc,ppc,acfpc,zpc,vpc)
-      endif
+      call pseudo_safe(z,tpc,ppc,zpc,vpc)
     endif
 
     if (solveForT) then
@@ -140,9 +129,7 @@ contains
     use utilities, only: boolean
     use single_phase, only: TP_CalcGibbs
     use eos, only: residualGibbs
-    use tpvar, only: comp, cbeos_alternative
-    use parameters, only: nc, VAPPH, LIQPH
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermopack_constants, only: VAPPH, LIQPH
     implicit none
     real, dimension(1), intent(in) :: X
     real, dimension(1), intent(out) :: F
@@ -151,7 +138,9 @@ contains
     logical :: tempIsVar, alt_eos, meta
     real :: P, T, gL, gG
     real, dimension(nc) :: Z
-    integer :: i_cbeos, gflag_opt
+    integer :: gflag_opt
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
     alt_eos = boolean(param(nc+3))
     tempIsVar = boolean(param(nc+2))
@@ -172,13 +161,13 @@ contains
     endif
 
     if (alt_eos) then
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
+      act_mod_ptr => get_active_thermo_model()
+      act_eos_ptr => get_active_alt_eos()
       !
-      call TP_CalcGibbs(nc,comp,cbeos_alternative(i_cbeos),T,P,Z,VAPPH,&
-           residual=.true.,g=gG,gflag_opt=gflag_opt)
-      call TP_CalcGibbs(nc,comp,cbeos_alternative(i_cbeos),T,P,Z,LIQPH,&
-           residual=.true.,g=gL,gflag_opt=gflag_opt)
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
+           T,P,Z,VAPPH,residual=.true.,g=gG,gflag_opt=gflag_opt)
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
+           T,P,Z,LIQPH,residual=.true.,g=gL,gflag_opt=gflag_opt)
     else
       call residualGibbs(t,p,z,VAPPH,gG,metaExtremum=meta)
       call residualGibbs(t,p,z,LIQPH,gL,metaExtremum=meta)
@@ -190,9 +179,7 @@ contains
     use utilities, only: boolean
     use single_phase, only: TP_CalcGibbs
     use eos, only: residualGibbs
-    use tpvar, only: comp, cbeos_alternative
-    use parameters, only: nc, VAPPH, LIQPH
-    !$ use omp_lib, only: omp_get_thread_num
+    use thermopack_constants, only: VAPPH, LIQPH
     implicit none
     real, dimension(1), intent(in) :: X
     real, dimension(1), intent(out) :: dFdX
@@ -201,7 +188,9 @@ contains
     logical :: tempIsVar, alt_eos, meta
     real :: P, T, gG, gL, dgL, dgG, dgrdt_G, dgrdt_L, dgrdp_G, dgrdp_L
     real, dimension(nc) :: Z
-    integer :: i_cbeos, gflag_opt
+    integer :: gflag_opt
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
 
     alt_eos = boolean(param(nc+3))
     tempIsVar = boolean(param(nc+2))
@@ -222,13 +211,13 @@ contains
     endif
 
     if (alt_eos) then
-      i_cbeos = 1
-      !$ i_cbeos = 1 + omp_get_thread_num()
+      act_mod_ptr => get_active_thermo_model()
+      act_eos_ptr => get_active_alt_eos()
       !
-      call TP_CalcGibbs(nc,comp,cbeos_alternative(i_cbeos),T,P,Z,VAPPH,&
-           residual=.true.,g=gG,dgdt=dgrdt_G,dgdp=dgrdp_G,gflag_opt=gflag_opt)
-      call TP_CalcGibbs(nc,comp,cbeos_alternative(i_cbeos),T,P,Z,LIQPH,&
-           residual=.true.,g=gL,dgdt=dgrdt_L,dgdp=dgrdp_L,gflag_opt=gflag_opt)
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
+           T,P,Z,VAPPH,residual=.true.,g=gG,dgdt=dgrdt_G,dgdp=dgrdp_G,gflag_opt=gflag_opt)
+      call TP_CalcGibbs(nc,act_mod_ptr%comps,act_eos_ptr,&
+           T,P,Z,LIQPH,residual=.true.,g=gL,dgdt=dgrdt_L,dgdp=dgrdp_L,gflag_opt=gflag_opt)
     else
       call residualGibbs(t,p,z,VAPPH,gG,dgrdt_G,dgrdp_G,metaExtremum=meta)
       call residualGibbs(t,p,z,LIQPH,gL,dgrdt_L,dgrdp_L,metaExtremum=meta)
@@ -247,7 +236,7 @@ contains
 
   function PureSatExtrapol(t,p,Z) result(dpdt)
     use eos, only: residualGibbs
-    use parameters, only: nc, VAPPH, LIQPH
+    use thermopack_constants, only: VAPPH, LIQPH
     real, dimension(nc), intent(in) :: Z
     real, intent(in) :: P, T
     real :: dpdt
@@ -270,8 +259,7 @@ contains
   !! \author MH, 2018-10
   !-----------------------------------------------------------------------------
   subroutine PureSatLine(P_start,Z,Ta,Pa,na,ierr)
-    use eos, only: pseudo_safe, need_alternative_eos
-    use parameters, only: nc
+    use eos, only: pseudo_safe
     real, dimension(nc), intent(in) :: Z
     real, intent(in) :: P_start
     real, intent(out) :: Pa(na), Ta(na)
@@ -280,7 +268,6 @@ contains
     ! Locals
     real :: tpc,ppc,zpc,vpc,pseudo_crit_TP(2)
     real :: dP, dpdT
-    logical :: alt_eos
     integer :: i
     call pseudo_safe(Z,tpc,ppc,zpc,vpc)
     pseudo_crit_TP(1) = tpc
@@ -288,12 +275,11 @@ contains
     Pa(na) = ppc
     Ta(na) = Tpc
     Ta(1) = Tpc
-    alt_eos = need_alternative_eos()
     dP = (ppc-P_start)/(na-1)
     do i=1,na-1
       Pa(i) = P_start + dP*(i-1)
       !print *,Ta(i),Pa(i)
-      call PureSat(Ta(i),Pa(i),Z,.true.,alt_eos,ierr=ierr,meta=.true.,&
+      call PureSat(Ta(i),Pa(i),Z,.true.,ierr=ierr,meta=.true.,&
            pseudo_crit_TP=pseudo_crit_TP)
       dpdt = PureSatExtrapol(Ta(i),Pa(i),Z)
       Ta(i+1) = Ta(i) + dP/dpdt

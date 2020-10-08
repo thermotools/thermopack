@@ -9,8 +9,9 @@ module saturation_point_locators ! Give a more descriptive name..
   use saturation
   use saturation_curve
   use solid_saturation
-  use eos, only: thermo, entropy, specificVolume, need_alternative_eos
-  use parameters
+  use eos, only: thermo, entropy, specificVolume
+  use thermopack_constants
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -836,9 +837,11 @@ contains
     real :: Ta(n_max), pa(n_max), Ki(n_max,nc)
     real :: betai(n_max)
     real :: crit(2)
+    type(thermo_model), pointer :: act_mod_ptr
 
+    act_mod_ptr => get_active_thermo_model()
     ! Locate critical point and set property at critical point
-    if (EoSlib /= TREND) then
+    if (act_mod_ptr%EoSlib /= TREND) then
       t_c = 0.0
       v_c = 0.0
       call calcCriticalTV(t_c,v_c,Z,ierr,tol=1.0e-7,p=p_c)
@@ -1361,7 +1364,7 @@ contains
     integer, intent(out) :: ierr !< Error indicator, zero on success
     ! Locals
     real :: dpds_sat, dtds_sat, h, dhdt, dhdp, s, dsdt, dsdp
-    real :: dtdp, dpdt, dh, ds, dT, dP, dlnP, dlnT, sgn
+    real :: dtdp, dpdt, dh, ds, dT, dP, sgn
     integer :: extrap ! 1 = isobaric, 2 = isothermal
     integer :: spec, propflag
     integer, parameter :: n_grid = 1
@@ -1369,7 +1372,7 @@ contains
     real :: wi_grid(nc,n_grid)
     integer :: phase_grid(n_grid), n_grid_found
     real, dimension(nc) :: X_cpy, Y_cpy
-    real :: tMax, tMin, pMax, pMin, t0, p0
+    real :: tMax, tMin, pMax, pMin
     ! How to extrapolate?
     if (str_eq(prop_specID,"T")) then
       extrap = ISO_T ! isothermal
@@ -1451,10 +1454,10 @@ contains
       endif
       ! Search for property on envelope
       prop_grid = prop_spec
-      tMax = max(ts,t0) + 5.0
-      tMin = min(ts,t0) - 5.0
-      pMax = max(ps,p0) + 5.0e5
-      pMin = max(min(ps,p0) - 5.0e5, 1.0e5)
+      tMax = ts + 5.0
+      tMin = ts - 5.0
+      pMax = ps + 5.0e5
+      pMin = max(ps - 5.0e5, 1.0e5)
       call sat_points_based_on_prop(Z,T,P,X_cpy,Y_cpy,n_grid,&
            propflag,prop_grid,T_grid,P_grid,phase_grid,&
            wi_grid,n_grid_found,&
