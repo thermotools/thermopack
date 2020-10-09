@@ -1,16 +1,8 @@
-# Issue descriptions
-
-The description should provide the details necessary to address the issue. This typically includes the following:
-
-1. A detailed description of the issue.
-2. The steps or actions necessary to reproduce the issue.
-3. A minimal working example.
-
 # Guide for code contributions
 
 ## Branch model
 
-Thermopack is developed mainly through the master branch, and pull requests should
+Thermopack is developed mainly through the main branch, and pull requests should
 be [fork based](https://help.github.com/articles/using-pull-requests/).
 
 ## Documentation
@@ -18,6 +10,8 @@ be [fork based](https://help.github.com/articles/using-pull-requests/).
 When adding a new model or a new numerical solver, please add a memo describing equations with required differentials and main functionallity. Add memo to [thermopack/doc/memo](https://github.com/SINTEF/thermopack/tree/main/doc/memo).
 
 ## Code
+
+Try to keep new code consistent with the current style of Thermopack.
 
 When submitting code for thermopack, please adhere to the following standards:
 
