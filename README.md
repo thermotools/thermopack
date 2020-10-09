@@ -1,5 +1,5 @@
 # Thermopack
-Thermopack is a thermodynamics library for multi-component and multi-phase thermodynamics developed at SINTEF Energy Resarch. Through decades of research, we have developed a software that performs thermodynamic calculations. A large selection of equations of state has been implemented in this software. Most of these equations of state have been developed by other research groups around the world, but some of them have been developed by us. Thermopack has has been a much-appreciated in-house powerhouse.   
+Thermopack is a thermodynamics library for multi-component and multi-phase thermodynamics developed at SINTEF Energy Resarch. Through decades of research, we have developed a software that performs thermodynamic calculations. A large selection of equations of state has been implemented in this software. Most of these equations of state have been developed by other research groups around the world, but some of them have been developed by us. Thermopack has has been a much-appreciated in-house powerhouse.  
   
 With the slogan of SINTEF in mind - *Technology for a better society* - we want
 to share Thermopack with everybody, free of charge through the MIT open-source
@@ -14,7 +14,7 @@ running on the Windows and Linux operating systems.
 
 
 ### Prerequisites
-Thermopack source code can be compiled with the [GNU Fortran compiler](https://gcc.gnu.org/wiki/GFortran) or [Intel FORTRAN](https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html) and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can be compiled using [Microsoft Visual Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in [thermopack/MSVStudio](https://github.com/SINTEF/thermopack/MSVStudio), assuming that the Intel Fortran compiler is integrated with Microsoft Visual Studio.
+Thermopack source code can be compiled with the [GNU Fortran compiler](https://gcc.gnu.org/wiki/GFortran) or [Intel FORTRAN](https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html) and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can be compiled using [Microsoft Visual Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in [thermopack/MSVStudio](https://github.com/SINTEF/thermopack/tree/MSVStudio), assuming that the Intel Fortran compiler is integrated with Microsoft Visual Studio.
 
 ### Initial setup
 The Thermopack source code is downloaded by cloning the library to your local
@@ -85,7 +85,7 @@ Ailo Aasen (Ailo.Aasen@sintef.no)<br>
 Øivind Wilhelmsen (Oivind.Wilhelmsen@sintef.no)
 
 ## License
-Thermopack is distributed under the [MIT](https://github.com/SINTEF/LICENSE) license.
+Thermopack is distributed under the [MIT](https://github.com/SINTEF/tree/thermopack/LICENSE.md) license.
 
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research have contributed to the development of thermopack. We gratefully acknowledge their contributions.
