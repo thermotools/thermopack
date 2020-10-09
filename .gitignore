@@ -29,6 +29,7 @@ doc/memo/SPUNG/figures/*.pdf
 *.pyc
 *.a
 *.so
+*.dll
 MSVStudio/Debug/*
 MSVStudio/Release/*
 MSVStudio/*.u2d
