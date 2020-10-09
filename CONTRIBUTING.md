@@ -15,7 +15,7 @@ be [fork based](https://help.github.com/articles/using-pull-requests/).
 
 ## Documentation
 
-When adding a new model or a new numerical solver, please add a memo describing equations with required differentials and main functionallity. Add memo to [thermopack/doc/memo](https://github.com/SINTEF/thermopack/tree/doc/memo).
+When adding a new model or a new numerical solver, please add a memo describing equations with required differentials and main functionallity. Add memo to [thermopack/doc/memo](https://github.com/SINTEF/thermopack/tree/main/doc/memo).
 
 ## Code
 
@@ -41,19 +41,19 @@ When submitting code for thermopack, please adhere to the following standards:
 - Add reference to relevant articles in the code. It is sufficient to add author names and digital object identifier (doi). Ex. *Peng and Robinson (10.1021%2Fi160057a011)*
 
 
-New fluids and binary interaction data should be added as new *json* files, or modification to exsisting files, in [thermopack/fluids](https://github.com/SINTEF/thermopack/tree/fluids) and [thermopack/binaries](https://github.com/SINTEF/thermopack/tree/binaries), and generate compdatadb.f90 and mixdatadb.f90 form the scripts in [thermopack/addon/pyUtils](https://github.com/SINTEF/thermopack/tree/pyUtils).
+New fluids and binary interaction data should be added as new *json* files, or modification to exsisting files, in [thermopack/fluids](https://github.com/SINTEF/thermopack/tree/main/fluids) and [thermopack/binaries](https://github.com/SINTEF/thermopack/main/tree/binaries), and generate compdatadb.f90 and mixdatadb.f90 form the scripts in [thermopack/addon/pyUtils](https://github.com/SINTEF/thermopack/tree/main/pyUtils).
 
 Thermopack reqires analytical differentials in temperature, volume and mol numbers to second order for the residual Helmholtz energy. New models should include these differentials.
 
 ## Tests
 
-New functionality should be accompanied by unit tests. The test files should be written for pFUnit, a unit testing framework enabling JUnit-like testing of serial and MPI-parallel software written in Fortran. The new tests should be included in [thermopack/unittests](https://github.com/SINTEF/thermopack/tree/unittest). The compilation (`make unittest_mode_compiler`) depends on the variable PFUNIT pointing to a working installation of pFUnit.
+New functionality should be accompanied by unit tests. The test files should be written for pFUnit, a unit testing framework enabling JUnit-like testing of serial and MPI-parallel software written in Fortran. The new tests should be included in [thermopack/unittests](https://github.com/SINTEF/thermopack/tree/main/unittest). The compilation (`make unittest_mode_compiler`) depends on the variable PFUNIT pointing to a working installation of pFUnit.
 
 The new code need to compile, in debug, optim and openmp mode, and run using the gfortran (Linux) and the Intel FORTRAN (Linux/Windows) compilers. The existing and new unittests should pass when compiled with both gfortran and Intel FORTRAN compiled in debug, optim and opnemp mode. So if possible, new code should have been tested as extensively as possible.
 
-The python interface pycThermopack functionallity should also not be broken. To ensure a workin python plugin, please run all example cases in [thermopack/addon/pyExample](https://github.com/SINTEF/thermopack/tree/addon/pyExample), and verify that all cases run by running [thermopack/addon/pyExample/run_all_examples.sh](https://github.com/SINTEF/thermopack/tree/addon/pyExample/run_all_examples.sh). Also run the exsisting python tests using pytest.
+The python interface pycThermopack functionallity should also not be broken. To ensure a workin python plugin, please run all example cases in [thermopack/addon/pyExample](https://github.com/SINTEF/thermopack/tree/main/addon/pyExample), and verify that all cases run by running [thermopack/addon/pyExample/run_all_examples.sh](https://github.com/SINTEF/thermopack/tree/main/addon/pyExample/run_all_examples.sh). Also run the exsisting python tests using pytest.
 
-If new functionallity is added to pycThermopack, please add new test for the [thermopack/addon/pycThermopack/tests](https://github.com/SINTEF/thermopack/tree/addon/pycThermopack/tests)
+If new functionallity is added to pycThermopack, please add new test for the [thermopack/addon/pycThermopack/tests](https://github.com/SINTEF/thermopack/tree/main/addon/pycThermopack/tests)
 
 A minimal procedure for testing on Linux would be to execute:
 ```bash
