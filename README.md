@@ -37,12 +37,14 @@ Download and compile LAPACK and BLAS libraries (you will need CMake and a workin
 
 To be compatible with the current settings, you need to compile using Intel Fortran with Visual Studio, and configure as follows:
 
+```
 - Fortran/Data/Default Real KIND = 8
 - Fortran/External Procedures/Calling Convention = cref
 - Fortran/External Procedures/Name Case Interpretation = lowercase
 - Fortran/External Procedures/String Length Argument Parsing = After All Arguments
 - Fortran/External Procedures/Append Underscore to External Names = Yes
 - Fortran/Floating Point/Floating Point Model = precise
+```
 
 Copy LAPACK and BLAS libraries to the paths:
 
