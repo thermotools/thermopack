@@ -26,7 +26,7 @@ running on the Windows and Linux operating systems.
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran compiler](https://gcc.gnu.org/wiki/GFortran) or [Intel FORTRAN](https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html) and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can be compiled using [Microsoft Visual Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in [thermopack/MSVStudio](https://github.com/SINTEF/thermopack/tree/main/MSVStudio), assuming that the Intel Fortran compiler is integrated with Microsoft Visual Studio.
 
-### Initial setup
+### Linux setup
 The Thermopack source code is downloaded by cloning the library to your local
 computer. The following commands assume that you have a local installation of
 [Git](https://git-scm.com/), [gfortran](https://gcc.gnu.org/fortran/) and
