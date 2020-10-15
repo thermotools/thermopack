@@ -46,16 +46,32 @@ Studio.
 The Thermopack source code is downloaded by cloning the library to your local
 computer. The following commands assume that you have a local installation of
 [Git](https://git-scm.com/), [gfortran](https://gcc.gnu.org/fortran/) and
-[Python 3](https://www.python.org/). To compile using Intel FORTRAN, use make
-optim_ifort.
+[Python 3](https://www.python.org/) with [pip](https://pypi.org/project/pip/).
+To compile using Intel FORTRAN, use `make optim_ifort`.
 
 ```bash
+# Fetch and compile
 git clone https://github.com/SINTEF/thermopack.git
 cd thermopack
 make optim
+
+# Prepare and install pycThermopack, aka pyctp
+# Remark: On some systems, Python 3 is installed as python, not python3. If so,
+# you can replace "python3" with "python" and perhaps also "pip3" with "pip" in
+# the below.
 cd addon/pycThermopack
 python3 makescript.py optim
-python3 setup.py install
+pip3 install --user .
+```
+
+If you are working actively with the Thermopack code, either the Fortran
+backend or the Python frontend, then it may be useful to install in editable
+mode (aka develop mode). This will install a _link_ to the develop files
+instead of copying the files when installing. This can be done with the `-e`
+option, i.e.:
+
+```bash
+pip3 install -e --user .
 ```
 
 ### Windows setup
