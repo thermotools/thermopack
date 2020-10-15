@@ -105,16 +105,17 @@ ifeq ($(OS),Linux)
   # Define gfortran flags
   gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8
   debug_gfortran_flags = "$(gf_common) \
-			  -g -fbounds-check -fbacktrace \
-			  -ffpe-trap=invalid,zero,overflow \
-			  -mieee-fp -Wno-unused-dummy-argument -Wall" \
-			 NOWARN_FFLAGS="-Wno-all"
+                          -g -fbounds-check -fbacktrace \
+                          -ffpe-trap=invalid,zero,overflow \
+                          -mieee-fp -Wno-unused-dummy-argument -Wall" \
+                         NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
   optim_gfortran_flags   = "$(gf_common) -O3 $(march1) -funroll-loops"
-  openmp_gfortran_flags  = "$(gf_common) -O3 $(march1) -funroll-loops -fopenmp -frecursive"
+  openmp_gfortran_flags  = "$(gf_common) \
+                            -O3 $(march1) -funroll-loops -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
-  #openmp_gfortran_flags  = "-fdefault-real-8 $(extra_flags_gfortran) -fopenmp -frecursive"
+  #openmp_gfortran_flags  = "-fdefault-real-8 -fdefault-double-8 -fopenmp -frecursive"
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
@@ -161,13 +162,12 @@ ifeq ($(OS),Linux)
   #
   # Define gfortran flags
   #---------------------------------------------------------------------------
-  debug_gfortran_flags  = "$(gf_common) -fbounds-check \
-                           -ffpe-trap=invalid,zero,overflow -mieee-fp \
-                           -Wall -g"
-  #                        -Wall -g -L$(mingw_path)"
+  debug_gfortran_flags  = "$(gf_common) -fbounds-check -Wall -g \
+                           -ffpe-trap=invalid,zero,overflow -mieee-fp"
+  #                        -L$(mingw_path)"
   normal_gfortran_flags = "$(gf_common)"
   optim_gfortran_flags  = "$(gf_common) -O3 -funroll-loops -malign-double"
-  #
+
   #
   # Set some processor specific flags (e.g. 64bit flags)
   #---------------------------------------------------------------------------
