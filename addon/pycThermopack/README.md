@@ -2,7 +2,7 @@
 
 pycThermopack: Python interface for Thermopack
 
-For examples on how to use, see `example.py`, and [../pyExamples/](../pyExamples/README.md).
+For examples on how to use, see [../pyExamples/](../pyExamples/README.md).
 
 Note that the files `../../libthermopack_export.version` (Linux) and
 `../../MSVStudio/thermopack.def` (Windows) define which symbols are exported
@@ -77,7 +77,6 @@ pyctp folder.
 To test pycThermopack, run one of
 
 ```sh
-python3 example.py
 python3 -m pytest
 ```
 
