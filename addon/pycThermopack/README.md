@@ -2,9 +2,11 @@
 
 pycThermopack: Python interface for Thermopack
 
-For examples on how to use, see `example.py`, and `../pyExamples/`
+For examples on how to use, see `example.py`, and [../pyExamples/](../pyExamples/README.md).
 
-Note that the files **../../libthermopack_export.version** (Linux) and **../../MSVStudio/thermopack.def** (Windows) define what symbols are exported from the dynamic thermopack library.
+Note that the files `../../libthermopack_export.version` (Linux) and
+`../../MSVStudio/thermopack.def` (Windows) define which symbols are exported
+from the dynamic thermopack library.
 
 # Prerequisites
 
@@ -16,13 +18,14 @@ you will need to tweake the get_platform_specifics method in thermo.py
 to get the module exports correct. These exports are compiler
 dependent.
 
-To use pycThermopack you need have `numpy` available.
+To use pycThermopack you need to have `numpy` available. It is also recommended
+to install `matploblib`.
 
 # Installation
 
-##Linux
+## Linux
 
-To prepare pycThermopack, a libthermopack.so file must be copied to
+To prepare pycThermopack, a `libthermopack.so` file must be copied to
 the pyctp folder. This is done as follows:
 
 ```sh
@@ -34,28 +37,40 @@ make optim
 
 # or
 python makescript.py optim
+
+# or, if Python 3 is available as python3
+python3 makescript.py optim
 ```
 
 One may also, optionally, install `pyctp` on a user or system level, which
 allwos one to import pycThermopack from anywhere. If this is desired, one can
-do:
+either install at system level or at user level with
+[pip](https://pypi.org/project/pip/). Use `pip3` for Python 3, as `pip` often
+defaults to `pip` for Python 2.
 
 ```sh
 # System level
-## Either
-sudo ./install
-
-## or (to specify the python version)
-sudo python setup.py install
+sudo pip3 install .
 
 # User level
-python setup.py install
+pip3 install --user .
+```
+
+If you are working actively with the Thermopack code, either the Fortran
+backend or the Python frontend, then it may be useful to install in editable
+mode (aka develop mode). This will install a _link_ to the develop files
+instead of copying the files when installing. This can be done with the `-e`
+option, e.g.:
+
+```bash
+pip3 install -e --user .
 ```
 
 ## Windows:
 
-Compile using Microsoft Visual Studio solution file (requires Intel Fortran license) in ../../MSVStudio, and a libthermopack.dll will be copied to the pyctp folder.
-
+Compile using Microsoft Visual Studio solution file (requires Intel Fortran
+license) in `../../MSVStudio`, and a `libthermopack.dll` will be copied to the
+pyctp folder.
 
 # Testing
 
@@ -74,7 +89,7 @@ To run the GUI application:
 python thermopack_gui.py
 ```
 
-You will need to have installed the following Python packages:
+The GUI application requires the following Python packages:
 
 * `pyqt5` for the GUI framework
 * `pint` for managing units

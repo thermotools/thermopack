@@ -29,6 +29,12 @@ running on the Windows and Linux operating systems.
   * [Acknowledgments](#acknowledgments)
 
 ## Setup
+The following sections show how to fetch, compile and install Thermopack and
+the Python frontend pycThermopack. When things are properly installed, it may
+be useful to look into the examples provided in the
+[addon/pyExamples](addon/pyExamples/README.md).
+
+
 
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran
@@ -74,6 +80,9 @@ option, i.e.:
 pip3 install -e --user .
 ```
 
+See also [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+more details on pycThermopack.
+
 ### Windows setup
 Download and compile LAPACK and BLAS libraries (you will need CMake and
 a working compiler).
@@ -96,6 +105,9 @@ Copy LAPACK and BLAS libraries to the paths:
 - thermopack\lapack\lib\Release
 
 Open thermopack\MSVStudio\thermopack.sln using Visual Studio, and compile the wanted configuration.
+
+See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+how to install pycThermopack.
 
 ## File System
 Brief description of file structure:
