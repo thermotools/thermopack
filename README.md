@@ -23,7 +23,7 @@ running on the Windows and Linux operating systems.
 
   * [Setup](#setup)
   * [File System](#file-system)
-  * [Please cite](#Please cite)
+  * [Please cite](#please-cite)
   * [Authors and contact persons](#authors-and-contact-persons)
   * [License](#license)
   * [Acknowledgments](#acknowledgments)
