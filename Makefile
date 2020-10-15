@@ -31,15 +31,6 @@ ifeq ($(OS),OSF1)
   default = OSF1
 endif
 
-gfortran_is_bleeding := $(shell expr `gfortran --version \
-                          | grep -o "[0-9]\.[0-9]\.[0-9]" | tail -1` \
-                          \>= 4.6.2)
-ifeq ($(gfortran_is_bleeding),1)
-  extra_flags_gfortran = "-fdefault-double-8"
-else
-  extra_flags_gfortran = ""
-endif
-
 #=============================================================================
 # Define architecture spesific flags
 #=============================================================================
@@ -112,17 +103,18 @@ ifeq ($(OS),Linux)
   compilers += gfortran
 
   # Define gfortran flags
-  debug_gfortran_flags   = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -g -fbounds-check -fbacktrace\
-			    -ffpe-trap=invalid,zero,overflow \
-			    -mieee-fp -Wno-unused-dummy-argument -Wall" \
-			    NOWARN_FFLAGS="-Wno-all"
-  profile_gfortran_flags = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -g -pg"
-  normal_gfortran_flags  = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran)"
-  optim_gfortran_flags   = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -O3 $(march1) \
-			    -funroll-loops"
-  openmp_gfortran_flags  = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -O3 $(march1) -funroll-loops -fopenmp -frecursive"
+  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8
+  debug_gfortran_flags = "$(gf_common) \
+			  -g -fbounds-check -fbacktrace \
+			  -ffpe-trap=invalid,zero,overflow \
+			  -mieee-fp -Wno-unused-dummy-argument -Wall" \
+			 NOWARN_FFLAGS="-Wno-all"
+  profile_gfortran_flags = "$(gf_common) -g -pg"
+  normal_gfortran_flags  = "$(gf_common)"
+  optim_gfortran_flags   = "$(gf_common) -O3 $(march1) -funroll-loops"
+  openmp_gfortran_flags  = "$(gf_common) -O3 $(march1) -funroll-loops -fopenmp -frecursive"
+  openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
   #openmp_gfortran_flags  = "-fdefault-real-8 $(extra_flags_gfortran) -fopenmp -frecursive"
-  openmpprofile_gfortran_flags = "-cpp -fPIC -fdefault-real-8 $(extra_flags_gfortran) -fopenmp -frecursive -gomp"
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
@@ -169,21 +161,19 @@ ifeq ($(OS),Linux)
   #
   # Define gfortran flags
   #---------------------------------------------------------------------------
-  debug_gfortran_flags  = "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -fbounds-check            \
+  debug_gfortran_flags  = "$(gf_common) -fbounds-check \
                            -ffpe-trap=invalid,zero,overflow -mieee-fp \
                            -Wall -g"
-#                           -Wall -g -L$(mingw_path)"
-  normal_gfortran_flags = "-cpp -fPIC -fdefault-real-8 -fdefault-double-8"
-  optim_gfortran_flags  = "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -O3 -funroll-loops \
-			   -malign-double"
+  #                        -Wall -g -L$(mingw_path)"
+  normal_gfortran_flags = "$(gf_common)"
+  optim_gfortran_flags  = "$(gf_common) -O3 -funroll-loops -malign-double"
   #
   #
   # Set some processor specific flags (e.g. 64bit flags)
   #---------------------------------------------------------------------------
   ifeq ($(PROC),x86_64)
-    optim_gfortran_flags = "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -O3 -funroll-loops"
+    optim_gfortran_flags = "$(gf_common) -O3 -funroll-loops"
   endif
-
 endif
 
 # g++ options

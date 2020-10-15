@@ -18,7 +18,6 @@ ODIR   = ./objects/$(TARGET)
 BDIR   = ./bin
 DDIR   = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
-MOD    = -module $(ODIR)
 LD     = $(FC)
 VPATH  = . bin/ $(SRC)
 
@@ -29,14 +28,10 @@ LIBTREND_DIR = $(FULLROOT)/trend
 LIB_OBJ_TMPDIR = ./lib_obj_tmp
 
 
-# gfortran: old: -M; new: -J (stupid incompatible change!)
+# Different module include syntax for different compilers
+MOD = -module $(ODIR)
 ifeq ($(FC),gfortran)
-	gfortran_is_bleeding := $(shell expr `gfortran --version | grep -o "[0-9]\.[0-9]\.[0-9]" | tail -1` \>= 4.3.3)
-	ifeq ($(gfortran_is_bleeding),1)
-    MOD = -J $(ODIR) -I $(ODIR)
-  else
-    MOD = -M $(ODIR) -I $(ODIR)
-  endif
+  MOD = -J $(ODIR) -I $(ODIR)
 else ifeq ($(FC),sunf90)
   MOD = -moddir=$(ODIR)
 endif
