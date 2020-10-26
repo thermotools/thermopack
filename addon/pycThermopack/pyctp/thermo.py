@@ -1,17 +1,13 @@
 # Support for python2
 from __future__ import print_function
-# Import ctypes
+
+import sys
 from ctypes import *
-# Importing Numpy (math, arrays, etc...)
-import numpy as np
-# Import platform to detect OS
-from sys import platform, exit
-# Import os utils
 from os import path
-# Import plotting tools
-from . import plotutils
-# Import utils
-from . import utils
+
+import numpy as np
+
+from . import plotutils, utils
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -30,14 +26,14 @@ else:
     c_len_type = c_int
 
 def get_platform_specifics():
+    """Get platform specific stuff."""
     os_id = ""
     prefix = ""
     module = ""
     postfix = ""
     postfix_no_module = ""
     dyn_lib = ""
-    if platform == "linux" or platform == "linux2":
-        # linux
+    if sys.platform in ("linux", "linux2"):
         # Assuming GNU FORTRAN
         prefix = G_PREFIX
         module = G_MODULE
@@ -45,12 +41,16 @@ def get_platform_specifics():
         postfix_no_module = G_POSTFIX_NM
         dyn_lib = "libthermopack.so"
         os_id = "linux"
-    elif platform == "darwin":
-        # MAC OS X
-        print("Thermopack python interface not yet tested for MAC OS")
-        exit(1)
-    elif platform == "win32":
-        # Windows
+    elif sys.platform == "darwin":
+        # Darwin means Mac OS X
+        # Assuming GNU FORTRAN
+        prefix = G_PREFIX
+        module = G_MODULE
+        postfix = G_POSTFIX
+        postfix_no_module = G_POSTFIX_NM
+        dyn_lib = "libthermopack.dynlib"
+        os_id = "darwin"
+    elif sys.platform == "win32":
         # Assuming INTEL FORTRAN
         prefix = I_PREFIX #"_"
         module = I_MODULE
@@ -58,8 +58,7 @@ def get_platform_specifics():
         postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
-    elif platform == "win64":
-        # Windows 64-bit
+    elif sys.platform == "win64":
         # Assuming INTEL FORTRAN
         prefix = I_PREFIX
         module = I_MODULE
@@ -78,7 +77,8 @@ class thermopack(object):
         """
         Load libthermopack.(so/dll) and initialize function pointers
         """
-        self.prefix, self.module, self.postfix, self.postfix_nm, dyn_lib, os_id = get_platform_specifics()
+        self.prefix, self.module, self.postfix, self.postfix_nm, \
+            dyn_lib, os_id = get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
@@ -164,7 +164,7 @@ class thermopack(object):
         else:
             print("Check for default....")
         print("Need to be implemented")
-        exit(1)
+        sys.exit(1)
 
     def get_export_name(self, module, method):
         """Generate library export name based on module and method name

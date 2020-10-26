@@ -38,6 +38,7 @@ src/*.bck
 *.pyc
 *.a
 *.so
+*.dynlib
 *.dll
 *.mod
 *.smod
