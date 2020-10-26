@@ -206,7 +206,7 @@ libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
 libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(DDIR)/libthermopack_$(TARGET)*.dynlib
 	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dynlib $(OBJE) \
-	$(OBJIF) $(DLIBS) -exported_symbols_list libthermopack_export.version
+	$(OBJIF) $(DLIBS) -exported_symbols_list libthermopack_export.symbols
 
 thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
   Makefile Makefile.code
