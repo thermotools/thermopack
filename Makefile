@@ -9,40 +9,32 @@
 #=============================================================================
 # Set some general variables
 #=============================================================================
-ifeq ($(shell uname -o),Msys)
-  OS = MINGW32
+PROC = x86_64
+
+ifeq '$(findstring ;,$(PATH))' ';'
+  UNAME := Windows
 else
-  OS := $(shell uname -s)
+  UNAME := $(shell uname 2>/dev/null || echo Unknown)
+  UNAME := $(patsubst CYGWIN%,Cygwin,$(UNAME))
+  UNAME := $(patsubst MSYS%,MSYS,$(UNAME))
+  UNAME := $(patsubst MINGW%,MSYS,$(UNAME))
 endif
 
-bit64 := $(shell uname -a | grep x86_64 | wc -c)
-ifeq ($(bit64),0)
-  PROC = i686
-else
-  PROC = x86_64
+OSTYPE := Unix
+ifeq ($(UNAME),MSYS)
+  OSTYPE := MINGW
+else ifeq ($(UNAME),MINGW)
+  OSTYPE := MINGW
 endif
 
-modes     = debug profile normal optim r16 debug_irg openmp openmpprofile
-targets   = help clean
-compilers = dummy
-default   = gfortran
+export OSTYPE
+export UNAME
+export PROC
 
-ifeq ($(OS),OSF1)
-  default = OSF1
-endif
-
-#=============================================================================
-# Define architecture spesific flags
-#=============================================================================
-# Note: march1 is march settings for gfortran
-march1=-march=i686 -msse2
-ifneq ($(OS),MINGW32)
-  ifneq ($(shell cat /proc/cpuinfo|grep Opteron),)
-    march1=-march=opteron -msse3
-  else ifeq ($(PROC),x86_64)
-    march1=-march=native -msse3
-  endif
-endif
+modes = debug profile normal optim r16 debug_irg openmp openmpprofile
+targets =
+compilers =
+default = gfortran
 
 #=============================================================================
 # Define some special targets
@@ -53,9 +45,11 @@ help:
 	@echo "Usage: make <target>"
 	@echo "<target> is one of the following:"
 	@echo
-	@echo -e " $(foreach target,$(targets),  $(target)\n)"
-	@echo " The default compiler is $(default)."
-	@echo "OS = $(OS), PROC = $(PROC)"
+	@echo "  help"
+	@echo "  clean"
+	@echo -e " $(foreach target,$(sort $(targets)), $(target)\n)"
+	@echo "The default compiler is $(default)."
+	@echo "OS = $(UNAME), PROC = $(PROC)"
 	@echo "Compilers: $(compilers)"
 
 clean:
@@ -86,20 +80,12 @@ unittests_all_openmp:
 #=============================================================================
 # Setup the compiler list and define the compiler flags
 #=============================================================================
-# - Based on the operating system reported by uname, a list of
-#   compilers will be made available through the variables
-#   default, compilers and modes. 'default' is the default
-#   compiler (the one used when only typing e.g. 'make debug'),
-#   compilers is a list of target compilers and modes is a list
-#   of compile modes.
-# - For each target specified by a combination of the compilers
-#   and modes, there is also defined a variable that contains
-#   the compiler flags: <mode>_<compiler>_flags. This must be
-#   defined if the target is to be created. For OSF1 (and similar
-#   OSes that might be added in the future), the flags are in
-#   variables named: <mode>_<OS>_flags.
-#
-ifeq ($(OS),Linux)
+# Targets will be automatically created based on the "OSTYPE" variable, the
+# "compilers" list and the "modes" list. Only the targets for the current
+# "OSTYPE"
+# is available. Each real target is defined by specifying the compiler flags in
+# a variable $(mode)_$(compiler)_flags.
+ifeq ($(OSTYPE),Unix)
   compilers += gfortran
 
   # Define gfortran flags
@@ -111,11 +97,9 @@ ifeq ($(OS),Linux)
                          NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
-  optim_gfortran_flags   = "$(gf_common) -O3 $(march1) -funroll-loops"
-  openmp_gfortran_flags  = "$(gf_common) \
-                            -O3 $(march1) -funroll-loops -fopenmp -frecursive"
+  optim_gfortran_flags   = "$(gf_common) -O3 -march=x86_64 -msse2 -funroll-loops"
+  openmp_gfortran_flags  = "$(optim_gfortran_flags) -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
-  #openmp_gfortran_flags  = "-fdefault-real-8 -fdefault-double-8 -fopenmp -frecursive"
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
@@ -142,162 +126,69 @@ ifeq ($(OS),Linux)
   r16_ifort_flags     = "-fpp -r16 -fpe0 -warn all -auto -fPIC -no-wrap-margin"
   openmp_ifort_flags = "-fpp $(omp_ifort) -r8 -O3 -ax -fp-model precise -fpe0 -w -ftz -auto -fPIC -no-wrap-margin"
 
-  # Set some processor specific flags (e.g. 64bit flags)
-  # Notes:
-  # * For optim_ifort: -axN ? (is also compatible with generic processor)
-  ifeq ($(PROC),i686)
-    optim_ifort_flags = "-r8 -O3 -xN -fpe0 -fPIC -w -fpp"
-  endif
-
-  #
-  # MinGW/Msys
-  #***************************************************************************
-  else ifeq ($(OS),MINGW32)
-  # Set list of compilers, default compiler and names of compiler binaries
-  #---------------------------------------------------------------------------
-  # Note: -lg2c ?
-  # use -lg2c if linking in TPlib compiled with g77 (Doesn't work on Windows?)
-  #
+else ifeq ($(OSTYPE),MINGW)
   compilers += gfortran
-  #
+
   # Define gfortran flags
-  #---------------------------------------------------------------------------
   debug_gfortran_flags  = "$(gf_common) -fbounds-check -Wall -g \
                            -ffpe-trap=invalid,zero,overflow -mieee-fp"
-  #                        -L$(mingw_path)"
   normal_gfortran_flags = "$(gf_common)"
-  optim_gfortran_flags  = "$(gf_common) -O3 -funroll-loops -malign-double"
-
-  #
-  # Set some processor specific flags (e.g. 64bit flags)
-  #---------------------------------------------------------------------------
-  ifeq ($(PROC),x86_64)
-    optim_gfortran_flags = "$(gf_common) -O3 -funroll-loops"
-  endif
+  optim_gfortran_flags = "$(gf_common) -O3 -funroll-loops"
 endif
-
-# g++ options
-debug_cpp = "-fPIC -Wall -g -mieee-fp -fsignaling-nans -D_GLIBCXX_USE_CXX11_ABI=0"
-optim_cpp = "-fPIC -O3 -funroll-loops -D_GLIBCXX_USE_CXX11_ABI=0"
-openmp_cpp = "-fPIC -O3 -DUSEOMP -fopenmp -funroll-loops -D_GLIBCXX_USE_CXX11_ABI=0"
-profile_cpp = "-fPIC -g -pg -D_GLIBCXX_USE_CXX11_ABI=0"
-normal_cpp = "-D_GLIBCXX_USE_CXX11_ABI=0"
-openmpprofile_cpp = "-fPIC -O3 -DUSEOMP -fopenmp -D_GLIBCXX_USE_CXX11_ABI=0"
-CC=g++
-
-#=============================================================================
-# Define the canned sequences that creates targets
-#=============================================================================
-#
-# 'create_phony_targets' is a canned sequence that creates the dummy targets.
-# If the corresponding flags are not defined, the targets will not be created.
-# when a target is created, it is automatically added to the list of targets.
-#
-define create_phony_targets
-  ifeq ($(2),dummy)
-    ifdef $(1)_$(default)_flags
-      targets += $(1)
-$(1): $(1)_$(default)
-    endif
-  else
-    ifdef $(1)_$(2)_flags
-      targets += $(1)_$(2)
-$(1)_$(2): $(1)_$(2)_$(OS)
-    endif
-  endif
-endef
-#
-# 'create_target' is a canned sequence that is used to define targets based on
-# three arguments: 'os', 'mode' and 'compiler' respectively. There are three
-# different uses based on the content of 'compiler':
-#
-#    "dummy"  : Create target <mode>_<os>
-#    <comp>   : Create target <mode>_<compiler>_<os>
-#
-# where <comp> is the name of any compiler, e.g. gfortran. The intent of
-# "dummy" is to create targets for OSF1, and the intent of "dummy2" is to
-# create targets for special modes (e.g. r16_ifort_Linux). The targets are only
-# created if there exist corresponding flags:
-#
-#    <mode>_<comp>_flags : when compiler is not "dummy"
-#    <mode>_<os>_flags   : else
-#
-# One example is in order. The following will create the targets
-# optim_ifort_Linux, debug_OSF1 and r16_ifort_Linux, respectively:
-#
-#    $(eval $(call create_target,Linux,optim,ifort))
-#    $(eval $(call create_target,OSF1 ,debug,dummy))
-#    $(eval $(call create_target,Linux,r16_ifort,dummy2))
-#
-define create_target
-ifeq ($(3),dummy)
-  ifdef $(2)_$(1)_flags
-    targets += $(2)_$(1)
-$(2)_$(1):
-	+$(MAKE) FC=$(fc) FFLAGS=$($(2)_$(1)_flags) CFLAGS=$($(2)_cpp) TARGET=$$@ \
-	        LEXT=$(1) -f Makefile.code -e thermopack
-  endif
-else
-  ifdef $(2)_$(3)_flags
-    targets += $(2)_$(3)_$(1)
-$(2)_$(3)_$(1):
-	+$(MAKE) FC=$(3) MODE=$(2) FFLAGS=$($(2)_$(3)_flags) CFLAGS=$($(2)_cpp) TARGET=$$@ \
-	        LEXT=$(3)_$(1) -f Makefile.code -e thermopack
-    endif
-  endif
-endef
-
-define create_test_target
-ifeq ($(3),dummy)
-  ifdef $(2)_$(1)_flags
-    targets += unittests_$(2)_$(1)
-unittests_$(2)_$(1):
-	+$(MAKE) FC=$(fc) FFLAGS=$($(2)_$(1)_flags) \
-	TARGET=$(2)_$(1) LEXT=$(1) -f Makefile.code -e run_unittests
-  endif
-else
-  ifdef $(2)_$(3)_flags
-    targets += unittests_$(2)_$(3)_$(1)
-unittests_$(2)_$(3)_$(1):
-	+$(MAKE) FC=$(3) MODE=$(2) FFLAGS=$($(2)_$(3)_flags) \
-	TARGET=$(2)_$(3)_$(1) LEXT=$(3)_$(1) -f Makefile.code -e run_unittests
-    endif
-  endif
-endef
-
-define create_phony_test_targets
-  ifeq ($(2),dummy)
-    ifdef $(1)_$(default)_flags
-      targets += unittests_$(1)
-unittests_$(1): unittests_$(1)_$(default)
-    endif
-  else
-    ifdef $(1)_$(2)_flags
-      targets += unittests_$(1)_$(2)
-unittests_$(1)_$(2): unittests_$(1)_$(2)_$(OS)
-    endif
-  endif
-endef
 
 #=============================================================================
 # Define the targets
 #=============================================================================
+# 'create_targets_phony' is a canned sequence that defines phony targets. For
+# instance, it links the phony target "debug_gfortran" to the actual target
+# "debug_gfortran_Linux".
 #
-# First we create the dummy targets that points to the real targets
-$(foreach mode,$(modes),$(foreach comp,$(compilers),\
-  $(eval $(call create_phony_targets,$(mode),$(comp)))))
+# 'create_targets_real' is a canned sequence that defines real targets, such as
+# "debug_gfortran_Linux".
 #
-# Then we create the real targets
-$(foreach mode,$(modes),$(foreach comp,$(compilers),\
-  $(eval $(call create_target,$(OS),$(mode),$(comp)))))
+# Note:
+# * When the corresponding flags for the specified compiler and mode are not
+#   defined, the targets will not be created.
+# * When a target is created, it is automatically added to the list of targets.
 
-# Similar for test targets
+define create_targets_default
+  ifdef $(1)_$(default)_flags
+    targets += $(1) unittests_$(1)
+$(1): $(1)_$(default)
+unittests_$(1): unittests_$(1)_$(default)
+  endif
+endef
+
+define create_targets_phony
+  ifdef $(1)_$(2)_flags
+    targets += $(1)_$(2) unittests_$(1)_$(2)
+$(1)_$(2): $(1)_$(2)_$(UNAME)
+unittests_$(1)_$(2): unittests_$(1)_$(2)_$(UNAME)
+  endif
+endef
+
+define create_targets_real
+  ifdef $(2)_$(3)_flags
+    targets += $(2)_$(3)_$(1) unittests_$(2)_$(3)_$(1)
+$(2)_$(3)_$(1):
+	+$(MAKE) FC=$(3) MODE=$(2) FFLAGS=$($(2)_$(3)_flags) \
+	  CFLAGS=$($(2)_cpp) TARGET=$$@ LEXT=$(3)_$(1) \
+	  -f Makefile.code -e thermopack
+unittests_$(2)_$(3)_$(1):
+	+$(MAKE) FC=$(3) MODE=$(2) FFLAGS=$($(2)_$(3)_flags) \
+	  TARGET=$(2)_$(3)_$(1) LEXT=$(3)_$(1) \
+	  -f Makefile.code -e run_unittests
+  endif
+endef
+
+
+$(foreach mode,$(modes),\
+  $(eval $(call create_targets_default,$(mode))))
+
 $(foreach mode,$(modes),$(foreach comp,$(compilers),\
-  $(eval $(call create_phony_test_targets,$(mode),$(comp)))))
-#
-$(foreach mode,$(modes),$(foreach comp,$(compilers),\
-  $(eval $(call create_test_target,$(OS),$(mode),$(comp)))))
+  $(eval $(call create_targets_phony,$(mode),$(comp)))\
+  $(eval $(call create_targets_real,$(UNAME),$(mode),$(comp)))))
 
 
 # Create list of filtered targets for the "all" family of targets
-targets_filtered := $(filter-out %_pgf90, $(filter-out %_Linux, $(targets)))
+targets_filtered := $(filter-out %_$(UNAME), $(targets))

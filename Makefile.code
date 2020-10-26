@@ -1,7 +1,8 @@
 #=============================================================================
 #
-# This is the code-specific makefile for thermopack.
-# It is called from Makefile.
+# This is the code-specific makefile for thermopack. It is meant to be called
+# recursively from the main Makefile.
+#
 #-----------------------------------------------------------------------
 # STM: 2007-01-05
 # KYL: 2009-03-16
@@ -9,26 +10,24 @@
 #=============================================================================
 # Set code specific directories and variables
 #=============================================================================
-ROOT   = .
+ROOT = .
 FULLROOT = $(shell pwd)
-SRC    = $(ROOT)/src
-TEST   = $(ROOT)/unittests
+SRC = $(ROOT)/src
+TEST = $(ROOT)/unittests
 PFUNIT ?= /usr/local/linux/pfunit
-ODIR   = ./objects/$(TARGET)
-BDIR   = ./bin
-DDIR   = $(BDIR)/dynamic
+ODIR = ./objects/$(TARGET)
+BDIR = ./bin
+DDIR = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
-LD     = $(FC)
-VPATH  = . bin/ $(SRC)
-
+LD = $(FC)
+VPATH = . bin/ $(SRC)
+SILENT_RUN ?= off
 
 # Needed libraries:
 LIBTREND_DIR = $(FULLROOT)/trend
 # Temporary directory for assembling all extra object files to be bundled:
 LIB_OBJ_TMPDIR = ./lib_obj_tmp
 
-
-# gfortran: old: -M; new: -J (stupid incompatible change!)
 MOD = -module $(ODIR)
 ifeq ($(FC),gfortran)
   MOD = -J $(ODIR) -I $(ODIR)
@@ -36,72 +35,45 @@ else ifeq ($(FC),sunf90)
   MOD = -moddir=$(ODIR)
 endif
 
-# Operative system dependent stuff
-X86=
-bit64 = $(shell uname -a | grep x86_64 | wc -c)
-ifneq ($(bit64),0)
-  X86=64
-endif
-UNAME:=$(shell uname -s)$(X86)
 LN_S=ln -s
-ifeq ($(UNAME),WindowsNT)
+ifeq ($(UNAME),Windows)
+  LN_S=cp
+else ifeq ($(OSTYPE),MINGW)
   LN_S=cp
 endif
-
-# Uname -o return Msys both on MINGW32 and MINGW64
-ifeq ($(shell uname -o), Msys)
-  LN_S=cp
-else
-  LN_S=ln -s
-endif
-
-# AA: Make it so OS = MINGW32 for all versions
-OSo := $(shell uname -o)
-ifeq ($(OSo),Msys)
-  OS=MINGW32
-else
-  OS := $(shell uname -s)
-endif
-
-# A more silent compilation? Set to: 'on' or 'off'.
-silent_run=off
 
 #=============================================================================
 # External libraries
 #=============================================================================
-# Thermodynamics
 SLIBS =
+DLIBS = -ldl -lstdc++
 
-ifeq ($(FC),pgf90)
-  DLIBS += -lgcc_s
-endif
 # Lapack and Blas are needed for numerical calculation of eigenvalues.
-LADIR=./lapacklib
-ifeq ($(UNAME),MINGW32)
-  DLIBS += -L$(LADIR)/$(UNAME) -llapack_$(LEXT) -lblas_$(LEXT)
-else ifeq ($(shell uname -o), Msys)
-    SLIBS += -L$(LIBTREND_DIR)/bin -ltrend_$(TARGET)
-    # Assumes now that X86_64 targets on windows/Msys2.0 have openblas installed
-    ifeq ($(X86),64)
-      DLIBS += -lopenblas
-    else
-      DLIBS += -L./lapacklib -llapack -lrefblas
-    endif
+ifeq ($(UNAME),MINGW)
+  DLIBS += -L./lapacklib/$(UNAME) -llapack_$(LEXT) -lblas_$(LEXT)
+else ifeq ($(UNAME),MSYS)
+  SLIBS += -L$(LIBTREND_DIR)/bin -ltrend_$(TARGET)
+
+  # Assumes now that X86_64 targets on windows/Msys2.0 have openblas installed
+  ifeq ($(X86),64)
+    DLIBS += -lopenblas
+  else
+    DLIBS += -L./lapacklib -llapack -lrefblas
+  endif
 else
   DLIBS +=-llapack -lblas
 endif
-DLIBS += -ldl -lstdc++
+
 LIBS += $(SLIBS)
 LIBS += $(DLIBS)
-
-TESTSRCS = $(wildcard $(TEST)/*.pf)
-TESTOBJS = $(TESTSRCS:.pf=.o)
 
 #=============================================================================
 # Location of objects, and executable:
 #=============================================================================
+TESTSRCS = $(wildcard $(TEST)/*.pf)
+TESTOBJS = $(TESTSRCS:.pf=.o)
+
 # Note: The order of the objects listed here decides the order of compilation.
-#
 OBJE = \
        $(ODIR)/numconstants.o \
        $(ODIR)/stringmod.o \
@@ -238,9 +210,9 @@ run: $(ODIR)/thermopack.o
 	$(LD) $(FFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
 	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 	@rm -f run_thermopack run_thermopack.exe
-	@if [ $(UNAME) = WindowsNT ]; then \
+	@if [ $(UNAME) = Windows ]; then \
 	  $(LN_S) $(BDIR)/thermopack_$(TARGET).exe run_thermopack.exe; \
-	else if [ $(OS) = MINGW32 ]; then \
+	else if [ $(OSTYPE) = MINGW ]; then \
 	  $(LN_S) $(BDIR)/thermopack_$(TARGET).exe run_thermopack.exe; \
 	else \
 	  $(LN_S) $(BDIR)/thermopack_$(TARGET) run_thermopack; \
@@ -255,7 +227,7 @@ run_unittests:
 	INCDIR=$(INCDIR) tests
 	$(MAKE) -f Makefile.code unittests_$(TARGET)
 	@rm -f run_unittests run_unittests.exe
-	@if [ $(OS) = MINGW32 ]; then \
+	@if [ $(OSTYPE) = MINGW ]; then \
 	  $(LN_S) $(BDIR)/unittests_$(TARGET).exe run_unittests.exe; \
 	else \
 	  $(LN_S) $(BDIR)/unittests_$(TARGET) run_unittests; \
@@ -278,7 +250,7 @@ clean:
 #=============================================================================
 # Detailed dependencies of the object files:
 #=============================================================================
-ifeq ($(silent_run),on)
+ifeq ($(SILENT_RUN),on)
   ifeq ($(MODE),openmpprofile)
     make_object = echo $(FC) ... $(1); \
       kinst-ompp $(FC) $(FFLAGS) $(MOD) $(INCDIR) -c -o $@ $(1);
@@ -309,10 +281,9 @@ endif
 $(ODIR)/dltrend.o: $(SRC)/dltrend.cpp $(LTREND)
 	@$(call make_object_cpp,$(SRC)/dltrend.cpp)
 
-###############################################
-# Build information generated using
-# thermopack/addon/pyUtils/generate_dependensies.py
-###############################################
+#=============================================================================
+# Build information generated with addon/pyUtils/generate_dependensies.py
+#=============================================================================
 $(ODIR)/ps_solver.o: $(SRC)/ps_solver.f90 \
   $(SRC)/numconstants.f90 $(SRC)/thermopack_var.f90 \
   $(SRC)/thermopack_constants.f90 $(SRC)/tp_solver.f90 \
