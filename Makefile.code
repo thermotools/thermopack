@@ -19,9 +19,16 @@ ODIR = ./objects/$(TARGET)
 BDIR = ./bin
 DDIR = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
-LD = $(FC)
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
+RANLIB ?= /usr/bin/ranlib
+ifeq ($(UNAME),Darwin)
+  LD = clang
+  AR ?= /usr/bin/ar -r -c
+else
+  LD = $(FC)
+  AR ?= /usr/bin/ar -rc -o
+endif
 
 # Needed libraries:
 LIBTREND_DIR = $(FULLROOT)/trend
@@ -60,8 +67,10 @@ else ifeq ($(UNAME),MSYS)
   else
     DLIBS += -L./lapacklib -llapack -lrefblas
   endif
+else ifeq ($(UNAME),Darwin)
+  DLIBS += -llapack -lblas -lgfortran -lm
 else
-  DLIBS +=-llapack -lblas
+  DLIBS += -llapack -lblas
 endif
 
 LIBS += $(SLIBS)
@@ -185,14 +194,19 @@ endif
 
 libthermopack_$(TARGET).a: $(LTREND) Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(BDIR)/libthermopack_$(TARGET).a
-	ar -rc -o $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
-	ranlib $(BDIR)/libthermopack_$(TARGET).a
+	$(AR) -rc -o $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
+	$(RANLIB) $(BDIR)/libthermopack_$(TARGET).a
 
 libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(DDIR)/libthermopack_$(TARGET)*.so
 	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).so $(OBJE) \
 	$(OBJIF) -Wl,--version-script=libthermopack_export.version \
 	-Wl,-Bstatic $(SLIBS) -Wl,-Bdynamic $(DLIBS)
+
+libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
+	@rm -f $(DDIR)/libthermopack_$(TARGET)*.dynlib
+	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dynlib $(OBJE) \
+	$(OBJIF) $(DLIBS) -exported_symbols_list libthermopack_export.version
 
 thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
   Makefile Makefile.code
@@ -203,7 +217,11 @@ thermopack:
 	@mkdir -p $(BDIR) $(ODIR) $(DDIR)
 	$(MAKE) -f Makefile.code -e trend_$(TARGET)
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).a
-	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).so
+	@if [ $(UNAME) = Darwin ]; then \
+	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).dynlib; \
+	else \
+	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).so; \
+	fi
 	$(MAKE) -f Makefile.code -e run
 
 run: $(ODIR)/thermopack.o
