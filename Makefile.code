@@ -25,6 +25,8 @@ RANLIB ?= /usr/bin/ranlib
 ifeq ($(UNAME),Darwin)
   LD = clang
   AR := /usr/bin/ar -r -c
+  export LIBRARY_PATH = \
+	  $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
 else
   LD = $(FC)
   AR := /usr/bin/ar -rc -o
