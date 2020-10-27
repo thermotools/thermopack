@@ -194,7 +194,7 @@ endif
 
 libthermopack_$(TARGET).a: $(LTREND) Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(BDIR)/libthermopack_$(TARGET).a
-	$(AR) -rc -o $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
+	$(AR) $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
 	$(RANLIB) $(BDIR)/libthermopack_$(TARGET).a
 
 libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
