@@ -24,10 +24,10 @@ SILENT_RUN ?= off
 RANLIB ?= /usr/bin/ranlib
 ifeq ($(UNAME),Darwin)
   LD = clang
-  AR ?= /usr/bin/ar -r -c
+  AR_ARGS ?= /usr/bin/ar -r -c
 else
   LD = $(FC)
-  AR ?= /usr/bin/ar -rc -o
+  AR_ARGS ?= /usr/bin/ar -rc -o
 endif
 
 # Needed libraries:
@@ -194,7 +194,7 @@ endif
 
 libthermopack_$(TARGET).a: $(LTREND) Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(BDIR)/libthermopack_$(TARGET).a
-	$(AR) $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
+	$(AR_ARGS) $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
 	$(RANLIB) $(BDIR)/libthermopack_$(TARGET).a
 
 libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
