@@ -26,16 +26,11 @@ ifeq ($(UNAME),Darwin)
   LD = clang
   AR := /usr/bin/ar -r -c
   export LIBRARY_PATH = \
-	  $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
+    $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
 else
   LD = $(FC)
   AR := /usr/bin/ar -rc -o
 endif
-
-# Needed libraries:
-LIBTREND_DIR = $(FULLROOT)/trend
-# Temporary directory for assembling all extra object files to be bundled:
-LIB_OBJ_TMPDIR = ./lib_obj_tmp
 
 MOD = -module $(ODIR)
 ifeq ($(FC),gfortran)
@@ -54,6 +49,8 @@ endif
 #=============================================================================
 # External libraries
 #=============================================================================
+LIBTREND_DIR = $(FULLROOT)/trend
+
 SLIBS =
 DLIBS = -ldl -lstdc++
 
@@ -62,13 +59,7 @@ ifeq ($(UNAME),MINGW)
   DLIBS += -L./lapacklib/$(UNAME) -llapack_$(LEXT) -lblas_$(LEXT)
 else ifeq ($(UNAME),MSYS)
   SLIBS += -L$(LIBTREND_DIR)/bin -ltrend_$(TARGET)
-
-  # Assumes now that X86_64 targets on windows/Msys2.0 have openblas installed
-  ifeq ($(X86),64)
-    DLIBS += -lopenblas
-  else
-    DLIBS += -L./lapacklib -llapack -lrefblas
-  endif
+  DLIBS += -lopenblas
 else ifeq ($(UNAME),Darwin)
   DLIBS += -llapack -lblas -lgfortran -lm
 else
