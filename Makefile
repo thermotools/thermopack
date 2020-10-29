@@ -130,6 +130,7 @@ else ifeq ($(OSTYPE),MINGW)
   compilers += gfortran
 
   # Define gfortran flags
+  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8
   debug_gfortran_flags  = "$(gf_common) -fbounds-check -Wall -g \
                            -ffpe-trap=invalid,zero,overflow -mieee-fp"
   normal_gfortran_flags = "$(gf_common)"
