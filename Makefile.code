@@ -50,25 +50,18 @@ endif
 #=============================================================================
 # External libraries
 #=============================================================================
-LIBTREND_DIR = $(FULLROOT)/trend
-
-SLIBS =
-DLIBS = -ldl -lstdc++
+LIBS += -ldl -lstdc++
 
 # Lapack and Blas are needed for numerical calculation of eigenvalues.
 ifeq ($(UNAME),MINGW)
-  DLIBS += -L./lapacklib/$(UNAME) -llapack_$(LEXT) -lblas_$(LEXT)
+  LIBS += -L./lapacklib/$(UNAME) -llapack_$(LEXT) -lblas_$(LEXT)
 else ifeq ($(UNAME),MSYS)
-  SLIBS += -L$(LIBTREND_DIR)/bin -ltrend_$(TARGET)
-  DLIBS += -lopenblas
+  LIBS += -lopenblas
 else ifeq ($(UNAME),Darwin)
-  DLIBS += -llapack -lblas -lgfortran -lm
+  LIBS += -llapack -lblas -lgfortran -lm
 else
-  DLIBS += -llapack -lblas
+  LIBS += -llapack -lblas
 endif
-
-LIBS += $(SLIBS)
-LIBS += $(DLIBS)
 
 #=============================================================================
 # Location of objects, and executable:
@@ -172,6 +165,7 @@ OBJE = \
        $(ODIR)/complexmodelinit.o \
        $(ODIR)/external.o
 
+LIBTREND_DIR = $(FULLROOT)/trend
 ifdef $(THERMOPACK_WITH_TREND)
     OBJIF = $(ODIR)/dltrend.o \
             $(ODIR)/compname_translation.o \
@@ -195,12 +189,12 @@ libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(DDIR)/libthermopack_$(TARGET)*.so
 	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).so $(OBJE) \
 	$(OBJIF) -Wl,--version-script=libthermopack_export.version \
-	-Wl,-Bstatic $(SLIBS) -Wl,-Bdynamic $(DLIBS)
+	-Wl,-Bdynamic $(LIBS)
 
 libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(DDIR)/libthermopack_$(TARGET)*.dynlib
 	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dynlib $(OBJE) \
-	$(OBJIF) $(DLIBS) -exported_symbols_list libthermopack_export.symbols
+	$(OBJIF) $(LIBS) -exported_symbols_list libthermopack_export.symbols
 
 thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
   Makefile Makefile.code
