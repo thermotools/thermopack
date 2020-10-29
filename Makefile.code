@@ -21,15 +21,16 @@ DDIR = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
-RANLIB ?= /usr/bin/ranlib
 ifeq ($(UNAME),Darwin)
   LD = clang
   AR := /usr/bin/ar -r -c
+  RANLIB := /usr/bin/ranlib
   export LIBRARY_PATH = \
     $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
 else
   LD = $(FC)
   AR := ar -rc -o
+  RANLIB := ranlib
 endif
 
 MOD = -module $(ODIR)
