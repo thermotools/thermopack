@@ -29,7 +29,7 @@ ifeq ($(UNAME),Darwin)
     $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
 else
   LD = $(FC)
-  AR := /usr/bin/ar -rc -o
+  AR := ar -rc -o
 endif
 
 MOD = -module $(ODIR)
