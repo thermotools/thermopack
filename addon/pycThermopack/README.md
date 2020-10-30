@@ -69,8 +69,20 @@ pip3 install -e --user .
 ## Windows:
 
 Compile using Microsoft Visual Studio solution file (requires Intel Fortran
-license) in `../../MSVStudio`, and a `libthermopack.dll` will be copied to the
+license) in `../../MSVStudio`, and `libthermopack.dll` will be copied to the
 pyctp folder.
+
+#### MSYS2/Mingw-W64 setup
+Having compiled thermopack for MSYS2, you can get pycThermopack up and running, using the `MSYS2 MinGW 64-bit` application, as follows:
+
+```bash
+pacman -S mingw-w64-x86_64-python
+pacman -S mingw-w64-x86_64-python-numpy
+pacman -S mingw-w64-x86_64-python-matplotlib
+cp bin/bin/dynamic/libthermopack_debug_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
+cd addon/pyExamples
+python cpa.py
+```
 
 # Testing
 

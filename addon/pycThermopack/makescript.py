@@ -1,9 +1,12 @@
+"""Simple script to copy the desired libthermopack.so file."""
 #!/usr/bin/env python
 from __future__ import print_function
-import os
-import sys
-import shutil
+
 import argparse
+import os
+import shutil
+import sys
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("mode", type=str, help="optim or debug")
@@ -11,9 +14,12 @@ parser.add_argument("mode", type=str, help="optim or debug")
 args = parser.parse_args()
 mode = args.mode
 
-thermopack = "../../bin/dynamic/libthermopack_" + mode + "_gfortran_Linux.so"
-if os.path.exists(thermopack):
-    shutil.copy2(thermopack, "./pyctp/libthermopack.so")
-else:
-    print(thermopack + " does not exist. Have you compiled thermopack?")
-    exit(1)
+# Glob to handle different OS suffixes
+libthermo = list(
+    Path('../../bin/dynamic').glob(f'libthermopack_{mode}_gfortran*.*'))[0]
+
+if not os.path.exists(libthermo):
+    print(f'{libthermo}does not exist. Have you compiled thermopack?')
+    sys.exit(1)
+
+shutil.copy2(libthermo, "./pyctp/libthermopack.so")
