@@ -27,7 +27,7 @@
           _thermopack_setkijandji_
           _thermopack_gethvparam_
           _thermopack_sethvparam_
-	   _get_phase_flags_c
+	  _get_phase_flags_c
 	  #
 	  *_init_thermo
 	  *_init_cubic
