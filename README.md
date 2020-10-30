@@ -109,6 +109,28 @@ Open thermopack\MSVStudio\thermopack.sln using Visual Studio, and compile the wa
 See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
 how to install pycThermopack.
 
+#### MSYS2/Mingw-W64 setup
+Thermopack can also be compiled using gfortran in the MSYS2 environment. Download MSYS2 from [https://www.msys2.org](https://www.msys2.org), and install and update the package system following the instructions given. Avoid having spaces in the MSYS2 installation directory path, as the Makefile might not work. Having a working MSYS2 installation, thermopack can be compiled after installing the following packages:
+
+```bash
+pacman -S git
+pacman -S mingw-w64-x86_64-gcc-fortran
+pacman -S mingw-w64-x86_64-openblas
+pacman -S mingw-w64-x86_64-make
+pacman -S mingw-w64-x86_64-dlfcn
+```
+
+Open the `MSYS2 MinGW 64-bit` application, and enter the following in the terminal:
+
+```bash
+git clone https://github.com/SINTEF/thermopack.git
+cd thermopack
+mingw32-make.exe optim
+```
+
+See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+how to install pycThermopack for the MSYS2 environment.
+
 ## File System
 Brief description of file structure:
 
@@ -148,7 +170,7 @@ rules:
 [Thermodynamic models to accurately describe the PVTxy-behavior of water/carbon dioxide mixtures](https://doi.org/10.1016/j.fluid.2017.02.006)
 
 - Using dry-ice and water-ice model or the tc-PR/tc-RK:  
-[Depressurization of \coto-\nto and \coto-\he in a pipe: Experiments and modelling of pressure and temperature dynamics](https://doi.org/XXX)
+[Depressurization of CO<sub>2</sub>-N<sub>2</sub> and CO<sub>2</sub>-He in a pipe: Experiments and modelling of pressure and temperature dynamics](https://doi.org/XXXto_be_publishedXXX)
 
 - Energy-density and entropy-density flashes:  
 [The influence of CO2 mixture composition and equations of state on simulations of transient pipeline decompression](https://doi.org/10.1016/j.ijggc.2016.07.004)
