@@ -4,7 +4,8 @@ from __future__ import print_function
 import sys
 from ctypes import *
 from os import path
-
+# Import sysconfig to detect mingw environment
+import sysconfig
 import numpy as np
 
 from . import plotutils, utils
@@ -51,19 +52,31 @@ def get_platform_specifics():
         dyn_lib = "libthermopack.dynlib"
         os_id = "darwin"
     elif sys.platform == "win32":
-        # Assuming INTEL FORTRAN
-        prefix = I_PREFIX #"_"
-        module = I_MODULE
-        postfix = I_POSTFIX
-        postfix_no_module = I_POSTFIX_NM
+        if sysconfig.get_platform() == "mingw":
+            prefix = G_PREFIX
+            module = G_MODULE
+            postfix = G_POSTFIX
+            postfix_no_module = G_POSTFIX_NM
+        else:
+            # Assuming INTEL FORTRAN
+            prefix = I_PREFIX #"_"
+            module = I_MODULE
+            postfix = I_POSTFIX
+            postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
     elif sys.platform == "win64":
-        # Assuming INTEL FORTRAN
-        prefix = I_PREFIX
-        module = I_MODULE
-        postfix = I_POSTFIX
-        postfix_no_module = I_POSTFIX_NM
+        if sysconfig.get_platform() == "mingw":
+            prefix = G_PREFIX
+            module = G_MODULE
+            postfix = G_POSTFIX
+            postfix_no_module = G_POSTFIX_NM
+        else:
+            # Assuming INTEL FORTRAN
+            prefix = I_PREFIX
+            module = I_MODULE
+            postfix = I_POSTFIX
+            postfix_no_module = I_POSTFIX_NM
         dyn_lib = "thermopack.dll"
         os_id = "win"
     return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
