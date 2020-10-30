@@ -11,15 +11,13 @@
 #=============================================================================
 PROC = x86_64
 
-ifeq '$(findstring ;,$(PATH))' ';'
-  UNAME := Windows
-else
-  UNAME := $(shell uname 2>/dev/null || echo Unknown)
-  UNAME := $(patsubst CYGWIN%,Cygwin,$(UNAME))
-  UNAME := $(patsubst MSYS%,MSYS,$(UNAME))
-  UNAME := $(patsubst MINGW%,MSYS,$(UNAME))
-endif
+# Detect OS into UNAME
+UNAME := $(shell uname 2>/dev/null || echo Unknown)
+UNAME := $(patsubst CYGWIN%,Cygwin,$(UNAME))
+UNAME := $(patsubst MSYS%,MSYS,$(UNAME))
+UNAME := $(patsubst MINGW%,MSYS,$(UNAME))
 
+# Reduce flavors of OS
 OSTYPE := Unix
 ifeq ($(UNAME),MSYS)
   OSTYPE := MINGW
