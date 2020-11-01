@@ -17,7 +17,7 @@ qPR.init("He,H2,Ne")
 qPR.set_tmin(temp=2.0)
 
 # Plot phase envelope
-z = np.array([0.01, 0.89, 0.1])
+z = np.array([0.01, 0.1, 0.89])
 T, P, v = qPR.get_envelope_twophase(1.0e4, z, maximum_pressure=1.5e7,
                                     minimum_temperature=2.0, calc_v=True)
 Tc, vc, Pc = qPR.critical(z)
