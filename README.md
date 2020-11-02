@@ -83,6 +83,18 @@ pip3 install -e --user .
 See also [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
 more details on pycThermopack.
 
+### MacOS setup
+The easiest way to get started is via [Homebrew](https://brew.sh). After
+following the instructions on their website to set it up, install `gcc`
+and `make`. Open a terminal (e.g. the default Terminal.app), and type:
+```
+brew install gcc make
+```
+Then follow the Linux instructions above, just replace `make` with `gmake`.
+Some additional packages like `git` and `python` can also be installed via
+Homebrew before you start, but if you use a recent version of MacOS (e.g.
+Catalina), then the versions installed by default should be sufficient.
+
 ### Windows setup
 Download and compile LAPACK and BLAS libraries (you will need CMake and
 a working compiler).
