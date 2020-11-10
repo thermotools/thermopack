@@ -182,7 +182,7 @@ rules:
 [Thermodynamic models to accurately describe the PVTxy-behavior of water/carbon dioxide mixtures](https://doi.org/10.1016/j.fluid.2017.02.006)
 
 - Using dry-ice and water-ice model or the tc-PR/tc-RK:  
-[Depressurization of CO<sub>2</sub>-N<sub>2</sub> and CO<sub>2</sub>-He in a pipe: Experiments and modelling of pressure and temperature dynamics](https://doi.org/XXXto_be_publishedXXX)
+[Depressurization of CO<sub>2</sub>-N<sub>2</sub> and CO<sub>2</sub>-He in a pipe: Experiments and modelling of pressure and temperature dynamics (To be published)](https://doi.org/XXXto_be_publishedXXX)
 
 - Energy-density and entropy-density flashes:  
 [The influence of CO2 mixture composition and equations of state on simulations of transient pipeline decompression](https://doi.org/10.1016/j.ijggc.2016.07.004)
