@@ -12,7 +12,7 @@
     "ref": "Default",
     "bib_reference": "",
     "temperature": 33.145,
-    "pressure": 1296960.0,
+    "pressure": 1296400.0,
     "compressibility": 0.305
   },
   "triple": {
@@ -110,6 +110,15 @@
         -0.1377
       ]
     },
+    "TWU-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "correlation": [
+        156.21,
+	-0.0062072,
+	5.047
+      ]
+    },
     "MC-1": {
       "ref": "Chapoy2005",
       "bib_reference": "Thesis by Antonin Chapoy (2005)",
@@ -119,10 +128,15 @@
         -0.029
       ]
     },
-    "volume_shift": {
+    "volume_shift-1": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
       "ci": -5.338599999999999e-06
+    },
+    "volume_shift-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "ci": -3.8139e-06
     }
   }
 }
