@@ -55,6 +55,7 @@ class saftvrmie(thermo.thermopack):
             comps (str): Comma separated list of component names
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
+        self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
@@ -139,6 +140,7 @@ class saftvrmie(thermo.thermopack):
         Returns:
             kij (float): Well depth interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(0.0)
@@ -161,6 +163,7 @@ class saftvrmie(thermo.thermopack):
             c2 (int): Component two
             kij (float): Well depth interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -184,6 +187,7 @@ class saftvrmie(thermo.thermopack):
         Returns:
             lij (float): Sigma interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(0.0)
@@ -206,6 +210,7 @@ class saftvrmie(thermo.thermopack):
             c2 (int): Component two
             lij (float): Sigma interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(lij)
@@ -229,6 +234,7 @@ class saftvrmie(thermo.thermopack):
         Returns:
             gammaij (float): Repulsive exponent interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         gammaij_c = c_double(0.0)
@@ -251,6 +257,7 @@ class saftvrmie(thermo.thermopack):
             c2 (int): Component two
             gammaij (float): Repulsive exponent interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         gammaij_c = c_double(gammaij)
@@ -276,6 +283,7 @@ class saftvrmie(thermo.thermopack):
             lambda_a (float): Attractive exponent of the Mie potential
             lambda_r (float): Repulsive exponent of the Mie potential
         """
+        self.activate()
         ic_c = c_int(ic)
         m_c = c_double(0.0)
         sigma_c = c_double(0.0)
@@ -311,6 +319,7 @@ class saftvrmie(thermo.thermopack):
             lambda_a (float): Attractive exponent of the Mie potential
             lambda_r (float): Repulsive exponent of the Mie potential
         """
+        self.activate()
         ic_c = c_int(ic)
         m_c = c_double(m)
         sigma_c = c_double(sigma)

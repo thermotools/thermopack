@@ -95,10 +95,17 @@ class thermopack(object):
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
-        self.model_id = None
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
         self.get_phase_flags()
+
+        # Model control
+        self.s_add_eos = getattr(self.tp, self.get_export_name("thermopack_var", "add_eos"))
+        self.s_delete_eos = getattr(self.tp, self.get_export_name("thermopack_var", "delete_eos"))
+        self.s_activate_model = getattr(self.tp, self.get_export_name("thermopack_var", "activate_model"))
+
+        # Information
+        self.s_get_model_id = getattr(self.tp, self.get_export_name("thermopack_var", "get_eos_identification"))
 
         # Init methods
         self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
@@ -168,16 +175,50 @@ class thermopack(object):
         self.s_second_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "secondvirialcoeffmatrix"))
         self.s_binary_third_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "binarythirdvirialcoeffmatrix"))
 
+        self.add_eos()
+
+    def __del__(self):
+        """
+        Delete FORTRAN memory allocated for this instance
+        """
+        self.delete_eos()
 
     def activate(self):
         """Activate this instance of thermopack parameters for calculation
         """
-        if self.model_id is not None:
-            print("Activate")
-        else:
-            print("Check for default....")
-        print("Need to be implemented")
-        sys.exit(1)
+        self.s_activate_model.argtypes = [POINTER( c_int )]
+        self.s_activate_model.restype = None
+        self.s_activate_model(self.model_index_c)
+
+    def add_eos(self):
+        """Allocate FORTRAN memory for this class instance
+        """
+        self.s_add_eos.argtypes = None
+        self.s_add_eos.restype = c_int
+        self.model_index_c = c_int(self.s_add_eos())
+
+    def delete_eos(self):
+        """de-allocate FORTRAN memory for this class instance
+        """
+        self.activate()
+        self.s_delete_eos.argtypes = [POINTER( c_int )]
+        self.s_delete_eos.restype = None
+        self.s_delete_eos(self.model_index_c)
+
+    def get_model_id(self):
+        """Get model identification
+        Returns:
+            str: Eos name
+        """
+        self.activate()
+        eosid_len = 40
+        eosid_c = c_char_p(b" " * eosid_len)
+        eosid_len_c = c_len_type(eosid_len)
+        self.s_get_model_id.argtypes = [c_char_p, c_len_type]
+        self.s_get_model_id.restype = None
+        self.s_get_model_id(eosid_c, eosid_len_c)
+        eosid = eosid_c.value.decode('ascii').strip()
+        return eosid
 
     def get_export_name(self, module, method):
         """Generate library export name based on module and method name
@@ -223,6 +264,7 @@ class thermopack(object):
             cptype (int array, optional): Equation type number for Cp. Defaults to None.
             silent (bool, optional): Supress messages during init?. Defaults to None.
         """
+        self.activate()
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
 
         null_pointer = POINTER(c_int)()
@@ -337,6 +379,7 @@ class thermopack(object):
         Args:
             parameter_reference (str): String defining parameter set, Defaults to "Default"
         """
+        self.activate()
         volume_trans_model = "PENELOUX"
         volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
         volume_trans_model_len = c_len_type(len(volume_trans_model))
@@ -360,6 +403,7 @@ class thermopack(object):
         Args:
             silent (bool): Ignore warnings? Defaults to True
         """
+        self.activate()
         if silent:
             silent_c = c_int(1)
         else:
@@ -382,6 +426,7 @@ class thermopack(object):
         Args:
             scomp (str): Component name
         """
+        self.activate()
         scomp_c = c_char_p(scomp.encode('ascii'))
         scomp_len = c_len_type(len(scomp))
         self.solideos_solid_init.argtypes = [c_char_p, c_len_type]
@@ -401,6 +446,7 @@ class thermopack(object):
         Returns:
             int: Component FORTRAN index
         """
+        self.activate()
         comp_c = c_char_p(comp.encode('ascii'))
         comp_len = c_len_type(len(comp))
         self.s_compdata_compindex.argtypes = [c_char_p, c_len_type]
@@ -417,6 +463,7 @@ class thermopack(object):
         Returns:
             comp (str): Component name
         """
+        self.activate()
         comp_len = 40
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
@@ -436,6 +483,7 @@ class thermopack(object):
         Returns:
             float: Component mole weight (g/mol)
         """
+        self.activate()
         comp_c = c_int(comp)
         self.s_eos_compmoleweight.argtypes = [POINTER( c_int )]
         self.s_eos_compmoleweight.restype = c_double
@@ -540,6 +588,7 @@ class thermopack(object):
         Returns:
             float: Specific volume (m3/mol), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
@@ -607,6 +656,7 @@ class thermopack(object):
         Returns:
             float: Compressibility (-), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
@@ -677,6 +727,7 @@ class thermopack(object):
         Returns:
             ndarray: fugacity coefficient (-), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
         temp_c = c_double(temp)
         press_c = c_double(press)
@@ -768,6 +819,7 @@ class thermopack(object):
         Returns:
             float: Specific enthalpy (J/mol), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
@@ -839,6 +891,7 @@ class thermopack(object):
         Returns:
             float: Specific entropy (J/mol/K), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
@@ -908,6 +961,7 @@ class thermopack(object):
         Returns:
             float: Specific ideal enthalpy (J/mol), and optionally differentials
         """
+        self.activate()
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
@@ -964,6 +1018,7 @@ class thermopack(object):
         Returns:
             float: Speed of sound (m/s)
         """
+        self.activate()
         temp_c = c_double(temp)
         press_c = c_double(press)
         x_c = (c_double * len(x))(*x)
@@ -1028,6 +1083,7 @@ class thermopack(object):
             betaL (float): Molar liquid phase fraction
             phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
+        self.activate()
         temp_c = c_double(temp)
         press_c = c_double(press)
         z_c = (c_double * len(z))(*z)
@@ -1081,7 +1137,7 @@ class thermopack(object):
             betaL (float): Molar liquid phase fraction
             phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
-
+        self.activate()
         press_c = c_double(press)
         z_c = (c_double * len(z))(*z)
         s_c = c_double(entropy)
@@ -1146,6 +1202,7 @@ class thermopack(object):
             betaL (float): Molar liquid phase fraction
             phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
+        self.activate()
         press_c = c_double(press)
         z_c = (c_double * len(z))(*z)
         h_c = c_double(enthalpy)
@@ -1214,7 +1271,7 @@ class thermopack(object):
             betaL (float): Molar liquid phase fraction
             phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
         """
-
+        self.activate()
         z_c = (c_double * len(z))(*z)
         e_c = c_double(specific_energy)
         v_c = c_double(specific_volume)
@@ -1273,6 +1330,7 @@ class thermopack(object):
         Returns:
             int: Phase int (VAPPH or LIQPH)
         """
+        self.activate()
         temp_c = c_double(temp)
         press_c = c_double(press)
         z_c = (c_double * len(z))(*z)
@@ -1318,6 +1376,7 @@ class thermopack(object):
             float: Pressure (Pa)
             Optionally pressure differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         n_c = (c_double * len(n))(*n)
@@ -1383,6 +1442,7 @@ class thermopack(object):
             float: Energy (J)
             Optionally energy differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         e_c = c_double(0.0)
@@ -1441,6 +1501,7 @@ class thermopack(object):
             float: Entropy (J/K)
             Optionally entropy differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         s_c = c_double(0.0)
@@ -1507,6 +1568,7 @@ class thermopack(object):
             float: Enthalpy (J)
             Optionally enthalpy differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         h_c = c_double(0.0)
@@ -1572,6 +1634,7 @@ class thermopack(object):
             float: Helmholtz energy (J)
             Optionally energy differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         a_c = c_double(0.0)
@@ -1638,6 +1701,7 @@ class thermopack(object):
             float: Chemical potential (J/mol)
             Optionally chemical potential differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         mu_c = (c_double * len(n))(0.0)
@@ -1708,6 +1772,7 @@ class thermopack(object):
             ndarry: Natural logarithm of fugacity
             Optionally differentials
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(volume)
         lnphi_c = (c_double * len(n))(0.0)
@@ -1777,6 +1842,7 @@ class thermopack(object):
             float: Temperature (K)
             ndarray: Incipient phase composition
         """
+        self.activate()
         press_c = c_double(press)
         y_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1813,6 +1879,7 @@ class thermopack(object):
             float: Pressure (Pa)
             ndarray: Incipient phase composition
         """
+        self.activate()
         temp_c = c_double(temp)
         y_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1849,6 +1916,7 @@ class thermopack(object):
             float : Temperature (K)
             ndarray : Incipient phase composition (-)
         """
+        self.activate()
         press_c = c_double(press)
         x_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1885,6 +1953,7 @@ class thermopack(object):
             float : Pressure (Pa)
             ndarray : Incipient phase composition (-)
         """
+        self.activate()
         temp_c = c_double(temp)
         x_c = (c_double * len(z))(0.0)
         z_c = (c_double * len(z))(*z)
@@ -1924,6 +1993,7 @@ class thermopack(object):
             ndarray: Pressure values (Pa)
             ndarray (optional): Specific volume (m3/mol)
         """
+        self.activate()
         nmax = 1000
         z_c = (c_double * len(z))(*z)
         temp_c = c_double(0.0)
@@ -2038,6 +2108,7 @@ class thermopack(object):
             tuple of arrays: LLE, L1VE, L2VE
         """
         # Redefinition of module parameter:
+        self.activate()
         nmax = 10000
         #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
 
@@ -2173,6 +2244,7 @@ class thermopack(object):
         Returns:
             tuple of arrays
         """
+        self.activate()
         max_press_c = c_double(maximum_pressure)
         min_press_c = c_double(minimum_pressure)
         max_temp_c = c_double(maximum_temperature)
@@ -2223,6 +2295,7 @@ class thermopack(object):
         Returns:
             tuple of arrays
         """
+        self.activate()
         z_c = (c_double * len(z))(*z)
         temp_c = c_double(0.0)
         press_c = c_double(initial_pressure)
@@ -2283,6 +2356,7 @@ class thermopack(object):
         Returns:
            Multiple numpy arrays.
         """
+        self.activate()
         temp_c = c_double(temp)
         minimum_pressure_c = c_double(minimum_pressure)
         maximum_pressure_c = c_double(maximum_pressure)
@@ -2343,6 +2417,7 @@ class thermopack(object):
         Returns:
             Multiple numpy arrays.
         """
+        self.activate()
         press_c = c_double(press)
         minimum_temperature_c = c_double(minimum_temperature)
         maximum_temperature_c = c_double(maximum_temperature)
@@ -2407,6 +2482,7 @@ class thermopack(object):
         Returns:
             Multiple numpy arrays.
         """
+        self.activate()
         enthalpy_c = c_double(enthalpy)
         minimum_pressure_c = c_double(minimum_pressure)
         maximum_pressure_c = c_double(maximum_pressure)
@@ -2477,6 +2553,7 @@ class thermopack(object):
         Returns:
             Multiple numpy arrays.
         """
+        self.activate()
         entropy_c = c_double(entropy)
         minimum_pressure_c = c_double(minimum_pressure)
         maximum_pressure_c = c_double(maximum_pressure)
@@ -2546,6 +2623,7 @@ class thermopack(object):
             float: Volume (m3)
             float: Pressure (Pa)
         """
+        self.activate()
         temp_c = c_double(temp)
         v_c = c_double(v)
         n_c = (c_double * len(n))(*n)
@@ -2589,6 +2667,7 @@ class thermopack(object):
             float: B (m3/mol)
             float: C (m6/mol2)
         """
+        self.activate()
         temp_c = POINTER( c_double )(c_double(temp))
         n_c = (c_double * len(n))(*n)
         B_c = c_double(0.0)
@@ -2618,6 +2697,7 @@ class thermopack(object):
         Returns:
             ndarray: B - Second virial coefficient matrix (m3/mol)
         """
+        self.activate()
         temp_c = POINTER( c_double )(c_double(temp))
         bmat_c = (c_double * self.nc**2)(0.0)
 
@@ -2647,6 +2727,7 @@ class thermopack(object):
         Returns:
             ndarray: C - Third virial coefficient matrix (m6/mol2)
         """
+        self.activate()
         assert self.nc == 2
         temp_c = POINTER( c_double )(c_double(temp))
         cmat_c = (c_double * self.nc**2)(0.0)

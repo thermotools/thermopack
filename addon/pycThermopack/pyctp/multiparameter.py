@@ -38,6 +38,7 @@ class multiparam(thermo.thermopack):
             comps (str): Comma separated list of component names
             eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
         """
+        self.activate()
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))
         comp_string_c = c_char_p(comps.encode('ascii'))

@@ -84,3 +84,7 @@ EXPORTS
 	binaryplot_mp_global_binary_plot_
 	binaryplot_mp_get_bp_term_
 	solid_saturation_mp_solidenvelopeplot_
+	thermopack_var_mp_add_eos_
+	thermopack_var_mp_delete_eos_
+	thermopack_var_mp_activate_model_
+	thermopack_var_mp_get_eos_identification_
