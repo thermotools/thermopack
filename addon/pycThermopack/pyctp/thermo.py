@@ -178,28 +178,23 @@ class thermopack(object):
         self.add_eos()
 
     def __del__(self):
-        """
-        Delete FORTRAN memory allocated for this instance
-        """
+        """Delete FORTRAN memory allocated for this instance"""
         self.delete_eos()
 
     def activate(self):
-        """Activate this instance of thermopack parameters for calculation
-        """
+        """Activate this instance of thermopack parameters for calculation"""
         self.s_activate_model.argtypes = [POINTER( c_int )]
         self.s_activate_model.restype = None
         self.s_activate_model(self.model_index_c)
 
     def add_eos(self):
-        """Allocate FORTRAN memory for this class instance
-        """
+        """Allocate FORTRAN memory for this class instance"""
         self.s_add_eos.argtypes = None
         self.s_add_eos.restype = c_int
         self.model_index_c = c_int(self.s_add_eos())
 
     def delete_eos(self):
-        """de-allocate FORTRAN memory for this class instance
-        """
+        """de-allocate FORTRAN memory for this class instance"""
         self.activate()
         self.s_delete_eos.argtypes = [POINTER( c_int )]
         self.s_delete_eos.restype = None
@@ -207,16 +202,19 @@ class thermopack(object):
 
     def get_model_id(self):
         """Get model identification
+
         Returns:
             str: Eos name
         """
         self.activate()
+
         eosid_len = 40
         eosid_c = c_char_p(b" " * eosid_len)
         eosid_len_c = c_len_type(eosid_len)
         self.s_get_model_id.argtypes = [c_char_p, c_len_type]
         self.s_get_model_id.restype = None
         self.s_get_model_id(eosid_c, eosid_len_c)
+
         eosid = eosid_c.value.decode('ascii').strip()
         return eosid
 

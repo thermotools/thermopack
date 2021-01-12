@@ -1,17 +1,13 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
-#Modify system path
+
 import sys
 sys.path.append('../pycThermopack/')
-# Importing pyThermopack
-from pyctp import tcPR
-from pyctp import pcsaft
-from pyctp import extended_csp
-# Importing Numpy (math, arrays, etc...)
-import numpy as np
-# Importing Matplotlib (plotting)
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+from pyctp import extended_csp, pcsaft, tcPR
+
 
 tc_pr = tcPR.tcPR()
 tc_pr.init("CO2,N2")
