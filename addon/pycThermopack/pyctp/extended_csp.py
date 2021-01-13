@@ -53,6 +53,7 @@ class ext_csp(thermo.thermopack):
             ref_alpha (str): Needed if refEos is a cubic eos. Should not be present if one want to use an mbwr reference eos. Defaults to "Classic"
             parameter_reference (str, optional): Identefier for parameters set. Defaults to "Default".
         """
+        self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         sh_eos_c = c_char_p(sh_eos.encode('ascii'))

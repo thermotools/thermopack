@@ -102,10 +102,24 @@
         1.0909
       ]
     },
-    "volume_shift": {
+    "TWU-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "correlation": [
+	0.48558,
+	1.7173,
+	0.30271
+      ]
+    },
+    "volume_shift-1": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
       "ci": -4.8915e-06
+    },
+    "volume_shift-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "ci": -3.1791e-06
     }
   }
 }

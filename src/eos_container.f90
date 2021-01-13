@@ -223,17 +223,17 @@ subroutine update_global_variables_form_active_thermo_model()
     nce = nc
     ncsym = nc
   endif
-  if (associated(act_mod_ptr%eos(1)%p_eos%assoc)) then
-    numAssocSites = act_mod_ptr%eos(1)%p_eos%assoc%numAssocSites
-  else
-    numAssocSites = 0
+  numAssocSites = 0
+  saftvrmie_param => NULL()
+  if (allocated(act_mod_ptr%eos)) then
+    if (associated(act_mod_ptr%eos(1)%p_eos%assoc)) then
+      numAssocSites = act_mod_ptr%eos(1)%p_eos%assoc%numAssocSites
+    endif
+    select type (p_eos => act_mod_ptr%eos(1)%p_eos)
+    class is (saftvrmie_eos)
+      saftvrmie_param => p_eos%saftvrmie_param
+    end select
   endif
-  select type (p_eos => act_mod_ptr%eos(1)%p_eos)
-  class is (saftvrmie_eos)
-    saftvrmie_param => p_eos%saftvrmie_param
-  class default
-    saftvrmie_param => NULL()
-  end select
 end subroutine update_global_variables_form_active_thermo_model
 
 subroutine print_globals()

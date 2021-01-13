@@ -43,6 +43,7 @@ class ljs_bh(thermo.thermopack):
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
+        self.activate()
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
@@ -64,6 +65,7 @@ class ljs_bh(thermo.thermopack):
             sigma (float): Particle diameter (m)
             eps_depth_divk (float): Well depth divided by Boltzmann constant (K)
         """
+        self.activate()
         sigma_c = c_double(0.0)
         eps_depth_divk_c = c_double(0.0)
         self.s_ljs_bh_get_pure_params.argtypes = [POINTER(c_double),
@@ -82,6 +84,7 @@ class ljs_bh(thermo.thermopack):
             sigma (float): Particle diameter (m)
             eps_depth_divk (float): Well depth divided by Boltzmann constant (K)
         """
+        self.activate()
         sigma_c = c_double(sigma)
         eps_depth_divk_c = c_double(eps_depth_divk)
         self.s_ljs_bh_set_pure_params.argtypes = [POINTER(c_double),
@@ -113,6 +116,7 @@ class ljs_bh(thermo.thermopack):
             enable_a2 (bool): Enable/disable use of a1 dispersion term. Defaults to True.
             enable_a3 (bool): Enable/disable use of a1 dispersion term. Defaults to True.
         """
+        self.activate()
         use_Lafitte_a3_c = c_int(use_Lafitte_a3)
         enable_chi_correction_c = c_int(enable_chi_correction)
         enable_hs_c = c_int(enable_hs)

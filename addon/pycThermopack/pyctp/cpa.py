@@ -47,6 +47,7 @@ class cpa(cubic.cubic):
             alpha (str, optional): Alpha model. Defaults to "Classic".
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
+        self.activate()
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))
         mixing_c = c_char_p(mixing.encode('ascii'))
@@ -93,6 +94,7 @@ class cpa(cubic.cubic):
         Returns:
             kij (array_like): i-j interaction parameter (2 parameters)
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = (c_double * 2)(0.0)
@@ -116,6 +118,7 @@ class cpa(cubic.cubic):
             c2 (int): Component two
             kij (array_like): i-j interaction parameter (2 parameters)
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = (c_double * 2)(*kij)

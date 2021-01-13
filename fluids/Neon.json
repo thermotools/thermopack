@@ -10,8 +10,8 @@
   "critical": {
     "ref": "Default",
     "bib_reference": "",
-    "temperature": 44.492,
-    "pressure": 2679000.0,
+    "temperature": 44.4,
+    "pressure": 2661630.0,
     "compressibility": 0.311
   },
   "triple": {
@@ -100,10 +100,24 @@
         1.4698
       ]
     },
-    "volume_shift": {
+    "TWU-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "correlation": [
+	0.40453,
+	0.95861,
+	0.8396
+      ]
+    },
+    "volume_shift-1": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
       "ci": -2.3573e-06
+    },
+    "volume_shift-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "ci": -2.4665e-06
     }
   }
 }

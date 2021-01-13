@@ -49,6 +49,7 @@ class cubic(thermo.thermopack):
             alpha (str, optional): Alpha model. Defaults to "Classic".
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
+        self.activate()
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))
         mixing_c = c_char_p(mixing.encode('ascii'))
@@ -102,6 +103,7 @@ class cubic(thermo.thermopack):
         Returns:
             kij (float): i-j interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(0.0)
@@ -125,6 +127,7 @@ class cubic(thermo.thermopack):
             c2 (int): Component two
             kij (float): i-j interaction parameter
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         kij_c = c_double(kij)
@@ -178,6 +181,7 @@ class cubic(thermo.thermopack):
             c_ij (float): c param i-j
             c_ji (float): c param j-i
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(0.0)
@@ -229,6 +233,7 @@ class cubic(thermo.thermopack):
             c_ij (float): c param i-j
             c_ji (float): c param j-i
         """
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         alpha_ij_c = c_double(alpha_ij)

@@ -40,6 +40,7 @@ class pets(thermo.thermopack):
         Args:
             parameter_reference (str, optional): Wath parameters to use. Defaults to "Default".
         """
+        self.activate()
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 

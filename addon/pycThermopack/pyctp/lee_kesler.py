@@ -38,6 +38,7 @@ class lee_kesler(thermo.thermopack):
             comps (str): Comma separated list of component names
             parameter_reference (str, optional): Identefier for parameters set. Defaults to "Default".
         """
+        self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))

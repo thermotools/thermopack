@@ -133,6 +133,7 @@ module thermopack_var
   public :: apparent_to_real_mole_numbers, real_to_apparent_diff, &
        real_to_apparent_differentials, TP_lnfug_apparent
   public :: base_eos_dealloc, delete_all_eos
+  public :: add_eos, delete_eos, activate_model, get_eos_identification
 
 contains
 
@@ -378,6 +379,23 @@ contains
       numAssocSites = 0
     endif
   end subroutine delete_all_eos
+
+  subroutine get_eos_identification(eosid)
+    character(len=*), intent(out) :: eosid
+    ! Locals
+    character(len=4) :: eosid_len_str
+    if (len(eosid) < eosid_len) then
+      write(eosid_len_str,"(I4)") eosid_len
+      call stoperror("get_model_identification: len(eosid) should be at least "//&
+           adjustl(trim(eosid_len_str)))
+    endif
+    eosid = "NONE"
+    if (associated(p_active_model)) then
+      if (allocated(p_active_model%eos)) then
+        eosid = trim(p_active_model%eos(1)%p_eos%eosid)
+      endif
+    endif
+  end subroutine get_eos_identification
 
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)

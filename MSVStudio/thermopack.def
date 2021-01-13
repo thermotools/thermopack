@@ -88,3 +88,7 @@ EXPORTS
 	lj_splined_mp_ljs_bh_model_control_
 	lj_splined_mp_ljs_bh_set_pure_params_
 	lj_splined_mp_ljs_bh_get_pure_params_
+	thermopack_var_mp_add_eos_
+	thermopack_var_mp_delete_eos_
+	thermopack_var_mp_activate_model_
+	thermopack_var_mp_get_eos_identification_

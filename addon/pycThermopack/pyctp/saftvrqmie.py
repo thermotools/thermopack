@@ -46,6 +46,7 @@ class saftvrqmie(saftvrmie.saftvrmie):
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
+        self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         fh_c = c_int(feynman_hibbs_order)
