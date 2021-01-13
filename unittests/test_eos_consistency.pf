@@ -305,6 +305,22 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_qsaftvrmie
 
+  @Test
+  subroutine test_fres_ljs_bh()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-BH"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 80.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_ljs_bh
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! The following routines are model-independent
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

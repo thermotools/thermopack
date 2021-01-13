@@ -18,6 +18,7 @@ EXPORTS
 	eoslibinit_mp_init_lee_kesler_
   	eoslibinit_mp_init_multiparameter_
 	eoslibinit_mp_init_pets_
+	eoslibinit_mp_init_ljs_bh_
 	eoslibinit_mp_init_volume_translation_
 	eoslibinit_mp_redefine_critical_parameters_
 	solideos_mp_solid_init_
@@ -84,3 +85,6 @@ EXPORTS
 	binaryplot_mp_global_binary_plot_
 	binaryplot_mp_get_bp_term_
 	solid_saturation_mp_solidenvelopeplot_
+	lj_splined_mp_ljs_bh_model_control_
+	lj_splined_mp_ljs_bh_set_pure_params_
+	lj_splined_mp_ljs_bh_get_pure_params_

@@ -43,6 +43,7 @@ libthermopack {
 	  *_init_cpa;
   	  *_init_pcsaft;
 	  *_init_saftvrmie;
+	  *_init_ljs_bh;
 	  *_solid_init;
 	  *_init_volume_translation;
 	  *_redefine_critical_parameters;
@@ -107,5 +108,8 @@ libthermopack {
 	  *_global_binary_plot;
 	  *_get_bp_term;
 	  *_solidenvelopeplot;
+	  *_ljs_bh_model_control;
+	  *_ljs_bh_set_pure_params;
+	  *_ljs_bh_get_pure_params;
   local: *;      # hide everything else
 };
