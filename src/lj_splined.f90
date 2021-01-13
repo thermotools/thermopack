@@ -21,8 +21,6 @@ module lj_splined
   real, parameter :: alpha_ljs = 0.5357287350120993
 
   type, extends(saftvrmie_eos) :: ljs_bh_eos
-    !type(saftvrmie_param_container), pointer :: param => NULL()
-    !type(saftvrmie_var_container), pointer :: var => NULL()
     ! Model control
     logical :: use_Lafitte_a3 = .false.
     logical :: enable_chi_correction = .true.
@@ -32,8 +30,6 @@ module lj_splined
     logical :: enable_a3 = .true.
   contains
     procedure, public :: set_sigma_eps => ljs_bh_set_sigma_eps
-    !procedure, public :: dealloc => ljs_bh_dealloc
-    !procedure, public :: allocate_and_init => ljs_bh_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_ljs_bh_eos
   end type ljs_bh_eos
@@ -845,73 +841,10 @@ contains
 
   end subroutine calcFresLJs_bh
 
-  ! subroutine ljs_bh_allocate_and_init(eos,nc,eos_label)
-  !   class(ljs_bh_eos), intent(inout) :: eos
-  !   integer, intent(in) :: nc
-  !   character(len=*), intent(in) :: eos_label !< EOS label
-  !   ! Locals
-  !   integer :: stat
-  !   call eos%dealloc()
-  !   allocate(eos%saftvrmie_param,stat=stat)
-  !   if (stat /= 0) call stoperror("ljs_bh_dealloc: Not able to allocate param")
-  !   call allocate_saftvrmie_param_container(nc,eos%saftvrmie_param)
-  !   allocate(eos%saftvrmie_var,stat=stat)
-  !   if (stat /= 0) call stoperror("ljs_bh_dealloc: Not able to allocate var")
-  !   call allocate_saftvrmie_var_container(nc,eos%saftvrmie_var)
-  ! end subroutine ljs_bh_allocate_and_init
-
-  ! subroutine ljs_bh_dealloc(eos)
-  !   class(ljs_bh_eos), intent(inout) :: eos
-  !   ! Locals
-  !   integer :: stat
-  !   call base_eos_dealloc(eos)
-  !   if (associated(eos%saftvrmie_param)) then
-  !     call cleanup_saftvrmie_param_container(eos%saftvrmie_param)
-  !     deallocate(eos%saftvrmie_param,stat=stat)
-  !     if (stat /= 0) call stoperror("ljs_bh_dealloc: Not able to deallocate param")
-  !     eos%saftvrmie_param  => NULL()
-  !   endif
-  !   if (associated(eos%saftvrmie_var)) then
-  !     call cleanup_saftvrmie_var_container(eos%saftvrmie_var)
-  !     deallocate(eos%saftvrmie_var,stat=stat)
-  !     if (stat /= 0) call stoperror("ljs_bh_dealloc: Not able to deallocate var")
-  !     eos%saftvrmie_var => NULL()
-  !   endif
-  ! end subroutine ljs_bh_dealloc
-
   subroutine assign_ljs_bh_eos(this, other)
     class(ljs_bh_eos), intent(inout) :: this
     class(*), intent(in) :: other
-    ! Locals
-    !integer :: nc, stat
-    ! select type (other)
-    ! class is (ljs_bh_eos)
-    !   call this%assign_base_eos_param(other)
-    !   if (associated(other%param)) then
-    !     nc = size(other%param%comp)
-    !     if (.not. associated(this%param)) then
-    !       allocate(this%param,stat=stat)
-    !       if (stat /= 0) call stoperror("assign_ljs_bh_eos: Not able to allocate param")
-    !     endif
-    !     call allocate_saftvrmie_param_container(nc,this%var)
-    !     if (.not. associated(this%var)) then
-    !       allocate(this%var,stat=stat)
-    !       if (stat /= 0) call stoperror("assign_ljs_bh_eos: Not able to allocate var")
-    !     endif
-    !     call allocate_saftvrmie_var_container(nc,this%var)
-    !     this%param = other%param
-    !     this%var = other%var
-    !     ! Model control
-    !     this%use_Lafitte_a3 = other%use_Lafitte_a3
-    !     this%enable_chi_correction = other%enable_chi_correction
-    !     this%enable_hs = other%enable_hs
-    !     this%enable_a1 = other%enable_a1
-    !     this%enable_a2 = other%enable_a2
-    !     this%enable_a3 = other%enable_a3
-    !   endif
-    ! class default
-    ! end select
-
+    !
     select type (other)
     class is (ljs_bh_eos)
       call this%saftvrmie_eos%assign_base_eos_param(other)
