@@ -1916,5 +1916,47 @@
     "ref": "Default",
     "bib_reference": "",
     "kij":  5.00000000E-01
+  },
+  "vdW-275": {
+    "comp1": "H2",
+    "comp2": "D2",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.0
+  },
+  "vdW-276": {
+    "comp1": "H2",
+    "comp2": "NE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.18
+  },
+  "vdW-277": {
+    "comp1": "H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.17
+  },
+  "vdW-278": {
+    "comp1": "HE",
+    "comp2": "NE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": -0.17
+  },
+  "vdW-279": {
+    "comp1": "HE",
+    "comp2": "D2",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.45
+  },
+  "vdW-280": {
+    "comp1": "NE",
+    "comp2": "D2",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.18
   }
 }

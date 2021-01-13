@@ -216,6 +216,7 @@ class comp_list(object):
             file_list = os.listdir("../../fluids/")
         else:
             file_list = os.listdir(path)
+        file_list.sort()
         self.comp_list = []
         for fl in file_list:
             filepath = os.path.join("../../fluids/", fl)

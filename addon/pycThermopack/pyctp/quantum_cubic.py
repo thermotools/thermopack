@@ -42,6 +42,7 @@ class qcubic(cubic.cubic):
             comps (str): Comma separated list of component names
             mixing (str, optional): Mixture model. Defaults to "vdW".
         """
+        self.activate()
         mixing_c = c_char_p(mixing.encode('ascii'))
         mixing_len = c_len_type(len(mixing))
         comp_string_c = c_char_p(comps.encode('ascii'))

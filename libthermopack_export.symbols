@@ -106,3 +106,7 @@
 	  *_global_binary_plot
 	  *_get_bp_term
 	  *_solidenvelopeplot
+	  *_add_eos
+	  *_delete_eos
+	  *_activate_model
+	  *_get_eos_identification
