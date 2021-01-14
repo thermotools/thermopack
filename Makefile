@@ -96,7 +96,7 @@ ifeq ($(OSTYPE),Unix)
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
   optim_gfortran_flags   = "$(gf_common) -O3 -march=x86-64 -msse2 -funroll-loops"
-  openmp_gfortran_flags  = "$(optim_gfortran_flags) -fopenmp -frecursive"
+  openmp_gfortran_flags  = $(optim_gfortran_flags)" -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
 
   # Define ifort flags
