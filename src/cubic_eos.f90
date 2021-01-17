@@ -18,6 +18,16 @@ module cubic_eos
     real :: kijvalue
   end type kijdatadb
 
+  type :: lijdatadb
+    character(len=eosid_len) :: eosid
+    character(len=eosid_len) :: mruleid
+    character(len=ref_len) :: ref
+    character(len=bibref_len) :: bib_ref
+    character(len=uid_len) :: uid1
+    character(len=uid_len) :: uid2
+    real :: lijvalue
+  end type lijdatadb
+
   type :: interGEdatadb
     character(len=eosid_len) :: eosid
     character(len=eosid_len) :: mruleid

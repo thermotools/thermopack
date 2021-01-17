@@ -1,9 +1,9 @@
 !> Automatically generated to file mixdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2020-11-12T21:46:54.020061
+!! Time stamp: 2021-01-15T20:02:55.851862
 
 module mixdatadb
-  use cubic_eos, only: kijdatadb, interGEdatadb
+  use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb
   implicit none
   public
 
@@ -7347,6 +7347,16 @@ module mixdatadb
       polyji = (/-2.93377000e+01, 0.00000000e+00, 0.00000000e+00/) &
       )
 
+  type (lijdatadb), parameter :: lij1 = &
+      lijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "H2", &
+      uid2 = "HE", &
+      lijvalue = -0.16000000  &
+      )
+
 
   integer, parameter :: maxkij =720
   type (kijdatadb), dimension(maxkij), parameter :: kijdb = (/&
@@ -7500,6 +7510,11 @@ module mixdatadb
   type (interGEdatadb), dimension(maxinterGEij), parameter :: interGEdb = (/&
       ge1,ge2,ge3,ge4,ge5, &
       ge6,ge7,ge8,ge9,ge10 &
+  /)
+
+  integer, parameter :: maxlij =1
+  type (lijdatadb), dimension(maxlij), parameter :: lijdb = (/&
+      lij1 &
   /)
 
 end module mixdatadb

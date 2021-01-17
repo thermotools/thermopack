@@ -1,0 +1,10 @@
+{
+  "LIJ-1": {
+    "comp1": "H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "mixing_rule": "vdW",
+    "lij":  -0.16
+  }
+}
