@@ -32,6 +32,8 @@ class ljs_bh(thermo.thermopack):
         self.s_ljs_bh_get_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_get_pure_params"))
         self.s_ljs_bh_set_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_set_pure_params"))
 
+        # LJS-BH specific methods
+        self.s_calc_ai_reduced_ljs_ex = getattr(self.tp, self.get_export_name("lj_splined", "calc_ai_reduced_ljs_ex"))
 
     #################################
     # Init
@@ -113,8 +115,8 @@ class ljs_bh(thermo.thermopack):
             enable_chi_correction (bool): Enable/disable use of chi correction for a2 dispersion term. Defaults to True.
             enable_hs (bool): Enable/disable hard-sphere term. Defaults to True.
             enable_a1 (bool): Enable/disable use of a1 dispersion term. Defaults to True.
-            enable_a2 (bool): Enable/disable use of a1 dispersion term. Defaults to True.
-            enable_a3 (bool): Enable/disable use of a1 dispersion term. Defaults to True.
+            enable_a2 (bool): Enable/disable use of a2 dispersion term. Defaults to True.
+            enable_a3 (bool): Enable/disable use of a3 dispersion term. Defaults to True.
         """
         self.activate()
         use_Lafitte_a3_c = c_int(use_Lafitte_a3)
@@ -139,3 +141,43 @@ class ljs_bh(thermo.thermopack):
                                     byref(enable_a1_c),
                                     byref(enable_a2_c),
                                     byref(enable_a3_c))
+
+    #################################
+    # LJS-BH specific methods
+    #################################
+    def get_pert_a(self,
+                   T_star,
+                   rho_star):
+        """Get perturbation terms.
+
+        Args:
+            T_star (float): Reduced temperature.
+            rho_star (float): Reduced density.
+
+        Returns:
+            a1 (float): a1 dispersion term divided by epsilon.
+            a2 (float): a2 dispersion term divided by epsilon squared.
+            a3 (float): a3 dispersion term divided by epsilon cube.
+        """
+        T_c = c_double(T_star)
+        rho_star_c = c_double(rho_star)
+        a1_c = c_double(0.0)
+        a2_c = c_double(0.0)
+        a3_c = c_double(0.0)
+
+
+        self.s_calc_ai_reduced_ljs_ex.argtypes = [POINTER(c_double),
+                                                  POINTER(c_double),
+                                                  POINTER(c_double),
+                                                  POINTER(c_double),
+                                                  POINTER(c_double)]
+
+        self.s_calc_ai_reduced_ljs_ex.restype = None
+
+        self.s_calc_ai_reduced_ljs_ex(byref(T_c),
+                                      byref(rho_star_c),
+                                      byref(a1_c),
+                                      byref(a2_c),
+                                      byref(a3_c))
+
+        return a1_c.value, a2_c.value, a3_c.value

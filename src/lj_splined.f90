@@ -60,7 +60,7 @@ module lj_splined
   public :: calc_ai_LJs_ex, calc_a1_LJs_ex, calc_a2_LJs_ex
   public :: calc_ais_LJs_ex, calc_chi_LJs_ex
   public :: ljs_bh_model_control, ljs_bh_set_pure_params, ljs_bh_get_pure_params
-
+  public :: calc_ai_reduced_LJs_ex
 contains
 
   !> Calculate the Wilhelmsen polynomials for the LJ/s
@@ -472,6 +472,46 @@ contains
     endif
     call calc_ai_LJs_ex(i,x0,rho,fac,ai,a_r,a_x,a_rr,a_xx,a_rx)
   end subroutine calc_ais_LJs_ex
+
+  !> Calculate a1-a3 for LJ/s
+  !! \author Morten Hammer, February 2020
+  subroutine calc_ai_reduced_LJs_ex(T_star,rho_star,a1,a2,a3)
+    use thermopack_var, only: base_eos_param, get_active_eos, nc
+    use saftvrmie_hardsphere, only: calc_hardsphere_diameter
+    ! Input
+    real, intent(in) :: T_star !< Reduced temperature
+    real, intent(in) :: rho_star !< Reduced density
+    ! Output
+    real, intent(out) :: a1, a2, a3
+    ! Locals
+    real :: x0, T, s, d, eps
+    class(base_eos_param), pointer :: eos
+    eps = saftvrmie_param%eps_divk_ij(1,1)
+    T = T_star*eps
+    eos => get_active_eos()
+    select type( p_eos => eos )
+    class is ( ljs_bh_eos )
+      call calc_hardsphere_diameter(nc,T,p_eos%saftvrmie_var,&
+           p_eos%saftvrmie_var%sigma_eff%d,&
+           p_eos%saftvrmie_var%sigma_eff%d_T,&
+           p_eos%saftvrmie_var%sigma_eff%d_TT,&
+           p_eos%saftvrmie_var%dhs%d,&
+           p_eos%saftvrmie_var%dhs%d_T,&
+           p_eos%saftvrmie_var%dhs%d_TT)
+      s = saftvrmie_param%sigma_ij(1,1)
+      d = p_eos%saftvrmie_var%dhs%d(1,1)
+      x0 = s/d
+      eps = 1
+      call calc_a1_LJs_ex(x0,rho_star,eps,a1)
+      call calc_a2_LJs_ex(x0,rho_star,eps,a2)
+      call calc_a3_LJs_ex(x0,rho_star,eps,a3)
+    class default
+      print *,"calc_a_Tstar_LJs_ex: Wrong active model...."
+      a1 = 0
+      a2 = 0
+      a3 = 0
+    end select
+  end subroutine calc_ai_reduced_LJs_ex
 
   !> Initialize the LJs model
   !!
