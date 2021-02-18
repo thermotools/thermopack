@@ -60,7 +60,8 @@ module lj_splined
   public :: calc_ai_LJs_ex, calc_a1_LJs_ex, calc_a2_LJs_ex
   public :: calc_ais_LJs_ex, calc_chi_LJs_ex
   public :: ljs_bh_model_control, ljs_bh_set_pure_params, ljs_bh_get_pure_params
-  public :: calc_ai_reduced_LJs_ex
+  public :: calc_ai_reduced_LJs_ex, ljs_bh_get_bh_diameter_div_sigma
+
 contains
 
   !> Calculate the Wilhelmsen polynomials for the LJ/s
@@ -971,6 +972,40 @@ contains
       eps_depth_divk = 0
     end select
   end subroutine ljs_bh_get_pure_params
+
+  ! Calculate the Barker--Henderson diameter (d/s)
+  subroutine ljs_bh_get_bh_diameter_div_sigma(T_star,d_bh)
+    use thermopack_var, only: base_eos_param, get_active_eos, nc
+    use saftvrmie_hardsphere, only: calc_hardsphere_diameter
+    implicit none
+    ! Input
+    real, intent(in) :: T_star !< Reduced temperature [-]
+    ! Output
+    real, intent(out) :: d_bh !< Barker--Henderson hard-sphere diameter
+    ! Locals
+    real :: T, eps, s, d
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type( p_eos => eos )
+    class is ( ljs_bh_eos )
+      eps = saftvrmie_param%eps_divk_ij(1,1)
+      T = T_star*eps
+      ! Calculate hard-sphere diameter
+      call calc_hardsphere_diameter(nc,T,p_eos%saftvrmie_var,&
+           p_eos%saftvrmie_var%sigma_eff%d,&
+           p_eos%saftvrmie_var%sigma_eff%d_T,&
+           p_eos%saftvrmie_var%sigma_eff%d_TT,&
+           p_eos%saftvrmie_var%dhs%d,&
+           p_eos%saftvrmie_var%dhs%d_T,&
+           p_eos%saftvrmie_var%dhs%d_TT)
+      s = saftvrmie_param%sigma_ij(1,1)
+      d = p_eos%saftvrmie_var%dhs%d(1,1)
+      d_bh = d/s
+    class default
+      print *,"get_bh_diameter: Wrong active model...."
+      d_bh = 0
+    end select
+  end subroutine ljs_bh_get_bh_diameter_div_sigma
 
 end module lj_splined
 

@@ -106,3 +106,16 @@ ax4.axis('off')
 plt.tight_layout()
 plt.show()
 plt.close()
+
+T_star = np.linspace(0.5, 12, 50)
+d_bh = np.zeros_like(T_star)
+for j in range(len(T_star)):
+    d_bh[j] = ljs.get_bh_diameter_div_sigma(T_star[j])
+
+print(ljs.get_bh_diameter_div_sigma(1.0))
+plt.plot(T_star, d_bh, color="k")
+plt.ylabel(r"$d_{\rm{BH}}/\sigma$")
+plt.xlabel(r"$T^*$")
+plt.title("Barker-Henderson diamter for Lennard-Jones (splined)")
+plt.show()
+plt.close()

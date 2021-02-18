@@ -34,6 +34,8 @@ class ljs_bh(thermo.thermopack):
 
         # LJS-BH specific methods
         self.s_calc_ai_reduced_ljs_ex = getattr(self.tp, self.get_export_name("lj_splined", "calc_ai_reduced_ljs_ex"))
+        self.s_ljs_bh_get_bh_diameter_div_sigma = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_get_bh_diameter_div_sigma"))
+
 
     #################################
     # Init
@@ -58,7 +60,6 @@ class ljs_bh(thermo.thermopack):
                                       ref_string_len)
 
         self.nc = 1
-
 
     def get_sigma_eps(self):
         """Get particle size and well depth
@@ -181,3 +182,27 @@ class ljs_bh(thermo.thermopack):
                                       byref(a3_c))
 
         return a1_c.value, a2_c.value, a3_c.value
+
+
+    def get_bh_diameter_div_sigma(self, T_star):
+        """Get Barker-Henderson diameter.
+
+        Args:
+            T_star (float): Reduced temperature (-).
+
+        Returns:
+            d_bh (float): Barker-Henderson diameter divided by sigma (-).
+        """
+        T_star_c = c_double(T_star)
+        d_bh_c = c_double(0.0)
+
+
+        self.s_ljs_bh_get_bh_diameter_div_sigma.argtypes = [POINTER(c_double),
+                                                            POINTER(c_double)]
+
+        self.s_ljs_bh_get_bh_diameter_div_sigma.restype = None
+
+        self.s_ljs_bh_get_bh_diameter_div_sigma(byref(T_star_c),
+                                                byref(d_bh_c))
+
+        return d_bh_c.value

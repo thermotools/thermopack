@@ -89,6 +89,7 @@ EXPORTS
 	lj_splined_mp_ljs_bh_set_pure_params_
 	lj_splined_mp_ljs_bh_get_pure_params_
 	lj_splined_mp_calc_ai_reduced_ljs_ex_
+	lj_splined_mp_ljs_bh_get_bh_diameter_div_sigma
 	thermopack_var_mp_add_eos_
 	thermopack_var_mp_delete_eos_
 	thermopack_var_mp_activate_model_

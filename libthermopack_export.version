@@ -112,6 +112,7 @@ libthermopack {
 	  *_ljs_bh_set_pure_params;
 	  *_ljs_bh_get_pure_params;
 	  *_calc_ai_reduced_ljs_ex;
+	  *_ljs_bh_get_bh_diameter_div_sigma;
 	  *_add_eos;
 	  *_delete_eos;
 	  *_activate_model;
