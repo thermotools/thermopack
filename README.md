@@ -1,7 +1,7 @@
 # Thermopack
 Thermopack is a thermodynamics library for multi-component and multi-phase
 thermodynamics developed at [SINTEF Energy
-Resarch](https://www.sintef.no/en/sintef-energy/). Through decades of research,
+Research](https://www.sintef.no/en/sintef-energy/). Through decades of research,
 we have developed a software that performs thermodynamic calculations. A large
 selection of equations of state has been implemented in this software. Most of
 these equations of state have been developed by other research groups around
