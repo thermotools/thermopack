@@ -1,0 +1,42 @@
+FROM ubuntu:20.04
+
+MAINTAINER Morten Hammer "Morten.Hammer@sintef.no"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update apt packages
+RUN apt update
+RUN apt upgrade -y
+
+# Install git
+RUN apt install -y git
+
+# Install build tools
+RUN apt install -y gfortran make liblapack-dev libstdc++-9-dev
+
+# Install python 3
+RUN apt install -y python3 python3-numpy python3-matplotlib python3-distutils
+
+# Make python 3 the default
+RUN ln -s /usr/bin/python3 python
+
+# Clean storage area for state information of package resource
+RUN rm -rf /var/lib/apt/lists/*
+
+# Add thermo user
+RUN groupadd -r thermo && useradd --no-log-init -r -g thermo thermo
+
+# Set temp work directory
+WORKDIR /home/thermo/
+
+# Install thermopack
+RUN git clone https://github.com/SINTEF/thermopack.git
+
+# Set working directory for thermopack
+WORKDIR /home/thermo/thermopack
+
+# Build thermopack
+RUN make optim
+
+# Install python interface to thermopack
+cd addon/pycThermopack; python3 makescript.py optim; python3 setup.py install
