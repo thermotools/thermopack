@@ -2,6 +2,8 @@
 
 This folder contains suplements to thermopack.
 
+**./docker/**: DockerFiles for running Thermopack in docker containers.  
+  
 **./pycThermopack/**: Python interface to Thermopack.  
   
 **./pyExamples/**: Example scripts using pycThermopack.  

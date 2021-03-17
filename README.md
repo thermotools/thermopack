@@ -143,6 +143,10 @@ mingw32-make.exe optim
 See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
 how to install pycThermopack for the MSYS2 environment.
 
+### Docker setup
+See [addon/docker/README.md](addon/docker/README.md) for
+available DockerFiles to run Thermopack with docker.
+
 ## File System
 Brief description of file structure:
 
