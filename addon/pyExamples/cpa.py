@@ -55,7 +55,7 @@ ax2.plot((-d, +d), (-d, +d), **kwargs)
 
 ax.set_ylabel(r"$P$ (MPa)")
 fig.text(0.5, 0.02, r"$x/y$ CO$_2$ (-)", ha='center')
-fig.suptitle("CO$_2$-H$_2$O binray phase diagram")
+fig.suptitle("CO$_2$-H$_2$O binary phase diagram")
 
 plt.show()
 plt.clf()
