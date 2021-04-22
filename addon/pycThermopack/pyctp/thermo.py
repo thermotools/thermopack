@@ -4,82 +4,13 @@ from __future__ import print_function
 import sys
 from ctypes import *
 from os import path
-# Import sysconfig to detect mingw environment
-import sysconfig
 import numpy as np
-
-from . import plotutils, utils
-
-# GNU FORTRAN
-G_PREFIX = "__"
-G_MODULE = "MOD"
-G_POSTFIX = ""
-G_POSTFIX_NM = "_"
-# INTEL FORTRAN (x64)
-I_PREFIX=""
-I_MODULE="mp"
-I_POSTFIX="_"
-I_POSTFIX_NM = "_"
+from . import plotutils, utils, platform_specifics
 
 if utils.gcc_major_version_greater_than(7):
     c_len_type = c_size_t # c_size_t on GCC > 7
 else:
     c_len_type = c_int
-
-def get_platform_specifics():
-    """Get platform specific stuff."""
-    os_id = ""
-    prefix = ""
-    module = ""
-    postfix = ""
-    postfix_no_module = ""
-    dyn_lib = ""
-    if sys.platform in ("linux", "linux2"):
-        # Assuming GNU FORTRAN
-        prefix = G_PREFIX
-        module = G_MODULE
-        postfix = G_POSTFIX
-        postfix_no_module = G_POSTFIX_NM
-        dyn_lib = "libthermopack.so"
-        os_id = "linux"
-    elif sys.platform == "darwin":
-        # Darwin means Mac OS X
-        # Assuming GNU FORTRAN
-        prefix = G_PREFIX
-        module = G_MODULE
-        postfix = G_POSTFIX
-        postfix_no_module = G_POSTFIX_NM
-        dyn_lib = "libthermopack.dynlib"
-        os_id = "darwin"
-    elif sys.platform == "win32":
-        if sysconfig.get_platform() == "mingw":
-            prefix = G_PREFIX
-            module = G_MODULE
-            postfix = G_POSTFIX
-            postfix_no_module = G_POSTFIX_NM
-        else:
-            # Assuming INTEL FORTRAN
-            prefix = I_PREFIX #"_"
-            module = I_MODULE
-            postfix = I_POSTFIX
-            postfix_no_module = I_POSTFIX_NM
-        dyn_lib = "thermopack.dll"
-        os_id = "win"
-    elif sys.platform == "win64":
-        if sysconfig.get_platform() == "mingw":
-            prefix = G_PREFIX
-            module = G_MODULE
-            postfix = G_POSTFIX
-            postfix_no_module = G_POSTFIX_NM
-        else:
-            # Assuming INTEL FORTRAN
-            prefix = I_PREFIX
-            module = I_MODULE
-            postfix = I_POSTFIX
-            postfix_no_module = I_POSTFIX_NM
-        dyn_lib = "thermopack.dll"
-        os_id = "win"
-    return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
 
 
 class thermopack(object):
@@ -91,7 +22,7 @@ class thermopack(object):
         Load libthermopack.(so/dll) and initialize function pointers
         """
         self.prefix, self.module, self.postfix, self.postfix_nm, \
-            dyn_lib, os_id = get_platform_specifics()
+            dyn_lib, os_id = platform_specifics.get_platform_specifics()
         dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
@@ -229,7 +160,7 @@ class thermopack(object):
             str: Library export name
         """
         if len(module) > 0:
-            export_name = self.prefix + module + "_" + self.module + "_" + method + self.postfix
+            export_name = self.prefix + module + self.module + method + self.postfix
         else:
             export_name = method + self.postfix_nm
         return export_name
