@@ -24,5 +24,4 @@ def write_platform_specifics_file(prefix, module, postfix, postfix_no_module, dy
 
 
 res = get_platform_specifics_by_trial_and_error()
-#print(res)
 write_platform_specifics_file(*res, "platform_specifics.py")
