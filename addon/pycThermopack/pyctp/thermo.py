@@ -21,9 +21,12 @@ class thermopack(object):
         """
         Load libthermopack.(so/dll) and initialize function pointers
         """
-        self.prefix, self.module, self.postfix, self.postfix_nm, \
-            dyn_lib, os_id = platform_specifics.get_platform_specifics()
-        dyn_lib_path = path.join(path.dirname(__file__), dyn_lib)
+        pf_specifics = platform_specifics.get_platform_specifics()
+        self.prefix = pf_specifics["prefix"]
+        self.module = pf_specifics["module"]
+        self.postfix = pf_specifics["postfix"]
+        self.postfix_nm = pf_specifics["postfix_no_module"]
+        dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
         # Set phase flags

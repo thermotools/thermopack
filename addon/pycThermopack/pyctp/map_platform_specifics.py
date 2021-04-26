@@ -20,68 +20,56 @@ I_POSTFIX_NM = "_"
 
 def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
-    os_id = ""
-    prefix = ""
-    module = ""
-    postfix = ""
-    postfix_no_module = ""
-    dyn_lib = ""
+
+    #Setting GNU FORTRAN as default
+    platform_specifics = {}
+    platform_specifics["os_id"] = ""
+    platform_specifics["prefix"] = G_PREFIX
+    platform_specifics["module"] = G_MODULE
+    platform_specifics["postfix"] = G_POSTFIX
+    platform_specifics["postfix_no_module"] = G_POSTFIX_NM
+    platform_specifics["dyn_lib"] = ""
+
     if sys.platform in ("linux", "linux2"):
-        # Assuming GNU FORTRAN
-        prefix = G_PREFIX
-        module = G_MODULE
-        postfix = G_POSTFIX
-        postfix_no_module = G_POSTFIX_NM
-        dyn_lib = "libthermopack.so"
-        os_id = "linux"
+        platform_specifics["os_id"] = "linux"
+        platform_specifics["dyn_lib"] = "libthermopack.so"
     elif sys.platform == "darwin":
         # Darwin means Mac OS X
         # Assuming GNU FORTRAN
-        prefix = G_PREFIX
-        module = G_MODULE
-        postfix = G_POSTFIX
-        postfix_no_module = G_POSTFIX_NM
-        dyn_lib = "libthermopack.dynlib"
-        os_id = "darwin"
+        platform_specifics["os_id"] = "darwin"
+        platform_specifics["dyn_lib"] = "libthermopack.dynlib"
     elif sys.platform == "win32":
-        if sysconfig.get_platform() == "mingw":
-            prefix = G_PREFIX
-            module = G_MODULE
-            postfix = G_POSTFIX
-            postfix_no_module = G_POSTFIX_NM
-        else:
+        if sysconfig.get_platform() != "mingw":
             # Assuming INTEL FORTRAN
-            prefix = I_PREFIX #"_"
-            module = I_MODULE
-            postfix = I_POSTFIX
-            postfix_no_module = I_POSTFIX_NM
-        dyn_lib = "thermopack.dll"
-        os_id = "win"
+            platform_specifics["prefix"] = I_PREFIX
+            platform_specifics["module"] = I_MODULE
+            platform_specifics["postfix"] = I_POSTFIX
+            platform_specifics["postfix_no_module"] = I_POSTFIX_NM
+        platform_specifics["os_id"] = "win"
+        platform_specifics["dyn_lib"] = "thermopack.dll"
     elif sys.platform == "win64":
-        if sysconfig.get_platform() == "mingw":
-            prefix = G_PREFIX
-            module = G_MODULE
-            postfix = G_POSTFIX
-            postfix_no_module = G_POSTFIX_NM
-        else:
+        if sysconfig.get_platform() != "mingw":
             # Assuming INTEL FORTRAN
-            prefix = I_PREFIX
-            module = I_MODULE
-            postfix = I_POSTFIX
-            postfix_no_module = I_POSTFIX_NM
-        dyn_lib = "thermopack.dll"
-        os_id = "win"
-    return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
+            platform_specifics["prefix"] = I_PREFIX
+            platform_specifics["module"] = I_MODULE
+            platform_specifics["postfix"] = I_POSTFIX
+            platform_specifics["postfix_no_module"] = I_POSTFIX_NM
+        platform_specifics["os_id"] = "win"
+        platform_specifics["dyn_lib"] = "thermopack.dll"
+    return platform_specifics
 
 
 def get_platform_specifics_by_trial_and_error():
     """Get platform specific stuff."""
-    os_id = ""
-    prefix = ""
-    module = ""
-    postfix = ""
-    postfix_no_module = ""
-    dyn_lib = ""
+
+    # Empty as default
+    platform_specifics = {}
+    platform_specifics["os_id"] = ""
+    platform_specifics["prefix"] = ""
+    platform_specifics["module"] = ""
+    platform_specifics["postfix"] = ""
+    platform_specifics["postfix_no_module"] = ""
+    platform_specifics["dyn_lib"] = ""
 
     dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dynlib"]
     for lib in dynlibs:
@@ -92,7 +80,7 @@ def get_platform_specifics_by_trial_and_error():
             tp = None
         #print(dyn_lib_path, tp)
         if tp is not None:
-            dyn_lib = lib
+            platform_specifics["dyn_lib"] = lib
             break
 
     prefixes = ["__", ""]
@@ -101,7 +89,7 @@ def get_platform_specifics_by_trial_and_error():
 
     module = "thermopack_var"
     method = "add_eos"
-    for pre, mod, post in itertools.product(prefixes,moduletxt,postfixes):
+    for pre, mod, post in itertools.product(prefixes, moduletxt, postfixes):
         export_name = pre + module + mod + method + post
         try:
             attr = getattr(tp, export_name)
@@ -109,9 +97,9 @@ def get_platform_specifics_by_trial_and_error():
             attr = None
         #print(export_name, attr)
         if attr is not None:
-            prefix = pre
-            module = mod
-            postfix = post
+            platform_specifics["prefix"] = pre
+            platform_specifics["module"] = mod
+            platform_specifics["postfix"] = post
             break
 
     method = "thermopack_getkij"
@@ -123,14 +111,15 @@ def get_platform_specifics_by_trial_and_error():
             attr = None
         #print(export_name, attr)
         if attr is not None:
-            postfix_no_module = post
+            platform_specifics["postfix_no_module"] = post
+            break
 
     if sys.platform in ("linux", "linux2"):
-        os_id = "linux"
+        platform_specifics["os_id"] = "linux"
     elif sys.platform == "darwin":
         # Darwin means Mac OS X
-        os_id = "darwin"
+        platform_specifics["os_id"] = "darwin"
     elif sys.platform == "win32" or sys.platform == "win64":
-        os_id = "win"
+        platform_specifics["os_id"] = "win"
 
-    return prefix, module, postfix, postfix_no_module, dyn_lib, os_id
+    return platform_specifics
