@@ -33,4 +33,4 @@ WORKDIR /home/thermo/thermopack
 RUN make optim
 
 # Install python interface to thermopack
-cd addon/pycThermopack; python3 makescript.py optim; python3 setup.py install
+RUN cd addon/pycThermopack; python3 makescript.py optim; python3 setup.py install
