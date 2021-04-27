@@ -18,19 +18,21 @@ RUN ln -s /usr/bin/python3 python
 RUN rm -rf /var/lib/apt/lists/*
 
 # Add thermo user
-RUN groupadd -r thermo && useradd --no-log-init -r -g thermo thermo
-
-# Set temp work directory
+RUN groupadd -r thermo && useradd --no-log-init -mr -g thermo thermo
+USER thermo
 WORKDIR /home/thermo/
 
-# Install thermopack
+# Fetch thermopack
 RUN git clone https://github.com/SINTEF/thermopack.git
-
-# Set working directory for thermopack
 WORKDIR /home/thermo/thermopack
 
-# Build thermopack
+# Build thermopack and its python interface
 RUN make optim
+RUN cd addon/pycThermopack; python3 makescript.py optim
 
-# Install python interface to thermopack
-RUN cd addon/pycThermopack; python3 makescript.py optim; python3 setup.py install
+# Install the python interface
+USER root
+RUN cd addon/pycThermopack; python3 setup.py install
+
+# Enter container as thermo user
+USER thermo
