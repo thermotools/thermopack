@@ -12,7 +12,7 @@ RUN apt install -y gfortran make liblapack-dev libstdc++-9-dev
 RUN apt install -y python3 python3-numpy python3-matplotlib python3-distutils
 
 # Make python3 the default python
-RUN ln -s /usr/bin/python3 python
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Clean storage area for state information of package resource
 RUN rm -rf /var/lib/apt/lists/*
@@ -28,7 +28,7 @@ WORKDIR /home/thermo/thermopack
 
 # Build thermopack and its python interface
 RUN make optim
-RUN cd addon/pycThermopack; python3 makescript.py optim
+RUN cd addon/pycThermopack; make optim
 
 # Install the python interface
 USER root
