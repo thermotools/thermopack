@@ -116,7 +116,10 @@
     "volume_shift": {
       "ref": "tcRK",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
-      "ci": 4.158199999999999e-06
+      "ciA": 4.158199999999999e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
     }
   },
   "PR": {
@@ -150,7 +153,10 @@
     "volume_shift": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
-      "ci": -1.1368e-06
+      "ciA": -1.1368e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
     }
   }
 }

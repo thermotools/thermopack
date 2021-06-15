@@ -30,7 +30,6 @@ contains
   function pressure(t,v,n,dpdv,dpdt,d2pdv2,dpdn,recalculate) result(p)
     use single_phase, only: TV_CalcPressure
     use cbHelm, only: cbPvv, cbPi
-    use volume_shift, only: volumeShiftVolume, NOSHIFT
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
