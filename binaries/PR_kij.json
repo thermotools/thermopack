@@ -1958,5 +1958,12 @@
     "ref": "QuantumCubic",
     "bib_reference": "10.1016/j.fluid.2020.112790",
     "kij": 0.18
+  },
+  "vdW-281": {
+    "comp1": "H2O2",
+    "comp2": "H2O",
+    "ref": "Default",
+    "bib_reference": "",
+    "kij":  -0.05
   }
 }

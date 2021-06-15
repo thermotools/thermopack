@@ -33,6 +33,9 @@ class cubic(thermo.thermopack):
         self.s_get_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_gethvparam"))
         self.s_set_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_sethvparam"))
 
+        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameter"))
+        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameter"))
+
 
     #################################
     # Init
@@ -268,3 +271,42 @@ class cubic(thermo.thermopack):
                             byref(b_ji_c),
                             byref(c_ij_c),
                             byref(c_ji_c))
+
+    def get_ci(self, cidx):
+        """Get volume correction
+
+        Args:
+            cidx (int): Component index
+
+        Returns:
+            ci (float): Volume shift of component cidx (m3/mol)
+        """
+        cidx_c = c_int(cidx)
+        ci_c = c_double(0.0)
+        self.s_get_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double)]
+
+        self.s_get_ci.restype = None
+
+        self.s_get_ci(byref(cidx_c),
+                      byref(ci_c))
+
+        return ci_c.value
+
+    def set_ci(self, cidx, ci):
+        """Set volume correction
+
+        Args:
+            cidx (int): Component index
+            ci (float): Volume shift of component cidx (m3/mol)
+        """
+        cidx_c = c_int(cidx)
+        ci_c = c_double(ci)
+        self.s_set_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double)]
+
+        self.s_set_ci.restype = None
+
+        self.s_set_ci(byref(cidx_c),
+                      byref(ci_c))
+

@@ -1,0 +1,109 @@
+{
+  "ident": "H2O2",
+  "formula": "H2O2",
+  "cas_number": "7722-84-1",
+  "name": "HYDROGENPEROXIDE",
+  "aliases": [
+    "dihydrogen peroxide"
+  ],
+  "mol_weight": 34.0147,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "temperature": 730.15,
+    "pressure": 217.00e5,
+    "compressibility": 0.2748
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "NIST",
+    "temperature": 272.7403,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "acf": 0.3582
+  },
+  "boiling_temperature": {
+    "bib_reference": "10.1002/chem.200400104",
+    "temperature": 424.55
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "https://webbook.nist.gov",
+    "correlation": 12,
+    "cp": [
+      34.25667,
+      55.18445,
+      -35.15443,
+      9.087440,
+      -0.422157,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 2000.0
+  },
+  "reference_state": {
+    "bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -136106.4,
+    "entropy": 232.95
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.2670
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.4351,
+        0.8775,
+        2.1604
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": 3.3532e-06
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.3191,
+	0.8649,
+        2.2883
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "10.1016/j.fluid.2016.09.003",
+      "ci": -0.8741e-05
+    }
+  }
+}

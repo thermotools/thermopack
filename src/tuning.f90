@@ -286,5 +286,28 @@ subroutine thermopack_setlijandji(i,j,lij)
   end select
 end subroutine thermopack_setlijandji
 
+!> Get volume translation parameter
+subroutine thermopack_get_volume_shift_parameter(i,ci)
+  use thermopack_var
+  implicit none
+  integer, intent(in) :: i
+  real, intent(out) :: ci
+  ! Locals
+  type(thermo_model), pointer :: act_mod_ptr
+  !
+  act_mod_ptr => get_active_thermo_model()
+  ci = act_mod_ptr%comps(i)%p_comp%ci
+end subroutine thermopack_get_volume_shift_parameter
 
-
+!> Tuning of volume translation parameter
+subroutine thermopack_set_volume_shift_parameter(i,ci)
+  use thermopack_var
+  implicit none
+  integer, intent(in) :: i
+  real, intent(in) :: ci
+  ! Locals
+  type(thermo_model), pointer :: act_mod_ptr
+  !
+  act_mod_ptr => get_active_thermo_model()
+  act_mod_ptr%comps(i)%p_comp%ci = ci
+end subroutine thermopack_set_volume_shift_parameter
