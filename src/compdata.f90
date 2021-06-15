@@ -2,39 +2,6 @@
 !! After initialisation of a mixture, data from the database "compdatadb.f90"
 !! are selected and copied into the working array "comp" of active components.
 !!
-!! Available CP-ideal correlations can vary, depending on the fluid.
-!!
-!! The ones that are in use are:
-!!\verbatim
-!! CPTYPE   - METHOD FOR IDEAL-GAS HEAT-CAPACITY CALCULATION                *
-!!             - 1 : SHERWOOD, REID & PRAUSNITZ, THIRD EDITION              *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3                    (cal/gmol K) *
-!!             - 2 : API-PROJECT 44                                         *
-!!             - 3 : HYPOTETIC COMPONENTS                                   *
-!!             - 4 : SHERWOOD, REID & PRAUSNITZ, FOURTH EDITION             *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3                    (J/mol K)    *
-!!             - 5 : ICI (KRISTER STR\M)                                    *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3 + CP(5)/T**2           (kJ/kgK) *
-!!             - 6 : CHEN, BENDER (PETTER NEKSÅ)                            *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3+ CP(5)*T**4        (kJ/kg K)    *
-!!             - 7 : AIChE, Daubert and Danner, DIPPR-databasen             *
-!!                   CP(ideal) = A + B[(C/T)/sinh(C/T)]**2                  *
-!!                               + D[(E/T)/cosh(E/T)]**2      (J/(kmol K))  *
-!!             - 8 : POLING, PRAUSNITZ & O'CONNEL, FIFTH EDITION            *
-!!                   CP(ideal)/R = CP(1) + CP(2)*T + CP(3)*T**2 +           *
-!!                               CP(4)*T**3 + CP(5)*T**4       (-)          *
-!!             - 9 : Linear function and fraction (J/mol/K)                 *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)/(T + CP(4))        *
-!!                                                                          *
-!!             -10 : Leachman (NIST) and Valenta expression H2              *
-!!                                                                          *
-!!             -11 : Use TREND model                                        *
-!! \endverbatim
-!!
 module compdata
   use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen, &
        comp_name_len, formula_len
@@ -54,7 +21,8 @@ module compdata
        CP_POLY4_SI=8, &
        CP_MOGENSEN_SI=9, &
        CP_H2_KMOL=10, &
-       CP_TREND_SI=11
+       CP_TREND_SI=11, &
+       CP_SHOMATE_SI=12
 
   !> Ideal heat capacity at constant pressure
   type :: cpdata

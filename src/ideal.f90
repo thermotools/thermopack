@@ -1,6 +1,40 @@
 module ideal
   !> Ideal gas properties.
-
+  !! Available CP-ideal correlations can vary, depending on the fluid.
+  !!
+  !! The ones that are in use are:
+  !!\verbatim
+  !! CPTYPE   - METHOD FOR IDEAL-GAS HEAT-CAPACITY CALCULATION                *
+  !!             - 1 : SHERWOOD, REID & PRAUSNITZ, THIRD EDITION              *
+  !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
+  !!                               CP(4)*T**3                    (cal/gmol K) *
+  !!             - 2 : API-PROJECT 44                                         *
+  !!             - 3 : HYPOTETIC COMPONENTS                                   *
+  !!             - 4 : SHERWOOD, REID & PRAUSNITZ, FOURTH EDITION             *
+  !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
+  !!                               CP(4)*T**3                    (J/mol K)    *
+  !!             - 5 : ICI (KRISTER STR\M)                                    *
+  !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
+  !!                               CP(4)*T**3 + CP(5)/T**2           (kJ/kgK) *
+  !!             - 6 : CHEN, BENDER (PETTER NEKSÅ)                            *
+  !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
+  !!                               CP(4)*T**3+ CP(5)*T**4        (kJ/kg K)    *
+  !!             - 7 : AIChE, Daubert and Danner, DIPPR-databasen             *
+  !!                   CP(ideal) = A + B[(C/T)/sinh(C/T)]**2                  *
+  !!                               + D[(E/T)/cosh(E/T)]**2      (J/(kmol K))  *
+  !!             - 8 : POLING, PRAUSNITZ & O'CONNEL, FIFTH EDITION            *
+  !!                   CP(ideal)/R = CP(1) + CP(2)*T + CP(3)*T**2 +           *
+  !!                               CP(4)*T**3 + CP(5)*T**4       (-)          *
+  !!             - 9 : Linear function and fraction (J/mol/K)                 *
+  !!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)/(T + CP(4))        *
+  !!                                                                          *
+  !!             -10 : Leachman (NIST) and Valenta expression H2              *
+  !!                                                                          *
+  !!             -11 : Use TREND model                                        *
+  !!             -12 : Shomate Equation (Note that: Ts=T/1000)                *
+  !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
+  !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
+  !! \endverbatim
   implicit none
   save
   ! Include TREND interface
@@ -149,7 +183,8 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: cpideal_h2
     implicit none
@@ -158,7 +193,7 @@ contains
     integer, intent(in) :: i
     real :: Cp_id
     !
-    real :: TminCp, TmaxCp
+    real :: TminCp, TmaxCp, Ts
 
     method_Cp: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree poynomial
@@ -232,6 +267,11 @@ contains
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
       call trend_ideal(T,i,Cp=Cp_id)
 
+    case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
+      Ts = T*1.0e-3
+      Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*Ts+comp%id_cp%cp(3)*Ts**2+comp%id_cp%cp(4)*Ts**3+ &
+           comp%id_cp%cp(5)/(Ts**2)
+
     end select method_Cp
   end function CPideal
 
@@ -278,14 +318,15 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
     integer, intent(in) :: i
-    real :: H_id, TminCp, TmaxCp
+    real :: H_id, TminCp, TmaxCp, Ts
 
     method_H: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
@@ -371,6 +412,12 @@ contains
       call trend_ideal(T,i,h=H_id)
       H_id = H_id
 
+    case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
+      Ts = T*1.0e-3
+      H_id=comp%id_cp%cp(1)*Ts+comp%id_cp%cp(2)*Ts**2.0/2.0 + &
+           comp%id_cp%cp(3)*Ts**3/3.0+comp%id_cp%cp(4)*Ts**4/4.0 - &
+           comp%id_cp%cp(5)/Ts
+      H_id=H_id*1.0e3 + comp%href
     end select method_H
   end function Hideal
 
@@ -388,7 +435,8 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: sideal_h2
     implicit none
@@ -396,7 +444,7 @@ contains
     real, intent(in) :: T
     integer, intent(in) :: i
     !
-    real :: S_id, TminCp, TmaxCp
+    real :: S_id, TminCp, TmaxCp, Ts
 
     method_S: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
@@ -478,6 +526,14 @@ contains
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
       call trend_ideal(T,i,s=S_id)
       S_id = S_id
+
+    case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
+      Ts = T*1.0e-3
+      S_id = comp%id_cp%cp(1)*log(Ts)+comp%id_cp%cp(2)*Ts +&
+           comp%id_cp%cp(3)*Ts**2/2.0+comp%id_cp%cp(4)*Ts**3/3.0-&
+           comp%id_cp%cp(5)/(2.0*Ts**2)
+      S_id=S_id + comp%sref
+
     end select method_S
   end function Sideal_T
 
