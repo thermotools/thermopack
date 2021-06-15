@@ -52,6 +52,8 @@ elif KSTYPE == 4:
     ks_str = "IV"
 elif KSTYPE == 5:
     ks_str = "V"
+else:
+    ks_str = str(KSTYPE)
 
 plt.title("van Konynenburg and Scott type: " + ks_str)
 leg = plt.legend(loc="best", numpoints=1)
