@@ -153,11 +153,12 @@ contains
         endif
       case(cbAlphaGergIdx)
         ierror = 1
-      case(cbAlphaClassicIdx, cbAlphaPR78Idx)
+      case(cbAlphaClassicIdx)
         corr_idx = alpha_corr_db(idx_db_classic)%alpha_idx
         call getAcentricAlphaParam(corr_idx, cbeos%single(i)%acf, params)
+      case(cbAlphaPR78Idx)
+        call getAcentricAlphaParam(corr_idx, cbeos%single(i)%acf, params)
       end select
-
 
       if ( ierror /= 0 ) then
         corr_idx = alpha_corr_db(idx_db_classic)%alpha_idx
