@@ -33,8 +33,8 @@ class cubic(thermo.thermopack):
         self.s_get_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_gethvparam"))
         self.s_set_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_sethvparam"))
 
-        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameter"))
-        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameter"))
+        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
+        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
 
     #################################
     # Init
