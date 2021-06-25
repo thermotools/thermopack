@@ -260,6 +260,7 @@ module cubic_eos
   integer, parameter :: cbAlphaPTIdx = 11 !< Alpha-corr of Patel-Teja
   integer, parameter :: cbAlphaSWIdx = 12 !< Alpha-corr of Schmidt-Wensel
   integer, parameter :: cbAlphaVDWIdx = 13 !< Alpha-corr of van der Waals
+  integer, parameter :: cbAlphaPR78Idx = 14 !< Peng-Robinson alpha-corr for w>0.491 (RR-28 GPA)
 
   type alpha_label_mapping
     integer :: alpha_idx
@@ -269,7 +270,7 @@ module cubic_eos
     integer :: classic_for_eos_idx
   end type alpha_label_mapping
 
-  integer, parameter :: n_alpha_corrs = 13
+  integer, parameter :: n_alpha_corrs = 14
   type(alpha_label_mapping), dimension(n_alpha_corrs), parameter :: alpha_corr_db = (/&
        alpha_label_mapping(alpha_idx=cbAlphaClassicIdx, n_param=1, short_label="CLASSIC", &
        description="Classic alpha-correlation VdW, SRK, PR, PT and SW", &
@@ -310,7 +311,10 @@ module cubic_eos
        classic_for_eos_idx=cbSW), &
        alpha_label_mapping(alpha_idx=cbAlphaVDWIdx, n_param=1, short_label="VDW", &
        description="Alpha-corr of cbAlphaVDWIdx", &
-       classic_for_eos_idx=cbVDW) &
+       classic_for_eos_idx=cbVDW), &
+       alpha_label_mapping(alpha_idx=cbAlphaPR78Idx, n_param=1, short_label="PR78", &
+       description="Alpha-corr of cbAlphaPR78Idx", &
+       classic_for_eos_idx=-1) &
        /)
 
   ! Beta correlations for cubic EoS "b" parameter. To add new correlations, add

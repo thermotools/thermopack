@@ -84,7 +84,7 @@ contains
   subroutine tpInitAlphaCorr(nc, comp, cbeos, alphastr, alpha_reference)
     use cubic_eos, only: get_alpha_db_idx, alpha_corr_db, cb_eos, &
          eos_to_classic_alpha_db_idx, cbAlphaTwuIdx, cbAlphaMcIdx, &
-         cbAlphaUMRIdx, cbAlphaGergIdx, cbAlphaClassicIdx
+         cbAlphaUMRIdx, cbAlphaGergIdx, cbAlphaClassicIdx, cbAlphaPR78Idx
     use compdata, only: gendata_pointer
     implicit none
     integer, intent(in) :: nc
@@ -156,8 +156,9 @@ contains
       case(cbAlphaClassicIdx)
         corr_idx = alpha_corr_db(idx_db_classic)%alpha_idx
         call getAcentricAlphaParam(corr_idx, cbeos%single(i)%acf, params)
+      case(cbAlphaPR78Idx)
+        call getAcentricAlphaParam(corr_idx, cbeos%single(i)%acf, params)
       end select
-
 
       if ( ierror /= 0 ) then
         corr_idx = alpha_corr_db(idx_db_classic)%alpha_idx
@@ -178,7 +179,8 @@ contains
     use cubic_eos, only: cb_eos, cbAlphaVDWIdx, cbAlphaClassicIdx, cbAlphaClassicFitIdx, &
          cbAlphaGBIdx, cbAlphaRKIdx, cbAlphaSoaveIdx, cbAlphaPRIdx, &
          cbAlphaPTIdx, cbAlphaVDWIdx, cbAlphaRKIdx, cbAlphaTwuIdx, &
-         cbAlphaMCIdx, cbAlphaSWIdx, cbAlphaGergIdx, cbAlphaRKIdx
+         cbAlphaMCIdx, cbAlphaSWIdx, cbAlphaGergIdx, cbAlphaRKIdx, &
+         cbAlphaPR78Idx
     implicit none
     integer, intent(in) :: nc
     class(cb_eos), intent(inout) :: cbeos
@@ -216,12 +218,13 @@ contains
         call calcAlpha_twu(cbeos, i, T,tci)
       case (cbAlphaMCIdx)
         call calcAlpha_MC(cbeos, i, T, Tci)
-     case (cbAlphaClassicIdx, &
-          cbAlphaClassicFitIdx, &
+      case (cbAlphaClassicIdx, &
+           cbAlphaClassicFitIdx, &
            cbAlphaGBIdx, &
            cbAlphaSoaveIdx, &
            cbAlphaPRIdx, &
-           cbAlphaPTIdx)
+           cbAlphaPTIdx, &
+           cbAlphaPR78Idx)
         call calcAlpha_classic(cbeos, i,T, tci, cbeos%single(i)%alphaParams(1))
       case (cbAlphaSWIdx)
         call calcAlpha_SW(cbeos, i,T, tci, acfi)
@@ -241,7 +244,7 @@ contains
     real, intent(out) :: params(3)
     ! Locals
     real :: a, b, c, d, e
-    call get_alpha_param_acentric(alpha_idx, a, b, c, d, e)
+    call get_alpha_param_acentric(alpha_idx, acfi, a, b, c, d, e)
     params = 0.0
     params(1) = a + b*acfi + c*acfi**2 + d*acfi**3 + e*acfi**4
 
@@ -452,12 +455,14 @@ contains
   !! \author Geir Skaugen
   !! \author Morten Hammer
   !!
-  subroutine get_alpha_param_acentric(alpha_idx, a, b, c, d, e)
+  subroutine get_alpha_param_acentric(alpha_idx, acfi, a, b, c, d, e)
     use cubic_eos, only: cb_eos, cbAlphaVDWIdx, cbAlphaUMRIdx, &
          cbAlphaGBIdx, cbAlphaRKIdx, cbAlphaSoaveIdx, cbAlphaPRIdx, &
-         cbAlphaPTIdx, cbAlphaVDWIdx, cbAlphaRKIdx, cbAlphaSWIdx
+         cbAlphaPTIdx, cbAlphaVDWIdx, cbAlphaRKIdx, cbAlphaSWIdx, &
+         cbAlphaPR78Idx
     implicit none
     integer, intent(in) :: alpha_idx
+    real, intent(in) :: acfi
     real, intent(out) :: a, b , c, d, e
     !
 
@@ -507,6 +512,18 @@ contains
       c = - 0.213808D+00
       d = 0.034616D+00
       e = - 0.001976D+00
+
+    case (cbAlphaPR78Idx)
+      if (acfi <= 0.491) then
+        a = 0.37464D+00
+        b = 1.54226D+00
+        c = -0.26992D+00
+      else
+        a = 0.379642D+00
+        b = 1.48503D+00
+        c = -0.164423D+00
+        d = 0.016666D+00
+      endif
 
     case default
       call stoperror("Wrong alpha correlation ")
