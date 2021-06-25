@@ -26,11 +26,13 @@
 \usepackage{hyperref}
 \usepackage{framed}
 \usepackage{siunitx,mhchem,todonotes}
+\usepackage{xspace}
 \newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}}% partial
                                 % derivative with information of
                                 % constant variables
 \newcommand*{\vektor}[1]{\boldsymbol{#1}}%
 \newcommand{\dd}[1]{\mathrm{d}{#1}}
+\newcommand{\eos}{\ensuremath{\text{eos}}\xspace}
 
 \DeclareMathOperator*{\argmin}{arg\,min }
 
@@ -73,23 +75,23 @@ liquid density at $T=0.7T_{\text{Crit}}$,
 
 The residual reduced Helmholtz function of a  generic EOS is found as follows,
 \begin{align}
-  F(T,V_{\text{eos}},\vektor{n}) = \frac{A^\text{r}(T,V_{\text{eos}},\vektor{n})}{RT}
-  = \int^\infty_{V_{\text{eos}}} \left[ \frac{P(T,V_{\text{eos}}^\prime,\vektor{n})}{RT} - \frac{n}{V_{\text{eos}}^\prime} \right]\dd{V_{\text{eos}}^\prime}
+  F(T,V_{\eos},\vektor{n}) = \frac{A^\text{r}(T,V_{\eos},\vektor{n})}{RT}
+  = \int^\infty_{V_{\eos}} \left[ \frac{P(T,V_{\eos}^\prime,\vektor{n})}{RT} - \frac{n}{V_{\eos}^\prime} \right]\dd{V_{\eos}^\prime}
   \label{eq:helmholtz_int_eos}
 \end{align}
 Introducing the volume shift,
 \begin{equation}
-V = V_{\text{eos}}- \sum n_ic_i = V_{\text{eos}}- C,
+V = V_{\eos}- \sum n_ic_i = V_{\eos}- C,
 \label{eq:v_shift}
 \end{equation}
 The residual reduced helmholtz of the volume-shifted (vs) EOS can be
-found, using $dV = dV_{\text{eos}}$ at constant $n$ and $T$,
+found, using $dV = dV_{\eos}$ at constant $n$ and $T$,
 \begin{align}
   F^{\text{vs}}(T,V,\vektor{n})
-  &= \int^\infty_V \left[ \frac{P(T,V^\prime+C,\vektor{n})}{RT} - \frac{n}{V^\prime} \right]\dd{V^\prime} \\ &= \int^\infty_V \left[ \frac{P(T,V^\prime+C,\vektor{n})}{RT} - \frac{n}{V^\prime + C} \right]\dd{V^\prime} + n\int^\infty_V \left[\frac{1}{V^\prime + C}  - \frac{1}{V^\prime} \right]\dd{V^\prime}\\ &= \int^\infty_{V_{\text{eos}}} \left[ \frac{P(T,V_{\text{eos}}^\prime,\vektor{n})}{RT} - \frac{n}{V_{\text{eos}}^\prime} \right]\dd{V_{\text{eos}}^\prime} + n\int^\infty_V \left[\frac{1}{V^\prime + C}  - \frac{1}{V^\prime} \right]\dd{V^\prime}\\ &= F(T,V_{\text{eos}},\vektor{n})  + n \ln \left(\frac{V}{V_{\text{eos}}} \right)
+  &= \int^\infty_V \left[ \frac{P(T,V^\prime+C,\vektor{n})}{RT} - \frac{n}{V^\prime} \right]\dd{V^\prime} \\ &= \int^\infty_V \left[ \frac{P(T,V^\prime+C,\vektor{n})}{RT} - \frac{n}{V^\prime + C} \right]\dd{V^\prime} + n\int^\infty_V \left[\frac{1}{V^\prime + C}  - \frac{1}{V^\prime} \right]\dd{V^\prime}\\ &= \int^\infty_{V_{\eos}} \left[ \frac{P(T,V_{\eos}^\prime,\vektor{n})}{RT} - \frac{n}{V_{\eos}^\prime} \right]\dd{V_{\eos}^\prime} + n\int^\infty_V \left[\frac{1}{V^\prime + C}  - \frac{1}{V^\prime} \right]\dd{V^\prime}\\ &= F(T,V_{\eos},\vektor{n})  + n \ln \left(\frac{V}{V_{\eos}} \right)
   \label{eq:helmholtz_int}
 \end{align}
-Here we need to treat $V_{\text{eos}} = V_{\text{eos}}(V,\vektor{n})$ with the
+Here we need to treat $V_{\eos} = V_{\eos}(V,\vektor{n})$ with the
 chain rule when differentiating $F^{\text{vs}}$.
 
 If we introduce $F^C$ as the corrected residual reduced Helmholtz energy, due to
@@ -100,17 +102,17 @@ the difference in ideal volume,
 \end{align}
 the differentials can be derived in a organized manner.
 \begin{align}
-  F^C_{V} &= n \left(\frac{1}{V} - \frac{1}{V+C} \right) = n \left(\frac{1}{V} - \frac{1}{V_{\text{eos}}} \right), \\
-  F^C_{VV} &= n \left(-\frac{1}{V^2} + \frac{1}{\left(V+C\right)^2} \right) = n \left(-\frac{1}{V^2} + \frac{1}{V_{\text{eos}}^2} \right), \\
-  F^C_{i} &= \ln \left(\frac{V}{V+C} \right) - \frac{nc_i}{V+C} = \ln \left(\frac{V}{V_{\text{eos}}} \right) - \frac{nc_i}{V_{\text{eos}}}, \\
-  F^C_{ij} &= -\frac{\left(c_j + c_i \right)}{V+C} +  \frac{n c_ic_j}{\left(V+C\right)^2} = -\frac{\left(c_j + c_i \right)}{V_{\text{eos}}} +  \frac{n c_ic_j}{V_{\text{eos}}^2}, \\
-  F^C_{Vi} &= \frac{1}{V} - \frac{1}{V+C} + \frac{nc_i}{\left(V+C\right)^2} =  \frac{1}{V} - \frac{1}{V_{\text{eos}}} + \frac{nc_i}{V_{\text{eos}}^2}
+  F^C_{V} &= n \left(\frac{1}{V} - \frac{1}{V+C} \right) = n \left(\frac{1}{V} - \frac{1}{V_{\eos}} \right), \\
+  F^C_{VV} &= n \left(-\frac{1}{V^2} + \frac{1}{\left(V+C\right)^2} \right) = n \left(-\frac{1}{V^2} + \frac{1}{V_{\eos}^2} \right), \\
+  F^C_{i} &= \ln \left(\frac{V}{V+C} \right) - \frac{nc_i}{V+C} = \ln \left(\frac{V}{V_{\eos}} \right) - \frac{nc_i}{V_{\eos}}, \\
+  F^C_{ij} &= -\frac{\left(c_j + c_i \right)}{V+C} +  \frac{n c_ic_j}{\left(V+C\right)^2} = -\frac{\left(c_j + c_i \right)}{V_{\eos}} +  \frac{n c_ic_j}{V_{\eos}^2}, \\
+  F^C_{Vi} &= \frac{1}{V} - \frac{1}{V+C} + \frac{nc_i}{\left(V+C\right)^2} =  \frac{1}{V} - \frac{1}{V_{\eos}} + \frac{nc_i}{V_{\eos}^2}
 \end{align}
-In addition the compositional differentials change for since $V_{\text{eos}} = V + C$,
+In addition the compositional differentials change since $V_{\eos} = V + C$,
 \begin{align}
-  F^{\text{eos}}_{i} &= F^{\text{eos}}_{i} + F^{\text{eos}}_{V_{\text{eos}}} c_i , \\
-  F^{\text{eos}}_{Ti} &= F^{\text{eos}}_{Ti} + F^{\text{eos}}_{TV_{\text{eos}}} c_i , \\
-  F^{\text{eos}}_{ij} &= F^{\text{eos}}_{ij} + F^{\text{eos}}_{iV_{\text{eos}}} c_j + F^{\text{eos}}_{V_{\text{eos}}j} c_i + F^{\text{eos}}_{V_{\text{eos}}V_{\text{eos}}} c_ic_j .
+  F^{\eos}_{i} &= F^{\eos}_{i} + F^{\eos}_{V_{\eos}} c_i , \label{eq:Fi}\\
+  F^{\eos}_{Ti} &= F^{\eos}_{Ti} + F^{\eos}_{TV_{\eos}} c_i , \\
+  F^{\eos}_{ij} &= F^{\eos}_{ij} + F^{\eos}_{iV_{\eos}} c_j + F^{\eos}_{V_{\eos}j} c_i + F^{\eos}_{V_{\eos}V_{\eos}} c_ic_j . \label{eq:Fij}
 \end{align}
 
 \subsection{Test of the fugacity coefficient}
@@ -121,13 +123,13 @@ Let us test this for the fugacity coefficient. It is defined as
 \end{align}
 Differentiating $F^{\text{vs}}$,
 \begin{align}
-  F_{n_i}^{\text{vs}} &= F_{n_i} + F_{V_{\text{eos}}}c_i  + \ln \left(\frac{V}{V_{\text{eos}}} \right) - \frac{n c_i}{V_{\text{eos}}} = F_{n_i} + \ln \left(\frac{V}{V_{\text{eos}}} \right) - \frac{P c_i}{RT}
+  F_{n_i}^{\text{vs}} &= F_{n_i} + F_{V_{\eos}}c_i  + \ln \left(\frac{V}{V_{\eos}} \right) - \frac{n c_i}{V_{\eos}} = F_{n_i} + \ln \left(\frac{V}{V_{\eos}} \right) - \frac{P c_i}{RT}
   \label{eq:Fni}
 \end{align}
 Combining Equation \ref{eq:fugacity} and \ref{eq:Fni}, we get
 \begin{align}
-  \ln \hat{\varphi}_i^{\text{vs}} &= F_{n_i} + \ln \left(\frac{V}{V_{\text{eos}}} \right) - \frac{P c_i}{RT} - \ln \left( \frac{PV}{n RT} \right) \\
-                      &= F_{n_i} - \ln \left( \frac{PV_{\text{eos}}}{n RT} \right) - \frac{P c_i}{RT} \\
+  \ln \hat{\varphi}_i^{\text{vs}} &= F_{n_i} + \ln \left(\frac{V}{V_{\eos}} \right) - \frac{P c_i}{RT} - \ln \left( \frac{PV}{n RT} \right) \\
+                      &= F_{n_i} - \ln \left( \frac{PV_{\eos}}{n RT} \right) - \frac{P c_i}{RT} \\
   &= \ln \hat{\varphi}_i - \frac{P c_i}{RT}
   \label{eq:fugacity2}
 \end{align}
@@ -153,6 +155,36 @@ Jhaveri and Youngren \cite{Jhaveri1988} have developed different paramaters for 
   c_i^{\text{PR}} = 0.50033\frac{R T_{c_i}}{P_{c_i}}\left(0.25969- Z_{\text{RA}}\right)
 \label{eq:ci_PR}
 \end{equation}
+
+\section{Temperature dependent volume shift}
+Temperature dependent volume translation are known to give supercritical
+iso-therm crossings \cite{Pfohl1999} and possibly un-physical
+behaviour \cite{Kalikhman2010} and must be executed with care. In
+some cases it can be used as a simple remedy to improve liquid density
+predictions.
+
+In this case the $F^C$ function becomes,
+\begin{align}
+  F^C(V,\vektor{n},T) &= n \ln \left(\frac{V}{V+C\left(\vektor{n},T\right)} \right),
+  \label{eq:F_corr_t}
+\end{align}
+and the temperature differentials become,
+\begin{align}
+  F^C_{T} &= -\frac{n C_T}{V+C} = -\frac{n C_T}{V_\eos}, \\
+  F^C_{TT} &= -\frac{n C_{TT}}{V+C} + \frac{n C_T^2}{\left( V+C \right)^2} = -\frac{n C_{TT}}{V_\eos} + \frac{n C_T^2}{V_\eos^2}, \\
+  F^C_{VT} &= \frac{n C_T}{\left( V+C \right)^2} = \frac{n C_T}{V_\eos^2}, \\
+  F^C_{iT} &= -\frac{C_T}{V+C} - \frac{n c_{iT}}{V+C} + \frac{n C_T c_i}{\left( V+C \right)^2} = -\frac{\left(C_T + n c_{iT}\right)}{V_\eos}  + \frac{n C_T c_i}{V_\eos^2}.
+\end{align}
+In addition the compositional and temperature differentials change
+since $V_{\eos} = V + C\left(\vektor{n},T\right)$,
+\begin{align}
+  F^{\eos}_{T} &= F^{\eos}_{T} + F^{\eos}_{V_{\eos}} C_T , \\
+  F^{\eos}_{TT} &= F^{\eos}_{TT} + 2 F^{\eos}_{TV_{\eos}} C_T + F^{\eos}_{V_{\eos}V_{\eos}} C_T^2 + F^{\eos}_{V_{\eos}} C_{TT} , \\
+  F^{\eos}_{VT} &= F^{\eos}_{VT} + F^{\eos}_{V_{\eos}V_{\eos}} C_T , \\
+  F^{\eos}_{Ti} &= F^{\eos}_{Ti} + F^{\eos}_{TV_{\eos}} c_i + F^{\eos}_{V_{\eos}V_{\eos}} C_T c_i + F^{\eos}_{V_{\eos}i} C_T + F^{\eos}_{V_{\eos}} c_{T,i}.
+\end{align}
+While $F^{\eos}_{i}$ and $F^{\eos}_{ij}$ are unchanged from
+\eqref{eq:Fi} and \eqref{eq:Fij} respectively.
 \clearpage
 \bibliographystyle{plain}
 \bibliography{../thermopack}

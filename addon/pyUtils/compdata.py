@@ -151,7 +151,11 @@ class component(object):
         code_lines.append(3*I + "cidatadb(eosid=\"" + eos + "\", &")
         code_lines.append(3*I + "cid=\"" + self.comp["ident"] + "\", &")
         code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
-        code_lines.append(3*I + 'ci={:.8e} &'.format(d["ci"]))
+        code_lines.append(3*I + "bib_ref=\"" + d["bib_reference"] + "\", &")
+        code_lines.append(3*I + 'ciA={:.8e}, &'.format(d["ciA"]))
+        code_lines.append(3*I + 'ciB={:.8e}, &'.format(d["ciB"]))
+        code_lines.append(3*I + 'ciC={:.8e}, &'.format(d["ciC"]))
+        code_lines.append(3*I + 'c_type={:d} &'.format(d["correlation"]))
         code_lines.append(3*I + ")")
         code_lines.append("")
 
