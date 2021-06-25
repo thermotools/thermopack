@@ -52,7 +52,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="BUT1OL", &
       ref="tcPR", &
-      ci=1.91930000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.91930000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu2 = &
@@ -66,7 +70,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="BUT1OL", &
       ref="tcRK", &
-      ci=1.74514000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.74514000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx2 = &
@@ -114,7 +122,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="HEX1OL", &
       ref="tcPR", &
-      ci=4.15340000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.15340000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu4 = &
@@ -128,7 +140,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="HEX1OL", &
       ref="tcRK", &
-      ci=2.59066000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.59066000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx3 = &
@@ -176,7 +192,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="PENT1OL", &
       ref="tcPR", &
-      ci=1.47820000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.47820000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu6 = &
@@ -190,7 +210,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="PENT1OL", &
       ref="tcRK", &
-      ci=1.99375000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.99375000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx4 = &
@@ -238,7 +262,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="PROP1OL", &
       ref="tcPR", &
-      ci=3.27770000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.27770000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu8 = &
@@ -252,7 +280,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="PROP1OL", &
       ref="tcRK", &
-      ci=1.58803000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.58803000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx5 = &
@@ -300,7 +332,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="13BD", &
       ref="tcPR", &
-      ci=-1.61400000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.61400000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu10 = &
@@ -314,7 +350,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="13BD", &
       ref="tcRK", &
-      ci=1.12082000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.12082000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx6 = &
@@ -362,7 +402,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="2MHX", &
       ref="tcPR", &
-      ci=7.27700000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.27700000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu12 = &
@@ -376,7 +420,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="2MHX", &
       ref="tcRK", &
-      ci=2.51160000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.51160000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx7 = &
@@ -424,7 +472,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="3MP", &
       ref="tcPR", &
-      ci=-1.74790000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.74790000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu14 = &
@@ -438,7 +490,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="3MP", &
       ref="tcRK", &
-      ci=1.88966000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.88966000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx8 = &
@@ -486,7 +542,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="ACETONE", &
       ref="tcPR", &
-      ci=1.26537000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.26537000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu16 = &
@@ -500,7 +560,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="ACETONE", &
       ref="tcRK", &
-      ci=2.61512000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.61512000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx9 = &
@@ -582,7 +646,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="ALLENE", &
       ref="tcPR", &
-      ci=1.92300000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.92300000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu18 = &
@@ -596,7 +664,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="ALLENE", &
       ref="tcRK", &
-      ci=1.18997000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.18997000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx11 = &
@@ -651,7 +723,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NH3", &
       ref="tcPR", &
-      ci=4.03030000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.03030000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu20 = &
@@ -672,7 +748,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NH3", &
       ref="tcRK", &
-      ci=8.63980000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.63980000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx12 = &
@@ -727,7 +807,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="AR", &
       ref="tcPR", &
-      ci=-3.29390000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.29390000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu22 = &
@@ -741,7 +825,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="AR", &
       ref="tcRK", &
-      ci=8.72800000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.72800000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx13 = &
@@ -796,7 +884,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="BENZENE", &
       ref="tcPR", &
-      ci=-1.39140000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.39140000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc5 = &
@@ -817,7 +909,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="BENZENE", &
       ref="tcRK", &
-      ci=1.35115000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.35115000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx14 = &
@@ -890,7 +986,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="CO2", &
       ref="tcPR", &
-      ci=-1.13680000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.13680000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu26 = &
@@ -911,7 +1011,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="CO2", &
       ref="tcRK", &
-      ci=4.15820000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.15820000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx15 = &
@@ -966,7 +1070,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="CO", &
       ref="tcPR", &
-      ci=-3.67610000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.67610000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu28 = &
@@ -980,7 +1088,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="CO", &
       ref="tcRK", &
-      ci=1.40680000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.40680000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx16 = &
@@ -1062,7 +1174,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="CYCLOHEX", &
       ref="tcPR", &
-      ci=-4.23270000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.23270000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu30 = &
@@ -1076,7 +1192,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="CYCLOHEX", &
       ref="tcRK", &
-      ci=1.33377000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.33377000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx18 = &
@@ -1124,7 +1244,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="C3_1", &
       ref="tcPR", &
-      ci=-3.05740000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.05740000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu32 = &
@@ -1138,7 +1262,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="C3_1", &
       ref="tcRK", &
-      ci=6.36470000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.36470000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx19 = &
@@ -1193,14 +1321,22 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="D2", &
       ref="tcPR", &
-      ci=-4.55550000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.55550000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (cidatadb), parameter :: c34 = &
       cidatadb(eosid="PR", &
       cid="D2", &
       ref="QuantumCubic", &
-      ci=-3.87180000e-06 &
+      bib_ref="10.1016/j.fluid.2020.112790", &
+      ciA=-3.87180000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu35 = &
@@ -1214,7 +1350,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="D2", &
       ref="tcRK", &
-      ci=-1.25430000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.25430000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx20 = &
@@ -1378,7 +1518,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="C2", &
       ref="tcPR", &
-      ci=-3.70740000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.70740000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu37 = &
@@ -1406,7 +1550,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="C2", &
       ref="tcRK", &
-      ci=4.57390000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.57390000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx24 = &
@@ -1454,7 +1602,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="ETOH", &
       ref="tcPR", &
-      ci=5.95100000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.95100000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu39 = &
@@ -1468,7 +1620,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="ETOH", &
       ref="tcRK", &
-      ci=1.60736000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.60736000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx25 = &
@@ -1516,7 +1672,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="EBZN", &
       ref="tcPR", &
-      ci=2.70300000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.70300000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu41 = &
@@ -1530,7 +1690,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="EBZN", &
       ref="tcRK", &
-      ci=2.46150000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.46150000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx26 = &
@@ -1633,14 +1797,22 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="HE", &
       ref="tcPR", &
-      ci=-4.89150000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.89150000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (cidatadb), parameter :: c43 = &
       cidatadb(eosid="PR", &
       cid="HE", &
       ref="QuantumCubic", &
-      ci=-3.17910000e-06 &
+      bib_ref="10.1016/j.fluid.2020.112790", &
+      ciA=-3.17910000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu44 = &
@@ -1654,7 +1826,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="HE", &
       ref="tcRK", &
-      ci=-1.46080000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.46080000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx28 = &
@@ -1716,14 +1892,22 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="H2", &
       ref="tcPR", &
-      ci=-5.33860000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-5.33860000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (cidatadb), parameter :: c46 = &
       cidatadb(eosid="PR", &
       cid="H2", &
       ref="QuantumCubic", &
-      ci=-3.81390000e-06 &
+      bib_ref="10.1016/j.fluid.2020.112790", &
+      ciA=-3.81390000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu47 = &
@@ -1744,7 +1928,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="H2", &
       ref="tcRK", &
-      ci=-1.34490000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.34490000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx29 = &
@@ -1861,7 +2049,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="H2S", &
       ref="tcPR", &
-      ci=-2.50560000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-2.50560000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu51 = &
@@ -1882,7 +2074,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="H2S", &
       ref="tcRK", &
-      ci=3.01750000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.01750000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx31 = &
@@ -1944,7 +2140,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="IC4", &
       ref="tcPR", &
-      ci=-4.07050000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.07050000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc22 = &
@@ -1972,7 +2172,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="IC4", &
       ref="tcRK", &
-      ci=1.04875000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.04875000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx32 = &
@@ -2034,7 +2238,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="IC5", &
       ref="tcPR", &
-      ci=-3.62110000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.62110000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc26 = &
@@ -2062,7 +2270,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="IC5", &
       ref="tcRK", &
-      ci=1.38881000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.38881000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx33 = &
@@ -2144,7 +2356,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="MXYL", &
       ref="tcPR", &
-      ci=5.14480000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.14480000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu57 = &
@@ -2158,7 +2374,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="MXYL", &
       ref="tcRK", &
-      ci=2.70949000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.70949000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx35 = &
@@ -2220,7 +2440,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="C1", &
       ref="tcPR", &
-      ci=-3.56060000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.56060000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu59 = &
@@ -2248,7 +2472,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="C1", &
       ref="tcRK", &
-      ci=2.05030000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.05030000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx36 = &
@@ -2296,7 +2524,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="MEOH", &
       ref="tcPR", &
-      ci=9.18650000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.18650000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu61 = &
@@ -2310,7 +2542,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="MEOH", &
       ref="tcRK", &
-      ci=1.69543000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.69543000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx37 = &
@@ -2358,7 +2594,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="MTC5", &
       ref="tcPR", &
-      ci=-3.43780000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.43780000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu63 = &
@@ -2372,7 +2612,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="MTC5", &
       ref="tcRK", &
-      ci=1.46862000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.46862000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx38 = &
@@ -2420,7 +2664,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="MEG", &
       ref="tcPR", &
-      ci=8.38700000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.38700000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu65 = &
@@ -2434,7 +2682,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="MEG", &
       ref="tcRK", &
-      ci=1.92954000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.92954000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx39 = &
@@ -2482,7 +2734,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC19", &
       ref="tcPR", &
-      ci=6.49064000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.49064000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu67 = &
@@ -2496,7 +2752,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC19", &
       ref="tcRK", &
-      ci=1.37989500e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.37989500e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx40 = &
@@ -2551,14 +2811,22 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NE", &
       ref="tcPR", &
-      ci=-2.35730000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-2.35730000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (cidatadb), parameter :: c69 = &
       cidatadb(eosid="PR", &
       cid="NE", &
       ref="QuantumCubic", &
-      ci=-2.46650000e-06 &
+      bib_ref="10.1016/j.fluid.2020.112790", &
+      ciA=-2.46650000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu70 = &
@@ -2572,7 +2840,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NE", &
       ref="tcRK", &
-      ci=-7.12000000e-08 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-7.12000000e-08, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx41 = &
@@ -2620,7 +2892,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NO", &
       ref="tcPR", &
-      ci=-7.54000000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-7.54000000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu72 = &
@@ -2634,7 +2910,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NO", &
       ref="tcRK", &
-      ci=2.63650000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.63650000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx42 = &
@@ -2696,7 +2976,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="N2", &
       ref="tcPR", &
-      ci=-3.64220000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.64220000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu74 = &
@@ -2724,7 +3008,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="N2", &
       ref="tcRK", &
-      ci=1.34700000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.34700000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx43 = &
@@ -2772,7 +3060,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="N2O", &
       ref="tcPR", &
-      ci=-1.23720000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.23720000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu76 = &
@@ -2786,7 +3078,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="N2O", &
       ref="tcRK", &
-      ci=4.39740000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.39740000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx44 = &
@@ -2902,7 +3198,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="OXYL", &
       ref="tcPR", &
-      ci=2.52880000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.52880000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu78 = &
@@ -2916,7 +3216,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="OXYL", &
       ref="tcRK", &
-      ci=2.38251000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.38251000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx47 = &
@@ -2971,7 +3275,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="O2", &
       ref="tcPR", &
-      ci=-2.76670000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-2.76670000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu80 = &
@@ -2992,7 +3300,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="O2", &
       ref="tcRK", &
-      ci=1.34570000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.34570000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx48 = &
@@ -3074,7 +3386,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="PXYL", &
       ref="tcPR", &
-      ci=5.37320000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.37320000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu82 = &
@@ -3088,7 +3404,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="PXYL", &
       ref="tcRK", &
-      ci=2.76019000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.76019000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx50 = &
@@ -3150,7 +3470,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="C3", &
       ref="tcPR", &
-      ci=-3.89270000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.89270000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu84 = &
@@ -3178,7 +3502,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="C3", &
       ref="tcRK", &
-      ci=7.46600000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.46600000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx51 = &
@@ -3226,7 +3554,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="PRLN", &
       ref="tcPR", &
-      ci=-3.56200000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.56200000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu86 = &
@@ -3240,7 +3572,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="PRLN", &
       ref="tcRK", &
-      ci=6.89870000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.89870000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx52 = &
@@ -3288,7 +3624,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R11", &
       ref="tcPR", &
-      ci=-4.75660000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.75660000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu88 = &
@@ -3302,7 +3642,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R11", &
       ref="tcRK", &
-      ci=9.15060000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.15060000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx53 = &
@@ -3350,7 +3694,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R1114", &
       ref="tcPR", &
-      ci=-1.39410000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.39410000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu90 = &
@@ -3364,7 +3712,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R1114", &
       ref="tcRK", &
-      ci=8.62210000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.62210000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx54 = &
@@ -3412,7 +3764,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R1132a", &
       ref="tcPR", &
-      ci=-4.08900000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.08900000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu92 = &
@@ -3426,7 +3782,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R1132a", &
       ref="tcRK", &
-      ci=8.45540000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.45540000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx55 = &
@@ -3474,7 +3834,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R114", &
       ref="tcPR", &
-      ci=-5.03720000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-5.03720000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu94 = &
@@ -3488,7 +3852,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R114", &
       ref="tcRK", &
-      ci=1.14150000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.14150000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx56 = &
@@ -3536,7 +3904,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R115", &
       ref="tcPR", &
-      ci=-6.21940000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-6.21940000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu96 = &
@@ -3550,7 +3922,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R115", &
       ref="tcRK", &
-      ci=8.07540000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.07540000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx57 = &
@@ -3598,7 +3974,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R116", &
       ref="tcPR", &
-      ci=-6.70800000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-6.70800000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu98 = &
@@ -3612,7 +3992,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R116", &
       ref="tcRK", &
-      ci=5.60370000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.60370000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx58 = &
@@ -3660,7 +4044,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R12", &
       ref="tcPR", &
-      ci=-4.23300000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.23300000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu100 = &
@@ -3674,7 +4062,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R12", &
       ref="tcRK", &
-      ci=7.93010000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.93010000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx59 = &
@@ -3722,7 +4114,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R1234yf", &
       ref="tcPR", &
-      ci=4.91000000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.91000000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu102 = &
@@ -3736,7 +4132,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R1234yf", &
       ref="tcRK", &
-      ci=1.42961000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.42961000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx60 = &
@@ -3784,7 +4184,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R1234ze", &
       ref="tcPR", &
-      ci=-1.47890000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.47890000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu104 = &
@@ -3798,7 +4202,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R1234ze", &
       ref="tcRK", &
-      ci=1.16861000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.16861000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx61 = &
@@ -3846,7 +4254,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R124", &
       ref="tcPR", &
-      ci=-3.07770000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.07770000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu106 = &
@@ -3860,7 +4272,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R124", &
       ref="tcRK", &
-      ci=1.06893000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.06893000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx62 = &
@@ -3942,7 +4358,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R125", &
       ref="tcPR", &
-      ci=-1.45020000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.45020000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu108 = &
@@ -3956,7 +4376,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R125", &
       ref="tcRK", &
-      ci=1.04040000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.04040000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx64 = &
@@ -4004,7 +4428,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R13", &
       ref="tcPR", &
-      ci=-3.88590000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.88590000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu110 = &
@@ -4018,7 +4446,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R13", &
       ref="tcRK", &
-      ci=6.25440000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.25440000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx65 = &
@@ -4066,7 +4498,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R134a", &
       ref="tcPR", &
-      ci=2.19800000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.19800000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu112 = &
@@ -4080,7 +4516,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R134a", &
       ref="tcRK", &
-      ci=1.38434000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.38434000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx66 = &
@@ -4128,7 +4568,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R14", &
       ref="tcPR", &
-      ci=-4.52580000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.52580000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu114 = &
@@ -4142,7 +4586,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R14", &
       ref="tcRK", &
-      ci=3.34870000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.34870000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx67 = &
@@ -4190,7 +4638,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R142b", &
       ref="tcPR", &
-      ci=-2.19000000e-08 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-2.19000000e-08, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu116 = &
@@ -4204,7 +4656,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R142b", &
       ref="tcRK", &
-      ci=1.30216000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.30216000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx68 = &
@@ -4252,7 +4708,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R143a", &
       ref="tcPR", &
-      ci=4.78330000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.78330000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu118 = &
@@ -4266,7 +4726,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R143a", &
       ref="tcRK", &
-      ci=1.65099000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.65099000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx69 = &
@@ -4314,7 +4778,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R152a", &
       ref="tcPR", &
-      ci=5.59180000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.59180000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu120 = &
@@ -4328,7 +4796,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R152a", &
       ref="tcRK", &
-      ci=1.64932000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.64932000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx70 = &
@@ -4376,7 +4848,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R21", &
       ref="tcPR", &
-      ci=-1.78500000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.78500000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu122 = &
@@ -4390,7 +4866,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R21", &
       ref="tcRK", &
-      ci=9.50530000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.50530000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx71 = &
@@ -4438,7 +4918,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R218", &
       ref="tcPR", &
-      ci=-1.06166000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.06166000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu124 = &
@@ -4452,7 +4936,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R218", &
       ref="tcRK", &
-      ci=5.58080000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.58080000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx72 = &
@@ -4500,7 +4988,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R22", &
       ref="tcPR", &
-      ci=-1.18800000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-1.18800000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu126 = &
@@ -4514,7 +5006,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R22", &
       ref="tcRK", &
-      ci=9.50070000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.50070000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx73 = &
@@ -4562,7 +5058,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R23", &
       ref="tcPR", &
-      ci=2.94380000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.94380000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu128 = &
@@ -4576,7 +5076,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R23", &
       ref="tcRK", &
-      ci=1.08742000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.08742000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx74 = &
@@ -4624,7 +5128,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R32", &
       ref="tcPR", &
-      ci=7.19530000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.19530000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu130 = &
@@ -4638,7 +5146,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R32", &
       ref="tcRK", &
-      ci=1.49356000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.49356000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx75 = &
@@ -4686,7 +5198,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="R41", &
       ref="tcPR", &
-      ci=6.15490000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.15490000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu132 = &
@@ -4700,7 +5216,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="R41", &
       ref="tcRK", &
-      ci=1.31619000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.31619000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx76 = &
@@ -4748,7 +5268,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="F6S", &
       ref="tcPR", &
-      ci=-5.49410000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-5.49410000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu134 = &
@@ -4762,7 +5286,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="F6S", &
       ref="tcRK", &
-      ci=5.39720000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.39720000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx77 = &
@@ -4810,7 +5338,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="SO2", &
       ref="tcPR", &
-      ci=-4.93000000e-08 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-4.93000000e-08, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu136 = &
@@ -4824,7 +5356,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="SO2", &
       ref="tcRK", &
-      ci=6.99930000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.99930000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx78 = &
@@ -4872,7 +5408,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="F4N2", &
       ref="tcPR", &
-      ci=0.00000000e+00 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=0.00000000e+00, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu138 = &
@@ -4886,7 +5426,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="F4N2", &
       ref="tcRK", &
-      ci=0.00000000e+00 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=0.00000000e+00, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx79 = &
@@ -4941,7 +5485,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="TOLU", &
       ref="tcPR", &
-      ci=1.23690000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.23690000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc43 = &
@@ -4962,7 +5510,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="TOLU", &
       ref="tcRK", &
-      ci=1.96684000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.96684000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx80 = &
@@ -5051,7 +5603,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="H2O", &
       ref="tcPR", &
-      ci=5.30410000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.30410000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu142 = &
@@ -5072,7 +5628,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="H2O", &
       ref="tcRK", &
-      ci=8.99950000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.99950000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx82 = &
@@ -5168,7 +5728,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC4", &
       ref="tcPR", &
-      ci=-3.58180000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-3.58180000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc48 = &
@@ -5196,7 +5760,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC4", &
       ref="tcRK", &
-      ci=1.09178000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.09178000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx84 = &
@@ -5244,7 +5812,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC10", &
       ref="tcPR", &
-      ci=1.28105000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.28105000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu146 = &
@@ -5258,7 +5830,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC10", &
       ref="tcRK", &
-      ci=4.85857000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.85857000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx85 = &
@@ -5306,7 +5882,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC22", &
       ref="tcPR", &
-      ci=8.51555000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.51555000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu148 = &
@@ -5320,7 +5900,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC22", &
       ref="tcRK", &
-      ci=1.71456100e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.71456100e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx86 = &
@@ -5368,7 +5952,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC20", &
       ref="tcPR", &
-      ci=6.37019000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.37019000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu150 = &
@@ -5382,7 +5970,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC20", &
       ref="tcRK", &
-      ci=1.40431300e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.40431300e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx87 = &
@@ -5430,7 +6022,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC21", &
       ref="tcPR", &
-      ci=7.24116000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.24116000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu152 = &
@@ -5444,7 +6040,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC21", &
       ref="tcRK", &
-      ci=1.53342200e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.53342200e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx88 = &
@@ -5492,7 +6092,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC17", &
       ref="tcPR", &
-      ci=5.24579000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.24579000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu154 = &
@@ -5506,7 +6110,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC17", &
       ref="tcRK", &
-      ci=1.17184700e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.17184700e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx89 = &
@@ -5568,7 +6176,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC7", &
       ref="tcPR", &
-      ci=3.09080000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.09080000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc52 = &
@@ -5596,7 +6208,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC7", &
       ref="tcRK", &
-      ci=2.78263000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.78263000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx90 = &
@@ -5655,7 +6271,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC16", &
       ref="tcPR", &
-      ci=5.19037000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.19037000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu158 = &
@@ -5669,7 +6289,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC16", &
       ref="tcRK", &
-      ci=1.13300800e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.13300800e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx91 = &
@@ -5731,7 +6355,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC6", &
       ref="tcPR", &
-      ci=7.92500000e-07 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.92500000e-07, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc56 = &
@@ -5759,7 +6387,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC6", &
       ref="tcRK", &
-      ci=2.20445000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.20445000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx92 = &
@@ -5807,7 +6439,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC9", &
       ref="tcPR", &
-      ci=9.31890000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.31890000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu162 = &
@@ -5821,7 +6457,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC9", &
       ref="tcRK", &
-      ci=4.13357000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.13357000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx93 = &
@@ -5869,7 +6509,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC18", &
       ref="tcPR", &
-      ci=5.90709000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.90709000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu164 = &
@@ -5883,7 +6527,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC18", &
       ref="tcRK", &
-      ci=1.27994400e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.27994400e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx94 = &
@@ -5945,7 +6593,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC8", &
       ref="tcPR", &
-      ci=6.41340000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.41340000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: mc60 = &
@@ -5973,7 +6625,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC8", &
       ref="tcRK", &
-      ci=3.48304000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.48304000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx95 = &
@@ -6021,7 +6677,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC25", &
       ref="tcPR", &
-      ci=1.05664500e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.05664500e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu168 = &
@@ -6035,7 +6695,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC25", &
       ref="tcRK", &
-      ci=2.11001600e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.11001600e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx96 = &
@@ -6083,7 +6747,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC15", &
       ref="tcPR", &
-      ci=4.53108000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=4.53108000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu170 = &
@@ -6097,7 +6765,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC15", &
       ref="tcRK", &
-      ci=1.02313400e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.02313400e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx97 = &
@@ -6207,7 +6879,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC14", &
       ref="tcPR", &
-      ci=3.96525000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.96525000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu172 = &
@@ -6221,7 +6897,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC14", &
       ref="tcRK", &
-      ci=9.26542000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=9.26542000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx99 = &
@@ -6269,7 +6949,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC24", &
       ref="tcPR", &
-      ci=8.96547000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.96547000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu174 = &
@@ -6283,7 +6967,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC24", &
       ref="tcRK", &
-      ci=1.83043000e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.83043000e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx100 = &
@@ -6331,7 +7019,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC23", &
       ref="tcPR", &
-      ci=8.45878000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=8.45878000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu176 = &
@@ -6345,7 +7037,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC23", &
       ref="tcRK", &
-      ci=1.73915900e-04 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.73915900e-04, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx101 = &
@@ -6393,7 +7089,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC13", &
       ref="tcPR", &
-      ci=3.00534000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.00534000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu178 = &
@@ -6407,7 +7107,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC13", &
       ref="tcRK", &
-      ci=7.83925000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=7.83925000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx102 = &
@@ -6455,7 +7159,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC11", &
       ref="tcPR", &
-      ci=1.81817000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=1.81817000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu180 = &
@@ -6469,7 +7177,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC11", &
       ref="tcRK", &
-      ci=5.80492000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=5.80492000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx103 = &
@@ -6517,7 +7229,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="NC12", &
       ref="tcPR", &
-      ci=2.20285000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=2.20285000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu182 = &
@@ -6531,7 +7247,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="NC12", &
       ref="tcRK", &
-      ci=6.56626000e-05 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=6.56626000e-05, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
 

@@ -112,6 +112,8 @@ append_export("thermopack_getkij")
 append_export("thermopack_setkijandji")
 append_export("thermopack_gethvparam")
 append_export("thermopack_sethvparam")
+append_export("thermopack_get_volume_shift_parameters")
+append_export("thermopack_set_volume_shift_parameters")
 
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")

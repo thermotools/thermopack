@@ -33,6 +33,8 @@ libthermopack {
 	thermopack_setkijandji_;
 	thermopack_gethvparam_;
 	thermopack_sethvparam_;
+	thermopack_get_volume_shift_parameters_;
+	thermopack_set_volume_shift_parameters_;
 	*get_bp_term*;
 	*vllebinaryxy*;
 	*global_binary_plot*;

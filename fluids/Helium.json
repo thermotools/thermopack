@@ -89,7 +89,10 @@
     "volume_shift": {
       "ref": "tcRK",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
-      "ci": -1.4608e-06
+      "ciA": -1.4608e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
     }
   },
   "PR": {
@@ -106,20 +109,26 @@
       "ref": "QuantumCubic",
       "bib_reference": "10.1016/j.fluid.2020.112790",
       "correlation": [
-	0.48558,
-	1.7173,
-	0.30271
+        0.48558,
+        1.7173,
+        0.30271
       ]
     },
     "volume_shift-1": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
-      "ci": -4.8915e-06
+      "ciA": -4.8915e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
     },
     "volume_shift-2": {
       "ref": "QuantumCubic",
       "bib_reference": "10.1016/j.fluid.2020.112790",
-      "ci": -3.1791e-06
+      "ciA": -3.1791e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
     }
   }
 }
