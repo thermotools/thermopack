@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2021-06-15T14:44:59.475004
+!! Time stamp: 2021-06-27T20:40:30.227534
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb
@@ -1980,7 +1980,11 @@ module compdatadb
       cidatadb(eosid="PR", &
       cid="H2O2", &
       ref="tcPR", &
-      ci=-8.74100000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=-8.74100000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (alphadatadb), parameter :: twu49 = &
@@ -1994,7 +1998,11 @@ module compdatadb
       cidatadb(eosid="SRK", &
       cid="H2O2", &
       ref="tcRK", &
-      ci=3.35320000e-06 &
+      bib_ref="10.1016/j.fluid.2016.09.003", &
+      ciA=3.35320000e-06, &
+      ciB=0.00000000e+00, &
+      ciC=0.00000000e+00, &
+      c_type=1 &
       )
 
   type (gendatadb), parameter :: cx30 = &
