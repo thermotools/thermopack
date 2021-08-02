@@ -348,10 +348,19 @@ contains
   !> Initialize translated and consistent cubic EoS by le Guennec et al.
   ! (10.1016/j.fluid.2016.09.003)
   !----------------------------------------------------------------------------
-  subroutine init_tcPR(comps, mixing)
+  subroutine init_tcPR(comps, mixing, parameter_ref)
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in), optional :: mixing !< Mixing rule
-    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="tcPR")
+    character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
+    !
+    character(len=200) :: parameter_reference
+    type(thermo_model), pointer      :: act_mod_ptr
+    parameter_reference = "tcPR"
+    if (present(parameter_ref)) then
+      parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
+    endif
+    call init_cubic(eos="PR", comps=comps, mixing=mixing, &
+         parameter_reference=parameter_reference)
   end subroutine init_tcPR
 
   !----------------------------------------------------------------------------
@@ -1035,7 +1044,6 @@ contains
 
     call init_thermopack("LK","CLASSIC", &
          "CLASSIC", nphase=3, kij_ref=param_ref)
-
     ! Set globals
     call update_global_variables_form_active_thermo_model()
 
