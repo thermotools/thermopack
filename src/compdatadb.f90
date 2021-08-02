@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2021-08-02T13:32:04.332583
+!! Time stamp: 2021-08-02T14:35:51.331965
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb
@@ -5634,8 +5634,8 @@ module compdatadb
       cid="H2O", &
       ref="tcPR-ENGINEERING", &
       bib_ref="", &
-      ciA=8.12803800e-08, &
-      ciB=-1.04455800e-08, &
+      ciA=-8.12803800e-08, &
+      ciB=1.04455800e-08, &
       ciC=0.00000000e+00, &
       c_type=2 &
       )
