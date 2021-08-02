@@ -217,9 +217,8 @@ class comp_list(object):
         self.nMC = None
         self.nVS = None
         if path is None:
-            file_list = os.listdir("../../fluids/")
-        else:
-            file_list = os.listdir(path)
+            path = "../../fluids/"
+        file_list = os.listdir(path)
         file_list.sort()
         self.comp_list = []
         for fl in file_list:
@@ -465,3 +464,7 @@ class comp_list(object):
             self.nVS += 1
         return line
 
+
+if __name__ == "__main__":
+    compl = comp_list()
+    compl.save_fortran_file("compdatadb.f90")

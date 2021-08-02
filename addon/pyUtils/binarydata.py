@@ -328,3 +328,9 @@ class binary_list(object):
             line = line.replace("LIJTAG",lijtag)
             self.nLIJ += 1
         return line
+
+
+if __name__ == "__main__":
+    binl = binary_list()
+    binl.save_fortran_file("mixdatadb.f90")
+
