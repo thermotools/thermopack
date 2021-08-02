@@ -121,7 +121,7 @@
         0.317
       ]
     },
-    "volume_shift": {
+    "volume_shift-1": {
       "ref": "tcPR",
       "bib_reference": "10.1016/j.fluid.2016.09.003",
       "ciA": 5.3041e-06,
@@ -129,13 +129,13 @@
       "ciC": 0.0,
       "correlation": 1
     },
-    "volume_shift": {
+    "volume_shift-2": {
       "ref": "tcPR-ENGINEERING",
       "bib_reference": "",
       "ciA": 8.128038e-8,
       "ciB": -1.044558e-8,
       "ciC": 0.0,
-      "correlation": 1
+      "correlation": 2
     }
   }
 }
