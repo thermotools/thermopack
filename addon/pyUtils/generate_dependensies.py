@@ -76,23 +76,26 @@ def save_make_lines(filename, make_lines):
         for line in make_lines:
             f.write(line+"\n")
 
-# Source files
-file_list = os.listdir("../../src/")
-# Possible module names
-module_list = []
-for f in file_list:
-    mod_name = f.split(".")[0]
-    module_list.append(mod_name)
+
+if __name__ == "__main__":
+    # Source files
+    file_list = os.listdir("../../src/")
+    file_list.sort()
+    # Possible module names
+    module_list = []
+    for f in file_list:
+        mod_name = f.split(".")[0]
+        module_list.append(mod_name)
 
 
-# Generate make_file to be copied to Makefile.code
-make_lines = []
-for fl in file_list:
-    filepath = os.path.join("../../src/", fl)
-    deps = get_file_dependencies(filepath, module_list)
-    lines = build_make_string(filepath, deps)
-    for line in lines:
-        make_lines.append(line)
-    print(fl, ": ", deps)
-    print(lines)
+    # Generate make_file to be copied to Makefile.code
+    make_lines = []
+    for fl in file_list:
+        filepath = os.path.join("../../src/", fl)
+        deps = get_file_dependencies(filepath, module_list)
+        lines = build_make_string(filepath, deps)
+        for line in lines:
+            make_lines.append(line)
+        print(fl, ": ", deps)
+        print(lines)
     save_make_lines("make_file", make_lines)
