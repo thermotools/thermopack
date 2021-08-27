@@ -149,6 +149,7 @@ class binary_list(object):
         if path is None:
             path = "../../binaries/"
         file_list = os.listdir(path)
+        file_list.sort()
         self.bin_list = []
         for fl in file_list:
             filepath = os.path.join(path, fl)
