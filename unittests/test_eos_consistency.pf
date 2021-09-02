@@ -335,7 +335,7 @@ contains
     ciB=3.0e-8
     ciC=7.0e-11
     ci_type=3
-    call thermopack_set_volume_shift_parameter(1,ciA,ciB,ciC,ci_type)
+    call thermopack_set_volume_shift_parameters(1,ciA,ciB,ciC,ci_type)
   end subroutine dummy_quadratic_vol_shift
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
