@@ -1965,5 +1965,19 @@
     "ref": "Default",
     "bib_reference": "",
     "kij":  -0.05
+  },
+  "vdW-282": {
+    "comp1": "H2O2",
+    "comp2": "O2",
+    "ref": "tcPR-ENGINEERING",
+    "bib_reference": "",
+    "kij":  -0.75
+  },
+  "vdW-283": {
+    "comp1": "H2O",
+    "comp2": "O2",
+    "ref": "tcPR-ENGINEERING",
+    "bib_reference": "",
+    "kij":  -0.26
   }
 }

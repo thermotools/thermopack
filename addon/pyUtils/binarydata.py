@@ -149,6 +149,7 @@ class binary_list(object):
         if path is None:
             path = "../../binaries/"
         file_list = os.listdir(path)
+        file_list.sort()
         self.bin_list = []
         for fl in file_list:
             filepath = os.path.join(path, fl)
@@ -328,3 +329,9 @@ class binary_list(object):
             line = line.replace("LIJTAG",lijtag)
             self.nLIJ += 1
         return line
+
+
+if __name__ == "__main__":
+    binl = binary_list()
+    binl.save_fortran_file("mixdatadb.f90")
+
