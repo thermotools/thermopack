@@ -1,7 +1,7 @@
 # Thermopack
 Thermopack is a thermodynamics library for multi-component and multi-phase
 thermodynamics developed at [SINTEF Energy
-Resarch](https://www.sintef.no/en/sintef-energy/). Through decades of research,
+Research](https://www.sintef.no/en/sintef-energy/). Through decades of research,
 we have developed a software that performs thermodynamic calculations. A large
 selection of equations of state has been implemented in this software. Most of
 these equations of state have been developed by other research groups around
@@ -143,6 +143,13 @@ mingw32-make.exe optim
 See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
 how to install pycThermopack for the MSYS2 environment.
 
+### Docker setup
+See [addon/docker/README.md](addon/docker/README.md) for
+available Dockerfiles to run Thermopack with docker.
+
+### CMake setup
+See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
+
 ## File System
 Brief description of file structure:
 
@@ -182,7 +189,7 @@ rules:
 [Thermodynamic models to accurately describe the PVTxy-behavior of water/carbon dioxide mixtures](https://doi.org/10.1016/j.fluid.2017.02.006)
 
 - Using dry-ice and water-ice model or the tc-PR/tc-RK:  
-[Depressurization of CO<sub>2</sub>-N<sub>2</sub> and CO<sub>2</sub>-He in a pipe: Experiments and modelling of pressure and temperature dynamics (To be published)](https://doi.org/XXXto_be_publishedXXX)
+[Depressurization of CO<sub>2</sub>-N<sub>2</sub> and CO<sub>2</sub>-He in a pipe: Experiments and modelling of pressure and temperature dynamics](https://doi.org/10.1016/j.ijggc.2021.103361)
 
 - Energy-density and entropy-density flashes:  
 [The influence of CO2 mixture composition and equations of state on simulations of transient pipeline decompression](https://doi.org/10.1016/j.ijggc.2016.07.004)

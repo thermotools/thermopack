@@ -174,7 +174,7 @@ submodule (compdata) comp_init
      cpidx = getCpDBindex(cname, ref)
      c%id_cp = cpdb(cpidx)
      ! Init parameters set elsewhere
-     c%ci = 0
+     call c%cid%set_zero_vol_trs()
      c%assoc_scheme = 0
    end subroutine gendata_init_from_name
 

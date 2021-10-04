@@ -43,7 +43,7 @@ python3 makescript.py optim
 ```
 
 One may also, optionally, install `pyctp` on a user or system level, which
-allwos one to import pycThermopack from anywhere. If this is desired, one can
+allows one to import pycThermopack from anywhere. If this is desired, one can
 either install at system level or at user level with
 [pip](https://pypi.org/project/pip/). Use `pip3` for Python 3, as `pip` often
 defaults to `pip` for Python 2.
@@ -73,13 +73,15 @@ license) in `../../MSVStudio`, and `libthermopack.dll` will be copied to the
 pyctp folder.
 
 #### MSYS2/Mingw-W64 setup
-Having compiled thermopack for MSYS2, you can get pycThermopack up and running, using the `MSYS2 MinGW 64-bit` application, as follows:
+Having compiled thermopack for MSYS2, you can get pycThermopack up and running
+as follows. Open the `MSYS2 MinGW 64-bit` application, navigate to the
+thermopack folder and run the following commands:
 
 ```bash
 pacman -S mingw-w64-x86_64-python
 pacman -S mingw-w64-x86_64-python-numpy
 pacman -S mingw-w64-x86_64-python-matplotlib
-cp bin/bin/dynamic/libthermopack_debug_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
+cp bin/dynamic/libthermopack_optim_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
 cd addon/pyExamples
 python cpa.py
 ```

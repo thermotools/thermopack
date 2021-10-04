@@ -33,6 +33,8 @@ class cubic(thermo.thermopack):
         self.s_get_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_gethvparam"))
         self.s_set_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_sethvparam"))
 
+        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
+        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
 
     #################################
     # Init
@@ -268,3 +270,65 @@ class cubic(thermo.thermopack):
                             byref(b_ji_c),
                             byref(c_ij_c),
                             byref(c_ji_c))
+
+    def get_ci(self, cidx):
+        """Get volume correction parameters
+
+        Args:
+            cidx (int): Component index
+
+        Returns:
+            ciA (float): Volume shift param of component cidx (m3/mol)
+            ciB (float): Volume shift param of component cidx (m3/mol/K)
+            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
+            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
+        """
+        cidx_c = c_int(cidx)
+        ciA_c = c_double(0.0)
+        ciB_c = c_double(0.0)
+        ciC_c = c_double(0.0)
+        ci_type_c = c_int(0)
+        self.s_get_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_int)]
+
+        self.s_get_ci.restype = None
+
+        self.s_get_ci(byref(cidx_c),
+                      byref(ciA_c),
+                      byref(ciB_c),
+                      byref(ciC_c),
+                      byref(ci_type_c))
+
+        return ciA_c.value, ciB_c.value, ciC_c.value, ci_type_c.value
+
+    def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ci_type=1):
+        """Set volume correction parametrs
+
+        Args:
+            cidx (int): Component index
+            ciA (float): Volume shift param of component cidx (m3/mol)
+            ciB (float): Volume shift param of component cidx (m3/mol/K)
+            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
+            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
+        """
+        cidx_c = c_int(cidx)
+        ciA_c = c_double(ciA)
+        ciB_c = c_double(ciB)
+        ciC_c = c_double(ciC)
+        ci_type_c = c_int(ci_type)
+        self.s_set_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_int)]
+
+        self.s_set_ci.restype = None
+
+        self.s_set_ci(byref(cidx_c),
+                      byref(ciA_c),
+                      byref(ciB_c),
+                      byref(ciC_c),
+                      byref(ci_type_c))

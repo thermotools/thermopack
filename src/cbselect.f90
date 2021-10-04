@@ -466,56 +466,73 @@ contains
     found = .false.
     eosid_local = eosid
     if (cbeos%eosidx == eosLK) then
-       eosid_local = 'LK'
-       kijvalue = 1.0 !< Default value - no interaction
+      eosid_local = 'LK'
+      kijvalue = 1.0 !< Default value - no interaction
     else
-       kijvalue = 0.0 !< Default value - no interaction
+      kijvalue = 0.0 !< Default value - no interaction
     endif
 
     found = .false.
     kijvalue = 0
     idx_lowest = 100000
     do i=1,maxkij
-       candidate_found = str_eq (eosid_local,kijdb(i)%eosid) .and. str_eq(mruleid,kijdb(i)%mruleid) &
-            .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
-            .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
-       if (candidate_found) then
-          if (.not. found) then ! we at least found one match
-             kijvalue = kijdb(i)%kijvalue
-          end if
-          found = .true.
+      candidate_found = str_eq (eosid_local,kijdb(i)%eosid) .and. str_eq(mruleid,kijdb(i)%mruleid) &
+           .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
+           .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
+      if (candidate_found) then
+        if (.not. found) then ! we at least found one match
+          kijvalue = kijdb(i)%kijvalue
+        end if
+        found = .true.
 
-          call string_match_val(ref,kijdb(i)%ref,ref_match,match_val)
-          if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
-             idx_lowest = match_val
-             kijvalue = kijdb(i)%kijvalue
-          end if
-       end if
+        call string_match_val(ref,kijdb(i)%ref,ref_match,match_val)
+        if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
+          idx_lowest = match_val
+          kijvalue = kijdb(i)%kijvalue
+        end if
+      end if
     enddo
   end function getkij
 
-  function getlij (cbeos, eosid, mruleid, ref, uid1, uid2) result(lijvalue)
-    use mixdatadb
-    use eosdata
-    use stringmod, only: str_eq, string_match_val
+  function getlij(cbeos, eosid, mruleid, ref, uid1, uid2) result(lijvalue)
+    use mixdatadb, only: lijdb, maxlij
+    use stringmod, only: str_eq, string_match_val, str_upcase
     use cubic_eos, only: cb_eos
     implicit none
     class(cb_eos), intent(inout) :: cbeos
-    character(len=*), intent(in) :: eosid, mruleid, uid1, uid2, ref
-    logical :: ref_match
-    integer :: match_val
+    character(len=*), intent(in) :: eosid
+    character(len=*), intent(in) :: uid1, uid2
+    character(len=*), intent(in) :: mruleid
+    character(len=*), intent(in) :: ref
     real :: lijvalue
-    lijvalue = 0.0
-
-    ! lijvalue nonzero only for the He-H2 binary with Quantum PR
-    if (str_eq(eosid,"PR") .and. str_eq(mruleid,"vdw")  &
-         .and. ((str_eq(uid1,"HE") .and. str_eq(uid2,"H2")) &
-         .or.  ( str_eq(uid1,"H2") .and. str_eq(uid2,"HE")))) then
-       call string_match_val("QuantumCubic", ref, ref_match, match_val)
-       if (ref_match) lijvalue = -0.16
-    end if
+    ! Locals
+    logical :: ref_match
+    integer :: match_val, i, idx_lowest
+    logical :: candidate_found
+    character(len=len_trim(ref)+8) :: ref_local
+    !
+    ! Use default value if possible:
+    ref_local = trim(ref)
+    call str_upcase(ref_local)
+    if (index(ref_local,"DEFAULT") == 0) then
+      ref_local = trim(ref_local)//"/DEFAULT"
+    endif
+    lijvalue = 0
+    idx_lowest = 100000
+    do i=1,maxlij
+      candidate_found = str_eq(eosid,lijdb(i)%eosid) &
+            .and. str_eq(mruleid,lijdb(i)%mruleid) &
+            .and. ((str_eq(uid1,lijdb(i)%uid1) .and. str_eq(uid2,lijdb(i)%uid2)) &
+            .or.  ( str_eq(uid1,lijdb(i)%uid2) .and. str_eq(uid2,lijdb(i)%uid1)))
+      if (candidate_found) then
+        call string_match_val(ref_local,lijdb(i)%ref,ref_match,match_val)
+        if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
+          idx_lowest = match_val
+          lijvalue = lijdb(i)%lijvalue
+        end if
+      end if
+    enddo
   end function getlij
-
 
   subroutine getInterDataGEij(mGE, eosid, ref, uid1, uid2, &
        indxi, indxj, found)

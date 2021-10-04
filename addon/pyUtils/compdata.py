@@ -151,7 +151,11 @@ class component(object):
         code_lines.append(3*I + "cidatadb(eosid=\"" + eos + "\", &")
         code_lines.append(3*I + "cid=\"" + self.comp["ident"] + "\", &")
         code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
-        code_lines.append(3*I + 'ci={:.8e} &'.format(d["ci"]))
+        code_lines.append(3*I + "bib_ref=\"" + d["bib_reference"] + "\", &")
+        code_lines.append(3*I + 'ciA={:.8e}, &'.format(d["ciA"]))
+        code_lines.append(3*I + 'ciB={:.8e}, &'.format(d["ciB"]))
+        code_lines.append(3*I + 'ciC={:.8e}, &'.format(d["ciC"]))
+        code_lines.append(3*I + 'c_type={:d} &'.format(d["correlation"]))
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -213,9 +217,8 @@ class comp_list(object):
         self.nMC = None
         self.nVS = None
         if path is None:
-            file_list = os.listdir("../../fluids/")
-        else:
-            file_list = os.listdir(path)
+            path = "../../fluids/"
+        file_list = os.listdir(path)
         file_list.sort()
         self.comp_list = []
         for fl in file_list:
@@ -461,3 +464,7 @@ class comp_list(object):
             self.nVS += 1
         return line
 
+
+if __name__ == "__main__":
+    compl = comp_list()
+    compl.save_fortran_file("compdatadb.f90")

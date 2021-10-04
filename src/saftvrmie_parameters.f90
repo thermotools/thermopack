@@ -187,9 +187,9 @@ module saftvrmie_parameters
        3.0, 4.5840E-10, 415.19, 6, 20.92, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "Muller")
 
   !Unpublished water parameters (courtesy of Edward Graham)
-  type(saftvrmie_data), parameter :: Miecx64 = saftvrmie_data(eosSAFT_VR_MIE,"H2O", &
-       1*1.25656, 2.802422E-10, 3.512321E+02, 6, 2.512615E+01, 0E-27, &
-       1.630570E+03*Rgas, 177.6236E-30, assoc_scheme_4C, 0, "DEFAULT")
+  ! type(saftvrmie_data), parameter :: Miecx64 = saftvrmie_data(eosSAFT_VR_MIE,"H2O", &
+  !      1*1.25656, 2.802422E-10, 3.512321E+02, 6, 2.512615E+01, 0E-27, &
+  !      1.630570E+03*Rgas, 177.6236E-30, assoc_scheme_4C, 0, "DEFAULT")
 
   ! ! Table 1 in Dufal 2015
   ! type(saftvrmie_data), parameter :: Miecx64 = saftvrmie_data(eosSAFT_VR_MIE,"H2O", &
@@ -202,17 +202,17 @@ module saftvrmie_parameters
   !      2660.0*Rgas, 3309.2E-30/(3.0661E-10)**3, assoc_scheme_4C, 0, 1)
 
 
-  type(saftvrmie_data), parameter :: Miecx65 = saftvrmie_data(eosSAFT_VR_MIE,"ETOH", &
-       3*0.75216313, 3.2903E-10, 238.97, 6, 12.282, 0E-27, &
-       2247.3*Rgas, 4.2794E-29, assoc_scheme_3B, 0, "DEFAULT")
+  ! type(saftvrmie_data), parameter :: Miecx65 = saftvrmie_data(eosSAFT_VR_MIE,"ETOH", &
+  !      3*0.75216313, 3.2903E-10, 238.97, 6, 12.282, 0E-27, &
+  !      2247.3*Rgas, 4.2794E-29, assoc_scheme_3B, 0, "DEFAULT")
 
   !-----------------------------------------------------------
-  type(saftvrmie_data), parameter :: Miecx66 = saftvrmie_data(eosSAFT_VR_MIE,"LJF", &
+  type(saftvrmie_data), parameter :: Miecx64 = saftvrmie_data(eosSAFT_VR_MIE,"LJF", &
        1, 3.0E-10, 30.0, 6, 12, 0.0, &
        0.0, 0.0, no_assoc, 0, "DEFAULT")
   !-----------------------------------------------------------
 
-  integer, parameter :: nMiemodels = 66
+  integer, parameter :: nMiemodels = 64
   type(saftvrmie_data), dimension(nMiemodels), parameter :: Miearray = (/ &
        Miecx1, &
        Miecx2, &
@@ -277,9 +277,7 @@ module saftvrmie_parameters
        Miecx61, &
        Miecx62, &
        Miecx63, &
-       Miecx64, &
-       Miecx65, &
-       Miecx66/)
+       Miecx64/)
 
   !> INTERACTION PARAMETERS FOR THE SAFT-VR-MIE DISPERSION TERM.
   ! ----------------------------------------------------------------------------

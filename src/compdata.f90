@@ -2,39 +2,6 @@
 !! After initialisation of a mixture, data from the database "compdatadb.f90"
 !! are selected and copied into the working array "comp" of active components.
 !!
-!! Available CP-ideal correlations can vary, depending on the fluid.
-!!
-!! The ones that are in use are:
-!!\verbatim
-!! CPTYPE   - METHOD FOR IDEAL-GAS HEAT-CAPACITY CALCULATION                *
-!!             - 1 : SHERWOOD, REID & PRAUSNITZ, THIRD EDITION              *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3                    (cal/gmol K) *
-!!             - 2 : API-PROJECT 44                                         *
-!!             - 3 : HYPOTETIC COMPONENTS                                   *
-!!             - 4 : SHERWOOD, REID & PRAUSNITZ, FOURTH EDITION             *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3                    (J/mol K)    *
-!!             - 5 : ICI (KRISTER STR\M)                                    *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3 + CP(5)/T**2           (kJ/kgK) *
-!!             - 6 : CHEN, BENDER (PETTER NEKSÅ)                            *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)*T**2 +             *
-!!                               CP(4)*T**3+ CP(5)*T**4        (kJ/kg K)    *
-!!             - 7 : AIChE, Daubert and Danner, DIPPR-databasen             *
-!!                   CP(ideal) = A + B[(C/T)/sinh(C/T)]**2                  *
-!!                               + D[(E/T)/cosh(E/T)]**2      (J/(kmol K))  *
-!!             - 8 : POLING, PRAUSNITZ & O'CONNEL, FIFTH EDITION            *
-!!                   CP(ideal)/R = CP(1) + CP(2)*T + CP(3)*T**2 +           *
-!!                               CP(4)*T**3 + CP(5)*T**4       (-)          *
-!!             - 9 : Linear function and fraction (J/mol/K)                 *
-!!                   CP(ideal) = CP(1) + CP(2)*T + CP(3)/(T + CP(4))        *
-!!                                                                          *
-!!             -10 : Leachman (NIST) and Valenta expression H2              *
-!!                                                                          *
-!!             -11 : Use TREND model                                        *
-!! \endverbatim
-!!
 module compdata
   use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen, &
        comp_name_len, formula_len
@@ -54,7 +21,8 @@ module compdata
        CP_POLY4_SI=8, &
        CP_MOGENSEN_SI=9, &
        CP_H2_KMOL=10, &
-       CP_TREND_SI=11
+       CP_TREND_SI=11, &
+       CP_SHOMATE_SI=12
 
   !> Ideal heat capacity at constant pressure
   type :: cpdata
@@ -78,13 +46,20 @@ module compdata
     real :: coeff(3)
   end type alphadatadb
 
-  !> Volume shift parameter
+  integer, parameter :: VS_CONSTANT = 1, VS_LINEAR = 2, VS_QUADRATIC = 3
+  !> Volume shift parameters
   type :: cidatadb
     character (len=uid_len) :: cid !< The component ID
     character (len=ref_len) :: ref !< Data group reference
     character (len=eosid_len) :: eosid !< EOS identifyer
-    !character (len=bibref_len) :: bib_ref !< Bibliograpich reference
-    real :: ci                            !< Volume shift (m3/mol)
+    character (len=bibref_len) :: bib_ref !< Bibliograpich reference
+    integer :: c_type = VS_CONSTANT !< VS_CONSTANT, VS_LINEAR, VS_QUADRATIC
+    real :: ciA = 0 !< Volume shift (m3/mol)
+    real :: ciB = 0 !< Volume shift (m3/mol/K)
+    real :: ciC = 0 !< Volume shift (m3/mol/K/K)
+  contains
+    procedure, public :: get_vol_trs_c => cidatadb_get_vol_trs_c
+    procedure, public :: set_zero_vol_trs => cidatadb_set_zero_vol_trs
   end type cidatadb
 
   type :: gendatadb
@@ -116,7 +91,7 @@ module compdata
 
   type, extends(gendatadb) :: gendata
     type(cpdata) :: id_cp          !< Ideal gas Cp correlation
-    real  :: ci                    !< Volume shift parameter [m3/mol]
+    type(cidatadb) :: cid          !< Volume shift parameters
     integer :: assoc_scheme        !< Association scheme for use in the SAFT model. The various schemes are defined in saft_parameters_db.f90.
   contains
     procedure, public :: init_from_name => gendata_init_from_name
@@ -246,7 +221,7 @@ contains
     select type (pc => cmp)
     class is (gendata)
       call assign_gendatadb(this, pc)
-      this%ci = pc%ci
+      this%cid = pc%cid
       this%id_cp = pc%id_cp
       this%assoc_scheme = pc%assoc_scheme
 
@@ -435,5 +410,47 @@ contains
       call deallocate_comp(comp_cpy)
     endif
   end subroutine copy_comp
+
+  subroutine cidatadb_get_vol_trs_c(cid, T, ci, cit, citt, ci_temp_dep)
+    implicit none
+    class(cidatadb), intent(in) :: cid
+    real, intent(in) :: T !< Temperature (K)
+    real, intent(out) :: ci !< Volume translation (m3/mol)
+    real, intent(out) :: cit !< Volume translation differential (m3/mol/K)
+    real, intent(out) :: citt !< Volume translation second differential (m3/mol/K2)
+    logical, intent(out) :: ci_temp_dep !< Volume translation is temp. dependent
+    ! Loclas
+    select case(cid%c_type)
+    case(VS_CONSTANT)
+      ci = cid%ciA
+      cit = 0
+      citt = 0
+      ci_temp_dep = .false.
+    case(VS_LINEAR)
+      ci = cid%ciA + cid%ciB*T
+      cit = cid%ciB
+      citt = 0
+      ci_temp_dep = .true.
+    case(VS_QUADRATIC)
+      ci = cid%ciA + cid%ciB*T + cid%ciC*T**2
+      cit = cid%ciB + 2*cid%ciC*T
+      citt = 2*cid%ciC
+      ci_temp_dep = .true.
+    case default
+      ci = 0
+      cit = 0
+      citt = 0
+      ci_temp_dep = .false.
+    end select
+  end subroutine cidatadb_get_vol_trs_c
+
+  subroutine cidatadb_set_zero_vol_trs(cid)
+    implicit none
+    class(cidatadb), intent(inout) :: cid
+    cid%ciA = 0
+    cid%ciB = 0
+    cid%ciC = 0
+    cid%c_type = VS_CONSTANT
+  end subroutine cidatadb_set_zero_vol_trs
 
 end module compdata
