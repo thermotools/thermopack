@@ -28,7 +28,7 @@ class ljs_bh(thermo.thermopack):
         self.s_ljs_bh_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_model_control"))
 
         # Init methods
-        self.s_eoslibinit_init_ljs_bh = getattr(self.tp, self.get_export_name("eoslibinit", "init_ljs_bh"))
+        self.s_eoslibinit_init_ljs_bh = getattr(self.tp, self.get_export_name("eoslibinit", "init_ljs"))
         self.s_ljs_bh_get_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_get_pure_params"))
         self.s_ljs_bh_set_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_set_pure_params"))
 
@@ -42,21 +42,29 @@ class ljs_bh(thermo.thermopack):
     #################################
 
     def init(self, parameter_reference="Default"):
-        """Initialize Lennard-Jomes splined model in thermopack
+        """Initialize Lennard-Jomes splined model based on Barker-Henderson perturbation theory
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         self.activate()
+        model = "BH"
+        model_string_c = c_char_p(model.encode('ascii'))
+        model_string_len = c_len_type(len(model))
+
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
         self.s_eoslibinit_init_ljs_bh.argtypes = [c_char_p,
+                                                  c_char_p,
+                                                  c_len_type,
                                                   c_len_type]
 
         self.s_eoslibinit_init_ljs_bh.restype = None
 
-        self.s_eoslibinit_init_ljs_bh(ref_string_c,
+        self.s_eoslibinit_init_ljs_bh(model_string_c,
+                                      ref_string_c,
+                                      model_string_len,
                                       ref_string_len)
 
         self.nc = 1

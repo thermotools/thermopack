@@ -1243,21 +1243,25 @@ contains
   !> Calculate x=r/d differentials
   !!
   !! \author Morten Hammer, March 2018
-  subroutine calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x,x_T,x_TT)
+  subroutine calcXDifferentials(s,s_T,s_TT,d,d_T,d_TT,x,x_T,x_TT,assmue_s_of_T)
     ! Input
     real, intent(in) :: d, d_T, d_TT !< Hard sphere diameter
     real, intent(in) :: s, s_T, s_TT !< Effective sigma
+    logical, optional, intent(in) :: assmue_s_of_T
     ! Output
     real, intent(out) :: x !< Reduced center-center hard sphere distance
     real, intent(out) :: x_T !< Reduced center-center hard sphere distance temperature differential
     real, intent(out) :: x_TT !< Reduced center-center hard sphere distance second temperature differential
     ! Locals
+    logical :: assmue_s_of_T_local
     x = s/d
     x_T = -(x/d)*d_T
     x_TT = -2.0*x_T*d_T/d - (x/d)*d_TT
-    if (quantum_correction_hs > 0) then
-       x_T = x_T + s_T/d
-       x_TT = x_TT + s_TT/d - 2.0*s_T*d_T/d**2
+    assmue_s_of_T_local = .false.
+    if (present(assmue_s_of_T)) assmue_s_of_T_local = assmue_s_of_T
+    if (quantum_correction_hs > 0 .OR. assmue_s_of_T_local) then
+      x_T = x_T + s_T/d
+      x_TT = x_TT + s_TT/d - 2.0*s_T*d_T/d**2
     endif
   end subroutine calcXDifferentials
 
