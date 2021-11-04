@@ -734,7 +734,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def enthalpy(self,temp,press,x,phase,dhdt=None,dhdp=None,dhdn=None):
+    def enthalpy(self,temp,press,x,phase,dhdt=None,dhdp=None,dhdn=None,residual=False):
         """ Calculate specific single-phase enthalpy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dhdt, dhdp and dhdn only are flags to enable calculation.
@@ -747,6 +747,7 @@ class thermopack(object):
             dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dhdn (logical, optional): Calculate enthalpy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+            residual (logical, optional): Calculate residual enthalpy. Defaults to False.
 
         Returns:
             float: Specific enthalpy (J/mol), and optionally differentials
@@ -773,7 +774,11 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(x))(0.0)
 
-        residual_c = POINTER(c_int)()
+        if residual:
+            residual_c = POINTER(c_int)(c_int(1))
+        else:
+            residual_c = POINTER(c_int)(c_int(0))
+
         self.s_eos_enthalpy.argtypes = [POINTER( c_double ),
                                         POINTER( c_double ),
                                         POINTER( c_double ),
@@ -806,7 +811,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def entropy(self,temp,press,x,phase,dsdt=None,dsdp=None,dsdn=None):
+    def entropy(self,temp,press,x,phase,dsdt=None,dsdp=None,dsdn=None,residual=False):
         """ Calculate specific single-phase entropy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dsdt, dhsp and dsdn only are flags to enable calculation.
@@ -819,6 +824,7 @@ class thermopack(object):
             dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dsdn (logical, optional): Calculate entropy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+            residual (logical, optional): Calculate residual entropy. Defaults to False.
 
         Returns:
             float: Specific entropy (J/mol/K), and optionally differentials
@@ -844,7 +850,11 @@ class thermopack(object):
             dsdn_c = null_pointer
         else:
             dsdn_c = (c_double * len(x))(0.0)
-        residual_c = POINTER(c_int)()
+
+        if residual:
+            residual_c = POINTER(c_int)(c_int(1))
+        else:
+            residual_c = POINTER(c_int)(c_int(0))
 
         self.s_eos_entropy.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1418,7 +1428,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None, dsdn=None):
+    def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None, dsdn=None, residual=False):
         """Calculate entropy given temperature, volume and mol numbers.
 
         Args:
@@ -1428,6 +1438,7 @@ class thermopack(object):
             dsdt (No type, optional): Flag to activate calculation. Defaults to None.
             dsdv (No type, optional): Flag to activate calculation. Defaults to None.
             dsdn (No type, optional): Flag to activate calculation. Defaults to None.
+            residual (logical, optional): Calculate residual entropy. Defaults to False.
 
         Returns:
             float: Entropy (J/K)
@@ -1453,7 +1464,10 @@ class thermopack(object):
         else:
             dsdn_c = (c_double * len(n))(0.0)
 
-        residual_c = POINTER(c_int)(c_int(0))
+        if residual:
+            residual_c = POINTER(c_int)(c_int(1))
+        else:
+            residual_c = POINTER(c_int)(c_int(0))
 
         self.s_entropy_tv.argtypes = [POINTER( c_double ),
                                       POINTER( c_double ),
@@ -1485,7 +1499,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None, dhdn=None):
+    def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None, dhdn=None, residual=False):
         """Calculate enthalpy given temperature, volume and mol numbers.
 
         Args:
@@ -1495,6 +1509,7 @@ class thermopack(object):
             dhdt (No type, optional): Flag to activate calculation. Defaults to None.
             dhdv (No type, optional): Flag to activate calculation. Defaults to None.
             dhdn (No type, optional): Flag to activate calculation. Defaults to None.
+            residual (logical, optional): Calculate residual enthalpy. Defaults to False.
 
         Returns:
             float: Enthalpy (J)
@@ -1520,7 +1535,10 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(n))(0.0)
 
-        residual_c = POINTER(c_int)(c_int(0))
+        if residual:
+            residual_c = POINTER(c_int)(c_int(1))
+        else:
+            residual_c = POINTER(c_int)(c_int(0))
 
         self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
