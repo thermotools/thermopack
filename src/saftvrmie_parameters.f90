@@ -180,11 +180,12 @@ module saftvrmie_parameters
   type(saftvrmie_data), parameter :: Miecx61 = saftvrmie_data(eosSAFT_VR_MIE,"H2", &
        1.0000, 3.0459E-10, 33.434, 6, 12.0, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "TREJOS2013") ! Trejos et al. 2013, doi: 10.1063/1.4829769
 
-  ! Müller's mystery parameters for methane and decane where SAFT-VR Mie fails
+  ! MÃ¼ller's mystery parameters for methane and decane where SAFT-VR Mie fails
   type(saftvrmie_data), parameter :: Miecx62 = saftvrmie_data(eosSAFT_VR_MIE,"C1", &
        1.0, 3.752E-10, 170.75, 6, 16.39, 0.0, 0.0, 0.0, no_assoc, 0, "Muller")
   type(saftvrmie_data), parameter :: Miecx63 = saftvrmie_data(eosSAFT_VR_MIE,"NC10", &
        3.0, 4.5840E-10, 415.19, 6, 20.92, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "Muller")
+  
 
   !Unpublished water parameters (courtesy of Edward Graham)
   ! type(saftvrmie_data), parameter :: Miecx64 = saftvrmie_data(eosSAFT_VR_MIE,"H2O", &
@@ -211,8 +212,12 @@ module saftvrmie_parameters
        1, 3.0E-10, 30.0, 6, 12, 0.0, &
        0.0, 0.0, no_assoc, 0, "DEFAULT")
   !-----------------------------------------------------------
-
-  integer, parameter :: nMiemodels = 64
+  
+  ! Parameters for Krypton - Irma et. al (1999) ISSN : 1029-0435/0892-7022
+  type(saftvrmie_data), parameter :: Miecx65 = saftvrmie_data(eosSAFT_VR_MIE,"KR", &
+      1, 3.64E-10, 166.66, 6, 12, 1.3915E-22, 0.0, 0.0, no_assoc, 0, "DEFAULT")
+  
+  integer, parameter :: nMiemodels = 65
   type(saftvrmie_data), dimension(nMiemodels), parameter :: Miearray = (/ &
        Miecx1, &
        Miecx2, &
@@ -277,7 +282,8 @@ module saftvrmie_parameters
        Miecx61, &
        Miecx62, &
        Miecx63, &
-       Miecx64/)
+       Miecx64, &
+       Miecx65/)
 
   !> INTERACTION PARAMETERS FOR THE SAFT-VR-MIE DISPERSION TERM.
   ! ----------------------------------------------------------------------------
