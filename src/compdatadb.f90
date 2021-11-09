@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2021-11-08T23:24:35.401958
+!! Time stamp: 2021-11-09T16:58:54.609558
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb
@@ -2365,74 +2365,6 @@ module compdatadb
       )
 
   type (gendatadb), parameter :: cx35 = &
-      gendatadb(ident = "LJF_1_05", &
-      formula = "LJF_1_05", &
-      name = "LENNARD-JONES_FLUID_1_05", &
-      mw = 1.0000, &
-      Tc = 0.6600, &
-      Pc = 882500.00, &
-      Zc = 0.310000, &
-      acf = 0.317700, &
-      Tb = 0.8000, &
-      Ttr = 0.0000, &
-      Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
-      psatcode = 1, &
-      ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
-      Tantmin = 0.0000, &
-      Tantmax = 0.0000, &
-      Zra = -1.000000 &
-      )
-
-  type (cpdata), parameter :: cp36 = &
-      cpdata(cid = "LJF_1_05", &
-      ref = "Default", &
-      bib_ref = "", &
-      cptype = 7, &
-      cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = 300.0000, &
-      Tcpmax = 1500.0000  &
-      )
-
-  type (gendatadb), parameter :: cx36 = &
-      gendatadb(ident = "LJF_1_1", &
-      formula = "LJF_1_1", &
-      name = "LENNARD-JONES_FLUID_1_1", &
-      mw = 1.0000, &
-      Tc = 1.3200, &
-      Pc = 1765000.00, &
-      Zc = 0.310000, &
-      acf = 0.317700, &
-      Tb = 0.8000, &
-      Ttr = 0.0000, &
-      Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
-      psatcode = 1, &
-      ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
-      Tantmin = 0.0000, &
-      Tantmax = 0.0000, &
-      Zra = -1.000000 &
-      )
-
-  type (cpdata), parameter :: cp37 = &
-      cpdata(cid = "LJF_1_1", &
-      ref = "Default", &
-      bib_ref = "", &
-      cptype = 7, &
-      cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = 300.0000, &
-      Tcpmax = 1500.0000  &
-      )
-
-  type (gendatadb), parameter :: cx37 = &
       gendatadb(ident = "MXYL", &
       formula = "C8H10", &
       name = "M-XYLENE", &
@@ -2455,7 +2387,7 @@ module compdatadb
       Zra = 0.258700 &
       )
 
-  type (cpdata), parameter :: cp38 = &
+  type (cpdata), parameter :: cp36 = &
       cpdata(cid = "MXYL", &
       ref = "Default", &
       bib_ref = "", &
@@ -2502,7 +2434,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx38 = &
+  type (gendatadb), parameter :: cx36 = &
       gendatadb(ident = "C1", &
       formula = "CH4", &
       name = "METHANE", &
@@ -2525,7 +2457,7 @@ module compdatadb
       Zra = 0.289200 &
       )
 
-  type (cpdata), parameter :: cp39 = &
+  type (cpdata), parameter :: cp37 = &
       cpdata(cid = "C1", &
       ref = "Default", &
       bib_ref = "", &
@@ -2600,7 +2532,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx39 = &
+  type (gendatadb), parameter :: cx37 = &
       gendatadb(ident = "MEOH", &
       formula = "CH4O", &
       name = "METHANOL", &
@@ -2623,7 +2555,7 @@ module compdatadb
       Zra = 0.233400 &
       )
 
-  type (cpdata), parameter :: cp40 = &
+  type (cpdata), parameter :: cp38 = &
       cpdata(cid = "MEOH", &
       ref = "Default", &
       bib_ref = "", &
@@ -2670,7 +2602,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx40 = &
+  type (gendatadb), parameter :: cx38 = &
       gendatadb(ident = "MTC5", &
       formula = "C6H12", &
       name = "METHYLCYCLOPENTANE", &
@@ -2693,7 +2625,7 @@ module compdatadb
       Zra = 0.271100 &
       )
 
-  type (cpdata), parameter :: cp41 = &
+  type (cpdata), parameter :: cp39 = &
       cpdata(cid = "MTC5", &
       ref = "Default", &
       bib_ref = "", &
@@ -2740,7 +2672,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx41 = &
+  type (gendatadb), parameter :: cx39 = &
       gendatadb(ident = "MEG", &
       formula = "C2H6O2", &
       name = "ETHYLENE GLYCOL", &
@@ -2763,7 +2695,7 @@ module compdatadb
       Zra = 0.242400 &
       )
 
-  type (cpdata), parameter :: cp42 = &
+  type (cpdata), parameter :: cp40 = &
       cpdata(cid = "MEG", &
       ref = "Default", &
       bib_ref = "", &
@@ -2810,7 +2742,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx42 = &
+  type (gendatadb), parameter :: cx40 = &
       gendatadb(ident = "NC19", &
       formula = "C19H40", &
       name = "N-NONADECANE", &
@@ -2833,7 +2765,7 @@ module compdatadb
       Zra = 0.233370 &
       )
 
-  type (cpdata), parameter :: cp43 = &
+  type (cpdata), parameter :: cp41 = &
       cpdata(cid = "NC19", &
       ref = "Default", &
       bib_ref = "", &
@@ -2880,7 +2812,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx43 = &
+  type (gendatadb), parameter :: cx41 = &
       gendatadb(ident = "NE", &
       formula = "NE", &
       name = "NEON", &
@@ -2903,7 +2835,7 @@ module compdatadb
       Zra = 0.308500 &
       )
 
-  type (cpdata), parameter :: cp44 = &
+  type (cpdata), parameter :: cp42 = &
       cpdata(cid = "NE", &
       ref = "Default", &
       bib_ref = "", &
@@ -2968,7 +2900,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx44 = &
+  type (gendatadb), parameter :: cx42 = &
       gendatadb(ident = "NO", &
       formula = "NO", &
       name = "NITRIC OXIDE", &
@@ -2991,7 +2923,7 @@ module compdatadb
       Zra = 0.266800 &
       )
 
-  type (cpdata), parameter :: cp45 = &
+  type (cpdata), parameter :: cp43 = &
       cpdata(cid = "NO", &
       ref = "Default", &
       bib_ref = "", &
@@ -3038,7 +2970,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx45 = &
+  type (gendatadb), parameter :: cx43 = &
       gendatadb(ident = "N2", &
       formula = "N2", &
       name = "NITROGEN", &
@@ -3061,7 +2993,7 @@ module compdatadb
       Zra = 0.290000 &
       )
 
-  type (cpdata), parameter :: cp46 = &
+  type (cpdata), parameter :: cp44 = &
       cpdata(cid = "N2", &
       ref = "Default", &
       bib_ref = "", &
@@ -3136,7 +3068,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx46 = &
+  type (gendatadb), parameter :: cx44 = &
       gendatadb(ident = "N2O", &
       formula = "N2O", &
       name = "NITROUS OXIDE", &
@@ -3159,7 +3091,7 @@ module compdatadb
       Zra = 0.275800 &
       )
 
-  type (cpdata), parameter :: cp47 = &
+  type (cpdata), parameter :: cp45 = &
       cpdata(cid = "N2O", &
       ref = "Default", &
       bib_ref = "", &
@@ -3206,7 +3138,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx47 = &
+  type (gendatadb), parameter :: cx45 = &
       gendatadb(ident = "N-H2", &
       formula = "H2", &
       name = "N-HYDROGEN", &
@@ -3229,7 +3161,7 @@ module compdatadb
       Zra = 0.306000 &
       )
 
-  type (cpdata), parameter :: cp48 = &
+  type (cpdata), parameter :: cp46 = &
       cpdata(cid = "N-H2", &
       ref = "Default", &
       bib_ref = "", &
@@ -3240,7 +3172,7 @@ module compdatadb
       Tcpmax = 5.0000  &
       )
 
-  type (gendatadb), parameter :: cx48 = &
+  type (gendatadb), parameter :: cx46 = &
       gendatadb(ident = "O-H2", &
       formula = "H2", &
       name = "ORTHO-HYDROGEN", &
@@ -3263,7 +3195,7 @@ module compdatadb
       Zra = 0.306000 &
       )
 
-  type (cpdata), parameter :: cp49 = &
+  type (cpdata), parameter :: cp47 = &
       cpdata(cid = "O-H2", &
       ref = "Default", &
       bib_ref = "", &
@@ -3274,7 +3206,7 @@ module compdatadb
       Tcpmax = 5.0000  &
       )
 
-  type (gendatadb), parameter :: cx49 = &
+  type (gendatadb), parameter :: cx47 = &
       gendatadb(ident = "OXYL", &
       formula = "C8H10", &
       name = "O-XYLENE", &
@@ -3297,7 +3229,7 @@ module compdatadb
       Zra = 0.261600 &
       )
 
-  type (cpdata), parameter :: cp50 = &
+  type (cpdata), parameter :: cp48 = &
       cpdata(cid = "OXYL", &
       ref = "Default", &
       bib_ref = "", &
@@ -3344,7 +3276,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx50 = &
+  type (gendatadb), parameter :: cx48 = &
       gendatadb(ident = "O2", &
       formula = "O2", &
       name = "OXYGEN", &
@@ -3367,7 +3299,7 @@ module compdatadb
       Zra = 0.290500 &
       )
 
-  type (cpdata), parameter :: cp51 = &
+  type (cpdata), parameter :: cp49 = &
       cpdata(cid = "O2", &
       ref = "Default", &
       bib_ref = "", &
@@ -3428,7 +3360,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx51 = &
+  type (gendatadb), parameter :: cx49 = &
       gendatadb(ident = "P-H2", &
       formula = "H2", &
       name = "PARA-HYDROGEN", &
@@ -3451,7 +3383,7 @@ module compdatadb
       Zra = 0.306000 &
       )
 
-  type (cpdata), parameter :: cp52 = &
+  type (cpdata), parameter :: cp50 = &
       cpdata(cid = "P-H2", &
       ref = "Default", &
       bib_ref = "", &
@@ -3462,7 +3394,7 @@ module compdatadb
       Tcpmax = 5.0000  &
       )
 
-  type (gendatadb), parameter :: cx52 = &
+  type (gendatadb), parameter :: cx50 = &
       gendatadb(ident = "PXYL", &
       formula = "C8H10", &
       name = "P-XYLENE", &
@@ -3485,7 +3417,7 @@ module compdatadb
       Zra = 0.258500 &
       )
 
-  type (cpdata), parameter :: cp53 = &
+  type (cpdata), parameter :: cp51 = &
       cpdata(cid = "PXYL", &
       ref = "Default", &
       bib_ref = "", &
@@ -3532,7 +3464,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx53 = &
+  type (gendatadb), parameter :: cx51 = &
       gendatadb(ident = "C3", &
       formula = "C3H8", &
       name = "PROPANE", &
@@ -3555,7 +3487,7 @@ module compdatadb
       Zra = 0.276600 &
       )
 
-  type (cpdata), parameter :: cp54 = &
+  type (cpdata), parameter :: cp52 = &
       cpdata(cid = "C3", &
       ref = "Default", &
       bib_ref = "", &
@@ -3630,7 +3562,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx54 = &
+  type (gendatadb), parameter :: cx52 = &
       gendatadb(ident = "PRLN", &
       formula = "C3H6", &
       name = "PROPYLENE", &
@@ -3653,7 +3585,7 @@ module compdatadb
       Zra = 0.277900 &
       )
 
-  type (cpdata), parameter :: cp55 = &
+  type (cpdata), parameter :: cp53 = &
       cpdata(cid = "PRLN", &
       ref = "Default", &
       bib_ref = "", &
@@ -3700,7 +3632,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx55 = &
+  type (gendatadb), parameter :: cx53 = &
       gendatadb(ident = "R11", &
       formula = "CCL3F", &
       name = "TRICHLOROFLUOROMETHANE", &
@@ -3723,7 +3655,7 @@ module compdatadb
       Zra = 0.274500 &
       )
 
-  type (cpdata), parameter :: cp56 = &
+  type (cpdata), parameter :: cp54 = &
       cpdata(cid = "R11", &
       ref = "Default", &
       bib_ref = "", &
@@ -3770,7 +3702,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx56 = &
+  type (gendatadb), parameter :: cx54 = &
       gendatadb(ident = "R1114", &
       formula = "C2F4", &
       name = "TETRAFLUOROETHYLENE", &
@@ -3793,7 +3725,7 @@ module compdatadb
       Zra = 0.270100 &
       )
 
-  type (cpdata), parameter :: cp57 = &
+  type (cpdata), parameter :: cp55 = &
       cpdata(cid = "R1114", &
       ref = "Default", &
       bib_ref = "", &
@@ -3840,7 +3772,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx57 = &
+  type (gendatadb), parameter :: cx55 = &
       gendatadb(ident = "R1132a", &
       formula = "C2H2F2", &
       name = "1,1-DIFLUOROETHYLENE", &
@@ -3863,7 +3795,7 @@ module compdatadb
       Zra = 0.271300 &
       )
 
-  type (cpdata), parameter :: cp58 = &
+  type (cpdata), parameter :: cp56 = &
       cpdata(cid = "R1132a", &
       ref = "Default", &
       bib_ref = "", &
@@ -3910,7 +3842,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx58 = &
+  type (gendatadb), parameter :: cx56 = &
       gendatadb(ident = "R114", &
       formula = "C2CL2F4", &
       name = "1,2-DICHLOROTETRAFLUOROETHANE", &
@@ -3933,7 +3865,7 @@ module compdatadb
       Zra = 0.273700 &
       )
 
-  type (cpdata), parameter :: cp59 = &
+  type (cpdata), parameter :: cp57 = &
       cpdata(cid = "R114", &
       ref = "Default", &
       bib_ref = "", &
@@ -3980,7 +3912,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx59 = &
+  type (gendatadb), parameter :: cx57 = &
       gendatadb(ident = "R115", &
       formula = "C2CLF5", &
       name = "CHLOROPENTAFLUOROETHANE", &
@@ -4003,7 +3935,7 @@ module compdatadb
       Zra = 0.275700 &
       )
 
-  type (cpdata), parameter :: cp60 = &
+  type (cpdata), parameter :: cp58 = &
       cpdata(cid = "R115", &
       ref = "Default", &
       bib_ref = "", &
@@ -4050,7 +3982,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx60 = &
+  type (gendatadb), parameter :: cx58 = &
       gendatadb(ident = "R116", &
       formula = "C2F6", &
       name = "HEXAFLUOROETHANE", &
@@ -4073,7 +4005,7 @@ module compdatadb
       Zra = 0.277800 &
       )
 
-  type (cpdata), parameter :: cp61 = &
+  type (cpdata), parameter :: cp59 = &
       cpdata(cid = "R116", &
       ref = "Default", &
       bib_ref = "", &
@@ -4120,7 +4052,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx61 = &
+  type (gendatadb), parameter :: cx59 = &
       gendatadb(ident = "R12", &
       formula = "CCL2F2", &
       name = "DICHLORODIFLUOROMETHANE", &
@@ -4143,7 +4075,7 @@ module compdatadb
       Zra = 0.275700 &
       )
 
-  type (cpdata), parameter :: cp62 = &
+  type (cpdata), parameter :: cp60 = &
       cpdata(cid = "R12", &
       ref = "Default", &
       bib_ref = "", &
@@ -4190,7 +4122,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx62 = &
+  type (gendatadb), parameter :: cx60 = &
       gendatadb(ident = "R1234yf", &
       formula = "CF3CF=CH2", &
       name = "2,3,3,3-TETRAFLUOROPROPENE", &
@@ -4213,7 +4145,7 @@ module compdatadb
       Zra = 0.264500 &
       )
 
-  type (cpdata), parameter :: cp63 = &
+  type (cpdata), parameter :: cp61 = &
       cpdata(cid = "R1234yf", &
       ref = "Default", &
       bib_ref = "", &
@@ -4260,7 +4192,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx63 = &
+  type (gendatadb), parameter :: cx61 = &
       gendatadb(ident = "R1234ze", &
       formula = "CHF=CHCF3_(t", &
       name = "TRANS-1,3,3,3-TETRAFLUOROPROPENE", &
@@ -4283,7 +4215,7 @@ module compdatadb
       Zra = 0.266400 &
       )
 
-  type (cpdata), parameter :: cp64 = &
+  type (cpdata), parameter :: cp62 = &
       cpdata(cid = "R1234ze", &
       ref = "Default", &
       bib_ref = "", &
@@ -4330,7 +4262,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx64 = &
+  type (gendatadb), parameter :: cx62 = &
       gendatadb(ident = "R124", &
       formula = "C2HCLF4", &
       name = "2-CHLORO-1,1,1,2-TETRAFLUOROETHANE", &
@@ -4353,7 +4285,7 @@ module compdatadb
       Zra = 0.269700 &
       )
 
-  type (cpdata), parameter :: cp65 = &
+  type (cpdata), parameter :: cp63 = &
       cpdata(cid = "R124", &
       ref = "Default", &
       bib_ref = "", &
@@ -4400,7 +4332,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx65 = &
+  type (gendatadb), parameter :: cx63 = &
       gendatadb(ident = "R124a", &
       formula = "C2HCLF4", &
       name = "1-CHLORO-1,1,2,2-TETRAFLUOROETHANE", &
@@ -4423,7 +4355,7 @@ module compdatadb
       Zra = -1.000000 &
       )
 
-  type (cpdata), parameter :: cp66 = &
+  type (cpdata), parameter :: cp64 = &
       cpdata(cid = "R124a", &
       ref = "Default", &
       bib_ref = "", &
@@ -4434,7 +4366,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (gendatadb), parameter :: cx66 = &
+  type (gendatadb), parameter :: cx64 = &
       gendatadb(ident = "R125", &
       formula = "C2HF5", &
       name = "PENTAFLUOROETHANE", &
@@ -4457,7 +4389,7 @@ module compdatadb
       Zra = 0.267100 &
       )
 
-  type (cpdata), parameter :: cp67 = &
+  type (cpdata), parameter :: cp65 = &
       cpdata(cid = "R125", &
       ref = "Default", &
       bib_ref = "", &
@@ -4504,7 +4436,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx67 = &
+  type (gendatadb), parameter :: cx65 = &
       gendatadb(ident = "R13", &
       formula = "CCLF3", &
       name = "CHLOROTRIFLUOROMETHANE", &
@@ -4527,7 +4459,7 @@ module compdatadb
       Zra = 0.277100 &
       )
 
-  type (cpdata), parameter :: cp68 = &
+  type (cpdata), parameter :: cp66 = &
       cpdata(cid = "R13", &
       ref = "Default", &
       bib_ref = "", &
@@ -4574,7 +4506,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx68 = &
+  type (gendatadb), parameter :: cx66 = &
       gendatadb(ident = "R134a", &
       formula = "C2H2F4", &
       name = "1,1,1,2-TETRAFLUOROETHANE", &
@@ -4597,7 +4529,7 @@ module compdatadb
       Zra = 0.259600 &
       )
 
-  type (cpdata), parameter :: cp69 = &
+  type (cpdata), parameter :: cp67 = &
       cpdata(cid = "R134a", &
       ref = "Default", &
       bib_ref = "", &
@@ -4644,7 +4576,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx69 = &
+  type (gendatadb), parameter :: cx67 = &
       gendatadb(ident = "R14", &
       formula = "CF4", &
       name = "CARBON TETRAFLUORIDE", &
@@ -4667,7 +4599,7 @@ module compdatadb
       Zra = 0.281000 &
       )
 
-  type (cpdata), parameter :: cp70 = &
+  type (cpdata), parameter :: cp68 = &
       cpdata(cid = "R14", &
       ref = "Default", &
       bib_ref = "", &
@@ -4714,7 +4646,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx70 = &
+  type (gendatadb), parameter :: cx68 = &
       gendatadb(ident = "R142b", &
       formula = "C2H3ClF2", &
       name = "1-CHLORO-1,1-DIFLUOROETHANE", &
@@ -4737,7 +4669,7 @@ module compdatadb
       Zra = 0.266800 &
       )
 
-  type (cpdata), parameter :: cp71 = &
+  type (cpdata), parameter :: cp69 = &
       cpdata(cid = "R142b", &
       ref = "Default", &
       bib_ref = "", &
@@ -4784,7 +4716,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx71 = &
+  type (gendatadb), parameter :: cx69 = &
       gendatadb(ident = "R143a", &
       formula = "C2H3F3", &
       name = "1,1,1-TRIFLUOROETHANE", &
@@ -4807,7 +4739,7 @@ module compdatadb
       Zra = 0.256700 &
       )
 
-  type (cpdata), parameter :: cp72 = &
+  type (cpdata), parameter :: cp70 = &
       cpdata(cid = "R143a", &
       ref = "Default", &
       bib_ref = "", &
@@ -4854,7 +4786,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx72 = &
+  type (gendatadb), parameter :: cx70 = &
       gendatadb(ident = "R152a", &
       formula = "C2H4F2", &
       name = "1,1-DIFLUOROETHANE", &
@@ -4877,7 +4809,7 @@ module compdatadb
       Zra = 0.253800 &
       )
 
-  type (cpdata), parameter :: cp73 = &
+  type (cpdata), parameter :: cp71 = &
       cpdata(cid = "R152a", &
       ref = "Default", &
       bib_ref = "", &
@@ -4924,7 +4856,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx73 = &
+  type (gendatadb), parameter :: cx71 = &
       gendatadb(ident = "R21", &
       formula = "CHCL2F", &
       name = "DICHLOROFLUOROMETHANE", &
@@ -4947,7 +4879,7 @@ module compdatadb
       Zra = 0.270500 &
       )
 
-  type (cpdata), parameter :: cp74 = &
+  type (cpdata), parameter :: cp72 = &
       cpdata(cid = "R21", &
       ref = "Default", &
       bib_ref = "", &
@@ -4994,7 +4926,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx74 = &
+  type (gendatadb), parameter :: cx72 = &
       gendatadb(ident = "R218", &
       formula = "C3F8", &
       name = "OCTAFLUOROPROPANE", &
@@ -5017,7 +4949,7 @@ module compdatadb
       Zra = 0.277800 &
       )
 
-  type (cpdata), parameter :: cp75 = &
+  type (cpdata), parameter :: cp73 = &
       cpdata(cid = "R218", &
       ref = "Default", &
       bib_ref = "", &
@@ -5064,7 +4996,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx75 = &
+  type (gendatadb), parameter :: cx73 = &
       gendatadb(ident = "R22", &
       formula = "CHCLF2", &
       name = "CHLORODIFLUOROMETHANE", &
@@ -5087,7 +5019,7 @@ module compdatadb
       Zra = 0.266300 &
       )
 
-  type (cpdata), parameter :: cp76 = &
+  type (cpdata), parameter :: cp74 = &
       cpdata(cid = "R22", &
       ref = "Default", &
       bib_ref = "", &
@@ -5134,7 +5066,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx76 = &
+  type (gendatadb), parameter :: cx74 = &
       gendatadb(ident = "R23", &
       formula = "CHF3", &
       name = "TRIFLUOROMETHANE", &
@@ -5157,7 +5089,7 @@ module compdatadb
       Zra = 0.257600 &
       )
 
-  type (cpdata), parameter :: cp77 = &
+  type (cpdata), parameter :: cp75 = &
       cpdata(cid = "R23", &
       ref = "Default", &
       bib_ref = "", &
@@ -5204,7 +5136,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx77 = &
+  type (gendatadb), parameter :: cx75 = &
       gendatadb(ident = "R32", &
       formula = "CH2F2", &
       name = "DIFLUOROMETHANE", &
@@ -5227,7 +5159,7 @@ module compdatadb
       Zra = 0.244400 &
       )
 
-  type (cpdata), parameter :: cp78 = &
+  type (cpdata), parameter :: cp76 = &
       cpdata(cid = "R32", &
       ref = "Default", &
       bib_ref = "", &
@@ -5274,7 +5206,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx78 = &
+  type (gendatadb), parameter :: cx76 = &
       gendatadb(ident = "R41", &
       formula = "CH3F", &
       name = "METHYL FLUORIDE", &
@@ -5297,7 +5229,7 @@ module compdatadb
       Zra = 0.248100 &
       )
 
-  type (cpdata), parameter :: cp79 = &
+  type (cpdata), parameter :: cp77 = &
       cpdata(cid = "R41", &
       ref = "Default", &
       bib_ref = "", &
@@ -5344,7 +5276,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx79 = &
+  type (gendatadb), parameter :: cx77 = &
       gendatadb(ident = "F6S", &
       formula = "F6S", &
       name = "SULFUR HEXAFLUORIDE", &
@@ -5367,7 +5299,7 @@ module compdatadb
       Zra = 0.278800 &
       )
 
-  type (cpdata), parameter :: cp80 = &
+  type (cpdata), parameter :: cp78 = &
       cpdata(cid = "F6S", &
       ref = "Default", &
       bib_ref = "", &
@@ -5414,7 +5346,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx80 = &
+  type (gendatadb), parameter :: cx78 = &
       gendatadb(ident = "SO2", &
       formula = "SO2", &
       name = "SULFUR DIOXIDE", &
@@ -5437,7 +5369,7 @@ module compdatadb
       Zra = 0.266100 &
       )
 
-  type (cpdata), parameter :: cp81 = &
+  type (cpdata), parameter :: cp79 = &
       cpdata(cid = "SO2", &
       ref = "Default", &
       bib_ref = "", &
@@ -5484,7 +5416,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx81 = &
+  type (gendatadb), parameter :: cx79 = &
       gendatadb(ident = "F4N2", &
       formula = "F4N2", &
       name = "TETRAFLUOROHYDRAZINE", &
@@ -5507,7 +5439,7 @@ module compdatadb
       Zra = -1.000000 &
       )
 
-  type (cpdata), parameter :: cp82 = &
+  type (cpdata), parameter :: cp80 = &
       cpdata(cid = "F4N2", &
       ref = "Default", &
       bib_ref = "", &
@@ -5554,7 +5486,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx82 = &
+  type (gendatadb), parameter :: cx80 = &
       gendatadb(ident = "TOLU", &
       formula = "C7H8", &
       name = "TOLUENE", &
@@ -5577,7 +5509,7 @@ module compdatadb
       Zra = 0.264300 &
       )
 
-  type (cpdata), parameter :: cp83 = &
+  type (cpdata), parameter :: cp81 = &
       cpdata(cid = "TOLU", &
       ref = "Default", &
       bib_ref = "", &
@@ -5638,7 +5570,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx83 = &
+  type (gendatadb), parameter :: cx81 = &
       gendatadb(ident = "F3NO", &
       formula = "F3N0", &
       name = "TRIFLUOROAMINEOXIDE", &
@@ -5661,7 +5593,7 @@ module compdatadb
       Zra = -1.000000 &
       )
 
-  type (cpdata), parameter :: cp84 = &
+  type (cpdata), parameter :: cp82 = &
       cpdata(cid = "F3NO", &
       ref = "Default", &
       bib_ref = "", &
@@ -5672,7 +5604,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (gendatadb), parameter :: cx84 = &
+  type (gendatadb), parameter :: cx82 = &
       gendatadb(ident = "H2O", &
       formula = "H2O", &
       name = "WATER", &
@@ -5695,7 +5627,7 @@ module compdatadb
       Zra = 0.233800 &
       )
 
-  type (cpdata), parameter :: cp85 = &
+  type (cpdata), parameter :: cp83 = &
       cpdata(cid = "H2O", &
       ref = "Default", &
       bib_ref = "", &
@@ -5767,7 +5699,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx85 = &
+  type (gendatadb), parameter :: cx83 = &
       gendatadb(ident = "XE", &
       formula = "XE", &
       name = "XENON", &
@@ -5790,7 +5722,7 @@ module compdatadb
       Zra = 0.282900 &
       )
 
-  type (cpdata), parameter :: cp86 = &
+  type (cpdata), parameter :: cp84 = &
       cpdata(cid = "XE", &
       ref = "Default", &
       bib_ref = "", &
@@ -5801,7 +5733,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (gendatadb), parameter :: cx86 = &
+  type (gendatadb), parameter :: cx84 = &
       gendatadb(ident = "NC4", &
       formula = "C4H10", &
       name = "N-BUTANE", &
@@ -5824,7 +5756,7 @@ module compdatadb
       Zra = 0.273000 &
       )
 
-  type (cpdata), parameter :: cp87 = &
+  type (cpdata), parameter :: cp85 = &
       cpdata(cid = "NC4", &
       ref = "Default", &
       bib_ref = "", &
@@ -5899,7 +5831,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx87 = &
+  type (gendatadb), parameter :: cx85 = &
       gendatadb(ident = "NC10", &
       formula = "C10H22", &
       name = "N-DECANE", &
@@ -5922,7 +5854,7 @@ module compdatadb
       Zra = 0.250700 &
       )
 
-  type (cpdata), parameter :: cp88 = &
+  type (cpdata), parameter :: cp86 = &
       cpdata(cid = "NC10", &
       ref = "Default", &
       bib_ref = "", &
@@ -5969,7 +5901,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx88 = &
+  type (gendatadb), parameter :: cx86 = &
       gendatadb(ident = "NC22", &
       formula = "C22H46", &
       name = "N-DOCOSANE", &
@@ -5992,7 +5924,7 @@ module compdatadb
       Zra = 0.229950 &
       )
 
-  type (cpdata), parameter :: cp89 = &
+  type (cpdata), parameter :: cp87 = &
       cpdata(cid = "NC22", &
       ref = "Default", &
       bib_ref = "", &
@@ -6039,7 +5971,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx89 = &
+  type (gendatadb), parameter :: cx87 = &
       gendatadb(ident = "NC20", &
       formula = "C20H42", &
       name = "N-EICOSANE", &
@@ -6062,7 +5994,7 @@ module compdatadb
       Zra = 0.232780 &
       )
 
-  type (cpdata), parameter :: cp90 = &
+  type (cpdata), parameter :: cp88 = &
       cpdata(cid = "NC20", &
       ref = "Default", &
       bib_ref = "", &
@@ -6109,7 +6041,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx90 = &
+  type (gendatadb), parameter :: cx88 = &
       gendatadb(ident = "NC21", &
       formula = "C21H44", &
       name = "N-HENEICOSANE", &
@@ -6132,7 +6064,7 @@ module compdatadb
       Zra = 0.231530 &
       )
 
-  type (cpdata), parameter :: cp91 = &
+  type (cpdata), parameter :: cp89 = &
       cpdata(cid = "NC21", &
       ref = "Default", &
       bib_ref = "", &
@@ -6179,7 +6111,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx91 = &
+  type (gendatadb), parameter :: cx89 = &
       gendatadb(ident = "NC17", &
       formula = "C17H36", &
       name = "N-HEPTADECANE", &
@@ -6202,7 +6134,7 @@ module compdatadb
       Zra = 0.236420 &
       )
 
-  type (cpdata), parameter :: cp92 = &
+  type (cpdata), parameter :: cp90 = &
       cpdata(cid = "NC17", &
       ref = "Default", &
       bib_ref = "", &
@@ -6249,7 +6181,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx92 = &
+  type (gendatadb), parameter :: cx90 = &
       gendatadb(ident = "NC7", &
       formula = "C7H16", &
       name = "N-HEPTANE", &
@@ -6272,7 +6204,7 @@ module compdatadb
       Zra = 0.260400 &
       )
 
-  type (cpdata), parameter :: cp93 = &
+  type (cpdata), parameter :: cp91 = &
       cpdata(cid = "NC7", &
       ref = "Default", &
       bib_ref = "", &
@@ -6347,7 +6279,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx93 = &
+  type (gendatadb), parameter :: cx91 = &
       gendatadb(ident = "NC16", &
       formula = "C16H34", &
       name = "N-HEXADECANE", &
@@ -6370,7 +6302,7 @@ module compdatadb
       Zra = 0.238800 &
       )
 
-  type (cpdata), parameter :: cp94 = &
+  type (cpdata), parameter :: cp92 = &
       cpdata(cid = "NC16", &
       ref = "Default", &
       bib_ref = "", &
@@ -6381,7 +6313,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (cpdata), parameter :: cp95 = &
+  type (cpdata), parameter :: cp93 = &
       cpdata(cid = "NC16", &
       ref = "", &
       bib_ref = "", &
@@ -6428,7 +6360,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx94 = &
+  type (gendatadb), parameter :: cx92 = &
       gendatadb(ident = "NC6", &
       formula = "C6H14", &
       name = "N-HEXANE", &
@@ -6451,7 +6383,7 @@ module compdatadb
       Zra = 0.263500 &
       )
 
-  type (cpdata), parameter :: cp96 = &
+  type (cpdata), parameter :: cp94 = &
       cpdata(cid = "NC6", &
       ref = "Default", &
       bib_ref = "", &
@@ -6526,7 +6458,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx95 = &
+  type (gendatadb), parameter :: cx93 = &
       gendatadb(ident = "NC9", &
       formula = "C9H20", &
       name = "N-NONANE", &
@@ -6549,7 +6481,7 @@ module compdatadb
       Zra = 0.254300 &
       )
 
-  type (cpdata), parameter :: cp97 = &
+  type (cpdata), parameter :: cp95 = &
       cpdata(cid = "NC9", &
       ref = "Default", &
       bib_ref = "", &
@@ -6596,7 +6528,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx96 = &
+  type (gendatadb), parameter :: cx94 = &
       gendatadb(ident = "NC18", &
       formula = "C18H38", &
       name = "N-OCTADECANE", &
@@ -6619,7 +6551,7 @@ module compdatadb
       Zra = 0.234730 &
       )
 
-  type (cpdata), parameter :: cp98 = &
+  type (cpdata), parameter :: cp96 = &
       cpdata(cid = "NC18", &
       ref = "Default", &
       bib_ref = "", &
@@ -6666,7 +6598,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx97 = &
+  type (gendatadb), parameter :: cx95 = &
       gendatadb(ident = "NC8", &
       formula = "C8H18", &
       name = "N-OCTANE", &
@@ -6689,7 +6621,7 @@ module compdatadb
       Zra = 0.257100 &
       )
 
-  type (cpdata), parameter :: cp99 = &
+  type (cpdata), parameter :: cp97 = &
       cpdata(cid = "NC8", &
       ref = "Default", &
       bib_ref = "", &
@@ -6764,7 +6696,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx98 = &
+  type (gendatadb), parameter :: cx96 = &
       gendatadb(ident = "NC25", &
       formula = "C25H52", &
       name = "N-PENTACOSANE", &
@@ -6787,7 +6719,7 @@ module compdatadb
       Zra = 0.228110 &
       )
 
-  type (cpdata), parameter :: cp100 = &
+  type (cpdata), parameter :: cp98 = &
       cpdata(cid = "NC25", &
       ref = "Default", &
       bib_ref = "", &
@@ -6834,7 +6766,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx99 = &
+  type (gendatadb), parameter :: cx97 = &
       gendatadb(ident = "NC15", &
       formula = "C15H32", &
       name = "N-PENTADECANE", &
@@ -6857,7 +6789,7 @@ module compdatadb
       Zra = 0.238360 &
       )
 
-  type (cpdata), parameter :: cp101 = &
+  type (cpdata), parameter :: cp99 = &
       cpdata(cid = "NC15", &
       ref = "Default", &
       bib_ref = "", &
@@ -6904,7 +6836,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx100 = &
+  type (gendatadb), parameter :: cx98 = &
       gendatadb(ident = "NC5", &
       formula = "C5H12", &
       name = "N-PENTAN", &
@@ -6927,7 +6859,7 @@ module compdatadb
       Zra = 0.268400 &
       )
 
-  type (cpdata), parameter :: cp102 = &
+  type (cpdata), parameter :: cp100 = &
       cpdata(cid = "NC5", &
       ref = "Default", &
       bib_ref = "", &
@@ -6966,7 +6898,7 @@ module compdatadb
       coeff=(/9.01000000e-01, -3.05000000e-01, 5.42000000e-01/) &
       )
 
-  type (gendatadb), parameter :: cx101 = &
+  type (gendatadb), parameter :: cx99 = &
       gendatadb(ident = "NC14", &
       formula = "C14H30", &
       name = "N-TETRADECANE", &
@@ -6989,7 +6921,7 @@ module compdatadb
       Zra = 0.240060 &
       )
 
-  type (cpdata), parameter :: cp103 = &
+  type (cpdata), parameter :: cp101 = &
       cpdata(cid = "NC14", &
       ref = "Default", &
       bib_ref = "", &
@@ -7036,7 +6968,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx102 = &
+  type (gendatadb), parameter :: cx100 = &
       gendatadb(ident = "NC24", &
       formula = "C24H50", &
       name = "N-TETRACOSANE", &
@@ -7059,7 +6991,7 @@ module compdatadb
       Zra = 0.228390 &
       )
 
-  type (cpdata), parameter :: cp104 = &
+  type (cpdata), parameter :: cp102 = &
       cpdata(cid = "NC24", &
       ref = "Default", &
       bib_ref = "", &
@@ -7106,7 +7038,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx103 = &
+  type (gendatadb), parameter :: cx101 = &
       gendatadb(ident = "NC23", &
       formula = "C23H48", &
       name = "N-TRICOSANE", &
@@ -7129,7 +7061,7 @@ module compdatadb
       Zra = 0.229280 &
       )
 
-  type (cpdata), parameter :: cp105 = &
+  type (cpdata), parameter :: cp103 = &
       cpdata(cid = "NC23", &
       ref = "Default", &
       bib_ref = "", &
@@ -7176,7 +7108,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx104 = &
+  type (gendatadb), parameter :: cx102 = &
       gendatadb(ident = "NC13", &
       formula = "C13H28", &
       name = "N-TRIDECANE", &
@@ -7199,7 +7131,7 @@ module compdatadb
       Zra = 0.243240 &
       )
 
-  type (cpdata), parameter :: cp106 = &
+  type (cpdata), parameter :: cp104 = &
       cpdata(cid = "NC13", &
       ref = "Default", &
       bib_ref = "", &
@@ -7246,7 +7178,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx105 = &
+  type (gendatadb), parameter :: cx103 = &
       gendatadb(ident = "NC11", &
       formula = "C11H24", &
       name = "N-UNDECANE", &
@@ -7269,7 +7201,7 @@ module compdatadb
       Zra = 0.249900 &
       )
 
-  type (cpdata), parameter :: cp107 = &
+  type (cpdata), parameter :: cp105 = &
       cpdata(cid = "NC11", &
       ref = "Default", &
       bib_ref = "", &
@@ -7316,7 +7248,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (gendatadb), parameter :: cx106 = &
+  type (gendatadb), parameter :: cx104 = &
       gendatadb(ident = "NC12", &
       formula = "C12H26", &
       name = "N-DODECANE", &
@@ -7339,7 +7271,7 @@ module compdatadb
       Zra = 0.246680 &
       )
 
-  type (cpdata), parameter :: cp108 = &
+  type (cpdata), parameter :: cp106 = &
       cpdata(cid = "NC12", &
       ref = "Default", &
       bib_ref = "", &
@@ -7387,7 +7319,7 @@ module compdatadb
       )
 
 
-  integer, parameter :: maxncdb =106
+  integer, parameter :: maxncdb =104
   type (gendatadb), dimension(maxncdb), parameter :: compdb = (/&
       cx1,cx2,cx3,cx4,cx5, &
       cx6,cx7,cx8,cx9,cx10, &
@@ -7409,11 +7341,10 @@ module compdatadb
       cx86,cx87,cx88,cx89,cx90, &
       cx91,cx92,cx93,cx94,cx95, &
       cx96,cx97,cx98,cx99,cx100, &
-      cx101,cx102,cx103,cx104,cx105, &
-      cx106 &
+      cx101,cx102,cx103,cx104 &
   /)
 
-  integer, parameter :: maxcpdb =108
+  integer, parameter :: maxcpdb =106
   type (cpdata), dimension(maxcpdb), parameter :: cpdb = (/&
       cp1,cp2,cp3,cp4,cp5, &
       cp6,cp7,cp8,cp9,cp10, &
@@ -7436,7 +7367,7 @@ module compdatadb
       cp91,cp92,cp93,cp94,cp95, &
       cp96,cp97,cp98,cp99,cp100, &
       cp101,cp102,cp103,cp104,cp105, &
-      cp106,cp107,cp108 &
+      cp106 &
   /)
 
   integer, parameter :: maxTWUdb =182
