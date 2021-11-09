@@ -1,0 +1,77 @@
+{
+  "ident": "KR",
+  "formula": "KR",
+  "cas_number": "7439-90-9",
+  "name": "KRYPTON",
+  "aliases": [
+    "Krypton"
+  ],
+  "mol_weight": 83.798,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 209.48,
+    "pressure": 5525000.0,
+    "compressibility": 0.291
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 115.775,
+    "pressure": 73530
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": -0.004
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 119.93
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      15.233,
+      700.51,
+      -5.84
+    ],
+    "Tmin": 81.0,
+    "Tmax": 94.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "NIST-Chase1998",
+    "correlation": 5,
+    "cp": [
+      20.78603,
+      4.850638e-10,
+      -1.582916e-10,
+      1.525102e-11,
+      3.196347e-11,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": 0.3085
+  }
+}
