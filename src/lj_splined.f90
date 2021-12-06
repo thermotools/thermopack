@@ -127,6 +127,7 @@ module lj_splined
   public :: calcFresLJ_uf_theory, calcFresLJs_uv_theory
   public :: uv_q_of_t, uv_hs_b2, ljs_b2, uv_a1_u_mult_t
   public :: uv_a1_b2, uv_phi, calc_ljs_wca_ai
+  public :: get_bh_ljs_eos_pointer
 
 contains
 
@@ -250,8 +251,8 @@ contains
     endif
     s = saftvrmie_param%sigma_ij(1,1)
     tau = 1 - s_vc%dhs%d(1,1)/s
-    tau_T = s_vc%dhs%d_T(1,1)/s
-    tau_TT = s_vc%dhs%d_TT(1,1)/s
+    tau_T = -s_vc%dhs%d_T(1,1)/s
+    tau_TT = -s_vc%dhs%d_TT(1,1)/s
     rho = s_vc%rho_star%zx
     eps = saftvrmie_param%eps_divk_ij(1,1)
     fac = 2*pi*eps
@@ -300,8 +301,8 @@ contains
     endif
     s = saftvrmie_param%sigma_ij(1,1)
     tau = 1 - eos%saftvrmie_var%dhs%d(1,1)/s
-    tau_T = eos%saftvrmie_var%dhs%d_T(1,1)/s
-    tau_TT = eos%saftvrmie_var%dhs%d_TT(1,1)/s
+    tau_T = -eos%saftvrmie_var%dhs%d_T(1,1)/s
+    tau_TT = -eos%saftvrmie_var%dhs%d_TT(1,1)/s
     rho =  eos%saftvrmie_var%rho_star%zx
     eps = saftvrmie_param%eps_divk_ij(1,1)
     fac = -pi*eps**2
@@ -412,8 +413,8 @@ contains
       endif
       s = saftvrmie_param%sigma_ij(1,1)
       tau = 1 - eos%saftvrmie_var%dhs%d(1,1)/s
-      tau_T = eos%saftvrmie_var%dhs%d_T(1,1)/s
-      tau_TT = eos%saftvrmie_var%dhs%d_TT(1,1)/s
+      tau_T = -eos%saftvrmie_var%dhs%d_T(1,1)/s
+      tau_TT = -eos%saftvrmie_var%dhs%d_TT(1,1)/s
       rho = eos%saftvrmie_var%rho_star%zx
       eps = saftvrmie_param%eps_divk_ij(1,1)
       fac = eps**3
@@ -2981,6 +2982,23 @@ contains
     a_rt = a1_rt + (1-u)*b2_rt - u_rt*b2 - u_t*b2_r - u_r*b2_t
   end subroutine calc_uv_WCA
 
+  !> Get pointer to LJS BH eos
+  !!
+  !! \author Morten Hammer, 2021-12
+  function get_bh_ljs_eos_pointer(base_eos) result(eos)
+    use thermopack_var, only: base_eos_param
+    class(base_eos_param), pointer, intent(in) :: base_eos
+    class(ljs_bh_eos), pointer :: eos
+    eos => NULL()
+    if (.not. associated(base_eos)) return
+    select type(p_eos => base_eos)
+    type is (ljs_bh_eos)
+      eos => p_eos
+    class default
+      call stoperror("Error casting to saftvrmie_eos")
+    end select
+  end function get_bh_ljs_eos_pointer
+
 end module lj_splined
 
 subroutine testing_uf()
@@ -3111,8 +3129,9 @@ subroutine test_LJs_Fres(nc,Ti,Vi,ni)
   class(ljs_bh_eos), pointer :: p_eos => NULL()
   type(thermo_model), pointer :: act_mod_ptr
   act_mod_ptr => get_active_thermo_model()
-  allocate(ljs_bh_eos :: p_eos)
-  call init_LJs_bh(nc,act_mod_ptr%comps,p_eos,"DEFAULT")
+  p_eos => get_bh_ljs_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+  !allocate(ljs_bh_eos :: p_eos)
+  !call init_LJs_bh(nc,act_mod_ptr%comps,p_eos,"DEFAULT")
 
   if (present(ni)) then
     n = ni
