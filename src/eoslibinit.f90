@@ -472,7 +472,7 @@ contains
   !>
   !> \author MH, 2019-03
   !----------------------------------------------------------------------
-  subroutine redefine_critical_parameters(silent_init)
+  subroutine redefine_critical_parameters(silent_init, Tc_in, vc_in)
     use cbmix,      only: cbSingleCalcABC
     use thermopack_var, only: nce
     use eosTV,        only: pressure
@@ -482,6 +482,7 @@ contains
     use cbAlpha,      only: getAcentricAlphaParam
     use cubic_eos,    only: cb_eos
     logical, intent(in) :: silent_init
+    real, optional, intent(in) :: Tc_in(nce), vc_in(nce)
     ! Locals
     integer :: i, j, ierr
     real :: Tmin
@@ -502,6 +503,8 @@ contains
       Z(i) = 1
       Tc = -1.0
       Vc = -1.0
+      if (present(Tc_in)) Tc = Tc_in(i)
+      if (present(Vc_in)) Vc = Vc_in(i)
       call calcCriticalTV(Tc,Vc,Z,ierr)
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
