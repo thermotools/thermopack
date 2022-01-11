@@ -10,23 +10,21 @@ from the dynamic thermopack library.
 
 # Prerequisites
 
-Before you build (and possibly install) pycThermopack, make sure that
-you have compiled thermopack using the provides Makefiles or Visual
-Studio solution files. Compiling using GNU/Intel (Linux) or Intel (Windows)
-FORTRAN should be straight forward. If you prefer another compiler,
-you will need to tweake the get_platform_specifics method in thermo.py
-to get the module exports correct. These exports are compiler
-dependent.
+Before you build (and possibly install) pycThermopack, make sure that you have
+compiled thermopack using the provides Makefiles or Visual Studio solution
+files. Compiling using GNU/Intel (Linux) or Intel (Windows) FORTRAN should be
+straight forward. If you prefer another compiler, you will need to tweak the
+get_platform_specifics method in thermo.py to get the module exports correct.
+These exports are compiler dependent.
 
-To use pycThermopack you need to have `numpy` available. It is also recommended
-to install `matploblib`.
+pycThermopack requires `numpy` and optionally `matplotlib` for plotting.
 
 # Installation
 
 ## Linux
 
-To prepare pycThermopack, a `libthermopack.so` file must be copied to
-the pyctp folder. This is done as follows:
+To prepare pycThermopack, a `libthermopack.so` file must be copied to the pyctp
+folder. This is done as follows:
 
 ```sh
 # Either
@@ -73,6 +71,7 @@ license) in `../../MSVStudio`, and `libthermopack.dll` will be copied to the
 pyctp folder.
 
 #### MSYS2/Mingw-W64 setup
+
 Having compiled thermopack for MSYS2, you can get pycThermopack up and running
 as follows. Open the `MSYS2 MinGW 64-bit` application, navigate to the
 thermopack folder and run the following commands:
