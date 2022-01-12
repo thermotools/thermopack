@@ -291,15 +291,47 @@ module saftvrmie_parameters
      sequence
      integer:: eosidx
      character (len=8) :: uid1, uid2
-     integer :: setno
+     character(len=ref_len) :: ref ! Parameter set
      real :: kijvalue
   end type Miekijdata
 
-  integer, parameter :: Miemaxkij = 3
+  integer, parameter :: Miemaxkij = 15
   type(Miekijdata), dimension(Miemaxkij), parameter :: Miekijdb = (/ &
-       Miekijdata(eosSAFT_VR_MIE,"He","Ne",1,0.0425), &
-       Miekijdata(eosSAFT_VR_MIE,"C2","NC10",1,-0.0222), &
-       Miekijdata(eosSAFT_VR_MIE,"H2S","C2",1,0.072)/)
+       Miekijdata(eosSAFT_VR_MIE,"He","Ne","DEFAULT",0.0425), &
+       Miekijdata(eosSAFT_VR_MIE,"C2","NC10","DEFAULT",-0.0222), &
+       Miekijdata(eosSAFT_VR_MIE,"H2S","C2","DEFAULT",0.072), &
+       !
+       Miekijdata(eosSAFT_VR_MIE,"He","Ne","AASEN2019-FH1",-0.22), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","Ne","AASEN2019-FH1",0.105), &
+       Miekijdata(eosSAFT_VR_MIE,"He","H2","AASEN2019-FH1",0.08), &
+       Miekijdata(eosSAFT_VR_MIE,"D2","Ne","AASEN2019-FH1",0.13), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","D2","AASEN2019-FH1",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"He","D2","AASEN2019-FH1",0.0), &
+       !
+       Miekijdata(eosSAFT_VR_MIE,"He","Ne","AASEN2019-FH2",-0.06), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","Ne","AASEN2019-FH2",0.105), &
+       Miekijdata(eosSAFT_VR_MIE,"He","H2","AASEN2019-FH2",0.15), &
+       Miekijdata(eosSAFT_VR_MIE,"D2","Ne","AASEN2019-FH2",0.14), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","D2","AASEN2019-FH2",-0.04), &
+       Miekijdata(eosSAFT_VR_MIE,"He","D2","AASEN2019-FH2",0.12) &
+       /)
+
+  integer, parameter :: Miemaxlij = 12
+  type(Miekijdata), dimension(Miemaxlij), parameter :: Mielijdb = (/ &
+       Miekijdata(eosSAFT_VR_MIE,"He","Ne","AASEN2019-FH1",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","Ne","AASEN2019-FH1",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"He","H2","AASEN2019-FH1",-0.05), &
+       Miekijdata(eosSAFT_VR_MIE,"D2","Ne","AASEN2019-FH1",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","D2","AASEN2019-FH1",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"He","D2","AASEN2019-FH1",-0.05), &
+       !
+       Miekijdata(eosSAFT_VR_MIE,"He","Ne","AASEN2019-FH2",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","Ne","AASEN2019-FH2",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"He","H2","AASEN2019-FH2",-0.025), &
+       Miekijdata(eosSAFT_VR_MIE,"D2","Ne","AASEN2019-FH2",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"H2","D2","AASEN2019-FH2",0.0), &
+       Miekijdata(eosSAFT_VR_MIE,"He","D2","AASEN2019-FH2",-0.05) &
+       /)
 
 contains
 
@@ -340,39 +372,48 @@ contains
   end function getMiedataIdx
 
   !> Retrieve binary interaction parameter for components uid1 and uid2.
-  !> If no kij is stored in the database PCkijdb, it returns 0.0.
-  function getMiekij (eosidx,uid1,uid2,setno) result(kijvalue)
-    use stringmod, only: str_eq
+  !> If no kij is stored in the database, it returns 0.0.
+  function getMie_l_or_k_ij (eosidx,uid1,uid2,nMiemaxij,Mieijdb,ref) result(kijvalue)
+    use stringmod, only: str_eq, string_match
     integer, intent(in) :: eosidx
     character(len=*), intent(in) :: uid1, uid2
-    integer, intent(in), optional :: setno
+    integer, intent(in) :: nMiemaxij
+    type(Miekijdata), intent(in) :: Mieijdb(:)
+    character(len=*), intent(in), optional :: ref
     real :: kijvalue
-    integer :: idx, setno_loc
+    ! Locals
+    integer :: idx
     logical :: match_11_22, match_12_21
+    character(len=ref_len) :: ref_local
 
-    setno_loc = 1
-    if (present(setno)) setno_loc = setno
+    if (present(ref)) then
+      ref_local = ref
+    else
+      ref_local = "DEFAULT"
+    endif
 
     kijvalue = 0.0 ! default value if the binary is not in Miekijdb.
     idx = 1
-    do idx = 1,Miemaxkij
-       match_11_22 = str_eq(uid1,Miekijdb(idx)%uid1) .and. str_eq(uid2,Miekijdb(idx)%uid2)
-       match_12_21 = str_eq(uid1,Miekijdb(idx)%uid2) .and. str_eq(uid2,Miekijdb(idx)%uid1)
+    do idx = 1,nMiemaxij
+       match_11_22 = str_eq(uid1,Mieijdb(idx)%uid1) .and. str_eq(uid2,Mieijdb(idx)%uid2)
+       match_12_21 = str_eq(uid1,Mieijdb(idx)%uid2) .and. str_eq(uid2,Mieijdb(idx)%uid1)
 
-       if ( eosidx==Miekijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21) &
-            .and. Miekijdb(idx)%setno==setno_loc) then
-          kijvalue = Miekijdb(idx)%kijvalue
+       if ( eosidx==Mieijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21) &
+            .and. string_match(ref,Mieijdb(idx)%ref)) then
+          kijvalue = Mieijdb(idx)%kijvalue
           exit ! Exit means "break" in Fortran.
        endif
     end do
-  end function getMiekij
+  end function getMie_l_or_k_ij
 
-  subroutine getMieKij_allComps(nc,comp,eosidx,kij)
+  subroutine getMie_k_or_l_ij_allComps(nc,comp,eosidx,get_kij,ref,kij)
     use thermopack_var, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
     integer, intent(in) :: eosidx
+    logical, intent(in) :: get_kij
+    character(len=*), intent(in), optional :: ref
     ! Output
     real, intent(out) :: kij(nc,nc)
     ! Locals
@@ -381,12 +422,18 @@ contains
     kij = 0.0
     do ic=1,nc
        do jc=ic+1,nc
-          kij(ic,jc) = getMiekij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,setno=1)
-          kij(jc,ic) = kij(ic,jc)
+         if (get_kij) then
+           kij(ic,jc) = getMie_l_or_k_ij(eosidx,comp(ic)%p_comp%ident,&
+                comp(jc)%p_comp%ident,Miemaxkij,Miekijdb,ref=ref)
+         else
+           kij(ic,jc) = getMie_l_or_k_ij(eosidx,comp(ic)%p_comp%ident,&
+                comp(jc)%p_comp%ident,Miemaxlij,Mielijdb,ref=ref)
+         endif
+         kij(jc,ic) = kij(ic,jc)
        end do
     end do
 
-  end subroutine getMieKij_allComps
+  end subroutine getMie_k_or_l_ij_allComps
 
   !> Map SAFT-VR Mie paramaters to active component
   subroutine getSaftVrMiePureFluidParams(compName,eosidx,ref,saftvrmie_comp,fh_order,found)

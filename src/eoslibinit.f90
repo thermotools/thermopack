@@ -838,10 +838,12 @@ contains
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
     use saftvrmie_options, only: LAFITTE, QSAFT_FH1, QSAFT_FH2, LAFITTE_HS_REF, &
          saftvrmieaij_model_options
+    use thermopack_constants, only: clen
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
+    character(len=clen) :: param_ref !< Data set reference
     integer :: FH, FH_model
     if (present(feynman_hibbs_order)) then
       FH = feynman_hibbs_order
@@ -850,7 +852,12 @@ contains
     endif
     FH_model = FH + 1
     call saftvrmieaij_model_options(FH_model, LAFITTE_HS_REF)
-    call init_saftvrmie(comps,parameter_reference)
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "AASEN2019-FH1" ! Default to AASEN2019-FH1
+    endif
+    call init_saftvrmie(comps,param_ref)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------
