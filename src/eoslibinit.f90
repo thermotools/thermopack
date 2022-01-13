@@ -836,8 +836,7 @@ contains
   !! Use: call init_quantum_saftvrmie('He,Ne',feynman_hibbs_order=1)
   !----------------------------------------------------------------------------
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
-    use saftvrmie_options, only: LAFITTE, QSAFT_FH1, QSAFT_FH2, LAFITTE_HS_REF, &
-         saftvrmieaij_model_options
+    use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
@@ -851,7 +850,7 @@ contains
       FH = 1
     endif
     FH_model = FH + 1
-    call saftvrmieaij_model_options(FH_model, LAFITTE_HS_REF)
+    call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
     if (present(parameter_reference)) then
       param_ref = parameter_reference
     else
