@@ -81,81 +81,80 @@ module saftvrmie_parameters
        4.8794, 4.8788E-10, 475.76, 6, 22.926, 6.6890E-27, 0.0, 0.0, no_assoc, 0,"DEFAULT")
 
   ! Parameters for quantum fluids are from Aasen 2019 unless otherwise stated
-  type(saftvrmie_data), parameter :: Miecx18 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
-       1.00, 3.1538e-10,  21.2, 6,     8, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
-  type(saftvrmie_data), parameter :: Miecx19 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
-       1.00, 3.0203e-10, 30.273, 6,    10, 6.6890E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx21 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
-       1.00, 2.9897e-10, 36.913, 6,    12, 6.6890E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2/AASEN2019-FH2-LJ")
   type(saftvrmie_data), parameter :: Miecx17 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
-       1.00, 3.1561e-10, 28.222, 6,    12, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 3.1538e-10,  21.2, 6,     8, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
+  type(saftvrmie_data), parameter :: Miecx18 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
+       1.00, 3.0203e-10, 30.273, 6,    10, 6.6890E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
+  type(saftvrmie_data), parameter :: Miecx19 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
+       1.00, 2.9897e-10, 36.913, 6,    12, 6.6890E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2/AASEN2019-FH2-LJ")
   type(saftvrmie_data), parameter :: Miecx20 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
+       1.00, 3.1561e-10, 28.222, 6,    12, 6.6890E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+  type(saftvrmie_data), parameter :: Miecx21 = saftvrmie_data(eosSAFT_VR_MIE, "D2" , &
        1.00, 3.0193e-10, 34.389, 6,    12, 6.6890E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
 
-  type(saftvrmie_data), parameter :: Miecx23 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
-       1.00, 3.2574e-10, 17.931, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
-  type(saftvrmie_data), parameter :: Miecx25 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
-       1.00, 3.0243e-10, 26.706, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx27 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
-       1.00, 2.9195e-10, 55.729, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
   type(saftvrmie_data), parameter :: Miecx22 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
-       1.00, 3.5333e-10, 14.312, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 3.2574e-10, 17.931, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
+  type(saftvrmie_data), parameter :: Miecx23 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
+       1.00, 3.0243e-10, 26.706, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
   type(saftvrmie_data), parameter :: Miecx24 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
-       1.00, 3.0225e-10, 33.096, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+       1.00, 2.9195e-10, 55.729, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
+  type(saftvrmie_data), parameter :: Miecx25 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
+       1.00, 3.5333e-10, 14.312, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
   type(saftvrmie_data), parameter :: Miecx26 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
+       1.00, 3.0225e-10, 33.096, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+  type(saftvrmie_data), parameter :: Miecx27 = saftvrmie_data(eosSAFT_VR_MIE, "H2" , &
        1.00, 2.9324e-10, 40.321, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2-LJ")
 
   type(saftvrmie_data), parameter :: Miecx28 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
        1.00, 3.353e-10,  4.44, 6, 14.84, 6.6464764E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0") ! Herdes 2015
-  type(saftvrmie_data), parameter :: Miecx31 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
-       1.00, 2.7443e-10, 5.4195, 6,     9, 6.6464764E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx33 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
-       1.00, 2.549e-10, 10.952, 6,    13, 6.6464764E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
   type(saftvrmie_data), parameter :: Miecx29 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
-       1.00, 3.1273e-10, 4.1463, 6,    12, 6.6464764E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 2.7443e-10, 5.4195, 6,     9, 6.6464764E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
   type(saftvrmie_data), parameter :: Miecx30 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
-       1.00, 2.8107e-10, 6.6893, 6,    12, 6.6464764E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+       1.00, 2.549e-10, 10.952, 6,    13, 6.6464764E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
+  type(saftvrmie_data), parameter :: Miecx31 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
+       1.00, 3.1273e-10, 4.1463, 6,    12, 6.6464764E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
   type(saftvrmie_data), parameter :: Miecx32 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
+       1.00, 2.8107e-10, 6.6893, 6,    12, 6.6464764E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+  type(saftvrmie_data), parameter :: Miecx33 = saftvrmie_data(eosSAFT_VR_MIE, "HE" , &
        1.00, 2.5442e-10, 10.393, 6,    12, 6.6464764E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2-LJ")
-
 
   type(saftvrmie_data), parameter :: Miecx34 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
        1.00, 2.8019e-10, 29.875, 6, 9.6977, 3.3509177E-26, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
-  type(saftvrmie_data), parameter :: Miecx37 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
-       1.00, 2.7778e-10, 37.501, 6,    13, 3.3509177E-26, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx39 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
-       1.00, 2.776e-10, 37.716, 6,    13, 3.3509177E-26, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
   type(saftvrmie_data), parameter :: Miecx35 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
-       1.00, 2.8066e-10, 33.977, 6,    12, 3.3509177E-26, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 2.7778e-10, 37.501, 6,    13, 3.3509177E-26, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
   type(saftvrmie_data), parameter :: Miecx36 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
-       1.00, 2.776e-10, 35.851, 6,    12, 3.3509177E-26, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+       1.00, 2.776e-10, 37.716, 6,    13, 3.3509177E-26, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
+  type(saftvrmie_data), parameter :: Miecx37 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
+       1.00, 2.8066e-10, 33.977, 6,    12, 3.3509177E-26, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
   type(saftvrmie_data), parameter :: Miecx38 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
+       1.00, 2.776e-10, 35.851, 6,    12, 3.3509177E-26, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+  type(saftvrmie_data), parameter :: Miecx39 = saftvrmie_data(eosSAFT_VR_MIE, "NE" , &
        1.00, 2.7745e-10, 36.024, 6,    12, 3.3509177E-26, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2-LJ")
 
-  type(saftvrmie_data), parameter :: Miecx41 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
-       1.00, 3.2571e-10, 17.935, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
-  type(saftvrmie_data), parameter :: Miecx43 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
-       1.00, 3.0239e-10, 26.716, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx45 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
-       1.00, 2.9191e-10, 55.749, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
   type(saftvrmie_data), parameter :: Miecx40 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
-       1.00, 3.3604e-10, 14.084, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 3.2571e-10, 17.935, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
+  type(saftvrmie_data), parameter :: Miecx41 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
+       1.00, 3.0239e-10, 26.716, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
   type(saftvrmie_data), parameter :: Miecx42 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
-       1.00, 3.0222e-10, 33.107, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+       1.00, 2.9191e-10, 55.749, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
+  type(saftvrmie_data), parameter :: Miecx43 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
+       1.00, 3.3604e-10, 14.084, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
   type(saftvrmie_data), parameter :: Miecx44 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
+       1.00, 3.0222e-10, 33.107, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+  type(saftvrmie_data), parameter :: Miecx45 = saftvrmie_data(eosSAFT_VR_MIE, "O-H2" , &
        1.00, 2.9319e-10, 40.342, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2-LJ")
 
-  type(saftvrmie_data), parameter :: Miecx47 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
-       1.00, 3.2557e-10, 17.849, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
-  type(saftvrmie_data), parameter :: Miecx49 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
-       1.00, 3.0235e-10, 26.586, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
-  type(saftvrmie_data), parameter :: Miecx51 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
-       1.00, 2.9185e-10, 55.519, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
   type(saftvrmie_data), parameter :: Miecx46 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
-       1.00, 3.8131e-10, 13.197, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
+       1.00, 3.2557e-10, 17.849, 6,     8, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "DEFAULT/AASEN2019-FH0")
+  type(saftvrmie_data), parameter :: Miecx47 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
+       1.00, 3.0235e-10, 26.586, 6,     9, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1")
   type(saftvrmie_data), parameter :: Miecx48 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
-       1.00, 3.0217e-10, 32.955, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+       1.00, 2.9185e-10, 55.519, 6,    20, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2")
+  type(saftvrmie_data), parameter :: Miecx49 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
+       1.00, 3.8131e-10, 13.197, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 0, "AASEN2019-FH0-LJ")
   type(saftvrmie_data), parameter :: Miecx50 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
+       1.00, 3.0217e-10, 32.955, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 1, "AASEN2019-FH1-LJ")
+  type(saftvrmie_data), parameter :: Miecx51 = saftvrmie_data(eosSAFT_VR_MIE, "P-H2" , &
        1.00, 2.9318e-10, 40.152, 6,    12, 3.3472E-27, 0.0, 0.0, no_assoc, 2, "AASEN2019-FH2-LJ")
 
   ! HYVA parameters with non-integer repulsive exponent (not recommended for general use)
