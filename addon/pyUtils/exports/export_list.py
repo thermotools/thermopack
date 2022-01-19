@@ -2,15 +2,19 @@
 from datetime import datetime
 
 
-def get_export_statement(compiler, export_info):
+def get_export_statement(platform, compiler, export_info):
     """
     """
     export_statement = ""
     if export_info["module"] is None:
-        if export_info["isBindC"]:
-            export_statement = export_info["method"]
+        if platform == MACOS:
+            prefix = "_"
         else:
-            export_statement = export_info["method"] + "_"
+            prefix = ""
+        if export_info["isBindC"]:
+            export_statement = prefix + export_info["method"]
+        else:
+            export_statement = prefix + export_info["method"] + "_"
     else:
         if compiler == GNU:
             export_statement = "__" + export_info["module"] \
@@ -51,14 +55,14 @@ def get_export_footer(linker):
     return footer
 
 
-def write_def_file(compiler, linker, filename):
+def write_def_file(compiler, linker, platform, filename):
     """
     """
     lines = []
     header = get_export_header(linker)
     lines.append(header)
     for i in range(len(exports)):
-        export_statement = get_export_statement(compiler, exports[i])
+        export_statement = get_export_statement(platform, compiler, exports[i])
         if linker == LD_GCC:
             lines.append("\t" + export_statement + ";")
         elif linker == LD_CLANG or linker == LD_MSVC:
@@ -81,7 +85,6 @@ def append_export(method, module=None, isBindC=False):
 
 exports = []
 
-append_export("thermopack_init_c", isBindC=True)
 append_export("thermopack_init_c", isBindC=True)
 append_export("thermopack_pressure_c", isBindC=True)
 append_export("thermopack_specific_volume_c", isBindC=True)
@@ -229,8 +232,13 @@ LD_GCC = 1
 LD_CLANG = 2
 LD_MSVC = 3
 
+# Platforms
+LINUX = 1
+MACOS = 2
+WINDOWS = 3
+
 if __name__ == "__main__":
     # Write export files
-    write_def_file(GENERIC, LD_GCC, "libthermopack_export.version")
-    write_def_file(GENERIC, LD_CLANG, "libthermopack_export.symbols")
-    write_def_file(IFORT, LD_MSVC, "thermopack.def")
+    write_def_file(GENERIC, LD_GCC, LINUX, "libthermopack_export.version")
+    write_def_file(GENERIC, LD_CLANG, MACOS, "libthermopack_export.symbols")
+    write_def_file(IFORT, LD_MSVC, WINDOWS, "thermopack.def")
