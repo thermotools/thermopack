@@ -845,16 +845,24 @@ contains
     character(len=clen) :: param_ref !< Data set reference
     integer :: FH, FH_model
     if (present(feynman_hibbs_order)) then
-      FH = feynman_hibbs_order
+      FH = max(min(feynman_hibbs_order, 2),0)
     else
-      FH = 1
+      FH = 1 ! Default to FH1
     endif
     FH_model = FH + 1
     call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
     if (present(parameter_reference)) then
       param_ref = parameter_reference
     else
-      param_ref = "AASEN2019-FH1" ! Default to AASEN2019-FH1
+      ! Default parameter sets
+      select case(FH)
+      case(0) ! FH0
+        param_ref = "AASEN2019-FH0"
+      case(1) ! FH1
+        param_ref = "AASEN2019-FH1"
+      case(2) ! FH2
+        param_ref = "AASEN2019-FH2"
+      end select
     endif
     call init_saftvrmie(comps,param_ref)
   end subroutine init_quantum_saftvrmie
