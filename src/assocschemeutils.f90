@@ -245,4 +245,36 @@ contains
 
   end subroutine check_site_and_scheme
 
+  function get_assoc_string(assoc) result(as)
+    integer, intent(in) :: assoc
+    character(len=10) :: as
+    select case(assoc)
+    case(assoc_scheme_1)
+      as = "1"
+    case(assoc_scheme_2A)
+      as = "2A"
+    case(assoc_scheme_2B)
+      as = "2B"
+    case(assoc_scheme_2C)
+      as = "2C"
+    case(assoc_scheme_3A)
+      as = "3A"
+    case(assoc_scheme_3B)
+      as = "3B"
+    case(assoc_scheme_4A)
+      as = "4A"
+    case(assoc_scheme_4B)
+      as = "4B"
+    case(assoc_scheme_4C)
+      as = "4C"
+    case(assoc_scheme_1ea)
+      as = "1ea"
+    case(no_assoc)
+      as = "None"
+    case default
+      print *,"Wrong assoc model"
+      as = ""
+    end select
+  end function get_assoc_string
+
 end module AssocSchemeUtils
