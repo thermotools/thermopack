@@ -11,11 +11,11 @@ def gcc_major_version_greater_than(GCC_version):
     Returns:
         bool: GCC version is greater than specified version
     """
-    is_gt = False
-    sys_arr_gcc = version.split("GCC")
+    is_gt = True
+    sys_arr_gcc = re.split('Clang|clang|GCC|gcc',version)
     if len(sys_arr_gcc) > 1:
         # GCC on system
-        out = check_output(["gcc", "--version"])
+        out = check_output(["gcc", "-dumpfullversion", "-dumpversion"])
         out_str = out.decode("utf8").split("\n")[0]
         match = re.search('[0-9]+\.[0-9]\.[0-9]', out_str)
         first_match_str = match.group(0)
