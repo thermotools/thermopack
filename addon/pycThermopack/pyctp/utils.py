@@ -1,6 +1,9 @@
-from subprocess import check_output
-from sys import exit, version
+"""Utility functions."""
+
 import re
+from subprocess import check_output
+import sys
+
 
 def gcc_major_version_greater_than(GCC_version):
     """Returns if GCC major version number is greater than specefied version
@@ -12,19 +15,17 @@ def gcc_major_version_greater_than(GCC_version):
         bool: GCC version is greater than specified version
     """
     is_gt = True
-    sys_arr_gcc = re.split('Clang|clang|GCC|gcc',version)
+    sys_arr_gcc = re.split('Clang|clang|GCC|gcc', sys.version)
     if len(sys_arr_gcc) > 1:
-        # GCC on system
-        out = check_output(["gcc", "-dumpfullversion", "-dumpversion"])
-        out_str = out.decode("utf8").split("\n")[0]
-        match = re.search('[0-9]+\.[0-9]\.[0-9]', out_str)
-        first_match_str = match.group(0)
-        gcc_mv_str = first_match_str.split(".")[0]
+        out = check_output(["gcc", "-dumpfullversion"])
+        out_str = out.decode("utf8").split("\n", maxsplit=1)[0]
+        match = re.search(r'([0-9]+)\.[0-9]\.[0-9]', out_str)
+        gcc_mv_str = match.group(1)
         try:
             gcc_mv = int(gcc_mv_str)
         except ValueError:
             print("Not able to determine GCC major version. Exiting.")
-            exit(1)
+            sys.exit(1)
 
         is_gt = gcc_mv > GCC_version
 
