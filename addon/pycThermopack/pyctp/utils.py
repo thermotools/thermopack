@@ -17,7 +17,7 @@ def gcc_major_version_greater_than(GCC_version):
     is_gt = True
     sys_arr_gcc = re.split('Clang|clang|GCC|gcc', sys.version)
     if len(sys_arr_gcc) > 1:
-        out = check_output(["gcc", "-dumpfullversion"])
+        out = check_output(["gcc", "-dumpfullversion", "-dumpversion"])
         out_str = out.decode("utf8").split("\n", maxsplit=1)[0]
         match = re.search(r'([0-9]+)\.[0-9]\.[0-9]', out_str)
         gcc_mv_str = match.group(1)
