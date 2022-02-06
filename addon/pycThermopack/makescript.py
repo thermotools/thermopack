@@ -1,6 +1,5 @@
-"""Simple script to copy the desired libthermopack.so file."""
+"""Simple script to copy the desired libthermopack.so/libthermopack.dynlib file."""
 #!/usr/bin/env python
-from __future__ import print_function
 
 import argparse
 import os
@@ -22,4 +21,4 @@ if not os.path.exists(libthermo):
     print(f'{libthermo}does not exist. Have you compiled thermopack?')
     sys.exit(1)
 
-shutil.copy2(libthermo, "./pyctp/libthermopack.so")
+shutil.copy2(libthermo, "./pyctp/libthermopack"+libthermo.suffix)
