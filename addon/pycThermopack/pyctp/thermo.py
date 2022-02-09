@@ -329,11 +329,13 @@ class thermopack(object):
                                                 volume_trans_model_len,
                                                 ref_string_len)
 
-    def redefine_critical_parameters(self, silent=True):
+    def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
         """Recalculate critical properties of pure fluids
 
         Args:
             silent (bool): Ignore warnings? Defaults to True
+            Tc_initials (array_like): Initial value for pure fluid critical temperatures (K). Negative values will trigger use of SRK values from data base.
+            vc_initials (array_like): Initial value for pure fluid critical volumes (m3/mol). Negative values will trigger use of SRK values from data base.
         """
         self.activate()
         if silent:
@@ -341,11 +343,23 @@ class thermopack(object):
         else:
             silent_c = c_int(0)
 
-        self.eoslibinit_redefine_critical_parameters.argtypes = [ POINTER( c_int ) ]
+        null_pointer = POINTER(c_double)()
+        if Tc_initials is None:
+            Tc_initials_c = null_pointer
+        else:
+            Tc_initials_c = (c_double * len(Tc_initials))(*Tc_initials)
+        if vc_initials is None:
+            vc_initials_c = null_pointer
+        else:
+            vc_initials_c = (c_double * len(vc_initials))(*vc_initials)
+
+        self.eoslibinit_redefine_critical_parameters.argtypes = [ POINTER( c_int ),
+                                                                  POINTER( c_double ),
+                                                                  POINTER( c_double ) ]
 
         self.eoslibinit_redefine_critical_parameters.restype = None
 
-        self.eoslibinit_redefine_critical_parameters(byref(silent_c))
+        self.eoslibinit_redefine_critical_parameters(byref(silent_c), Tc_initials_c, vc_initials_c)
 
 
     #################################

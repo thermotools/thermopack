@@ -471,7 +471,7 @@ contains
   !>
   !> \author MH, 2019-03
   !----------------------------------------------------------------------
-  subroutine redefine_critical_parameters(silent_init)
+  subroutine redefine_critical_parameters(silent_init, Tc_in, vc_in)
     use cbmix,      only: cbSingleCalcABC
     use thermopack_var, only: nce
     use eosTV,        only: pressure
@@ -481,6 +481,7 @@ contains
     use cbAlpha,      only: getAcentricAlphaParam
     use cubic_eos,    only: cb_eos
     logical, intent(in) :: silent_init
+    real, optional, intent(in) :: Tc_in(nce), vc_in(nce)
     ! Locals
     integer :: i, j, ierr
     real :: Tmin
@@ -501,6 +502,8 @@ contains
       Z(i) = 1
       Tc = -1.0
       Vc = -1.0
+      if (present(Tc_in)) Tc = Tc_in(i)
+      if (present(Vc_in)) Vc = Vc_in(i)
       call calcCriticalTV(Tc,Vc,Z,ierr)
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
@@ -832,12 +835,13 @@ contains
   !! Use: call init_quantum_saftvrmie('He,Ne',feynman_hibbs_order=1)
   !----------------------------------------------------------------------------
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
-    use saftvrmie_options, only: LAFITTE, QSAFT_FH1, QSAFT_FH2, LAFITTE_HS_REF, &
-         saftvrmieaij_model_options
+    use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
+    use thermopack_constants, only: clen
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
+    character(len=clen) :: param_ref !< Data set reference
     integer :: FH, FH_model
     if (present(feynman_hibbs_order)) then
       FH = feynman_hibbs_order
@@ -845,8 +849,13 @@ contains
       FH = 1
     endif
     FH_model = FH + 1
-    call saftvrmieaij_model_options(FH_model, LAFITTE_HS_REF)
-    call init_saftvrmie(comps,parameter_reference)
+    call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "AASEN2019-FH1" ! Default to AASEN2019-FH1
+    endif
+    call init_saftvrmie(comps,param_ref)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------

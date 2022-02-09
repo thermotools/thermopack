@@ -286,7 +286,7 @@ Contains
   subroutine init_saftvrmie_containers(nc,comp,eos,ref,mixing)
     use eosdata, only: eosSAFT_VR_MIE
     use thermopack_var, only: gendata_pointer
-    use saftvrmie_parameters, only: getMieKij_allComps,getSaftVrMieParams
+    use saftvrmie_parameters, only: getMie_k_or_l_ij_allComps,getSaftVrMieParams
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     class(saftvrmie_eos), intent(inout) :: eos
@@ -301,9 +301,11 @@ Contains
     call cleanup_saftvrmie_var_container(svrmie_var)
     call allocate_saftvrmie_var_container(nc,svrmie_var)
     ! Get interaction parameters
-    call getMieKij_allComps(nc,comp,eosSAFT_VR_MIE,eos%saftvrmie_param%kij)
+    call getMie_k_or_l_ij_allComps(nc,comp,eosSAFT_VR_MIE,&
+         get_kij=.true.,ref=ref,kij=eos%saftvrmie_param%kij)
     eos%saftvrmie_param%gamma_ij = 0.0
-    eos%saftvrmie_param%lij = 0.0
+    call getMie_k_or_l_ij_allComps(nc,comp,eosSAFT_VR_MIE,&
+         get_kij=.false.,ref=ref,kij=eos%saftvrmie_param%lij)
     ! Get component data
     call getSaftVrMieParams(nc,comp,eosSAFT_VR_MIE,ref,&
          eos%saftvrmie_param%comp,fh_orders=fh_orders)
