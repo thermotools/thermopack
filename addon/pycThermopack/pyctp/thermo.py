@@ -109,6 +109,9 @@ class thermopack(object):
         self.s_second_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "secondvirialcoeffmatrix"))
         self.s_binary_third_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "binarythirdvirialcoeffmatrix"))
 
+        # Joule-Thompson inversion
+        self.s_joule_thompson_inversion = getattr(self.tp, self.get_export_name("joule_thompson_inversion", "map_jt_inversion"))
+
         self.add_eos()
 
     def __del__(self):
@@ -2709,3 +2712,56 @@ class thermopack(object):
                 cmat[i][j] = cmat_c[i+j*self.nc]
 
         return cmat
+
+    #################################
+    # Joule-Thompson interface
+    #################################
+
+    def joule_thompson_inversion(self, z, nmax=1000):
+        """Calculate Joule-Thompson inversion curve
+
+        Args:
+            temp (float): Temperature (K)
+            nmax (int): Array size
+
+        Returns:
+            ndarray: temp - Temperature (K)
+            ndarray: press - Pressure (Pa)
+            ndarray: vol - Volume (m3/mol)
+        """
+        self.activate()
+        z_c = (c_double * len(z))(*z)
+        nmax_c = c_int(nmax)
+        temp_c = (c_double * nmax)(0.0)
+        press_c = (c_double * nmax)(0.0)
+        vol_c = (c_double * nmax)(0.0)
+        ierr_c = c_int(0)
+        n_c = c_int(0)
+
+        self.s_joule_thompson_inversion.argtypes = [POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_int )]
+
+        self.s_joule_thompson_inversion.restype = None
+
+        self.s_joule_thompson_inversion(z_c,
+                                        temp_c,
+                                        vol_c,
+                                        press_c,
+                                        byref(nmax_c),
+                                        byref(n_c),
+                                        byref(ierr_c))
+
+
+        if ierr_c.value != 0:
+            raise Exception("Joule-Thompson inversion curve mapping failed")
+
+        t_vals = np.array(temp_c[0:n_c.value])
+        v_vals = np.array(vol_c[0:n_c.value])
+        p_vals = np.array(press_c[0:n_c.value])
+
+        return t_vals, p_vals, v_vals

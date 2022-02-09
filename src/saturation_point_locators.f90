@@ -23,6 +23,7 @@ module saturation_point_locators ! Give a more descriptive name..
   integer, parameter :: locate_from_enthalpy = 3
   integer, parameter :: locate_from_temperature = 4
   integer, parameter :: locate_from_pressure = 5
+  integer, parameter :: locate_from_joule_thompson = 6
 
 contains
 
@@ -266,6 +267,7 @@ contains
 
   subroutine genericProperty(t,p,Z,phase,propflag,prop)
     use eos
+    use eosTV, only: pressure
     use trend_solver, only: trend_density
     !$ use omp_lib
     implicit none
@@ -275,19 +277,26 @@ contains
     real, dimension(1:nc), intent(in) :: Z !< Compozition
     integer, intent(in) :: propflag !< Flag determining what property to return
     real, intent(out) :: prop !< Property
+    ! Locals
+    real :: v, dpdt, dpdv, p_dummy
 
-    if (propflag == locate_from_entropy) then
+    select case(propflag)
+    case(locate_from_entropy)
       call entropy(t,p,Z,phase,prop)
-    else if (propflag == locate_from_lnvol) then
+    case(locate_from_lnvol)
       call specificVolume(t,p,Z,phase,prop)
       prop = log(prop)
-    else if (propflag == locate_from_enthalpy) then
+    case(locate_from_enthalpy)
       call enthalpy(t,p,Z,phase,prop)
-    else if (propflag == locate_from_temperature) then
+    case(locate_from_temperature)
       prop = T
-    else if (propflag == locate_from_pressure) then
+    case(locate_from_pressure)
       prop = P
-    end if
+    case(locate_from_joule_thompson)
+      call specificVolume(t,p,Z,phase,v)
+      p_dummy = pressure(T, v, z, dpdv, dpdt)
+      prop = (T*dpdt + v*dpdv)/max(abs(T*dpdt), 1.0)
+    end select
 
   end subroutine genericProperty
 

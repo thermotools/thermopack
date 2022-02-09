@@ -160,6 +160,8 @@ append_export("isotherm", "isolines")
 append_export("isenthalp", "isolines")
 append_export("isentrope", "isolines")
 
+append_export("map_jt_inversion", "joule_thompson_inversion")
+
 append_export("ljs_bh_model_control", "lj_splined")
 append_export("ljs_bh_get_pure_params", "lj_splined")
 append_export("ljs_bh_set_pure_params", "lj_splined")

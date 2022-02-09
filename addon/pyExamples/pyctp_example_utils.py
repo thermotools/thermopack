@@ -44,3 +44,17 @@ def calc_reduced_entropy(s):
     sStar = np.zeros_like(s)
     sStar = s/(NA*KB)
     return sStar
+
+def calc_reduced_P(Pa, eps, sigma):
+    """ Calculate reduced pressure
+    """
+    Pstar = np.zeros_like(Pa)
+    Pstar = Pa*sigma**3/eps/KB
+    return Pstar
+
+def calc_real_P(Pstar, eps, sigma):
+    """ Calculate reduced pressure
+    """
+    Pa = np.zeros_like(Pstar)
+    Pa = Pstar*eps*KB/sigma**3
+    return Pa

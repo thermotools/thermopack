@@ -10,50 +10,39 @@ from pyctp import ljs_bh
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-from pyctp_example_utils import calc_reduced_T, calc_reduced_rho
+from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, calc_reduced_P
 
-# Instanciate and init LJS-BH object
-ljs = ljs_bh.ljs_bh()
-ljs.init()
-ljs.set_tmin(temp=2.0)
+LJS = []
+for i in range(3):
+    # Instanciate and init LJS-BH object
+    ljs = ljs_bh.ljs_bh()
+    ljs.init()
+    ljs.set_tmin(temp=2.0)
+    if i == 1:
+        ljs.model_control(enable_a3=False)
+    elif i == 2:
+        ljs.model_control(enable_a2=False, enable_a3=False)
+    if i > 0:
+        ljs.redefine_critical_parameters()
+    LJS.append(ljs)
+
+colors = ["k", "b", "g"]
+labels = ["$a_1+a_2+a_3$", "$a_1+a_2$", "$a_1$"]
+z = np.array([1.0])
 
 # Get parameters for Argon
-sigma, eps = ljs.get_sigma_eps()
+sigma, eps = LJS[0].get_sigma_eps()
 
-# Plot phase envelope using a1-a3
-z = np.array([1.0])
-T, P, v = ljs.get_envelope_twophase(5.0e3, z, maximum_pressure=1.0e7, calc_v=True)
-T_s = calc_reduced_T(T, eps)
-rho_s = calc_reduced_rho(1.0/v, sigma)
-Tc, vc, Pc = ljs.critical(z)
-Tc_s = calc_reduced_T(np.array([Tc]), eps)
-rhoc_s = calc_reduced_rho(np.array([1.0/vc]), sigma)
-plt.plot(rho_s, T_s, color="k", label="$a_1+a_2+a_3$")
-plt.plot(rhoc_s, Tc_s, color="k", marker="o")
-
-# Disable a_3
-ljs.model_control(enable_a3=False)
-ljs.redefine_critical_parameters()
-T, P, v = ljs.get_envelope_twophase(5.0e3, z, maximum_pressure=1.0e7, calc_v=True)
-T_s = calc_reduced_T(T, eps)
-rho_s = calc_reduced_rho(1.0/v, sigma)
-Tc, vc, Pc = ljs.critical(z)
-Tc_s = calc_reduced_T(np.array([Tc]), eps)
-rhoc_s = calc_reduced_rho(np.array([1.0/vc]), sigma)
-plt.plot(rho_s, T_s, color="b", label="$a_1+a_2$")
-plt.plot(rhoc_s, Tc_s, color="b", marker="o")
-
-# Disable a_2 and a_3
-ljs.model_control(enable_a2=False, enable_a3=False)
-ljs.redefine_critical_parameters()
-T, P, v = ljs.get_envelope_twophase(5.0e3, z, maximum_pressure=1.0e7, calc_v=True)
-T_s = calc_reduced_T(T, eps)
-rho_s = calc_reduced_rho(1.0/v, sigma)
-Tc, vc, Pc = ljs.critical(z)
-Tc_s = calc_reduced_T(np.array([Tc]), eps)
-rhoc_s = calc_reduced_rho(np.array([1.0/vc]), sigma)
-plt.plot(rho_s, T_s, color="g", label="$a_1$")
-plt.plot(rhoc_s, Tc_s, color="g", marker="o")
+# Plot phase envelopes
+for i, ljs in enumerate(LJS):
+    T, P, v = ljs.get_envelope_twophase(5.0e3, z, maximum_pressure=1.0e7, calc_v=True)
+    T_s = calc_reduced_T(T, eps)
+    rho_s = calc_reduced_rho(1.0/v, sigma)
+    Tc, vc, Pc = ljs.critical(z)
+    Tc_s = calc_reduced_T(np.array([Tc]), eps)
+    rhoc_s = calc_reduced_rho(np.array([1.0/vc]), sigma)
+    plt.plot(rho_s, T_s, color=colors[i], label=labels[i])
+    plt.plot(rhoc_s, Tc_s, color=colors[i], marker="o")
 
 plt.ylabel(r"$T^*$")
 plt.xlabel(r"$\rho^*$")
@@ -64,7 +53,22 @@ plt.ylim([0.45, 1.05])
 plt.show()
 plt.close()
 
+# Plot Joule-Thompson inversion curve
+for i, ljs in enumerate(LJS):
+    T, P, v = ljs.joule_thompson_inversion(z)
+    T_s = calc_reduced_T(T, eps)
+    P_s = calc_reduced_P(P, eps, sigma)
+    plt.plot(P_s, T_s, color=colors[i], label=labels[i])
 
+plt.ylabel(r"$T^*$")
+plt.xlabel(r"$P^*$")
+leg = plt.legend(loc="best", numpoints=1)
+leg.get_frame().set_linewidth(0.0)
+plt.title("LJS-BH Joule-Thompson inversion curves")
+plt.show()
+plt.close()
+
+# Plot perturbation terms
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 T_star = [0.6, 0.75, 1.0, 2.0, 4.0]
 colors = ["g", "b", "r", "grey", "k"]

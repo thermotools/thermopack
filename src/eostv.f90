@@ -20,6 +20,7 @@ module eosTV
   public :: binaryThirdVirialCoeffMatrix
   public :: enthalpyTV
   !
+  public :: lnfug_tvp
 contains
 
   !----------------------------------------------------------------------
@@ -695,5 +696,89 @@ contains
     end if
     !
   end subroutine chemical_potential
+
+  !-----------------------------------------------------------------------------
+  !> Calculate the logarithmic fugacity coefficent and its differentials.
+  !! Evaluate using (T,v,n) but output differentials for  (T, P, n)
+  !!
+  !! \author Morten Hammer, 2022-02
+  !-----------------------------------------------------------------------------
+  subroutine lnfug_tvp(T,v,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
+    use compdata, only: gendata_pointer
+    use thermopack_constants, only: Rgas
+    use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
+         TP_lnfug_apparent, base_eos_param
+    use single_phase, only: TV_CalcFres
+    ! Input.
+    real, intent(in) :: T                               !< Temperature [K]
+    real, intent(in) :: v                               !< Volume [m3]
+    real, intent(in) :: n(nc)                           !< Mole numbers [mols]
+    ! Output
+    real, intent(out) :: lnfug(nc)
+    real, optional, intent(out) :: dlnfugdt(nc), dlnfugdp(nc), dlnfugdn(nc,nc)
+    ! Locals.
+    real :: P     !< Pressure [Pa].
+    real :: sumne  !< Total mole number in mixture [mol]
+    real :: zFac
+    real :: F_n(nce),F_Tn(nce),F_TV,F_VV,F_Vn(nce),F_nn(nce,nce)
+    real :: dPdV, dPdT, dPdn(nce)
+    real :: dVdn(nce)
+    real :: ne(nce), lnfug_real(nce), ze(nce)
+    real :: dlnfugdt_real(nce), dlnfugdp_real(nce), dlnfugdn_real(nce,nce)
+    integer :: i,j
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
+
+    act_mod_ptr => get_active_thermo_model()
+    act_eos_ptr => get_active_eos()
+
+    call apparent_to_real_mole_numbers(n,ne)
+    sumne = sum(ne)
+
+    ze = ne/sumne
+    P = pressure(T,V,n)
+    zFac = V*P/(sumne*Rgas*T)
+    if (present(dlnfugdt) .or. present(dlnfugdp) .or. present(dlnfugdn)) then
+      if (nc /= nce) then
+        call TV_CalcFres(nc=nce,comp=act_mod_ptr%comps,cbeos=act_eos_ptr,T=T,V=V,n=ne,F_n=F_n,&
+             F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
+      else
+        call Fres(T=T,V=V,n=ne,F_n=F_n,&
+             F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
+      endif
+      dPdV = -Rgas*T*(F_VV + sumne/V**2)
+      dPdn = Rgas*T*(-F_Vn + 1/V)
+      dVdn = -dPdn/dPdV
+    else
+      if (nc /= nce) then
+        call TV_CalcFres(nc=nce,comp=act_mod_ptr%comps,cbeos=act_eos_ptr,T=T,V=V,n=ne,F_n=F_n)
+      else
+        call Fres(T=T,V=V,n=ne,F_n=F_n)
+      endif
+    end if
+
+    lnfug_real = F_n - log(zFac)
+
+    if (present(dlnfugdt)) then
+      dPdT = P/T-Rgas*T*F_TV
+      dlnfugdt_real = F_Tn + (1 - dVdn*dPdT/Rgas)/T
+    endif
+
+    if (present(dlnfugdp)) then
+      dlnfugdp_real = dVdn/(Rgas*T)-1/P
+    endif
+
+    if (present(dlnfugdn)) then
+      do i=1,nce
+        do j=1,nce
+          dlnfugdn_real(i,j) = F_nn(i,j) + 1/sumne - dVdn(j)*dPdn(i)/(Rgas*T)
+        end do
+      end do
+    endif
+
+    call TP_lnfug_apparent(nc,ne,n,P,lnfug_real,lnfug,dlnfugdt_real,&
+       dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
+
+  end subroutine lnfug_tvp
 
 end module eosTV

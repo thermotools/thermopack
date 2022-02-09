@@ -353,7 +353,6 @@ contains
     character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     !
     character(len=200) :: parameter_reference
-    type(thermo_model), pointer      :: act_mod_ptr
     parameter_reference = "tcPR"
     if (present(parameter_ref)) then
       parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
