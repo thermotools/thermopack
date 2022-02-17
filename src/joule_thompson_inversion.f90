@@ -209,13 +209,13 @@ contains
   !-----------------------------------------------------------------------------
   function single_phase_is_stable(T, P, v, z) result(isStable)
     use stability, only: stabcalc, stabilityLimit
-    use eostv, only: lnfug_tvp
+    use eostv, only: thermo_tvp
     implicit none
     real, intent(in) :: T, P, v, z(nc)
     logical :: isStable
     ! Locals
     real :: lnFugZ(nc), lnFug(nc), tpd
-    call lnfug_tvp(T,v,z,lnfugZ)
+    call thermo_tvp(T,v,z,lnfugZ)
     tpd = stabcalc(t,p,Z,LIQPH,lnFugZ,lnFug)
     isStable = (tpd > stabilityLimit)
     if (.not. isStable) return

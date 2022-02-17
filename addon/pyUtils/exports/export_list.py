@@ -116,7 +116,6 @@ append_export("global_binary_plot", "binaryplot")
 append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")
 
-
 append_export("calccriticaltv", "critical")
 
 append_export("specificvolume", "eos")
@@ -125,7 +124,6 @@ append_export("thermo", "eos")
 append_export("entropy", "eos")
 append_export("enthalpy", "eos")
 append_export("compmoleweight", "eos")
-append_export("idealenthalpysingle", "eos")
 
 append_export("init_thermo", "eoslibinit")
 append_export("init_cubic", "eoslibinit")
@@ -154,6 +152,11 @@ append_export("chemical_potential", "eostv")
 append_export("virial_coefficients", "eostv")
 append_export("secondvirialcoeffmatrix", "eostv")
 append_export("binarythirdvirialcoeffmatrix", "eostv")
+append_export("entropy_tvp", "eostv")
+append_export("thermo_tvp", "eostv")
+append_export("enthalpy_tvp", "eostv")
+
+append_export("idealenthalpysingle", "ideal")
 
 append_export("isobar", "isolines")
 append_export("isotherm", "isolines")

@@ -58,7 +58,9 @@ class thermopack(object):
         self.s_eos_entropy = getattr(self.tp, self.get_export_name("eos", "entropy"))
         self.s_eos_enthalpy = getattr(self.tp, self.get_export_name("eos", "enthalpy"))
         self.s_eos_compmoleweight = getattr(self.tp, self.get_export_name("eos", "compmoleweight"))
-        self.s_eos_idealenthalpysingle = getattr(self.tp, self.get_export_name("eos", "idealenthalpysingle"))
+
+        # Ideal property interface
+        self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name("ideal", "idealenthalpysingle"))
 
         # Speed of sound
         #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
@@ -86,6 +88,11 @@ class thermopack(object):
         self.s_enthalpy_tv = getattr(self.tp, self.get_export_name("eostv", "enthalpytv"))
         self.s_helmholtz_energy = getattr(self.tp, self.get_export_name("eostv", "free_energy"))
         self.s_chempot = getattr(self.tp, self.get_export_name("eostv", "chemical_potential"))
+
+        # TVP interfaces
+        self.s_entropy_tvp = getattr(self.tp, self.get_export_name("eostv", "entropy_tvp"))
+        self.s_thermo_tvp = getattr(self.tp, self.get_export_name("eostv", "thermo_tvp"))
+        self.s_enthalpy_tvp = getattr(self.tp, self.get_export_name("eostv", "enthalpy_tvp"))
 
         # Saturation properties
         self.s_bubble_t = getattr(self.tp, self.get_export_name("saturation", "safe_bubt"))
@@ -904,14 +911,13 @@ class thermopack(object):
 
         return return_tuple
 
-    def idealenthalpysingle(self,temp,press,j,dhdt=None,dhdp=None):
+    def idealenthalpysingle(self,temp,j,dhdt=None):
         """ Calculate specific ideal enthalpy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dhdt, and dhdp only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
-            press (float): Pressure (Pa)
             x (array_like): Molar composition
             phase (int): Calcualte root for specified phase
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
@@ -932,31 +938,21 @@ class thermopack(object):
             dhdt_c = null_pointer
         else:
             dhdt_c = POINTER(c_double)(c_double(0.0))
-        if dhdp is None:
-            dhdp_c = null_pointer
-        else:
-            dhdp_c = POINTER(c_double)(c_double(0.0))
 
-        self.s_eos_idealenthalpysingle.argtypes = [POINTER( c_double ),
-                                                   POINTER( c_double ),
-                                                   POINTER( c_int ),
-                                                   POINTER( c_double ),
-                                                   POINTER( c_double ),
-                                                   POINTER( c_double )]
+        self.s_ideal_idealenthalpysingle.argtypes = [POINTER( c_double ),
+                                                     POINTER( c_int ),
+                                                     POINTER( c_double ),
+                                                     POINTER( c_double )]
 
-        self.s_eos_idealenthalpysingle.restype = None
+        self.s_ideal_idealenthalpysingle.restype = None
 
-        self.s_eos_idealenthalpysingle(byref(temp_c),
-                                       byref(press_c),
-                                       byref(j_c),
-                                       byref(h_c),
-                                       dhdt_c,
-                                       dhdp_c)
+        self.s_ideal_idealenthalpysingle(byref(temp_c),
+                                         byref(j_c),
+                                         byref(h_c),
+                                         dhdt_c)
         return_tuple = (h_c.value, )
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
-        if not dhdp is None:
-            return_tuple += (dhdp_c[0], )
 
         return return_tuple
 
@@ -1788,6 +1784,233 @@ class thermopack(object):
                 for j in range(len(n)):
                     dlnphidn[i][j] = dlnphidn_c[i + j*len(n)]
             return_tuple += (dlnphidn, )
+
+        return return_tuple
+
+    #################################
+    # Temperature-volume property interfaces evaluating functions as if temperature-pressure
+    #################################
+
+    def entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None, dsdn=None, property_flag="IR"):
+        """Calculate entropy given temperature, pressure and mol numbers.
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+            dsdt (No type, optional): Flag to activate calculation. Defaults to None.
+            dsdp (No type, optional): Flag to activate calculation. Defaults to None.
+            dsdn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+
+        Returns:
+            float: Entropy (J/K)
+            Optionally entropy differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        s_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dsdt is None:
+            dsdt_c = null_pointer
+        else:
+            dsdt_c = POINTER(c_double)(c_double(0.0))
+        if dsdp is None:
+            dsdp_c = null_pointer
+        else:
+            dsdp_c = POINTER(c_double)(c_double(0.0))
+        if dsdn is None:
+            dsdn_c = null_pointer
+        else:
+            dsdn_c = (c_double * len(n))(0.0)
+
+        prop_flag = property_flag.upper()
+        if prop_flag in ("IR", "RI"):
+            contribution_c = POINTER(c_int)(c_int(0))
+        elif prop_flag == "R":
+            contribution_c = POINTER(c_int)(c_int(1))
+        elif prop_flag == "I":
+            contribution_c = POINTER(c_int)(c_int(1))
+        else:
+            raise ValueError("property_flag in entropy_tvp has wrong value."\
+                             " Expected I,R or IR, got " + prop_flag)
+
+        self.s_entropy_tvp.argtypes = [POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_double ),
+                                       POINTER( c_int )]
+
+        self.s_entropy_tvp.restype = None
+
+        self.s_entropy_tvp(byref(temp_c),
+                           byref(v_c),
+                           n_c,
+                           byref(s_c),
+                           dsdt_c,
+                           dsdp_c,
+                           dsdn_c,
+                           contribution_c)
+
+        return_tuple = (s_c.value, )
+        if not dsdt is None:
+            return_tuple += (dsdt_c[0], )
+        if not dsdp is None:
+            return_tuple += (dsdp_c[0], )
+        if not dsdn is None:
+            return_tuple += (np.array(dsdn_c), )
+
+        return return_tuple
+
+    def enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag="IR"):
+        """Calculate enthalpy given temperature, volume and mol numbers.
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+            dhdt (No type, optional): Flag to activate calculation. Defaults to None.
+            dhdp (No type, optional): Flag to activate calculation. Defaults to None.
+            dhdn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+
+        Returns:
+            float: Enthalpy (J)
+            Optionally enthalpy differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        h_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        null_pointer = POINTER(c_double)()
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+        if dhdn is None:
+            dhdn_c = null_pointer
+        else:
+            dhdn_c = (c_double * len(n))(0.0)
+
+        prop_flag = property_flag.upper()
+        if prop_flag in ("IR", "RI"):
+            contribution_c = POINTER(c_int)(c_int(0))
+        elif prop_flag == "R":
+            contribution_c = POINTER(c_int)(c_int(1))
+        elif prop_flag == "I":
+            contribution_c = POINTER(c_int)(c_int(1))
+        else:
+            raise ValueError("property_flag in enthalpy_tvp has wrong value."\
+                             " Expected I,R or IR, got " + prop_flag)
+
+        self.s_enthalpy_tvp.argtypes = [POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_double ),
+                                        POINTER( c_int )]
+
+        self.s_enthalpy_tvp.restype = None
+
+        self.s_enthalpy_tvp(byref(temp_c),
+                            byref(v_c),
+                            n_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c,
+                            dhdn_c,
+                            contribution_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+        if not dhdn is None:
+            return_tuple += (np.array(dhdn_c), )
+
+        return return_tuple
+
+    def thermo_tvp(self,temp,v,n,phase,dlnfugdt=None,dlnfugdp=None,
+                   dlnfugdn=None):
+        """ Calculate logarithm of fugacity coefficient given molar numbers,
+        temperature and pressure.
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            v (float): Volume (m3)
+            n (array_like): Molar numbers (mol)
+            dlnfugdt (logical, optional): Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dlnfugdp (logical, optional): Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dlnfugdn (logical, optional): Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+        Returns:
+            ndarray: fugacity coefficient (-), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+        temp_c = c_double(temp)
+        vol_c = c_double(v)
+        n_c = (c_double * len(n))(*n)
+        lnfug_c = (c_double * len(n))(0.0)
+
+        if dlnfugdt is None:
+            dlnfugdt_c = null_pointer
+        else:
+            dlnfugdt_c = (c_double * len(n))(0.0)
+        if dlnfugdp is None:
+            dlnfugdp_c = null_pointer
+        else:
+            dlnfugdp_c = (c_double * len(n))(0.0)
+        if dlnfugdn is None:
+            dlnfugdn_c = null_pointer
+        else:
+            dlnfugdn_c = (c_double * len(n)**2)(0.0)
+
+        self.s_thermo_tvp.argtypes = [POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double ),
+                                      POINTER( c_double )]
+
+        self.s_thermo_tvp.restype = None
+
+        self.s_thermo_tvp(byref(temp_c),
+                          byref(vol_c),
+                          n_c,
+                          lnfug_c,
+                          dlnfugdt_c,
+                          dlnfugdp_c,
+                          dlnfugdn_c)
+
+        return_tuple = (np.array(lnfug_c), )
+        if not dlnfugdt is None:
+            return_tuple += (np.array(dlnfugdt_c), )
+        if not dlnfugdp is None:
+            return_tuple += (np.array(dlnfugdp_c), )
+        if not dlnfugdn is None:
+            dlnfugdn_r = np.zeros((len(x),len(x)))
+            for i in range(len(x)):
+                for j in range(len(x)):
+                    dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(x)]
+            return_tuple += (dlnfugdn_r, )
 
         return return_tuple
 

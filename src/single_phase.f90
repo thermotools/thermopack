@@ -969,7 +969,6 @@ contains
     end if
 
     S = Rgas*(-F - T*F_T + sumn*log(zFac))
-
     if (present(dSdt)) then
       dSdt = dVdt*dPdt - Rgas*(2*F_T + T*F_TT + sumn/T)
     endif

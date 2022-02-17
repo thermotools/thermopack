@@ -47,7 +47,8 @@ module ideal
        CPideal_mix, Hideal_mix, TP_Sideal_mix, TV_Yideal_mix, &
        Sideal_Vn, TV_Sideal_mix, Fideal_mix_SI
   public :: Hideal_apparent, TP_Sideal_apparent, Cpideal_apparent
-
+  public :: idealGibbsSingle, idealEntropySingle, idealEnthalpySingle
+  public :: idealEntropy_ne
 contains
   !---------------------------------------------------------------------- >
   !> The function returns the vapour pressure for a pure component
@@ -1028,5 +1029,173 @@ contains
     end if
 
   end subroutine Fideal_mix_SI
+
+  !----------------------------------------------------------------------
+  !> Calculate single component ideal Gibbs energy.
+  !> Unit: J/mol
+  !>
+  !> \author MH, 2013-03-06
+  !----------------------------------------------------------------------
+  subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
+    use thermopack_var, only: get_active_thermo_model, thermo_model, nc
+    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    implicit none
+    ! Transferred variables
+    real, intent(in) :: t                   !< K - Temperature
+    real, intent(in) :: p                   !< Pa - Pressure
+    integer, intent(in) :: j                !< Component index
+    real, intent(out) :: g                  !< J/mol - Ideal Gibbs energy
+    real, optional, intent(out) :: dgdt     !< J/mol/K - Temperature differential of ideal Gibbs energy
+    real, optional, intent(out) :: dgdp     !< J/mol/Pa - Pressure differential of ideal Gibbs energy
+    ! Locals
+    real :: s, h
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    s = 0.0
+    h = 0.0
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      ! Thermopack
+      h = Hideal_apparent(act_mod_ptr%comps,j,T)
+      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
+    case (TREND)
+      ! TREND
+      h = trend_ideal_enthalpy(T,j)
+      s = trend_ideal_entropy(T,P,j)
+    case default
+      write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+    g = h - T*s
+    if (present(dgdt)) then
+      dgdt = -s
+    end if
+    if (present(dgdp)) then
+      dgdp=T*Rgas/P
+    end if
+  end subroutine idealGibbsSingle
+
+  !----------------------------------------------------------------------
+  !> Calculate single component ideal entropy.
+  !> Unit: J/mol/K
+  !>
+  !> \author MH, 2014-01
+  !----------------------------------------------------------------------
+  subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
+    use thermopack_var, only: get_active_thermo_model, thermo_model, nc
+    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    implicit none
+    ! Transferred variables
+    real, intent(in) :: t                   !< K - Temperature
+    real, intent(in) :: p                   !< Pa - Pressure
+    integer, intent(in) :: j                !< Component index
+    real, intent(out) :: s                  !< J/mol/K - Ideal entropy
+    real, optional, intent(out) :: dsdt     !< J/mol/K^2 - Temperature differential of ideal entropy
+    real, optional, intent(out) :: dsdp     !< J/mol/Pa - Pressure differential of ideal entopy
+    ! Locals
+    real :: z(nc)
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    z = 0.0
+    z(j) = 1.0
+    s = 0.0
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      ! Thermopack
+      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
+    case (TREND)
+      ! TREND
+      s = trend_ideal_entropy(T,P,j)
+      if (present(dsdt)) then
+        dsdt = trend_ideal_Cp(T,j) / T ! J/mol/K^2
+      end if
+    case default
+      write(*,*) 'EoSlib error in eos::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+    if (present(dsdp)) then
+      dsdp=-Rgas/P
+    end if
+  end subroutine idealEntropySingle
+
+  !----------------------------------------------------------------------
+  !> Calculate single component ideal enthalpy.
+  !> Unit: J/mol
+  !>
+  !> \author MH, 2014-01
+  !----------------------------------------------------------------------
+  subroutine idealEnthalpySingle(t,j,h,dhdt)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    real, intent(in) :: t                   !< K - Temperature
+    integer, intent(in) :: j                !< Component index
+    real, intent(out) :: h                  !< J/mol - Ideal enthalpy
+    real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      ! Thermopack
+      h = Hideal_apparent(act_mod_ptr%comps,j,T)
+      if (present(dhdt)) then
+        dhdt = CPideal_apparent(act_mod_ptr%comps, j, T)
+      endif
+    case (TREND)
+      ! TREND
+      h = trend_ideal_enthalpy(T,j)
+      if (present(dhdt)) then
+        dhdt = trend_ideal_Cp(T,j) ! J/mol/K^2
+      end if
+    case default
+      write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine idealEnthalpySingle
+
+  !----------------------------------------------------------------------
+  !> Calculate ideal entropy.
+  !> Unit: J/mol/K
+  !>
+  !> \author MH, 2022-02
+  !----------------------------------------------------------------------
+  subroutine idealEntropy_ne(t,p,n,s,dsdt,dsdp,dsdn)
+    use thermopack_var, only: get_active_thermo_model, thermo_model, nce
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    real, intent(in) :: t                    !< K - Temperature
+    real, intent(in) :: p                    !< Pa - Pressure
+    real, intent(in) :: n(nce)               !< Component index
+    real, intent(out) :: s                   !< J/mol/K - Ideal entropy
+    real, optional, intent(out) :: dsdt      !< J/mol/K^2 - Temperature differential of ideal entropy
+    real, optional, intent(out) :: dsdp      !< J/mol/Pa - Pressure differential of ideal entopy
+    real, optional, intent(out) :: dsdn(nce) !< J/mol^2/K - Mol number differentials of ideal entopy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
+           dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
+    case (TREND)
+      ! TREND
+      write(*,*) 'ideal::idealEntropy_ne: dsdn not yet implemented for TREND.'
+      call stoperror("")
+    case default
+      write(*,*) 'EoSlib error in eos::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine idealEntropy_ne
 
 end module ideal
