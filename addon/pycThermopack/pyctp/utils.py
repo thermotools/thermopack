@@ -3,7 +3,7 @@
 import re
 from subprocess import check_output
 import sys
-
+from ctypes import c_int, POINTER
 
 def gcc_major_version_greater_than(GCC_version):
     """Returns if GCC major version number is greater than specefied version
@@ -30,3 +30,16 @@ def gcc_major_version_greater_than(GCC_version):
         is_gt = gcc_mv > GCC_version
 
     return is_gt
+
+def get_contribution_flag(property_flag):
+    prop_flag = property_flag.upper()
+    if prop_flag in ("IR", "RI"):
+        contribution_c = POINTER(c_int)(c_int(0))
+    elif prop_flag == "R":
+        contribution_c = POINTER(c_int)(c_int(1))
+    elif prop_flag == "I":
+        contribution_c = POINTER(c_int)(c_int(2))
+    else:
+        raise ValueError("property_flag has wrong value."\
+                         " Expected I,R or IR, got " + prop_flag)
+    return contribution_c

@@ -2644,7 +2644,7 @@ contains
   !-------------------------------------------------------------------
   subroutine llve_TV_fun_newton(G,XX,param)
     use thermopack_var, only: nc
-    use eosTV, only: thermoTV, pressure
+    use eosTV, only: thermo_tv, pressure
     implicit none
     real, dimension(10), intent(out) :: G !< Function values
     real, dimension(10), intent(in) :: XX !< Variable vector
@@ -2667,9 +2667,9 @@ contains
     !
     P = param(1)
 
-    call thermoTV(t,vx,x,lnfx)
-    call thermoTV(t,vw,w,lnfw)
-    call thermoTV(t,vy,y,lnfy)
+    call thermo_tv(t,vx,x,lnfx)
+    call thermo_tv(t,vw,w,lnfw)
+    call thermo_tv(t,vy,y,lnfy)
 
     Px = pressure(t,vx,x)
     Pw = pressure(t,vw,w)
@@ -2707,7 +2707,7 @@ contains
   !-------------------------------------------------------------------
   subroutine llve_TV_diff_newton(Jac,XX,param)
     use thermopack_var, only: nc
-    use eosTV, only: thermoTV, pressure
+    use eosTV, only: thermo_tv, pressure
     implicit none
     real, dimension(10), intent(in) :: XX !< Variable vector
     real, dimension(10,10), intent(out) :: Jac !< Function differentials
@@ -2734,9 +2734,9 @@ contains
     !
     P = param(1)
 
-    call thermoTV(t,vx,x,lnfx,lnphit=lnfxT,lnphiv=lnfxv,lnphin=lnfxn)
-    call thermoTV(t,vw,w,lnfw,lnphit=lnfwT,lnphiv=lnfwv,lnphin=lnfwn)
-    call thermoTV(t,vy,y,lnfy,lnphit=lnfyT,lnphiv=lnfyv,lnphin=lnfyn)
+    call thermo_tv(t,vx,x,lnfx,lnphit=lnfxT,lnphiv=lnfxv,lnphin=lnfxn)
+    call thermo_tv(t,vw,w,lnfw,lnphit=lnfwT,lnphiv=lnfwv,lnphin=lnfwn)
+    call thermo_tv(t,vy,y,lnfy,lnphit=lnfyT,lnphiv=lnfyv,lnphin=lnfyn)
 
     Px = pressure(t,vx,x,dpdv=Pxv,dpdt=PxT,dpdn=Pxn)
     Pw = pressure(t,vw,w,dpdv=Pwv,dpdt=PwT,dpdn=Pwn)
@@ -5033,7 +5033,7 @@ contains
   !> \author MH, 2019-10
   !-------------------------------------------------------------------------
   subroutine azFun(Fun,X,param)
-    use eosTV, only: pressure, thermoTV
+    use eosTV, only: pressure, thermo_tv
     implicit none
     real, dimension(4), intent(out) :: Fun !< Function value
     real, dimension(4), intent(in) :: X !< Variables
@@ -5053,9 +5053,9 @@ contains
     call getPropFromXaz(X,T,vg,vl,Z,ic)
     !
     Pg = pressure(t,vg,z)
-    call thermoTV(t,vg,z,lnfg)
+    call thermo_tv(t,vg,z,lnfg)
     Pl = pressure(t,vl,z)
-    call thermoTV(t,vl,z,lnfl)
+    call thermo_tv(t,vl,z,lnfl)
 
     fun(1) = log(Pl) - log(Pg)
     fun(2:3) = lnfl - lnfg
@@ -5073,7 +5073,7 @@ contains
   !> \author MH, 2019-10
   !-------------------------------------------------------------------------
   subroutine azJac(dF,X,param)
-    use eosTV, only: pressure, thermoTV
+    use eosTV, only: pressure, thermo_tv
     implicit none
     real, dimension(4,4), intent(out) :: dF !< Function differential
     real, dimension(4), intent(in) :: X !< Variables
@@ -5099,9 +5099,9 @@ contains
     call getPropFromXaz(X,T,vg,vl,Z,ic)
     !
     Pg = pressure(t,vg,z,dpdv=Pg_v,dpdt=Pg_T,dpdn=Pg_n)
-    call thermoTV(t,vg,z,lnfg,lnfg_t,lnfg_v,lnfg_n)
+    call thermo_tv(t,vg,z,lnfg,lnfg_t,lnfg_v,lnfg_n)
     Pl = pressure(t,vl,z,dpdv=Pl_v,dpdt=Pl_T,dpdn=Pl_n)
-    call thermoTV(t,vl,z,lnfl,lnfl_t,lnfl_v,lnfl_n)
+    call thermo_tv(t,vl,z,lnfl,lnfl_t,lnfl_v,lnfl_n)
     !
     !fun(1) = log(Pl) - log(Pg)
     dF(1,1) = T*(Pl_T/Pl - Pg_T/Pg)

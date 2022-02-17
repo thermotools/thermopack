@@ -283,7 +283,7 @@ contains
   !!
   !! \author Morten Hammer
   function TV_CalcInnerEnergy(nc,comp,cbeos,T,v,n,dudt,dudv,dudn,&
-       recalculate) result (u)
+       recalculate, contribution) result (u)
     use thermopack_constants, only: Rgas
     use ideal
     use eosdata
@@ -298,6 +298,7 @@ contains
     real, intent(in) :: T, v
     real, optional, intent(out) :: dudt, dudv, dudn(nc)
     logical, optional, intent(in) :: recalculate
+    integer, optional, intent(in) :: contribution
     real :: u
     !
     real :: F_T, u_id, F_Tn(nc)

@@ -4,7 +4,8 @@
 !! \author MH, 2015-02
 module eosTV
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
-       thermo_model, get_active_thermo_model
+       thermo_model, get_active_thermo_model, apparent_to_real_mole_numbers, &
+       real_to_apparent_diff
   use thermopack_constants
   !
   implicit none
@@ -14,11 +15,11 @@ module eosTV
   include 'trend_interface.f95'
   !
   private
-  public :: pressure, internal_energy, free_energy, entropyTV
-  public :: thermoTV, Fres, Fideal, chemical_potential
+  public :: pressure, internal_energy_tv, free_energy_tv, entropy_tv
+  public :: thermo_tv, Fres, Fideal, chemical_potential_tv
   public :: virial_coefficients, secondvirialcoeffmatrix
   public :: binaryThirdVirialCoeffMatrix
-  public :: enthalpyTV
+  public :: enthalpy_tv, Fres_ne, Fideal_ne
   !
   public :: enthalpy_tvp, entropy_tvp, thermo_tvp
 contains
@@ -85,9 +86,9 @@ contains
   !>
   !> \author MH, 2012-03-14
   !----------------------------------------------------------------------
-  subroutine internal_energy(t,v,n,u,dudt,dudv,recalculate)
-    use single_phase, only: TV_CalcInnerEnergy
+  subroutine internal_energy_tv(t,v,n,u,dudt,dudv,dudn,contribution)
     use eosdata
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -95,43 +96,81 @@ contains
     real, dimension(1:nc), intent(in) :: n !< Mol numbers
     real, intent(out) :: u !< J - Specific internal energy
     real, optional, intent(out) :: dudt !< J/K - Energy differential wrpt. temperature
-    real, optional, intent(out) :: dudv !< J/m3 - Energy differential wrpt. specific volume
-    logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
+    real, optional, intent(out) :: dudv !< J/m3 - Energy differential wrpt. volume
+    real, optional, intent(out) :: dudn(nc) !< J/mol - Energy differential wrpt. mol numbers
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    logical :: recalculate_loc
-    class(base_eos_param), pointer :: act_eos_ptr
-    type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
-    else
-      recalculate_loc = .true.
-    end if
+    real :: F_T, u_id, F_Tn(nc)
+    real, pointer :: F_TT_p, F_TV_p, F_Tn_p(:)
+    real, target :: F_TT_l, F_TV_l, F_Tn_l(nce)
+    real, dimension(nce) :: ne
+    logical :: res, ideal
+    call apparent_to_real_mole_numbers(n,ne)
 
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      u = TV_CalcInnerEnergy(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,dudt,dudv,&
-           recalculate=recalculate_loc)
-    case (TREND)
-      ! TREND
-      u = trend_internal_energy(n,t,v,dudv,dudt)
-    case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
-  end subroutine internal_energy
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
+    endif
+
+    if (present(dudt)) then
+      dudt = 0
+      F_TT_p => F_TT_l
+    else
+      F_TT_p => NULL()
+    endif
+    if (present(dudv)) then
+      dudv = 0
+      F_TV_p => F_TV_l
+    else
+      F_TV_p => NULL()
+    endif
+    if (present(dudn)) then
+      dudn = 0
+      F_Tn_p => F_Tn_l
+    else
+      F_Tn_p => NULL()
+    endif
+    u = 0
+
+    if (res) then
+      call Fres_ne(T,V,ne,F_T=F_T,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_Tn=F_Tn_p)
+      u = (-Rgas)*T**2*F_T
+      if (present(dudv)) dudv = (-Rgas)*T**2*F_TV_l
+      if (present(dudt)) dudt = (-Rgas)*T*(T*F_TT_l+2.0*F_T)
+      if (present(dudn)) then
+        call real_to_apparent_diff(F_Tn_l,F_Tn)
+        dudn = (-Rgas)*T**2*F_Tn
+      endif
+    endif
+    if (ideal) then
+      ! Add ideal gas contributions
+      call Fideal_ne(T,V,ne,F_T=F_T,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_Tn=F_Tn_p)
+      u_id = (-Rgas)*T**2*F_T
+      u = u + u_id
+      if (present(dudv)) dudv = dudv + (-Rgas)*T**2*F_TV_l
+      if (present(dudt)) dudt = dudt + (-Rgas)*T*(T*F_TT_l+2.0*F_T)
+      if (present(dudn)) then
+        call real_to_apparent_diff(F_Tn_l,F_Tn)
+        dudn = dudn + (-Rgas)*T**2*F_Tn
+      endif
+    endif
+  end subroutine internal_energy_tv
 
   !----------------------------------------------------------------------
   !> Calculate Helmholtz free energy given composition, temperature and density.
   !>
   !> \author GL, 2015-01-23
   !----------------------------------------------------------------------
-  subroutine free_energy(t,v,n,y,dydt,dydv,d2ydt2,d2ydv2,d2ydvdt,recalculate)
-    use single_phase, only: TV_CalcFreeEnergy
-    !$ use omp_lib
+  subroutine free_energy_tv(t,v,n,y,dydt,dydv,dydn,contribution)
+    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -140,47 +179,77 @@ contains
     real, intent(out) :: y !< J - Free energy
     real, optional, intent(out) :: dydt !< J/K - Differential wrt. temperature
     real, optional, intent(out) :: dydv !< J/m3 - Differential wrt. specific volume
-    real, optional, intent(out) :: d2ydt2 !< J/K2 - Helmholtz differential wrpt. temperature
-    real, optional, intent(out) :: d2ydv2 !< J/m6 - Helmholtz second differential wrpt. specific volume
-    real, optional, intent(out) :: d2ydvdt !< J/(m3 K) - Helmholtz second differential wrpt. specific volume and temperature
-    logical, optional, intent(in) :: recalculate !< Recalculate cbeos-structure
+    real, optional, intent(out) :: dydn(nc) !< J/mol - Helmholtz differential wrpt. mol numbers
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    logical :: recalculate_loc
-    class(base_eos_param), pointer :: act_eos_ptr
-    type(thermo_model), pointer :: act_mod_ptr
+    logical :: res, ideal
+    real :: F, F_n(nc)
+    real, pointer :: F_T_p, F_V_p, F_n_p(:)
+    real, target :: F_T_l, F_V_l, F_n_l(nce)
+    real, dimension(nce) :: ne
     !--------------------------------------------------------------------
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
-    else
-      recalculate_loc = .true.
-    end if
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      y = TV_CalcFreeEnergy(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,&
-           dydt,dydv,recalculate=recalculate_loc)
-      if (present(d2ydt2) .or. present(d2ydv2) .or. present(d2ydvdt)) then
-        write(*,*) 'eos::free_energy: Differentials not implemented'
-        call stoperror('')
+    call apparent_to_real_mole_numbers(n,ne)
+
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
       endif
-    case (TREND)
-      ! TREND
-      y = trend_free_energy(n,t,v,dydv,dydt,d2ydt2,d2ydv2,d2ydvdt)
-    case default
-      write(*,*) 'EoSlib error in eos::internal_energy: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
-  end subroutine free_energy
+    endif
+
+    if (present(dYdT)) then
+      dYdT = 0
+      F_T_p => F_T_l
+    else
+      F_T_p => NULL()
+    endif
+    if (present(dYdV)) then
+      dYdV = 0
+      F_V_p => F_V_l
+    else
+      F_V_p => NULL()
+    endif
+    if (present(dYdn)) then
+      dYdn = 0
+      F_n_p => F_n_l
+    else
+      F_n_p => NULL()
+    endif
+    y = 0
+
+    if (res) then
+      call Fres_ne(T,V,ne,F=F,F_T=F_T_p,F_V=F_V_p,F_n=F_n_p)
+      Y = Rgas*T*F
+      if (present(dYdt)) dYdt = Rgas*(F + T*F_T_l)
+      if (present(dYdv)) dYdv = Rgas*T*F_V_l
+      if (present(dYdn)) then
+        call real_to_apparent_diff(F_n_l,F_n)
+        dYdn = Rgas*T*F_n
+      endif
+    endif
+    if (ideal) then
+      ! Add ideal gas contributions
+      call Fideal_ne(T,V,ne,F=F,F_T=F_T_p,F_V=F_V_p,F_n=F_n_p)
+      Y = Y + Rgas*T*F
+      if (present(dYdt)) dYdt = dYdt + Rgas*(F + T*F_T_l)
+      if (present(dYdv)) dYdv = dYdv + Rgas*T*F_V_l
+      if (present(dYdn)) then
+        call real_to_apparent_diff(F_n_l,F_n)
+        dYdn = dYdn + Rgas*T*F_n
+      endif
+    endif
+  end subroutine free_energy_tv
 
   !----------------------------------------------------------------------
   !> Calculate entropy given composition, temperature and density.
   !>
   !> \author MH, 2015-02
   !----------------------------------------------------------------------
-  subroutine entropyTV(t,v,n,s,dsdt,dsdv,dsdn,residual)
-    use thermopack_constants, only: Rgas
+  subroutine entropy_tv(t,v,n,s,dsdt,dsdv,dsdn,contribution)
+    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -190,28 +259,35 @@ contains
     real, optional, intent(out) :: dsdt !< J/K2 - Entropy differential wrpt. temperature
     real, optional, intent(out) :: dsdv !< J/K/m3 - Entropy differential wrpt. specific volume
     real, optional, intent(out) :: dsdn(nc) !< J/K/mol - Entropy differential wrpt. mol numbers
-    logical, optional, intent(in) :: residual
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    real :: s_id, dsdt_id, dsdv_id, F, F_T, dsdn_id(nc)
-    logical :: res
+    real :: s_id, dsdt_id, dsdv_id, F, F_T, dsdne_id(nce), dsdne(nce)
+    real :: ne(nce)
+    logical :: res, ideal
     real, pointer :: F_TT_p, F_V_p, F_TV_p
     real, target :: F_TT, F_V, F_TV
-    real, pointer :: F_Tn_p(:), F_n_p(:)
-    real, target :: F_Tn(nc), F_n(nc)
-
+    real, pointer :: F_Tne_p(:), F_ne_p(:)
+    real, target :: F_Tne(nce), F_ne(nce)
     !--------------------------------------------------------------------
-    if (present(residual)) then
-      res = residual
-    else
-      res = .false.
+    call apparent_to_real_mole_numbers(n,ne)
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
     endif
 
     if (present(dsdT)) then
+      dsdT = 0
       F_TT_p => F_TT
     else
       F_TT_p => NULL()
     endif
     if (present(dsdV)) then
+      dsdV = 0
       F_V_p => F_V
       F_TV_p => F_TV
     else
@@ -219,27 +295,33 @@ contains
       F_TV_p => NULL()
     endif
     if (present(dsdn)) then
-      F_n_p => F_n
-      F_Tn_p => F_Tn
+      dsdne = 0
+      F_ne_p => F_ne
+      F_Tne_p => F_Tne
     else
-      F_n_p => NULL()
-      F_Tn_p => NULL()
+      F_ne_p => NULL()
+      F_Tne_p => NULL()
     endif
 
-    ! Residual contribution
-    call Fres(T,v,n,F=F,F_T=F_T,F_V=F_V_p,F_n=F_n_p,F_TT=F_TT_p,F_TV=F_TV_p,F_Tn=F_Tn_p)
-    s = - Rgas*(F + T*F_T)
-    if (present(dsdt)) then
-      dsdt = - Rgas*(2*F_T + T*F_TT)
+    if (res) then
+      ! Residual contribution
+      call Fres_ne(T,v,ne,F=F,F_T=F_T,F_V=F_V_p,F_n=F_ne_p,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_Tn=F_Tne_p)
+      s = - Rgas*(F + T*F_T)
+      if (present(dsdt)) then
+        dsdt = - Rgas*(2*F_T + T*F_TT)
+      endif
+      if (present(dsdv)) then
+        dsdv = - Rgas*(F_V + T*F_TV)
+      endif
+      if(present(dsdn)) then
+        dsdne = -Rgas*(F_ne + T*F_Tne)
+      end if
     endif
-    if (present(dsdv)) then
-      dsdv = - Rgas*(F_V + T*F_TV)
-    endif
-    if(present(dsdn)) then
-      dsdn = -Rgas*(F_n + T*F_Tn)
-    end if
-    if (.not. res) then
-      call Fideal(T,v,n,F,F_T,F_V=F_V_p,F_n=F_n_p,F_TT=F_TT_p,F_TV=F_TV_p,F_Tn=F_Tn_p)
+
+    if (ideal) then
+      call Fideal_ne(T,v,ne,F,F_T,F_V=F_V_p,F_n=F_ne_p,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_Tn=F_Tne_p)
       s_id = - Rgas*(F + T*F_T)
       s = s + s_id
       if (present(dsdt)) then
@@ -251,18 +333,21 @@ contains
         dsdv = dsdv + dsdv_id
       endif
       if(present(dsdn)) then
-        dsdn_id = -Rgas*(F_n + T*F_Tn)
-        dsdn = dsdn + dsdn_id
+        dsdne_id = -Rgas*(F_ne + T*F_Tne)
+        dsdne = dsdne + dsdne_id
       end if
     endif
-  end subroutine entropyTV
+    if (present(dSdn)) then
+      call real_to_apparent_diff(dSdne,dSdn)
+    endif
+  end subroutine entropy_tv
 
   !----------------------------------------------------------------------
   !> Calculate enthalpy given composition, temperature and density.
   !>
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
-  subroutine enthalpyTV(t,v,n,h,dhdt,dhdv,dhdn,residual)
+  subroutine enthalpy_tv(t,v,n,h,dhdt,dhdv,dhdn,contribution)
     use thermopack_constants, only: Rgas
     implicit none
     ! Transferred variables
@@ -273,27 +358,35 @@ contains
     real, optional, intent(out) :: dhdt !< J/K - Enthalpy differential wrpt. temperature
     real, optional, intent(out) :: dhdv !< J/m3 - Enthalpy differential wrpt. volume
     real, optional, intent(out) :: dhdn(nc) !< J/m3 - Enthalpy differential wrpt. mol numbers
-    logical, optional, intent(in) :: residual
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    real :: h_id, dhdt_id, dhdv_id, F, F_T, F_V, h_T, h_id_T, dhdn_id(nc)
-    logical :: res
+    real :: h_id, dhdt_id, dhdv_id, F, F_T, F_V, h_T, h_id_T, dhdne_id(nc), dhdne(nce)
+    real :: ne(nce)
+    logical :: res, ideal
     real, pointer :: F_TT_p, F_TV_p, F_VV_p
     real, target :: F_TT, F_TV, F_VV
-    real, pointer :: F_Tn_p(:), F_Vn_p(:)
-    real, target :: F_Tn(nc), F_Vn(nc)
+    real, pointer :: F_Tne_p(:), F_Vne_p(:)
+    real, target :: F_Tne(nce), F_Vne(nce)
     !--------------------------------------------------------------------
-    if (present(residual)) then
-      res = residual
-    else
-      res = .false.
+    call apparent_to_real_mole_numbers(n,ne)
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
     endif
 
     if (present(dhdT)) then
+      dhdT = 0
       F_TT_p => F_TT
     else
       F_TT_p => NULL()
     endif
     if (present(dhdV)) then
+      dhdV = 0
       F_VV_p => F_VV
       F_TV_p => F_TV
     else
@@ -301,30 +394,34 @@ contains
       F_TV_p => NULL()
     endif
     if (present(dhdn)) then
-      F_Vn_p => F_Vn
-      F_Tn_p => F_Tn
+      dhdne = 0
+      F_Vne_p => F_Vne
+      F_Tne_p => F_Tne
     else
-      F_Vn_p => NULL()
-      F_Tn_p => NULL()
+      F_Vne_p => NULL()
+      F_Tne_p => NULL()
     endif
+    h = 0
 
-    ! Residual contribution
-    call Fres(T,v,n,F=F,F_T=F_T,F_V=F_V,F_TT=F_TT_p,&
-         F_TV=F_TV_p,F_VV=F_VV_p,F_Tn=F_Tn_p,F_Vn=F_Vn_p)
-    h_T = -Rgas*(T*F_T + v*F_V)
-    h = h_T*T
-    if (present(dhdt)) then
-      dhdt = h_T - Rgas*T*(F_T + T*F_TT + v*F_TV)
+    if (res) then
+      ! Residual contribution
+      call Fres_ne(T,v,ne,F=F,F_T=F_T,F_V=F_V,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_VV=F_VV_p,F_Tn=F_Tne_p,F_Vn=F_Vne_p)
+      h_T = -Rgas*(T*F_T + v*F_V)
+      h = h_T*T
+      if (present(dhdt)) then
+        dhdt = h_T - Rgas*T*(F_T + T*F_TT + v*F_TV)
+      endif
+      if (present(dhdv)) then
+        dhdv = - Rgas*T*(T*F_TV + F_V + v*F_VV)
+      endif
+      if (present(dhdn)) then
+        dhdne = - Rgas*T*(T*F_Tne + v*F_Vne)
+      endif
     endif
-    if (present(dhdv)) then
-      dhdv = - Rgas*T*(T*F_TV + F_V + v*F_VV)
-    endif
-    if (present(dhdn)) then
-      dhdn = - Rgas*T*(T*F_Tn + v*F_Vn)
-    endif
-    if (.not. res) then
-      call Fideal(T,v,n,F,F_T,F_V=F_V,F_TT=F_TT_p,&
-           F_TV=F_TV_p,F_VV=F_VV_p,F_Tn=F_Tn_p,F_Vn=F_Vn_p)
+    if (ideal) then
+      call Fideal_ne(T,v,ne,F,F_T,F_V=F_V,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_VV=F_VV_p,F_Tn=F_Tne_p,F_Vn=F_Vne_p)
       h_id_T = -Rgas*(T*F_T + v*F_V)
       h_id = h_id_T*T
       h = h + h_id
@@ -337,11 +434,14 @@ contains
         dhdv = dhdv + dhdv_id
       endif
       if (present(dhdn)) then
-        dhdn_id = - Rgas*T*(T*F_Tn + v*F_Vn)
-        dhdn = dhdn + dhdn_id
+        dhdne_id = - Rgas*T*(T*F_Tne + v*F_Vne)
+        dhdne = dhdne + dhdne_id
       endif
     endif
-  end subroutine enthalpyTV
+    if (present(dhdn)) then
+      call real_to_apparent_diff(dhdne,dhdn)
+    endif
+  end subroutine enthalpy_tv
 
   !----------------------------------------------------------------------
   !> Calculate fugacity and differentials given composition,
@@ -349,7 +449,7 @@ contains
   !>
   !> \author MH, 2015-10
   !----------------------------------------------------------------------
-  subroutine thermoTV(t,v,n,lnphi,lnphit,lnphiv,lnphin)
+  subroutine thermo_tv(t,v,n,lnphi,lnphit,lnphiv,lnphin)
     use single_phase, only: TV_CalcFugacity
     !$ use omp_lib
     implicit none
@@ -379,7 +479,7 @@ contains
       write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
     end select
-  end subroutine thermoTV
+  end subroutine thermo_tv
 
   !----------------------------------------------------------------------
   !> Calculate residual reduced Helmholtz energy
@@ -689,8 +789,9 @@ contains
   !>
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
-  subroutine chemical_potential(t, v, n, mu, dmudv, dmudt, dmudn)
+  subroutine chemical_potential_tv(t, v, n, mu, dmudv, dmudt, dmudn, contribution)
     use thermopack_constants, only: rgas
+    use thermopack_var, only: real_to_apparent_differentials
     implicit none
     real,                             intent(in)  :: t !< K - Temperature
     real,                             intent(in)  :: v !< m3 - Molar volume
@@ -699,50 +800,85 @@ contains
     real, dimension(nc),    optional, intent(out) :: dmudv !< J/m^3
     real, dimension(nc),    optional, intent(out) :: dmudt !< J/mol K
     real, dimension(nc,nc), optional, intent(out) :: dmudn !< J/mol^2
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    real :: Fr_n(nc), Fi_n(nc)
-    real, pointer :: Fr_Tn_p(:), Fr_vn_p(:), Fr_nn_p(:,:)
-    real, target :: Fr_Tn(nc), Fr_vn(nc), Fr_nn(nc,nc)
-    real, pointer :: Fi_Tn_p(:), Fi_vn_p(:), Fi_nn_p(:,:)
-    real, target :: Fi_Tn(nc), Fi_vn(nc), Fi_nn(nc,nc)
+    logical :: res, ideal
+    real :: Fr_ne(nce), Fi_ne(nce), mue(nce), dmudt_e(nce), dmudv_e(nce)
+    real :: ne(nce), dmudne_e(nce,nce)
+    real, pointer :: Fr_Tne_p(:), Fr_vne_p(:), Fr_nene_p(:,:)
+    real, target :: Fr_Tne(nce), Fr_vne(nce), Fr_nene(nc,nce)
+    real, pointer :: Fi_Tne_p(:), Fi_vne_p(:), Fi_nene_p(:,:)
+    real, target :: Fi_Tne(nce), Fi_vne(nce), Fi_nene(nce,nce)
     !
-    if (present(dmudt)) then
-      Fr_Tn_p => Fr_Tn
-      Fi_Tn_p => Fi_Tn
-    else
-      Fr_Tn_p => NULL()
-      Fi_Tn_p => NULL()
-    endif
-    if (present(dmudV)) then
-      Fr_Vn_p => Fr_Vn
-      Fi_Vn_p => Fi_Vn
-    else
-      Fr_Vn_p => NULL()
-      Fi_Vn_p => NULL()
-    endif
-    if (present(dmudn)) then
-      Fr_nn_p => Fr_nn
-      Fi_nn_p => Fi_nn
-    else
-      Fr_nn_p => NULL()
-      Fi_nn_p => NULL()
+    call apparent_to_real_mole_numbers(n,ne)
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
     endif
 
-    call Fres(t, v, n, f_n=Fr_n, F_Tn=Fr_Tn_p, F_Vn=Fr_Vn_p, F_nn=Fr_nn_p)
-    call Fideal(t, v, n, f_n=Fi_n, F_Tn=Fi_Tn_p, F_Vn=Fi_Vn_p, F_nn=Fi_nn_p)
-    mu = rgas*t*(Fr_n + Fi_n)
-    !
     if (present(dmudt)) then
-      dmudt = rgas*(Fr_n + Fi_n + t*(Fr_Tn + Fi_Tn))
-    end if
-    if (present(dmudv)) then
-      dmudv = rgas*t*(Fr_Vn + Fi_Vn)
-    end if
+      dmudt_e = 0
+      Fr_Tne_p => Fr_Tne
+      Fi_Tne_p => Fi_Tne
+    else
+      Fr_Tne_p => NULL()
+      Fi_Tne_p => NULL()
+    endif
+    if (present(dmudV)) then
+      dmudV_e = 0
+      Fr_Vne_p => Fr_Vne
+      Fi_Vne_p => Fi_Vne
+    else
+      Fr_Vne_p => NULL()
+      Fi_Vne_p => NULL()
+    endif
     if (present(dmudn)) then
-      dmudn = rgas*t*(Fr_nn +  Fi_nn)
-    end if
+      dmudne_e = 0
+      Fr_nene_p => Fr_nene
+      Fi_nene_p => Fi_nene
+    else
+      Fr_nene_p => NULL()
+      Fi_nene_p => NULL()
+    endif
+    mue = 0
+
+    if (res) then
+      call Fres_ne(t, v, ne, f_n=Fr_ne, F_Tn=Fr_Tne_p, F_Vn=Fr_Vne_p, F_nn=Fr_nene_p)
+      mue = rgas*t*Fr_ne
+      !
+      if (present(dmudt)) then
+        dmudt_e = rgas*(Fr_ne + t*Fr_Tne)
+      end if
+      if (present(dmudv)) then
+        dmudv_e = rgas*t*Fr_Vne
+      end if
+      if (present(dmudn)) then
+        dmudne_e = rgas*t*Fr_nene
+      end if
+    endif
+    if (ideal) then
+      call Fideal_ne(t, v, ne, f_n=Fi_ne, F_Tn=Fi_Tne_p, F_Vn=Fi_Vne_p, F_nn=Fi_nene_p)
+      mue = mue + rgas*t*Fi_ne
+      !
+      if (present(dmudt)) then
+        dmudt_e = dmudt_e + rgas*(Fi_ne + t*Fi_Tne)
+      end if
+      if (present(dmudv)) then
+        dmudv_e = dmudv_e + rgas*t*Fi_Vne
+      end if
+      if (present(dmudn)) then
+        dmudne_e = dmudne_e + rgas*t*Fi_nene
+      end if
+    endif
     !
-  end subroutine chemical_potential
+    call real_to_apparent_differentials(mue,dmudt_e,dmudv_e,dmudne_e,&
+         mu,dmudt,dmudv,dmudn)
+  end subroutine chemical_potential_tv
 
   !-----------------------------------------------------------------------------
   !> Calculate the logarithmic fugacity coefficient and its differentials.

@@ -90,13 +90,13 @@ class thermopack(object):
         self.s_guess_phase = getattr(self.tp, self.get_export_name("thermo_utils", "guessphase"))
 
         # TV interfaces
-        self.s_internal_energy_tv = getattr(self.tp, self.get_export_name("eostv", "internal_energy"))
-        self.s_entropy_tv = getattr(self.tp, self.get_export_name("eostv", "entropytv"))
+        self.s_internal_energy_tv = getattr(self.tp, self.get_export_name("eostv", "internal_energy_tv"))
+        self.s_entropy_tv = getattr(self.tp, self.get_export_name("eostv", "entropy_tv"))
         self.s_pressure_tv = getattr(self.tp, self.get_export_name("eostv", "pressure"))
-        self.s_lnphi_tv = getattr(self.tp, self.get_export_name("eostv", "thermotv"))
-        self.s_enthalpy_tv = getattr(self.tp, self.get_export_name("eostv", "enthalpytv"))
-        self.s_helmholtz_energy = getattr(self.tp, self.get_export_name("eostv", "free_energy"))
-        self.s_chempot = getattr(self.tp, self.get_export_name("eostv", "chemical_potential"))
+        self.s_lnphi_tv = getattr(self.tp, self.get_export_name("eostv", "thermo_tv"))
+        self.s_enthalpy_tv = getattr(self.tp, self.get_export_name("eostv", "enthalpy_tv"))
+        self.s_helmholtz_energy = getattr(self.tp, self.get_export_name("eostv", "free_energy_tv"))
+        self.s_chempot = getattr(self.tp, self.get_export_name("eostv", "chemical_potential_tv"))
 
         # TVP interfaces
         self.s_entropy_tvp = getattr(self.tp, self.get_export_name("eostv", "entropy_tvp"))
@@ -1478,7 +1478,8 @@ class thermopack(object):
 
         return return_tuple
 
-    def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None):
+    def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None,
+                           dedn=None, property_flag="IR"):
         """Calculate internal energy given temperature, volume and mol numbers.
 
         Args:
@@ -1487,6 +1488,8 @@ class thermopack(object):
             n (array_like): Mol numbers (mol)
             dedt (No type, optional): Flag to activate calculation. Defaults to None.
             dedv (No type, optional): Flag to activate calculation. Defaults to None.
+            dedn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Energy (J)
@@ -1507,10 +1510,15 @@ class thermopack(object):
             dedv_c = null_pointer
         else:
             dedv_c = POINTER(c_double)(c_double(0.0))
+        if dedn is None:
+            dedn_c = null_pointer
+        else:
+            dedn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_internal_energy_tv.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
                                               POINTER( c_double ),
                                               POINTER( c_double ),
                                               POINTER( c_double ),
@@ -1526,17 +1534,21 @@ class thermopack(object):
                                   byref(e_c),
                                   dedt_c,
                                   dedv_c,
-                                  recalculate_c)
+                                  dedn_c,
+                                  contribution_c)
 
         return_tuple = (e_c.value, )
         if not dedt is None:
             return_tuple += (dedt_c[0], )
         if not dedv is None:
             return_tuple += (dedv_c[0], )
+        if not dedn is None:
+            return_tuple += (np.array(dedv_c), )
 
         return return_tuple
 
-    def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None, dsdn=None, residual=False):
+    def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None,
+                   dsdn=None, property_flag="IR"):
         """Calculate entropy given temperature, volume and mol numbers.
 
         Args:
@@ -1546,7 +1558,7 @@ class thermopack(object):
             dsdt (No type, optional): Flag to activate calculation. Defaults to None.
             dsdv (No type, optional): Flag to activate calculation. Defaults to None.
             dsdn (No type, optional): Flag to activate calculation. Defaults to None.
-            residual (logical, optional): Calculate residual entropy. Defaults to False.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Entropy (J/K)
@@ -1572,10 +1584,7 @@ class thermopack(object):
         else:
             dsdn_c = (c_double * len(n))(0.0)
 
-        if residual:
-            residual_c = POINTER(c_int)(c_int(1))
-        else:
-            residual_c = POINTER(c_int)(c_int(0))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_entropy_tv.argtypes = [POINTER( c_double ),
                                       POINTER( c_double ),
@@ -1595,7 +1604,7 @@ class thermopack(object):
                           dsdt_c,
                           dsdv_c,
                           dsdn_c,
-                          residual_c)
+                          contribution_c)
 
         return_tuple = (s_c.value, )
         if not dsdt is None:
@@ -1607,7 +1616,8 @@ class thermopack(object):
 
         return return_tuple
 
-    def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None, dhdn=None, residual=False):
+    def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None,
+                    dhdn=None, property_flag="IR"):
         """Calculate enthalpy given temperature, volume and mol numbers.
 
         Args:
@@ -1617,7 +1627,7 @@ class thermopack(object):
             dhdt (No type, optional): Flag to activate calculation. Defaults to None.
             dhdv (No type, optional): Flag to activate calculation. Defaults to None.
             dhdn (No type, optional): Flag to activate calculation. Defaults to None.
-            residual (logical, optional): Calculate residual enthalpy. Defaults to False.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Enthalpy (J)
@@ -1643,10 +1653,7 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(n))(0.0)
 
-        if residual:
-            residual_c = POINTER(c_int)(c_int(1))
-        else:
-            residual_c = POINTER(c_int)(c_int(0))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1666,7 +1673,7 @@ class thermopack(object):
                            dhdt_c,
                            dhdv_c,
                            dhdn_c,
-                           residual_c)
+                           contribution_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -1678,7 +1685,8 @@ class thermopack(object):
 
         return return_tuple
 
-    def helmholtz_tv(self, temp, volume, n, dadt=None, dadv=None):
+    def helmholtz_tv(self, temp, volume, n, dadt=None, dadv=None,
+                     dadn=None, property_flag="IR"):
         """Calculate Helmholtz energy given temperature, volume and mol numbers.
 
         Args:
@@ -1687,7 +1695,8 @@ class thermopack(object):
             n (array_like): Mol numbers (mol)
             dadt (No type, optional): Flag to activate calculation. Defaults to None.
             dadv (No type, optional): Flag to activate calculation. Defaults to None.
-
+            dadn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
         Returns:
             float: Helmholtz energy (J)
             Optionally energy differentials
@@ -1707,14 +1716,14 @@ class thermopack(object):
             dadv_c = null_pointer
         else:
             dadv_c = POINTER(c_double)(c_double(0.0))
-        d2adt2_c = null_pointer
-        d2adv2_c = null_pointer
-        d2advdt_c = null_pointer
-        recalculate_c = POINTER(c_int)(c_int(1))
+        if dadn is None:
+            dadn_c = null_pointer
+        else:
+            dadn_c = (c_double * len(n))(0.0)
+
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_helmholtz_energy.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
                                             POINTER( c_double ),
                                             POINTER( c_double ),
                                             POINTER( c_double ),
@@ -1731,20 +1740,21 @@ class thermopack(object):
                                 byref(a_c),
                                 dadt_c,
                                 dadv_c,
-                                d2adt2_c,
-                                d2adv2_c,
-                                d2advdt_c,
-                                recalculate_c)
+                                dadn_c,
+                                contribution_c)
 
         return_tuple = (a_c.value, )
         if not dadt is None:
             return_tuple += (dadt_c[0], )
         if not dadv is None:
             return_tuple += (dadv_c[0], )
+        if not dadn is None:
+            return_tuple += (np.array(dadn_c), )
 
         return return_tuple
 
-    def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None, dmudn=None):
+    def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None,
+                              dmudn=None, property_flag="IR"):
         """Calculate chemical potential given temperature, volume and mol numbers.
 
         Args:
@@ -1754,6 +1764,7 @@ class thermopack(object):
             dmudt (No type, optional): Flag to activate calculation. Defaults to None.
             dmudv (No type, optional): Flag to activate calculation. Defaults to None.
             dmudn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Chemical potential (J/mol)
@@ -1779,7 +1790,7 @@ class thermopack(object):
         else:
             dmudn_c = (c_double * len(n)**2)(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_chempot.argtypes = [POINTER( c_double ),
                                    POINTER( c_double ),
@@ -1799,7 +1810,7 @@ class thermopack(object):
                        dmudv_c,
                        dmudt_c,
                        dmudn_c,
-                       recalculate_c)
+                       contribution_c)
 
         return_tuple = (np.array(mu_c), )
         if not dmudt is None:
@@ -1886,7 +1897,8 @@ class thermopack(object):
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
     #################################
 
-    def entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None, dsdn=None, property_flag="IR"):
+    def entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None,
+                    dsdn=None, property_flag="IR"):
         """Calculate entropy given temperature, pressure and mol numbers.
 
         Args:
@@ -1922,16 +1934,7 @@ class thermopack(object):
         else:
             dsdn_c = (c_double * len(n))(0.0)
 
-        prop_flag = property_flag.upper()
-        if prop_flag in ("IR", "RI"):
-            contribution_c = POINTER(c_int)(c_int(0))
-        elif prop_flag == "R":
-            contribution_c = POINTER(c_int)(c_int(1))
-        elif prop_flag == "I":
-            contribution_c = POINTER(c_int)(c_int(1))
-        else:
-            raise ValueError("property_flag in entropy_tvp has wrong value."\
-                             " Expected I,R or IR, got " + prop_flag)
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_entropy_tvp.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1999,16 +2002,7 @@ class thermopack(object):
         else:
             dhdn_c = (c_double * len(n))(0.0)
 
-        prop_flag = property_flag.upper()
-        if prop_flag in ("IR", "RI"):
-            contribution_c = POINTER(c_int)(c_int(0))
-        elif prop_flag == "R":
-            contribution_c = POINTER(c_int)(c_int(1))
-        elif prop_flag == "I":
-            contribution_c = POINTER(c_int)(c_int(1))
-        else:
-            raise ValueError("property_flag in enthalpy_tvp has wrong value."\
-                             " Expected I,R or IR, got " + prop_flag)
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_enthalpy_tvp.argtypes = [POINTER( c_double ),
                                         POINTER( c_double ),

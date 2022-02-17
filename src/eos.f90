@@ -546,7 +546,7 @@ contains
   !> \author EA, 2014-09
   !----------------------------------------------------------------------
   function twoPhaseInternalEnergy(t,p,z,x,y,beta,phase,betaL) result(u)
-    use eosTV, only: internal_energy
+    use eosTV, only: internal_energy_tv
     implicit none
     ! Input:
     real, intent(in)                  :: t !< K - Temperature
@@ -566,10 +566,10 @@ contains
     if (phase == TWOPH) then
       ! Liquid phase
       call specificVolume(t,p,x,LIQPH,vl)
-      call internal_energy(t,vl,x,ul)
+      call internal_energy_tv(t,vl,x,ul)
       ! Gas phase
       call specificVolume(t,p,y,VAPPH,vg)
-      call internal_energy(t,vg,y,ug)
+      call internal_energy_tv(t,vg,y,ug)
       ! Combined
       if (present(betaL)) then
         u = beta*ug+betaL*ul
@@ -582,7 +582,7 @@ contains
         sphase = LIQPH
       endif
       call specificVolume(t,p,z,sphase,v)
-      call internal_energy(t,v,z,u)
+      call internal_energy_tv(t,v,z,u)
     endif
   end function twoPhaseInternalEnergy
 
