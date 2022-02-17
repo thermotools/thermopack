@@ -157,6 +157,10 @@ append_export("thermo_tvp", "eostv")
 append_export("enthalpy_tvp", "eostv")
 
 append_export("idealenthalpysingle", "ideal")
+append_export("set_entropy_reference_value", "ideal")
+append_export("get_entropy_reference_value", "ideal")
+append_export("set_enthalpy_reference_value", "ideal")
+append_export("get_enthalpy_reference_value", "ideal")
 
 append_export("isobar", "isolines")
 append_export("isotherm", "isolines")

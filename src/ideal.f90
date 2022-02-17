@@ -49,6 +49,9 @@ module ideal
   public :: Hideal_apparent, TP_Sideal_apparent, Cpideal_apparent
   public :: idealGibbsSingle, idealEntropySingle, idealEnthalpySingle
   public :: idealEntropy_ne
+  public :: set_entropy_reference_value, get_entropy_reference_value
+  public :: set_enthalpy_reference_value, get_enthalpy_reference_value
+
 contains
   !---------------------------------------------------------------------- >
   !> The function returns the vapour pressure for a pure component
@@ -420,6 +423,7 @@ contains
            comp%id_cp%cp(5)/Ts
       H_id=H_id*1.0e3 + comp%href
     end select method_H
+
   end function Hideal
 
   !---------------------------------------------------------------------- >
@@ -1037,7 +1041,7 @@ contains
   !> \author MH, 2013-03-06
   !----------------------------------------------------------------------
   subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
-    use thermopack_var, only: get_active_thermo_model, thermo_model, nc
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     use thermopack_constants, only: THERMOPACK, TREND, Rgas
     implicit none
     ! Transferred variables
@@ -1065,7 +1069,7 @@ contains
       h = trend_ideal_enthalpy(T,j)
       s = trend_ideal_entropy(T,P,j)
     case default
-      write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
+      write(*,*) 'EosLib error in ideal::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
     g = h - T*s
@@ -1114,7 +1118,7 @@ contains
         dsdt = trend_ideal_Cp(T,j) / T ! J/mol/K^2
       end if
     case default
-      write(*,*) 'EoSlib error in eos::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
+      write(*,*) 'EoSlib error in ideal::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
     if (present(dsdp)) then
@@ -1156,7 +1160,7 @@ contains
         dhdt = trend_ideal_Cp(T,j) ! J/mol/K^2
       end if
     case default
-      write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
+      write(*,*) 'EoSlib error in ideal::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine idealEnthalpySingle
@@ -1193,9 +1197,133 @@ contains
       write(*,*) 'ideal::idealEntropy_ne: dsdn not yet implemented for TREND.'
       call stoperror("")
     case default
-      write(*,*) 'EoSlib error in eos::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
+      write(*,*) 'EoSlib error in ideal::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
   end subroutine idealEntropy_ne
+
+  !----------------------------------------------------------------------
+  !> Set ideal entropy reference value
+  !> Unit: J/mol/K
+  !>
+  !> \author MH, 2022-02
+  !----------------------------------------------------------------------
+  subroutine set_entropy_reference_value(i,s0)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    integer, intent(in) :: i             !< Component index
+    real, intent(in) :: s0               !< J/mol/K - Ideal entropy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      act_mod_ptr%comps(i)%p_comp%sref = s0
+    case (TREND)
+      ! TREND
+      write(*,*) 'ideal::set_entropy_reference_value: not yet implemented for TREND.'
+      call stoperror("")
+    case default
+      write(*,*) 'EoSlib error in ideal::set_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine set_entropy_reference_value
+
+  !----------------------------------------------------------------------
+  !> Get ideal entropy reference value
+  !> Unit: J/mol/K
+  !>
+  !> \author MH, 2022-02
+  !----------------------------------------------------------------------
+  subroutine get_entropy_reference_value(i,s0)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    integer, intent(in) :: i             !< Component index
+    real, intent(out) :: s0              !< J/mol/K - Ideal entropy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      s0 = act_mod_ptr%comps(i)%p_comp%sref
+    case (TREND)
+      ! TREND
+      write(*,*) 'ideal::get_entropy_reference_value: not yet implemented for TREND.'
+      call stoperror("")
+    case default
+      write(*,*) 'EoSlib error in ideal::get_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine get_entropy_reference_value
+
+  !----------------------------------------------------------------------
+  !> Set ideal enthalpy reference value
+  !> Unit: J/mol
+  !>
+  !> \author MH, 2022-02
+  !----------------------------------------------------------------------
+  subroutine set_enthalpy_reference_value(i,h0)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    integer, intent(in) :: i             !< Component index
+    real, intent(in) :: h0               !< J/mol - Ideal enthalpy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      act_mod_ptr%comps(i)%p_comp%href = h0
+    case (TREND)
+      ! TREND
+      write(*,*) 'ideal::set_enthalpy_reference_value: not yet implemented for TREND.'
+      call stoperror("")
+    case default
+      write(*,*) 'EoSlib error in ideal::set_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine set_enthalpy_reference_value
+
+  !----------------------------------------------------------------------
+  !> Set ideal enthalpy reference value
+  !> Unit: J/mol
+  !>
+  !> \author MH, 2022-02
+  !----------------------------------------------------------------------
+  subroutine get_enthalpy_reference_value(i,h0)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
+    use thermopack_constants, only: THERMOPACK, TREND
+    implicit none
+    ! Transferred variables
+    integer, intent(in) :: i             !< Component index
+    real, intent(out) :: h0              !< J/mol - Ideal enthalpy
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    !--------------------------------------------------------------------
+    !
+    act_mod_ptr => get_active_thermo_model()
+    select case (act_mod_ptr%EosLib)
+    case (THERMOPACK)
+      h0 = act_mod_ptr%comps(i)%p_comp%href
+    case (TREND)
+      ! TREND
+      write(*,*) 'ideal::get_enthalpy_reference_value: not yet implemented for TREND.'
+      call stoperror("")
+    case default
+      write(*,*) 'EoSlib error in ideal::get_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
+      call stoperror('')
+    end select
+  end subroutine get_enthalpy_reference_value
 
 end module ideal

@@ -60,7 +60,16 @@ class thermopack(object):
         self.s_eos_compmoleweight = getattr(self.tp, self.get_export_name("eos", "compmoleweight"))
 
         # Ideal property interface
-        self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name("ideal", "idealenthalpysingle"))
+        self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
+            "ideal", "idealenthalpysingle"))
+        self.s_ideal_get_entropy_reference_value = getattr(self.tp, self.get_export_name(
+            "ideal", "get_entropy_reference_value"))
+        self.s_ideal_set_entropy_reference_value = getattr(self.tp, self.get_export_name(
+            "ideal", "set_entropy_reference_value"))
+        self.s_ideal_get_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
+            "ideal", "get_enthalpy_reference_value"))
+        self.s_ideal_set_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
+            "ideal", "set_enthalpy_reference_value"))
 
         # Speed of sound
         #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
@@ -918,8 +927,7 @@ class thermopack(object):
 
         Args:
             temp (float): Temperature (K)
-            x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
+            j (array_like): Component index
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate ideal enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
@@ -930,7 +938,6 @@ class thermopack(object):
         null_pointer = POINTER(c_double)()
 
         temp_c = c_double(temp)
-        press_c = c_double(press)
         j_c = c_int(j)
         h_c = c_double(0.0)
 
@@ -955,6 +962,94 @@ class thermopack(object):
             return_tuple += (dhdt_c[0], )
 
         return return_tuple
+
+    def set_ideal_entropy_reference_value(self, j, s0):
+        """ Set specific ideal entropy reference value
+
+        Args:
+            j (integer): Component index
+            s0 (float): Ideal entropy reference (J/mol/K)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        s0_c = c_double(s0)
+
+        self.s_ideal_set_entropy_reference_value.argtypes = [POINTER( c_int ),
+                                                             POINTER( c_double )]
+
+        self.s_ideal_set_entropy_reference_value.restype = None
+
+        self.s_ideal_set_entropy_reference_value(byref(j_c),
+                                                 byref(s0_c))
+
+    def get_ideal_entropy_reference_value(self, j):
+        """ Get specific ideal entropy reference value
+
+        Args:
+            j (integer): Component index
+
+        Returns:
+            float: Specific ideal entropy (J/mol/K)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        s0_c = c_double(0.0)
+
+        self.s_ideal_get_entropy_reference_value.argtypes = [POINTER( c_int ),
+                                                             POINTER( c_double )]
+
+        self.s_ideal_get_entropy_reference_value.restype = None
+
+        self.s_ideal_get_entropy_reference_value(byref(j_c),
+                                                 byref(s0_c))
+
+        return s0_c.value
+
+    def set_ideal_enthalpy_reference_value(self, j, h0):
+        """ Set specific ideal enthalpy reference value
+
+        Args:
+            j (integer): Component index
+            h0 (float): Ideal enthalpy reference (J/mol)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        h0_c = c_double(h0)
+
+        self.s_ideal_set_enthalpy_reference_value.argtypes = [POINTER( c_int ),
+                                                              POINTER( c_double )]
+
+        self.s_ideal_set_enthalpy_reference_value.restype = None
+
+        self.s_ideal_set_enthalpy_reference_value(byref(j_c),
+                                                  byref(h0_c))
+
+    def get_ideal_enthalpy_reference_value(self, j):
+        """ Get specific ideal enthalpy reference value
+
+        Args:
+            j (integer): Component index
+
+        Returns:
+            float: Specific ideal enthalpy (J/mol)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        h0_c = c_double(0.0)
+
+        self.s_ideal_get_enthalpy_reference_value.argtypes = [POINTER( c_int ),
+                                                              POINTER( c_double )]
+
+        self.s_ideal_get_enthalpy_reference_value.restype = None
+
+        self.s_ideal_get_enthalpy_reference_value(byref(j_c),
+                                                  byref(h0_c))
+
+        return h0_c.value
 
     def speed_of_sound(self,temp,press,x,y,z,betaV,betaL,phase):
         """Calculate speed of sound for single phase or two phase mixture assuming
