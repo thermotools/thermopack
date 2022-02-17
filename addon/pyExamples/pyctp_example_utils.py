@@ -58,3 +58,10 @@ def calc_real_P(Pstar, eps, sigma):
     Pa = np.zeros_like(Pstar)
     Pa = Pstar*eps*KB/sigma**3
     return Pa
+
+def calc_reduced_heat_capacity(C):
+    """ Calclate reduced heat capcity
+    """
+    CStar = np.zeros_like(C)
+    CStar = C/(NA*KB)
+    return CStar
