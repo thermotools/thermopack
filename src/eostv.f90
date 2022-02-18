@@ -302,6 +302,7 @@ contains
       F_ne_p => NULL()
       F_Tne_p => NULL()
     endif
+    s = 0
 
     if (res) then
       ! Residual contribution
@@ -789,7 +790,7 @@ contains
   !>
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
-  subroutine chemical_potential_tv(t, v, n, mu, dmudv, dmudt, dmudn, contribution)
+  subroutine chemical_potential_tv(t, v, n, mu, dmudt, dmudv, dmudn, contribution)
     use thermopack_constants, only: rgas
     use thermopack_var, only: real_to_apparent_differentials
     implicit none

@@ -1807,8 +1807,8 @@ class thermopack(object):
                        byref(v_c),
                        n_c,
                        mu_c,
-                       dmudv_c,
                        dmudt_c,
+                       dmudv_c,
                        dmudn_c,
                        contribution_c)
 
