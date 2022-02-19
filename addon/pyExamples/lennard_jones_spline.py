@@ -37,10 +37,13 @@ def plot_phase_envelope(LJS, labels, title):
     plt.show()
     plt.close()
 
-def plot_JT_inversion(LJS, labels, title):
+def plot_JT_inversion(LJS, labels, title, override_colors=None):
     # Plot Joule-Thompson inversion curves
     z = np.array([1.0])
-    colors = ["k", "b", "g", "r"]
+    if override_colors is not None:
+        colors = override_colors
+    else:
+        colors = ["k", "b", "g", "r"]
     for i, ljs in enumerate(LJS):
         # Get parameters
         sigma, eps = ljs.get_sigma_eps()
