@@ -31,6 +31,166 @@ mpl.rcParams['ytick.labelsize'] = SMALL_SIZE
 mpl.rcParams['legend.fontsize'] = MEDIUM_SIZE
 
 
+# def get_GCMC_sat_data():
+#     """ GCMC-histogram-reweighting simulations:
+#     Perturbation theories for fluids with short-ranged attractive forces: A case
+#     study of the Lennard-Jones spline fluid
+#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+#     Øivind Wilhelmsen
+#     doi:
+#     """
+#     T = np.array([])
+#     rhol = np.array([])
+#     rhog = np.array([])
+#     p = np.array([])
+#     data = {}
+#     data["T"] = T
+#     data["P"] = P
+#     data["rhol"] = rhol
+#     data["rhog"] = rhog
+#     return data
+
+
+# def get_MD_isotherms():
+#     """ MD results for P-V isotherms:
+#     Perturbation theories for fluids with short-ranged attractive forces: A case
+#     study of the Lennard-Jones spline fluid
+#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+#     Øivind Wilhelmsen
+#     doi:
+#     """
+#     T = np.array([])
+#     rho = np.array([])
+#     p = np.array([])
+#     data = {}
+#     data["T"] = T
+#     data["P"] = P
+#     data["rho"] = rho
+#     return data
+
+
+# def get_GCMC_heat_cap_data():
+#     """ GCMC-histogram-reweighting simulations:
+#     Perturbation theories for fluids with short-ranged attractive forces: A case
+#     study of the Lennard-Jones spline fluid
+#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+#     Øivind Wilhelmsen
+#     doi:
+#     """
+#     T = np.array([])
+#     Cv = np.array([])
+#     Cp = np.array([])
+#     data = {}
+#     data["T"] = T
+#     data["Cv"] = Cv
+#     data["Cp"] = Cp
+#     return data
+
+def get_MD_heat_cap_data():
+    """ MD data for saturation densities:
+    Thermodynamic properties of the 3D Lennard-Jones/spline model
+    Bjørn Hafskjold and Karl Patrick Travis and Amanda Bailey Hass and
+    Morten Hammer and Ailo Aasen and Øivind Wilhelmsen
+    doi: 10.1080/00268976.2019.1664780
+    """
+
+    data = {}
+    data["T=0.7"] = {"rho": np.array([0.02, 0.80]),
+                     "Cp": np.array([3.65-2.5, 4.88-2.5]),
+                     "Cv": np.array([1.93-1.5, 2.59-1.5])}
+    # Actually T=0.991
+    data["T=1.0"] = {"rho": np.array([0.40]),
+                     "Cp": np.array([14.22-2.5]),
+                     "Cv": np.array([2.56-1.5])}
+
+    data["T=1.46"] = {"rho": np.array([]),
+                     "Cp": np.array([]),
+                     "Cv": np.array([])}
+    return data
+
+
+def get_GEMC_sat_data():
+    """ GEMC data for saturation curve:
+    Thermodynamic properties of the 3D Lennard-Jones/spline model
+    Bjørn Hafskjold and Karl Patrick Travis and Amanda Bailey Hass and
+    Morten Hammer and Ailo Aasen and Øivind Wilhelmsen
+    doi: 10.1080/00268976.2019.1664780
+    """
+    T = np.array([0.55, 0.6, 0.625, 0.65, 0.675, 0.7, 0.725,
+                  0.75, 0.775, 0.8, 0.825, 0.85])
+    rhol = np.array([0.80408, 0.778, 0.763955, 0.749004, 0.733098,
+                     0.715797, 0.697191, 0.676001, 0.652946, 0.625045,
+                     0.591004, 0.544877])
+    rhog = np.array([0.004001, 0.008285, 0.01149, 0.015399, 0.02054,
+                     0.026996, 0.035112, 0.045018, 0.058921, 0.07528,
+                     0.099615, 0.135605])
+    p = np.array([0.002106, 0.004607, 0.006513, 0.008856, 0.011899,
+                  0.015656, 0.020214, 0.025602, 0.032361, 0.039875,
+                  0.049038, 0.059711])
+
+    data = {}
+    data["T"] = T
+    data["P"] = p
+    data["rhol"] = rhol
+    data["rhog"] = rhog
+    return data
+
+
+def get_MD_sat_data():
+    """ MD data for saturation densities:
+    Thermodynamic properties of the 3D Lennard-Jones/spline model
+    Bjørn Hafskjold and Karl Patrick Travis and Amanda Bailey Hass and
+    Morten Hammer and Ailo Aasen and Øivind Wilhelmsen
+    doi: 10.1080/00268976.2019.1664780
+    """
+    T = np.array([0.5507, 0.5529, 0.5976, 0.6028, 0.6465, 0.6513,
+                  0.7000, 0.7004, 0.7022, 0.7500, 0.7501, 0.7533,
+                  0.8000, 0.8000, 0.8168, 0.8500])
+    rhol = np.array([0.8038, 0.8033, 0.7780, 0.7772, 0.7510, 0.7479,
+                     0.7143, 0.7148, 0.7140, 0.6738, 0.6733, 0.6729,
+                     0.6225, 0.6218, 0.6023, 0.5324])
+    rhog = np.array([0.0041, 0.0036, 0.0082, 0.0084, 0.0150, 0.0142,
+                     0.0265, 0.0280, 0.0271, 0.0501, 0.0481, 0.0467,
+                     0.0828, 0.0769, 0.0963, 0.1435])
+    data = {}
+    data["T"] = T
+    data["rhol"] = rhol
+    data["rhog"] = rhog
+    return data
+
+def get_MD_psat():
+    """ MD data for saturation densities:
+    Thermodynamic properties of the 3D Lennard-Jones/spline model
+    Bjørn Hafskjold and Karl Patrick Travis and Amanda Bailey Hass and
+    Morten Hammer and Ailo Aasen and Øivind Wilhelmsen
+    doi: 10.1080/00268976.2019.1664780
+    """
+    T = np.array([0.5501, 0.5499, 0.5496, 0.5997, 0.6500, 0.7000, 0.7504,
+                  0.8000, 0.8202, 0.8407, 0.8596, 0.8688, 0.8771, 0.8775,
+                  0.6898, 0.7723, 0.8070, 0.8407, 0.8437, 0.8570, 0.8687,
+                  0.8723, 0.8762, 0.8770])
+    p = np.array([0.002158, 0.002084, 0.002123, 0.004656, 0.008804, 0.015332,
+                  0.025052, 0.038927, 0.045588, 0.054326, 0.063949, 0.069529,
+                  0.075501, 0.075752, 0.014112, 0.031532, 0.042154, 0.055300,
+                  0.056660, 0.062675, 0.070558, 0.070944, 0.072616, 0.073748])
+    data = {}
+    data["T"] = T
+    data["P"] = P
+    return data
+
+
+def get_crit_point():
+    """Critical data from MD/GEMC/GCMC:
+    doi: 10.1080/00268976.2019.1664780
+    doi: 
+    """
+    data = {}
+    data["MD"] = {"rho": 0.332, "T": 0.882, "P": 0.074}
+    data["GEMC"] = {"rho": 0.333, "T": 0.884, "P": 0.076}
+    data["GCMC"] = {"rho": 0.333, "T": 0.8796, "P": 0.07451}
+    return data
+
+
 def plot_figure_2(LJS_BH, LJS_WCA):
     z = np.array([1.0])
     colors = ["k", "grey", "darkgrey", "lightgrey"]
@@ -50,7 +210,9 @@ def plot_figure_2(LJS_BH, LJS_WCA):
         ax1.plot(rho_s, T_s, color=colors[i])
         ax1.plot(rhoc_s, Tc_s, color=colors[i], marker="o")
 
-    custom_legends = [Line2D([0], [0], color='k', linestyle="None", label='BH')]
+    custom_legends = [Line2D([0], [0], color='k', linestyle="None", label='BH'),
+                      Line2D([0], [0], color='b', linestyle="None", marker="v", label='GEMC', mfc="None"),
+                      Line2D([0], [0], color='r', linestyle="None", marker="x", label='MD')]
     leg = ax1.legend(handles=custom_legends, loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
 
@@ -69,6 +231,24 @@ def plot_figure_2(LJS_BH, LJS_WCA):
     custom_legends = [Line2D([0], [0], color='k', linestyle="None", label='WCA')]
     leg = ax2.legend(handles=custom_legends, loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
+
+    MD_data = get_MD_sat_data()
+    ax1.plot(MD_data["rhol"], MD_data["T"], color="r", marker="x", linestyle="None")
+    ax1.plot(MD_data["rhog"], MD_data["T"], color="r", marker="x", linestyle="None")
+    ax2.plot(MD_data["rhol"], MD_data["T"], color="r", marker="x", linestyle="None")
+    ax2.plot(MD_data["rhog"], MD_data["T"], color="r", marker="x", linestyle="None")
+
+    GEMC_data = get_GEMC_sat_data()
+    ax1.plot(GEMC_data["rhol"], GEMC_data["T"], color="b", marker="v", linestyle="None", mfc="None")
+    ax1.plot(GEMC_data["rhog"], GEMC_data["T"], color="b", marker="v", linestyle="None", mfc="None")
+    ax2.plot(GEMC_data["rhol"], GEMC_data["T"], color="b", marker="v", linestyle="None", mfc="None")
+    ax2.plot(GEMC_data["rhog"], GEMC_data["T"], color="b", marker="v", linestyle="None", mfc="None")
+
+    crit_data = get_crit_point()
+    ax1.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="x", linestyle="None")
+    ax2.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="x", linestyle="None")
+    ax1.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="b", marker="v", linestyle="None")
+    ax2.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="b", marker="v", linestyle="None")
 
     ax1.set_ylabel(r"$T^*$")
     ax1.set_ylim((0.55,1.1))
@@ -175,6 +355,21 @@ def plot_figure_4(LJS, labels):
         ax2.plot(rho_s, P_s, color=colors[i], label=labels[i])
         ax3.plot(rho_s, T_s, color=colors[i], label=labels[i])
 
+    crit_data = get_crit_point()
+    ax1.plot(crit_data["MD"]["T"], crit_data["MD"]["P"], color="r", marker="v", linestyle="None", label="MD")
+    ax2.plot(crit_data["MD"]["rho"], crit_data["MD"]["P"], color="r", marker="v", linestyle="None")
+    ax3.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="v", linestyle="None")
+    ax1.plot(crit_data["GCMC"]["T"], crit_data["GCMC"]["P"], color="k", marker="s", linestyle="None", label="GCMC")
+    ax2.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["P"], color="k", marker="s", linestyle="None")
+    ax3.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="k", marker="s", linestyle="None")
+
+    GEMC_data = get_GEMC_sat_data()
+    ax1.plot(GEMC_data["T"], GEMC_data["P"], color="r", marker="d", linestyle="None", mfc="None", label="GEMC")
+    ax2.plot(GEMC_data["rhog"], GEMC_data["P"], color="r", marker="d", linestyle="None", mfc="None")
+    ax2.plot(GEMC_data["rhol"], GEMC_data["P"], color="r", marker="d", linestyle="None", mfc="None")
+    ax3.plot(GEMC_data["rhog"], GEMC_data["T"], color="r", marker="d", linestyle="None", mfc="None")
+    ax3.plot(GEMC_data["rhol"], GEMC_data["T"], color="r", marker="d", linestyle="None", mfc="None")
+
     ax1.set_ylabel(r"$P^*$")
     ax1.set_xlabel(r"$T^*$")
     ax1.set_ylim((0.0,0.12))
@@ -202,6 +397,21 @@ def plot_figure_7(LJS, labels):
         T_s = calc_reduced_T(T, eps)
         P_s = calc_reduced_P(P, eps, sigma)
         plt.plot(P_s, T_s, color=colors[i], label=labels[i])
+
+    Ps_NEMD = np.array([0.0000, 0.1942, 0.3752, 0.3748, 0.5394, 0.6832, 0.6848,
+                        0.8017, 0.8992, 0.9073, 0.9616, 0.9843, 0.9959, 0.9886,
+                        0.9914, 0.9219, 0.7832, 0.7794, 0.6716, 0.6751, 0.5592,
+                        0.5035, 0.4686, 0.4615, 0.3480, 0.3425, 0.2744, 0.2744,
+                        0.2059, 0.1246, 0.1269])
+
+    Ts_NEMD = np.array([4.0153, 3.6905, 3.4845, 3.4590, 3.2859, 2.9665, 2.9638,
+                    2.6978, 2.4962, 2.5056, 2.2587, 2.1030, 1.9156, 1.7352,
+                    1.6945, 1.5182, 1.2927, 1.2876, 1.1644, 1.1646, 1.0606,
+                    1.0100, 0.9945, 0.9868, 0.9120, 0.9078, 0.8710, 0.8650,
+                    0.8307, 0.7885, 0.7833])
+
+    plt.plot(Ps_NEMD, Ts_NEMD, color="k", label="NEMD", linestyle="None",
+             marker="o", mfc="None")
 
     plt.ylabel(r"$T^*$")
     plt.xlabel(r"$P^*$")
@@ -239,6 +449,12 @@ def plot_figure_8(LJS, labels):
             Cv_s = calc_reduced_heat_capacity(Cv)
             ax[iT].plot(rhos[iT], Cv_s, color=colors[i], label=labels[i])
 
+    MD_heat_data = get_MD_heat_cap_data()
+    ax[0].plot(MD_heat_data["T=0.7"]["rho"], MD_heat_data["T=0.7"]["Cv"],
+               color="k", label="MD", marker="o", mfc="None", linestyle="None")
+    ax[1].plot(MD_heat_data["T=1.0"]["rho"], MD_heat_data["T=1.0"]["Cv"],
+               color="k", marker="o", mfc="None", linestyle="None")
+
     ax[0].set_ylim((0.0,2.4))
     ax[0].set_ylabel(r"$C_V^{\rm{res}}/Nk_{\rm{B}}$")
     leg = ax[0].legend(loc="best", numpoints=1)
@@ -263,6 +479,11 @@ def plot_figure_8(LJS, labels):
                                              property_flag="R")
             Cp_s = calc_reduced_heat_capacity(Cp)
             ax[iT].plot(rhos[iT], Cp_s, color=colors[i], label=labels[i])
+
+    ax[0].plot(MD_heat_data["T=0.7"]["rho"], MD_heat_data["T=0.7"]["Cp"],
+               color="k", marker="o", mfc="None", linestyle="None")
+    ax[1].plot(MD_heat_data["T=1.0"]["rho"], MD_heat_data["T=1.0"]["Cp"],
+               color="k", marker="o", mfc="None", linestyle="None")
 
     ax[0].set_ylim((0.0,15.0))
     ax[0].set_ylabel(r"$C_P^{\rm{res}}/Nk_{\rm{B}}$")
@@ -342,22 +563,22 @@ if __name__ == '__main__':
     labels_LJS = ["UV-theory", "WCA4", "BH3"]
 
     # Figure 2
-    plot_figure_2(LJS_BH, LJS_WCA)
+    #plot_figure_2(LJS_BH, LJS_WCA)
 
     # Figure 3
-    plot_figure_3(LJS_BH, LJS_WCA)
+    #plot_figure_3(LJS_BH, LJS_WCA)
 
     # Figure 4
-    plot_figure_4(LJS, labels=labels_LJS)
+    #plot_figure_4(LJS, labels=labels_LJS)
 
     # Figure 7
-    plot_figure_7(LJS, labels=labels_LJS)
+    #plot_figure_7(LJS, labels=labels_LJS)
 
     # Figure 8
     plot_figure_8(LJS, labels=labels_LJS)
 
     # Figure 9
-    plot_figure_9(LJS, labels=labels_LJS)
+    #plot_figure_9(LJS, labels=labels_LJS)
 
     # Show figures
     plt.show()
