@@ -12,6 +12,7 @@ if utils.gcc_major_version_greater_than(7):
 else:
     c_len_type = c_int
 
+c_len_type = c_size_t # I need this to compile locally, just remember to delete this line when merging.
 
 class thermopack(object):
     """
@@ -28,7 +29,7 @@ class thermopack(object):
         self.postfix_nm = pf_specifics["postfix_no_module"]
         dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
         self.tp = cdll.LoadLibrary(dyn_lib_path)
-
+        
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
         self.get_phase_flags()
@@ -59,6 +60,7 @@ class thermopack(object):
         self.s_eos_enthalpy = getattr(self.tp, self.get_export_name("eos", "enthalpy"))
         self.s_eos_compmoleweight = getattr(self.tp, self.get_export_name("eos", "compmoleweight"))
         self.s_eos_idealenthalpysingle = getattr(self.tp, self.get_export_name("eos", "idealenthalpysingle"))
+        self.s_eos_getCriticalParam = getattr(self.tp, self.get_export_name("eos", "getcriticalparam"))
 
         # Speed of sound
         #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
@@ -435,6 +437,41 @@ class thermopack(object):
         self.s_eos_compmoleweight.restype = c_double
         mw_i = self.s_eos_compmoleweight(byref(comp_c))
         return mw_i
+
+    def acentric_factor(self, i):
+        '''
+        Get acentric factor of component i
+        args: 
+            i (int) component FORTRAN index
+        returns:
+            float: acentric factor
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        self.s_eos_getCriticalParam.argtypes = [POINTER( c_int ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),]
+        self.s_eos_getCriticalParam.restype = None
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+        
+        return_tuple = (w.value, )
+        return return_tuple
+
 
     def get_phase_flags(self):
         """Get phase identifiers used by thermopack
