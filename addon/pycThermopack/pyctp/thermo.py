@@ -12,8 +12,6 @@ if utils.gcc_major_version_greater_than(7):
 else:
     c_len_type = c_int
 
-c_len_type = c_size_t # I need this to compile locally, just remember to delete this line when merging.
-
 class thermopack(object):
     """
     Interface to thermopack
