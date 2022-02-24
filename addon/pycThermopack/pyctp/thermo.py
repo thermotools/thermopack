@@ -27,7 +27,7 @@ class thermopack(object):
         self.postfix_nm = pf_specifics["postfix_no_module"]
         dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
         self.tp = cdll.LoadLibrary(dyn_lib_path)
-        
+
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
         self.get_phase_flags()
@@ -439,7 +439,7 @@ class thermopack(object):
     def acentric_factor(self, i):
         '''
         Get acentric factor of component i
-        args: 
+        Args:
             i (int) component FORTRAN index
         returns:
             float: acentric factor
@@ -451,7 +451,7 @@ class thermopack(object):
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
-                                                POINTER( c_double ),]
+                                                POINTER( c_double )]
         self.s_eos_getCriticalParam.restype = None
 
         w = c_double(0.0)
@@ -466,9 +466,8 @@ class thermopack(object):
                                     byref(w),
                                     byref(vci),
                                     byref(tnbi))
-        
-        return_tuple = (w.value, )
-        return return_tuple
+
+        return w.value
 
 
     def get_phase_flags(self):
