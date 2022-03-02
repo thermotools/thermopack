@@ -43,7 +43,7 @@ mpl.rcParams['legend.fontsize'] = MEDIUM_SIZE
 #     study of the Lennard-Jones spline fluid
 #     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
 #     Øivind Wilhelmsen
-#     doi:
+#     doi: 10.1063/5.0082690
 #     """
 #     T = np.array([])
 #     rhol = np.array([])
@@ -57,23 +57,105 @@ mpl.rcParams['legend.fontsize'] = MEDIUM_SIZE
 #     return data
 
 
-# def get_MD_isotherms():
-#     """ MD results for P-V isotherms:
-#     Perturbation theories for fluids with short-ranged attractive forces: A case
-#     study of the Lennard-Jones spline fluid
-#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
-#     Øivind Wilhelmsen
-#     doi:
-#     """
-#     T = np.array([])
-#     rho = np.array([])
-#     p = np.array([])
-#     data = {}
-#     data["T"] = T
-#     data["P"] = P
-#     data["rho"] = rho
-#     return data
-
+def get_MD_isotherms():
+    """ MD results for P-V isotherms:
+    Perturbation theories for fluids with short-ranged attractive forces: A case
+    study of the Lennard-Jones spline fluid
+    Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+    Øivind Wilhelmsen
+    doi: 10.1063/5.0082690
+    """
+    data = {}
+    data["T=0.65"] = {}
+    data["T=0.65"]["rho"] = np.array([0.000, 0.005, 0.010, 0.015, 0.020,
+                                      0.025, 0.030, 0.035, 0.680, 0.690,
+                                      0.700, 0.710, 0.720, 0.730, 0.740,
+                                      0.750, 0.760, 0.770, 0.780, 0.790,
+                                      0.800])
+    data["T=0.65"]["p"] = np.array([0.0000, 0.0031, 0.0060, 0.0086, 0.0110,
+                                    0.0131, 0.0149, 0.0165, -0.2699, -0.2589,
+                                    -0.2331, -0.2028, -0.1627, -0.1124, -0.0540,
+                                    0.0159, 0.0972, 0.1906, 0.2955, 0.4120,
+                                    0.5409])
+    data["T=0.70"] = {}
+    data["T=0.70"]["rho"] = np.array([0.000, 0.005, 0.010, 0.015, 0.020,
+                                      0.025, 0.030, 0.035, 0.040, 0.045,
+                                      0.050, 0.650, 0.660, 0.670, 0.680,
+                                      0.690, 0.700, 0.710, 0.720, 0.730,
+                                      0.740, 0.750, 0.760, 0.770, 0.780,
+                                      0.790, 0.800])
+    data["T=0.70"]["p"] = np.array([0.000, 0.003, 0.007, 0.009, 0.012,
+                                    0.015, 0.017, 0.019, 0.021, 0.023,
+                                    0.024, -0.172, -0.162, -0.146, -0.125,
+                                    -0.095, -0.059, -0.016, 0.035, 0.098,
+                                    0.167, 0.247, 0.337, 0.443, 0.555,
+                                    0.683, 0.826])
+    data["T=0.75"] = {}
+    data["T=0.75"]["rho"] = np.array([0.000, 0.005, 0.010, 0.015, 0.020,
+                                      0.025, 0.030, 0.035, 0.040, 0.045,
+                                      0.050, 0.055, 0.060, 0.065, 0.070,
+                                      0.075, 0.080, 0.610, 0.620, 0.630,
+                                      0.640, 0.650, 0.660, 0.670, 0.680,
+                                      0.690, 0.700, 0.710, 0.720, 0.730,
+                                      0.740, 0.750, 0.760, 0.770, 0.780,
+                                      0.790, 0.800])
+    data["T=0.75"]["p"] = np.array([0.000, 0.004, 0.007, 0.010, 0.013,
+                                    0.016, 0.019, 0.021, 0.024, 0.026,
+                                    0.027, 0.029, 0.031, 0.032, 0.033,
+                                    0.034, 0.035, -0.088, -0.083, -0.076,
+                                    -0.063, -0.047, -0.026, 0.000, 0.033,
+                                    0.072, 0.117, 0.173, 0.231, 0.303,
+                                    0.384, 0.473, 0.574, 0.686, 0.812,
+                                    0.949, 1.098])
+    data["T=0.80"] = {}
+    data["T=0.80"]["rho"] = np.array([0.000, 0.005, 0.010, 0.015, 0.020,
+                                      0.025, 0.030, 0.035, 0.040, 0.045,
+                                      0.050, 0.055, 0.060, 0.065, 0.070,
+                                      0.075, 0.080, 0.085, 0.090, 0.095,
+                                      0.100, 0.105, 0.110, 0.115, 0.570,
+                                      0.580, 0.590, 0.600, 0.610, 0.620,
+                                      0.630, 0.640, 0.650, 0.660, 0.670,
+                                      0.680, 0.690, 0.700, 0.710, 0.720,
+                                      0.730, 0.740, 0.750, 0.760, 0.770,
+                                      0.780, 0.790, 0.800])
+    data["T=0.80"]["p"] = np.array([0.000, 0.004, 0.008, 0.011, 0.015,
+                                    0.018, 0.021, 0.023, 0.026, 0.029,
+                                    0.031, 0.033, 0.035, 0.037, 0.039,
+                                    0.040, 0.041, 0.043, 0.044, 0.045,
+                                    0.046, 0.046, 0.047, 0.047, -0.016,
+                                    -0.011, -0.005, 0.001, 0.012, 0.024,
+                                    0.041, 0.062, 0.087, 0.117, 0.152,
+                                    0.194, 0.240, 0.296, 0.357, 0.429,
+                                    0.508, 0.599, 0.696, 0.806, 0.927,
+                                    1.060, 1.207, 1.365])
+    data["T=0.85"] = {}
+    data["T=0.85"]["rho"] = np.array([0.000, 0.005, 0.010, 0.015, 0.020,
+                                      0.025, 0.030, 0.035, 0.040, 0.045,
+                                      0.050, 0.055, 0.060, 0.065, 0.070,
+                                      0.075, 0.080, 0.085, 0.090, 0.095,
+                                      0.100, 0.105, 0.110, 0.115, 0.120,
+                                      0.125, 0.130, 0.135, 0.140, 0.145,
+                                      0.150, 0.160, 0.170, 0.180, 0.190,
+                                      0.510, 0.520, 0.530, 0.540, 0.550,
+                                      0.560, 0.570, 0.580, 0.590, 0.600,
+                                      0.610, 0.620, 0.630, 0.640, 0.650,
+                                      0.660, 0.670, 0.680, 0.690, 0.700,
+                                      0.710, 0.720, 0.730, 0.740, 0.750,
+                                      0.760, 0.770, 0.780, 0.790, 0.800])
+    data["T=0.85"]["p"] = np.array([0.000, 0.004, 0.008, 0.012, 0.016,
+                                    0.019, 0.022, 0.026, 0.029, 0.031,
+                                    0.034, 0.037, 0.039, 0.041, 0.044,
+                                    0.045, 0.047, 0.049, 0.051, 0.052,
+                                    0.054, 0.055, 0.056, 0.057, 0.058,
+                                    0.059, 0.060, 0.060, 0.061, 0.062,
+                                    0.062, 0.063, 0.063, 0.064, 0.064,
+                                    0.043, 0.045, 0.048, 0.051, 0.056,
+                                    0.060, 0.068, 0.076, 0.089, 0.104,
+                                    0.121, 0.140, 0.164, 0.193, 0.224,
+                                    0.261, 0.304, 0.352, 0.409, 0.474,
+                                    0.543, 0.622, 0.708, 0.806, 0.914,
+                                    1.031, 1.162, 1.304, 1.462, 1.630])
+    return data
 
 # def get_GCMC_heat_cap_data():
 #     """ GCMC-histogram-reweighting simulations:
@@ -81,7 +163,7 @@ mpl.rcParams['legend.fontsize'] = MEDIUM_SIZE
 #     study of the Lennard-Jones spline fluid
 #     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
 #     Øivind Wilhelmsen
-#     doi:
+#     doi: 10.1063/5.0082690
 #     """
 #     T = np.array([])
 #     Cv = np.array([])
@@ -188,7 +270,7 @@ def get_MD_psat():
 def get_crit_point():
     """Critical data from MD/GEMC/GCMC:
     doi: 10.1080/00268976.2019.1664780
-    doi: 
+    doi: 10.1063/5.0082690
     """
     data = {}
     data["MD"] = {"rho": 0.332, "T": 0.882, "P": 0.074}
@@ -506,6 +588,8 @@ def plot_figure_9(LJS, labels):
     z = np.array([1.0])
     colors = ["orange", "b", "g"]
     linestyle = ["-", "--", ":"]
+    markers = ["o", "o", "p", "p", "v"]
+    markerfill = ["full", "none", "full", "none", "full"]
     n = 100
     Ts = np.linspace(0.65, 0.85, 5)
     rhos = np.linspace(1.0e-3, 0.8, n)
@@ -536,13 +620,40 @@ def plot_figure_9(LJS, labels):
     ax[0].set_xlabel(r"$\rho^*$")
     ax[0].set_ylim((-0.3,0.4))
     ax[0].set_xlim((0.0,0.8))
+
+    md_data = get_MD_isotherms()
+    for iT, T in enumerate(Ts):
+        label = "T={:.2f}".format(T)
+        data = md_data[label]
+        ax[0].plot(data["rho"], data["p"], marker=markers[iT],
+                   fillstyle=markerfill[iT], label="{:.2f}".format(T),
+                   color="k", linestyle="None")
+
+    print("Update")
+    data = md_data["T=0.70"]
+    ax[0].plot(data["rho"], data["p"], marker="o",
+               fillstyle="none", label=r"0.7 ($1/N \rightarrow 0$)",
+               color="magenta", linestyle="None")
+
     leg = ax[0].legend(loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
-
 
     for ip, psi in enumerate(p_s_array):
         j = 2 - ip % 3
         ax[1].plot(rhos, psi, color=colors[j], linestyle=linestyle[j])
+
+    for iT, T in enumerate(Ts):
+        label = "T={:.2f}".format(T)
+        data = md_data[label]
+        ax[1].plot(data["rho"], data["p"], marker=markers[iT],
+                   fillstyle=markerfill[iT], color="k",
+                   linestyle="None")
+
+    print("Update")
+    data = md_data["T=0.70"]
+    ax[1].plot(data["rho"], data["p"], marker="o",
+               fillstyle="none", label=r"0.7 ($1/N \rightarrow 0$)",
+               color="magenta", linestyle="None")
 
     ax[1].set_ylabel(r"$p^*$")
     ax[1].set_xlabel(r"$\rho^*$")
@@ -555,7 +666,7 @@ def plot_figure_9(LJS, labels):
 if __name__ == '__main__':
     # Generate plots from article:
     # Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid
-    # doi:
+    # doi: 10.1063/5.0082690
     #
     # Instanciate and init LJS objects
     uv = ljs_wca.ljs_uv()
@@ -584,7 +695,7 @@ if __name__ == '__main__':
     plot_figure_8(LJS, labels=labels_LJS)
 
     # Figure 9
-    #plot_figure_9(LJS, labels=labels_LJS)
+    plot_figure_9(LJS, labels=labels_LJS)
 
     # Show figures
     plt.show()
