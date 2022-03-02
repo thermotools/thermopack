@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+#
+# Plots from:
+# Thijs van Westen,Morten Hammer,Bjørn Hafskjold,Ailo Aasen,Joachim Gross, Øivind Wilhelmsen
+# Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid
+# doi: 10.1063/5.0082690
+#
 #Modify system path
 import sys
 sys.path.append('../../pycThermopack/')

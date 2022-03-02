@@ -199,7 +199,7 @@ rules:
 [Predicting triggering and consequence of delayed LNG RPT](https://doi.org/10.1016/j.jlp.2018.06.001)
 
 - Perturbation theories for Lennard-Jones spline fluid:  
-[Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid](XXXX)  
+[Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid](https://doi.org/10.1063/5.0082690)  
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## Authors and contact persons
