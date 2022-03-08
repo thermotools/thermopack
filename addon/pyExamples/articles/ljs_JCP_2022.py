@@ -22,6 +22,7 @@ from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, \
     calc_reduced_P, calc_reduced_heat_capacity, calc_real_T, \
     calc_real_rho
 from lennard_jones_spline import get_BH_models, get_WCA_models, plot_JT_inversion
+from numpy.polynomial.polynomial import Polynomial as Poly
 
 SMALL_SIZE=10
 MEDIUM_SIZE=12
@@ -37,25 +38,122 @@ mpl.rcParams['ytick.labelsize'] = SMALL_SIZE
 mpl.rcParams['legend.fontsize'] = MEDIUM_SIZE
 
 
-# def get_GCMC_sat_data():
-#     """ GCMC-histogram-reweighting simulations:
-#     Perturbation theories for fluids with short-ranged attractive forces: A case
-#     study of the Lennard-Jones spline fluid
-#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
-#     Øivind Wilhelmsen
-#     doi: 10.1063/5.0082690
-#     """
-#     T = np.array([])
-#     rhol = np.array([])
-#     rhog = np.array([])
-#     p = np.array([])
-#     data = {}
-#     data["T"] = T
-#     data["P"] = P
-#     data["rhol"] = rhol
-#     data["rhog"] = rhog
-#     return data
+def get_GCMC_sat_data():
+    """ GCMC-histogram-reweighting simulations:
+    Perturbation theories for fluids with short-ranged attractive forces: A case
+    study of the Lennard-Jones spline fluid
+    Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+    Øivind Wilhelmsen
+    doi: 10.1063/5.0082690
+    """
+    data = {}
+    data["T"] = np.array([0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.6,
+                          0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.7, 0.71,
+                          0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.8, 0.81, 0.82,
+                          0.83, 0.84, 0.85, 0.86])
+    data["P"] = np.array([0.000823794, 0.001010671, 0.0012295, 0.001484077, 0.001778445, 0.002116494,
+                          0.002502294, 0.00294027, 0.003435011, 0.00399134, 0.004614135, 0.005308239,
+                          0.006078788, 0.006931239, 0.007871194, 0.008904249, 0.010035956, 0.011272147,
+                          0.012618969, 0.014082575, 0.015669227, 0.017385424, 0.019237983, 0.021233929,
+                          0.023380382, 0.025684837, 0.028155344, 0.030800674, 0.033630229, 0.03665362,
+                          0.039880759, 0.043322479, 0.046991458, 0.050902983, 0.055075457, 0.059532306,
+                          0.064304709])
+    data["rhol"] = np.array([0.82836295, 0.823355104, 0.81859732, 0.814360341, 0.809715804, 0.804376191,
+                             0.799169194, 0.79396531, 0.788769465, 0.783571739, 0.778104661, 0.772446099,
+                             0.766781356, 0.761109081, 0.755326325, 0.749254557, 0.742912166, 0.736473712,
+                             0.729855171, 0.722970147, 0.715850297, 0.708514819, 0.700947594, 0.693015136,
+                             0.684657282, 0.675914509, 0.66681543, 0.657367649, 0.647401673, 0.636652858,
+                             0.624942159, 0.612160512, 0.59815662, 0.582544491, 0.564555692, 0.54266521,
+                             0.51444438])
+    data["rhog"] = np.array([0.001686374, 0.002035539, 0.002438087, 0.002899665, 0.003426306, 0.004023683,
+                             0.004697834, 0.005455563, 0.0063041, 0.007251305, 0.008305352, 0.009474607,
+                             0.010768306, 0.012196705, 0.013770911, 0.015502857, 0.017405454, 0.019493299,
+                             0.021782667, 0.024290963, 0.027037497, 0.030044931, 0.033340714, 0.036957308,
+                             0.040931352, 0.045304607, 0.050127316, 0.055462824, 0.061391234, 0.068013871,
+                             0.075464554, 0.083929031, 0.093674867, 0.105108857, 0.118928902, 0.136566125,
+                             0.160556508])
+    return data
 
+def get_meta_MD_isotherms():
+    """ MD results for P-V isotherms:
+    Perturbation theories for fluids with short-ranged attractive forces: A case
+    study of the Lennard-Jones spline fluid
+    Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+    Øivind Wilhelmsen
+    doi: 10.1063/5.0082690
+
+    All data points at T*=0.7
+    """
+    data = {}
+    data["N=4000"] = {}
+    data["N=4000"]["rho"] = np.array([0.400, 0.420, 0.440, 0.460, 0.480,
+                                      0.500, 0.510, 0.520, 0.530, 0.540,
+                                      0.550, 0.560, 0.570, 0.580, 0.590,
+                                      0.600, 0.610, 0.620, 0.630, 0.640,
+                                      0.650, 0.660, 0.670, 0.680, 0.690,
+                                      0.700, 0.710, 0.720, 0.730, 0.740,
+                                      0.750, 0.760, 0.770, 0.780, 0.790,
+                                      0.800])
+    data["N=4000"]["p"] = np.array([0.0000, -0.0002, -0.0004, -0.0127, -0.0274,
+                                    -0.0290, -0.0302, -0.0318, -0.0334, -0.0352,
+                                    -0.0375, -0.0400, -0.0426, -0.0442, -0.0545,
+                                    -0.0659, -0.0705, -0.0745, -0.0820, -0.0882,
+                                    -0.0999, -0.1463, -0.1344, -0.1164, -0.0888,
+                                    -0.0545, -0.0112, 0.0386, 0.0983, 0.1677,
+                                    0.2471, 0.3368, 0.4379, 0.5526, 0.6791,
+                                    0.8183])
+    data["N=2048"] = {}
+    data["N=2048"]["rho"] = np.array([0.400, 0.420, 0.440, 0.460, 0.480,
+                                      0.500, 0.510, 0.520, 0.530, 0.540,
+                                      0.550, 0.560, 0.570, 0.580, 0.590,
+                                      0.600, 0.610, 0.620, 0.630, 0.640,
+                                      0.650, 0.660, 0.670, 0.680, 0.690,
+                                      0.700, 0.710, 0.720, 0.730, 0.740,
+                                      0.750, 0.760, 0.770, 0.780, 0.790,
+                                      0.800])
+    data["N=2048"]["p"] = np.array([-0.0046, -0.0050, -0.0049, -0.0193, -0.0343,
+                                    -0.0423, -0.0426, -0.0467, -0.0474, -0.0519,
+                                    -0.0539, -0.0563, -0.0612, -0.0707, -0.0851,
+                                    -0.0887, -0.0960, -0.1000, -0.1179, -0.1405,
+                                    -0.1549, -0.1490, -0.1368, -0.1151, -0.0884,
+                                    -0.0542, -0.0118, 0.0395, 0.1009, 0.1704,
+                                    0.2489, 0.3376, 0.4411, 0.5556, 0.6819,
+                                    0.8222])
+    data["N=500"] = {}
+    data["N=500"]["rho"] = np.array([0.400, 0.420, 0.440, 0.460, 0.48,
+                                     0.5, 0.51, 0.52, 0.53, 0.54,
+                                     0.55, 0.56, 0.57, 0.58, 0.59,
+                                     0.6, 0.61, 0.62, 0.63, 0.64,
+                                     0.65, 0.66, 0.67, 0.68, 0.69,
+                                     0.7, 0.71, 0.72, 0.73, 0.74,
+                                     0.75, 0.76, 0.77, 0.78, 0.79,
+                                     0.8])
+    data["N=500"]["p"] = np.array([-0.0216, -0.0301, -0.0341, -0.0521, -0.06465,
+                                   -0.07543, -0.08414, -0.08792, -0.09345, -0.1014,
+                                   -0.1113, -0.1209, -0.1291, -0.143, -0.1522,
+                                   -0.1616, -0.1663, -0.1726, -0.1751, -0.1738,
+                                   -0.1654, -0.1525, -0.1375, -0.1116, -0.08439
+                                   -0.04706, -0.00303, 0.05124, 0.1124, 0.1832,
+                                   0.2652, 0.3575, 0.4603, 0.5729, 0.7032,
+                                   0.8492])
+    data["N=256"] = {}
+    data["N=256"]["rho"] = np.array([0.400, 0.420, 0.440, 0.460, 0.480,
+                                     0.500, 0.510, 0.520, 0.530, 0.540,
+                                     0.550, 0.560, 0.570, 0.580, 0.590,
+                                     0.600, 0.610, 0.620, 0.630, 0.640,
+                                     0.650, 0.660, 0.670, 0.680, 0.690,
+                                     0.700, 0.710, 0.720, 0.730, 0.740,
+                                     0.750, 0.760, 0.770, 0.780, 0.790,
+                                     0.800])
+    data["N=256"]["p"] = np.array([-0.0414, -0.0534, -0.0641, -0.0756, -0.0870,
+                                   -0.1038, -0.1091, -0.1180, -0.1235, -0.1397,
+                                   -0.1446, -0.1544, -0.1637, -0.1692, -0.1776,
+                                   -0.1789, -0.1824, -0.1790, -0.1822, -0.1755,
+                                   -0.1683, -0.1501, -0.1275, -0.1058, -0.0764,
+                                   -0.0407, 0.0093, 0.0612, 0.1269, 0.1957,
+                                   0.2837, 0.3773, 0.4777, 0.5979, 0.7226,
+                                   0.8672])
+    return data
 
 def get_MD_isotherms():
     """ MD results for P-V isotherms:
@@ -157,22 +255,53 @@ def get_MD_isotherms():
                                     1.031, 1.162, 1.304, 1.462, 1.630])
     return data
 
-# def get_GCMC_heat_cap_data():
-#     """ GCMC-histogram-reweighting simulations:
-#     Perturbation theories for fluids with short-ranged attractive forces: A case
-#     study of the Lennard-Jones spline fluid
-#     Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
-#     Øivind Wilhelmsen
-#     doi: 10.1063/5.0082690
-#     """
-#     T = np.array([])
-#     Cv = np.array([])
-#     Cp = np.array([])
-#     data = {}
-#     data["T"] = T
-#     data["Cv"] = Cv
-#     data["Cp"] = Cp
-#     return data
+def get_GCMC_heat_cap_data():
+    """ GCMC-histogram-reweighting simulations:
+    Perturbation theories for fluids with short-ranged attractive forces: A case
+    study of the Lennard-Jones spline fluid
+    Thijs van Westen, Morten Hammer, Bjørn Hafskjold, Ailo Aasen, Joachim Gross, and 
+    Øivind Wilhelmsen
+    doi: 10.1063/5.0082690
+    """
+    data = {}
+    data["Cp"] = {}
+    data["Cp"]["T=0.7"] = {}
+    data["Cp"]["T=0.7"]["rho"] = np.array([0.799711])
+    data["Cp"]["T=0.7"]["heat_cap"] = np.array([4.882485])
+    data["Cp"]["T=1.0"] = {}
+    data["Cp"]["T=1.0"]["rho"] = np.array([0.10008, 0.200707, 0.298901, 0.398321, 0.497948,
+                                           0.59863, 0.699503, 0.799767, 0.899881, 0.99977])
+    data["Cp"]["T=1.0"]["heat_cap"] = np.array([5.622381, 11.284659, 15.322921, 13.62433, 9.087688,
+                                                6.197951, 4.892438, 4.284435, 4.140472, 4.159483])
+    data["Cp"]["T=1.46"] = {}
+    data["Cp"]["T=1.46"]["rho"] = np.array([0.099999, 0.199936, 0.299898, 0.399602, 0.499294,
+                                            0.599309, 0.699622, 0.799851, 0.899966, 0.999864])
+    data["Cp"]["T=1.46"]["heat_cap"] = np.array([3.512126, 4.417776, 4.986423, 5.037563, 4.749557,
+                                                 4.342986, 4.03262, 3.90379, 3.83238, 3.970287])
+    data["Cv"] = {}
+    data["Cv"]["T=0.7"] = {}
+    data["Cv"]["T=0.7"]["rho"] = np.array([0.7, 0.8])
+    data["Cv"]["T=0.7"]["heat_cap"] = np.array([2.451731, 2.600915])
+    data["Cv"]["T=1.0"] = {}
+    data["Cv"]["T=1.0"]["rho"] = np.array([0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4,
+                                           0.45, 0.5, 0.6, 0.65, 0.7, 0.8, 0.9, 1.0])
+    data["Cv"]["T=1.0"]["heat_cap"] = np.array([1.778747, 2.069358, 2.338263, 2.541156, 2.643347,
+                                                2.622405, 2.594958, 2.491514, 2.395597, 2.286722,
+                                                2.158285, 2.16753, 2.223785, 2.452495, 2.709948,
+                                                3.025815])
+    data["Cv"]["T=1.46"] = {}
+    data["Cv"]["T=1.46"]["rho"] = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    data["Cv"]["T=1.46"]["heat_cap"] = np.array([1.677391, 1.795279, 1.855617, 1.883796, 1.915577,
+                                                 1.983026, 2.122238, 2.319825, 2.561611, 2.820619])
+
+    # Subtract ideal gas part
+    data["Cp"]["T=0.7"]["heat_cap"] -= 22.5
+    data["Cp"]["T=1.0"]["heat_cap"] -= 2.5
+    data["Cp"]["T=1.46"]["heat_cap"] -= 2.5
+    data["Cv"]["T=0.7"]["heat_cap"] -= 1.5
+    data["Cv"]["T=1.0"]["heat_cap"] -= 1.5
+    data["Cv"]["T=1.46"]["heat_cap"] -= 1.5
+    return data
 
 def get_MD_heat_cap_data():
     """ MD data for saturation densities:
@@ -284,6 +413,7 @@ def plot_figure_2(LJS_BH, LJS_WCA):
     colors = ["k", "grey", "darkgrey", "lightgrey"]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, sharey="all")
+    fig.set_size_inches(10, 6)
     plt.subplots_adjust(wspace=0, hspace=0)
 
     # Plot phase envelope
@@ -299,9 +429,11 @@ def plot_figure_2(LJS_BH, LJS_WCA):
         ax1.plot(rhoc_s, Tc_s, color=colors[i], marker="o")
 
     custom_legends = [Line2D([0], [0], color='k', linestyle="None", label='BH'),
+                      Line2D([0], [0], color='w', linestyle="None", marker="v", label='', mfc="None"),
                       Line2D([0], [0], color='b', linestyle="None", marker="v", label='GEMC', mfc="None"),
+                      Line2D([0], [0], color='k', linestyle="None", marker="o", label='GCMC', mfc="None"),
                       Line2D([0], [0], color='r', linestyle="None", marker="x", label='MD')]
-    leg = ax1.legend(handles=custom_legends, loc="best", numpoints=1)
+    leg = ax1.legend(handles=custom_legends, loc="upper right", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
 
     # Plot phase envelope
@@ -317,7 +449,7 @@ def plot_figure_2(LJS_BH, LJS_WCA):
         ax2.plot(rhoc_s, Tc_s, color=colors[i], marker="o")
 
     custom_legends = [Line2D([0], [0], color='k', linestyle="None", label='WCA')]
-    leg = ax2.legend(handles=custom_legends, loc="best", numpoints=1)
+    leg = ax2.legend(handles=custom_legends, loc="upper right", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
 
     MD_data = get_MD_sat_data()
@@ -335,8 +467,16 @@ def plot_figure_2(LJS_BH, LJS_WCA):
     crit_data = get_crit_point()
     ax1.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="x", linestyle="None")
     ax2.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="x", linestyle="None")
-    ax1.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="b", marker="v", linestyle="None")
-    ax2.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="b", marker="v", linestyle="None")
+    ax1.plot(crit_data["GEMC"]["rho"], crit_data["GEMC"]["T"], color="b", marker="v", linestyle="None")
+    ax2.plot(crit_data["GEMC"]["rho"], crit_data["GEMC"]["T"], color="b", marker="v", linestyle="None")
+    ax1.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="k", marker="o", linestyle="None")
+    ax2.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="k", marker="o", linestyle="None")
+
+    GCMC_data = get_GCMC_sat_data()
+    ax1.plot(GCMC_data["rhol"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
+    ax1.plot(GCMC_data["rhog"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
+    ax2.plot(GCMC_data["rhol"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
+    ax2.plot(GCMC_data["rhog"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
 
     ax1.set_ylabel(r"$T^*$")
     ax1.set_ylim((0.55,1.1))
@@ -393,6 +533,7 @@ def plot_figure_3(LJS_BH, LJS_WCA):
     WCA_crit_rho = np.array(WCA_crit_rho)/rho_c_GCMC
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex="all")
+    fig.set_size_inches(7, 8)
     plt.subplots_adjust(hspace=0)
 
     ax1.plot(BH_order, BH_crit_T, color="k", label="BH", marker="o")
@@ -427,7 +568,7 @@ def plot_figure_4(LJS, labels):
     colors = ["orange", "b", "g", "k", "r"]
 
     assert len(LJS) == 3
-    plt.figure()
+    plt.figure(figsize=(12, 6))
     ax1 = plt.subplot(1, 3, 1)
     ax2 = plt.subplot(1, 3, 2)
     ax3 = plt.subplot(1, 3, 3)
@@ -447,7 +588,7 @@ def plot_figure_4(LJS, labels):
     ax1.plot(crit_data["MD"]["T"], crit_data["MD"]["P"], color="r", marker="v", linestyle="None", label="MD")
     ax2.plot(crit_data["MD"]["rho"], crit_data["MD"]["P"], color="r", marker="v", linestyle="None")
     ax3.plot(crit_data["MD"]["rho"], crit_data["MD"]["T"], color="r", marker="v", linestyle="None")
-    ax1.plot(crit_data["GCMC"]["T"], crit_data["GCMC"]["P"], color="k", marker="s", linestyle="None", label="GCMC")
+    ax1.plot(crit_data["GCMC"]["T"], crit_data["GCMC"]["P"], color="k", marker="s", linestyle="None")
     ax2.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["P"], color="k", marker="s", linestyle="None")
     ax3.plot(crit_data["GCMC"]["rho"], crit_data["GCMC"]["T"], color="k", marker="s", linestyle="None")
 
@@ -457,6 +598,13 @@ def plot_figure_4(LJS, labels):
     ax2.plot(GEMC_data["rhol"], GEMC_data["P"], color="r", marker="d", linestyle="None", mfc="None")
     ax3.plot(GEMC_data["rhog"], GEMC_data["T"], color="r", marker="d", linestyle="None", mfc="None")
     ax3.plot(GEMC_data["rhol"], GEMC_data["T"], color="r", marker="d", linestyle="None", mfc="None")
+
+    GCMC_data = get_GCMC_sat_data()
+    ax1.plot(GCMC_data["T"], GCMC_data["P"], color="k", marker="o", linestyle="None", mfc="None", label="GCMC")
+    ax2.plot(GCMC_data["rhog"], GCMC_data["P"], color="k", marker="o", linestyle="None", mfc="None")
+    ax2.plot(GCMC_data["rhol"], GCMC_data["P"], color="k", marker="o", linestyle="None", mfc="None")
+    ax3.plot(GCMC_data["rhol"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
+    ax3.plot(GCMC_data["rhog"], GCMC_data["T"], color="k", marker="o", linestyle="None", mfc="None")
 
     ax1.set_ylabel(r"$P^*$")
     ax1.set_xlabel(r"$T^*$")
@@ -520,6 +668,7 @@ def plot_figure_8(LJS, labels):
     assert len(LJS) == 3
 
     fig, ax_all = plt.subplots(2, 3, sharey="row", sharex="col")
+    fig.set_size_inches(12, 6)
     plt.subplots_adjust(wspace=0, hspace=0.1)
     ax = ax_all[0]
 
@@ -542,6 +691,14 @@ def plot_figure_8(LJS, labels):
                color="k", label="MD", marker="o", mfc="None", linestyle="None")
     ax[1].plot(MD_heat_data["T=1.0"]["rho"], MD_heat_data["T=1.0"]["Cv"],
                color="k", marker="o", mfc="None", linestyle="None")
+
+    MC_heat_data = get_GCMC_heat_cap_data()
+    ax[0].plot(MC_heat_data["Cv"]["T=0.7"]["rho"], MC_heat_data["Cv"]["T=0.7"]["heat_cap"],
+               color="k", label="MC", marker="v", mfc="None", linestyle="None")
+    ax[1].plot(MC_heat_data["Cv"]["T=1.0"]["rho"], MC_heat_data["Cv"]["T=1.0"]["heat_cap"],
+               color="k", marker="v", mfc="None", linestyle="None")
+    ax[2].plot(MC_heat_data["Cv"]["T=1.46"]["rho"], MC_heat_data["Cv"]["T=1.46"]["heat_cap"],
+               color="k", marker="v", mfc="None", linestyle="None")
 
     ax[0].set_ylim((0.0,2.4))
     ax[0].set_ylabel(r"$C_V^{\rm{res}}/Nk_{\rm{B}}$")
@@ -573,6 +730,13 @@ def plot_figure_8(LJS, labels):
     ax[1].plot(MD_heat_data["T=1.0"]["rho"], MD_heat_data["T=1.0"]["Cp"],
                color="k", marker="o", mfc="None", linestyle="None")
 
+    ax[0].plot(MC_heat_data["Cp"]["T=0.7"]["rho"], MC_heat_data["Cp"]["T=0.7"]["heat_cap"],
+               color="k", label="MC", marker="v", mfc="None", linestyle="None")
+    ax[1].plot(MC_heat_data["Cp"]["T=1.0"]["rho"], MC_heat_data["Cp"]["T=1.0"]["heat_cap"],
+               color="k", marker="v", mfc="None", linestyle="None")
+    ax[2].plot(MC_heat_data["Cp"]["T=1.46"]["rho"], MC_heat_data["Cp"]["T=1.46"]["heat_cap"],
+               color="k", marker="v", mfc="None", linestyle="None")
+
     ax[0].set_ylim((0.0,15.0))
     ax[0].set_ylabel(r"$C_P^{\rm{res}}/Nk_{\rm{B}}$")
     for i, axi in enumerate(ax):
@@ -596,6 +760,7 @@ def plot_figure_9(LJS, labels):
     assert len(LJS) == 3
 
     fig, ax = plt.subplots(1, 2)
+    fig.set_size_inches(12, 6)
 
     p_s_array = []
     # Plot reduced isotherms
@@ -629,9 +794,8 @@ def plot_figure_9(LJS, labels):
                    fillstyle=markerfill[iT], label="{:.2f}".format(T),
                    color="k", linestyle="None")
 
-    print("Update")
-    data = md_data["T=0.70"]
-    ax[0].plot(data["rho"], data["p"], marker="o",
+    data = extrapolate_to_N_inf()
+    ax[0].plot(data[0], data[1], marker="o",
                fillstyle="none", label=r"0.7 ($1/N \rightarrow 0$)",
                color="magenta", linestyle="None")
 
@@ -649,18 +813,28 @@ def plot_figure_9(LJS, labels):
                    fillstyle=markerfill[iT], color="k",
                    linestyle="None")
 
-    print("Update")
-    data = md_data["T=0.70"]
-    ax[1].plot(data["rho"], data["p"], marker="o",
-               fillstyle="none", label=r"0.7 ($1/N \rightarrow 0$)",
-               color="magenta", linestyle="None")
-
     ax[1].set_ylabel(r"$p^*$")
     ax[1].set_xlabel(r"$\rho^*$")
     ax[1].set_ylim((0.0,0.08))
     ax[1].set_xlim((0.0,0.2))
 
     plt.suptitle("Figure 9: Isotherms")
+
+def extrapolate_to_N_inf():
+    MD_data = get_meta_MD_isotherms()
+    keys = ["N=4000", "N=2048", "N=500", "N=256"]
+    x = np.array([1.0/4000.0, 1.0/2048.0, 1.0/500.0, 1.0/256.0])
+    rho = []
+    p = []
+    for i in range(9):
+        j = - 5 - i
+        rho.append(MD_data[keys[0]]["rho"][j])
+        p_of_x = []
+        for key in keys:
+            p_of_x.append(MD_data[key]["p"][j])
+        line = Poly.fit(x, p_of_x, deg=1)
+        p.append(line(0.0))
+    return np.array(rho), np.array(p)
 
 
 if __name__ == '__main__':
@@ -680,16 +854,16 @@ if __name__ == '__main__':
     labels_LJS = ["UV-theory", "WCA4", "BH3"]
 
     # Figure 2
-    #plot_figure_2(LJS_BH, LJS_WCA)
+    plot_figure_2(LJS_BH, LJS_WCA)
 
     # Figure 3
-    #plot_figure_3(LJS_BH, LJS_WCA)
+    plot_figure_3(LJS_BH, LJS_WCA)
 
     # Figure 4
-    #plot_figure_4(LJS, labels=labels_LJS)
+    plot_figure_4(LJS, labels=labels_LJS)
 
     # Figure 7
-    #plot_figure_7(LJS, labels=labels_LJS)
+    plot_figure_7(LJS, labels=labels_LJS)
 
     # Figure 8
     plot_figure_8(LJS, labels=labels_LJS)
