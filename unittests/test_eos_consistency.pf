@@ -311,6 +311,7 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_qsaftvrmie
 
+  @Test
   subroutine test_fres_ljs_bh()
     integer, parameter :: ncomp = 1
     character(len=*), parameter :: eos="LJS-BH"
@@ -326,6 +327,38 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_ljs_bh
 
+  @Test
+  subroutine test_fres_ljs_uv()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-UV"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 60.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_ljs_uv
+
+  @Test
+  subroutine test_fres_ljs_wca()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-WCA"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 80.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_ljs_wca
+
+  @Test
   subroutine test_fres_tv_tcPR_q_vol_trs()
     integer, parameter :: ncomp = 2
     character(len=*), parameter :: eos="tcPR"
@@ -342,6 +375,7 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
   end subroutine test_fres_tv_tcPR_q_vol_trs
 
+  @Test
   subroutine dummy_quadratic_vol_shift()
     real :: ciA, ciB, ciC
     integer :: ci_type
