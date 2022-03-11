@@ -58,7 +58,7 @@ contains
     use saftvrmie_interface, only: init_saftvrmie
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
-    use pets, only: PETS_eos
+    use pets, only: PETS_eos, getPetsPureParams
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     class(base_eos_param), intent(inout) :: eos       !< Underlying cubic equation of state.
@@ -99,7 +99,7 @@ contains
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
     else if (assoc%saft_model == eosPeTS) then
       !cbeos%name = "PeTS"
-      call getPcSaftPureParams_allComps(nc,comp,assoc%saft_model,param_ref,compInDB,&
+      call getPetsPureParams(nc,comp,assoc%saft_model,param_ref,compInDB,&
            m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
     else
       assocSchemes_db = no_assoc

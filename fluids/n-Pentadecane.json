@@ -112,5 +112,15 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 6.2614,
+    "sigma": 3.9412E-10,
+    "eps_depth_divk": 250.4867,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
   }
 }

@@ -113,5 +113,25 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 3.1488,
+    "sigma": 3.635E-10,
+    "eps_depth_divk": 261.960,
+    "eps": 21246.278906671701,
+    "beta": 0.003926990817,
+    "assoc_scheme": "2C",
+    "bib_reference": "de Villiers et al. (2011). Doi: 10.1021/ie200521k",
+    "ref": "Default/deVilliers2011"
+  },
+  "PC-SAFT-2": {
+    "m": 3.626,
+    "sigma": 3.4508E-10,
+    "eps_depth_divk": 247.280,
+    "eps": 18725.00126234291,
+    "beta": 0.010319,
+    "assoc_scheme": "2B",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "ref": "Tang_Gross2010"
   }
 }

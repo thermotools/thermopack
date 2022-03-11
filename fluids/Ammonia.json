@@ -130,5 +130,15 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.25807,
+    "sigma": 2.37802E-10,
+    "eps_depth_divk": 126.868,
+    "eps": 11032.6000,
+    "beta": 0.20479,
+    "assoc_scheme": "3B",
+    "bib_reference": "SINTEF Energy Research",
+    "ref": "Default/InHouse"
   }
 }
