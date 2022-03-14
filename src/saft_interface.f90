@@ -531,6 +531,67 @@ contains
   end subroutine saft_total_pressure
 
 
+  !> Calculates the reduced dispersion contribution to the
+  !> Helmholtz energy, together with its derivatives.
+  !>
+  subroutine calc_saft_dispersion(T,V,n,a,a_T,&
+       a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
+    use cubic, only: calcCbFder_res_SI
+    use cubic_eos, only: cb_eos
+    use pc_saft_nonassoc, only: alpha_disp_PC_TVn, PCSAFT_eos
+    use pets, only: F_PeTS_TVn, PETS_eos
+    use saftvrmie_interface, only: calc_saftvrmie_dispersion
+    use saftvrmie_containers, only: saftvrmie_eos
+    ! Input.
+    real, intent(in) :: T,V,n(nce)
+    ! Output.
+    real, optional, intent(out) :: a,a_T,a_V,a_n(nce)
+    real, optional, intent(out) :: a_TT,a_TV,a_Tn(nce),a_VV,a_Vn(nce),a_nn(nce,nce)
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      call alpha_disp_PC_TVn(p_eos,T,V,n,a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
+           alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
+    class is (saftvrmie_eos)
+      call calc_saftvrmie_dispersion(p_eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_V,F_n=a_n,F_TT=a_TT,&
+           F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+    class default
+      call stoperror("calc_saft_dispersion: Wrong eos...")
+    end select
+
+  end subroutine calc_saft_dispersion
+
+  !> Calculates Hard-sphere diameter
+  subroutine calc_hard_sphere_diameter(T,d)
+    use pc_saft_nonassoc, only: calc_d, PCSAFT_eos
+    use saftvrmie_interface, only: update_saftvrmie_hs_diameter
+    use saftvrmie_containers, only: saftvrmie_eos
+    ! Input.
+    real, intent(in) :: T!,V,n(nce)
+    ! Output.
+    real, intent(out) :: d(nce) !(m)
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    integer :: i
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      call calc_d(p_eos,T,d)
+    class is (saftvrmie_eos)
+      call update_saftvrmie_hs_diameter(p_eos,nce,T)
+      do i=1,nce
+        d(i) = p_eos%saftvrmie_var%dhs%d(i,i)
+      enddo
+    class default
+      call stoperror("calc_hard_sphere_diameter: Wrong eos...")
+    end select
+
+  end subroutine calc_hard_sphere_diameter
+
 
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 
@@ -1537,8 +1598,10 @@ contains
       call stoperror("pc_saft_set_pure_params: Wrong type.")
     end select
 
-    call setActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
-
+    if (associated(eos%assoc)) then
+      if (eos%assoc%numAssocSites > 0) &
+           call setActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
+    endif
   end subroutine pc_saft_set_pure_params
 
   subroutine pc_saft_get_pure_params(ic,params)

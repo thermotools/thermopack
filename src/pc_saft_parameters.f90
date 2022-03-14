@@ -77,23 +77,23 @@ contains
     idx_default = -1
     found = .false.
     do idx = 1,PCmaxkij
-       match_11_22 = str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)
-       match_12_21 = str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1)
+      match_11_22 = str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)
+      match_12_21 = str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1)
 
-       if ( eosidx==PCkijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21)) then
-         if (string_match(param_ref,PCkijdb(idx)%ref)) then
-           kijvalue = PCkijdb(idx)%kijvalue
-           found = .true.
-           exit
-         elseif (string_match("DEFAULT", PCkijdb(idx)%ref)) then
-           idx_default = idx
-         endif
-       endif
-     end do
+      if ( eosidx==PCkijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21)) then
+        if (string_match(param_ref,PCkijdb(idx)%ref)) then
+          kijvalue = PCkijdb(idx)%kijvalue
+          found = .true.
+          exit
+        elseif (string_match("DEFAULT", PCkijdb(idx)%ref)) then
+          idx_default = idx
+        endif
+      endif
+    end do
 
-     if (.not. found .and. idx_default > 0) then
-       kijvalue = PCkijdb(idx_default)%kijvalue
-     endif
+    if (.not. found .and. idx_default > 0) then
+      kijvalue = PCkijdb(idx_default)%kijvalue
+    endif
   end function getPCkij
 
   subroutine getPcSaftKij_allComps(nc,comp,eosidx,kij)
@@ -109,15 +109,16 @@ contains
 
     kij = 0.0
     do ic=1,nc
-       do jc=ic+1,nc
-          kij(ic,jc) = getPCkij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,"DEFAULT")
-          kij(jc,ic) = kij(ic,jc)
-       end do
+      do jc=ic+1,nc
+        kij(ic,jc) = getPCkij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,"DEFAULT")
+        kij(jc,ic) = kij(ic,jc)
+      end do
     end do
 
   end subroutine getPcSaftKij_allComps
 
-  subroutine getPcSaftPureParams_allComps(nc,comp,eosidx,param_ref,found,m,sigma,eps_depth_divk,eps,beta,scheme)
+  subroutine getPcSaftPureParams_allComps(nc,comp,eosidx,param_ref,&
+       found,m,sigma,eps_depth_divk,eps,beta,scheme)
     use compdata, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
@@ -132,13 +133,14 @@ contains
     integer :: ic
 
     do ic=1,nc
-       call getPcSaftpureParams_singleComp(comp(ic)%p_comp%ident,eosidx,param_ref,found(ic),m(ic),&
-            sigma(ic),eps_depth_divk(ic),eps(ic),beta(ic),scheme(ic))
+      call getPcSaftpureParams_singleComp(comp(ic)%p_comp%ident,eosidx,param_ref,&
+           found(ic),m(ic),sigma(ic),eps_depth_divk(ic),eps(ic),beta(ic),scheme(ic))
     end do
 
   end subroutine getPcSaftPureParams_allComps
 
-  subroutine getPcSaftpureParams_singleComp(compName,eosidx,param_ref,found,m,sigma,eps_depth_divk,eps,beta,scheme)
+  subroutine getPcSaftpureParams_singleComp(compName,eosidx,param_ref,&
+       found,m,sigma,eps_depth_divk,eps,beta,scheme)
     ! Input
     character(len=*), intent(in) :: compName, param_ref
     integer, intent(in) :: eosidx
@@ -151,8 +153,8 @@ contains
 
     idx = getPCdataIdx(eosidx,compName,param_ref)
     if ( idx == 0 ) then
-       found = .false.
-       return
+      found = .false.
+      return
     end if
 
     found = .true.

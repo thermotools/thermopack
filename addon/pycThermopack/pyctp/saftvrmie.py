@@ -9,11 +9,11 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from . import thermo, saft
 
 c_len_type = thermo.c_len_type
 
-class saftvrmie(thermo.thermopack):
+class saftvrmie(saft.saft):
     """
     Interface to SAFT-VR Mie
     """

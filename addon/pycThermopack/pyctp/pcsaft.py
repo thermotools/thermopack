@@ -9,17 +9,17 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from . import thermo, saft
 
 c_len_type = thermo.c_len_type
 
-class pcsaft(thermo.thermopack):
+class pcsaft(saft.saft):
     """
-    Interface to cubic
+    Interface to PC-SAFT model
     """
     def __init__(self):
         """
-        Initialize cubic specific function pointers
+        Initialize PC-SAFT specific function pointers
         """
         # Load dll/so
         super(pcsaft, self).__init__()
@@ -29,6 +29,9 @@ class pcsaft(thermo.thermopack):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_kij_asym"))
+        # SAFT specific methods
+        self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
+        self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
 
     #################################
     # Init
@@ -106,3 +109,51 @@ class pcsaft(thermo.thermopack):
         self.s_set_kij(byref(c1_c),
                        byref(c2_c),
                        byref(kij_c))
+
+
+    def set_pure_params(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0):
+        """Set pure fluid PC-SAFT parameters
+
+        Args:
+            c (int): Component index (FORTRAN)
+            m (float): Mean number of segments
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+            eps (float): Association energy (J/mol)
+            beta (float): Association volume (-)
+        """
+        self.activate()
+        c_c = c_int(c)
+        param_c = (c_double * 5)(m, sigma, eps_div_kb, eps, beta)
+        self.s_set_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_set_pure_params.restype = None
+
+        self.s_set_pure_params(byref(c_c),
+                               param_c)
+
+    def get_pure_params(self, c):
+        """Get pure fluid PC-SAFT parameters
+
+        Args:
+            c (int): Component index (FORTRAN)
+        Returns:
+            m (float): Mean number of segments
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+            eps (float): Association energy (J/mol)
+            beta (float): Association volume (-)
+        """
+        self.activate()
+        c_c = c_int(c)
+        param_c = (c_double * 5)(0.0)
+        self.s_get_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_get_pure_params.restype = None
+
+        self.s_get_pure_params(byref(c_c),
+                               param_c)
+        m, sigma, eps_div_kb, eps, beta = param_c
+        return m, sigma, eps_div_kb, eps, beta

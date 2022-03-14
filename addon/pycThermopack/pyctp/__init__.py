@@ -7,6 +7,7 @@ from . import tcPR
 from . import quantum_cubic
 from . import cpa
 from . import extended_csp
+from . import saft
 from . import pcsaft
 from . import saftvrmie
 from . import saftvrqmie
@@ -23,6 +24,7 @@ __all__ = ["map_platform_specifics",
            "tcPR",
            "quantum_cubic",
            "cpa",
+           "saft",
            "pcsaft",
            "extended_csp",
            "saftvrmie",
