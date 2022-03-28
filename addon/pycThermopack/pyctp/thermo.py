@@ -27,7 +27,7 @@ class thermopack(object):
         self.postfix_nm = pf_specifics["postfix_no_module"]
         dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
         self.tp = cdll.LoadLibrary(dyn_lib_path)
-
+        
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
         self.get_phase_flags()
@@ -439,7 +439,7 @@ class thermopack(object):
     def acentric_factor(self, i):
         '''
         Get acentric factor of component i
-        Args:
+        args: 
             i (int) component FORTRAN index
         returns:
             float: acentric factor
@@ -451,7 +451,7 @@ class thermopack(object):
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
-                                                POINTER( c_double )]
+                                                POINTER( c_double ),]
         self.s_eos_getCriticalParam.restype = None
 
         w = c_double(0.0)
@@ -466,8 +466,9 @@ class thermopack(object):
                                     byref(w),
                                     byref(vci),
                                     byref(tnbi))
-
-        return w.value
+        
+        return_tuple = (w.value, )
+        return return_tuple
 
 
     def get_phase_flags(self):
@@ -2086,6 +2087,21 @@ class thermopack(object):
 
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
+
+            LLE : Liquid-Liquid Equilibrium
+                LLE[0] : Liquid 1 composition (mole fraction of component 1)
+                LLE[1] : Liquid 2 composition (mole fraction of component 1)
+                LLE[2] : Pressure [Pa]
+            L1VE : Liquid 1 - Vapour Equilibrium
+                L1VE[0] : Bubble line composition (mole fraction of component 1)
+                L1VE[1] : Dew line composition (mole fraction of component 1)
+                L1VE[2] : Pressure [Pa]
+            L2VE : Liquid 2 - Vapour Equilibrium
+                L2VE[0] : Bubble line composition (mole fraction of component 1)
+                L2VE[1] : Dew line composition (mole fraction of component 1)
+                L2VE[2] : Pressure [Pa]
+            
+            If no equilibrium is found, tuple is (None, None, None)
         """
         # Redefinition of module parameter:
         self.activate()
