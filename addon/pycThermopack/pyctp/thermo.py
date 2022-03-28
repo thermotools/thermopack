@@ -12,6 +12,7 @@ if utils.gcc_major_version_greater_than(7):
 else:
     c_len_type = c_int
 
+c_len_type = c_size_t # I need this to work locally, just remember to delete before merge
 class thermopack(object):
     """
     Interface to thermopack
@@ -439,7 +440,7 @@ class thermopack(object):
     def acentric_factor(self, i):
         '''
         Get acentric factor of component i
-        args: 
+        Args:
             i (int) component FORTRAN index
         returns:
             float: acentric factor
@@ -451,7 +452,7 @@ class thermopack(object):
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
                                                 POINTER( c_double ),
-                                                POINTER( c_double ),]
+                                                POINTER( c_double )]
         self.s_eos_getCriticalParam.restype = None
 
         w = c_double(0.0)
@@ -466,9 +467,8 @@ class thermopack(object):
                                     byref(w),
                                     byref(vci),
                                     byref(tnbi))
-        
-        return_tuple = (w.value, )
-        return return_tuple
+
+        return w.value
 
 
     def get_phase_flags(self):
@@ -2088,20 +2088,20 @@ class thermopack(object):
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
 
-            LLE : Liquid-Liquid Equilibrium
+            LLE : Liquid 1 - Liquid 2 Equilibrium
                 LLE[0] : Liquid 1 composition (mole fraction of component 1)
                 LLE[1] : Liquid 2 composition (mole fraction of component 1)
                 LLE[2] : Pressure [Pa]
             L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] : Bubble line composition (mole fraction of component 1)
+                L1VE[0] : Bubble line composition (mole fraction of component 1) 
                 L1VE[1] : Dew line composition (mole fraction of component 1)
                 L1VE[2] : Pressure [Pa]
             L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] : Bubble line composition (mole fraction of component 1)
+                L2VE[0] : Bubble line composition (mole fraction of component 1) 
                 L2VE[1] : Dew line composition (mole fraction of component 1)
                 L2VE[2] : Pressure [Pa]
             
-            If no equilibrium is found, tuple is (None, None, None)
+            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
         # Redefinition of module parameter:
         self.activate()
