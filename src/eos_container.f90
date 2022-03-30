@@ -205,7 +205,7 @@ subroutine update_global_variables_form_active_thermo_model()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
        ncsym, numAssocSites, get_active_thermo_model, &
        thermo_model
-  use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
+  use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, svrm_opt
   implicit none
   type(thermo_model), pointer :: act_mod_ptr
   act_mod_ptr => get_active_thermo_model()
@@ -229,6 +229,7 @@ subroutine update_global_variables_form_active_thermo_model()
     select type (p_eos => act_mod_ptr%eos(1)%p_eos)
     class is (saftvrmie_eos)
       saftvrmie_param => p_eos%saftvrmie_param
+      svrm_opt => p_eos%svrm_opt
     end select
   endif
 end subroutine update_global_variables_form_active_thermo_model

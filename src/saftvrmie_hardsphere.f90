@@ -22,7 +22,7 @@ module saftvrmie_hardsphere
   use saftvrmie_containers, only: saftvrmie_dhs, saftvrmie_param,&
        mie_c_factor, get_DFeynHibbsPower,&
        saftvrmie_zeta, saftvrmie_dhs, &
-       saftvrmie_var_container, saftvrmie_zeta_hs
+       saftvrmie_var_container, saftvrmie_zeta_hs, svrm_opt
   use thermopack_constants, only: h_const,kB_const,N_AVOGADRO
   use numconstants, only: pi
   use thermopack_constants, only: verbose
@@ -145,15 +145,15 @@ Contains
     endif
 
     ! Compute the exact d_ij's according to BH-theory
-    storage_container_dhs=exact_binary_dhs  ! Store logical
-    exact_binary_dhs=.true.                 ! Reset logical
+    storage_container_dhs=svrm_opt%exact_binary_dhs  ! Store logical
+    svrm_opt%exact_binary_dhs=.true.                 ! Reset logical
 
     ! Calculate exact hard-sphere diameters
     call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
          s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
          dhs_exact%d_T,dhs_exact%d_TT)
 
-    exact_binary_dhs=storage_container_dhs  ! Reset logical
+    svrm_opt%exact_binary_dhs=storage_container_dhs  ! Reset logical
 
     ! Pre-calculate
     two_pi_div_V=2.0*pi/V
@@ -359,15 +359,15 @@ Contains
     endif
 
     ! Compute the exact d_ij's according to BH-theory
-    storage_container_dhs=exact_binary_dhs  ! Store logical
-    exact_binary_dhs=.true.                 ! Reset logical
+    storage_container_dhs=svrm_opt%exact_binary_dhs  ! Store logical
+    svrm_opt%exact_binary_dhs=.true.                 ! Reset logical
 
     ! Calculate exact hard-sphere diameters
     call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
          s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
          dhs_exact%d_T,dhs_exact%d_TT)
 
-    exact_binary_dhs=storage_container_dhs  ! Reset logical
+    svrm_opt%exact_binary_dhs=storage_container_dhs  ! Reset logical
 
     ! Compute the pair-correlation function and derivatives:
     call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
@@ -641,7 +641,7 @@ Contains
     do j = 1,nc
        do k = 1,nc
           !
-          if (.not. exact_binary_dhs .and. k/=j) then
+          if (.not. svrm_opt%exact_binary_dhs .and. k/=j) then
              cycle
           end if
 
@@ -730,7 +730,7 @@ Contains
        end do
     end do
 
-    if (.not. exact_binary_dhs) then
+    if (.not. svrm_opt%exact_binary_dhs) then
        ! Loop over all components and obtain the mixture values
        do i=1,nc
           do j=i+1,nc
@@ -861,7 +861,7 @@ Contains
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
 
-    if (quantum_correction_hs==0) then ! With no quantum corrections
+    if (svrm_opt%quantum_correction_hs==0) then ! With no quantum corrections
        sigma_eff=saftvrmie_param%sigma_ij
        sigma_eff_T=0.0
        sigma_eff_TT=0.0
@@ -869,7 +869,7 @@ Contains
     else
        do i=1,nc
           do j=i,nc
-             if ((.not. exact_crosspot_eff) .and. i/=j) then
+             if ((.not. svrm_opt%exact_crosspot_eff) .and. i/=j) then
                 cycle
              end if
 
@@ -940,7 +940,7 @@ Contains
              sigma_eff_TT(j,i) = sigma_eff_TT(i,j)
           end do
        end do
-       if (.not. exact_crosspot_eff) then
+       if (.not. svrm_opt%exact_crosspot_eff) then
           ! Use simplified combining rule for effective sigma
           do i=1,nc
              do j=i+1,nc
@@ -1004,7 +1004,7 @@ Contains
     U_divk=r_n-r_m
 
     ! Add the first order quantum correction
-    if (quantum_correction_hs>0) then
+    if (svrm_opt%quantum_correction_hs>0) then
 
        r_2=(en_div_r)**2
        product_q1=r_2*(Q1_n*r_n-Q1_m*r_m)
@@ -1013,7 +1013,7 @@ Contains
     end if
 
     ! Add the second order quantum correction
-    if (quantum_correction_hs>1) then
+    if (svrm_opt%quantum_correction_hs>1) then
 
        r_4=r_2**2
        product_q2=r_4*(Q2_n*r_n-Q2_m*r_m)
@@ -1075,7 +1075,7 @@ Contains
     dU_divk=dr_n-dr_m
 
     ! Add the first order quantum correction
-    if (quantum_correction_hs>0) then
+    if (svrm_opt%quantum_correction_hs>0) then
 
        r_2=(en_div_r)**2
        dr_2=-2.0*(en_div_r**3)
@@ -1089,7 +1089,7 @@ Contains
     end if
 
     ! Add the second order quantum correction
-    if (quantum_correction_hs>1) then
+    if (svrm_opt%quantum_correction_hs>1) then
 
        r_4=en_div_r**4
        dr_4=-4.0*((en_div_r)**5)
@@ -1184,7 +1184,7 @@ Contains
     endif
     ! Compute the quantum parameter D and derivatives to a
     ! suitable order decided by the quantum correction flag
-    if (quantum_correction_hs==0) then
+    if (svrm_opt%quantum_correction_hs==0) then
 
        D=0.0
        D_T=0.0
@@ -1193,7 +1193,8 @@ Contains
        D2_T=0.0
        D2_TT=0.0
 
-    elseif ((quantum_correction_hs==1) .or. (quantum_correction_hs==2)) then
+     elseif ((svrm_opt%quantum_correction_hs==1) .or. &
+          (svrm_opt%quantum_correction_hs==2)) then
        call get_DFeynHibbsPower(comp1,comp2,D,D_T,D_TT,s_vc,power_in=1)
        call get_DFeynHibbsPower(comp1,comp2,D2,D2_T,D2_TT,s_vc,power_in=2)
     else
@@ -1201,7 +1202,7 @@ Contains
     end if
 
     ! Add the first order quantum correction
-    if (quantum_correction_hs>0) then
+    if (svrm_opt%quantum_correction_hs>0) then
        en_r2 = en_r**2
        ! The modified interaction potential and derivatives
        product_q1=en_r2*(Q1_n*r_n-Q1_m*r_m)
@@ -1236,7 +1237,7 @@ Contains
     end if
 
     ! Add the second order quantum correction
-    if (quantum_correction_hs>1) then
+    if (svrm_opt%quantum_correction_hs>1) then
 
        en_r4 = en_r**4
 
@@ -1577,7 +1578,7 @@ Contains
        a_nn=0.0
     endif
 
-    select case(hardsphere_EoS)
+    select case(svrm_opt%hardsphere_EoS)
     case(HS_EOS_ORIGINAL)
        call calc_hardsphere_helmholtzenergy_original(nc,T,V,n,s_vc%dhs,&
             a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
@@ -1585,7 +1586,7 @@ Contains
        call calc_hardsphere_helmholtzenergy_santos(nc,T,V,n,s_vc,&
             a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
     case(HS_EOS_PURE_DIJ)
-       if (.not. exact_binary_dhs) then
+       if (.not. svrm_opt%exact_binary_dhs) then
           call stoperror("exact_binary_dhs must be true when using HS_EOS_PURE_DIJ")
        end if
        call calc_hardsphere_helmholtzenergy_pure(nc,T,V,n,s_vc,&
@@ -2403,14 +2404,14 @@ Contains
     Ux=(-n*s_n+m*s_m)*s_1
 
     ! Add the first order quantum correction
-    if (quantum_correction_hs>0) then
+    if (svrm_opt%quantum_correction_hs>0) then
        s_2=(s_1)**2
        U_q1_x=D*s_1*s_2*(-(n+2)*Q1_n*s_n+(m+2)*Q1_m*s_m)
        Ux=Ux+U_q1_x
     end if
 
     ! Add the second order quantum correction
-    if (quantum_correction_hs>1) then
+    if (svrm_opt%quantum_correction_hs>1) then
        s_4=s_2**2
        U_q2_x=D2*s_1*s_4*(-(n+4)*Q2_n*s_n+(m+4)*Q2_m*s_m)
        Ux=Ux+U_q2_x
@@ -2459,13 +2460,13 @@ Contains
     Ux=(n*(n+1.0)*s_n-m*(m+1.0)*s_m)*s_2
 
     ! Add the first order quantum correction
-    if (quantum_correction_hs>0) then
+    if (svrm_opt%quantum_correction_hs>0) then
        U_q1_x=D*s_2*s_2*((n+2)*(n+3)*Q1_n*s_n-(m+2)*(m+3)*Q1_m*s_m)
        Ux=Ux+U_q1_x
     end if
 
     ! Add the second order quantum correction
-    if (quantum_correction_hs>1) then
+    if (svrm_opt%quantum_correction_hs>1) then
        s_4=s_2**2
        U_q2_x=D2*s_2*s_4*((n+4)*(n+5)*Q2_n*s_n-(m+4)*(m+5)*Q2_m*s_m)
        Ux=Ux+U_q2_x
@@ -2499,7 +2500,7 @@ Contains
     integer :: i, j
     real :: z, z_T, z_TT
 
-    if (quantum_correction_hs==0) then ! With no quantum corrections
+    if (svrm_opt%quantum_correction_hs==0) then ! With no quantum corrections
        eps_divk_eff=saftvrmie_param%eps_divk_ij
        eps_divk_eff_T=0.0
        eps_divk_eff_TT=0.0
@@ -2507,7 +2508,7 @@ Contains
     else
        do i=1,nc
           do j=i,nc
-             if (.not. exact_crosspot_eff .and. i/=j) then
+             if (.not. svrm_opt%exact_crosspot_eff .and. i/=j) then
                 cycle
              end if
 
@@ -2567,7 +2568,7 @@ Contains
           end do
        end do
 
-       if (.not. exact_crosspot_eff) then
+       if (.not. svrm_opt%exact_crosspot_eff) then
           ! Use simplified combining rule for effective eps_divk. NOTE: this is
           ! probably a very bad simplified combining rule
           do i=1,nc
@@ -2684,9 +2685,9 @@ Contains
   subroutine calc_pure_ahs_div_nRT_eta(y,a,a_y,a_yy)
     real, intent(in) :: y
     real, intent(out) :: a,a_y,a_yy
-    if (pure_hs_EoS == PURE_HS_CSK) then
+    if (svrm_opt%pure_hs_EoS == PURE_HS_CSK) then
        call calc_ahs_div_nRT_CSK(y,a,a_y,a_yy)
-    else if (pure_hs_EoS == PURE_HS_CS) then
+    else if (svrm_opt%pure_hs_EoS == PURE_HS_CS) then
        call calc_ahs_div_nRT_CS(y,a,a_y,a_yy)
     else
        call stoperror("Wrong pure hard-sphere model")
@@ -2697,9 +2698,9 @@ Contains
   function calc_z_ahs_pure(y) result(Zp)
     real, intent(in) :: y
     real :: Zp
-    if (pure_hs_EoS == PURE_HS_CSK) then
+    if (svrm_opt%pure_hs_EoS == PURE_HS_CSK) then
        Zp = (1+y+y**2-2*y**3*(1+y)/3)/(1-y)**3
-    else if (pure_hs_EoS == PURE_HS_CS) then
+    else if (svrm_opt%pure_hs_EoS == PURE_HS_CS) then
        Zp = (1+y+y**2-y**3)/(1-y)**3
     else
        Zp = 0.0

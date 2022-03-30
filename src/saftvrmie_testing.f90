@@ -40,8 +40,8 @@ contains
     n(1)=2
 
     ! No quantum corrections
-    quantum_correction=0
-    quantum_correction_hs=0
+    svrm_opt%quantum_correction=0
+    svrm_opt%quantum_correction_hs=0
     eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
     saftvrmie_var => eos%saftvrmie_var
     call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,&
@@ -53,8 +53,8 @@ contains
     call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B)
 
     ! First order quantum corrections
-    quantum_correction=1
-    quantum_correction_hs=1
+    svrm_opt%quantum_correction=1
+    svrm_opt%quantum_correction_hs=1
     call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,"DEFAULT",mixing)
     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
     call test_a1_integration(nc,T,V,n,saftvrmie_var)
@@ -63,8 +63,8 @@ contains
     call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B1)
 
     ! Second order quantum corrections
-    quantum_correction=2
-    quantum_correction_hs=2
+    svrm_opt%quantum_correction=2
+    svrm_opt%quantum_correction_hs=2
     call init_saftvrmie_containers(nc,act_mod_ptr%comps,eos,"DEFAULT",mixing)
     call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
     call test_a1_integration(nc,T,V,n,saftvrmie_var)
@@ -123,7 +123,7 @@ contains
     b=100.0*saftvrmie_param%comp(1)%sigma
 
     Nr=100000
-    spec = quantum_correction
+    spec = svrm_opt%quantum_correction
     call trapz_integration(nc,T,V,n,testing_virial_B_term, a, b, Nr, Int_B, spec)
 
     Int_B=Int_B*prefactor
@@ -131,7 +131,7 @@ contains
        ! Print stuff
        print *, " ---- Testing of second virial coeff  ------- "
        print *, " -------------------------------------------- "
-       print *, " The quantum correction            : ", quantum_correction
+       print *, " The quantum correction            : ", svrm_opt%quantum_correction
        print *, " Integrated B                      : ", Int_B
        print *, " EOS B                             : ", BvirialEOS
        print *, " -------------------------------------------- "
@@ -165,7 +165,7 @@ contains
     Nr=10000
 
     ! Compute alpha
-    if (quantum_correction_hs == 0) then
+    if (svrm_opt%quantum_correction_hs == 0) then
        alpha = saftvrmie_param%alpha_ij(1,1)
     else
        call calcAlpha(nc,s_vc%sigma_eff,s_vc%eps_divk_eff,T,svrm_var,alph)
@@ -194,7 +194,7 @@ contains
     print *, " --------- Testing of alpha -------------- "
     print *, " -- s=sigma, s_eff=sigma_eff, Int=Integral -- "
     print *, " -------------------------------------------- "
-    print *, " The quantum correction            : ", quantum_correction
+    print *, " The quantum correction            : ", svrm_opt%quantum_correction
     print *, " True alpha (from s_eff to inf)    : ", Int_alpha_true*prefactor
     print *, " Our value of alpha                : ", alpha
     print *, " -------------------- "
@@ -273,7 +273,7 @@ contains
     print *, " --------- Testing of a2 terms -------------- "
     print *, " -- s=sigma, s_eff=sigma_eff, Int=Integral -- "
     print *, " -------------------------------------------- "
-    print *, " The quantum correction         : ", quantum_correction
+    print *, " The quantum correction         : ", svrm_opt%quantum_correction
     print *, " True a2 (from s_eff to inf)    : ", Int_a2_true*prefactor
     print *, " Our value of a2                : ", a2
     print *, " -------------------- "
@@ -344,7 +344,7 @@ contains
     call  calcA1(nc,T,V,n,saftvrmie_vc,a1)
     call  calcA1ij(nc,T,V,n,1,1,saftvrmie_vc,a1_Mie)
 
-    if (quantum_correction==0) then
+    if (svrm_opt%quantum_correction==0) then
        a1_Q1=0.0
     else
        call calcA1ijQuantumCorrection(nc,T,V,n,1,1,saftvrmie_vc,a1_Q1)
@@ -378,7 +378,7 @@ contains
     print *, " --------- Testing of a1 terms -------------- "
     print *, " -- s=sigma, s_eff=sigma_eff, Int=Integral -- "
     print *, " -------------------------------------------- "
-    print *, " The quantum correction         : ", quantum_correction
+    print *, " The quantum correction         : ", svrm_opt%quantum_correction
     print *, " True a1 (from s_eff to inf)    : ", a1_test
     print *, " Our value of a1                : ", a1
     print *, " -------------------- "
@@ -744,16 +744,16 @@ contains
          "DEFAULT",mixing)
     do i=1,nIter
        T = Tmin + (Tmax-Tmin)*real(i-1)/(nIter-1)
-       quantum_correction=0
-       quantum_correction_hs=0
+       svrm_opt%quantum_correction=0
+       svrm_opt%quantum_correction_hs=0
        call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
        call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B,.false.)
-       quantum_correction=1
-       quantum_correction_hs=1
+       svrm_opt%quantum_correction=1
+       svrm_opt%quantum_correction_hs=1
        call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
        call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B1,.false.)
-       quantum_correction=2
-       quantum_correction_hs=2
+       svrm_opt%quantum_correction=2
+       svrm_opt%quantum_correction_hs=2
        call preCalcSAFTVRMie(nc,T,V,n,2,saftvrmie_var)
        call calc_virial_B_by_integration(nc,T,saftvrmie_var,Int_B2,.false.)
        write(20,*) T, Int_B, Int_B1, Int_B2

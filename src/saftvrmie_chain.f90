@@ -8,7 +8,7 @@ module saftvrmie_chain
   use saftvrmie_containers, only: saftvrmie_zeta, saftvrmie_dhs, &
        saftvrmie_aij, saftvrmie_param, init_saftvrmie_containers, &
        saftvrmie_param_container, saftvrmie_var_container, allocate_saftvrmie_zeta, &
-       cleanup_saftvrmie_zeta
+       cleanup_saftvrmie_zeta, svrm_opt
   use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: pi, machine_prec
   use saftvrmie_dispersion, only: calcA1Sutherland, calcBTilde, &
@@ -415,7 +415,7 @@ contains
        difflevel = 0
     endif
     e = s_vc%zeta%zx
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call allocate_saftvrmie_zeta(nc,x0z)
        call calcXDifferentialsPureHSRef(nc,saftvrmie_param%sigma_ij(i,i),0.0,0.0,&
             s_vc%d_pure,x0z)
@@ -426,7 +426,7 @@ contains
     endif
     call rdf_at_contact_zeroth_order(e,x0_ii,g,g_ii_e,g_ii_x,g_ii_ee,g_ii_xx,g_ii_ex,&
          difflevel_in=difflevel)
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
             g,g_ii_e,g_ii_x,g_ii_ee,g_ii_xx,g_ii_ex,0.0,0.0,0.0,0.0,&
             g_T,g_V,g_n,g_TT,g_VV,g_TV,g_Tn,g_Vn,g_nn,&
@@ -552,7 +552,7 @@ contains
     real, dimension(nc) :: g12_n,g12_Tn,g12_Vn
     real, dimension(nc,nc) :: g12_nn
     integer :: i !< Component index
-    if (enable_A1) then
+    if (svrm_opt%enable_A1) then
        do i=1,nc
           if ( present(g_TT) .or. present(g_VV) .or. present(g_TV) .or. &
                present(g_Tn) .or. present(g_Vn) .or. present(g_nn)) then
@@ -640,7 +640,7 @@ contains
        difflevel = 0
     endif
 
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call allocate_saftvrmie_zeta(nc,x0z)
        call calcXDifferentialsPureHSRef(nc,saftvrmie_param%sigma_ij(i,i),0.0,0.0,s_vc%d_pure,x0z)
        x0_ii = x0z%zx
@@ -652,7 +652,7 @@ contains
     call calcG12_ex(x0_ii,e,saftvrmie_param%lambda_a_ij(i,i),&
          saftvrmie_param%lambda_r_ij(i,i),saftvrmie_param%eps_divk_ij(i,i),&
          saftvrmie_param%Cij(i,i),g,g_ii_e,g_ii_x,g_ii_ee,g_ii_xx,g_ii_ex)
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call convert_zeta_zeta_to_TVn(nc,x0z,s_vc%zeta,&
             g,g_ii_e,g_ii_x,g_ii_ee,g_ii_xx,g_ii_ex,0.0,0.0,0.0,0.0,&
             g_T,g_V,g_n,g_TT,g_VV,g_TV,g_Tn,g_Vn,g_nn,&
@@ -751,7 +751,7 @@ contains
 
     eps = saftvrmie_param%eps_divk_ij(i,i)
     K = -3.0/(2.0*eps*pi*N_AVOGADRO)
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call set_gx_to_Kax_v(nc,i,K,saftvrmie_vc%a1ij,g,g_T,g_V,g_n,g_TT,&
             g_VV,g_TV,g_Tn,g_Vn,g_nn)
        call allocate_saftvrmie_zeta(nc,pf)
@@ -795,7 +795,7 @@ contains
     real, dimension(nc) :: gam_n,gam_Tn,gam_Vn
     real, dimension(nc,nc) :: gam_nn
 
-    if (enable_A2) then
+    if (svrm_opt%enable_A2) then
        do i=1,nc
           if ( present(g_TT) .or. present(g_VV) .or. present(g_TV) .or. &
                present(g_Tn) .or. present(g_Vn) .or. present(g_nn)) then
@@ -928,7 +928,7 @@ contains
     s = saftvrmie_param%sigma_ij(i,i) !saftvrmie_vc%sigma_eff%d(i,i)
     s_T = 0.0 !saftvrmie_vc%sigma_eff%d_T(i,i)
     s_TT = 0.0 !saftvrmie_vc%sigma_eff%d_TT(i,i)
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call allocate_saftvrmie_zeta(nc,x0z)
        call calcXDifferentialsPureHSRef(nc,s,s_T,s_TT,saftvrmie_vc%d_pure,x0z)
        x0 = x0z%zx
@@ -941,7 +941,7 @@ contains
     call calcG22MCA(x0,eta,lambda_a,lambda_r,eps,C,&
          g2,g2_e,g2_x,g2_ee,g2_xx,g2_ex)
     g = g2
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call convert_zeta_zeta_to_TVn(nc,x0z,saftvrmie_vc%zeta,&
             g2,g2_e,g2_x,g2_ee,g2_xx,g2_ex,0.0,0.0,0.0,0.0,&
             g_T,g_V,g_n,g_TT,g_VV,g_TV,g_Tn,g_Vn,g_nn,&
@@ -1077,7 +1077,7 @@ contains
 
     eps = saftvrmie_param%eps_divk_ij(i,i)
     K = -3.0/(2.0*eps**2*pi*N_AVOGADRO)
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        call set_gx_to_Kax_v(nc,i,K,saftvrmie_vc%a2chij,g,g_T,g_V,g_n,g_TT,&
             g_VV,g_TV,g_Tn,g_Vn,g_nn)
        call allocate_saftvrmie_zeta(nc,pf)

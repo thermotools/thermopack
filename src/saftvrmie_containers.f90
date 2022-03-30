@@ -52,6 +52,7 @@ module saftvrmie_containers
     !> Parameters in the quantum correction, second order - repulsive
     real, allocatable, dimension(:,:) :: Quantum_const_2r_ij
   contains
+    procedure, public :: print => saftvrmie_param_container_print
     ! Assignment operator
     procedure, public :: assign_saftvrmie_param_container
     generic, public :: assignment(=) => assign_saftvrmie_param_container
@@ -200,12 +201,15 @@ module saftvrmie_containers
   end type saftvrmie_var_container
 
   type(saftvrmie_param_container), pointer :: saftvrmie_param => NULL()
+  type(saftvrmie_opt), pointer :: svrm_opt => NULL()
   type(saftvrmie_var_container) :: svrmie_var ! ONLY USED FOR TESTING
 
   type, extends(base_eos_param) :: saftvrmie_eos
     logical :: ovner_of_saftvrmie_param = .false. ! Perform deallocation on saftvrmie_param?
     type(saftvrmie_param_container), pointer :: saftvrmie_param => NULL()
     type(saftvrmie_var_container), pointer :: saftvrmie_var => NULL()
+    logical :: ovner_of_svrm_opt = .false.
+    type(saftvrmie_opt), pointer :: svrm_opt => NULL()
   contains
     procedure, public :: dealloc => saftvrmie_dealloc
     procedure, public :: allocate_and_init => saftvrmie_allocate_and_init
@@ -233,6 +237,7 @@ module saftvrmie_containers
   public :: cleanup_saftvrmie_param_container
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
+  public :: svrm_opt
 
 Contains
 
@@ -298,6 +303,7 @@ Contains
     ! Deallocate old memory
     call eos%allocate_and_init(nc,"SAFT-VR Mie")
     saftvrmie_param => eos%saftvrmie_param
+    svrm_opt => eos%svrm_opt
     call cleanup_saftvrmie_var_container(svrmie_var)
     call allocate_saftvrmie_var_container(nc,svrmie_var)
     ! Get interaction parameters
@@ -313,8 +319,8 @@ Contains
     do i = 1, nc-1
       if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
     end do
-    quantum_correction = fh_orders(1)
-    quantum_correction_hs = fh_orders(1)
+    svrm_opt%quantum_correction = fh_orders(1)
+    svrm_opt%quantum_correction_hs = fh_orders(1)
     ! Calculate mix parameters
     call calcBinaryMieParmeters(eos%saftvrmie_param,mixing)
     ! Add association.....
@@ -514,9 +520,9 @@ Contains
     ! locals
     real :: prefactor
 
-    if (quantum_correction_spec==0) then        ! Feynman-Hibbs
+    if (svrm_opt%quantum_correction_spec==0) then        ! Feynman-Hibbs
       prefactor=0.5
-    elseif (quantum_correction_spec==1) then    ! Jaen-Kahn
+    elseif (svrm_opt%quantum_correction_spec==1) then    ! Jaen-Kahn
       prefactor=9.0/10.0
     else
       call stoperror("saftvrmie_containers::calcBinary_Quantum_const_secondorder: "//&
@@ -594,7 +600,7 @@ Contains
     ! Output
     real :: eps_ij
     !
-    if (use_epsrule_Lafitte) then ! standard combining rule of SAFT-VR Mie
+    if (svrm_opt%use_epsrule_Lafitte) then ! standard combining rule of SAFT-VR Mie
       eps_ij = (1.0-kij)*sqrt(sigma_i**3*sigma_j**3)*sqrt(eps_i*eps_j)/sigma_ij**3
     else ! geometric mixing rule
       eps_ij = (1.0-kij)*sqrt(eps_i*eps_j)
@@ -1385,6 +1391,9 @@ Contains
     if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_param")
     eos%ovner_of_saftvrmie_param = .true.
     call allocate_saftvrmie_param_container(nc,eos%saftvrmie_param)
+    allocate(eos%svrm_opt,stat=stat)
+    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate eos%svrm_opt")
+    eos%ovner_of_svrm_opt = .true.
     allocate(eos%saftvrmie_var,stat=stat)
     if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to allocate saftvrmie_var")
     call allocate_saftvrmie_var_container(nc,eos%saftvrmie_var)
@@ -1402,6 +1411,13 @@ Contains
       deallocate(eos%saftvrmie_param,stat=stat)
       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate saftvrmie_param")
       eos%saftvrmie_param => NULL()
+    endif
+    if (eos%ovner_of_svrm_opt .and. &
+         associated(eos%svrm_opt)) then
+      eos%ovner_of_svrm_opt = .false.
+      deallocate(eos%svrm_opt,stat=stat)
+      if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate svrm_opt")
+      eos%svrm_opt => NULL()
     endif
     if (associated(eos%saftvrmie_var)) then
       call cleanup_saftvrmie_var_container(eos%saftvrmie_var)
@@ -1435,6 +1451,7 @@ Contains
       call allocate_saftvrmie_var_container(nc,this%saftvrmie_var)
       this%saftvrmie_param => other%saftvrmie_param
       this%saftvrmie_var = other%saftvrmie_var
+      this%svrm_opt => other%svrm_opt
     class default
     end select
 
@@ -1463,6 +1480,52 @@ Contains
     this%Quantum_const_2a_ij = other%Quantum_const_2a_ij
     this%Quantum_const_2r_ij = other%Quantum_const_2r_ij
   end subroutine assign_saftvrmie_param_container
+
+  subroutine saftvrmie_param_container_print(this)
+    class(saftvrmie_param_container), intent(in) :: this
+    !
+    integer :: i
+    do i=1,size(this%comp)
+      call print_comp(i)
+    enddo
+    print *,""
+    print *, "kij", this%kij
+    print *, "gamma_ij", this%gamma_ij
+    print *, "lij", this%lij
+    print *, "alpha_ij", this%alpha_ij
+    print *, "f_alpha_ij", this%f_alpha_ij
+    print *, "lambda_a_ij", this%lambda_a_ij
+    print *, "lambda_r_ij", this%lambda_r_ij
+    print *, "sigma_ij", this%sigma_ij
+    print *, "eps_divk_ij", this%eps_divk_ij
+    print *, "Cij", this%Cij
+    print *, "DFeynHibbsParam_ij", this%DFeynHibbsParam_ij
+    print *, "ms", this%ms
+    print *, "sigma_ij_cube", this%sigma_ij_cube
+    print *, "Quantum_const_1a_ij", this%Quantum_const_1a_ij
+    print *, "Quantum_const_1r_ij", this%Quantum_const_1r_ij
+    print *, "Quantum_const_2a_ij", this%Quantum_const_2a_ij
+    print *, "Quantum_const_2r_ij", this%Quantum_const_2r_ij
+  contains
+    subroutine print_comp(i)
+      integer, intent(in) :: i
+      print *, "Component ", i
+      print *, "compName: ", trim(this%comp(i)%compName)
+      print *, "eosidx:", this%comp(i)%eosidx
+      print *, "m:", this%comp(i)%m
+      print *, "sigma:", this%comp(i)%sigma
+      print *, "eps_depth_divk:", this%comp(i)%eps_depth_divk
+      print *, "lambda_a:", this%comp(i)%lambda_a
+      print *, "lambda_r:", this%comp(i)%lambda_r
+      print *, "mass:", this%comp(i)%mass
+      print *, "eps:", this%comp(i)%eps
+      print *, "beta:", this%comp(i)%beta
+      print *, "assoc_scheme:", this%comp(i)%assoc_scheme
+      print *, "fh_order:", this%comp(i)%fh_order
+      print *, "bib_ref: ", trim(this%comp(i)%bib_ref)
+      print *, "ref: ", trim(this%comp(i)%ref)
+    end subroutine print_comp
+  end subroutine saftvrmie_param_container_print
 
   subroutine assign_saftvrmie_var_container(this,other)
     class(saftvrmie_var_container), intent(inout) :: this

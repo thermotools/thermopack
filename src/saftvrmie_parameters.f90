@@ -140,6 +140,8 @@ contains
        endif
     end if
 
+    saftvrmie_comp%compname = Miearray(idx)%compname
+    saftvrmie_comp%eosidx = Miearray(idx)%eosidx
     saftvrmie_comp%m = Miearray(idx)%m
     saftvrmie_comp%sigma = Miearray(idx)%sigma
     saftvrmie_comp%eps_depth_divk = Miearray(idx)%eps_depth_divk
@@ -151,6 +153,9 @@ contains
     saftvrmie_comp%mass = Miearray(idx)%mass
     saftvrmie_comp%eps_depth_divk = Miearray(idx)%eps_depth_divk
     fh_order = Miearray(idx)%fh_order
+    saftvrmie_comp%fh_order = Miearray(idx)%fh_order
+    saftvrmie_comp%bib_ref = Miearray(idx)%bib_ref
+    saftvrmie_comp%ref = Miearray(idx)%ref
   end subroutine getSaftVrMiePureFluidParams
 
   !> Map SAFT-VR Mie paramaters to active components

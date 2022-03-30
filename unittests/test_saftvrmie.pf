@@ -277,6 +277,7 @@ contains
 
   @Test
   subroutine test_helmholtzterms_C2_NC10()
+    use saftvrmie_containers, only: svrm_opt
     !> Test the values for the terms in the equation; these values have been
     !> shown to be consistent an independent MATLAB implementation.
     character(len=20) :: compstr
@@ -319,13 +320,13 @@ contains
     svrm_var => get_saftvrmie_var()
 
     ! Set flags to make the eos correspond to Lafittes SAFT-VR Mie implementation
-    quantum_correction = 0
-    quantum_correction_hs = 0
-    quantum_correction_spec = 0
-    quantum_correct_A2 = .False.
-    use_epsrule_Lafitte = .True.
-    exact_binary_dhs=.False.
-    exact_crosspot_eff=.False.
+    svrm_opt%quantum_correction = 0
+    svrm_opt%quantum_correction_hs = 0
+    svrm_opt%quantum_correction_spec = 0
+    svrm_opt%quantum_correct_A2 = .False.
+    svrm_opt%use_epsrule_Lafitte = .True.
+    svrm_opt%exact_binary_dhs=.False.
+    svrm_opt%exact_crosspot_eff=.False.
 
     ! Set Lafitte integration of HS diameter
     hs_diam_quadrature = GAUSS_10
@@ -441,7 +442,7 @@ contains
     p = 1.0e6
     z = n/sum(n)
     do m=1,3
-      call saftvrmieaij_model_options(m)
+      call svrm_opt%saftvrmieaij_model_options(m)
       do ph=1,2
         call consistency(t,p,n,ph,gi,phiP,phiT,gd,phi,phisym,phinumP,phinumT,phinumX)
         @assertEqual(gi,0.0,tol1)

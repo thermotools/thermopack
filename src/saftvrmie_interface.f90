@@ -8,7 +8,7 @@ module saftvrmie_interface
   use saftvrmie_containers, only: saftvrmie_zeta, saftvrmie_dhs, &
        saftvrmie_aij, saftvrmie_param, init_saftvrmie_containers, &
        saftvrmie_param_container, saftvrmie_var_container, calc_DFeynHibbsij, &
-       saftvrmie_eos
+       saftvrmie_eos, svrm_opt
   use thermopack_constants, only: kB_const
   use saftvrmie_options
   implicit none
@@ -19,6 +19,11 @@ module saftvrmie_interface
   public :: calc_saftvrmie_zeta
   public :: deBoerParameter
   public :: calc_saftvrmie_term, calc_alpha_saftvrmie
+  public :: model_control_a1
+  public :: model_control_a2
+  public :: model_control_a3
+  public :: model_control_hs
+  public :: model_control_chain
 
 contains
 
@@ -101,7 +106,7 @@ contains
     type(saftvrmie_var_container), intent(inout) :: saftvrmie_vc
     !
     ! Check that the spceified model is consistent
-    call check_model_consitency()
+    call svrm_opt%check_model_consitency()
     !
     ! NB: the order of the function calls below is important
     !
@@ -129,7 +134,7 @@ contains
     !> Calculate packing fraction
     call calcZetaX(nc,T,V,n,difflevel,saftvrmie_vc%sigma_eff,saftvrmie_vc%zeta_bar, zetaxbar=.true.)
 
-    if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+    if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
        ! Calculate diameter for pure-fluid hard-sphere reference
        call calc_d_pure(nc,n,V,difflevel,saftvrmie_vc%dhs,saftvrmie_vc%d_pure)
     endif
@@ -188,37 +193,37 @@ contains
        ! Precalculate common variables
        call preCalcSAFTVRMie(nc,T,V,n,2,eos%saftvrmie_var)
        ! Calculate hard-sphere term
-       if (enable_hs) then
+       if (svrm_opt%enable_hs) then
           call calc_hardsphere_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
                Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n,&
                a_TT=Fhs_TT,a_VV=Fhs_VV,a_TV=Fhs_TV,a_Tn=Fhs_Tn,a_Vn=Fhs_Vn,a_nn=Fhs_nn)
        endif
        ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-       if (enable_hs_extra) then
+       if (svrm_opt%enable_hs_extra) then
           call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
                Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n,&
                a_TT=Fhse_TT,a_VV=Fhse_VV,a_TV=Fhse_TV,a_Tn=Fhse_Tn,a_Vn=Fhse_Vn,a_nn=Fhse_nn)
        endif
        ! Calculate first order monomer term
-       if (enable_A1) then
+       if (svrm_opt%enable_A1) then
           call calcA1(nc,T,V,n,eos%saftvrmie_var,&
                F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n,a1_TT=F1_TT,a1_VV=F1_VV,&
                a1_TV=F1_TV,a1_Tn=F1_Tn,a1_Vn=F1_Vn,a1_nn=F1_nn)
        endif
        ! Calculate second order monomer term
-       if (enable_A2) then
+       if (svrm_opt%enable_A2) then
           call calcA2(nc,T,V,n,eos%saftvrmie_var,&
                F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n,a2_TT=F2_TT,&
                a2_VV=F2_VV,a2_TV=F2_TV,a2_Tn=F2_Tn,a2_Vn=F2_Vn,a2_nn=F2_nn)
        end if
        ! Calculate third order monomer term
-       if (enable_A3) then
+       if (svrm_opt%enable_A3) then
           call calcA3(nc,T,V,n,eos%saftvrmie_var,&
                F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n,a3_TT=F3_TT,&
                a3_VV=F3_VV,a3_TV=F3_TV,a3_Tn=F3_Tn,a3_Vn=F3_Vn,a3_nn=F3_nn)
        endif
        ! Calculate chain term
-       if (enable_chain) then
+       if (svrm_opt%enable_chain) then
           call calcAchain(nc,T,V,n,eos%saftvrmie_var,&
                Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,ach_TT=Fc_TT,&
                ach_VV=Fc_VV,ach_TV=Fc_TV,ach_Tn=Fc_Tn,ach_Vn=Fc_Vn,ach_nn=Fc_nn,&
@@ -228,30 +233,30 @@ contains
        ! Precalculate common variables
        call preCalcSAFTVRMie(nc,T,V,n,1,eos%saftvrmie_var)
        ! Calculate hard-sphere term
-       if (enable_hs) then
+       if (svrm_opt%enable_hs) then
           call calc_hardsphere_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
                Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n)
        endif
        ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-       if (enable_hs_extra) then
+       if (svrm_opt%enable_hs_extra) then
           call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
                Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n)
        endif
        ! Calculate first order monomer term
-       if (enable_A1) then
+       if (svrm_opt%enable_A1) then
           call calcA1(nc,T,V,n,eos%saftvrmie_var,F1,a1_T=F1_T,a1_V=F1_V,a1_n=F1_n)
        endif
        ! Calculate second order monomer term
-       if (enable_A2) then
+       if (svrm_opt%enable_A2) then
           call calcA2(nc,T,V,n,eos%saftvrmie_var,F2,a2_T=F2_T,a2_V=F2_V,a2_n=F2_n)
        end if
        ! Calculate third order monomer term
-       if (enable_A3) then
+       if (svrm_opt%enable_A3) then
           call calcA3(nc,T,V,n,eos%saftvrmie_var,&
                F3,a3_T=F3_T,a3_V=F3_V,a3_n=F3_n)
        endif
        ! Calculate chain term
-       if (enable_chain) then
+       if (svrm_opt%enable_chain) then
           call calcAchain(nc,T,V,n,eos%saftvrmie_var,Fc,ach_T=Fc_T,ach_V=Fc_V,ach_n=Fc_n,&
                returnF=returnF)
        endif
@@ -259,33 +264,33 @@ contains
        ! Precalculate common variables
        call preCalcSAFTVRMie(nc,T,V,n,0,eos%saftvrmie_var)
        ! Calculate hard-sphere term
-       if (enable_hs) then
+       if (svrm_opt%enable_hs) then
           call calc_hardsphere_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,Fhs)
        endif
        ! Calculate extraterm to hard-sphere reference for non-additive mixtures
-       if (enable_hs_extra) then
+       if (svrm_opt%enable_hs_extra) then
           call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
                Fhse)
        endif
        ! Calculate first order monomer term
-       if (enable_A1) then
+       if (svrm_opt%enable_A1) then
           call calcA1(nc,T,V,n,eos%saftvrmie_var,F1)
        endif
-       if (enable_A2) then
+       if (svrm_opt%enable_A2) then
           ! Calculate second order monomer term
           call calcA2(nc,T,V,n,eos%saftvrmie_var,F2)
        end if
        ! Calculate third order monomer term
-       if (enable_A3) then
+       if (svrm_opt%enable_A3) then
           call calcA3(nc,T,V,n,eos%saftvrmie_var,F3)
        endif
        ! Calculate chain term
-       if (enable_chain) then
+       if (svrm_opt%enable_chain) then
           call calcAchain(nc,T,V,n,eos%saftvrmie_var,Fc,returnF=returnF)
        endif
     endif
 
-    if (.not. enable_hs) then
+    if (.not. svrm_opt%enable_hs) then
        Fhs = 0.0
        Fhs_T = 0.0
        Fhs_V = 0.0
@@ -298,7 +303,7 @@ contains
        Fhs_nn = 0.0
     endif
 
-    if (.not. enable_hs_extra) then
+    if (.not. svrm_opt%enable_hs_extra) then
        Fhse = 0.0
        Fhse_T = 0.0
        Fhse_V = 0.0
@@ -311,7 +316,7 @@ contains
        Fhse_nn = 0.0
     endif
 
-    if (.not. enable_A1) then
+    if (.not. svrm_opt%enable_A1) then
        F1 = 0.0
        F1_T = 0.0
        F1_V = 0.0
@@ -324,7 +329,7 @@ contains
        F1_nn = 0.0
     endif
 
-    if (.not. enable_A2) then
+    if (.not. svrm_opt%enable_A2) then
        F2 = 0.0
        F2_T = 0.0
        F2_V = 0.0
@@ -337,7 +342,7 @@ contains
        F2_nn = 0.0
     endif
 
-    if (.not. enable_A3) then
+    if (.not. svrm_opt%enable_A3) then
        F3 = 0.0
        F3_T = 0.0
        F3_V = 0.0
@@ -350,7 +355,7 @@ contains
        F3_nn = 0.0
     endif
 
-    if (.not. enable_chain) then
+    if (.not. svrm_opt%enable_chain) then
        Fc = 0.0
        Fc_T = 0.0
        Fc_V = 0.0
@@ -363,7 +368,7 @@ contains
        Fc_nn = 0.0
     endif
 
-    if (.not. enable_truncation_correction) then
+    if (.not. svrm_opt%enable_truncation_correction) then
        Ftc = 0.0
        Ftc_T = 0.0
        Ftc_V = 0.0
@@ -375,7 +380,7 @@ contains
        Ftc_Vn = 0.0
        Ftc_nn = 0.0
     else
-       call calc_delta_Ac(nc,T,V,n,r_cut,eos%saftvrmie_var,&
+       call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,eos%saftvrmie_var,&
             Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
             a_VV=Ftc_VV,a_TV=Ftc_TV,a_Tn=Ftc_Tn,a_Vn=Ftc_Vn,&
             a_nn=Ftc_nn)
@@ -512,7 +517,7 @@ contains
     ! Locals
     type(saftvrmie_var_container), pointer :: svrm_var
     svrm_var => get_saftvrmie_var()
-    if (quantum_correction_hs > 0) then
+    if (svrm_opt%quantum_correction_hs > 0) then
        ! NB: the order of the function calls below is important
        !
        ! Calculate Feynman--Hibbs D parameter
@@ -535,6 +540,61 @@ contains
        alpha = saftvrmie_param%alpha_ij
     endif
   end function calc_alpha_saftvrmie
+
+  !> Enable/disable a1 term
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine model_control_a1(enable)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: enable !< Enable/disable a1 term
+    !
+    svrm_opt%enable_a1 = enable
+  end subroutine model_control_a1
+
+  !> Enable/disable a2 term
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine model_control_a2(enable)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: enable !< Enable/disable a2 term
+    !
+    svrm_opt%enable_a2 = enable
+  end subroutine model_control_a2
+
+  !> Enable/disable a3 term
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine model_control_a3(enable)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: enable !< Enable/disable a3 term
+    !
+    svrm_opt%enable_a3 = enable
+  end subroutine model_control_a3
+
+  !> Enable/disable hs term
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine model_control_hs(enable)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: enable !< Enable/disable hs term
+    !
+    svrm_opt%enable_hs = enable
+  end subroutine model_control_hs
+
+  !> Enable/disable chain term
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine model_control_chain(enable)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: enable !< Enable/disable chain term
+    !
+    svrm_opt%enable_chain = enable
+  end subroutine model_control_chain
 
 end module saftvrmie_interface
 
@@ -1436,10 +1496,10 @@ subroutine test_A3()
   eps = 1.0e-8
   i = 1
   j = 1
-  quantum_correction = 2
-  quantum_correction_hs = 2
+  svrm_opt%quantum_correction = 2
+  svrm_opt%quantum_correction_hs = 2
 
-  a3_model = A3_SIJ_PREFAC
+  svrm_opt%a3_model = A3_SIJ_PREFAC
   !a3_model = A3_LAFITTE
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
 
@@ -1674,7 +1734,7 @@ subroutine test_g1(Ti,Vi,ni)
   print *,g_xx,(g2_x - g_x)/(eps)
   print *,g_ex,(g2_e - g_e)/(eps)
 
-  if (hardsphere_EoS == HS_EOS_PURE_DIJ) then
+  if (svrm_opt%hardsphere_EoS == HS_EOS_PURE_DIJ) then
      call allocate_saftvrmie_zeta(nc,pf)
      call allocate_saftvrmie_zeta(nc,pf2)
      call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
@@ -2036,9 +2096,9 @@ subroutine test_rdf_at_contact(Ti,Vi,ni,doInit,qc)
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
   if (present(qc)) then
-     quantum_correction=qc
+     svrm_opt%quantum_correction=qc
   else
-     quantum_correction=1
+     svrm_opt%quantum_correction=1
   endif
   if (present(doInit)) then
      doInit_L = doInit
@@ -2319,9 +2379,9 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   act_mod_ptr => get_active_thermo_model()
   return_F = .true.
   if (present(qc)) then
-     quantum_correction=qc
+     svrm_opt%quantum_correction=qc
   else
-     quantum_correction=1
+     svrm_opt%quantum_correction=1
   endif
   if (present(doInit)) then
      doInit_L = doInit
@@ -2530,9 +2590,9 @@ subroutine test_a1_quantum_corrections()
   act_mod_ptr => get_active_thermo_model()
   eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
 
-  quantum_correction = 2
-  quantum_correction_hs = 0
-  quantum_correction_spec = 0
+  svrm_opt%quantum_correction = 2
+  svrm_opt%quantum_correction_hs = 0
+  svrm_opt%quantum_correction_spec = 0
   call init_saftvrmie(nc,act_mod_ptr%comps,act_mod_ptr%eos(1)%p_eos,"DEFAULT",1)
   n = (/0.4,0.8/) ! He, Ne mixture
   n0 = n
@@ -2703,7 +2763,7 @@ subroutine test_IC
   eps = 1.0e-8
   i = 1
   j = 1
-  quantum_correction_hs = 2
+  svrm_opt%quantum_correction_hs = 2
   svrm_var => get_saftvrmie_var()
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
 
@@ -2882,7 +2942,8 @@ end subroutine test_IC
 
 subroutine test_hard_sphere_diameter
   use thermopack_constants
-  use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container
+  use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container, &
+       svrm_opt
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_options
   use thermopack_var
@@ -2896,7 +2957,7 @@ subroutine test_hard_sphere_diameter
   V = 1.0e-4
   T = 5.0
   eps = 1.0e-8
-  quantum_correction_hs = 2
+  svrm_opt%quantum_correction_hs = 2
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
   d = svrm_var%dhs%d
   d_T = svrm_var%dhs%d_T
@@ -2916,7 +2977,8 @@ end subroutine test_hard_sphere_diameter
 subroutine test_hard_sphere_Santos
   use thermopack_constants
   use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container, &
-       allocate_saftvrmie_zeta, cleanup_saftvrmie_zeta, saftvrmie_zeta
+       allocate_saftvrmie_zeta, cleanup_saftvrmie_zeta, saftvrmie_zeta, &
+       svrm_opt
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_hardsphere, only: calc_Santos_eta, calc_ahs_div_nRT_Santos_part, &
        calc_ahs_div_nRT_CSK, calc_ahs_div_nRT_CS, calc_F11_Santos, calc_pure_ahs_div_nRT, &
@@ -2984,7 +3046,7 @@ subroutine test_hard_sphere_Santos
   T = 5.0
   eps = 1.0e-6
   difflevel = 2
-  quantum_correction_hs = 2
+  svrm_opt%quantum_correction_hs = 2
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
   call calc_Santos_eta(nc,n,V,difflevel,svrm_var%dhs,svrm_var%eta_hs)
 
@@ -3413,7 +3475,7 @@ subroutine test_hardsphere_pure()
   use thermopack_constants
   use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_param, &
        allocate_saftvrmie_zeta, cleanup_saftvrmie_zeta, saftvrmie_zeta, &
-       saftvrmie_var_container
+       saftvrmie_var_container, svrm_opt
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_hardsphere, only: calc_eta_dij, calc_hardsphere_helmholtzenergy_pure, &
        calc_d_pure
@@ -3446,7 +3508,7 @@ subroutine test_hardsphere_pure()
   T = 5.0
   eps = 1.0e-6
   difflevel = 2
-  quantum_correction_hs = 2
+  svrm_opt%quantum_correction_hs = 2
   !hardsphere_EoS = HS_EOS_PURE_DIJ
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
   call calc_eta_dij(nc,n,V,difflevel,svrm_var%dhs,svrm_var%eta_hs)
@@ -3706,6 +3768,7 @@ subroutine test_zeta_zeta()
   use thermopack_constants
   use saftvrmie_options
   use thermopack_var
+  use saftvrmie_containers
   implicit none
   real :: n(nc),T,V,eps,n0(nc)
   real :: a, a_T,a_V,a_n(nc)
@@ -3721,8 +3784,8 @@ subroutine test_zeta_zeta()
   V = 1.0e-4
   T = 5.0
   eps = 1.0e-6
-  quantum_correction_hs = 2
-  hardsphere_EoS = HS_EOS_PURE_DIJ
+  svrm_opt%quantum_correction_hs = 2
+  svrm_opt%hardsphere_EoS = HS_EOS_PURE_DIJ
 
   call calc_a(nc,T,V,n,a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn,&
        a_VVV,a_VVT,a_VTT,a_VVn,a_Vnn,a_VTn)
@@ -3835,7 +3898,8 @@ subroutine test_pure_fluid()
   use saftvrmie_options
   use saftvrmie_interface, only: preCalcSAFTVRMie
   use saftvrmie_dispersion, only: calcA1, get_saftvrmie_var, saftvrmie_var_container
-  use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container
+  use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container, &
+       svrm_opt
   use thermopack_var
   implicit none
   real :: n(nc),T,V,eps,n0(nc)
@@ -3854,18 +3918,18 @@ subroutine test_pure_fluid()
   V = 1.0e-4
   T = 5.0
   eps = 1.0e-6
-  quantum_correction_hs = 2
-  quantum_correction = 2
+  svrm_opt%quantum_correction_hs = 2
+  svrm_opt%quantum_correction = 2
 
-  hardsphere_EoS = HS_EOS_ORIGINAL
-  zeta_mixing_rule = ZETA_LEONARD
-  exact_binary_dhs = .true.
+  svrm_opt%hardsphere_EoS = HS_EOS_ORIGINAL
+  svrm_opt%zeta_mixing_rule = ZETA_LEONARD
+  svrm_opt%exact_binary_dhs = .true.
   call preCalcSAFTVRMie(nc,T,V,n,3,svrm_var)
   call calcA1(nc,T,V,n,svrm_var,&
        a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn,&
        a_VVV,a_VVT,a_VTT,a_VVn,a_Vnn,a_VTn)
 
-  hardsphere_EoS = HS_EOS_PURE_DIJ
+  svrm_opt%hardsphere_EoS = HS_EOS_PURE_DIJ
   call preCalcSAFTVRMie(nc,T,V,n,3,svrm_var)
   call calcA1(nc,T,V,n,svrm_var,&
        a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn,&
@@ -3909,8 +3973,8 @@ subroutine test_zeta()
   V = 1.0e-4
   eps=1.0e-5
   T = 20.0
-  quantum_correction = 1
-  quantum_correction_hs = 1
+  svrm_opt%quantum_correction = 1
+  svrm_opt%quantum_correction_hs = 1
   call allocate_saftvrmie_zeta(nc,zeta2)
 
   call preCalcSAFTVRMie(nc,T,V,n,3,svrm_var)
@@ -4091,17 +4155,17 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
 
   eps = 1.0e-8
 
-  r_cut = 2.0
-  quantum_correction=2
-  quantum_correction_hs=0
-  enable_truncation_correction = .true.
-  enable_shift_correction = .true.
+  svrm_opt%r_cut = 2.0
+  svrm_opt%quantum_correction=2
+  svrm_opt%quantum_correction_hs=0
+  svrm_opt%enable_truncation_correction = .true.
+  svrm_opt%enable_shift_correction = .true.
 
   svrm_var => get_saftvrmie_var()
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
-  call calc_delta_Ac(nc,T,V,n,r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,&
        F,F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn)
-  call calc_delta_Ac(nc,T,V+V*eps,n,r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V+V*eps,n,svrm_opt%r_cut,svrm_var,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
 
   print *,"Testing the residual reduced Helmholtz energy"
@@ -4114,7 +4178,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   !stop
   print *,"n1"
   n(1) = n(1) + eps
-  call calc_delta_Ac(nc,T,V,n,r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
   print *,F_n(1),(Fp - F)/eps
   print *,F_Tn(1),(Fp_T - F_T)/eps
@@ -4124,7 +4188,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   print *,"T"
   n = n0
   call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,svrm_var)
-  call calc_delta_Ac(nc,T+T*eps,V,n,r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T+T*eps,V,n,svrm_opt%r_cut,svrm_var,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
 
   print *,F_T,(Fp - F)/(T*eps)
@@ -4153,7 +4217,7 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   class(saftvrmie_eos), pointer :: eos
   act_mod_ptr => get_active_thermo_model()
   eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
-  quantum_correction=0
+  svrm_opt%quantum_correction=0
   if (present(doInit)) then
      call_init = doInit
   else
@@ -4186,13 +4250,13 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   !print *,"p  ", p
   !print *,"z  ", p*v/sum(n)/Rgas/T
   print *
-  enable_hs = .true.
-  enable_A1 = .true.
-  enable_A3 = .true.
-  enable_A2 = .true.
-  enable_chain = .true.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .true.
+  svrm_opt%enable_A1 = .true.
+  svrm_opt%enable_A3 = .true.
+  svrm_opt%enable_A2 = .true.
+  svrm_opt%enable_chain = .true.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   call calcFresSAFTVRMie(eos,nc,T,V,n,F=F,F_n=F_n)
   !print *,"F,-p*v/Rgas/T+sum(F_n*n) + sum(n)",F,-p*v/Rgas/T+sum(F_n*n) + sum(n)
@@ -4200,58 +4264,58 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   print *,"Entire model:"
   call print_fres(T,V,n)
 
-  enable_hs = .true.
-  enable_A1 = .false.
-  enable_A3 = .false.
-  enable_A2 = .false.
-  enable_chain = .false.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .true.
+  svrm_opt%enable_A1 = .false.
+  svrm_opt%enable_A3 = .false.
+  svrm_opt%enable_A2 = .false.
+  svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   print *,"HS term:"
   call print_fres(T,V,n)
 
-  enable_hs = .false.
-  enable_A1 = .true.
-  enable_A3 = .false.
-  enable_A2 = .false.
-  enable_chain = .false.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .false.
+  svrm_opt%enable_A1 = .true.
+  svrm_opt%enable_A3 = .false.
+  svrm_opt%enable_A2 = .false.
+  svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   print *,"A1 term:"
   call print_fres(T,V,n)
 
-  enable_hs = .false.
-  enable_A1 = .false.
-  enable_A3 = .false.
-  enable_A2 = .true.
-  enable_chain = .false.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .false.
+  svrm_opt%enable_A1 = .false.
+  svrm_opt%enable_A3 = .false.
+  svrm_opt%enable_A2 = .true.
+  svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   print *,"A2 term:"
   call print_fres(T,V,n)
   call print_a2chi(T,V,n)
 
-  enable_hs = .false.
-  enable_A1 = .false.
-  enable_A3 = .true.
-  enable_A2 = .false.
-  enable_chain = .false.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .false.
+  svrm_opt%enable_A1 = .false.
+  svrm_opt%enable_A3 = .true.
+  svrm_opt%enable_A2 = .false.
+  svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   print *,"A3 term:"
   call print_fres(T,V,n)
 
-  enable_hs = .false.
-  enable_A1 = .false.
-  enable_A3 = .false.
-  enable_A2 = .false.
-  enable_chain = .true.
-  enable_truncation_correction = .false.
-  enable_hs_extra = .false.
+  svrm_opt%enable_hs = .false.
+  svrm_opt%enable_A1 = .false.
+  svrm_opt%enable_A3 = .false.
+  svrm_opt%enable_A2 = .false.
+  svrm_opt%enable_chain = .true.
+  svrm_opt%enable_truncation_correction = .false.
+  svrm_opt%enable_hs_extra = .false.
 
   print *,"Chain term:"
   call print_fres(T,V,n)

@@ -354,7 +354,6 @@ contains
     character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     !
     character(len=200) :: parameter_reference
-    type(thermo_model), pointer      :: act_mod_ptr
     parameter_reference = "tcPR"
     if (present(parameter_ref)) then
       parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
@@ -838,6 +837,7 @@ contains
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
     use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
+    use saftvrmie_containers, only: svrm_opt
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -850,10 +850,12 @@ contains
       FH = 1 ! Default to FH1
     endif
     FH_model = FH + 1
-    call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
     if (present(parameter_reference)) then
       param_ref = parameter_reference
     else
+      param_ref = "DEFAULT"
+    endif
+    if (str_eq(param_ref, "DEFAULT")) then
       ! Default parameter sets
       select case(FH)
       case(0) ! FH0
@@ -865,6 +867,7 @@ contains
       end select
     endif
     call init_saftvrmie(comps,param_ref)
+    call svrm_opt%saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------

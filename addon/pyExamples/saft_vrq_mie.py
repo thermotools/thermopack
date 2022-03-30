@@ -1,14 +1,10 @@
-#!/usr/bin/python
-# Support for python2
-from __future__ import print_function
-#Modify system path
+#!/usr/bin/python3
+import matplotlib.pyplot as plt
+import numpy as np
 import sys
 sys.path.append('../pycThermopack/')
-# Importing pyThermopack
 from pyctp import saftvrqmie
-# Importing Numpy (math, arrays, etc...)
 import numpy as np
-# Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init SAFT-VRQ Mie object
@@ -18,7 +14,7 @@ qSAFT.set_tmin(temp=2.0)
 
 # Plot phase envelope
 z = np.array([0.01, 0.89, 0.1])
-T, P, v = qSAFT.get_envelope_twophase(1.0e4, z, maximum_pressure=1.5e7, calc_v=True)
+T, P, v = qSAFT.get_envelope_twophase(5.0e4, z, maximum_pressure=2.0e6, calc_v=True)
 Tc, vc, Pc = qSAFT.critical(z)
 plt.plot(T, P*1.0e-6)
 plt.plot([Tc], [Pc*1.0e-6], "ko")

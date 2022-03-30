@@ -177,16 +177,16 @@ append_export("set_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 
+append_export("model_control_hs", "saftvrmie_interface")
+append_export("model_control_a1", "saftvrmie_interface")
+append_export("model_control_a2", "saftvrmie_interface")
+append_export("model_control_a3", "saftvrmie_interface")
+append_export("model_control_chain", "saftvrmie_interface")
+
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
-
-append_export("enable_hs", "saftvrmie_options")
-append_export("enable_a1", "saftvrmie_options")
-append_export("enable_a2", "saftvrmie_options")
-append_export("enable_a3", "saftvrmie_options")
-append_export("enable_chain", "saftvrmie_options")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
