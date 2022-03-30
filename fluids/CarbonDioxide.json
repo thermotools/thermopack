@@ -188,5 +188,19 @@
     "assoc_scheme": "3B",
     "bib_reference": "Smith (2017) MSc thesis, Doi: 10019.1/101071",
     "ref": "Smith2017"
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.500,
+    "sigma": 3.1916E-10,
+    "eps_depth_divk": 231.8800,
+    "lambda_a": 5.1646,
+    "lambda_r": 27.5570,
+    "mass": 0.0000E+00,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Lafitte et al. 2013, doi: 10.1063/1.4819786",
+    "ref": "DEFAULT"
   }
 }

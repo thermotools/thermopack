@@ -1,0 +1,218 @@
+{
+  "KIJ-1": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "Ne",
+    "ref": "DEFAULT",
+    "bib_reference": "",
+    "kij": 0.0425
+  },
+  "KIJ-2": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "C2",
+    "uid2": "NC10",
+    "ref": "DEFAULT",
+    "bib_reference": "",
+    "kij": -0.0222
+  },
+  "KIJ-3": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2S",
+    "uid2": "C2",
+    "ref": "DEFAULT",
+    "bib_reference": "",
+    "kij": 0.072
+  },
+  "KIJ-4": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": -0.22
+  },
+  "KIJ-5": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.105
+  },
+  "KIJ-6": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "H2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.08
+  },
+  "KIJ-7": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "D2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.13
+  },
+  "KIJ-8": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.0
+  },
+  "KIJ-9": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.0
+  },
+  "KIJ-10": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": -0.06
+  },
+  "KIJ-11": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.105
+  },
+  "KIJ-12": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "H2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.15
+  },
+  "KIJ-13": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "D2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.14
+  },
+  "KIJ-14": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": -0.04
+  },
+  "KIJ-15": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "kij": 0.12
+  },
+  "LIJ-1": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-2": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-3": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "H2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": -0.05
+  },
+  "LIJ-4": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "D2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-5": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-6": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH1",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": -0.05
+  },
+  "LIJ-7": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-8": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-9": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "H2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": -0.025
+  },
+  "LIJ-10": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "D2",
+    "uid2": "Ne",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-11": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": 0.0
+  },
+  "LIJ-12": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "He",
+    "uid2": "D2",
+    "ref": "AASEN2019-FH2",
+    "bib_reference": "10.1063/1.5136079",
+    "lij": -0.05
+  }
+}

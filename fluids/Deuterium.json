@@ -129,5 +129,75 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.1538E-10,
+    "eps_depth_divk": 21.2000,
+    "lambda_a": 6.0000,
+    "lambda_r": 8.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
+    "ref": "DEFAULT/AASEN2019-FH0"
+  },
+  "SAFTVRMIE-2": {
+    "m": 1.000,
+    "sigma": 3.0203E-10,
+    "eps_depth_divk": 30.2730,
+    "lambda_a": 6.0000,
+    "lambda_r": 10.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 1,
+    "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
+    "ref": "AASEN2019-FH1"
+  },
+  "SAFTVRMIE-3": {
+    "m": 1.000,
+    "sigma": 2.9897E-10,
+    "eps_depth_divk": 36.9130,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 2,
+    "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
+    "ref": "AASEN2019-FH2/AASEN2019-FH2-LJ"
+  },
+  "SAFTVRMIE-4": {
+    "m": 1.000,
+    "sigma": 3.1561E-10,
+    "eps_depth_divk": 28.2220,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
+    "ref": "AASEN2019-FH0-LJ"
+  },
+  "SAFTVRMIE-5": {
+    "m": 1.000,
+    "sigma": 3.0193E-10,
+    "eps_depth_divk": 34.3890,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 1,
+    "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
+    "ref": "AASEN2019-FH1-LJ"
   }
 }

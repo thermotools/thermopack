@@ -6,9 +6,8 @@ import os
 import math
 import json
 from datetime import datetime
-
-I = "  "
-N_TAGS_PER_LINE = 5
+from data_utils import I, N_TAGS_PER_LINE, \
+    sci_print_float, print_float
 
 class binaries(object):
     """Read binary data form file, manipulate, save and generate
@@ -21,7 +20,9 @@ class binaries(object):
         filename - path to file
         """
         self.eos = os.path.basename(filepath).split("_")[0]
-        if "kij" in os.path.basename(filepath) or "lij" in os.path.basename(filepath):
+        if "SAFTVRMIE" in os.path.basename(filepath):
+            self.mixing = "SAFTVRMIE"
+        elif "kij" in os.path.basename(filepath) or "lij" in os.path.basename(filepath):
             self.mixing = "vdW"
         else:
             self.mixing = "GE"
@@ -118,27 +119,29 @@ class binaries(object):
         code_lines_vdW = []
         code_lines_GE = []
         code_lines_lij = []
-        for key in self.bins:
-            if "vdW" in key or "LK" in key:
-                cl = self.get_vdW_fortran_code(key)
-                for line in cl:
-                    code_lines_vdW.append(line)
-            elif "LIJ" in key:
-                cl = self.get_lij_fortran_code(key)
-                for line in cl:
-                    code_lines_lij.append(line)
-            else:
-                cl = self.get_GE_fortran_code(key)
-                for line in cl:
-                    code_lines_GE.append(line)
+        if self.mixing != "SAFTVRMIE":
+            for key in self.bins:
+                if "vdW" in key or "LK" in key:
+                    cl = self.get_vdW_fortran_code(key)
+                    for line in cl:
+                        code_lines_vdW.append(line)
+                elif "LIJ" in key:
+                    cl = self.get_lij_fortran_code(key)
+                    for line in cl:
+                        code_lines_lij.append(line)
+                else:
+                    cl = self.get_GE_fortran_code(key)
+                    for line in cl:
+                        code_lines_GE.append(line)
         return code_lines_vdW, code_lines_GE, code_lines_lij
+
 
 class binary_list(object):
     """Read binary data files into list save and generate
     component data file for Thermopack
     """
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, binclass=binaries):
         """Load files from data-base
         Arguments:
         filename - path to folder
@@ -147,19 +150,19 @@ class binary_list(object):
         self.nVDW = None
         self.nGE = None
         if path is None:
-            path = "../../binaries/"
+            path = "../../../binaries/"
         file_list = os.listdir(path)
         file_list.sort()
         self.bin_list = []
         for fl in file_list:
             filepath = os.path.join(path, fl)
             print(fl)
-            self.bin_list.append(binaries(filepath))
+            self.bin_list.append(binclass(filepath))
 
     def save_fortran_file(self,filename):
         """Generate fortran file for Thermopack
         Arguments:
-        filename - path to folder
+        filename - filename for interaction parameters
         """
         header = []
         header.append("!> Automatically generated to file mixdatadb.f90")
@@ -179,6 +182,7 @@ class binary_list(object):
         code_lines_vdW = []
         code_lines_GE = []
         code_lines_lij = []
+        code_lines_saftvrmie = []
         for bins in self.bin_list:
             #print(bins.filepath)
             bin_code_lines_vdW, bin_code_lines_GE, bin_code_lines_lij = bins.get_fortran_code()

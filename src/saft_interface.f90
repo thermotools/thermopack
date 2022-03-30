@@ -26,7 +26,8 @@
 module saft_interface
   use thermopack_constants, only: verbose
   use compdata, only: gendata
-  use saft_globals, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE
+  use eosdata, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
+       eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
@@ -57,6 +58,7 @@ contains
     use pc_saft_nonassoc, only: PCSAFT_eos
     use saftvrmie_interface, only: init_saftvrmie
     use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_bh_eos, init_ljs_bh, ljs_wca_eos, init_ljs_wca
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
     use pets, only: PETS_eos, getPetsPureParams
     integer, intent(in)           :: nc          !< Number of components.
@@ -147,6 +149,10 @@ contains
            eps_depth_divk_db,kij_PCSAFT)
     class is ( saftvrmie_eos )
       call init_saftvrmie(nc,comp,p_eos,param_ref)
+    class is ( ljs_bh_eos )
+      call init_ljs_bh(nc,comp,p_eos,param_ref)
+    class is ( ljs_wca_eos )
+      call init_ljs_wca(nc,comp,p_eos,param_ref)
     class is ( PETS_eos )
       call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
     class default
@@ -448,6 +454,8 @@ contains
     use pets, only: F_PeTS_TVn, PETS_eos
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
+         ljs_wca_eos, calcFres_WCA
     ! Input.
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
@@ -466,6 +474,18 @@ contains
       !      F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     class is ( PCSAFT_eos )
       call F_PC_SAFT_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class is (ljs_bh_eos)
+      call calcFresLJs_bh(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
+    class is (ljs_wca_eos)
+      call calcFres_WCA(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
     class is (saftvrmie_eos)
       call calcFresSAFTVRMie(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
            F_VV,F_TV,F_Tn,F_Vn,F_nn)
@@ -1035,6 +1055,8 @@ contains
     use numconstants, only: PI
     use saftvrmie_interface, only: calc_saftvrmie_zeta
     use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_bh_eos, calc_ljs_bh_zeta, &
+         ljs_wca_eos, calc_ljx_wca_zeta
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
@@ -1053,6 +1075,10 @@ contains
         prod_sum = prod_sum + n(i)*p_eos%m(i)*diam(i)**3
       end do
       conv_num = N_AVOGADRO*(PI/6)*prod_sum/sum(n)
+    class is(ljs_bh_eos)
+      conv_num = calc_ljs_bh_zeta(p_eos,nc,T,1.0,n)
+    class is(ljs_wca_eos)
+      conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(saftvrmie_eos)
       conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
     class is ( PETS_eos )
@@ -1095,25 +1121,30 @@ contains
 
     ! Compute conversion numerator and initialize the reduced density zeta.
     if (eos%assoc%saft_model == eosPC_SAFT .or. &
-         eos%assoc%saft_model == eosSAFT_VR_MIE) then
-       conv_num = conversion_numerator(eos,nc,T,n)
-       if (phase .eq. VAPPH) then
-          zeta = 1e-10
-       else
-          zeta = 0.5
-       end if
+         eos%assoc%saft_model == eosSAFT_VR_MIE .or. &
+         eos%assoc%saft_model == eosLJS_BH .or. &
+         eos%assoc%saft_model == eosLJS_WCA .or. &
+         eos%assoc%saft_model == eosLJS_UF .or. &
+         eos%assoc%saft_model == eosLJS_UV .or. &
+         eos%assoc%saft_model == eosLJ_UF) then
+      conv_num = conversion_numerator(eos,nc,T,n)
+      if (phase .eq. VAPPH) then
+        zeta = 1e-10
+      else
+        zeta = 0.5
+      end if
 
-       zetaMin = 1e-10
-       zetaMax = 0.75
+      zetaMin = 1e-10
+      zetaMax = 0.75
     else
-       b_mix = get_bmix(nc, eos, n)
-       conv_num = b_mix*sumn
+      b_mix = get_bmix(nc, eos, n)
+      conv_num = b_mix*sumn
 
-       if (phase .eq. VAPPH) then
-          zeta = b_mix/(b_mix+Rgas*T/P_spec)
-       else
-          zeta = 0.99
-       end if
+      if (phase .eq. VAPPH) then
+        zeta = b_mix/(b_mix+Rgas*T/P_spec)
+      else
+        zeta = 0.99
+      end if
 
       zetaMin = 0.0
       zetaMax = 1.0
@@ -1257,6 +1288,8 @@ contains
     use pets, only: F_PETS_TVn, PETS_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_interface, only: calcFresSAFTVRMie
+    use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
+         ljs_wca_eos, calcFres_WCA
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T, V
@@ -1266,38 +1299,38 @@ contains
     real, optional, intent(out) :: dPdV, dPdT, dPdn(nc)
     real :: sumn
     real :: F_V, F
+    logical :: correct_fres
     sumn = sum(n)
+    correct_fres = .true.
 
     select type ( p_eos => eos )
     class is ( PCSAFT_eos )
       call F_PC_SAFT_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-      P = -Rgas*T*F_V + sumn*Rgas*T/V
-      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
     class is ( saftvrmie_eos )
       call calcFresSAFTVRMie(p_eos, nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-      P = -Rgas*T*F_V + sumn*Rgas*T/V
-      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    class is ( ljs_bh_eos )
+      call calcFresLJs_bh(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+    class is(ljs_wca_eos)
+      call calcFres_WCA(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
     class is ( PETS_eos )
       call F_PETS_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-      P = -Rgas*T*F_V + sumn*Rgas*T/V
-      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
-      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
-      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
    class is ( cb_eos )
       ! This routine takes in the volume in L/mole.
       call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
            dPdv,dPdT,dpdz=dPdn)
-
+      correct_fres = .false.
       ! Convert to volume derivative from (specific volume)-derivative.
       if (present(dPdV)) dPdV = 1000*dPdv/sumn
     class default
       call stoperror("nonassoc_pressure: Not able to call cbCalcPressure. Not cubic eos.")
     end select
 
+    if (correct_fres) then
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumn*Rgas*T/V**2
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+      if (present(dPdn)) dPdn = -Rgas*T*dPdn + Rgas*T/V
+    endif
   end subroutine nonassoc_pressure
 
 
@@ -1658,7 +1691,6 @@ contains
 
   end subroutine pc_saft_get_pure_params
 
-
   subroutine pets_set_pure_params(ic,params)
     use pets, only: PETS_eos
     integer, intent(in) :: ic
@@ -1686,7 +1718,6 @@ contains
       params(2) = p_eos%epsdivk_pets
     end select
   end subroutine pets_get_pure_params
-
 
   ! Returns eps=-1.0, beta=-1.0 if component ic is not self-associating.
   subroutine getActiveAssocParams(assoc, ic, eps, beta)

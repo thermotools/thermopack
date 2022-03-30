@@ -1595,7 +1595,7 @@ contains
   !> \author MH, 2014
   !-------------------------------------------------------------------------
   subroutine fun_Tv_single(f,var,param)
-    use eosTV, only: internal_energy
+    use eosTV, only: internal_energy_tv
     implicit none
     real, dimension(1), intent(out) :: f !< Function values
     real, dimension(1), intent(in) :: var !< Variable vector
@@ -1609,7 +1609,7 @@ contains
     vspec = param(2)
     Z(1:nc) = param(3:nc+2)
 
-    call internal_energy(t,vspec,Z,u)
+    call internal_energy_tv(t,vspec,Z,u)
 
     f(1)= (u-uspec)/max(1.0,abs(uspec))
   end subroutine fun_Tv_single
@@ -1620,7 +1620,7 @@ contains
   !> \author MH, 2014
   !-------------------------------------------------------------------------
   subroutine jac_Tv_single(Jac,var,param)
-    use eosTV, only: internal_energy
+    use eosTV, only: internal_energy_tv
     implicit none
     real, dimension(1), intent(in) :: var !< Variable vector
     real, dimension(nc+2), intent(inout) :: param !< Parameter vector
@@ -1633,7 +1633,7 @@ contains
     uspec = param(1)
     vspec = param(2)
     Z(1:nc) = param(3:nc+2)
-    call internal_energy(t,vspec,Z,u,dudt)
+    call internal_energy_tv(t,vspec,Z,u,dudt)
     !
     !f(1)=  (u-uspec)/max(1.0,abs(uspec))
     !

@@ -1,6 +1,6 @@
 module test_eosTV
   use eoslibinit, only: init_thermo, init_cubic, silent_init
-  use eosTV, only: internal_energy, free_energy, pressure
+  use eosTV, only: internal_energy_tv, free_energy_tv, pressure
   use pfunit_mod
   implicit none
   public
@@ -41,8 +41,8 @@ contains
         v = vmin+j*(vmax-vmin)/n  ! m3/mol
 
         p = pressure(t, v, x, dpdv=dpdv, dpdt=dpdt)
-        call internal_energy(t, v, x, u, dudt=dudt, dudv=dudv)
-        call free_energy(t, v, x, y, dydt=dydt, dydv=dydv)
+        call internal_energy_tv(t, v, x, u, dudt=dudt, dudv=dudv)
+        call free_energy_tv(t, v, x, y, dydt=dydt, dydv=dydv)
 
         ! print *,
         ! print *, 'T    =', T
@@ -89,14 +89,14 @@ contains
         ! print *, 'Numerical derivatives'
         teps = 1e-6
         veps = 1e-9
-        call free_energy(t+teps, v, x, y_tp)
-        call free_energy(t-teps, v, x, y_tm)
-        call free_energy(t, v+veps, x, y_vp)
-        call free_energy(t, v-veps, x, y_vm)
-        call internal_energy(t, v+veps, x, u_vp)
-        call internal_energy(t, v-veps, x, u_vm)
-        call internal_energy(t+teps, v, x, u_tp)
-        call internal_energy(t-teps, v, x, u_tm)
+        call free_energy_tv(t+teps, v, x, y_tp)
+        call free_energy_tv(t-teps, v, x, y_tm)
+        call free_energy_tv(t, v+veps, x, y_vp)
+        call free_energy_tv(t, v-veps, x, y_vm)
+        call internal_energy_tv(t, v+veps, x, u_vp)
+        call internal_energy_tv(t, v-veps, x, u_vm)
+        call internal_energy_tv(t+teps, v, x, u_tp)
+        call internal_energy_tv(t-teps, v, x, u_tm)
         p_tp = pressure(t+teps, v, x)
         p_tm = pressure(t-teps, v, x)
         p_vp = pressure(t, v+veps, x)
@@ -441,7 +441,7 @@ contains
   end subroutine test_pressure_TV_model
 
   subroutine test_chemical_potential_tv()
-    use eostv, only: chemical_potential, free_energy
+    use eostv, only: chemical_potential_tv, free_energy_tv
     implicit none
     real :: t, v, z(2), mu(2), dn, n(2), tmax, tmin, vmax, vmin
     real :: f1, f2, mu_num, v1, v2, error, dt, mu1(2), mu2(2)
@@ -472,7 +472,7 @@ contains
         ! =======================
         !
         z = n
-        call chemical_potential(t, v, z, mu=mu)
+        call chemical_potential_tv(t, v, z, mu=mu)
         !
         ! Compute numerical derivative of Helmholtz free energy for
         ! component 1
@@ -480,13 +480,13 @@ contains
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v1 = v/sum(n)
-        call free_energy(t, v1, z, f1)
+        call free_energy_tv(t, v1, z, f1)
         f1 = f1*sum(n)
         n(1) = n(1) + dn
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v2 = v/sum(n)
-        call free_energy(t, v2, z, f2)
+        call free_energy_tv(t, v2, z, f2)
         f2 = f2*sum(n)
         mu_num = (f2 - f1)/dn
         n(1) = n(1) - 0.5*dn
@@ -502,13 +502,13 @@ contains
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v1 = v/sum(n)
-        call free_energy(t, v1, z, f1)
+        call free_energy_tv(t, v1, z, f1)
         f1 = f1*sum(n)
         n(2) = n(2) + dn
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v2 = v/sum(n)
-        call free_energy(t, v2, z, f2)
+        call free_energy_tv(t, v2, z, f2)
         f2 = f2*sum(n)
         mu_num = (f2 - f1)/dn
         n(2) = n(2) - 0.5*dn
@@ -520,14 +520,14 @@ contains
         !
         !
         z = n/sum(n)
-        call chemical_potential(t, v, z, mu=mu, dmudv=dmudv, dmudt=dmudt, &
+        call chemical_potential_tv(t, v, z, mu=mu, dmudv=dmudv, dmudt=dmudt, &
              dmudn=dmudz)
         !
         ! Test derivatives of chemical potential w.r.t. temperature
         ! =========================================================
         !
-        call chemical_potential(t - 0.5*dt, v, z, mu=mu1)
-        call chemical_potential(t + 0.5*dt, v, z, mu=mu2)
+        call chemical_potential_tv(t - 0.5*dt, v, z, mu=mu1)
+        call chemical_potential_tv(t + 0.5*dt, v, z, mu=mu2)
         dmudt_num = (mu2(1) - mu1(1))/dt
         error = abs((dmudt(1) - dmudt_num)/dmudt(1))
         !write (*,*) error
@@ -541,8 +541,8 @@ contains
         ! ====================================================
         !
         dv = 1e-5*v
-        call chemical_potential(t, v - 0.5*dv, z, mu=mu1)
-        call chemical_potential(t, v + 0.5*dv, z, mu=mu2)
+        call chemical_potential_tv(t, v - 0.5*dv, z, mu=mu1)
+        call chemical_potential_tv(t, v + 0.5*dv, z, mu=mu2)
         dmudv_num = (mu2(1) - mu1(1))/dv
         error = abs((dmudv(1) - dmudv_num)/dmudv(1))
         !write (*,*) error
@@ -560,12 +560,12 @@ contains
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v1 = v/sum(n)
-        call chemical_potential(t, v1, z, mu=mu1)
+        call chemical_potential_tv(t, v1, z, mu=mu1)
         n(1) = n(1) + dn
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v2 = v/sum(n)
-        call chemical_potential(t, v2, z, mu=mu2)
+        call chemical_potential_tv(t, v2, z, mu=mu2)
         n(1) = n(1) - 0.5*dn
         !
         dmudz_num = (mu2(1) - mu1(1))/dn
@@ -583,12 +583,12 @@ contains
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v1 = v/sum(n)
-        call chemical_potential(t, v1, z, mu=mu1)
+        call chemical_potential_tv(t, v1, z, mu=mu1)
         n(2) = n(2) + dn
         z(1) = n(1)/sum(n)
         z(2) = n(2)/sum(n)
         v2 = v/sum(n)
-        call chemical_potential(t, v2, z, mu=mu2)
+        call chemical_potential_tv(t, v2, z, mu=mu2)
         n(2) = n(2) - 0.5*dn
         !
         dmudz_num = (mu2(1) - mu1(1))/dn

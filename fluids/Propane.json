@@ -157,5 +157,19 @@
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
     "ref": "Default/Kontogeorgis_Folas2001"
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.6845,
+    "sigma": 3.9056E-10,
+    "eps_depth_divk": 239.8900,
+    "lambda_a": 6.0000,
+    "lambda_r": 13.0060,
+    "mass": 0.0000E+00,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Lafitte et al. 2013, doi: 10.1063/1.4819786",
+    "ref": "DEFAULT"
   }
 }

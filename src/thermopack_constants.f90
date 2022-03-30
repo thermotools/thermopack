@@ -41,17 +41,17 @@ module thermopack_constants
   real, parameter :: zLimit = 0.0
   !> Continue on error?
   logical :: continueOnError = .false.
-  !> Grid type option
-  integer, parameter :: TPGRID = 1, SPGRID = 2, HPGRID = 3, UVGRID = 4, SVGRID = 5
   !> Test type
   integer, parameter :: GRID = 1, ENVELOPE_PL = 2, &
        BINARY_PL = 3, BINARY_VLLE_PL = 4, META_LIMIT_PL = 5, SOLIDENVELOPE_PL = 6
+  !> Property type
+  integer, parameter :: PROP_OVERALL=0, PROP_RESIDUAL=1, PROP_IDEAL=2
   !> String lengths
   integer, parameter :: uid_len = 20
   integer, parameter :: ref_len = 40
   integer, parameter :: comp_name_len = 40
   integer, parameter :: formula_len = 20
-  integer, parameter :: bibref_len = 40
+  integer, parameter :: bibref_len = 80
   integer, parameter :: eosid_len = 20
   integer, parameter :: mix_len = 20
   integer, parameter :: eos_name_len = 30

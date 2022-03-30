@@ -566,7 +566,7 @@ subroutine thermopack_entropy_tv_c(t,v,n,s) BIND(C)
   !> \author MH, 2019-04-15
   !---------------------------------------------------------------!
   use, intrinsic :: ISO_C_BINDING
-  use eosTV, only: entropyTV
+  use eosTV, only: entropy_tv
   use thermopack_var, only: nc
   implicit none
   !Input:
@@ -575,7 +575,7 @@ subroutine thermopack_entropy_tv_c(t,v,n,s) BIND(C)
   real(C_double), dimension(1:nc), intent(in) :: n !< Mol numbers
   real(C_double), intent(out) :: s !< J/K - Entropy
   !---------------------------------------------------------------!
-  call entropyTV(t,v,n,s)
+  call entropy_tv(t,v,n,s)
   !---------------------------------------------------------------!
 end subroutine thermopack_entropy_tv_c
 
