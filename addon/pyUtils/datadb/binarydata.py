@@ -22,6 +22,8 @@ class binaries(object):
         self.eos = os.path.basename(filepath).split("_")[0]
         if "SAFTVRMIE" in os.path.basename(filepath):
             self.mixing = "SAFTVRMIE"
+        elif "PC-SAFT" in os.path.basename(filepath):
+            self.mixing = "PC-SAFT"
         elif "kij" in os.path.basename(filepath) or "lij" in os.path.basename(filepath):
             self.mixing = "vdW"
         else:
