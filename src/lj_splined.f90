@@ -7,13 +7,14 @@
 !---------------------------------------------------------------------
 module lj_splined
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_var_container, &
-       saftvrmie_param, saftvrmie_zeta, saftvrmie_dhs
+       saftvrmie_param, saftvrmie_zeta, saftvrmie_dhs, svrm_opt
+  use saftvrmie_options, only: saftvrmie_opt
   use saftvrmie_utils, only: calc_a_zeta_product, convert_zeta_x_to_TVn, &
        calc_a0_a_product
   use numconstants, only: pi
   use eosdata, only: eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
-  use thermopack_var, only: base_eos_param, get_active_eos
+  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   use hardsphere_wca, only: calc_dhs_WCA, calc_cavity_integral_LJ_Fres, &
        calcZetaX_vdW_no_segments
   implicit none
@@ -49,9 +50,13 @@ module lj_splined
     logical :: enable_a2 = .true.
     logical :: enable_a3 = .true.
     logical :: enable_a4 = .true.
+    ! Need hard-sphere options from SAFT-VR Mie
+    logical :: ovner_of_svrm_opt = .false.
+    type(saftvrmie_opt), pointer :: svrm_opt => NULL()
   contains
     procedure, public :: set_sigma_eps => ljs_wca_set_sigma_eps
     !
+    procedure, public :: dealloc => wca_dealloc
     procedure, public :: allocate_and_init => wca_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_ljs_wca_eos
@@ -580,7 +585,7 @@ contains
     use saftvrmie_containers, only: cleanup_saftvrmie_param_container, &
          cleanup_saftvrmie_var_container, allocate_saftvrmie_zeta, &
          allocate_saftvrmie_param_container, allocate_saftvrmie_dhs, &
-         calcFunAlpha
+         calcFunAlpha, svrm_opt
     integer, intent(in) :: nc          !< Number of components.
     type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector.
     class(ljs_bh_eos), intent(inout) :: ljs
@@ -593,6 +598,7 @@ contains
     ! Deallocate old memory and init new memory
     call ljs%allocate_and_init(nc,"LJS-BH")
     saftvrmie_param => ljs%saftvrmie_param
+    svrm_opt => ljs%svrm_opt
 
     idx = getLJSdataIdx(ljs%subeosidx,trim(comp(1)%p_comp%ident),ref)
     sigma = LJSarray(idx)%sigma
@@ -1083,18 +1089,15 @@ contains
     real :: sigma, eps_depth_divk
     integer :: idx
 
+    call ljs%allocate_and_init(nc,"WCA")
+    svrm_opt => ljs%svrm_opt
+
     idx = getLJSdataIdx(ljs%subeosidx,trim(comp(1)%p_comp%ident),ref)
     sigma = LJSarray(idx)%sigma
     eps_depth_divk = LJSarray(idx)%eps_depth_divk
 
     ! Set component data
     call ljs%set_sigma_eps(sigma, eps_depth_divk)
-
-    ! Allocate structures
-    call cleanup_saftvrmie_dhs(ljs%dhs)
-    call cleanup_saftvrmie_zeta(ljs%eta_hs)
-    call allocate_saftvrmie_dhs(nc,ljs%dhs)
-    call allocate_saftvrmie_zeta(nc,ljs%eta_hs)
 
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
@@ -1135,22 +1138,53 @@ contains
       this%enable_a2 = other%enable_a2
       this%enable_a3 = other%enable_a3
       this%enable_a4 = other%enable_a4
+      ! HS options
+      this%svrm_opt => other%svrm_opt
     class default
     end select
   end subroutine assign_ljs_wca_eos
 
+  subroutine wca_dealloc(eos)
+    use saftvrmie_containers, only: cleanup_saftvrmie_dhs, cleanup_saftvrmie_zeta
+    class(ljs_wca_eos), intent(inout) :: eos
+    ! Locals
+    integer :: stat
+    call base_eos_dealloc(eos)
+    call cleanup_saftvrmie_dhs(eos%dhs)
+    call cleanup_saftvrmie_zeta(eos%eta_hs)
+    if (eos%ovner_of_svrm_opt .and. &
+         associated(eos%svrm_opt)) then
+      eos%ovner_of_svrm_opt = .false.
+      deallocate(eos%svrm_opt,stat=stat)
+      if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate svrm_opt")
+      eos%svrm_opt => NULL()
+    endif
+   end subroutine wca_dealloc
+
   subroutine wca_allocate_and_init(eos,nc,eos_label)
-    use saftvrmie_containers, only: allocate_saftvrmie_dhs, &
-         cleanup_saftvrmie_dhs, allocate_saftvrmie_zeta, &
-         cleanup_saftvrmie_zeta
+    use saftvrmie_containers, only: allocate_saftvrmie_dhs,&
+         allocate_saftvrmie_zeta
     class(ljs_wca_eos), intent(inout) :: eos
     integer, intent(in) :: nc
     character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+    integer :: stat
+    !
+    call eos%dealloc()
     ! Allocate structures
-    call cleanup_saftvrmie_dhs(eos%dhs)
-    call cleanup_saftvrmie_zeta(eos%eta_hs)
     call allocate_saftvrmie_dhs(nc,eos%dhs)
     call allocate_saftvrmie_zeta(nc,eos%eta_hs)
+
+    if (eos%ovner_of_svrm_opt .and. &
+         associated(eos%svrm_opt)) then
+      eos%ovner_of_svrm_opt = .false.
+      deallocate(eos%svrm_opt,stat=stat)
+      if (stat /= 0) call stoperror("wca_allocate_and_init: Not able to deallocate svrm_opt")
+      eos%svrm_opt => NULL()
+    endif
+    allocate(eos%svrm_opt,stat=stat)
+    if (stat /= 0) call stoperror("wca_allocate_and_init: Not able to allocate eos%svrm_opt")
+    eos%ovner_of_svrm_opt = .true.
   end subroutine wca_allocate_and_init
 
   subroutine ljs_wca_model_control(enable_cavity,&

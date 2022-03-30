@@ -116,6 +116,7 @@ OBJE = \
        $(ODIR)/cbselect.o \
        $(ODIR)/pc_saft_nonassoc.o \
        $(ODIR)/saftvrmie_options.o \
+       $(ODIR)/saftvrmie_datadb.o \
        $(ODIR)/saftvrmie_parameters.o \
        $(ODIR)/saftvrmie_containers.o \
        $(ODIR)/saftvrmie_utils.o \
@@ -422,12 +423,13 @@ $(ODIR)/eoslibinit.o: $(SRC)/eoslibinit.f90 \
 	$(SRC)/critical.f90 $(SRC)/saturation.f90 \
 	$(SRC)/cbalpha.f90 $(SRC)/saft_interface.f90 \
 	$(SRC)/cpa_parameters.f90 $(SRC)/assocschemeutils.f90 \
-	$(SRC)/saft_association.f90 $(SRC)/saftvrmie_options.f90
+	$(SRC)/saft_association.f90 $(SRC)/saftvrmie_options.f90 \
+	$(SRC)/saftvrmie_containers.f90
 	@$(call make_object, $(SRC)/eoslibinit.f90)
 $(ODIR)/eostv.o: $(SRC)/eostv.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/single_phase.f90 $(SRC)/cbhelm.f90 \
-	$(SRC)/eosdata.f90 $(SRC)/compdata.f90
+	$(SRC)/eosdata.f90 $(SRC)/ideal.f90
 	@$(call make_object, $(SRC)/eostv.f90)
 $(ODIR)/error.o: $(SRC)/error.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/error.f90
@@ -620,6 +622,10 @@ $(ODIR)/saftvrmie_containers.o: $(SRC)/saftvrmie_containers.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/saftvrmie_containers.f90)
+$(ODIR)/saftvrmie_datadb.o: $(SRC)/saftvrmie_datadb.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/assocschemeutils.f90 \
+	$(SRC)/eosdata.f90
+	@$(call make_object, $(SRC)/saftvrmie_datadb.f90)
 $(ODIR)/saftvrmie_dispersion.o: $(SRC)/saftvrmie_dispersion.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_utils.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90 \
@@ -643,9 +649,10 @@ $(ODIR)/saftvrmie_interface.o: $(SRC)/saftvrmie_interface.f90 \
 $(ODIR)/saftvrmie_options.o: $(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/saftvrmie_options.f90)
 $(ODIR)/saftvrmie_parameters.o: $(SRC)/saftvrmie_parameters.f90 \
+	$(SRC)/saftvrmie_datadb.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/assocschemeutils.f90 $(SRC)/eosdata.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/stringmod.f90 \
-	$(SRC)/thermopack_var.f90 $(SRC)/compdata.f90
+	$(SRC)/stringmod.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/saftvrmie_parameters.f90)
 $(ODIR)/saftvrmie_testing.o: $(SRC)/saftvrmie_testing.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_constants.f90 \
@@ -710,7 +717,8 @@ $(ODIR)/solideos.o: $(SRC)/solideos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/co2_gibbs.f90 $(SRC)/h2o_gibbs.f90 \
 	$(SRC)/compdata.f90 $(SRC)/eos.f90 \
-	$(SRC)/nonlinear_solvers.f90 $(SRC)/saturation.f90
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/ideal.f90 \
+	$(SRC)/saturation.f90
 	@$(call make_object, $(SRC)/solideos.f90)
 $(ODIR)/speed_of_sound.o: $(SRC)/speed_of_sound.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \

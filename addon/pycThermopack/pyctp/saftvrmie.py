@@ -13,10 +13,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class saftvrmie(thermo.thermopack):
     """
     Interface to SAFT-VR Mie
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -25,24 +27,38 @@ class saftvrmie(thermo.thermopack):
         super(saftvrmie, self).__init__()
 
         # Options methods
-        self.enable_hs_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_hs")) # Option to enable/disable hard-sphere contribution
-        self.enable_a1_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_a1")) # Option to enable/disable A1 contribution
-        self.enable_a2_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_a2")) # Option to enable/disable A2 contribution
-        self.enable_a3_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_a3")) # Option to enable/disable A1 contribution
-        self.enable_chain_c = c_int.in_dll(self.tp, self.get_export_name("saftvrmie_options", "enable_chain")) # Option to enable/disable A1 contribution
+        self.s_enable_hs = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "model_control_hs"))  # Option to enable/disable hard-sphere contribution
+        self.s_enable_a1 = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "model_control_a1"))  # Option to enable/disable A1 contribution
+        self.s_enable_a2 = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "model_control_a2"))  # Option to enable/disable A2 contribution
+        self.s_enable_a3 = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "model_control_a3"))  # Option to enable/disable A1 contribution
+        self.s_enable_chain = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "model_control_chain"))  # Option to enable/disable A1 contribution
 
         # Init methods
-        self.s_eoslibinit_init_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_saftvrmie"))
-        self.s_get_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_pure_fluid_param"))
-        self.s_set_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name("saftvrmie_containers", "set_saftvrmie_pure_fluid_param"))
+        self.s_eoslibinit_init_saftvrmie = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_saftvrmie"))
+        self.s_get_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "get_saftvrmie_pure_fluid_param"))
+        self.s_set_saftvrmie_pure_fluid_param = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "set_saftvrmie_pure_fluid_param"))
 
         # Tuning methods
-        self.s_get_eps_kij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_eps_kij"))
-        self.s_set_eps_kij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "set_saftvrmie_eps_kij"))
-        self.s_get_sigma_lij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_sigma_lij"))
-        self.s_set_sigma_lij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "set_saftvrmie_sigma_lij"))
-        self.s_get_lr_gammaij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "get_saftvrmie_lr_gammaij"))
-        self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name("saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
+        self.s_get_eps_kij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "get_saftvrmie_eps_kij"))
+        self.s_set_eps_kij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "set_saftvrmie_eps_kij"))
+        self.s_get_sigma_lij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "get_saftvrmie_sigma_lij"))
+        self.s_set_sigma_lij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "set_saftvrmie_sigma_lij"))
+        self.s_get_lr_gammaij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "get_saftvrmie_lr_gammaij"))
+        self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
+            "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
 
     #################################
     # Init
@@ -72,7 +88,7 @@ class saftvrmie(thermo.thermopack):
                                          ref_string_c,
                                          comp_string_len,
                                          ref_string_len)
-        self.nc = max(len(comps.split(" ")),len(comps.split(",")))
+        self.nc = max(len(comps.split(" ")), len(comps.split(",")))
 
     def model_control_hard_sphere(self, active):
         """Model control. Enable/disable hard-sphere term.
@@ -80,10 +96,11 @@ class saftvrmie(thermo.thermopack):
         Args:
             active (bool): Enable/disable hard-sphere dispersion term
         """
-        if active:
-            self.enable_hs_c.value = 1
-        else:
-            self.enable_hs_c.value = 0
+        self.activate()
+        active_c = c_int(1 if active else 0)
+        self.s_enable_hs.argtypes = [POINTER(c_int)]
+        self.s_enable_hs.restype = None
+        self.s_enable_hs(byref(active_c))
 
     def model_control_a1(self, active):
         """Model control. Enable/disable first dispersion term.
@@ -91,11 +108,11 @@ class saftvrmie(thermo.thermopack):
         Args:
             active (bool): Enable/disable first dispersion term
         """
-        if active:
-            self.enable_a1_c.value = 1
-        else:
-            print("zero")
-            self.enable_a1_c.value = 0
+        self.activate()
+        active_c = c_int(1 if active else 0)
+        self.s_enable_a1.argtypes = [POINTER(c_int)]
+        self.s_enable_a1.restype = None
+        self.s_enable_a1(byref(active_c))
 
     def model_control_a2(self, active):
         """Model control. Enable/disable second dispersion term.
@@ -103,10 +120,11 @@ class saftvrmie(thermo.thermopack):
         Args:
             active (bool): Enable/disable second dispersion term
         """
-        if active:
-            self.enable_a2_c.value = 1
-        else:
-            self.enable_a2_c.value = 0
+        self.activate()
+        active_c = c_int(1 if active else 0)
+        self.s_enable_a2.argtypes = [POINTER(c_int)]
+        self.s_enable_a2.restype = None
+        self.s_enable_a2(byref(active_c))
 
     def model_control_a3(self, active):
         """Model control. Enable/disable third dispersion term.
@@ -114,10 +132,11 @@ class saftvrmie(thermo.thermopack):
         Args:
             active (bool): Enable/disable third dispersion term
         """
-        if active:
-            self.enable_a3_c.value = 1
-        else:
-            self.enable_a3_c.value = 0
+        self.activate()
+        active_c = c_int(1 if active else 0)
+        self.s_enable_a3.argtypes = [POINTER(c_int)]
+        self.s_enable_a3.restype = None
+        self.s_enable_a3(byref(active_c))
 
     def model_control_chain(self, active):
         """Model control. Enable/disable chain term.
@@ -125,10 +144,11 @@ class saftvrmie(thermo.thermopack):
         Args:
             active (bool): Enable/disable chain term
         """
-        if active:
-            self.enable_chain_c.value = 1
-        else:
-            self.enable_chain_c.value = 0
+        self.activate()
+        active_c = c_int(1 if active else 0)
+        self.s_enable_chain.argtypes = [POINTER(c_int)]
+        self.s_enable_chain.restype = None
+        self.s_enable_chain(byref(active_c))
 
     def get_eps_kij(self, c1, c2):
         """Get binary well depth interaction parameter

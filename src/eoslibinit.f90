@@ -836,6 +836,7 @@ contains
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
     use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
+    use saftvrmie_containers, only: svrm_opt
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -843,18 +844,29 @@ contains
     character(len=clen) :: param_ref !< Data set reference
     integer :: FH, FH_model
     if (present(feynman_hibbs_order)) then
-      FH = feynman_hibbs_order
+      FH = max(min(feynman_hibbs_order, 2),0)
     else
-      FH = 1
+      FH = 1 ! Default to FH1
     endif
     FH_model = FH + 1
-    call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
     if (present(parameter_reference)) then
       param_ref = parameter_reference
     else
-      param_ref = "AASEN2019-FH1" ! Default to AASEN2019-FH1
+      param_ref = "DEFAULT"
+    endif
+    if (str_eq(param_ref, "DEFAULT")) then
+      ! Default parameter sets
+      select case(FH)
+      case(0) ! FH0
+        param_ref = "AASEN2019-FH0"
+      case(1) ! FH1
+        param_ref = "AASEN2019-FH1"
+      case(2) ! FH2
+        param_ref = "AASEN2019-FH2"
+      end select
     endif
     call init_saftvrmie(comps,param_ref)
+    call svrm_opt%saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------

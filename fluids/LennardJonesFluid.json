@@ -77,5 +77,19 @@
     "Zra": -1.0
   },
   "SRK": {},
-  "PR": {}
+  "PR": {},
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.0000E-10,
+    "eps_depth_divk": 30.0000,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.0000,
+    "mass": 0.0000E+00,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "",
+    "ref": "DEFAULT"
+  }
 }

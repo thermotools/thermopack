@@ -275,9 +275,20 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_csp_NIST
 
+  subroutine set_saftvrmie_LAFITTE_option()
+    use saftvrmie_options, only: LAFITTE
+    use saftvrmie_containers, only: svrm_opt
+    call svrm_opt%saftvrmieaij_model_options(LAFITTE)
+  end subroutine set_saftvrmie_LAFITTE_option
+
+  subroutine set_saftvrmie_QSAFT_FH1_option()
+    use saftvrmie_options, only: QSAFT_FH1
+    use saftvrmie_containers, only: svrm_opt
+    call svrm_opt%saftvrmieaij_model_options(QSAFT_FH1)
+  end subroutine set_saftvrmie_QSAFT_FH1_option
+
   @Test
   subroutine test_fres_tv_saftvrmie()
-    use saftvrmie_options, only: saftvrmieaij_model_options, LAFITTE
     integer, parameter :: ncomp = 3
     character(len=*), parameter :: eos="SAFT-VR-MIE"
     character(len=*), parameter :: compstr="C1,C2,C3"
@@ -287,15 +298,14 @@ contains
     P0 = 2.0e6
     T0 = 300.0
 
-    call saftvrmieaij_model_options(LAFITTE)
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
-    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_lafitte_option)
     !call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_saftvrmie
 
   @Test
   subroutine test_fres_tv_qsaftvrmie()
-    use saftvrmie_options, only: saftvrmieaij_model_options, QSAFT_FH1
     integer, parameter :: ncomp = 3
     character(len=*), parameter :: eos="SAFT-VR-MIE"
     character(len=*), parameter :: compstr="He,Ne,H2"
@@ -305,10 +315,11 @@ contains
     P0 = 1.0e6
     T0 = 25.0
 
-    call saftvrmieaij_model_options(QSAFT_FH1)
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
-    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
-    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_QSAFT_FH1_option)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_QSAFT_FH1_option)
   end subroutine test_fres_tv_qsaftvrmie
 
   @Test

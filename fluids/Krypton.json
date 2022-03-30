@@ -73,5 +73,19 @@
   "rackett_factor": {
     "bib_reference": "",
     "Zra": 0.3085
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.6400E-10,
+    "eps_depth_divk": 166.6600,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.0000,
+    "mass": 1.3915E-22,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Irma et. al (1999) ISSN : 1029-0435/0892-7022",
+    "ref": "DEFAULT"
   }
 }
