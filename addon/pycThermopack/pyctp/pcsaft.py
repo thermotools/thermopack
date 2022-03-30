@@ -63,6 +63,15 @@ class pcsaft(saft.saft):
                                     ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        for i in range(self.nc):
+            self.m[i], self.sigma[i], self.eps_div_kb[i], eps, beta = \
+                self.get_pure_params(i+1)
+
+
     def get_kij(self, c1, c2):
         """Get binary well depth interaction parameter
 
@@ -122,6 +131,10 @@ class pcsaft(saft.saft):
             eps (float): Association energy (J/mol)
             beta (float): Association volume (-)
         """
+        self.m[c-1] = m
+        self.sigma[c-1] = sigma
+        self.eps_div_kb[c-1] = eps_div_kb
+
         self.activate()
         c_c = c_int(c)
         param_c = (c_double * 5)(m, sigma, eps_div_kb, eps, beta)
