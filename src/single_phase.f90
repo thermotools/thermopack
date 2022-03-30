@@ -610,11 +610,11 @@ contains
   !! \param v - Specific volume [m3/mol]
   !!
   subroutine TV_CalcPressure(nc,comp,cbeos,T,v,n,p,&
-       dpdv,dpdt,d2pdv2,dpdn,recalculate)
+       dpdv,dpdt,d2pdv2,dpdn,recalculate,contribution)
     use cubic
     use eosdata
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
+    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
     implicit none
@@ -626,9 +626,11 @@ contains
     real, optional, intent(inout) :: dpdv, dpdt, d2pdv2
     real, dimension(nc), optional, intent(out) :: dpdn
     logical, optional, intent(in) :: recalculate
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
     real :: sumne
     real :: F_V
+    logical :: res, ideal
     real, dimension(nce) :: ne
     real, pointer :: F_Vne_p(:)
     real, target :: F_Vne(nce)
@@ -640,17 +642,43 @@ contains
     call apparent_to_real_mole_numbers(n,ne)
     sumne = sum(ne)
 
-    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_TV=dpdt,&
-         F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2,recalculate=recalculate)
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
+    endif
 
-    P = -Rgas*T*F_V + sumne*Rgas*T/V
-    if (present(dPdV)) dPdV = -Rgas*T*dPdV - sumne*Rgas*T/V**2
-    if (present(dPdT)) dPdT = -Rgas*T*dPdT + P/T
+    if (res) then
+      call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_TV=dpdt,&
+           F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2,recalculate=recalculate)
+      P = -Rgas*T*F_V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT
+      if (present(dPdn)) F_Vne = -Rgas*T*F_Vne
+      if (present(d2PdV2)) d2PdV2 = -Rgas*T*d2PdV2
+    else
+      P = 0
+      if (present(dPdV)) dPdV = 0
+      if (present(dPdT)) dPdT = 0
+      if (present(dPdn)) F_Vne = 0
+      if (present(d2PdV2)) d2PdV2 = 0
+    endif
+    if (ideal) then
+      P = P + sumne*Rgas*T/V
+      if (present(dPdV)) dPdV = dPdV - sumne*Rgas*T/V**2
+      if (present(dPdT)) dPdT = dPdT + P/T
+      if (present(dPdn)) F_Vne = F_Vne + Rgas*T/V
+      if (present(d2PdV2)) d2PdV2 = d2PdV2 + 2.0*sumne*Rgas*T/V**3
+    endif
+
     if (present(dPdn)) then
-      F_Vne = -Rgas*T*F_Vne + Rgas*T/V
       call real_to_apparent_diff(F_Vne,dPdn)
     endif
-    if (present(d2PdV2)) d2PdV2 = -Rgas*T*d2PdV2 + 2.0*sumne*Rgas*T/V**3
+
   end subroutine TV_CalcPressure
 
   !> Calculate pseudo critical properties.

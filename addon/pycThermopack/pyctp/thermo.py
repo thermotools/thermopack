@@ -1,6 +1,3 @@
-# Support for python2
-from __future__ import print_function
-
 import sys
 from ctypes import *
 from os import path
@@ -65,13 +62,19 @@ class thermopack(object):
             self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
 
         # Eos interface
-        self.s_eos_specificvolume = getattr(self.tp, self.get_export_name("eos", "specificvolume"))
+        self.s_eos_specificvolume = getattr(
+            self.tp, self.get_export_name("eos", "specificvolume"))
         self.s_eos_zfac = getattr(self.tp, self.get_export_name("eos", "zfac"))
-        self.s_eos_thermo = getattr(self.tp, self.get_export_name("eos", "thermo"))
-        self.s_eos_entropy = getattr(self.tp, self.get_export_name("eos", "entropy"))
-        self.s_eos_enthalpy = getattr(self.tp, self.get_export_name("eos", "enthalpy"))
-        self.s_eos_compmoleweight = getattr(self.tp, self.get_export_name("eos", "compmoleweight"))
-        self.s_eos_getCriticalParam = getattr(self.tp, self.get_export_name("eos", "getcriticalparam"))
+        self.s_eos_thermo = getattr(
+            self.tp, self.get_export_name("eos", "thermo"))
+        self.s_eos_entropy = getattr(
+            self.tp, self.get_export_name("eos", "entropy"))
+        self.s_eos_enthalpy = getattr(
+            self.tp, self.get_export_name("eos", "enthalpy"))
+        self.s_eos_compmoleweight = getattr(
+            self.tp, self.get_export_name("eos", "compmoleweight"))
+        self.s_eos_getCriticalParam = getattr(
+            self.tp, self.get_export_name("eos", "getcriticalparam"))
 
         # Ideal property interface
         self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
@@ -87,57 +90,93 @@ class thermopack(object):
 
         # Speed of sound
         #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
-        self.s_sos_sound_velocity_2ph = getattr(self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
+        self.s_sos_sound_velocity_2ph = getattr(
+            self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
 
         # Component info
-        self.s_compdata_compindex = getattr(self.tp, self.get_export_name("compdata", "comp_index_active"))
-        self.s_compdata_compname = getattr(self.tp, self.get_export_name("compdata", "comp_name_active"))
+        self.s_compdata_compindex = getattr(
+            self.tp, self.get_export_name("compdata", "comp_index_active"))
+        self.s_compdata_compname = getattr(
+            self.tp, self.get_export_name("compdata", "comp_name_active"))
 
         # Flashes
-        self.s_set_ph_tolerance = getattr(self.tp, self.get_export_name("ph_solver", "setphtolerance"))
-        self.s_twophasetpflash = getattr(self.tp, self.get_export_name("tp_solver", "twophasetpflash"))
-        self.s_psflash_twophase = getattr(self.tp, self.get_export_name("ps_solver", "twophasepsflash"))
+        self.s_set_ph_tolerance = getattr(
+            self.tp, self.get_export_name("ph_solver", "setphtolerance"))
+        self.s_twophasetpflash = getattr(
+            self.tp, self.get_export_name("tp_solver", "twophasetpflash"))
+        self.s_psflash_twophase = getattr(
+            self.tp, self.get_export_name("ps_solver", "twophasepsflash"))
         #self.tpflash_multiphase = getattr(self.tp, '__mp_tp_solver_MOD_mp_flash_tp')
-        self.s_uvflash_twophase = getattr(self.tp, self.get_export_name("uv_solver", "twophaseuvflash"))
-        self.s_phflash_twophase = getattr(self.tp, self.get_export_name("ph_solver", "twophasephflash"))
+        self.s_uvflash_twophase = getattr(
+            self.tp, self.get_export_name("uv_solver", "twophaseuvflash"))
+        self.s_phflash_twophase = getattr(
+            self.tp, self.get_export_name("ph_solver", "twophasephflash"))
         #self.s_svflash_twophase = getattr(self.tp, self.get_export_name("sv_solver", "twophasesvflash"))
-        self.s_guess_phase = getattr(self.tp, self.get_export_name("thermo_utils", "guessphase"))
+        self.s_guess_phase = getattr(
+            self.tp, self.get_export_name("thermo_utils", "guessphase"))
 
         # TV interfaces
-        self.s_internal_energy_tv = getattr(self.tp, self.get_export_name("eostv", "internal_energy_tv"))
-        self.s_entropy_tv = getattr(self.tp, self.get_export_name("eostv", "entropy_tv"))
-        self.s_pressure_tv = getattr(self.tp, self.get_export_name("eostv", "pressure"))
-        self.s_lnphi_tv = getattr(self.tp, self.get_export_name("eostv", "thermo_tv"))
-        self.s_enthalpy_tv = getattr(self.tp, self.get_export_name("eostv", "enthalpy_tv"))
-        self.s_helmholtz_energy = getattr(self.tp, self.get_export_name("eostv", "free_energy_tv"))
-        self.s_chempot = getattr(self.tp, self.get_export_name("eostv", "chemical_potential_tv"))
+        self.s_internal_energy_tv = getattr(
+            self.tp, self.get_export_name("eostv", "internal_energy_tv"))
+        self.s_entropy_tv = getattr(
+            self.tp, self.get_export_name("eostv", "entropy_tv"))
+        self.s_pressure_tv = getattr(
+            self.tp, self.get_export_name("eostv", "pressure"))
+        self.s_lnphi_tv = getattr(
+            self.tp, self.get_export_name("eostv", "thermo_tv"))
+        self.s_enthalpy_tv = getattr(
+            self.tp, self.get_export_name("eostv", "enthalpy_tv"))
+        self.s_helmholtz_energy = getattr(
+            self.tp, self.get_export_name("eostv", "free_energy_tv"))
+        self.s_chempot = getattr(self.tp, self.get_export_name(
+            "eostv", "chemical_potential_tv"))
 
         # TVP interfaces
-        self.s_entropy_tvp = getattr(self.tp, self.get_export_name("eostv", "entropy_tvp"))
-        self.s_thermo_tvp = getattr(self.tp, self.get_export_name("eostv", "thermo_tvp"))
-        self.s_enthalpy_tvp = getattr(self.tp, self.get_export_name("eostv", "enthalpy_tvp"))
+        self.s_entropy_tvp = getattr(
+            self.tp, self.get_export_name("eostv", "entropy_tvp"))
+        self.s_thermo_tvp = getattr(
+            self.tp, self.get_export_name("eostv", "thermo_tvp"))
+        self.s_enthalpy_tvp = getattr(
+            self.tp, self.get_export_name("eostv", "enthalpy_tvp"))
 
         # Saturation properties
-        self.s_bubble_t = getattr(self.tp, self.get_export_name("saturation", "safe_bubt"))
-        self.s_bubble_p = getattr(self.tp, self.get_export_name("saturation", "safe_bubp"))
-        self.s_dew_t = getattr(self.tp, self.get_export_name("saturation", "safe_dewt"))
-        self.s_dew_p = getattr(self.tp, self.get_export_name("saturation", "safe_dewp"))
-        self.s_envelope_plot = getattr(self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
-        self.s_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
-        self.s_global_binary_plot = getattr(self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
-        self.s_get_bp_term = getattr(self.tp, self.get_export_name("binaryplot", "get_bp_term"))
-        self.s_solid_envelope_plot = getattr(self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
-        self.s_isotherm = getattr(self.tp, self.get_export_name("isolines", "isotherm"))
-        self.s_isobar = getattr(self.tp, self.get_export_name("isolines", "isobar"))
-        self.s_isenthalp = getattr(self.tp, self.get_export_name("isolines", "isenthalp"))
-        self.s_isentrope = getattr(self.tp, self.get_export_name("isolines", "isentrope"))
+        self.s_bubble_t = getattr(
+            self.tp, self.get_export_name("saturation", "safe_bubt"))
+        self.s_bubble_p = getattr(
+            self.tp, self.get_export_name("saturation", "safe_bubp"))
+        self.s_dew_t = getattr(
+            self.tp, self.get_export_name("saturation", "safe_dewt"))
+        self.s_dew_p = getattr(
+            self.tp, self.get_export_name("saturation", "safe_dewp"))
+        self.s_envelope_plot = getattr(
+            self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
+        self.s_binary_plot = getattr(
+            self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
+        self.s_global_binary_plot = getattr(
+            self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
+        self.s_get_bp_term = getattr(
+            self.tp, self.get_export_name("binaryplot", "get_bp_term"))
+        self.s_solid_envelope_plot = getattr(
+            self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
+        self.s_isotherm = getattr(
+            self.tp, self.get_export_name("isolines", "isotherm"))
+        self.s_isobar = getattr(
+            self.tp, self.get_export_name("isolines", "isobar"))
+        self.s_isenthalp = getattr(
+            self.tp, self.get_export_name("isolines", "isenthalp"))
+        self.s_isentrope = getattr(
+            self.tp, self.get_export_name("isolines", "isentrope"))
         # Stability
-        self.s_crit_tv = getattr(self.tp, self.get_export_name("critical", "calccriticaltv"))
+        self.s_crit_tv = getattr(
+            self.tp, self.get_export_name("critical", "calccriticaltv"))
 
         # Virials
-        self.s_virial_coeffcients = getattr(self.tp, self.get_export_name("eostv", "virial_coefficients"))
-        self.s_second_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "secondvirialcoeffmatrix"))
-        self.s_binary_third_virial_matrix = getattr(self.tp, self.get_export_name("eostv", "binarythirdvirialcoeffmatrix"))
+        self.s_virial_coeffcients = getattr(
+            self.tp, self.get_export_name("eostv", "virial_coefficients"))
+        self.s_second_virial_matrix = getattr(
+            self.tp, self.get_export_name("eostv", "secondvirialcoeffmatrix"))
+        self.s_binary_third_virial_matrix = getattr(
+            self.tp, self.get_export_name("eostv", "binarythirdvirialcoeffmatrix"))
 
         # Joule-Thompson inversion
         self.s_joule_thompson_inversion = getattr(self.tp, self.get_export_name("joule_thompson_inversion", "map_jt_inversion"))
@@ -1459,7 +1498,8 @@ class thermopack(object):
     # Temperature-volume property interfaces
     #################################
 
-    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None):
+    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None,
+                    property_flag="IR"):
         """Calculate pressure given temperature, volume and mol numbers.
 
         Args:
@@ -1469,6 +1509,7 @@ class thermopack(object):
             dpdt (No type, optional): Flag to activate calculation. Defaults to None.
             dpdv (No type, optional): Flag to activate calculation. Defaults to None.
             dpdn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Pressure (Pa)
@@ -1495,6 +1536,7 @@ class thermopack(object):
             dpdn_c = (c_double * len(n))(0.0)
 
         recalculate_c = POINTER(c_int)(c_int(1))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER( c_double ),
                                        POINTER( c_double ),
@@ -1503,6 +1545,7 @@ class thermopack(object):
                                        POINTER( c_double ),
                                        POINTER( c_double ),
                                        POINTER( c_double ),
+                                       POINTER( c_int ),
                                        POINTER( c_int )]
 
         self.s_pressure_tv.restype = c_double
@@ -1514,7 +1557,8 @@ class thermopack(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c)
+                               recalculate_c,
+                               contribution_c)
 
         return_tuple = (P, )
         if not dpdt is None:
@@ -1527,7 +1571,7 @@ class thermopack(object):
         return return_tuple
 
     def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None,
-                           dedn=None, property_flag="IR"):
+                       dedn=None, property_flag="IR"):
         """Calculate internal energy given temperature, volume and mol numbers.
 
         Args:
@@ -1802,7 +1846,7 @@ class thermopack(object):
         return return_tuple
 
     def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None,
-                              dmudn=None, property_flag="IR"):
+                          dmudn=None, property_flag="IR"):
         """Calculate chemical potential given temperature, volume and mol numbers.
 
         Args:
