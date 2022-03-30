@@ -12,7 +12,6 @@ if utils.gcc_major_version_greater_than(7):
 else:
     c_len_type = c_int
 
-
 class thermopack(object):
     """
     Interface to thermopack
@@ -2143,10 +2142,10 @@ class thermopack(object):
         if not dlnfugdp is None:
             return_tuple += (np.array(dlnfugdp_c), )
         if not dlnfugdn is None:
-            dlnfugdn_r = np.zeros((len(x),len(x)))
-            for i in range(len(x)):
-                for j in range(len(x)):
-                    dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(x)]
+            dlnfugdn_r = np.zeros((len(n),len(n)))
+            for i in range(len(n)):
+                for j in range(len(n)):
+                    dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(n)]
             return_tuple += (dlnfugdn_r, )
 
         return return_tuple
