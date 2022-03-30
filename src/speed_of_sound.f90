@@ -280,7 +280,7 @@ contains
   !! \author MH, 2019-06
   !-----------------------------------------------------------------------------
   function speed_of_sound_TV(t,v,n) result(sos)
-    use eosTV, only: pressure, entropyTV
+    use eosTV, only: pressure, entropy_tv
     use eos, only: moleWeight
     implicit none
     real,                   intent(in) :: t     !< Temperature [K]
@@ -290,7 +290,7 @@ contains
     ! Locals
     real :: p, dpdv, dpdt, s, dsdt, dsdv, dtdv, dpdrho, rho
     p = pressure(t,v,n,dpdv,dpdt)
-    call entropyTV(t,v,n,s,dsdt,dsdv)
+    call entropy_tv(t,v,n,s,dsdt,dsdv)
     dtdv = -dsdv/dsdt
     dpdv = dpdv + dpdt*dtdv
     if (dpdv < 0.0) then

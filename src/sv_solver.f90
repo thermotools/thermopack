@@ -1653,7 +1653,7 @@ contains
   !> \author MH, 2014
   !-----------------------------------------------------------------------------
   subroutine fun_Tv_single(f,var,param)
-    use eosTV, only: entropyTV
+    use eosTV, only: entropy_tv
     implicit none
     real, dimension(1), intent(out) :: f !< Function values
     real, dimension(1), intent(in) :: var !< Variable vector
@@ -1667,7 +1667,7 @@ contains
     vspec = param(2)
     Z(1:nc) = param(3:nc+2)
 
-    call entropyTV(t,vspec,Z,s)
+    call entropy_tv(t,vspec,Z,s)
 
     f(1)= (s-sspec)/max(1.0,abs(sspec))
   end subroutine fun_Tv_single
@@ -1678,7 +1678,7 @@ contains
   !> \author MH, 2014
   !-----------------------------------------------------------------------------
   subroutine jac_Tv_single(Jac,var,param)
-    use eosTV, only: entropyTV
+    use eosTV, only: entropy_tv
     implicit none
     real, dimension(1), intent(in) :: var !< Variable vector
     real, dimension(nc+2), intent(inout) :: param !< Parameter vector
@@ -1691,7 +1691,7 @@ contains
     sspec = param(1)
     vspec = param(2)
     Z(1:nc) = param(3:nc+2)
-    call entropyTV(t,vspec,Z,s,dsdt)
+    call entropy_tv(t,vspec,Z,s,dsdt)
     !
     !f(1)=  (u-sspec)/max(1.0,abs(sspec))
     !

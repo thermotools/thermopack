@@ -46,6 +46,7 @@ module saftvrmie_hardsphere
   public :: calc_binary_Z_Santos
   public :: calc_hardsphere_extra_helmholtzenergy, calc_gij_boublik
   public :: calc_d_pure
+  public :: calc_hardsphere_diameter_reduced_units
   ! Exported for testing
   public :: calc_mie_potential_quantumcorrected, epseff_Ux, epseff_Uxx
   public :: calc_hardsphere_virial_Bijk, calc_Santos_eta
@@ -2774,6 +2775,172 @@ Contains
     call calc_hardsphere_helmholtzenergy_santos(nc,T,V,x,s_vc,a,a_V=a_V)
     Z = 1 - a_V*V
   end function calc_binary_Z_Santos
+
+  subroutine calc_hardsphere_diameter_reduced_units(lambda_a,lambda_r,T_red,d_red)
+    !--------------------------------------------------------------------
+    !  2021-09,    Morten Hammer
+    !
+    !  Calulates the Barker--Henderson diameter from reduced unit temperature.
+    !  ---------------------------------------------------------------------
+    real, intent(in) :: T_red    !< temperature, reduced unit [-]
+    real, intent(out) :: d_red   !< reduced hard-sphere diameter [-]
+    real, intent(in) :: lambda_a,lambda_r      !< potential parameters
+    ! Locals
+    integer :: i, n_quad
+    real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
+    real :: f_vec(max_n_quadrature), quad_error
+    real :: r_red, sigmaj_2, r0_red, U_red
+    real :: prefactor
+    real :: minus_exp_term
+
+    ! Get quadrature points
+    call get_quadrature_positions(hs_diam_quadrature,x_vec,n_quad)
+    call get_quadrature_weights(hs_diam_quadrature,w_vec,n_quad)
+
+    ! Solve for exp(-beta*u(r0)) = machine_prec
+    call calc_zero_d_integrand_reduced_units(lambda_a,lambda_r,T_red,r0_red)
+    ! Use 1-exp(-beta*u(r)) = 1 for [0,r0]:
+    d_red=r0_red
+    ! Loop quadrature points
+    do i = 1,n_quad
+      ! Obtain the position to evaluate r
+      sigmaj_2=0.5*(1.0 - r0_red)
+      r_red=sigmaj_2*x_vec(i)+sigmaj_2 + r0_red
+
+      call calc_mie_potential_reduced_units(lambda_a,lambda_r,r_red,U_red)
+
+      ! The prefactor
+      prefactor=sigmaj_2*w_vec(i)
+
+      ! Obtain the hahrd-sphere diameter
+      minus_exp_term=-1.0*exp(-U_red/T_red)
+
+      ! Hard sphere diameter [m]
+      d_red=d_red+prefactor*(1.0+minus_exp_term)
+
+      if (estimate_quadrature_error) then
+        ! Store function evaluations for post-processing error estimate
+        f_vec(i) = sigmaj_2*(1.0+minus_exp_term)
+      endif
+
+    enddo
+    if (estimate_quadrature_error) then
+      quad_error = calc_quadrature_error(f_vec,d_red-r0_red,hs_diam_quadrature)
+      print *,"Estimated relative quadrature error in hard "//&
+           "sphere diameter calculation: ",quad_error
+    endif
+
+  end subroutine calc_hardsphere_diameter_reduced_units
+
+  subroutine calc_zero_d_integrand_reduced_units(lambda_a,lambda_r,T_red,r0_red)
+    !--------------------------------------------------------------------
+    ! Calculate point where 1-exp(beta u(r)) = 0.0, numerically     !
+    !
+    !! \author Morten Hammer, September 2021
+    !---------------------------------------------------------------------
+    use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
+    use numconstants, only: machine_prec
+    real, intent(in) :: T_red                    !< Temperature [K]
+    real, intent(in) :: lambda_a,lambda_r      !< potential parameters
+    real, intent(out) :: r0_red                  !< reduced particle distances [-]
+    ! Locals
+    type(nonlinear_solver) :: solver
+    real :: param(3)
+    real :: rs, rsmin, rsmax
+    !real :: f,dfdr,d2fdr2,f1,df1dr,d2f1dr2,eps
+    param(1) = lambda_a
+    param(2) = lambda_r
+    param(3) = T_red
+    rs = 0.9
+    rsmin = 0.0
+    rsmax = 1.0
+    solver%rel_tol = 1.0e-13
+    solver%max_it = 20
+    solver%ls_max_it = 3
+    ! Testing
+    ! call zero_integrand_reduced_units(rs,f,param,dfdr,d2fdr2)
+    ! eps = 1.0e-5
+    ! call zero_integrand_reduced_units(rs+eps,f1,param,df1dr,d2f1dr2)
+    ! print *,(f1-f)/eps,dfdr
+    ! print *,(df1dr-dfdr)/eps,d2fdr2
+    ! stop
+    call newton_secondorder_singlevar(zero_integrand_reduced_units,0.7,rsmin,rsmax,solver,rs,param)
+    if (solver%exitflag /= 0) then
+      call stoperror("Not able to solve for point where d-integrand becomes zero")
+    else
+      r0_red = rs
+    endif
+  end subroutine calc_zero_d_integrand_reduced_units
+
+  subroutine zero_integrand_reduced_units(r_red,f,param,dfdr,d2fdr2)
+    use numconstants, only: machine_prec
+    real, intent(in) :: r_red
+    real, intent(in) :: param(3)
+    real, intent(out) :: f,dfdr,d2fdr2
+    ! Locals
+    real :: U_red,U_red_r,U_red_rr
+    real :: Tstar, lambda_a, lambda_r
+    lambda_a = param(1)
+    lambda_r = param(2)
+    Tstar = param(3)
+    call calc_mie_potential_reduced_units(lambda_a,lambda_r,r_red,U_red,&
+       U_red_r,U_red_rr)
+    f = U_red/Tstar + log(machine_prec)
+    dfdr = U_red_r/Tstar
+    d2fdr2 = U_red_rr/Tstar
+  end subroutine zero_integrand_reduced_units
+
+  subroutine calc_mie_potential_reduced_units(lambda_a,lambda_r,r_red,U_red,&
+       U_red_r,U_red_rr,U_red_rrr)
+    use saftvrmie_containers, only: mie_c_factor
+    !--------------------------------------------------------------------
+    !  2021-09, Morten Hammer
+    !
+    !  Mie poential at position r [m]
+    !---------------------------------------------------------------------
+    real, intent(in) :: lambda_a,lambda_r      !< potential parameters
+    real, intent(in) :: r_red                  !< reduced particle distances [-]
+    real, intent(out) :: U_red                 !< value of interaction div. by eps
+    real, intent(out), optional :: U_red_r, U_red_rr, U_red_rrr     !< r-derivatives
+    ! Locals
+    real :: m, n, r_n, r_m, r_1                !< Parameters and radii [m]
+    real :: Mie_pref                           !< Prefactor Mie potential
+    real :: en_r, dr_n, dr_m, d2r_n, d2r_m     !< Intermediate variables
+    real :: d3r_n, d3r_m
+
+    ! The repulsive and attracive exponents
+    n=lambda_r
+    m=lambda_a
+
+    ! The inverse radii
+    en_r=1/r_red
+    r_1=en_r
+
+    ! Powers of the inverse radii and derivs
+    r_n=(r_1)**n
+    r_m=(r_1)**m
+    dr_n=-1.0*n*(r_n)*en_r
+    dr_m=-1.0*m*(r_m)*en_r
+    d2r_n=-1.0*(n+1.0)*dr_n*en_r
+    d2r_m=-1.0*(m+1.0)*dr_m*en_r
+    d3r_n=-1.0*(n+2.0)*d2r_n*en_r
+    d3r_m=-1.0*(m+2.0)*d2r_m*en_r
+
+    ! The Mie potential prefactor, divided by kB
+    Mie_pref = mie_c_factor(lambda_r, lambda_a)
+
+    U_red=Mie_pref*(r_n-r_m)
+    if (present(U_red_r)) then
+      U_red_r=Mie_pref*(dr_n-dr_m)
+    endif
+    if (present(U_red_rr)) then
+      U_red_rr=Mie_pref*(d2r_n-d2r_m)
+    endif
+    if (present(U_red_rrr)) then
+      U_red_rrr=Mie_pref*(d3r_n-d3r_m)
+    endif
+
+  end subroutine calc_mie_potential_reduced_units
 
 end module saftvrmie_hardsphere
 

@@ -696,7 +696,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine getUVDerivativesTwoPhase(t,p,z,betav,betal,x,y,iphase, &
        dudp_v,dudt_v,dvdp_u,dvdt_u)
-    use eosTV, only: pressure,internal_energy
+    use eosTV, only: pressure,internal_energy_tv
     implicit none
     real, intent(in) :: betav !< Vapour phase molar fraction [-]
     real, intent(in) :: betal !< Liquid phase molar fraction [-]
@@ -788,7 +788,7 @@ contains
       !
       if (iphase_internal /= VAPPH) iphase_internal = LIQPH
       call specificVolume(t,p,z,iphase_internal,v,dvdt=dvdt_p,dvdp=dvdp_t)
-      call internal_energy(t,v,z,u_internal,dudt=dudt_v_internal,dudv=dudv_t)
+      call internal_energy_tv(t,v,z,u_internal,dudt=dudt_v_internal,dudv=dudv_t)
       p_internal = pressure(t,v,z,dpdv_t,dpdt_v)
       !
       if (present(dudt_v)) dudt_v = dudt_v_internal
