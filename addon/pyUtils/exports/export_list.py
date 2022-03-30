@@ -124,6 +124,7 @@ append_export("thermo", "eos")
 append_export("entropy", "eos")
 append_export("enthalpy", "eos")
 append_export("compmoleweight", "eos")
+append_export("getcriticalparam", "eos")
 
 append_export("init_thermo", "eoslibinit")
 append_export("init_cubic", "eoslibinit")

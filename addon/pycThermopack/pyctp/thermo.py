@@ -8,7 +8,7 @@ import numpy as np
 from . import plotutils, utils, platform_specifics
 
 if utils.gcc_major_version_greater_than(7):
-    c_len_type = c_size_t # c_size_t on GCC > 7
+    c_len_type = c_size_t  # c_size_t on GCC > 7
 else:
     c_len_type = c_int
 
@@ -17,6 +17,7 @@ class thermopack(object):
     """
     Interface to thermopack
     """
+
     def __init__(self):
         """
         Load libthermopack.(so/dll) and initialize function pointers
@@ -26,7 +27,8 @@ class thermopack(object):
         self.module = pf_specifics["module"]
         self.postfix = pf_specifics["postfix"]
         self.postfix_nm = pf_specifics["postfix_no_module"]
-        dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
+        dyn_lib_path = path.join(path.dirname(
+            __file__), pf_specifics["dyn_lib"])
         self.tp = cdll.LoadLibrary(dyn_lib_path)
 
         # Set phase flags
@@ -34,22 +36,33 @@ class thermopack(object):
         self.get_phase_flags()
 
         # Model control
-        self.s_add_eos = getattr(self.tp, self.get_export_name("thermopack_var", "add_eos"))
-        self.s_delete_eos = getattr(self.tp, self.get_export_name("thermopack_var", "delete_eos"))
-        self.s_activate_model = getattr(self.tp, self.get_export_name("thermopack_var", "activate_model"))
+        self.s_add_eos = getattr(
+            self.tp, self.get_export_name("thermopack_var", "add_eos"))
+        self.s_delete_eos = getattr(
+            self.tp, self.get_export_name("thermopack_var", "delete_eos"))
+        self.s_activate_model = getattr(
+            self.tp, self.get_export_name("thermopack_var", "activate_model"))
 
         # Information
-        self.s_get_model_id = getattr(self.tp, self.get_export_name("thermopack_var", "get_eos_identification"))
+        self.s_get_model_id = getattr(self.tp, self.get_export_name(
+            "thermopack_var", "get_eos_identification"))
 
         # Init methods
-        self.eoslibinit_init_thermo = getattr(self.tp, self.get_export_name("eoslibinit", "init_thermo"))
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "rgas")).value
+        self.eoslibinit_init_thermo = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_thermo"))
+        self.Rgas = c_double.in_dll(self.tp, self.get_export_name(
+            "thermopack_constants", "rgas")).value
         self.nc = None
-        self.minimum_temperature_c = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "tptmin"))
-        self.minimum_pressure_c = c_double.in_dll(self.tp, self.get_export_name("thermopack_constants", "tppmin"))
-        self.solideos_solid_init = getattr(self.tp, self.get_export_name("solideos", "solid_init"))
-        self.eoslibinit_init_volume_translation = getattr(self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
-        self.eoslibinit_redefine_critical_parameters = getattr(self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
+        self.minimum_temperature_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tptmin"))
+        self.minimum_pressure_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tppmin"))
+        self.solideos_solid_init = getattr(
+            self.tp, self.get_export_name("solideos", "solid_init"))
+        self.eoslibinit_init_volume_translation = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
+        self.eoslibinit_redefine_critical_parameters = getattr(
+            self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
 
         # Eos interface
         self.s_eos_specificvolume = getattr(self.tp, self.get_export_name("eos", "specificvolume"))
@@ -58,6 +71,7 @@ class thermopack(object):
         self.s_eos_entropy = getattr(self.tp, self.get_export_name("eos", "entropy"))
         self.s_eos_enthalpy = getattr(self.tp, self.get_export_name("eos", "enthalpy"))
         self.s_eos_compmoleweight = getattr(self.tp, self.get_export_name("eos", "compmoleweight"))
+        self.s_eos_getCriticalParam = getattr(self.tp, self.get_export_name("eos", "getcriticalparam"))
 
         # Ideal property interface
         self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
@@ -454,6 +468,40 @@ class thermopack(object):
         self.s_eos_compmoleweight.restype = c_double
         mw_i = self.s_eos_compmoleweight(byref(comp_c))
         return mw_i
+
+    def acentric_factor(self, i):
+        '''
+        Get acentric factor of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: acentric factor
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        self.s_eos_getCriticalParam.argtypes = [POINTER( c_int ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double ),
+                                                POINTER( c_double )]
+        self.s_eos_getCriticalParam.restype = None
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return w.value
+
 
     def get_phase_flags(self):
         """Get phase identifiers used by thermopack
@@ -2385,6 +2433,21 @@ class thermopack(object):
 
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
+
+            LLE : Liquid 1 - Liquid 2 Equilibrium
+                LLE[0] : Liquid 1 composition (mole fraction of component 1)
+                LLE[1] : Liquid 2 composition (mole fraction of component 1)
+                LLE[2] : Pressure [Pa]
+            L1VE : Liquid 1 - Vapour Equilibrium
+                L1VE[0] : Bubble line composition (mole fraction of component 1) 
+                L1VE[1] : Dew line composition (mole fraction of component 1)
+                L1VE[2] : Pressure [Pa]
+            L2VE : Liquid 2 - Vapour Equilibrium
+                L2VE[0] : Bubble line composition (mole fraction of component 1) 
+                L2VE[1] : Dew line composition (mole fraction of component 1)
+                L2VE[2] : Pressure [Pa]
+            
+            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
         # Redefinition of module parameter:
         self.activate()
