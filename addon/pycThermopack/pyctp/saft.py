@@ -27,6 +27,7 @@ class saft(thermo.thermopack):
         # SAFT specific methods
         self.s_calc_saft_dispersion = getattr(self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
         self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name("saft_interface", "calc_hard_sphere_diameter"))
+        self.s_de_broglie_wavelength = getattr(self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
 
     def hard_sphere_diameters(self, temp):
         """Calculate hard-sphere diameters given temperature, volume and mol numbers.
@@ -172,3 +173,31 @@ class saft(thermo.thermopack):
             return_tuple += (a_nn, )
 
         return return_tuple
+
+    def de_broglie_wavelength(self, c, temp):
+        """Calculate de Broglie wavelength
+
+        Args:
+            c (int): Component index (FORTRAN)
+            temp (float): Temperature (K)
+
+        Returns:
+            float: de Broglie wavelength (m)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        c_c = c_int(c)
+        lambda_c = c_double(lambda)
+
+        self.s_de_broglie_wavelength.argtypes = [POINTER( c_double ),
+                                                 POINTER( c_double ),
+                                                 POINTER( c_double )]
+
+        self.s_de_broglie_wavelength.restype = None
+
+        self.s_de_broglie_wavelength(byref(c_c),
+                                     byref(temp_c),
+                                     byref(lambda_c))
+
+        return lambda_c.value
+

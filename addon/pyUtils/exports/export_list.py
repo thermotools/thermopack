@@ -180,6 +180,7 @@ append_export("calc_saft_dispersion", "saft_interface")
 append_export("calc_hard_sphere_diameter", "saft_interface")
 append_export("pc_saft_get_pure_params", "saft_interface")
 append_export("pc_saft_set_pure_params", "saft_interface")
+append_export("de_broglie_wavelength", "saft_interface")
 
 append_export("enable_hs", "saftvrmie_options")
 append_export("enable_a1", "saftvrmie_options")

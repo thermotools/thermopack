@@ -593,6 +593,40 @@ contains
   end subroutine calc_hard_sphere_diameter
 
 
+  !> Return de Broglie wavelength for component i
+  !!
+  !! \author Morten Hammer, March 2022
+  subroutine de_Broglie_wavelength(i, T, lambda)
+    use numconstants, only: pi
+    use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
+    use thermopack_constants, only: h_const, kB_const, N_Avogadro
+    use thermopack_var, only: thermo_model
+    ! Input
+    integer, intent(in) :: i !< Component number
+    real, intent(in) :: T !< Temperature
+    real, intent(out) :: lambda !< de Broglie wavelength
+    !
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
+    class(base_eos_param), pointer :: eos
+    real :: mass
+    p_thermo => get_active_thermo_model()
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      mass = saftvrmie_param%comp(i)%mass
+      if (mass < 0.0) then
+        mass = 1.0e-3*p_thermo%comps(i)%p_comp%mw/N_Avogadro
+      endif
+    class default
+      mass = 1.0e-3*p_thermo%comps(i)%p_comp%mw/N_Avogadro
+    end select
+    lambda = h_const/sqrt(2*pi*mass*kB_const*T)
+
+  end subroutine de_Broglie_wavelength
+
+
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 
   !> Calculate the compressibility and its derivatives.
