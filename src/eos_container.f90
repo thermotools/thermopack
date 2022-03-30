@@ -7,6 +7,7 @@ module eos_container
   use cubic_eos
   use thermopack_var
   use saftvrmie_containers, only: saftvrmie_eos
+  use lj_splined, only: ljs_bh_eos, ljs_wca_eos, ljx_ux_eos_constructor
   use pc_saft_nonassoc, only: PCSAFT_eos
   use extcsp, only: extcsp_eos
 
@@ -116,10 +117,16 @@ contains
     case(eos_single)
       allocate(p_eos, &
            source=single_eos_constructor(nc, eosstr), stat=istat)
-    case(eosBH_pert)
+    case(eosPT)
       select case(eos_subindex)
       case(eosSAFT_VR_MIE)
         allocate(saftvrmie_eos :: p_eos, stat=istat)
+      case(eosLJS_BH)
+        allocate(ljs_bh_eos :: p_eos, stat=istat)
+      case(eosLJS_WCA)
+        allocate(ljs_wca_eos :: p_eos, stat=istat)
+      case(eosLJS_UV, eosLJS_UF, eosLJ_UF)
+        allocate(p_eos, source=ljx_ux_eos_constructor(eosstr), stat=istat)
       case default
         istat = 1
       end select

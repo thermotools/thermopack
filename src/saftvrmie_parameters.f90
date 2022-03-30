@@ -6,7 +6,7 @@
 module saftvrmie_parameters
   use AssocSchemeUtils
   use eosdata, only: eosSAFT_VR_MIE
-  use thermopack_constants, only: ref_len, Rgas => Rgas_default
+  use thermopack_constants, only: uid_len, ref_len, Rgas => Rgas_default
   implicit none
   save
 
@@ -16,7 +16,7 @@ module saftvrmie_parameters
   ! ---------------------------------------------------------------------------
   type :: saftvrmie_data
      integer :: eosidx
-     character (len=10) :: compName
+     character(len=uid_len) :: compName
      ! Pure component fitted parameters.
      real :: m        !< [-]. Mean number of segments.
      real :: sigma    !< [m]. Temperature-independent segment diameter.

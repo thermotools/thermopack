@@ -25,8 +25,13 @@ Module eosdata
   integer, parameter :: meosMbwr19 = 611    !< MBWR19 (Bender) multiparameter equation of state
   integer, parameter :: meosMbwr32 = 612    !< MBWR32 multiparameter equation of state
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
-  integer, parameter :: eosBH_pert = 7      !< Barker-Henderson perturbation theory model
+  integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
+  integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
+  integer, parameter :: eosLJS_WCA = 722    !< Lennard-Jones splined equation of state using Weeks-Chandler-Andersen perturbation theory
+  integer, parameter :: eosLJS_UV = 723     !< Lennard-Jones splined equation of state using Van Westen UV perturbation theory
+  integer, parameter :: eosLJS_UF = 724     !< Lennard-Jones equation of state using Van Westen UF perturbation theory
+  integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
 
@@ -38,7 +43,7 @@ Module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 17
+  integer, parameter :: max_n_eos = 22
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -153,10 +158,50 @@ Module eosdata
        ),&
        !
        eos_label_mapping(&
-       eos_idx = eosBH_pert, &
+       eos_idx = eosPT, &
        eos_subidx = eosSAFT_VR_MIE, &
        short_label = "SAFT-VR-MIE", &
        label = "SAFT for variable range Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_BH, &
+       short_label = "LJS-BH", &
+       label = "LJs equation of state using BH perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_WCA, &
+       short_label = "LJS-WCA", &
+       label = "LJs equation of state using WCA perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_UV, &
+       short_label = "LJS-UV", &
+       label = "LJs equation of state using UV perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_UF, &
+       short_label = "LJS-UF", &
+       label = "LJs equation of state using UF perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJ_UF, &
+       short_label = "LJ-UF", &
+       label = "LJ equation of state using UF perturbation theory", &
        need_alternative_eos = .true. &
        ),&
        !
@@ -193,7 +238,7 @@ Module eosdata
   integer, parameter, dimension(nSAFT) :: SAFTindices = (/&
        eosCPA, &
        eosPC_SAFT,&
-       eosBH_pert,&
+       eosPT,&
        eosPeTS/)
 
 contains

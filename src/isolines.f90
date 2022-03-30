@@ -22,7 +22,7 @@ contains
   subroutine isotherm(T,Pmin,Pmax,z,n,pa,va,sa,ha,na)
     use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
-    use eosTV, only: entropyTV, enthalpyTV, pressure
+    use eosTV, only: entropy_tv, enthalpy_tv, pressure
     use eos, only: specificvolume, getCriticalParam
     use thermo_utils, only: isSingleComp
     use saturation, only: safe_bubP
@@ -69,8 +69,8 @@ contains
         endif
         do i=1,n
           call specificvolume(T,pa(i),z,phase(i),va(i))
-          call enthalpyTV(T,va(i),z,ha(i))
-          call entropyTV(T,va(i),z,sa(i))
+          call enthalpy_tv(T,va(i),z,ha(i))
+          call entropy_tv(T,va(i),z,sa(i))
         enddo
       endif
     else
@@ -85,33 +85,33 @@ contains
         if (phase(i) == SINGLEPH) phase(i) = LIQPH
         if (phase(i) == TWOPH) then
           call specificvolume(T,pa(i),y(i,:),VAPPH,vg)
-          call enthalpyTV(T,vg,y(i,:),hg)
-          call entropyTV(T,vg,y(i,:),sg)
+          call enthalpy_tv(T,vg,y(i,:),hg)
+          call entropy_tv(T,vg,y(i,:),sg)
           call specificvolume(T,pa(i),x(i,:),LIQPH,vl)
-          call enthalpyTV(T,vl,x(i,:),hl)
-          call entropyTV(T,vl,x(i,:),sl)
+          call enthalpy_tv(T,vl,x(i,:),hl)
+          call entropy_tv(T,vl,x(i,:),sl)
           va(i) = beta(i)*vg + betaL(i)*vl
           ha(i) = beta(i)*hg + betaL(i)*hl
           sa(i) = beta(i)*sg + betaL(i)*sl
         else
           call specificvolume(T,pa(i),z,phase(i),va(i))
-          call enthalpyTV(T,va(i),z,ha(i))
-          call entropyTV(T,va(i),z,sa(i))
+          call enthalpy_tv(T,va(i),z,ha(i))
+          call entropy_tv(T,va(i),z,sa(i))
         endif
       enddo
       if (na < n) then
         ta = T
         istart = 1
         if (phase_transition(ta,pa,phase,beta,betaL,Z,X,Y,n,na,istart,ISO_T,T,tsat,vsat)) then
-          call enthalpyTV(T,vsat,z,hg)
-          call entropyTV(T,vsat,z,sg)
+          call enthalpy_tv(T,vsat,z,hg)
+          call entropy_tv(T,vsat,z,sg)
           psat = pressure(T,vsat,z)
           call add_point(istart,ta,pa,va,sa,ha,n,na,t,psat,vsat,sg,hg)
           istart = istart + 1
         endif
         if (phase_transition(ta,pa,phase,beta,betaL,Z,X,Y,n,na,istart,ISO_T,T,tsat,vsat)) then
-          call enthalpyTV(T,vsat,z,hg)
-          call entropyTV(T,vsat,z,sg)
+          call enthalpy_tv(T,vsat,z,hg)
+          call entropy_tv(T,vsat,z,sg)
           psat = pressure(T,vsat,z)
           call add_point(istart,ta,pa,va,sa,ha,n,na,t,psat,vsat,sg,hg)
         endif
@@ -127,7 +127,7 @@ contains
   subroutine isobar(P,Tmin,Tmax,z,n,ta,va,sa,ha,na)
     use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
-    use eosTV, only: entropyTV, enthalpyTV
+    use eosTV, only: entropy_tv, enthalpy_tv
     use eos, only: specificvolume, getCriticalParam
     use thermo_utils, only: isSingleComp
     use saturation, only: safe_bubT
@@ -172,8 +172,8 @@ contains
         endif
         do i=1,n
           call specificvolume(ta(i),P,z,phase(i),va(i))
-          call enthalpyTV(ta(i),va(i),z,ha(i))
-          call entropyTV(ta(i),va(i),z,sa(i))
+          call enthalpy_tv(ta(i),va(i),z,ha(i))
+          call entropy_tv(ta(i),va(i),z,sa(i))
         enddo
       endif
     else
@@ -183,18 +183,18 @@ contains
         if (phase(i) == SINGLEPH) phase(i) = LIQPH
         if (phase(i) == TWOPH) then
           call specificvolume(ta(i),P,y,VAPPH,vg)
-          call enthalpyTV(ta(i),vg,y,hg)
-          call entropyTV(ta(i),vg,y,sg)
+          call enthalpy_tv(ta(i),vg,y,hg)
+          call entropy_tv(ta(i),vg,y,sg)
           call specificvolume(ta(i),P,x,LIQPH,vl)
-          call enthalpyTV(ta(i),vl,x,hl)
-          call entropyTV(ta(i),vl,x,sl)
+          call enthalpy_tv(ta(i),vl,x,hl)
+          call entropy_tv(ta(i),vl,x,sl)
           va(i) = beta*vg + betaL*vl
           ha(i) = beta*hg + betaL*hl
           sa(i) = beta*sg + betaL*sl
         else
           call specificvolume(ta(i),P,z,phase(i),va(i))
-          call enthalpyTV(ta(i),va(i),z,ha(i))
-          call entropyTV(ta(i),va(i),z,sa(i))
+          call enthalpy_tv(ta(i),va(i),z,ha(i))
+          call entropy_tv(ta(i),va(i),z,sa(i))
         endif
       enddo
     endif
@@ -209,7 +209,7 @@ contains
     use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
          tpTmin, tpTmax
     use thermopack_var, only: nc
-    use eosTV, only: entropyTV
+    use eosTV, only: entropy_tv
     use eos, only: specificvolume
     use ph_solver, only: twoPhasePHflash
     real, intent(in) :: h !< Specific enthalpy (J/mol)
@@ -243,14 +243,14 @@ contains
         if (phase == SINGLEPH) phase = LIQPH
         if (phase == TWOPH) then
           call specificvolume(ta(i),pa(i),y,VAPPH,vg)
-          call entropyTV(ta(i),vg,y,sg)
+          call entropy_tv(ta(i),vg,y,sg)
           call specificvolume(ta(i),pa(i),x,LIQPH,vl)
-          call entropyTV(ta(i),vl,x,sl)
+          call entropy_tv(ta(i),vl,x,sl)
           va(i) = beta*vg + betaL*vl
           sa(i) = beta*sg + betaL*sl
         else
           call specificvolume(ta(i),pa(i),z,phase,va(i))
-          call entropyTV(ta(i),va(i),z,sa(i))
+          call entropy_tv(ta(i),va(i),z,sa(i))
         endif
       else
         ierr(i) = 1
@@ -282,7 +282,7 @@ contains
     use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
          tpTmin, tpTmax
     use thermopack_var, only: nc
-    use eosTV, only: enthalpyTV
+    use eosTV, only: enthalpy_tv
     use eos, only: specificvolume
     use ps_solver, only: twoPhasePSflash
     real, intent(in) :: s !< Specific entropy (J/mol/K)
@@ -316,14 +316,14 @@ contains
         if (phase == SINGLEPH) phase = LIQPH
         if (phase == TWOPH) then
           call specificvolume(ta(i),pa(i),y,VAPPH,vg)
-          call enthalpyTV(ta(i),vg,y,hg)
+          call enthalpy_tv(ta(i),vg,y,hg)
           call specificvolume(ta(i),pa(i),x,LIQPH,vl)
-          call enthalpyTV(ta(i),vl,x,hl)
+          call enthalpy_tv(ta(i),vl,x,hl)
           va(i) = beta*vg + betaL*vl
           ha(i) = beta*hg + betaL*hl
         else
           call specificvolume(ta(i),pa(i),z,phase,va(i))
-          call enthalpyTV(ta(i),va(i),z,ha(i))
+          call enthalpy_tv(ta(i),va(i),z,ha(i))
         endif
       else
         ierr(i) = 1

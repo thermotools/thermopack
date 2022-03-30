@@ -19,7 +19,6 @@ module eos
   public :: pseudo_safe
   public :: twoPhaseEnthalpy, twoPhaseEntropy, twoPhaseSpecificVolume
   public :: twoPhaseInternalEnergy
-  public :: idealGibbsSingle, idealEntropySingle, idealEnthalpySingle
   public :: moleWeight, compMoleWeight, getCriticalParam
   public :: residualGibbs
   !
@@ -547,7 +546,7 @@ contains
   !> \author EA, 2014-09
   !----------------------------------------------------------------------
   function twoPhaseInternalEnergy(t,p,z,x,y,beta,phase,betaL) result(u)
-    use eosTV, only: internal_energy
+    use eosTV, only: internal_energy_tv
     implicit none
     ! Input:
     real, intent(in)                  :: t !< K - Temperature
@@ -567,10 +566,10 @@ contains
     if (phase == TWOPH) then
       ! Liquid phase
       call specificVolume(t,p,x,LIQPH,vl)
-      call internal_energy(t,vl,x,ul)
+      call internal_energy_tv(t,vl,x,ul)
       ! Gas phase
       call specificVolume(t,p,y,VAPPH,vg)
-      call internal_energy(t,vg,y,ug)
+      call internal_energy_tv(t,vg,y,ug)
       ! Combined
       if (present(betaL)) then
         u = beta*ug+betaL*ul
@@ -583,7 +582,7 @@ contains
         sphase = LIQPH
       endif
       call specificVolume(t,p,z,sphase,v)
-      call internal_energy(t,v,z,u)
+      call internal_energy_tv(t,v,z,u)
     endif
   end function twoPhaseInternalEnergy
 
@@ -718,138 +717,6 @@ contains
     end select
 
   end subroutine getCriticalParam
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal Gibbs energy.
-  !> Unit: J/mol
-  !>
-  !> \author MH, 2013-03-06
-  !----------------------------------------------------------------------
-  subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
-    use ideal, only: Hideal_apparent, TP_Sideal_apparent
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: g                  !< J/mol - Ideal Gibbs energy
-    real, optional, intent(out) :: dgdt     !< J/mol/K - Temperature differential of ideal Gibbs energy
-    real, optional, intent(out) :: dgdp     !< J/mol/Pa - Pressure differential of ideal Gibbs energy
-    ! Locals
-    real :: s, h, z(nc)
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    s = 0.0
-    h = 0.0
-    z = 0.0
-    z(j) = 1.0
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      h = Hideal_apparent(act_mod_ptr%comps,j,T)
-      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
-    case (TREND)
-      ! TREND
-      h = trend_ideal_enthalpy(T,j)
-      s = trend_ideal_entropy(T,P,j)
-    case default
-      write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
-    g = h - T*s
-    if (present(dgdt)) then
-      dgdt = -s
-    end if
-    if (present(dgdp)) then
-      dgdp=T*Rgas/P
-    end if
-  end subroutine idealGibbsSingle
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal entropy.
-  !> Unit: J/mol/K
-  !>
-  !> \author MH, 2014-01
-  !----------------------------------------------------------------------
-  subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
-    use ideal, only: TP_Sideal_apparent
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: s                  !< J/mol/K - Ideal entropy
-    real, optional, intent(out) :: dsdt     !< J/mol/K^2 - Temperature differential of ideal entropy
-    real, optional, intent(out) :: dsdp     !< J/mol/Pa - Pressure differential of ideal entopy
-    ! Locals
-    real :: z(nc)
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    z = 0.0
-    z(j) = 1.0
-    s = 0.0
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
-    case (TREND)
-      ! TREND
-      s = trend_ideal_entropy(T,P,j)
-      if (present(dsdt)) then
-        dsdt = trend_ideal_Cp(T,j) / T ! J/mol/K^2
-      end if
-    case default
-      write(*,*) 'EoSlib error in eos::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
-    if (present(dsdp)) then
-      dsdp=-Rgas/P
-    end if
-  end subroutine idealEntropySingle
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal enthalpy.
-  !> Unit: J/mol
-  !>
-  !> \author MH, 2014-01
-  !----------------------------------------------------------------------
-  subroutine idealEnthalpySingle(t,p,j,h,dhdt,dhdp)
-    use ideal, only: Hideal_apparent, Cpideal_apparent
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: h                  !< J/mol - Ideal enthalpy
-    real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
-    real, optional, intent(out) :: dhdp     !< J/mol/Pa - Pressure differential of ideal enthalpy
-    ! Locals
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      h = Hideal_apparent(act_mod_ptr%comps,j,T)
-    case (TREND)
-      ! TREND
-      h = trend_ideal_enthalpy(T,j)
-      if (present(dhdt)) then
-        dhdt = trend_ideal_Cp(T,j) ! J/mol/K^2
-      end if
-    case default
-      write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
-    if (present(dhdp)) then
-      dhdp=0.0
-    end if
-  end subroutine idealEnthalpySingle
 
   !----------------------------------------------------------------------
   !> Calculate residual Gibbs energy.
