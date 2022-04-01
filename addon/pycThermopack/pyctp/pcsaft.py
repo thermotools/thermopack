@@ -13,6 +13,7 @@ from . import thermo, saft
 
 c_len_type = thermo.c_len_type
 
+
 class pcsaft(saft.saft):
     """
     Interface to PC-SAFT model
@@ -32,6 +33,12 @@ class pcsaft(saft.saft):
         # SAFT specific methods
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
+
+        # Define parameters to be set by init
+        self.nc = None
+        self.m = None
+        self.sigma = None
+        self.eps_div_kb = None
 
     #################################
     # Init

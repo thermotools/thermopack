@@ -476,7 +476,7 @@ class thermopack(object):
         """Get component name
 
         Args:
-            int: Component FORTRAN index
+            index (int): Component FORTRAN index
 
         Returns:
             comp (str): Component name
@@ -1007,7 +1007,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def idealenthalpysingle(self,temp,j,dhdt=None):
+    def idealenthalpysingle(self, temp, j, dhdt=None):
         """ Calculate specific ideal enthalpy
             Note that the order of the output match the default order of input for the differentials.
             Note further that dhdt, and dhdp only are flags to enable calculation.
@@ -1016,7 +1016,6 @@ class thermopack(object):
             temp (float): Temperature (K)
             j (array_like): Component index
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dhdp (logical, optional): Calculate ideal enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
         Returns:
             float: Specific ideal enthalpy (J/mol), and optionally differentials
@@ -2273,11 +2272,11 @@ class thermopack(object):
             raise Exception("bubble_pressure calclualtion failed")
         return press, y
 
-    def dew_temperature(self,press,z):
+    def dew_temperature(self, press, z):
         """Calculate dew temperature given pressure and composition
 
         Args:
-            temp (float): Pressure (Pa)
+            press (float): Pressure (Pa)
             z (float): Compositon (-)
 
         Raises:
@@ -3140,7 +3139,7 @@ class thermopack(object):
         """Calculate Joule-Thompson inversion curve
 
         Args:
-            temp (float): Temperature (K)
+            z (array like): Compozition
             nmax (int): Array size
 
         Returns:
