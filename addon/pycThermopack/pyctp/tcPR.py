@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -15,10 +13,12 @@ from . import cubic
 
 c_len_type = thermo.c_len_type
 
+
 class tcPR(cubic.cubic):
     """
     Interface to tc-PR
     """
+
     def __init__(self):
         """
         Initialize tcPR specific function pointers
@@ -27,8 +27,8 @@ class tcPR(cubic.cubic):
         super(tcPR, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_tcpr = getattr(self.tp, self.get_export_name("eoslibinit", "init_tcpr"))
-
+        self.eoslibinit_init_tcpr = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_tcpr"))
 
     #################################
     # Init

@@ -1,6 +1,4 @@
-#!/usr/bin/python
-# Support for python2
-from __future__ import print_function
+#!/usr/bin/python3
 #Modify system path
 import sys
 sys.path.append('../pycThermopack/')

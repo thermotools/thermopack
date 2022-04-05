@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -19,6 +17,7 @@ class ljs_wca_base(thermo.thermopack):
     """
     Interface to LJS-WCA
     """
+
     def __init__(self):
         """
         Initialize wca specific function pointers
@@ -27,9 +26,12 @@ class ljs_wca_base(thermo.thermopack):
         super(ljs_wca_base, self).__init__()
 
         # Init methods
-        self.s_eoslibinit_init_ljs = getattr(self.tp, self.get_export_name("eoslibinit", "init_ljs"))
-        self.s_ljs_wca_get_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_wca_get_pure_params"))
-        self.s_ljs_wca_set_pure_params = getattr(self.tp, self.get_export_name("lj_splined", "ljs_wca_set_pure_params"))
+        self.s_eoslibinit_init_ljs = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_ljs"))
+        self.s_ljs_wca_get_pure_params = getattr(
+            self.tp, self.get_export_name("lj_splined", "ljs_wca_get_pure_params"))
+        self.s_ljs_wca_set_pure_params = getattr(
+            self.tp, self.get_export_name("lj_splined", "ljs_wca_set_pure_params"))
 
     @abstractmethod
     def init(self, parameter_reference="Default"):
@@ -109,6 +111,7 @@ class ljs_wca(ljs_wca_base):
     """
     Interface to LJS-WCA
     """
+
     def __init__(self):
         """
         Initialize wca specific function pointers

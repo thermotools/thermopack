@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -14,10 +12,12 @@ from . import cubic
 
 c_len_type = thermo.c_len_type
 
+
 class cpa(cubic.cubic):
     """
     Interface to cubic plus association model
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -26,7 +26,8 @@ class cpa(cubic.cubic):
         super(cpa, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_cpa = getattr(self.tp, self.get_export_name("eoslibinit", "init_cpa"))
+        self.eoslibinit_init_cpa = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_cpa"))
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_kij"))

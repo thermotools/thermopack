@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -15,10 +13,12 @@ from . import saftvrmie
 
 c_len_type = thermo.c_len_type
 
+
 class saftvrqmie(saftvrmie.saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -27,7 +27,8 @@ class saftvrqmie(saftvrmie.saftvrmie):
         super(saftvrqmie, self).__init__()
 
         # Init methods
-        self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_saftvrmie"))
+        self.s_eoslibinit_init_quantum_saftvrmie = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_quantum_saftvrmie"))
 
     #################################
     # Init

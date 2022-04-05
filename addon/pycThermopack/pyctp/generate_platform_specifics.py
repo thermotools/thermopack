@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Module for generating file with platform specifics
 from map_platform_specifics import get_platform_specifics_by_trial_and_error
 
@@ -6,7 +6,8 @@ from map_platform_specifics import get_platform_specifics_by_trial_and_error
 def write_platform_specifics_file(pf_specifics, filename):
     """ Write file for platform specifics"""
     lines = []
-    lines.append("# Module for platform specific stuff. Automatically generated.")
+    lines.append(
+        "# Module for platform specific stuff. Automatically generated.")
     lines.append("\n")
     lines.append("def get_platform_specifics():")
     lines.append("    pf_specifics = {}")

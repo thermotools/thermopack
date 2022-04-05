@@ -1,7 +1,7 @@
-#!/usr/bin/python
-# Support for python2
-from __future__ import print_function
-#Modify system path
+#!/usr/bin/python3
+# Modify system path
+import matplotlib.pyplot as plt
+import numpy as np
 import sys
 sys.path.append('../pycThermopack/')
 # Importing pyThermopack

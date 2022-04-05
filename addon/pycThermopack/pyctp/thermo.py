@@ -1,6 +1,3 @@
-# Support for python2
-from __future__ import print_function
-
 import sys
 from ctypes import *
 from os import path
@@ -11,6 +8,7 @@ if utils.gcc_major_version_greater_than(7):
     c_len_type = c_size_t  # c_size_t on GCC > 7
 else:
     c_len_type = c_int
+
 
 class thermopack(object):
     """
@@ -64,7 +62,8 @@ class thermopack(object):
             self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
 
         # Eos interface
-        self.s_eos_specificvolume = getattr(self.tp, self.get_export_name("eos", "specificvolume"))
+        self.s_eos_specificvolume = getattr(
+            self.tp, self.get_export_name("eos", "specificvolume"))
         self.s_eos_zfac = getattr(self.tp, self.get_export_name("eos", "zfac"))
         self.s_eos_thermo = getattr(self.tp, self.get_export_name("eos", "thermo"))
         self.s_eos_entropy = getattr(self.tp, self.get_export_name("eos", "entropy"))

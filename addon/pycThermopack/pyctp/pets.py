@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class pets(thermo.thermopack):
     """
     Interface to PETS
     """
+
     def __init__(self):
         """
         Initialize pets specific function pointers
@@ -25,8 +25,8 @@ class pets(thermo.thermopack):
         super(pets, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_pets = getattr(self.tp, self.get_export_name("eoslibinit", "init_pets"))
-
+        self.eoslibinit_init_pets = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_pets"))
 
     #################################
     # Init

@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class cubic(thermo.thermopack):
     """
     Interface to cubic
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -25,7 +25,8 @@ class cubic(thermo.thermopack):
         super(cubic, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_cubic"))
+        self.eoslibinit_init_cubic = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_cubic"))
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("", "thermopack_getkij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("", "thermopack_setkijandji"))

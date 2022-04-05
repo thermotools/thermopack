@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class multiparam(thermo.thermopack):
     """
     Interface to multiparameter EOS
     """
+
     def __init__(self):
         """
         Initialize multiparameter EOS specific function pointers
@@ -25,7 +25,8 @@ class multiparam(thermo.thermopack):
         super(multiparam, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_multiparameter = getattr(self.tp, self.get_export_name("eoslibinit", "init_multiparameter"))
+        self.eoslibinit_init_multiparameter = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_multiparameter"))
 
     #################################
     # Init

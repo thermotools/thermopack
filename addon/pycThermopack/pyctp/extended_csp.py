@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class ext_csp(thermo.thermopack):
     """
     Interface to tc-PR
     """
+
     def __init__(self):
         """
         Initialize extended corredsponding state model
@@ -25,8 +25,8 @@ class ext_csp(thermo.thermopack):
         super(ext_csp, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_extcsp = getattr(self.tp, self.get_export_name("eoslibinit", "init_extcsp"))
-
+        self.eoslibinit_init_extcsp = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_extcsp"))
 
     #################################
     # Init

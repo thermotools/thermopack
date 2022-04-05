@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class ljs_bh(thermo.thermopack):
     """
     Interface to LJS-BH
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -25,7 +25,8 @@ class ljs_bh(thermo.thermopack):
         super(ljs_bh, self).__init__()
 
         # Options methods
-        self.s_ljs_bh_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_model_control"))
+        self.s_ljs_bh_model_control = getattr(
+            self.tp, self.get_export_name("lj_splined", "ljs_bh_model_control"))
 
         # Init methods
         self.s_eoslibinit_init_ljs_bh = getattr(self.tp, self.get_export_name("eoslibinit", "init_ljs"))

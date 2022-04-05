@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -13,10 +11,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class lee_kesler(thermo.thermopack):
     """
     Interface to Lee-Kesler model
     """
+
     def __init__(self):
         """
         Initialize Lee-Kesler specific function pointers
@@ -25,7 +25,8 @@ class lee_kesler(thermo.thermopack):
         super(lee_kesler, self).__init__()
 
         # Init methods
-        self.eoslibinit_init_lee_kesler = getattr(self.tp, self.get_export_name("eoslibinit", "init_lee_kesler"))
+        self.eoslibinit_init_lee_kesler = getattr(
+            self.tp, self.get_export_name("eoslibinit", "init_lee_kesler"))
 
     #################################
     # Init
