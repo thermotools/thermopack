@@ -133,6 +133,8 @@ module lj_splined
   public :: uv_q_of_t, uv_hs_b2, ljs_b2, uv_a1_u_mult_t
   public :: uv_a1_b2, uv_phi, calc_ljs_wca_ai
   public :: get_bh_ljs_eos_pointer
+  public :: uv_delta_b2_overall, calc_uv_wca, uv_a1_u
+  public :: calc_uv_wca_tvn
 
 contains
 
@@ -3323,6 +3325,8 @@ subroutine test_uv_LJs()
   real :: a,a_V,a_t,a_n(1),a_VV,a_tt,a_Vt,a_nn(1,1),a_nT(1),a_nV(1)
   real :: a1_V,a1_n(1),a1_VV,a1_Vt,a1_nn(1,1),a1_nT(1),a1_nV(1)
   real :: a2,a2_V,a2_t,a2_n(1),a2_VV,a2_tt,a2_Vt,a2_nn(1,1),a2_nT(1),a2_nV(1)
+  class(ljx_ux_eos), pointer :: eos
+  allocate(eos, source=ljx_ux_eos_constructor("LJS-UV"))
   n = (/1.2/)
   n0 = n
   V = 1.0e-4
@@ -3457,21 +3461,26 @@ subroutine test_uv_LJs()
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a1,a1_r,a1_t,a1_rr,a1_tt,a1_rt)
+  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a1,a1_r,a1_t,a1_rr,a1_tt,a1_rt,&
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt)
+  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt)
+  call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   print *,a1
   print *,a1_T,(a12-a11)/(2*dT)
   print *,a1_TT,(a12_T-a11_T)/(2*dT)
   print *,a1_rT,(a12_r-a11_r)/(2*dT)
   T = T0
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA(sigma,eps_divk,rho+eps,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt)
-  call calc_uv_WCA(sigma,eps_divk,rho-eps,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt)
+  call calc_uv_WCA(sigma,eps_divk,rho+eps,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+  call calc_uv_WCA(sigma,eps_divk,rho-eps,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   print *,a1_r,(a12-a11)/(2*eps)
   print *,a1_rr,(a12_r-a11_r)/(2*eps)
   print *,a1_rT,(a12_T-a11_T)/(2*eps)
@@ -3481,13 +3490,13 @@ subroutine test_uv_LJs()
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V,n,dhs,a,a_t,a_v,a_n,a_tt,a_vv,a_Vt,a_nT,a_nV,a_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a,a_t,a_v,a_n,a_tt,a_vv,a_Vt,a_nT,a_nV,a_nn)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
 
   print *,"LJs",a
   print *,"LJs",a_t,(a2-a1)/(2*dT)
@@ -3499,8 +3508,8 @@ subroutine test_uv_LJs()
   T = T0
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   dV = V*eps
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V+dv,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V-dv,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V+dv,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V-dv,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
   print *,"LJs",a_v,(a2-a1)/(2*dV)
   print *,"LJs",a_vv,(a2_v-a1_v)/(2*dV), (a2-2*a+a1)/dV**2
   print *,"LJs",a_vt,(a2_t-a1_t)/(2*dV)
@@ -3508,9 +3517,9 @@ subroutine test_uv_LJs()
 
   print *,"n"
   n2(1) = n(1) + eps
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V,n2,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n2,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
   n1(1) = n(1) - eps
-  call calc_uv_WCA_TVN(1,sigma,eps_divk,T,V,n1,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
+  call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n1,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
   print *,"LJs",a_n,(a2-a1)/(2*eps)
   print *,"LJs",a_nn,(a2_n-a1_n)/(2*eps), (a2-2*a+a1)/eps**2
   print *,"LJs",a_nt,(a2_t-a1_t)/(2*eps)
