@@ -593,9 +593,9 @@ class thermopack(object):
             press (float): Pressure (Pa)
             x (array_like): Molar composition
             phase (int): Calcualte root for specified phase
-            dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
-            dvdn (logical, optional): Calculate volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+            dvdt (logical, optional): Calculate molar volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dvdp (logical, optional): Calculate molar volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dvdn (logical, optional): Calculate molar volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
             float: Specific volume (m3/mol), and optionally differentials
