@@ -10,7 +10,7 @@ module critical
   use thermopack_constants, only: verbose, VAPPH, LIQPH, Rgas
   use thermopack_var, only: nc, thermo_model, get_active_thermo_model
   use eos, only : thermo, pseudo_safe
-  use eosTV, only : thermoTV, pressure
+  use eosTV, only : thermo_tv, pressure
   implicit none
   private
   save
@@ -401,7 +401,7 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   function calcStabMinEigTV(t,v,z) result(lambdaMin)
-    use eosTV, only: thermoTV
+    use eosTV, only: thermo_tv
     implicit none
     real, dimension(nc), intent(in) :: z !< Overall composition
     real, intent(in) :: T !< Temperature (K)
@@ -415,7 +415,7 @@ contains
     integer :: INFO, LWORK
     real, dimension(nc) :: W
     real, dimension(3*nc) :: WORK
-    call thermoTV(t,v,z,lnfug,lnphin=B)
+    call thermo_tv(t,v,z,lnfug,lnphin=B)
     zs = sqrt(z)
     do i=1,nc
       do j=1,nc
@@ -441,7 +441,7 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   subroutine calcBmatrixTV(t,v,z,zs,B,u,lambdaMin,lnfugz,lnfugTz,lnfugVz)
-    use eosTV, only: thermoTV
+    use eosTV, only: thermo_tv
     implicit none
     real, dimension(nc), intent(in) :: z !< Overall composition
     real, dimension(nc), intent(in) :: zs !< z
@@ -459,7 +459,7 @@ contains
     real, dimension(nc,nc) :: A
     real, dimension(nc) :: L
     real, dimension(3*nc) :: WORK
-    call thermoTV(t,v,z,lnfugz,lnfugTz,lnfugVz,B)
+    call thermo_tv(t,v,z,lnfugz,lnfugTz,lnfugVz,B)
 
     do i=1,nc
       do j=1,nc
@@ -1887,7 +1887,7 @@ contains
     ! Locals
     real, dimension(nc) :: lnfugy
     y = s*u*zs + z
-    call thermoTV(t,v,y,lnfugy,lnfugTs,lnfugVs)
+    call thermo_tv(t,v,y,lnfugy,lnfugTs,lnfugVs)
     Py = pressure(t,v,y,Pvy,PTy)
     g = lnfugy-lnfugz
     f = sum(y*g) - (Py-Pz)*v/(T*Rgas)
@@ -2386,7 +2386,7 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine critFunEnd(Fun,X,param)
-    use eosTV, only: pressure, thermoTV
+    use eosTV, only: pressure, thermo_tv
     implicit none
     real, dimension(6), intent(out) :: Fun !< Function value
     real, dimension(6), intent(in) :: X !< Variables
@@ -2436,7 +2436,7 @@ contains
     Fun(2) = c
     Pzy = pressure(t,vy,zy)
     Fun(3) = (Pz-Pzy)/param(2)
-    call thermoTV(t,vy,zy,lnfy)
+    call thermo_tv(t,vy,zy,lnfy)
     Fun(4:5) = lnfugz - lnfy
     Fun(6) = sum(zy) - 1
     !print *,t,v,b,c
@@ -2449,7 +2449,7 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine critJacEnd(dF,X,param)
-    use eosTV, only: pressure, thermoTV
+    use eosTV, only: pressure, thermo_tv
     implicit none
     real, dimension(6,6), intent(out) :: dF !< Function differential
     real, dimension(6), intent(in) :: X !< Variables
@@ -2531,8 +2531,8 @@ contains
     dF(3,6) = -vy*dpydv/param(2)
 
     ! Fugacities
-    call thermoTV(t,vy,zy,lnfy,dlnfydt,dlnfydv,dlnfydn)
-    call thermoTV(t,vc,zc,lnfc,dlnfcdt,dlnfcdv,dlnfcdn)
+    call thermo_tv(t,vy,zy,lnfy,dlnfydt,dlnfydv,dlnfydn)
+    call thermo_tv(t,vc,zc,lnfc,dlnfcdt,dlnfcdv,dlnfcdn)
     dF(4,1) = sum(dlnfcdn(1,:)*vmult)
     dF(5,1) = sum(dlnfcdn(2,:)*vmult)
     dF(4:5,2) = T*(dlnfcdt-dlnfydt)

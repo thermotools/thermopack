@@ -473,7 +473,7 @@ contains
   !> \author MH, 2013-03-01
   !--------------------------------------------------------------------------
   subroutine solidGibbs_fug(T,P,iSolid,lnfug,dlnfugdt,dlnfugdp)
-    use eos, only: idealGibbsSingle
+    use ideal, only: idealGibbsSingle
     implicit none
     real, intent(in) :: T !< K - Temperature
     real, intent(in) :: P !< Pa - Pressure
@@ -596,6 +596,5 @@ contains
       print *,'Pressure (bar):  ',p_tr*1.0e-5
     endif
   end subroutine initDryIce
-
 
 end module solideos

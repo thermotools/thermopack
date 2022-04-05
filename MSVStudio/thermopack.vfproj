@@ -48,7 +48,7 @@
 		<File RelativePath="..\src\association_var.f90"/>
 		<File RelativePath="..\src\assocschemeutils.f90"/>
 		<File RelativePath="..\src\binaryplot.f90"/>
-		<File RelativePath="..\src\cbAlpha.f90"/>
+		<File RelativePath="..\src\cbalpha.f90"/>
 		<File RelativePath="..\src\cbbeta.f90"/>
 		<File RelativePath="..\src\cbhelm.f90"/>
 		<File RelativePath="..\src\cbmix.f90"/>
@@ -69,16 +69,19 @@
 		<File RelativePath="..\src\eos_parameters.f90"/>
 		<File RelativePath="..\src\eosdata.f90"/>
 		<File RelativePath="..\src\eoslibinit.f90"/>
-		<File RelativePath="..\src\eosTV.f90"/>
+		<File RelativePath="..\src\eostv.f90"/>
 		<File RelativePath="..\src\error.f90"/>
 		<File RelativePath="..\src\excess_gibbs.f90"/>
 		<File RelativePath="..\src\extcsp.f90"/>
 		<File RelativePath="..\src\external.f90"/>
 		<File RelativePath="..\src\h2o_gibbs.f90"/>
+		<File RelativePath="..\src\hardsphere_wca.f90"/>
 		<File RelativePath="..\src\ideal.f90"/>
 		<File RelativePath="..\src\idealh2.f90"/>
 		<File RelativePath="..\src\isolines.f90"/>
+		<File RelativePath="..\src\joule_thompson_inversion.f90"/>
 		<File RelativePath="..\src\leekesler.f90"/>
+		<File RelativePath="..\src\lj_splined.f90"/>
 		<File RelativePath="..\src\mbwr.f90"/>
 		<File RelativePath="..\src\mbwr_additional.f90"/>
 		<File RelativePath="..\src\mbwrdata.f90"/>
@@ -106,6 +109,7 @@
 		<File RelativePath="..\src\saft_rdf.f90"/>
 		<File RelativePath="..\src\saftvrmie_chain.f90"/>
 		<File RelativePath="..\src\saftvrmie_containers.f90"/>
+		<File RelativePath="..\src\saftvrmie_datadb.f90"/>
 		<File RelativePath="..\src\saftvrmie_dispersion.f90"/>
 		<File RelativePath="..\src\saftvrmie_hardsphere.f90"/>
 		<File RelativePath="..\src\saftvrmie_interface.f90"/>

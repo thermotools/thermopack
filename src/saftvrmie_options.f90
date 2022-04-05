@@ -10,51 +10,24 @@ module saftvrmie_options
   save
 
   !-------------------------------------------------------------------
-  ! Quantum correction parameters
-  integer :: quantum_correction = 0       ! Specifies order of quantum corr. included
-  integer :: quantum_correction_hs = 0    ! Specifies the Q-corr of the reference hard-sphere
-  integer :: quantum_correction_spec = 0  ! 0: Feynman-Hibbs, 1: Jaen-Kahn
-  logical :: quantum_correct_A2 = .true.  ! Include quantum correction to A2
-
-
-  logical :: use_epsrule_Lafitte = .true. ! Use the Lafitte combining rule for epsilon
-  logical :: exact_binary_dhs=.false.     ! If false, use the Lafitte approximation dij=(di+dj)/2
-  logical :: exact_crosspot_eff=.true.    ! Use exact sigma_eff and eps_eff for cross interaction (doesn't seem to improve much, and slows the code down)
+  ! Flags for how to mix ZETA
   integer, parameter :: ZETA_LAFITTE=1, ZETA_LINEAR=2, ZETA_LEONARD=3
-  integer :: zeta_mixing_rule = ZETA_LAFITTE   ! Specifies packing fraction treatement for mixtures (LAFITTE or LINEAR)
 
   !-------------------------------------------------------------------
   ! Flag for switching on hard-sphere EoS
   integer, parameter :: HS_EOS_ORIGINAL = 0, &
        HS_EOS_SANTOS = 1, &
        HS_EOS_PURE_DIJ = 2
-  integer :: hardsphere_EoS = HS_EOS_ORIGINAL
   integer, parameter :: KHS_EOS_LAFITTE = 0, & ! Carnahan-Starling
        KHS_EOS_BMCSL = 1, & ! Boublik-Mansoori-Carnahan-Starling-Leland
        KHS_EOS_SANTOS = 2 ! Non-additive Santos
-  integer :: Khs_EoS = KHS_EOS_LAFITTE
 
   ! Flag for switching on which pure hard-sphere EoS is used with HS_EOS_SANTOS
   integer, parameter :: PURE_HS_CSK = 0, PURE_HS_CS = 1
-  integer :: pure_hs_EoS = PURE_HS_CS
-  logical :: enable_hs_extra = .false.  !> Option to enable/disable extra-term to hard-sphere reference
 
   !-------------------------------------------------------------------
   ! Dispersion terms
   integer, parameter :: A3_LAFITTE = 1, A3_SIJ_PREFAC = 2
-  integer :: a3_model = A3_LAFITTE
-
-  logical :: enable_hs = .true.  !> Option to enable/disable hard-sphere contribution
-  logical :: enable_A1 = .true.  !> Option to enable/disable A1 contribution
-  logical :: enable_A3 = .true.  !> Option to enable/disable A3 contribution
-  logical :: enable_A2 = .true.  !> Option to enable/disable A2 contribution
-  logical :: enable_chain = .true. !> Option to enable/disable chain contribution
-
-  !-------------------------------------------------------------------
-  ! Truncation and shift corrections
-  logical :: enable_truncation_correction = .false. !> Option to enable/disable truncation correction
-  logical :: enable_shift_correction = .false. !> Option to enable/disable shift correction
-  real    :: r_cut = 3.5 !> Truncation radius
 
   !-------------------------------------------------------------------
   ! Overall model selections
@@ -62,26 +35,77 @@ module saftvrmie_options
   integer, parameter :: LAFITTE_HS_REF=1, SINGLE_COMP_HS_REF=2
   integer, parameter :: ADDITIVE_HS_REF=3, NON_ADD_HS_REF=4
 
+  type saftvrmie_opt
+    ! Quantum correction parameters
+    integer :: quantum_correction = 0       ! Specifies order of quantum corr. included
+    integer :: quantum_correction_hs = 0    ! Specifies the Q-corr of the reference hard-sphere
+    integer :: quantum_correction_spec = 0  ! 0: Feynman-Hibbs, 1: Jaen-Kahn
+    logical :: quantum_correct_A2 = .true.  ! Include quantum correction to A2
+
+
+    ! Mixing rules
+    logical :: use_epsrule_Lafitte = .true. ! Use the Lafitte combining rule for epsilon
+    logical :: exact_binary_dhs=.false.     ! If false, use the Lafitte approximation dij=(di+dj)/2
+    logical :: exact_crosspot_eff=.true.    ! Use exact sigma_eff and eps_eff for cross interaction (doesn't seem to improve much, and slows the code down)
+    integer :: zeta_mixing_rule = ZETA_LAFITTE   ! Specifies packing fraction treatement for mixtures (LAFITTE or LINEAR)
+
+    ! Flag for switching on hard-sphere EoS
+    integer :: hardsphere_EoS = HS_EOS_ORIGINAL
+    integer :: Khs_EoS = KHS_EOS_LAFITTE
+
+    ! Flag for switching on which pure hard-sphere EoS is used with HS_EOS_SANTOS
+    integer :: pure_hs_EoS = PURE_HS_CS
+    logical :: enable_hs_extra = .false.  !> Option to enable/disable extra-term to hard-sphere reference
+
+    !-------------------------------------------------------------------
+    ! Dispersion terms
+    integer :: a3_model = A3_LAFITTE
+
+    logical :: enable_hs = .true.  !> Option to enable/disable hard-sphere contribution
+    logical :: enable_A1 = .true.  !> Option to enable/disable A1 contribution
+    logical :: enable_A3 = .true.  !> Option to enable/disable A3 contribution
+    logical :: enable_A2 = .true.  !> Option to enable/disable A2 contribution
+    logical :: enable_chain = .true. !> Option to enable/disable chain contribution
+
+    !-------------------------------------------------------------------
+    ! Truncation and shift corrections
+    logical :: enable_truncation_correction = .false. !> Option to enable/disable truncation correction
+    logical :: enable_shift_correction = .false. !> Option to enable/disable shift correction
+    real    :: r_cut = 3.5 !> Truncation radius
+  contains
+    procedure, public :: saftvrmieaij_model_options
+    procedure, public :: set_r_cut
+    procedure, public :: truncation_correction_model_control
+    procedure, public :: check_model_consitency
+    procedure, public :: set_Lafitte_option
+    procedure, public :: print
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_model_options
+    generic, public :: assignment(=) => assign_saftvrmie_model_options
+  end type saftvrmie_opt
+
+
 contains
 
   !> Model options....
   !! \author Morten Hammer, January 2019
-  subroutine saftvrmieaij_model_options(model, hs_reference)
+  subroutine saftvrmieaij_model_options(svrm_o, model, hs_reference)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
     integer, intent(in) :: model
     integer, optional, intent(in) :: hs_reference
     select case(model)
     case(LAFITTE)
-       call set_Lafitte_option()
+       call svrm_o%set_Lafitte_option()
     case(QSAFT_FH1)
-       call set_Lafitte_option()
-       quantum_correction = 1
-       quantum_correction_hs = 1
-       quantum_correction_spec = 0
+       call svrm_o%set_Lafitte_option()
+       svrm_o%quantum_correction = 1
+       svrm_o%quantum_correction_hs = 1
+       svrm_o%quantum_correction_spec = 0
     case(QSAFT_FH2)
-       call set_Lafitte_option()
-       quantum_correction = 2
-       quantum_correction_hs = 2
-       quantum_correction_spec = 0
+       call svrm_o%set_Lafitte_option()
+       svrm_o%quantum_correction = 2
+       svrm_o%quantum_correction_hs = 2
+       svrm_o%quantum_correction_spec = 0
     case default
        call stoperror("Unknown model options for SAFT-VR Mie")
     end select
@@ -91,73 +115,133 @@ contains
        case(LAFITTE_HS_REF)
           ! As already set
        case(SINGLE_COMP_HS_REF)
-          hardsphere_EoS = HS_EOS_PURE_DIJ
-          zeta_mixing_rule = ZETA_LEONARD
-          exact_binary_dhs = .true.
+          svrm_o%hardsphere_EoS = HS_EOS_PURE_DIJ
+          svrm_o%zeta_mixing_rule = ZETA_LEONARD
+          svrm_o%exact_binary_dhs = .true.
        case(ADDITIVE_HS_REF)
-          hardsphere_EoS = HS_EOS_ORIGINAL
-          zeta_mixing_rule = ZETA_LAFITTE
-          exact_binary_dhs = .false.
-          enable_hs_extra = .true.
+          svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+          svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+          svrm_o%exact_binary_dhs = .false.
+          svrm_o%enable_hs_extra = .true.
        case(NON_ADD_HS_REF)
-          hardsphere_EoS = HS_EOS_SANTOS
-          pure_hs_EoS = PURE_HS_CS
-          exact_binary_dhs = .true.
+          svrm_o%hardsphere_EoS = HS_EOS_SANTOS
+          svrm_o%pure_hs_EoS = PURE_HS_CS
+          svrm_o%exact_binary_dhs = .true.
        case default
           call stoperror("Unknown HS model options for SAFT-VR Mie")
        end select
     endif
-  contains
-    subroutine set_Lafitte_option()
-      use_epsrule_Lafitte = .true.
-      exact_binary_dhs = .false.
-      zeta_mixing_rule = ZETA_LAFITTE
-      exact_crosspot_eff = .true.
-      hardsphere_EoS = HS_EOS_ORIGINAL
-      a3_model = A3_LAFITTE
-      enable_hs = .true.
-      enable_A1 = .true.
-      enable_A3 = .true.
-      enable_A2 = .true.
-      enable_chain = .true.
-      enable_truncation_correction = .false.
-      enable_hs_extra = .false.
-      quantum_correction = 0
-      quantum_correction_hs = 0
-      quantum_correction_spec = 0
-      quantum_correct_A2 = .true.
-      Khs_EoS = KHS_EOS_LAFITTE
-    end subroutine set_Lafitte_option
   end subroutine saftvrmieaij_model_options
+
+  subroutine set_Lafitte_option(svrm_o)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
+    svrm_o%use_epsrule_Lafitte = .true.
+    svrm_o%exact_binary_dhs = .false.
+    svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+    svrm_o%exact_crosspot_eff = .true.
+    svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+    svrm_o%a3_model = A3_LAFITTE
+    svrm_o%enable_hs = .true.
+    svrm_o%enable_A1 = .true.
+    svrm_o%enable_A3 = .true.
+    svrm_o%enable_A2 = .true.
+    svrm_o%enable_chain = .true.
+    svrm_o%enable_truncation_correction = .false.
+    svrm_o%enable_hs_extra = .false.
+    svrm_o%quantum_correction = 0
+    svrm_o%quantum_correction_hs = 0
+    svrm_o%quantum_correction_spec = 0
+    svrm_o%quantum_correct_A2 = .true.
+    svrm_o%Khs_EoS = KHS_EOS_LAFITTE
+  end subroutine set_Lafitte_option
 
   !> Set r_cut, and enable truncation correction
   !!
   !! \author Morten Hammer, November 2018
-  subroutine set_r_cut(r_c)
+  subroutine set_r_cut(svrm_o, r_c)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
     real, intent(in) :: r_c ! Potential cut-off radius
-    r_cut = r_c
-    enable_truncation_correction = .true.
+    svrm_o%r_cut = r_c
+    svrm_o%enable_truncation_correction = .true.
   end subroutine set_r_cut
 
   !> Enable/disable truncation and shift correction
   !!
   !! \author Morten Hammer, November 2018
-  subroutine truncation_correction_model_control(truncation,shift)
+  subroutine truncation_correction_model_control(svrm_o, truncation,shift)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
     logical, intent(in) :: truncation,shift
-    enable_truncation_correction = truncation
-    enable_shift_correction = shift
+    svrm_o%enable_truncation_correction = truncation
+    svrm_o%enable_shift_correction = shift
   end subroutine truncation_correction_model_control
 
   !> Check that model parameters are consistent
   !!
   !! \author Morten Hammer, March 2019
-  subroutine check_model_consitency()
+  subroutine check_model_consitency(svrm_o)
+    class(saftvrmie_opt), intent(in) :: svrm_o
     !SINGLE_COMP_HS_REF
-    if (  hardsphere_EoS == HS_EOS_PURE_DIJ .and. &
-         (zeta_mixing_rule /= ZETA_LEONARD .or. .not. exact_binary_dhs)) then
+    if (  svrm_o%hardsphere_EoS == HS_EOS_PURE_DIJ .and. &
+         (svrm_o%zeta_mixing_rule /= ZETA_LEONARD .or. .not. svrm_o%exact_binary_dhs)) then
        call stoperror("Single component HS reference requires ZETA_LEONARD mixing rules and exact_binary_dhs")
     endif
 
   end subroutine check_model_consitency
+
+  subroutine assign_saftvrmie_model_options(this,other)
+    class(saftvrmie_opt), intent(inout) :: this
+    class(saftvrmie_opt), intent(in) :: other
+    !
+    this%use_epsrule_Lafitte = other%use_epsrule_Lafitte
+    this%exact_binary_dhs = other%exact_binary_dhs
+    this%zeta_mixing_rule = other%zeta_mixing_rule
+    this%exact_crosspot_eff = other%exact_crosspot_eff
+    this%hardsphere_EoS = other%hardsphere_EoS
+    this%a3_model = other%a3_model
+    this%enable_hs = other%enable_hs
+    this%enable_A1 = other%enable_A1
+    this%enable_A3 = other%enable_A3
+    this%enable_A2 = other%enable_A2
+    this%enable_chain = other%enable_chain
+    this%enable_truncation_correction = other%enable_truncation_correction
+    this%enable_hs_extra = other%enable_hs_extra
+    this%quantum_correction = other%quantum_correction
+    this%quantum_correction_hs = other%quantum_correction_hs
+    this%quantum_correction_spec = other%quantum_correction_spec
+    this%quantum_correct_A2 = other%quantum_correct_A2
+    this%Khs_EoS = other%Khs_EoS
+    this%enable_shift_correction = other%enable_shift_correction
+    this%r_cut = other%r_cut
+    this%pure_hs_EoS = other%pure_hs_EoS
+
+  end subroutine assign_saftvrmie_model_options
+
+  subroutine print(this)
+    class(saftvrmie_opt), intent(in) :: this
+    !
+    print *,"saftvrmie options:"
+    print *, "use_epsrule_Lafitte:", this%use_epsrule_Lafitte
+    print *, "exact_binary_dhs:", this%exact_binary_dhs
+    print *, "zeta_mixing_rule:", this%zeta_mixing_rule
+    print *, "exact_crosspot_eff:", this%exact_crosspot_eff
+    print *, "hardsphere_EoS:", this%hardsphere_EoS
+    print *, "a3_model:", this%a3_model
+    print *, "enable_hs:", this%enable_hs
+    print *, "enable_A1:", this%enable_A1
+    print *, "enable_A3:", this%enable_A3
+    print *, "enable_A2:", this%enable_A2
+    print *, "enable_chain:", this%enable_chain
+    print *, "enable_truncation_correction:", this%enable_truncation_correction
+    print *, "enable_hs_extra:", this%enable_hs_extra
+    print *, "quantum_correction:", this%quantum_correction
+    print *, "quantum_correction_hs:", this%quantum_correction_hs
+    print *, "quantum_correction_spec:", this%quantum_correction_spec
+    print *, "quantum_correct_A2:", this%quantum_correct_A2
+    print *, "Khs_EoS:", this%Khs_EoS
+    print *, "enable_shift_correction:", this%enable_shift_correction
+    print *, "r_cut:", this%r_cut
+    print *, "pure_hs_EoS:", this%pure_hs_EoS
+
+  end subroutine print
 
 end module saftvrmie_options

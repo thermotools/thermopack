@@ -1,4 +1,4 @@
-"""Module for calculating Mie potential."""
+"""Module for automatic generation of FORTRAN code of component data."""
 from __future__ import print_function
 import numpy as np
 from sys import exit
@@ -6,9 +6,8 @@ import os
 import math
 import json
 from datetime import datetime
-
-I = "  "
-N_TAGS_PER_LINE = 5
+from data_utils import I, N_TAGS_PER_LINE, \
+    sci_print_float, print_float
 
 def get_keys_from_base_name(d,name):
     key_list = []
@@ -200,12 +199,13 @@ class component(object):
 
         return code_lines
 
+
 class comp_list(object):
     """Read component data files into list save and generate
     component data file for Thermopack
     """
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, comp=component):
         """Load files from data-base
         Arguments:
         filename - path to folder
@@ -217,14 +217,14 @@ class comp_list(object):
         self.nMC = None
         self.nVS = None
         if path is None:
-            path = "../../fluids/"
+            path = "../../../fluids/"
         file_list = os.listdir(path)
         file_list.sort()
         self.comp_list = []
         for fl in file_list:
-            filepath = os.path.join("../../fluids/", fl)
+            filepath = os.path.join(path, fl)
             print(fl)
-            self.comp_list.append(component(filepath))
+            self.comp_list.append(comp(filepath))
 
     def save_fortran_file(self,filename):
         """Generate fortran file for Thermopack
@@ -463,7 +463,6 @@ class comp_list(object):
             line = line.replace("VSTAG",vstag)
             self.nVS += 1
         return line
-
 
 if __name__ == "__main__":
     compl = comp_list()

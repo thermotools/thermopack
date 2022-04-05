@@ -80,7 +80,7 @@ contains
   function safe_dewT(P,X,Y,ierr) result(Tdew)
     use thermo_utils, only: maxComp, isSingleComp
     use eos, only: getCriticalParam, specificVolume
-    use eosTV, only: entropyTV
+    use eosTV, only: entropy_tv
     implicit none
     real, dimension(nc), intent(out) :: X
     real, dimension(nc), intent(in) :: Y
@@ -110,8 +110,8 @@ contains
         do i=1,n
           call specificVolume(Tdew,P_red,X,LIQPH,vL)
           call specificVolume(Tdew,P_red,Y,VAPPH,vG)
-          call entropyTV(Tdew,vL,X,sL)
-          call entropyTV(Tdew,vG,Y,sG)
+          call entropy_tv(Tdew,vL,X,sL)
+          call entropy_tv(Tdew,vG,Y,sG)
           dPdT = (sG-sL)/(vG-vL)
           dP = min(dP,p-P_red)
           P_red = P_red + dP

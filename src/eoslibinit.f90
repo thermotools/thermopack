@@ -20,7 +20,7 @@ module eoslibinit
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
-  public :: init_multiparameter, init_pets
+  public :: init_multiparameter, init_pets, init_ljs, init_lj
   public :: silent_init
   public :: redefine_critical_parameters
   public :: init_volume_translation
@@ -79,7 +79,6 @@ contains
     use cbselect,   only: SelectCubicEOS
     use compdata,   only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use eosdata,    only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosBH_pert
     !$ use omp_lib, only: omp_get_max_threads
     ! Method information
     character(len=*), intent(in) :: eos    !< String defining equation of state
@@ -354,7 +353,6 @@ contains
     character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     !
     character(len=200) :: parameter_reference
-    type(thermo_model), pointer      :: act_mod_ptr
     parameter_reference = "tcPR"
     if (present(parameter_ref)) then
       parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
@@ -838,6 +836,7 @@ contains
   subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
     use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
+    use saftvrmie_containers, only: svrm_opt
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -845,18 +844,29 @@ contains
     character(len=clen) :: param_ref !< Data set reference
     integer :: FH, FH_model
     if (present(feynman_hibbs_order)) then
-      FH = feynman_hibbs_order
+      FH = max(min(feynman_hibbs_order, 2),0)
     else
-      FH = 1
+      FH = 1 ! Default to FH1
     endif
     FH_model = FH + 1
-    call saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
     if (present(parameter_reference)) then
       param_ref = parameter_reference
     else
-      param_ref = "AASEN2019-FH1" ! Default to AASEN2019-FH1
+      param_ref = "DEFAULT"
+    endif
+    if (str_eq(param_ref, "DEFAULT")) then
+      ! Default parameter sets
+      select case(FH)
+      case(0) ! FH0
+        param_ref = "AASEN2019-FH0"
+      case(1) ! FH1
+        param_ref = "AASEN2019-FH1"
+      case(2) ! FH2
+        param_ref = "AASEN2019-FH2"
+      end select
     endif
     call init_saftvrmie(comps,param_ref)
+    call svrm_opt%saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------
@@ -1198,5 +1208,112 @@ contains
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_pets
+
+  !----------------------------------------------------------------------------
+  !> Initialize Lennard-Jones splined equation of state using perturbation theory
+  !----------------------------------------------------------------------------
+  subroutine init_ljs(model,parameter_reference)
+    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "BH", "WCA"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    !
+    call init_lj_ljs("LJS",model,parameter_reference)
+  end subroutine init_ljs
+
+  !----------------------------------------------------------------------------
+  !> Initialize Lennard-Jones equation of state using perturbation theory
+  !----------------------------------------------------------------------------
+  subroutine init_lj(model,parameter_reference)
+    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    !
+    call init_lj_ljs("LJ",model,parameter_reference)
+  end subroutine init_lj
+
+  !----------------------------------------------------------------------------
+  !> Initialize Lennard-Jones (spline) equation of state using perturbation theory
+  !----------------------------------------------------------------------------
+  subroutine init_lj_ljs(potential,model,parameter_reference)
+    use compdata, only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK, ref_len
+    use stringmod,  only: uppercase
+    use volume_shift, only: NOSHIFT
+    use saft_interface, only: saft_type_eos_init
+    !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), intent(in) :: potential !< Potential selection: "LJ", "LJS"
+    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF", "BH", "WCA"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, ncbeos, i, ierr, index, len_model
+    character(len=3)                 :: comps_upper
+    type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
+    character(len=ref_len)           :: param_ref
+    character(len=7)                 :: model_local
+
+    ! Initialize Pets eos
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
+      index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+    ! Set component list
+    comps_upper="AR"
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    !
+    if (present(model)) then
+      len_model = min(3,len_trim(model))
+      model_local = trim(potential)//"-"//uppercase(model(1:len_model))
+    else
+      model_local = trim(potential)//"-UV"
+    endif
+    call allocate_eos(ncomp, model_local)
+
+    ! Number of phases
+    act_mod_ptr%nph = 2
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    act_mod_ptr%nc = ncomp
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    act_mod_ptr%eosLib = THERMOPACK
+
+    ! Set local variable for parameter reference
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "DEFAULT"
+    endif
+
+    ! Initialize components module
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+
+    ! Initialize Thermopack
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+
+    call saft_type_eos_init(nce,act_mod_ptr%comps,&
+         act_eos_ptr,param_ref,silent_init=.true.)
+
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
+
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+    ! Initialize fallback eos
+    act_mod_ptr%need_alternative_eos = .true.
+    call init_fallback_and_redefine_criticals(silent=.true.)
+  end subroutine init_lj_ljs
 
 end module eoslibinit

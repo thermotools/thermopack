@@ -275,9 +275,20 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_csp_NIST
 
+  subroutine set_saftvrmie_LAFITTE_option()
+    use saftvrmie_options, only: LAFITTE
+    use saftvrmie_containers, only: svrm_opt
+    call svrm_opt%saftvrmieaij_model_options(LAFITTE)
+  end subroutine set_saftvrmie_LAFITTE_option
+
+  subroutine set_saftvrmie_QSAFT_FH1_option()
+    use saftvrmie_options, only: QSAFT_FH1
+    use saftvrmie_containers, only: svrm_opt
+    call svrm_opt%saftvrmieaij_model_options(QSAFT_FH1)
+  end subroutine set_saftvrmie_QSAFT_FH1_option
+
   @Test
   subroutine test_fres_tv_saftvrmie()
-    use saftvrmie_options, only: saftvrmieaij_model_options, LAFITTE
     integer, parameter :: ncomp = 3
     character(len=*), parameter :: eos="SAFT-VR-MIE"
     character(len=*), parameter :: compstr="C1,C2,C3"
@@ -287,15 +298,14 @@ contains
     P0 = 2.0e6
     T0 = 300.0
 
-    call saftvrmieaij_model_options(LAFITTE)
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
-    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_lafitte_option)
     !call test_consistency(ncomp,eos,compstr,T0,P0,n0)
   end subroutine test_fres_tv_saftvrmie
 
   @Test
   subroutine test_fres_tv_qsaftvrmie()
-    use saftvrmie_options, only: saftvrmieaij_model_options, QSAFT_FH1
     integer, parameter :: ncomp = 3
     character(len=*), parameter :: eos="SAFT-VR-MIE"
     character(len=*), parameter :: compstr="He,Ne,H2"
@@ -305,11 +315,59 @@ contains
     P0 = 1.0e6
     T0 = 25.0
 
-    call saftvrmieaij_model_options(QSAFT_FH1)
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_QSAFT_FH1_option)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0,&
+         additional_init=set_saftvrmie_QSAFT_FH1_option)
+  end subroutine test_fres_tv_qsaftvrmie
+
+  @Test
+  subroutine test_fres_ljs_bh()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-BH"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 80.0
+
     if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
     call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
     call test_consistency(ncomp,eos,compstr,T0,P0,n0)
-  end subroutine test_fres_tv_qsaftvrmie
+  end subroutine test_fres_ljs_bh
+
+  @Test
+  subroutine test_fres_ljs_uv()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-UV"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 60.0
+
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_ljs_uv
+
+  @Test
+  subroutine test_fres_ljs_wca()
+    integer, parameter :: ncomp = 1
+    character(len=*), parameter :: eos="LJS-WCA"
+    character(len=*), parameter :: compstr="AR"
+    real :: T0, P0, n0(ncomp)
+
+    n0 = [1.0]*1.333
+    P0 = 1.0e6
+    T0 = 80.0
+    if (VERBOSE) write(*,'(4A)') "TESTING ", eos, " FOR ", compstr
+    call test_fres_tv_model(ncomp,eos,compstr,T0,P0,n0)
+    call test_consistency(ncomp,eos,compstr,T0,P0,n0)
+  end subroutine test_fres_ljs_wca
 
   @Test
   subroutine test_fres_tv_tcPR_q_vol_trs()
@@ -328,6 +386,7 @@ contains
     call test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing=mixing)
   end subroutine test_fres_tv_tcPR_q_vol_trs
 
+  @Test
   subroutine dummy_quadratic_vol_shift()
     real :: ciA, ciB, ciC
     integer :: ci_type
@@ -496,7 +555,7 @@ contains
   subroutine test_consistency(ncomp,eos,compstr,T0,P0,n0,mixing,v_spec,&
        test_extensive,additional_init)
     !> Verifies that a selection of thermodynamic identities are fulfilled.
-    use eosTV, only: thermoTV, Fres, pressure
+    use eosTV, only: thermo_tv, Fres, pressure
     use thermopack_constants, only: LIQPH
     use stringmod, only: str_eq
     integer, intent(in) :: ncomp
@@ -593,14 +652,14 @@ contains
       if (test_ext) then
         ! Verify that NVT functions are extensive
         call specificvolume(t,p,z,ph,v)
-        call thermoTV(t,v,z,lnf)
+        call thermo_tv(t,v,z,lnf)
         call Fres(t,1000*v,z,F)
         factor = 1.2345
         n2 = z*factor
         v = v*factor
         call Fres(t,1000*v,n2,F2)
         @assertEqual(0.0,F*factor-F2,0.1*tol1)
-        call thermoTV(t,v,n2,lnf2)
+        call thermo_tv(t,v,n2,lnf2)
         do i=1,ncomp
           @assertEqual(0.0,lnf(i)-lnf2(i),0.1*tol1)
         enddo
