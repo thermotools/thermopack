@@ -49,3 +49,9 @@ TAGS
 *tags
 *~
 *\#
+
+.DS_Store
+*/.DS_Store
+.idea/
+local_testing/
+venv/
