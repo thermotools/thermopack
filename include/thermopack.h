@@ -141,7 +141,6 @@ extern "C" {
 #define TMIN MODULE_METHOD(thermopack_constants, tptmin)
     extern double TMIN;
 
-
 #endif ///*thermopack_h_included */
 
 #if defined (__cplusplus)|| defined (c_plusplus)

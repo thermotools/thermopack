@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "../thermopack.h"
 
 // Simple code testing thermopack.h
@@ -7,7 +8,26 @@ int main() {
     std::cout << "Testing interface to cpp\n";
     int nph(2);
     const int ncomp(3);
-    std::cout << "Init of SRK\n";
+
+    std::cout << "\nMemory sizes\n";
+    std::cout << "sizeof(double): " << sizeof(double) << std::endl;
+    std::cout << "sizeof(int): " << sizeof(int) << std::endl;
+
+    std::cout << "\nPhase flags\n";
+    int iTWOPH(0), iLIQPH(0), iVAPPH(0), iMINGIBBSPH(0),
+      iSINGLEPH(0), iSOLIDPH(0), iFAKEPH(0);
+    ISO_C_METHOD(get_phase_flags_c)(&iTWOPH, &iLIQPH, &iVAPPH, &iMINGIBBSPH,
+				    &iSINGLEPH, &iSOLIDPH, &iFAKEPH);
+
+    std::cout << "iTWOPH=" << iTWOPH << std::endl;
+    std::cout << "iLIQPH=" << iLIQPH << std::endl;
+    std::cout << "iVAPPH=" << iVAPPH << std::endl;
+    std::cout << "iMINGIBBSPH=" << iMINGIBBSPH << std::endl;
+    std::cout << "iSINGLEPH=" << iSINGLEPH << std::endl;
+    std::cout << "iSOLIDPH=" << iSOLIDPH << std::endl;
+    std::cout << "iFAKEPH=" << iFAKEPH << std::endl;
+
+    std::cout << "\nInit of SRK\n";
     ISO_C_METHOD(thermopack_init_c)("SRK", "Classic",
 				    "Classic", "CO2,N2,C1",
 				    &nph, NULL, NULL, NULL,
@@ -37,10 +57,10 @@ int main() {
     std::cout << "y=" << y[0] << ", " << y[1] << ", " << y[2] << std::endl;
 
     std::cout << "\nSpecific volume\n";
-    int iphgas(2);
+    int iphgas(iVAPPH);
     double vg(0.0);
     ISO_C_METHOD(thermopack_specific_volume_c)(&T, &P, &y[0], &iphgas, &vg);
-    int iphliq(1);
+    int iphliq(iLIQPH);
     double vl(0.0);
     ISO_C_METHOD(thermopack_specific_volume_c)(&T, &P, &x[0], &iphliq, &vl);
     std::cout << "vg=" << vg << std::endl;
@@ -76,6 +96,8 @@ int main() {
     std::cout << "hl=" << hl << std::endl;
     // Define enthalpy for later
     double h(hg*beta+hl*(1.0-beta));
+    std::cout << "h=" << h << std::endl;
+    std::cout << "beta=" << beta << std::endl;
     // Define internal energy for later
     double u(h-P*v);
 
@@ -137,7 +159,7 @@ int main() {
       std::cout << "ki=" << ki << std::endl;
     }
 
-    std::cout << "\nComponent mol weights\n";
+    std::cout << "\nComponent mol weights (kg/mol)\n";
     double mwz(0.0), mwz_sum(0.0);
     ISO_C_METHOD(thermopack_moleweight_c)(&z[0], &mwz);
     std::vector<double> mw(ncomp);
@@ -147,21 +169,6 @@ int main() {
       mwz_sum += it[0]*z[fortran_index-1];
     }
     std::cout << "mw=" << mwz << ", " << mwz_sum << std::endl;
-
-
-    std::cout << "\nPhase flags\n";
-    int iTWOPH(0), iLIQPH(0), iVAPPH(0), iMINGIBBSPH(0),
-      iSINGLEPH(0), iSOLIDPH(0), iFAKEPH(0);
-    ISO_C_METHOD(get_phase_flags_c)(&iTWOPH, &iLIQPH, &iVAPPH, &iMINGIBBSPH,
-				    &iSINGLEPH, &iSOLIDPH, &iFAKEPH);
-
-    std::cout << "iTWOPH=" << iTWOPH << std::endl;
-    std::cout << "iLIQPH=" << iLIQPH << std::endl;
-    std::cout << "iVAPPH=" << iVAPPH << std::endl;
-    std::cout << "iMINGIBBSPH=" << iMINGIBBSPH << std::endl;
-    std::cout << "iSINGLEPH=" << iSINGLEPH << std::endl;
-    std::cout << "iSOLIDPH=" << iSOLIDPH << std::endl;
-    std::cout << "iFAKEPH=" << iFAKEPH << std::endl;
 
     std::cout << "\nPure component parameters\n";
     for (int i = 1 ; i <= ncomp; ++i) {
@@ -181,6 +188,7 @@ int main() {
     ISO_C_METHOD(thermopack_hpflash_c)(&T, &P, &z[0],
 				       &beta, &betal, &x[0], &y[0],
 				       &h, &phase, &ierr);
+    std::cout << "beta=" << beta << std::endl;
     std::cout << "T_hp=" << T << std::endl;
 
     std::cout << "\nSP-flash\n";
@@ -188,27 +196,43 @@ int main() {
     ISO_C_METHOD(thermopack_spflash_c)(&T, &P, &z[0],
 				       &beta, &betal, &x[0], &y[0],
 				       &s, &phase, &ierr);
+    std::cout << "beta=" << beta << std::endl;
     std::cout << "T_sp=" << T << std::endl;
 
     std::cout << "\nUV-flash\n";
     T = 300.0;
     P = 50.0e5;
-    //std::cout << "z=" << z[0] << ", " << z[1] << ", " << z[2] << std::endl;
-    ISO_C_METHOD(thermopack_spflash_c)(&T, &P, &z[0],
+    ISO_C_METHOD(thermopack_uvflash_c)(&T, &P, &z[0],
 				       &beta, &x[0], &y[0],
 				       &u, &v, &phase, &ierr);
+    std::cout << "beta=" << beta << std::endl;
     std::cout << "T_uv=" << T << std::endl;
+    std::cout << "P_uv=" << P << std::endl;
     std::cout << "ierr=" << ierr << std::endl;
 
     std::cout << "\ndhdt\n";
     double dhdt(0.0);
     ISO_C_METHOD(thermopack_twophase_dhdt_c)(&T, &P, &z[0], &x[0], &y[0], &beta, &betal, &dhdt);
-    std::cout << "dhdt=" << dhdt << std::endl;
+    double dT(T*1.0e-5);
+    T += dT;
+    ISO_C_METHOD(thermopack_tpflash_c)(&T, &P, &z[0], &beta, &phase, &x[0], &y[0]);
+    ISO_C_METHOD(thermopack_enthalpy_c)(&T, &P, &y[0], &iphgas, &hg, NULL, NULL, NULL);
+    ISO_C_METHOD(thermopack_enthalpy_c)(&T, &P, &x[0], &iphliq, &hl, NULL, NULL, NULL);
+    double hp(hg*beta+hl*(1.0-beta));
+    std::cout << "dhdt=" << dhdt << ", " << (hp-h)/dT <<  std::endl;
 
     std::cout << "\nThermo\n";
-    std::vector<double> lnfug(ncomp);
-    ISO_C_METHOD(thermopack_thermo_c)(&T, &P, &x[0], &iphliq, &lnfug[0], NULL, NULL, NULL, NULL);
-    std::cout << "lnfug=" << lnfug[0] << ", " << lnfug[1] << ", " << lnfug[2] << std::endl;
+    std::vector<double> lnfug_l(ncomp), lnfug_g(ncomp);
+    ISO_C_METHOD(thermopack_thermo_c)(&T, &P, &x[0], &iphliq, &lnfug_l[0], NULL, NULL, NULL, NULL);
+    ISO_C_METHOD(thermopack_thermo_c)(&T, &P, &y[0], &iphgas, &lnfug_g[0], NULL, NULL, NULL, NULL);
+    std::cout << "lnfug_l + log(x)"
+	      << lnfug_l[0]+log(x[0]) << ", "
+	      << lnfug_l[1]+log(x[1]) << ", "
+	      << lnfug_l[2]+log(x[2]) << std::endl;
+    std::cout << "lnfug_g + log(y)="
+	      << lnfug_g[0]+log(y[0]) << ", "
+	      << lnfug_g[1]+log(y[1]) << ", "
+	      << lnfug_g [2]+log(y[2]) << std::endl;
 
     return 0;
 }
