@@ -1,13 +1,20 @@
 CC=g++
-CFLAGS=-fPIC -cpp -Wall -g -mieee-fp -fsignaling-nans -D_GLIBCXX_USE_CXX11_ABI=0
-#CFLAGS=-fPIC -cpp -O3 -funroll-loops -D_GLIBCXX_USE_CXX11_ABI=0
+FC=gfortran
+DEF=
+LTP=-lthermopack_debug_gfortran_Linux
+LIBS=$(LTP) -llapack -lblas -lstdc++
+
+CFLAGS=-fPIC -cpp -Wall -g -mieee-fp -fsignaling-nans $(DEF)
 
 test: test.o
-	$(CC) $(FFLAGS) test.o -o test -L../../bin -lthermopack_debug_gfortran_Linux -llapack -lblas -lgfortran
+	$(FC) $(MAIN) test.o -o test -L../../bin $(LIBS)
 
 clean:
-	 rm -f -r *.o *.a *.obj
+	 rm -f -r *.o *.a *.obj test
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c -o $*.o $(<:.mod=.cpp)
-#$< -o $@
+
+ifort-test:
+	$(MAKE) test FC=ifort DEF=-D__INTEL_THERMOPACK__ MAIN=-nofor_main \
+	LTP=-lthermopack_debug_ifort_Linux
