@@ -464,6 +464,44 @@ class comp_list(object):
             self.nVS += 1
         return line
 
+
+    def save_wiki_name_mapping(self,filename):
+        """Generate table with name to comp. id. mapping
+        Arguments:
+        filename - path to file
+        """
+        wiki_header_lines = []
+        wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
+        wiki_header_lines.append("&nbsp;\n")
+        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifyers as shown in the table below.\n")
+        wiki_header_lines.append("&nbsp;\n")
+        wiki_header_lines.append("| Fluid name | Fluid identifyer |")
+        wiki_header_lines.append("| ------------------------ | ----------- |")
+
+        wiki_lines = []
+        for comp in self.comp_list:
+            name = comp.comp["name"].lower()
+            if name[:2] in ("n-", "m-", "o-", "p-"):
+                name = name[:2] + name[2:].capitalize()
+            elif name[0].isdigit():
+                for i in range(1,len(name)):
+                    if name[i].isalpha():
+                        name = name[:i] + name[i:].capitalize()
+                        break
+            else:
+                name = name.capitalize()
+            line = "| " + name + " | " + comp.comp["ident"] + " |"
+            wiki_lines.append(line)
+
+        wiki_lines.sort()
+        wiki_lines = wiki_header_lines + wiki_lines
+        with open(filename, "w") as f:
+            for line in wiki_lines:
+                f.write(line)
+                f.write("\n")
+
+
 if __name__ == "__main__":
     compl = comp_list()
     compl.save_fortran_file("compdatadb.f90")
+    compl.save_wiki_name_mapping("Component-name-mapping.md")
