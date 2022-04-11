@@ -197,7 +197,7 @@ end subroutine thermopack_TPflash_c
 !-----------------------------------------------------------------!
 
 !-----------------------------------------------------------------!
-subroutine thermopack_pressure_c(t,rho,z,p) BIND(C)
+subroutine thermopack_pressure_c(t,v,n,p) BIND(C)
 !-----------------------------------------------------------------!
   !> External interface for the pressure.
   !---------------------------------------------------------------!
@@ -208,14 +208,14 @@ subroutine thermopack_pressure_c(t,rho,z,p) BIND(C)
   use eosTV,      only: pressure
   implicit none
   ! Input:
-  real(C_double),                intent(in)  :: t   !< K      - Temperature
-  real(C_double),                intent(in)  :: rho !< mol/m3 - Molar density
-  real(C_double), dimension(nc), intent(in)  :: z   !<          Composition
+  real(C_double),                intent(in)  :: t   !< K  - Temperature
+  real(C_double),                intent(in)  :: v   !< m3 - Volume
+  real(C_double), dimension(nc), intent(in)  :: n   !< molar numbers
   ! Output:
   real(C_double),                intent(out) :: p   !< Pa     - Pressure
   !---------------------------------------------------------------!
   ! Thermopack
-  p=pressure(t,1.0/rho,z)
+  p=pressure(t,v,n)
 end subroutine thermopack_pressure_c
 !-----------------------------------------------------------------!
 
@@ -673,9 +673,9 @@ subroutine thermopack_moleweight_c(z, mw) BIND(C)
   implicit none
   !Input:
   real(C_double), dimension(1:nc), intent(in) :: z !< Composition
-  real(C_double), intent(out) :: mw !< g/mol - moleweight
+  real(C_double), intent(out) :: mw !< kg/mol - moleweight
   !---------------------------------------------------------------!
-  mw = moleWeight(z)
+  mw = 1.0e-3*moleWeight(z)
   !---------------------------------------------------------------!
   end subroutine thermopack_moleWeight_c
 !-----------------------------------------------------------------!
@@ -750,4 +750,26 @@ subroutine thermopack_twophase_dhdt_c(t,p,Z,X,Y,betaV,betaL,dhdt) BIND(C)
   dhdt = dhdt_twoPhase(t,p,Z,betaV,betaL,X,Y)
 
 !-----------------------------------------------------------------!
-  end subroutine thermopack_twophase_dhdt_c
+end subroutine thermopack_twophase_dhdt_c
+
+subroutine thermopack_comp_name_c(i,comp_name) BIND(C)
+  !---------------------------------------------------------------!
+  !> External interface for acessing component names
+  !> \author MH, 2022-04
+  !---------------------------------------------------------------!
+  use, intrinsic :: ISO_C_BINDING
+  use compdata, only: comp_name_active
+  use thermopack_constants, only: comp_name_len
+  implicit none
+  integer(C_int), intent(in) :: i !< Component index
+  TYPE(C_ptr), intent(out) :: comp_name !< Component name
+  ! Locals
+  character(len=comp_name_len+1), pointer :: fstring
+  character(len=comp_name_len) :: compName
+  call comp_name_active(i, compName)
+  allocate(fstring)
+  fstring = trim(compName)
+  fstring(len_trim(compName)+1:len_trim(compName)+1) = c_null_char
+  comp_name = c_loc(fstring)
+  !-----------------------------------------------------------------!
+end subroutine thermopack_comp_name_c
