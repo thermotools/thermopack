@@ -22,7 +22,7 @@ class saftvrmie(saft.saft):
         Initialize cubic specific function pointers
         """
         # Load dll/so
-        super(saftvrmie, self).__init__()
+        saft.saft.__init__(self)
 
         # Options methods
         self.s_enable_hs = getattr(self.tp, self.get_export_name(
@@ -58,6 +58,11 @@ class saftvrmie(saft.saft):
         self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
             "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
 
+        # Define parameters to be set by init
+        self.nc = None
+        self.lambda_a = None
+        self.lambda_r = None
+
     #################################
     # Init
     #################################
@@ -87,6 +92,16 @@ class saftvrmie(saft.saft):
                                          comp_string_len,
                                          ref_string_len)
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.lambda_a = np.zeros(self.nc)
+        self.lambda_r = np.zeros(self.nc)
+        for i in range(self.nc):
+            self.m[i], self.sigma[i], self.eps_div_kb[i], self.lambda_a[i], self.lambda_r[i] = \
+                self.get_pure_fluid_param(i+1)
 
     def model_control_hard_sphere(self, active):
         """Model control. Enable/disable hard-sphere term.
@@ -326,14 +341,14 @@ class saftvrmie(saft.saft):
 
         return m_c.value, sigma_c.value, eps_c.value, lambda_a_c.value, lambda_r_c.value
 
-    def set_pure_fluid_param(self, ic, m, sigma, eps_div_k, lambda_a, lambda_r):
+    def set_pure_fluid_param(self, ic, m, sigma, eps_div_kb, lambda_a, lambda_r):
         """Set pure fluid parameters
 
         Args:
             ic (int): Component index
             m (float): Mean number of segments.
             sigma (float): Temperature-independent segment diameter [m].
-            eps_div_k (float): Well depth divided by Boltzmann's const. [K].
+            eps_div_kb (float): Well depth divided by Boltzmann's const. [K].
             lambda_a (float): Attractive exponent of the Mie potential
             lambda_r (float): Repulsive exponent of the Mie potential
         """
@@ -341,7 +356,7 @@ class saftvrmie(saft.saft):
         ic_c = c_int(ic)
         m_c = c_double(m)
         sigma_c = c_double(sigma)
-        eps_c = c_double(eps_div_k)
+        eps_c = c_double(eps_div_kb)
         lambda_a_c = c_double(lambda_a)
         lambda_r_c = c_double(lambda_r)
         self.s_set_saftvrmie_pure_fluid_param.argtypes = [POINTER(c_int),
@@ -359,3 +374,20 @@ class saftvrmie(saft.saft):
                                               byref(eps_c),
                                               byref(lambda_a_c),
                                               byref(lambda_r_c))
+
+        self.m[ic-1] = m
+        self.sigma[ic-1] = sigma
+        self.eps_div_kb[ic-1] = eps_div_kb
+        self.lambda_a[ic-1] = lambda_a
+        self.lambda_r[ic-1] = lambda_r
+
+    def print_saft_parameters(self, c):
+        """Print saft parameters for component c
+
+        Args:
+            c (int): Component index (FORTRAN)
+
+        """
+        saft.saft.print_saft_parameters(self, c)
+        print(f"lambda_a: {self.lambda_a[c-1]}")
+        print(f"lambda_r: {self.lambda_r[c-1]}")

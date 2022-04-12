@@ -15,19 +15,31 @@ from . import saftvrmie
 
 c_len_type = thermo.c_len_type
 
+
 class saftvrqmie(saftvrmie.saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
         """
         # Load dll/so
-        super(saftvrqmie, self).__init__()
+        saftvrmie.saftvrmie.__init__(self)
 
         # Init methods
-        self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_saftvrmie"))
+        self.s_eoslibinit_init_quantum_saftvrmie = getattr(
+            self.tp, self.get_export_name("eoslibinit",
+                                          "init_quantum_saftvrmie"))
+
+        # Quantum methods
+        self.s_get_feynman_hibbs_order = getattr(
+            self.tp, self.get_export_name("saftvrmie_containers",
+                                          "get_feynman_hibbs_order"))
+
+        self.lambda_a = np.zeros(self.nc)
+        self.lambda_r = np.zeros(self.nc)
 
     #################################
     # Init
@@ -67,3 +79,48 @@ class saftvrqmie(saftvrmie.saftvrmie):
                                                  comp_string_len,
                                                  ref_string_len)
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.lambda_a = np.zeros(self.nc)
+        self.lambda_r = np.zeros(self.nc)
+        for i in range(self.nc):
+            self.m[i], self.sigma[i], self.eps_div_kb[i], self.lambda_a[i], self.lambda_r[i] = \
+                self.get_pure_fluid_param(i+1)
+
+    def get_feynman_hibbs_order(self, c):
+        """Get Feynman-Hibbs order
+
+        Args:
+            c (int): Component index (FORTRAN)
+        Returns:
+           int: Feynman-Hibbs order
+        """
+        self.activate()
+        c_c = c_int(c)
+        fh_c = c_int(0)
+        fh_hs_c = c_int(0)
+
+        self.s_get_feynman_hibbs_order.argtypes = [POINTER(c_int),
+                                                   POINTER(c_int),
+                                                   POINTER(c_int)]
+
+        self.s_get_feynman_hibbs_order.restype = None
+
+        self.s_get_feynman_hibbs_order(byref(c_c),
+                                       byref(fh_c),
+                                       byref(fh_hs_c))
+        return fh_c.value
+
+    def print_saft_parameters(self, c):
+        """Print saft parameters for component c
+
+        Args:
+            c (int): Component index (FORTRAN)
+
+        """
+        saftvrmie.saftvrmie.print_saft_parameters(self, c)
+        fh = self.get_feynman_hibbs_order(c)
+        print(f"FH order: {fh}")

@@ -13,10 +13,12 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
+
 class saft(thermo.thermopack):
     """
     Methods common for saft type equations of state
     """
+
     def __init__(self):
         """
         Initialize cubic specific function pointers
@@ -25,9 +27,16 @@ class saft(thermo.thermopack):
         super(saft, self).__init__()
 
         # SAFT specific methods
-        self.s_calc_saft_dispersion = getattr(self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
-        self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name("saft_interface", "calc_hard_sphere_diameter"))
-        self.s_de_broglie_wavelength = getattr(self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
+        self.s_calc_saft_dispersion = getattr(
+            self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
+        self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name(
+            "saft_interface", "calc_hard_sphere_diameter"))
+        self.s_de_broglie_wavelength = getattr(
+            self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
+
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
 
     def hard_sphere_diameters(self, temp):
         """Calculate hard-sphere diameters given temperature, volume and mol numbers.
@@ -42,8 +51,8 @@ class saft(thermo.thermopack):
         temp_c = c_double(temp)
         d_c = (c_double * self.nc)(0.0)
 
-        self.s_calc_hs_diameter.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double )]
+        self.s_calc_hs_diameter.argtypes = [POINTER(c_double),
+                                            POINTER(c_double)]
 
         self.s_calc_hs_diameter.restype = None
 
@@ -118,19 +127,19 @@ class saft(thermo.thermopack):
         else:
             a_nn_c = (c_double * len(n)**2)(0.0)
 
-        self.s_calc_saft_dispersion.argtypes = [POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double ),
-                                                POINTER( c_double )]
+        self.s_calc_saft_dispersion.argtypes = [POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
 
         self.s_calc_saft_dispersion.restype = None
 
@@ -166,7 +175,7 @@ class saft(thermo.thermopack):
         if not a_vn is None:
             return_tuple += (np.array(a_vn_c), )
         if not a_nn is None:
-            a_nn = np.zeros((len(n),len(n)))
+            a_nn = np.zeros((len(n), len(n)))
             for i in range(len(n)):
                 for j in range(len(n)):
                     a_nn[i][j] = a_nn_c[i + j*len(n)]
@@ -189,9 +198,9 @@ class saft(thermo.thermopack):
         c_c = c_int(c)
         lambda_c = c_double(0.0)
 
-        self.s_de_broglie_wavelength.argtypes = [POINTER( c_double ),
-                                                 POINTER( c_double ),
-                                                 POINTER( c_double )]
+        self.s_de_broglie_wavelength.argtypes = [POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double)]
 
         self.s_de_broglie_wavelength.restype = None
 
@@ -201,3 +210,15 @@ class saft(thermo.thermopack):
 
         return lambda_c.value
 
+    def print_saft_parameters(self, c):
+        """Print saft parameters for component c
+
+        Args:
+            c (int): Component index (FORTRAN)
+
+        """
+        name = self.get_comp_name(c)
+        print(f"{name}:")
+        print(f"Segments: {self.m[c-1]}")
+        print(f"sigma: {self.sigma[c-1]}")
+        print(f"eps div kB: {self.eps_div_kb[c-1]}")

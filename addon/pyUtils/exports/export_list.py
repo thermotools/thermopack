@@ -2,6 +2,7 @@
 from datetime import datetime
 from shutil import copy
 
+
 def get_export_statement(platform, compiler, export_info):
     export_statement = ""
 
@@ -194,6 +195,7 @@ append_export("get_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("set_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
+append_export("get_feynman_hibbs_order", "saftvrmie_containers")
 
 append_export("model_control_hs", "saftvrmie_interface")
 append_export("model_control_a1", "saftvrmie_interface")

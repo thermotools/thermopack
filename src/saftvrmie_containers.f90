@@ -237,7 +237,7 @@ module saftvrmie_containers
   public :: cleanup_saftvrmie_param_container
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
-  public :: svrm_opt
+  public :: svrm_opt, get_feynman_hibbs_order
 
 Contains
 
@@ -360,6 +360,15 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
   end subroutine get_saftvrmie_pure_fluid_param
 
+  !> Get quantum parameters for SAFT-VRQ Mie
+  subroutine get_feynman_hibbs_order(ic,fh,fh_hs)
+    integer, intent(in)  :: ic          !< Component index
+    integer, intent(out)    :: fh       !< Specifies order of quantum corr. included
+    integer, intent(out)    :: fh_hs    !< Specifies the Q-corr of the reference hard-sphere
+    !
+    fh = svrm_opt%quantum_correction
+    fh_hs = svrm_opt%quantum_correction_hs
+  end subroutine get_feynman_hibbs_order
 
   !> Set the de Boer parameter Lambda, by adjusting the mass of the component
   !> \author Ailo Aasen, May 2018
