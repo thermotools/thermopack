@@ -51,6 +51,9 @@ module pc_saft_nonassoc
   ! 2. a and b can probably be calculated simultaneously.
   ! 3. A lot of routines should be able to optionally accept e.g. d_i(T).
 
+  logical :: enable_hs = .true.
+  logical :: enable_disp = .true.
+
 contains
 
   !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
@@ -136,17 +139,23 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-      call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n,&
+      if (enable_hs) &
+           call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n,&
            alp_hc_rhorho,alp_hc_rhoT,alp_hc_rhon,&
            alp_hc_TT,alp_hc_Tn,alp_hc_nn)
-      call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
+      if (enable_disp) &
+           call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
            alp_d_rhorho,alp_d_rhoT,alp_d_rhon,&
            alp_d_TT,alp_d_Tn,alp_d_nn)
     else if (fir_der_present) then
+      if (enable_hs) &
       call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n)
-      call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
+      if (enable_disp) &
+           call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
     else
-      call alpha_spc_saft_hc(eos,rho,T,n,alp_hc)
+      if (enable_hs) &
+           call alpha_spc_saft_hc(eos,rho,T,n,alp_hc)
+      if (enable_disp) &
       call alpha_disp(eos,rho,T,n,alp_d)
     end if
 
