@@ -6,33 +6,27 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from datetime import datetime
 from pyctp import map_platform_specifics
 
-parser = argparse.ArgumentParser()
-parser.add_argument("mode", type=str, help="optim or debug")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", type=str, help="optim or debug")
 
-args = parser.parse_args()
-mode = args.mode
+    args = parser.parse_args()
+    mode = args.mode
 
-# Glob to handle different OS suffixes
-libthermo = list(
-    Path('../../bin/dynamic').glob(f'libthermopack_{mode}_gfortran*.*'))[0]
+    # Glob to handle different OS suffixes
+    libthermo = list(
+        Path('../../bin/dynamic').glob(f'libthermopack_{mode}_gfortran*.*'))[0]
 
-if not os.path.exists(libthermo):
-    print(f'{libthermo}does not exist. Have you compiled thermopack?')
-    sys.exit(1)
+    if not os.path.exists(libthermo):
+        print(f'{libthermo}does not exist. Have you compiled thermopack?')
+        sys.exit(1)
 
-shutil.copy2(libthermo, "./pyctp/libthermopack"+libthermo.suffix)
+    shutil.copy2(libthermo, "./pyctp/libthermopack"+libthermo.suffix)
 
-pf_specifics = map_platform_specifics.get_platform_specifics_from_platform()
-with open('pyctp/platform_specifics.py', 'w') as file:
-    tab = '    '
-    file.write('# Module for platform specific stuff. Automatically generated.\n'
-                +'# Timestamp : '+ str(datetime.today().isoformat())+'\n\n\n')
-    file.write('def get_platform_specifics():\n'
-                +tab + 'pf_specifics = {}\n')
-    for k, v in pf_specifics.items():
-        file.write(tab+'pf_specifics["'+k+'"] = "'+v+'"\n')
-    
-    file.write(tab+'return pf_specifics')
+    pf_specifics_path = os.path.join(os.path.dirname(
+        __file__), "pyctp", "platform_specifics.py")
+    pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
+    map_platform_specifics.write_platform_specifics_file(
+        pf_specifics, pf_specifics_path)
