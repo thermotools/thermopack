@@ -1,0 +1,38 @@
+\section{Cubic Equations of State and Phase keys}
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{l c | l c}
+    \toprule
+        Name & Key & Phase & Key\\
+    \midrule
+        Van der Waal & VdW\\
+        Soave Redlich Kwong & SRK\\
+        Peng Robinson & PR\\
+        Schmidt-Wensel & SW\\
+        Patel Teja & PT\\
+    \bottomrule
+    \end{tabular}
+    \caption{Cubic Equations of state implemented in ThermoPack and the corresponding keys used for initialization.}
+    \label{tab:EoS_thermopack}
+\end{table}
+
+\section{Mixing Rules and Phase keys}
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{l c | l c}
+    \toprule
+        Name & Key & Phase & Key\\
+    \midrule
+        Van der Waals & vdW & Two-phase & 0\\
+        Wong Sandler & WS & Liquid & 1\\
+        Huron Vidal & HV & Vapor & 2\\
+        Huron Vidal & HV2 & Minimum Gibbs & 3\\
+        Reid & Reid & Single & 4\\
+        NRTL & NRTL & Solid & 5\\
+        UNIFAC & UNIFAC & Fake & 6\\
+    \bottomrule
+    \end{tabular}
+    \caption{Mixing rules and phases availible in thermopack, with the corresponding keys used to identify them.}
+    \label{tab:mixing_rules_thermopack}
+\end{table}
