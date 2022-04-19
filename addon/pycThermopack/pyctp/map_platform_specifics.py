@@ -6,6 +6,7 @@ import itertools
 # Import sysconfig to detect mingw environment
 import sysconfig
 from datetime import datetime
+import os
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -147,3 +148,10 @@ def write_platform_specifics_file(pf_specifics, filename):
         for line in lines:
             f.write(line)
             f.write("\n")
+
+
+if __name__ == "__main__":
+    pf_specifics_path = os.path.join(os.path.dirname(
+        __file__), "platform_specifics.py")
+    pf_specifics = get_platform_specifics_by_trial_and_error()
+    write_platform_specifics_file(pf_specifics, pf_specifics_path)

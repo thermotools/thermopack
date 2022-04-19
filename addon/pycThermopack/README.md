@@ -72,6 +72,12 @@ Compile using Microsoft Visual Studio solution file (requires Intel Fortran
 license) in `../../MSVStudio`, and `libthermopack.dll` will be copied to the
 pyctp folder.
 
+Make sure the symbol mapping is correct for the python interface
+```bash
+cd addon/pycThermopack/pyctp
+python map_platform_specifics.py
+```
+
 #### MSYS2/Mingw-W64 setup
 Having compiled thermopack for MSYS2, you can get pycThermopack up and running
 as follows. Open the `MSYS2 MinGW 64-bit` application, navigate to the
@@ -82,7 +88,9 @@ pacman -S mingw-w64-x86_64-python
 pacman -S mingw-w64-x86_64-python-numpy
 pacman -S mingw-w64-x86_64-python-matplotlib
 cp bin/dynamic/libthermopack_optim_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
-cd addon/pyExamples
+cd addon/pycThermopack/pyctp
+python map_platform_specifics.py
+cd ../../pyExamples
 python cpa.py
 ```
 
