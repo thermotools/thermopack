@@ -205,7 +205,6 @@ class thermopack(object):
 
     def delete_eos(self):
         """de-allocate FORTRAN memory for this class instance"""
-        self.activate()
         self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
@@ -2604,7 +2603,7 @@ class thermopack(object):
         message_len = c_len_type(message_len)
         i_term_c = c_int(i_term)
 
-        self.s_get_bp_term.argtypes = [POINTER( c_int ),
+        self.s_get_bp_term.argtypes = [POINTER(c_int),
                                        c_char_p,
                                        c_len_type]
 
