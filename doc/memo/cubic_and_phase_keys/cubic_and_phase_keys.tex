@@ -1,38 +1,94 @@
-\section{Cubic Equations of State and Phase keys}
+\documentclass[english]{../thermomemo/thermomemo}
 
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[utf8]{inputenc}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
+
+\title{User guide}
+\author{Vegard Gjeldvik Jervell}
+\date{\today}
+\begin{document}
+\frontmatter
+\tableofcontents
+
+\section{Introduction}
+This document is intended for generic user documentation. Also see
+\url{https://github.com/SINTEF/thermopack/wiki}.
+
+\section{Phase keys}
+The phase keys are defined in \path{src/thermopack_constants.f90},
+and are shown in Table~\ref{tab:phase_flags_thermopack}.
 \begin{table}[ht!]
-    \centering
-    \begin{tabular}{l c | l c}
+  \centering
+  \begin{tabular}{l c l}
     \toprule
-        Name & Key & Phase & Key\\
+    Phase & Key & Description\\
     \midrule
-        Van der Waal & VdW\\
-        Soave Redlich Kwong & SRK\\
-        Peng Robinson & PR\\
-        Schmidt-Wensel & SW\\
-        Patel Teja & PT\\
+    Two-phase & 0 & Liquid-vapor two-phase mixture (Code: TWOPH)\\
+    Liquid & 1 & Single phase liquid (Code: LIQPH) \\
+    Vapor & 2 & Single phase vapor (Code: VAPPH) \\
+    Minimum Gibbs & 3 & Single phase root with the minimum Gibbs free energy \\ & & (Code: MINGIBBSPH) \\
+    Single & 4 & Single phase not identified as liquid or vapor \\ & & (Code: SINGLEPH) \\
+    Solid & 5 & Single phase solid (Code: SOLIDPH) \\
+    Fake & 6 & In rare cases no physical roots exist, and a fake liquid root is \\ & & returned (Code: FAKEPH) \\
     \bottomrule
-    \end{tabular}
-    \caption{Cubic Equations of state implemented in ThermoPack and the corresponding keys used for initialization.}
-    \label{tab:EoS_thermopack}
+  \end{tabular}
+  \caption{Phase flags in thermopack.}
+  \label{tab:phase_flags_thermopack}
 \end{table}
 
-\section{Mixing Rules and Phase keys}
+\section{Cubic Equations of State}
+
 \begin{table}[ht!]
-    \centering
-    \begin{tabular}{l c | l c}
+  \centering
+  \begin{tabular}{l c }
     \toprule
-        Name & Key & Phase & Key\\
+    Name & Key \\
     \midrule
-        Van der Waals & vdW & Two-phase & 0\\
-        Wong Sandler & WS & Liquid & 1\\
-        Huron Vidal & HV & Vapor & 2\\
-        Huron Vidal & HV2 & Minimum Gibbs & 3\\
-        Reid & Reid & Single & 4\\
-        NRTL & NRTL & Solid & 5\\
-        UNIFAC & UNIFAC & Fake & 6\\
+    Van der Waal & VdW\\
+    Soave Redlich Kwong & SRK\\
+    Peng Robinson & PR\\
+    Schmidt-Wensel & SW\\
+    Patel Teja & PT\\
     \bottomrule
-    \end{tabular}
-    \caption{Mixing rules and phases availible in thermopack, with the corresponding keys used to identify them.}
-    \label{tab:mixing_rules_thermopack}
+  \end{tabular}
+  \caption{Cubic Equations of state implemented in ThermoPack and the corresponding keys used for initialization.}
+  \label{tab:EoS_thermopack}
 \end{table}
+
+\subsection{Mixing Rules}
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l c}
+    \toprule
+    Name & Key \\
+    \midrule
+    Van der Waals & vdW\\
+    Wong Sandler & WS \\
+    Huron Vidal & HV \\
+    Huron Vidal & HV2 \\
+    Reid & Reid \\
+    NRTL & NRTL \\
+    UNIFAC & UNIFAC \\
+    \bottomrule
+  \end{tabular}
+  \caption{Mixing rules and phases availible in thermopack, with the corresponding keys used to identify them.}
+  \label{tab:mixing_rules_thermopack}
+\end{table}
+\end{document}
