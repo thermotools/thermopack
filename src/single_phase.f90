@@ -157,9 +157,9 @@ contains
       call calc_multiparameter_idealmix_enthalpy(nc, p_eos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
     class default
-       call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
-            dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
-     end select
+      call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
+           dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
+    end select
 
     ! Add ideal gas contributions
     if (.not. residual) then
@@ -335,7 +335,7 @@ contains
     endif
     ! Add ideal gas contributions
     call TV_CalcFid(nce,comp,cbeos,T,V,ne,F_T=F_T,F_TT=F_TT_p,&
-      F_TV=F_TV_p,F_Tn=F_Tn_l)
+         F_TV=F_TV_p,F_Tn=F_Tn_l)
     u_id = (-Rgas)*T**2*F_T
     u = u + u_id
     if (present(dudv)) dudv = dudv + (-Rgas)*T**2*F_TV_l
@@ -475,7 +475,7 @@ contains
            lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
     class default
       call TP_lnfug(nc,comp,cbeos,phase,T,P,z,lnfug,&
-             dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v)
+           dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v)
     end select
   end subroutine TP_CalcFugacity
 
@@ -560,7 +560,7 @@ contains
       v = zFac*sumne*Rgas*T/P
 
       call TV_CalcFres(nce,comp,cbeos,T,v,ne,F=F,F_T=F_T_p,&
-        F_n=F_n_p,recalculate=recalculate)
+           F_n=F_n_p,recalculate=recalculate)
 
       logZfac = log(Zfac)
       g = Rgas*T*F + P*V - sumne*Rgas*T*(1.0+logZfac)
@@ -789,15 +789,14 @@ contains
          present(F_VV) .or. present(F_Vn) .or. present(F_nn) .or. present(F_VVV)
 
     if (do_all_derivs) then
-       call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
     else
-       call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
+      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
     end if
-
     ! Correct the F from the individual models according to the volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-       call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-            eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+           eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
     end if
 
     if (present(F)) F = eF
@@ -818,30 +817,30 @@ contains
       real, optional, intent(out) :: eF,eF_T,eF_V,eF_n(nc), eF_VVV
       real, optional, intent(out) :: eF_TT,eF_TV,eF_Tn(nc),eF_VV,eF_Vn(nc),eF_nn(nc,nc)
       if (cbeos%isElectrolyteEoS) then
-         call stoperror("TV_CalcFres::electrolyteeos not yet implemented")
+        call stoperror("TV_CalcFres::electrolyteeos not yet implemented")
       else
-         select type ( p_eos => cbeos )
-         type is ( cb_eos ) ! cubic equations of state
-            call calcCbFder_res_SI(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV,recalculate)
-            isCubic = .true.
-          type is ( lk_eos ) ! Lee-Kesler equations of state
-            call stoperror('Lee-Kesler model does not support TV_CalcFres')
-          type is ( single_eos )
-            call Fres_single(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-         type is ( meos_mix )
-            call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
-         type is ( extcsp_eos ) ! Corresponding State Principle
-            call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-         class default ! Saft eos
-            call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-                 eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-         end select
+        select type ( p_eos => cbeos )
+        type is ( cb_eos ) ! cubic equations of state
+          call calcCbFder_res_SI(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+               eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV,recalculate)
+          isCubic = .true.
+        type is ( lk_eos ) ! Lee-Kesler equations of state
+          call stoperror('Lee-Kesler model does not support TV_CalcFres')
+        type is ( single_eos )
+          call Fres_single(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+               eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        type is ( meos_mix )
+          call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
+        type is ( extcsp_eos ) ! Corresponding State Principle
+          call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+               eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        class default ! Saft eos
+          call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
+               eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        end select
       end if
       if (present(F_VVV) .and. .not. isCubic) then
-         call stoperror('F_VVV only supported for pure cubical models')
+        call stoperror('F_VVV only supported for pure cubical models')
       endif
     end subroutine get_eos_F
 
@@ -923,7 +922,7 @@ contains
     endif
 
     call TP_lnfug_apparent(nc,ne,n,P,lnfug_real,lnfug,dlnfugdt_real,&
-       dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
+         dlnfugdp_real,dlnfugdn_real,dlnfugdT,dlnfugdP,dlnfugdn)
 
   end subroutine TP_lnfug
 
@@ -1143,7 +1142,7 @@ contains
 
     ! Apply volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-       call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
+      call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
     endif
 
   end function fork_Zfac_Calculation
