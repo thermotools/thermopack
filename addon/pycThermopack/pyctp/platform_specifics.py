@@ -1,12 +1,6 @@
-# Module for platform specific stuff. Automatically generated.
+# Module for platform specific stuff.
+from . import map_platform_specifics
 
 
 def get_platform_specifics():
-    pf_specifics = {}
-    pf_specifics["prefix"] = "__"
-    pf_specifics["module"] = "_MOD_"
-    pf_specifics["postfix"] = ""
-    pf_specifics["postfix_no_module"] = "_"
-    pf_specifics["dyn_lib"] = "libthermopack.so"
-    pf_specifics["os_id"] = "linux"
-    return pf_specifics
+    return map_platform_specifics.get_platform_specifics_from_platform()

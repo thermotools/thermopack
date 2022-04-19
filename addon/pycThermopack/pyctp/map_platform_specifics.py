@@ -5,6 +5,8 @@ from os import path
 import itertools
 # Import sysconfig to detect mingw environment
 import sysconfig
+from datetime import datetime
+import os
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -21,7 +23,7 @@ I_POSTFIX_NM = "_"
 def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
 
-    #Setting GNU FORTRAN as default
+    # Setting GNU FORTRAN as default
     platform_specifics = {}
     platform_specifics["os_id"] = ""
     platform_specifics["prefix"] = G_PREFIX
@@ -123,3 +125,33 @@ def get_platform_specifics_by_trial_and_error():
         platform_specifics["os_id"] = "win"
 
     return platform_specifics
+
+
+def write_platform_specifics_file(pf_specifics, filename):
+    """Write file for platform specifics"""
+    lines = []
+    lines.append(
+        "# Module for platform specific stuff. Automatically generated.")
+    lines.append("# Timestamp : " +
+                 str(datetime.today().isoformat()) + "\n\n")
+
+    tab = " "*4
+    lines.append("def get_platform_specifics():")
+    lines.append(tab + "pf_specifics = {}")
+
+    for k, v in pf_specifics.items():
+        lines.append(tab + 'pf_specifics["'+k+'"] = "'+v+'"')
+
+    lines.append(tab + "return pf_specifics")
+
+    with open(filename, "w") as f:
+        for line in lines:
+            f.write(line)
+            f.write("\n")
+
+
+if __name__ == "__main__":
+    pf_specifics_path = os.path.join(os.path.dirname(
+        __file__), "platform_specifics.py")
+    pf_specifics = get_platform_specifics_by_trial_and_error()
+    write_platform_specifics_file(pf_specifics, pf_specifics_path)
