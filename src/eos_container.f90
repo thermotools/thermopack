@@ -230,6 +230,7 @@ subroutine update_global_variables_form_active_thermo_model()
   endif
   numAssocSites = 0
   saftvrmie_param => NULL()
+  svrm_opt => NULL()
   if (allocated(act_mod_ptr%eos)) then
     if (associated(act_mod_ptr%eos(1)%p_eos%assoc)) then
       numAssocSites = act_mod_ptr%eos(1)%p_eos%assoc%numAssocSites
