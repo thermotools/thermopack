@@ -2656,7 +2656,6 @@ end subroutine test_a_chain_pure
 
 subroutine test_fres(Ti,Vi,ni)
   use thermopack_constants
-
   use saftvrmie_containers
   use saftvrmie_hardsphere
   use saftvrmie_interface
@@ -2682,7 +2681,7 @@ subroutine test_fres(Ti,Vi,ni)
   n0 = n
   V = Vi
   T = Ti
-  
+
   eps = 1.0e-8
 
   call calcFresSAFTVRMie(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&

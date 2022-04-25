@@ -115,6 +115,7 @@ OBJE = \
        $(ODIR)/ideal.o \
        $(ODIR)/cpa_parameters.o \
        $(ODIR)/cbselect.o \
+       $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \
        $(ODIR)/saftvrmie_options.o \
        $(ODIR)/saftvrmie_datadb.o \
@@ -815,3 +816,5 @@ $(ODIR)/wong_sandler.o: $(SRC)/wong_sandler.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/cubic_eos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/excess_gibbs.f90
 	@$(call make_object, $(SRC)/wong_sandler.f90)
+$(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90
+	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
