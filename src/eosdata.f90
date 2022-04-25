@@ -21,6 +21,8 @@ Module eosdata
   integer, parameter :: cpaSRK = 41    !< SRK Plus Association
   integer, parameter :: cpaPR = 42     !< PR Plus Association
   integer, parameter :: eosPC_SAFT = 5      !< PC-SAFT equation of state
+  integer, parameter :: eosSPC_SAFT = 51      !< Simplefied PC-SAFT equation of state
+  integer, parameter :: eosOPC_SAFT = 52      !< Original PC-SAFT equation of state
   integer, parameter :: eos_single = 6      !< Single component multiparamater eos
   integer, parameter :: meosMbwr19 = 611    !< MBWR19 (Bender) multiparameter equation of state
   integer, parameter :: meosMbwr32 = 612    !< MBWR32 multiparameter equation of state
@@ -43,7 +45,7 @@ Module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 22
+  integer, parameter :: max_n_eos = 23
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -127,7 +129,15 @@ Module eosdata
        !
        eos_label_mapping(&
        eos_idx = eosPC_SAFT, &
-       eos_subidx = eosPC_SAFT, &
+       eos_subidx = eosSPC_SAFT, &
+       short_label = "sPC-SAFT", &
+       label = "Simplified Perturbed Chain SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosOPC_SAFT, &
        short_label = "PC-SAFT", &
        label = "Perturbed Chain SAFT", &
        need_alternative_eos = .true. &

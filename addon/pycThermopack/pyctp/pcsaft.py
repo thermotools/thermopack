@@ -45,21 +45,27 @@ class pcsaft(saft.saft):
     # Init
     #################################
 
-    def init(self, comps, parameter_reference="Default"):
+    def init(self, comps, parameter_reference="Default", simplified=False):
         """Initialize PC-SAFT model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            simplified (bool): Use simplified PC-SAFT (Default False)
         """
         self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
+	if simplified:
+            c_simplified = c_int(1)
+        else:
+            c_simplified = c_int(0)
 
         self.eoslibinit_init_pcsaft.argtypes = [c_char_p,
                                                 c_char_p,
+                                                POINTER( c_int ),
                                                 c_len_type,
                                                 c_len_type]
 
@@ -67,6 +73,7 @@ class pcsaft(saft.saft):
 
         self.eoslibinit_init_pcsaft(comp_string_c,
                                     ref_string_c,
+                                    byref( c_simplified ),
                                     comp_string_len,
                                     ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))

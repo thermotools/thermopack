@@ -872,18 +872,20 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize PC-SAFT EoS. Use: call init_pcsaft('CO2,N2')
   !----------------------------------------------------------------------------
-  subroutine init_pcsaft(comps,parameter_reference)
+  subroutine init_pcsaft(comps,parameter_reference,simplified)
     use compdata,   only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    logical, optional, intent(in) :: simplified !< Use simplified PC-SAFT (Von Solms et al. 2003: 10.1021/ie020753p)
     ! Locals
     integer                          :: ncomp, index, ierr
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
     character(len=ref_len)           :: param_ref
+    character(len=10)                :: label
 
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
@@ -894,7 +896,11 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
-    call allocate_eos(ncomp, "PC-SAFT")
+    label = "PC-SAFT"
+    if (present(simplified)) then
+      if (simplified) label = "sPC-SAFT"
+    endif
+    call allocate_eos(ncomp, trim(label))
 
     ! Number of phases
     act_mod_ptr%nph = 3

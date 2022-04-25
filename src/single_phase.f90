@@ -790,8 +790,6 @@ contains
     !use pets, only: PETS_eos
     use eos_parameters, only: single_eos, meos_mix
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
-    use saftvrmie_containers, only: saftvrmie_eos
-    use pc_saft_nonassoc, only: PCSAFT_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -1109,8 +1107,6 @@ contains
     use eos_parameters, only: single_eos, meos_mix
     !use pets, only: PETS_eos
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
-    use saftvrmie_containers, only: saftvrmie_eos
-    use pc_saft_nonassoc, only: PCSAFT_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp

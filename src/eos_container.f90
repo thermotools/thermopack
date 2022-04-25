@@ -8,7 +8,7 @@ module eos_container
   use thermopack_var
   use saftvrmie_containers, only: saftvrmie_eos
   use lj_splined, only: ljs_bh_eos, ljs_wca_eos, ljx_ux_eos_constructor
-  use pc_saft_nonassoc, only: PCSAFT_eos
+  use pc_saft_nonassoc, only: PCSAFT_eos, sPCSAFT_eos
   use extcsp, only: extcsp_eos
 
 contains
@@ -110,10 +110,18 @@ contains
     case(eosCSP)
       allocate(extcsp_eos :: p_eos, stat=istat)
     case(eosCPA)
-       allocate(p_eos, source=cpa_eos_constructor(nc, eosstr), stat=istat)
+      allocate(p_eos, source=cpa_eos_constructor(nc, eosstr), stat=istat)
     case(eosPC_SAFT)
-      allocate(PCSAFT_eos :: p_eos, stat=istat)
-      call p_eos%allocate_and_init(nc,eosstr)
+      select case(eos_subindex)
+      case(eosOPC_SAFT)
+        allocate(PCSAFT_eos :: p_eos, stat=istat)
+      case(eosSPC_SAFT)
+        allocate(sPCSAFT_eos :: p_eos, stat=istat)
+      case default
+        istat = 1
+      end select
+      if (istat == 0) &
+           call p_eos%allocate_and_init(nc,eosstr)
     case(eos_single)
       allocate(p_eos, &
            source=single_eos_constructor(nc, eosstr), stat=istat)

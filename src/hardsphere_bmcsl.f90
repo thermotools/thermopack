@@ -15,11 +15,11 @@ module hardsphere_bmcsl
   !> Container for temperature dependent hard-sphere diameter and differentials
   type :: hs_diameter
     !> Hard sphere diameter
-    real, allocatable, dimension(:,:) :: d
+    real, allocatable, dimension(:) :: d
     !> Temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_T
+    real, allocatable, dimension(:) :: d_T
     !> Second temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_TT
+    real, allocatable, dimension(:) :: d_TT
   contains
     procedure, public :: allocate => allocate_hs_diameter
     procedure, public :: deallocate => cleanup_hs_diameter
@@ -203,20 +203,20 @@ contains
     real :: mu_TT_up1, mu_TT_up2
 
     ! Compute mu
-    mu_up=dhs%d(i,i)*dhs%d(j,j)
-    mu_down=dhs%d(i,i)+dhs%d(j,j)
+    mu_up=dhs%d(i)*dhs%d(j)
+    mu_down=dhs%d(i)+dhs%d(j)
     mu=mu_up/mu_down
     zeta%zet(5) = mu
     if (present(g_T)) then
       g_T = 0
-      zeta%zet_T(5)=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))/(mu_down**2)
+      zeta%zet_T(5)=((dhs%d(i)**2)*dhs%d_T(j)+(dhs%d(j)**2)*dhs%d_T(i))/(mu_down**2)
     endif
     if (present(g_TT)) then
       g_TT = 0
-      mu_TT_up1=2.0*(dhs%d(i,i)+dhs%d(j,j))*dhs%d_T(i,i)*dhs%d_T(j,j)+&
-           ((dhs%d(i,i)**2)*dhs%d_TT(j,j)+(dhs%d(j,j)**2)*dhs%d_TT(i,i))
-      mu_TT_up2=((dhs%d(i,i)**2)*dhs%d_T(j,j)+(dhs%d(j,j)**2)*dhs%d_T(i,i))*&
-           (dhs%d_T(i,i)+dhs%d_T(j,j))
+      mu_TT_up1=2.0*(dhs%d(i)+dhs%d(j))*dhs%d_T(i)*dhs%d_T(j)+&
+           ((dhs%d(i)**2)*dhs%d_TT(j)+(dhs%d(j)**2)*dhs%d_TT(i))
+      mu_TT_up2=((dhs%d(i)**2)*dhs%d_T(j)+(dhs%d(j)**2)*dhs%d_T(i))*&
+           (dhs%d_T(i)+dhs%d_T(j))
       zeta%zet_TT(5)=mu_TT_up1/(mu_down**2)-2.0*mu_TT_up2/(mu_down**3)
     endif
 
@@ -411,27 +411,27 @@ contains
 
       do i = 1, nc
         ! The zeta variable and its derivatives:
-        zeta%zet(index_l)=zeta%zet(index_l)+ms(i)*n(i)*dhs%d(i,i)**(l)
-        zeta%zet_n(i,index_l)=ms(i)*(dhs%d(i,i)**l)
-        zeta%zet_Vn(i,index_l)=-1.0*ms(i)*(dhs%d(i,i)**l)/V
+        zeta%zet(index_l)=zeta%zet(index_l)+ms(i)*n(i)*dhs%d(i)**(l)
+        zeta%zet_n(i,index_l)=ms(i)*(dhs%d(i)**l)
+        zeta%zet_Vn(i,index_l)=-1.0*ms(i)*(dhs%d(i)**l)/V
 
         if (l>0) then
 
           zeta%zet_T(index_l)=zeta%zet_T(index_l)+&
-               l*ms(i)*n(i)*(dhs%d(i,i)**(l-1))*dhs%d_T(i,i)
+               l*ms(i)*n(i)*(dhs%d(i)**(l-1))*dhs%d_T(i)
 
-          zeta%zet_TT(index_l)=zeta%zet_TT(index_l)+l*ms(i)*n(i)*(dhs%d(i,i)**(l-1))*&
-               dhs%d_TT(i,i)
+          zeta%zet_TT(index_l)=zeta%zet_TT(index_l)+l*ms(i)*n(i)*(dhs%d(i)**(l-1))*&
+               dhs%d_TT(i)
 
           zeta%zet_TV(index_l)=zeta%zet_TV(index_l)-(1.0*l/V)*ms(i)*n(i)*&
-               (dhs%d(i,i)**(l-1))*dhs%d_T(i,i)
+               (dhs%d(i)**(l-1))*dhs%d_T(i)
 
-          zeta%zet_Tn(i,index_l)=l*ms(i)*(dhs%d(i,i)**(l-1))*dhs%d_T(i,i)
+          zeta%zet_Tn(i,index_l)=l*ms(i)*(dhs%d(i)**(l-1))*dhs%d_T(i)
         end if
         if (l>1) then
 
           zeta%zet_TT(index_l)=zeta%zet_TT(index_l)+l*(l-1)*ms(i)*n(i)*&
-               (dhs%d(i,i)**(l-2))*(dhs%d_T(i,i)**2)
+               (dhs%d(i)**(l-2))*(dhs%d_T(i)**2)
 
         end if
       end do
@@ -709,15 +709,16 @@ contains
     integer, intent(in) :: nc
     ! Locals
     integer :: ierr
-    allocate (dhs%d(nc,nc), STAT=ierr)
+    call dhs%deallocate()
+    allocate (dhs%d(nc), STAT=ierr)
     if (ierr /= 0) then
       call stoperror("hardsphere_bmcsl::allocate_hs_diameter: Not able to allocate dhs%d")
     endif
-    allocate (dhs%d_T(nc,nc), STAT=ierr)
+    allocate (dhs%d_T(nc), STAT=ierr)
     if (ierr /= 0) then
       call stoperror("hardsphere_bmcsl::allocate_hs_diameter: Not able to allocate dhs%d_T")
     endif
-    allocate (dhs%d_TT(nc,nc), STAT=ierr)
+    allocate (dhs%d_TT(nc), STAT=ierr)
     if (ierr /= 0) then
       call stoperror("hardsphere_bmcsl::allocate_hs_diameter: Not able to allocate dhs%d_TT")
     endif
@@ -772,6 +773,7 @@ contains
     integer, intent(in) :: nc
     ! Locals
     integer :: ierr
+    call zeta%deallocate()
     zeta%zet = 0.0
     zeta%zet_T = 0.0
     zeta%zet_TT = 0.0

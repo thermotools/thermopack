@@ -1,6 +1,5 @@
 module saft_globals
-  use eosdata, only: cpaPR, cpaSRK, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
-       eosLJS_BH
+  use eosdata, only: eosSAFT_VR_MIE, eosLJS_BH
   implicit none
   save
   public
@@ -8,7 +7,7 @@ module saft_globals
 contains
 
   function assoc_covol(ic)
-    use pc_saft_nonassoc, only: PCSAFT_eos
+    use pc_saft_nonassoc, only: sPCSAFT_eos
     use saftvrmie_containers, only: saftvrmie_param
     use cubic_eos, only: cb_eos
     use thermopack_constants, only: N_AVOGADRO
@@ -25,7 +24,7 @@ contains
       select type ( p_eos => eos )
       class is ( cb_eos )
         assoc_covol = p_eos%single(ic)%b/1000
-      class is ( PCSAFT_eos )
+      class is ( sPCSAFT_eos )
         assoc_covol = N_AVOGADRO*p_eos%sigma_cube(ic,ic)
       class default
         assoc_covol = 0
@@ -35,7 +34,7 @@ contains
   end function assoc_covol
 
   function assoc_covol_binary(ic,jc)
-    use pc_saft_nonassoc, only: PCSAFT_eos
+    use pc_saft_nonassoc, only: sPCSAFT_eos
     use saftvrmie_containers, only: saftvrmie_param
     use thermopack_constants, only: N_AVOGADRO
     use thermopack_var, only: base_eos_param, get_active_eos
@@ -51,7 +50,7 @@ contains
       select type ( p_eos => eos )
       class is ( cb_eos )
         assoc_covol_binary = 0.5*(p_eos%single(ic)%b + p_eos%single(jc)%b)/1000.0
-      class is (PCSAFT_eos)
+      class is (sPCSAFT_eos)
         assoc_covol_binary = N_AVOGADRO*p_eos%sigma_cube(ic,jc)
       class default
         assoc_covol_binary = 0
