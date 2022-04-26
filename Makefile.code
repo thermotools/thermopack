@@ -462,6 +462,9 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 	@$(call make_object, $(SRC)/external.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
+$(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90
+	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
 $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/quadratures.f90 \
 	$(SRC)/saftvrmie_utils.f90 $(SRC)/numconstants.f90 \
@@ -552,11 +555,13 @@ $(ODIR)/pc_saft_datadb.o: $(SRC)/pc_saft_datadb.f90 \
 	@$(call make_object, $(SRC)/pc_saft_datadb.f90)
 $(ODIR)/pc_saft_nonassoc.o: $(SRC)/pc_saft_nonassoc.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/thermopack_constants.f90 \
-	$(SRC)/numconstants.f90 $(SRC)/utilities.f90
+	$(SRC)/numconstants.f90 $(SRC)/hardsphere_bmcsl.f90 \
+	$(SRC)/utilities.f90 $(SRC)/pc_saft_nonassoc.f90
 	@$(call make_object, $(SRC)/pc_saft_nonassoc.f90)
 $(ODIR)/pc_saft_parameters.o: $(SRC)/pc_saft_parameters.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/pc_saft_datadb.f90 \
-	$(SRC)/stringmod.f90 $(SRC)/compdata.f90
+	$(SRC)/stringmod.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/pc_saft_parameters.f90)
 $(ODIR)/pets.o: $(SRC)/pets.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/thermopack_constants.f90 \
@@ -706,8 +711,7 @@ $(ODIR)/single_phase.o: $(SRC)/single_phase.f90 \
 	$(SRC)/single_component.f90 $(SRC)/eos_parameters.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/extcsp.f90 $(SRC)/saft_interface.f90 \
-	$(SRC)/volume_shift.f90 $(SRC)/saftvrmie_containers.f90 \
-	$(SRC)/pc_saft_nonassoc.f90
+	$(SRC)/volume_shift.f90
 	@$(call make_object, $(SRC)/single_phase.f90)
 $(ODIR)/solid_saturation.o: $(SRC)/solid_saturation.f90 \
 	$(SRC)/saturation.f90 $(SRC)/saturation_curve.f90 \
@@ -758,8 +762,11 @@ $(ODIR)/thermo_utils.o: $(SRC)/thermo_utils.f90 \
 	$(SRC)/trend_solver.f90
 	@$(call make_object, $(SRC)/thermo_utils.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90 \
-	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_constants.f90 \
-	$(SRC)/critical.f90 $(SRC)/eostv.f90
+	$(SRC)/thermopack_constants.f90 $(SRC)/critical.f90 \
+	$(SRC)/saft_interface.f90 $(SRC)/pc_saft_nonassoc.f90 \
+	$(SRC)/hardsphere_bmcsl.f90 $(SRC)/saftvrmie_containers.f90 \
+	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/saftvrmie_interface.f90 \
+	$(SRC)/thermopack_var.f90
 	@$(call make_object, $(SRC)/thermopack.f90)
 $(ODIR)/thermopack_constants.o: $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/thermopack_constants.f90)
@@ -816,5 +823,3 @@ $(ODIR)/wong_sandler.o: $(SRC)/wong_sandler.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/cubic_eos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/excess_gibbs.f90
 	@$(call make_object, $(SRC)/wong_sandler.f90)
-$(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90
-	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
