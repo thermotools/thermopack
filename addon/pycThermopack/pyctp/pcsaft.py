@@ -37,6 +37,7 @@ class pcsaft(saft.saft):
         # SAFT specific methods
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
+        self.s_lng_ii_pc_saft_tvn = getattr(self.tp, self.get_export_name("pc_saft_nonassoc", "lng_ii_pc_saft_tvn"))
 
         # Define parameters to be set by init
         self.nc = None
@@ -182,3 +183,103 @@ class pcsaft(saft.saft):
                                param_c)
         m, sigma, eps_div_kb, eps, beta = param_c
         return m, sigma, eps_div_kb, eps, beta
+
+
+    def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
+               lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
+        """Calculate logarithm og g at contact gitvne temperature, volume and mol numbers.
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+            i (int): FORTRAN component index
+            lng_t (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_v (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_n (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_tt (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_vv (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_tv (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_tn (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_vn (No type, optional): Flag to activate calculation. Defaults to None.
+            lng_nn (No type, optional): Flag to activate calculation. Defaults to None.
+
+        Returns:
+            ndarry:
+            Optionally differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        lng_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+        i_c = c_int(i)
+
+        null_pointer = POINTER(c_double)()
+        lng_t_c = null_pointer if lng_t is None else c_double(0.0)
+        lng_v_c = null_pointer if lng_v is None else c_double(0.0)
+        lng_n_c = null_pointer if lng_n is None else (c_double * len(n))(0.0)
+        lng_tt_c = null_pointer if lng_tt is None else c_double(0.0)
+        lng_vv_c = null_pointer if lng_vv is None else c_double(0.0)
+        lng_tv_c = null_pointer if lng_tv is None else c_double(0.0)
+        lng_tn_c = null_pointer if lng_tn is None else (c_double * len(n))(0.0)
+        lng_vn_c = null_pointer if lng_vn is None else (c_double * len(n))(0.0)
+        lng_nn_c = null_pointer if lng_nn is None else (c_double * len(n)**2)(0.0)
+
+        self.s_lng_ii_pc_saft_tvn.argtypes = [POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_int),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double)]
+
+        self.s_lng_ii_pc_saft_tvn.restype = None
+
+        self.s_lng_ii_pc_saft_tvn(byref(temp_c),
+                                  byref(v_c),
+                                  n_c,
+                                  byref(i_c),
+                                  byref(lng_c),
+                                  lng_t_c,
+                                  lng_v_c,
+                                  lng_n_c,
+                                  lng_tt_c,
+                                  lng_tv_c,
+                                  lng_tn_c,
+                                  lng_vv_c,
+                                  lng_vn_c,
+                                  lng_nn_c)
+
+        return_tuple = (lng_c.value, )
+        if not lng_t is None:
+            return_tuple += (lng_t_c.value, )
+        if not lng_v is None:
+            return_tuple += (lng_v_c.value, )
+        if not lng_n is None:
+            return_tuple += (np.array(lng_n_c), )
+        if not lng_tt is None:
+            return_tuple += (lng_tt_c.value, )
+        if not lng_tv is None:
+            return_tuple += (lng_tv_c.value, )
+        if not lng_vv is None:
+            return_tuple += (lng_vv_c.value, )
+        if not lng_tn is None:
+            return_tuple += (np.array(lng_tn_c), )
+        if not lng_vn is None:
+            return_tuple += (np.array(lng_vn_c), )
+        if not lng_nn is None:
+            lng_nn = np.zeros((len(n), len(n)))
+            for i in range(len(n)):
+                for j in range(len(n)):
+                    lng_nn[i][j] = lng_nn_c[i + j*len(n)]
+            return_tuple += (lng_nn, )
+
+        return return_tuple

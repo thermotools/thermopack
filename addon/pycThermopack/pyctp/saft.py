@@ -101,7 +101,7 @@ class saft(thermo.thermopack):
         if a_n is None:
             a_n_c = null_pointer
         else:
-            a_n_c = (c_double * len(n)**2)(0.0)
+            a_n_c = (c_double * len(n))(0.0)
         if a_tt is None:
             a_tt_c = null_pointer
         else:

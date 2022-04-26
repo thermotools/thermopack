@@ -1586,7 +1586,11 @@ contains
     class(PCSAFT_eos), intent(inout) :: eos
     real, intent(in) :: T            !< [K]
     !
-    call calc_d(eos,T,eos%dhs%d,eos%dhs%d_T,eos%dhs%d_TT)
+    if (eos%dhs%T_update /= T) then
+      ! Avoid updating all the time with mu-V-T dft
+      call calc_d(eos,T,eos%dhs%d,eos%dhs%d_T,eos%dhs%d_TT)
+      eos%dhs%T_update = T
+    endif
   end subroutine calc_dhs
 
   subroutine g_pc_saft_TVn(eos,T,V,n,i,j,g,g_T,g_V,g_n,&
@@ -1966,6 +1970,31 @@ contains
     endif
 
   end subroutine F_PC_SAFT_TVn
+
+  !> Get ln(g_ii) with differentials
+  subroutine lng_ii_PC_SAFT_TVn(T,V,n,i,lng,lng_T,lng_V,lng_n,lng_TT,lng_TV,lng_Tn,lng_VV,lng_Vn,lng_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_lngij, calc_bmcsl_zeta_and_derivatives
+    use thermopack_var, only: get_active_eos, base_eos_param, nce
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: lng !< [mol]
+    real, intent(out), optional :: lng_T,lng_V,lng_n(nce)
+    real, intent(out), optional :: lng_TT,lng_TV,lng_Tn(nce),lng_VV,lng_Vn(nce),lng_nn(nce,nce)
+    ! Locals
+    integer :: i
+    class(PCSAFT_eos), pointer :: eos
+    class(base_eos_param), pointer :: base_eos
+    base_eos => get_active_eos()
+    eos => get_PCSAFT_eos_pointer(base_eos)
+
+    call calc_dhs(eos, T)
+    call calc_bmcsl_zeta_and_derivatives(nce,V,n,eos%dhs,eos%zeta,eos%m)
+    call calc_bmcsl_lngij(nce,T,V,n,i,i,eos%dhs,eos%zeta, &
+         lng=lng,lng_T=lng_T,lng_V=lng_V,lng_n=lng_n,&
+         lng_TT=lng_TT,lng_TV=lng_TV,lng_Tn=lng_Tn,&
+         lng_VV=lng_VV,lng_Vn=lng_Vn,lng_nn=lng_nn)
+
+  end subroutine lng_ii_PC_SAFT_TVn
 
   subroutine spcsaft_allocate_and_init(eos,nc,eos_label)
     use utilities, only: allocate_nc_x_nc, allocate_nc

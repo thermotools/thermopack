@@ -20,6 +20,8 @@ module hardsphere_bmcsl
     real, allocatable, dimension(:) :: d_T
     !> Second temperature differential of hard sphere diameter
     real, allocatable, dimension(:) :: d_TT
+    !> d calculated for T:
+    real :: T_update = 0
   contains
     procedure, public :: allocate => allocate_hs_diameter
     procedure, public :: deallocate => cleanup_hs_diameter
@@ -673,6 +675,7 @@ contains
     this%d = other%d
     this%d_T = other%d_T
     this%d_TT = other%d_TT
+    this%T_update = other%T_update
   end subroutine assign_hs_diameter
 
   !> Free allocated hs_diameter memory
@@ -710,6 +713,7 @@ contains
     ! Locals
     integer :: ierr
     call dhs%deallocate()
+    dhs%T_update = 0
     allocate (dhs%d(nc), STAT=ierr)
     if (ierr /= 0) then
       call stoperror("hardsphere_bmcsl::allocate_hs_diameter: Not able to allocate dhs%d")
