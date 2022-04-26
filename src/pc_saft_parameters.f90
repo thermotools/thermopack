@@ -64,36 +64,55 @@ contains
 
   !> Retrieve binary interaction parameter for components uid1 and uid2.
   !> If no kij is stored in the database PCkijdb, it returns 0.0.
-  function getPCkij (eosidx,uid1,uid2,param_ref) result(kijvalue)
+  function getPCkij(eosidx,uid1,uid2,param_ref) result(kijvalue)
     use stringmod, only: str_eq, string_match
+    use eosdata, only: eosPC_SAFT, eosSPC_SAFT, eosOPC_SAFT
     integer, intent(in) :: eosidx
     character(len=*), intent(in) :: uid1, uid2, param_ref
     real :: kijvalue
-    integer :: idx, idx_default
+    ! Locals
+    integer :: idx, idx_default, eosidx_local
     logical :: match_11_22, match_12_21, found
 
-    kijvalue = 0.0 ! default value if the binary is not in PCkijdb.
-    idx = 1
-    idx_default = -1
-    found = .false.
-    do idx = 1,PCmaxkij
-      match_11_22 = str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)
-      match_12_21 = str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1)
-
-      if ( eosidx==PCkijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21)) then
-        if (string_match(param_ref,PCkijdb(idx)%ref)) then
-          kijvalue = PCkijdb(idx)%kijvalue
-          found = .true.
-          exit
-        elseif (string_match("DEFAULT", PCkijdb(idx)%ref)) then
-          idx_default = idx
-        endif
-      endif
-    end do
-
-    if (.not. found .and. idx_default > 0) then
-      kijvalue = PCkijdb(idx_default)%kijvalue
+    if (eosidx == eosOPC_SAFT) then
+      eosidx_local = eosPC_SAFT
+    else
+      eosidx_local = eosidx
     endif
+    call getkij()
+
+    ! Use PC-SAFT kij with sPC-SAFT
+    if (eosidx == eosSPC_SAFT .and. .not. found) then
+      eosidx_local = eosPC_SAFT
+      call getkij()
+      if (found) print *,"Using PC-SAFT kij with simplified EOS: "//trim(uid1)//"-"//trim(uid2)
+    endif
+
+  contains
+    subroutine getkij()
+      kijvalue = 0.0 ! default value if the binary is not in PCkijdb.
+      idx = 1
+      idx_default = -1
+      found = .false.
+      do idx = 1,PCmaxkij
+        match_11_22 = str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)
+        match_12_21 = str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1)
+
+        if (eosidx_local == PCkijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21)) then
+          if (string_match(param_ref,PCkijdb(idx)%ref)) then
+            kijvalue = PCkijdb(idx)%kijvalue
+            found = .true.
+            exit
+          elseif (string_match("DEFAULT", PCkijdb(idx)%ref)) then
+            idx_default = idx
+          endif
+        endif
+      enddo
+      if (.not. found .and. idx_default > 0) then
+        found = .true.
+        kijvalue = PCkijdb(idx_default)%kijvalue
+      endif
+    end subroutine getkij
   end function getPCkij
 
   subroutine getPcSaftKij_allComps(nc,comp,eosidx,kij)

@@ -20,7 +20,7 @@ This folder contains several example Python scripts for running pycThermopack.
 
 * **pets.py**: LJ-fluid cut-off 2.5 temperature-density phase envelope.
 
-* **PC-SAFT.py**: CO2-CH4 temperature-pressure phase envelope.
+* **pc-saft.py**: CO2-CH4 temperature-pressure and Pxy phase envelopes.
 
 * **pyctp_example_utils.py**: Constants and methods for converting to and from reduced units.
 

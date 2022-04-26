@@ -11,6 +11,7 @@ from data_utils import I, N_TAGS_PER_LINE, \
     get_assoc_scheme_parameter
 from binarydata import binaries, binary_list
 
+
 class pcsaft_component(component):
     """Read component data from file, manipulate, save and generate
     component data file for Thermopack
@@ -31,16 +32,23 @@ class pcsaft_component(component):
         """
         code_lines = []
         code_lines.append(I+"type(pc_saft_data), parameter :: PC-SAFTTAG = &")
-        code_lines.append(3*I+"pc_saft_data(eosidx = " + saft_eos_to_idx(self.eos) + ", &")
+        code_lines.append(3*I+"pc_saft_data(eosidx = " +
+                          saft_eos_to_idx(self.eos) + ", &")
         code_lines.append(3*I+"compName = \"" + self.comp["ident"] + "\", &")
-        code_lines.append(3*I + 'm = {}'.format(print_float(self.comp[tag]["m"])) + ", &")
-        code_lines.append(3*I + 'sigma = {}'.format(sci_print_float(self.comp[tag]["sigma"])) + ", &")
-        code_lines.append(3*I + 'eps_depth_divk = {}'.format(print_float(self.comp[tag]["eps_depth_divk"])) + ", &")
-        code_lines.append(3*I + 'eps = {}'.format(print_float(self.comp[tag]["eps"])) + ", &")
-        code_lines.append(3*I + 'beta = {}'.format(print_float(self.comp[tag]["beta"])) + ", &")
+        code_lines.append(
+            3*I + 'm = {}'.format(print_float(self.comp[tag]["m"])) + ", &")
+        code_lines.append(
+            3*I + 'sigma = {}'.format(sci_print_float(self.comp[tag]["sigma"])) + ", &")
+        code_lines.append(
+            3*I + 'eps_depth_divk = {}'.format(print_float(self.comp[tag]["eps_depth_divk"])) + ", &")
+        code_lines.append(
+            3*I + 'eps = {}'.format(print_float(self.comp[tag]["eps"])) + ", &")
+        code_lines.append(
+            3*I + 'beta = {}'.format(print_float(self.comp[tag]["beta"])) + ", &")
         code_lines.append(3*I + 'assoc_scheme = {}, &'.format(
             get_assoc_scheme_parameter(self.comp[tag]["assoc_scheme"])))
-        code_lines.append(3*I + "bib_ref = \"" + self.comp[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I + "bib_ref = \"" +
+                          self.comp[tag]["bib_reference"] + "\", &")
         code_lines.append(3*I + "ref = \"" + self.comp[tag]["ref"] + "\" &")
         code_lines.append(3*I + ")")
         code_lines.append("")
@@ -99,9 +107,12 @@ class pcsaft_comp_list(comp_list):
         code_lines - Code lines
         """
         code_lines = []
-        code_lines.append(I+"integer, parameter :: nPCmodels = " + str(self.nPCSAFT))
-        code_lines.append(I+"type(pc_saft_data), dimension(nPCmodels), parameter :: PCarray = (/&")
-        code_lines = self.get_array_fortran_code(code_lines,self.nPCSAFT,self.get_pcsaft_tag)
+        code_lines.append(
+            I+"integer, parameter :: nPCmodels = " + str(self.nPCSAFT))
+        code_lines.append(
+            I+"type(pc_saft_data), dimension(nPCmodels), parameter :: PCarray = (/&")
+        code_lines = self.get_array_fortran_code(
+            code_lines, self.nPCSAFT, self.get_pcsaft_tag)
         code_lines.append("")
         return code_lines
 
@@ -290,7 +301,7 @@ def PCSAFT_header_and_footer():
         header.append("module pc_saft_datadb")
         header.append(I+"use thermopack_constants, only: uid_len, ref_len, bibref_len")
         header.append(I+"use AssocSchemeUtils")
-        header.append(I+"use eosdata, only: eosPC_SAFT")
+        header.append(I+"use eosdata, only: eosPC_SAFT, eosOPC_SAFT, eosSPC_SAFT")
         header.append(I+"implicit none")
         header.append(I+"public")
         header.append("")

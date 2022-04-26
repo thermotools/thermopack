@@ -1,7 +1,7 @@
 !> The module eosdata contains the definitions of the equation of state, mixing
 !> rule and the interaction parameters.
 
-Module eosdata
+module eosdata
   use stringmod, only: string_match, str_eq
   use thermopack_constants, only: short_label_len, label_len
   implicit none

@@ -1,11 +1,11 @@
 !> Automatically generated to file pc_saft_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2022-03-11T15:11:44.594742
+!! Time stamp: 2022-04-26T09:27:11.753771
 
 module pc_saft_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
   use AssocSchemeUtils
-  use eosdata, only: eosPC_SAFT
+  use eosdata, only: eosPC_SAFT, eosOPC_SAFT, eosSPC_SAFT
   implicit none
   public
 
