@@ -107,8 +107,8 @@ contains
   subroutine test_1st_der_dim(rout,eos,rho,T,x,dim,verbose)
     interface
       subroutine rout(eos,rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
-        import nce, PCSAFT_eos
-        class(PCSAFT_eos), intent(in) :: eos
+        import nce, sPCSAFT_eos
+        class(sPCSAFT_eos), intent(in) :: eos
         real, intent(in)    :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
         real, intent(out)   :: z(0:3)        !< [m^(i-3)]
         real, intent(out), optional :: z_rho(0:3), z_T(0:3), z_n(0:3,nce)
@@ -116,7 +116,7 @@ contains
         real, intent(out), optional :: z_TT(0:3), z_Tn(0:3,nce), z_nn(0:3,nce,nce)
       END SUBROUTINE Rout
     end interface
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     integer, intent(in) :: dim
     logical, intent(in), optional :: verbose
@@ -229,8 +229,8 @@ contains
   subroutine test_1st_der_opt(rout,eos,rho,T,x,verbose)
     interface
       subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-        import nce, PCSAFT_eos
-        class(PCSAFT_eos), intent(in) :: eos
+        import nce, sPCSAFT_eos
+        class(sPCSAFT_eos), intent(in) :: eos
         real, intent(in) :: rho, T, n(nce)
         real, intent(out), optional :: e
         real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -239,14 +239,14 @@ contains
       END SUBROUTINE Rout
     end interface
     !
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     logical, intent(in), optional :: verbose
     !
     call test_1st_der(rout_nonopt,eos,rho,T,x,verbose)
   contains
     subroutine rout_nonopt(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-      class(PCSAFT_eos), intent(in) :: eos
+      class(sPCSAFT_eos), intent(in) :: eos
       real, intent(in) :: rho, T, n(nce)
       real, intent(out) :: e
       real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -260,8 +260,8 @@ contains
   subroutine test_1st_der(rout,eos,rho,T,x,verbose)
     interface
       subroutine rout(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-        import nce, PCSAFT_eos
-        class(PCSAFT_eos), intent(in) :: eos
+        import nce, sPCSAFT_eos
+        class(sPCSAFT_eos), intent(in) :: eos
         real, intent(in) :: rho, T, n(nce)
         real, intent(out) :: e
         real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -269,7 +269,7 @@ contains
         real, intent(out), optional :: e_TT, e_Tn(nce), e_nn(nce,nce)
       END SUBROUTINE Rout
     end interface
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,x(2)
     logical, intent(in), optional :: verbose
     ! Locals
@@ -509,7 +509,7 @@ contains
     ! call test_Tn_der(T,x,m2e1s3_mean)
     ! call test_Tn_der(T,x,m2e2s3_mean)
     select type( eos => base_eos )
-    class is (PCSAFT_eos)
+    class is (sPCSAFT_eos)
       call test_1st_der(eta,eos,rho,T,x)
       call test_1st_der_dim(zeta,eos,rho,T,x,dim=4)
       call test_1st_der(C_1,eos,rho,T,x)
@@ -520,7 +520,7 @@ contains
       call test_1st_der_opt(alpha_disp,eos,rho,T,x)
       call test_1st_der_opt(alpha_spc_saft_hc,eos,rho,T,x)
       call test_1st_der_opt(alpha_PC,eos,rho,T,x)
-      call test_1st_der_opt(F_PC_SAFT_TVn,eos,rho=T,T=sum(x)/rho,x=x)
+      call test_1st_der_opt(F_sPC_SAFT_TVn,eos,rho=T,T=sum(x)/rho,x=x)
     end select
   end subroutine test_der
 
@@ -535,7 +535,7 @@ contains
     x = (/1.0/)
 
     ! Should estimate the liquid and vapor density of propane to within 5 %.
-    call init_thermo(alpha='Classic',eos='PC-SAFT',&
+    call init_thermo(alpha='Classic',eos='sPC-SAFT',&
          mixing='Classic',comp_string="C3",nphases=2,saft_ref="DEFAULT")
     P = 101325.0
     p_eos => get_active_eos()
@@ -575,7 +575,7 @@ contains
     P = 1e5
 
     ! Should estimate density of air at STP to within 1 %.
-    call init_thermo(alpha='Classic',eos='PC-SAFT',&
+    call init_thermo(alpha='Classic',eos='sPC-SAFT',&
          mixing='Classic',comp_string="N2,O2,AR",nphases=2,saft_ref="DEFAULT")
     p_eos => get_active_eos()
 

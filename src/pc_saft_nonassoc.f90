@@ -1933,23 +1933,37 @@ contains
       pF_disp_nn => NULL()
     endif
 
-    ! Get dispersion contribution
-    call F_disp_PC_TVn(eos,T,V,n,F_disp,F_disp_V,F_disp_T,F_disp_n, &
-         F_disp_VV,F_disp_TV,F_disp_Vn,F_disp_TT,F_disp_Tn,F_disp_nn)
+    if (enable_hs) then
+      ! Get HC contribution
+      call F_HC_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    else
+      if (present(F)) F = 0
+      if (present(F_T)) F_T = 0
+      if (present(F_V)) F_V = 0
+      if (present(F_n)) F_n = 0
+      if (present(F_TT)) F_TT = 0
+      if (present(F_TV)) F_TV = 0
+      if (present(F_Tn)) F_Tn = 0
+      if (present(F_VV)) F_VV = 0
+      if (present(F_Vn)) F_Vn = 0
+      if (present(F_nn)) F_nn = 0
+    endif
 
-    ! Get HC contribution
-    call F_HC_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-
-    if (present(F)) F = F + F_disp
-    if (present(F_T)) F_T = F_T + F_disp_T
-    if (present(F_V)) F_V = F_V + F_disp_V
-    if (present(F_n)) F_n = F_n + F_disp_n
-    if (present(F_TT)) F_TT = F_TT + F_disp_TT
-    if (present(F_TV)) F_TV = F_TV + F_disp_TV
-    if (present(F_Tn)) F_Tn = F_Tn + F_disp_Tn
-    if (present(F_VV)) F_VV = F_VV + F_disp_VV
-    if (present(F_Vn)) F_Vn = F_Vn + F_disp_Vn
-    if (present(F_nn)) F_nn = F_nn + F_disp_nn
+    if (enable_disp) then
+      ! Get dispersion contribution
+      call F_disp_PC_TVn(eos,T,V,n,F_disp,F_disp_V,F_disp_T,F_disp_n, &
+           F_disp_VV,F_disp_TV,F_disp_Vn,F_disp_TT,F_disp_Tn,F_disp_nn)
+      if (present(F)) F = F + F_disp
+      if (present(F_T)) F_T = F_T + F_disp_T
+      if (present(F_V)) F_V = F_V + F_disp_V
+      if (present(F_n)) F_n = F_n + F_disp_n
+      if (present(F_TT)) F_TT = F_TT + F_disp_TT
+      if (present(F_TV)) F_TV = F_TV + F_disp_TV
+      if (present(F_Tn)) F_Tn = F_Tn + F_disp_Tn
+      if (present(F_VV)) F_VV = F_VV + F_disp_VV
+      if (present(F_Vn)) F_Vn = F_Vn + F_disp_Vn
+      if (present(F_nn)) F_nn = F_nn + F_disp_nn
+    endif
 
   end subroutine F_PC_SAFT_TVn
 
