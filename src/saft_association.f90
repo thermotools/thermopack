@@ -20,13 +20,14 @@ contains
     real, intent(in) :: T
     real, intent(out) :: boltzmann_fac(numAssocSites, numAssocSites)
     integer :: k, l
-    if (T /= assoc%T_cache) then
+    if (T /= assoc%T_cache) then ! does caching work when changing parameters but keeping T constant...?
       assoc%T_cache = T
       do k=1, numAssocSites
-        do l=k, numAssocSites
-          assoc%boltzmann_fac_cache(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
-          assoc%boltzmann_fac_cache(l,k) = &
-               assoc%boltzmann_fac_cache(k,l) ! assumes eps_kl==eps_lk
+         do l=k, numAssocSites
+            if (assoc%eps_kl(k,l)>0) then
+               assoc%boltzmann_fac_cache(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
+               assoc%boltzmann_fac_cache(l,k) = assoc%boltzmann_fac_cache(k,l)
+            end if
         end do
       end do
     end if
@@ -72,10 +73,6 @@ contains
     integer :: difflevel
     type(association), pointer :: assoc
     assoc => eos%assoc
-
-    ! real :: gij(nc,nc), gij_T(nc,nc),gij_V(nc,nc),gij_n(nc,nc,nc)        !< rdf+ derivatives
-    ! real :: gij_VV(nc,nc),gij_TV(nc,nc),gij_Vn(nc,nc,nc)        !< rdf+derivatives
-    ! real :: gij_TT(nc,nc,nc,nc),gij_Tn(nc,nc,nc),gij_nn(nc,nc,nc,nc) !< rdf+derivatives
 
     fir_der_present = present(Delta_T) .or. present(Delta_V) .or. present(Delta_n)
     sec_der_present = present(Delta_TT) .or. present(Delta_TV) .or. &
@@ -131,7 +128,6 @@ contains
 
           Delta(k,l) = g*h
           Delta(l,k) = Delta(k,l)
-          !print *, ic, jc, g, beta_kl(k,l)
 
           if (present(Delta_T)) then
              Delta_T(k,l) = g_T*h + g*h_T
@@ -370,6 +366,9 @@ contains
     integer :: k
     real :: m_mich_k(numAssocSites)
 
+    type(association), pointer :: assoc
+    assoc => eos%assoc
+
     ! Special considerations in the case that one of the mole numbers are
     ! zero. In that case, the jacobian in the Newton solver can't be inverted,
     ! and we use successive substitution instead.
@@ -382,6 +381,14 @@ contains
         end if
       end do
     end if
+
+
+    ! Explicit solution for the case of a single associating component
+    ! if (assoc%numAssocSites==1) then
+    !    cidx = assoc%compIdcs(1)
+       
+    ! end if
+
 
     if (present(maxit)) then
       solver%max_it = maxit
