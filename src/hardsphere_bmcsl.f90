@@ -63,6 +63,7 @@ module hardsphere_bmcsl
   public :: packing_fraction_hs, hs_diameter
   public :: calc_bmcsl_zeta_and_derivatives
   public :: calc_bmcsl_lngij
+  public :: calc_bmcsl_gij_FMT
 
 contains
 
@@ -180,6 +181,51 @@ contains
     endif
 
   end subroutine calc_bmcsl_lngij
+
+  subroutine calc_bmcsl_gij_FMT(T,n_alpha,i,j,dhs,g,g_n)
+    !------------------------------------------------------------------------
+    !>  FMT model for associating fluids
+    !! 2022-04, Morten Hammer
+    !! We have used the expression from Yang-Xin Yu and Jianzhong Wu
+    !! "A fundamental-measure theory for inhomogeneous associating fluids"
+    !! J. Chem. Phys., Vol. 116, No. 16 (2002).  All derivatives checked numerically.
+    !! doi: 10.1063/1.1463435
+    !----------------------------------------------------------------------------
+    real, intent(in) :: T, n_alpha(0:5)  !< temperature [K], n_alpha
+    integer, intent(in) :: i, j    ! The pair-correlation of the pair i,j
+    type(hs_diameter), intent(in) :: dhs !< Hard-sphere diameter and differentials
+    real, intent(out) :: g         !< reduced helmholtz energy [-]
+    real, intent(out), optional :: g_n(0:5) !< derivatives
+    integer, parameter :: n2V = 5
+    real :: mu, mu_2, xi, xi_n2, xi_n2V, g_xi
+    real :: div_diff_1, div_diff_2, div_diff_3, div_diff_4
+
+    ! Compute mu
+    mu=(dhs%d(i)*dhs%d(j))/(dhs%d(i)+dhs%d(j))
+    xi = 1 - n_alpha(n2V)**2/n_alpha(2)**2
+    xi_n2 = 2*n_alpha(n2V)**2/n_alpha(2)**3
+    xi_n2V = -2*n_alpha(n2V)/n_alpha(2)**2
+
+    ! Prefactors that go into many of the expressions
+    div_diff_1=1.0/(1-n_alpha(3))
+    div_diff_2=div_diff_1**2
+    div_diff_3=div_diff_1*div_diff_2
+    div_diff_4=div_diff_2*div_diff_2
+    mu_2=mu*mu
+
+    g_xi = mu*n_alpha(2)*div_diff_2/2 + n_alpha(2)**2*mu_2*div_diff_3/18
+    g = div_diff_1 + g_xi*xi
+
+    if (present(g_n)) then
+      g_n=0
+      g_n(2) = xi*(mu*div_diff_2/2 + n_alpha(2)*mu_2*div_diff_3/9) +&
+           g_xi*xi_n2
+      g_n(3) = div_diff_2 + n_alpha(2)*div_diff_3*mu*xi &
+           + n_alpha(2)**2*div_diff_4*mu_2*xi/6
+      g_n(n2V) = g_xi*xi_n2V
+    endif
+
+  end subroutine calc_bmcsl_gij_FMT
 
   subroutine calc_bmcsl_gij(nc,T,V,n,i,j,dhs,zeta, &
        g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
