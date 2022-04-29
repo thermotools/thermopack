@@ -34,7 +34,7 @@ contains
   end function assoc_covol
 
   function assoc_covol_binary(ic,jc)
-    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pc_saft_nonassoc, only: sPCSAFT_eos, PCSAFT_eos
     use saftvrmie_containers, only: saftvrmie_param
     use thermopack_constants, only: N_AVOGADRO
     use thermopack_var, only: base_eos_param, get_active_eos
@@ -50,6 +50,8 @@ contains
       select type ( p_eos => eos )
       class is ( cb_eos )
         assoc_covol_binary = 0.5*(p_eos%single(ic)%b + p_eos%single(jc)%b)/1000.0
+      class is (PCSAFT_eos)
+        assoc_covol_binary = N_AVOGADRO*(0.5*(p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**3
       class is (sPCSAFT_eos)
         assoc_covol_binary = N_AVOGADRO*p_eos%sigma_cube(ic,jc)
       class default
