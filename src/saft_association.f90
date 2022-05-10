@@ -20,18 +20,14 @@ contains
     real, intent(in) :: T
     real, intent(out) :: boltzmann_fac(numAssocSites, numAssocSites)
     integer :: k, l
-    if (T /= assoc%T_cache) then ! does caching work when changing parameters but keeping T constant...?
-      assoc%T_cache = T
-      do k=1, numAssocSites
-         do l=k, numAssocSites
-            if (assoc%eps_kl(k,l)>0) then
-               assoc%boltzmann_fac_cache(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
-               assoc%boltzmann_fac_cache(l,k) = assoc%boltzmann_fac_cache(k,l)
-            end if
-        end do
-      end do
-    end if
-    boltzmann_fac = assoc%boltzmann_fac_cache
+    do k=1, numAssocSites
+       do l=k, numAssocSites
+          if (assoc%eps_kl(k,l)>0) then
+             boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
+             boltzmann_fac(l,k) = boltzmann_fac(k,l)
+          end if
+       end do
+    end do
   end subroutine calc_boltzmann_fac
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized

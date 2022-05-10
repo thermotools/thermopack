@@ -202,6 +202,11 @@ contains
     ! call check_site_and_scheme(site1,assoc_scheme_I)
     ! call check_site_and_scheme(site2,assoc_scheme_II)
 
+    cross_site_interaction = .false.
+    if (assoc_scheme_I == no_assoc .or. assoc_scheme_II == no_assoc) then
+       cross_site_interaction = .false.
+    end if
+
     pol1 = polarity(site1,assoc_scheme_I)
     pol2 = polarity(site2,assoc_scheme_II)
     if (pol1*pol2 > 0) then
