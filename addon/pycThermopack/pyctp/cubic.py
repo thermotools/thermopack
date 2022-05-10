@@ -33,6 +33,9 @@ class cubic(thermo.thermopack):
         self.s_get_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_gethvparam"))
         self.s_set_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_sethvparam"))
 
+        self.s_get_ws_param = getattr(self.tp, self.get_export_name("", "thermopack_getwsparam"))
+        self.s_set_ws_param = getattr(self.tp, self.get_export_name("", "thermopack_setwsparam"))
+
         self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
         self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
 
@@ -270,6 +273,90 @@ class cubic(thermo.thermopack):
                             byref(b_ji_c),
                             byref(c_ij_c),
                             byref(c_ji_c))
+
+
+    def get_ws_param(self, c1, c2):
+        """Get Wong-Sandler parameters
+
+        Args:
+            c1 (int): Component one
+            c2 (int): Component two
+
+        Returns:
+            alpha_ij (float): alpha param i-j
+            alpha_ji (float): alpha param j-i
+            k_ij (float): k param i-j
+            k_ji (float): k param j-i
+            tau_ij (float): tau param i-j
+            tau_ji (float): tau param j-i
+        """
+        self.activate()
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        alpha_ij_c = c_double(0.0)
+        alpha_ji_c = c_double(0.0)
+        k_ij_c = c_double(0.0)
+        k_ji_c = c_double(0.0)
+        tau_ij_c = c_double(0.0)
+        tau_ji_c = c_double(0.0)
+        self.s_get_ws_param.argtypes = [POINTER(c_int),
+                                        POINTER(c_int)]
+
+        self.s_get_ws_param.restype = None
+
+        self.s_get_ws_param(byref(c1_c),
+                            byref(c2_c),
+                            byref(alpha_ij_c),
+                            byref(alpha_ji_c),
+                            byref(k_ij_c),
+                            byref(k_ji_c),
+                            byref(tau_ij_c),
+                            byref(tau_ji_c))
+        return alpha_ij_c.value, alpha_ji_c.value, k_ij_c.value, k_ji_c.value, tau_ij_c.value, tau_ji_c.value
+
+    def set_ws_param(self, c1, c2, alpha_ij, alpha_ji, k_ij, k_ji, tau_ij, tau_ji):
+        """Set Wong-Sandler parameters
+
+        Args:
+            c1 (int): Component one
+            c2 (int): Component two
+            alpha_ij (float): alpha param i-j
+            alpha_ji (float): alpha param j-i
+            k_ij (float): k param i-j
+            k_ji (float): k param j-i
+            tau_ij (float): tau param i-j
+            tau_ji (float): tau param j-i
+        """
+        self.activate()
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        alpha_ij_c = c_double(alpha_ij)
+        alpha_ji_c = c_double(alpha_ji)
+        k_ij_c = c_double(k_ij)
+        k_ji_c = c_double(k_ji)
+        tau_ij_c = c_double(tau_ij)
+        tau_ji_c = c_double(tau_ji)
+
+        self.s_set_ws_param.argtypes = [POINTER(c_int),
+                                        POINTER(c_int),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.s_set_ws_param.restype = None
+
+        self.s_set_ws_param(byref(c1_c),
+                            byref(c2_c),
+                            byref(alpha_ij_c),
+                            byref(alpha_ji_c),
+                            byref(k_ij_c),
+                            byref(k_ji_c),
+                            byref(tau_ij_c),
+                            byref(tau_ji_c))
+
 
     def get_ci(self, cidx):
         """Get volume correction parameters
