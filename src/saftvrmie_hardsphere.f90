@@ -256,11 +256,11 @@ Contains
     endif
 
     ! Add the extra double-sum terms to the first order n-derivatives
-    if (present(a_V)) then
+    if (present(a_n)) then
        a_n=a_n
     endif
     ! Add the extra double-sum terms to the second order n-derivatives
-    if (present(a_V)) then
+    if (present(a_nn)) then
        a_nn=a_nn
     endif
 

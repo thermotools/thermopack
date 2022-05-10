@@ -35,6 +35,8 @@ class saftvrmie(saft.saft):
             "saftvrmie_interface", "model_control_a3"))  # Option to enable/disable A1 contribution
         self.s_enable_chain = getattr(self.tp, self.get_export_name(
             "saftvrmie_interface", "model_control_chain"))  # Option to enable/disable A1 contribution
+        self.s_hs_reference = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "hard_sphere_reference"))  # Option to set HS model
 
         # Init methods
         self.s_eoslibinit_init_saftvrmie = getattr(
@@ -114,6 +116,39 @@ class saftvrmie(saft.saft):
         self.s_enable_hs.argtypes = [POINTER(c_int)]
         self.s_enable_hs.restype = None
         self.s_enable_hs(byref(active_c))
+
+    def set_hard_sphere_reference(self,
+                                  reference,
+                                  exact_binary_dhs=None,
+                                  enable_hs_extra=None):
+        """Set hard-sphere reference.
+
+        Args:
+            reference (str): "LAFITTE", "ADDITIVE", "NON-ADDITIVE"
+            exact_binary_dhs (bool): Calculate d_ij from sigma_ij and epsilon_ij
+                                     or simply as d_ij = (d_ii + d_jj)/2
+            enable_hs_extra (bool): Correction of A_HS due to non-additive d_ij
+        """
+        self.activate()
+        if reference.upper() == "LAFITTE":
+            hs_ref_c = c_int(1)
+        else:
+            is_non_additive = (reference.upper() == "NON-ADDITIVE" or
+                               reference.upper() == "NONADDITIVE")
+            hs_ref_c = c_int(4 if is_non_additive else 3)
+
+        exact_binary_dhs_c = (POINTER(c_int)() if exact_binary_dhs is None
+                              else POINTER(c_int)(c_int(exact_binary_dhs)))
+        enable_hs_extra_c = (POINTER(c_int)() if enable_hs_extra is None
+                             else POINTER(c_int)(c_int(enable_hs_extra)))
+
+        self.s_hs_reference.argtypes = [POINTER(c_int),
+                                        POINTER(c_int),
+                                        POINTER(c_int)]
+        self.s_hs_reference.restype = None
+        self.s_hs_reference(byref(hs_ref_c),
+                            exact_binary_dhs_c,
+                            enable_hs_extra_c)
 
     def model_control_a1(self, active):
         """Model control. Enable/disable first dispersion term.

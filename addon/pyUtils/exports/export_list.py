@@ -204,6 +204,7 @@ append_export("model_control_a1", "saftvrmie_interface")
 append_export("model_control_a2", "saftvrmie_interface")
 append_export("model_control_a3", "saftvrmie_interface")
 append_export("model_control_chain", "saftvrmie_interface")
+append_export("hard_sphere_reference", "saftvrmie_interface")
 
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
