@@ -1,6 +1,6 @@
 !> Automatically generated to file saftvrmie_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2022-05-13T18:15:50.763291
+!! Time stamp: 2022-05-13T18:38:16.650150
 
 module saftvrmie_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -741,7 +741,7 @@ module saftvrmie_datadb
       beta = 0., &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
-      bib_ref = "A highly accurate interatomic potential for argon, Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051", &
+      bib_ref = "Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051", &
       ref = "DEFAULT" &
       )
 
@@ -860,7 +860,7 @@ module saftvrmie_datadb
       beta = 0., &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
-      bib_ref = "Short-Time Oxidation Behavior of Low-Carbon, Low-Silicon Steel in Air at 850-1180 °C: II. Linear to Parabolic Transition Determined Using Existing Gas-Phase Transport and Solid-Phase Diffusion Theories, Chen, Rex and Yuen, W., Oxidation of Metals, 73 (2009), DOI : 10.1007/s11085-009-9180-z", &
+      bib_ref = "Chen, Rex and Yuen, W., Oxidation of Metals, 73 (2009), DOI : 10.1007/s11085-009-9180-z", &
       ref = "DEFAULT" &
       )
 

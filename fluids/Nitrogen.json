@@ -160,7 +160,7 @@
     "beta": 0.0000,
     "assoc_scheme": "None",
     "fh_order": 0,
-    "bib_reference": "A highly accurate interatomic potential for argon, Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051",
+    "bib_reference": "Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051",
     "ref": "DEFAULT"
   }
 }
