@@ -149,34 +149,27 @@ module cubic_eos
     ! Mixing parameters
     real, allocatable, dimension(:,:) :: kij ! interaction parameter for energy
     real, allocatable, dimension(:,:) :: lij ! interaction parameter for size
-    real, allocatable, dimension(:,:) :: lowcase_bij
-    logical :: simple_covolmixing
-    type(mixExcessGibbs) :: mixGE
-    type(mixWongSandler) :: mixWS
-    type(unifacdb), pointer :: unifdb => NULL()
+    real, allocatable, dimension(:,:) :: lowcase_bij ! the cubic eos covolume parameters bij
+    logical :: simple_covolmixing ! whether to use linear mixing of covolume with bij=(bi+bj)/2
+    type(mixExcessGibbs) :: mixGE ! extra parameters for excess gibbs mixing rule (excluding wong sandler)
+    type(mixWongSandler) :: mixWS ! extra parameters for wong sandler mixing rule
+    type(unifacdb), pointer :: unifdb => NULL() ! unifac database pointer
 
   contains
     procedure, public :: dealloc => cubic_eos_dealloc
     procedure, public  :: allocate_and_init => allocate_and_init_cubic_eos
-    !procedure, public :: de_allocate_cubic_eos
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_cubic_eos
   end type cb_eos
 
   type, extends(cb_eos) :: lk_eos
-
-  !   private
-
-  ! contains
   end type lk_eos
 
   type, extends(cb_eos) :: cpa_eos
-
-  !   private
-
-  ! contains
   end type cpa_eos
 
+
+  ! Mixing rules for cubic EoS.
   integer, parameter :: cbMixClassicGroup = 1 !< Classic kij type mixing
   integer, parameter :: cbMixVdW = 11 !< Classic vdW mixing rule for am and bm - using k_ij == k_ji
   integer, parameter :: cbMixVdWCPA = 12 !< CPA mixing rule (same as cbMixVdW, but kij from another db)
@@ -189,6 +182,7 @@ module cubic_eos
   integer, parameter :: cbMixHVCPA = 25 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixHVCPA2 = 26 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixWongSandler = 3 !< Wong Sandler mixing rule
+  integer, parameter :: cbMixWSCPA = 31 !< Wong-Sandler mixing rule for CPA
 
   type mix_label_mapping
     integer :: mix_idx_group
@@ -196,9 +190,9 @@ module cubic_eos
     character(len=short_label_len) :: short_label
     character(len=label_len) :: label
     character(len=label_len) :: alias
-  end type mix_label_mapping
+ end type mix_label_mapping
 
-  integer, parameter :: n_mix_rules = 10
+  integer, parameter :: n_mix_rules = 11
   type(mix_label_mapping), dimension(n_mix_rules), parameter :: mix_label_db = (/&
        mix_label_mapping(mix_idx_group=cbMixClassicGroup,&
        mix_idx=cbMixVdW, short_label="VDW", label="Classic",&
@@ -229,9 +223,13 @@ module cubic_eos
        alias = ""), &
        mix_label_mapping(mix_idx_group=cbMixGEGroup,&
        mix_idx=cbMixHVCPA2, short_label="HVCPA2", label="HVCPA2",&
+       alias = ""), &
+       mix_label_mapping(mix_idx_group=cbMixWongSandler,&
+       mix_idx=cbMixWSCPA, short_label="WongSandler", label="WSCPA",&
        alias = "") &
        /)
 
+  ! Different choices for correlations in the Huron-Vidal mixing rule
   integer, parameter :: nHVCorrs = 4
   integer, parameter, dimension(nHVCorrs) :: HVCorrIndices = (/&
        cbMixHuronVidal,&
@@ -414,6 +412,7 @@ contains
       enddo
    enddo
   end subroutine excess_gibbs_allocate_and_init
+
 
   subroutine assign_excess_gibbs_mix(mixGE1,mixGE2)
     class(mixExcessGibbs), intent(inout) :: mixGE1

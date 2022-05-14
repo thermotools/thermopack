@@ -36,8 +36,8 @@ extern "C" {
 				       /*Optionals, set to NULL if not available: */
 				       int* liq_vap_discr_method_in,
 				       const char* csp_eos, const char* csp_ref_comp,
-				       int* kij_setno, int alpha_setno[],
-				       int* saft_setno, double* b_exponent);
+				       const char* kij_ref, const char* alpha_ref,
+				       const char* saft_ref, double* b_exponent);
   //---------------------------------------------------------------------//
   void ISO_C_METHOD(thermopack_tpflash_c)(const double* t, const double* p,
 					  const double x_overall[],

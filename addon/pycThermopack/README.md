@@ -1,6 +1,6 @@
 # Introduction
 
-pycThermopack: Python interface for Thermopack
+pycThermopack: Python interface for Thermopack using ctypes
 
 For examples on how to use, see [../pyExamples/](../pyExamples/README.md).
 
@@ -11,10 +11,10 @@ from the dynamic thermopack library.
 # Prerequisites
 
 Before you build (and possibly install) pycThermopack, make sure that
-you have compiled thermopack using the provides Makefiles or Visual
+you have compiled thermopack using the provided Makefiles or Visual
 Studio solution files. Compiling using GNU/Intel (Linux) or Intel (Windows)
-FORTRAN should be straight forward. If you prefer another compiler,
-you will need to tweake the get_platform_specifics method in thermo.py
+FORTRAN should be straightforward. If you prefer another compiler,
+you will need to tweak the get_platform_specifics method in thermo.py
 to get the module exports correct. These exports are compiler
 dependent.
 

@@ -39,20 +39,21 @@ contains
     integer, intent(in) :: saft_model
     integer, intent(in) :: assocSchemes_db(nc)
     ! Locals
-    integer :: numAssocComps
     integer :: ic
+    integer :: assocCompIdcs(nc)
 
     if (allocated(assoc%comp_vs_sites)) deallocate(assoc%comp_vs_sites)
     allocate(assoc%comp_vs_sites(nc,2))
 
     ! Iterate through the components, count the number of self-associating ones,
     ! as well as the total number of association sites.
-    numAssocComps = 0
+    assoc%numAssocComps = 0
     assoc%numAssocSites = 0
     do ic=1,nc
        ! Count numAssocComps.
        if (assocSchemes_db(ic) .ne. no_assoc) then
-          numAssocComps = numAssocComps + 1
+          assoc%numAssocComps = assoc%numAssocComps + 1
+          assocCompIdcs(assoc%numAssocComps) = ic
        end if
        ! Count association sites, and construct a mapping from component
        ! indices to site numbers.
@@ -77,6 +78,11 @@ contains
           assoc%comp_vs_sites(ic,:) = noSitesFlag
        end select
     end do
+
+    if (allocated(assoc%compidcs)) deallocate(assoc%compidcs)
+    allocate(assoc%compidcs(assoc%numAssocComps))
+
+    assoc%compidcs(:) = assocCompIdcs(1:assoc%numAssocComps)
 
     if (assoc%numAssocSites .eq. 0) then
        ! No associating components: exit routine.
@@ -195,6 +201,11 @@ contains
     ! ! Sanity check on input. (For testing.)
     ! call check_site_and_scheme(site1,assoc_scheme_I)
     ! call check_site_and_scheme(site2,assoc_scheme_II)
+
+    cross_site_interaction = .false.
+    if (assoc_scheme_I == no_assoc .or. assoc_scheme_II == no_assoc) then
+       cross_site_interaction = .false.
+    end if
 
     pol1 = polarity(site1,assoc_scheme_I)
     pol2 = polarity(site2,assoc_scheme_II)
