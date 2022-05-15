@@ -1,6 +1,6 @@
 !> Automatically generated to file saftvrmie_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2022-05-13T18:38:16.650150
+!! Time stamp: 2022-05-15T19:17:32.065393
 
 module saftvrmie_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -985,6 +985,23 @@ module saftvrmie_datadb
 
   type(saftvrmie_data), parameter :: Miecx56 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "XE", &
+      m = 1., &
+      sigma = 3.9011e-10, &
+      eps_depth_divk = 227.55, &
+      lambda_a = 6., &
+      lambda_r = 12., &
+      mass = 2.1801716e-22, &
+      eps = 0., &
+      beta = 0., &
+      assoc_scheme = no_assoc, &
+      fh_order = 0, &
+      bib_ref = "Jadran Vrabec, Jurgen Stoll, Hans Hasse, J. Phys. Chem. B 2001, 105, DOI : 10.1021/jp012542o", &
+      ref = "DEFAULT" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx57 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC4", &
       m = 1.8514, &
       sigma = 4.0887e-10, &
@@ -1000,7 +1017,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx57 = &
+  type(saftvrmie_data), parameter :: Miecx58 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC10", &
       m = 2.9976, &
@@ -1017,7 +1034,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx58 = &
+  type(saftvrmie_data), parameter :: Miecx59 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC10", &
       m = 3., &
@@ -1034,7 +1051,7 @@ module saftvrmie_datadb
       ref = "Muller" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx59 = &
+  type(saftvrmie_data), parameter :: Miecx60 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC22", &
       m = 3.2519, &
@@ -1051,7 +1068,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx60 = &
+  type(saftvrmie_data), parameter :: Miecx61 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC20", &
       m = 4.8794, &
@@ -1068,7 +1085,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx61 = &
+  type(saftvrmie_data), parameter :: Miecx62 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC7", &
       m = 2.3949, &
@@ -1085,7 +1102,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx62 = &
+  type(saftvrmie_data), parameter :: Miecx63 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC6", &
       m = 2.1097, &
@@ -1102,7 +1119,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx63 = &
+  type(saftvrmie_data), parameter :: Miecx64 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC9", &
       m = 2.8099, &
@@ -1119,7 +1136,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx64 = &
+  type(saftvrmie_data), parameter :: Miecx65 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC8", &
       m = 2.6253, &
@@ -1136,7 +1153,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx65 = &
+  type(saftvrmie_data), parameter :: Miecx66 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC15", &
       m = 3.9325, &
@@ -1153,7 +1170,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx66 = &
+  type(saftvrmie_data), parameter :: Miecx67 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC5", &
       m = 1.9606, &
@@ -1170,7 +1187,7 @@ module saftvrmie_datadb
       ref = "DEFAULT" &
       )
 
-  integer, parameter :: nMiemodels = 66
+  integer, parameter :: nMiemodels = 67
   type(saftvrmie_data), dimension(nMiemodels), parameter :: Miearray = (/&
       Miecx1,Miecx2,Miecx3,Miecx4,Miecx5, &
       Miecx6,Miecx7,Miecx8,Miecx9,Miecx10, &
@@ -1185,7 +1202,7 @@ module saftvrmie_datadb
       Miecx51,Miecx52,Miecx53,Miecx54,Miecx55, &
       Miecx56,Miecx57,Miecx58,Miecx59,Miecx60, &
       Miecx61,Miecx62,Miecx63,Miecx64,Miecx65, &
-      Miecx66 &
+      Miecx66,Miecx67 &
   /)
 
   type (Miekijdata), parameter :: SVRM_KIJ_1 = &
