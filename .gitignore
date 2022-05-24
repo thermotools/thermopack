@@ -16,6 +16,7 @@ MSVStudio/*.u2d
 MSVStudio/*.suo
 
 pyctp.egg-info
+addon/pycThermopack/pyctp/platform_specifics.py
 
 src/*.bck
 *suite__genmod.f90

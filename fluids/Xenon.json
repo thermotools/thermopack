@@ -75,5 +75,19 @@
     "Zra": 0.2829
   },
   "SRK": {},
-  "PR": {}
+  "PR": {},
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.9011E-10,
+    "eps_depth_divk": 227.55,
+    "lambda_a": 6.00,
+    "lambda_r": 12.00,
+    "mass": 2.1801716e-22,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Jadran Vrabec, Jurgen Stoll, Hans Hasse, J. Phys. Chem. B 2001, 105, DOI: 10.1021/jp012542o",
+    "ref": "DEFAULT"
+  }
 }

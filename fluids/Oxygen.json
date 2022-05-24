@@ -130,5 +130,19 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.4330E-10,
+    "eps_depth_divk": 113.00,
+    "lambda_a": 6.00,
+    "lambda_r": 12.00,
+    "mass": 5.31339291e-26,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Chen, Rex and Yuen, W., Oxidation of Metals, 73 (2009), DOI : 10.1007/s11085-009-9180-z",
+    "ref": "DEFAULT"
   }
 }
