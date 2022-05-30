@@ -2692,7 +2692,12 @@ subroutine test_fres(Ti,Vi,ni)
   class(saftvrmie_eos), pointer :: eos
   act_mod_ptr => get_active_thermo_model()
   eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
-  !enable_chain = .false.
+
+  ! svrm_opt%enable_HS = .false.
+  ! svrm_opt%enable_A1 = .false.
+  ! svrm_opt%enable_A2 = .false.
+  ! svrm_opt%enable_A3 = .false.
+  ! svrm_opt%enable_chain = .false.
   n = ni
   n0 = n
   V = Vi

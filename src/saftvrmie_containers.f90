@@ -80,6 +80,7 @@ module saftvrmie_containers
     !> Second temperature differential of hard sphere diameter
     real, allocatable, dimension(:,:) :: d_TT
   contains
+    procedure, public :: update_symmetric_diameters
     ! Assignment operator
     procedure, public :: assign_saftvrmie_dhs
     generic, public :: assignment(=) => assign_saftvrmie_dhs
@@ -1592,6 +1593,24 @@ Contains
     this%d_T = other%d_T
     this%d_TT = other%d_TT
   end subroutine assign_saftvrmie_dhs
+
+  subroutine update_symmetric_diameters(this)
+    class(saftvrmie_dhs), intent(inout) :: this
+    !
+    integer :: i, j
+    ! Loop over all components and obtain the mixture values
+    do i=1,size(this%d,dim=1)-1
+      do j=i+1,size(this%d,dim=1)
+        this%d(i,j)=0.5*(this%d(i,i)+this%d(j,j))
+        this%d_T(i,j)=0.5*(this%d_T(i,i)+this%d_T(j,j))
+        this%d_TT(i,j)=0.5*(this%d_TT(i,i)+this%d_TT(j,j))
+        !
+        this%d(j,i)=this%d(i,j)
+        this%d_T(j,i)=this%d_T(i,j)
+        this%d_TT(j,i)=this%d_TT(i,j)
+      end do
+    end do
+  end subroutine update_symmetric_diameters
 
   subroutine assign_saftvrmie_zeta(this,other)
     class(saftvrmie_zeta), intent(inout) :: this
