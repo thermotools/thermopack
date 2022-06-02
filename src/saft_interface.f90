@@ -1528,12 +1528,12 @@ contains
       stop
     end select
 
-    if (numAssocSites > 0) then
-      ! Get the schemes and values of eps and beta for components i and j.
+    scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+    scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
+    if ((scheme_i /= no_assoc) .and. (scheme_j /= no_assoc)) then
+      ! Get the values of eps and beta for components i and j.
       call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
       call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
-      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
-      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
 
       call compidx_to_sites(p_assoc,i,k_first,k_last)
       call compidx_to_sites(p_assoc,j,l_first,l_last)
@@ -1589,10 +1589,10 @@ contains
       call stoperror("Not able to set cubic interaction parameter. Eos not cubic.")
     end select
 
-    if (numAssocSites > 0) then
-      ! Get the schemes and values of eps and beta for components i and j.
-      scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
-      scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
+    scheme_i = act_mod_ptr%comps(i)%p_comp%assoc_scheme
+    scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
+    if ((scheme_i /= no_assoc) .and. (scheme_j /= no_assoc)) then
+      ! Get the values of eps and beta for components i and j.
       call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
       call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
 
@@ -1610,7 +1610,6 @@ contains
         end do
       end do
     endif
-
   end subroutine cpa_set_kij
 
   !> Input a0, b in their conventional (non-SI) units,

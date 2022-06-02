@@ -66,7 +66,7 @@ contains
   subroutine getGeParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
     use thermopack_var, only: nce
     use eosdata
-    use cubic_eos, only: cb_eos, isHVmixModel, cbMixNRTL, cbMixWongSandler
+    use cubic_eos, only: cb_eos, isHVmixModel, cbMixNRTL, cbMixWongSandler, cbMixWSCPA
     implicit none
     class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
@@ -77,7 +77,7 @@ contains
     if ( isHVmixModel(cbeos%mruleidx) .OR. &
          cbeos%mruleidx == cbMixNRTL) then
       call getHvNRTLParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
-    else if (cbeos%mruleidx == cbMixWongSandler) then
+   else if (cbeos%mruleidx==cbMixWongSandler .or. cbeos%mruleidx==cbMixWSCPA) then
       call getWSParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
     else
       call stoperror('excess_gibbs::getGeParam: Wrong mixing rule!')

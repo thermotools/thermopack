@@ -202,10 +202,10 @@ class thermopack(object):
 
     def delete_eos(self):
         """de-allocate FORTRAN memory for this class instance"""
-        self.activate()
         self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
+        self.model_index_c = c_int(0)
 
     def get_model_id(self):
         """Get model identification
@@ -521,7 +521,6 @@ class thermopack(object):
         '''
         self.activate()
         comp_c = c_int(i)
-
         w = c_double(0.0)
         tci = c_double(0.0)
         pci = c_double(0.0)
@@ -705,9 +704,9 @@ class thermopack(object):
             press (float): Pressure (Pa)
             x (array_like): Molar composition
             phase (int): Calcualte root for specified phase
-            dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
-            dvdn (logical, optional): Calculate volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+            dvdt (logical, optional): Calculate molar volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dvdp (logical, optional): Calculate molar volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dvdn (logical, optional): Calculate molar volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
 
         Returns:
             float: Specific volume (m3/mol), and optionally differentials
@@ -1272,11 +1271,11 @@ class thermopack(object):
             tol (float): Tolerance
         """
         tol_c = c_double(tol)
-        self.s_set_ph_tolerance.argtypes = [POINTER( c_double )]
+        self.s_set_ph_tolerance.argtypes = [POINTER(c_double)]
         self.s_set_ph_tolerance.restype = None
         self.s_set_ph_tolerance(byref(tol_c))
 
-    def two_phase_tpflash(self,temp,press,z):
+    def two_phase_tpflash(self, temp, press, z):
         """Do isothermal-isobaric (TP) flash
 
         Args:
@@ -1302,14 +1301,14 @@ class thermopack(object):
         betaL_c = c_double(0.0)
         phase_c = c_int(0)
 
-        self.s_twophasetpflash.argtypes = [POINTER( c_double ),
-                                           POINTER( c_double ),
-                                           POINTER( c_double ),
-                                           POINTER( c_double ),
-                                           POINTER( c_double ),
-                                           POINTER( c_int ),
-                                           POINTER( c_double ),
-                                           POINTER( c_double )]
+        self.s_twophasetpflash.argtypes = [POINTER(c_double),
+                                           POINTER(c_double),
+                                           POINTER(c_double),
+                                           POINTER(c_double),
+                                           POINTER(c_double),
+                                           POINTER(c_int),
+                                           POINTER(c_double),
+                                           POINTER(c_double)]
 
         self.s_twophasetpflash.restype = None
 
@@ -1327,8 +1326,7 @@ class thermopack(object):
 
         return x, y, betaV_c.value, betaL_c.value, phase_c.value
 
-
-    def two_phase_psflash(self,press,z,entropy,temp=None):
+    def two_phase_psflash(self, press, z, entropy, temp=None):
         """Do isentropic-isobaric (SP) flash
 
         Args:
@@ -1351,9 +1349,9 @@ class thermopack(object):
         s_c = c_double(entropy)
 
         if not temp is None:
-            temp_c = POINTER( c_double )(c_double(temp))
+            temp_c = POINTER(c_double)(c_double(temp))
         else:
-            temp_c = POINTER( c_double )(c_double(0.0))
+            temp_c = POINTER(c_double)(c_double(0.0))
 
         x_c = (c_double * len(z))(0.0)
         y_c = (c_double * len(z))(0.0)
@@ -1361,16 +1359,16 @@ class thermopack(object):
         betaL_c = c_double(0.0)
         phase_c = c_int(0)
         ierr_c = c_int(0)
-        self.s_psflash_twophase.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_int ),
-                                            POINTER( c_int )]
+        self.s_psflash_twophase.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int),
+                                            POINTER(c_int)]
 
         self.s_psflash_twophase.restype = None
 
@@ -1393,7 +1391,7 @@ class thermopack(object):
 
         return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
-    def two_phase_phflash(self,press,z,enthalpy,temp=None):
+    def two_phase_phflash(self, press, z, enthalpy, temp=None):
         """Do isenthalpic-isobaric (HP) flash
 
         Args:
@@ -1416,9 +1414,9 @@ class thermopack(object):
         h_c = c_double(enthalpy)
 
         if not temp is None:
-            temp_c = POINTER( c_double )(c_double(temp))
+            temp_c = POINTER(c_double)(c_double(temp))
         else:
-            temp_c = POINTER( c_double )(c_double(0.0))
+            temp_c = POINTER(c_double)(c_double(0.0))
 
         x_c = (c_double * len(z))(0.0)
         y_c = (c_double * len(z))(0.0)
@@ -1427,16 +1425,16 @@ class thermopack(object):
         phase_c = c_int(0)
         ierr_c = c_int(0)
 
-        self.s_phflash_twophase.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_int ),
-                                            POINTER( c_int )]
+        self.s_phflash_twophase.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int),
+                                            POINTER(c_int)]
 
         self.s_phflash_twophase.restype = None
 
@@ -1459,7 +1457,7 @@ class thermopack(object):
 
         return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
-    def two_phase_uvflash(self,z,specific_energy,specific_volume,temp=None,press=None):
+    def two_phase_uvflash(self, z, specific_energy, specific_volume, temp=None, press=None):
         """Do isoenergetic-isochoric (UV) flash
 
         Args:
@@ -1485,14 +1483,14 @@ class thermopack(object):
         v_c = c_double(specific_volume)
 
         if not temp is None:
-            temp_c = POINTER( c_double )(c_double(temp))
+            temp_c = POINTER(c_double)(c_double(temp))
         else:
-            temp_c = POINTER( c_double )(c_double(0.0))
+            temp_c = POINTER(c_double)(c_double(0.0))
 
         if not press is None:
-            press_c = POINTER( c_double )(c_double(press))
+            press_c = POINTER(c_double)(c_double(press))
         else:
-            press_c = POINTER( c_double )(c_double(0.0))
+            press_c = POINTER(c_double)(c_double(0.0))
 
         x_c = (c_double * len(z))(0.0)
         y_c = (c_double * len(z))(0.0)
@@ -1500,16 +1498,16 @@ class thermopack(object):
         betaL_c = c_double(0.0)
         phase_c = c_int(0)
 
-        self.s_uvflash_twophase.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_int )]
+        self.s_uvflash_twophase.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int)]
 
         self.s_uvflash_twophase(temp_c,
                                 press_c,
@@ -1547,12 +1545,12 @@ class thermopack(object):
         press_comp_c = null_pointer
         vb_ratio_c = null_pointer
 
-        self.s_guess_phase.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double )]
+        self.s_guess_phase.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double)]
 
         self.s_guess_phase.restype = c_int
 
@@ -1609,15 +1607,14 @@ class thermopack(object):
         recalculate_c = POINTER(c_int)(c_int(1))
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_pressure_tv.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_int ),
-                                       POINTER( c_int )]
+        self.s_pressure_tv.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
 
         self.s_pressure_tv.restype = c_double
 
@@ -1680,14 +1677,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_internal_energy_tv.argtypes = [POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_double ),
-                                              POINTER( c_int )]
+        self.s_internal_energy_tv.argtypes = [POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_int)]
 
         self.s_internal_energy_tv.restype = None
 
@@ -1749,14 +1746,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_entropy_tv.argtypes = [POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_int )]
+        self.s_entropy_tv.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
 
         self.s_entropy_tv.restype = None
 
@@ -1818,14 +1815,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_enthalpy_tv.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_int )]
+        self.s_enthalpy_tv.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
 
         self.s_enthalpy_tv.restype = None
 
@@ -1886,14 +1883,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_helmholtz_energy.argtypes = [POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_double ),
-                                            POINTER( c_int )]
+        self.s_helmholtz_energy.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int)]
 
         self.s_helmholtz_energy.restype = None
 
@@ -1955,14 +1952,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_chempot.argtypes = [POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_double ),
-                                   POINTER( c_int )]
+        self.s_chempot.argtypes = [POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_int)]
 
         self.s_chempot.restype = None
 
@@ -2024,13 +2021,13 @@ class thermopack(object):
         else:
             dlnphidn_c = (c_double * len(n)**2)(0.0)
 
-        self.s_lnphi_tv.argtypes = [POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double )]
+        self.s_lnphi_tv.argtypes = [POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double)]
 
         self.s_lnphi_tv.restype = None
 
@@ -2048,7 +2045,7 @@ class thermopack(object):
         if not dlnphidv is None:
             return_tuple += (np.array(dlnphidv_c), )
         if not dlnphidn is None:
-            dlnphidn = np.zeros((len(n),len(n)))
+            dlnphidn = np.zeros((len(n), len(n)))
             for i in range(len(n)):
                 for j in range(len(n)):
                     dlnphidn[i][j] = dlnphidn_c[i + j*len(n)]
@@ -2099,14 +2096,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_entropy_tvp.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_int )]
+        self.s_entropy_tvp.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
 
         self.s_entropy_tvp.restype = None
 
@@ -2167,14 +2164,14 @@ class thermopack(object):
 
         contribution_c = utils.get_contribution_flag(property_flag)
 
-        self.s_enthalpy_tvp.argtypes = [POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_double ),
-                                        POINTER( c_int )]
+        self.s_enthalpy_tvp.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_int)]
 
         self.s_enthalpy_tvp.restype = None
 
@@ -2197,7 +2194,7 @@ class thermopack(object):
 
         return return_tuple
 
-    def thermo_tvp(self,temp,v,n,phase,dlnfugdt=None,dlnfugdp=None,
+    def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
         """ Calculate logarithm of fugacity coefficient given molar numbers,
         temperature and pressure.
@@ -2234,13 +2231,13 @@ class thermopack(object):
         else:
             dlnfugdn_c = (c_double * len(n)**2)(0.0)
 
-        self.s_thermo_tvp.argtypes = [POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double ),
-                                      POINTER( c_double )]
+        self.s_thermo_tvp.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double)]
 
         self.s_thermo_tvp.restype = None
 
@@ -2258,10 +2255,10 @@ class thermopack(object):
         if not dlnfugdp is None:
             return_tuple += (np.array(dlnfugdp_c), )
         if not dlnfugdn is None:
-            dlnfugdn_r = np.zeros((len(x),len(x)))
-            for i in range(len(x)):
-                for j in range(len(x)):
-                    dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(x)]
+            dlnfugdn_r = np.zeros((len(n), len(n)))
+            for i in range(len(n)):
+                for j in range(len(n)):
+                    dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(n)]
             return_tuple += (dlnfugdn_r, )
 
         return return_tuple
@@ -2290,10 +2287,10 @@ class thermopack(object):
         z_c = (c_double * len(z))(*z)
         ierr_c = c_int(0)
 
-        self.s_bubble_t.argtypes = [POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_int )]
+        self.s_bubble_t.argtypes = [POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_int)]
 
         self.s_bubble_t.restype = c_double
 
@@ -2327,10 +2324,10 @@ class thermopack(object):
         z_c = (c_double * len(z))(*z)
         ierr_c = c_int(0)
 
-        self.s_bubble_p.argtypes = [POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_double ),
-                                    POINTER( c_int )]
+        self.s_bubble_p.argtypes = [POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_double),
+                                    POINTER(c_int)]
 
         self.s_bubble_p.restype = c_double
 
@@ -2364,10 +2361,10 @@ class thermopack(object):
         z_c = (c_double * len(z))(*z)
         ierr_c = c_int(0)
 
-        self.s_dew_t.argtypes = [POINTER( c_double ),
-                                 POINTER( c_double ),
-                                 POINTER( c_double ),
-                                 POINTER( c_int )]
+        self.s_dew_t.argtypes = [POINTER(c_double),
+                                 POINTER(c_double),
+                                 POINTER(c_double),
+                                 POINTER(c_int)]
 
         self.s_dew_t.restype = c_double
 
@@ -2381,7 +2378,7 @@ class thermopack(object):
             raise Exception("dew_temperature calclualtion failed")
         return temp, x
 
-    def dew_pressure(self,temp,z):
+    def dew_pressure(self, temp, z):
         """Calculate dew pressure given temperature and composition
 
         Args:
@@ -2401,10 +2398,10 @@ class thermopack(object):
         z_c = (c_double * len(z))(*z)
         ierr_c = c_int(0)
 
-        self.s_dew_p.argtypes = [POINTER( c_double ),
-                                 POINTER( c_double ),
-                                 POINTER( c_double ),
-                                 POINTER( c_int )]
+        self.s_dew_p.argtypes = [POINTER(c_double),
+                                 POINTER(c_double),
+                                 POINTER(c_double),
+                                 POINTER(c_int)]
 
         self.s_dew_p.restype = c_double
 
@@ -2462,23 +2459,23 @@ class thermopack(object):
         else:
             tme_c = POINTER(c_double)(c_double(minimum_temperature))
 
-        self.s_envelope_plot.argtypes = [POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_int ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_int ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_int ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_double ),
-                                         POINTER( c_int ),
-                                         POINTER( c_double )]
+        self.s_envelope_plot.argtypes = [POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double)]
 
         self.s_envelope_plot.restype = None
 
@@ -2516,8 +2513,10 @@ class thermopack(object):
                     t_vals_single[-i-1] = t_vals[i]
                     p_vals_single[i] = p_vals[i]
                     p_vals_single[-i-1] = p_vals[i]
-                    v_vals_single[i], = self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH)
-                    v_vals_single[-i-1], = self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH)
+                    v_vals_single[i], = self.specific_volume(
+                        t_vals[i], p_vals[i], z, self.VAPPH)
+                    v_vals_single[-i-1], = self.specific_volume(
+                        t_vals[i], p_vals[i], z, self.LIQPH)
                 return_tuple = (t_vals_single, p_vals_single, v_vals_single)
             else:
                 v_vals = np.zeros_like(t_vals)
@@ -2526,7 +2525,8 @@ class thermopack(object):
                         phase = self.VAPPH
                     else:
                         phase = self.LIQPH
-                    v_vals[i], = self.specific_volume(t_vals[i], p_vals[i], z, phase)
+                    v_vals[i], = self.specific_volume(
+                        t_vals[i], p_vals[i], z, phase)
                 return_tuple += (v_vals, )
 
         return return_tuple
@@ -2535,7 +2535,7 @@ class thermopack(object):
                        temp,
                        maximum_pressure=1.5e7,
                        minimum_pressure=1.0e5,
-                       maximum_dz = 0.003,
+                       maximum_dz=0.003,
                        maximum_dlns=0.01):
         """Calculate binary three phase envelope
 
@@ -2561,7 +2561,7 @@ class thermopack(object):
                 L2VE[0] : Bubble line composition (mole fraction of component 1) 
                 L2VE[1] : Dew line composition (mole fraction of component 1)
                 L2VE[2] : Pressure [Pa]
-            
+
             If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
         # Redefinition of module parameter:
@@ -2584,18 +2584,18 @@ class thermopack(object):
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
 
-        self.s_binary_plot.argtypes = [POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_int ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_char_p ),
-                                       POINTER( c_double ),
-                                       POINTER( c_double ),
-                                       POINTER( c_int ),
-                                       POINTER( c_int ),
-                                       POINTER( c_double ),
+        self.s_binary_plot.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_char_p),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_int),
+                                       POINTER(c_double),
                                        c_len_type]
 
         self.s_binary_plot.restype = None
@@ -2671,7 +2671,7 @@ class thermopack(object):
         message_len = c_len_type(message_len)
         i_term_c = c_int(i_term)
 
-        self.s_get_bp_term.argtypes = [POINTER( c_int ),
+        self.s_get_bp_term.argtypes = [POINTER(c_int),
                                        c_char_p,
                                        c_len_type]
 
