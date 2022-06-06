@@ -79,7 +79,7 @@ contains
     @assertEqual(yL2VE(1), 0.99969765693143653, 1e-8)
     @assertEqual(pLLE(1), 5103721.7270745458, 1e-8)
     @assertEqual(pL1VE(nL1VE), 1455.3507414351843, 1e-8)
-    @assertEqual(pL2VE(nL2VE), 5102431.3866153369, 1e-8)
+    @assertEqual(pL2VE(nL2VE), 5102431.3866153369, 1e-7)
 
   end subroutine test_vlle_binary
 
