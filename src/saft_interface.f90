@@ -403,43 +403,45 @@ contains
          F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
 
     if (numAssocSites > 0) then
-      ! Store the non-association contribution
-      if (present(F)) F_nonassoc = F
-      if (present(F_T)) F_T_nonassoc = F_T
-      if (present(F_V)) F_V_nonassoc = F_V
-      if (present(F_n)) F_n_nonassoc = F_n
-      if (present(F_TT)) F_TT_nonassoc = F_TT
-      if (present(F_TV)) F_TV_nonassoc = F_TV
-      if (present(F_Tn)) F_Tn_nonassoc = F_Tn
-      if (present(F_VV)) F_VV_nonassoc = F_VV
-      if (present(F_Vn)) F_Vn_nonassoc = F_Vn
-      if (present(F_nn)) F_nn_nonassoc = F_nn
+      if (sum(n(eos%assoc%compIdcs)) > 1e-20) then
+        ! Store the non-association contribution
+        if (present(F)) F_nonassoc = F
+        if (present(F_T)) F_T_nonassoc = F_T
+        if (present(F_V)) F_V_nonassoc = F_V
+        if (present(F_n)) F_n_nonassoc = F_n
+        if (present(F_TT)) F_TT_nonassoc = F_TT
+        if (present(F_TV)) F_TV_nonassoc = F_TV
+        if (present(F_Tn)) F_Tn_nonassoc = F_Tn
+        if (present(F_VV)) F_VV_nonassoc = F_VV
+        if (present(F_Vn)) F_Vn_nonassoc = F_Vn
+        if (present(F_nn)) F_nn_nonassoc = F_nn
 
-      ! Calculate the association contribution.
-      param = assemble_param(T,V,n,nc)
-      X_k = 0.2 ! Initial guess.
-      call solve_for_X_k(eos,nc,param,X_k,tol=10**5*machine_prec)
-      if (present(Xk)) then
-        Xk = X_k ! Return X_k
+        ! Calculate the association contribution.
+        param = assemble_param(T,V,n,nc)
+        X_k = 0.2 ! Initial guess.
+        call solve_for_X_k(eos,nc,param,X_k,tol=10**5*machine_prec)
+        if (present(Xk)) then
+          Xk = X_k ! Return X_k
+        endif
+        call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+             F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+
+        ! Add the non-association and association contribution.
+        if (present(F)) F = F + F_nonassoc
+        if (present(F_T)) F_T = F_T + F_T_nonassoc
+        if (present(F_V)) F_V = F_V + F_V_nonassoc
+        if (present(F_n)) F_n = F_n + F_n_nonassoc
+        if (present(F_TT)) F_TT = F_TT + F_TT_nonassoc
+        if (present(F_TV)) F_TV = F_TV + F_TV_nonassoc
+        if (present(F_Tn)) then
+          F_Tn = F_Tn + F_Tn_nonassoc
+        end if
+
+        if (present(F_VV)) F_VV = F_VV + F_VV_nonassoc
+        if (present(F_Vn)) F_Vn = F_Vn + F_Vn_nonassoc
+        if (present(F_nn)) F_nn = F_nn + F_nn_nonassoc
       endif
-      call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-
-      ! Add the non-association and association contribution.
-      if (present(F)) F = F + F_nonassoc
-      if (present(F_T)) F_T = F_T + F_T_nonassoc
-      if (present(F_V)) F_V = F_V + F_V_nonassoc
-      if (present(F_n)) F_n = F_n + F_n_nonassoc
-      if (present(F_TT)) F_TT = F_TT + F_TT_nonassoc
-      if (present(F_TV)) F_TV = F_TV + F_TV_nonassoc
-      if (present(F_Tn)) then
-        F_Tn = F_Tn + F_Tn_nonassoc
-      end if
-
-      if (present(F_VV)) F_VV = F_VV + F_VV_nonassoc
-      if (present(F_Vn)) F_Vn = F_Vn + F_Vn_nonassoc
-      if (present(F_nn)) F_nn = F_nn + F_nn_nonassoc
-    end if
+    endif
 
   end subroutine calcSaftFder_res
 

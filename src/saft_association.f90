@@ -21,12 +21,14 @@ contains
     real, intent(out) :: boltzmann_fac(numAssocSites, numAssocSites)
     integer :: k, l
     do k=1, numAssocSites
-       do l=k, numAssocSites
-          if (assoc%eps_kl(k,l)>0) then
-             boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
-             boltzmann_fac(l,k) = boltzmann_fac(k,l)
-          end if
-       end do
+      do l=k, numAssocSites
+        if (assoc%eps_kl(k,l)>0) then
+          boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
+        else
+          boltzmann_fac(k,l) = 1
+        end if
+        boltzmann_fac(l,k) = boltzmann_fac(k,l)
+      end do
     end do
   end subroutine calc_boltzmann_fac
 
@@ -99,7 +101,6 @@ contains
     end if
 
     ! Assemble Delta matrix.
-
     call calc_boltzmann_fac(assoc, T, boltzmann_fac)
 
     if (assoc%saft_model/=eosSAFT_VR_MIE) then
@@ -378,13 +379,11 @@ contains
       end do
     end if
 
-
     ! Explicit solution for the case of a single associating component
     ! if (assoc%numAssocSites==1) then
     !    cidx = assoc%compIdcs(1)
-       
-    ! end if
 
+    ! end if
 
     if (present(maxit)) then
       solver%max_it = maxit
