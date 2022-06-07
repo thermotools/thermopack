@@ -205,6 +205,7 @@ contains
     cross_site_interaction = .false.
     if (assoc_scheme_I == no_assoc .or. assoc_scheme_II == no_assoc) then
        cross_site_interaction = .false.
+       return
     end if
 
     pol1 = polarity(site1,assoc_scheme_I)

@@ -19,8 +19,6 @@ module association_var
     real, allocatable, dimension(:,:) :: eps_kl   !< Association energy.
 
     !> Cached states
-    real :: T_cache = 0.0
-    real, allocatable, dimension(:,:) :: boltzmann_fac_cache !< Cached Delta_kl matrix
   contains
     procedure, public :: dealloc
 !    procedure, public :: allocate_and_init => association_allocate_and_init
@@ -44,7 +42,6 @@ contains
     if (ierr /= 0) print *,'association: Not able to allocate comp_vs_sites memory'
     call deallocate_real_2(assoc%beta_kl,"assoc%beta_kl")
     call deallocate_real_2(assoc%eps_kl,"assoc%eps_kl")
-    call deallocate_real_2(assoc%boltzmann_fac_cache,"assoc%boltzmann_fac_cache")
   end subroutine dealloc
 
 end module association_var

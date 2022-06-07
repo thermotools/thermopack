@@ -172,9 +172,6 @@ contains
     allocate(eos%assoc%beta_kl(numAssocSites,numAssocSites))
     if (allocated(eos%assoc%eps_kl)) deallocate(eos%assoc%eps_kl)
     allocate(eos%assoc%eps_kl(numAssocSites,numAssocSites))
-    if (allocated(eos%assoc%boltzmann_fac_cache)) deallocate(eos%assoc%boltzmann_fac_cache)
-    allocate(eos%assoc%boltzmann_fac_cache(numAssocSites,numAssocSites))
-    eos%assoc%T_cache = -1.0 ! to ensure a new init recalculates any cached variables
 
     if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%assoc%saft_model == eosPC_SAFT) then
        call saft_setAssocParams(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)

@@ -14,7 +14,6 @@ module saft_association
 contains
 
   !> Calculate Boltzmann factor for association energy, with caching
-  !> Ailo 19.03.19
   subroutine calc_boltzmann_fac(assoc, T, boltzmann_fac)
     type(association), intent(inout) :: assoc
     real, intent(in) :: T
@@ -33,8 +32,7 @@ contains
   end subroutine calc_boltzmann_fac
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
-  !> e.g. by not calculating the exponential in every loop iteration; they can
-  !> even be cached for a given T.
+  !> e.g. by not calculating the exponential in every loop iteration
   subroutine Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
     use saft_globals, only: assoc_covol_binary, eosSAFT_VR_MIE
