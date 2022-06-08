@@ -74,7 +74,7 @@ pyctp folder.
 
 Make sure the symbol mapping is correct for the python interface
 ```bash
-cd addon/pycThermopack/pyctp
+cd addon/pycThermopack
 python map_platform_specifics.py
 ```
 
@@ -88,7 +88,7 @@ pacman -S mingw-w64-x86_64-python
 pacman -S mingw-w64-x86_64-python-numpy
 pacman -S mingw-w64-x86_64-python-matplotlib
 cp bin/dynamic/libthermopack_optim_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
-cd addon/pycThermopack/pyctp
+cd addon/pycThermopack
 python map_platform_specifics.py
 cd ../../pyExamples
 python cpa.py

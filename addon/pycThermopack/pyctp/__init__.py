@@ -1,5 +1,4 @@
 """Initialization code for the pyctp package"""
-from . import map_platform_specifics
 from . import platform_specifics
 from . import thermo
 from . import cubic
@@ -16,8 +15,7 @@ from . import multiparameter
 from . import pets
 from . import lee_kesler
 
-__all__ = ["map_platform_specifics",
-           "platform_specifics",
+__all__ = ["platform_specifics",
            "thermo",
            "cubic",
            "tcPR",
