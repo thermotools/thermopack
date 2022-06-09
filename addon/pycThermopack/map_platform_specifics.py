@@ -75,7 +75,7 @@ def get_platform_specifics_by_trial_and_error():
 
     dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dynlib"]
     for lib in dynlibs:
-        dyn_lib_path = path.join(path.dirname(__file__), lib)
+        dyn_lib_path = path.join(path.dirname(__file__), "pyctp", lib)
         try:
             tp = cdll.LoadLibrary(dyn_lib_path)
         except OSError:
@@ -152,6 +152,6 @@ def write_platform_specifics_file(pf_specifics, filename):
 
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
-        __file__), "platform_specifics.py")
+        __file__), "pyctp", "platform_specifics.py")
     pf_specifics = get_platform_specifics_by_trial_and_error()
     write_platform_specifics_file(pf_specifics, pf_specifics_path)
