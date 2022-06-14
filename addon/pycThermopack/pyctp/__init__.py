@@ -14,7 +14,7 @@ from . import plotutils
 from . import utils
 from . import multiparameter
 from . import pets
-from . import lee_kesler
+from . import thermopack_state
 
 __all__ = ["platform_specifics",
            "thermo",
@@ -31,4 +31,5 @@ __all__ = ["platform_specifics",
            "utils",
            "multiparameter"
            "pets",
-           "lee_kesler"]
+           "lee_kesler",
+           "thermopack_state"]
