@@ -263,6 +263,17 @@ class equilibrium(object):
                        init_specific=True)
         return equilibrium(vapor, liquid)
 
+    @property
+    def temperature(self):
+        return vle.vapour.temperature if vle.vapour else vle.liquid.temperature
+
+    @property
+    def pressure(self):
+        return vle.vapour.pressure if vle.vapour else vle.liquid.pressure
+
+    @property
+    def eos(self):
+        return vle.vapour.eos if vle.vapour else vle.liquid.eos
 
 class phase_state_list(object):
     """
