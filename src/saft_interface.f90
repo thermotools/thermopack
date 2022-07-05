@@ -46,6 +46,7 @@ module saft_interface
   public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
   public :: calcSaftFder_res_nonassoc
   public :: pets_get_pure_params, pets_set_pure_params
+  public :: potential
 
 contains
 
@@ -613,7 +614,6 @@ contains
 
   end subroutine calc_hard_sphere_diameter
 
-
   !> Return de Broglie wavelength for component i
   !!
   !! \author Morten Hammer, March 2022
@@ -647,6 +647,51 @@ contains
 
   end subroutine de_Broglie_wavelength
 
+  !> Return interaction potential between component i and j
+  !!
+  !! \author Morten Hammer, July 2022
+  subroutine potential(i, j, n, r, T, pot)
+    use saftvrmie_containers, only: saftvrmie_eos, calc_DFeynHibbsij
+    use saftvrmie_hardsphere, only: mie_potential_quantumcorrected_wrapper
+    use thermopack_var, only: base_eos_param, thermo_model, nce
+    ! Input
+    integer, intent(in) :: i, j !< Component number
+    real, intent(in) :: T !< Temperature
+    integer, intent(in) :: n !< Array size
+    real, intent(in) :: r(n) !< Intermolecular separation (m)
+    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant
+    !
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
+    class(base_eos_param), pointer :: eos
+    integer :: ir
+    real, parameter :: max_pot_val = 500.0
+    p_thermo => get_active_thermo_model()
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      ! Update Feynman--Hibbs D parameter
+      if (p_eos%svrm_opt%quantum_correction_hs > 0) &
+           call calc_DFeynHibbsij(nce,T,p_eos%saftvrmie_param%DFeynHibbsParam_ij, &
+           p_eos%saftvrmie_var%DFeynHibbsij, p_eos%saftvrmie_var%D2FeynHibbsij)
+      pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r)
+    class default
+      print *,"Need to implement potential function for specified model"
+      stop
+      pot = 0
+    end select
+
+    do ir=1,n
+      if (pot(ir) /= pot(ir)) then
+        ! Avoid NaN in output
+        pot(ir) = max_pot_val
+      else if (pot(ir) > max_pot_val) then
+        ! Cap potential at max_pot_val
+        pot(ir) = max_pot_val
+      endif
+    enddo
+
+  end subroutine potential
 
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 

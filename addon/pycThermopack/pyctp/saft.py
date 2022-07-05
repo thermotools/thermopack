@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -33,6 +31,8 @@ class saft(thermo.thermopack):
             "saft_interface", "calc_hard_sphere_diameter"))
         self.s_de_broglie_wavelength = getattr(
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
+        self.s_potential = getattr(
+            self.tp, self.get_export_name("saft_interface", "potential"))
 
         self.m = np.zeros(self.nc)
         self.sigma = np.zeros(self.nc)
@@ -222,3 +222,40 @@ class saft(thermo.thermopack):
         print(f"Segments: {self.m[c-1]}")
         print(f"sigma: {self.sigma[c-1]}")
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
+
+    def potential(self, ic, jc, r, temp):
+        """Get potential energy divided by Boltzmann constant
+        as a function of r
+
+        Args:
+            ic, jc (int): Component indices (FORTRAN)
+            r (array_like): Distance between particles (m)
+            temp (float): Temperature (K)
+        Returns:
+            array_like: Potential energy divided by Boltzmann constant (K)
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        jc_c = c_int(jc)
+        n_c = c_int(len(r))
+        temp_c = c_double(temp)
+        r_c = (c_double * len(r))(*r)
+        pot_c = (c_double * len(r))(0.0)
+
+        self.s_potential.argtypes = [POINTER(c_int),
+                                     POINTER(c_int),
+                                     POINTER(c_int),
+                                     POINTER(c_double),
+                                     POINTER(c_double),
+                                     POINTER(c_double)]
+
+        self.s_potential.restype = None
+
+        self.s_potential(byref(ic_c),
+                         byref(jc_c),
+                         byref(n_c),
+                         r_c,
+                         byref(temp_c),
+                         pot_c)
+
+        return np.array(pot_c)
