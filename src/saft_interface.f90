@@ -654,6 +654,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos, calc_DFeynHibbsij
     use saftvrmie_hardsphere, only: mie_potential_quantumcorrected_wrapper
     use thermopack_var, only: base_eos_param, thermo_model, nce
+    use pc_saft_nonassoc, only: sPCSAFT_eos
     ! Input
     integer, intent(in) :: i, j !< Component number
     real, intent(in) :: T !< Temperature
@@ -675,6 +676,9 @@ contains
            call calc_DFeynHibbsij(nce,T,p_eos%saftvrmie_param%DFeynHibbsParam_ij, &
            p_eos%saftvrmie_var%DFeynHibbsij, p_eos%saftvrmie_var%D2FeynHibbsij)
       pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r)
+    class is (sPCSAFT_eos)
+      pot = 4.0 * p_eos%eps_depth_divk(i,j) &
+           * ((p_eos%sigma(i,j) / r)**12 - (p_eos%sigma(i,j) / r)**6)
     class default
       print *,"Need to implement potential function for specified model"
       stop
