@@ -182,6 +182,9 @@ append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
 
+append_export("solve_mu_t", "mut_solver")
+append_export("solve_lnf_t", "mut_solver")
+
 append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
 
 append_export("setphtolerance", "ph_solver")

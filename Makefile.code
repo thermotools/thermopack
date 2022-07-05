@@ -158,6 +158,7 @@ OBJE = \
        $(ODIR)/solid_saturation.o \
        $(ODIR)/saturation_point_locators.o \
        $(ODIR)/joule_thompson_inversion.o \
+       $(ODIR)/mut_solver.o \
        $(ODIR)/ph_solver.o \
        $(ODIR)/ps_solver.o \
        $(ODIR)/uv_solver.o \
@@ -542,6 +543,11 @@ $(ODIR)/multiparameter_para_h2.o: $(SRC)/multiparameter_para_h2.f90 \
 $(ODIR)/multiparameter_r134a.o: $(SRC)/multiparameter_r134a.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/multiparameter_r134a.f90)
+$(ODIR)/mut_solver.o: $(SRC)/mut_solver.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eos.f90 \
+	$(SRC)/nonlinear_solvers.f90
+	@$(call make_object, $(SRC)/mut_solver.f90)
 $(ODIR)/nonlinear_solvers.o: $(SRC)/nonlinear_solvers.f90
 	@$(call make_object, $(SRC)/nonlinear_solvers.f90)
 $(ODIR)/numconstants.o: $(SRC)/numconstants.f90

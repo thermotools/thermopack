@@ -130,6 +130,10 @@ class thermopack(object):
             self.tp, self.get_export_name("eostv", "free_energy_tv"))
         self.s_chempot = getattr(self.tp, self.get_export_name(
             "eostv", "chemical_potential_tv"))
+        self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_mu_t"))
+        self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_lnf_t"))
 
         # TVP interfaces
         self.s_entropy_tvp = getattr(
@@ -2052,6 +2056,74 @@ class thermopack(object):
             return_tuple += (dlnphidn, )
 
         return return_tuple
+
+    def solve_mu_t(self, temp, mu, rho_initial=None, phase=None):
+        """Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+
+        Args:
+            temp (float): Temperature (K)
+            mu (array_like): Flag to activate calculation. Defaults to None.
+            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
+            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+
+        Returns:
+            rho (array_like): Mol per volume (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial if rho_initial else 0.0)
+        phase_c = POINTER(c_int)(c_int(phase) if phase else ())
+        ierr_c = c_int(0)
+        self.s_solve_mu_t.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int),
+                                      POINTER(c_int)]
+
+        self.s_solve_mu_t.restype = None
+
+        self.s_solve_mu_t(byref(temp_c),
+                          mu_c,
+                          rho_c,
+                          byref(ierr_c),
+                          phase_c)
+
+        return np.array(rho_c)
+
+    def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):
+        """Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+            lnf (array_like): Logaritm of fugacity coefficients. Defaults to None.
+            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
+            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+
+        Returns:
+            rho (array_like): Mol per volume (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial if rho_initial else 0.0)
+        phase_c = POINTER(c_int)(c_int(phase) if phase else ())
+        ierr_c = c_int(0)
+        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_int)]
+
+        self.s_solve_lnf_t.restype = None
+
+        self.s_solve_lnf_t(byref(temp_c),
+                           mu_c,
+                           rho_c,
+                           byref(ierr_c),
+                           phase_c)
+
+        return np.array(rho_c)
 
     #################################
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
