@@ -37,6 +37,7 @@ class thermopack(object):
             self.tp, self.get_export_name("thermopack_var", "add_eos"))
         self.s_delete_eos = getattr(
             self.tp, self.get_export_name("thermopack_var", "delete_eos"))
+        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_activate_model = getattr(
             self.tp, self.get_export_name("thermopack_var", "activate_model"))
 
@@ -154,6 +155,9 @@ class thermopack(object):
             self.tp, self.get_export_name("saturation", "safe_dewp"))
         self.s_envelope_plot = getattr(
             self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
+        self.s_pure_fluid_saturation_wrapper = getattr(
+            self.tp, self.get_export_name("saturation_curve",
+                                          "pure_fluid_saturation_wrapper"))
         self.s_binary_plot = getattr(
             self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
         self.s_global_binary_plot = getattr(
@@ -206,10 +210,9 @@ class thermopack(object):
 
     def delete_eos(self):
         """de-allocate FORTRAN memory for this class instance"""
-        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
-        self.model_index_c = c_int(0)
+        self.model_index_c = None
 
     def get_model_id(self):
         """Get model identification
@@ -2602,6 +2605,82 @@ class thermopack(object):
                 return_tuple += (v_vals, )
 
         return return_tuple
+
+    def get_pure_fluid_saturation_curve(self,
+                                        initial_pressure=None,
+                                        initial_temperature=None,
+                                        z=None,
+                                        max_delta_press=0.2e5,
+                                        nmax=100,
+                                        log_linear_grid=False):
+        """Get the pure fluid saturation line
+
+        Args:
+            initial_pressure (float, optional): Start mapping form dew point at initial pressure (Pa). Default None.
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature (K). Default None.
+            z (array_like, optional): Composition (-). Default None. Must be given if self.nc > 1.
+            max_delta_press (float , optional): Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+            nmax (int , optional): Maximum number of points on envelope. Defaults to 100.
+            log_linear_grid (logical , optional): Use log-linear grid?. Defaults to False.
+
+        Returns:
+            ndarray: Temperature values (K)
+            ndarray: Pressure values (Pa)
+            ndarray: Specific liquid volume (m3/mol)
+            ndarray: Specific gas volume (m3/mol)
+        """
+        self.activate()
+        if (initial_pressure is None and initial_temperature is None) or \
+           (initial_pressure is not None and initial_temperature is not None):
+            raise Exception("One of initial_pressure and initial_temperature must be given")
+        if z is None:
+            assert self.nc == 1
+            z = np.ones(1)
+        z_c = (c_double * len(z))(*z)
+        t_or_p_c = c_double(initial_temperature if initial_pressure is None
+                            else initial_pressure)
+        start_from_temp_c = c_int(initial_pressure is None)
+        nmax_c = c_int(nmax)
+        max_delta_press_c = c_double(max_delta_press)
+        log_linear_grid_c = c_int(log_linear_grid)
+        Ta_c = (c_double * nmax)(0.0)
+        Pa_c = (c_double * nmax)(0.0)
+        vla_c = (c_double * nmax)(0.0)
+        vga_c = (c_double * nmax)(0.0)
+        n_c = c_int(0)
+
+        self.s_pure_fluid_saturation_wrapper.argtypes = [POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_int)]
+
+        self.s_pure_fluid_saturation_wrapper.restype = None
+
+        self.s_pure_fluid_saturation_wrapper(z_c,
+                                             byref(t_or_p_c),
+                                             byref(start_from_temp_c),
+                                             byref(max_delta_press_c),
+                                             byref(log_linear_grid_c),
+                                             Ta_c,
+                                             Pa_c,
+                                             vla_c,
+                                             vga_c,
+                                             byref(nmax_c),
+                                             byref(n_c))
+
+        t_vals = np.array(Ta_c[0:n_c.value])
+        p_vals = np.array(Pa_c[0:n_c.value])
+        vl_vals = np.array(vla_c[0:n_c.value])
+        vg_vals = np.array(vga_c[0:n_c.value])
+
+        return t_vals, p_vals, vl_vals, vg_vals
 
     def get_binary_pxy(self,
                        temp,

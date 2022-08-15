@@ -219,6 +219,8 @@ append_export("pc_saft_get_pure_params", "saft_interface")
 append_export("pc_saft_set_pure_params", "saft_interface")
 append_export("de_broglie_wavelength", "saft_interface")
 append_export("potential", "saft_interface")
+append_export("adjust_mass_to_specified_de_boer_parameter", "saft_interface")
+append_export("de_boer_parameter", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
@@ -226,6 +228,7 @@ append_export("safe_dewt", "saturation")
 append_export("safe_dewp", "saturation")
 
 append_export("envelopeplot", "saturation_curve")
+append_export("pure_fluid_saturation_wrapper", "saturation_curve")
 
 append_export("solid_init", "solideos")
 

@@ -38,6 +38,7 @@ module saturation_curve
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
   public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
+  public :: pure_fluid_saturation_wrapper
 
 contains
 
@@ -1407,6 +1408,43 @@ contains
       print *,'saturation::criconden_solve: Not able to solve for criconden'
     endif
   end subroutine criconden_solve
+
+  !-----------------------------------------------------------------------------
+  !> Plot saturation line for single component (wrapper for external calls)
+  !>
+  !> \author MH, 2022-07-15
+  !-----------------------------------------------------------------------------
+  subroutine pure_fluid_saturation_wrapper(Z,t_or_p,start_from_temp,max_delta_p,&
+       log_linear,Ta,Pa,val,vag,nmax,n)
+    use eos, only: specificvolume
+    implicit none
+    logical, intent(in) :: start_from_temp
+    real, dimension(nc), intent(in) :: Z
+    real, intent(in) :: t_or_p
+    integer, intent(in) :: nmax
+    real, dimension(nmax), intent(out) :: Ta,Pa,val,vag
+    integer, intent(out) :: n
+    real, intent(in) :: max_delta_p !< Maximum Delta P between points
+    logical, intent(in) :: log_linear !< Distribute values lineary based on natural logarithm
+    ! Locals
+    real :: t, p
+    integer :: i, spec
+    if (start_from_temp) then
+      spec = SPECT
+      t = t_or_p
+      p = 0
+    else
+      spec = SPECP
+      p = t_or_p
+      t = 0
+    endif
+    call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,&
+         maxDeltaP=max_delta_p,log_linear=log_linear)
+    do i=1,n
+      call specificvolume(Ta(i), Pa(i), Z, VAPPH, vag(i))
+      call specificvolume(Ta(i), Pa(i), Z, LIQPH, val(i))
+    enddo
+  end subroutine pure_fluid_saturation_wrapper
 
   !-----------------------------------------------------------------------------
   !> Plot saturation line for single component
