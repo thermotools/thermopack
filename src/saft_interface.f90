@@ -46,7 +46,8 @@ module saft_interface
   public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
   public :: calcSaftFder_res_nonassoc
   public :: pets_get_pure_params, pets_set_pure_params
-  public :: potential
+  public :: potential, de_boer_parameter
+  public :: adjust_mass_to_specified_de_boer_parameter
 
 contains
 
@@ -647,11 +648,78 @@ contains
 
   end subroutine de_Broglie_wavelength
 
+  !> Return de Boer parameter for component i
+  !!
+  !! \author Morten Hammer, July 2022
+  subroutine de_boer_parameter(i, lambda)
+    use saftvrmie_containers, only: saftvrmie_eos, get_saftvrmie_pure_fluid_deBoer
+    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use thermopack_constants, only: h_const, kB_const, N_Avogadro
+    use thermopack_var, only: thermo_model
+    ! Input
+    integer, intent(in) :: i !< Component number
+    real, intent(out) :: lambda !< de Boer
+    !
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
+    class(base_eos_param), pointer :: eos
+    real :: mass, sigma, eps_div_kb
+    p_thermo => get_active_thermo_model()
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      call get_saftvrmie_pure_fluid_deBoer(i, lambda)
+    class is (sPCSAFT_eos)
+      sigma = p_eos%sigma(i,i)
+      eps_div_kb = p_eos%eps_depth_divk(i,i)
+      mass = 1.0e-3*p_thermo%comps(i)%p_comp%mw/N_Avogadro
+      lambda = h_const/(sigma*sqrt(mass*eps_div_kb*kB_const))
+    class default
+      print *,"Need to implement de Boer function for specified model"
+      stop
+    end select
+  end subroutine de_boer_parameter
+
+  !> Return de Boer parameter for component i
+  !!
+  !! \author Morten Hammer, July 2022
+  subroutine adjust_mass_to_specified_de_boer_parameter(i, lambda)
+    use saftvrmie_containers, only: saftvrmie_eos, set_saftvrmie_pure_fluid_deBoer
+    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use thermopack_constants, only: h_const, kB_const, N_Avogadro
+    use thermopack_var, only: thermo_model
+    ! Input
+    integer, intent(in) :: i !< Component number
+    real, intent(in) :: lambda !< de Boer
+    !
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
+    class(base_eos_param), pointer :: eos
+    real :: mass, sigma, eps_div_kb
+    p_thermo => get_active_thermo_model()
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      call set_saftvrmie_pure_fluid_deBoer(i, lambda)
+    class is (sPCSAFT_eos)
+      sigma = p_eos%sigma(i,i)
+      eps_div_kb = p_eos%eps_depth_divk(i,i)
+      mass = (h_const/(lambda*sigma))**2/(eps_div_kb*kB_const)
+      p_thermo%comps(i)%p_comp%mw = mass*1.0e3*N_Avogadro
+    class default
+      print *,"Need to implement mass adjustment function for specified model"
+      stop
+    end select
+  end subroutine adjust_mass_to_specified_de_boer_parameter
+
   !> Return interaction potential between component i and j
   !!
   !! \author Morten Hammer, July 2022
   subroutine potential(i, j, n, r, T, pot)
-    use saftvrmie_containers, only: saftvrmie_eos, calc_DFeynHibbsij
+    use saftvrmie_containers, only: saftvrmie_eos, calc_DFeynHibbsij, &
+         saftvrmie_param
     use saftvrmie_hardsphere, only: mie_potential_quantumcorrected_wrapper
     use thermopack_var, only: base_eos_param, thermo_model, nce
     use pc_saft_nonassoc, only: sPCSAFT_eos
@@ -667,6 +735,7 @@ contains
     class(base_eos_param), pointer :: eos
     integer :: ir
     real, parameter :: max_pot_val = 500.0
+    real :: eps_divk
     p_thermo => get_active_thermo_model()
     eos => get_active_eos()
     select type ( p_eos => eos )
@@ -676,22 +745,25 @@ contains
            call calc_DFeynHibbsij(nce,T,p_eos%saftvrmie_param%DFeynHibbsParam_ij, &
            p_eos%saftvrmie_var%DFeynHibbsij, p_eos%saftvrmie_var%D2FeynHibbsij)
       pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r)
+      eps_divk = saftvrmie_param%eps_divk_ij(i,j)
     class is (sPCSAFT_eos)
       pot = 4.0 * p_eos%eps_depth_divk(i,j) &
            * ((p_eos%sigma(i,j) / r)**12 - (p_eos%sigma(i,j) / r)**6)
+      eps_divk = p_eos%eps_depth_divk(i,j)
     class default
       print *,"Need to implement potential function for specified model"
       stop
       pot = 0
+      eps_divk = 1
     end select
 
     do ir=1,n
       if (pot(ir) /= pot(ir)) then
         ! Avoid NaN in output
         pot(ir) = max_pot_val
-      else if (pot(ir) > max_pot_val) then
+      else if (pot(ir) > max_pot_val*eps_divk) then
         ! Cap potential at max_pot_val
-        pot(ir) = max_pot_val
+        pot(ir) = max_pot_val*eps_divk
       endif
     enddo
 

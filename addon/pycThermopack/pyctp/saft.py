@@ -33,6 +33,12 @@ class saft(thermo.thermopack):
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
         self.s_potential = getattr(
             self.tp, self.get_export_name("saft_interface", "potential"))
+        self.s_de_boer_parameter = getattr(
+            self.tp, self.get_export_name("saft_interface",
+                                          "de_boer_parameter"))
+        self.s_adjust_mass_to_de_boer_parameter = getattr(
+            self.tp, self.get_export_name("saft_interface",
+                                          "adjust_mass_to_specified_de_boer_parameter"))
 
         self.m = np.zeros(self.nc)
         self.sigma = np.zeros(self.nc)
@@ -259,3 +265,45 @@ class saft(thermo.thermopack):
                          pot_c)
 
         return np.array(pot_c)
+
+    def adjust_mass_to_de_boer_parameter(self, c, de_boer):
+        """Adjust mass in order to get specified de Boer parameter
+
+        Args:
+            c (int): Component index (FORTRAN)
+            de_boer (float): de Boer parameter
+
+        """
+        self.activate()
+        c_c = c_int(c)
+        de_boer_c = c_double(de_boer)
+
+        self.s_adjust_mass_to_de_boer_parameter.argtypes = [POINTER(c_int),
+                                                            POINTER(c_double)]
+
+        self.s_adjust_mass_to_de_boer_parameter.restype = None
+
+        self.s_adjust_mass_to_de_boer_parameter(byref(c_c),
+                                                byref(de_boer_c))
+
+    def de_boer_parameter(self, c):
+        """Get de Boer parameter
+
+        Args:
+            c (int): Component index (FORTRAN)
+        Results:
+            de_boer (float): de Boer parameter
+
+        """
+        self.activate()
+        c_c = c_int(c)
+        de_boer_c = c_double(0.0)
+
+        self.s_de_boer_parameter.argtypes = [POINTER(c_int),
+                                             POINTER(c_double)]
+
+        self.s_de_boer_parameter.restype = None
+
+        self.s_de_boer_parameter(byref(c_c),
+                                 byref(de_boer_c))
+        return de_boer_c.value
