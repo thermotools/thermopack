@@ -184,6 +184,7 @@ append_export("ljs_wca_get_pure_params", "lj_splined")
 
 append_export("solve_mu_t", "mut_solver")
 append_export("solve_lnf_t", "mut_solver")
+append_export("extrapolate_mu_in_inverse_radius", "mut_solver")
 
 append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
 

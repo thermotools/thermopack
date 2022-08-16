@@ -73,6 +73,7 @@ TESTOBJS = $(TESTSRCS:.pf=.o)
 OBJE = \
        $(ODIR)/numconstants.o \
        $(ODIR)/stringmod.o \
+       $(ODIR)/linear_numerics.o \
        $(ODIR)/quadratures.o \
        $(ODIR)/thermopack_constants.o \
        $(ODIR)/error.o \
@@ -459,7 +460,7 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 	$(SRC)/ph_solver.f90 $(SRC)/ps_solver.f90 \
 	$(SRC)/saturation.f90 $(SRC)/eos.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/puresaturation.f90 \
-	$(SRC)/state_functions.f90
+	$(SRC)/state_functions.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/external.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
@@ -499,6 +500,9 @@ $(ODIR)/leekesler.o: $(SRC)/leekesler.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/compdata.f90 \
 	$(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/leekesler.f90)
+$(ODIR)/linear_numerics.o: $(SRC)/linear_numerics.f90 \
+	$(SRC)/nonlinear_solvers.f90
+	@$(call make_object, $(SRC)/linear_numerics.f90)
 $(ODIR)/lj_splined.o: $(SRC)/lj_splined.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_options.f90 \
 	$(SRC)/saftvrmie_utils.f90 $(SRC)/numconstants.f90 \
@@ -545,7 +549,7 @@ $(ODIR)/multiparameter_r134a.o: $(SRC)/multiparameter_r134a.f90 \
 	@$(call make_object, $(SRC)/multiparameter_r134a.f90)
 $(ODIR)/mut_solver.o: $(SRC)/mut_solver.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90 \
-	$(SRC)/thermopack_var.f90 $(SRC)/eos.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eostv.f90 \
 	$(SRC)/nonlinear_solvers.f90
 	@$(call make_object, $(SRC)/mut_solver.f90)
 $(ODIR)/nonlinear_solvers.o: $(SRC)/nonlinear_solvers.f90
@@ -620,8 +624,9 @@ $(ODIR)/saft_interface.o: $(SRC)/saft_interface.f90 \
 	$(SRC)/pets.f90 $(SRC)/cbalpha.f90 \
 	$(SRC)/saft_association.f90 $(SRC)/numconstants.f90 \
 	$(SRC)/eos_parameters.f90 $(SRC)/cubic.f90 \
-	$(SRC)/cbmix.f90 $(SRC)/cbhelm.f90 \
-	$(SRC)/saft_globals.f90 $(SRC)/saft_rdf.f90
+	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/cbmix.f90 \
+	$(SRC)/cbhelm.f90 $(SRC)/saft_globals.f90 \
+	$(SRC)/saft_rdf.f90
 	@$(call make_object, $(SRC)/saft_interface.f90)
 $(ODIR)/saft_rdf.o: $(SRC)/saft_rdf.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/saftvrmie_hardsphere.f90 \
@@ -768,11 +773,10 @@ $(ODIR)/thermo_utils.o: $(SRC)/thermo_utils.f90 \
 	$(SRC)/trend_solver.f90
 	@$(call make_object, $(SRC)/thermo_utils.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/critical.f90 \
-	$(SRC)/saft_interface.f90 $(SRC)/pc_saft_nonassoc.f90 \
-	$(SRC)/hardsphere_bmcsl.f90 $(SRC)/saftvrmie_containers.f90 \
-	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/saftvrmie_interface.f90 \
-	$(SRC)/thermopack_var.f90
+	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/critical.f90 $(SRC)/eostv.f90 \
+	$(SRC)/eos.f90 $(SRC)/mut_solver.f90 \
+	$(SRC)/linear_numerics.f90
 	@$(call make_object, $(SRC)/thermopack.f90)
 $(ODIR)/thermopack_constants.o: $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/thermopack_constants.f90)

@@ -135,6 +135,8 @@ class thermopack(object):
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_lnf_t"))
+        self.s_extrapolate_mu_in_inverse_radius = getattr(self.tp, self.get_export_name(
+            "mut_solver", "extrapolate_mu_in_inverse_radius"))
 
         # TVP interfaces
         self.s_entropy_tvp = getattr(
@@ -2127,6 +2129,59 @@ class thermopack(object):
                            phase_c)
 
         return np.array(rho_c)
+
+    def extrapolate_mu_in_inverse_radius(self, sigma_0, temp, rho_l, rho_g, radius, geometry, phase):
+        """Extrapolate mu in inverse radius ot the curved surface and solve for bulk states
+
+        Args:
+            sigma_0 (float); Surface tension of planar surface (N/m)
+            temp (float): Temperature (K)
+            rho_l (array_like): Liquid density (mol/m3)
+            rho_g (array_like): Gas density (mol/m3)
+            radius (float): Radius (m)
+            geometry (str): "SPHERICAL" or "CYLINDRICAL"
+            phase (int): Phase where composition assumed constant.
+        Returns:
+            mu (ndarray): Chemical potential (J/mol).
+            rho_l (ndarray): Liquid density (mol/m3)
+            rho_g (ndarray): Gas density (mol/m3)
+        """
+        self.activate()
+        sigma_0_c = c_double(sigma_0)
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(0.0)
+        rho_l_c = (c_double * len(mu))(*rho_l)
+        rho_g_c = (c_double * len(mu))(*rho_g)
+        radius_c = c_double(radius)
+        phase_c = c_int(phase)
+        ierr_c = c_int(0)
+        geometry_c = POINTER(c_int)(c_int(1) if "SPHER" in geometry.upper() else c_int(2))
+        self.s_extrapolate_mu_in_inverse_radius.argtypes = [POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int)]
+
+        self.s_extrapolate_mu_in_inverse_radius.restype = None
+
+        self.s_extrapolate_mu_in_inverse_radius(byref(sigma_0_c),
+                                                byref(temp_c),
+                                                rho_g_c,
+                                                rho_l_c,
+                                                byref(phase_c),
+                                                byref(radius_c),
+                                                byref(geometry_c),
+                                                mu_c,
+                                                byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("extrapolate_mu_in_inverse_radius calclualtion failed")
+
+        return np.array(mu_c), np.array(rho_l_c), np.array(rho_g_c)
 
     #################################
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
