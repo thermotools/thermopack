@@ -194,7 +194,7 @@ class equilibrium(object):
         self.solid = solid
 
     @staticmethod
-    def tp_flash(self, eos, T, p, z):
+    def tp_flash(eos, T, p, z):
         """Construct class from tpz flash
 
         Args:
@@ -222,7 +222,7 @@ class equilibrium(object):
         return equilibrium(vapor, liquid)
 
     @staticmethod
-    def bubble_pressure(self, eos, T, z):
+    def bubble_pressure(eos, T, z):
         """Construct class from bubble pressure calculation
 
         Args:
@@ -243,7 +243,7 @@ class equilibrium(object):
         return equilibrium(vapor, liquid)
 
     @staticmethod
-    def bubble_temperature(self, eos, p, z):
+    def bubble_temperature(eos, p, z):
         """Construct class from bubble temperature calculation
 
         Args:
@@ -265,15 +265,15 @@ class equilibrium(object):
 
     @property
     def temperature(self):
-        return vle.vapour.temperature if vle.vapour else vle.liquid.temperature
+        return self.vapor.T if self.vapor else self.liquid.T
 
     @property
     def pressure(self):
-        return vle.vapour.pressure if vle.vapour else vle.liquid.pressure
+        return self.vapor.pressure if self.vapor else self.liquid.pressure
 
     @property
     def eos(self):
-        return vle.vapour.eos if vle.vapour else vle.liquid.eos
+        return self.vapor.eos if self.vapor else self.liquid.eos
 
 class phase_state_list(object):
     """
