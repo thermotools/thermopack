@@ -76,6 +76,7 @@ OBJE = \
        $(ODIR)/quadratures.o \
        $(ODIR)/thermopack_constants.o \
        $(ODIR)/error.o \
+       $(ODIR)/hyperdual_mod.o \
        $(ODIR)/optimizer.o \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \
@@ -83,6 +84,7 @@ OBJE = \
        $(ODIR)/compdata.o \
        $(ODIR)/association_var.o \
        $(ODIR)/thermopack_var.o \
+       $(ODIR)/hyperdual_utility.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -466,6 +468,11 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
+	@$(call make_object, $(SRC)/hyperdual_mod.f90)
+$(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/thermopack_var.f90
+	@$(call make_object, $(SRC)/hyperdual_utility.f90)
 $(ODIR)/ideal.o: $(SRC)/ideal.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/compdata.f90 \
 	$(SRC)/idealh2.f90 $(SRC)/thermopack_var.f90
