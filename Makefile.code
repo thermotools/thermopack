@@ -93,6 +93,7 @@ OBJE = \
        $(ODIR)/multiparameter_ortho_h2.o \
        $(ODIR)/multiparameter_normal_h2.o \
        $(ODIR)/multiparameter_r134a.o \
+       $(ODIR)/multiparameter_lj.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -532,6 +533,9 @@ $(ODIR)/multiparameter_c3.o: $(SRC)/multiparameter_c3.f90 \
 $(ODIR)/multiparameter_idealmix.o: $(SRC)/multiparameter_idealmix.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/eos_parameters.f90
 	@$(call make_object, $(SRC)/multiparameter_idealmix.f90)
+$(ODIR)/multiparameter_lj.o: $(SRC)/multiparameter_lj.f90 \
+	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90
+	@$(call make_object, $(SRC)/multiparameter_lj.f90)
 $(ODIR)/multiparameter_normal_h2.o: $(SRC)/multiparameter_normal_h2.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/multiparameter_normal_h2.f90)

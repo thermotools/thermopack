@@ -140,6 +140,8 @@ contains
     this%pc = 1.2964e6 !< (Pa)
     this%rc = 15.508e3  !< (mol/m^3)
 
+    this%acf = -0.219
+
     this%t_triple = 13.957      !< (K)
     this%p_triple = 7360.0      !< (Pa)
     this%rhoLiq_triple = 38.2e3 !< (mol/m^3)
