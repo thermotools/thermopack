@@ -524,7 +524,7 @@ contains
   subroutine cbCalcAmix(nc, cbeos, t, zcomp)
     use cubic_eos, only: cb_eos, cbMixVdW, cbMixVdWCPA, &
          cbMixHuronVidal, cbMixHuronVidal2, cbMixNRTL, cbMixUNIFAC, &
-         cbMixHVCPA, cbMixHVCPA2, cbMixWongSandler, cbMixWSCPA, cbMixReid
+         cbMixHVCPA, cbMixHVCPA2, cbMixWongSandler, cbMixWSCPA, cbMixHvWS, cbMixReid
     use wong_sandler, only : WongSandlerMix
     use excess_gibbs, only : ExcessGibbsMix
     use cbAlpha, only: cbCalcAlphaTerm
@@ -548,7 +548,7 @@ contains
          cbMixHVCPA, cbMixHVCPA2)
       call ExcessGibbsMix(cbeos,T,zcomp)
 
-   case (cbMixWongSandler, cbMixWSCPA)
+   case (cbMixWongSandler, cbMixWSCPA, cbMixHVWS)
       call WongSandlerMix(cbeos, T, zcomp)
 
     case (cbMixReid) !< Un-symmetric - need to be developed
