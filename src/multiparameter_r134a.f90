@@ -67,6 +67,7 @@ contains
     this%tc = 374.21  !< (K)
     this%rc = 4978.8301!5.017053e3    !< (mol/m^3)
     this%pc = 4059.28e3 !< (Pa)
+    this%acf = 0.32684
 
     this%t_triple = 169.85  !< (K)
     this%p_triple = 389.6 !< (Pa)
