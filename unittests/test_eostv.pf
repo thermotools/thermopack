@@ -195,6 +195,24 @@ contains
   end subroutine test_fres_tv_PRHV
 
   @Test
+  subroutine test_fres_tv_HVWS()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 2
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0 = [0.9,0.15]
+    P0 = 5.0e6
+    T0 = 300.0
+    components = "CO2,H2O"
+
+    call test_fres_tv_model(ncomp,"PR",trim(components),T0,P0,n0,"HVWS",alpha='Twu')
+
+  end subroutine test_fres_tv_HVWS
+
+  @Test
   subroutine test_fres_tv_CPA_SRK()
     ! Test residual reduced Helmholtz function differentials
     ! MH, 2017-02
@@ -246,7 +264,8 @@ contains
 
   ! end subroutine test_fres_tv_EOSCG
 
-  subroutine test_fres_tv_model(ncomp,model,components,T0,P0,n0,mixing)
+
+  subroutine test_fres_tv_model(ncomp,model,components,T0,P0,n0,mixing,saft_ref,alpha)
     ! Test residual reduced Helmholtz function differentials
     !
     ! MH, 2017-02
@@ -258,6 +277,8 @@ contains
     character(len=*), intent(in) :: model
     character(len=*), intent(in) :: components
     character(len=*), optional, intent(in) :: mixing
+    character(len=*), optional, intent(in) :: saft_ref
+    character(len=*), optional, intent(in) :: alpha
     real, intent(in) :: T0, P0
     real, dimension(ncomp), intent(in) :: n0
     ! Locals
@@ -265,15 +286,26 @@ contains
     real :: t, v, dt, dv, v0, sumn
     real :: F,F_T,F_V,F_n(ncomp),F_TT,F_TV,F_VV,F_Tn(ncomp)
     real :: F_Vn(ncomp),F_nn(ncomp,ncomp),F_VVV
+    real :: F1,F1_T,F1_V,F1_n(ncomp),F1_VV
     real :: F2,F2_T,F2_V,F2_n(ncomp),F2_VV
     real, dimension(ncomp) :: n, dn, x
     integer :: i, j
-    character(len=100) :: mixing_l
+    character(len=100) :: mixing_l, saft_ref_l, alpha_l
     logical :: isCubic
     if (present(mixing)) then
       mixing_l = mixing
     else
       mixing_l = "vdW"
+    endif
+    if (present(saft_ref)) then
+      saft_ref_l = saft_ref
+    else
+      saft_ref_l = "DEFAULT"
+    endif
+    if (present(alpha)) then
+       alpha_l = alpha
+    else
+       alpha_l = "Classic"
     endif
     if ( str_eq(model, "SRK").OR. &
          str_eq(model, "PR") ) then
@@ -284,10 +316,11 @@ contains
     sumn = sum(n0)
     x = n0/sumn
     ! Test model
-    silent_init = .true.
+    silent_init = .False.
 
-    call init_thermo(trim(model), trim(mixing_l), 'Classic',&
-         trim(components), 1)
+    call init_thermo(trim(model), trim(mixing_l), trim(alpha_l),&
+         trim(components), 1, saft_ref=saft_ref_l)
+
     call specificvolume(T0,p0,x,LIQPH,v0)
 
     ! Get volume
