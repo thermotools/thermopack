@@ -588,7 +588,7 @@ contains
   end subroutine calc_saft_dispersion
 
   !> Calculates Hard-sphere diameter
-  subroutine calc_hard_sphere_diameter(T,d)
+  subroutine calc_hard_sphere_diameter(T,d,d_T)
     use pc_saft_nonassoc, only: calc_d, sPCSAFT_eos
     use saftvrmie_interface, only: update_saftvrmie_hs_diameter
     use saftvrmie_containers, only: saftvrmie_eos
@@ -596,6 +596,7 @@ contains
     real, intent(in) :: T!,V,n(nce)
     ! Output.
     real, intent(out) :: d(nce) !(m)
+    real, optional, intent(out) :: d_T(nce) !(m/K)
     ! Locals
     class(base_eos_param), pointer :: eos
     integer :: i
@@ -603,11 +604,12 @@ contains
     ! Calculate the non-association contribution.
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-      call calc_d(p_eos,T,d)
+      call calc_d(p_eos,T,d,d_T)
     class is (saftvrmie_eos)
       call update_saftvrmie_hs_diameter(p_eos,nce,T)
       do i=1,nce
         d(i) = p_eos%saftvrmie_var%dhs%d(i,i)
+        if (present(d_T)) d_T(i) = p_eos%saftvrmie_var%dhs%d_T(i,i)
       enddo
     class default
       call stoperror("calc_hard_sphere_diameter: Wrong eos...")

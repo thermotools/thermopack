@@ -44,11 +44,12 @@ class saft(thermo.thermopack):
         self.sigma = np.zeros(self.nc)
         self.eps_div_kb = np.zeros(self.nc)
 
-    def hard_sphere_diameters(self, temp):
+    def hard_sphere_diameters(self, temp, calc_d_T=False):
         """Calculate hard-sphere diameters given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
+            calc_d_T (logical): Calculate temperature differential
 
         Returns:
             float: Hard-sphere diameter (m)
@@ -56,16 +57,19 @@ class saft(thermo.thermopack):
         self.activate()
         temp_c = c_double(temp)
         d_c = (c_double * self.nc)(0.0)
+        dT_c = (c_double * self.nc)(0.0) if calc_d_T else POINTER(c_double)()
 
         self.s_calc_hs_diameter.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
                                             POINTER(c_double)]
 
         self.s_calc_hs_diameter.restype = None
 
         self.s_calc_hs_diameter(byref(temp_c),
-                                d_c)
+                                d_c,
+                                dT_c)
 
-        return np.array(d_c)
+        return np.array(d_c) if calc_d_T else np.array(d_c), np.array(dT_c)
 
     def a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
