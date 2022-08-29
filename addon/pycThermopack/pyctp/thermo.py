@@ -2149,13 +2149,13 @@ class thermopack(object):
         self.activate()
         sigma_0_c = c_double(sigma_0)
         temp_c = c_double(temp)
-        mu_c = (c_double * len(mu))(0.0)
-        rho_l_c = (c_double * len(mu))(*rho_l)
-        rho_g_c = (c_double * len(mu))(*rho_g)
+        mu_c = (c_double * len(rho_l))(0.0)
+        rho_l_c = (c_double * len(rho_l))(*rho_l)
+        rho_g_c = (c_double * len(rho_g))(*rho_g)
         radius_c = c_double(radius)
         phase_c = c_int(phase)
         ierr_c = c_int(0)
-        geometry_c = POINTER(c_int)(c_int(1) if "SPHER" in geometry.upper() else c_int(2))
+        geometry_c = c_int(1) if "SPHER" in geometry.upper() else c_int(2)
         self.s_extrapolate_mu_in_inverse_radius.argtypes = [POINTER(c_double),
                                                             POINTER(c_double),
                                                             POINTER(c_double),

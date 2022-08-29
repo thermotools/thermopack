@@ -221,8 +221,9 @@ contains
     endif
 
     ! Equation 14
-    fac = dot_product(mu_1,(rho_l-rho_g)) / (g*sigma_0)
+    fac = g*sigma_0 / dot_product(mu_1,(rho_l-rho_g))
     mu_1 = mu_1*fac
+
     ! Equation 8 truncated after first order correction
     mu = mu_0 + mu_1/radius
 
