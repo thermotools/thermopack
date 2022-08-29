@@ -596,7 +596,7 @@ contains
     real, intent(in) :: T!,V,n(nce)
     ! Output.
     real, intent(out) :: d(nce) !(m)
-    real, optional, intent(out) :: d_T(nce) !(m/K)
+    real, intent(out) :: d_T(nce) !(m/K)
     ! Locals
     class(base_eos_param), pointer :: eos
     integer :: i
@@ -609,7 +609,7 @@ contains
       call update_saftvrmie_hs_diameter(p_eos,nce,T)
       do i=1,nce
         d(i) = p_eos%saftvrmie_var%dhs%d(i,i)
-        if (present(d_T)) d_T(i) = p_eos%saftvrmie_var%dhs%d_T(i,i)
+        d_T(i) = p_eos%saftvrmie_var%dhs%d_T(i,i)
       enddo
     class default
       call stoperror("calc_hard_sphere_diameter: Wrong eos...")
