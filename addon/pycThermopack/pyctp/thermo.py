@@ -2078,7 +2078,7 @@ class thermopack(object):
         temp_c = c_double(temp)
         mu_c = (c_double * len(mu))(*mu)
         rho_c = (c_double * len(mu))(*rho_initial if rho_initial else 0.0)
-        phase_c = POINTER(c_int)(c_int(phase) if phase else ())
+        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
         ierr_c = c_int(0)
         self.s_solve_mu_t.argtypes = [POINTER(c_double),
                                       POINTER(c_double),
@@ -2088,8 +2088,8 @@ class thermopack(object):
 
         self.s_solve_mu_t.restype = None
 
-        self.s_solve_mu_t(byref(temp_c),
-                          mu_c,
+        self.s_solve_mu_t(mu_c,
+                          byref(temp_c),
                           rho_c,
                           byref(ierr_c),
                           phase_c)
@@ -2110,9 +2110,9 @@ class thermopack(object):
         """
         self.activate()
         temp_c = c_double(temp)
-        mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial if rho_initial else 0.0)
-        phase_c = POINTER(c_int)(c_int(phase) if phase else ())
+        lnf_c = (c_double * len(lnf))(*lnf)
+        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial else 0.0)
+        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
         ierr_c = c_int(0)
         self.s_solve_lnf_t.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -2122,8 +2122,8 @@ class thermopack(object):
 
         self.s_solve_lnf_t.restype = None
 
-        self.s_solve_lnf_t(byref(temp_c),
-                           mu_c,
+        self.s_solve_lnf_t(lnf_c,
+                           byref(temp_c),
                            rho_c,
                            byref(ierr_c),
                            phase_c)
