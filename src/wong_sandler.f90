@@ -16,6 +16,7 @@
 !!
 !-----------------------------------------------------------------------------
 module wong_sandler
+  use cbalpha, only: cbCalcAlphaTerm
   implicit none
   private
   save
@@ -84,9 +85,10 @@ contains
   !-------------------------------------------
   subroutine WongSandlerMix(cbeos, T, zcomp)
     use thermopack_var, only : nc
-    use cubic_eos, only : cb_eos
+    use cubic_eos, only : cb_eos, isHVmixModel
     use thermopack_constants, only: kRgas
     use excess_gibbs, only: gEinf, getInfinitLimitC, GetFraction
+    use hyperdual_mod
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: T, zcomp(nc)
@@ -94,13 +96,15 @@ contains
     integer ::i,j, k
     real :: r1, n
     real ::  Q, Qt, Qtt, C ,D, Dt, Dtt, rrijt, rrijtt
+    real ::  QQ, QQt, QQtt, QQi(nc), QQij(nc,nc), QQit(nc)
     real, dimension(nc) :: aa, aat, aatt, bb, rr, rrt, rrtt
     real, dimension(nc) :: Qi, Di, Qit, Dit, dAExInfdNi, d2AexInfdNidT
     real, dimension(nc,nc) :: kWS, kWSt, kWStt, Qij, Dij
     real, dimension(nc,nc) :: rrij, d2AExInfdNidNj
     real :: AExInf, dAExInfdT, d2AExinfdT2
+    type(hyperdual) :: Qhd, Thd, nhd(nc), nhdp(nc), Qhdp, Thdp
 
-   ! Variables
+    ! Variable
     !  Used(f)      df/dt,      df/dni   Variable
     !  zSum         0.0           1.0       sum(zComp) is genrally not 1
     !  aa(i)        aat(i)        0.0       a_i=0.46*(RT)²/Pc* Alpha
@@ -113,8 +117,6 @@ contains
     !  D            Dt            Di(i)     : D for calcualtion of a and b
     !  cbeos%a      cbeos%at      cbeos%ai(i): Variable cbeos
     !  cbeos%b      cbeos%bt      cbeos%bi(i): Variable cbeos
-
-
 
     n = 0.0
     do i=1,nc
@@ -140,7 +142,7 @@ contains
       enddo
     enddo
 
-    ! Calculate AEinf
+    ! Calculate AEinf -
     call gEinf(cbeos,t,zcomp,AExInf,dAExInfdT,d2AExinfdT2,&
          dAExInfdNi,d2AexInfdNidT,d2AExInfdNidNj)
 
@@ -148,27 +150,173 @@ contains
     Q = 0.0
     Qt = 0.0
     Qtt = 0.0
-    do i=1,nc
-      QiT(i) = 0.0
-      do j=1,nc
-        rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
-        rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
-        rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
-             - (rrt(i)+rrt(j))*kWSt(i,j) &
-             - 0.5*(rr(i)+rr(j))*kWStt(i,j)
-        Q = Q + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
-        Qt = Qt + zcomp(i)*zcomp(j)*rrijt
-        Qtt = Qtt + zcomp(i)*zcomp(j)*rrijtt
-        QiT(i) = QiT(i) + 2.0*rrijt*zcomp(j)
-      enddo
-    enddo
-    do k = 1,nc
-      Qi(k) = 0.0
-      do i=1,nc
-        Qi(k) = Qi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
-        Qij(i,k) = rrij(i,k)+rrij(k,i)
-      enddo
-    enddo
+    Qit = 0.0
+    Qij = 0.0
+    QQ = 0.0
+    QQt = 0.0
+    QQtt = 0.0
+    QQit = 0.0
+    QQij = 0.0
+
+    Thd = 0.0
+    nhd = 0.0
+    if (isHVmixModel(cbeos%mruleidx)) then ! use HV formulation of NRTL
+       ! Q, QT, QTT, Qn, QTn, Qnn
+       Thd%f0 = T
+       nhd(:)%f0 = zcomp
+
+       ! T, n, and Tn derivatives
+       Thd%f1 = 1
+       do i=1,nc
+          nhd(i)%f2 = 1
+          call calc_Q_HVNRTL(cbeos, Thd, nhd, kWS, Qhd)
+          QT = Qhd%f1
+          Qi(i) = Qhd%f2
+          QiT(i) = Qhd%f12
+          nhd(i)%f2 = 0
+       end do
+       Thd%f1 = 0
+
+       ! TT derivative
+       Thd%f1 = 1
+       Thd%f2 = 1
+       call calc_Q_HVNRTL(cbeos, Thd, nhd, kWS, Qhd)
+       Qtt = Qhd%f12
+       Thd%f1 = 0
+       Thd%f2 = 0
+
+       Qij = 0.0
+       ! nn derivative
+       do i=1,nc
+          nhd(i)%f1 = 1
+          do j=i,nc
+             nhd(j)%f2 = 1
+             call calc_Q_HVNRTL(cbeos, Thd, nhd, kWS, Qhd)
+             Qij(i,j) = Qhd%f12
+             Qij(j,i) = Qij(i,j)
+             nhd(j)%f2 = 0
+          end do
+          nhd(i)%f1 = 0
+       end do
+       Q = Qhd%f0
+
+       ! Original calculation
+       do i=1,nc
+          do j=1,nc
+             rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
+             rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
+             rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
+                  - (rrt(i)+rrt(j))*kWSt(i,j) &
+                  - 0.5*(rr(i)+rr(j))*kWStt(i,j)
+             QQ = QQ + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
+             QQt = QQt + zcomp(i)*zcomp(j)*rrijt
+             QQtt = QQtt + zcomp(i)*zcomp(j)*rrijtt
+             QQiT(i) = QQiT(i) + 2.0*rrijt*zcomp(j)
+          enddo
+       enddo
+       do k = 1,nc
+          do i=1,nc
+             QQi(k) = QQi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
+             QQij(i,k) = rrij(i,k)+rrij(k,i)
+          enddo
+       enddo
+
+       ! print *, "Q"
+       ! print *, Q
+       ! print *, QQ
+
+       ! print *, "Qt"
+       ! print *, Qt
+       ! print *, QQt
+
+       ! print *, "Qtt"
+       ! print *, Qtt
+       ! print *, QQtt
+
+       ! print *, "Qi"
+       ! print *, Qi
+       ! print *, QQi
+
+       ! print *, "Qit"
+       ! print *, Qit
+       ! print *, QQit
+
+       ! print *, "Qij"
+       ! print *, Qij
+       ! print *, QQij
+       ! stop "END OF COMPARISON"
+    else
+       do i=1,nc
+          do j=1,nc
+             rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
+             rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
+             rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
+                  - (rrt(i)+rrt(j))*kWSt(i,j) &
+                  - 0.5*(rr(i)+rr(j))*kWStt(i,j)
+             Q = Q + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
+             Qt = Qt + zcomp(i)*zcomp(j)*rrijt
+             Qtt = Qtt + zcomp(i)*zcomp(j)*rrijtt
+             QiT(i) = QiT(i) + 2.0*rrijt*zcomp(j)
+          enddo
+       enddo
+       do k = 1,nc
+          do i=1,nc
+             Qi(k) = Qi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
+             Qij(i,k) = rrij(i,k)+rrij(k,i)
+          enddo
+       enddo
+    end if
+
+    ! print *, "Test first T-derivatives""
+    ! Thdp = 0.0
+    ! Thdp%f0 = Thd%f0*(1+1e-5)
+    ! call cbCalcAlphaTerm(nc, cbeos, Thdp%f0)
+    ! call calc_Q_HVNRTL(cbeos, Thdp, nhd, kWs, Qhdp)
+    ! print *, "T"
+    ! print *, ((Qhdp%f0-Qhd%f0)/(Thdp%f0-Thd%f0))
+    ! print *, Qt
+    ! call cbCalcAlphaTerm(nc, cbeos, Thd%f0)
+    ! Thdp = Thd
+
+    ! print *, "Test Tn-derivatives"
+    ! Thdp = 0.0
+    ! Thdp%f0 = Thd%f0
+    ! Thdp%f1 = 1.0
+    ! nhdp%f0 = nhd%f0
+    ! do i=1,nc
+    !    nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
+    !    call calc_Q_HVNRTL(cbeos, Thdp, nhdp, kWs, Qhdp)
+    !    print *, i
+    !    print *, ((Qhdp%f1-Qt)/(nhdp(i)%f0-nhd(i)%f0))
+    !    print *, Qit(i)
+    !    nhdp(i)%f0 = nhd(i)%f0
+    ! end do
+
+    ! print *, "Test first n-derivatives""
+    ! nhdp%f0 = nhd%f0
+    ! do i=1,nc
+    !    nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
+    !    call calc_Q_HVNRTL(cbeos, Thd, nhdp, kWs, Qhdp)
+    !    print *, i
+    !    print *, ((Qhdp%f0-Qhd%f0)/(nhdp(i)%f0-nhd(i)%f0))
+    !    print *, Qi(i)
+    !    nhdp(i)%f0 = nhd(i)%f0
+    ! end do
+
+    ! print *, "Test mixed n-derivatives"
+    ! nhdp%f0 = nhd%f0
+    ! do i=1,nc
+    !    do j=1,nc
+    !       nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
+    !       nhdp(j)%f1 = 1
+    !       call calc_Q_HVNRTL(cbeos, Thd, nhdp, kWs, Qhdp)
+    !       print *, i, j
+    !       print *, ((Qhdp%f1-Qi(j))/(nhdp(i)%f0-nhd(i)%f0))
+    !       print *, Qij(i, j)
+    !       nhdp(j)%f1 = 0.0
+    !    end do
+    !    nhdp(i)%f0 = nhd(i)%f0
+    ! end do
 
     !-----D--- Eq(A9)--------------
     C = getInfinitLimitC(cbeos) ! Note! C defined positive -> Sign change
@@ -207,7 +355,6 @@ contains
     enddo
 
     cbeos%sumb = cbeos%b
-
     !-------cbeos: a------------
     cbeos%a = Q * D * kRGas * T / (n - D)  !Eq (A7)
     cbeos%at = kRGas*(cbeos%bt*D*T + cbeos%b*Dt*T + cbeos%b*D)
@@ -229,5 +376,47 @@ contains
 
     cbeos%suma = cbeos%a
   end subroutine WongSandlerMix
+
+
+  subroutine calc_Q_HVNRTL(cbeos, Thd, nhd, kij_a, Qhd)
+    use thermopack_var, only : nc
+    use cubic_eos, only : cb_eos
+    use thermopack_constants, only: kRgas
+    use hyperdual_mod
+    class(cb_eos), intent(inout) :: cbeos
+    type(hyperdual), intent(in) :: Thd, nhd(nc)
+    real, intent(in) :: kij_a(nc,nc)
+    type(hyperdual), intent(out) :: Qhd
+    ! Local variables:
+    integer :: i, j, k
+    real :: r1, a, a_T, a_TT, bij
+    type(hyperdual) :: aahd(nc), virbin(nc,nc), aij
+
+    aahd = 0.0
+    do i=1,nc
+       r1 = cbeos%single(i)%a !< constant ai in cubic eos
+       a = cbeos%single(i)%alpha*r1
+       a_T = cbeos%single(i)%dalphadt*r1
+       a_TT = cbeos%single(i)%d2alphadt2*r1
+       aahd(i)%f0 = a
+       aahd(i)%f1 = Thd%f1 * a_T
+       aahd(i)%f2 = Thd%f2 * a_T
+       aahd(i)%f12 = (Thd%f1*Thd%f2*a_TT + Thd%f12*a_T)
+    enddo
+
+    ! Assemble hyperdual Qhd
+    Qhd = 0.0
+    do i=1,nc
+       do j=1,nc
+          aij = sqrt(aahd(i)*aahd(j)) * (1 - kij_a(i,j))
+          bij = 0.5*(cbeos%single(i)%b+cbeos%single(j)%b)*(1-cbeos%lij(i,j))
+          virbin(i,j) = bij - aij/(kRGas*Thd)
+          ! The following yields the original original WS formulation: virbin(i,j) = 0.5*(bij/0.5 - (aahd(i)+aahd(j))/(kRGas*Thd)) * (1-kij_a(i,j))
+          Qhd = Qhd + nhd(i)*nhd(j)*virbin(i,j)
+       end do
+    end do
+
+  end subroutine calc_Q_HVNRTL
+
 
 end module wong_sandler
