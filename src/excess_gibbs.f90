@@ -122,15 +122,15 @@ contains
             if (cbeos%mixGE%mGE .eq. cbMixHuronVidal .or. &
                 cbeos%mixGE%mGE .eq. cbMixNRTL) then
               ! Beware!!
-              ! The coefficients from literature for dgji correlates directly to tau(j,i) 
+              ! The coefficients from literature for dgji correlates directly to tau(j,i)
               ! NOT dgji as tau(j,i) = dgji/R
-              ! linear 
+              ! linear
               tau(j,i) = (cbeos%mixGE%aGE(j,i)/T + cbeos%mixGE%bGE(j,i))
               dtaudT(j,i) = -cbeos%mixGE%aGE(j,i)/(T*T)
               d2taudT2(j,i) = 2.0*cbeos%mixGE%aGE(j,i)/(T*T*T)
             else
               if (cbeos%mixGE%correlation(j,i) == 1) then
-                ! 2'nd order 
+                ! 2'nd order
                 tau(j,i) = (cbeos%mixGE%aGE(j,i)/T + cbeos%mixGE%bGE(j,i)+ cbeos%mixGE%cGE(j,i)*T)
                 dtaudT(j,i) = (-cbeos%mixGE%aGE(j,i)/(T*T) + cbeos%mixGE%cGE(j,i))
                 d2taudT2(j,i) = 2.0*cbeos%mixGE%aGE(j,i)/(T*T*T)
@@ -289,7 +289,7 @@ contains
           endif
         endif ! if i <> j
         Cij(i,j) = exp(-alpha(i,j) * tau(i,j))
- 
+
         if (cbeos%cubic_verbose) then
           write (*,*) 'j: ',j,' i: ',i
           write(*,*) 'Cji:', Cij(i,j)
@@ -433,7 +433,7 @@ contains
         gamma3(i) = gamma3(i) + dtaudT(j,i)*bj * zcomp(j) * Cij(j,i) * alpha(j,i)
         gamma4(i) = gamma4(i) + dtaudT(j,i)*bj * zcomp(j) * Cij(j,i) * (1-tau(j,i)*alpha(j,i))
         gamma5(i) = gamma5(i) +             bj * zcomp(j) * Cij(j,i) * alpha(j,i) &
-             *(d2taudT2(j,i) - alpha(j,i)*dtaudT(j,i)*dtaudT(j,i)) 
+             *(d2taudT2(j,i) - alpha(j,i)*dtaudT(j,i)*dtaudT(j,i))
         gamma6(i) = gamma6(i) +             bj * zcomp(j) * Cij(j,i) &
              * (d2taudT2(j,i) *(1 - alpha(j,i)*tau(j,i))  &
              - (dtaudT(j,i)*dtaudT(j,i) * alpha(j,i)*(2.0 - tau(j,i)*alpha(j,i))))
@@ -445,7 +445,7 @@ contains
           write(*,*) 'ghv_ji   (',j,',',i,') = ',tau(j,i)*(kRgas*T)
         endif
       enddo
-      ! Some often used relations 
+      ! Some often used relations
       fracin1(i) = gamma1(i)*gamma3(i)/(gamma2(i)*gamma2(i))
 
       if (cbeos%cubic_verbose) then
@@ -473,11 +473,11 @@ contains
       ! for GE_inf ..
       sum2i = sum2i + zcomp(i)* gamma1(i)/gamma2(i)
       ! for dGE/dT
-      sum3i = sum3i + zcomp(i)* fracin1(i) 
+      sum3i = sum3i + zcomp(i)* fracin1(i)
       sum4i = sum4i + zcomp(i)* (gamma4(i)/ gamma2(i))
       ! for d2GE/dT2
       sum5i = sum5i + zcomp(i)* (fracin1(i) + gamma4(i)/gamma2(i))
-      sum6i = sum6i + zcomp(i)* (2* fracin1(i) * gamma3(i)/gamma2(i)) 
+      sum6i = sum6i + zcomp(i)* (2* fracin1(i) * gamma3(i)/gamma2(i))
       sum7i = sum7i + zcomp(i) * (2*gamma4(i)*gamma3(i) + gamma1(i)*gamma5(i))/(gamma2(i)*gamma2(i))
       sum8i = sum8i + zcomp(i)* gamma6(i)/gamma2(i)
     enddo !i
@@ -487,7 +487,7 @@ contains
     !
 
     gExInf      = kRgas* T * sum2i                         ! == GEinf
-    dgExInfdT   = kRgas*(sum2i + T*(sum3i + sum4i))        ! dGEinf/dT 
+    dgExInfdT   = kRgas*(sum2i + T*(sum3i + sum4i))        ! dGEinf/dT
     d2gExInfdT2 = kRgas*(2*sum5i+T*(sum6i +sum7i + sum8i)) ! d2GEinf/dT2
 
     if (cbeos%cubic_verbose) then
@@ -527,7 +527,7 @@ contains
         sum7ji = sum7ji + zcomp(j)*bi*Cij(i,j)*fracin1(j)/gamma2(j)
       enddo !j
 
-      dGexInfdNi(i) = kRgas*T* (gamma1(i)/gamma2(i) + sum1ji - sum2ji) 
+      dGexInfdNi(i) = kRgas*T* (gamma1(i)/gamma2(i) + sum1ji - sum2ji)
       d2GexInfdNidT(i) = (1/T)* dGexInfdNi(i) &
            + kRgas*T*(fracin1(i) + gamma4(i)/gamma2(i) + sum3ji + sum4ji + sum5ji - sum6ji - 2*sum7ji)
 
