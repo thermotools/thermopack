@@ -40,19 +40,6 @@ module wong_sandler
     type(GeneralTProp):: kijvalue,  Alpha, Tau12, Tau21
   end type inter_ws_datadb
 
-  type(GeneralTProp), parameter :: EmptyTProp = &
-       GeneralTProp(1,1,0, (/1.0, 0.0, 0.0, 0.0/))
-
-  type(inter_ws_datadb), parameter :: TEstDB = &
-       inter_ws_datadb("PR","CO2","AR", EmptyTProp, EmptyTProp, &
-       EmptyTProp, EmptyTProp)
-
-  type(inter_ws_datadb), dimension(max_ws_datab), parameter :: data_ws_datadb = (/ &
-       inter_ws_datadb("PR","CO2","AR", EmptyTProp, EmptyTProp, &
-       EmptyTProp, EmptyTProp),                            &
-       inter_ws_datadb("PR","CO2","N2", EmptyTProp, EmptyTProp, &
-       EmptyTProp, EmptyTProp) /)
-
   public :: fidel_alpha
   public :: WongSandlerMix
 
@@ -96,13 +83,12 @@ contains
     integer ::i,j, k
     real :: r1, n
     real ::  Q, Qt, Qtt, C ,D, Dt, Dtt, rrijt, rrijtt
-    real ::  QQ, QQt, QQtt, QQi(nc), QQij(nc,nc), QQit(nc)
     real, dimension(nc) :: aa, aat, aatt, bb, rr, rrt, rrtt
     real, dimension(nc) :: Qi, Di, Qit, Dit, dAExInfdNi, d2AexInfdNidT
     real, dimension(nc,nc) :: kWS, kWSt, kWStt, Qij, Dij
     real, dimension(nc,nc) :: rrij, d2AExInfdNidNj
     real :: AExInf, dAExInfdT, d2AExinfdT2
-    type(hyperdual) :: Qhd, Thd, nhd(nc), nhdp(nc), Qhdp, Thdp
+    type(hyperdual) :: Qhd, Thd, nhd(nc)
 
     ! Variable
     !  Used(f)      df/dt,      df/dni   Variable
@@ -152,11 +138,6 @@ contains
     Qtt = 0.0
     Qit = 0.0
     Qij = 0.0
-    QQ = 0.0
-    QQt = 0.0
-    QQtt = 0.0
-    QQit = 0.0
-    QQij = 0.0
 
     Thd = 0.0
     nhd = 0.0
@@ -199,52 +180,6 @@ contains
           nhd(i)%f1 = 0
        end do
        Q = Qhd%f0
-
-       ! Original calculation
-       do i=1,nc
-          do j=1,nc
-             rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
-             rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
-             rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
-                  - (rrt(i)+rrt(j))*kWSt(i,j) &
-                  - 0.5*(rr(i)+rr(j))*kWStt(i,j)
-             QQ = QQ + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
-             QQt = QQt + zcomp(i)*zcomp(j)*rrijt
-             QQtt = QQtt + zcomp(i)*zcomp(j)*rrijtt
-             QQiT(i) = QQiT(i) + 2.0*rrijt*zcomp(j)
-          enddo
-       enddo
-       do k = 1,nc
-          do i=1,nc
-             QQi(k) = QQi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
-             QQij(i,k) = rrij(i,k)+rrij(k,i)
-          enddo
-       enddo
-
-       ! print *, "Q"
-       ! print *, Q
-       ! print *, QQ
-
-       ! print *, "Qt"
-       ! print *, Qt
-       ! print *, QQt
-
-       ! print *, "Qtt"
-       ! print *, Qtt
-       ! print *, QQtt
-
-       ! print *, "Qi"
-       ! print *, Qi
-       ! print *, QQi
-
-       ! print *, "Qit"
-       ! print *, Qit
-       ! print *, QQit
-
-       ! print *, "Qij"
-       ! print *, Qij
-       ! print *, QQij
-       ! stop "END OF COMPARISON"
     else
        do i=1,nc
           do j=1,nc
@@ -266,57 +201,6 @@ contains
           enddo
        enddo
     end if
-
-    ! print *, "Test first T-derivatives""
-    ! Thdp = 0.0
-    ! Thdp%f0 = Thd%f0*(1+1e-5)
-    ! call cbCalcAlphaTerm(nc, cbeos, Thdp%f0)
-    ! call calc_Q_HVNRTL(cbeos, Thdp, nhd, kWs, Qhdp)
-    ! print *, "T"
-    ! print *, ((Qhdp%f0-Qhd%f0)/(Thdp%f0-Thd%f0))
-    ! print *, Qt
-    ! call cbCalcAlphaTerm(nc, cbeos, Thd%f0)
-    ! Thdp = Thd
-
-    ! print *, "Test Tn-derivatives"
-    ! Thdp = 0.0
-    ! Thdp%f0 = Thd%f0
-    ! Thdp%f1 = 1.0
-    ! nhdp%f0 = nhd%f0
-    ! do i=1,nc
-    !    nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
-    !    call calc_Q_HVNRTL(cbeos, Thdp, nhdp, kWs, Qhdp)
-    !    print *, i
-    !    print *, ((Qhdp%f1-Qt)/(nhdp(i)%f0-nhd(i)%f0))
-    !    print *, Qit(i)
-    !    nhdp(i)%f0 = nhd(i)%f0
-    ! end do
-
-    ! print *, "Test first n-derivatives""
-    ! nhdp%f0 = nhd%f0
-    ! do i=1,nc
-    !    nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
-    !    call calc_Q_HVNRTL(cbeos, Thd, nhdp, kWs, Qhdp)
-    !    print *, i
-    !    print *, ((Qhdp%f0-Qhd%f0)/(nhdp(i)%f0-nhd(i)%f0))
-    !    print *, Qi(i)
-    !    nhdp(i)%f0 = nhd(i)%f0
-    ! end do
-
-    ! print *, "Test mixed n-derivatives"
-    ! nhdp%f0 = nhd%f0
-    ! do i=1,nc
-    !    do j=1,nc
-    !       nhdp(i)%f0 = nhd(i)%f0*(1+1e-5)
-    !       nhdp(j)%f1 = 1
-    !       call calc_Q_HVNRTL(cbeos, Thd, nhdp, kWs, Qhdp)
-    !       print *, i, j
-    !       print *, ((Qhdp%f1-Qi(j))/(nhdp(i)%f0-nhd(i)%f0))
-    !       print *, Qij(i, j)
-    !       nhdp(j)%f1 = 0.0
-    !    end do
-    !    nhdp(i)%f0 = nhd(i)%f0
-    ! end do
 
     !-----D--- Eq(A9)--------------
     C = getInfinitLimitC(cbeos) ! Note! C defined positive -> Sign change
@@ -388,7 +272,7 @@ contains
     real, intent(in) :: kij_a(nc,nc)
     type(hyperdual), intent(out) :: Qhd
     ! Local variables:
-    integer :: i, j, k
+    integer :: i, j
     real :: r1, a, a_T, a_TT, bij
     type(hyperdual) :: aahd(nc), virbin(nc,nc), aij
 
