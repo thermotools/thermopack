@@ -207,6 +207,7 @@ append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
+append_export("setcpaformulation", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
