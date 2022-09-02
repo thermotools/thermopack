@@ -162,7 +162,7 @@ class cubic(thermo.thermopack):
         Returns:
             lij (float): i-j interaction parameter
         """
-                self.activate()
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(0.0)
@@ -186,7 +186,7 @@ class cubic(thermo.thermopack):
             c2 (int): Component two
             lij ([type]): [description]
         """
-                self.activate()
+        self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
         lij_c = c_double(lij)
