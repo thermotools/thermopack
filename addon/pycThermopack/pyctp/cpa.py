@@ -30,6 +30,8 @@ class cpa(cubic.cubic):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_kij"))
+        # Options methods
+        self.s_use_simplified_cpa = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
 
 
     #################################
@@ -131,3 +133,13 @@ class cpa(cubic.cubic):
         self.s_set_kij(byref(c1_c),
                        byref(c2_c),
                        kij_c)
+
+    def use_simplified_cpa(self, simplified):
+        """Use simplified form for rdf in CPA
+        Args:
+            simplified (bool): True if simplified
+        """
+        simplified_c = c_bool(simplified)
+        self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
+        self.s_use_simplified_cpa.restype = None
+        self.s_use_simplified_cpa(byref(simplified_c))
