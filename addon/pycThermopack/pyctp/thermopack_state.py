@@ -60,6 +60,8 @@ class state(object):
             self.rho = None
         self.p = p
         self.h = h
+        self.s = None
+        self.sE = None
         self.ph = ph
 
     def __repr__(self):
@@ -174,9 +176,34 @@ class state(object):
         return h
 
     def enthalpy(self):
-        _ = self.specific_volume()
+        _ = self.specific_enthalpy()
         return self.h*np.sum(self.n)
 
+    def specific_entropy(self):
+        if self.s is not None:
+            s = self.s
+        elif self.v is not None:
+            _ = self.volume()
+            s, = self.eos.entropy_tv(self.T, self.v, self.x)
+            self.s = s
+        return s
+
+    def entropy(self):
+        _ = self.specific_entropy()
+        return self.s*np.sum(self.n)
+
+    def specific_excess_entropy(self):
+        if self.sE is not None:
+            sE = self.sE
+        elif self.v is not None:
+            _ = self.volume()
+            sE, = self.eos.entropy_tv(self.T, self.v, self.x, property_flag="R")
+            self.sE = sE
+        return sE
+
+    def excess_entropy(self):
+        _ = self.specific_excess_entropy()
+        return self.sE*np.sum(self.n)
 
 class equilibrium(object):
     """
