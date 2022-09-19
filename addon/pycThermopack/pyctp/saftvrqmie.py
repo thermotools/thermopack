@@ -11,12 +11,12 @@ from os import path
 # Import thermo
 from . import thermo
 # Import saftvrmie
-from . import saftvrmie
+from .saftvrmie import saftvrmie
 
 c_len_type = thermo.c_len_type
 
 
-class saftvrqmie(saftvrmie.saftvrmie):
+class saftvrqmie(saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
@@ -26,7 +26,7 @@ class saftvrqmie(saftvrmie.saftvrmie):
         Initialize cubic specific function pointers
         """
         # Load dll/so
-        saftvrmie.saftvrmie.__init__(self)
+        saftvrmie.__init__(self)
 
         # Init methods
         self.s_eoslibinit_init_quantum_saftvrmie = getattr(
@@ -38,8 +38,8 @@ class saftvrqmie(saftvrmie.saftvrmie):
             self.tp, self.get_export_name("saftvrmie_containers",
                                           "get_feynman_hibbs_order"))
 
-        self.lambda_a = np.zeros(self.nc)
-        self.lambda_r = np.zeros(self.nc)
+        self.lambda_a = None
+        self.lambda_r = None
 
     #################################
     # Init

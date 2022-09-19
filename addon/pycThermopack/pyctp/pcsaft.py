@@ -9,12 +9,13 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo, saft
+from . import thermo
+from .saft import saft
 
 c_len_type = thermo.c_len_type
 
 
-class pcsaft(saft.saft):
+class pcsaft(saft):
     """
     Interface to PC-SAFT model
     """
@@ -24,7 +25,7 @@ class pcsaft(saft.saft):
         Initialize PC-SAFT specific function pointers
         """
         # Load dll/so
-        saft.saft.__init__(self)
+        saft.__init__(self)
 
         # Init methods
         self.eoslibinit_init_pcsaft = getattr(

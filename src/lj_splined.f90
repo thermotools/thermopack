@@ -135,6 +135,7 @@ module lj_splined
   public :: get_bh_ljs_eos_pointer
   public :: uv_delta_b2_overall, calc_uv_wca, uv_a1_u
   public :: calc_uv_wca_tvn
+  public :: calc_ljs_dispersion, calc_wca_soft_repulsion
 
 contains
 
@@ -1278,7 +1279,7 @@ contains
     sigma = eos%sigma
     eps_divk = eos%eps_divk
     ! The hard-sphere diameter
-    call calc_dhs_WCA(nc,sigma,eps_divk,T,n,eos%dhs)
+    call calc_dhs_WCA(nc,sigma,eps_divk,T,eos%dhs)
     ! Packing fraction
     call calcZetaX_vdW_no_segments(nc,T,V,n,eos%dhs,eos%eta_hs)
     zeta = eos%eta_hs%zx
@@ -1371,7 +1372,7 @@ contains
     sigma = eos%sigma
     eps_divk = eos%eps_divk
     ! The hard-sphere diameter
-    call calc_dhs_WCA(nc,sigma,eps_divk,T,n,eos%dhs)
+    call calc_dhs_WCA(nc,sigma,eps_divk,T,eos%dhs)
     ! Calculate hard-sphere term
     if (eos%enable_hs) then
       ! Packing fraction
@@ -2424,7 +2425,7 @@ contains
     ! Calculate hard-sphere term
     if (eos%enable_hs) then
       ! The hard-sphere diameter
-      call calc_dhs_WCA(nc,sigma,eps_divk,T,n,eos%dhs)
+      call calc_dhs_WCA(nc,sigma,eps_divk,T,eos%dhs)
       ! Packing fraction
       call calcZetaX_vdW_no_segments(nc,T,V,n,eos%dhs,eos%eta_hs)
       ! Get pure fluid Helmholtz energy
@@ -2565,7 +2566,7 @@ contains
     sigma = eos%sigma
     eps_divk = eos%eps_divk
     ! The hard-sphere diameter
-    call calc_dhs_WCA(nc,sigma,eps_divk,T,n,eos%dhs)
+    call calc_dhs_WCA(nc,sigma,eps_divk,T,eos%dhs)
     ! Calculate hard-sphere term
     if (eos%enable_hs) then
       ! Packing fraction
@@ -3035,6 +3036,82 @@ contains
     end select
   end function get_bh_ljs_eos_pointer
 
+
+  !> Calculate reduced dispersion contribution to Helmholts free energy
+  !!
+  !! \author Morten Hammer, September 2022
+  subroutine calc_ljs_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+    class(base_eos_param), pointer, intent(in) :: eos
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    ! Output
+    real, intent(out) :: F
+    real, optional, intent(out) :: F_T,F_V,F_TT,F_VV,F_TV
+    real, optional, dimension(nc), intent(out) :: F_n,F_Tn,F_Vn
+    real, optional, dimension(nc,nc), intent(out) :: F_nn
+    ! Locals
+    logical :: enable_hs
+    real :: nsum
+    select type ( p_eos => eos )
+    class is (ljs_wca_eos)
+      ! Disable hard-sphere term
+      enable_hs = p_eos%enable_hs
+      p_eos%enable_hs = .false.
+      call calcFres_WCA(p_eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      p_eos%enable_hs = enable_hs
+    class is (ljs_bh_eos)
+      ! Disable hard-sphere term
+      enable_hs = p_eos%enable_hs
+      p_eos%enable_hs = .false.
+      call calcFresLJs_bh(p_eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      p_eos%enable_hs = enable_hs
+    class default
+      call stoperror("calc_ljs_dispersion: Wrong eos...")
+    end select
+
+    nsum = sum(n)
+    if (present(F_Tn)) F_Tn(1) = F_Tn(1)/nsum - F_T/nsum**2
+    if (present(F_Vn)) F_Vn(1) = F_Vn(1)/nsum - F_V/nsum**2
+    if (present(F_nn)) F_nn(1,1) = F_nn(1,1)/nsum - 2*F_n(1)/nsum**2 + 2*F/nsum**3
+    if (present(F_n)) F_n(1) = F_n(1)/nsum - F/nsum**2
+    if (present(F_TT)) F_TT = F_TT/nsum
+    if (present(F_VV)) F_VV = F_VV/nsum
+    if (present(F_T)) F_T = F_T/nsum
+    if (present(F_V)) F_V = F_V/nsum
+    if (present(F_TV)) F_TV = F_TV/nsum
+    F = F/nsum
+  end subroutine calc_ljs_dispersion
+
+  !> Calculate reduced dispersion contribution to Helmholts free energy
+  !!
+  !! \author Morten Hammer, September 2022
+  subroutine calc_wca_soft_repulsion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+    class(ljs_wca_eos), pointer, intent(in) :: eos
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    ! Output
+    real, intent(out) :: F
+    real, optional, intent(out) :: F_T,F_V,F_TT,F_VV,F_TV
+    real, optional, dimension(nc), intent(out) :: F_n,F_Tn,F_Vn
+    real, optional, dimension(nc,nc), intent(out) :: F_nn
+    !
+    ! The hard-sphere diameter
+    call calc_dhs_WCA(nc,eos%sigma,eos%eps_divk,T,eos%dhs)
+    ! Packing fraction
+    call calcZetaX_vdW_no_segments(nc,T,V,n,eos%dhs,eos%eta_hs)
+    ! Soft repulsion term
+    call calc_cavity_integral_LJ_Fres(nc,eos%sigma,eos%eps_divk,eos%dhs,eos%eta_hs,T,V,n,&
+         F,F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn,disable_n_multiplication=.true.)
+  end subroutine calc_wca_soft_repulsion
+
 end module lj_splined
 
 subroutine testing_uf()
@@ -3377,14 +3454,14 @@ subroutine test_uv_LJs()
 
   call allocate_saftvrmie_dhs(1,dhs)
   !call allocate_saftvrmie_zeta(nc,eta_hs)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_b2(dhs,sigma,eps_divk,T,b,b_T,b_TT)
   T0 = T
   T = T0 + dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_b2(dhs,sigma,eps_divk,T,b2,b2_T,b2_TT)
   T = T0 - dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_b2(dhs,sigma,eps_divk,T,b1,b1_T,b1_TT)
 
   print *,b
@@ -3411,13 +3488,13 @@ subroutine test_uv_LJs()
   T = T0
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b,b_r,b_T,b_rr,b_TT,b_rT)
   T = T0 + dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
   T = T0 - dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b
   print *,b_T,(b2-b1)/(2*dT)
@@ -3425,7 +3502,7 @@ subroutine test_uv_LJs()
   print *,b_rT,(b2_r-b1_r)/(2*dT)
   !
   T = T0
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho+eps,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
   call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho-eps,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b_r,(b2-b1)/(2*eps)
@@ -3436,20 +3513,20 @@ subroutine test_uv_LJs()
   T = T0
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_u(sigma,eps_divk,T,dhs,rho,a1,a1_r,a1_T,a1_rr,a1_TT,a1_rT)
   T = T0 + dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_u(sigma,eps_divk,T,dhs,rho,a12,a12_r,a12_T,a12_rr,a12_TT,a12_rT)
   T = T0 - dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_u(sigma,eps_divk,T,dhs,rho,a11,a11_r,a11_T,a11_rr,a11_TT,a11_rT)
   print *,a1
   print *,a1_T,(a12-a11)/(2*dT)
   print *,a1_TT,(a12_T-a11_T)/(2*dT)
   print *,a1_rT,(a12_r-a11_r)/(2*dT)
   T = T0
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call uv_a1_u(sigma,eps_divk,T,dhs,rho+eps,a12,a12_r,a12_T,a12_rr,a12_TT,a12_rT)
   call uv_a1_u(sigma,eps_divk,T,dhs,rho-eps,a11,a11_r,a11_T,a11_rr,a11_TT,a11_rT)
   print *,a1_r,(a12-a11)/(2*eps)
@@ -3460,15 +3537,15 @@ subroutine test_uv_LJs()
   T = T0
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a1,a1_r,a1_t,a1_rr,a1_tt,a1_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   T = T0 + dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   T = T0 - dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   print *,a1
@@ -3476,7 +3553,7 @@ subroutine test_uv_LJs()
   print *,a1_TT,(a12_T-a11_T)/(2*dT)
   print *,a1_rT,(a12_r-a11_r)/(2*dT)
   T = T0
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho+eps,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
   call calc_uv_WCA(sigma,eps_divk,rho-eps,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
@@ -3489,13 +3566,13 @@ subroutine test_uv_LJs()
   T = T0
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a,a_t,a_v,a_n,a_tt,a_vv,a_Vt,a_nT,a_nV,a_nn)
   T = T0 + dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
   T = T0 - dT
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)
 
   print *,"LJs",a
@@ -3506,7 +3583,7 @@ subroutine test_uv_LJs()
 
   print *,"V"
   T = T0
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   dV = V*eps
   call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V+dv,n,dhs,a2,a2_t,a2_v,a2_n,a2_tt,a2_vv,a2_Vt,a2_nT,a2_nV,a2_nn)
   call calc_uv_WCA_TVN(eos,1,sigma,eps_divk,T,V-dv,n,dhs,a1,a1_t,a1_v,a1_n,a1_tt,a1_vv,a1_Vt,a1_nT,a1_nV,a1_nn)

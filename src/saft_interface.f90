@@ -48,6 +48,7 @@ module saft_interface
   public :: pets_get_pure_params, pets_set_pure_params
   public :: potential, de_boer_parameter
   public :: adjust_mass_to_specified_de_boer_parameter
+  public :: calc_soft_repulsion
 
 contains
 
@@ -559,12 +560,10 @@ contains
   !>
   subroutine calc_saft_dispersion(T,V,n,a,a_T,&
        a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
-    use cubic, only: calcCbFder_res_SI
-    use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: alpha_disp_PC_TVn, sPCSAFT_eos
-    use pets, only: F_PeTS_TVn, PETS_eos
     use saftvrmie_interface, only: calc_saftvrmie_dispersion
     use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_wca_eos,ljs_bh_eos,calc_ljs_dispersion
     ! Input.
     real, intent(in) :: T,V,n(nce)
     ! Output.
@@ -578,20 +577,51 @@ contains
     class is ( sPCSAFT_eos )
       call alpha_disp_PC_TVn(p_eos,T,V,n,a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
            alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
-    class is (saftvrmie_eos)
+    class is ( ljs_wca_eos )
+      call calc_ljs_dispersion(eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_v,F_n=a_n,F_TT=a_TT,&
+           F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+    class is ( ljs_bh_eos )
+      call calc_ljs_dispersion(eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_v,F_n=a_n,F_TT=a_TT,&
+           F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+    class is ( saftvrmie_eos )
       call calc_saftvrmie_dispersion(p_eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_V,F_n=a_n,F_TT=a_TT,&
            F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
     class default
       call stoperror("calc_saft_dispersion: Wrong eos...")
     end select
-
   end subroutine calc_saft_dispersion
+
+  !> Calculates the reduced soft repulsion contribution to the
+  !> Helmholtz energy, together with its derivatives.
+  !>
+  subroutine calc_soft_repulsion(T,V,n,a,a_T,&
+       a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
+    use lj_splined, only: ljs_wca_eos, calc_wca_soft_repulsion
+    ! Input.
+    real, intent(in) :: T,V,n(nce)
+    ! Output.
+    real, optional, intent(out) :: a,a_T,a_V,a_n(nce)
+    real, optional, intent(out) :: a_TT,a_TV,a_Tn(nce),a_VV,a_Vn(nce),a_nn(nce,nce)
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is ( ljs_wca_eos )
+      call calc_wca_soft_repulsion(p_eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_v,F_n=a_n,F_TT=a_TT,&
+           F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+    class default
+      call stoperror("calc_soft_repulsion: Wrong eos...")
+    end select
+  end subroutine calc_soft_repulsion
 
   !> Calculates Hard-sphere diameter
   subroutine calc_hard_sphere_diameter(T,d,d_T)
     use pc_saft_nonassoc, only: calc_d, sPCSAFT_eos
     use saftvrmie_interface, only: update_saftvrmie_hs_diameter
     use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_wca_eos
+    use hardsphere_wca, only: calc_dhs_WCA
     ! Input.
     real, intent(in) :: T!,V,n(nce)
     ! Output.
@@ -610,6 +640,12 @@ contains
       do i=1,nce
         d(i) = p_eos%saftvrmie_var%dhs%d(i,i)
         d_T(i) = p_eos%saftvrmie_var%dhs%d_T(i,i)
+      enddo
+    class is (ljs_wca_eos)
+      call calc_dhs_WCA(1,p_eos%sigma,p_eos%eps_divk,T,p_eos%dhs)
+      do i=1,nce
+        d(i) = p_eos%dhs%d(i,i)
+        d_T(i) = p_eos%dhs%d_T(i,i)
       enddo
     class default
       call stoperror("calc_hard_sphere_diameter: Wrong eos...")

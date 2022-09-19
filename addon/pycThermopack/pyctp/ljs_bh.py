@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -10,10 +8,11 @@ from sys import platform, exit
 from os import path
 # Import thermo
 from . import thermo
+from .saft import saft
 
 c_len_type = thermo.c_len_type
 
-class ljs_bh(thermo.thermopack):
+class ljs_bh(saft):
     """
     Interface to LJS-BH
     """
@@ -22,7 +21,7 @@ class ljs_bh(thermo.thermopack):
         Initialize cubic specific function pointers
         """
         # Load dll/so
-        super(ljs_bh, self).__init__()
+        saft.__init__(self)
 
         # Options methods
         self.s_ljs_bh_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_model_control"))
@@ -68,6 +67,12 @@ class ljs_bh(thermo.thermopack):
                                       ref_string_len)
 
         self.nc = 1
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.m[0] = 1.0
+        self.sigma[0], self.eps_div_kb[0] = self.get_sigma_eps()
 
     def get_sigma_eps(self):
         """Get particle size and well depth

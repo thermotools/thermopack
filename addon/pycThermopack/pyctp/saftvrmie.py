@@ -8,11 +8,12 @@ from sys import platform, exit
 from os import path
 # Import thermo
 from . import thermo, saft
+from .saft import saft
 
 c_len_type = thermo.c_len_type
 
 
-class saftvrmie(saft.saft):
+class saftvrmie(saft):
     """
     Interface to SAFT-VR Mie
     """
@@ -22,7 +23,7 @@ class saftvrmie(saft.saft):
         Initialize cubic specific function pointers
         """
         # Load dll/so
-        saft.saft.__init__(self)
+        saft.__init__(self)
 
         # Options methods
         self.s_enable_hs = getattr(self.tp, self.get_export_name(
@@ -423,6 +424,6 @@ class saftvrmie(saft.saft):
             c (int): Component index (FORTRAN)
 
         """
-        saft.saft.print_saft_parameters(self, c)
+        saft.print_saft_parameters(self, c)
         print(f"lambda_a: {self.lambda_a[c-1]}")
         print(f"lambda_r: {self.lambda_r[c-1]}")
