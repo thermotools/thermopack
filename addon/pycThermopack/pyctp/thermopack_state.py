@@ -341,6 +341,34 @@ class phase_diagram(object):
         self.vle_states = vle_states
 
     @staticmethod
+    def pure_saturation_curve(eos, T, n):
+        """Map pure fluid saturation curve
+
+        Args:
+            eos (thermo.thermo): Equation of state object
+            T (float): Temperature to start mapping curve (K)
+            n (int): Number of equidistant temperature points
+        Returns:
+            phase_diagram: Phase diagram
+        """
+        assert eos.nc == 1
+        z = np.ones(1)
+        t_vals, p_vals, vl_vals, vg_vals = eos.get_pure_fluid_saturation_curve(initial_pressure=None,
+                                                                               initial_temperature=T,
+                                                                               z=None,
+                                                                               max_delta_press=0.2e5,
+                                                                               nmax=n,
+                                                                               log_linear_grid=False)
+        vle_states = []
+        for i in range(len(t_vals)):
+            vapor = state(eos=eos, T=t_vals[i], V=vg_vals[i], n=z, p=p_vals[i], n_tot=1.0,
+                          init_specific=True)
+            liquid = state(eos=eos, T=t_vals[i], V=vl_vals[i], n=z, p=p_vals[i], n_tot=1.0,
+                           init_specific=True)
+            vle_states.append(equilibrium(vapor, liquid))
+        return phase_diagram(vle_states)
+
+    @staticmethod
     def binary_isotherm_vle(eos, T, maximum_pressure=1.5e7):
         """Construct phase_diagram from binary vle isotherm
 
@@ -378,3 +406,11 @@ class phase_diagram(object):
     @property
     def vapour(self):
         return phase_state_list([vle.vapor for vle in self.vle_states])
+
+    @property
+    def temperatures(self):
+        return phase_state_list([vle.vapor for vle in self.vle_states]).temperatures
+
+    @property
+    def pressures(self):
+        return phase_state_list([vle.vapor for vle in self.vle_states]).pressures
