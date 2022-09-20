@@ -113,6 +113,7 @@ append_export("thermopack_set_volume_shift_parameters")
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")
 append_export("global_binary_plot", "binaryplot")
+append_export("threephaseline", "binaryplot")
 
 append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")

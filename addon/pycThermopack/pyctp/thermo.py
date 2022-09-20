@@ -168,6 +168,8 @@ class thermopack(object):
             self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
         self.s_get_bp_term = getattr(
             self.tp, self.get_export_name("binaryplot", "get_bp_term"))
+        self.s_three_phase_line = getattr(
+            self.tp, self.get_export_name("binaryplot", "threephaseline"))
         self.s_solid_envelope_plot = getattr(
             self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
         self.s_isotherm = getattr(
@@ -2943,6 +2945,68 @@ class thermopack(object):
                            message_len)
         message = message_c.value.decode('ascii')
         return message
+
+    def binary_triple_point_pressure(self,
+                                     temp,
+                                     maximum_pressure=1.5e7,
+                                     minimum_pressure=1.0e4):
+        """Calculate triple point for binary mixture at specified temperature
+
+        Args:
+            temp (float): Temperature (K)
+            maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e4.
+
+        Returns:
+            has_triple_point (boolean): Does the mixture have a triple point?
+            x (np.ndarray): Liquid 1 composition
+            y (np.ndarray): Gas composition
+            w (np.ndarray): Liquid 2 composition
+            P (float): Pressure (Pa)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        min_temp_c = c_double(0.0)
+        ispec_c = c_int(1) # Specify temperature
+        has_triple_point_c = c_int(0)
+        hasLLE_c = c_int(0)
+        press_c = c_double(0.0)
+        max_press_c = c_double(maximum_pressure)
+        min_press_c = c_double(minimum_pressure)
+        x_c = (c_double * self.nc)(0.0)
+        y_c = (c_double * self.nc)(0.0)
+        w_c = (c_double * self.nc)(0.0)
+
+        self.s_three_phase_line.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int),
+                                            POINTER(c_int),
+                                            POINTER(c_int),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double)]
+
+        self.s_three_phase_line.restype = None
+
+        self.s_three_phase_line(byref(temp_c),
+                                byref(press_c),
+                                x_c,
+                                y_c,
+                                w_c,
+                                byref(has_triple_point_c),
+                                byref(hasLLE_c),
+                                byref(ispec_c),
+                                byref(min_temp_c),
+                                byref(max_press_c),
+                                byref(min_press_c))
+
+        has_triple_point = (has_triple_point_c.value != 0)
+
+        return has_triple_point, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value
+
 
     def global_binary_plot(self,
                            maximum_pressure=1.5e7,
