@@ -45,7 +45,7 @@ class saftvrqmie(saftvrmie):
     # Init
     #################################
 
-    def init(self, comps, feynman_hibbs_order=1, parameter_reference="Default"):
+    def init(self, comps, feynman_hibbs_order=1, additive_hard_sphere_reference=False, parameter_reference="Default"):
         """Initialize SAFT-VRQ Mie model in thermopack
 
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
@@ -56,16 +56,19 @@ class saftvrqmie(saftvrmie):
         Args:
             comps (str): Comma separated list of component names
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
+            additive_hard_sphere_reference (boolean): Use additive hard-sphere reference? Defaults to false.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         fh_c = c_int(feynman_hibbs_order)
+        additive_hs_ref_c = c_int(1 if additive_hard_sphere_reference else 0)
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
         self.s_eoslibinit_init_quantum_saftvrmie.argtypes = [c_char_p,
+                                                             POINTER(c_int),
                                                              POINTER(c_int),
                                                              c_char_p,
                                                              c_len_type,
@@ -75,6 +78,7 @@ class saftvrqmie(saftvrmie):
 
         self.s_eoslibinit_init_quantum_saftvrmie(comp_string_c,
                                                  byref(fh_c),
+                                                 byref(additive_hs_ref_c),
                                                  ref_string_c,
                                                  comp_string_len,
                                                  ref_string_len)

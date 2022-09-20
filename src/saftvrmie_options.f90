@@ -34,6 +34,7 @@ module saftvrmie_options
   integer, parameter :: LAFITTE=1, QSAFT_FH1=2, QSAFT_FH2=3
   integer, parameter :: LAFITTE_HS_REF=1, SINGLE_COMP_HS_REF=2
   integer, parameter :: ADDITIVE_HS_REF=3, NON_ADD_HS_REF=4
+  integer, parameter :: ADDITIVE_EXACT_HS_REF=5
 
   type saftvrmie_opt
     ! Quantum correction parameters
@@ -163,6 +164,11 @@ contains
       svrm_o%pure_hs_EoS = PURE_HS_CS
       svrm_o%exact_binary_dhs = .true.
       svrm_o%enable_hs_extra = .false.
+    case(ADDITIVE_EXACT_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .true.
     case default
       call stoperror("Unknown HS model options for SAFT-VR Mie")
     end select
