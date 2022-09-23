@@ -60,8 +60,15 @@ class state(object):
             self.rho = None
         self.p = p
         self.h = h
+        self.hE = None
         self.s = None
         self.sE = None
+        self.a = None
+        self.aE = None
+        self.u = None
+        self.uE = None
+        self.mu = None
+        self.muE = None
         self.ph = ph
 
     def __repr__(self):
@@ -179,6 +186,19 @@ class state(object):
         _ = self.specific_enthalpy()
         return self.h*np.sum(self.n)
 
+    def specific_excess_enthalpy(self):
+        if self.hE is not None:
+            hE = self.hE
+        elif self.v is not None:
+            _ = self.volume()
+            hE, = self.eos.enthalpy_tv(self.T, self.v, self.x, property_flag="R")
+            self.hE = hE
+        return hE
+
+    def excess_enthalpy(self):
+        _ = self.specific_excess_enthalpy()
+        return self.hE*np.sum(self.n)
+
     def specific_entropy(self):
         if self.s is not None:
             s = self.s
@@ -204,6 +224,76 @@ class state(object):
     def excess_entropy(self):
         _ = self.specific_excess_entropy()
         return self.sE*np.sum(self.n)
+
+    def specific_free_energy(self):
+        if self.a is not None:
+            a = self.a
+        elif self.v is not None:
+            _ = self.volume()
+            a, = self.eos.helmholtz_tv(self.T, self.v, self.x)
+            self.a = a
+        return a
+
+    def free_energy(self):
+        _ = self.specific_free_energy()
+        return self.a*np.sum(self.n)
+
+    def specific_excess_free_energy(self):
+        if self.aE is not None:
+            aE = self.aE
+        elif self.v is not None:
+            _ = self.volume()
+            aE, = self.eos.helmholtz_tv(self.T, self.v, self.x, property_flag="R")
+            self.aE = aE
+        return aE
+
+    def excess_free_energy(self):
+        _ = self.specific_excess_free_energy()
+        return self.aE*np.sum(self.n)
+
+    def specific_energy(self):
+        if self.u is not None:
+            u = self.u
+        elif self.v is not None:
+            _ = self.volume()
+            u, = self.eos.internal_energy_tv(self.T, self.v, self.x)
+            self.u = u
+        return u
+
+    def energy(self):
+        _ = self.specific_energy()
+        return self.u*np.sum(self.n)
+
+    def specific_excess_energy(self):
+        if self.uE is not None:
+            uE = self.uE
+        elif self.v is not None:
+            _ = self.volume()
+            uE, = self.eos.internal_energy_tv(self.T, self.v, self.x, property_flag="R")
+            self.uE = uE
+        return uE
+
+    def excess_energy(self):
+        _ = self.specific_excess_energy()
+        return self.uE*np.sum(self.n)
+
+    def chemical_potential(self):
+        if self.mu is not None:
+            mu = self.mu
+        elif self.v is not None:
+            _ = self.volume()
+            mu, = self.eos.internal_energychemical_potential_tv(self.T, self.v, self.x)
+            self.mu = mu
+        return mu
+
+    def excess_chemical_potential(self):
+        if self.muE is not None:
+            muE = self.muE
+        elif self.v is not None:
+            _ = self.volume()
+            muE, = self.eos.chemical_potential_tv(self.T, self.v, self.x, property_flag="R")
+            self.muE = muE
+        return muE
 
 class equilibrium(object):
     """
