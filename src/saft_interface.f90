@@ -564,6 +564,7 @@ contains
     use saftvrmie_interface, only: calc_saftvrmie_dispersion
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_wca_eos,ljs_bh_eos,calc_ljs_dispersion
+    use pets, only: PETS_eos
     ! Input.
     real, intent(in) :: T,V,n(nce)
     ! Output.
@@ -586,6 +587,9 @@ contains
     class is ( saftvrmie_eos )
       call calc_saftvrmie_dispersion(p_eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_V,F_n=a_n,F_TT=a_TT,&
            F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+    class is ( PETS_eos )
+      call p_eos%alpha_disp_TVn(V,T,n,alp=a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
+           alp_VV=a_VV,alp_VT=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
     class default
       call stoperror("calc_saft_dispersion: Wrong eos...")
     end select
@@ -622,6 +626,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_wca_eos
     use hardsphere_wca, only: calc_dhs_WCA
+    use pets, only: PETS_eos
     ! Input.
     real, intent(in) :: T!,V,n(nce)
     ! Output.
@@ -647,6 +652,8 @@ contains
         d(i) = p_eos%dhs%d(i,i)
         d_T(i) = p_eos%dhs%d_T(i,i)
       enddo
+    class is (PETS_eos)
+      call p_eos%calc_d_pets(T,d=d,d_T=d_T)
     class default
       call stoperror("calc_hard_sphere_diameter: Wrong eos...")
     end select
@@ -761,6 +768,7 @@ contains
     use saftvrmie_hardsphere, only: mie_potential_quantumcorrected_wrapper
     use thermopack_var, only: base_eos_param, thermo_model, nce
     use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pets, only: PETS_eos
     ! Input
     integer, intent(in) :: i, j !< Component number
     real, intent(in) :: T !< Temperature
@@ -788,6 +796,9 @@ contains
       pot = 4.0 * p_eos%eps_depth_divk(i,j) &
            * ((p_eos%sigma(i,j) / r)**12 - (p_eos%sigma(i,j) / r)**6)
       eps_divk = p_eos%eps_depth_divk(i,j)
+    class is (PETS_eos)
+      call p_eos%calc_potential_pets(n,r,pot)
+      eps_divk = p_eos%epsdivk_pets
     class default
       print *,"Need to implement potential function for specified model"
       stop
