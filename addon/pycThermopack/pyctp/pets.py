@@ -9,11 +9,10 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import c_len_type
+from .saft import saft
 
-c_len_type = thermo.c_len_type
-
-class pets(thermo.thermopack):
+class pets(saft):
     """
     Interface to PETS
     """
@@ -22,10 +21,13 @@ class pets(thermo.thermopack):
         Initialize pets specific function pointers
         """
         # Load dll/so
-        super(pets, self).__init__()
+        saft.__init__(self)
 
         # Init methods
         self.eoslibinit_init_pets = getattr(self.tp, self.get_export_name("eoslibinit", "init_pets"))
+
+        self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pets_get_pure_params"))
+        self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pets_get_pure_params"))
 
 
     #################################
@@ -53,3 +55,51 @@ class pets(thermo.thermopack):
                                   ref_string_len)
 
         self.nc = 1
+
+        # Map pure fluid parameters
+        self.m = np.ones(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.sigma[0], self.eps_div_kb[0] = self.get_pure_params()
+
+    def set_pure_params(self, sigma, eps_div_kb):
+        """Set pure fluid PeTS parameters
+
+        Args:
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+        """
+        self.sigma[c-1] = sigma
+        self.eps_div_kb[c-1] = eps_div_kb
+
+        self.activate()
+        c_c = c_int(1)
+        param_c = (c_double * 2)(sigma, eps_div_kb)
+
+        self.s_set_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_set_pure_params.restype = None
+
+        self.s_set_pure_params(byref(c_c),
+                               param_c)
+
+    def get_pure_params(self):
+        """Get pure fluid PeTS parameters
+
+        Returns:
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+        """
+        self.activate()
+        c_c = c_int(1)
+        param_c = (c_double * 2)(0.0)
+        self.s_get_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_get_pure_params.restype = None
+
+        self.s_get_pure_params(byref(c_c),
+                               param_c)
+        sigma, eps_div_kb = param_c
+        return sigma, eps_div_kb

@@ -225,6 +225,8 @@ append_export("potential", "saft_interface")
 append_export("adjust_mass_to_specified_de_boer_parameter", "saft_interface")
 append_export("de_boer_parameter", "saft_interface")
 append_export("calc_soft_repulsion", "saft_interface")
+append_export("pets_get_pure_params", "saft_interface")
+append_export("pets_set_pure_params", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")

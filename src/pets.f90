@@ -169,7 +169,7 @@ contains
   end subroutine alpha_PETS
 
   !> The reduced, molar Helmholtz energy contribution from dispersion.
-  subroutine alpha_disp_Tvn(eos,V,T,n,alp,alp_V,alp_T,alp_n, &
+  subroutine alpha_disp_TVn(eos,V,T,n,alp,alp_V,alp_T,alp_n, &
        alp_VV,alp_VT,alp_Vn,alp_TT,alp_Tn,alp_nn)
     class (PETS_eos), intent(in) :: eos
     real, intent(in) :: V, T, n(nce)  !< [mol/m^3], [K], [mol]
@@ -180,23 +180,47 @@ contains
     real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
     ! Locals
     real :: rho
-    rho = sum(n)/V
+    real, pointer :: alp_V_p, alp_VV_p, alp_Vn_p(:)
+    real, target :: alp_V_l, alp_VV_l, alp_Vn_l(nce)
 
-    call eos%alpha_disp(rho,T,n,alp=alp,alp_rho=alp_V,alp_T=alp_T,alp_n=alp_n, &
-         alp_rhorho=alp_VV,alp_rhoT=alp_VT,alp_rhon=alp_Vn,alp_TT=alp_TT,&
+    if ( present(alp_v) .or. &
+         present(alp_vv) .or. &
+         present(alp_n) .or. &
+         present(alp_Vn)) then
+      alp_V_p => alp_V_l
+    else
+      alp_V_p => NULL()
+    endif
+    if ( present(alp_vv) .or. &
+         present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_VV_p => alp_VV_l
+    else
+      alp_VV_p => NULL()
+    endif
+    if ( present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_Vn_p => alp_Vn_l
+    else
+      alp_Vn_p => NULL()
+    endif
+
+    rho = sum(n)/V
+    call eos%alpha_disp(rho,T,n,alp=alp,alp_rho=alp_V_p,alp_T=alp_T,alp_n=alp_n, &
+         alp_rhorho=alp_VV_l,alp_rhoT=alp_VT,alp_rhon=alp_Vn_l,alp_TT=alp_TT,&
          alp_Tn=alp_Tn,alp_nn=alp_nn)
 
     if (present(alp_nn)) then
-      alp_nn(1,1) = alp_nn(1,1) + alp_VV/V**2 + alp_Vn(1)/V
+      alp_nn(1,1) = alp_nn(1,1) + alp_VV_l/V**2 + alp_Vn_l(1)/V
     end if
     if (present(alp_Tn)) alp_Tn = alp_VT/V + alp_Tn
     if (present(alp_VT)) alp_VT = -(rho/V)*alp_VT
-    if (present(alp_VV)) alp_VV = 2*rho/V**2*alp_V + (rho/V)**2*alp_VV
-    if (present(alp_Vn)) alp_Vn = -alp_V/V**2-rho*alp_Vn/V
-    if (present(alp_n)) alp_n = alp_V/V + alp_n
-    if (present(alp_V)) alp_V = -(rho/V)*alp_V
+    if (present(alp_Vn)) alp_Vn = -alp_V_l/V**2-rho*alp_Vn_l/V-(rho/V**2)*alp_VV_l
+    if (present(alp_VV)) alp_VV = 2*rho/V**2*alp_V_l + (rho/V)**2*alp_VV_l
+    if (present(alp_n)) alp_n = alp_V_l/V + alp_n
+    if (present(alp_V)) alp_V = -(rho/V)*alp_V_l
 
-  end subroutine alpha_disp_Tvn
+  end subroutine alpha_disp_TVn
 
   !> The reduced, molar Helmholtz energy contribution from dispersion.
   subroutine alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
