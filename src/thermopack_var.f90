@@ -319,11 +319,13 @@ contains
     ! Locals
     integer :: i, istat
     do i=1,size(model%eos)
-      if (associated(model%eos(i)%p_eos)) then
-        call model%eos(i)%p_eos%dealloc()
-        deallocate(model%eos(i)%p_eos, stat=istat)
-        if (istat /= 0) print *,"Error deallocating eos"
-        model%eos(i)%p_eos => NULL()
+       if (allocated(model%eos)) then
+          if (associated(model%eos(i)%p_eos)) then
+             call model%eos(i)%p_eos%dealloc()
+             deallocate(model%eos(i)%p_eos, stat=istat)
+             if (istat /= 0) print *,"Error deallocating eos"
+             model%eos(i)%p_eos => NULL()
+          end if
       endif
       if (allocated(model%cubic_eos_alternative)) then
         if (associated(model%cubic_eos_alternative(i)%p_eos)) then
