@@ -35,20 +35,7 @@ module saft_interface
   use association_var, only: association
   implicit none
   save
-
-  public :: saft_type_eos_init
-  public :: saft_master_volume_solver
-  public :: calcSaftFder_res, saft_total_pressure
-  public :: saft_zfac, saft_lnphi, saft_ResidEntropy, saft_ResidEnthalpy, saft_ResidGibbs
-  public :: saft_setAssocParams, cpa_setAssocParams
-  public :: pcsaft_set_nonassoc_params, cpa_set_cubic_params
-  public :: cpa_get_kij, cpa_set_kij, cpa_get_pure_params, cpa_set_pure_params
-  public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
-  public :: calcSaftFder_res_nonassoc
-  public :: pets_get_pure_params, pets_set_pure_params
-  public :: potential, de_boer_parameter
-  public :: adjust_mass_to_specified_de_boer_parameter
-  public :: calc_soft_repulsion
+  public
 
 contains
 
@@ -636,7 +623,7 @@ contains
     class(base_eos_param), pointer :: eos
     integer :: i
     eos => get_active_eos()
-    ! Calculate the non-association contribution.
+    ! Calculate the hard-sphere diameter
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
       call calc_d(p_eos,T,d,d_T)
@@ -659,6 +646,29 @@ contains
     end select
 
   end subroutine calc_hard_sphere_diameter
+
+  !> Enable/disable truncation corrections
+  subroutine truncation_corrections(enable_truncation_correction, &
+       enable_shift_correction, reduced_radius_cut)
+    use saftvrmie_containers, only: saftvrmie_eos
+    ! Input.
+    logical, intent(in) :: enable_truncation_correction
+    logical, intent(in) :: enable_shift_correction
+    real, intent(in) :: reduced_radius_cut
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    ! Calculate .
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      call p_eos%svrm_opt%set_r_cut(reduced_radius_cut)
+      call p_eos%svrm_opt%truncation_correction_model_control(enable_truncation_correction, &
+           enable_shift_correction)
+    class default
+      call stoperror("truncation_corrections: Wrong eos...")
+    end select
+
+  end subroutine truncation_corrections
 
   !> Return de Broglie wavelength for component i
   !!
@@ -1580,8 +1590,6 @@ contains
     call Q_derivatives_knowing_X(eos,nc,T,V,n,X_k,Q_VV=Q_VV,Q_XV=Q_XV,X_calculated=.true.)
     P_V = P_V - Rgas*T*(Q_VV + dot_product(Q_XV,X_V))
   end subroutine compute_dXdV_and_dPdV
-
-
 
 
   !> Routine useful when fitting binary interaction parameters.

@@ -3624,10 +3624,10 @@ contains
     endif
   end subroutine calcAlpha
 
-  !> Calculate truncation correction for quantum-corrected Mie fluid
-  !!
+  !> Calculate truncation (and shifted) correction for quantum-corrected Mie fluid
+  !! dAc = A - Ac
   !! \author Morten Hammer, November 2018
-  subroutine calc_delta_Ac(nc,T,V,n,r_c,saftvrmie_vc,&
+  subroutine calc_delta_Ac(nc,T,V,n,r_c,saftvrmie_vc,divide_by_n,&
        a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn)
     ! Input
     integer, intent(in) :: nc !< Number of components
@@ -3636,6 +3636,7 @@ contains
     real, intent(in) :: n(nc) !< Mol numbers [mol]
     real, intent(in) :: r_c !< Reduced cut off distance (actual cut off: r_c*sigma)  [-]
     type(saftvrmie_var_container), intent(in) :: saftvrmie_vc
+    logical, intent(in) :: divide_by_n
     ! Output
     real, intent(out) :: a
     real, optional, intent(out) ::  a_T,a_V,a_TT,a_VV,a_TV
@@ -3643,7 +3644,7 @@ contains
     real, optional, dimension(nc,nc), intent(out) :: a_nn
     ! Locals
     integer :: i !<
-    real :: kF, L, Lq1, Lq2, inv_rc, inv_sigma, lamr, lama, a_T_l
+    real :: kc, L, Lq1, Lq2, inv_rc, inv_sigma, lamr, lama
     real :: Q1a, Q1r, Q2a, Q2r
     real :: D, D_T, D_TT          !< Quantum par. and derivatives
     real :: D2, D2_T, D2_TT       !< Quantum par. and derivatives
@@ -3653,7 +3654,7 @@ contains
     inv_rc = 1.0/r_c
     i = 1
     inv_sigma = 1.0/saftvrmie_param%sigma_ij(i,i)
-    kF = 2.0*pi*N_AVOGADRO*saftvrmie_param%Cij(i,i)*&
+    kc = 2.0*pi*N_AVOGADRO*saftvrmie_param%Cij(i,i)*&
          saftvrmie_param%sigma_ij_cube(i,i)*saftvrmie_param%eps_divk_ij(i,i)
 
     lamr = saftvrmie_param%lambda_r_ij(i,i)
@@ -3710,9 +3711,13 @@ contains
        a_TT = 0.0
     endif
     ! Calculate correction
-    call calc_a_correction()
+    if (divide_by_n) then
+      call calc_a_correction_div_n()
+    else
+      call calc_a_correction()
+    endif
     if (svrm_opt%enable_shift_correction) then
-       kF = kF/3.0
+       kc = kc/3.0
        L = inv_rc**(lamr-3) - inv_rc**(lama-3)
        if (svrm_opt%quantum_correction > 0) then
           Q1a = saftvrmie_param%Quantum_const_1a_ij(i,i)
@@ -3722,13 +3727,17 @@ contains
        if (svrm_opt%quantum_correction > 1) then
           Lq2 = (Q2r*inv_rc**(lamr+1) &
                - Q2a*inv_rc**(lama+1))*inv_sigma**4
-       endif
-       call calc_a_correction()
+        endif
+        if (divide_by_n) then
+          call calc_a_correction_div_n()
+        else
+          call calc_a_correction()
+        endif
     endif
   contains
     subroutine calc_a_correction()
-      real :: a_local
-      a_local = kF*(n(i)**2/V)*(1/T)*(L+D*Lq1+D2*Lq2)
+      real :: a_local, a_T_l
+      a_local = kc*(n(i)**2/V)*(1/T)*(L+D*Lq1+D2*Lq2)
       a = a + a_local
       if (present(a_n)) then
          a_n = a_n + 2.0*a_local/n(i)
@@ -3746,7 +3755,7 @@ contains
          a_Vn = a_Vn - 2.0*a_local/(V*n(i))
       endif
       if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
-         a_T_l = -a_local/T + kF*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
+         a_T_l = -a_local/T + kc*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
          if (present(a_T)) then
             a_T = a_T + a_T_l
          endif
@@ -3758,10 +3767,43 @@ contains
          a_TV = a_TV - a_T_l/V
       endif
       if (present(a_TT)) then
-         a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kF*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
-              + kF*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
+         a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kc*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
+              + kc*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
       endif
     end subroutine calc_a_correction
+    subroutine calc_a_correction_div_n()
+      real :: a_local, a_T_l
+      a_local = kc*(1/V)*(1/T)*(L+D*Lq1+D2*Lq2)
+      a = a + a_local*n(i)
+      if (present(a_n)) then
+         a_n = a_n + a_local
+      endif
+      if (present(a_V)) then
+         a_V = a_V - a_local*n(i)/V
+      endif
+      if (present(a_VV)) then
+         a_VV = a_VV + 2.0*a_local*n(i)/V**2
+      endif
+      if (present(a_Vn)) then
+         a_Vn = a_Vn - a_local/V
+      endif
+      if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
+         a_T_l = -a_local*n(i)/T + kc*(n(i)/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
+         if (present(a_T)) then
+            a_T = a_T + a_T_l
+         endif
+      endif
+      if (present(a_Tn)) then
+         a_Tn = a_Tn + a_T_l/n(i)
+      endif
+      if (present(a_TV)) then
+         a_TV = a_TV - a_T_l/V
+      endif
+      if (present(a_TT)) then
+         a_TT = a_TT + 2.0*a_local*n(i)/T**2 - 2.0*kc*(n(i)/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
+              + kc*(n(i)/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
+      endif
+    end subroutine calc_a_correction_div_n
   end subroutine calc_delta_Ac
 
 end module saftvrmie_dispersion

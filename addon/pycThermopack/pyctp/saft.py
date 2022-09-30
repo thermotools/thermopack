@@ -43,6 +43,8 @@ class saft(thermopack):
                                           "adjust_mass_to_specified_de_boer_parameter"))
         self.s_calc_soft_repulsion = getattr(
             self.tp, self.get_export_name("saft_interface", "calc_soft_repulsion"))
+        self.s_truncation_corrections = getattr(
+            self.tp, self.get_export_name("saft_interface", "truncation_corrections"))
 
         self.m = None
         self.sigma = None
@@ -437,3 +439,27 @@ class saft(thermopack):
         self.s_de_boer_parameter(byref(c_c),
                                  byref(de_boer_c))
         return de_boer_c.value
+
+    def truncation_correction(self, enable_truncation_correction, enable_shift_correction, reduced_radius_cut=3.5):
+        """Enable/disable truncation corrections
+
+        Args:
+            enable_truncation_correction (bool): Enable long range truncation correction
+            enable_shift_correction (bool): Enable potential shift correction
+            reduced_radius_cut (float): Reduced length cut-off
+        """
+        self.activate()
+        enable_truncation_correction_c = c_int(1 if enable_truncation_correction else 0)
+        enable_shift_correction_c = c_int(1 if enable_shift_correction else 0)
+        rr_c = c_double(reduced_radius_cut)
+
+        self.s_truncation_corrections.argtypes = [POINTER(c_int),
+                                                  POINTER(c_int),
+                                                  POINTER(c_double)]
+
+        self.s_truncation_corrections.restype = None
+
+        self.s_truncation_corrections(byref(enable_truncation_correction_c),
+                                      byref(enable_shift_correction_c),
+                                      byref(rr_c))
+

@@ -760,4 +760,104 @@ contains
     scheme = no_assoc
   end subroutine getPetsPureParams
 
+  !> Calculate truncation and shift correction to LJ fluid
+  !! dAc = A - Ac
+  !! \author Morten Hammer, September 2022
+  subroutine calc_delta_Ac_LJ(nc,T,V,n,sigma,eps_div_kb,&
+       a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn)
+    ! Input
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    real, intent(in) :: sigma,eps_div_kb
+    ! Output
+    real, intent(out) :: a
+    real, optional, intent(out) ::  a_T,a_V,a_TT,a_VV,a_TV
+    real, optional, dimension(nc), intent(out) :: a_n,a_Tn,a_Vn
+    real, optional, dimension(nc,nc), intent(out) :: a_nn
+    ! Locals
+    real, parameter :: r_c = 2.5 !< Reduced cut off distance (actual cut off: r_c*sigma)  [-]
+    integer :: i !<
+    real :: kc, L, inv_rc, inv_sigma
+
+    if (nc /= 1) stop "calc_delta_Ac_LJ: Currently only for pure fluids"
+
+    inv_rc = 1.0/r_c
+    i = 1
+    inv_sigma = 1.0/sigma
+    kc = 2.0*pi*N_AVOGADRO*4.0*sigma**3*eps_div_kb
+    L = inv_rc**9/9 - inv_rc**3/3
+    ! Initialize
+    a = 0.0
+    if (present(a_n)) then
+       a_n = 0.0
+    endif
+    if (present(a_nn)) then
+       a_nn = 0.0
+    endif
+    if (present(a_V)) then
+       a_V = 0.0
+    endif
+    if (present(a_VV)) then
+       a_VV = 0.0
+    endif
+    if (present(a_Vn)) then
+       a_Vn = 0.0
+    endif
+    if (present(a_T)) then
+       a_T = 0.0
+    endif
+    if (present(a_Tn)) then
+       a_Tn = 0.0
+    endif
+    if (present(a_TV)) then
+       a_TV = 0.0
+    endif
+    if (present(a_TT)) then
+       a_TT = 0.0
+    endif
+    ! Calculate correction
+    call calc_a_correction()
+    kc = kc/3.0
+    L = inv_rc**9 - inv_rc**3
+    call calc_a_correction()
+  contains
+    subroutine calc_a_correction()
+      real :: a_local, a_T_l
+      a_local = kc*(n(i)**2/V)*(1/T)*L
+      a = a + a_local
+      if (present(a_n)) then
+         a_n = a_n + 2.0*a_local/n(i)
+      endif
+      if (present(a_nn)) then
+         a_nn = a_nn + 2.0*a_local/n(i)**2
+      endif
+      if (present(a_V)) then
+         a_V = a_V - a_local/V
+      endif
+      if (present(a_VV)) then
+         a_VV = a_VV + 2.0*a_local/V**2
+      endif
+      if (present(a_Vn)) then
+         a_Vn = a_Vn - 2.0*a_local/(V*n(i))
+      endif
+      if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
+         a_T_l = -a_local/T
+         if (present(a_T)) then
+            a_T = a_T + a_T_l
+         endif
+      endif
+      if (present(a_Tn)) then
+         a_Tn = a_Tn + 2.0*a_T_l/n(i)
+      endif
+      if (present(a_TV)) then
+         a_TV = a_TV - a_T_l/V
+      endif
+      if (present(a_TT)) then
+         a_TT = a_TT + 2.0*a_local/T**2
+      endif
+    end subroutine calc_a_correction
+  end subroutine calc_delta_Ac_LJ
+
 end module pets

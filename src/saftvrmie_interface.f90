@@ -398,7 +398,8 @@ contains
       Ftc_nn = 0.0
     else
       call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,eos%saftvrmie_var,&
-           Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
+           divide_by_n=.false.,&
+           a=Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
            a_VV=Ftc_VV,a_TV=Ftc_TV,a_Tn=Ftc_Tn,a_Vn=Ftc_Vn,&
            a_nn=Ftc_nn)
     endif
@@ -563,7 +564,7 @@ contains
   !! \author Morten Hammer, February 2022
   subroutine calc_saftvrmie_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_VV,F_TV,F_Tn,F_Vn,F_nn)
-    use saftvrmie_dispersion, only: calcA1, calcA2, calcA3
+    use saftvrmie_dispersion, only: calcA1, calcA2, calcA3, calc_delta_Ac
     ! Input
     class(saftvrmie_eos), intent(inout) :: eos
     integer, intent(in) :: nc !< Number of components
@@ -586,6 +587,9 @@ contains
     real :: F3,F3_T,F3_V,F3_TT,F3_VV,F3_TV
     real, dimension(nc) :: F3_n,F3_Tn,F3_Vn
     real, dimension(nc,nc) :: F3_nn
+    real :: Ftc,Ftc_T,Ftc_V,Ftc_TT,Ftc_VV,Ftc_TV
+    real, dimension(nc) :: Ftc_n,Ftc_Tn,Ftc_Vn
+    real, dimension(nc,nc) :: Ftc_nn
     integer :: k,l,difflevel
     real :: am, am_T, am_V, am_n(nc)
 
@@ -653,65 +657,87 @@ contains
       F3_nn = 0.0
     endif
 
+    if (.not. svrm_opt%enable_truncation_correction) then
+      Ftc = 0.0
+      Ftc_T = 0.0
+      Ftc_V = 0.0
+      Ftc_TT = 0.0
+      Ftc_VV = 0.0
+      Ftc_TV = 0.0
+      Ftc_n = 0.0
+      Ftc_Tn = 0.0
+      Ftc_Vn = 0.0
+      Ftc_nn = 0.0
+    else
+      call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,eos%saftvrmie_var,&
+           divide_by_n=.true.,&
+           a=Ftc,a_T=Ftc_T,a_V=Ftc_V,a_n=Ftc_n,a_TT=Ftc_TT,&
+           a_VV=Ftc_VV,a_TV=Ftc_TV,a_Tn=Ftc_Tn,a_Vn=Ftc_Vn,&
+           a_nn=Ftc_nn)
+    endif
+
     beta(1) = 1.0/T
     beta(2) = beta(1)*beta(1)
     beta(3) = beta(1)*beta(2)
     sumn = sum(n)
     xs = sum(n*saftvrmie_param%ms)/sumn
     am = beta(1)*F1 + beta(2)*F2 + beta(3)*F3
-    F = xs*am
+    F = xs*am - Ftc
 
     if (present(F_n) .or. present(F_Tn) .or. present(F_Vn) .or. present(F_nn)) then
       xs_n = (saftvrmie_param%ms - xs)/sumn
     endif
     if (present(F_T) .or. present(F_Tn)) then
-       am_T = beta(1)*F1_T + beta(2)*F2_T + beta(3)*F3_T &
-            -(beta(1)*F1 + 2.0*beta(2)*F2 + 3.0*beta(3)*F3)/T
+      am_T = beta(1)*F1_T + beta(2)*F2_T + beta(3)*F3_T &
+           -(beta(1)*F1 + 2.0*beta(2)*F2 + 3.0*beta(3)*F3)/T
     endif
     if (present(F_T)) then
-       F_T = xs*am_T
+      F_T = xs*am_T - Ftc_T
     endif
     if (present(F_V) .or. present(F_Vn)) then
-       am_V = beta(1)*F1_V + beta(2)*F2_V + beta(3)*F3_V
+      am_V = beta(1)*F1_V + beta(2)*F2_V + beta(3)*F3_V
     endif
     if (present(F_V)) then
-       F_V = xs*am_V
+      F_V = xs*am_V - Ftc_V
     endif
     if (present(F_TT)) then
-       F_TT = xs*(beta(1)*F1_TT + beta(2)*F2_TT + beta(3)*F3_TT) &
-            +xs*(2.0*beta(1)*F1 + 6.0*beta(2)*F2 + 12.0*beta(3)*F3)/T**2 &
-            -2.0*xs*(beta(1)*F1_T + 2.0*beta(2)*F2_T + 3.0*beta(3)*F3_T)/T
+      F_TT = xs*(beta(1)*F1_TT + beta(2)*F2_TT + beta(3)*F3_TT) &
+           +xs*(2.0*beta(1)*F1 + 6.0*beta(2)*F2 + 12.0*beta(3)*F3)/T**2 &
+           -2.0*xs*(beta(1)*F1_T + 2.0*beta(2)*F2_T + 3.0*beta(3)*F3_T)/T &
+           - Ftc_TT
     endif
     if (present(F_VV)) then
-       F_VV = xs*(beta(1)*F1_VV + beta(2)*F2_VV + beta(3)*F3_VV)
+      F_VV = xs*(beta(1)*F1_VV + beta(2)*F2_VV + beta(3)*F3_VV)  - Ftc_VV
     endif
     if (present(F_TV)) then
-       F_TV = xs*(beta(1)*F1_TV + beta(2)*F2_TV + beta(3)*F3_TV)  &
-            -xs*(beta(1)*F1_V + 2.0*beta(2)*F2_V + 3.0*beta(3)*F3_V)/T
+      F_TV = xs*(beta(1)*F1_TV + beta(2)*F2_TV + beta(3)*F3_TV)  &
+           -xs*(beta(1)*F1_V + 2.0*beta(2)*F2_V + 3.0*beta(3)*F3_V)/T &
+           - Ftc_TV
     endif
     if (present(F_Tn)) then
-       F_Tn = xs*(beta(1)*F1_Tn + beta(2)*F2_Tn + beta(3)*F3_Tn) &
-            -xs*(beta(1)*F1_n + 2.0*beta(1)**2*F2_n + 3.0*beta(3)*F3_n)/T &
-            + xs_n*am_T
+      F_Tn = xs*(beta(1)*F1_Tn + beta(2)*F2_Tn + beta(3)*F3_Tn) &
+           -xs*(beta(1)*F1_n + 2.0*beta(1)**2*F2_n + 3.0*beta(3)*F3_n)/T &
+           + xs_n*am_T &
+           - Ftc_Tn
     endif
     if (present(F_Vn)) then
-       F_Vn = xs*(beta(1)*F1_Vn + beta(2)*F2_Vn + beta(3)*F3_Vn) &
-            + xs_n*am_V
+      F_Vn = xs*(beta(1)*F1_Vn + beta(2)*F2_Vn + beta(3)*F3_Vn) &
+           + xs_n*am_V - Ftc_Vn
     endif
     if (present(F_n) .or. present(F_nn)) then
-       am_n = beta(1)*F1_n + beta(2)*F2_n + beta(3)*F3_n
+      am_n = beta(1)*F1_n + beta(2)*F2_n + beta(3)*F3_n
     endif
     if (present(F_n)) then
-       F_n = xs*am_n + xs_n*am
+      F_n = xs*am_n + xs_n*am - Ftc_n
     endif
     if (present(F_nn)) then
-       F_nn = xs*(beta(1)*F1_nn + beta(1)**2*F2_nn + beta(1)**3*F3_nn)
-       do k=1,nc
-         do l=1,nc
-           F_nn(k,l) = F_nn(k,l) + xs_n(k)*am_n(l) &
-                + xs_n(l)*am_n(k) + am*(-saftvrmie_param%ms(l) -saftvrmie_param%ms(k) + 2*xs)/sumn**2
-         enddo
-       enddo
+      F_nn = xs*(beta(1)*F1_nn + beta(1)**2*F2_nn + beta(1)**3*F3_nn) - Ftc_nn
+      do k=1,nc
+        do l=1,nc
+          F_nn(k,l) = F_nn(k,l) + xs_n(k)*am_n(l) &
+               + xs_n(l)*am_n(k) + am*(-saftvrmie_param%ms(l) -saftvrmie_param%ms(k) + 2*xs)/sumn**2
+        enddo
+      enddo
     endif
 
   end subroutine calc_saftvrmie_dispersion
@@ -2698,6 +2724,9 @@ subroutine test_fres(Ti,Vi,ni)
   ! svrm_opt%enable_A2 = .false.
   ! svrm_opt%enable_A3 = .false.
   ! svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .true.
+  svrm_opt%enable_shift_correction = .true.
+
   n = ni
   n0 = n
   V = Vi
@@ -4317,7 +4346,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
   real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(nc,nc) :: Fp_nn
-  logical :: call_init
+  logical :: call_init, divide_by_n
   type(thermo_model), pointer :: act_mod_ptr
   type(saftvrmie_var_container), pointer :: svrm_var
   act_mod_ptr => get_active_thermo_model()
@@ -4347,6 +4376,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
      T = 5.0
   endif
 
+  divide_by_n = .true.
   eps = 1.0e-8
 
   svrm_opt%r_cut = 2.0
@@ -4357,9 +4387,9 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
 
   svrm_var => get_saftvrmie_var()
   call preCalcSAFTVRMie(nc,T,V,n,2,svrm_var)
-  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,divide_by_n,&
        F,F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn)
-  call calc_delta_Ac(nc,T,V+V*eps,n,svrm_opt%r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V+V*eps,n,svrm_opt%r_cut,svrm_var,divide_by_n,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
 
   print *,"Testing the residual reduced Helmholtz energy"
@@ -4372,7 +4402,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   !stop
   print *,"n1"
   n(1) = n(1) + eps
-  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T,V,n,svrm_opt%r_cut,svrm_var,divide_by_n,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
   print *,F_n(1),(Fp - F)/eps
   print *,F_Tn(1),(Fp_T - F_T)/eps
@@ -4382,7 +4412,7 @@ subroutine test_delta_Ac(Ti,Vi,ni,doInit)
   print *,"T"
   n = n0
   call preCalcSAFTVRMie(nc,T+T*eps,V,n,2,svrm_var)
-  call calc_delta_Ac(nc,T+T*eps,V,n,svrm_opt%r_cut,svrm_var,&
+  call calc_delta_Ac(nc,T+T*eps,V,n,svrm_opt%r_cut,svrm_var,divide_by_n,&
        Fp,Fp_T,Fp_V,Fp_n,Fp_TT,Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
 
   print *,F_T,(Fp - F)/(T*eps)
@@ -4832,3 +4862,88 @@ subroutine test_mixKhs(T,V,n)
      !print *,"Khs_VTn ",svrm_var%Khs%zx_VTn(:,j,j),(s_vc%Khs%zx_TV(j,j)-svrm_var%Khs%zx_TV(j,j))/(eps*n(j))
   endif
 end subroutine test_mixKhs
+
+subroutine test_a_dispersion(Ti,Vi,ni)
+  use thermopack_constants
+  use saftvrmie_containers
+  use saftvrmie_hardsphere
+  use saftvrmie_interface
+  use saftvrmie_options
+  use thermopack_var, only: nc, get_active_thermo_model, thermo_model
+  implicit none
+  real, intent(in) :: Ti,Vi,ni(nc)
+  ! Locals
+  real :: n(nc),n0(nc),T,V,eps
+  real :: F,F_T,F_V,F_TT,F_VV,F_TV
+  real, dimension(nc) :: F_n,F_Tn,F_Vn
+  real, dimension(nc,nc) :: F_nn
+  real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
+  real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
+  real, dimension(nc,nc) :: Fp_nn
+  logical :: call_init
+  type(thermo_model), pointer :: act_mod_ptr
+  class(saftvrmie_eos), pointer :: eos
+  act_mod_ptr => get_active_thermo_model()
+  eos => get_saftvrmie_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+
+  ! svrm_opt%enable_HS = .false.
+  ! svrm_opt%enable_A1 = .false.
+  ! svrm_opt%enable_A2 = .false.
+  ! svrm_opt%enable_A3 = .false.
+  ! svrm_opt%enable_chain = .false.
+  svrm_opt%enable_truncation_correction = .true.
+  svrm_opt%enable_shift_correction = .true.
+  svrm_opt%r_cut = 2.5
+  n = ni
+  n0 = n
+  V = Vi
+  T = Ti
+
+  eps = 1.0e-8
+
+  call calc_saftvrmie_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+  call calc_saftvrmie_dispersion(eos,nc,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+
+  print *,"Testing the residual reduced Helmholtz energy"
+  print *,"V"
+  print *,F
+  print *,F_V,(Fp - F)/(V*eps)
+  print *,F_VV,(Fp_V - F_V)/(V*eps)
+  print *,F_TV,(Fp_T - F_T)/(V*eps)
+  print *,F_Vn,(Fp_n - F_n)/(V*eps)
+  !stop
+  print *,"n1"
+  n(1) = n(1) + eps
+  call calc_saftvrmie_dispersion(eos,nc,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+  print *,F_n(1),(Fp - F)/eps
+  print *,F_Tn(1),(Fp_T - F_T)/eps
+  print *,F_Vn(1),(Fp_V - F_V)/eps
+  print *,F_nn(1,:),(Fp_n - F_n)/eps
+  !stop
+  if (nc > 1) then
+     print *,"n2"
+     n = n0
+     n(2) = n(2) + eps
+     call calc_saftvrmie_dispersion(eos,nc,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+          Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+     print *,F_n(2),(Fp - F)/eps
+     print *,F_Tn(2),(Fp_T - F_T)/eps
+     print *,F_Vn(2),(Fp_V - F_V)/eps
+     print *,F_nn(2,:),(Fp_n - F_n)/eps
+  endif
+
+  print *,"T"
+  n = n0
+  call calc_saftvrmie_dispersion(eos,nc,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+
+  print *,F_T,(Fp - F)/(T*eps)
+  print *,F_TT,(Fp_T - F_T)/(T*eps)
+  print *,F_TV,(Fp_V - F_V)/(T*eps)
+  print *,F_Tn,(Fp_n - F_n)/(T*eps)
+
+  stop
+end subroutine test_a_dispersion

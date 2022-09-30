@@ -2335,8 +2335,8 @@ module compdatadb
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
       mw = 1.0000, &
-      Tc = 1.3200, &
-      Pc = 0.13, &
+      Tc = 39.366451, &
+      Pc = 2002758.38, &
       Zc = 0.310000, &
       acf = 0.317700, &
       Tb = 0.8000, &
