@@ -126,6 +126,8 @@ module lj_splined
   public :: calc_ljs_wca_ai_tr, calcFresLJs_WCA
   public :: ljs_uv_model_control, ljs_wca_model_control
   public :: ljs_wca_set_pure_params, ljs_wca_get_pure_params
+  public :: calc_ljs_dispersion, calc_wca_soft_repulsion
+  public :: calc_ljs_hard_sphere
 
   ! Testing
   public :: calc_uf_wca, calc_uf_wca_tvn, ljx_ux_eos
@@ -135,7 +137,6 @@ module lj_splined
   public :: get_bh_ljs_eos_pointer
   public :: uv_delta_b2_overall, calc_uv_wca, uv_a1_u
   public :: calc_uv_wca_tvn
-  public :: calc_ljs_dispersion, calc_wca_soft_repulsion
 
 contains
 
@@ -3037,7 +3038,7 @@ contains
   end function get_bh_ljs_eos_pointer
 
 
-  !> Calculate reduced dispersion contribution to Helmholts free energy
+  !> Calculate reduced molar dispersion contribution to Helmholts free energy
   !!
   !! \author Morten Hammer, September 2022
   subroutine calc_ljs_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
@@ -3086,6 +3087,82 @@ contains
     if (present(F_TV)) F_TV = F_TV/nsum
     F = F/nsum
   end subroutine calc_ljs_dispersion
+
+  !> Calculate reduced molar hard-sphere contribution to Helmholts free energy
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine calc_ljs_hard_sphere(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+    class(base_eos_param), pointer, intent(in) :: eos
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    ! Output
+    real, intent(out) :: F
+    real, optional, intent(out) :: F_T,F_V,F_TT,F_VV,F_TV
+    real, optional, dimension(nc), intent(out) :: F_n,F_Tn,F_Vn
+    real, optional, dimension(nc,nc), intent(out) :: F_nn
+    ! Locals
+    logical :: enable_hs, enable_cavity, enable_a1, enable_a2, enable_a3, enable_a4
+    real :: nsum
+    select type ( p_eos => eos )
+    class is (ljs_wca_eos)
+      ! Enable only hard-sphere term
+      enable_hs = p_eos%enable_hs
+      enable_cavity = p_eos%enable_cavity
+      enable_a1 = p_eos%enable_a1
+      enable_a2 = p_eos%enable_a2
+      enable_a3 = p_eos%enable_a3
+      enable_a4 = p_eos%enable_a4
+      !
+      p_eos%enable_hs = .true.
+      p_eos%enable_cavity = .false.
+      p_eos%enable_a1 = .false.
+      p_eos%enable_a2 = .false.
+      p_eos%enable_a3 = .false.
+      p_eos%enable_a4 = .false.
+      call calcFres_WCA(p_eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      p_eos%enable_hs = enable_hs
+      p_eos%enable_cavity = enable_cavity
+      p_eos%enable_a1 = enable_a1
+      p_eos%enable_a2 = enable_a2
+      p_eos%enable_a3 = enable_a3
+      p_eos%enable_a4 = enable_a4
+    class is (ljs_bh_eos)
+      ! Enable only hard-sphere term
+      enable_hs = p_eos%enable_hs
+      enable_a1 = p_eos%enable_a1
+      enable_a2 = p_eos%enable_a2
+      enable_a3 = p_eos%enable_a3
+      !
+      p_eos%enable_hs = .true.
+      p_eos%enable_a1 = .false.
+      p_eos%enable_a2 = .false.
+      p_eos%enable_a3 = .false.
+      call calcFresLJs_bh(p_eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      p_eos%enable_hs = enable_hs
+      p_eos%enable_a1 = enable_a1
+      p_eos%enable_a2 = enable_a2
+      p_eos%enable_a3 = enable_a3
+    class default
+      call stoperror("calc_ljs_hard_sphere: Wrong eos...")
+    end select
+
+    nsum = sum(n)
+    if (present(F_Tn)) F_Tn(1) = F_Tn(1)/nsum - F_T/nsum**2
+    if (present(F_Vn)) F_Vn(1) = F_Vn(1)/nsum - F_V/nsum**2
+    if (present(F_nn)) F_nn(1,1) = F_nn(1,1)/nsum - 2*F_n(1)/nsum**2 + 2*F/nsum**3
+    if (present(F_n)) F_n(1) = F_n(1)/nsum - F/nsum**2
+    if (present(F_TT)) F_TT = F_TT/nsum
+    if (present(F_VV)) F_VV = F_VV/nsum
+    if (present(F_T)) F_T = F_T/nsum
+    if (present(F_V)) F_V = F_V/nsum
+    if (present(F_TV)) F_TV = F_TV/nsum
+    F = F/nsum
+  end subroutine calc_ljs_hard_sphere
 
   !> Calculate reduced dispersion contribution to Helmholts free energy
   !!

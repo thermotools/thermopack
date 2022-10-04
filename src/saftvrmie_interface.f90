@@ -20,6 +20,7 @@ module saftvrmie_interface
   public :: deBoerParameter
   public :: calc_saftvrmie_term, calc_alpha_saftvrmie
   public :: update_saftvrmie_hs_diameter, calc_saftvrmie_dispersion
+  public :: calc_saftvrmie_hard_sphere
   public :: model_control_a1
   public :: model_control_a2
   public :: model_control_a3
@@ -559,7 +560,7 @@ contains
     endif
   end function calc_alpha_saftvrmie
 
-  !> Calculate reduced dispersion contribution to Helmholts free energy
+  !> Calculate reduced molar dispersion contribution to Helmholts free energy
   !!
   !! \author Morten Hammer, February 2022
   subroutine calc_saftvrmie_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
@@ -741,6 +742,137 @@ contains
     endif
 
   end subroutine calc_saftvrmie_dispersion
+
+  !> Calculate reduced molar hard-sphere contribution to Helmholts free energy
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine calc_saftvrmie_hard_sphere(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+    use saftvrmie_hardsphere, only: calc_hardsphere_helmholtzenergy, calc_hardsphere_extra_helmholtzenergy
+    ! Input
+    class(saftvrmie_eos), intent(inout) :: eos
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    ! Output
+    real, intent(out) :: F
+    real, optional, intent(out) :: F_T,F_V,F_TT,F_VV,F_TV
+    real, optional, dimension(nc), intent(out) :: F_n,F_Tn,F_Vn
+    real, optional, dimension(nc,nc), intent(out) :: F_nn
+    ! Locals
+    real :: xs,sumn, xs_n(nc)
+    real :: Fhs,Fhs_T,Fhs_V,Fhs_TT,Fhs_VV,Fhs_TV
+    real, dimension(nc) :: Fhs_n,Fhs_Tn,Fhs_Vn
+    real, dimension(nc,nc) :: Fhs_nn
+    real :: Fhse,Fhse_T,Fhse_V,Fhse_TT,Fhse_VV,Fhse_TV
+    real, dimension(nc) :: Fhse_n,Fhse_Tn,Fhse_Vn
+    real, dimension(nc,nc) :: Fhse_nn
+    integer :: k,l,difflevel
+
+    if (present(F_TT) .or. present(F_VV) .or. present(F_TV) .or. &
+         present(F_Tn) .or. present(F_Vn) .or. present(F_nn)) then
+      difflevel = 2
+    else if (present(F_T) .or. present(F_V) .or. present(F_n)) then
+      difflevel = 1
+    else
+      difflevel = 0
+    endif
+
+    ! Precalculate common variables
+    call preCalcSAFTVRMie(nc,T,V,n,difflevel,eos%saftvrmie_var)
+    sumn = sum(n)
+
+    ! Calculate hard-sphere term
+    if (svrm_opt%enable_hs) then
+      call calc_hardsphere_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
+           Fhs,a_T=Fhs_T,a_V=Fhs_V,a_n=Fhs_n,&
+           a_TT=Fhs_TT,a_VV=Fhs_VV,a_TV=Fhs_TV,a_Tn=Fhs_Tn,a_Vn=Fhs_Vn,a_nn=Fhs_nn)
+    else
+      Fhs = 0.0
+      Fhs_T = 0.0
+      Fhs_V = 0.0
+      Fhs_TT = 0.0
+      Fhs_VV = 0.0
+      Fhs_TV = 0.0
+      Fhs_n = 0.0
+      Fhs_Tn = 0.0
+      Fhs_Vn = 0.0
+      Fhs_nn = 0.0
+    endif
+    ! Calculate extraterm to hard-sphere reference for non-additive mixtures
+    if (svrm_opt%enable_hs_extra) then
+      call calc_hardsphere_extra_helmholtzenergy(nc,T,V,n,eos%saftvrmie_var,&
+           Fhse,a_T=Fhse_T,a_V=Fhse_V,a_n=Fhse_n,&
+           a_TT=Fhse_TT,a_VV=Fhse_VV,a_TV=Fhse_TV,a_Tn=Fhse_Tn,a_Vn=Fhse_Vn,a_nn=Fhse_nn)
+      Fhse_nn = Fhse_nn/sumn + 2*Fhse/sumn**3
+      do k=1,nc
+        do l=1,nc
+          Fhse_nn(k,l) = Fhse_nn(k,l) - Fhse_n(k)/sumn**2 - Fhse_n(l)/sumn**2
+        enddo
+      enddo
+      Fhse_n = Fhse_n/sumn - Fhse/sumn**2
+      Fhse_Tn = Fhse_Tn/sumn - Fhse_T/sumn**2
+      Fhse_Vn = Fhse_Vn/sumn - Fhse_V/sumn**2
+      Fhse = Fhse/sumn
+      Fhse_T = Fhse_T/sumn
+      Fhse_TT = Fhse_TT/sumn
+      Fhse_TV = Fhse_TV/sumn
+      Fhse_V = Fhse_V/sumn
+      Fhse_VV = Fhse_VV/sumn
+    else
+      Fhse = 0.0
+      Fhse_T = 0.0
+      Fhse_V = 0.0
+      Fhse_TT = 0.0
+      Fhse_VV = 0.0
+      Fhse_TV = 0.0
+      Fhse_n = 0.0
+      Fhse_Tn = 0.0
+      Fhse_Vn = 0.0
+      Fhse_nn = 0.0
+    endif
+
+    xs = sum(n*saftvrmie_param%ms)/sumn
+    F = xs*Fhs + Fhse
+
+    if (present(F_n) .or. present(F_Tn) .or. present(F_Vn) .or. present(F_nn)) then
+      xs_n = (saftvrmie_param%ms - xs)/sumn
+    endif
+    if (present(F_T)) then
+      F_T = xs*Fhs_T + Fhse_T
+    endif
+    if (present(F_V)) then
+      F_V = xs*Fhs_V + Fhse_V
+    endif
+    if (present(F_TT)) then
+      F_TT = xs*Fhs_TT + Fhse_TT
+    endif
+    if (present(F_VV)) then
+      F_VV = xs*Fhs_VV + Fhse_VV
+    endif
+    if (present(F_TV)) then
+      F_TV = xs*Fhs_TV - Fhse_TV
+    endif
+    if (present(F_Tn)) then
+      F_Tn = xs*Fhs_Tn + xs_n*Fhs_T + Fhse_Tn
+    endif
+    if (present(F_Vn)) then
+      F_Vn = xs*Fhs_Vn + xs_n*Fhs_V + Fhse_Vn
+    endif
+    if (present(F_n)) then
+      F_n = xs*Fhs_n + xs_n*Fhs + Fhse_n
+    endif
+    if (present(F_nn)) then
+      F_nn = xs*Fhs_nn + Fhse_nn
+      do k=1,nc
+        do l=1,nc
+          F_nn(k,l) = F_nn(k,l) + xs_n(k)*Fhs_n(l) &
+               + xs_n(l)*Fhs_n(k) + Fhs*(-saftvrmie_param%ms(l) -saftvrmie_param%ms(k) + 2*xs)/sumn**2
+        enddo
+      enddo
+    endif
+  end subroutine calc_saftvrmie_hard_sphere
 
   !> Enable/disable a1 term
   !!

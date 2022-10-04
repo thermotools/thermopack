@@ -228,6 +228,7 @@ append_export("calc_soft_repulsion", "saft_interface")
 append_export("pets_get_pure_params", "saft_interface")
 append_export("pets_set_pure_params", "saft_interface")
 append_export("truncation_corrections", "saft_interface")
+append_export("calc_saft_hard_sphere", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
