@@ -128,6 +128,7 @@ module lj_splined
   public :: ljs_wca_set_pure_params, ljs_wca_get_pure_params
   public :: calc_ljs_dispersion, calc_wca_soft_repulsion
   public :: calc_ljs_hard_sphere
+  public :: ljs_potential_reduced
 
   ! Testing
   public :: calc_uf_wca, calc_uf_wca_tvn, ljx_ux_eos
@@ -3188,6 +3189,35 @@ contains
     call calc_cavity_integral_LJ_Fres(nc,eos%sigma,eos%eps_divk,eos%dhs,eos%eta_hs,T,V,n,&
          F,F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn,disable_n_multiplication=.true.)
   end subroutine calc_wca_soft_repulsion
+
+  !> Return interaction potential
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine ljs_potential_reduced(n, r_div_sigma, pot)
+    ! Input
+    integer, intent(in) :: n !< Array size
+    real, intent(in) :: r_div_sigma(n) !< Intermolecular separation reduced by sigma (-)
+    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant
+    !
+    ! Locals
+    integer :: i
+    real :: xs, xc, a, b, irm
+    xs = (26.0/7.0)**(1.0/6.0)
+    xc = 67.0/48.0 * xs
+    a = -24192.0/3211.0/xs**2
+    b = -387072.0/61009.0/xs**3
+    pot = 0
+    do i=1,n
+      if (r_div_sigma(i) < xs) then
+        irm = 1.0/r_div_sigma(i)**6
+        pot(i) = 4.0*(irm*irm-irm)
+      else if (r_div_sigma(i) < xc) then
+        pot(i) = a*(r_div_sigma(i)-xc)**2+b*(r_div_sigma(i)-xc)**3
+      else
+        exit
+      endif
+    enddo
+  end subroutine ljs_potential_reduced
 
 end module lj_splined
 
