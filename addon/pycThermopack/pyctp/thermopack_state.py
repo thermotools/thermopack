@@ -309,6 +309,29 @@ class equilibrium(object):
         self.liquid1 = self.liquid
         self.liquid2 = liquid2
         self.solid = solid
+        self.present_phase_list = [ {"state": vapor, "phase": "V"}, {"state": liquid, "phase": "L"}]
+        if liquid2 is not None:
+            self.present_phase_list.append({"state": liquid2, "phase": "L"})
+        if solid is not None:
+            self.present_phase_list.append({"state": solid, "phase": "S"})
+
+    def __repr__(self):
+        output = "-----------------------------------------------------"
+        for p in self.present_phase_list:
+            output += "\n"
+            state = p["state"]
+            phase = p["phase"]
+            output += f"{phase}: {state.T:.5f} K   {np.sum(state.partial_density())*1e-3:.5f} kmol/m3    {state.x}"
+        return output
+
+    def __str__(self):
+        output = "-----------------------------------------------------"
+        for p in self.present_phase_list:
+            output += "\n"
+            state = p["state"]
+            phase = p["phase"]
+            output += f"{phase}: {state.T:.5f} K   {np.sum(state.partial_density())*1e-3:.5f} kmol/m3    {state.x}"
+        return output
 
     @staticmethod
     def tp_flash(eos, T, p, z):
