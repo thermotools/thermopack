@@ -80,6 +80,7 @@ module saftvrmie_options
     procedure, public :: check_model_consitency
     procedure, public :: set_Lafitte_option
     procedure, public :: set_hs_reference
+    procedure, public :: test_fmt_compatibility
     procedure, public :: print
     ! Assignment operator
     procedure, public :: assign_saftvrmie_model_options
@@ -262,5 +263,24 @@ contains
     print *, "pure_hs_EoS:", this%pure_hs_EoS
 
   end subroutine print
+
+  !> Test if SAFT-VR Mie model setup is comaptible with the Fundamental
+  !! Measure Theory (FMT)
+  subroutine test_fmt_compatibility(this, is_fmt_consistent, na_enabled)
+    class(saftvrmie_opt), intent(in) :: this
+    logical, intent(out) :: is_fmt_consistent, na_enabled
+    ! Locals
+    logical :: has_additive_hs_ref
+    has_additive_hs_ref = (this%hardsphere_EoS == HS_EOS_ORIGINAL .and. &
+         this%zeta_mixing_rule == ZETA_LAFITTE)
+    na_enabled = this%enable_hs_extra
+    if (has_additive_hs_ref) then
+      if (na_enabled) then
+        is_fmt_consistent = this%exact_binary_dhs
+      endif
+    else
+      is_fmt_consistent = .false.
+    endif
+  end subroutine test_fmt_compatibility
 
 end module saftvrmie_options

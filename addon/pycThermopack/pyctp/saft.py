@@ -33,6 +33,9 @@ class saft(thermopack):
             self.tp, self.get_export_name("saft_interface", "calc_saft_hard_sphere"))
         self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name(
             "saft_interface", "calc_hard_sphere_diameter"))
+        self.s_calc_hs_diameter_ij = getattr(self.tp, self.get_export_name(
+            "saft_interface", "calc_hard_sphere_diameter_ij"))
+
         self.s_de_broglie_wavelength = getattr(
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
         self.s_potential = getattr(
@@ -47,6 +50,8 @@ class saft(thermopack):
             self.tp, self.get_export_name("saft_interface", "calc_soft_repulsion"))
         self.s_truncation_corrections = getattr(
             self.tp, self.get_export_name("saft_interface", "truncation_corrections"))
+        self.s_test_fmt_compatibility = getattr(
+            self.tp, self.get_export_name("saft_interface", "test_fmt_compatibility"))
 
         self.m = None
         self.sigma = None
@@ -78,6 +83,41 @@ class saft(thermopack):
                                 dT_c)
 
         return  np.array(d_c), np.array(dT_c)
+
+    def hard_sphere_diameter_ij(self, i, j, temp):
+        """Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+            temp (float): Temperature (K)
+
+        Returns:
+            float: Hard-sphere diameter (m)
+            float: Temperature differential of hard-sphere diameter (m/K)
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        temp_c = c_double(temp)
+        d_c = c_double(0.0)
+        dT_c = c_double(0.0)
+
+        self.s_calc_hs_diameter_ij.argtypes = [POINTER(c_int),
+                                               POINTER(c_int),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double)]
+
+        self.s_calc_hs_diameter_ij.restype = None
+
+        self.s_calc_hs_diameter_ij(byref(i_c),
+                                   byref(j_c),
+                                   byref(temp_c),
+                                   byref(d_c),
+                                   byref(dT_c))
+
+        return  d_c.value, dT_c.value
 
     def a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
@@ -587,3 +627,24 @@ class saft(thermopack):
                                       byref(enable_shift_correction_c),
                                       byref(rr_c))
 
+    def test_fmt_compatibility(self):
+        """Test if model setup is comaptible with the Fundamental
+        Measure Theory (FMT)
+
+        Returns:
+            bool: Is model FMT consistent?
+            bool: Is non-additive hard-sphere term used?
+        """
+        self.activate()
+        is_fmt_consistent_c = c_int(0)
+        na_enabled_c = c_int(0)
+
+        self.s_test_fmt_compatibility.argtypes = [POINTER(c_int),
+                                                  POINTER(c_int)]
+
+        self.s_test_fmt_compatibility.restype = None
+
+        self.s_test_fmt_compatibility(byref(is_fmt_consistent_c),
+                                      byref(na_enabled_c))
+
+        return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1

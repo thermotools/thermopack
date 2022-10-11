@@ -687,6 +687,30 @@ contains
 
   end subroutine calc_hard_sphere_diameter
 
+  !> Calculates non-additive Hard-sphere diameter
+  subroutine calc_hard_sphere_diameter_ij(i,j,T,d,d_T)
+    use saftvrmie_interface, only: update_saftvrmie_hs_diameter
+    use saftvrmie_containers, only: saftvrmie_eos
+    ! Input.
+    integer, intent(in) :: i, j
+    real, intent(in) :: T
+    ! Output.
+    real, intent(out) :: d !(m)
+    real, intent(out) :: d_T !(m/K)
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    ! Calculate the non-additive hard-sphere diameter
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      call update_saftvrmie_hs_diameter(p_eos,nce,T)
+      d = p_eos%saftvrmie_var%dhs%d(i,j)
+      d_T = p_eos%saftvrmie_var%dhs%d_T(i,j)
+    class default
+      call stoperror("calc_hard_sphere_diameter_ij: Wrong eos...")
+    end select
+  end subroutine calc_hard_sphere_diameter_ij
+
   !> Enable/disable truncation corrections
   subroutine truncation_corrections(enable_truncation_correction, &
        enable_shift_correction, reduced_radius_cut)
@@ -819,6 +843,7 @@ contains
     use thermopack_var, only: base_eos_param, thermo_model, nce
     use pc_saft_nonassoc, only: sPCSAFT_eos
     use pets, only: PETS_eos
+    use lj_splined, only: ljs_bh_eos, ljs_wca_eos, ljs_potential_reduced
     ! Input
     integer, intent(in) :: i, j !< Component number
     real, intent(in) :: T !< Temperature
@@ -831,10 +856,22 @@ contains
     class(base_eos_param), pointer :: eos
     integer :: ir
     real, parameter :: max_pot_val = 500.0
-    real :: eps_divk
+    real :: eps_divk, sigma, r_div_sigma(n)
     p_thermo => get_active_thermo_model()
     eos => get_active_eos()
     select type ( p_eos => eos )
+    class is (ljs_bh_eos)
+      sigma = p_eos%saftvrmie_param%sigma_ij(1,1)
+      r_div_sigma = r/sigma
+      call ljs_potential_reduced(n, r_div_sigma, pot)
+      eps_divk = p_eos%saftvrmie_param%eps_divk_ij(1,1)
+      pot = pot*eps_divk
+    class is (ljs_wca_eos)
+      sigma = p_eos%sigma
+      r_div_sigma = r/sigma
+      call ljs_potential_reduced(n, r_div_sigma, pot)
+      eps_divk = p_eos%eps_divk
+      pot = pot*eps_divk
     class is (saftvrmie_eos)
       ! Update Feynman--Hibbs D parameter
       if (p_eos%svrm_opt%quantum_correction_hs > 0) &
@@ -859,7 +896,7 @@ contains
     do ir=1,n
       if (pot(ir) /= pot(ir)) then
         ! Avoid NaN in output
-        pot(ir) = max_pot_val
+        pot(ir) = max_pot_val*eps_divk
       else if (pot(ir) > max_pot_val*eps_divk) then
         ! Cap potential at max_pot_val
         pot(ir) = max_pot_val*eps_divk
@@ -867,6 +904,41 @@ contains
     enddo
 
   end subroutine potential
+
+  !> Test if model setup is comaptible with the Fundamental
+  !! Measure Theory (FMT)
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine test_fmt_compatibility(is_fmt_consistent, na_enabled)
+    use saftvrmie_containers, only: saftvrmie_eos
+    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pets, only: PETS_eos
+    use lj_splined, only: ljs_wca_eos, ljs_bh_eos
+    use thermopack_var, only: base_eos_param, nce
+    logical, intent(out) :: is_fmt_consistent, na_enabled
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    na_enabled = .false.
+    select type ( p_eos => eos )
+    class is (ljs_bh_eos)
+      is_fmt_consistent = .true.
+    class is (saftvrmie_eos)
+      if (nce == 1) then
+        is_fmt_consistent = .true.
+      else
+        call p_eos%svrm_opt%test_fmt_compatibility(is_fmt_consistent, na_enabled)
+      endif
+    class is (sPCSAFT_eos)
+      is_fmt_consistent = .true.
+    class is (PETS_eos)
+      is_fmt_consistent = .true.
+    class is (ljs_wca_eos)
+      is_fmt_consistent = .true.
+    class default
+      is_fmt_consistent = .false.
+    end select
+  end subroutine test_fmt_compatibility
 
   !****************** ROUTINES NEEDED IN TPSINGLE **************************!
 
