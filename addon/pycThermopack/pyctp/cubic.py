@@ -26,9 +26,14 @@ class cubic(thermo.thermopack):
 
         # Init methods
         self.eoslibinit_init_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_cubic"))
+
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("", "thermopack_getkij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("", "thermopack_setkijandji"))
+
+        self.s_get_lij = getattr(self.tp, self.get_export_name("", "thermopack_getlij"))
+        self.s_set_lij = getattr(self.tp, self.get_export_name("", "thermopack_setlijandji"))
+
 
         self.s_get_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_gethvparam"))
         self.s_set_hv_param = getattr(self.tp, self.get_export_name("", "thermopack_sethvparam"))
@@ -99,7 +104,7 @@ class cubic(thermo.thermopack):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
-        """Get attractive energy interaction parameter
+        """Get attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
 
         Args:
             c1 (int): Component one
@@ -125,7 +130,7 @@ class cubic(thermo.thermopack):
         return kij_c.value
 
     def set_kij(self, c1, c2, kij):
-        """Set attractive energy interaction parameter
+        """Set attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
 
         Args:
             c1 (int): Component one
@@ -148,7 +153,7 @@ class cubic(thermo.thermopack):
 
 
     def get_lij(self, c1, c2):
-        """Get co-volume interaction
+        """Get co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
 
         Args:
             c1 (int): Component one
@@ -157,17 +162,43 @@ class cubic(thermo.thermopack):
         Returns:
             lij (float): i-j interaction parameter
         """
-        return 1.0
+        self.activate()
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        lij_c = c_double(0.0)
+        self.s_get_lij.argtypes = [POINTER(c_int),
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
+
+        self.s_get_lij.restype = None
+
+        self.s_get_lij(byref(c1_c),
+                       byref(c2_c),
+                       byref(lij_c))
+
+        return lij_c.value
 
     def set_lij(self, c1, c2, lij):
-        """Set co-volume interaction
+        """Set co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
 
         Args:
             c1 (int): Component one
             c2 (int): Component two
             lij ([type]): [description]
         """
-        print("Setting lij")
+        self.activate()
+        c1_c = c_int(c1)
+        c2_c = c_int(c2)
+        lij_c = c_double(lij)
+        self.s_set_lij.argtypes = [POINTER(c_int),
+                                   POINTER(c_int),
+                                   POINTER(c_double)]
+
+        self.s_set_lij.restype = None
+
+        self.s_set_lij(byref(c1_c),
+                       byref(c2_c),
+                       byref(lij_c))
 
     def get_hv_param(self, c1, c2):
         """Get Huron-Vidal parameters
