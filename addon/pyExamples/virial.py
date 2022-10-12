@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 
 # Exapmle of virial coefficient plot
 
-tc_pr = tcPR.tcPR()
-tc_pr.init("CO2,C1")
+tc_pr = tcPR.tcPR("CO2,C1")
 
 # Plot phase envelope
 z = np.array([0.9, 0.1])

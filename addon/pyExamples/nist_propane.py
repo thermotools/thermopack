@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init multiparameter object
-nist = multiparameter.multiparam()
-nist.init("C3", "NIST_MEOS")
+nist = multiparameter.multiparam("C3", "NIST_MEOS")
 
 # Plot phase envelope
 z = np.array([1.0])

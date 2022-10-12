@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init Quantum-cubic object
-qPR = quantum_cubic.qcubic()
-qPR.init("He,H2,Ne")
+qPR = quantum_cubic.qcubic("He,H2,Ne")
 qPR.set_tmin(temp=2.0)
 
 # Plot phase envelope

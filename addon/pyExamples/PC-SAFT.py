@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init PC-SAFT object
-pcs = pcsaft.pcsaft()
-pcs.init("CO2,C1")
+pcs = pcsaft.pcsaft("CO2,C1")
 
 # Plot phase envelope
 z = np.array([0.9,0.1])

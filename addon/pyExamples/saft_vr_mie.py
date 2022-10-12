@@ -29,8 +29,7 @@ def calc_reduced_rho(rhoa, sigma):
     return rhoStar
 
 # Instanciate and init SAFT-VR Mie object
-svrm = saftvrmie.saftvrmie()
-svrm.init("H2")
+svrm = saftvrmie.saftvrmie("H2")
 svrm.set_tmin(temp=2.0)
 
 # Get parameters for H2
@@ -58,7 +57,7 @@ sigma = 1.0e-10
 eps = 30.0
 lambda_a = 6.0
 lambda_r = 12.0
-svrm.init("Ar")
+svrm.init("Ar")  # Re-initialize with new component
 svrm.set_tmin(temp=2.0)
 svrm.set_pure_fluid_param(1, m, sigma, eps, lambda_a, lambda_r)
 svrm.redefine_critical_parameters(False)

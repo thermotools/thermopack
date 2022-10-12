@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init extended corrensponding state object
-csp = extended_csp.ext_csp()
-csp.init("C1,C2,C3,NC4", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
+csp = extended_csp.ext_csp("C1,C2,C3,NC4", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
 
 # Plot phase envelope
 z = np.array([0.86, 0.1, 0.03, 0.01])

@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init SRK object.
-srk = cubic.cubic()
-srk.init("C1,C2,C3", "SRK")
+srk = cubic.cubic("C1,C2,C3", "SRK")
 srk.set_tmin(50.0)
 
 print("Rgas = {} (J/K/mol)".format(srk.Rgas))

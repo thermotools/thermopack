@@ -8,8 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init SAFT-VRQ Mie object
-qSAFT = saftvrqmie.saftvrqmie()
-qSAFT.init("He,H2,Ne")
+qSAFT = saftvrqmie.saftvrqmie("He,H2,Ne")
 qSAFT.set_tmin(temp=2.0)
 
 # Plot phase envelope

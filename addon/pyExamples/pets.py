@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 # Instanciate and init PeTS object
 PeTS = pets.pets()
-PeTS.init()
 PeTS.set_tmin(temp=5.0)
 
 # Plot phase envelope

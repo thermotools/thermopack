@@ -9,12 +9,9 @@ import numpy as np
 from pyctp import extended_csp, pcsaft, tcPR
 
 
-tc_pr = tcPR.tcPR()
-tc_pr.init("CO2,N2")
-csp = extended_csp.ext_csp()
-csp.init("CO2,N2", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
-pcs = pcsaft.pcsaft()
-pcs.init("CO2,N2")
+tc_pr = tcPR.tcPR("CO2,N2")
+csp = extended_csp.ext_csp("CO2,N2", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
+pcs = pcsaft.pcsaft("CO2,N2")
 
 eoss = [tc_pr, csp, pcs]
 colors = ["r", "g", "b"]

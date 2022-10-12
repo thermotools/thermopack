@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 
 # Instanciate and init tcPR object. Translated and consistent cubic EoS by le Guennec et al. (10.1016/j.fluid.2016.09.003)
 
-tc_pr = tcPR.tcPR()
-tc_pr.init("CO2,N2")
+tc_pr = tcPR.tcPR("CO2,N2")
 
 # Plot phase envelope
 z = np.array([0.9,0.1])

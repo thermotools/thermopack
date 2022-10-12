@@ -11,8 +11,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-cb = cubic.cubic()
-cb.init("Ne,H2","SRK","Classic","Classic")
+cb = cubic.cubic("Ne,H2","SRK","Classic","Classic")
 cb.set_kij(1,2,0.19)
 KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=2.0, include_azeotropes=True)
 p_scaling = 1.0e-6
