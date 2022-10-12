@@ -17,7 +17,15 @@ class ext_csp(thermo.thermopack):
     """
     Interface to tc-PR
     """
-    def __init__(self):
+    def __init__(self,
+                 comps=None,
+                 sh_eos=None,
+                 sh_alpha=None,
+                 sh_mixing=None,
+                 ref_eos=None,
+                 ref_comp=None,
+                 ref_alpha="Classic",
+                 parameter_reference="Default"):
         """
         Initialize extended corredsponding state model
         """
@@ -26,6 +34,9 @@ class ext_csp(thermo.thermopack):
 
         # Init methods
         self.eoslibinit_init_extcsp = getattr(self.tp, self.get_export_name("eoslibinit", "init_extcsp"))
+
+        if None not in (comps, sh_eos, sh_alpha, sh_mixing, ref_eos, ref_comp):
+            self.init(comps, sh_eos, sh_alpha, sh_mixing, ref_eos, ref_comp, ref_alpha, parameter_reference)
 
 
     #################################

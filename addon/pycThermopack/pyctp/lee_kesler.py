@@ -17,7 +17,7 @@ class lee_kesler(thermo.thermopack):
     """
     Interface to Lee-Kesler model
     """
-    def __init__(self):
+    def __init__(self, comps, parameter_reference="Default"):
         """
         Initialize Lee-Kesler specific function pointers
         """
@@ -26,6 +26,9 @@ class lee_kesler(thermo.thermopack):
 
         # Init methods
         self.eoslibinit_init_lee_kesler = getattr(self.tp, self.get_export_name("eoslibinit", "init_lee_kesler"))
+
+        if comps is not None:
+            self.init(comps, parameter_reference)
 
     #################################
     # Init

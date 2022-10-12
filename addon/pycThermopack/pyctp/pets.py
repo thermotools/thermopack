@@ -17,7 +17,7 @@ class pets(thermo.thermopack):
     """
     Interface to PETS
     """
-    def __init__(self):
+    def __init__(self, parameter_reference="Default"):
         """
         Initialize pets specific function pointers
         """
@@ -26,6 +26,7 @@ class pets(thermo.thermopack):
 
         # Init methods
         self.eoslibinit_init_pets = getattr(self.tp, self.get_export_name("eoslibinit", "init_pets"))
+        self.init(parameter_reference)
 
 
     #################################

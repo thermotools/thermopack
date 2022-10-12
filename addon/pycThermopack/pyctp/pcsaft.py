@@ -17,7 +17,7 @@ class pcsaft(thermo.thermopack):
     """
     Interface to cubic
     """
-    def __init__(self):
+    def __init__(self, comps=None, parameter_reference="Default"):
         """
         Initialize cubic specific function pointers
         """
@@ -29,6 +29,9 @@ class pcsaft(thermo.thermopack):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_kij_asym"))
+
+        if comps is not None:
+            self.init(comps, parameter_reference=parameter_reference)
 
     #################################
     # Init

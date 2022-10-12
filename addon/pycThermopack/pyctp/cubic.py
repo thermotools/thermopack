@@ -17,7 +17,8 @@ class cubic(thermo.thermopack):
     """
     Interface to cubic
     """
-    def __init__(self):
+    def __init__(self, comps=None, eos=None, mixing="vdW", alpha="Classic",
+             parameter_reference="Default", volume_shift=False):
         """
         Initialize cubic specific function pointers
         """
@@ -38,6 +39,9 @@ class cubic(thermo.thermopack):
 
         self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
         self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
+
+        if None not in (comps, eos):
+            self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
 
     #################################
     # Init

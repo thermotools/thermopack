@@ -109,7 +109,7 @@ class ljs_wca(ljs_wca_base):
     """
     Interface to LJS-WCA
     """
-    def __init__(self):
+    def __init__(self, parameter_reference='Default'):
         """
         Initialize wca specific function pointers
         """
@@ -121,6 +121,8 @@ class ljs_wca(ljs_wca_base):
 
         # LJS-WCA specific methods
         self.s_calc_ai_reduced_ljs_wca = getattr(self.tp, self.get_export_name("lj_splined", "calc_ljs_wca_ai_tr"))
+
+        self.init(parameter_reference)
 
 
     #################################
@@ -223,7 +225,7 @@ class ljs_uv(ljs_wca_base):
     """
     Interface to LJS-UV
     """
-    def __init__(self):
+    def __init__(self, parameter_reference="Default"):
         """
         Initialize UV specific function pointers
         """
@@ -233,6 +235,7 @@ class ljs_uv(ljs_wca_base):
         # Options methods
         self.s_ljs_uv_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_uv_model_control"))
 
+        self.init(parameter_reference)
 
     #################################
     # Init

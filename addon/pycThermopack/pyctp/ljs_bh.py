@@ -17,7 +17,7 @@ class ljs_bh(thermo.thermopack):
     """
     Interface to LJS-BH
     """
-    def __init__(self):
+    def __init__(self, parameter_reference="Default"):
         """
         Initialize cubic specific function pointers
         """
@@ -36,6 +36,7 @@ class ljs_bh(thermo.thermopack):
         self.s_calc_ai_reduced_ljs_ex = getattr(self.tp, self.get_export_name("lj_splined", "calc_ai_reduced_ljs_ex"))
         self.s_ljs_bh_get_bh_diameter_div_sigma = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_get_bh_diameter_div_sigma"))
 
+        self.init(parameter_reference)
 
     #################################
     # Init

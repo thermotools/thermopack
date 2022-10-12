@@ -19,7 +19,7 @@ class saftvrqmie(saftvrmie.saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
-    def __init__(self):
+    def __init__(self, comps=None, feynman_hibbs_order=1, parameter_reference="Default"):
         """
         Initialize cubic specific function pointers
         """
@@ -28,6 +28,8 @@ class saftvrqmie(saftvrmie.saftvrmie):
 
         # Init methods
         self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_saftvrmie"))
+        if comps is not None:
+            self.init(comps, feynman_hibbs_order=feynman_hibbs_order, parameter_reference=parameter_reference)
 
     #################################
     # Init
