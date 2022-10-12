@@ -891,4 +891,40 @@ contains
 
   end function is_classic_alpha
 
+  !> Get covolumes
+  subroutine get_covolumes(b)
+    use thermopack_var
+    implicit none
+    real, intent(out) :: b(nce) ! Covolume (L/mol)
+    ! Locals
+    class(base_eos_param), pointer :: act_eos_ptr
+    !
+    act_eos_ptr => get_active_eos()
+    !
+    select type(p_eos => act_eos_ptr)
+    class is (cb_eos)
+      b = p_eos%single(:)%b
+    class default
+      print *,"get_covolumes: Wrong model - not cubic"
+    end select
+  end subroutine get_covolumes
+
+  !> Get energy constant
+  subroutine get_energy_constants(a)
+    use thermopack_var
+    implicit none
+    real, intent(out) :: a(nce) ! Energy constant in front of alpha. Units: Pa*L^2/mol^2.
+    ! Locals
+    class(base_eos_param), pointer :: act_eos_ptr
+    !
+    act_eos_ptr => get_active_eos()
+    !
+    select type(p_eos => act_eos_ptr)
+    class is (cb_eos)
+      a = p_eos%single(:)%a
+    class default
+      print *,"get_energy_constants: Wrong model - not cubic"
+    end select
+  end subroutine get_energy_constants
+
 end module cubic_eos
