@@ -12,8 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init cubic object
-cb = cubic.cubic()
-cb.init("CO2,N2", "PR", "HV", "Classic")
+cb = cubic.cubic("CO2,N2", "PR", "HV", "Classic")
 cb.init_solid("CO2")
 z = np.array([0.98, 0.02])
 lines, crits = cb.solid_envelope_plot(1.0e5, z)

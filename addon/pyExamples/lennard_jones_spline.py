@@ -190,7 +190,6 @@ if __name__ == '__main__':
 
     # Instanciate and init LJS-UV object
     ljs = ljs_wca.ljs_uv()
-    ljs.init()
     ljs.set_tmin(temp=2.0)
 
     plot_phase_envelope([ljs], labels=["UV"], title="LJS-UV phase diagram")

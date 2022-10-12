@@ -25,8 +25,7 @@ def phase_name(th, ph):
 
 # Instanciate and init tcPR object.
 
-tc_pr = tcPR.tcPR()
-tc_pr.init("NH3,N2,H2")
+tc_pr = tcPR.tcPR("NH3,N2,H2")
 
 z = np.array([0.85, 0.1, 0.05])
 T = 273.15 + 115.0 # K
