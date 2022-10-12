@@ -45,6 +45,9 @@ class cubic(thermo.thermopack):
         self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
         self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
 
+        self.s_get_covolumes = getattr(self.tp, self.get_export_name("cubic_eos", "get_covolumes"))
+        self.s_get_energy_constants = getattr(self.tp, self.get_export_name("cubic_eos", "get_energy_constants"))
+
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
 
@@ -454,3 +457,29 @@ class cubic(thermo.thermopack):
                       byref(ciB_c),
                       byref(ciC_c),
                       byref(ci_type_c))
+
+    def get_covolumes(self):
+        """Get component covolumes (L/mol)
+
+        Returns:
+            np.ndarray: Component covolumes (L/mol)
+        """
+        self.activate()
+        b_c = (c_double * self.nc)(0.0)
+        self.s_get_covolumes.argtypes = [POINTER(c_double)]
+        self.s_get_covolumes.restype = None
+        self.s_get_covolumes(b_c)
+        return np.array(b_c)
+
+    def get_energy_constants(self):
+        """Get component energy constants in front of alpha. (Pa*L^2/mol^2)
+
+        Returns:
+            np.ndarray: Component energy constants in front of alpha. (Pa*L^2/mol^2)
+        """
+        self.activate()
+        a_c = (c_double * self.nc)(0.0)
+        self.s_get_energy_constants.argtypes = [POINTER(c_double)]
+        self.s_get_energy_constants.restype = None
+        self.s_get_energy_constants(a_c)
+        return np.array(a_c)
