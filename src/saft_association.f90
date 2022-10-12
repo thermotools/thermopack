@@ -14,25 +14,25 @@ module saft_association
 contains
 
   !> Calculate Boltzmann factor for association energy, with caching
-  !> Ailo 19.03.19
   subroutine calc_boltzmann_fac(assoc, T, boltzmann_fac)
     type(association), intent(inout) :: assoc
     real, intent(in) :: T
     real, intent(out) :: boltzmann_fac(numAssocSites, numAssocSites)
     integer :: k, l
     do k=1, numAssocSites
-       do l=k, numAssocSites
-          if (assoc%eps_kl(k,l)>0) then
-             boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
-             boltzmann_fac(l,k) = boltzmann_fac(k,l)
-          end if
-       end do
+      do l=k, numAssocSites
+        if (assoc%eps_kl(k,l)>0) then
+          boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
+        else
+          boltzmann_fac(k,l) = 1
+        end if
+        boltzmann_fac(l,k) = boltzmann_fac(k,l)
+      end do
     end do
   end subroutine calc_boltzmann_fac
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
-  !> e.g. by not calculating the exponential in every loop iteration; they can
-  !> even be cached for a given T.
+  !> e.g. by not calculating the exponential in every loop iteration
   subroutine Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
     use saft_globals, only: assoc_covol_binary, eosSAFT_VR_MIE
@@ -99,7 +99,6 @@ contains
     end if
 
     ! Assemble Delta matrix.
-
     call calc_boltzmann_fac(assoc, T, boltzmann_fac)
 
     if (assoc%saft_model/=eosSAFT_VR_MIE) then
@@ -378,13 +377,11 @@ contains
       end do
     end if
 
-
     ! Explicit solution for the case of a single associating component
     ! if (assoc%numAssocSites==1) then
     !    cidx = assoc%compIdcs(1)
-       
-    ! end if
 
+    ! end if
 
     if (present(maxit)) then
       solver%max_it = maxit

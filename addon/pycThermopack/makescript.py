@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from pyctp import map_platform_specifics
+import map_platform_specifics
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
