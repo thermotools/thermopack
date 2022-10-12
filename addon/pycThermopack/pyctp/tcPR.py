@@ -19,7 +19,7 @@ class tcPR(cubic.cubic):
     """
     Interface to tc-PR
     """
-    def __init__(self):
+    def __init__(self, comps=None, mixing="vdW", parameter_reference=None):
         """
         Initialize tcPR specific function pointers
         """
@@ -28,6 +28,8 @@ class tcPR(cubic.cubic):
 
         # Init methods
         self.eoslibinit_init_tcpr = getattr(self.tp, self.get_export_name("eoslibinit", "init_tcpr"))
+        if comps is not None:
+            self.init(comps, mixing=mixing, parameter_reference=parameter_reference)
 
 
     #################################

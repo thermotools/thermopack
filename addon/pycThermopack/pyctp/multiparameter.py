@@ -17,7 +17,7 @@ class multiparam(thermo.thermopack):
     """
     Interface to multiparameter EOS
     """
-    def __init__(self):
+    def __init__(self, comps=None, eos=None):
         """
         Initialize multiparameter EOS specific function pointers
         """
@@ -26,6 +26,9 @@ class multiparam(thermo.thermopack):
 
         # Init methods
         self.eoslibinit_init_multiparameter = getattr(self.tp, self.get_export_name("eoslibinit", "init_multiparameter"))
+
+        if None not in (comps, eos):
+            self.init(comps, eos)
 
     #################################
     # Init

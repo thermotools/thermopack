@@ -18,7 +18,8 @@ class cpa(cubic.cubic):
     """
     Interface to cubic plus association model
     """
-    def __init__(self):
+    def __init__(self, comps=None, eos="SRK", mixing="vdW", alpha="Classic",
+             parameter_reference="Default"):
         """
         Initialize cubic specific function pointers
         """
@@ -30,6 +31,9 @@ class cpa(cubic.cubic):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_kij"))
+
+        if comps is not None:
+            self.init(comps, eos, mixing, alpha, parameter_reference)
 
 
     #################################

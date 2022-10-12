@@ -19,7 +19,7 @@ class saftvrmie(thermo.thermopack):
     Interface to SAFT-VR Mie
     """
 
-    def __init__(self):
+    def __init__(self, comps=None, parameter_reference="Default"):
         """
         Initialize cubic specific function pointers
         """
@@ -59,6 +59,9 @@ class saftvrmie(thermo.thermopack):
             "saftvrmie_containers", "get_saftvrmie_lr_gammaij"))
         self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
             "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
+
+        if comps is not None:
+            self.init(comps, parameter_reference=parameter_reference)
 
     #################################
     # Init

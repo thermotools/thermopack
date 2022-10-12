@@ -19,7 +19,7 @@ class qcubic(cubic.cubic):
     """
     Interface to cubic
     """
-    def __init__(self):
+    def __init__(self, comps=None, mixing="vdW"):
         """
         Initialize cubic specific function pointers
         """
@@ -28,6 +28,8 @@ class qcubic(cubic.cubic):
 
         # Init methods
         self.eoslibinit_init_quantum_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_cubic"))
+        if comps is not None:
+            self.init(comps, mixing=mixing)
 
 
     #################################
