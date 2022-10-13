@@ -120,6 +120,9 @@ append_export("comp_name_active", "compdata")
 
 append_export("calccriticaltv", "critical")
 
+append_export("get_energy_constants", "cubic_eos")
+append_export("get_covolumes", "cubic_eos")
+
 append_export("specificvolume", "eos")
 append_export("zfac", "eos")
 append_export("thermo", "eos")
