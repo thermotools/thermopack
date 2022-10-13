@@ -344,6 +344,24 @@ subroutine thermopack_setkijandji(i,j,kij)
 end subroutine thermopack_setkijandji
 
 !> Tuning of lij interaction parameters
+subroutine thermopack_getlij(i,j,lij)
+  use thermopack_var
+  use cubic_eos, only: cb_eos
+  implicit none
+  integer, intent(in) :: i,j
+  real, intent(out) :: lij
+  class(base_eos_param), pointer :: act_eos_ptr
+  !
+  act_eos_ptr => get_active_eos()
+  !
+  select type(p_eos => act_eos_ptr)
+  class is (cb_eos)
+    lij = p_eos%lij(i,j)
+  class default
+    print *,"thermopack_getlij: Wrong model - not cubic"
+  end select
+end subroutine thermopack_getlij
+
 subroutine thermopack_setlijandji(i,j,lij)
   use thermopack_var
   use eos_parameters, only: single_eos
@@ -361,7 +379,8 @@ subroutine thermopack_setlijandji(i,j,lij)
   act_eos_ptr => get_active_eos()
   select type (p_eos => act_eos_ptr)
   class is (cb_eos)
-    call stoperror("Not able to set binary lij for Cubic eos.")
+     p_eos%lij(i,j) = lij
+     p_eos%lij(j,i) = lij
   type is(cpa_eos)
     call stoperror("Not able to set binary lij for CPA eos.")
   type is(PCSAFT_eos)

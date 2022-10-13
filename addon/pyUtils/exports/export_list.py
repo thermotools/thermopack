@@ -104,6 +104,8 @@ append_export("get_phase_flags_c", isBindC=True)
 
 append_export("thermopack_getkij")
 append_export("thermopack_setkijandji")
+append_export("thermopack_getlij")
+append_export("thermopack_setlijandji")
 append_export("thermopack_gethvparam")
 append_export("thermopack_sethvparam")
 append_export("thermopack_get_volume_shift_parameters")
@@ -117,6 +119,9 @@ append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")
 
 append_export("calccriticaltv", "critical")
+
+append_export("get_energy_constants", "cubic_eos")
+append_export("get_covolumes", "cubic_eos")
 
 append_export("specificvolume", "eos")
 append_export("zfac", "eos")
@@ -205,6 +210,7 @@ append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
+append_export("setcpaformulation", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
