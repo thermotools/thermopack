@@ -18,8 +18,14 @@ class multiparam(thermo.thermopack):
     Interface to multiparameter EOS
     """
     def __init__(self, comps=None, eos=None):
-        """
-        Initialize multiparameter EOS specific function pointers
+        """Initialize multiparameter EOS
+
+        Unless both parameters are specified, model must be initialized for specific components later by direct call
+        to 'init'.  Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            eos (str, optional): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
         """
         # Load dll/so
         super(multiparam, self).__init__()

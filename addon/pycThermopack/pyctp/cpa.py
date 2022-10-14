@@ -20,8 +20,17 @@ class cpa(cubic.cubic):
     """
     def __init__(self, comps=None, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
-        """
-        Initialize cubic specific function pointers
+        """Initialize cubic plus association model in thermopack
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            eos (str, optional): Cubic equation of state. Defaults to "SRK".
+            mixing (str, optional): Mixture model. Defaults to "vdW".
+            alpha (str, optional): Alpha model. Defaults to "Classic".
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
         super(cpa, self).__init__()

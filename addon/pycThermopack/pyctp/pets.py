@@ -22,8 +22,8 @@ class pets(thermo.thermopack):
         Initialize pets specific function pointers
 
         Args:
-            parameter_reference (str, optional): Wath parameters to use. Defaults to "Default".
-            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
+            parameter_reference (str, optional): What parameters to use. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         super(pets, self).__init__()
@@ -43,8 +43,8 @@ class pets(thermo.thermopack):
         Heier et al. 2018 (10.1080/00268976.2018.1447153)
 
         Args:
-            parameter_reference (str, optional): Wath parameters to use. Defaults to "Default".
-            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
+            parameter_reference (str, optional): What parameters to use. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         self.activate()
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))

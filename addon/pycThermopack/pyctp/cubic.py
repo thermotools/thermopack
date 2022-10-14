@@ -19,8 +19,18 @@ class cubic(thermo.thermopack):
     """
     def __init__(self, comps=None, eos=None, mixing="vdW", alpha="Classic",
              parameter_reference="Default", volume_shift=False):
-        """
-        Initialize cubic specific function pointers
+        """Initialize cubic model in thermopack
+
+        Unless both 'comps' and 'eos' parameters are specified, model must be initialized for specific components
+        later by direct call to 'init'.
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            eos (str, optional): Equation of state (SRK, PR, ...)
+            mixing (str, optional): Mixture model. Defaults to "vdW".
+            alpha (str, optional): Alpha model. Defaults to "Classic".
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
         super(cubic, self).__init__()

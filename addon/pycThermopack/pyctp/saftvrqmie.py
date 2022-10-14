@@ -19,23 +19,38 @@ class saftvrqmie(saftvrmie.saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
-    def __init__(self, comps=None, feynman_hibbs_order=1, parameter_reference="Default"):
-        """
-        Initialize cubic specific function pointers
+    def __init__(self, comps=None, feynman_hibbs_order=1, parameter_reference="Default", minimum_temperature=None):
+        """Initialize SAFT-VRQ Mie model in thermopack
+
+        Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
+        (doi.org/10.1063/1.5111364
+        Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium
+        (doi.org/10.1063/1.5136079)
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional) : Is passed directly to thermopack::set_tmin()
         """
         # Load dll/so
         super(saftvrqmie, self).__init__()
 
         # Init methods
-        self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_saftvrmie"))
+        self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit",
+                                                                                         "init_quantum_saftvrmie"))
         if comps is not None:
-            self.init(comps, feynman_hibbs_order=feynman_hibbs_order, parameter_reference=parameter_reference)
+            self.init(comps, feynman_hibbs_order=feynman_hibbs_order, parameter_reference=parameter_reference,
+                      minimum_temperature=minimum_temperature)
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, feynman_hibbs_order=1, parameter_reference="Default"):
+    def init(self, comps, feynman_hibbs_order=1, parameter_reference="Default", minimum_temperature=None):
         """Initialize SAFT-VRQ Mie model in thermopack
 
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
@@ -47,6 +62,7 @@ class saftvrqmie(saftvrmie.saftvrmie):
             comps (str): Comma separated list of component names
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional) : Is passed directly to thermopack::set_tmin()
         """
         self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
@@ -69,3 +85,4 @@ class saftvrqmie(saftvrmie.saftvrmie):
                                                  comp_string_len,
                                                  ref_string_len)
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+        self.set_tmin(minimum_temperature)
