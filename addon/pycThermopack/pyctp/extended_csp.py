@@ -26,8 +26,21 @@ class ext_csp(thermo.thermopack):
                  ref_comp=None,
                  ref_alpha="Classic",
                  parameter_reference="Default"):
-        """
-        Initialize extended corredsponding state model
+        """Initialize extended corredsponding state model model.
+
+        Unless all of the optional arguments that default to None are specified, model must be initialized
+        for specific components later by direct call to 'init'.
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            sh_eos (str, optional): Shape factor equation of state
+            sh_alpha (str, optional): Shape factor alpha
+            sh_mixing (str, optional): Shape factor mixing rules
+            ref_eos (str, optional): Reference equation of state
+            ref_comp (str, optional): Reference component
+            ref_alpha (str, optional): Needed if refEos is a cubic eos. Should not be present if one want to use an mbwr reference eos. Defaults to "Classic"
+            parameter_reference (str, optional): Identefier for parameters set. Defaults to "Default".
         """
         # Load dll/so
         super(ext_csp, self).__init__()

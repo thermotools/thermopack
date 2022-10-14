@@ -603,7 +603,8 @@ class thermopack(object):
         Args:
             temp (float): Temperature (K)
         """
-        self.minimum_temperature_c.value = temp
+        if temp is not None:
+            self.minimum_temperature_c.value = temp
 
     def get_tmin(self):
         """Get minimum temperature in Thermopack. Used to limit search

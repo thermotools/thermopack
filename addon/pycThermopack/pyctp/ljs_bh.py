@@ -23,7 +23,7 @@ class ljs_bh(thermo.thermopack):
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
-            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         super(ljs_bh, self).__init__()
@@ -51,7 +51,7 @@ class ljs_bh(thermo.thermopack):
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
-            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         self.activate()
         model = "BH"

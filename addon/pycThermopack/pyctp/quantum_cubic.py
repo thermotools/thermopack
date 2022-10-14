@@ -20,8 +20,15 @@ class qcubic(cubic.cubic):
     Interface to cubic
     """
     def __init__(self, comps=None, mixing="vdW"):
-        """
-        Initialize cubic specific function pointers
+        """Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
+        (10.1016/j.fluid.2020.112790)
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            mixing (str, optional): Mixture model. Defaults to "vdW".
         """
         # Load dll/so
         super(qcubic, self).__init__()

@@ -17,9 +17,15 @@ class lee_kesler(thermo.thermopack):
     """
     Interface to Lee-Kesler model
     """
-    def __init__(self, comps, parameter_reference="Default"):
-        """
-        Initialize Lee-Kesler specific function pointers
+    def __init__(self, comps=None, parameter_reference="Default"):
+        """ Init Lee-Kesler
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            parameter_reference (str, optional): Identifier for parameters set. Defaults to "Default".
         """
         # Load dll/so
         super(lee_kesler, self).__init__()
