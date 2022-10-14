@@ -1,11 +1,9 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import tcPR
+from pyctp.tcPR import tcPR
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -25,7 +23,7 @@ def phase_name(th, ph):
 
 # Instanciate and init tcPR object.
 
-tc_pr = tcPR.tcPR("NH3,N2,H2")
+tc_pr = tcPR("NH3,N2,H2")
 
 z = np.array([0.85, 0.1, 0.05])
 T = 273.15 + 115.0 # K

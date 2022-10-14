@@ -1,11 +1,9 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import tcPR
+from pyctp.tcPR import tcPR
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -13,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # Instanciate and init tcPR object. Translated and consistent cubic EoS by le Guennec et al. (10.1016/j.fluid.2016.09.003)
 
-tc_pr = tcPR.tcPR("CO2,N2")
+tc_pr = tcPR("CO2,N2")
 
 # Plot phase envelope
 z = np.array([0.9,0.1])
