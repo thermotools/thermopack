@@ -1,18 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import quantum_cubic
+from pyctp.quantum_cubic import qcubic
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init Quantum-cubic object
-qPR = quantum_cubic.qcubic("He,H2,Ne")
+qPR = qcubic("He,H2,Ne")
 qPR.set_tmin(temp=2.0)
 
 # Plot phase envelope

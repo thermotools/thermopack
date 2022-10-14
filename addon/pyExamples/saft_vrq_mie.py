@@ -2,13 +2,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-sys.path.append('../pycThermopack/')
-from pyctp import saftvrqmie
+sys.path.insert(0,'../pycThermopack/')
+from pyctp.saftvrqmie import saftvrqmie
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init SAFT-VRQ Mie object
-qSAFT = saftvrqmie.saftvrqmie("He,H2,Ne")
+qSAFT = saftvrqmie("He,H2,Ne")
 qSAFT.set_tmin(temp=2.0)
 
 # Plot phase envelope
