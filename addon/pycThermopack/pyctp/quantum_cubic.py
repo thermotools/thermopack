@@ -19,22 +19,31 @@ class qcubic(cubic.cubic):
     """
     Interface to cubic
     """
-    def __init__(self):
-        """
-        Initialize cubic specific function pointers
+    def __init__(self, comps=None, mixing="vdW", minimum_temperature=2.0):
+        """Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
+        (10.1016/j.fluid.2020.112790)
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            mixing (str, optional): Mixture model. Defaults to "vdW".
         """
         # Load dll/so
         super(qcubic, self).__init__()
 
         # Init methods
         self.eoslibinit_init_quantum_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_cubic"))
+        if comps is not None:
+            self.init(comps, mixing=mixing, minimum_temperature=minimum_temperature)
 
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, mixing="vdW"):
+    def init(self, comps, mixing="vdW", minimum_temperature=2.0):
         """Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
         (10.1016/j.fluid.2020.112790)
 
@@ -61,3 +70,5 @@ class qcubic(cubic.cubic):
                                            mixing_len)
 
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+
+        self.set_tmin(minimum_temperature)

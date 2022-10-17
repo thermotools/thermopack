@@ -1,11 +1,10 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import ljs_wca, ljs_bh
+from pyctp.ljs_wca import ljs_wca, ljs_uv
+from pyctp.ljs_bh import ljs_bh
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -139,9 +138,7 @@ def get_BH_models():
     LJS_BH = []
     for i in range(3):
         # Instanciate and init LJS-BH object
-        ljs = ljs_bh.ljs_bh()
-        ljs.init()
-        ljs.set_tmin(temp=2.0)
+        ljs = ljs_bh()
         if i == 1:
             ljs.model_control(enable_a3=False)
         elif i == 2:
@@ -159,9 +156,7 @@ def get_WCA_models():
     LJS_WCA = []
     for i in range(4):
         # Instanciate and init LJS-WCA object
-        ljs = ljs_wca.ljs_wca()
-        ljs.init()
-        ljs.set_tmin(temp=2.0)
+        ljs = ljs_wca()
         if i > 0:
             if i == 1:
                 enable_a4=False
@@ -189,9 +184,7 @@ if __name__ == '__main__':
     ####################################################################
 
     # Instanciate and init LJS-UV object
-    ljs = ljs_wca.ljs_uv()
-    ljs.init()
-    ljs.set_tmin(temp=2.0)
+    ljs = ljs_uv()
 
     plot_phase_envelope([ljs], labels=["UV"], title="LJS-UV phase diagram")
     plot_JT_inversion([ljs], labels=["UV"], title="LJS-UV Joule-Thompson inversion curves")

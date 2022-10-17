@@ -1,19 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import cubic
+from pyctp.cubic import cubic
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init cubic object
-cb = cubic.cubic()
-cb.init("CO2,N2", "PR", "HV", "Classic")
+cb = cubic("CO2,N2", "PR", "HV", "Classic")
 cb.init_solid("CO2")
 z = np.array([0.98, 0.02])
 lines, crits = cb.solid_envelope_plot(1.0e5, z)

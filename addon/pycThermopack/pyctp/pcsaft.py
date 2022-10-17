@@ -17,9 +17,15 @@ class pcsaft(thermo.thermopack):
     """
     Interface to cubic
     """
-    def __init__(self):
-        """
-        Initialize cubic specific function pointers
+    def __init__(self, comps=None, parameter_reference="Default"):
+        """Initialize PC-SAFT model in thermopack
+
+        If no are specified, model must be initialized for specific components later by direct call to 'init'.
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
         super(pcsaft, self).__init__()
@@ -29,6 +35,9 @@ class pcsaft(thermo.thermopack):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_kij_asym"))
+
+        if comps is not None:
+            self.init(comps, parameter_reference=parameter_reference)
 
     #################################
     # Init

@@ -1,18 +1,15 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import cubic
+from pyctp.cubic import cubic
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-cb = cubic.cubic()
-cb.init("Ne,H2","SRK","Classic","Classic")
+cb = cubic("Ne,H2","SRK","Classic","Classic")
 cb.set_kij(1,2,0.19)
 KSTYPE, VLE, LLVE, CRIT, AZ = cb.global_binary_plot(minimum_pressure=1.0e5, minimum_temperature=2.0, include_azeotropes=True)
 p_scaling = 1.0e-6

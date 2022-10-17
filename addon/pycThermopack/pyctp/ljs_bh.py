@@ -17,9 +17,13 @@ class ljs_bh(thermo.thermopack):
     """
     Interface to LJS-BH
     """
-    def __init__(self):
+    def __init__(self, parameter_reference="Default", minimum_temperature=2.0):
         """
         Initialize cubic specific function pointers
+
+        Args:
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         super(ljs_bh, self).__init__()
@@ -36,16 +40,18 @@ class ljs_bh(thermo.thermopack):
         self.s_calc_ai_reduced_ljs_ex = getattr(self.tp, self.get_export_name("lj_splined", "calc_ai_reduced_ljs_ex"))
         self.s_ljs_bh_get_bh_diameter_div_sigma = getattr(self.tp, self.get_export_name("lj_splined", "ljs_bh_get_bh_diameter_div_sigma"))
 
+        self.init(parameter_reference, minimum_temperature)
 
     #################################
     # Init
     #################################
 
-    def init(self, parameter_reference="Default"):
+    def init(self, parameter_reference="Default", minimum_temperature=2.0):
         """Initialize Lennard-Jomes splined model based on Barker-Henderson perturbation theory
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         self.activate()
         model = "BH"
@@ -68,6 +74,7 @@ class ljs_bh(thermo.thermopack):
                                       ref_string_len)
 
         self.nc = 1
+        self.set_tmin(minimum_temperature)
 
     def get_sigma_eps(self):
         """Get particle size and well depth

@@ -19,9 +19,15 @@ class saftvrmie(thermo.thermopack):
     Interface to SAFT-VR Mie
     """
 
-    def __init__(self):
-        """
-        Initialize cubic specific function pointers
+    def __init__(self, comps=None, parameter_reference="Default"):
+        """Initialize SAFT-VR Mie model in thermopack
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
         super(saftvrmie, self).__init__()
@@ -59,6 +65,9 @@ class saftvrmie(thermo.thermopack):
             "saftvrmie_containers", "get_saftvrmie_lr_gammaij"))
         self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
             "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
+
+        if comps is not None:
+            self.init(comps, parameter_reference=parameter_reference)
 
     #################################
     # Init

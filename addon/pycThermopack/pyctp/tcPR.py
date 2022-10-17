@@ -19,15 +19,27 @@ class tcPR(cubic.cubic):
     """
     Interface to tc-PR
     """
-    def __init__(self):
+    def __init__(self, comps=None, mixing="vdW", parameter_reference=None):
         """
-        Initialize tcPR specific function pointers
+        Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
+        (10.1016/j.fluid.2016.09.003)
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            mixing (str, optional): Mixture model. Defaults to "vdW".
+            parameter_ref (str, optional): Parameter reference additional to "tcPR".
+
         """
         # Load dll/so
         super(tcPR, self).__init__()
 
         # Init methods
         self.eoslibinit_init_tcpr = getattr(self.tp, self.get_export_name("eoslibinit", "init_tcpr"))
+        if comps is not None:
+            self.init(comps, mixing=mixing, parameter_reference=parameter_reference)
 
 
     #################################

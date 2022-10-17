@@ -1,36 +1,17 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import saftvrmie
+from pyctp.saftvrmie import saftvrmie
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-
-# Avogadros number
-NA = 6.02214076e23
-
-def calc_reduced_T(Ta, eps):
-    """ Calculate reduced temperature
-    """
-    Tstar = np.zeros_like(Ta)
-    Tstar = Ta/eps
-    return Tstar
-
-def calc_reduced_rho(rhoa, sigma):
-    """ Calculate reduced density
-    """
-    rhoStar = np.zeros_like(rhoa)
-    rhoStar = sigma**3*NA*rhoa
-    return rhoStar
+from pyctp_example_utils import NA, calc_reduced_T, calc_reduced_rho
 
 # Instanciate and init SAFT-VR Mie object
-svrm = saftvrmie.saftvrmie()
-svrm.init("H2")
+svrm = saftvrmie("H2")
 svrm.set_tmin(temp=2.0)
 
 # Get parameters for H2
@@ -58,7 +39,7 @@ sigma = 1.0e-10
 eps = 30.0
 lambda_a = 6.0
 lambda_r = 12.0
-svrm.init("Ar")
+svrm.init("Ar")  # Re-initialize with new component
 svrm.set_tmin(temp=2.0)
 svrm.set_pure_fluid_param(1, m, sigma, eps, lambda_a, lambda_r)
 svrm.redefine_critical_parameters(False)

@@ -39,12 +39,13 @@ class ljs_wca_base(thermo.thermopack):
     def model_control(self):
         pass
 
-    def _base_init(self, model, parameter_reference="Default"):
+    def _base_init(self, model, parameter_reference="Default", minimum_temperature=2.0):
         """Initialize Lennard-Jomes splined model based on Weeks-Chandler-Anderson perturbation theory
 
         Args:
             model (str, optional): Which model to use?. ("WCA", "UV", UF)
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         self.activate()
         model_string_c = c_char_p(model.encode('ascii'))
@@ -66,6 +67,7 @@ class ljs_wca_base(thermo.thermopack):
                                    ref_string_len)
 
         self.nc = 1
+        self.set_tmin(minimum_temperature)
 
     def get_sigma_eps(self):
         """Get particle size and well depth
@@ -109,9 +111,12 @@ class ljs_wca(ljs_wca_base):
     """
     Interface to LJS-WCA
     """
-    def __init__(self):
+    def __init__(self, parameter_reference='Default', minimum_temperature=2.0):
         """
         Initialize wca specific function pointers
+        Args:
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         super(ljs_wca, self).__init__()
@@ -122,18 +127,23 @@ class ljs_wca(ljs_wca_base):
         # LJS-WCA specific methods
         self.s_calc_ai_reduced_ljs_wca = getattr(self.tp, self.get_export_name("lj_splined", "calc_ljs_wca_ai_tr"))
 
+        self.init(parameter_reference, minimum_temperature)
+
 
     #################################
     # Init
     #################################
 
-    def init(self, parameter_reference="Default"):
+    def init(self, parameter_reference="Default", minimum_temperature=2.0):
         """Initialize Lennard-Jomes splined model based on Weeks-Chandler-Anderson perturbation theory
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
         """
-        self._base_init(model="WCA",parameter_reference=parameter_reference)
+        self._base_init(model="WCA",
+                        parameter_reference=parameter_reference,
+                        minimum_temperature=minimum_temperature)
 
     #################################
     # Model options
@@ -223,9 +233,12 @@ class ljs_uv(ljs_wca_base):
     """
     Interface to LJS-UV
     """
-    def __init__(self):
-        """
-        Initialize UV specific function pointers
+    def __init__(self, parameter_reference="Default", minimum_temperature=2.0):
+        """Initialize Lennard-Jomes splined model based on Weeks-Chandler-Anderson perturbation theory
+
+        Args:
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         super(ljs_uv, self).__init__()
@@ -233,18 +246,22 @@ class ljs_uv(ljs_wca_base):
         # Options methods
         self.s_ljs_uv_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_uv_model_control"))
 
+        self.init(parameter_reference, minimum_temperature)
 
     #################################
     # Init
     #################################
 
-    def init(self, parameter_reference="Default"):
+    def init(self, parameter_reference="Default", minimum_temperature=2.0):
         """Initialize Lennard-Jomes splined model based on Weeks-Chandler-Anderson perturbation theory
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
-        self._base_init(model="UV",parameter_reference=parameter_reference)
+        self._base_init(model="UV",
+                        parameter_reference=parameter_reference,
+                        minimum_temperature=minimum_temperature)
 
     #################################
     # Model options
