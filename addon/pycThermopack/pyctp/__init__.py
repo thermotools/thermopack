@@ -14,6 +14,8 @@ from . import utils
 from . import multiparameter
 from . import pets
 from . import lee_kesler
+from . import ljs_bh
+from . import ljs_wca
 
 __all__ = ["platform_specifics",
            "thermo",
@@ -29,4 +31,6 @@ __all__ = ["platform_specifics",
            "utils",
            "multiparameter"
            "pets",
-           "lee_kesler"]
+           "lee_kesler",
+           "ljs_bh",
+           "ljs_wca"]

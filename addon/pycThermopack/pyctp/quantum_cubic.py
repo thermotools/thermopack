@@ -19,7 +19,7 @@ class qcubic(cubic.cubic):
     """
     Interface to cubic
     """
-    def __init__(self, comps=None, mixing="vdW"):
+    def __init__(self, comps=None, mixing="vdW", minimum_temperature=2.0):
         """Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
         (10.1016/j.fluid.2020.112790)
 
@@ -36,14 +36,14 @@ class qcubic(cubic.cubic):
         # Init methods
         self.eoslibinit_init_quantum_cubic = getattr(self.tp, self.get_export_name("eoslibinit", "init_quantum_cubic"))
         if comps is not None:
-            self.init(comps, mixing=mixing)
+            self.init(comps, mixing=mixing, minimum_temperature=minimum_temperature)
 
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, mixing="vdW"):
+    def init(self, comps, mixing="vdW", minimum_temperature=2.0):
         """Initialize Quantum Cubic Peng-Robinson equation of state by Aasen et al.
         (10.1016/j.fluid.2020.112790)
 
@@ -70,3 +70,5 @@ class qcubic(cubic.cubic):
                                            mixing_len)
 
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+
+        self.set_tmin(minimum_temperature)

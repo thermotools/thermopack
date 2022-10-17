@@ -141,7 +141,9 @@ class ljs_wca(ljs_wca_base):
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
         """
-        self._base_init(model="WCA",parameter_reference=parameter_reference)
+        self._base_init(model="WCA",
+                        parameter_reference=parameter_reference,
+                        minimum_temperature=minimum_temperature)
 
     #################################
     # Model options
@@ -257,7 +259,9 @@ class ljs_uv(ljs_wca_base):
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
-        self._base_init(model="UV",parameter_reference=parameter_reference, minimum_temperature=minimum_temperature)
+        self._base_init(model="UV",
+                        parameter_reference=parameter_reference,
+                        minimum_temperature=minimum_temperature)
 
     #################################
     # Model options
