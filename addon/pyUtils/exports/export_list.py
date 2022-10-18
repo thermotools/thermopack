@@ -159,6 +159,8 @@ append_export("entropy_tvp", "eostv")
 append_export("thermo_tvp", "eostv")
 append_export("enthalpy_tvp", "eostv")
 
+append_export("calc_bmcsl_gij_fmt", "hardsphere_bmcsl")
+
 append_export("idealenthalpysingle", "ideal")
 append_export("set_entropy_reference_value", "ideal")
 append_export("get_entropy_reference_value", "ideal")

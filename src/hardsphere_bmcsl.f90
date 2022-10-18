@@ -182,7 +182,7 @@ contains
 
   end subroutine calc_bmcsl_lngij
 
-  subroutine calc_bmcsl_gij_FMT(T,n_alpha,i,j,dhs,g,g_n)
+  subroutine calc_bmcsl_gij_FMT(n_alpha,mu_ij,mu_ij_T,g,g_n,g_T)
     !------------------------------------------------------------------------
     !>  FMT model for associating fluids
     !! 2022-04, Morten Hammer
@@ -191,17 +191,18 @@ contains
     !! J. Chem. Phys., Vol. 116, No. 16 (2002).  All derivatives checked numerically.
     !! doi: 10.1063/1.1463435
     !----------------------------------------------------------------------------
-    real, intent(in) :: T, n_alpha(0:5)  !< temperature [K], n_alpha
-    integer, intent(in) :: i, j    ! The pair-correlation of the pair i,j
-    type(hs_diameter), intent(in) :: dhs !< Hard-sphere diameter and differentials
+    real, intent(in) :: n_alpha(0:5)  !< temperature [K], n_alpha
+    !type(hs_diameter), intent(in) :: dhs !< Hard-sphere diameter and differentials
+    real, intent(in) :: mu_ij, mu_ij_T !< mu=(d(i)*d(j))/(d(i)+d(j)) and temperature differential
     real, intent(out) :: g         !< reduced helmholtz energy [-]
     real, intent(out), optional :: g_n(0:5) !< derivatives
+    real, intent(out), optional :: g_T !< derivative wrpt. temperature
     integer, parameter :: n2V = 5
     real :: mu, mu_2, xi, xi_n2, xi_n2V, g_xi
     real :: div_diff_1, div_diff_2, div_diff_3, div_diff_4
 
     ! Compute mu
-    mu=(dhs%d(i)*dhs%d(j))/(dhs%d(i)+dhs%d(j))
+    !mu=(dhs%d(i)*dhs%d(j))/(dhs%d(i)+dhs%d(j))
     xi = 1 - n_alpha(n2V)**2/n_alpha(2)**2
     xi_n2 = 2*n_alpha(n2V)**2/n_alpha(2)**3
     xi_n2V = -2*n_alpha(n2V)/n_alpha(2)**2
@@ -211,6 +212,7 @@ contains
     div_diff_2=div_diff_1**2
     div_diff_3=div_diff_1*div_diff_2
     div_diff_4=div_diff_2*div_diff_2
+    mu = mu_ij
     mu_2=mu*mu
 
     g_xi = mu*n_alpha(2)*div_diff_2/2 + n_alpha(2)**2*mu_2*div_diff_3/18
@@ -223,6 +225,9 @@ contains
       g_n(3) = div_diff_2 + n_alpha(2)*div_diff_3*mu*xi &
            + n_alpha(2)**2*div_diff_4*mu_2*xi/6
       g_n(n2V) = g_xi*xi_n2V
+    endif
+    if (present(g_T)) then
+      g_T=xi*mu_ij_T*(n_alpha(2)*div_diff_2/2 + n_alpha(2)**2*mu*div_diff_3/9)
     endif
 
   end subroutine calc_bmcsl_gij_FMT

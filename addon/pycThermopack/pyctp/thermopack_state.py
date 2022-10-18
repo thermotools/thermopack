@@ -282,7 +282,7 @@ class state(object):
             mu = self.mu
         elif self.v is not None:
             _ = self.volume()
-            mu, = self.eos.internal_energychemical_potential_tv(self.T, self.v, self.x)
+            mu, = self.eos.chemical_potential_tv(self.T, self.v, self.x)
             self.mu = mu
         return mu
 

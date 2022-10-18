@@ -35,6 +35,8 @@ class saft(thermopack):
             "saft_interface", "calc_hard_sphere_diameter"))
         self.s_calc_hs_diameter_ij = getattr(self.tp, self.get_export_name(
             "saft_interface", "calc_hard_sphere_diameter_ij"))
+        self.s_calc_bmcsl_gij_fmt = getattr(self.tp, self.get_export_name(
+            "hardsphere_bmcsl", "calc_bmcsl_gij_fmt"))
 
         self.s_de_broglie_wavelength = getattr(
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
@@ -648,3 +650,48 @@ class saft(thermopack):
                                       byref(na_enabled_c))
 
         return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1
+
+    def calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None):
+        """Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
+
+        Args:
+            n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2)
+            mu_ij (float): mu_ij = d_i*d_j/(d_i+d_j)
+            mu_ij_T (float): Temperature differential of mu_ij
+
+        Returns:
+            float: g_ij
+            np.ndarray: g_ij_n
+            float: g_ij_T
+        """
+        self.activate()
+        n_alpha_c = (c_double * len(n_alpha))(*n_alpha)
+        mu_ij_c = c_double(mu_ij)
+        mu_ij_T_c = c_double(mu_ij_T if isinstance(mu_ij_T, float) else 0.0)
+        g_ij_c = c_double(0.0)
+        g_ij_n_c = (c_double * len(n_alpha))(0.0) if calc_g_ij_n else POINTER(c_double)()
+        g_ij_T_c = POINTER(c_double)(c_double(0.0)) if isinstance(mu_ij_T, float) else POINTER(c_double)()
+
+        self.s_calc_bmcsl_gij_fmt.argtypes = [POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double)]
+
+        self.s_calc_bmcsl_gij_fmt.restype = None
+
+        self.s_calc_bmcsl_gij_fmt(n_alpha_c,
+                                  byref(mu_ij_c),
+                                  byref(mu_ij_T_c),
+                                  byref(g_ij_c),
+                                  g_ij_n_c,
+                                  g_ij_T_c)
+
+        return_tuple = (g_ij_c.value, )
+        if calc_g_ij_n:
+            return_tuple += (np.array(g_ij_n_c), )
+        if isinstance(mu_ij_T, float):
+            return_tuple += (g_ij_T_c[0], )
+
+        return  return_tuple
