@@ -186,6 +186,9 @@ class state(object):
         _ = self.specific_enthalpy()
         return self.h*np.sum(self.n)
 
+    def enthalpy_density(self):
+        return self.specific_enthalpy()/self.v
+
     def specific_excess_enthalpy(self):
         if self.hE is not None:
             hE = self.hE
@@ -194,6 +197,9 @@ class state(object):
             hE, = self.eos.enthalpy_tv(self.T, self.v, self.x, property_flag="R")
             self.hE = hE
         return hE
+
+    def excess_enthalpy_density(self):
+        return self.specific_excess_enthalpy()/self.v
 
     def excess_enthalpy(self):
         _ = self.specific_excess_enthalpy()
@@ -212,6 +218,9 @@ class state(object):
         _ = self.specific_entropy()
         return self.s*np.sum(self.n)
 
+    def entropy_density(self):
+        return self.specific_entropy()/self.v
+
     def specific_excess_entropy(self):
         if self.sE is not None:
             sE = self.sE
@@ -220,6 +229,15 @@ class state(object):
             sE, = self.eos.entropy_tv(self.T, self.v, self.x, property_flag="R")
             self.sE = sE
         return sE
+
+    def excess_entropy_density(self):
+        if self.sE is not None:
+            sE = self.sE
+        elif self.v is not None:
+            _ = self.volume()
+            sE, = self.eos.entropy_tv(self.T, self.v, self.x, property_flag="R")
+            self.sE = sE
+        return sE/self.v
 
     def excess_entropy(self):
         _ = self.specific_excess_entropy()
@@ -238,6 +256,9 @@ class state(object):
         _ = self.specific_free_energy()
         return self.a*np.sum(self.n)
 
+    def free_energy_density(self):
+        return self.specific_free_energy()/self.v
+
     def specific_excess_free_energy(self):
         if self.aE is not None:
             aE = self.aE
@@ -246,6 +267,9 @@ class state(object):
             aE, = self.eos.helmholtz_tv(self.T, self.v, self.x, property_flag="R")
             self.aE = aE
         return aE
+
+    def excess_free_energy_density(self):
+        return self.specific_excess_free_energy()/self.v
 
     def excess_free_energy(self):
         _ = self.specific_excess_free_energy()
@@ -264,6 +288,9 @@ class state(object):
         _ = self.specific_energy()
         return self.u*np.sum(self.n)
 
+    def energy_density(self):
+        return self.specific_energy()/self.v
+
     def specific_excess_energy(self):
         if self.uE is not None:
             uE = self.uE
@@ -276,6 +303,9 @@ class state(object):
     def excess_energy(self):
         _ = self.specific_excess_energy()
         return self.uE*np.sum(self.n)
+
+    def excess_energy_density(self):
+        return self.specific_excess_energy()/self.v
 
     def chemical_potential(self):
         if self.mu is not None:
