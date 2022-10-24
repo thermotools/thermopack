@@ -2081,7 +2081,7 @@ class thermopack(object):
         self.activate()
         temp_c = c_double(temp)
         mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial if rho_initial else 0.0)
+        rho_c = (c_double * len(mu))(*rho_initial if rho_initial is not None else [0.0]*len(mu))
         phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
         ierr_c = c_int(0)
         self.s_solve_mu_t.argtypes = [POINTER(c_double),
@@ -2115,7 +2115,7 @@ class thermopack(object):
         self.activate()
         temp_c = c_double(temp)
         lnf_c = (c_double * len(lnf))(*lnf)
-        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial else 0.0)
+        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial is not None else [0.0]*len(lnf))
         phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
         ierr_c = c_int(0)
         self.s_solve_lnf_t.argtypes = [POINTER(c_double),
