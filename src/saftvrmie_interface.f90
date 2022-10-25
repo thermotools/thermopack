@@ -128,23 +128,26 @@ contains
     !
     ! NB: the order of the function calls below is important
     !
-    ! Calculate Feynman--Hibbs D parameter
-    call calc_DFeynHibbsij(nc, T, saftvrmie_param%DFeynHibbsParam_ij, &
-         saftvrmie_vc%DFeynHibbsij, saftvrmie_vc%D2FeynHibbsij)
-    ! Calculate effective sigma
-    call calc_binary_effective_sigma(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
-         saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT)
-    ! Calculate effective epsilon divided by k
-    call calc_binary_effective_eps_divk(nc,T,saftvrmie_vc,saftvrmie_vc%eps_divk_eff%d,&
-         saftvrmie_vc%eps_divk_eff%d_T,saftvrmie_vc%eps_divk_eff%d_TT)
-    ! Calculate hard-sphere diameter
-    call calc_hardsphere_diameter(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
-         saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT,saftvrmie_vc%dhs%d,&
-         saftvrmie_vc%dhs%d_T,saftvrmie_vc%dhs%d_TT)
-    ! Calculate dimensionless van der Waals energy
-    call calcAlpha(nc,saftvrmie_vc%sigma_eff,saftvrmie_vc%eps_divk_eff,&
-         T,saftvrmie_vc,saftvrmie_vc%alpha%d,saftvrmie_vc%alpha%d_T,saftvrmie_vc%alpha%d_TT)
-
+    if (saftvrmie_vc%temperature /= T) then
+      ! Calculate Feynman--Hibbs D parameter
+      call calc_DFeynHibbsij(nc, T, saftvrmie_param%DFeynHibbsParam_ij, &
+           saftvrmie_vc%DFeynHibbsij, saftvrmie_vc%D2FeynHibbsij)
+      ! Calculate effective sigma
+      call calc_binary_effective_sigma(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
+           saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT)
+      ! Calculate effective epsilon divided by k
+      call calc_binary_effective_eps_divk(nc,T,saftvrmie_vc,saftvrmie_vc%eps_divk_eff%d,&
+           saftvrmie_vc%eps_divk_eff%d_T,saftvrmie_vc%eps_divk_eff%d_TT)
+      ! Calculate hard-sphere diameter
+      call calc_hardsphere_diameter(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
+           saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT,saftvrmie_vc%dhs%d,&
+           saftvrmie_vc%dhs%d_T,saftvrmie_vc%dhs%d_TT)
+      ! Calculate dimensionless van der Waals energy
+      call calcAlpha(nc,saftvrmie_vc%sigma_eff,saftvrmie_vc%eps_divk_eff,&
+           T,saftvrmie_vc,saftvrmie_vc%alpha%d,saftvrmie_vc%alpha%d_T,saftvrmie_vc%alpha%d_TT)
+      ! Set temperature of update
+      saftvrmie_vc%temperature = T
+    endif
     ! Calculate hypotetical pure fluid packing fraction
     call calcZetaX(nc,T,V,n,difflevel,saftvrmie_vc%dhs,saftvrmie_vc%zeta)
     ! Calculate isothermal hard sphere compressibillity factor

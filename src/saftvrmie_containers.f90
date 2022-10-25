@@ -155,6 +155,8 @@ module saftvrmie_containers
   !> Container for SAFT-VR Mie common variables
   !! To be claculated only once per state
   type :: saftvrmie_var_container
+    !> Temperature of last update
+    real :: temperature = -1.0 ! Unphysical initila value
     !> Hard sphere diameter
     type(saftvrmie_dhs) :: dhs
     !> Effective sigma for the quantum corrected potential
