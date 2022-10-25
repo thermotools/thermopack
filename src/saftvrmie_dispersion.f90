@@ -1544,60 +1544,62 @@ contains
     ns = sum(saftvrmie_param%ms*n)
     ns2 = ns**2
     do i=1,nc
-       do j=1,nc
-          if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
-               present(a1_TT) .or. present(a1_VV) .or. present(a1_TV)) then
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
-                  saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
-                  saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
-              end if
-          else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
-             end if
-          else
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
-             end if
-          endif
-       enddo
+      do j=i,nc
+        if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
+             present(a1_TT) .or. present(a1_VV) .or. present(a1_TV)) then
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
+               saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
+               saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
+          end if
+        else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
+          end if
+        else
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
+          end if
+        endif
+      enddo
     enddo
+    call saftvrmie_vc%a1ij%mirror()
 
     if (svrm_opt%quantum_correction>0) then
-       ! Add the quantum corrections a1ijQCorr to a1ij
-       call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
+      call saftvrmie_vc%a1ijQCorr%mirror()
+      ! Add the quantum corrections a1ijQCorr to a1ij
+      call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
     end if
 
     ! Average over mole fractions
@@ -1840,79 +1842,80 @@ contains
     ! Locals
     integer :: i,j !< Binary of interest
     do i=1,nc
-       do j=1,nc
-          if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
-               present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
-                  saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
-                  saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             end if
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2ij%am(i,j),&
-                  saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
-                  saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
-                  saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
-                  saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
-                  saftvrmie_vc%a2ij%am_nn(:,:,i,j))
-          else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             endif
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
-                  saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
-          else
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             end if
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
+      do j=i,nc
+        if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
+             present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
+               saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
+               saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+          end if
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2ij%am(i,j),&
+               saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
+               saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
+               saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
+               saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
+               saftvrmie_vc%a2ij%am_nn(:,:,i,j))
+        else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
           endif
-       enddo
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
+               saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
+        else
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+          end if
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
+        endif
+      enddo
     enddo
+    call saftvrmie_vc%a2ij%mirror()
     call calc_double_sum(nc,n,saftvrmie_vc%a2ij,&
          a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
   end subroutine calcA2
@@ -3310,7 +3313,7 @@ contains
     endif
     z = s_vc%zeta_bar%zx
     do i=1,nc
-       do j=1,nc
+       do j=i,nc
           call calcA3zeta(s_vc%eps_divk_eff%d(i,j),z,s_vc%alpha%d(i,j), &
                saftvrmie_param%f_alpha_ij(:,i,j),s_vc%a3ij%am(i,j),a3_z,a3_zz,&
                a3_a,a3_aa,a3_az)
@@ -3359,7 +3362,7 @@ contains
           endif
        enddo
     enddo
-
+    call s_vc%a3ij%mirror()
     call calc_double_sum(nc,n,s_vc%a3ij,&
          a3,a_T=a3_T,a_V=a3_V,a_n=a3_n,a_TT=a3_TT,a_VV=a3_VV,a_TV=a3_TV,&
          a_Tn=a3_Tn,a_Vn=a3_Vn,a_nn=a3_nn)

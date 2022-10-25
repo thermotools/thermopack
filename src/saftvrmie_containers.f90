@@ -65,6 +65,7 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
     real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
   contains
+    procedure, public :: mirror => mirror_saftvrmie_aij
     ! Assignment operator
     procedure, public :: assign_saftvrmie_aij
     generic, public :: assignment(=) => assign_saftvrmie_aij
@@ -1564,6 +1565,38 @@ Contains
     this%a2ij = this%a2ij
     this%a3ij = this%a3ij
   end subroutine assign_saftvrmie_var_container
+
+  subroutine mirror_saftvrmie_aij(this)
+    class(saftvrmie_aij), intent(inout) :: this
+    ! Locals
+    integer :: i,j, nc
+    if (allocated(this%am)) then
+      nc = size(this%am, dim=1)
+    else
+      nc = 0
+    endif
+    ! Mirror upper left triangle over diagonal
+    do i=1,nc
+      do j=i+1,nc
+        this%am(j,i) = this%am(i,j)
+        this%am_T(j,i) = this%am_T(i,j)
+        this%am_V(j,i) = this%am_V(i,j)
+        this%am_TT(j,i) = this%am_TT(i,j)
+        this%am_VV(j,i) = this%am_VV(i,j)
+        this%am_TV(j,i) = this%am_TV(i,j)
+        this%am_VVV(j,i) = this%am_VVV(i,j)
+        this%am_VVT(j,i) = this%am_VVT(i,j)
+        this%am_VTT(j,i) = this%am_VTT(i,j)
+        this%am_n(:,j,i) = this%am_n(:,i,j)
+        this%am_Tn(:,j,i) = this%am_Tn(:,i,j)
+        this%am_Vn(:,j,i) = this%am_Vn(:,i,j)
+        this%am_VVn(:,j,i) = this%am_VVn(:,i,j)
+        this%am_VTn(:,j,i) = this%am_VTn(:,i,j)
+        this%am_nn(:,:,j,i) = this%am_nn(:,:,i,j)
+        this%am_Vnn(:,:,j,i) = this%am_Vnn(:,:,i,j)
+      enddo
+    enddo
+  end subroutine mirror_saftvrmie_aij
 
   subroutine assign_saftvrmie_aij(this,other)
     class(saftvrmie_aij), intent(inout) :: this
