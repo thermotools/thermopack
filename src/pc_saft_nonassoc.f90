@@ -610,7 +610,7 @@ contains
 
   !> alpha^{hs} TVn
   !! alpha = A/(nRT)
-  subroutine alpha_hs_PC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
+  subroutine alpha_hs_sPC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
        alp_VV,alp_TV,alp_Vn,alp_TT,alp_Tn,alp_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
@@ -643,7 +643,7 @@ contains
       end do
     end if
 
-  end subroutine alpha_hs_PC_TVn
+  end subroutine alpha_hs_sPC_TVn
 
   ! Reduced molar Helmholtz free energy contribution from a hard-sphere fluid.
   ! Should be pretty fast.
@@ -1865,7 +1865,6 @@ contains
     call F_HS_PC_SAFT_TVn(eos,T,V,n,F_HS,F_HS_T,F_HS_V,F_HS_n,F_HS_TT,F_HS_TV,&
          F_HS_Tn,F_HS_VV,F_HS_Vn,F_HS_nn)
     call F_chain_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-
     ! if (present(F)) F = 0
     ! if (present(F_T)) F_T = 0
     ! if (present(F_V)) F_V = 0
@@ -1899,6 +1898,43 @@ contains
     if (present(F_nn)) F_nn = F_nn + F_HS_nn
 
   end subroutine F_HC_PC_SAFT_TVn
+
+  !> alpha^{hs} TVn
+  !! alpha = A/(nRT)
+  subroutine alpha_hs_PC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_TV,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
+    real, intent(out), optional :: alp !< [-]
+    real, intent(out), optional :: alp_V, alp_T, alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_TV, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals.
+    real :: sumn
+    integer :: i, j
+
+    sumn = sum(n)
+    call F_HC_PC_SAFT_TVn(eos,T,V,n,F=alp,F_T=alp_T,F_V=alp_V,F_n=alp_n,&
+         F_TT=alp_TT,F_TV=alp_TV,F_Tn=alp_Tn,F_VV=alp_VV,F_Vn=alp_Vn,F_nn=alp_nn)
+
+    if (present(alp_nn)) then
+      do i=1,nce
+        do j=1,nce
+          alp_nn(i,j) = alp_nn(i,j)/sumn - (alp_n(i) + alp_n(j))/sumn**2 + 2*alp/sumn**3
+        end do
+      end do
+    end if
+    if (present(alp_n)) alp_n = alp_n/sumn - alp/sumn**2
+    if (present(alp_Tn)) alp_Tn = alp_Tn/sumn - alp_T/sumn**2
+    if (present(alp_Vn)) alp_Vn = alp_Vn/sumn - alp_V/sumn**2
+    if (present(alp)) alp = alp/sumn
+    if (present(alp_T)) alp_T = alp_T/sumn
+    if (present(alp_TT)) alp_TT = alp_TT/sumn
+    if (present(alp_V)) alp_V = alp_V/sumn
+    if (present(alp_VV)) alp_VV = alp_VV/sumn
+    if (present(alp_TV)) alp_TV = alp_TV/sumn
+
+  end subroutine alpha_hs_PC_TVn
 
   !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
   !> coming from PC-SAFT's hard-chain and dispersion contributions. All

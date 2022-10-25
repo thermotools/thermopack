@@ -587,7 +587,7 @@ contains
   !>
   subroutine calc_saft_hard_sphere(T,V,n,a,a_T,&
        a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
-    use pc_saft_nonassoc, only: alpha_hs_PC_TVn, sPCSAFT_eos
+    use pc_saft_nonassoc, only: alpha_hs_sPC_TVn, sPCSAFT_eos, PCSAFT_eos, alpha_hs_PC_TVn
     use saftvrmie_interface, only: calc_saftvrmie_hard_sphere
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_wca_eos,ljs_bh_eos,calc_ljs_hard_sphere
@@ -602,8 +602,11 @@ contains
     eos => get_active_eos()
     ! Calculate the non-association contribution.
     select type ( p_eos => eos )
-    class is ( sPCSAFT_eos )
+    class is ( PCSAFT_eos )
       call alpha_hs_PC_TVn(p_eos,T,V,n,a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
+           alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
+    class is ( sPCSAFT_eos )
+      call alpha_hs_sPC_TVn(p_eos,T,V,n,a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
            alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
     class is ( ljs_wca_eos )
       call calc_ljs_hard_sphere(eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_v,F_n=a_n,F_TT=a_TT,&
@@ -911,7 +914,7 @@ contains
   !! \author Morten Hammer, October 2022
   subroutine test_fmt_compatibility(is_fmt_consistent, na_enabled)
     use saftvrmie_containers, only: saftvrmie_eos
-    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pc_saft_nonassoc, only: sPCSAFT_eos, PCSAFT_eos
     use pets, only: PETS_eos
     use lj_splined, only: ljs_wca_eos, ljs_bh_eos
     use thermopack_var, only: base_eos_param, nce
@@ -929,8 +932,14 @@ contains
       else
         call p_eos%svrm_opt%test_fmt_compatibility(is_fmt_consistent, na_enabled)
       endif
-    class is (sPCSAFT_eos)
+    class is (PCSAFT_eos)
       is_fmt_consistent = .true.
+    class is (sPCSAFT_eos)
+      if (nce == 1) then
+        is_fmt_consistent = .true.
+      else
+        is_fmt_consistent = .false.
+      endif
     class is (PETS_eos)
       is_fmt_consistent = .true.
     class is (ljs_wca_eos)
