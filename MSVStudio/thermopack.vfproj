@@ -76,6 +76,8 @@
 		<File RelativePath="..\src\external.f90"/>
 		<File RelativePath="..\src\h2o_gibbs.f90"/>
 		<File RelativePath="..\src\hardsphere_wca.f90"/>
+		<File RelativePath="..\src\hyperdual_mod.f90"/>
+		<File RelativePath="..\src\hyperdual_utility.f90"/>
 		<File RelativePath="..\src\ideal.f90"/>
 		<File RelativePath="..\src\idealh2.f90"/>
 		<File RelativePath="..\src\isolines.f90"/>

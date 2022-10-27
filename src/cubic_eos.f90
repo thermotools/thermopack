@@ -750,6 +750,7 @@ contains
   !! \author Morten H
   subroutine cubic_eos_dealloc(eos)
     use utilities, only: deallocate_real, deallocate_real_2
+    use thermopack_var, only: base_eos_dealloc
     ! Passed object:
     class(cb_eos), intent(inout) :: eos
     ! Loclas
