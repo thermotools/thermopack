@@ -57,7 +57,7 @@ To compile using Intel FORTRAN, use `make optim_ifort`.
 
 ```bash
 # Fetch and compile
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 make optim
 
