@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyctp"
+version = "2.0.0"
+authors = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+  { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
+]
+description = "Python interface to thermopack"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Fortran",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+    "License :: Apache-2.0",
+]
+keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
+
+[project.urls]
+"Homepage" = "https://github.com/thermotools/thermopack"
+"Bug Tracker" = "https://github.com/thermotools/thermopack/issues"
+
+[dependencies]
+numpy = "^1.1"
+matplotlib = "^3.3"
