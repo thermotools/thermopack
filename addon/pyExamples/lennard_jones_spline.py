@@ -14,6 +14,7 @@ from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, \
 
 def plot_phase_envelope(LJS, labels, title):
     # Plot phase envelopes
+    plt.figure()
     z = np.array([1.0])
     colors = ["k", "b", "g", "r"]
     for i, ljs in enumerate(LJS):
@@ -33,11 +34,10 @@ def plot_phase_envelope(LJS, labels, title):
     leg = plt.legend(loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
     plt.title(title)
-    plt.show()
-    plt.close()
 
 def plot_JT_inversion(LJS, labels, title, override_colors=None):
     # Plot Joule-Thompson inversion curves
+    plt.figure()
     z = np.array([1.0])
     if override_colors is not None:
         colors = override_colors
@@ -56,8 +56,6 @@ def plot_JT_inversion(LJS, labels, title, override_colors=None):
     leg = plt.legend(loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
     plt.title(title)
-    plt.show()
-    plt.close()
 
 def plot_BH_preturbation_terms(ljs):
     """Plot the Barker-Henderson perturbation terms"""
@@ -85,11 +83,10 @@ def plot_BH_preturbation_terms(ljs):
     ax4.axis('off')
     plt.suptitle("Barker-Henderson perturbation terms")
     plt.tight_layout()
-    plt.show()
-    plt.close()
 
 def plot_BH_diameter(ljs):
     """Plot the Barker-Henderson diameter as a function of reduced temperature"""
+    plt.figure()
     T_star = np.linspace(0.5, 12, 50)
     d_bh = np.zeros_like(T_star)
     for j in range(len(T_star)):
@@ -99,8 +96,6 @@ def plot_BH_diameter(ljs):
     plt.ylabel(r"$d_{\rm{BH}}/\sigma$")
     plt.xlabel(r"$T^*$")
     plt.title("Barker-Henderson diameter for Lennard-Jones (splined)")
-    plt.show()
-    plt.close()
 
 def plot_WCA_preturbation_terms(ljs):
     """Plot the Weeks–Chandler–Anderson perturbation terms"""
@@ -207,3 +202,6 @@ if __name__ == '__main__':
     plot_phase_envelope(LJS_WCA, labels=labels_WCA, title="LJS-WCA phase diagram")
     plot_JT_inversion(LJS_WCA, labels=labels_WCA, title="LJS-WCA Joule-Thompson inversion curves")
     plot_WCA_preturbation_terms(LJS_WCA[0])
+
+    # Show plots
+    plt.show()
