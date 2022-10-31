@@ -7,10 +7,7 @@ from os import path
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
-if utils.gcc_major_version_greater_than(7):
-    c_len_type = c_size_t  # c_size_t on GCC > 7
-else:
-    c_len_type = c_int
+c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
 class thermopack(object):
     """

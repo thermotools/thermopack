@@ -371,6 +371,7 @@ contains
       crit = 0.0
       lambda_old = 500.0
       lambda_min = 400.0
+      lambda = lambda_old
       n_crit = 0
     endif
 

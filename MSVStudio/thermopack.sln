@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30128.74
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "thermopack", "thermopack.vfproj", "{438EA9FE-716E-4464-B6F9-757704715B80}"
 EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "thermopack_dll", "thermopack_dll.vfproj", "{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}"
+EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "thermopack_exe", "thermopack_exe.vfproj", "{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{438EA9FE-716E-4464-B6F9-757704715B80} = {438EA9FE-716E-4464-B6F9-757704715B80}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +31,19 @@ Global
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Debug|Win32.Build.0 = Debug|Win32
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Debug|x64.ActiveCfg = Debug|x64
+		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Debug|x64.Build.0 = Debug|x64
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|Win32.ActiveCfg = Release|Win32
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|Win32.Build.0 = Release|Win32
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|x64.ActiveCfg = Release|x64
 		{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}.Release|x64.Build.0 = Release|x64
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Debug|Win32.Build.0 = Debug|Win32
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Debug|x64.ActiveCfg = Debug|x64
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Debug|x64.Build.0 = Debug|x64
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Release|Win32.ActiveCfg = Release|Win32
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Release|Win32.Build.0 = Release|Win32
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Release|x64.ActiveCfg = Release|x64
+		{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
