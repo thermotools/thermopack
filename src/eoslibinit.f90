@@ -188,16 +188,20 @@ contains
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
+    use eos_parameters, only: single_eos
     !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
     ! Locals
     integer             :: i
-    real                :: Tci, Pci, oi
-
+    real                :: Tci, Pci, oi, rhocrit
+    logical             :: redefine_critical
     type(thermo_model), pointer :: act_mod_ptr
+    !
     act_mod_ptr => get_active_thermo_model()
 
     if (.not. act_mod_ptr%need_alternative_eos) return
+
+    redefine_critical = isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)
 
     if (act_mod_ptr%EoSLib == TREND) then
       ! Use TREND parameters to get better critical point in alternative model
@@ -208,6 +212,21 @@ contains
         act_mod_ptr%comps(i)%p_comp%acf = oi
       enddo
     endif
+
+    select type(p_eos => act_mod_ptr%eos(1)%p_eos)
+    type is (single_eos)
+      if (allocated(p_eos%mbwr_meos)) then
+        redefine_critical = .true.
+      else if (allocated(p_eos%nist)) then
+        do i=1,nce
+          call p_eos%nist(i)%meos%getCritPoint(Tci,Pci,rhocrit)
+          act_mod_ptr%comps(i)%p_comp%tc = Tci
+          act_mod_ptr%comps(i)%p_comp%pc = Pci
+          act_mod_ptr%comps(i)%p_comp%zc = Pci/(rhocrit*Tci*p_eos%nist(i)%meos%Rgas_meos)
+          act_mod_ptr%comps(i)%p_comp%acf = p_eos%nist(i)%meos%acf
+        enddo
+      endif
+    end select
 
     select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
@@ -226,8 +245,7 @@ contains
            act_mod_ptr%cubic_eos_alternative(1)%p_eos
     enddo
 
-    if (act_mod_ptr%EoSLib == THERMOPACK .and. &
-         isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)) then
+    if (act_mod_ptr%EoSLib == THERMOPACK .and. redefine_critical) then
       call redefine_critical_parameters(silent)
     endif
   end subroutine init_fallback_and_redefine_criticals
@@ -1129,6 +1147,7 @@ contains
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
+
   end subroutine init_multiparameter
 
   !----------------------------------------------------------------------------

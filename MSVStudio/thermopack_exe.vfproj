@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{C0B8C0B9-59E4-4E39-A446-62F77B79E86C}">
+	<Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" TargetName="thermopack">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.exe" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD" ManifestFile="$(OutDir)\thermopack.intermediate.manifest" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Debug|x64" TargetName="thermopack">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.exe" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD" ManifestFile="$(OutDir)\thermopack.intermediate.manifest" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32" TargetName="thermopack">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.exe" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRT" ManifestFile="$(OutDir)\thermopack.intermediate.manifest" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|x64" TargetName="thermopack">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.exe" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRT" ManifestFile="$(OutDir)\thermopack.intermediate.manifest" SubSystem="subSystemConsole" AdditionalDependencies="thermopack.lib lapack.lib blas.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath="..\src\thermopack.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>

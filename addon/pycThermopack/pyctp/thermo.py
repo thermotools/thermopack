@@ -7,10 +7,7 @@ from os import path
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
-if utils.gcc_major_version_greater_than(7):
-    c_len_type = c_size_t  # c_size_t on GCC > 7
-else:
-    c_len_type = c_int
+c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
 class thermopack(object):
     """
@@ -545,6 +542,41 @@ class thermopack(object):
                                     byref(tnbi))
 
         return w.value
+
+    def get_critcal_parameters(self, i):
+        '''
+        Get pure fluid critical parameters of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: Critical temperature (K)
+            float: Critical volume (m3/mol)
+            float: Critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value, vci.value, pci.value
 
     def get_phase_flags(self):
         """Get phase identifiers used by thermopack
