@@ -20,7 +20,7 @@ module multiparameter_base
   type, abstract :: meos
      !> Parameters in SI units. These are set in the deferred init routine.
      character(LEN=20), public :: compName
-     real, public :: tc, pc, rc
+     real, public :: tc, pc, rc, acf
      real, public :: t_triple, p_triple, rhoLiq_triple, rhoVap_triple
      real, public :: molarMass !< (kg/mol)
      real, public :: maxT, maxP !< (K), (Pa)
@@ -36,7 +36,9 @@ module multiparameter_base
 
      ! Public methods
      procedure, public :: mp_pressure
+     procedure, public :: alpha_to_F_conversion
      procedure, public :: calc_F
+     procedure, public :: calc_Fid
      procedure, public :: calc_zfac
      procedure, public :: calc_lnphi
      procedure, public :: calc_entropy
@@ -395,6 +397,32 @@ contains
 
   end subroutine calc_enthalpy
 
+  subroutine alpha_to_F_conversion(this, T, V, n, alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv, &
+       F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
+    ! input
+    class(meos), intent(in) :: this
+    real, intent(in) :: t ! [K]
+    real, intent(in) :: V ! [m^3]
+    real, intent(in) :: n(1) ! [mol]
+    real, intent(in) :: alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv
+    ! output
+    real, optional, intent(out) :: F ! A/(RT), so that [F]=mol
+    real, optional, intent(out) :: F_T, F_V, F_n(1)
+    real, optional, intent(out) :: F_TT, F_TV, F_Tn(1), F_VV, F_Vn(1), F_nn(1,1)
+
+    ! F(T,V,n) = n*alp(T,V/n)
+    if (present(F)) F = alp*n(1)
+    if (present(F_T)) F_T = alp_T*n(1)
+    if (present(F_V)) F_V = alp_v
+    if (present(F_n)) F_n = alp - alp_v*V/n(1)
+    if (present(F_TT)) F_TT = alp_TT*n(1)
+    if (present(F_TV)) F_TV = alp_Tv
+    if (present(F_Tn)) F_Tn = alp_T - alp_Tv*V/n(1)
+    if (present(F_VV)) F_VV = alp_vv/n(1)
+    if (present(F_Vn)) F_Vn = -alp_vv*V/n(1)**2
+    if (present(F_nn)) F_nn = alp_vv*V**2/n(1)**3
+
+  end subroutine alpha_to_F_conversion
 
   subroutine calc_F(this, T, V, n, F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
     class(meos) :: this
@@ -411,19 +439,31 @@ contains
 
     call this%alphaDerivs_Tv(t, V/n(1), alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual=.TRUE.)
 
-    ! F(T,V,n) = n*alp(T,V/n)
-    if (present(F)) F = alp*n(1)
-    if (present(F_T)) F_T = alp_T*n(1)
-    if (present(F_V)) F_V = alp_v
-    if (present(F_n)) F_n = alp - alp_v*V/n(1)
-    if (present(F_TT)) F_TT = alp_TT*n(1)
-    if (present(F_TV)) F_TV = alp_Tv
-    if (present(F_Tn)) F_Tn = alp_T - alp_Tv*V/n(1)
-    if (present(F_VV)) F_VV = alp_vv/n(1)
-    if (present(F_Vn)) F_Vn = -alp_vv*V/n(1)**2
-    if (present(F_nn)) F_nn = (alp_v - alp_vv*V/n(1))*(-V/n(1)**2) + alp_v*V/n(1)**2
+    call this%alpha_to_F_conversion(T, V, n, alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv, &
+         F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
 
   end subroutine calc_F
+
+  !> Calculate reduced ideal Helmholtz energy and differentials
+  subroutine calc_Fid(this, T, V, n, F, F_T, F_V, F_n, F_TT, F_TV, F_Tn, F_VV, F_Vn, F_nn)
+    class(meos) :: this
+    ! input
+    real, intent(in) :: t ! [K]
+    real, intent(in) :: V ! [m^3]
+    real, intent(in) :: n(1) ! [mol]
+    ! output
+    real, optional, intent(out) :: F ! A/(RT), so that [F]=mol
+    real, optional, intent(out) :: F_T, F_V, F_n(1)
+    real, optional, intent(out) :: F_TT, F_TV, F_Tn(1), F_VV, F_Vn(1), F_nn(1,1)
+    ! local
+    real :: alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv
+
+    call this%alphaIdDerivs_Tv(t, V/n(1), alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv)
+
+    call this%alpha_to_F_conversion(T, V, n, alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv, &
+         F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
+
+  end subroutine calc_Fid
 
   ! Calculate residual Gibbs energy.
   subroutine calc_resgibbs(this, t, p, n, phase, g, g_t, g_p, g_n)
@@ -587,7 +627,7 @@ contains
     real, intent(out) :: rho !< Density (mol/m^3)
     integer, optional, intent(out) :: phase_found
     ! Internals
-    integer :: iter, maxiter=80 ! Changed from 40 to 80
+    integer :: iter, maxiter=200 ! Changed from 40 to 80
     real :: rhoOld, pOld, dpdrhoOld
     real :: p, dpdrho
     real :: pMin, dpdrhoMin

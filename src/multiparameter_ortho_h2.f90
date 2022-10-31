@@ -135,6 +135,7 @@ contains
     this%tc = 33.22     !< (K)
     this%pc = 1.31065e6 !< (Pa)
     this%rc = 15.445e3  !< (mol/m^3)
+    this%acf = -0.218
 
     this%t_triple = 14.008      !< (K)
     this%p_triple = 7461.0      !< (Pa)

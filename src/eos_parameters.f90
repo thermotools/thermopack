@@ -11,6 +11,7 @@ Module eos_parameters
   use multiparameter_para_h2, only: meos_para_h2
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
+  use multiparameter_lj, only: meos_lj, constructor_LJ
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
 
@@ -99,14 +100,17 @@ contains
       else
         call initializeMBWRmodel(complist(1), eos%mbwr_meos(1), 32)
       endif
-    else if (str_eq(eos_label,'NIST_MEOS') .or. str_eq(eos_label,'NIST_MEOS_MIX')) then
-      if (str_eq(eos_label,'NIST_MEOS')) then
-        if (nc /= 1) call stoperror("NIST_MEOS only implemented for pure components.")
+    else if (str_eq(eos_label,'NIST_MEOS') .or. &
+         str_eq(eos_label,'LJ_MEOS') .or. &
+         str_eq(eos_label,'LJTS_MEOS') .or. &
+         str_eq(eos_label,'NIST_MEOS_MIX')) then
+      if (.not. str_eq(eos_label,'NIST_MEOS_MIX')) then
+        if (nc /= 1) call stoperror("MEOS only implemented for pure components.")
       endif
       allocate(eos%nist(nc), STAT=istat)
       if (istat /= 0) call stoperror('Error allocating nist')
       do i=1,nc
-        call single_eos_alloc(complist(i),eos%nist(i)%meos)
+        call single_eos_alloc(complist(i),eos%nist(i)%meos,eos_label)
         call eos%nist(i)%meos%init()
       enddo
     else
@@ -115,14 +119,23 @@ contains
   end subroutine single_eos_allocate_and_init
 
   ! \author Morten H
-  subroutine single_eos_alloc(comp,meos_ptr)
+  subroutine single_eos_alloc(comp,meos_ptr,eos_label)
     ! Passed object:
     class(meos), pointer, intent(inout) :: meos_ptr
     character(len=*), intent(in) :: comp
+    character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
     integer :: istat
     istat = 0
-    if (str_eq(comp, "C3")) then
+    if (str_eq(eos_label,'LJ_MEOS')) then
+      allocate(meos_ptr,&
+           source=constructor_lj(comp,shift_and_truncate=.false.),&
+           stat=istat)
+    else if (str_eq(eos_label,'LJTS_MEOS')) then
+      allocate(meos_ptr, &
+           source=constructor_lj(comp,shift_and_truncate=.true.), &
+           stat=istat)
+    else if (str_eq(comp, "C3")) then
       allocate(meos_c3 :: meos_ptr, stat=istat)
     elseif (str_eq(comp,"N-H2")) then
       allocate(meos_normal_h2 :: meos_ptr, stat=istat)

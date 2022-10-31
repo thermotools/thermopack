@@ -44,7 +44,7 @@ contains
     case (meosMbwr19, meosMbwr32)
       v = mbwr_volume (t,p,Z(1),phase,seos%mbwr_meos(1))
       call MBWR_zfac(seos%mbwr_meos(1), t, p, v, Z(1), zfac, dzdt,dzdp,dzdz)
-    case (meosNist)
+    case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%calc_zfac(t,p,Z,phase, zfac, dzdt, dzdp, dzdz)
     end select Choice_EoS
 
@@ -103,7 +103,7 @@ contains
         if(present(dhdp)) dhdp_id = dhdp + dhdp_id
         if(present(dhdz)) dhdz_id = dhdz + dhdz_id
       endif
-     case (meosNist)
+     case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%calc_enthalpy(t, p, Z, phase, enthalpy, &
            dhdt, dhdp, dhdz, residual=residual)
     end select Choice_EoS
@@ -162,7 +162,7 @@ contains
         if(present(dsdp)) dsdp_id = dsdp + dsdp_id
         if(present(dsdz)) dsdz_id = dsdz + dsdz_id
       endif
-    case (meosNist)
+    case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%calc_entropy(t, p, Z, phase, entropy, &
            dsdt, dsdp, dsdz, residual=residual)
     end select Choice_EoS
@@ -203,7 +203,7 @@ contains
       v = mbwr_volume (t,p,Z(1),phase,seos%mbwr_meos(1))
       call MBWR_lnphi(seos%mbwr_meos(1), t, p, v, Z(1), lnfug, &
            dlnfdt, dlnfdp, dlnfdz)
-    case (meosNist)
+    case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%calc_lnphi(t, p, Z, phase, lnfug, &
            dlnfdt, dlnfdp, dlnfdz)
     end select Choice_EoS
@@ -243,7 +243,7 @@ contains
       call MBWR_Gres(seos%mbwr_meos(1), t, p, v, Z(1), gr)
       if (present(dgrdt)) call stoperror("dgrdt not implemented in MBWR_Gres")
       if (present(dgrdp)) call stoperror("dgrdp not implemented in MBWR_Gres")
-    case (meosNist)
+    case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%calc_resgibbs(t, p, Z, phase, gr, dgrdt, dgrdp)
     end select Choice_EoS
 
@@ -272,7 +272,7 @@ contains
     Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
       call MBWR_press(seos%mbwr_meos(1), T, v, sum(n), p, dpdv, dpdt)
-    case (meosNist)
+    case (meosNist, meosLJ, meosLJTS)
       call seos%nist(1)%meos%mp_pressure(rho=rho,t=T,p=p,p_rho=dpdv,p_T=dpdt)
       if (present(dpdv)) then
         dpdv = -dpdv/v**2
@@ -299,62 +299,16 @@ contains
     class(single_eos), intent(inout) :: seos
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
-    ! Locals
-    real :: v_l
-    real, pointer :: F_n_p, F_nn_p, F_Tn_p, F_Vn_p
-    real, target :: F_n_l, F_nn_l, F_Tn_l, F_Vn_l
     !---------------------------------------------------------------------
-    if (present(F_n)) then
-      F_n_p => F_n_l
-    else
-      F_n_p => NULL()
-    endif
-    if (present(F_nn)) then
-      F_nn_p => F_nn_l
-    else
-      F_nn_p => NULL()
-    endif
-    if (present(F_Tn)) then
-      F_Tn_p => F_Tn_l
-    else
-      F_Tn_p => NULL()
-    endif
-    if (present(F_Vn)) then
-      F_Vn_p => F_Vn_l
-    else
-      F_Vn_p => NULL()
-    endif
-    v_l = V/n(1)
 
     !-------- Specific for each equation of state ------------------------
     Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
       call MBWR_Fres(seos%mbwr_meos(1), T, V, n(1), F, &
-           F_T, F_v, F_TT, F_Tv, F_vv, F_n_p, F_Tn_p, F_vn_p, F_nn_p)
-      if (present(F_Vn)) F_Vn = F_Vn_l
-      if (present(F_n)) F_n = F_n_l
-      if (present(F_nn)) F_nn = F_nn_l
-      if (present(F_Tn)) F_Tn = F_Tn_l
-    case (meosNist)
-      call seos%nist(1)%meos%alphaResDerivs_Tv(T, v_l, F, &
-           F_T, F_v, F_TT, F_Tv, F_vv, F_n_p, F_Tn_p, F_vn_p, F_nn_p)
-      ! F = n*alpha(tau,delta)
-      if (present(F)) F = F*n(1)
-      if (present(F_T)) F_T = F_T*n(1)
-      if (present(F_TT)) F_TT = F_TT*n(1)
-      if (present(F_VV)) F_VV = F_VV/n(1)
-      if (present(F_n)) then
-        F_n = F_n_l
-      endif
-      if (present(F_nn)) then
-        F_nn = F_nn_l/n(1)
-      endif
-      if (present(F_Tn)) then
-        F_Tn = F_Tn_l
-      endif
-      if (present(F_Vn)) then
-        F_Vn = F_Vn_l/n(1)
-      endif
+           F_T, F_v, F_TT, F_Tv, F_vv, F_n, F_Tn, F_vn, F_nn)
+    case (meosNist, meosLJ, meosLJTS)
+      call seos%nist(1)%meos%calc_F(T, V, n, F=F, F_T=F_T, F_V=F_V, F_n=F_n, &
+           F_TT=F_TT, F_TV=F_TV, F_tn=F_TN, F_VV=F_VV, F_Vn=F_Vn, F_nn=F_nn)
     end select Choice_EoS
 
   end subroutine Fres_single
@@ -377,62 +331,15 @@ contains
     class(single_eos), intent(inout) :: seos
     real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
-    ! Locals
-    real :: v_l
-    real, pointer :: F_n_p, F_nn_p, F_Tn_p, F_Vn_p
-    real, target :: F_n_l, F_nn_l, F_Tn_l, F_Vn_l
-    !---------------------------------------------------------------------
-    if ( seos%subeosidx == meosNist) then
-      if (present(F_n)) then
-        F_n_p => F_n_l
-      else
-        F_n_p => NULL()
-      endif
-      if (present(F_nn)) then
-        F_nn_p => F_nn_l
-      else
-        F_nn_p => NULL()
-      endif
-      if (present(F_Tn)) then
-        F_Tn_p => F_Tn_l
-      else
-        F_Tn_p => NULL()
-      endif
-      if (present(F_Vn)) then
-        F_Vn_p => F_Vn_l
-      else
-        F_Vn_p => NULL()
-      endif
-    endif
-    v_l = V/sum(n)
-
     !-------- Specific for each equation of state ------------------------
     Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
     case (meosMbwr19, meosMbwr32)
       call Fideal_mix_SI(nc, comp, T, V, n, Fid=F, Fid_T=F_T, Fid_v=F_V, &
            Fid_n=F_n, Fid_TT=F_TT, Fid_vv=F_vv, Fid_nn=F_nn, Fid_Tv=F_TV,&
            Fid_vn=F_Vn, Fid_Tn=F_Tn)
-    case (meosNist)
-      call seos%nist(1)%meos%alphaIdDerivs_Tv(T,v_l,alp=F,alp_T=F_T,&
-           alp_v=F_V,alp_TT=F_TT,alp_Tv=F_TV,alp_vv=F_VV, &
-           alp_n=F_n_p, alp_Tn=F_Tn_p, alp_vn=F_vn_p, alp_nn=F_nn_p)
-      ! F = n*alpha(tau,delta)
-      if (present(F)) F = F*n(1)
-      if (present(F_T)) F_T = F_T*n(1)
-      if (present(F_TT)) F_TT = F_TT*n(1)
-      if (present(F_VV)) F_VV = F_VV/n(1)
-      if (present(F_n)) then
-        F_n = F_n_l
-      endif
-      if (present(F_nn)) then
-        F_nn = F_nn_l/n(1)
-      endif
-      if (present(F_Tn)) then
-        F_Tn = F_Tn_l
-      endif
-      if (present(F_Vn)) then
-        F_Vn = F_Vn_l/n(1)
-      endif
+    case (meosNist, meosLJ, meosLJTS)
+      call seos%nist(1)%meos%calc_Fid(T, V, n, F=F, F_T=F_T, F_V=F_V, F_n=F_n, &
+           F_TT=F_TT, F_TV=F_TV, F_tn=F_TN, F_VV=F_VV, F_Vn=F_Vn, F_nn=F_nn)
     end select Choice_EoS
 
   end subroutine Fid_single
