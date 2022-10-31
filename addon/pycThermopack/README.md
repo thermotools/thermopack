@@ -124,16 +124,16 @@ The GUI application requires the following Python packages:
 # Building pyctp wheel for pypi
 
 After copying the dynamic library to the pyctp folder the license
-files should be made availabel in the pycThermopack folder. To
+files should be made available in the pycThermopack folder. To
 generate the manylinux2014 wheel the `auditwheel repair` command
-sholud be executed.
+should be executed.
 
 ```sh
 ln -s ../../LICENCE-MIT
 ln -s ../../LICENCE-APACHE
 python map_platform_specifics.py
 python -m pip wheel .
-auditwheel repair pyctp-2.0.0-py3-none-any.whl -w .
+python -m auditwheel repair pyctp-2.0.0-py3-none-any.whl -w .
 ```
 
 Note that the following Python packages `pip`, `setuptools` and
