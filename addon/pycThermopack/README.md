@@ -1,8 +1,12 @@
 # Introduction
 
-pycThermopack: Python interface for Thermopack using ctypes
+Python interface for Thermopack using ctypes (pyctp)
 
-For examples on how to use, see [../pyExamples/](../pyExamples/README.md).
+For examples on how to use, see
+[../pyExamples/](../pyExamples/README.md). Also the function headers
+of the EoS classes [../pyctp/](../pyctp), as well as the base class
+`thermo.py`, will help you understand what pyctp can do.
+
 
 Note that the files `../../libthermopack_export.version` (Linux) and
 `../../MSVStudio/thermopack.def` (Windows) define which symbols are exported
@@ -116,3 +120,22 @@ The GUI application requires the following Python packages:
 * `pint` for managing units
 * `matplotlib`
 * `numpy`
+
+# Building pyctp wheel for pypi
+
+After copying the dynamic library to the pyctp folder the license
+files should be made availabel in the pycThermopack folder. To
+generate the manylinux2014 wheel the `auditwheel repair` command
+sholud be executed.
+
+```sh
+ln -s ../../LICENCE-MIT
+ln -s ../../LICENCE-APACHE
+python map_platform_specifics.py
+python -m pip wheel .
+auditwheel repair pyctp-2.0.0-py3-none-any.whl -w .
+```
+
+Note that the following Python packages `pip`, `setuptools` and
+`wheel` are required to build the wheel.
+

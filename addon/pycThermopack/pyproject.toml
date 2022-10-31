@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=39.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,11 +7,14 @@ name = "pyctp"
 version = "2.0.0"
 authors = [
   { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+]
+maintainers = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
   { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
 ]
 description = "Python interface to thermopack"
-readme = "README.md"
-requires-python = ">=3.7"
+readme = "README_pypi.md"
+requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Fortran",
@@ -29,4 +32,4 @@ keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria
 
 [dependencies]
 numpy = "^1.1"
-matplotlib = "^3.3"
+matplotlib = "^2.0"
