@@ -22,7 +22,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
     "License :: OSI Approved :: MIT License",
-    "License :: Apache-2.0",
 ]
 keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
 

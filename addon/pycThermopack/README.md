@@ -133,7 +133,7 @@ ln -s ../../LICENCE-MIT
 ln -s ../../LICENCE-APACHE
 python map_platform_specifics.py
 python -m pip wheel .
-python -m auditwheel repair pyctp-2.0.0-py3-none-any.whl -w .
+auditwheel repair pyctp-2.0.0-py3-none-any.whl -w .
 ```
 
 Note that the following Python packages `pip`, `setuptools` and
