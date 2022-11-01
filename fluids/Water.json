@@ -61,9 +61,9 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
+    "bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -241826.4,
+    "entropy": 188.84
   },
   "standard_formation_energy": {
     "bib_reference": "",
