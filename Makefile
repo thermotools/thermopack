@@ -87,7 +87,7 @@ ifeq ($(OSTYPE),Unix)
   compilers += gfortran
 
   # Define gfortran flags
-  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8
+  gf_common := -fPIC -fdefault-double-8 -fdefault-real-8 -cpp 
   debug_gfortran_flags = "$(gf_common) \
                           -g -fbounds-check -fbacktrace \
                           -ffpe-trap=invalid,zero,overflow \
@@ -95,7 +95,7 @@ ifeq ($(OSTYPE),Unix)
                          NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
-  optim_gfortran_flags   = "$(gf_common) -O3 -march=x86-64 -msse2 -funroll-loops"
+  optim_gfortran_flags   = "$(gf_common) -O3 -march=native -funroll-loops"
   openmp_gfortran_flags  = $(optim_gfortran_flags)" -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
 
