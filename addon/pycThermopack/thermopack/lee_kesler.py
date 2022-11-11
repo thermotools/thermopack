@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class lee_kesler(thermo.thermopack):
+class lee_kesler(thermo.thermo):
     """
     Interface to Lee-Kesler model
     """

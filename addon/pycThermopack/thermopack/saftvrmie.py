@@ -14,7 +14,7 @@ from . import thermo
 c_len_type = thermo.c_len_type
 
 
-class saftvrmie(thermo.thermopack):
+class saftvrmie(thermo.thermo):
     """
     Interface to SAFT-VR Mie
     """

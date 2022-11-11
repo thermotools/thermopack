@@ -1,6 +1,6 @@
 # pycThermopack examples
 
-This folder contains several example Python scripts for running pycThermopack.
+This folder contains several example Python scripts for running the python interface to thermopack.
 
 * **cpa.py**: Plot binary Pxy for carbon dioxide-water.
 
@@ -10,7 +10,7 @@ This folder contains several example Python scripts for running pycThermopack.
 
 * **global_binary.py**: Global binary phase diagram for neon and hydrogen, plotted using SRK EOS.
 
-* **ljs.py**: Plotting phase diagrams and Joule-Thompson inversion curve for Lennard-Jones spline fluid
+* **lennard_jones_spline.py**: Plotting phase diagrams and Joule-Thompson inversion curve for Lennard-Jones spline fluid
 
 * **model_comparison.py**: Simple script comparing different models in Thermopack.
 
@@ -22,7 +22,7 @@ This folder contains several example Python scripts for running pycThermopack.
 
 * **PC-SAFT.py**: CO2-CH4 temperature-pressure phase envelope.
 
-* **pyctp_example_utils.py**: Constants and methods for converting to and from reduced units.
+* **thermopack_example_utils.py**: Constants and methods for converting to and from reduced units.
 
 * **quantum_cubic.py**: Quantum fluid (helium-hydrogen-neon) phase envelope.
 
@@ -35,6 +35,4 @@ This folder contains several example Python scripts for running pycThermopack.
 * **tcPR.py**: Translated and consistent cubic EoS. Phase envelope plotted for carbon dioxide-nitrogen.
 
 * **virial.py**: Example plotting virial coefficients.
-
-
 

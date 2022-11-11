@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QValidator
 
-from pyctp.cubic import cubic
-from pyctp.cpa import cpa
-from pyctp.pcsaft import pcsaft
-from pyctp.saftvrmie import saftvrmie
+from thermopack.cubic import cubic
+from thermopack.cpa import cpa
+from thermopack.pcsaft import pcsaft
+from thermopack.saftvrmie import saftvrmie
 
 import json
 import os

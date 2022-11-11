@@ -3,7 +3,7 @@ requires = ["setuptools>=39.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyctp"
+name = "thermopack"
 version = "2.0.0"
 authors = [
   { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
