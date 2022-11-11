@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.pcsaft import pcsaft
+from thermopack.pcsaft import pcsaft
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)

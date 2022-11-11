@@ -3,12 +3,12 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.saftvrmie import saftvrmie
+from thermopack.saftvrmie import saftvrmie
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-from pyctp_example_utils import NA, calc_reduced_T, calc_reduced_rho
+from thermopack_example_utils import NA, calc_reduced_T, calc_reduced_rho
 
 # Instanciate and init SAFT-VR Mie object
 svrm = saftvrmie("H2")

@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class ljs_bh(thermo.thermopack):
+class ljs_bh(thermo.thermo):
     """
     Interface to LJS-BH
     """

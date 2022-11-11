@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.extended_csp import ext_csp
+from thermopack.extended_csp import ext_csp
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)

@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class multiparam(thermo.thermopack):
+class multiparam(thermo.thermo):
     """
     Interface to multiparameter EOS
     """
