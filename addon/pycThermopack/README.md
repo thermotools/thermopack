@@ -139,3 +139,10 @@ auditwheel repair thermopack-2.0.0-py3-none-any.whl -w .
 Note that the following Python packages `pip`, `setuptools` and
 `wheel` are required to build the wheel.
 
+# For Mac
+
+Instead of `auditwheel ...` run
+```
+delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
+```
+
