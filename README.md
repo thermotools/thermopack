@@ -51,7 +51,7 @@ and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and
 [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can
 be compiled using [Microsoft Visual
 Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
-[thermopack/MSVStudio](https://github.com/SINTEF/thermopack/tree/main/MSVStudio),
+[thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
 
@@ -64,7 +64,7 @@ To compile using Intel FORTRAN, use `make optim_ifort`.
 
 ```bash
 # Fetch and compile
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 make optim
 
@@ -142,7 +142,7 @@ pacman -S mingw-w64-x86_64-dlfcn
 Open the `MSYS2 MinGW 64-bit` application, and enter the following in the terminal:
 
 ```bash
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 mingw32-make.exe optim
 ```
@@ -215,7 +215,7 @@ Ailo Aasen (ailo.aasen@sintef.no)<br>
 Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
 
 ## License
-Thermopack is distributed under the [MIT license](https://github.com/SINTEF/thermopack/blob/main/LICENSE).
+Thermopack is distributed under the [MIT license](https://github.com/thermotools/thermopack/blob/main/LICENSE).
 
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research have contributed to the
