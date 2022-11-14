@@ -22,7 +22,7 @@ INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
 ifeq ($(UNAME),Darwin)
-  LD = clang
+  LD = arch -x86_64 clang
   AR := /usr/bin/ar -r -c
   RANLIB := /usr/bin/ranlib
   export LIBRARY_PATH = \
@@ -205,7 +205,7 @@ libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
 
 thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
   Makefile Makefile.code
-	$(LD) $(FFLAGS) -o$(BDIR)/run_$(TARGET) \
+	$(LD) -o$(BDIR)/run_$(TARGET) \
 	$(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 
 thermopack:
@@ -220,7 +220,7 @@ thermopack:
 	$(MAKE) -f Makefile.code -e run
 
 run: $(ODIR)/thermopack.o
-	$(LD) $(FFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
+	$(LD) -o$(BDIR)/thermopack_$(TARGET) \
 	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 	@rm -f run_thermopack run_thermopack.exe
 	@if [ $(UNAME) = Windows ]; then \
@@ -247,7 +247,7 @@ run_unittests:
 	fi
 
 unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
-	$(LD) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -I$(PFUNIT)/mod -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lpfunit $(LIBS) -Iunittests -DBUILD_ROBUST
+	$(LD) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -I$(PFUNIT)/mod -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lpfunit $(LIBS) -Iunittests -DBUILD_ROBUST
 
 trend_$(TARGET):
 ifdef $(THERMOPACK_WITH_TREND)
