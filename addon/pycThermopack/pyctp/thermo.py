@@ -131,14 +131,6 @@ class thermopack(object):
             self.tp, self.get_export_name("eostv", "free_energy_tv"))
         self.s_chempot = getattr(self.tp, self.get_export_name(
             "eostv", "chemical_potential_tv"))
-        self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
-            "mut_solver", "solve_mu_t"))
-        self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
-            "mut_solver", "solve_lnf_t"))
-        self.s_extrapolate_mu_in_inverse_radius = getattr(self.tp, self.get_export_name(
-            "mut_solver", "extrapolate_mu_in_inverse_radius"))
-        self.s_solve_laplace = getattr(self.tp, self.get_export_name(
-            "mut_solver", "solve_laplace"))
 
         # TVP interfaces
         self.s_entropy_tvp = getattr(
@@ -180,9 +172,26 @@ class thermopack(object):
             self.tp, self.get_export_name("isolines", "isenthalp"))
         self.s_isentrope = getattr(
             self.tp, self.get_export_name("isolines", "isentrope"))
+
         # Stability
         self.s_crit_tv = getattr(
             self.tp, self.get_export_name("critical", "calccriticaltv"))
+        self.s_map_stability_limit = getattr(
+            self.tp, self.get_export_name("spinodal", "map_stability_limit"))
+        self.s_initial_stab_limit_point = getattr(
+            self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
+        self.s_map_meta_isentrope = getattr(
+            self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_mu_t"))
+        self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_lnf_t"))
+        self.s_extrapolate_mu_in_inverse_radius = getattr(self.tp, self.get_export_name(
+            "mut_solver", "extrapolate_mu_in_inverse_radius"))
+        self.s_solve_laplace = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_laplace"))
+        self.s_map_meta_isotherm = getattr(self.tp, self.get_export_name(
+            "mut_solver", "map_meta_isotherm"))
 
         # Virials
         self.s_virial_coeffcients = getattr(
@@ -2066,180 +2075,6 @@ class thermopack(object):
 
         return return_tuple
 
-    def solve_mu_t(self, temp, mu, rho_initial=None, phase=None):
-        """Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
-
-        Args:
-            temp (float): Temperature (K)
-            mu (array_like): Flag to activate calculation. Defaults to None.
-            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
-            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
-
-        Returns:
-            rho (array_like): Mol per volume (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial if rho_initial is not None else [0.0]*len(mu))
-        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
-        ierr_c = c_int(0)
-        self.s_solve_mu_t.argtypes = [POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_int),
-                                      POINTER(c_int)]
-
-        self.s_solve_mu_t.restype = None
-
-        self.s_solve_mu_t(mu_c,
-                          byref(temp_c),
-                          rho_c,
-                          byref(ierr_c),
-                          phase_c)
-
-        return np.array(rho_c)
-
-    def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):
-        """Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
-
-        Args:
-            temp (float): Temperature (K)
-            lnf (array_like): Logaritm of fugacity coefficients. Defaults to None.
-            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
-            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
-
-        Returns:
-            rho (array_like): Mol per volume (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        lnf_c = (c_double * len(lnf))(*lnf)
-        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial is not None else [0.0]*len(lnf))
-        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
-        ierr_c = c_int(0)
-        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_int),
-                                       POINTER(c_int)]
-
-        self.s_solve_lnf_t.restype = None
-
-        self.s_solve_lnf_t(lnf_c,
-                           byref(temp_c),
-                           rho_c,
-                           byref(ierr_c),
-                           phase_c)
-
-        return np.array(rho_c)
-
-    def extrapolate_mu_in_inverse_radius(self, sigma_0, temp, rho_l, rho_g, radius, geometry, phase):
-        """Extrapolate mu in inverse radius ot the curved surface and solve for bulk states
-
-        Args:
-            sigma_0 (float); Surface tension of planar surface (N/m)
-            temp (float): Temperature (K)
-            rho_l (array_like): Liquid density (mol/m3)
-            rho_g (array_like): Gas density (mol/m3)
-            radius (float): Radius (m)
-            geometry (str): "SPHERICAL" or "CYLINDRICAL"
-            phase (int): Phase where composition assumed constant.
-        Returns:
-            mu (ndarray): Chemical potential (J/mol).
-            rho_l (ndarray): Liquid density (mol/m3)
-            rho_g (ndarray): Gas density (mol/m3)
-        """
-        self.activate()
-        sigma_0_c = c_double(sigma_0)
-        temp_c = c_double(temp)
-        mu_c = (c_double * len(rho_l))(0.0)
-        rho_l_c = (c_double * len(rho_l))(*rho_l)
-        rho_g_c = (c_double * len(rho_g))(*rho_g)
-        radius_c = c_double(radius)
-        phase_c = c_int(phase)
-        ierr_c = c_int(0)
-        geometry_c = c_int(1) if "SPHER" in geometry.upper() else c_int(2)
-        self.s_extrapolate_mu_in_inverse_radius.argtypes = [POINTER(c_double),
-                                                            POINTER(c_double),
-                                                            POINTER(c_double),
-                                                            POINTER(c_double),
-                                                            POINTER(c_int),
-                                                            POINTER(c_double),
-                                                            POINTER(c_int),
-                                                            POINTER(c_double),
-                                                            POINTER(c_int)]
-
-        self.s_extrapolate_mu_in_inverse_radius.restype = None
-
-        self.s_extrapolate_mu_in_inverse_radius(byref(sigma_0_c),
-                                                byref(temp_c),
-                                                rho_g_c,
-                                                rho_l_c,
-                                                byref(phase_c),
-                                                byref(radius_c),
-                                                byref(geometry_c),
-                                                mu_c,
-                                                byref(ierr_c))
-
-        if ierr_c.value != 0:
-            raise Exception("extrapolate_mu_in_inverse_radius calclualtion failed")
-
-        return np.array(mu_c), np.array(rho_l_c), np.array(rho_g_c)
-
-    def solve_laplace(self, sigma_0, temp, rho_l, rho_g, radius, geometry, phase):
-        """Solve Laplace relation for droplet/bubble
-
-        Args:
-            sigma_0 (float); Surface tension of planar surface (N/m)
-            temp (float): Temperature (K)
-            rho_l (array_like): Liquid density (mol/m3)
-            rho_g (array_like): Gas density (mol/m3)
-            radius (float): Radius (m)
-            geometry (str): "SPHERICAL" or "CYLINDRICAL"
-            phase (int): Phase where composition assumed constant.
-        Returns:
-            mu (ndarray): Chemical potential (J/mol).
-            rho_l (ndarray): Liquid density (mol/m3)
-            rho_g (ndarray): Gas density (mol/m3)
-        """
-        self.activate()
-        sigma_0_c = c_double(sigma_0)
-        temp_c = c_double(temp)
-        mu_c = (c_double * len(rho_l))(0.0)
-        rho_l_c = (c_double * len(rho_l))(*rho_l)
-        rho_g_c = (c_double * len(rho_g))(*rho_g)
-        radius_c = c_double(radius)
-        phase_c = c_int(phase)
-        ierr_c = c_int(0)
-        geometry_c = c_int(1) if "SPHER" in geometry.upper() else c_int(2)
-        self.s_solve_laplace.argtypes = [POINTER(c_double),
-                                         POINTER(c_double),
-                                         POINTER(c_double),
-                                         POINTER(c_double),
-                                         POINTER(c_int),
-                                         POINTER(c_double),
-                                         POINTER(c_int),
-                                         POINTER(c_double),
-                                         POINTER(c_int)]
-
-        self.s_solve_laplace.restype = None
-
-        self.s_solve_laplace(byref(sigma_0_c),
-                             byref(temp_c),
-                             rho_g_c,
-                             rho_l_c,
-                             byref(phase_c),
-                             byref(radius_c),
-                             byref(geometry_c),
-                             mu_c,
-                             byref(ierr_c))
-
-        if ierr_c.value != 0:
-            raise Exception("solve_laplace failed")
-
-        return np.array(mu_c), np.array(rho_l_c), np.array(rho_g_c)
-
     #################################
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
     #################################
@@ -3432,6 +3267,439 @@ class thermopack(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+
+    def spinodal(self,
+                 z,
+                 initial_pressure=1.0e5,
+                 initial_liquid_temperature=None,
+                 dlnv=None,
+                 min_temperature_vapor=None):
+        """Trace spinodal curve
+
+        Args:
+            z (array_like): Composition (-)
+            initial_pressure (float): Initial pressure (Pa). Defaults to 1.0e5.
+            initial_liquid_temperature (float, optional): Initial temperature on liquid spinodal (K).
+            dlnv (float, optional): Override step size (-).
+            min_vapor_temperature (float, optional): Minimum temperature on vapor spinodal (K).
+
+        Raises:
+            Exception: Failure to trace spinodal
+
+        Returns:
+            np.ndarray: Temperature (K)
+            np.ndarray: Volume (m3/mol)
+            np.ndarray: Pressure (Pa)
+        """
+        self.activate()
+        n_max = 1000
+        p0_c = c_double(initial_pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(0)
+        vol_c = (c_double * n_max)(0.0)
+        press_c = (c_double * n_max)(0.0)
+        temp_c = (c_double * n_max)(0.0)
+
+        if min_temperature_vapor is not None:
+            t_min = min_temperature_vapor
+        else:
+            t_min = 0.0
+            for i in range(self.nc):
+                t_min += z[i]*self.critical_temperature(i+1)
+            t_min *= 0.6
+        t_min_c = c_double(t_min)
+
+        if dlnv is None:
+            dlnv_c = POINTER(c_double)()
+        else:
+            dlnv_c = POINTER(c_double)(c_double(dlnv))
+
+        if initial_liquid_temperature is None:
+            t_liq_start_c = POINTER(c_double)()
+        else:
+            t_liq_start_c = POINTER(c_double)(c_double(initial_liquid_temperature))
+
+        self.s_map_stability_limit.argtypes = [POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_int ),
+                                               POINTER( c_int ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double )]
+
+        self.s_map_stability_limit.restype = None
+
+        self.s_map_stability_limit(byref(p0_c),
+                                   z_c,
+                                   byref(t_min_c),
+                                   temp_c,
+                                   press_c,
+                                   vol_c,
+                                   byref(n_c),
+                                   byref(ierr_c),
+                                   dlnv_c,
+                                   t_liq_start_c)
+
+        if ierr_c.value != 0:
+            raise Exception("Spinodial calclualtion failed")
+
+        T = np.array(temp_c[0:n_c.value])
+        v = np.array(vol_c[0:n_c.value])
+        P = np.array(press_c[0:n_c.value])
+
+        return T,v,P
+
+    def spinodal_point(self,
+                 z,
+                 pressure,
+                 temperature=None):
+        """Solve for spinodal curve point. Not able to solve for points cloes to critical point.
+        Solve for temperature if given, otherwise solve for pressure.
+
+        Args:
+            z (array_like): Composition (-)
+            pressure (float): Pressure (Pa).
+            temperature (float, optional): Temperature (K). Solve for temperature if given.
+
+        Raises:
+            Exception: Failure to solve for spinodal curve point
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3/mol)
+        """
+        self.activate()
+        n_max = 1000
+        p0_c = c_double(pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(0)
+        vol_c = c_double(0.0)
+        temp_c = c_double(0.0)
+
+        if temperature is None:
+            t_min_c = POINTER(c_double)()
+        else:
+            t_min_c = POINTER(c_double)(c_double(temperature))
+
+        self.s_initial_stab_limit_point.argtypes = [POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_double )]
+
+        self.s_initial_stab_limit_point.restype = None
+
+        self.s_initial_stab_limit_point(byref(p0_c),
+                                        z_c,
+                                        byref(vol_c),
+                                        byref(temp_c),
+                                        byref(phase_c),
+                                        byref(ierr_c),
+                                        t_min_c)
+
+        if ierr_c.value != 0:
+            raise Exception("Spinodial point calclualtion failed")
+
+        return temp_c.value,vol_c.value
+
+    def map_meta_isentrope(self,
+                           z,
+                           initial_pressure,
+                           entropy,
+                           minimum_pressure,
+                           n_max=50):
+        """Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
+
+        Args:
+            z (array_like): Composition (-)
+            initial_pressure (float): Initial pressure (Pa)
+            entropy (float): Entropy (J/mol/K).
+            minimum_pressure (float): Minimum pressure (Pa).
+            n_max (int): Number of points on curve. Default 50.
+
+        Raises:
+            Exception: Failure to map isentrope
+
+        Returns:
+            np.ndarray: Temperature (K)
+            np.ndarray: Volume (m3/mol)
+            np.ndarray: Pressure (Pa)
+        """
+        self.activate()
+        initial_pressure_c = c_double(pressure)
+        entropy_c = c_double(entropy)
+        minimum_pressure_c = c_double(minimum_pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(n_max)
+        vol_c = (c_double * n_max)(0.0)
+        press_c = (c_double * n_max)(0.0)
+        temp_c = (c_double * n_max)(0.0)
+
+        self.s_map_meta_isentrope.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int )]
+
+        self.s_map_meta_isentrope.restype = None
+
+        self.s_map_meta_isentrope(byref(initial_pressure_c),
+                                  byref(entropy_c),
+                                  z_c,
+                                  byref(minimum_pressure_c),
+                                  byref(n_c),
+                                  temp_c,
+                                  vol_c,
+                                  press_c,
+                                  byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Isentrope mapping into the meta-stable region failed")
+
+        return np.array(temp_c), np.array(vol_c), np.array(press_c)
+
+    def solve_mu_t(self, temp, mu, rho_initial=None, phase=None):
+        """Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+
+        Args:
+            temp (float): Temperature (K)
+            mu (array_like): Flag to activate calculation. Defaults to None.
+            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
+            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+
+        Returns:
+            rho (array_like): Mol per volume (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial if rho_initial is not None else [0.0]*len(mu))
+        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
+        ierr_c = c_int(0)
+        self.s_solve_mu_t.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int),
+                                      POINTER(c_int)]
+
+        self.s_solve_mu_t.restype = None
+
+        self.s_solve_mu_t(mu_c,
+                          byref(temp_c),
+                          rho_c,
+                          byref(ierr_c),
+                          phase_c)
+
+        return np.array(rho_c)
+
+    def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):
+        """Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+            lnf (array_like): Logaritm of fugacity coefficients. Defaults to None.
+            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
+            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+
+        Returns:
+            rho (array_like): Mol per volume (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        lnf_c = (c_double * len(lnf))(*lnf)
+        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial is not None else [0.0]*len(lnf))
+        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
+        ierr_c = c_int(0)
+        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_int)]
+
+        self.s_solve_lnf_t.restype = None
+
+        self.s_solve_lnf_t(lnf_c,
+                           byref(temp_c),
+                           rho_c,
+                           byref(ierr_c),
+                           phase_c)
+
+        return np.array(rho_c)
+
+    def extrapolate_mu_in_inverse_radius(self, sigma_0, temp, rho_l, rho_g, radius, geometry, phase):
+        """Extrapolate mu in inverse radius ot the curved surface and solve for bulk states
+
+        Args:
+            sigma_0 (float); Surface tension of planar surface (N/m)
+            temp (float): Temperature (K)
+            rho_l (array_like): Liquid density (mol/m3)
+            rho_g (array_like): Gas density (mol/m3)
+            radius (float): Radius (m)
+            geometry (str): "SPHERICAL" or "CYLINDRICAL"
+            phase (int): Phase where composition assumed constant.
+        Returns:
+            mu (ndarray): Chemical potential (J/mol).
+            rho_l (ndarray): Liquid density (mol/m3)
+            rho_g (ndarray): Gas density (mol/m3)
+        """
+        self.activate()
+        sigma_0_c = c_double(sigma_0)
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(rho_l))(0.0)
+        rho_l_c = (c_double * len(rho_l))(*rho_l)
+        rho_g_c = (c_double * len(rho_g))(*rho_g)
+        radius_c = c_double(radius)
+        phase_c = c_int(phase)
+        ierr_c = c_int(0)
+        geometry_c = c_int(1) if "SPHER" in geometry.upper() else c_int(2)
+        self.s_extrapolate_mu_in_inverse_radius.argtypes = [POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int),
+                                                            POINTER(c_double),
+                                                            POINTER(c_int)]
+
+        self.s_extrapolate_mu_in_inverse_radius.restype = None
+
+        self.s_extrapolate_mu_in_inverse_radius(byref(sigma_0_c),
+                                                byref(temp_c),
+                                                rho_g_c,
+                                                rho_l_c,
+                                                byref(phase_c),
+                                                byref(radius_c),
+                                                byref(geometry_c),
+                                                mu_c,
+                                                byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("extrapolate_mu_in_inverse_radius calclualtion failed")
+
+        return np.array(mu_c), np.array(rho_l_c), np.array(rho_g_c)
+
+    def solve_laplace(self, sigma_0, temp, rho_l, rho_g, radius, geometry, phase):
+        """Solve Laplace relation for droplet/bubble
+
+        Args:
+            sigma_0 (float); Surface tension of planar surface (N/m)
+            temp (float): Temperature (K)
+            rho_l (array_like): Liquid density (mol/m3)
+            rho_g (array_like): Gas density (mol/m3)
+            radius (float): Radius (m)
+            geometry (str): "SPHERICAL" or "CYLINDRICAL"
+            phase (int): Phase where composition assumed constant.
+        Returns:
+            mu (ndarray): Chemical potential (J/mol).
+            rho_l (ndarray): Liquid density (mol/m3)
+            rho_g (ndarray): Gas density (mol/m3)
+        """
+        self.activate()
+        sigma_0_c = c_double(sigma_0)
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(rho_l))(0.0)
+        rho_l_c = (c_double * len(rho_l))(*rho_l)
+        rho_g_c = (c_double * len(rho_g))(*rho_g)
+        radius_c = c_double(radius)
+        phase_c = c_int(phase)
+        ierr_c = c_int(0)
+        geometry_c = c_int(1) if "SPHER" in geometry.upper() else c_int(2)
+        self.s_solve_laplace.argtypes = [POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double),
+                                         POINTER(c_int),
+                                         POINTER(c_double),
+                                         POINTER(c_int)]
+
+        self.s_solve_laplace.restype = None
+
+        self.s_solve_laplace(byref(sigma_0_c),
+                             byref(temp_c),
+                             rho_g_c,
+                             rho_l_c,
+                             byref(phase_c),
+                             byref(radius_c),
+                             byref(geometry_c),
+                             mu_c,
+                             byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("solve_laplace failed")
+
+        return np.array(mu_c), np.array(rho_l_c), np.array(rho_g_c)
+
+    def map_meta_isotherm(self,
+                          temperature,
+                          z,
+                          phase,
+                          n=50):
+        """Trace isotherm from saturation line to spinodal. Solve for equilibrium phase.
+
+        Args:
+            temperature (float): Temperature (K)
+            z (array_like): Composition (-)
+            phase (float): Phase (LIQPH or VAPPH)
+            n (int): Number of points on curve. Default 50.
+
+        Raises:
+            Exception: Failure to map isotherm
+
+        Returns:
+            np.ndarray: Volume of meta-stable phase (m3/mol)
+            np.ndarray: Density of equilibrium (mol/m3)
+        """
+        self.activate()
+        temperature_c = c_double(temperature)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(n)
+        phase_c = c_int(phase)
+        vol_c = (c_double * n)(0.0)
+        rho_c = (c_double * (n*self.nc))(0.0)
+
+        self.s_map_meta_isotherm.argtypes = [POINTER( c_double ),
+                                             POINTER( c_double ),
+                                             POINTER( c_int ),
+                                             POINTER( c_int ),
+                                             POINTER( c_double ),
+                                             POINTER( c_double ),
+                                             POINTER( c_int )]
+
+        self.s_map_meta_isotherm.restype = None
+
+        self.s_map_meta_isotherm(byref(temperature_c),
+                                 z_c,
+                                 byref(n_c),
+                                 byref(phase_c),
+                                 vol_c,
+                                 rho_c,
+                                 byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Isotherm mapping into the meta-stable region failed")
+
+        rho = np.zeros((n, self.nc))
+        for i in range(n):
+            for j in range(self.nc):
+                rho[i][j] = rho_c[i+j*n]
+
+        return np.array(vol_c), rho
 
     #################################
     # Virial interfaces

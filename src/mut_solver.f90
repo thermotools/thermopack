@@ -22,6 +22,7 @@ module mut_solver
   public :: solve_mu_t, solve_lnf_t
   public :: extrapolate_mu_in_inverse_radius
   public :: solve_laplace
+  public :: map_meta_isotherm
 
 contains
 
@@ -423,5 +424,74 @@ contains
     J(nce+1,nce+1) = V1*PV_1/dp_spec
 
   end subroutine laplace_jacobian
+
+  !-------------------------------------------------------------------------
+  !> Map isotherm from saturation line to spinodal
+  !>
+  !> \author MH, 2022-11
+  !-------------------------------------------------------------------------
+  subroutine map_meta_isotherm(t,Z,n,phase,v,rho_other,ierr)
+    use saturation, only: safe_bubP, safe_dewP
+    use spinodal, only: initial_stab_limit_point
+    use eos, only: specificvolume
+    implicit none
+    real, dimension(nce), intent(in) :: Z !< Composition
+    real, intent(in) :: t !< Temperature [K]
+    integer, intent(in) :: n !< Number of points on isotherm
+    integer, intent(in) :: phase !< Phase identifer
+    integer, intent(out) :: ierr !< Error flag
+    real, intent(out) :: v(n) !< Specific volume (m3/mol)
+    real, intent(out) :: rho_other(n,nce) !< Specific volume of liquid phase (-)
+    ! Locals
+    real :: vz, vo, p_sat, mu(nce), dmu(nce)
+    real :: T_spin, vz_spin, P0
+    real :: Xo(nce), dv, rho(nce)
+    real :: mu_old(nce), mu_other(nce), dmudrho(nce)
+    integer :: o_phase, i
+    ierr = 0
+    ! Locate saturation state
+    if (phase == LIQPH) then
+      p_sat = safe_bubP(T,Z,Xo,ierr)
+      o_phase = VAPPH
+    else
+      p_sat = safe_dewP(T,Xo,Z,ierr)
+      o_phase = LIQPH
+    endif
+    if (ierr /= 0) then
+      ! Need to trace envelope to find saturation pressure
+      call stoperror("map_meta_isotherm::Enable evelope tracing")
+    endif
+    ! Get volumes at saturation curve
+    call specificvolume(T,p_sat,Z,phase,vz)
+    call specificvolume(T,p_sat,Xo,o_phase,vo)
+    call chemical_potential_tv(T, vz, Z, mu_old)
+    rho = xo/vo
+    v(1) = vz
+    rho_other(1,:) = rho
+
+    ! Locate spinodal
+    P0 = 1.0e5
+    call initial_stab_limit_point(P0,z,vz_spin,T_spin,phase,ierr,Tmin=T)
+    if (ierr /= 0) then
+      call stoperror("map_meta_isotherm::Point location on spinodal failed")
+    endif
+    dv = (vz_spin - vz)/(n-1)
+
+    ! Map from saturation curve to spinodal
+    do i=2,n
+      vz = vz + dv
+      ! Calculate mu
+      call chemical_potential_tv(T, vz, Z, mu)
+      ! Extrapolate density of other phase
+      dmu = mu - mu_old
+      call chemical_potential_tv(T, 1.0, rho, mu_other, dmudn=dmudrho)
+      rho = rho + dmu/dmudrho
+      call solve_mu_t(mu,T,rho,ierr)
+      if (ierr /= 0) return
+      v(i) = vz
+      rho_other(i,:) = rho
+      mu_old = mu
+    enddo
+  end subroutine map_meta_isotherm
 
 end module mut_solver

@@ -557,3 +557,66 @@ class phase_diagram(object):
     @property
     def pressures(self):
         return phase_state_list([vle.vapor for vle in self.vle_states]).pressures
+
+class meta_curve(object):
+    """
+    List of meta-stable states
+    """
+
+    def __init__(self, meta_states):
+        """
+        Assign list of states
+        """
+        self.meta_states = meta_states
+
+    @staticmethod
+    def isothermal(eos, T, z, n, phase):
+        """Map meta-stable states from saturation curve to spinodal
+
+        Args:
+            eos (thermo): Equation of state object
+            T (float): Temperature to start mapping curve (K)
+            z (float): Composition (-)
+            n (int): Number of points equidistant in specific volume
+            phase (int): Phase indicator. thermo.LIQPH or thermo.VAPPH
+        Returns:
+            meta_curve: List of states from saturation curve to spinodal
+        """
+        vz, rho = eos.map_meta_isotherm(T=T,
+                                        z=z,
+                                        phase=phase,
+                                        n=n)
+        meta_states = []
+        for i in range(len(t_vals)):
+            if phase == eos.LIQPH:
+                vl = vz
+                vg = 1.0/np.sum(rho[i,:])
+                x = z
+                y = rho[i,:]*vg
+            else:
+                vg = vz
+                vl = 1.0/np.sum(rho[i,:])
+                y = z
+                x = rho[i,:]*vl
+            vapor = state(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
+                          init_specific=True)
+            liquid = state(eos=eos, T=T, V=vl, n=x, n_tot=1.0,
+                           init_specific=True)
+            meta_states.append(equilibrium(vapor, liquid))
+        return meta_curve(meta_states)
+
+    @property
+    def liquid(self):
+        return phase_state_list([meta.liquid for meta in self.meta_states])
+
+    @property
+    def vapour(self):
+        return phase_state_list([meta.vapor for meta in self.meta_states])
+
+    @property
+    def temperatures(self):
+        return phase_state_list([meta.vapor for meta in self.meta_states]).temperatures
+
+    @property
+    def pressures(self):
+        return phase_state_list([meta.vapor for meta in self.meta_states]).pressures
