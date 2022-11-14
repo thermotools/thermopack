@@ -9,7 +9,7 @@
 #=============================================================================
 # Set some general variables
 #=============================================================================
-PROC = x86_64
+PROC = $(shell arch)
 
 # Detect OS into UNAME
 UNAME := $(shell uname 2>/dev/null || echo Unknown)
@@ -95,7 +95,7 @@ ifeq ($(OSTYPE),Unix)
                          NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
-  optim_gfortran_flags   = "$(gf_common) -O3 -march=x86-64 -msse2 -funroll-loops"
+  optim_gfortran_flags   = "$(gf_common) -O3 -arch arm64 -funroll-loops"
   openmp_gfortran_flags  = $(optim_gfortran_flags)" -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
 
@@ -170,7 +170,7 @@ define create_targets_real
   ifdef $(2)_$(3)_flags
     targets += $(2)_$(3)_$(1) unittests_$(2)_$(3)_$(1)
 $(2)_$(3)_$(1):
-	+$(MAKE) FC=$(3) MODE=$(2) FFLAGS=$($(2)_$(3)_flags) \
+	+$(MAKE) FC=/opt/homebrew/bin/gfortran MODE=$(2) FFLAGS=$($(2)_$(3)_flags) \
 	  CFLAGS=$($(2)_cpp) TARGET=$$@ LEXT=$(3)_$(1) \
 	  -f Makefile.code -e thermopack
 unittests_$(2)_$(3)_$(1):
