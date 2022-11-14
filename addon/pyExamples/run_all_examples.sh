@@ -1,5 +1,5 @@
 #!/bin/bash
 for file in ./*.py; do
    [ -f "$file" ] || continue
-   python -- "$file"
+   arch -x86_64 python -- "$file"
 done

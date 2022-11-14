@@ -146,3 +146,14 @@ Instead of `auditwheel ...` run
 delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
 ```
 
+# For cross-compiling on Mac for x86
+
+Run the following from a `Rosetta` terminal (skip setting up virtualenv if already in place)
+```
+arch -x86_64 python3 venv venv_x86
+arch -x86_64 pip install numpy matplotlib
+arch -x86_64 python makescript.py optim
+arch -x86_64 python map_platform_specifics.py
+arch -x86_64 python -m pip wheel .
+arch -x86_64 delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
+```
