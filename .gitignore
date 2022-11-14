@@ -52,4 +52,4 @@ TAGS
 */.DS_Store
 */.idea/
 local_testing/
-venv/
+venv*
