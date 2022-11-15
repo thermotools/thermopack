@@ -9,3 +9,5 @@ cd wheelhouse
 delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
 cd fixed_wheels
 mv thermopack-2.0.0-py3-none-any.whl thermopack-2.0.0-py3-none-macosx_10_9_x86_64.whl
+cd ..
+rm thermopack-2.0.0-py3-none-any.whl # Prevent using the old wheel by accident if version is updated, but build script is not
