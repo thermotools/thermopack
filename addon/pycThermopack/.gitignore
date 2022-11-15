@@ -1,5 +1,5 @@
 *.whl
-!fixed_wheels/*
+!wheelhouse/fixed_wheels/*
 LICENSE*
 *.egg-info/
 build/
