@@ -1,6 +1,6 @@
 cd ~/thermopack/
-# make clean
-# make optim
+make clean
+make optim
 cd addon/pycThermopack
 python makescript.py optim
 python map_platform_specifics.py
