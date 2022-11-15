@@ -1,4 +1,4 @@
-cd ~/thermopack/
+cd ../.. # ~/thermopack/
 make clean
 make optim
 cd addon/pycThermopack
