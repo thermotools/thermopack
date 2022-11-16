@@ -582,19 +582,19 @@ class meta_curve(object):
         Returns:
             meta_curve: List of states from saturation curve to spinodal
         """
-        vz, rho = eos.map_meta_isotherm(T=T,
+        vz, rho = eos.map_meta_isotherm(temperature=T,
                                         z=z,
                                         phase=phase,
                                         n=n)
         meta_states = []
-        for i in range(len(t_vals)):
+        for i in range(len(vz)):
             if phase == eos.LIQPH:
-                vl = vz
+                vl = vz[i]
                 vg = 1.0/np.sum(rho[i,:])
                 x = z
                 y = rho[i,:]*vg
             else:
-                vg = vz
+                vg = vz[i]
                 vl = 1.0/np.sum(rho[i,:])
                 y = z
                 x = rho[i,:]*vl
