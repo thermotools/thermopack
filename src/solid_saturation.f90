@@ -891,8 +891,10 @@ contains
       if (plotEnergiesEtc) then
         Ki(n+1:2*n,:) = 1.0
         betai(n+1:2*n) = 0.0
-        Ta(n+1:2*n) = Ta(1:n)
-        Pa(n+1:2*n) = Pa(1:n)
+        do i=1,n
+          Ta(n+i) = Ta(n+1-i)
+          Pa(n+i) = Pa(n+1-i)
+        enddo
         n = n*2
       endif
     else
