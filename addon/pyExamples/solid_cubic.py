@@ -48,5 +48,21 @@ leg.get_frame().set_linewidth(0.0)
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
 plt.title("CO2 solid-gas-liquid phase diagram")
+plt.figure()
+
+# Plotting phase diagram for temperatures and density
+lines, crits = cb.solid_envelope_plot(1.0e5, z,calc_esv = True)
+n_scaling = 0.001# m3 to Liters
+for i in range(len(lines)):
+    densities = n_scaling/lines[i][:,4]
+    plt.plot(densities,lines[i][:,0])
+
+for i in range(len(crits)):
+    nCrit = n_scaling/crits[i][4]
+    plt.plot(nCrit,crits[i][0], linestyle="None",
+             marker="o", color="k", label=label)
+plt.ylabel(r"$T$ (K)")
+plt.xlabel(r"$\rho$ (mol/L)")
+plt.title("CO2 solid-gas-liquid phase diagram")
 plt.show()
 plt.clf()
