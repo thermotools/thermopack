@@ -1252,11 +1252,17 @@ class thermopack(object):
             z (array_like): Overall molar composition
 
         Returns:
+            FlashResult object with the attributes
+            flash_type (str) : 'tp'
+            state_point (tuple(float)) : (Temperature [K], pressure [Pa]) of calculation
+            z (ndarray) : Total composition
+
             x (ndarray): Liquid molar composition
             y (ndarray): Gas molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            phase (str) : Phase identifier string
+            phase_idx (int): Phase identifier index (iTWOPH/iLIQPH/iVAPPH)
         """
         self.activate()
         temp_c = c_double(temp)
@@ -1292,7 +1298,10 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return x, y, betaV_c.value, betaL_c.value, phase_c.value
+        flashres = utils.FlashResult((x, y, betaV_c.value, betaL_c.value, phase_c.value), 'Tp', z, (temp, press))
+        flashres.phase = self.get_phase_type(phase_c.value)
+
+        return flashres # x, y, betaV_c.value, betaL_c.value, phase_c.value
 
     def two_phase_psflash(self, press, z, entropy, temp=None):
         """Do isentropic-isobaric (SP) flash
@@ -1357,7 +1366,11 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        flashres = utils.FlashResult((x, y, betaV_c.value, betaL_c.value, phase_c.value),
+                                     'ps', z, (press, entropy), {'T' : ('Temperature', temp_c[0])})
+        flashres.phase = self.get_phase_type(phase_c.value)
+
+        return flashres # temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
     def two_phase_phflash(self, press, z, enthalpy, temp=None):
         """Do isenthalpic-isobaric (HP) flash
@@ -1423,7 +1436,11 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        flashres = utils.FlashResult((x, y, betaV_c.value, betaL_c.value, phase_c.value),
+                                     'ph', z, (press, enthalpy), {'T': ('Temperature', temp_c[0])})
+        flashres.phase = self.get_phase_type(phase_c.value)
+
+        return flashres # temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
     def two_phase_uvflash(self, z, specific_energy, specific_volume, temp=None, press=None):
         """Do isoenergetic-isochoric (UV) flash
@@ -1491,7 +1508,12 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        flashres = utils.FlashResult((x, y, betaV_c.value, betaL_c.value, phase_c.value),
+                                     'uv', z, (specific_energy, specific_volume),
+                                     {'T': ('Temperature', temp_c[0]), 'p' : ('Pressure', press_c[0])})
+        flashres.phase = self.get_phase_type(phase_c.value)
+
+        return flashres # temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
 
     def guess_phase(self, temp, press, z):
         """If only one root exsist for the equation of state the phase type can be
