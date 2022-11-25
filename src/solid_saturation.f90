@@ -895,6 +895,16 @@ contains
           Ta(n+i) = Ta(n+1-i)
           Pa(n+i) = Pa(n+1-i)
         enddo
+        n_sol_lines(4) = n
+        Ts(1:n) = tsl(1:n)
+        Ps(1:n) = psl(1:n)
+        Ks(1:n,:) = 1.0
+        bs(1:n) = 1.0
+        n_sol_lines(5) = n
+        Ts2(1:n) = tsg(1:n)
+        Ps2(1:n) = psg(1:n)
+        Ks2(1:n,:) = 1.0
+        bs2(1:n) = 1.0
         n = n*2
       endif
     else
@@ -1372,6 +1382,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine getESV(T,P,Z,beta,betaSol,is,e,s,v,K)
     use vls, only: mpEntropy, mpEnthalpy, mpSpecificVolume
+    use numconstants, only: machine_prec
     implicit none
     ! Input:
     real,           intent(in)    :: T           !> T-guess and solution T (K)
@@ -1399,8 +1410,8 @@ contains
     endif
     nd = 3
     Zstar = Z
-    Zstar(is) = Z(is) - betaSol
-    Zstar = Zstar/(1.0-betaSol)
+    Zstar(is) = max(machine_prec, Z(is) - betaSol)
+    Zstar = Zstar/max(machine_prec, (1.0-betaSol))
     Zsolid = 0.0
     Zsolid(is) = 1.0
     X = Zstar/(1-beta+beta*Kl)

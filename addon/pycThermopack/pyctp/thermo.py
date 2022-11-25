@@ -53,6 +53,8 @@ class thermopack(object):
             self.tp, self.get_export_name("thermopack_constants", "tptmin"))
         self.minimum_pressure_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tppmin"))
+        self.maximum_pressure_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tppmax"))
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(
@@ -649,13 +651,22 @@ class thermopack(object):
         return temp
 
     def set_pmin(self, press):
-        """Get minimum pressure in Thermopack. Used to limit search
+        """Set minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.minimum_pressure_c.value = press
+
+    def set_pmax(self, press):
+        """Set minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        self.maximum_pressure_c.value = press
 
     #################################
     # Phase properties
