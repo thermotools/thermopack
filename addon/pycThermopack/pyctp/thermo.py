@@ -3502,6 +3502,9 @@ class thermopack(object):
                           byref(ierr_c),
                           phase_c)
 
+        if ierr_c.value != 0:
+            raise Exception("mu-T solver failed")
+
         return np.array(rho_c)
 
     def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):

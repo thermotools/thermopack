@@ -127,6 +127,24 @@ class state(object):
         return state(eos=eos, T=None, V=None, n=x, p=p, h=h, n_tot=1.0, init_specific=True)
 
     @staticmethod
+    def new_mut(eos, mu, T, rho0):
+        """Create mu-T state
+
+        Args:
+            eos (thermo.thermo): Equation of state object
+            mu (float): Chemical potential (J/mol)
+            T (float): Temperature (K).
+            rho0 (np.ndarray): Initial densities (mol/m3)
+
+        Returns:
+            state: State constructed form mu-T
+        """
+        rho = eos.solve_mu_t(T, mu, rho_initial=rho0)
+        v = 1.0/np.sum(rho)
+        x = rho*v
+        return state(eos=eos, T=T, V=v, n=x, p=None, h=None, n_tot=1.0, init_specific=True)
+
+    @staticmethod
     def critical(eos, x):
         """Create critical state
 
