@@ -44,7 +44,7 @@ and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and
 [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can
 be compiled using [Microsoft Visual
 Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
-[thermopack/MSVStudio](https://github.com/SINTEF/thermopack/tree/main/MSVStudio),
+[thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
 
@@ -57,7 +57,7 @@ To compile using Intel FORTRAN, use `make optim_ifort`.
 
 ```bash
 # Fetch and compile
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 make optim
 
@@ -94,6 +94,19 @@ Then follow the Linux instructions above, just replace `make` with `gmake`.
 Some additional packages like `git` and `python` can also be installed via
 Homebrew before you start, but if you use a recent version of MacOS (e.g.
 Catalina), then the versions installed by default should be sufficient.
+
+#### MacOS with arm64 architecture (M1, M2 etc.)
+
+Use the alternative `Makefile_arm64` and `Makefile_arm64.code` by renaming the files
+```
+Makefile => Makefile_x86
+Makefile.code => Makefile_x86.code
+Makefile_arm64 => Makefile
+Makefile_arm64.code => Makefile.code
+```
+
+
+then follow the steps under MacOS setup. Please feel free to leave an issue if you have build problems, the build system for MacOS on Apple Silicon has not been as thouroughly tested as other build systems, and is still somewhat a work in progress.
 
 ### Windows setup
 Download and compile LAPACK and BLAS libraries (you will need CMake and
@@ -135,7 +148,7 @@ pacman -S mingw-w64-x86_64-dlfcn
 Open the `MSYS2 MinGW 64-bit` application, and enter the following in the terminal:
 
 ```bash
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 mingw32-make.exe optim
 ```
@@ -208,7 +221,7 @@ Ailo Aasen (ailo.aasen@sintef.no)<br>
 Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
 
 ## License
-Thermopack is distributed under the [MIT license](https://github.com/SINTEF/thermopack/blob/main/LICENSE).
+Thermopack is distributed under the [MIT license](https://github.com/thermotools/thermopack/blob/main/LICENSE).
 
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research have contributed to the

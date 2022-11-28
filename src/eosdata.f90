@@ -27,6 +27,8 @@ module eosdata
   integer, parameter :: meosMbwr19 = 611    !< MBWR19 (Bender) multiparameter equation of state
   integer, parameter :: meosMbwr32 = 612    !< MBWR32 multiparameter equation of state
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
+  integer, parameter :: meosLJ = 63        !< Multiparameter EoS
+  integer, parameter :: meosLJTS = 64      !< Multiparameter EoS
   integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
   integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
@@ -45,7 +47,7 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 23
+  integer, parameter :: max_n_eos = 25
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -164,6 +166,22 @@ module eosdata
        eos_subidx = meosNist, &
        short_label = "NIST_MEOS", &
        label = "Multiparameter EoS on NIST-like form", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosLJ, &
+       short_label = "LJ_MEOS", &
+       label = "Multiparameter EoS for LJ", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosLJTS, &
+       short_label = "LJTS_MEOS", &
+       label = "Multiparameter EoS for LJTS", &
        need_alternative_eos = .true. &
        ),&
        !

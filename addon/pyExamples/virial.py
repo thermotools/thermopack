@@ -1,11 +1,9 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import tcPR
+from pyctp.tcPR import tcPR
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -13,8 +11,7 @@ import matplotlib.pyplot as plt
 
 # Exapmle of virial coefficient plot
 
-tc_pr = tcPR.tcPR()
-tc_pr.init("CO2,C1")
+tc_pr = tcPR("CO2,C1")
 
 # Plot phase envelope
 z = np.array([0.9, 0.1])

@@ -18,9 +18,19 @@ class cpa(cubic.cubic):
     """
     Interface to cubic plus association model
     """
-    def __init__(self):
-        """
-        Initialize cubic specific function pointers
+    def __init__(self, comps=None, eos="SRK", mixing="vdW", alpha="Classic",
+             parameter_reference="Default"):
+        """Initialize cubic plus association model in thermopack
+
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'
+        Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+        Args:
+            comps (str, optional): Comma separated list of component names
+            eos (str, optional): Cubic equation of state. Defaults to "SRK".
+            mixing (str, optional): Mixture model. Defaults to "vdW".
+            alpha (str, optional): Alpha model. Defaults to "Classic".
+            parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
         super(cpa, self).__init__()
@@ -30,6 +40,11 @@ class cpa(cubic.cubic):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_kij"))
+        # Options methods
+        self.s_use_simplified_cpa = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
+
+        if comps is not None:
+            self.init(comps, eos, mixing, alpha, parameter_reference)
 
 
     #################################
@@ -131,3 +146,13 @@ class cpa(cubic.cubic):
         self.s_set_kij(byref(c1_c),
                        byref(c2_c),
                        kij_c)
+
+    def use_simplified_cpa(self, simplified):
+        """Use simplified form for rdf in CPA
+        Args:
+            simplified (bool): True if simplified
+        """
+        simplified_c = c_bool(simplified)
+        self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
+        self.s_use_simplified_cpa.restype = None
+        self.s_use_simplified_cpa(byref(simplified_c))

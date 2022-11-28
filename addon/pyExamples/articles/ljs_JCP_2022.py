@@ -7,10 +7,10 @@
 #
 #Modify system path
 import sys
-sys.path.append('../../pycThermopack/')
-sys.path.append('../')
+sys.path.insert(0,'../../pycThermopack/')
+sys.path.insert(1,'../')
 # Importing pyThermopack
-from pyctp import ljs_wca, ljs_bh
+from pyctp.ljs_wca import ljs_uv
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -843,9 +843,7 @@ if __name__ == '__main__':
     # doi: 10.1063/5.0082690
     #
     # Instanciate and init LJS objects
-    uv = ljs_wca.ljs_uv()
-    uv.init()
-    uv.set_tmin(temp=2.0)
+    uv = ljs_uv()
     LJS_BH, labels_BH = get_BH_models()
     LJS_WCA, labels_WCA = get_WCA_models()
 

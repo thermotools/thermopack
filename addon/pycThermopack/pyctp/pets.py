@@ -16,9 +16,13 @@ class pets(saft):
     """
     Interface to PETS
     """
-    def __init__(self):
+    def __init__(self, parameter_reference="Default", minimum_temperature=2.0):
         """
         Initialize pets specific function pointers
+
+        Args:
+            parameter_reference (str, optional): What parameters to use. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
         saft.__init__(self)
@@ -29,18 +33,21 @@ class pets(saft):
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pets_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pets_get_pure_params"))
 
+        self.init(parameter_reference, minimum_temperature)
+
 
     #################################
     # Init
     #################################
 
-    def init(self, parameter_reference="Default"):
+    def init(self, parameter_reference="Default", minimum_temperature=2.0):
         """Initialize he PeTS equation of state for the LJ fluid
         truncated and shifted at 2.5 sigma. Reference:
         Heier et al. 2018 (10.1080/00268976.2018.1447153)
 
         Args:
-            parameter_reference (str, optional): Wath parameters to use. Defaults to "Default".
+            parameter_reference (str, optional): What parameters to use. Defaults to "Default".
+            minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         self.activate()
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
@@ -55,6 +62,7 @@ class pets(saft):
                                   ref_string_len)
 
         self.nc = 1
+        self.set_tmin(minimum_temperature)
 
         # Map pure fluid parameters
         self.m = np.ones(self.nc)

@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)

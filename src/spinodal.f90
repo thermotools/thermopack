@@ -1025,8 +1025,8 @@ contains
     end if
 
     rho = rho_init
-    p_rho = dpdrho(rho)
-    p_rhorho = d2pdrho2 (rho)
+    p_rho = dpdrho(rho, x, T)
+    p_rhorho = d2pdrho2(rho, x, T)
 
     ! Make an effort to ensure that we're starting from a good place.
     ! (Note to self: If p_rho < 0, then either we are too high or too low;
@@ -1039,8 +1039,8 @@ contains
         print *
       end if
       rho = rho*(1-s*0.1) ! increase or decrease by 10 percent
-      p_rho = dpdrho(rho)
-      p_rhorho = d2pdrho2 (rho)
+      p_rho = dpdrho(rho, x, T)
+      p_rhorho = d2pdrho2(rho, x, T)
     end do
 
     ! Solve dpdrho=0 using Newton's method with numerical gradient.
@@ -1065,8 +1065,8 @@ contains
       ! Updates.
       rho_old = rho
       rho = rho + drho
-      p_rho = dpdrho(rho)
-      p_rhorho = d2pdrho2(rho)
+      p_rho = dpdrho(rho, x, T)
+      p_rhorho = d2pdrho2(rho, x, T)
 
       ! Check convergence of extremum search
       n_iter = n_iter+1
@@ -1090,27 +1090,34 @@ contains
       endif
     end do
 
-  contains
-    function dpdrho (rho)
-      use eosTV, only: pressure
-      real, intent(in) :: rho
-      real :: dpdrho
-
-      p = pressure(t,1.0/rho,x,dpdv=dpdrho)
-      dpdrho = -dpdrho/rho**2
-    end function dpdrho
-
-    function d2pdrho2 (rho)
-      real, intent(in) :: rho
-      real :: d2pdrho2
-      real :: p_rho_1, p_rho_2
-
-      p_rho_1 = dpdrho(rho*(1-rel_eps))
-      p_rho_2 = dpdrho(rho*(1+rel_eps))
-
-      d2pdrho2 = (p_rho_2 - p_rho_1)/(2*rho*rel_eps)
-    end function d2pdrho2
   end function rho_of_meta_extremum
+
+  function dpdrho(rho, x, t)
+    use thermopack_var, only: nce
+    use eosTV, only: pressure
+    real, intent(in) :: rho
+    real, intent(in) :: x(nce)                      !< Composition
+    real, intent(in) :: T                          !< Temperature [K]
+    real :: dpdrho
+    ! Locals
+    real :: p
+    p = pressure(t,1.0/rho,x,dpdv=dpdrho)
+    dpdrho = -dpdrho/rho**2
+  end function dpdrho
+
+  function d2pdrho2(rho, x, T)
+    use thermopack_var, only: nce
+    real, intent(in) :: rho
+    real, intent(in) :: x(nce)                      !< Composition
+    real, intent(in) :: T                          !< Temperature [K]
+    real :: d2pdrho2
+    real :: p_rho_1, p_rho_2
+    real, parameter    :: rel_eps=1e-8
+    p_rho_1 = dpdrho(rho*(1-rel_eps), x, T)
+    p_rho_2 = dpdrho(rho*(1+rel_eps), x, T)
+
+    d2pdrho2 = (p_rho_2 - p_rho_1)/(2*rho*rel_eps)
+  end function d2pdrho2
 
   function genericPropertyTV(t,v,n,propflag) result(prop)
     use eosTV, only: pressure, internal_energy_tv, enthalpy_tv, entropy_tv

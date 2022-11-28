@@ -4,11 +4,7 @@ from os import path
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
-if utils.gcc_major_version_greater_than(7):
-    c_len_type = c_size_t  # c_size_t on GCC > 7
-else:
-    c_len_type = c_int
-
+c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
 class thermopack(object):
     """
@@ -566,6 +562,41 @@ class thermopack(object):
 
         return w.value
 
+    def get_critcal_parameters(self, i):
+        '''
+        Get pure fluid critical parameters of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: Critical temperature (K)
+            float: Critical volume (m3/mol)
+            float: Critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value, vci.value, pci.value
+
     def critical_temperature(self, i):
         '''
         Get critical temperature of component i
@@ -576,7 +607,6 @@ class thermopack(object):
         '''
         self.activate()
         comp_c = c_int(i)
-
         w = c_double(0.0)
         tci = c_double(0.0)
         pci = c_double(0.0)
@@ -691,7 +721,8 @@ class thermopack(object):
         Args:
             temp (float): Temperature (K)
         """
-        self.minimum_temperature_c.value = temp
+        if temp is not None:
+            self.minimum_temperature_c.value = temp
 
     def get_tmin(self):
         """Get minimum temperature in Thermopack. Used to limit search

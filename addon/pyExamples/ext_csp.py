@@ -1,19 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import extended_csp
+from pyctp.extended_csp import ext_csp
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init extended corrensponding state object
-csp = extended_csp.ext_csp()
-csp.init("C1,C2,C3,NC4", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
+csp = ext_csp("C1,C2,C3,NC4", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
 
 # Plot phase envelope
 z = np.array([0.86, 0.1, 0.03, 0.01])
