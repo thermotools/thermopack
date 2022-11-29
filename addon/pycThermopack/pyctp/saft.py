@@ -54,6 +54,8 @@ class saft(thermopack):
             self.tp, self.get_export_name("saft_interface", "truncation_corrections"))
         self.s_test_fmt_compatibility = getattr(
             self.tp, self.get_export_name("saft_interface", "test_fmt_compatibility"))
+        self.s_fmt_energy_density = getattr(
+            self.tp, self.get_export_name("fundamental_measure_theory", "fmt_energy_density"))
 
         self.m = None
         self.sigma = None
@@ -694,4 +696,58 @@ class saft(thermopack):
         if isinstance(mu_ij_T, float):
             return_tuple += (g_ij_T_c[0], )
 
+        return  return_tuple
+
+    def fmt_energy_density(self, n_alpha, phi_n=False, pii_nn=False, fmt_model="WB"):
+        """Calculate FMT reduced energy density
+
+        Args:
+            n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2) for the entire grid
+            phi_n (bool): Calculate first order differetnials?
+            phi_nn (bool): Calculate second order differetnials?
+            fmt_model (str): FMT model (Rosenfeld, WB, WBII)
+
+        Returns:
+            np.ndarray: phi
+            np.ndarray: phi_n
+            np.ndarray: phi_nn
+        """
+        self.activate()
+        n_grid, nv = np.shape(n_alpha)
+        n_grid_c = c_int(n_grid)
+        nv_c = c_int(nv)
+        n_alpha_c = (c_double * (n_grid*nv))(*n_alpha.ravel(order='F'))
+        if fmt_model == "Rosenfeld":
+            fmt_model_c = c_int(1)
+        elif fmt_model == "WB":
+            fmt_model_c = c_int(2)
+        elif fmt_model == "WBII":
+            fmt_model_c = c_int(3)
+        phi_c = (c_double * n_grid)(0.0)
+        phi_n_c = (c_double * (n_grid*nv))(0.0) if phi_n else POINTER(c_double)()
+        phi_nn_c = (c_double * (n_grid*nv*nv))(0.0) if phi_nn else POINTER(c_double)()
+
+        self.s_fmt_energy_density.argtypes = [POINTER(c_int),
+                                              POINTER(c_int),
+                                              POINTER(c_int),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double)]
+
+        self.s_fmt_energy_density.restype = None
+
+        self.s_fmt_energy_density(byref(fmt_model_c),
+                                  byref(n_grid_c),
+                                  byref(nv_c),
+                                  n_alpha_c,
+                                  phi_c,
+                                  phi_n_c,
+                                  phi_nn_c)
+
+        return_tuple = (np.array(phi_c), )
+        if phi_n:
+            return_tuple += (np.array(phi_n_c).reshape((n_grid, nv), order='F').ravel(order="C").reshape((n_grid, nv)), )
+        if phi_nn:
+            return_tuple += (np.array(phi_nn_c).reshape((n_grid, nv, nv), order='F').ravel(order="C").reshape((n_grid, nv, nv)), )
         return  return_tuple

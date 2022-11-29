@@ -170,6 +170,8 @@ append_export("entropy_tvp", "eostv")
 append_export("thermo_tvp", "eostv")
 append_export("enthalpy_tvp", "eostv")
 
+append_export("fmt_energy_density", "fundamental_measure_theory")
+
 append_export("calc_bmcsl_gij_fmt", "hardsphere_bmcsl")
 
 append_export("idealenthalpysingle", "ideal")

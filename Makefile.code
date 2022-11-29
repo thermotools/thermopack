@@ -86,6 +86,7 @@ OBJE = \
        $(ODIR)/association_var.o \
        $(ODIR)/thermopack_var.o \
        $(ODIR)/hyperdual_utility.o \
+       $(ODIR)/fmt.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -466,6 +467,9 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/puresaturation.f90 \
 	$(SRC)/state_functions.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/external.f90)
+$(ODIR)/fmt.o: $(SRC)/fmt.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/hyperdual_mod.f90
+	@$(call make_object, $(SRC)/fmt.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
