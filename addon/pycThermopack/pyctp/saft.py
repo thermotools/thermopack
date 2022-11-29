@@ -698,14 +698,14 @@ class saft(thermopack):
 
         return  return_tuple
 
-    def fmt_energy_density(self, n_alpha, phi_n=False, pii_nn=False, fmt_model="WB"):
+    def fmt_energy_density(self, n_alpha, phi_n=False, phi_nn=False, fmt_model="WB"):
         """Calculate FMT reduced energy density
 
         Args:
             n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2) for the entire grid
             phi_n (bool): Calculate first order differetnials?
             phi_nn (bool): Calculate second order differetnials?
-            fmt_model (str): FMT model (Rosenfeld, WB, WBII)
+            fmt_model (str): FMT model (RF (Rosenfeld), WB (White Bear), WBII (White Bear Mark II))
 
         Returns:
             np.ndarray: phi
@@ -717,12 +717,15 @@ class saft(thermopack):
         n_grid_c = c_int(n_grid)
         nv_c = c_int(nv)
         n_alpha_c = (c_double * (n_grid*nv))(*n_alpha.ravel(order='F'))
-        if fmt_model == "Rosenfeld":
+        if fmt_model == "RF":
             fmt_model_c = c_int(1)
         elif fmt_model == "WB":
             fmt_model_c = c_int(2)
         elif fmt_model == "WBII":
             fmt_model_c = c_int(3)
+        else:
+            raise ValueError("Wrong FMT model")
+
         phi_c = (c_double * n_grid)(0.0)
         phi_n_c = (c_double * (n_grid*nv))(0.0) if phi_n else POINTER(c_double)()
         phi_nn_c = (c_double * (n_grid*nv*nv))(0.0) if phi_nn else POINTER(c_double)()
