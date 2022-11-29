@@ -489,6 +489,9 @@ class phase_state_list(object):
     def molefracs(self):
         return np.array([state.x for state in self.states])
 
+    @property
+    def specific_volumes(self):
+        return np.array([state.specific_volume() for state in self.states])
 
 class PhaseDiagram(object):
     """
@@ -557,8 +560,8 @@ class PhaseDiagram(object):
                           init_specific=True)
             liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
                            init_specific=True)
-            vle_States.append(Equilibrium(vapor, liquid))
-        return PhaseDiagram(vle_States)
+            vle_states.append(Equilibrium(vapor, liquid))
+        return PhaseDiagram(vle_states)
 
     @property
     def liquid(self):
