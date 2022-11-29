@@ -2,7 +2,7 @@ import sys
 import numpy as np
 
 
-class state(object):
+class State(object):
     """
     Thermodynamic state point
     """
@@ -94,7 +94,7 @@ class state(object):
         Returns:
             state: State constructed form TVn
         """
-        return state(eos=eos, T=T, V=V, n=n)
+        return State(eos=eos, T=T, V=V, n=n)
 
     @staticmethod
     def new_tpx(eos, T, p, x):
@@ -107,9 +107,9 @@ class state(object):
             x (np.ndarray): Mol numbers (mol/mol)
 
         Returns:
-            state: State constructed form Tpx
+            State: State constructed form Tpx
         """
-        return state(eos=eos, T=T, V=None, n=x, p=p, n_tot=1.0, init_specific=True)
+        return State(eos=eos, T=T, V=None, n=x, p=p, n_tot=1.0, init_specific=True)
 
     @staticmethod
     def new_phx(eos, h, p, x):
@@ -122,9 +122,9 @@ class state(object):
             x (np.ndarray): Mol numbers (mol/mol)
 
         Returns:
-            state: State constructed form hpx
+            State: State constructed form hpx
         """
-        return state(eos=eos, T=None, V=None, n=x, p=p, h=h, n_tot=1.0, init_specific=True)
+        return State(eos=eos, T=None, V=None, n=x, p=p, h=h, n_tot=1.0, init_specific=True)
 
     @staticmethod
     def new_mut(eos, mu, T, rho0):
@@ -137,12 +137,12 @@ class state(object):
             rho0 (np.ndarray): Initial densities (mol/m3)
 
         Returns:
-            state: State constructed form mu-T
+            State: State constructed form mu-T
         """
         rho = eos.solve_mu_t(T, mu, rho_initial=rho0)
         v = 1.0/np.sum(rho)
         x = rho*v
-        return state(eos=eos, T=T, V=v, n=x, p=None, h=None, n_tot=1.0, init_specific=True)
+        return State(eos=eos, T=T, V=v, n=x, p=None, h=None, n_tot=1.0, init_specific=True)
 
     @staticmethod
     def critical(eos, x):
@@ -153,10 +153,10 @@ class state(object):
             x (np.ndarray): Mol numbers (mol/mol)
 
         Returns:
-            state: State constructed form critical point
+            State: State constructed form critical point
         """
         T, v, p = eos.critical(n=x)
-        return state(eos=eos, T=T, V=v, n=x, p=p, n_tot=1.0, init_specific=True)
+        return State(eos=eos, T=T, V=v, n=x, p=p, n_tot=1.0, init_specific=True)
 
     def pressure(self):
         if self.p is not None:
@@ -343,7 +343,7 @@ class state(object):
             self.muE = muE
         return muE
 
-class equilibrium(object):
+class Equilibrium(object):
     """
     VLLSE phase equilibrium
     """
@@ -399,15 +399,15 @@ class equilibrium(object):
             if phase in [eos.VAPPH, eos.TWOPH] else (None,)
         vl, = eos.specific_volume(T, p, x, eos.LIQPH) \
             if phase in [eos.LIQPH, eos.TWOPH] else (None,)
-        vapor = state(eos=eos, T=T, v=vg, n=y, p=p,
+        vapor = State(eos=eos, T=T, v=vg, n=y, p=p,
                       ph=eos.VAPPH, n_tot=betaV,
                       init_specific=True) \
             if phase in [eos.VAPPH, eos.TWOPH] else None
-        liquid = state(eos=eos, T=T, V=vl, n=x, p=p,
+        liquid = State(eos=eos, T=T, V=vl, n=x, p=p,
                        ph=eos.LIQPH, n_tot=betaL,
                        init_specific=True) \
             if phase in [eos.LIQPH, eos.TWOPH] else None
-        return equilibrium(vapor, liquid)
+        return Equilibrium(vapor, liquid)
 
     @staticmethod
     def bubble_pressure(eos, T, z):
@@ -424,11 +424,11 @@ class equilibrium(object):
         p, y = eos.bubble_pressure(temp=T, z=z)
         vg, = eos.specific_volume(T, p, y, eos.VAPPH)
         vl, = eos.specific_volume(T, p, z, eos.LIQPH)
-        vapor = state(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
+        vapor = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
-        liquid = state(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
+        liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
                        init_specific=True)
-        return equilibrium(vapor, liquid)
+        return Equilibrium(vapor, liquid)
 
     @staticmethod
     def bubble_temperature(eos, p, z):
@@ -445,11 +445,11 @@ class equilibrium(object):
         T, y = eos.bubble_temperature(press=p, z=z)
         vg, = eos.specific_volume(T, p, y, eos.VAPPH)
         vl, = eos.specific_volume(T, p, z, eos.LIQPH)
-        vapor = state(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
+        vapor = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
-        liquid = state(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
+        liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
                        init_specific=True)
-        return equilibrium(vapor, liquid)
+        return Equilibrium(vapor, liquid)
 
     @property
     def temperature(self):
@@ -490,7 +490,7 @@ class phase_state_list(object):
         return np.array([state.x for state in self.states])
 
 
-class phase_diagram(object):
+class PhaseDiagram(object):
     """
     List of states
     """
@@ -510,7 +510,7 @@ class phase_diagram(object):
             T (float): Temperature to start mapping curve (K)
             n (int): Number of equidistant temperature points
         Returns:
-            phase_diagram: Phase diagram
+            PhaseDiagram: Phase diagram
         """
         assert eos.nc == 1
         z = np.ones(1)
@@ -522,16 +522,16 @@ class phase_diagram(object):
                                                                                log_linear_grid=False)
         vle_states = []
         for i in range(len(t_vals)):
-            vapor = state(eos=eos, T=t_vals[i], V=vg_vals[i], n=z, p=p_vals[i], n_tot=1.0,
+            vapor = State(eos=eos, T=t_vals[i], V=vg_vals[i], n=z, p=p_vals[i], n_tot=1.0,
                           init_specific=True)
-            liquid = state(eos=eos, T=t_vals[i], V=vl_vals[i], n=z, p=p_vals[i], n_tot=1.0,
+            liquid = State(eos=eos, T=t_vals[i], V=vl_vals[i], n=z, p=p_vals[i], n_tot=1.0,
                            init_specific=True)
-            vle_states.append(equilibrium(vapor, liquid))
-        return phase_diagram(vle_states)
+            vle_states.append(Equilibrium(vapor, liquid))
+        return PhaseDiagram(vle_states)
 
     @staticmethod
     def binary_isotherm_vle(eos, T, maximum_pressure=1.5e7):
-        """Construct phase_diagram from binary vle isotherm
+        """Construct PhaseDiagram from binary vle isotherm
 
         Args:
             eos (thermo.thermo): Equation of state object
@@ -539,7 +539,7 @@ class phase_diagram(object):
             maximum_pressure (float, optional): Pressure (Pa). Defaults to 1.5e7.
 
         Returns:
-            phase_diagram: Phase diagram
+            PhaseDiagram: Phase diagram
         """
         _, L1VE, _ = eos.get_binary_pxy(temp=T,
                                         maximum_pressure=maximum_pressure,
@@ -553,12 +553,12 @@ class phase_diagram(object):
             vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
             xx = np.array([x[i], 1-x[i]])
             vl, = eos.specific_volume(T, p[i], xx, eos.LIQPH)
-            vapor = state(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
+            vapor = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
                           init_specific=True)
-            liquid = state(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
+            liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
                            init_specific=True)
-            vle_states.append(equilibrium(vapor, liquid))
-        return phase_diagram(vle_states)
+            vle_States.append(Equilibrium(vapor, liquid))
+        return PhaseDiagram(vle_States)
 
     @property
     def liquid(self):
@@ -576,14 +576,14 @@ class phase_diagram(object):
     def pressures(self):
         return phase_state_list([vle.vapor for vle in self.vle_states]).pressures
 
-class meta_curve(object):
+class MetaCurve(object):
     """
     List of meta-stable states
     """
 
     def __init__(self, meta_states):
         """
-        Assign list of states
+        Assign list of States
         """
         self.meta_states = meta_states
 
@@ -616,12 +616,12 @@ class meta_curve(object):
                 vl = 1.0/np.sum(rho[i,:])
                 y = z
                 x = rho[i,:]*vl
-            vapor = state(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
+            vapor = State(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
                           init_specific=True)
-            liquid = state(eos=eos, T=T, V=vl, n=x, n_tot=1.0,
+            liquid = State(eos=eos, T=T, V=vl, n=x, n_tot=1.0,
                            init_specific=True)
-            meta_states.append(equilibrium(vapor, liquid))
-        return meta_curve(meta_states)
+            meta_states.append(Equilibrium(vapor, liquid))
+        return MetaCurve(meta_states)
 
     @property
     def liquid(self):
