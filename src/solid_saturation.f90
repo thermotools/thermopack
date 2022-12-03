@@ -845,7 +845,7 @@ contains
     real :: betaMin, point(5), betaSolCrit
     integer :: s, is, iter, ierr, i, n_vap_line
     integer :: ifile
-    logical :: plotEnergiesEtc, exit_loop, closing
+    logical :: plotEnergiesEtc, closing, has_crit_vls
     character(len=*), parameter :: sep = '  '
     character(len=*), parameter :: non = 'NaN' ! '.' for gnuplot, NaN for numpy
     character(len=clen) :: line, mergedlines
@@ -873,6 +873,7 @@ contains
     if (present(plotESV)) then
       plotEnergiesEtc = plotESV
     endif
+    has_crit_vls = .false.
     if (isSingleComp(z)) then
       n = 100
       call solidEnvelopePlotSingle(Z,T_init,p_init,spec,Pmax,n,Ta,Pa,tsg,psg,tsl,psl,ierr)
@@ -1171,7 +1172,6 @@ contains
         p = Ptr2
         betaSol = 0.0
         n_vap_line = nsol
-        exit_loop = .false.
         do i=2,nsol
           pn = Ptr2 + (Pmax-Ptr2)*real(i-1)/real(nsol-1)
           ln_spec = log(pn)
@@ -1187,7 +1187,7 @@ contains
           endif
           if (isCriticalThreePhase(Z,K,t,p,beta,betaSol,is,tcrit,pcrit,ierr)) then
             betaSolCrit = betaSol
-            exit_loop = .true.
+            has_crit_vls = .true.
             n_vap_line = i
           endif
           if (verbose) then
@@ -1197,9 +1197,34 @@ contains
           Ts2(i) = t
           Ps2(i) = p
           bs2(i) = betaSol
-          if (exit_loop) exit
+          if (has_crit_vls) exit
         enddo
         n_sol_lines(5) = n_vap_line
+      endif
+
+      if (plotEnergiesEtc .and. nc == 2) then
+        ! Calculate energies for curve where liquid disapear
+        n_sol_lines(4) = n_sol_lines(3) + n_sol_lines(5)
+        Ks(1:n_sol_lines(3),:) = Kl(1:n_sol_lines(3),:)
+        Ts(1:n_sol_lines(3)) = Tl(1:n_sol_lines(3))
+        Ps(1:n_sol_lines(3)) = Pl(1:n_sol_lines(3))
+        ! Triple line
+        do i=1,n_sol_lines(3)
+          bs(i) = Z(is)*(1-Ks(i,is))/(1-Z(is)*Ks(i,is))
+        enddo
+        ! Vapour-liquid line in coexistence with solid
+        Ks(n_sol_lines(3)+1:n_sol_lines(4),:) = Ks2(1:n_sol_lines(5),:)
+        Ts(n_sol_lines(3)+1:n_sol_lines(4)) = Ts2(1:n_sol_lines(5))
+        Ps(n_sol_lines(3)+1:n_sol_lines(4)) = Ps2(1:n_sol_lines(5))
+        bs(n_sol_lines(3)+1:n_sol_lines(4)) = bs2(1:n_sol_lines(5))
+        n_vap_line = n_sol_lines(5)
+        if (has_crit_vls) then
+          n_vap_line = n_vap_line - 1
+          bs(n_sol_lines(4)) = betaSolCrit
+        endif
+        do i=1,n_vap_line
+          bs(n_sol_lines(3)+i) = Z(is)*(1-Ks(n_sol_lines(3)+i,is))/(1-Z(is)*Ks(n_sol_lines(3)+i,is))
+        enddo
       endif
 
       if (verbose) then
@@ -1246,7 +1271,7 @@ contains
         point = 0
       endif
       write(ifile,'(A,5es19.10e3)') '#Critical point 1: ', point
-      if (tcrit > 0)  then
+      if (has_crit_vls)  then
         call getESV(tcrit,pcrit,Z,0.0,betaSolCrit,is,e,ent,v)
         point = (/tcrit,pcrit,e,ent,v/)
       else
