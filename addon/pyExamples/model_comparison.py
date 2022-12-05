@@ -3,9 +3,9 @@ import sys
 sys.path.insert(0,'../pycThermopack/')
 import matplotlib.pyplot as plt
 import numpy as np
-from pyctp.extended_csp import ext_csp
-from pyctp.pcsaft import pcsaft
-from pyctp.tcPR import tcPR
+from thermopack.extended_csp import ext_csp
+from thermopack.pcsaft import pcsaft
+from thermopack.tcPR import tcPR
 
 
 tc_pr = tcPR("CO2,N2")

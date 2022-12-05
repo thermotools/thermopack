@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 sys.path.insert(0,'../pycThermopack/')
-from pyctp.saftvrqmie import saftvrqmie
+from thermopack.saftvrqmie import saftvrqmie
 import numpy as np
 import matplotlib.pyplot as plt
 

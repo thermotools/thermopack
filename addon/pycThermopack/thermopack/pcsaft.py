@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class pcsaft(thermo.thermopack):
+class pcsaft(thermo.thermo):
     """
     Interface to cubic
     """

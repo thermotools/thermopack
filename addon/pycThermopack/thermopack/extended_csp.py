@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class ext_csp(thermo.thermopack):
+class ext_csp(thermo.thermo):
     """
     Interface to tc-PR
     """

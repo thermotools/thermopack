@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0,'../../pycThermopack/')
 sys.path.insert(1,'../')
 # Importing pyThermopack
-from pyctp.ljs_wca import ljs_uv
+from thermopack.ljs_wca import ljs_uv
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -18,7 +18,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
-from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, \
+from thermopack_example_utils import calc_reduced_T, calc_reduced_rho, \
     calc_reduced_P, calc_reduced_heat_capacity, calc_real_T, \
     calc_real_rho
 from lennard_jones_spline import get_BH_models, get_WCA_models, plot_JT_inversion

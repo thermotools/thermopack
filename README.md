@@ -38,7 +38,14 @@ the Python frontend pycThermopack. When things are properly installed, it may
 be useful to look into the examples provided in the
 [addon/pyExamples](addon/pyExamples/README.md).
 
+### pypi
+Thermopack have been compiled for Windows, Linux and macOS
+and made available on the Python Package Index (pypi), and can be
+installed using pip.
 
+```bash
+pip3 install --user thermopack
+```
 
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran
@@ -65,7 +72,7 @@ git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 make optim
 
-# Prepare and install pycThermopack, aka pyctp
+# Prepare and install pycThermopack, aka "thermopack"
 # Remark: On some systems, Python 3 is installed as python, not python3. If so,
 # you can replace "python3" with "python" and perhaps also "pip3" with "pip" in
 # the below.

@@ -1,12 +1,14 @@
 from distutils.core import setup
+import sys
 
-setup(name='pyctp',
-      version='1.0.0',
-      description='pycThermopack',
+
+setup(name='thermopack',
+      version='2.0.0',
+      description='Python interface to thermopack',
       author='Morten Hammer',
-      author_email='hammer.morten@sintef.no',
-      url='https://github.com/SINTEF/thermopack',
-      packages=['pyctp'],
-      package_data={'pyctp':['libthermopack.*']}
+      author_email='morten.hammer@sintef.no',
+      url='https://github.com/thermotools/thermopack',
+      packages=['thermopack'],
+      package_data={'thermopack':['*thermopack.*']}
 )
 

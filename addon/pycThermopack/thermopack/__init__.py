@@ -1,4 +1,4 @@
-"""Initialization code for the pyctp package"""
+"""Initialization code for the thermopack package"""
 from . import platform_specifics
 from . import thermo
 from . import cubic
