@@ -149,7 +149,25 @@ for Tstar in temperatures:
 plt.ylabel(r"$\mu^*$")
 plt.xlabel(r"$P^*$")
 plt.tight_layout()
-plt.savefig("pets_Tmu.pdf")
+plt.savefig("pets_Pmu.pdf")
+
+plt.figure()
+plt.plot(sat["rho"], sat["P"], color="k")
+plt.plot(critical["rho"], critical["P"], "ko")
+plt.plot(spin["rho"], spin["P"], color="k", linestyle="--")
+colors = {temperatures[0]: "tab:blue", temperatures[1]: "tab:gray", temperatures[2]: "tab:green"}
+#["tab:blue", "tab:green", "tab:red", "tab:orange"]
+for Tstar in temperatures:
+    for phase in phases:
+        plt.plot(isoterms[Tstar][phase]["rho_z"], isoterms[Tstar][phase]["P_z"], color=colors[Tstar])
+        plt.plot(isoterms[Tstar][phase]["rho"], isoterms[Tstar][phase]["P"], color=colors[Tstar])
+    plt.plot(isoterms[Tstar]["rho_spin"], isoterms[Tstar]["P_spin"], color=colors[Tstar], linestyle=":")
+#leg = plt.legend(loc="best", numpoints=1, frameon=False)
+#plt.xlim([-0.2, plt.gca().get_xlim()[1]])
+plt.xlabel(r"$\rho^*$")
+plt.ylabel(r"$P^*$")
+plt.tight_layout()
+plt.savefig("pets_Prho.pdf")
 
 plt.show()
 sys.exit()
