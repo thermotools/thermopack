@@ -1,23 +1,27 @@
 # Thermopack
-Thermopack is a thermodynamics library for multi-component and multi-phase
-thermodynamics developed at [SINTEF Energy
-Research](https://www.sintef.no/en/sintef-energy/). Through decades of research,
-we have developed a software that performs thermodynamic calculations. A large
-selection of equations of state has been implemented in this software. Most of
-these equations of state have been developed by other research groups around
-the world, but some of them have been developed by us. Thermopack has has been
-a much-appreciated in-house powerhouse.
 
-With the slogan of SINTEF in mind - *Technology for a better society* - we want
-to share Thermopack with everybody, free of charge through the MIT open-source
-license. Thermopack is written in modern FORTRAN to handle heavy numerical
-computations associated with process and computational fluid dynamics (CFD)
-simulations. The thermodynamic framework is easily interfaced from C/C++ and
-also contains a flexible Python wrapper to make scripting easy. The Python
-interface is also a building block for the Thermopack graphical user interface,
-where it is possible to plot thermodynamic phase diagrams with the most
-frequently used equations of state. The graphical user interface is currently
-running on the Windows and Linux operating systems.
+Thermopack is a thermodynamics library for multi-component and
+multi-phase thermodynamics developed at [SINTEF Energy
+Research](https://www.sintef.no/en/sintef-energy/) and [NTNU
+Department of
+Chemistry](https://www.ntnu.edu/chemistry/research/thermodynamics). Through
+decades of research, we have developed a software that performs
+thermodynamic calculations. A large selection of equations of state
+has been implemented in this software. Most of these equations of
+state have been developed by other research groups around the world,
+but some of them have been developed by us. Thermopack has has been a
+much-appreciated in-house powerhouse.
+
+Thermopack is available for everybody, free of charge under the
+MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
+to handle heavy numerical computations associated with process and
+computational fluid dynamics (CFD) simulations. The thermodynamic
+framework is easily interfaced from C/C++ and also contains a flexible
+Python wrapper to make scripting easy. The Python interface is also a
+building block for the Thermopack graphical user interface, where it
+is possible to plot thermodynamic phase diagrams with the most
+frequently used equations of state. The graphical user interface is
+currently running on the Windows and Linux operating systems.
 
 ## Table of contents
 
@@ -51,7 +55,7 @@ and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and
 [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can
 be compiled using [Microsoft Visual
 Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
-[thermopack/MSVStudio](https://github.com/SINTEF/thermopack/tree/main/MSVStudio),
+[thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
 
@@ -64,7 +68,7 @@ To compile using Intel FORTRAN, use `make optim_ifort`.
 
 ```bash
 # Fetch and compile
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 make optim
 
@@ -101,6 +105,19 @@ Then follow the Linux instructions above, just replace `make` with `gmake`.
 Some additional packages like `git` and `python` can also be installed via
 Homebrew before you start, but if you use a recent version of MacOS (e.g.
 Catalina), then the versions installed by default should be sufficient.
+
+#### MacOS with arm64 architecture (M1, M2 etc.)
+
+Use the alternative `Makefile_arm64` and `Makefile_arm64.code` by renaming the files
+```
+Makefile => Makefile_x86
+Makefile.code => Makefile_x86.code
+Makefile_arm64 => Makefile
+Makefile_arm64.code => Makefile.code
+```
+
+
+then follow the steps under MacOS setup. Please feel free to leave an issue if you have build problems, the build system for MacOS on Apple Silicon has not been as thouroughly tested as other build systems, and is still somewhat a work in progress.
 
 ### Windows setup
 Download and compile LAPACK and BLAS libraries (you will need CMake and
@@ -142,7 +159,7 @@ pacman -S mingw-w64-x86_64-dlfcn
 Open the `MSYS2 MinGW 64-bit` application, and enter the following in the terminal:
 
 ```bash
-git clone https://github.com/SINTEF/thermopack.git
+git clone https://github.com/thermotools/thermopack.git
 cd thermopack
 mingw32-make.exe optim
 ```
@@ -215,8 +232,11 @@ Ailo Aasen (ailo.aasen@sintef.no)<br>
 Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
 
 ## License
-Thermopack is distributed under the [MIT license](https://github.com/SINTEF/thermopack/blob/main/LICENSE).
+Thermopack is distributed under the [MIT
+license](https://github.com/thermotools/thermopack/blob/main/LICENSE-MIT)
+and [Apache
+2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE-APACHE).
 
 ## Acknowledgments
-A number of colleagues at SINTEF Energy Research have contributed to the
+A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
 development of thermopack. We gratefully acknowledge their contributions.
