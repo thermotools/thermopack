@@ -4,6 +4,10 @@ make optim
 cd addon/pycThermopack
 python makescript.py optim
 python map_platform_specifics.py
+
+binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
+[[ "${binary_arch}" != "arm64" ]] &&  echo "Binary file is not arm64, but " && echo "${binary_arch}" && exit 1
+
 python -m pip wheel --wheel-dir=wheelhouse .
 cd wheelhouse
 delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
