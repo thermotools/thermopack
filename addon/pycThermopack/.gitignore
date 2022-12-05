@@ -1,5 +1,6 @@
 *.whl
 !wheelhouse/fixed_wheels/*
+!thermopack/*.dynlib
 LICENSE*
 *.egg-info/
 build/
