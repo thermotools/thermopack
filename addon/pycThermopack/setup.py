@@ -3,7 +3,7 @@ import sys
 
 
 setup(name='thermopack',
-      version='2.0.0',
+      version='2.1.0',
       description='Python interface to thermopack',
       author='Morten Hammer',
       author_email='morten.hammer@sintef.no',
