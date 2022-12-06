@@ -9,7 +9,7 @@ from . import plotutils, utils, platform_specifics
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
-class thermopack(object):
+class thermo(object):
     """
     Interface to thermopack
     """
@@ -80,6 +80,8 @@ class thermopack(object):
         # Ideal property interface
         self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
             "ideal", "idealenthalpysingle"))
+        self.s_eos_idealentropysingle = getattr(self.tp, self.get_export_name(
+            "ideal", "idealentropysingle"))
         self.s_ideal_get_entropy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "get_entropy_reference_value"))
         self.s_ideal_set_entropy_reference_value = getattr(self.tp, self.get_export_name(
@@ -1059,13 +1061,12 @@ class thermopack(object):
     def idealenthalpysingle(self, temp, j, dhdt=None):
         """ Calculate specific ideal enthalpy
             Note that the order of the output match the default order of input for the differentials.
-            Note further that dhdt, and dhdp only are flags to enable calculation.
+            Note further that dhdt only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
-            j (array_like): Component index
+            j (int): Component index (FORTRAN)
             dhdt (logical, optional): Calculate ideal enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dhdp (logical, optional): Calculate ideal enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
         Returns:
             float: Specific ideal enthalpy (J/mol), and optionally differentials
@@ -1096,6 +1097,60 @@ class thermopack(object):
         return_tuple = (h_c.value, )
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
+
+        return return_tuple
+
+    def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
+        """ Calculate specific ideal entropy
+            Note that the order of the output match the default order of input for the differentials.
+            Note further that dhdt, and dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            j (int): Component index (FORTRAN)
+            dsdt (logical, optional): Calculate ideal entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dsdp (logical, optional): Calculate ideal entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific ideal entropy (J/mol/K), and optionally differentials
+        """
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        j_c = c_int(j)
+        s_c = c_double(0.0)
+
+        if dsdt is None:
+            dsdt_c = null_pointer
+        else:
+            dsdt_c = POINTER(c_double)(c_double(0.0))
+        if dsdp is None:
+            dsdp_c = null_pointer
+        else:
+            dsdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.s_eos_idealentropysingle.argtypes = [POINTER( c_double ),
+                                                  POINTER( c_double ),
+                                                  POINTER( c_int ),
+                                                  POINTER( c_double ),
+                                                  POINTER( c_double ),
+                                                  POINTER( c_double )]
+
+        self.s_eos_idealentropysingle.restype = None
+
+        self.s_eos_idealentropysingle(byref(temp_c),
+                                      byref(press_c),
+                                      byref(j_c),
+                                      byref(s_c),
+                                      dsdt_c,
+                                      dsdp_c)
+        return_tuple = (s_c.value, )
+        if not dsdt is None:
+            return_tuple += (dsdt_c[0], )
+        if not dsdp is None:
+            return_tuple += (dsdp_c[0], )
 
         return return_tuple
 
