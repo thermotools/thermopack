@@ -10,8 +10,8 @@ binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
 
 python -m pip wheel --wheel-dir=wheelhouse .
 cd wheelhouse
-delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
+delocate-wheel -w fixed_wheels -v thermopack-2.1.0-py3-none-any.whl
 cd fixed_wheels
-mv thermopack-2.0.0-py3-none-any.whl thermopack-2.0.0-py3-none-macosx_10_9_x86_64.whl
+mv thermopack-2.1.0-py3-none-any.whl thermopack-2.1.0-py3-none-macosx_10_9_x86_64.whl
 cd ..
-rm thermopack-2.0.0-py3-none-any.whl # Prevent using the old wheel by accident if version is updated, but build script is not
+rm thermopack-2.1.0-py3-none-any.whl # Prevent using the old wheel by accident if version is updated, but build script is not
