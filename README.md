@@ -9,7 +9,7 @@ decades of research, we have developed a software that performs
 thermodynamic calculations. A large selection of equations of state
 has been implemented in this software. Most of these equations of
 state have been developed by other research groups around the world,
-but some of them have been developed by us. Thermopack has has been a
+but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
 
 Thermopack is available for everybody, free of charge under the
