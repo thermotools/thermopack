@@ -1751,6 +1751,7 @@ contains
     else
       if (present(p)) then
         p = pressure(t,v,z)
+        if (p < 0.0) ierr = 1 ! Converged to something un-physical
       endif
     endif
   end subroutine calcCriticalTV
