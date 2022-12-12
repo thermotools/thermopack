@@ -1,19 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import cubic
+from thermopack.cubic import cubic
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init SRK object.
-srk = cubic.cubic()
-srk.init("C1,C2,C3", "SRK")
+srk = cubic("C1,C2,C3", "SRK")
 srk.set_tmin(50.0)
 
 print("Rgas = {} (J/K/mol)".format(srk.Rgas))

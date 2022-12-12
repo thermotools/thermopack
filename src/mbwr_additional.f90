@@ -334,7 +334,7 @@ CONTAINS
     type(eosmbwr), intent(in) :: model
     !output
     real, optional, intent(out) :: Fr, F_T, F_v, F_TT, F_Tv, F_vv, &
-       F_n, F_Tn, F_vn, F_nn
+       F_n(1), F_Tn(1), F_vn(1), F_nn(1,1)
     !local variables
     real, dimension(0:2) :: res
     real, dimension(0:2,0:2) :: alphaDerivatives

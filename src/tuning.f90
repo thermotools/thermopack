@@ -75,6 +75,95 @@ subroutine thermopack_setHVparam(i,j,alpha_ij,alpha_ji,aGE_ij,aGE_ji,bGE_ij,bGE_
   end select
 end subroutine thermopack_setHVparam
 
+
+!> Tuning of WS data
+subroutine thermopack_setWSparam(i,j, alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_ji)
+  use thermopack_var
+  use cubic_eos, only: cb_eos, fraction
+  implicit none
+  integer, intent(in) :: i,j
+  real, intent(in) :: alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_ji
+  !
+  type(fraction):: frac, fracji
+  class(base_eos_param), pointer :: act_eos_ptr
+  act_eos_ptr => get_active_eos()
+  !
+  select type(p_eos => act_eos_ptr)
+  class is (cb_eos)
+     if (.not. allocated(p_eos%mixWS%f_kij)) then
+        call stoperror('p_eos%mixWS%f_kij not allocated')
+     endif
+     if (.not. allocated(p_eos%mixWS%f_tauij)) then
+        call stoperror('p_eos%mixWS%f_tauij not allocated')
+     endif
+     if (.not. allocated(p_eos%mixWS%alphaij)) then
+        call stoperror('p_eos%mixWS%alphaij not allocated')
+     endif
+
+     frac%pNum = 0.0
+     frac%pDen = 0.0
+     frac%pDen(1) = 1.0
+
+     ! Set ij parameters
+     p_eos%mixWS%alphaij(i,j) = alpha_ij
+
+     frac%pnum(1) = k_ij
+     p_eos%mixWS%f_kij(i,j) = frac
+
+     frac%pnum(1) = tau_ij
+     p_eos%mixWS%f_tauij(i,j) = frac
+
+     ! Set ji parameters
+     p_eos%mixWS%alphaij(j,i) = alpha_ji
+
+     frac%pnum(1) = k_ji
+     p_eos%mixWS%f_kij(j,i) = frac
+
+     frac%pnum(1) = tau_ji
+     p_eos%mixWS%f_tauij(j,i) = frac
+
+  class default
+     print *,"thermopack_setWSparam: Wrong model - no WS parameters"
+  end select
+end subroutine thermopack_setWSparam
+
+! Tuning of WS data
+subroutine thermopack_getWSparam(i,j,alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_ji)
+  use thermopack_var
+  use cubic_eos, only: cb_eos
+  implicit none
+  integer, intent(in) :: i,j
+  real, intent(out) :: alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_ji
+  !
+  class(base_eos_param), pointer :: act_eos_ptr
+  act_eos_ptr => get_active_eos()
+  !
+  select type(p_eos => act_eos_ptr)
+  class is (cb_eos)
+     if (.not. allocated(p_eos%mixWS%f_kij)) then
+        call stoperror('p_eos%mixWS%f_kij not allocated')
+     endif
+     if (.not. allocated(p_eos%mixWS%f_tauij)) then
+        call stoperror('p_eos%mixWS%f_tauij not allocated')
+     endif
+     if (.not. allocated(p_eos%mixWS%alphaij)) then
+        call stoperror('p_eos%mixWS%alphaij not allocated')
+     endif
+
+     k_ij = p_eos%mixWS%f_kij(i,j)%pNum(1)
+     k_ji = p_eos%mixWS%f_kij(j,i)%pNum(1)
+
+
+     tau_ij = p_eos%mixWS%f_tauij(i,j)%pNum(1)
+     tau_ji = p_eos%mixWS%f_tauij(j,i)%pNum(1)
+
+     alpha_ij = p_eos%mixWS%alphaij(i,j)
+     alpha_ji = p_eos%mixWS%alphaij(j,i)
+  class default
+     print *,"thermopack_getWSparam: Wrong model - no WS parameters"
+  end select
+end subroutine thermopack_getWSparam
+
 !> Tuning of TWU alpha correlation
 subroutine thermopack_getTWUparam(i,c_1,c_2,c_3)
   use thermopack_var
@@ -255,6 +344,24 @@ subroutine thermopack_setkijandji(i,j,kij)
 end subroutine thermopack_setkijandji
 
 !> Tuning of lij interaction parameters
+subroutine thermopack_getlij(i,j,lij)
+  use thermopack_var
+  use cubic_eos, only: cb_eos
+  implicit none
+  integer, intent(in) :: i,j
+  real, intent(out) :: lij
+  class(base_eos_param), pointer :: act_eos_ptr
+  !
+  act_eos_ptr => get_active_eos()
+  !
+  select type(p_eos => act_eos_ptr)
+  class is (cb_eos)
+    lij = p_eos%lij(i,j)
+  class default
+    print *,"thermopack_getlij: Wrong model - not cubic"
+  end select
+end subroutine thermopack_getlij
+
 subroutine thermopack_setlijandji(i,j,lij)
   use thermopack_var
   use eos_parameters, only: single_eos
@@ -272,7 +379,8 @@ subroutine thermopack_setlijandji(i,j,lij)
   act_eos_ptr => get_active_eos()
   select type (p_eos => act_eos_ptr)
   class is (cb_eos)
-    call stoperror("Not able to set binary lij for Cubic eos.")
+     p_eos%lij(i,j) = lij
+     p_eos%lij(j,i) = lij
   type is(cpa_eos)
     call stoperror("Not able to set binary lij for CPA eos.")
   type is(PCSAFT_eos)

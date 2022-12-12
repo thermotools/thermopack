@@ -1,20 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import pets
+from thermopack.pets import pets
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init PeTS object
-PeTS = pets.pets()
-PeTS.init()
-PeTS.set_tmin(temp=5.0)
+PeTS = pets()
 
 # Plot phase envelope
 z = np.array([1.0])

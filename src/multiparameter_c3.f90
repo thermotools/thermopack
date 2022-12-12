@@ -83,6 +83,8 @@ contains
     this%rc = 5000    !< (mol/m^3)
     this%pc = 4251200 !< (Pa)
 
+    this%acf = 0.1521
+
     this%t_triple = 85.525  !< (K)
     this%p_triple = 0.00017 !< (Pa)
     this%rhoLiq_triple = 16625  !< (mol/m^3)

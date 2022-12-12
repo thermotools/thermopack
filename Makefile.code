@@ -76,6 +76,7 @@ OBJE = \
        $(ODIR)/quadratures.o \
        $(ODIR)/thermopack_constants.o \
        $(ODIR)/error.o \
+       $(ODIR)/hyperdual_mod.o \
        $(ODIR)/optimizer.o \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \
@@ -83,6 +84,7 @@ OBJE = \
        $(ODIR)/compdata.o \
        $(ODIR)/association_var.o \
        $(ODIR)/thermopack_var.o \
+       $(ODIR)/hyperdual_utility.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -91,6 +93,7 @@ OBJE = \
        $(ODIR)/multiparameter_ortho_h2.o \
        $(ODIR)/multiparameter_normal_h2.o \
        $(ODIR)/multiparameter_r134a.o \
+       $(ODIR)/multiparameter_lj.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -466,6 +469,11 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
+	@$(call make_object, $(SRC)/hyperdual_mod.f90)
+$(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/thermopack_var.f90
+	@$(call make_object, $(SRC)/hyperdual_utility.f90)
 $(ODIR)/ideal.o: $(SRC)/ideal.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/compdata.f90 \
 	$(SRC)/idealh2.f90 $(SRC)/thermopack_var.f90
@@ -525,6 +533,9 @@ $(ODIR)/multiparameter_c3.o: $(SRC)/multiparameter_c3.f90 \
 $(ODIR)/multiparameter_idealmix.o: $(SRC)/multiparameter_idealmix.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/eos_parameters.f90
 	@$(call make_object, $(SRC)/multiparameter_idealmix.f90)
+$(ODIR)/multiparameter_lj.o: $(SRC)/multiparameter_lj.f90 \
+	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90
+	@$(call make_object, $(SRC)/multiparameter_lj.f90)
 $(ODIR)/multiparameter_normal_h2.o: $(SRC)/multiparameter_normal_h2.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/multiparameter_normal_h2.f90)

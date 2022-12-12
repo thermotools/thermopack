@@ -62,9 +62,9 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "bib_reference": "https://webbook.nist.gov",
     "enthalpy": 0.0,
-    "entropy": 0.0
+    "entropy": 191.61
   },
   "standard_formation_energy": {
     "bib_reference": "",
@@ -148,5 +148,19 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.000,
+    "sigma": 3.6560E-10,
+    "eps_depth_divk": 98.9400,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.2600,
+    "mass": 4.65173451e-26,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 0,
+    "bib_reference": "Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051",
+    "ref": "DEFAULT"
   }
 }

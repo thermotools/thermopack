@@ -149,34 +149,27 @@ module cubic_eos
     ! Mixing parameters
     real, allocatable, dimension(:,:) :: kij ! interaction parameter for energy
     real, allocatable, dimension(:,:) :: lij ! interaction parameter for size
-    real, allocatable, dimension(:,:) :: lowcase_bij
-    logical :: simple_covolmixing
-    type(mixExcessGibbs) :: mixGE
-    type(mixWongSandler) :: mixWS
-    type(unifacdb), pointer :: unifdb => NULL()
+    real, allocatable, dimension(:,:) :: lowcase_bij ! the cubic eos covolume parameters bij
+    logical :: simple_covolmixing ! whether to use linear mixing of covolume with bij=(bi+bj)/2
+    type(mixExcessGibbs) :: mixGE ! extra parameters for excess gibbs mixing rule (excluding wong sandler)
+    type(mixWongSandler) :: mixWS ! extra parameters for wong sandler mixing rule
+    type(unifacdb), pointer :: unifdb => NULL() ! unifac database pointer
 
   contains
     procedure, public :: dealloc => cubic_eos_dealloc
     procedure, public  :: allocate_and_init => allocate_and_init_cubic_eos
-    !procedure, public :: de_allocate_cubic_eos
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_cubic_eos
   end type cb_eos
 
   type, extends(cb_eos) :: lk_eos
-
-  !   private
-
-  ! contains
   end type lk_eos
 
   type, extends(cb_eos) :: cpa_eos
-
-  !   private
-
-  ! contains
   end type cpa_eos
 
+
+  ! Mixing rules for cubic EoS.
   integer, parameter :: cbMixClassicGroup = 1 !< Classic kij type mixing
   integer, parameter :: cbMixVdW = 11 !< Classic vdW mixing rule for am and bm - using k_ij == k_ji
   integer, parameter :: cbMixVdWCPA = 12 !< CPA mixing rule (same as cbMixVdW, but kij from another db)
@@ -189,6 +182,8 @@ module cubic_eos
   integer, parameter :: cbMixHVCPA = 25 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixHVCPA2 = 26 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixWongSandler = 3 !< Wong Sandler mixing rule
+  integer, parameter :: cbMixWSCPA = 31 !< Wong-Sandler mixing rule for CPA
+  integer, parameter :: cbMixHVWS = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
 
   type mix_label_mapping
     integer :: mix_idx_group
@@ -196,9 +191,9 @@ module cubic_eos
     character(len=short_label_len) :: short_label
     character(len=label_len) :: label
     character(len=label_len) :: alias
-  end type mix_label_mapping
+ end type mix_label_mapping
 
-  integer, parameter :: n_mix_rules = 10
+  integer, parameter :: n_mix_rules = 12
   type(mix_label_mapping), dimension(n_mix_rules), parameter :: mix_label_db = (/&
        mix_label_mapping(mix_idx_group=cbMixClassicGroup,&
        mix_idx=cbMixVdW, short_label="VDW", label="Classic",&
@@ -229,17 +224,25 @@ module cubic_eos
        alias = ""), &
        mix_label_mapping(mix_idx_group=cbMixGEGroup,&
        mix_idx=cbMixHVCPA2, short_label="HVCPA2", label="HVCPA2",&
+       alias = ""), &
+       mix_label_mapping(mix_idx_group=cbMixWongSandler,&
+       mix_idx=cbMixWSCPA, short_label="WongSandler", label="WSCPA",&
+       alias = ""), &
+       mix_label_mapping(mix_idx_group=cbMixWongSandler,&
+       mix_idx=cbMixHVWS, short_label="HVWS", label="HVWS",&
        alias = "") &
        /)
 
-  integer, parameter :: nHVCorrs = 4
+  ! Different choices for correlations in the Huron-Vidal mixing rule
+  integer, parameter :: nHVCorrs = 5
   integer, parameter, dimension(nHVCorrs) :: HVCorrIndices = (/&
        cbMixHuronVidal,&
        cbMixHuronVidal2,&
        cbMixHVCPA,&
-       cbMixHVCPA2/)
+       cbMixHVCPA2,&
+       cbMixHVWS/)
 
-  integer, parameter :: nGECorrs = 6
+  integer, parameter :: nGECorrs = 7
   integer, parameter, dimension(nGECorrs) :: GECorrIndices = (/&
        HVCorrIndices,&
        cbMixNRTL,&
@@ -414,6 +417,7 @@ contains
       enddo
    enddo
   end subroutine excess_gibbs_allocate_and_init
+
 
   subroutine assign_excess_gibbs_mix(mixGE1,mixGE2)
     class(mixExcessGibbs), intent(inout) :: mixGE1
@@ -746,6 +750,7 @@ contains
   !! \author Morten H
   subroutine cubic_eos_dealloc(eos)
     use utilities, only: deallocate_real, deallocate_real_2
+    use thermopack_var, only: base_eos_dealloc
     ! Passed object:
     class(cb_eos), intent(inout) :: eos
     ! Loclas
@@ -811,17 +816,18 @@ contains
   end function isGEmixModel
 
   function get_mix_db_idx(short_label) result(idx)
+    use stringmod, only: str_eq, string_match, string_match_val
     character(len=*), intent(in) :: short_label
     integer :: idx
     ! Locals
     integer :: i
     idx = -1
     do i=1,n_mix_rules
-      if (str_eq(short_label,mix_label_db(i)%short_label) .or. &
-           string_match(short_label,mix_label_db(i)%alias)) then
-        idx = i
-        return
-      endif
+       if (str_eq(short_label,mix_label_db(i)%short_label) .or. &
+            string_match(short_label,mix_label_db(i)%alias)) then
+          idx = i
+          return
+       endif
     enddo
   end function get_mix_db_idx
 
@@ -885,5 +891,41 @@ contains
          alphaidx == cbAlphaVDWIdx)
 
   end function is_classic_alpha
+
+  !> Get covolumes
+  subroutine get_covolumes(b)
+    use thermopack_var
+    implicit none
+    real, intent(out) :: b(nce) ! Covolume (L/mol)
+    ! Locals
+    class(base_eos_param), pointer :: act_eos_ptr
+    !
+    act_eos_ptr => get_active_eos()
+    !
+    select type(p_eos => act_eos_ptr)
+    class is (cb_eos)
+      b = p_eos%single(:)%b
+    class default
+      print *,"get_covolumes: Wrong model - not cubic"
+    end select
+  end subroutine get_covolumes
+
+  !> Get energy constant
+  subroutine get_energy_constants(a)
+    use thermopack_var
+    implicit none
+    real, intent(out) :: a(nce) ! Energy constant in front of alpha. Units: Pa*L^2/mol^2.
+    ! Locals
+    class(base_eos_param), pointer :: act_eos_ptr
+    !
+    act_eos_ptr => get_active_eos()
+    !
+    select type(p_eos => act_eos_ptr)
+    class is (cb_eos)
+      a = p_eos%single(:)%a
+    class default
+      print *,"get_energy_constants: Wrong model - not cubic"
+    end select
+  end subroutine get_energy_constants
 
 end module cubic_eos

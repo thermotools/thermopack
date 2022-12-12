@@ -1,19 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import multiparameter
+from thermopack.multiparameter import multiparam
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init multiparameter object
-nist = multiparameter.multiparam()
-nist.init("C3", "NIST_MEOS")
+nist = multiparam("C3", "NIST_MEOS")
 
 # Plot phase envelope
 z = np.array([1.0])

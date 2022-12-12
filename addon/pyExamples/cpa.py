@@ -1,19 +1,16 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import cpa
+from thermopack.cpa import cpa
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
 # Instanciate and init PeTS object
-cpa_srk = cpa.cpa()
-cpa_srk.init("CO2,H2O")
+cpa_srk = cpa("CO2,H2O")
 
 fig, (ax, ax2) = plt.subplots(1, 2, sharey=True, facecolor='w')
 ax.set_xlim(0, 0.04)

@@ -1,20 +1,20 @@
 #!/usr/bin/python
-# Support for python2
-from __future__ import print_function
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
+sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp import ljs_wca, ljs_bh
+from thermopack.ljs_wca import ljs_wca, ljs_uv
+from thermopack.ljs_bh import ljs_bh
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, \
+from thermopack_example_utils import calc_reduced_T, calc_reduced_rho, \
     calc_reduced_P
 
 def plot_phase_envelope(LJS, labels, title):
     # Plot phase envelopes
+    plt.figure()
     z = np.array([1.0])
     colors = ["k", "b", "g", "r"]
     for i, ljs in enumerate(LJS):
@@ -34,11 +34,10 @@ def plot_phase_envelope(LJS, labels, title):
     leg = plt.legend(loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
     plt.title(title)
-    plt.show()
-    plt.close()
 
 def plot_JT_inversion(LJS, labels, title, override_colors=None):
     # Plot Joule-Thompson inversion curves
+    plt.figure()
     z = np.array([1.0])
     if override_colors is not None:
         colors = override_colors
@@ -57,8 +56,6 @@ def plot_JT_inversion(LJS, labels, title, override_colors=None):
     leg = plt.legend(loc="best", numpoints=1)
     leg.get_frame().set_linewidth(0.0)
     plt.title(title)
-    plt.show()
-    plt.close()
 
 def plot_BH_preturbation_terms(ljs):
     """Plot the Barker-Henderson perturbation terms"""
@@ -86,11 +83,10 @@ def plot_BH_preturbation_terms(ljs):
     ax4.axis('off')
     plt.suptitle("Barker-Henderson perturbation terms")
     plt.tight_layout()
-    plt.show()
-    plt.close()
 
 def plot_BH_diameter(ljs):
     """Plot the Barker-Henderson diameter as a function of reduced temperature"""
+    plt.figure()
     T_star = np.linspace(0.5, 12, 50)
     d_bh = np.zeros_like(T_star)
     for j in range(len(T_star)):
@@ -100,8 +96,6 @@ def plot_BH_diameter(ljs):
     plt.ylabel(r"$d_{\rm{BH}}/\sigma$")
     plt.xlabel(r"$T^*$")
     plt.title("Barker-Henderson diameter for Lennard-Jones (splined)")
-    plt.show()
-    plt.close()
 
 def plot_WCA_preturbation_terms(ljs):
     """Plot the Weeks–Chandler–Anderson perturbation terms"""
@@ -139,9 +133,7 @@ def get_BH_models():
     LJS_BH = []
     for i in range(3):
         # Instanciate and init LJS-BH object
-        ljs = ljs_bh.ljs_bh()
-        ljs.init()
-        ljs.set_tmin(temp=2.0)
+        ljs = ljs_bh()
         if i == 1:
             ljs.model_control(enable_a3=False)
         elif i == 2:
@@ -159,9 +151,7 @@ def get_WCA_models():
     LJS_WCA = []
     for i in range(4):
         # Instanciate and init LJS-WCA object
-        ljs = ljs_wca.ljs_wca()
-        ljs.init()
-        ljs.set_tmin(temp=2.0)
+        ljs = ljs_wca()
         if i > 0:
             if i == 1:
                 enable_a4=False
@@ -189,9 +179,7 @@ if __name__ == '__main__':
     ####################################################################
 
     # Instanciate and init LJS-UV object
-    ljs = ljs_wca.ljs_uv()
-    ljs.init()
-    ljs.set_tmin(temp=2.0)
+    ljs = ljs_uv()
 
     plot_phase_envelope([ljs], labels=["UV"], title="LJS-UV phase diagram")
     plot_JT_inversion([ljs], labels=["UV"], title="LJS-UV Joule-Thompson inversion curves")
@@ -214,3 +202,6 @@ if __name__ == '__main__':
     plot_phase_envelope(LJS_WCA, labels=labels_WCA, title="LJS-WCA phase diagram")
     plot_JT_inversion(LJS_WCA, labels=labels_WCA, title="LJS-WCA Joule-Thompson inversion curves")
     plot_WCA_preturbation_terms(LJS_WCA[0])
+
+    # Show plots
+    plt.show()

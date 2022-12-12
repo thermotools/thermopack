@@ -15,8 +15,6 @@ MSVStudio/Release/*
 MSVStudio/*.u2d
 MSVStudio/*.suo
 
-pyctp.egg-info
-
 src/*.bck
 *suite__genmod.f90
 
@@ -49,3 +47,9 @@ TAGS
 *tags
 *~
 *\#
+
+.DS_Store
+*/.DS_Store
+*/.idea/
+local_testing/
+venv/

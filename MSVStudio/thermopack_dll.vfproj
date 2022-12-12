@@ -12,7 +12,7 @@
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\pyctp\&quot; /F /Y"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
@@ -22,27 +22,27 @@
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\pyctp\&quot; /F /Y"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Debug|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
 				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\pyctp\&quot; /F /Y"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
 				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\pyctp\&quot; /F /Y"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>
@@ -80,6 +80,8 @@
 		<File RelativePath="..\src\external.f90"/>
 		<File RelativePath="..\src\h2o_gibbs.f90"/>
 		<File RelativePath="..\src\hardsphere_wca.f90"/>
+		<File RelativePath="..\src\hyperdual_mod.f90"/>
+		<File RelativePath="..\src\hyperdual_utility.f90"/>
 		<File RelativePath="..\src\ideal.f90"/>
 		<File RelativePath="..\src\idealh2.f90"/>
 		<File RelativePath="..\src\isolines.f90"/>
@@ -93,6 +95,7 @@
 		<File RelativePath="..\src\multiparameter_base.f90"/>
 		<File RelativePath="..\src\multiparameter_c3.f90"/>
 		<File RelativePath="..\src\multiparameter_idealmix.f90"/>
+		<File RelativePath="..\src\multiparameter_lj.f90"/>
 		<File RelativePath="..\src\multiparameter_normal_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_ortho_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_para_h2.f90"/>

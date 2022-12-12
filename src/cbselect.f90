@@ -23,7 +23,8 @@ contains
   subroutine get_mixing_rule_index(eosidx, mrulestr, mruleidx)
     use eosdata
     use cubic_eos, only: mix_label_db, get_mix_db_idx, cbMixHuronVidal, &
-         cbMixVdW, cbMixHVCPA, cbMixHVCPA2, cbMixHuronVidal2, cbMixVdWCPA
+         cbMixVdW, cbMixHVCPA, cbMixHVCPA2, cbMixHuronVidal2, &
+         cbMixWongSandler, cbMixWSCPA, cbMixVdWCPA
     use stringmod, only: str_eq
     implicit none
     integer, intent(in) :: eosidx
@@ -32,6 +33,7 @@ contains
     ! Locals
     integer :: idx_db
 
+
     idx_db = get_mix_db_idx(mrulestr)
     if (idx_db < 0) then
       call stoperror('unknown mixing rule')
@@ -39,16 +41,17 @@ contains
 
     mruleidx = mix_label_db(idx_db)%mix_idx
 
-    ! Use the CPA interaction parameters if they exist, if not use the standard database. The details are in tpSelectInteractionParameters.
+    ! Use the CPA interaction parameters if they exist, if not use the standard
+    ! database. The details are in tpSelectInteractionParameters.
     if (eosidx == eosCPA) then
       if (mruleidx == cbMixVdW) then
         mruleidx = cbMixVdWCPA
       elseif (mruleidx ==  cbMixHuronVidal) then
         mruleidx = cbMixHVCPA
-        !cbeos%mixGE%mGE = cbMixHVCPA
       elseif (mruleidx ==  cbMixHuronVidal2) then
         mruleidx = cbMixHVCPA2
-        !cbeos%mixGE%mGE = cbMixHVCPA2
+     elseif (mruleidx == cbMixWongSandler) then
+        mruleidx = cbMixWSCPA
       else
         call stoperror("Selected mixing rule not implemented for cubic part of the CPA model.")
       end if
@@ -160,7 +163,7 @@ contains
   !! \author Geir S
   !! \author Morten Hammer
   subroutine SelectMixingRules(nc, comp, cbeos, mrulestr, param_reference, b_exponent)
-    use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixNRTL, isHVmixModel
+    use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixWSCPA, cbMixHVWS,cbMixNRTL, isHVmixModel
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
     use cbmix, only: cbCalcLowcasebij
@@ -182,7 +185,10 @@ contains
 
     if (isHVmixModel(cbeos%mruleidx) .or. cbeos%mruleidx == cbMixNRTL) then
        call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
-    else if (cbeos%mruleidx == cbMixWongSandler ) then
+    end if
+
+    if (cbeos%mruleidx == cbMixWongSandler .or. cbeos%mruleidx == cbMixWSCPA .or. cbeos%mruleidx == cbMixHVWS) then
+       !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
        call cbeos%mixWS%WS_allocate_and_init(nc)
     endif
 
