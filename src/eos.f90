@@ -5,7 +5,7 @@
 module eos
   use thermopack_constants
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, get_active_alt_eos, base_eos_param
+       get_active_eos, get_active_alt_eos, base_eos_param, Rgas
   !
   implicit none
   save
@@ -679,7 +679,6 @@ contains
   !! \author MH, 2013-03-06
   !----------------------------------------------------------------------
   subroutine getCriticalParam(i,tci,pci,oi,vci,tnbi)
-    use thermopack_constants, only: Rgas
     use eosdata
     implicit none
     integer, intent(in) :: i !< Component index

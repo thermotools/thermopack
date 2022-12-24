@@ -291,7 +291,7 @@ contains
 
   subroutine cbSingleCalcABC(nc,cbeos,i)
     use cubic_eos, only: cb_eos
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: kRgas
     implicit none
     integer, intent(in) :: nc, i
     class(cb_eos), intent(inout) :: cbeos

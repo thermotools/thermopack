@@ -8,11 +8,11 @@
 module uv_solver
   !
   !
-  use thermopack_constants, only: tpPmax, tpPmin, get_templimits, Rgas, &
-       LIQPH, VAPPH, continueOnError, zLimit, FAKEPH, &
+  use thermopack_constants, only: LIQPH, VAPPH, continueOnError, zLimit, FAKEPH, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use numconstants, only: machine_prec, small
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpPmax, tpPmin, get_templimits, Rgas
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions

@@ -7,8 +7,9 @@
 !!
 !-------------------------------------------------------------------------
 module critical
-  use thermopack_constants, only: verbose, VAPPH, LIQPH, Rgas
-  use thermopack_var, only: nc, thermo_model, get_active_thermo_model
+  use thermopack_constants, only: verbose, VAPPH, LIQPH
+  use thermopack_var, only: nc, thermo_model, get_active_thermo_model, Rgas, &
+       tpPmin, tpPmax, get_templimits
   use eos, only : thermo, pseudo_safe
   use eosTV, only : thermo_tv, pressure
   implicit none
@@ -36,7 +37,6 @@ contains
   !> \author MH, 2014-11
   !-------------------------------------------------------------------------
   subroutine calcCritical(t,p,Z,phase,ierr,tol)
-    use thermopack_constants, only: tpPmin, tpPmax, get_templimits
     use nonlinear_solvers
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
@@ -649,7 +649,6 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   subroutine solveStabLimitTV(T,v,z,ierr)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     implicit none
@@ -1113,7 +1112,6 @@ contains
   subroutine mapMetaStabilityLimit(P0,z,Tmin,Tl,Pl,vl,nl,ierr,dlnv_override)
     use eos, only: specificVolume
     use eosTV, only: pressure
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use thermo_utils, only: isSingleComp
@@ -1348,7 +1346,6 @@ contains
   !--------------------------------------------------------------------------
   subroutine stablimitPointSingleComp(T,z,v,ierr)
     use eos, only: specificVolume
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use eosTV, only: pressure
@@ -1464,7 +1461,6 @@ contains
   !-------------------------------------------------------------------------
   function rhomax_PR (x)
     use thermopack_var, only: nce
-    use thermopack_constants, only: Rgas
     use eos, only: getCriticalParam
     ! Input:
     real :: x(nce)      !< Composition (needn't be normalized)
@@ -1644,7 +1640,6 @@ contains
   !! \author MH, 2016-01
   !-------------------------------------------------------------------------
   subroutine calcCriticalTV(t,v,Z,ierr,tol,p)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
@@ -1902,7 +1897,6 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalZ(t,v,P,Z,s,ierr,tol,free_comp,iter)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
@@ -2241,7 +2235,6 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalEndPoint(t,vc,Zc,y,vy,ierr,tol,free_comp)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small

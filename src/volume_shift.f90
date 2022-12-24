@@ -5,7 +5,7 @@
 module volume_shift
   use compdata, only: gendata_pointer
   use stringmod, only: str_eq, uppercase, string_match, string_match_val
-  use thermopack_constants, only: Rgas
+  use thermopack_var, only: Rgas
   implicit none
   private
   save

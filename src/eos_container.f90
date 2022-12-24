@@ -219,7 +219,7 @@ end module eos_container
 subroutine update_global_variables_form_active_thermo_model()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
        ncsym, numAssocSites, get_active_thermo_model, &
-       thermo_model
+       thermo_model, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, svrm_opt
   use lj_splined, only: ljs_wca_eos
   implicit none
@@ -229,6 +229,12 @@ subroutine update_global_variables_form_active_thermo_model()
   nph = act_mod_ptr%nph
   complist => act_mod_ptr%complist
   apparent => act_mod_ptr%apparent
+  Rgas = act_mod_ptr%Rgas
+  kRgas = act_mod_ptr%kRgas
+  tpTmax = act_mod_ptr%tpTmax
+  tpTmin = act_mod_ptr%tpTmin
+  tpPmax = act_mod_ptr%tpPmax
+  tpPmin = act_mod_ptr%tpPmin
   if (associated(apparent)) then
     nce = apparent%nce
     ncsym = apparent%ncsym
@@ -255,7 +261,7 @@ end subroutine update_global_variables_form_active_thermo_model
 
 subroutine print_globals()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
-       ncsym, numAssocSites
+       ncsym, numAssocSites, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin
   implicit none
   integer :: i
   print *,"nph",nph
@@ -268,4 +274,10 @@ subroutine print_globals()
     print *," ",trim(complist(i))
   enddo
   print *,"associated(apparent)",associated(apparent)
+  print *,"Rgas", Rgas
+  print *,"kRgas", kRgas
+  print *,"tpTmax", tpTmax
+  print *,"tpTmin", tpTmin
+  print *,"tpPmax", tpPmax
+  print *,"tpPmin", tpPmin
 end subroutine print_globals

@@ -627,7 +627,7 @@ contains
     real, intent(out) :: rho !< Density (mol/m^3)
     integer, optional, intent(out) :: phase_found
     ! Internals
-    integer :: iter, maxiter=200 ! Changed from 40 to 80
+    integer :: iter, maxiter=200
     real :: rhoOld, pOld, dpdrhoOld
     real :: p, dpdrho
     real :: pMin, dpdrhoMin
@@ -652,7 +652,8 @@ contains
        if (rho<0) then
           call switchPhase()
        else
-          call this%mp_pressure(rho, T_spec, p, dpdrho)
+         call this%mp_pressure(rho, T_spec, p, dpdrho)
+         print *,p,rho
           if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
                curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
              call switchPhase()

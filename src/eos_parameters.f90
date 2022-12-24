@@ -12,6 +12,7 @@ Module eos_parameters
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
   use multiparameter_lj, only: meos_lj, constructor_LJ
+  use gerg, only: meos_gerg, constructor_gerg
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
 
@@ -103,6 +104,7 @@ contains
     else if (str_eq(eos_label,'NIST_MEOS') .or. &
          str_eq(eos_label,'LJ_MEOS') .or. &
          str_eq(eos_label,'LJTS_MEOS') .or. &
+         str_eq(eos_label,'GERG2008') .or. &
          str_eq(eos_label,'NIST_MEOS_MIX')) then
       if (.not. str_eq(eos_label,'NIST_MEOS_MIX')) then
         if (nc /= 1) call stoperror("MEOS only implemented for pure components.")
@@ -145,6 +147,8 @@ contains
       allocate(meos_para_h2 :: meos_ptr, stat=istat)
     elseif (str_eq(comp,"R134A")) then
       allocate(meos_r134a :: meos_ptr, stat=istat)
+    elseif (str_eq(eos_label,'GERG2008') .or. str_eq(eos_label,'GERG')) then
+      allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
     else
       call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
     end if

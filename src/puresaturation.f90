@@ -1,7 +1,7 @@
 module puresaturation
   use nonlinear_solvers
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       base_eos_param, get_active_alt_eos
+       base_eos_param, get_active_alt_eos, tpTmin
 !  use utilities, only: get_thread_index
   implicit none
   private
@@ -21,7 +21,6 @@ contains
   subroutine PureSat(T,P,Z,solveForT,ierr,meta,pseudo_crit_TP)
     use eos, only: pseudo_safe
     use single_phase, only: TP_CalcPseudo
-    use thermopack_constants, only: tpTmin
     use numconstants, only: Small
     implicit none
     real, dimension(nc), intent(in) :: Z

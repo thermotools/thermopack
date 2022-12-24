@@ -5,7 +5,7 @@
 module eosTV
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
        thermo_model, get_active_thermo_model, apparent_to_real_mole_numbers, &
-       real_to_apparent_diff
+       real_to_apparent_diff, Rgas
   use thermopack_constants
   !
   implicit none
@@ -180,7 +180,7 @@ contains
   !> \author GL, 2015-01-23
   !----------------------------------------------------------------------
   subroutine free_energy_tv(t,v,n,y,dydt,dydv,dydn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -259,7 +259,7 @@ contains
   !> \author MH, 2015-02
   !----------------------------------------------------------------------
   subroutine entropy_tv(t,v,n,s,dsdt,dsdv,dsdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -359,7 +359,6 @@ contains
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpy_tv(t,v,n,h,dhdt,dhdv,dhdn,contribution)
-    use thermopack_constants, only: Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -801,7 +800,6 @@ contains
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
   subroutine chemical_potential_tv(t, v, n, mu, dmudt, dmudv, dmudn, contribution)
-    use thermopack_constants, only: rgas
     use thermopack_var, only: real_to_apparent_differentials
     implicit none
     real,                             intent(in)  :: t !< K - Temperature
@@ -898,7 +896,6 @@ contains
   !! \author Morten Hammer, 2022-02
   !-----------------------------------------------------------------------------
   subroutine thermo_tvp(T,v,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          TP_lnfug_apparent, base_eos_param
     ! Input.
@@ -983,7 +980,7 @@ contains
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpy_tvp(t,v,n,h,dhdt,dhdp,dhdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     use ideal, only: idealEnthalpySingle
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff
@@ -1103,7 +1100,7 @@ contains
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
   subroutine entropy_tvp(t,v,n,s,dsdt,dsdp,dsdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     use ideal, only: idealEntropy_ne
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff

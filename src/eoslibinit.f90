@@ -5,7 +5,7 @@ module eoslibinit
   !
   use thermopack_var, only: nce, get_active_eos, thermo_model, &
        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
-       active_thermo_model_is_associated, numAssocSites
+       active_thermo_model_is_associated, numAssocSites, Rgas, tpTmin
   use eos_container, only: allocate_eos
   use stringmod,  only: uppercase, str_eq, string_match, string_match_val
   implicit none
@@ -503,7 +503,6 @@ contains
     use eosTV,        only: pressure
     use critical,     only: calcCriticalTV
     use saturation,   only: acentricFactorEos
-    use thermopack_constants,      only: tpTmin, Rgas
     use cbAlpha,      only: getAcentricAlphaParam
     use cubic_eos,    only: cb_eos
     use saft_interface, only: estimate_critical_parameters

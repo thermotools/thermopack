@@ -6,7 +6,7 @@ module thermo_utils
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
        WATER, TREND
   use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
-       get_active_thermo_model, get_active_alt_eos
+       get_active_thermo_model, get_active_alt_eos, Rgas
 
   implicit none
   public :: guessPhase, isWaterComponent, waterComponentFraction
@@ -28,7 +28,7 @@ module thermo_utils
   !----------------------------------------------------------------------
   function guessPhase(T,P,z,T_comp,p_comp,vb_ratio)
     use eos, only: thermo, pseudo_safe, zfac, specificVolume
-    use thermopack_constants, only: Rgas, PSEUDO_CRIT_ZFAC,&
+    use thermopack_constants, only: PSEUDO_CRIT_ZFAC,&
                           PSEUDO_CRIT_MOLAR_VOLUME, VOLUME_COVOLUME_RATIO
     implicit none
     ! Input:
@@ -111,7 +111,7 @@ module thermo_utils
   function guessPhaseTV(T,v,z,T_comp,v_comp,vb_ratio)
     use eos, only: pseudo_safe, zfac
     use eosTV, only: pressure
-    use thermopack_constants, only: Rgas, PSEUDO_CRIT_ZFAC,&
+    use thermopack_constants, only: PSEUDO_CRIT_ZFAC,&
          PSEUDO_CRIT_MOLAR_VOLUME, VOLUME_COVOLUME_RATIO
     implicit none
     ! Input:

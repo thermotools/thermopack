@@ -2,7 +2,7 @@
 !> module.
 module thermopack_var
   use thermopack_constants, only: eosid_len, label_len, &
-       PSEUDO_CRIT_MOLAR_VOLUME
+       PSEUDO_CRIT_MOLAR_VOLUME, Rgas_default
   use apparent_compostion, only: apparent_container
   use compdata, only: gendata_pointer
   use utilities, only: get_thread_index
@@ -12,6 +12,15 @@ module thermopack_var
   save
   !
   public
+
+  !< Gas constant usde by current model
+  real :: Rgas = Rgas_default !< J/mol/K
+  real :: kRgas = 1000.0*Rgas_default !< J/kmol/K
+  !< Temperature/pressure min/max values
+  real :: tpTmax = 999.0 !< K
+  real :: tpTmin = 80.0 !< K
+  real :: tpPmax = 1.0e8 !< Pa
+  real :: tpPmin = 1.0e1 !< Pa
 
   !> Number of phases:
   integer :: nph = 0
@@ -92,6 +101,15 @@ module thermopack_var
     integer :: eosidx=0
     character(len=label_len) :: label
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
+
+    !< Gas constant usde by current model
+    real :: Rgas = Rgas_default !< J/mol/K
+    real :: kRgas = 1000.0*Rgas_default !< J/kmol/K
+    !< Temperature/pressure min/max values used for solvers
+    real :: tpTmax = 999.0 !< K
+    real :: tpTmin = 80.0 !< K
+    real :: tpPmax = 1.0e8 !< Pa
+    real :: tpPmin = 1.0e1 !< Pa
 
     ! Apparent composition
     type(apparent_container), pointer :: apparent => NULL()
@@ -473,4 +491,37 @@ contains
       if (present(dlnfugdn)) dlnfugdn = dlnfugdn_real
     endif
   end subroutine TP_lnfug_apparent
+
+  subroutine set_Rgas(RgasIn)
+    implicit none
+    real, intent(in) :: RgasIn
+    Rgas = RgasIn
+    kRgas = 1000.0*Rgas
+  end subroutine set_Rgas
+
+  !----------------------------------------------------------------------
+  subroutine get_templimits(Tmin, Tmax)
+    !> Get EoSlib-specific max/min supported temperature
+    !>
+    !> \author EA, 2014-05
+    implicit none
+    ! Output:
+    real,     intent(out) :: Tmin !< Minimum supported temperature (K)
+    real,     intent(out) :: Tmax !< Maximum supported temperature (K)
+
+    Tmin = tpTmin
+    Tmax = tpTmax
+  end subroutine get_templimits
+
+  subroutine get_presslimits(Pmin, Pmax)
+    !> Get EoSlib-specific max/min supported pressure
+    implicit none
+    ! Output:
+    real,     intent(out) :: Pmin !< Minimum supported temperature (Pa)
+    real,     intent(out) :: Pmax !< Maximum supported temperature (Pa)
+
+    Pmin = tpPmin
+    Pmax = tpPmax
+  end subroutine get_presslimits
+
 end module thermopack_var

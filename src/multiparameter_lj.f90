@@ -3,8 +3,9 @@ module multiparameter_lj
   !! See doi:10.1063/1.4945000
   !! and doi:10.1080/00268976.2016.1246760
   use multiparameter_base, only: meos
-  use thermopack_constants, only: N_Avogadro, Rgas, kB_const, &
+  use thermopack_constants, only: N_Avogadro, kB_const, &
        VAPPH, LIQPH
+  use thermopack_var, only: Rgas
   implicit none
   save
   public :: meos_lj, lj_param, constructor_lj, init_LJTS

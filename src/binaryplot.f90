@@ -6,7 +6,8 @@ module binaryPlot
   !
   !
   use thermopack_constants, only: verbose, LIQPH, VAPPH
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpPmin, tpTmin, tpPmax, tpTmax, get_templimits
   implicit none
   save
   !
@@ -290,7 +291,6 @@ contains
     use saturation, only: bubT,bubP
     use critical, only: calcStabMinEig, calcCriticalZ
     use eos, only: specificvolume
-    use thermopack_constants, only: tpTmin
     implicit none
     integer, intent(in) :: ispec
     real, intent(in) :: T,P,Tmin,Pmax,dzmax
@@ -879,7 +879,7 @@ contains
   !-------------------------------------------------------------------
   subroutine VLLEBinaryXY(T,P,ispec,Tmin,Pmax,dzmax,filename,dlns_max,&
        res,nRes,writeSingleFile,Pmin)
-    use thermopack_constants, only: tpTmin, LIQPH, clen, VAPPH
+    use thermopack_constants, only: LIQPH, clen, VAPPH
     use thermopack_var, only: nc
     implicit none
     integer, intent(in) :: ispec
@@ -1640,7 +1640,6 @@ contains
   !-------------------------------------------------------------------
   function binaryStep(XX,T,P,x,w,ispec,ispecStep,dlns,&
        dzmax,Pmax,Tmin,phase,dXdS,ierr,Pmin) result(iter)
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use thermopack_var, only: nc
@@ -2102,7 +2101,6 @@ contains
     use numconstants, only: machine_prec
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     use thermopack_var, only: nc
     implicit none
     real, dimension(nc), intent(inout) :: x,y,w !< Phase compositions
@@ -2508,7 +2506,7 @@ contains
   subroutine LLVEpointTV(P,T,vx,vw,vy,x,w,y,ispec,ierr,iter)
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
-    use thermopack_constants, only: get_templimits, MINGIBBSPH
+    use thermopack_constants, only: MINGIBBSPH
     use thermopack_var, only: nc
     use eosTV, only: pressure
     use eos, only: specificVolume, thermo, pseudo_safe
@@ -2957,7 +2955,6 @@ contains
   !> \author MH, 2019-04
   !-------------------------------------------------------------------
   function high_pressure_critical_point(Pc,Tc,Zc,Tmin,Tmax) result(found)
-    use thermopack_constants, only: tpTmin, tpTmax
     use thermopack_var, only: nc
     use eos, only: specificvolume, thermo
     use critical, only: calcCriticalZ, calcCriticalTV
@@ -3160,7 +3157,6 @@ contains
   !> \author MH, 2019-04
   !-----------------------------------------------------------------------------
   subroutine limitDeltaTemp(T,param,dT)
-    use thermopack_constants, only: get_templimits
     implicit none
     real, dimension(1), intent(in)    :: T !< Variable
     real, dimension(2), intent(in) :: param !< Parameter vector
@@ -3658,7 +3654,6 @@ contains
     use eos, only: specificvolume
     use saturation, only: specP
     use saturation_curve, only: singleCompSaturation, aep
-    use thermopack_constants, only: tpTmin
     implicit none
     real, intent(in) :: Pmin, Pmax !<
     real, intent(in) :: Tmin !<
@@ -4895,7 +4890,6 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcAzeotropicPoint(t,vg,vl,P,Z,s,ierr,tol,free_comp,iter)
-    use thermopack_constants, only: get_templimits
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds

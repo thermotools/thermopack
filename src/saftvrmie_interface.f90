@@ -11,6 +11,7 @@ module saftvrmie_interface
        saftvrmie_eos, svrm_opt
   use thermopack_constants, only: kB_const
   use saftvrmie_options
+  use thermopack_var, only: Rgas, kRgas
   implicit none
   private
   save
@@ -36,7 +37,7 @@ contains
   !! \author Morten Hammer, February 2018
   subroutine init_saftvrmie(nc,comp,eos,ref,mixing)
     use thermopack_var, only: gendata_pointer, base_eos_param
-    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use thermopack_constants, only: N_Avogadro, kB_const
     use AssocSchemeUtils, only: no_assoc
     use saftvrmie_association, only: calc_aij
     integer, intent(in)           :: nc          !< Number of components.
@@ -4426,7 +4427,6 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   use saftvrmie_hardsphere
   use saftvrmie_interface
   use saftvrmie_options
-  !use thermopack_constants, only: Rgas
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit

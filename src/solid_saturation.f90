@@ -3,7 +3,8 @@ module solid_saturation
   use saturation_curve
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpTmin, tpTmax, tpPmin, tpPmax, get_templimits
   use nonlinear_solvers
   !use nonlinear_solvers
   !use numconstants, only: machine_prec
@@ -98,7 +99,6 @@ contains
   !> \author MH, 2016-02
   !-----------------------------------------------------------------------------
   subroutine sat_fun_newton_threePh(G,Xvar,param)
-    use thermopack_constants, only: tpPmax,tpPmin
     use solideos, only: solid_thermo
     implicit none
     real, dimension(nc+3), intent(out) :: G !< Function values
@@ -327,7 +327,6 @@ contains
        mode,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, dimension(nc), intent(inout) :: K !< Equilibrium constants
@@ -687,7 +686,6 @@ contains
        ln_spec,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(inout) :: t !< Temperature
@@ -1540,7 +1538,6 @@ contains
   !> \author MH, 2016-03
   !-----------------------------------------------------------------------------
   subroutine solidFluidEqSingleComp(Z,Y,X,t,p,specification,phase,ierr,dTdP)
-    use thermopack_constants, only: tpTmin, tpTmax, tpPmin, tpPmax
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
     real, dimension(nc), intent(in) :: Z     ! Total composition

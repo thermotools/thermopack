@@ -7,7 +7,7 @@
 module state_functions
   !
   !
-  use thermopack_var, only: nc
+  use thermopack_var, only: nc, Rgas, get_templimits
   use thermopack_constants
   use eos
   use numconstants, only: almost_zero, machine_prec

@@ -14,7 +14,8 @@ module lj_splined
   use numconstants, only: pi
   use eosdata, only: eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
-  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
+  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc, &
+       Rgas, kRgas
   use hardsphere_wca, only: calc_dhs_WCA, calc_cavity_integral_LJ_Fres, &
        calcZetaX_vdW_no_segments
   implicit none
@@ -583,7 +584,7 @@ contains
   !! \author Morten Hammer, March 2019
   subroutine init_LJs_bh(nc,comp,ljs,ref)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use thermopack_constants, only: N_Avogadro, kB_const
     use saftvrmie_containers, only: cleanup_saftvrmie_param_container, &
          cleanup_saftvrmie_var_container, allocate_saftvrmie_zeta, &
          allocate_saftvrmie_param_container, allocate_saftvrmie_dhs, &
@@ -1079,7 +1080,7 @@ contains
   !! \author Morten Hammer, March 2021
   subroutine init_LJs_WCA(nc,comp,ljs,ref)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use thermopack_constants, only: N_Avogadro, kB_const
     use saftvrmie_containers, only: cleanup_saftvrmie_zeta, &
          cleanup_saftvrmie_dhs, allocate_saftvrmie_zeta, &
          allocate_saftvrmie_dhs

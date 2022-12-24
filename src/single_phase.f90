@@ -284,7 +284,7 @@ contains
   !! \author Morten Hammer
   function TV_CalcInnerEnergy(nc,comp,cbeos,T,v,n,dudt,dudv,dudn,&
        recalculate, contribution) result (u)
-    use thermopack_constants, only: Rgas
+    use thermopack_var, only: Rgas
     use ideal
     use eosdata
     use compdata, only: gendata_pointer
@@ -369,9 +369,8 @@ contains
     use extcsp, only: csp_calcFres
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -503,10 +502,9 @@ contains
     use LeeKesler, only: lkCalcGdep
     use eosdata
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use single_component, only: Gres_single
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_Gres
     use eos_parameters, only: meos_mix
     use cubic_eos, only: lk_eos
@@ -616,7 +614,7 @@ contains
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -709,9 +707,8 @@ contains
     use eosdata
     use compdata, only: gendata_pointer
     use ideal, only: Sideal_Vn
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_differentials, base_eos_param
+         real_to_apparent_differentials, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -882,9 +879,8 @@ contains
   subroutine TP_lnfug(nc,comp,cbeos,phase,T,P,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn,&
        gflag_opt,v_out)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         TP_lnfug_apparent, base_eos_param
+         TP_lnfug_apparent, base_eos_param, Rgas
     ! Input.
     integer, intent(in) :: nc
     type(gendata_pointer), dimension(:), intent(in) :: comp
@@ -960,8 +956,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine TP_ResidEntropy(nc,comp,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn,gflag_opt)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
-    use thermopack_var, only: base_eos_param
+    use thermopack_var, only: base_eos_param, Rgas
     integer, intent(in) :: nc !< Number of components in mixture.
     type(gendata_pointer), intent(in) :: comp(nc) !< Component vector.
     class(base_eos_param), intent(inout) :: cbeos !< Cubic eos for
@@ -1019,8 +1014,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine TP_ResidEnthalpy(nc,comp,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn,gflag_opt)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
-    use thermopack_var, only: base_eos_param
+    use thermopack_var, only: base_eos_param, Rgas
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
     class(base_eos_param), intent(inout) :: cbeos !< Cubic eos
@@ -1193,9 +1187,8 @@ contains
     use LeeKesler, only: lkCalcEntropy
     use eosdata
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp

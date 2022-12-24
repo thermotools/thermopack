@@ -98,6 +98,9 @@ OBJE = \
        $(ODIR)/cubic_eos.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
+       $(ODIR)/gergdatadb.o \
+       $(ODIR)/satdensdatadb.o \
+       $(ODIR)/saturated_densities.o \
        $(ODIR)/multiparameter_base.o \
        $(ODIR)/multiparameter_c3.o \
        $(ODIR)/multiparameter_para_h2.o \
@@ -105,6 +108,7 @@ OBJE = \
        $(ODIR)/multiparameter_normal_h2.o \
        $(ODIR)/multiparameter_r134a.o \
        $(ODIR)/multiparameter_lj.o \
+       $(ODIR)/gerg.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -475,6 +479,13 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/puresaturation.f90 \
 	$(SRC)/state_functions.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/external.f90)
+$(ODIR)/gerg.o: $(SRC)/gerg.f90 \
+	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
+	$(SRC)/gergdatadb.f90
+	@$(call make_object, $(SRC)/gerg.f90)
+$(ODIR)/gergdatadb.o: $(SRC)/gergdatadb.f90
+	@$(call make_object, $(SRC)/gergdatadb.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
@@ -714,6 +725,12 @@ $(ODIR)/saftvrmie_testing.o: $(SRC)/saftvrmie_testing.f90 \
 $(ODIR)/saftvrmie_utils.o: $(SRC)/saftvrmie_utils.f90 \
 	$(SRC)/saftvrmie_containers.f90
 	@$(call make_object, $(SRC)/saftvrmie_utils.f90)
+$(ODIR)/satdensdatadb.o: $(SRC)/satdensdatadb.f90
+	@$(call make_object, $(SRC)/satdensdatadb.f90)
+$(ODIR)/saturated_densities.o: $(SRC)/saturated_densities.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/satdensdatadb.f90
+	@$(call make_object, $(SRC)/saturated_densities.f90)
 $(ODIR)/saturation.o: $(SRC)/saturation.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/nonlinear_solvers.f90 \

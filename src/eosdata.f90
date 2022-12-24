@@ -31,6 +31,7 @@ module eosdata
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
   integer, parameter :: meosLJ = 63        !< Multiparameter EoS
   integer, parameter :: meosLJTS = 64      !< Multiparameter EoS
+  integer, parameter :: meosGERG = 65      !< Multiparameter EoS
   integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
   integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
@@ -200,6 +201,14 @@ module eosdata
        eos_subidx = meosLJTS, &
        short_label = "LJTS_MEOS", &
        label = "Multiparameter EoS for LJTS", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosGERG, &
+       short_label = "GERG2008", &
+       label = "GERG EoS", &
        need_alternative_eos = .true. &
        ),&
        !
