@@ -2,7 +2,7 @@ module saturation_curve
   use eos, only: thermo, entropy, specificvolume
   use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param, get_templimits
+       get_active_eos, base_eos_param
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
   use saturation

@@ -8,8 +8,7 @@ module ps_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       get_templimits
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
   use thermopack_constants, only: LIQPH, VAPPH, continueOnError, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use tp_solver, only: twoPhaseTPflash

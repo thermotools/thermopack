@@ -7,7 +7,7 @@ module binaryPlot
   !
   use thermopack_constants, only: verbose, LIQPH, VAPPH
   use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       tpPmin, tpTmin, tpPmax, tpTmax, get_templimits
+       tpPmin, tpTmin, tpPmax, tpTmax
   implicit none
   save
   !

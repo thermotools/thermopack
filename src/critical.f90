@@ -9,7 +9,7 @@
 module critical
   use thermopack_constants, only: verbose, VAPPH, LIQPH
   use thermopack_var, only: nc, thermo_model, get_active_thermo_model, Rgas, &
-       tpPmin, tpPmax, get_templimits
+       tpPmin, tpPmax, tpTmin, tpTmax
   use eos, only : thermo, pseudo_safe
   use eosTV, only : thermo_tv, pressure
   implicit none
@@ -84,7 +84,8 @@ contains
       solver%abs_tol = tol
     endif
     solver%rel_tol = 1.0e-20
-    call get_templimits(xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     xmin(2) = tpPmin*1.0e-5
     xmax(2) = tpPmax*1.0e-5
     call nonlinear_solve(solver,critFun,critJac,critJac,limit_dx,&
@@ -660,7 +661,8 @@ contains
     real :: Tmin, Tmax, param(nc+1)
     type(nonlinear_solver) :: solver
     real, dimension(1) :: x,xmin,xmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     solver%abs_tol = 1.0e-8
     param(1:nc) = z
     param(nc+1) = v
@@ -1988,7 +1990,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(2), xmax(2))
+    xmin(2) = tpTmin
+    xmax(2) = tpTmax
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
@@ -2315,7 +2318,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(2), xmax(2))
+    xmin(2) = tpTmin
+    xmax(2) = tpTmax
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then

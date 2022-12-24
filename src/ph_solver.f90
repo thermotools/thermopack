@@ -5,7 +5,7 @@ module ph_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_var, only: nc, get_templimits
+  use thermopack_var, only: nc, tpTmin, tpTmax
   use tp_solver, only: twoPhaseTPflash
   use state_functions
   use thermopack_constants, only: VAPPH, LIQPH, TWOPH, SINGLEPH
@@ -68,7 +68,8 @@ contains
     endif
     isStable=.true.
     tInitial = t
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -162,7 +163,8 @@ contains
     end if
 
     if (ierr/=0) then
-      call get_templimits(Tmin,Tmax)
+      Tmin = tpTmin
+      Tmax = tpTmax
       if (t > Tmax .OR. t < Tmin .OR. T /= T) then
         t = 0.5*(Tmax+Tmin)
       endif
@@ -456,7 +458,8 @@ contains
     real, dimension(n), intent(inout) :: dTv !< Calculated change in temperature [K]
     !
     real :: tMax, tMin
-    call get_templimits(tMin,tMax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     tMin = max(tMin,param(nc+3))
     tMax = min(tMax,param(nc+4))
     if (Tv(1) + dTv(1) < tMin) then
@@ -481,7 +484,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - hspec > 0
       doReturn = .true.
@@ -830,7 +834,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - hspec > 0
       doReturn = .true.

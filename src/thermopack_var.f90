@@ -492,36 +492,4 @@ contains
     endif
   end subroutine TP_lnfug_apparent
 
-  subroutine set_Rgas(RgasIn)
-    implicit none
-    real, intent(in) :: RgasIn
-    Rgas = RgasIn
-    kRgas = 1000.0*Rgas
-  end subroutine set_Rgas
-
-  !----------------------------------------------------------------------
-  subroutine get_templimits(Tmin, Tmax)
-    !> Get EoSlib-specific max/min supported temperature
-    !>
-    !> \author EA, 2014-05
-    implicit none
-    ! Output:
-    real,     intent(out) :: Tmin !< Minimum supported temperature (K)
-    real,     intent(out) :: Tmax !< Maximum supported temperature (K)
-
-    Tmin = tpTmin
-    Tmax = tpTmax
-  end subroutine get_templimits
-
-  subroutine get_presslimits(Pmin, Pmax)
-    !> Get EoSlib-specific max/min supported pressure
-    implicit none
-    ! Output:
-    real,     intent(out) :: Pmin !< Minimum supported temperature (Pa)
-    real,     intent(out) :: Pmax !< Maximum supported temperature (Pa)
-
-    Pmin = tpPmin
-    Pmax = tpPmax
-  end subroutine get_presslimits
-
 end module thermopack_var

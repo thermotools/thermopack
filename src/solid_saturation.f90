@@ -4,7 +4,7 @@ module solid_saturation
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
   use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       tpTmin, tpTmax, tpPmin, tpPmax, get_templimits
+       tpTmin, tpTmax, tpPmin, tpPmax
   use nonlinear_solvers
   !use nonlinear_solvers
   !use numconstants, only: machine_prec

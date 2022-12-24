@@ -653,8 +653,7 @@ contains
           call switchPhase()
        else
          call this%mp_pressure(rho, T_spec, p, dpdrho)
-         print *,p,rho
-          if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
+         if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
                curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
              call switchPhase()
              continue

@@ -12,7 +12,7 @@ module uv_solver
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use numconstants, only: machine_prec, small
   use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       tpPmax, tpPmin, get_templimits, Rgas
+       tpPmax, tpPmin, Rgas, tpTmin, tpTmax
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -233,7 +233,8 @@ contains
     if (present(isConverged)) then
       isConverged = .true.
     endif
-    call get_templimits(Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -411,7 +412,8 @@ contains
     real, parameter :: maxstep_p = 5.0e5
     real :: factor, T0, P0, T1, P1, Tmin, Tmax
     real, dimension(2) :: dvar_tp
-    call get_templimits(Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (var(1) + dvar(1) > 0.99*expMax) then
       factor = 1.0/dvar(1)
       dvar(1) = 0.99*expMax - var(1)
@@ -553,7 +555,8 @@ contains
     logical :: liq_stab_negative, gas_stab_negative
     !
     converged = .false.
-    call get_templimits(Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -1154,7 +1157,8 @@ contains
     if (present(ierr)) then
       ierr = 0
     endif
-    call get_templimits( Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     imax = maxloc(Z)
     Tmin = max(act_mod_ptr%comps(imax(1))%p_comp%ttr, Tmin) ! Limit to triple point
     if (t > Tmax .OR. t < Tmin) then
@@ -1250,7 +1254,8 @@ contains
     call getCriticalParam(maxComp(Z),tci,pci,oi)
     param(nc+3) = pci
     param(nc+4) = tci
-    call get_templimits( Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     !t = max(min(t, tci - 20.0), tpTmin + 50.0)
     if (t > tci - 5.0 .OR. t < Tmin + 10.0) then
       t = (tci + Tmin + 50.0)*0.5
@@ -1540,7 +1545,8 @@ contains
     solver%ls_max_it = singleuv_line_searches
     solver%max_it = singleuv_nmax
 
-    call get_templimits( xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     call nonlinear_solve(solver,fun_Tv_single,jac_Tv_single,jac_Tv_single,limit_dx,&
          premterm_at_dx_zero,setXv,var,xmin,xmax,param)
 

@@ -2,7 +2,7 @@ module saturation
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, verbose
   use thermopack_var, only: nc, thermo_model, get_active_eos, &
-       Rgas, tptmin, tppmin, tppmax, get_templimits
+       Rgas, tptmin, tppmin, tppmax, tpTmax
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -297,7 +297,8 @@ contains
         T0 = T
         XX(1) = log(min(t,tci))
         xmax = log(tci)
-        call get_templimits(Tmin,Tmax)
+        Tmin = tpTmin
+        Tmax = tpTmax
         xmin = log(Tmin)
       else
         if (t > tci) then
@@ -668,7 +669,8 @@ contains
 
     Xmin = expMin
     Xmax = expMax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(nc+1) = log(Tmin) !Tmin
     Xmax(nc+1) = log(Tmax) !Tmax
     Xmin(nc+2) = log(tpPmin) !Pmin
@@ -778,7 +780,8 @@ contains
     integer :: i
     real :: Tmin,Tmax,eps_local
     real :: lnMin(nc+2), lnMax(nc+2)
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     atLimit = .false.
     lnMin(1:nc) = expMin
     lnMax(1:nc) = expMax
@@ -929,7 +932,8 @@ contains
     endif
 
     if (specification == specP) then
-      call get_templimits(Tmin, Tmax)
+      Tmin = tpTmin
+      Tmax = tpTmax
     endif
 
     f = 1.0
