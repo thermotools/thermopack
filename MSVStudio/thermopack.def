@@ -147,10 +147,11 @@ EXPORTS
 	solid_saturation_mp_solidenvelopeplot_
 	speed_of_sound_mp_sound_velocity_2ph_
 	thermo_utils_mp_guessphase_
-	thermopack_constants_mp_rgas_
-	thermopack_constants_mp_tptmin_
-	thermopack_constants_mp_tppmin_
-	thermopack_constants_mp_tppmax_
+	thermopack_var_mp_rgas_
+	thermopack_var_mp_tptmin_
+	thermopack_var_mp_tppmin_
+	thermopack_var_mp_tppmax_
+	thermopack_var_mp_tppmin_
 	thermopack_var_mp_add_eos_
 	thermopack_var_mp_delete_eos_
 	thermopack_var_mp_activate_model_

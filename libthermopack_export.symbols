@@ -147,6 +147,7 @@
 	*tptmin*
 	*tppmin*
 	*tppmax*
+	*tppmin*
 	*add_eos*
 	*delete_eos*
 	*activate_model*

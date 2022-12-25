@@ -249,10 +249,11 @@ append_export("sound_velocity_2ph", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 
-append_export("rgas", "thermopack_constants")
-append_export("tptmin", "thermopack_constants")
-append_export("tppmin", "thermopack_constants")
-append_export("tppmax", "thermopack_constants")
+append_export("rgas", "thermopack_var")
+append_export("tptmin", "thermopack_var")
+append_export("tppmin", "thermopack_var")
+append_export("tppmax", "thermopack_var")
+append_export("tppmin", "thermopack_var")
 
 append_export("add_eos", "thermopack_var")
 append_export("delete_eos", "thermopack_var")

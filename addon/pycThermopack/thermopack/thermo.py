@@ -79,16 +79,16 @@ class thermo(object):
         self.eoslibinit_init_thermo = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_thermo"))
         self.Rgas = c_double.in_dll(self.tp, self.get_export_name(
-            "thermopack_constants", "rgas")).value
+            "thermopack_var", "rgas")).value
         self.nc = None
         self.minimum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmin"))
-        self.maximum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
+            self.tp, self.get_export_name("thermopack_var", "tptmin"))
         self.minimum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmin"))
+            self.tp, self.get_export_name("thermopack_var", "tppmin"))
         self.maximum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmax"))
+            self.tp, self.get_export_name("thermopack_var", "tppmax"))
+        self.minimum_pressure_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_var", "tppmin"))
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(

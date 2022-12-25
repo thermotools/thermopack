@@ -378,7 +378,8 @@ contains
     Xvar(1:nc) = log(K)
     Xvar(nc+1) = log(t)
     Xvar(nc+2) = log(p)
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1:nc) = -1.0e100
     Xmax(1:nc) = 1.0e100
     Xmin(nc+1) = log(Tmin) !Tmin
@@ -718,7 +719,8 @@ contains
     param(nc+4) = real(is)
     param(nc+5) = real(fluidPhase)
 
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1) = log(Tmin) !Tmin
     Xmax(1) = log(Tmax) !Tmax
     Xmin(2) = log(tpPmin) !Pmin

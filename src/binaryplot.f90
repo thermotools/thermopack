@@ -1394,17 +1394,32 @@ contains
         P = P1 + P2
       endif
     else !(ispec == PSPEC)
-      ! Locate upper temperature
-      Tbub = tci - safetyDt
-      Pbub = pci
-      do i=1,2
-        if (P < pci(i)) then
-          Tbub(i) = safe_bubT(P,z(i,:),y,ierrBub)
-          Pbub(i) = P
-          if (ierrBub/= 0) then
-            ierr = 1
-            return
-          endif
+      if (tci(1) > tci(2)) then
+        T = tci(2) - safetyDt
+        Pmax = safe_bubP(T,w,y,ierrBub) + pci(1)
+      else
+        T = tci(1) - safetyDt
+        Pmax = safe_bubP(T,x,y,ierrBub) + pci(2)
+      endif
+      if (ierrBub /= 0) then
+        call stoperror("initialLLtp failed to converge safe_bubP")
+      endif
+      if (P > Pmax) then
+        ! No LLE
+        ierr = 1
+      else
+        solver_psat%abs_tol = 1.0e-5
+        solver_psat%max_it = 1000
+        solver_psat%isolver = NS_PEGASUS
+        ! Set the constant parameters of the objective function.
+        param(1) = P
+        Tmin = tpTmin
+        Tmax = tpTmax
+        ! Find f=0 inside the bracket.
+        call bracketing_solver(Tmin,Tmax,fun_psat,T,solver_psat,param)
+        ! Check for successful convergence
+        if (solver_psat%exitflag /= 0) then
+          ierr = solver_psat%exitflag
         endif
       enddo
       ! Determine pressures at max temperature
@@ -1727,7 +1742,8 @@ contains
       endif
       XXmax(neq) = log(min(tpPmax,Pmax)) !Pmax
     else
-      call get_templimits(XXmin(neq),XXmax(neq))
+      XXmin(neq) = tpTmin
+      XXmax(neq) = tpTmax
       XXmin(neq) = log(max(XXmin(neq),Tmin)) !Tmin
       XXmax(neq) = log(XXmax(neq)) !Tmax
     endif
@@ -2128,7 +2144,8 @@ contains
       XX(3*nc+1) = log(P)
     else ! PSPEC
       param(1) = P
-      call get_templimits(XXmin(3*nc+1),XXmax(3*nc+1))
+      XXmin(3*nc+1) = tpTmin
+      XXmax(3*nc+1) = tpTmax
       XX(3*nc+1) = log(T)
       XXmin(3*nc+1) = log(XXmin(3*nc+1))
       XXmax(3*nc+1) = log(XXmax(3*nc+1))
@@ -2543,7 +2560,8 @@ contains
     XXmax(1:6) = log(5.0)
     XXmin(7:9) = log(1.0e-8)
     XXmax(7:9) = log(100.0)
-    call get_templimits(XXmin(10),XXmax(10))
+    XXmin(10) = tpTmin
+    XXmax(10) = tpTmax
     XXmin(10) = log(XXmin(10))
     XXmax(10) = log(XXmax(10))
     param(1) = max(1.0e5, p)
@@ -3164,7 +3182,8 @@ contains
     ! Locals
     real, parameter :: maxstep_t = 50.0
     real :: T0, T1, Tmin, Tmax
-    call get_templimits(Tmin, Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
 
     T0 = T(1)
     T1 = T(1) + dT(1)
@@ -4987,7 +5006,8 @@ contains
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
     ! Temperature
-    call get_templimits(xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     xmin(1) = log(xmin(1))
     xmax(1) = log(xmax(1))
     ! Volumes
