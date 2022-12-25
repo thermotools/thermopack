@@ -69,9 +69,11 @@ contains
   function constructor_GERG(comp_name) result(gerg_comp)
     use stringmod, only: str_eq
     use gergdatadb, only: maxgerg, gergdb
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     character(len=*), intent(in) :: comp_name
     type(meos_gerg) :: gerg_comp
     ! Locals
+    type(thermo_model), pointer :: p_thermo
     integer :: i_comp, i, j
 
     i_comp = -1
@@ -136,6 +138,10 @@ contains
       print *,"No parameters for component ",trim(comp_name)
     endif
 
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = gerg_comp%Rgas_meos
+    p_thermo%kRgas = 1000.0*gerg_comp%Rgas_meos !< J/kmol/K
   end function constructor_GERG
 
   subroutine init_GERG(this, use_Rgas_fit)

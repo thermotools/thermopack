@@ -161,6 +161,13 @@ contains
     eos_c1%EoSlib = eos_c2%EoSlib
     eos_c1%label = eos_c2%label
 
+    eos_c1%Rgas = eos_c2%Rgas
+    eos_c1%kRgas = eos_c2%kRgas
+    eos_c1%tpPmin = eos_c2%tpPmin
+    eos_c1%tpPmax = eos_c2%tpPmax
+    eos_c1%tpTmin = eos_c2%tpTmin
+    eos_c1%tpTmax = eos_c2%tpTmax
+
     eos_c1%eosidx = eos_c2%eosidx
     !eos_c1%subeosidx = eos_c2%subeosidx
     !eos_c1%volumeShiftId = eos_c2%volumeShiftId

@@ -31,7 +31,7 @@ module saft_interface
        eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
        eosPCP_SAFT, eosSPCP_SAFT
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param, numassocsites, Rgas
+       get_active_eos, base_eos_param, numassocsites, Rgas => Rgas_default
   use association_var, only: association
   implicit none
   save

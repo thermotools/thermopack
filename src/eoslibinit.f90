@@ -5,7 +5,8 @@ module eoslibinit
   !
   use thermopack_var, only: nce, get_active_eos, thermo_model, &
        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
-       active_thermo_model_is_associated, numAssocSites, Rgas, tpTmin
+       active_thermo_model_is_associated, numAssocSites, Rgas, tpTmin, &
+       kRgas
   use eos_container, only: allocate_eos
   use stringmod,  only: uppercase, str_eq, string_match, string_match_val
   implicit none
@@ -135,6 +136,8 @@ contains
     complist => act_mod_ptr%complist
     apparent => NULL()
     numAssocSites = 0
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Initialize components
     call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
@@ -302,6 +305,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifier
     act_mod_ptr%eosLib = THERMOPACK
@@ -449,6 +454,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -853,6 +860,7 @@ contains
     ! SAFT initialization must be done after cbeos initialization.
     call saft_type_eos_init(nce,act_mod_ptr%comps,&
          act_eos_ptr,param_ref,silent_init=.true.)
+
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
@@ -963,6 +971,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1040,6 +1050,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1112,6 +1124,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1178,6 +1192,8 @@ contains
     act_mod_ptr%nc = ncomp
     nph = act_mod_ptr%nph
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1245,6 +1261,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1355,6 +1373,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK

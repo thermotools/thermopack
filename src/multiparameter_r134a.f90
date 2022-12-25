@@ -60,8 +60,11 @@ module multiparameter_r134a
 contains
 
   subroutine init_r134a (this, use_Rgas_fit)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     class(meos_r134a) :: this
     logical, optional, intent(in) :: use_Rgas_fit
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
 
     this%compName = "R134A"
     this%tc = 374.21  !< (K)
@@ -80,11 +83,15 @@ contains
     this%maxP = 70.0e6 ! (Pa)
 
     if (present(use_Rgas_fit)) then
-       if (use_Rgas_fit) then
-          this%Rgas_meos = this%Rgas_fit
-       end if
+      if (use_Rgas_fit) then
+        this%Rgas_meos = this%Rgas_fit
+      end if
     end if
 
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = this%Rgas_meos
+    p_thermo%kRgas = 1000.0*this%Rgas_meos !< J/kmol/K
   end subroutine init_r134a
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,

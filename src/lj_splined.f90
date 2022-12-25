@@ -15,7 +15,7 @@ module lj_splined
   use eosdata, only: eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
   use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc, &
-       Rgas, kRgas
+       Rgas, kRgas, get_active_thermo_model, thermo_model
   use hardsphere_wca, only: calc_dhs_WCA, calc_cavity_integral_LJ_Fres, &
        calcZetaX_vdW_no_segments
   implicit none
@@ -597,6 +597,7 @@ contains
     real :: f_alpha(6)
     real :: sigma, eps_depth_divk
     integer :: idx
+    type(thermo_model), pointer :: p_thermo
 
     ! Deallocate old memory and init new memory
     call ljs%allocate_and_init(nc,"LJS-BH")
@@ -620,6 +621,11 @@ contains
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
+
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = Rgas
+    p_thermo%kRgas = kRgas !< J/kmol/K
 
     ! Set ideal gas Cp
     comp(1)%p_comp%id_cp%cptype = 8
@@ -1091,6 +1097,7 @@ contains
     ! Locals
     real :: sigma, eps_depth_divk
     integer :: idx
+    type(thermo_model), pointer :: p_thermo
 
     call ljs%allocate_and_init(nc,"WCA")
     svrm_opt => ljs%svrm_opt
@@ -1105,6 +1112,11 @@ contains
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
+
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = Rgas
+    p_thermo%kRgas = kRgas !< J/kmol/K
 
     ! Set ideal gas Cp
     comp(1)%p_comp%id_cp%cptype = 8

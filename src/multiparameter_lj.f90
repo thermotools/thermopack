@@ -5,7 +5,7 @@ module multiparameter_lj
   use multiparameter_base, only: meos
   use thermopack_constants, only: N_Avogadro, kB_const, &
        VAPPH, LIQPH
-  use thermopack_var, only: Rgas
+  use thermopack_var, only: Rgas => Rgas_default
   implicit none
   save
   public :: meos_lj, lj_param, constructor_lj, init_LJTS
@@ -194,6 +194,7 @@ contains
   function constructor_LJ(comp_name, shift_and_truncate) result(lj)
     use stringmod, only: str_eq
     use compdata_init, only: getCompDBindex, compdb
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     character(len=*), intent(in) :: comp_name
     logical, intent(in) :: shift_and_truncate
     type(meos_lj) :: lj
@@ -202,6 +203,8 @@ contains
     real :: tau_triple
     integer :: nModels
     type(lj_param), dimension(:), allocatable :: param_array
+    type(thermo_model), pointer :: p_thermo
+    !
     if (shift_and_truncate) then
       call init_LJTS(lj)
       nModels = nLJTSmodels
@@ -243,6 +246,11 @@ contains
     lj%rhoVap_triple = lj%rc*lj%satDeltaEstimate(tau_triple, VAPPH)
 
     deallocate(param_array)
+
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = lj%Rgas_meos
+    p_thermo%kRgas = 1000.0*lj%Rgas_meos !< J/kmol/K
   end function constructor_LJ
 
   subroutine init_dummy(this, use_Rgas_fit)
