@@ -185,6 +185,8 @@ module multiparameter_lj
      procedure, public :: init => init_dummy
      procedure, private :: alphaResPrefactors => alphaResPrefactors_LJ
      procedure, private :: allocate_param
+     procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_LJ
+     procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_LJ
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_lj
    end type meos_lj
@@ -454,6 +456,18 @@ contains
     alp0(0,2) = -1.5
   end subroutine alpha0Derivs_LJ
 
+  ! The functional form of the ideal gas function varies among multiparameter EoS,
+  ! which explains why this routine may seem a bit hard-coded.
+  function alpha0Derivs_hd_LJ(this, delta, tau) result(alp0)
+    use hyperdual_mod
+    class(meos_lj) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alp0 !< alp0
+    ! Internals
+    integer :: i
+    alp0 = log(delta) + 1.5*log(tau) + this%a(1)*tau + this%a(2)
+  end function alpha0Derivs_hd_LJ
+
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_LJ (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
     class(meos_lj) :: this
@@ -467,7 +481,6 @@ contains
     prefactors_expexp = this%N_expexp * tau**this%t_expexp
 
   end subroutine alphaResPrefactors_LJ
-
 
   subroutine alphaResDerivs_LJ (this, delta, tau, alpr)
     class(meos_lj) :: this
@@ -529,6 +542,30 @@ contains
          (this%t_expexp - 2*this%beta_expexp*tau*(tau-this%gam_expexp)))
 
   end subroutine alphaResDerivs_LJ
+
+  function alphaResDerivs_hd_LJ(this, delta, tau) result(alpr)
+    use hyperdual_mod
+    class(meos_lj) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alpr !< alpr
+    ! Internal
+    integer :: i
+
+    alpr = 0.0_dp
+    do i=1,this%upPol
+      alpr = alpr + this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
+    enddo
+
+    do i=this%upPol+1,this%upExp
+      alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
+    enddo
+
+    do i=this%upExp+1,this%upExpExp
+      alpr = alpr + this%N_expexp(i) * tau**this%t_expexp(i) * delta**this%d_expexp(i) &
+           * exp(-this%eta_expexp(i)*(delta-this%eps_expexp(i))**2 - &
+           this%beta_expexp(i)*(tau-this%gam_expexp(i))**2)
+    enddo
+  end function alphaResDerivs_hd_LJ
 
   function satDeltaEstimate_LJ(this,tau,phase) result(deltaSat)
     class(meos_lj) :: this

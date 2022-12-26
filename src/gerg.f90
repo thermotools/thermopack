@@ -57,6 +57,8 @@ module gerg
     procedure, public :: init => init_GERG
     procedure, private :: alphaResPrefactors => alphaResPrefactors_GERG
     procedure, private :: allocate_param
+    procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_GERG
+    procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_GERG
 
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_gerg
@@ -218,6 +220,29 @@ contains
 
   end subroutine alpha0Derivs_GERG
 
+    ! The functional form of the ideal gas function varies among multiparameter EoS,
+  ! which explains why this routine may seem a bit hard-coded.
+  function alpha0Derivs_hd_GERG(this, delta, tau) result(alp0)
+    use hyperdual_mod
+    class(meos_gerg) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alp0 !< alp0
+    ! Internals
+    integer :: i
+    real :: RR
+    type(hyperdual) :: exps
+    RR = Rgas_star/this%Rgas_fit
+    alp0 = log(delta) + RR*(this%n(1) + this%n(2)*tau + this%n(3)*log(tau))
+    do i=4,this%n_cosh
+      exps = exp(this%b(i)*tau)
+      alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp + 1.0_dp/(2.0_dp*exps))
+    enddo
+    do i=this%n_cosh+1,this%n_sinh
+      exps = exp(this%b(i)*tau)
+      alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp - 1.0_dp/(2.0_dp*exps))
+    enddo
+  end function alpha0Derivs_hd_GERG
+
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_GERG (this, tau, prefactors_pol, prefactors_exp)
     class(meos_gerg) :: this
@@ -270,6 +295,25 @@ contains
          dot_product(expTerms, (this%d_exp - this%l_exp*deltaL)*this%t_exp )
 
   end subroutine alphaResDerivs_GERG
+
+  function alphaResDerivs_hd_GERG(this, delta, tau) result(alpr)
+    use hyperdual_mod
+    class(meos_gerg) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alpr !< alpr
+    ! Internal
+    integer :: i
+
+    alpr = 0.0_dp
+    do i=1,this%upPol
+      alpr = alpr + this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
+    enddo
+
+    do i=this%upPol+1,this%upExp
+      alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
+    enddo
+
+  end function alphaResDerivs_hd_GERG
 
   function satDeltaEstimate_GERG(this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH
