@@ -99,6 +99,7 @@ OBJE = \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/gergdatadb.o \
+       $(ODIR)/gergmixdb.o \
        $(ODIR)/satdensdatadb.o \
        $(ODIR)/saturated_densities.o \
        $(ODIR)/multiparameter_base.o \
@@ -109,6 +110,7 @@ OBJE = \
        $(ODIR)/multiparameter_r134a.o \
        $(ODIR)/multiparameter_lj.o \
        $(ODIR)/gerg.o \
+       $(ODIR)/gergmix.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -486,6 +488,13 @@ $(ODIR)/gerg.o: $(SRC)/gerg.f90 \
 	@$(call make_object, $(SRC)/gerg.f90)
 $(ODIR)/gergdatadb.o: $(SRC)/gergdatadb.f90
 	@$(call make_object, $(SRC)/gergdatadb.f90)
+$(ODIR)/gergmix.o: $(SRC)/gergmix.f90 \
+	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
+	$(SRC)/gergdatadb.f90 $(SRC)/gergmixdb.f90 $(SRC)/gerg.f90
+	@$(call make_object, $(SRC)/gergmix.f90)
+$(ODIR)/gergmixdb.o: $(SRC)/gergmixdb.f90
+	@$(call make_object, $(SRC)/gergmixdb.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
