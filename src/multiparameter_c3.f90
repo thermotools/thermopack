@@ -65,8 +65,8 @@ module multiparameter_C3
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_C3
 
-     procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_C3
-     procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_C3
+     procedure, public :: alpha0_hd_taudelta => alpha0_hd_C3
+     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_C3
 
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_c3
@@ -139,7 +139,7 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0Derivs_hd_C3(this, delta, tau) result(alp0)
+  function alpha0_hd_C3(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_c3) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -151,7 +151,7 @@ contains
     do i=3,6
       alp0 = alp0 + v(i)*log(1.0_dp-1.0_dp/exp(b(i)*tau))
     enddo
-  end function alpha0Derivs_hd_C3
+  end function alpha0_hd_C3
 
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_C3 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
@@ -225,7 +225,7 @@ contains
 
   end subroutine alphaResDerivs_C3
 
-  function alphaResDerivs_hd_C3 (this, delta, tau) result(alpr)
+  function alphaRes_hd_C3 (this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_c3) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -248,7 +248,7 @@ contains
            - beta_expexp(i)*(tau-gam_expexp(i))**2)
     enddo
 
-  end function alphaResDerivs_hd_C3
+  end function alphaRes_hd_C3
 
   function satDeltaEstimate_C3 (this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH

@@ -110,7 +110,6 @@ OBJE = \
        $(ODIR)/multiparameter_r134a.o \
        $(ODIR)/multiparameter_lj.o \
        $(ODIR)/gerg.o \
-       $(ODIR)/gergmix.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -129,6 +128,7 @@ OBJE = \
        $(ODIR)/idealh2.o \
        $(ODIR)/ideal.o \
        $(ODIR)/cpa_parameters.o \
+       $(ODIR)/gergmix.o \
        $(ODIR)/cbselect.o \
        $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \

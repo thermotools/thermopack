@@ -60,8 +60,8 @@ module multiparameter_base
     procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
     procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
     ! Hyperdual number interfaces
-    procedure(alpha0Derivs_hd_intf), public, deferred :: alpha0Derivs_hd_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
-    procedure(alphaResDerivs_hd_intf), public, deferred :: alphaResDerivs_hd_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
+    procedure(alpha0_hd_intf), public, deferred :: alpha0_hd_taudelta  !< alpha0
+    procedure(alphaRes_hd_intf), public, deferred :: alphaRes_hd_taudelta  !< alphaRes
 
     procedure, public :: assign_meos_base
     ! Assignment operator
@@ -118,23 +118,23 @@ module multiparameter_base
   end interface
 
   abstract interface
-    function alphaResDerivs_hd_intf(this, delta, tau) result(alpr)
+    function alphaRes_hd_intf(this, delta, tau) result(alpr)
       use hyperdual_mod, only: hyperdual
       import meos
       class(meos) :: this
       type(hyperdual), intent(in) :: delta, tau
       type(hyperdual) :: alpr !< alpr
-    end function alphaResDerivs_hd_intf
+    end function alphaRes_hd_intf
   end interface
 
   abstract interface
-    function alpha0Derivs_hd_intf(this,delta, tau) result(alp0)
+    function alpha0_hd_intf(this,delta, tau) result(alp0)
       use hyperdual_mod, only: hyperdual
       import meos
       class(meos) :: this
       type(hyperdual), intent(in) :: delta, tau
       type(hyperdual) :: alp0 !< alp0
-    end function alpha0Derivs_hd_intf
+    end function alpha0_hd_intf
   end interface
 
   ! Allow array of pointers to NIST meos

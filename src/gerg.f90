@@ -57,8 +57,8 @@ module gerg
     procedure, public :: init => init_GERG
     procedure, private :: alphaResPrefactors => alphaResPrefactors_GERG
     procedure, private :: allocate_param
-    procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_GERG
-    procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_GERG
+    procedure, public :: alpha0_hd_taudelta => alpha0_hd_GERG
+    procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_GERG
 
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_gerg
@@ -222,7 +222,7 @@ contains
 
     ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0Derivs_hd_GERG(this, delta, tau) result(alp0)
+  function alpha0_hd_GERG(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_gerg) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -241,7 +241,7 @@ contains
       exps = exp(this%b(i)*tau)
       alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp - 1.0_dp/(2.0_dp*exps))
     enddo
-  end function alpha0Derivs_hd_GERG
+  end function alpha0_hd_GERG
 
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_GERG (this, tau, prefactors_pol, prefactors_exp)
@@ -296,7 +296,7 @@ contains
 
   end subroutine alphaResDerivs_GERG
 
-  function alphaResDerivs_hd_GERG(this, delta, tau) result(alpr)
+  function alphaRes_hd_GERG(this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_gerg) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -313,7 +313,7 @@ contains
       alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
     enddo
 
-  end function alphaResDerivs_hd_GERG
+  end function alphaRes_hd_GERG
 
   function satDeltaEstimate_GERG(this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH

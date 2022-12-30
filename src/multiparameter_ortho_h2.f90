@@ -112,8 +112,8 @@ module multiparameter_ortho_h2
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_ORTHO_H2
 
-     procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_ORTHO_H2
-     procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_ORTHO_H2
+     procedure, public :: alpha0_hd_taudelta => alpha0_hd_ORTHO_H2
+     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_ORTHO_H2
 
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_ortho_h2
@@ -182,7 +182,7 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0Derivs_hd_ORTHO_H2(this, delta, tau) result(alp0)
+  function alpha0_hd_ORTHO_H2(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_ortho_h2) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -193,7 +193,7 @@ contains
     do i=3,6
       alp0 = alp0 + v(i)*log(1.0_dp-exp(b(i)*tau))
     enddo
-  end function alpha0Derivs_hd_ORTHO_H2
+  end function alpha0_hd_ORTHO_H2
 
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_ORTHO_H2 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
@@ -266,7 +266,7 @@ contains
 
   end subroutine alphaResDerivs_ORTHO_H2
 
-  function alphaResDerivs_hd_ORTHO_H2 (this, delta, tau) result(alpr)
+  function alphaRes_hd_ORTHO_H2 (this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_ortho_h2) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -289,7 +289,7 @@ contains
            beta_expexp(i)*(tau-gam_expexp(i))**2)
     enddo
 
-  end function alphaResDerivs_hd_ORTHO_H2
+  end function alphaRes_hd_ORTHO_H2
 
   function satDeltaEstimate_ORTHO_H2 (this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH

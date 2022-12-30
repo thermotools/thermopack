@@ -185,8 +185,8 @@ module multiparameter_lj
      procedure, public :: init => init_dummy
      procedure, private :: alphaResPrefactors => alphaResPrefactors_LJ
      procedure, private :: allocate_param
-     procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_LJ
-     procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_LJ
+     procedure, public :: alpha0_hd_taudelta => alpha0_hd_LJ
+     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_LJ
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_lj
    end type meos_lj
@@ -458,15 +458,14 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0Derivs_hd_LJ(this, delta, tau) result(alp0)
+  function alpha0_hd_LJ(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_lj) :: this
     type(hyperdual), intent(in) :: delta, tau
     type(hyperdual) :: alp0 !< alp0
     ! Internals
-    integer :: i
     alp0 = log(delta) + 1.5*log(tau) + this%a(1)*tau + this%a(2)
-  end function alpha0Derivs_hd_LJ
+  end function alpha0_hd_LJ
 
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_LJ (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
@@ -543,7 +542,7 @@ contains
 
   end subroutine alphaResDerivs_LJ
 
-  function alphaResDerivs_hd_LJ(this, delta, tau) result(alpr)
+  function alphaRes_hd_LJ(this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_lj) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -565,7 +564,7 @@ contains
            * exp(-this%eta_expexp(i)*(delta-this%eps_expexp(i))**2 - &
            this%beta_expexp(i)*(tau-this%gam_expexp(i))**2)
     enddo
-  end function alphaResDerivs_hd_LJ
+  end function alphaRes_hd_LJ
 
   function satDeltaEstimate_LJ(this,tau,phase) result(deltaSat)
     class(meos_lj) :: this

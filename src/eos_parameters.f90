@@ -106,7 +106,7 @@ contains
          str_eq(eos_label,'LJTS_MEOS') .or. &
          str_eq(eos_label,'GERG2008') .or. &
          str_eq(eos_label,'NIST_MEOS_MIX')) then
-      if (.not. str_eq(eos_label,'NIST_MEOS_MIX')) then
+      if (.not. (str_eq(eos_label,'NIST_MEOS_MIX') .or. str_eq(eos_label,'GERG2008'))) then
         if (nc /= 1) call stoperror("MEOS only implemented for pure components.")
       endif
       allocate(eos%nist(nc), STAT=istat)
@@ -258,6 +258,10 @@ contains
               allocate(meos_para_h2 :: this%nist(i)%meos, stat=istat)
             class is (meos_r134a)
               allocate(meos_r134a :: this%nist(i)%meos, stat=istat)
+            class is (meos_lj)
+              allocate(meos_lj :: this%nist(i)%meos, stat=istat)
+            class is (meos_gerg)
+              allocate(meos_gerg :: this%nist(i)%meos, stat=istat)
             class default
               call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
             end select

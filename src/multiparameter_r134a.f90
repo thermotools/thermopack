@@ -52,8 +52,8 @@ module multiparameter_r134a
      procedure, public :: satDeltaEstimate => satDeltaEstimate_r134a
      procedure, public :: init => init_r134a
 
-     procedure, public :: alpha0Derivs_hd_taudelta => alpha0Derivs_hd_r134a
-     procedure, public :: alphaResDerivs_hd_taudelta => alphaResDerivs_hd_r134a
+     procedure, public :: alpha0_hd_taudelta => alpha0_hd_r134a
+     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_r134a
 
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_r134a
@@ -118,16 +118,15 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0Derivs_hd_r134a(this, delta, tau) result(alp0)
+  function alpha0_hd_r134a(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_r134a) :: this
     type(hyperdual), intent(in) :: delta, tau
     type(hyperdual) :: alp0 !< alp0
     ! Internals
-    integer :: i
     alp0 = a0i(1) + a0i(2)*tau+a0i(3)*log(tau)+log(delta)&
          +a0i(4)*tau**(-0.5) + a0i(5)*tau**(-0.75)
-  end function alpha0Derivs_hd_r134a
+  end function alpha0_hd_r134a
 
   subroutine alphaResDerivs_r134a(this, delta, tau, alpr)
     class(meos_r134a) :: this
@@ -172,7 +171,7 @@ contains
 
   end subroutine alphaResDerivs_r134a
 
-  function alphaResDerivs_hd_r134a (this, delta, tau) result(alpr)
+  function alphaRes_hd_r134a (this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_r134a) :: this
     type(hyperdual), intent(in) :: delta, tau
@@ -187,7 +186,7 @@ contains
     do i=9,resTerms
       alpr = alpr + ai(i)*tau**ti(i)*delta**di(i)*exp(-delta**li(i))
     enddo
-  end function alphaResDerivs_hd_r134a
+  end function alphaRes_hd_r134a
 
   function satDeltaEstimate_r134a (this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH
