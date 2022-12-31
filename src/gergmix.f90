@@ -384,15 +384,13 @@ contains
     enddo
   end function calc_del_alpha_r
 
-  subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac,dZdt,dZdp,dZdz)
+  subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac)
     implicit none
     class(meos_gergmix), intent(inout) :: eos
     real, dimension(nce), intent(in) :: Z
     real, intent(in) :: T, P
     integer, intent(in) :: phase
     real, intent(out) :: Zfac
-    real, optional, intent(out) :: dZdt, dZdp
-    real, optional, dimension(nce), intent(out) :: dZdz
     ! Locals
     real :: rho
     integer :: phase_found

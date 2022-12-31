@@ -1147,7 +1147,8 @@ contains
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
     type is ( meos_gergmix )
-      call p_eos%Zfac(T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
+      call p_eos%Zfac(T,p,ne,phase,Zfac)
+      call calc_Zfac_differentials()
     type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
@@ -1174,6 +1175,34 @@ contains
     if (cbeos%volumeShiftId /= NOSHIFT) then
       call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
     endif
+
+  contains
+
+    subroutine calc_Zfac_differentials()
+      use thermopack_var, only: Rgas
+      real :: sumn, V
+      real :: dpdv, dpdn(nce), dVdn(nce), dpdt, dvdt
+      real :: F_VV, F_TV, F_Vn(nce)
+      if (present(dZdT) .or. present(dZdP) .or. present(dZdz)) then
+        sumn = sum(ne)
+        V = sumn*Rgas*T/P
+        call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_TV=F_TV,F_VV=F_VV,F_Vn=F_Vn)
+        dPdV = -Rgas*T*(F_VV + sumn/V**2)
+      end if
+      if (present(dZdT)) then
+        dPdT = P/T - Rgas*T*F_TV
+        dVdT = -dPdT/dPdV
+        dZdT = -Zfac*(1.0/T - dVdT/V)
+      end if
+      if (present(dZdP)) then
+        dZdP = Zfac*(1.0/P + 1.0/(dPdV*V))
+      end if
+      if (present(dZdz)) then
+        dPdn = Rgas*T*(-F_Vn + 1/V)
+        dVdn = -dPdn/dPdV
+        dZdz = -Zfac*(1.0/sumn - dVdn/V)
+      end if
+    end subroutine calc_Zfac_differentials
 
   end function fork_Zfac_Calculation
 
