@@ -12,6 +12,7 @@ module gergmix
   use saturated_densities, only: sat_densities
   use gergmixdb, only: max_gerg_mix_reducing, gerg_mix_reducingdb, &
        max_gerg_mix_data, gerg_mix_datadb
+  use iso_fortran_env, only: dp => REAL64
   implicit none
   save
   private
@@ -53,7 +54,6 @@ contains
 
   function constructor_GERGMIX(nc) result(gerg_mix)
     use stringmod, only: str_eq
-    use iso_fortran_env, only: dp => REAL64
     use thermopack_var, only: get_active_thermo_model, thermo_model
     !character(len=*), intent(in) :: comp_name
     integer, intent(in) :: nc
@@ -232,7 +232,7 @@ contains
           print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
           print *, "currentPhase", currentPhase
           print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
-          call stoperror("multiparameter_eos::densitySolver: iter == max_iter.")
+          call stoperror("GERG2008_MIX::densitySolver: iter == max_iter.")
         end if
       end if
     end do
@@ -305,7 +305,14 @@ contains
     select type (other)
     class is (meos_gergmix)
       call this%single_eos%assign_eos(other)
-
+      call this%allocate_param(nce)
+      this%inv_rho_pow = other%inv_rho_pow
+      this%tc_prod_sqrt = other%tc_prod_sqrt
+      this%beta_T = other%beta_T
+      this%beta_v = other%beta_v
+      this%gamma_T = other%gamma_T
+      this%gamma_v = other%gamma_v
+      this%mix_data_index = other%mix_data_index
       !
     class default
       call stoperror("assign_meos_gergmix: Should not be here....")
@@ -434,7 +441,6 @@ contains
     class default
       call stoperror("Error in hd_fres_GERGMIX")
     end select
-
   end function hd_fres_GERGMIX
 
 end module gergmix
