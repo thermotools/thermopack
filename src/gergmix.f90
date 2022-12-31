@@ -38,6 +38,7 @@ module gergmix
     procedure, private :: allocate_param
     procedure, public :: alpha0_hd
     procedure, public :: alphaRes_hd
+    procedure, public :: Zfac => Zfac_gergmix
 
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_gergmix
@@ -47,10 +48,12 @@ module gergmix
     procedure, private ::  calc_tau
     procedure, private ::  calc_del_alpha_r
     procedure, private ::  pressure
+    procedure, private ::  densitySolver
 
   end type meos_gergmix
 
   public :: meos_gergmix, constructor_gergmix
+  public :: hd_fres_GERGMIX, hd_fid_GERGMIX
 
 contains
 
@@ -192,7 +195,7 @@ contains
     v%f2 = 1.0_dp
     f_res = hd_fres_GERGMIX(this,nce,T,V,n)
     p = -Rgas*T_spec*(f_res%f1 + 1.0_dp)
-    if (present(p_rho)) p_rho = Rgas*T_spec*f_res%f2*rho**2
+    if (present(p_rho)) p_rho = Rgas*T_spec*f_res%f12*rho**2
   end subroutine pressure
 
   ! function satDeltaEstimate_GERGMIX(this,tau,phase) result(deltaSat)
@@ -423,6 +426,23 @@ contains
     enddo
   end function calc_del_alpha_r
 
+  subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac,dZdt,dZdp,dZdz)
+    implicit none
+    class(meos_gergmix), intent(inout) :: eos
+    real, dimension(nce), intent(in) :: Z
+    real, intent(in) :: T, P
+    integer, intent(in) :: phase
+    real, intent(out) :: Zfac
+    real, optional, intent(out) :: dZdt, dZdp
+    real, optional, dimension(nce), intent(out) :: dZdz
+    ! Locals
+    real :: rho
+    integer :: phase_found
+    !
+    call eos%densitySolver(z, T, P, phase, rho, phase_found)
+    zfac = P/(sum(z)*Rgas*T*rho)
+  end subroutine Zfac_Gergmix
+
   function hd_fid_GERGMIX(p_eos,nc,T,V,n) result(f)
     use hyperdual_mod
     use thermopack_var, only: base_eos_param
@@ -440,7 +460,7 @@ contains
       delta = eos%calc_delta(x, 1.0_dp/V)
       f = sum(n)*eos%alpha0_hd(x, delta, tau)
     class default
-      call stoperrro("Error in hd_fidx_GERGMIX")
+      call stoperror("Error in hd_fidx_GERGMIX")
     end select
   end function hd_fid_GERGMIX
 
@@ -461,7 +481,7 @@ contains
       delta = eos%calc_delta(x, 1.0_dp/V)
       f = sum(n)*eos%alphaRes_hd(x, delta, tau)
     class default
-      call stoperrro("Error in hd_fres_GERGMIX")
+      call stoperror("Error in hd_fres_GERGMIX")
     end select
 
   end function hd_fres_GERGMIX

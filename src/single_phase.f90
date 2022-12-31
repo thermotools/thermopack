@@ -787,6 +787,10 @@ contains
     !use pets, only: PETS_eos
     use eos_parameters, only: single_eos, meos_mix
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use hyperdual_utility, only: hyperdual_fres_wrapper
+    use gergmix, only: meos_gergmix, hd_fres_GERGMIX
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -857,6 +861,9 @@ contains
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        type is ( meos_gergmix ) ! GERG2008
+          call hyperdual_fres_wrapper(hd_fres_GERGMIX,p_eos,nc,T,V_eos,n,eF,ef_T,ef_V,ef_n,&
+               ef_TT,ef_VV,ef_TV,ef_Tn,ef_Vn,ef_nn)
         class default ! Saft eos
           call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
@@ -1100,6 +1107,9 @@ contains
     use eos_parameters, only: single_eos, meos_mix
     !use pets, only: PETS_eos
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -1136,6 +1146,8 @@ contains
       call cbCalcZfac(nce,p_eos,T,p,ne,phase,Zfac,gflag_opt_local,dZdt,dZdp,dZdz)
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
+    type is ( meos_gergmix )
+      call p_eos%Zfac(T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
     type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
@@ -1262,6 +1274,8 @@ contains
     use ideal, only: Fideal_mix_SI
     use thermopack_var, only: base_eos_param
     use eos_parameters, only: single_eos
+    use hyperdual_utility, only: hyperdual_fres_wrapper
+    use gergmix, only: meos_gergmix, hd_fid_GERGMIX
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -1276,6 +1290,9 @@ contains
     select type ( p_seos => cbeos )
     type is ( single_eos )
       call Fid_single(nc,comp,p_seos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+    type is ( meos_gergmix ) ! GERG2008
+      call hyperdual_fres_wrapper(hd_fid_GERGMIX,p_seos,nc,T,V,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
     class default
       call Fideal_mix_SI(nc, comp, T, v, n, Fid=F, Fid_T=F_T, Fid_v=F_V, &

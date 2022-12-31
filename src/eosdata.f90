@@ -41,6 +41,7 @@ module eosdata
   integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
+  integer, parameter :: meosGERG_mix = 10   !< Multicomponent GERG
 
   type eos_label_mapping
     integer :: eos_idx
@@ -50,7 +51,7 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 27
+  integer, parameter :: max_n_eos = 29
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -273,6 +274,14 @@ module eosdata
        eos_subidx = meosNist_mix, &
        short_label = "NIST_MEOS_MIX", &
        label = "Ideal mixture of NIST multiparameter EOS", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meosGERG_mix, &
+       eos_subidx = meosGERG_mix, &
+       short_label = "GERG2008_MIX", &
+       label = "GERG2008 mixture model", &
        need_alternative_eos = .true. &
        ) &
        /)

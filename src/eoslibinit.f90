@@ -1168,6 +1168,7 @@ contains
     integer                          :: ncomp, index, ierr, ncbeos, i
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
+    character(len=len_trim(eos)+4)   :: eos_local !< Equation of state
 
     ! Initialize MEOS
     if (.not. active_thermo_model_is_associated()) then
@@ -1179,8 +1180,13 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
+    eos_local = trim(eos)
+    if (ncomp > 1 .and. str_eq(eos,"GERG2008")) then
+      eos_local = trim(eos)//"_MIX"
+    endif
+    !
     complist => act_mod_ptr%complist
-    call allocate_eos(ncomp, eos)
+    call allocate_eos(ncomp, eos_local)
 
     ! Number of phases
     act_mod_ptr%nph = 3
