@@ -16,8 +16,6 @@ module gergmix
   save
   private
 
-  real, parameter :: Rgas_star = 8.314510 !< J/mol/K
-
   !> GERG-2008 multiparameter equations of state.
   type, extends(single_eos) :: meos_gergmix
 
@@ -31,10 +29,6 @@ module gergmix
 
   contains
 
-    !procedure, public :: alpha0Derivs_taudelta => alpha0Derivs_GERGMIX
-    !procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_GERGMIX
-    !procedure, public :: satDeltaEstimate => satDeltaEstimate_GERGMIX
-    !procedure, public :: init => init_GERGMIX
     procedure, private :: allocate_param
     procedure, public :: alpha0_hd
     procedure, public :: alphaRes_hd
@@ -108,7 +102,7 @@ contains
 
     ! Set consistent Rgas
     p_thermo => get_active_thermo_model()
-    p_thermo%Rgas = 8.314472
+    p_thermo%Rgas = 8.314472_dp
     p_thermo%kRgas = 1000.0*p_thermo%Rgas !< J/kmol/K
   end function constructor_GERGMIX
 
@@ -132,18 +126,6 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  ! subroutine alpha0Derivs_GERGMIX(this, delta, tau, alp0)
-  !   use iso_fortran_env, only: dp => REAL64
-  !   class(meos_gergmix) :: this
-  !   real, intent(in) :: delta, tau
-  !   real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
-  !   !
-  !   ! Internals
-  !   alp0 = 0.0_dp
-  ! end subroutine alpha0Derivs_GERGMIX
-
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
   function alpha0_hd(this, x, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -156,14 +138,6 @@ contains
       alp0 = alp0 + x(i)*(this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau) + log(x(i)))
     enddo
   end function alpha0_hd
-
-  ! subroutine alphaResDerivs_GERGMIX (this, delta, tau, alpr)
-  !   class(meos_gergmix) :: this
-  !   real, intent(in) :: delta, tau
-  !   real, intent(out) :: alpr(0:2,0:2) !< alpr(i,j) = (d_delta)^i(d_tau)^j alphaRes
-  !   ! Internal
-  !   alpr = 0
-  ! end subroutine alphaResDerivs_GERGMIX
 
   function alphaRes_hd(this, x, delta, tau) result(alpr)
     use hyperdual_mod
@@ -197,29 +171,6 @@ contains
     p = -Rgas*T_spec*(f_res%f1 + 1.0_dp)
     if (present(p_rho)) p_rho = Rgas*T_spec*f_res%f12*rho**2
   end subroutine pressure
-
-  ! function satDeltaEstimate_GERGMIX(this,tau,phase) result(deltaSat)
-  !   use thermopack_constants, only: LIQPH, VAPPH
-  !   class(meos_gergmix) :: this
-  !   real, intent(in) :: tau
-  !   integer, intent(in) :: phase
-  !   real :: deltaSat
-  !   ! Internals
-  !   !real :: T
-
-  !   deltaSat = 0.0
-  !   ! T = this%tc/tau
-  !   ! if (tau<1.0) then
-  !   !    deltaSat = 1.0
-  !   ! else if ( phase == LIQPH ) then
-  !   !   deltaSat = this%dl%density(T)/this%rc
-  !   ! else if ( phase == VAPPH ) then
-  !   !   deltaSat = this%dv%density(T)/this%rc
-  !   ! else
-  !   !   call stoperror("satDeltaEstimate_GERGMIX: only LIQPH and VAPPH allowed!")
-  !   ! end if
-
-  ! end function satDeltaEstimate_GERGMIX
 
   subroutine densitySolver(this, x, T_spec, p_spec, phase_spec, rho, phase_found)
     use thermopack_constants
@@ -460,7 +411,7 @@ contains
       delta = eos%calc_delta(x, 1.0_dp/V)
       f = sum(n)*eos%alpha0_hd(x, delta, tau)
     class default
-      call stoperror("Error in hd_fidx_GERGMIX")
+      call stoperror("Error in hd_fid_GERGMIX")
     end select
   end function hd_fid_GERGMIX
 
