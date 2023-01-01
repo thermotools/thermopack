@@ -74,15 +74,20 @@ contains
         rhoc_j = gerg_mix%nist(j)%meos%rc
         Tc_j = gerg_mix%nist(j)%meos%tc
         gerg_mix%inv_rho_pow(i,j) = (1/rhoc_i**(1.0_dp/3.0_dp) + 1/rhoc_j**(1.0_dp/3.0_dp))**3
-        gerg_mix%tc_prod_sqrt(i,i) = (Tc_i*Tc_j)**(0.5_dp)
+        gerg_mix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
         !
         do k=1,max_gerg_mix_reducing
-          if ((str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &
-               str_eq(gerg_mix_reducingdb(k)%ident2, complist(j))) .or. &
-               (str_eq(gerg_mix_reducingdb(k)%ident1, complist(j)) .and. &
-               str_eq(gerg_mix_reducingdb(k)%ident2, complist(i)))) then
-            gerg_mix%beta_T(i,j) = gerg_mix_reducingdb(k)%beta_T
-            gerg_mix%beta_v(i,j) = gerg_mix_reducingdb(k)%beta_v
+          if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &
+               str_eq(gerg_mix_reducingdb(k)%ident2, complist(j))) then
+           gerg_mix%beta_T(i,j) = gerg_mix_reducingdb(k)%beta_T
+           gerg_mix%beta_v(i,j) = gerg_mix_reducingdb(k)%beta_v
+           gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
+           gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
+           exit
+         else if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(j)) .and. &
+               str_eq(gerg_mix_reducingdb(k)%ident2, complist(i))) then
+            gerg_mix%beta_T(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_T
+            gerg_mix%beta_v(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_v
             gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
             gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
             exit
@@ -126,16 +131,21 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0_hd(this, x, delta, tau) result(alp0)
+  function alpha0_hd(this, x, rho, T) result(alp0)
     use hyperdual_mod
     class(meos_gergmix) :: this
-    type(hyperdual), intent(in) :: delta, tau, x(nce)
+    type(hyperdual), intent(in) :: rho, T, x(nce)
     type(hyperdual) :: alp0 !< alp0
     ! Internals
     integer :: i
+    type(hyperdual) :: delta, tau
+    type(hyperdual) :: alp0i !< alpr
     alp0 = 0.0_dp
     do i=1,nce
-      alp0 = alp0 + x(i)*(this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau) + log(x(i)))
+      delta = rho/this%nist(i)%meos%rc
+      tau = this%nist(i)%meos%tc/T
+      alp0i = this%nist(i)%meos%alpha0_hd_taudelta(delta,tau)
+      alp0 = alp0 + x(i)*(this%nist(i)%meos%alpha0_hd_taudelta(delta,tau) + log(x(i)))
     enddo
   end function alpha0_hd
 
@@ -146,9 +156,10 @@ contains
     type(hyperdual) :: alpr !< alpr
     ! Internal
     integer :: i
-
+    type(hyperdual) :: alpri !< alpr
     alpr = 0.0_dp
     do i=1,nce
+      alpri = this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
       alpr = alpr + x(i)*this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
     enddo
     alpr = alpr + this%calc_del_alpha_r(x, tau, delta)
@@ -168,8 +179,8 @@ contains
     v%f1 = 1.0_dp
     v%f2 = 1.0_dp
     f_res = hd_fres_GERGMIX(this,nce,T,V,n)
-    p = -Rgas*T_spec*(f_res%f1 + 1.0_dp)
-    if (present(p_rho)) p_rho = Rgas*T_spec*f_res%f12*rho**2
+    p = -Rgas*T_spec*(f_res%f1 - rho)
+    if (present(p_rho)) p_rho = Rgas*T_spec*(f_res%f12/rho**2 + 1.0_dp)
   end subroutine pressure
 
   subroutine densitySolver(this, x, T_spec, p_spec, phase_spec, rho, phase_found)
@@ -327,12 +338,14 @@ contains
     ! Internals
     integer :: i, j
     delta = 0.0_dp
-    do i=1,nce
-      do j=1,nce
-        delta = delta + x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
+    do i=1,nce-1
+      delta = delta + x(i)*x(i)*this%inv_rho_pow(i,i)/8.0_dp
+      do j=i+1,nce
+        delta = delta + 2*x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
              ((x(i)+x(j))/(this%beta_v(i,j)**2*x(i)+x(j)))*this%inv_rho_pow(i,j)/8.0_dp
       enddo
     enddo
+    delta = delta + x(nce)*x(nce)*this%inv_rho_pow(nce,nce)/8.0_dp
     delta = delta*rho
   end function calc_delta
 
@@ -344,12 +357,14 @@ contains
     ! Internals
     integer :: i, j
     tau = 0.0_dp
-    do i=1,nce
-      do j=1,nce
-        tau = tau + x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
+    do i=1,nce-1
+      tau = tau + x(i)*x(i)*this%tc_prod_sqrt(i,i)
+      do j=i+1,nce
+        tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
              ((x(i)+x(j))/(this%beta_T(i,j)**2*x(i)+x(j)))*this%tc_prod_sqrt(i,j)
       enddo
     enddo
+    tau = tau + x(nce)*x(nce)*this%tc_prod_sqrt(nce,nce)
     tau = tau/T
   end function calc_tau
 
@@ -363,8 +378,8 @@ contains
     type(hyperdual) :: del_alpha_r_ij
     del_alpha_r = 0.0_dp
 
-    do i=1,nce
-      do j=1,nce
+    do i=1,nce-1
+      do j=i+1,nce
         del_alpha_r_ij = 0.0_dp
         if (this%mix_data_index(i,j) > 0) then
           idb = this%mix_data_index(i,j)
@@ -372,7 +387,7 @@ contains
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)
           enddo
-          do k=1+gerg_mix_datadb(idb)%num_exp,gerg_mix_datadb(idb)%num_mix
+          do k=1+gerg_mix_datadb(idb)%num_mix-gerg_mix_datadb(idb)%num_exp,gerg_mix_datadb(idb)%num_mix
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)* &
                  exp(-gerg_mix_datadb(idb)%eta_mix(k)*(delta-gerg_mix_datadb(idb)%epsilon_mix(k))**2 &
@@ -408,13 +423,14 @@ contains
     type(hyperdual), intent(in) :: T, V, n(nc)
     type(hyperdual) :: f
     ! Locals
-    type(hyperdual) :: tau, delta, x(nc)
+    type(hyperdual) :: rho, x(nce)
     select type ( eos => p_eos )
     class is(meos_gergmix)
       x = n/sum(n)
-      tau = eos%calc_tau(x, T)
-      delta = eos%calc_delta(x, 1.0_dp/V)
-      f = sum(n)*eos%alpha0_hd(x, delta, tau)
+      !tau = eos%calc_tau(x, T)
+      !delta = eos%calc_delta(x, 1.0_dp/V)
+      rho = sum(n)/V
+      f = sum(n)*eos%alpha0_hd(x, rho, T)
     class default
       call stoperror("Error in hd_fid_GERGMIX")
     end select

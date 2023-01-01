@@ -234,12 +234,12 @@ contains
     RR = Rgas_star/this%Rgas_fit
     alp0 = log(delta) + RR*(this%n(1) + this%n(2)*tau + this%n(3)*log(tau))
     do i=4,this%n_cosh
-      exps = exp(this%b(i)*tau)
-      alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp + 1.0_dp/(2.0_dp*exps))
+      exps = cosh(this%b(i)*tau)
+      alp0 = alp0 + RR*this%v(i)*log(exps)
     enddo
     do i=this%n_cosh+1,this%n_sinh
-      exps = exp(this%b(i)*tau)
-      alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp - 1.0_dp/(2.0_dp*exps))
+      exps = abs(sinh(this%b(i)*tau))
+      alp0 = alp0 + RR*this%v(i)*log(exps)
     enddo
   end function alpha0_hd_GERG
 
