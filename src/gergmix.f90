@@ -188,6 +188,7 @@ contains
     use numconstants, only: machine_prec
     use cubic, only: cbCalcZfac
     use cubic_eos, only: cb_eos
+    use thermo_utils, only: get_b_linear_mix
     class(meos_gergmix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
     integer, intent(in) :: phase_spec !< Phase flag.
@@ -270,7 +271,7 @@ contains
     !> This routine computes initial rho and dpdrho, as well as setting parameters
     !> for the stability test (pMin, dpdrhoMin, curvatureSign).
     subroutine initializeSearch ()
-      real :: z
+      real :: z, b
       converged = .false.
 
       if( currentPhase == VAPPH) then
@@ -279,14 +280,8 @@ contains
         call this%pressure(rho, x, T_spec, p, p_rho=dpdrho)
       else
         curvatureSign = 1
-        p_alt_eos => get_active_alt_eos()
-        select type ( p_eos => p_alt_eos )
-        type is ( cb_eos ) ! cubic equations of state
-          call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
-          rho = p_spec/(z*Rgas*t_spec)
-        class default ! Saft eos
-          call stoperror("Error in initializeSearch")
-        end select
+        b = get_b_linear_mix(x)
+        rho = 1.0/(1.01 * b)
         call this%pressure(rho, x, T_spec, p, p_rho=dpdrho)
         do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
           rho = 2*rho
@@ -427,8 +422,6 @@ contains
     select type ( eos => p_eos )
     class is(meos_gergmix)
       x = n/sum(n)
-      !tau = eos%calc_tau(x, T)
-      !delta = eos%calc_delta(x, 1.0_dp/V)
       rho = sum(n)/V
       f = sum(n)*eos%alpha0_hd(x, rho, T)
     class default
@@ -450,7 +443,7 @@ contains
     class is(meos_gergmix)
       x = n/sum(n)
       tau = eos%calc_tau(x, T)
-      delta = eos%calc_delta(x, 1.0_dp/V)
+      delta = eos%calc_delta(x, sum(n)/V)
       f = sum(n)*eos%alphaRes_hd(x, delta, tau)
     class default
       call stoperror("Error in hd_fres_GERGMIX")
