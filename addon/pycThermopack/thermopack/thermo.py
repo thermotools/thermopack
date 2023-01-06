@@ -51,6 +51,8 @@ class thermo(object):
         self.nc = None
         self.minimum_temperature_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tptmin"))
+        self.maximum_temperature_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
         self.minimum_pressure_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tppmin"))
         self.maximum_pressure_c = c_double.in_dll(
@@ -652,6 +654,26 @@ class thermo(object):
         temp = self.minimum_temperature_c.value
         return temp
 
+    def set_tmax(self, temp):
+        """Set maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers.
+
+        Args:
+            temp (float): Temperature (K)
+        """
+        if temp is not None:
+            self.maximum_temperature_c.value = temp
+
+    def get_tmax(self):
+        """Get maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers.
+
+        Returns:
+            float: Temperature (K)
+        """
+        temp = self.maximum_temperature_c.value
+        return temp
+
     def set_pmin(self, press):
         """Set minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers.
@@ -661,6 +683,16 @@ class thermo(object):
         """
         self.minimum_pressure_c.value = press
 
+    def get_pmin(self, press):
+        """Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.minimum_pressure_c.value
+        return press
+
     def set_pmax(self, press):
         """Set minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers.
@@ -669,6 +701,16 @@ class thermo(object):
             press (float): Pressure (Pa)
         """
         self.maximum_pressure_c.value = press
+
+    def get_pmax(self, press):
+        """Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.maximum_pressure_c.value
+        return press
 
     #################################
     # Phase properties
