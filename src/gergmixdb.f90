@@ -2,12 +2,13 @@
 !! Time stamp: 2022-10-03T21:42:11.071422
 
 module gergmixdb
+  use thermopack_constants, only: uid_len
   implicit none
   public
 
   type :: gerg_mix_reducing
-    character(len=8) :: ident1 !< The component ID
-    character(len=8) :: ident2 !< The component ID
+    character(len=uid_len) :: ident1 !< The component ID
+    character(len=uid_len) :: ident2 !< The component ID
     real :: beta_v !< Reducing density parameter
     real :: gamma_v !< Reducing density parameter
     real :: beta_T !< Reducing temperature parameter
@@ -15,8 +16,8 @@ module gergmixdb
   end type gerg_mix_reducing
 
   type :: gerg_mix_data
-    character(len=8) :: ident1 !< The component ID
-    character(len=8) :: ident2 !< The component ID
+    character(len=uid_len) :: ident1 !< The component ID
+    character(len=uid_len) :: ident2 !< The component ID
     real :: Fij !< Departure function parameter
     integer :: num_mix !< Number of parameters
     real :: n_mix(12) !<

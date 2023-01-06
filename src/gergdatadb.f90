@@ -2,12 +2,13 @@
 !! Time stamp: 2021-07-25T15:05:48.938109
 
 module gergdatadb
+  use thermopack_constants, only: uid_len, comp_name_len
   implicit none
   public
 
   type :: gergdata
-    character(len=8) :: ident !< The component ID
-    character(len=40) :: name !< The component name
+    character(len=uid_len) :: ident !< The component ID
+    character(len=comp_name_len) :: name !< The component name
     real :: mw !< Mole weight (g/mol)
     real :: ttr !< Triple point temperature (K)
     real :: ptr !< Triple point pressure (kPa)
