@@ -636,7 +636,7 @@ class thermo(object):
 
     def set_tmin(self, temp):
         """Set minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Args:
             temp (float): Temperature (K)
@@ -646,7 +646,7 @@ class thermo(object):
 
     def get_tmin(self):
         """Get minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Returns:
             float: Temperature (K)
@@ -656,7 +656,7 @@ class thermo(object):
 
     def set_tmax(self, temp):
         """Set maximum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 999 K.
 
         Args:
             temp (float): Temperature (K)
@@ -666,7 +666,7 @@ class thermo(object):
 
     def get_tmax(self):
         """Get maximum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 999 K.
 
         Returns:
             float: Temperature (K)
@@ -676,16 +676,16 @@ class thermo(object):
 
     def set_pmin(self, press):
         """Set minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.minimum_pressure_c.value = press
 
-    def get_pmin(self, press):
+    def get_pmin(self):
         """Get minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
             press (float): Pressure (Pa)
@@ -695,16 +695,16 @@ class thermo(object):
 
     def set_pmax(self, press):
         """Set minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 100 MPa.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.maximum_pressure_c.value = press
 
-    def get_pmax(self, press):
+    def get_pmax(self):
         """Get minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 100 MPa.
 
         Args:
             press (float): Pressure (Pa)
