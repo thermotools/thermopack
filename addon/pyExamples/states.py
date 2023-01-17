@@ -4,8 +4,8 @@ import numpy as np
 #Modify system path
 import sys
 sys.path.insert(0,'../pycThermopack/')
-from pyctp.saftvrqmie import saftvrqmie
-from pyctp.thermopack_state import State, PhaseDiagram
+from thermopack.saftvrqmie import saftvrqmie
+from thermopack.thermopack_state import State, PhaseDiagram
 import numpy as np
 import matplotlib.pyplot as plt
 

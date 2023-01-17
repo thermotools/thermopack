@@ -8,7 +8,7 @@ from thermopack.pets import pets
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-from pyctp_example_utils import calc_reduced_rho, calc_reduced_T, calc_reduced_P
+from thermopack_example_utils import calc_reduced_rho, calc_reduced_T, calc_reduced_P
 
 # Instanciate and init PeTS object
 PeTS = pets()

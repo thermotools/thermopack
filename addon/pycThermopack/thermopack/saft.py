@@ -8,10 +8,7 @@ from sys import platform, exit
 from os import path
 # Import thermo
 from . import thermo
-from .thermo import thermopack
-
-
-c_len_type = thermo.c_len_type
+from .thermo import thermopack, c_len_type
 
 
 class saft(thermopack):

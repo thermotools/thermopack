@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -11,8 +9,6 @@ from os import path
 # Import thermo
 from .thermo import c_len_type
 from .saft import saft
-
-c_len_type = thermo.c_len_type
 
 class pets(saft):
     """

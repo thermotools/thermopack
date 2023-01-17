@@ -6,7 +6,7 @@ from . import plotutils, utils, platform_specifics
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
-class thermo(object):
+class thermopack(object):
     """
     Interface to thermopack
     """

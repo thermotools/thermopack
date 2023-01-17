@@ -9,11 +9,10 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import thermopack, c_len_type
 
-c_len_type = thermo.c_len_type
 
-class ext_csp(thermo.thermo):
+class ext_csp(thermopack):
     """
     Interface to tc-PR
     """
