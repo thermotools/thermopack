@@ -12,6 +12,8 @@ from os import path
 from .thermo import c_len_type
 from .saft import saft
 
+c_len_type = thermo.c_len_type
+
 class pets(saft):
     """
     Interface to PETS

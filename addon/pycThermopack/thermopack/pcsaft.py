@@ -14,7 +14,6 @@ from .saft import saft
 
 c_len_type = thermo.c_len_type
 
-
 class pcsaft(saft):
     """
     Interface to PC-SAFT model

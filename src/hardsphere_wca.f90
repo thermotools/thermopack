@@ -104,7 +104,7 @@ contains
     r_diff_2 = 0.5*(d_star - r_min)
     r_diff_2_T = 0.5*(d_star_T - r_min_T)
     r_diff_2_TT = 0.5*(d_star_TT - r_min_TT)
-
+    !
     I1 = 0
     I1_T = 0
     I1_TT = 0
@@ -156,7 +156,6 @@ contains
            + prefactor*y_hs*e_lj_wca*r_T**2*2 &
            + prefactor*y_hs*e_lj_wca*r*r_TT*2
     enddo
-
     !
     r_min = d_star
     r_min_T = d_star_T
@@ -217,7 +216,6 @@ contains
            + prefactor*y_hs*(e_lj_wca - 1)*r_T**2*2 &
            + prefactor*y_hs*(e_lj_wca - 1)*r*r_TT*2
     enddo
-
     ! ! ! ! TESTING
     ! I2 = 0
     ! I2_T = 0
@@ -225,7 +223,6 @@ contains
     ! I2_e = 0
     ! I2_ee = 0
     ! I2_eT = 0
-
 
     eta = eta_hs%zx
     Fn = -12*eta*(I1 + I2)/d_star**3
@@ -392,18 +389,20 @@ contains
     real, intent(in) :: eps_divk
     real, intent(out) :: r, r_T, r_TT! r/sigma_hs
     !
-    real :: denum, sqr, C
-    ! -beta*u = expMin
-    ! 1/r**12 - 1/r**6 = -expMin/(4*beta_star)
-    ! x**2 - x + expMin/(4*beta_star) = 0
-    ! x = (1 + sqrt(1 - expMin/beta_star))/2
-    C = expMin*eps_divk
-    sqr = sqrt(1.0-C/T)
-    denum = 1+sqr
-    r = (2/denum)**(1.0/6.0)
-    r_T = -(1.0/12.0)*r/denum/sqr*C/T**2
-    r_TT = -(7.0/12.0)*r_T/denum/sqr*C/T**2 - r_T/2/sqr**2*C/T**2 &
-         -2*r_T/T
+    real :: x, sqr, C
+    !u = 4*(ir12 - ir6) + 1.0
+    !u*eps_divk/T = -expMin
+    !(ir12 - ir6) = -(expMin*T/eps_divk + 1)/4
+    !x = ir6
+    !x^2 - x + (expMin*T/eps_divk + 1)/4 = 0
+    !x = 0.5 + 0.5*sqrt(-expMin*T/eps_divk)
+    !r = (1/x)**(1.0/6.0)
+    C = -expMin/eps_divk
+    sqr = sqrt(C*T)
+    x = 0.5 + 0.5*sqr
+    r = x**(-1.0/6.0)
+    r_T = -r*C/(24*sqr*x)
+    r_TT = 7*r_T**2/r - 0.5*r_T/T
   end subroutine minimum_r_cavity_int_LJ
 
   ! Cavity-correlation function of hard spheres
@@ -420,6 +419,15 @@ contains
     real :: y_hs_r_c, y_hs_er_c, y_hs_eer_c
     real :: y_hs_rr_c, y_hs_err_c, y_hs_eerr_c
 
+    ! if (r_star > sqrt(2.0)) then
+    !   y_hs = 1
+    !   y_hs_e = 0
+    !   y_hs_ee = 0
+    !   y_hs_er = 0
+    !   y_hs_r = 0
+    !   y_hs_rr = 0
+    !   return
+    ! endif
     if (eta <= eta_c) then
       call cavity_parameters(eta,A,B,C,A_e,B_e,C_e,A_ee,B_ee,C_ee)
       ln_y_hs = A + B*r_star + C*r_star**3
@@ -778,6 +786,26 @@ subroutine testing_WCA_lj()
   print *,r_TT,(r2_T-r1_T)/(2*eps), (r2-2*r+r1)/eps**2
   stop
 end subroutine testing_WCA_lj
+
+subroutine test_r_min(Ts)
+  use hardsphere_wca
+  implicit none
+  real, intent(in) :: Ts
+  ! Locals
+  real :: eps
+  real :: r, r_T, r_TT
+  real :: r1, r1_T, r1_TT
+  real :: r2, r2_T, r2_TT
+  eps = 1.0e-5*Ts
+  print *,"Minimum r"
+  call minimum_r_cavity_int_LJ(Ts, 1.0, r, r_T, r_TT)
+  call minimum_r_cavity_int_LJ(Ts-eps, 1.0, r1, r1_T, r1_TT)
+  call minimum_r_cavity_int_LJ(Ts+eps, 1.0, r2, r2_T, r2_TT)
+  print *,r
+  print *,r_T,(r2-r1)/(2*eps)
+  print *,r_TT,(r2_T-r1_T)/(2*eps), (r2-2*r+r1)/eps**2
+  stop
+end subroutine test_r_min
 
 subroutine test_uf_LJ_cavity_Fres()
   use saftvrmie_options

@@ -130,6 +130,29 @@ def getPoint(filename, pointLabel):
             break
     return T, P
 
+def getEntries(filename, entry_label):
+    """Get point [...] from line identefied by entry_label.
+
+    Args:
+        filename (str): File path
+        entry_label (str): Searchable string
+
+    Returns:
+        list: Entries on line containg pointLabel
+    """
+    file = open(filename, 'r')
+    # Parse header
+    entries = []
+    for line in file:
+        words = line.split()
+        if words[0][0] == '#':
+            if entry_label in line:
+                data = line.split(entry_label)[-1]
+                entries = [float(i) for i in data.split()]
+        else:
+            break
+    return entries
+
 def getNaNindices(data):
     """Get location of NaNs in data arrays
 
@@ -160,14 +183,21 @@ def get_solid_envelope_data(filename):
     """
     lines = []
     crits = []
+    triples = []
     if file_exists(filename):
         data = loadFile(filename)
-        Tc1, Pc1 = getPoint(filename, "#Critical point 1")
-        if Tc1 > 1.0:
-            crits.append([Tc1, Pc1])
-        Tc2, Pc2 = getPoint(filename, "#Critical point 2")
-        if Tc2 > 1.0:
-            crits.append([Tc2, Pc2])
+        c1_data = getEntries(filename, "#Critical point 1:")
+        if c1_data and c1_data[0] > 0.0:
+            crits.append(c1_data)
+        c2_data = getEntries(filename, "#Critical point 2:")
+        if c2_data and c2_data[0] > 0.0:
+            crits.append(c2_data)
+        tr1_data = getEntries(filename, "#Triple point 1:")
+        if tr1_data and tr1_data[0] > 0.0:
+            triples.append(tr1_data)
+        tr2_data = getEntries(filename, "#Triple point 2:")
+        if tr2_data and tr2_data[0] > 0.0:
+            triples.append(tr2_data)
         i_nans = getNaNindices(data)
         m = np.shape(data)[1]
         if m == 12:
@@ -183,7 +213,7 @@ def get_solid_envelope_data(filename):
             for j in range(k):
                 line[:,j] = data[0:i_nan,j+istart]
             lines.append(line)
-    return lines, crits
+    return lines, crits, triples
 
 def get_globa_binary_data(filename):
     """[summary]
