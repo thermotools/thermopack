@@ -367,7 +367,7 @@ contains
     use cubic_eos, only: cb_eos
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, &
-         calcFder_assoc, assemble_param
+         calcFder_assoc
     use saft_association, only: numAssocSites, solve_for_X_k, calcFder_assoc
     use eos_parameters, only: base_eos_param
     ! Input.
@@ -382,7 +382,6 @@ contains
     real :: F_nonassoc,F_T_nonassoc,F_V_nonassoc,F_n_nonassoc(nc)
     real :: F_TT_nonassoc,F_TV_nonassoc,F_Tn_nonassoc(nc),F_VV_nonassoc
     real :: F_Vn_nonassoc(nc),F_nn_nonassoc(nc,nc)
-    real :: param(2+nc)
     real :: X_k(numAssocSites)
 
     ! Calculate the non-association contribution.
@@ -404,13 +403,13 @@ contains
         if (present(F_nn)) F_nn_nonassoc = F_nn
 
         ! Calculate the association contribution.
-        param = assemble_param(T,V,n,nc)
+        call eos%assoc%state%init(nc,T,V,n)
         X_k = 0.2 ! Initial guess.
-        call solve_for_X_k(eos,nc,param,X_k,tol=10**5*machine_prec)
+        call solve_for_X_k(eos,nc,X_k,tol=10**5*machine_prec)
         if (present(Xk)) then
           Xk = X_k ! Return X_k
         endif
-        call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+        call calcFder_assoc(eos,nc=nc,X_k=X_k,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
              F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
 
         ! Add the non-association and association contribution.
@@ -496,7 +495,7 @@ contains
   subroutine saft_total_pressure_assoc_mix(nc,eos,T,V,n,P,&
        dPdV,dPdT,dPdn)
     use thermopack_var, only: base_eos_param
-    use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
+    use saft_association, only: numAssocSites, solve_for_X_k
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
     real, intent(in)  :: T                  !< Temperature [K]
@@ -506,13 +505,12 @@ contains
     real, intent(out), optional :: dPdV, dPdT, dPdn(nc)
     ! Locals.
     real :: X_k(numAssocSites)
-    real :: param(nc+2)
 
     if (numAssocSites == 0) call stoperror("For associating mixtures only.")
-    param = assemble_param(T,V,n,nc)
+    call eos%assoc%state%init(nc,T,V,n)
     X_k = 0.2 ! Initial guess.
-    call solve_for_X_k(eos,nc,param,X_k)
-    call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
+    call solve_for_X_k(eos,nc,X_k)
+    call saft_total_pressure_knowing_X_k(nc,eos,X_k,P,&
          dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
 
   end subroutine saft_total_pressure_assoc_mix
@@ -1396,7 +1394,7 @@ contains
     use thermopack_var, only: base_eos_param
     use thermopack_constants, only: Rgas, VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
-    use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
+    use saft_association, only: numAssocSites, solve_for_X_k
     ! Input.
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
@@ -1414,7 +1412,6 @@ contains
     real :: zeta                                       !< Reduced density
     real :: F, dFdzeta                                 !< The objective function (not Helmholtz energy)
     real :: zetaMin, zetaMax
-    real :: param(nc+2)
     real :: P, P_V
     integer :: iter, maxiter
     real :: b_mix, conv_num
@@ -1455,15 +1452,15 @@ contains
 
     ! Set the param vector.
     V = conv_num/(zeta)
-    param = assemble_param(T,V,n,nc)
+    call eos%assoc%state%init(nc,T,V,n)
 
     ! Initialize all X_k components to 0.2, and then converge X_k exactly.
     X_k = 0.2
-    call solve_for_X_k(eos,nc,param,X_k,maxit=10,tol=machine_prec*1e9)
+    call solve_for_X_k(eos,nc,X_k,maxit=10,tol=machine_prec*1e9)
 
     ! Having obtained the correct value of X_k, compute the corresponding
     ! pressure P.
-    call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P)
+    call saft_total_pressure_knowing_X_k(nc,eos,X_k,P)
 
     ! Initialize iteration variables and objective function.
     V_has_converged = .false.
@@ -1475,7 +1472,7 @@ contains
     ! zeta, and the corresponding param, X_k and F.
     do
       ! Compute X_V and P_V at V.
-      call compute_dxdv_and_dpdv (nc,eos,X_k,param,X_V,P_V)
+      call compute_dxdv_and_dpdv(nc,eos,X_k,X_V,P_V)
 
       ! Perform a Newton iteration to get a new zeta.
       dFdzeta = P_spec - P - ((1-zeta)/zeta)*P_V*V
@@ -1493,12 +1490,12 @@ contains
       V = conv_num/(zeta)
 
       ! Update param. Solve for X_k given the current volume.
-      param(2) = V
+      eos%assoc%state%V = V
       X_k = X_k + X_V*(V-Vold)
-      call solve_for_X_k(eos,nc,param,X_k,maxit=10,tol=machine_prec*1e8)
+      call solve_for_X_k(eos,nc,X_k,maxit=10,tol=machine_prec*1e8)
 
       ! Compute the pressure P at V, and the value of F.
-      call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P)
+      call saft_total_pressure_knowing_X_k(nc,eos,X_k,P)
       F = (1-zeta)*(P-P_spec)
 
       ! Convergence?
@@ -1551,23 +1548,25 @@ contains
 
   !> A back-end procedure giving the combined pressure of the cubic
   !> contribution and the association contribution.
-  subroutine saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
+  subroutine saft_total_pressure_knowing_X_k(nc,eos,X_k,P,&
        dPdV,dPdT,dPdn)
     use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, numAssocSites, assoc_pressure
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
-    real, intent(in)  :: T !< Temperature [K]
-    real, intent(in)  :: V !< Volume [m^3]
-    real, intent(in)  :: n(nc)
     real, intent(in)  :: X_k(numAssocSites)
     real, intent(out) :: P !< Pressure [Pa]
     real, intent(out), optional :: dPdV, dPdT, dPdn(nc)
     ! Locals.
     real :: P_nonassoc, P_assoc
     real :: temp_v, temp_t, temp_n(nc)
-
-    call assoc_pressure(eos,nc,T,V,n,X_k,P_assoc,dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
+    real  :: T !< Temperature [K]
+    real  :: V !< Volume [m^3]
+    real  :: n(nc)
+    T = eos%assoc%state%T
+    V = eos%assoc%state%V
+    n = eos%assoc%state%n
+    call assoc_pressure(eos,nc,X_k,P_assoc,dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
     if (present(dPdV)) temp_v = dPdV
     if (present(dPdT)) temp_t = dPdT
     if (present(dPdn)) temp_n = dPdn
@@ -1682,7 +1681,7 @@ contains
 
   !> Special routine for computing the derivatives needed in the Newton
   !> iteration of volume_solver.
-  subroutine compute_dXdV_and_dPdV(nc,eos,X_k,param,X_V,P_V)
+  subroutine compute_dXdV_and_dPdV(nc,eos,X_k,X_V,P_V)
     use saft_association, only: numAssocSites,X_derivatives_knowing_X, Q_derivatives_knowing_X
     use cubic_eos, only: cb_eos
     use thermopack_var, only: base_eos_param
@@ -1690,7 +1689,7 @@ contains
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
     real, dimension(numAssocSites), intent(in) :: X_k
-    real, dimension(nc+2), intent(in) :: param
+    !real, dimension(nc+2), intent(in) :: param
     ! Output.
     real, dimension(numAssocSites), intent(out) :: X_V
     real, intent(out) :: P_V
@@ -1699,16 +1698,16 @@ contains
     real :: Q_VV, Q_XV(numAssocSites)
     real :: P
 
-    T = param(1)
-    V = param(2)
-    n = param(3:(nc+2))
+    T = eos%assoc%state%T
+    V = eos%assoc%state%V
+    n = eos%assoc%state%n
 
     ! Calculate X_V.
-    call X_derivatives_knowing_X (eos,nc=nc,T=T,V=V,n=n,X=X_k,X_V=X_V)
+    call X_derivatives_knowing_X (eos,nc=nc,X=X_k,X_V=X_V)
 
     ! Efficient calculation of P_V.
     call nonassoc_pressure(nc,eos,T,V,n,P,dPdV=P_V)
-    call Q_derivatives_knowing_X(eos,nc,T,V,n,X_k,Q_VV=Q_VV,Q_XV=Q_XV,X_calculated=.true.)
+    call Q_derivatives_knowing_X(eos,nc,X_k,Q_VV=Q_VV,Q_XV=Q_XV,X_calculated=.true.)
     P_V = P_V - Rgas*T*(Q_VV + dot_product(Q_XV,X_V))
   end subroutine compute_dXdV_and_dPdV
 
@@ -2205,5 +2204,121 @@ contains
     vc = (sigma**3*N_Avogadro)/rhos
     !Pc =
   end subroutine estimate_critical_parameters
+
+  !> Calculates the reduced association Helmholtz energy density
+  !! together with its derivatives.
+  !! FMT interface
+  subroutine calc_assoc_phi(n_fmt,T,F,F_T,F_n,F_TT,F_Tn,F_nn)
+    use hyperdual_mod
+    use thermopack_var, only: nce, base_eos_param, get_active_eos
+    use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
+    use saft_association, only: numAssocSites, solve_for_X_k, &
+         calcFder_assoc
+    use saft_association, only: numAssocSites, solve_for_X_k, calcFder_assoc, Q_fmt_hd
+    use eos_parameters, only: base_eos_param
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    ! Input.
+    real, intent(in) :: n_fmt(nce,0:5)
+    real, intent(in) :: T
+    ! Output.
+    real, optional, intent(out) :: F,F_T,F_n(nce,6)
+    real, optional, intent(out) :: F_TT,F_Tn(nce,6),F_nn(nce,nce,6,6)
+    ! Locals.
+    class(base_eos_param), pointer :: eos
+    real :: ms(nce)
+    real, dimension(numAssocSites) :: X_k
+    type(hyperdual) :: T_hd,n_fmt_hd(nce,0:5), Q
+
+
+    eos => get_active_eos()
+
+    ! Initialize
+    if (present(F)) F = 0
+    if (present(F_T)) F_T = 0
+    if (present(F_n)) F_n = 0
+    if (present(F_TT)) F_TT = 0
+    if (present(F_Tn)) F_Tn = 0
+    if (present(F_nn)) F_nn = 0
+
+    ! Set segment numbers
+    select type ( p_eos => eos )
+    class is(PCSAFT_eos)
+      ms = p_eos%m
+    class default
+      call stoperror("calc_assoc_phi: Wrong eos...")
+    end select
+
+    if (numAssocSites > 0) then
+      if (sum(n_fmt(eos%assoc%compIdcs,0)) > 1e-20) then
+
+        ! Calculate the association contribution.
+        call eos%assoc%state%init_fmt(nce, T, n_fmt, ms)
+        X_k = 0.2 ! Initial guess.
+        call solve_for_X_k(eos,nce,X_k,tol=10**5*machine_prec)
+        print *,"X_k",X_k
+        T_hd = T
+        n_fmt_hd = n_fmt
+        T_hd%f1 = 1.0_dp
+        T_hd%f2 = 1.0_dp
+        Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k)
+        print *,"Q",Q%f0*eos%assoc%state%V
+        print *,"Q_T",Q%f1*eos%assoc%state%V
+        print *,"Q_TT",Q%f2*eos%assoc%state%V
+        ! call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+        !      F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+
+      endif
+    endif
+
+  end subroutine calc_assoc_phi
+
+  !>
+  subroutine test_calc_assoc_phi()
+    use thermopack_var, only: nce
+    use pc_saft_nonassoc, only: PCSAFT_eos, calc_dhs
+    use saft_association, only: solve_for_X_k, calcFder_assoc
+    use numconstants, only: pi, machine_prec
+    use thermopack_constants, only: N_AVOGADRO
+    ! Locals
+    real :: n_fmt(nce,0:5), n(1), ms(nce)
+    real :: T, V, R, D
+    real :: F
+    real :: F_T, F_V, F_n(nce)
+    real :: F_TT, F_TV, F_VV, F_Tn(nce), F_Vn(nce), F_nn(nce,nce)
+    real :: Xk(numAssocSites)
+    class(base_eos_param), pointer :: eos
+    T = 280.0
+    V = 1.0e-4
+    eos => get_active_eos()
+    ! Set segment numbers
+    select type ( p_eos => eos )
+    class is(PCSAFT_eos)
+      ms = p_eos%m
+      print *,"ms",ms
+      call calc_dhs(p_eos, T)
+      R = 0.5*p_eos%dhs%d(1)
+      D = p_eos%dhs%d(1)
+    class default
+      call stoperror("test_calc_assoc_phi: Wrong eos...")
+    end select
+
+    print *,"Evaluating Fres:"
+    n = 1
+    !call calcSaftFder_res(nce,eos,T,V,n,F,Xk=Xk)
+    call eos%assoc%state%init(nce,T,V,n)
+    Xk = 0.2 ! Initial guess.
+    call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
+    call calcFder_assoc(eos,nc=nce,X_k=Xk,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+         F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+    print *,"F",F
+    print *,"F_T",F_T
+    !
+    n_fmt(1,0) = ms(1)/V
+    n_fmt(1,2) = 4*pi*R**2*n_fmt(1,0)*N_AVOGADRO
+    n_fmt(1,3) = 4*pi*R**3*n_fmt(1,0)*N_AVOGADRO/3
+
+    call calc_assoc_phi(n_fmt,T,F)
+
+  end subroutine test_calc_assoc_phi
 
 end module saft_interface

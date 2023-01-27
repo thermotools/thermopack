@@ -73,11 +73,11 @@ TESTOBJS = $(TESTSRCS:.pf=.o)
 OBJE = \
        $(ODIR)/numconstants.o \
        $(ODIR)/stringmod.o \
-       $(ODIR)/linear_numerics.o \
        $(ODIR)/quadratures.o \
        $(ODIR)/thermopack_constants.o \
        $(ODIR)/error.o \
        $(ODIR)/hyperdual_mod.o \
+       $(ODIR)/linear_numerics.o \
        $(ODIR)/optimizer.o \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \

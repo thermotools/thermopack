@@ -11,6 +11,7 @@ module saft_association
   integer, parameter :: STANDARD=1
   integer, parameter :: ELLIOT=2
   integer :: DELTA_COMBRULE = STANDARD
+
 contains
 
   !> Calculate Boltzmann factor for association energy, with caching
@@ -33,16 +34,14 @@ contains
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
   !> e.g. by not calculating the exponential in every loop iteration
-  subroutine Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
+  subroutine Delta_kl(eos,nc,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
-    use saft_globals, only: assoc_covol_binary, eosSAFT_VR_MIE
+    use saft_globals, only: assoc_covol_binary
+    use eosdata, only: eosSAFT_VR_MIE, eosOPC_SAFT
     use saft_rdf
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, intent(in) :: T
-    real, intent(in) :: V
-    real, intent(in) :: n(nc)
     ! Output.
     real, dimension(numAssocSites,numAssocSites), intent(out) :: Delta
     real, intent(out), optional :: Delta_T(numAssocSites,numAssocSites)
@@ -55,9 +54,13 @@ contains
     real, intent(out), optional :: Delta_Vn(numAssocSites,numAssocSites,nc)
     real, intent(out), optional :: Delta_nn(numAssocSites,numAssocSites,nc,nc)
     ! Locals.
-    real :: g, g_V, g_VV
-    real :: g_T, g_TT, g_TV, g_Tn(nc)
-    real :: g_n(nc), g_Vn(nc), g_nn(nc,nc)
+    real :: g
+    real, target :: g_V, g_VV
+    real, target :: g_T, g_TT, g_TV, g_Tn(nc)
+    real, target :: g_n(nc), g_Vn(nc), g_nn(nc,nc)
+    real, pointer :: g_V_p, g_VV_p
+    real, pointer :: g_T_p, g_TT_p, g_TV_p, g_Tn_p(:)
+    real, pointer :: g_n_p(:), g_Vn_p(:), g_nn_p(:,:)
     real :: h, h_T, h_TT
     integer :: ic,jc
     integer :: k,l
@@ -66,9 +69,11 @@ contains
     real :: covol, expo
     logical :: fir_der_present, sec_der_present
     real :: boltzmann_fac(numAssocSites, numAssocSites)
-    integer :: difflevel
+    real :: T
     type(association), pointer :: assoc
     assoc => eos%assoc
+
+    T = assoc%state%T
 
     fir_der_present = present(Delta_T) .or. present(Delta_V) .or. present(Delta_n)
     sec_der_present = present(Delta_TT) .or. present(Delta_TV) .or. &
@@ -76,33 +81,67 @@ contains
          present(Delta_Vn) .or. present(Delta_nn)
 
     Delta = 0.0
-    if (present(Delta_T)) Delta_T = 0.0
-    if (present(Delta_V)) Delta_V = 0.0
-    if (present(Delta_n)) Delta_n = 0.0
-    if (present(Delta_TT)) Delta_TT = 0.0
-    if (present(Delta_TV)) Delta_TV = 0.0
-    if (present(Delta_VV)) Delta_VV = 0.0
-    if (present(Delta_Tn)) Delta_Tn = 0.0
-    if (present(Delta_Vn)) Delta_Vn = 0.0
-    if (present(Delta_nn)) Delta_nn = 0.0
-
-    if (sec_der_present) then
-       call master_saft_rdf(eos,nc,T,V,n,1,1,g,g_T,g_V,g_n,&
-            g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-       difflevel = 2
-    else if (fir_der_present) then
-       call master_saft_rdf(eos,nc,T,V,n,1,1,g,g_T,g_V,g_n)
-       difflevel = 1
+    if (present(Delta_T)) then
+      Delta_T = 0.0
+      g_T_p => g_T
     else
-       call master_saft_rdf(eos,nc,T,V,n,1,1,g)
-       difflevel = 0
-    end if
+      g_T_p => NULL()
+    endif
+    if (present(Delta_V))  then
+      Delta_V = 0.0
+      g_V_p => g_V
+    else
+      g_V_p => NULL()
+    endif
+    if (present(Delta_n))  then
+      Delta_n = 0.0
+      g_n_p => g_n
+    else
+      g_n_p => NULL()
+    endif
+    if (present(Delta_TT))  then
+      Delta_TT = 0.0
+      g_TT_p => g_TT
+    else
+      g_TT_p => NULL()
+    endif
+    if (present(Delta_TV))  then
+      Delta_TV = 0.0
+      g_TV_p => g_TV
+    else
+      g_TV_p => NULL()
+    endif
+    if (present(Delta_VV))  then
+      Delta_VV = 0.0
+      g_VV_p => g_VV
+    else
+      g_VV_p => NULL()
+    endif
+    if (present(Delta_Tn))  then
+      Delta_Tn = 0.0
+      g_Tn_p => g_Tn
+    else
+      g_Tn_p => NULL()
+    endif
+    if (present(Delta_Vn))  then
+      Delta_Vn = 0.0
+      g_Vn_p => g_Vn
+    else
+      g_Vn_p => NULL()
+    endif
+    if (present(Delta_nn))  then
+      Delta_nn = 0.0
+      g_nn_p => g_nn
+    else
+      g_nn_p => NULL()
+    endif
 
     ! Assemble Delta matrix.
     call calc_boltzmann_fac(assoc, T, boltzmann_fac)
 
-    if (assoc%saft_model/=eosSAFT_VR_MIE) then
-       call master_saft_rdf(eos,nc,T,V,n,1,1,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+    if (assoc%saft_model/=eosSAFT_VR_MIE .and. assoc%saft_model/=eosOPC_SAFT) then
+      call master_saft_rdf(eos,nc,1,1,g,g_T_p,g_V_p,g_n_p,g_TT_p,g_TV_p,&
+           g_Tn_p,g_VV_p,g_Vn_p,g_nn_p)
     end if
 
     do k = 1,numAssocSites
@@ -111,8 +150,9 @@ contains
           ic = site_to_compidx(assoc,k)
           jc = site_to_compidx(assoc,l)
           if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
-          if (assoc%saft_model==eosSAFT_VR_MIE) then
-             call master_saft_rdf(eos,nc,T,V,n,ic,jc,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+          if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosOPC_SAFT) then
+            call master_saft_rdf(eos,nc,ic,jc,g,g_T_p,g_V_p,g_n_p,g_TT_p,g_TV_p,&
+                 g_Tn_p,g_VV_p,g_Vn_p,g_nn_p)
           end if
 
           covol = assoc_covol_binary(ic,jc)
@@ -293,29 +333,25 @@ contains
 
   !> Assemble the m vector from Michelsen paper, holding the number of moles of
   !> each association site.
-  subroutine assemble_m_mich_k (assoc,nc,n,m_mich_k)
+  subroutine assemble_m_mich_k(assoc,nc,m_mich_k)
     integer, intent(in) :: nc
-    real, intent(in) :: n(nc)                     !< Component mole numbers.
     real, intent(out) :: m_mich_k(numAssocSites) !< Michelsen m vector.
     integer :: ic
     type(association), intent(in) :: assoc
     if (numAssocSites == 0) call stoperror("No associating components.")
 
     do ic=1,nc
-       if ( assoc%comp_vs_sites(ic,1) /= noSitesFlag ) then
-          m_mich_k(assoc%comp_vs_sites(ic,1):assoc%comp_vs_sites(ic,2)) = n(ic)
-       end if
+      if ( assoc%comp_vs_sites(ic,1) /= noSitesFlag ) then
+        m_mich_k(assoc%comp_vs_sites(ic,1):assoc%comp_vs_sites(ic,2)) = assoc%state%n(ic)
+      end if
     end do
 
   end subroutine assemble_m_mich_k
 
   !> Computes the K matrix from Michelsen paper. Needed when solving for X.
-  subroutine K_mich (eos,nc,T,V,n,K_mich_kl,m_opt,Delta_opt)
+  subroutine K_mich (eos,nc,K_mich_kl,m_opt,Delta_opt)
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, intent(in) :: T
-    real, intent(in) :: V
-    real, intent(in) :: n(nc) !< Component mole numbers.
     real, intent(out) :: K_mich_kl(numAssocSites,numAssocSites)
     real, intent(in), optional :: m_opt(numAssocSites)                !< Optional input m_mich_k, in case it has already been computed.
     real, intent(in), optional :: Delta_opt(numAssocSites,numAssocSites) !< Optional input Delta_kl, in case it has already been computed.
@@ -323,17 +359,18 @@ contains
     real, dimension(numAssocSites) :: m_mich_k
     real, dimension(numAssocSites,numAssocSites) :: Delta
     integer :: k,l
-
+    real :: V
+    V = eos%assoc%state%V
     if (present(m_opt)) then
       m_mich_k = m_opt
     else
-      call assemble_m_mich_k (eos%assoc,nc,n,m_mich_k)
+      call assemble_m_mich_k(eos%assoc,nc,m_mich_k)
     end if
 
     if (present(Delta_opt)) then
       Delta = Delta_opt
     else
-      call Delta_kl(eos,nc,T,V,n,Delta)
+      call Delta_kl(eos,nc,Delta)
     end if
 
     do k=1,numAssocSites
@@ -346,12 +383,12 @@ contains
   end subroutine K_mich
 
   !> Compute the value of X_k consistent with (T,V,n) stored in param.
-  subroutine solve_for_X_k(eos,nc,param,X_k,maxit,tol)
+  subroutine solve_for_X_k(eos,nc,X_k,maxit,tol)
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, premReturn, setXv
     use numconstants, only: machine_prec
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, dimension(2+nc), intent(inout) :: param
+    !real, dimension(2+nc), intent(inout) :: param
     real, dimension(numAssocSites), intent(inout) :: X_k
     integer, intent(in), optional :: maxit !< Maximum number of iterations.
     real, intent(in), optional :: tol      !< Tolerance.
@@ -360,15 +397,15 @@ contains
     type(nonlinear_solver) :: solver
     integer :: k
     real :: m_mich_k(numAssocSites)
-
+    real, dimension(1) :: param ! Dummy
     type(association), pointer :: assoc
     assoc => eos%assoc
 
     ! Special considerations in the case that one of the mole numbers are
     ! zero. In that case, the jacobian in the Newton solver can't be inverted,
     ! and we use successive substitution instead.
-    if (minval(param(3:)) < 1e-20) then
-      call assemble_m_mich_k (eos%assoc,nc,n=param(3:),m_mich_k=m_mich_k)
+    if (minval(eos%assoc%state%n) < 1e-20) then
+      call assemble_m_mich_k (eos%assoc,nc,m_mich_k=m_mich_k)
       do k=1,numAssocSites
         if (m_mich_k(k) .eq. 0.0) then
           ! Set the nonphysical X_k-components to 1.0.
@@ -410,31 +447,29 @@ contains
 
     if (solver%exitflag /= 0) then
        X_k = 0.2
-      call succ_subs (eos,nc,T=param(1),V=param(2),n=param(3:),X=X_k,n_iter=300)
+      call succ_subs (eos,nc,X=X_k,n_iter=300)
     end if
 
   end subroutine solve_for_X_k
 
-  !> Assembles the param struct, which ultimately is needed due to the input
-  !> structure of nonlinear_solve.
-  function assemble_param(T,V,n,nc)
-    ! Input.
-    integer, intent(in) :: nc
-    real, intent(in)    :: T,V,n(nc)
-    ! Output.
-    real :: assemble_param(2+nc)
-    ! Assembly.
-    assemble_param(1) = T
-    assemble_param(2) = V
-    assemble_param(3:(nc+2)) = n
-  end function assemble_param
+  ! !> Assembles the param struct, which ultimately is needed due to the input
+  ! !> structure of nonlinear_solve.
+  ! function assemble_param(T,V,n,nc)
+  !   ! Input.
+  !   integer, intent(in) :: nc
+  !   real, intent(in)    :: T,V,n(nc)
+  !   ! Output.
+  !   real :: assemble_param(2+nc)
+  !   ! Assembly.
+  !   assemble_param(1) = T
+  !   assemble_param(2) = V
+  !   assemble_param(3:(nc+2)) = n
+  ! end function assemble_param
 
-  subroutine succ_subs (eos,nc,T,V,n,X,n_iter)
+  subroutine succ_subs (eos,nc,X,n_iter)
     use numconstants, only: machine_prec
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in)  :: nc
-    real, intent(in)     :: T,V
-    real, intent(in)     :: n(nc)
     real, intent(inout)  :: X(numAssocSites)
     integer, intent(in)  :: n_iter
     ! Locals.
@@ -443,7 +478,7 @@ contains
 
     do i=1,n_iter
        Xold = X
-       call fun_succ_subst (eos,T,V,n,X)
+       call fun_succ_subst (eos,X)
        if ( maxval(abs(X-Xold)) < 1e6*machine_prec ) then
           return
        end if
@@ -452,12 +487,12 @@ contains
 
 
   !> Computes the derivatives of X. Assumes that X is known.
-  subroutine X_derivatives_knowing_X (eos,nc,T,V,n,X,X_T,X_V,X_n,&
+  subroutine X_derivatives_knowing_X(eos,nc,X,X_T,X_V,X_n,&
        X_TT,X_TV,X_VV,X_Tn,X_Vn,X_nn)
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, intent(in)            :: T, V, n(nc), X(numAssocSites)
+    real, intent(in)            :: X(numAssocSites)
     ! Output.
     real, intent(out), optional :: X_T(numAssocSites), X_V(numAssocSites), X_n(numAssocSites,nc)
     real, intent(out), optional :: X_TT(numAssocSites), X_TV(numAssocSites)
@@ -491,18 +526,18 @@ contains
     end if
 
     ! Assemble the m vector.
-    call assemble_m_mich_k (eos%assoc,nc,n,m_mich_k)
+    call assemble_m_mich_k(eos%assoc,nc,m_mich_k)
 
     ! Assemble necessary Q-derivatives.
     if (second_order_diff) then
-      call Q_derivatives_knowing_X(eos,nc,T=T,V=V,n=n,X_k=X,&
+      call Q_derivatives_knowing_X(eos,nc,X_k=X,&
            Q_XT=Q_XT,Q_XV=Q_XV,Q_Xn=Q_Xn,Q_XX=Q_XX,&
            Q_XXX=Q_XXX,Q_XXT=Q_XXT,Q_XXV=Q_XXV,Q_XXn=Q_XXn,&
            Q_XTT=Q_XTT,Q_XVV=Q_XVV,Q_XTV=Q_XTV,Q_XTn=Q_XTn,&
            Q_XVn=Q_XVn,Q_Xnn=Q_Xnn,&
            X_calculated=.true.)
     else ! first_order_diff
-      call Q_derivatives_knowing_X(eos,nc,T=T,V=V,n=n,X_k=X,&
+      call Q_derivatives_knowing_X(eos,nc,X_k=X,&
            Q_XT=Q_XT,Q_XV=Q_XV,Q_Xn=Q_Xn,Q_XX=Q_XX,X_calculated=.true.)
     endif
     if (present(X_T)) then
@@ -687,13 +722,12 @@ contains
   !> is an independent variable of this routine, but if one feeds it an X_k
   !> calculated from (T,V,n), one should set X_calculated = .true. This routine
   !> is valid for general SAFT equations (both CPA and PC-SAFT).
-  subroutine Q_derivatives_knowing_X(eos,nc,T,V,n,X_k,Q,Q_T,Q_V,Q_n,Q_X,&
+  subroutine Q_derivatives_knowing_X(eos,nc,X_k,Q,Q_T,Q_V,Q_n,Q_X,&
        Q_XT,Q_XV,Q_Xn,Q_XX,Q_TT,Q_TV,Q_Tn,Q_VV,Q_Vn,Q_nn,&
        Q_XXX,Q_XXT,Q_XXV,Q_XXn,Q_XTT,Q_XVV,Q_XTV,Q_XTn,Q_XVn,Q_Xnn,X_calculated)
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in)         :: nc
-    real, intent(in)            :: T,V,n(nc)
     real, intent(in)            :: X_k(numAssocSites)
     ! Output.
     real, intent(out), optional :: Q
@@ -726,13 +760,14 @@ contains
     integer :: i,j,k,l,m,k1,k2,l1,l2
     integer :: n_k,C_nu,B_j,A_k
     logical :: loc_flag, present_fir_der, present_sec_der, K_mich_calc
-
+    real :: V
+    V = eos%assoc%state%V
     loc_flag = .false.
     if (present(X_calculated)) then
       if (X_calculated) loc_flag = .true.
     end if
 
-    call assemble_m_mich_k (eos%assoc,nc,n,m_mich_k)
+    call assemble_m_mich_k(eos%assoc,nc,m_mich_k)
 
     K_mich_calc = present(Q_XX) .or. present(Q_XXT) .or. &
          present(Q_XXV) .or. present(Q_XXn) .or. present(Q_XTT) .or. &
@@ -749,17 +784,17 @@ contains
 
     ! Assemble necessary Delta derivatives.
     if (present_sec_der) then
-      call Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
+      call Delta_kl(eos,nc,Delta,Delta_T,Delta_V,Delta_n,&
            Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
     else if ( present_fir_der ) then
-      call Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n)
+      call Delta_kl(eos,nc,Delta,Delta_T,Delta_V,Delta_n)
     else
-      call Delta_kl(eos,nc,T,V,n,Delta)
+      call Delta_kl(eos,nc,Delta)
     end if
 
     ! Calculate the K_mich
     if (K_mich_calc) then
-      call K_mich(eos,nc,T,V,n,Kmich,m_opt=m_mich_k,Delta_opt=Delta)
+      call K_mich(eos,nc,Kmich,m_opt=m_mich_k,Delta_opt=Delta)
     endif
 
     ! Precalculate a quantity common to many of the expressions.
@@ -1186,14 +1221,11 @@ contains
 
   !> Calculates the association contribution to the reduced, residual Helmholtz
   !> energy, along with its derivatives.
-  subroutine calcFder_assoc(eos,nc,X_k,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+  subroutine calcFder_assoc(eos,nc,X_k,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: X_k(numAssocSites)
-    real, intent(in) :: T
-    real, intent(in) :: V
-    real, intent(in) :: n(nc)
     ! Output.
     real, optional, intent(out) :: F
     real, optional, intent(out) :: F_T, F_V, F_n(nc)
@@ -1205,7 +1237,7 @@ contains
 
     ! Compute contributions from direct differentiation of Q.
     ! This syntax only computes the variables that are present.
-    call Q_derivatives_knowing_X(eos,nc,T,V,n,X_k,Q=F,Q_T=F_T,Q_V=F_V,Q_n=F_n,&
+    call Q_derivatives_knowing_X(eos,nc,X_k,Q=F,Q_T=F_T,Q_V=F_V,Q_n=F_n,&
          Q_TT=F_TT,Q_TV=F_TV,Q_Tn=F_Tn,Q_VV=F_VV,Q_Vn=F_Vn,Q_nn=F_nn,X_calculated=.true.)
 
     sec_der_present = present(F_TT) .or. present(F_TV) .or. present(F_Tn) .or. &
@@ -1213,8 +1245,8 @@ contains
 
     ! Additional contributions to second derivatives.
     if (sec_der_present) then
-      call X_derivatives_knowing_X (eos,nc=nc,T=T,V=V,n=n,X=X_k,X_T=X_T,X_V=X_V,X_n=X_n)
-      call Q_derivatives_knowing_X(eos,nc,T=T,V=V,n=n,X_k=X_k,Q_XT=Q_XT,Q_XV=Q_XV,Q_Xn=Q_Xn,X_calculated=.true.)
+      call X_derivatives_knowing_X (eos,nc=nc,X=X_k,X_T=X_T,X_V=X_V,X_n=X_n)
+      call Q_derivatives_knowing_X(eos,nc,X_k=X_k,Q_XT=Q_XT,Q_XV=Q_XV,Q_Xn=Q_Xn,X_calculated=.true.)
 
       if (present(F_TT)) F_TT = F_TT + dot_product(Q_XT,X_T)
       if (present(F_TV)) F_TV = F_TV + dot_product(Q_XV,X_T)
@@ -1231,19 +1263,17 @@ contains
   end subroutine calcFder_assoc
 
   !> Gives the association contribution to pressure.
-  subroutine assoc_pressure(eos,nc,T,V,n,X_k,P,dPdV,dPdT,dPdn)
+  subroutine assoc_pressure(eos,nc,X_k,P,dPdV,dPdT,dPdn)
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, intent(in)  :: T
-    real, intent(in)  :: V
-    real, intent(in)  :: n(nc)
     real, intent(in)  :: X_k(numAssocSites)
     real, intent(out) :: P
     real, intent(out), optional :: dPdV, dPdT, dPdn(nc)
     ! Locals.
-    real :: F_V
+    real :: F_V, T
+    T = eos%assoc%state%T
 
-    call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F_V=F_V,&
+    call calcFder_assoc(eos,nc=nc,X_k=X_k,F_V=F_V,&
          F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
     P = -Rgas*T*F_V
     if (present(dPdV)) dPdV = -Rgas*T*dPdV
@@ -1262,18 +1292,15 @@ contains
     real, dimension(numAssocSites), intent(in) :: X         !< the X-vector
     real, dimension(2+nce), intent(in) :: param
     ! Locals.
-    real :: T, V, n(nce)
+    !real :: T, V, n(nce)
     integer :: k
     real :: m_mich_k(numAssocSites)
     class(base_eos_param), pointer :: eos
-    T = param(1)
-    V = param(2)
-    n = param(3:(nce+2))
     eos => get_active_eos()
 
-    call Q_derivatives_knowing_X(eos,nce,T=T,V=V,n=n,X_k=X,Q_X=resid0)
+    call Q_derivatives_knowing_X(eos,nce,X_k=X,Q_X=resid0)
 
-    call assemble_m_mich_k (eos%assoc,nce,n,m_mich_k)
+    call assemble_m_mich_k(eos%assoc,nce,m_mich_k)
     do k=1,numAssocSites
       if (m_mich_k(k) .eq. 0.0) resid0(k) = 0.0 ! Previous bug: resid0 = 0.0
     end do
@@ -1290,18 +1317,14 @@ contains
     real, dimension(2+nce), intent(in) :: param
     ! Locals.
     integer :: k
-    real :: T, V, n(nce)
     real, dimension(numAssocSites,numAssocSites) :: K_mich_kl
     real, dimension(numAssocSites) :: m_mich_k
     class(base_eos_param), pointer :: eos
-    T = param(1)
-    V = param(2)
-    n = param(3:(nce+2))
     eos => get_active_eos()
 
     ! Assemble m_mich and K_mich.
-    call assemble_m_mich_k (eos%assoc,nce,n,m_mich_k)
-    call K_mich (eos,nce,T,V,n,K_mich_kl,m_opt=m_mich_k)
+    call assemble_m_mich_k(eos%assoc,nce,m_mich_k)
+    call K_mich (eos,nce,K_mich_kl,m_opt=m_mich_k)
 
     ! Assemble the modified Hessian matrix hatH, here called J.
     J = -K_mich_kl
@@ -1351,13 +1374,12 @@ contains
   end subroutine limit
 
   !> Successive substitution method.
-  subroutine fun_succ_subst (eos,T,V,n,X)
+  subroutine fun_succ_subst (eos,X)
     use thermopack_var, only: nce
     class(base_eos_param), intent(inout) :: eos
     real, intent(inout)  :: X(numAssocSites)
     ! Locals.
     integer :: k,l
-    real :: T, V, n(nce)
     real, dimension(numAssocSites,numAssocSites) :: K_mich_kl
     real, dimension(numAssocSites) :: m_mich_k
     real :: temp
@@ -1365,8 +1387,8 @@ contains
     omega = 0.2 ! damping factor
 
     ! assemble m_mich and K_mich
-    call assemble_m_mich_k (eos%assoc,nce,n,m_mich_k)
-    call K_mich (eos,nce,T,V,n,K_mich_kl,m_opt=m_mich_k)
+    call assemble_m_mich_k(eos%assoc,nce,m_mich_k)
+    call K_mich (eos,nce,K_mich_kl,m_opt=m_mich_k)
     do k=1,numAssocSites
       if (m_mich_k(k) .eq. 0.0) then
         cycle
@@ -1380,4 +1402,159 @@ contains
 
   end subroutine fun_succ_subst
 
-end module saft_association
+  function Q_fmt_hd(eos,nc,T,n_fmt,Xk0) result(Q)
+    use hyperdual_mod
+    use linear_numerics, only: solve_lu_hd
+    use pc_saft_nonassoc, only: sPCSAFT_eos, calc_d_hd
+    ! Input.
+    class(base_eos_param), intent(inout) :: eos
+    integer, intent(in)         :: nc
+    type(hyperdual), intent(in) :: T,n_fmt(nc,0:5)
+    real, intent(in)            :: Xk0(numAssocSites)
+    ! Output.
+    type(hyperdual) :: Q
+    ! Local variables.
+    type(hyperdual) :: X_k(numAssocSites), Q_X(numAssocSites)
+    type(hyperdual) :: Delta(numAssocSites,numAssocSites), J(numAssocSites,numAssocSites)
+    type(hyperdual) :: m_mich_k(numAssocSites), K_mich_kl(numAssocSites,numAssocSites)
+    type(hyperdual) :: dhs(nc), dotprod, rho(nc), V, xi(nc)
+    real :: ms(nc)
+    integer :: k, i, l, ierr
+
+    select type ( p_eos => eos )
+    class is (sPCSAFT_eos)
+      call calc_d_hd(p_eos,T,dhs)
+      ms = p_eos%m
+    class default
+      print *,"Q_fmt_hd: Should not be here"
+    end select
+    xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
+    rho = xi*n_fmt(:,0)/ms
+    V = 1.0_dp/sum(rho)
+    call Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+    m_mich_k = 0.0_dp
+    do i=1,nc
+      if ( eos%assoc%comp_vs_sites(i,1) /= noSitesFlag ) then
+        m_mich_k(eos%assoc%comp_vs_sites(i,1):eos%assoc%comp_vs_sites(i,2)) = rho(i)
+      end if
+    end do
+    do k=1,numAssocSites
+      do l=k,numAssocSites
+        K_mich_kl(k,l) = m_mich_k(k)*m_mich_k(l)*Delta(k,l)
+        K_mich_kl(l,k) = K_mich_kl(k,l)
+      end do
+    end do
+
+    X_k = Xk0 ! Transform to volume based
+    do i=1,2 ! Do two iterations to propagate differentials to second order
+      Q_X = 0.0_dp
+      do k=1,numAssocSites
+        Q_X(k) = m_mich_k(k)*(1.0_dp/X_k(k) - 1.0_dp)
+        do l=1,numAssocSites
+          Q_X(k) = Q_X(k) - m_mich_k(k)*m_mich_k(l)*X_k(l)*Delta(k,l)
+        end do
+      end do
+
+      ! Assemble the modified Hessian matrix hatH, here called J.
+      J = -K_mich_kl
+      do k=1,numAssocSites
+        if (m_mich_k(k) .eq. 0.0_dp) then
+          J(k,k) = 1.0 ! Other elements in kth row and kth column are 0.0.
+        else
+          dotprod = 0.0_dp
+          do l=1,numAssocSites
+            dotprod = dotprod + K_mich_kl(k,l)*X_k(l)
+          enddo
+          J(k,k) = J(k,k) - (m_mich_k(k) + dotprod)/X_k(k)
+        end if
+      enddo
+      call solve_lu_hd(J, numAssocSites, Q_X, ierr)
+      X_k = X_k - Q_X
+    enddo
+
+    ! Assemble Q
+    Q = 0.0_dp
+    do k=1,numAssocSites
+      Q = Q + m_mich_k(k)*(log(X_k(k))+0.5_dp*(-X_k(k)+1.0_dp))
+    end do
+
+  end function Q_fmt_hd
+
+  !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
+  !> e.g. by not calculating the exponential in every loop iteration
+  subroutine Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+    use hyperdual_mod
+    use thermopack_var, only: nc
+    use thermopack_constants, only: N_AVOGADRO
+    use eosdata, only: eosSAFT_VR_MIE, eosOPC_SAFT
+    use hardsphere_bmcsl, only: calc_bmcsl_gij_fmt_hd
+    use saft_rdf
+    ! Input.
+    class(base_eos_param), intent(inout) :: eos
+    type(hyperdual), intent(in) :: T
+    type(hyperdual), intent(in) :: n_fmt(6)
+    type(hyperdual), intent(in) :: dhs(nc)
+    ! Output.
+    type(hyperdual), dimension(numAssocSites,numAssocSites), intent(out) :: Delta
+    ! Locals.
+    type(hyperdual) :: g, h
+    integer :: ic,jc
+    integer :: k,l
+    integer :: k1, k2, l1, l2
+    type(hyperdual) :: covol, expo
+    type(hyperdual) :: boltzmann_fac(numAssocSites, numAssocSites)
+    type(association), pointer :: assoc
+    assoc => eos%assoc
+
+    Delta = 0.0
+
+    if (assoc%saft_model /= eosOPC_SAFT) call stoperror("Wrong model")
+
+    ! Assemble Delta matrix.
+    do k=1, numAssocSites
+      do l=k, numAssocSites
+        if (assoc%eps_kl(k,l)>0) then
+          boltzmann_fac(k,l) = exp(assoc%eps_kl(k,l)/(Rgas*T))
+        else
+          boltzmann_fac(k,l) = 1.0_dp
+        end if
+        boltzmann_fac(l,k) = boltzmann_fac(k,l)
+      end do
+    end do
+
+    do k = 1,numAssocSites
+      do l = k,numAssocSites
+        ic = site_to_compidx(assoc,k)
+        jc = site_to_compidx(assoc,l)
+        if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
+        call calc_bmcsl_gij_FMT_hd(nc,n_fmt,dhs,ic,jc,g)
+        covol = N_AVOGADRO*(0.5_dp*(dhs(ic) + dhs(jc)))**3
+        expo = boltzmann_fac(k,l)
+        h = assoc%beta_kl(k,l)*covol*(expo-1.0_dp)
+        Delta(k,l) = g*h
+        Delta(l,k) = Delta(k,l)
+      end do
+    end do
+
+    if (DELTA_COMBRULE==ELLIOT) then
+      do ic=1,nc
+        do jc=ic+1,nc
+          call compidx_to_sites(assoc,ic,k1,k2)
+          call compidx_to_sites(assoc,jc,l1,l2)
+          if (k1<0 .or. l1<0) cycle
+          if (assoc%beta_kl(k1,k2)==0.0 .or. assoc%beta_kl(l1,l2)==0.0) then
+            stop "Delta_kl::Need more general implementation of Elliot combining rule"
+          end if
+          do k=k1, k2
+            do l=l1, l2
+              if (.not. assoc%beta_kl(k,l)>0) cycle ! Do sites have the same polarity?
+              Delta(k,l) = sqrt(Delta(k1,k2)*Delta(l1,l2))
+              Delta(l,k) = Delta(k,l)
+            end do
+          end do
+        end do
+      end do
+    end if
+  end subroutine Delta_kl_hd
+
+End module saft_association

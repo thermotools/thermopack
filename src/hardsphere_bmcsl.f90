@@ -64,6 +64,7 @@ module hardsphere_bmcsl
   public :: calc_bmcsl_zeta_and_derivatives
   public :: calc_bmcsl_lngij
   public :: calc_bmcsl_gij_FMT
+  public :: calc_bmcsl_gij_FMT_hd
 
 contains
 
@@ -231,6 +232,31 @@ contains
     endif
 
   end subroutine calc_bmcsl_gij_FMT
+
+  subroutine calc_bmcsl_gij_FMT_hd(nc,n_alpha,dhs,i,j,g)
+    !------------------------------------------------------------------------
+    !>  FMT model for associating fluids
+    !! 2022-04, Morten Hammer
+    !! We have used the expression from Yang-Xin Yu and Jianzhong Wu
+    !! "A fundamental-measure theory for inhomogeneous associating fluids"
+    !! J. Chem. Phys., Vol. 116, No. 16 (2002).  All derivatives checked numerically.
+    !! doi: 10.1063/1.1463435
+    !----------------------------------------------------------------------------
+    use hyperdual_mod
+    integer, intent(in) :: nc, i, j
+    type(hyperdual), intent(in) :: n_alpha(0:5) !< temperature [K], n_alpha
+    type(hyperdual), intent(in) :: dhs(nc)      !< Hard-sphere diameter
+    type(hyperdual), intent(out) :: g           !< reduced helmholtz energy [-]
+    ! Locals
+    integer, parameter :: n2V = 5
+    type(hyperdual) :: mu, xi
+
+    mu=(dhs(i)*dhs(j))/(dhs(i)+dhs(j))
+    xi = 1.0_dp - n_alpha(n2V)**2/n_alpha(2)**2
+    g = 1.0_dp/(1.0_dp-n_alpha(3)) + xi*n_alpha(2)*mu*(1.0_dp/(2.0_dp*(1.0_dp-n_alpha(3))**2) &
+         + n_alpha(2)*mu/(18.0_dp*(1.0_dp-n_alpha(3))**3))
+
+  end subroutine calc_bmcsl_gij_FMT_hd
 
   subroutine calc_bmcsl_gij(nc,T,V,n,i,j,dhs,zeta, &
        g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)

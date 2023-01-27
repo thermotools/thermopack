@@ -1615,6 +1615,19 @@ contains
 
   end subroutine calc_d
 
+  ! The segment diameter d_i
+  subroutine calc_d_hd(eos,T,d)
+    use hyperdual_mod
+    class(sPCSAFT_eos), intent(in) :: eos
+    type(hyperdual), intent(in) :: T            !< [mol/m^3], [K], [mol]
+    type(hyperdual), intent(out) :: d(nce)      !< [m]
+    ! Locals.
+    integer :: i
+    do i=1,nce
+      d(i) = eos%sigma(i,i)*(1.0_dp - 0.12*exp(-3*eos%eps_depth_divk(i,i)/T))
+    end do
+  end subroutine calc_d_hd
+
   ! The segment diameter d_i and its derivatives.
   ! These diameters are often needed, but since they require computing an
   ! exponential, calc_d should not be called unecessary.

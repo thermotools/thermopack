@@ -10,6 +10,11 @@ module linear_numerics
 
   public :: cg, solveLU, inverse, null_space
   public :: outer_product
+  public :: solve_lu_hd
+
+  ! Debugging
+  public :: test_solve_lu_hd
+
 contains
 
   !-----------------------------------------------------------------------------
@@ -235,7 +240,7 @@ contains
   end subroutine null_space
 
   !-----------------------------------------------------------------------------
-  !> Calculate outer product 
+  !> Calculate outer product
   !>
   !> \author MH, August 2022
   !-----------------------------------------------------------------------------
@@ -246,5 +251,183 @@ contains
     AB = spread(source = A, dim = 2, ncopies = nB) * &
          spread(source = B, dim = 1, ncopies = nA)
   end subroutine outer_product
+
+  !-----------------------------------------------------------------------------
+  !> LU decomposition of a N x N matrix A
+  !! Numerical Recipes in C++
+  !! Second edition,
+  !! By W.H. Press, S.A. Teukolsky, W.T. Vetterling and B. P. Flannery,
+  !! Cambridge University Press, 2002
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  subroutine ludcmp_hd(a,n,indx,d,ierr)
+    use hyperdual_mod
+    use numconstants, only: machine_prec
+    implicit none
+    type(hyperdual), intent(inout), dimension(n,n) :: a
+    integer, intent(in) :: n
+    integer, intent(out) :: d, ierr
+    integer, intent(out), dimension(n) :: indx
+    ! Locals
+    type(hyperdual) :: amax, dum, summ, vv(n)
+    integer :: i, j, k, imax
+
+    d=1
+    ierr=0
+
+    do i=1,n
+      amax=0.d0
+      do j=1,n
+        if (abs(a(i,j)) > amax) amax=abs(a(i,j))
+      enddo
+      if(amax < machine_prec) then
+        ierr = 1
+        return
+      end if
+      vv(i) = 1.d0 / amax
+    enddo
+
+    do j=1,n
+      do i=1,j-1
+        summ = a(i,j)
+        do k=1,i-1
+          summ = summ - a(i,k)*a(k,j)
+        enddo
+        a(i,j) = summ
+      enddo
+      amax = 0.d0
+      do i=j,n
+        summ = a(i,j)
+        do k=1,j-1
+          summ = summ - a(i,k)*a(k,j)
+        enddo
+        a(i,j) = summ
+        dum = vv(i)*abs(summ)
+        if(dum >= amax) then
+          imax = i
+          amax = dum
+        end if
+      enddo
+
+      if(j /= imax) then
+        do k=1,n
+          dum = a(imax,k)
+          a(imax,k) = a(j,k)
+          a(j,k) = dum
+        enddo
+        d = -d
+        vv(imax) = vv(j)
+      end if
+
+      indx(j) = imax
+      if(abs(a(j,j)) < machine_prec) a(j,j) = machine_prec
+
+      if(j /= n) then
+        dum = 1.d0 / a(j,j)
+        do i=j+1,n
+          a(i,j) = a(i,j)*dum
+        enddo
+      end if
+    enddo
+
+  end subroutine ludcmp_hd
+
+  !-----------------------------------------------------------------------------
+  !> Back substitute for LU of a x = b
+  !! Numerical Recipes in C++
+  !! Second edition,
+  !! By W.H. Press, S.A. Teukolsky, W.T. Vetterling and B. P. Flannery,
+  !! Cambridge University Press, 2002
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  subroutine lubksb_hd(a, n, indx, b)
+    use hyperdual_mod
+    implicit none
+    integer, intent(in) :: n
+    type(hyperdual), intent(in), dimension(n,n) :: a
+    integer, intent(in), dimension(n) :: indx
+    type(hyperdual), intent(inout), dimension(n) :: b
+    ! Locals
+    integer :: i, j, ii, ll
+    type(hyperdual) ::  summ
+
+    ii = 0
+    do i=1,n
+      ll = indx(i)
+      summ = b(ll)
+      b(ll) = b(i)
+      if(ii /= 0) then
+        do j=ii,i-1
+          summ = summ - a(i,j)*b(j)
+        enddo
+      else if(summ /= 0.d0) then
+        ii = i
+      end if
+      b(i) = summ
+    enddo
+
+    do i=n,1,-1
+      summ = b(i)
+      if(i < n) then
+        do j=i+1,n
+          summ = summ - a(i,j)*b(j)
+        enddo
+      end if
+      b(i) = summ / a(i,i)
+    enddo
+
+  end subroutine lubksb_hd
+
+  !-----------------------------------------------------------------------------
+  !> Solve a x = b
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  subroutine solve_lu_hd(a, n, b, ierr)
+    use hyperdual_mod
+    implicit none
+    integer, intent(in) :: n
+    type(hyperdual), intent(inout), dimension(n,n) :: a
+    type(hyperdual), intent(inout), dimension(n) :: b
+    integer, intent(out) :: ierr
+    ! Locals
+    integer, dimension(n) :: indx
+    integer :: d
+    call ludcmp_hd(a,n,indx,d,ierr)
+    if (ierr /= 0) return
+    call lubksb_hd(a, n, indx, b)
+
+  end subroutine solve_lu_hd
+
+
+  !-----------------------------------------------------------------------------
+  !> Test solving a x = b
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  subroutine test_solve_lu_hd()
+    use hyperdual_mod
+    implicit none
+    integer, parameter :: n = 3
+    type(hyperdual) :: a(n,n)
+    type(hyperdual) :: b(n)
+    integer :: ierr
+    a(1,1) = 1.0_dp
+    a(1,2) = 2.0_dp
+    a(1,3) = 3.0_dp
+    a(2,1) = 4.0_dp
+    a(2,2) = 5.0_dp
+    a(2,3) = 6.0_dp
+    a(3,1) = 7.0_dp
+    a(3,2) = 8.0_dp
+    a(3,3) = 9._dp
+    b(1) = 1.0_dp
+    b(2) = 2.0_dp
+    b(3) = 3.0_dp
+    call solve_lu_hd(a, n, b, ierr)
+    print *,b(:)%f0
+  end subroutine test_solve_lu_hd
 
 end module linear_numerics

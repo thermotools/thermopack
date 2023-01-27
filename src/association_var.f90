@@ -5,6 +5,19 @@ module association_var
   !
   public
 
+  !> Current state for eos evaluation
+  type association_state
+    logical :: fmt_mode = .false.
+    real :: T
+    real :: V
+    real, allocatable :: n(:)
+    real, allocatable :: n_fmt(:,:)
+  contains
+    procedure :: init => init_assoc_state
+    procedure :: init_fmt => init_assoc_state_fmt
+    procedure :: dealloc => dealloc_assoc_state
+  end type association_state
+
   type association
     integer :: saft_model   !> Active SAFT model. Set to the correct EoS index stored in module eosdata.
     integer :: numAssocSites !< Total number of associating sites.
@@ -18,7 +31,8 @@ module association_var
     real, allocatable, dimension(:,:) :: beta_kl  !< Effective association volume between site Ai and Bj (called \beta^{A_i B_j} in CPA).
     real, allocatable, dimension(:,:) :: eps_kl   !< Association energy.
 
-    !> Cached states
+    type(association_state) :: state
+
   contains
     procedure, public :: dealloc
 !    procedure, public :: allocate_and_init => association_allocate_and_init
@@ -43,5 +57,38 @@ contains
     call deallocate_real_2(assoc%beta_kl,"assoc%beta_kl")
     call deallocate_real_2(assoc%eps_kl,"assoc%eps_kl")
   end subroutine dealloc
+
+  subroutine init_assoc_state(assoc_p, nc, T, V, n)
+    class(association_state), intent(inout) :: assoc_p
+    integer, intent(in) :: nc
+    real, intent(in) :: T, V, n(nc)
+    call assoc_p%dealloc()
+    assoc_p%fmt_mode = .false.
+    assoc_p%T = T
+    assoc_p%V = V
+    assoc_p%n = n
+  end subroutine init_assoc_state
+
+  subroutine init_assoc_state_fmt(assoc_p, nc, T, n_fmt, m)
+    class(association_state), intent(inout) :: assoc_p
+    real, intent(in) :: T, n_fmt(nc, 0:5), m(nc)
+    integer, intent(in) :: nc
+    ! Locals
+    real :: xi(nc)
+    call assoc_p%dealloc()
+    assoc_p%fmt_mode = .true.
+    assoc_p%T = T
+    assoc_p%n_fmt = n_fmt
+    xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
+    assoc_p%n = xi*n_fmt(:,0)/m
+    assoc_p%V = 1.0/sum(assoc_p%n)
+    assoc_p%n = assoc_p%n*assoc_p%V
+  end subroutine init_assoc_state_fmt
+
+  subroutine dealloc_assoc_state(assoc_p)
+    class(association_state), intent(inout) :: assoc_p
+    if (allocated(assoc_p%n)) deallocate(assoc_p%n)
+    if (allocated(assoc_p%n_fmt)) deallocate(assoc_p%n_fmt)
+  end subroutine dealloc_assoc_state
 
 end module association_var
