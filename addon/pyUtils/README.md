@@ -6,4 +6,5 @@ This folder contains suplements to thermopack.
   
 **./dependencies**: Generate dependencies for ../../Makefile by looping fortran source files in ../../src.  
   
-**./datadb**: Read files from ../../fluids and ../../binaries and generate compdatadb.f90/mixdatadb.f90/saftvrmie_datadb.f90 for thermopack. Must be copied manually to ../../src/.  
+**./datadb**: Read files from ../../fluids and ../../binaries and generate compdatadb.f90/mixdatadb.f90/saftvrmie_datadb.f90 for thermopack. Must be copied manually to ../../src/. 
+    Also generates the file Component-name-mapping.md for the wiki.

@@ -50,6 +50,7 @@ TAGS
 
 .DS_Store
 */.DS_Store
-*/.idea/
+*.idea/
 local_testing/
 venv/
+venv*/

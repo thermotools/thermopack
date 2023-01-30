@@ -473,10 +473,10 @@ class comp_list(object):
         wiki_header_lines = []
         wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
         wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifyers as shown in the table below.\n")
+        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT' column indicates which fluids SAFT-EoS parameters are available for.\n")
         wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("| Fluid name | Fluid identifyer |")
-        wiki_header_lines.append("| ------------------------ | ----------- |")
+        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT |")
+        wiki_header_lines.append("| ------------------------ | ----------- | ---- |")
 
         wiki_lines = []
         for comp in self.comp_list:
@@ -490,9 +490,20 @@ class comp_list(object):
                         break
             else:
                 name = name.capitalize()
-            line = "| " + name + " | " + comp.comp["ident"] + " |"
-            wiki_lines.append(line)
 
+            has_saft_params = False
+            for k in comp.comp.keys():
+                if 'SAFTVRMIE' in k:
+                    has_saft_params = True
+                    break
+
+            if has_saft_params is True:
+                has_saft_params = ':heavy_check_mark:'
+            else:
+                has_saft_params = ' '
+
+            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_saft_params + " |"
+            wiki_lines.append(line)
         wiki_lines.sort()
         wiki_lines = wiki_header_lines + wiki_lines
         with open(filename, "w") as f:
