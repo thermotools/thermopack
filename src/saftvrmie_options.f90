@@ -73,6 +73,11 @@ module saftvrmie_options
     logical :: enable_truncation_correction = .false. !> Option to enable/disable truncation correction
     logical :: enable_shift_correction = .false. !> Option to enable/disable shift correction
     real    :: r_cut = 3.5 !> Truncation radius
+
+    !-------------------------------------------------------------------
+    ! Use temperature cache?
+    logical :: use_temp_cache = .false.
+
   contains
     procedure, public :: saftvrmieaij_model_options
     procedure, public :: set_r_cut

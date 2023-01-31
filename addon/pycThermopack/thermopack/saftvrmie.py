@@ -42,6 +42,8 @@ class saftvrmie(saft):
             "saftvrmie_interface", "model_control_chain"))  # Option to enable/disable A1 contribution
         self.s_hs_reference = getattr(self.tp, self.get_export_name(
             "saftvrmie_interface", "hard_sphere_reference"))  # Option to set HS model
+        self.s_set_temperature_cache_flag = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "set_temperature_cache_flag"))  # Set flag controlling temperature cache
 
         # Init methods
         self.s_eoslibinit_init_saftvrmie = getattr(
@@ -205,6 +207,18 @@ class saftvrmie(saft):
         self.s_enable_chain.argtypes = [POINTER(c_int)]
         self.s_enable_chain.restype = None
         self.s_enable_chain(byref(active_c))
+
+    def enable_temperature_cache(self, enable=True):
+        """Model performance. Enable/disable temperature cache.
+
+        Args:
+            enable (bool): Enable/disable temperature cache
+        """
+        self.activate()
+        enable_c = c_int(1 if enable else 0)
+        self.s_set_temperature_cache_flag.argtypes = [POINTER(c_int)]
+        self.s_set_temperature_cache_flag.restype = None
+        self.s_set_temperature_cache_flag(byref(enable_c))
 
     def get_eps_kij(self, c1, c2):
         """Get binary well depth interaction parameter

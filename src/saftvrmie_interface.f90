@@ -27,6 +27,7 @@ module saftvrmie_interface
   public :: model_control_hs
   public :: model_control_chain
   public :: hard_sphere_reference
+  public :: set_temperature_cache_flag
 
 contains
 
@@ -67,18 +68,21 @@ contains
     integer, intent(in) :: nc !< Number of components
     real, intent(in) :: T !< Temperature [K]
     !
-    ! Calculate Feynman--Hibbs D parameter
-    call calc_DFeynHibbsij(nc,T,eos%saftvrmie_param%DFeynHibbsParam_ij, &
-         eos%saftvrmie_var%DFeynHibbsij, EOS%saftvrmie_var%D2FeynHibbsij)
-    ! Calculate effective sigma
-    call calc_binary_effective_sigma(nc,T,eos%saftvrmie_var,&
-         eos%saftvrmie_var%sigma_eff%d,&
-         eos%saftvrmie_var%sigma_eff%d_T,eos%saftvrmie_var%sigma_eff%d_TT)
-    ! Calculate hard-sphere diameter
-    call calc_hardsphere_diameter(nc,T,eos%saftvrmie_var,eos%saftvrmie_var%sigma_eff%d,&
-         eos%saftvrmie_var%sigma_eff%d_T,eos%saftvrmie_var%sigma_eff%d_TT,&
-         eos%saftvrmie_var%dhs%d,&
-         eos%saftvrmie_var%dhs%d_T,eos%saftvrmie_var%dhs%d_TT)
+    if (eos%saftvrmie_var%temperature_dhs /= T .or. .not. svrm_opt%use_temp_cache) then
+      ! Calculate Feynman--Hibbs D parameter
+      call calc_DFeynHibbsij(nc,T,eos%saftvrmie_param%DFeynHibbsParam_ij, &
+           eos%saftvrmie_var%DFeynHibbsij, EOS%saftvrmie_var%D2FeynHibbsij)
+      ! Calculate effective sigma
+      call calc_binary_effective_sigma(nc,T,eos%saftvrmie_var,&
+           eos%saftvrmie_var%sigma_eff%d,&
+           eos%saftvrmie_var%sigma_eff%d_T,eos%saftvrmie_var%sigma_eff%d_TT)
+      ! Calculate hard-sphere diameter
+      call calc_hardsphere_diameter(nc,T,eos%saftvrmie_var,eos%saftvrmie_var%sigma_eff%d,&
+           eos%saftvrmie_var%sigma_eff%d_T,eos%saftvrmie_var%sigma_eff%d_TT,&
+           eos%saftvrmie_var%dhs%d,&
+           eos%saftvrmie_var%dhs%d_T,eos%saftvrmie_var%dhs%d_TT)
+      eos%saftvrmie_var%temperature_dhs = T
+    endif
 
   end subroutine update_saftvrmie_hs_diameter
 
@@ -128,26 +132,31 @@ contains
     !
     ! NB: the order of the function calls below is important
     !
-    if (saftvrmie_vc%temperature /= T) then
+    if (saftvrmie_vc%temperature_dhs /= T .or. .not. svrm_opt%use_temp_cache) then
       ! Calculate Feynman--Hibbs D parameter
       call calc_DFeynHibbsij(nc, T, saftvrmie_param%DFeynHibbsParam_ij, &
            saftvrmie_vc%DFeynHibbsij, saftvrmie_vc%D2FeynHibbsij)
       ! Calculate effective sigma
       call calc_binary_effective_sigma(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
            saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT)
+      ! ! Calculate hard-sphere diameter
+      call calc_hardsphere_diameter(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
+            saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT,saftvrmie_vc%dhs%d,&
+            saftvrmie_vc%dhs%d_T,saftvrmie_vc%dhs%d_TT)
+      ! Set temperature of update
+      saftvrmie_vc%temperature_dhs = T
+    endif
+    if (saftvrmie_vc%temperature_eps /= T .or. .not. svrm_opt%use_temp_cache) then
       ! Calculate effective epsilon divided by k
       call calc_binary_effective_eps_divk(nc,T,saftvrmie_vc,saftvrmie_vc%eps_divk_eff%d,&
            saftvrmie_vc%eps_divk_eff%d_T,saftvrmie_vc%eps_divk_eff%d_TT)
-      ! Calculate hard-sphere diameter
-      call calc_hardsphere_diameter(nc,T,saftvrmie_vc,saftvrmie_vc%sigma_eff%d,&
-           saftvrmie_vc%sigma_eff%d_T,saftvrmie_vc%sigma_eff%d_TT,saftvrmie_vc%dhs%d,&
-           saftvrmie_vc%dhs%d_T,saftvrmie_vc%dhs%d_TT)
       ! Calculate dimensionless van der Waals energy
       call calcAlpha(nc,saftvrmie_vc%sigma_eff,saftvrmie_vc%eps_divk_eff,&
            T,saftvrmie_vc,saftvrmie_vc%alpha%d,saftvrmie_vc%alpha%d_T,saftvrmie_vc%alpha%d_TT)
       ! Set temperature of update
-      saftvrmie_vc%temperature = T
+       saftvrmie_vc%temperature_eps = T
     endif
+
     ! Calculate hypotetical pure fluid packing fraction
     call calcZetaX(nc,T,V,n,difflevel,saftvrmie_vc%dhs,saftvrmie_vc%zeta)
     ! Calculate isothermal hard sphere compressibillity factor
@@ -558,6 +567,8 @@ contains
        ! Calculate dimensionless van der Waals energy
        call calcAlpha(nc,svrm_var%sigma_eff,svrm_var%eps_divk_eff,&
             T,svrm_var,alpha,svrm_var%alpha%d_T,svrm_var%alpha%d_TT)
+       svrm_var%temperature_dhs = T
+       svrm_var%temperature_eps = T
     else
        alpha = saftvrmie_param%alpha_ij
     endif
@@ -946,6 +957,17 @@ contains
     if (present(exact_binary_dhs)) svrm_opt%exact_binary_dhs = exact_binary_dhs
     if (present(enable_hs_extra)) svrm_opt%enable_hs_extra = enable_hs_extra
   end subroutine hard_sphere_reference
+
+  !> Activte temperature cache
+  !!
+  !! \author Morten Hammer, January 2023
+  subroutine set_temperature_cache_flag(use_temp_cache)
+    use saftvrmie_containers, only: svrm_opt
+    ! Input
+    logical, intent(in) :: use_temp_cache !< Cache temperature to reduce computation time
+    !
+    svrm_opt%use_temp_cache = use_temp_cache
+  end subroutine set_temperature_cache_flag
 
 end module saftvrmie_interface
 

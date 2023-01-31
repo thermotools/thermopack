@@ -157,7 +157,8 @@ module saftvrmie_containers
   !! To be claculated only once per state
   type :: saftvrmie_var_container
     !> Temperature of last update
-    real :: temperature = -1.0 ! Unphysical initila value
+    real :: temperature_dhs = -1.0 ! Unphysical initial value
+    real :: temperature_eps = -1.0 ! Unphysical initial value
     !> Hard sphere diameter
     type(saftvrmie_dhs) :: dhs
     !> Effective sigma for the quantum corrected potential
