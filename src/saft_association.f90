@@ -66,7 +66,7 @@ contains
     integer :: k,l
     integer :: ii, jj, k1, k2, l1, l2
     real :: d1, d2
-    real :: covol, expo
+    real :: covol, expo, covol_T, covol_TT
     logical :: fir_der_present, sec_der_present
     real :: boltzmann_fac(numAssocSites, numAssocSites)
     real :: T
@@ -74,7 +74,6 @@ contains
     assoc => eos%assoc
 
     T = assoc%state%T
-
     fir_der_present = present(Delta_T) .or. present(Delta_V) .or. present(Delta_n)
     sec_der_present = present(Delta_TT) .or. present(Delta_TV) .or. &
          present(Delta_Tn) .or. present(Delta_VV) .or. &
@@ -155,11 +154,12 @@ contains
                  g_Tn_p,g_VV_p,g_Vn_p,g_nn_p)
           end if
 
-          covol = assoc_covol_binary(ic,jc)
+          call assoc_covol_binary(ic,jc,covol,covol_T,covol_TT)
           expo = boltzmann_fac(k,l)
 
           h = assoc%beta_kl(k,l)*covol*(expo-1)
-          h_T = -assoc%eps_kl(k,l)*expo*covol*assoc%beta_kl(k,l)/(Rgas*T*T)
+          h_T = -assoc%eps_kl(k,l)*expo*covol*assoc%beta_kl(k,l)/(Rgas*T*T) + &
+               assoc%beta_kl(k,l)*covol_T*(expo-1)
 
           Delta(k,l) = g*h
           Delta(l,k) = Delta(k,l)
@@ -181,7 +181,9 @@ contains
 
           if (present(Delta_TT)) then
              h_TT = (2+assoc%eps_kl(k,l)/(Rgas*T))*&
-                  assoc%eps_kl(k,l)/(Rgas*T**3)*expo*assoc%beta_kl(k,l)*covol
+                  assoc%eps_kl(k,l)/(Rgas*T**3)*expo*assoc%beta_kl(k,l)*covol + &
+                  -2*assoc%eps_kl(k,l)*expo*covol_T*assoc%beta_kl(k,l)/(Rgas*T*T) + &
+                  assoc%beta_kl(k,l)*covol_TT*(expo-1)
              Delta_TT(k,l) = g_TT*h + 2*g_T*h_T + g*h_TT
              Delta_TT(l,k) = Delta_TT(k,l)
           end if
@@ -1402,7 +1404,7 @@ contains
 
   end subroutine fun_succ_subst
 
-  function Q_fmt_hd(eos,nc,T,n_fmt,Xk0) result(Q)
+  function Q_fmt_hd(eos,nc,T,n_fmt,Xk0,n) result(Q)
     use hyperdual_mod
     use linear_numerics, only: solve_lu_hd
     use pc_saft_nonassoc, only: sPCSAFT_eos, calc_d_hd
@@ -1411,13 +1413,14 @@ contains
     integer, intent(in)         :: nc
     type(hyperdual), intent(in) :: T,n_fmt(nc,0:5)
     real, intent(in)            :: Xk0(numAssocSites)
+    integer, intent(in)         :: n ! Propagate differentials to order n
     ! Output.
     type(hyperdual) :: Q
     ! Local variables.
     type(hyperdual) :: X_k(numAssocSites), Q_X(numAssocSites)
     type(hyperdual) :: Delta(numAssocSites,numAssocSites), J(numAssocSites,numAssocSites)
     type(hyperdual) :: m_mich_k(numAssocSites), K_mich_kl(numAssocSites,numAssocSites)
-    type(hyperdual) :: dhs(nc), dotprod, rho(nc), V, xi(nc)
+    type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc)
     real :: ms(nc)
     integer :: k, i, l, ierr
 
@@ -1430,7 +1433,6 @@ contains
     end select
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
     rho = xi*n_fmt(:,0)/ms
-    V = 1.0_dp/sum(rho)
     call Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
     m_mich_k = 0.0_dp
     do i=1,nc
@@ -1446,7 +1448,7 @@ contains
     end do
 
     X_k = Xk0 ! Transform to volume based
-    do i=1,2 ! Do two iterations to propagate differentials to second order
+    do i=1,n ! Do two iterations to propagate differentials to second order
       Q_X = 0.0_dp
       do k=1,numAssocSites
         Q_X(k) = m_mich_k(k)*(1.0_dp/X_k(k) - 1.0_dp)

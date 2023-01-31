@@ -77,6 +77,7 @@ contains
     real :: xi(nc)
     call assoc_p%dealloc()
     assoc_p%fmt_mode = .true.
+    !assoc_p%fmt_mode = .false.
     assoc_p%T = T
     assoc_p%n_fmt = n_fmt
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
@@ -90,5 +91,13 @@ contains
     if (allocated(assoc_p%n)) deallocate(assoc_p%n)
     if (allocated(assoc_p%n_fmt)) deallocate(assoc_p%n_fmt)
   end subroutine dealloc_assoc_state
+
+  !subroutine print_assoc_state(assoc_p)
+  !  class(association_state), intent(in) :: assoc_p
+  !  assoc_p%fmt_mode = .false.
+  !  assoc_p%T = T
+  !  assoc_p%V = V
+  !  assoc_p%n = n
+  !end subroutine init_assoc_state
 
 end module association_var

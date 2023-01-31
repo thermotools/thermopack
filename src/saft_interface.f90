@@ -2221,15 +2221,18 @@ contains
     real, intent(in) :: n_fmt(nce,0:5)
     real, intent(in) :: T
     ! Output.
-    real, optional, intent(out) :: F,F_T,F_n(nce,6)
-    real, optional, intent(out) :: F_TT,F_Tn(nce,6),F_nn(nce,nce,6,6)
+    real, optional, intent(out) :: F,F_T,F_n(nce,0:5)
+    real, optional, intent(out) :: F_TT,F_Tn(nce,0:5),F_nn(nce,nce,0:5,0:5)
     ! Locals.
     class(base_eos_param), pointer :: eos
     real :: ms(nce)
     real, dimension(numAssocSites) :: X_k
     type(hyperdual) :: T_hd,n_fmt_hd(nce,0:5), Q
-
-
+    logical :: F_T_calculated, F_n_calculated, F_calculated
+    integer :: i, j, k, l
+    F_calculated = .false.
+    F_T_calculated = .false.
+    F_n_calculated = .false.
     eos => get_active_eos()
 
     ! Initialize
@@ -2240,85 +2243,232 @@ contains
     if (present(F_Tn)) F_Tn = 0
     if (present(F_nn)) F_nn = 0
 
-    ! Set segment numbers
-    select type ( p_eos => eos )
-    class is(PCSAFT_eos)
-      ms = p_eos%m
-    class default
-      call stoperror("calc_assoc_phi: Wrong eos...")
-    end select
-
     if (numAssocSites > 0) then
       if (sum(n_fmt(eos%assoc%compIdcs,0)) > 1e-20) then
+        ! Set segment numbers
+        select type ( p_eos => eos )
+        class is(PCSAFT_eos)
+          ms = p_eos%m
+        class default
+          call stoperror("calc_assoc_phi: Wrong eos...")
+        end select
 
         ! Calculate the association contribution.
         call eos%assoc%state%init_fmt(nce, T, n_fmt, ms)
         X_k = 0.2 ! Initial guess.
         call solve_for_X_k(eos,nce,X_k,tol=10**5*machine_prec)
-        print *,"X_k",X_k
         T_hd = T
         n_fmt_hd = n_fmt
-        T_hd%f1 = 1.0_dp
-        T_hd%f2 = 1.0_dp
-        Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k)
-        print *,"Q",Q%f0*eos%assoc%state%V
-        print *,"Q_T",Q%f1*eos%assoc%state%V
-        print *,"Q_TT",Q%f2*eos%assoc%state%V
-        ! call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-        !      F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
 
+        if (present(F_TT)) then
+          T_hd%f1 = 1.0_dp
+          T_hd%f2 = 1.0_dp
+          Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=2)
+          F_TT = Q%f12
+          if (present(F)) then
+            F = Q%f0
+            F_calculated = .true.
+          endif
+          if (present(F_T)) then
+            F_T = Q%f1
+            F_T_calculated = .true.
+          endif
+          T_hd%f1 = 0.0_dp
+          T_hd%f2 = 0.0_dp
+        endif
+
+        if (present(F_Tn)) then
+          T_hd%f1 = 1.0_dp
+          do i=1,nce
+            do j=0,5
+              n_fmt_hd(i,j)%f2 = 1.0_dp
+              Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=2)
+              F_Tn(i,j) = Q%f12
+              n_fmt_hd(i,j)%f2 = 0.0_dp
+            enddo
+          enddo
+          T_hd%f1 = 0.0_dp
+          if (present(F_T)) then
+            F_T = Q%f1
+            F_T_calculated = .true.
+          endif
+          if (present(F)) then
+            F = Q%f0
+            F_calculated = .true.
+          endif
+        endif
+
+        if (present(F_nn)) then
+          ! Loop upper triangle
+          do i=1,nce
+            do j=0,5
+              n_fmt_hd(i,j)%f1 = 1.0_dp
+              do k=i,nce
+                do l=j,5
+                  n_fmt_hd(k,l)%f2 = 1.0_dp
+                  Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=2)
+                  F_nn(i,k,j,l) = Q%f12
+                  F_nn(k,i,l,j) = F_nn(i,k,j,l)
+                  n_fmt_hd(k,l)%f2 = 0.0_dp
+                enddo
+              enddo
+              n_fmt_hd(i,j)%f1 = 0.0_dp
+              if (present(F_n)) then
+                F_n(i,j) = Q%f1
+                F_n_calculated = .true.
+              endif
+            enddo
+          enddo
+          if (present(F)) then
+            F = Q%f0
+            F_calculated = .true.
+          endif
+        endif
+
+        if (present(F_T) .and. .not. F_T_calculated) then
+          T_hd%f1 = 1.0_dp
+          Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=1)
+          if (present(F_T)) then
+            F_T = Q%f1
+            F_T_calculated = .true.
+          endif
+          T_hd%f1 = 0.0_dp
+          if (present(F)) then
+            F = Q%f0
+            F_calculated = .true.
+          endif
+        endif
+
+        if (present(F_n) .and. .not. F_n_calculated) then
+          do i=1,nce
+            do j=0,5
+              n_fmt_hd(i,j)%f1 = 1.0_dp
+              Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=1)
+              F_n(i,j) = Q%f1
+              n_fmt_hd(i,j)%f1 = 0.0_dp
+            enddo
+          enddo
+          if (present(F)) then
+            F = Q%f0
+            F_calculated = .true.
+          endif
+        endif
+
+        if (present(F) .and. .not. F_calculated) then
+          Q = Q_fmt_hd(eos,nce,T_hd,n_fmt_hd,X_k,n=0)
+          F = Q%f0
+        endif
       endif
     endif
-
   end subroutine calc_assoc_phi
 
-  !>
+  !> Test calc_assoc_phi
   subroutine test_calc_assoc_phi()
+    use iso_fortran_env, only: dp => REAL64
     use thermopack_var, only: nce
     use pc_saft_nonassoc, only: PCSAFT_eos, calc_dhs
     use saft_association, only: solve_for_X_k, calcFder_assoc
-    use numconstants, only: pi, machine_prec
-    use thermopack_constants, only: N_AVOGADRO
+    use numconstants, only: machine_prec
     ! Locals
-    real :: n_fmt(nce,0:5), n(1), ms(nce)
-    real :: T, V, R, D
-    real :: F
-    real :: F_T, F_V, F_n(nce)
-    real :: F_TT, F_TV, F_VV, F_Tn(nce), F_Vn(nce), F_nn(nce,nce)
+    real :: n_fmt(nce,0:5), n(1), n_fmt_0(nce,0:5)
+    real :: T, V
+    real :: F, eps, dn
+    real :: F_T, F_V, F_n(nce,0:5)
+    real :: F_TT, F_TV, F_VV, F_Tn(nce,0:5), F_Vn(nce,0:5), F_nn(nce,nce,0:5,0:5)
+    real :: F1,F1_T,F1_V,F1_n(nce,0:5)
+    real :: F2,F2_T,F2_V,F2_n(nce,0:5)
     real :: Xk(numAssocSites)
+    integer :: i, j
     class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
     T = 280.0
     V = 1.0e-4
-    eos => get_active_eos()
-    ! Set segment numbers
-    select type ( p_eos => eos )
-    class is(PCSAFT_eos)
-      ms = p_eos%m
-      print *,"ms",ms
-      call calc_dhs(p_eos, T)
-      R = 0.5*p_eos%dhs%d(1)
-      D = p_eos%dhs%d(1)
-    class default
-      call stoperror("test_calc_assoc_phi: Wrong eos...")
-    end select
-
-    print *,"Evaluating Fres:"
     n = 1
-    !call calcSaftFder_res(nce,eos,T,V,n,F,Xk=Xk)
+    print *,"Evaluating Fres:"
+    call calcSaftFder_res(nce,eos,T,V,n,F,Xk=Xk)
     call eos%assoc%state%init(nce,T,V,n)
     Xk = 0.2 ! Initial guess.
     call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
     call calcFder_assoc(eos,nc=nce,X_k=Xk,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
          F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-    print *,"F",F
-    print *,"F_T",F_T
+    eps = 1.0e-5*T
+    call eos%assoc%state%init(nce,T-eps,V,n)
+    Xk = 0.2 ! Initial guess.
+    call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
+    call calcFder_assoc(eos,nc=nce,X_k=Xk,F=F1,F_T=F1_T,F_V=F1_V,F_n=F1_n)
+    call eos%assoc%state%init(nce,T+eps,V,n)
+    Xk = 0.2 ! Initial guess.
+    call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
+    call calcFder_assoc(eos,nc=nce,X_k=Xk,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
+    print *,"F",F*V, F1*V, F2*V
+    print *,"F_T",F_T, (F2-F1)/(2*eps)
+    print *,"F_TT",F_TT, (F2_T-F1_T)/(2*eps)
     !
-    n_fmt(1,0) = ms(1)/V
-    n_fmt(1,2) = 4*pi*R**2*n_fmt(1,0)*N_AVOGADRO
-    n_fmt(1,3) = 4*pi*R**3*n_fmt(1,0)*N_AVOGADRO/3
-
-    call calc_assoc_phi(n_fmt,T,F)
+    ! Note that n_fmt = n_fmt(T,V,n)!
+    call set_fmt_densities(T, V, n, n_fmt)
+    n_fmt(:,5) = n_fmt(:,2)*1e-3
+    !call calc_assoc_phi(n_fmt,T,F,F_T=F_T,F_n=F_n,F_TT=F_TT,F_Tn=F_Tn,F_nn=F_nn)
+    call calc_assoc_phi(n_fmt,T,F,F_T=F_T,F_n=F_n,F_TT=F_TT,F_Tn=F_Tn,F_nn=F_nn)
+    !
+    ! Temperature differentials
+    !call set_fmt_densities(T-eps, V, n, n_fmt)
+    call calc_assoc_phi(n_fmt,T-eps,F1,F_n=F1_n)
+    !call set_fmt_densities(T+eps, V, n, n_fmt)
+    call calc_assoc_phi(n_fmt,T+eps,F2,F_n=F2_n)
+    print *,"F",F*V, F1*V, F2*V
+    print *,"F_T",F_T*V, (F2-F1)/(2*eps)*V
+    print *,"F_TT",F_TT*V, (F2+F1-2*F)/(eps)**2*V
+    print *,"F_Tn",F_Tn*V
+    print *,"F_Tn",(F2_n-F1_n)/(2*eps)*V
+    !
+    ! n - differentials
+    n_fmt_0 = n_fmt
+    do i=1,nce
+      do j=0,5
+        dn = n_fmt_0(i,j)*1.0e-5
+        if (dn > 1.0e-10) then
+          n_fmt(i,j) = n_fmt_0(i,j) - dn
+          !call set_fmt_densities(T, V, n, n_fmt)
+          call calc_assoc_phi(n_fmt,T,F1,F_T=F1_T,F_n=F1_n)
+          n_fmt(i,j) = n_fmt_0(i,j) + dn
+          !call set_fmt_densities(T, V, n, n_fmt)
+          call calc_assoc_phi(n_fmt,T,F2,F_T=F2_T,F_n=F2_n)
+          print *,"w",j
+          print *,"F_n",F_n(i,j)*V, (F2-F1)/(2*dn)*V
+          print *,"F_nn",F_nn(i,:,j,:)*V
+          print *,"F_nn",(F2_n-F1_n)/(2*dn)*V
+          n_fmt = n_fmt_0
+        endif
+      enddo
+    enddo
 
   end subroutine test_calc_assoc_phi
+
+  subroutine set_fmt_densities(T, V, n, n_fmt)
+    use thermopack_var, only: nce
+    use pc_saft_nonassoc, only: PCSAFT_eos, calc_dhs
+    use thermopack_constants, only: N_AVOGADRO
+    use numconstants, only: pi
+    real, intent(out) :: n_fmt(nce,0:5)
+    real, intent(in) :: T, V, n(nce)
+    ! Locls
+    real :: ms(nce)
+    real :: R(nce)
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is(PCSAFT_eos)
+      ms = p_eos%m
+      call calc_dhs(p_eos, T)
+      R = 0.5*p_eos%dhs%d
+    class default
+      call stoperror("set_fmt_densities: Wrong eos...")
+    end select
+    !
+    n_fmt = 0
+    n_fmt(:,0) = ms(:)/V
+    n_fmt(:,2) = 4*pi*R(:)**2*n_fmt(:,0)*N_AVOGADRO
+    n_fmt(:,3) = 4*pi*R(:)**3*n_fmt(:,0)*N_AVOGADRO/3
+  end subroutine set_fmt_densities
 
 end module saft_interface

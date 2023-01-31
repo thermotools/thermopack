@@ -12,9 +12,6 @@ module linear_numerics
   public :: outer_product
   public :: solve_lu_hd
 
-  ! Debugging
-  public :: test_solve_lu_hd
-
 contains
 
   !-----------------------------------------------------------------------------
@@ -273,19 +270,19 @@ contains
     type(hyperdual) :: amax, dum, summ, vv(n)
     integer :: i, j, k, imax
 
-    d=1
+    !d=1
     ierr=0
 
     do i=1,n
-      amax=0.d0
+      amax=0.0_dp
       do j=1,n
-        if (abs(a(i,j)) > amax) amax=abs(a(i,j))
+        if (abs(a(i,j)) > amax) amax = abs(a(i,j))
       enddo
       if(amax < machine_prec) then
         ierr = 1
         return
       end if
-      vv(i) = 1.d0 / amax
+      vv(i) = 1.0_dp / amax
     enddo
 
     do j=1,n
@@ -296,7 +293,7 @@ contains
         enddo
         a(i,j) = summ
       enddo
-      amax = 0.d0
+      amax = 0.0_dp
       do i=j,n
         summ = a(i,j)
         do k=1,j-1
@@ -316,7 +313,7 @@ contains
           a(imax,k) = a(j,k)
           a(j,k) = dum
         enddo
-        d = -d
+        !d = -d
         vv(imax) = vv(j)
       end if
 
@@ -324,7 +321,7 @@ contains
       if(abs(a(j,j)) < machine_prec) a(j,j) = machine_prec
 
       if(j /= n) then
-        dum = 1.d0 / a(j,j)
+        dum = 1.0_dp / a(j,j)
         do i=j+1,n
           a(i,j) = a(i,j)*dum
         enddo
@@ -362,7 +359,10 @@ contains
         do j=ii,i-1
           summ = summ - a(i,j)*b(j)
         enddo
-      else if(summ /= 0.d0) then
+      else if(summ%f0 /= 0.0_dp .or. &
+           summ%f1 /= 0.0_dp .or. &
+           summ%f2 /= 0.0_dp .or. &
+           summ%f12 /= 0.0_dp) then ! Make sure differentials are propagated correctly
         ii = i
       end if
       b(i) = summ
@@ -400,34 +400,5 @@ contains
     call lubksb_hd(a, n, indx, b)
 
   end subroutine solve_lu_hd
-
-
-  !-----------------------------------------------------------------------------
-  !> Test solving a x = b
-  !!
-  !! \author MH, January 2023
-  !-----------------------------------------------------------------------------
-  subroutine test_solve_lu_hd()
-    use hyperdual_mod
-    implicit none
-    integer, parameter :: n = 3
-    type(hyperdual) :: a(n,n)
-    type(hyperdual) :: b(n)
-    integer :: ierr
-    a(1,1) = 1.0_dp
-    a(1,2) = 2.0_dp
-    a(1,3) = 3.0_dp
-    a(2,1) = 4.0_dp
-    a(2,2) = 5.0_dp
-    a(2,3) = 6.0_dp
-    a(3,1) = 7.0_dp
-    a(3,2) = 8.0_dp
-    a(3,3) = 9._dp
-    b(1) = 1.0_dp
-    b(2) = 2.0_dp
-    b(3) = 3.0_dp
-    call solve_lu_hd(a, n, b, ierr)
-    print *,b(:)%f0
-  end subroutine test_solve_lu_hd
 
 end module linear_numerics
