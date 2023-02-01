@@ -56,6 +56,7 @@ contains
     if (ierr /= 0) print *,'association: Not able to allocate comp_vs_sites memory'
     call deallocate_real_2(assoc%beta_kl,"assoc%beta_kl")
     call deallocate_real_2(assoc%eps_kl,"assoc%eps_kl")
+    call assoc%state%dealloc()
   end subroutine dealloc
 
   subroutine init_assoc_state(assoc_p, nc, T, V, n)

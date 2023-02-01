@@ -1,0 +1,52 @@
+module test_dft
+  !> \author Morten Hammer 2023
+  use pfunit_mod
+  use thermopack_var
+  use thermopack_constants
+  use saft_interface
+  use saft_association
+  use eoslibinit
+  use numconstants
+  implicit none
+  public
+  real, parameter :: tol = 1.0e5*machine_prec
+
+contains
+
+  !-----------------------------------------------------------------------------
+  !> Test that DFT association code is in sync with regular association code
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  @Test
+  subroutine test_dft_association()
+    implicit none
+    integer, parameter :: ncomp = 1
+    real :: n(ncomp)
+    real :: T, V
+    real :: F,F_T,F_n(ncomp),F_TT
+    real :: phi,phi_T,phi_n(ncomp,0:5),phi_TT
+    real :: n_fmt(ncomp,0:5)
+    real, allocatable :: Xk(:)
+    class(base_eos_param), pointer :: eos
+    !
+    call init_pcsaft("H2O")
+    eos => get_active_eos()
+    T = 280.0
+    V = 1.0e-4
+    n = 1
+
+    call eos%assoc%state%init(ncomp,T,V,n)
+    allocate(Xk(numAssocSites))
+    Xk = 0.2 ! Initial guess.
+    call solve_for_X_k(eos,nce,Xk,tol=tol)
+    call calcFder_assoc(eos,nc=ncomp,X_k=Xk,F=F)
+    deallocate(Xk)
+
+    call set_fmt_densities(T, V, n, n_fmt)
+    call calc_assoc_phi(n_fmt=n_fmt,T=T,F=phi)
+    @assertTrue(abs((phi*V - F)/F) < tol)
+
+  end subroutine test_dft_association
+
+end module test_dft
