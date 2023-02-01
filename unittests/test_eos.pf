@@ -41,9 +41,9 @@ contains
     real, intent(in) :: T0, P0
     real, dimension(ncomp), intent(in) :: x0
     ! Locals
-    real, parameter :: eps = 1.0e-6
+    real, parameter :: eps = 1.0e-5, tol = 1.0e-8
     real :: t, p, dt, dp
-    real :: g,g2,dgdt,dgdp,dgdn(ncomp)
+    real :: g,g2,g1,dgdt,dgdp,dgdn(ncomp)
     real, dimension(ncomp) :: n, dn
     integer :: j
     character(len=100) :: mixing_l
@@ -75,27 +75,33 @@ contains
          dgdt,dgdp,dgdn)
 
     ! Temperature differentials
-    t = t0 + dt
     n = x0
     p = p0
+    t = t0 - dt
+    call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g1)
+    t = t0 + dt
     call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
-    @assertEqual(dgdt,(g2-g)/dt,10.0*eps*abs(dgdt))
+    @assertEqual(dgdt,(g2-g1)/dt/2,tol*abs(dgdt))
 
     ! Pressure differentials
     t = t0
     n = x0
+    p = p0 - dp
+    call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g1)
     p = p0 + dp
     call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
-    @assertEqual(dgdp,(g2-g)/dp,10.0*eps*abs(dgdp))
+    @assertEqual(dgdp,(g2-g1)/dp/2,tol*abs(dgdp))
 
     ! Mole number differentials
     t = t0
     p = p0
     do j=1,ncomp
       n = x0
+      n(j) = x0(j) - dn(j)
+      call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g1)
       n(j) = x0(j) + dn(j)
       call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
-      @assertEqual(dgdn(j),(g2-g)/dn(j),10.0*eps*abs(dgdn(j)))
+      @assertEqual(dgdn(j),(g2-g1)/dn(j)/2,tol*abs(dgdn(j)))
     enddo
 
   end subroutine test_Gibbs_TP_model

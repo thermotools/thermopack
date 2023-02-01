@@ -316,7 +316,7 @@ contains
     sumn = sum(n0)
     x = n0/sumn
     ! Test model
-    silent_init = .False.
+    silent_init = .True.
 
     call init_thermo(trim(model), trim(mixing_l), trim(alpha_l),&
          trim(components), 1, saft_ref=saft_ref_l)
