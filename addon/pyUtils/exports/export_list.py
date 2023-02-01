@@ -252,6 +252,7 @@ append_export("truncation_corrections", "saft_interface")
 append_export("calc_saft_hard_sphere", "saft_interface")
 append_export("test_fmt_compatibility", "saft_interface")
 append_export("setcpaformulation", "saft_interface")
+append_export("calc_assoc_phi", "saft_interface")
 
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")

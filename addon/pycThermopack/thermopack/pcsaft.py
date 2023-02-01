@@ -43,6 +43,8 @@ class pcsaft(saft):
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
         self.s_lng_ii_pc_saft_tvn = getattr(self.tp, self.get_export_name("pc_saft_nonassoc", "lng_ii_pc_saft_tvn"))
+        # DFT interface
+        self.s_calc_assoc_phi = getattr(self.tp, self.get_export_name("saft_interface", "calc_assoc_phi"))
 
         # Define parameters to be set by init
         self.nc = None
@@ -291,3 +293,70 @@ class pcsaft(saft):
             return_tuple += (lng_nn, )
 
         return return_tuple
+
+    def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
+                                   phi_tt=None, phi_TT=None, phi_tn=None, phi_nn=None):
+        """Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
+
+        Args:
+            temp (float): Temperature (K)
+            n_alpha (np.ndarray): Weighted densities
+            phi (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_T (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_n (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_TT (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_Tn (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_nn (No type, optional): Flag to activate calculation. Defaults to None.
+
+        Returns:
+            Optionally energy density and differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        dim = self.nc*6
+        assert np.shape(n_alpha) == [self.nc, 6]
+        n_alpha_c = (c_double * dim)(*n_alpha.flatten('F'))
+
+        null_pointer = POINTER(c_double)()
+        phi_c = null_pointer if phi is None else c_double(0.0)
+        phi_t_c = null_pointer if phi_t is None else c_double(0.0)
+        phi_n_c = null_pointer if phi_n is None else (c_double * dim)(0.0)
+        phi_tt_c = null_pointer if phi_tt is None else c_double(0.0)
+        phi_tn_c = null_pointer if phi_tn is None else (c_double * dim)(0.0)
+        phi_nn_c = null_pointer if phi_nn is None else (c_double * dim**2)(0.0)
+
+        self.s_calc_assoc_phi.argtypes = [POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double)]
+
+        self.s_calc_assoc_phi.restype = None
+
+        self.s_calc_assoc_phi(byref(temp_c),
+                              n_alpha_c,
+                              phi_c,
+                              phi_t_c,
+                              phi_n_c,
+                              phi_tt_c,
+                              phi_tn_c,
+                              phi_nn_c)
+
+        return_dict = {}
+        if not phi is None:
+            return_dict["phi"] = phi_c.value
+        if not phi_T is None:
+            return_dict["phi_t"] = phi_t_c.value
+        if not phi_n is None:
+            return_dict["phi_n"] = np.array(phi_n_c).reshape((self.nc, 6), order='F')
+        if not phi_tt is None:
+            return_dict["phi_tt"] = phi_tt_c.value
+        if not phi_tn is None:
+            return_dict["phi_tn"] = np.array(phi_tn_c).reshape((self.nc, 6), order='F')
+        if not phi_nn is None:
+            return_dict["phi_nn"] = np.array(phi_nn_c).reshape((self.nc, self.nc, 6, 6), order='F')
+
+        return return_dict
