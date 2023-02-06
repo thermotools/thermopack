@@ -421,6 +421,7 @@ $(ODIR)/eos_container.o: $(SRC)/eos_container.f90 \
 	$(SRC)/compdata.f90 $(SRC)/eos_parameters.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/lj_splined.f90 \
+	$(SRC)/uv_theory.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/extcsp.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/pets.f90
 	@$(call make_object, $(SRC)/eos_container.f90)

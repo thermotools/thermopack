@@ -86,25 +86,25 @@ module uv_theory
   real, parameter :: B_DELTAB2_WCA = 3.41106168592999
 
 
-  type, extends(base_eos_param) :: uv_theory_param
+  type, extends(base_eos_param) :: uv_theory_eos
      ! Mie potential parameters
      type(mie_potential_hd), allocatable :: mie(:,:)
-     real, allocatable :: lambda_r(:,:)        !< Repulsive exponent [-]
-     real, allocatable :: lambda_a(:,:)        !< Attractive exponent [-]
-     real, allocatable :: sigma(:,:)           !< [m]
-     real, allocatable :: eps_divk(:,:)        !< [K]
-     real, allocatable :: Cmie(:,:)            !< Mie potential prefactor [-]
-     real, allocatable :: rmin(:,:)            !< Location of minimum [m]
+     ! real, allocatable :: lambda_r(:,:)        !< Repulsive exponent [-]
+     ! real, allocatable :: lambda_a(:,:)        !< Attractive exponent [-]
+     ! real, allocatable :: sigma(:,:)           !< [m]
+     ! real, allocatable :: eps_divk(:,:)        !< [K]
+     ! real, allocatable :: Cmie(:,:)            !< Mie potential prefactor [-]
+     ! real, allocatable :: rmin(:,:)            !< Location of minimum [m]
    contains
      procedure, public :: dealloc => uv_dealloc
      procedure, public :: allocate_and_init => uv_allocate_and_init
      procedure, public :: calc_onefluid_params
      ! Assignment operator
-     procedure, pass(This), public :: assign_eos => assign_uv_eos
-  end type uv_theory_param
+     procedure, pass(this), public :: assign_eos => assign_uv_eos
+  end type uv_theory_eos
 
-  public :: uv_theory_param
-  public :: calc_fres_uv
+  public :: uv_theory_eos
+  public :: calcFres_uv
   
 contains
 
@@ -114,29 +114,39 @@ contains
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
     integer, intent(in) :: nc          !< Number of components.
     type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector.
-    class(uv_theory_param), intent(inout) :: uv
+    class(uv_theory_eos), intent(inout) :: uv
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     ! Locals
-    real :: lamr, lama, sigma, eps_divk
+    type(mie_potential_hd) :: mie_pure
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
     integer :: idx
 
     ! Deallocate old memory and init new memory
     call uv%allocate_and_init(nc, eos_label="UV-MIE-WCA")
 
-    idx = getUVdataIdx(uv%subeosidx,trim(comp(1)%p_comp%ident),ref)
-    sigma = MieArray(idx)%sigma
-    eps_divk = MieArray(idx)%eps_divk
-    lamr = MieArray(idx)%lamr
+    idx = getMiedataIdx(uv%subeosidx,trim(comp(1)%p_comp%ident),ref)
+    sigma = 3.42e-10
+    epsdivk = 124.0
+    lamr = 12.0
     lama = 6.0
 
-    ! Set component data
-    uv%lambda_a = 6.0
-    uv%lambda_r = lamr
-    uv%eps_divk = eps_divk
-    uv%sigma = sigma
-    uv%CMie = abs(lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama)))
-    uv%rmin = sigma*(lamr/6)**(1/(lamr-6))
+    ! ! ! Set component data
+    ! print *, nc, ref
+    ! print *, idx, sigma, eps_divk, lamr, lama
+    ! print *, uv%lambda_r
+    ! print *, uv%mie(1,1)%lama
 
+    print *, lamr%f0, sigma%f0, epsdivk%f0
+
+    ! call mie_pure%init(lama=6.0, lamr=MieArray(idx)%lamr, &
+    !      sigma=MieArray(idx)%sigma, epsdivk=MieArray(idx)%eps_divk)
+    call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+
+    uv%mie(1,1) = mie_pure
+
+    !print *, "assigned?", mie_pure%lamr
+    print *, "assigned?", uv%mie(1,1)%lamr
+    
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
@@ -148,11 +158,11 @@ contains
   end subroutine init_uv_theory
 
 
-  subroutine calc_fres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
+  subroutine calcFres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
     use hyperdual_utility, only: hyperdual_fres_wrapper
     !> The reduced helmholtz energy from uv-theory
-    class(uv_theory_param), intent(inout) :: eos
+    type(uv_theory_eos), intent(inout) :: eos
     integer, intent(in)                :: nc
     real, intent(in)  :: T             !< temperature (K)
     real, intent(in)  :: V             !< volume (m^3)
@@ -161,13 +171,12 @@ contains
     real, optional, intent(inout) :: f_T,f_V,f_TT,f_VV,f_TV
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
     ! Locals
-    
+    print *, "T,V,n", T,V,n
     call hyperdual_fres_wrapper(fun,eos,nc,T,V,n,f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
-    
   contains
     function fun(eos,nc,T,V,n) result(f)
-      !class(uv_theory_param), intent(inout) :: eos
+      !class(uv_theory_eos), intent(inout) :: eos
       class(base_eos_param), intent(inout) :: eos
       integer, intent(in)                :: nc
       type(hyperdual), intent(in)  :: T             !< temperature (K)
@@ -179,19 +188,20 @@ contains
       z = n/sum(n)
       rho = sum(n)/V
       select type ( p_eos => eos )
-      type is ( uv_theory_param )
+      type is ( uv_theory_eos )
          call calc_a_uv(p_eos, nc, T, rho=rho, z=z, a=f)
+        
       end select
       f = a*sum(n)
     end function fun
-  end subroutine calc_fres_uv
+  end subroutine calcFres_uv
   
   
 
   subroutine calc_a_uv(eos, nc, T, rho, z, a)
     !> The reduced helmholtz energy from uv-theory
     integer, intent(in)                :: nc
-    class(uv_theory_param), intent(inout) :: eos
+    class(uv_theory_eos), intent(inout) :: eos
     type(hyperdual), intent(in)  :: T             !< temperature (K)
     type(hyperdual), intent(in)  :: rho           !< density (mol/m^3)
     type(hyperdual), intent(in)  :: z(nc)         !< mole fractions (-)
@@ -204,6 +214,9 @@ contains
     type(hyperdual) :: lama, lamr
     integer :: i,j
 
+    print *, "finally arrived!"
+    print *, "assigned?", eos%mie(1,1)%lamr
+    print *, eos%mie(1,1)%lamr
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     do i = 1,nc
@@ -252,15 +265,20 @@ contains
     ! Calculate total helmholtz energy
     a = a0 + phi*Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
 
+    print *, "a0", a0
+    print *, "phi", phi
+    print *, "Delta_a1u", Delta_a1u
+    print *, "Delta_B2u",  Delta_B2u
+    print *, "Delta_B2",  Delta_B2
   end subroutine calc_a_uv
 
 
   subroutine assign_uv_eos(this, other)
-    class(uv_theory_param), intent(inout) :: this
+    class(uv_theory_eos), intent(inout) :: this
     class(*), intent(in) :: other
     !
     select type (other)
-    class is (uv_theory_param)
+    class is (uv_theory_eos)
        call this%assign_base_eos_param(other)
        this%mie = other%mie
        ! this%lambda_r = other%lambda_r
@@ -273,45 +291,9 @@ contains
     end select
   end subroutine assign_uv_eos
 
-  !> Get the index in the MieArray of the component having uid given by
-  !> compName. idx=0 if component isn't in database.
-  function getUVdataIdx(eosidx,compName,ref) result(idx)
-    use stringmod, only: str_eq, string_match
-    integer, intent(in) :: eosidx
-    character(len=*), intent(in) :: compName, ref
-    integer :: idx, idx_default
-    logical :: found
-
-    found = .false.
-    idx = 1
-    idx_default = -1
-    do while (idx <= nMie)
-       if ((eosidx == Miearray(idx)%eosidx) .and. &
-            str_eq(compName, Miearray(idx)%compName)) then
-          if (string_match(ref,Miearray(idx)%ref)) then
-             found = .true.
-             exit
-          else if (string_match("DEFAULT",Miearray(idx)%ref)) then
-             idx_default = idx
-          endif
-       endif
-       idx = idx + 1
-    enddo
-
-    if (.not. found .and. idx_default > 0) then
-       idx = idx_default
-       found = .true.
-    endif
-    if (.not. found) then
-       print *, "ERROR FOR COMPONENT ", compname
-       call stoperror("The UV parameters don't exist.")
-    end if
-
-  end function getUVdataIdx
-
 
   subroutine calc_onefluid_params(this,nc,z, epsdivk, sigma3_single, sigma3_double)
-    class(uv_theory_param), intent(in) :: this
+    class(uv_theory_eos), intent(in) :: this
     integer, intent(in) :: nc                           !< Number of components.
     type(hyperdual), intent(in) :: z(nc)                !< Mole fractions
     type(hyperdual), intent(out) :: sigma3_single   !< Cubed one-fluid diameter
@@ -335,53 +317,71 @@ contains
 
 
   subroutine uv_dealloc(eos)
-    class(uv_theory_param), intent(inout) :: eos
+    class(uv_theory_eos), intent(inout) :: eos
     ! Locals
     integer :: stat
     call base_eos_dealloc(eos)
 
-    deallocate(eos%mie,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! if (allocated(eos%lambda_r)) deallocate(eos%lambda_r,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate lambda_r")
 
-    deallocate(eos%lambda_r,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! deallocate(eos%lambda_a,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
 
-    deallocate(eos%lambda_a,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! deallocate(eos%sigma,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
 
-    deallocate(eos%sigma,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! deallocate(eos%eps_divk,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
 
-    deallocate(eos%eps_divk,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! deallocate(eos%CMie,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
 
-    deallocate(eos%CMie,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    ! deallocate(eos%rmin,stat=stat)
+    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
 
-    deallocate(eos%rmin,stat=stat)
-    if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
+    select type (p_eos => eos)
+    class is (uv_theory_eos)
+       if (allocated(eos%mie)) deallocate(eos%mie,stat=stat)
+       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
+    end select
+
   end subroutine uv_dealloc
 
   subroutine uv_allocate_and_init(eos,nc,eos_label)
-    class(uv_theory_param), intent(inout) :: eos
+    class(uv_theory_eos), intent(inout) :: eos
     integer, intent(in) :: nc
     character(len=*), intent(in) :: eos_label !< EOS label
     ! Locals
 
     call eos%dealloc()
     allocate(eos%mie(nc,nc))
-    allocate(eos%lambda_r(nc,nc))
-    allocate(eos%lambda_a(nc,nc))
-    allocate(eos%sigma(nc,nc))
-    allocate(eos%eps_divk(nc,nc))
-    allocate(eos%Cmie(nc,nc))
-    allocate(eos%rmin(nc,nc))
+    ! allocate(eos%lambda_r(nc,nc))
+    ! allocate(eos%lambda_a(nc,nc))
+    ! allocate(eos%sigma(nc,nc))
+    ! allocate(eos%eps_divk(nc,nc))
+    ! allocate(eos%Cmie(nc,nc))
+    ! allocate(eos%rmin(nc,nc))
   end subroutine uv_allocate_and_init
 
+  !> Allocate memory for cubic eos
+  function uv_eos_constructor(nc,eos_label) result(uv)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(uv_theory_eos) :: uv
+    ! Locals
+
+    call uv%allocate_and_init(nc,eos_label)
+
+  end function uv_eos_constructor
+
+  
 
   subroutine delta_a1u_b2u_WCA_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
-    type(uv_theory_param), intent(in) :: eos ! uv-theory eos
+    type(uv_theory_eos), intent(in) :: eos ! uv-theory eos
     integer, intent(in) :: nc ! number of components
     type(hyperdual), intent(in) :: T      ! reduced temperature (-)
     type(hyperdual), intent(in) :: rho    ! reduced density (-)
@@ -466,7 +466,7 @@ contains
   subroutine DeltaB2_WCA_Mie(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
     integer, intent(in) :: nc !< Number of components
-    class(uv_theory_param), intent(in) :: eos
+    type(uv_theory_eos), intent(in) :: eos
     type(hyperdual), intent(in) :: T         ! reduced temperature
     type(hyperdual), intent(in) :: z(nc)
     type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2
@@ -539,7 +539,7 @@ contains
 
   subroutine calc_eta_dhs(nc, eos, T, rho, z, eta)
     integer, intent(in) :: nc !< Number of components
-    class(uv_theory_param), intent(in) :: eos
+    type(uv_theory_eos), intent(in) :: eos
     type(hyperdual), intent(in) :: T, rho, z(nc)
     type(hyperdual), intent(out) :: eta
     ! Locals
@@ -556,7 +556,7 @@ contains
     !> Perturbation contribution delta_a0 to the reference Helmholtz
     !> energy a0, defined by a_0 = ahs_d + delta_a0. See Eq S40 in [1].
     integer, intent(in) :: nc !< Number of components
-    class(uv_theory_param), intent(in) :: eos
+    type(uv_theory_eos), intent(in) :: eos
     type(hyperdual), intent(in) :: T
     type(hyperdual), intent(in) :: rho
     type(hyperdual), intent(in) :: x(nc)
@@ -585,7 +585,7 @@ contains
           IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)/3.0
           IB = (1.0-etaB/2.0)/(1.0-etaB)**3 * (rs_r**3-dhs_r**3)/3.0
           I0f = IA-IB
-          delta_a0 = delta_a0 + x(i)*x(j)*eos%sigma(i,j)**3 * I0f
+          delta_a0 = delta_a0 + x(i)*x(j)*eos%mie(i,j)%sigma**3 * I0f
        end do
     end do
     delta_a0 = -2*PI*rho*delta_a0
@@ -702,10 +702,10 @@ subroutine test_Fres_derivatives()
   real :: Fm,Fm_T,Fm_V,Fm_TT,Fm_VV,Fm_TV
   real, dimension(1) :: Fm_n,Fm_Tn,Fm_Vn
   real, dimension(1,1) :: Fm_nn
-  class(uv_theory_param), pointer :: eos
+  type(uv_theory_eos) :: eos
   real, parameter :: sigma_param = 2.801e-10, eps_divk_param = 33.921
-  allocate(uv_theory_param :: eos)
-  call eos%allocate_and_init(nc,"uv-theory")
+  !allocate(uv_theory_eos :: eos)
+  !call eos%allocate_and_init(nc,"uv-theory")
   eps = 1.0e-5
   ! eos%enable_A1 = .true.
   ! eos%enable_A2 = .true.
@@ -722,13 +722,14 @@ subroutine test_Fres_derivatives()
   print *,V
 
   ! select type ( p_eos => eos )
-  ! type is ( uv_theory_param )
-     call calc_fres_uv(eos,1,T,V,n,F,F_T,F_V,F_n,F_TT,&
-          F_VV,F_TV,F_Tn,F_Vn,F_nn)
-     call calc_fres_uv(eos,1,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
-          Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-     call calc_fres_uv(eos,1,T,V-V*eps,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
-          Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+  ! type is ( uv_theory_eos )
+  !    print *, "here, right?"
+  call calcFres_uv(eos,1,T,V,n,F,F_T,F_V,F_n,F_TT,&
+       F_VV,F_TV,F_Tn,F_Vn,F_nn)
+  call calcFres_uv(eos,1,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+  call calcFres_uv(eos,1,T,V-V*eps,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
   ! end select
   print *,"Testing the residual reduced Helmholtz energy"
   print *,"V"
@@ -740,10 +741,10 @@ subroutine test_Fres_derivatives()
 
   print *,"n1"
   n(1) = n0(1) + eps
-  call calc_fres_uv(eos,1,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+  call calcFres_uv(eos,1,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
   n(1) = n0(1) - eps
-  call calc_fres_uv(eos,1,T,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+  call calcFres_uv(eos,1,T,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
        Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
   print *,F_n(1),(Fp - Fm)/(2*eps)
   print *,F_Tn(1),(Fp_T - Fm_T)/(2*eps)
@@ -752,9 +753,9 @@ subroutine test_Fres_derivatives()
 
   print *,"T"
   n = n0
-  call calc_fres_uv(eos,1,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+  call calcFres_uv(eos,1,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-  call calc_fres_uv(eos,1,T-T*eps,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+  call calcFres_uv(eos,1,T-T*eps,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
        Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
 
   print *,F_T,(Fp - Fm)/(2*T*eps)

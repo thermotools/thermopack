@@ -254,6 +254,14 @@ module eosdata
        ),&
        !
        eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_WCA, &
+       short_label = "uv-mie-wca", &
+       label = "uv-theory using WCA for Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
        eos_idx = eosPeTS, &
        eos_subidx = eosPeTS, &
        short_label = "PETS", &
