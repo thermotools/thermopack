@@ -123,6 +123,7 @@ OBJE = \
        $(ODIR)/idealh2.o \
        $(ODIR)/ideal.o \
        $(ODIR)/cpa_parameters.o \
+       $(ODIR)/pair_potentials.o \
        $(ODIR)/cbselect.o \
        $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \
@@ -137,7 +138,9 @@ OBJE = \
        $(ODIR)/saftvrmie_association.o \
        $(ODIR)/saftvrmie_interface.o \
        $(ODIR)/hardsphere_wca.o \
+       $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/lj_splined.o \
+       $(ODIR)/uv_theory.o \
        $(ODIR)/saft_globals.o \
        $(ODIR)/saft_rdf.o \
        $(ODIR)/saft_association.o \
@@ -384,6 +387,9 @@ $(ODIR)/cpa_parameters.o: $(SRC)/cpa_parameters.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/assocschemeutils.f90 \
 	$(SRC)/stringmod.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/cpa_parameters.f90)
+$(ODIR)/pair_potentials.o: $(SRC)/pair_potentials.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/thermopack_constants.f90
+	@$(call make_object, $(SRC)/pair_potentials.f90)
 $(ODIR)/critical.o: $(SRC)/critical.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/eos.f90 $(SRC)/eostv.f90 \
@@ -486,6 +492,9 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
+	$(SRC)/quadratures.f90 $(SRC)/hyperdual_mod.f90
+	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
 $(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hyperdual_mod.f90)
 $(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \
@@ -527,6 +536,15 @@ $(ODIR)/lj_splined.o: $(SRC)/lj_splined.f90 \
 	$(SRC)/compdata.f90 $(SRC)/stringmod.f90 \
 	$(SRC)/lj_splined.f90
 	@$(call make_object, $(SRC)/lj_splined.f90)
+$(ODIR)/uv_theory.o: $(SRC)/uv_theory.f90 \
+	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_utils.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/hardsphere_wca.f90 $(SRC)/saftvrmie_dispersion.f90 \
+	$(SRC)/compdata.f90 $(SRC)/pair_potentials.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/lj_splined.f90 \
+	$(SRC)/saftvrmie_options.f90
+	@$(call make_object, $(SRC)/uv_theory.f90)
 $(ODIR)/mbwr.o: $(SRC)/mbwr.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/mbwrdata.f90 \
 	$(SRC)/compdatadb.f90 $(SRC)/compdata_init.f90 \
