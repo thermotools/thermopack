@@ -517,7 +517,7 @@ $(ODIR)/lj_splined.o: $(SRC)/lj_splined.f90 \
 	$(SRC)/hardsphere_wca.f90 $(SRC)/saftvrmie_dispersion.f90 \
 	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/compdata.f90 \
 	$(SRC)/stringmod.f90 $(SRC)/lj_splined.f90 \
-	$(SRC)/saftvrmie_options.f90
+	$(SRC)/saft_interface.f90 $(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/lj_splined.f90)
 $(ODIR)/uv_theory.o: $(SRC)/uv_theory.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_utils.f90 \
@@ -525,7 +525,7 @@ $(ODIR)/uv_theory.o: $(SRC)/uv_theory.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/hardsphere_wca.f90 $(SRC)/saftvrmie_dispersion.f90 \
 	$(SRC)/compdata.f90 $(SRC)/pair_potentials.f90 \
-	$(SRC)/stringmod.f90 $(SRC)/lj_splined.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/saft_interface.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/uv_theory.f90)
 $(ODIR)/mbwr.o: $(SRC)/mbwr.f90 \
