@@ -1,4 +1,5 @@
 module pair_potentials
+  use hyperdual_mod
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
   use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH
 
@@ -15,6 +16,21 @@ module pair_potentials
      procedure, public :: init => mie_potential_init
   end type mie_potential
 
+
+  type :: mie_potential_hd
+     type(hyperdual) :: lamr        !< repulsive exponent [-]
+     type(hyperdual) :: lama        !< attractive exponent [-]
+     type(hyperdual) :: sigma       !< diameter [m]
+     type(hyperdual) :: epsdivk     !< energy divided by kB [K]
+     type(hyperdual) :: Cmie        !< Mie potential prefactor [-]
+     type(hyperdual) :: rmin        !< location of minimum [m]
+     type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
+     type(hyperdual) :: alpha       !< adimensional van der waals energy [-]
+   contains
+     procedure, public :: init => mie_potential_hd_init
+  end type mie_potential_hd
+
+  
   !> PURE COMPONENT PARAMETERS.
   ! ---------------------------------------------------------------------------
   type :: mie_data
@@ -54,11 +70,25 @@ contains
     this%sigma = sigma
     this%epsdivk = epsdivk
 
-    this%CMie = abs(lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama)))
+    this%CMie = lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama))
     this%rmin = sigma*(lamr/lama)**(1/(lamr-lama))
     this%rmin_adim = this%rmin/sigma
     this%alpha = this%CMie*(1.0/(lama - 3.0) - 1.0/(lamr - 3.0))
   end subroutine mie_potential_init
 
+  subroutine mie_potential_hd_init(this, lama, lamr, sigma, epsdivk)
+    class(mie_potential_hd), intent(inout) :: this
+    type(hyperdual), intent(in) :: lama, lamr, sigma, epsdivk
+
+    this%lama = lama
+    this%lamr = lamr
+    this%sigma = sigma
+    this%epsdivk = epsdivk
+
+    this%CMie = lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama))
+    this%rmin = sigma*(lamr/lama)**(1.0/(lamr-lama))
+    this%rmin_adim = this%rmin/sigma
+    this%alpha = this%CMie*(1.0/(lama - 3.0) - 1.0/(lamr - 3.0))
+  end subroutine mie_potential_hd_init
 
 end module pair_potentials
