@@ -20,7 +20,7 @@ module eoslibinit
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
-  public :: init_multiparameter, init_pets, init_ljs, init_lj
+  public :: init_multiparameter, init_pets, init_ljs, init_lj, init_uv
   public :: silent_init
   public :: redefine_critical_parameters
   public :: init_volume_translation
@@ -1266,6 +1266,17 @@ contains
   end subroutine init_ljs
 
   !----------------------------------------------------------------------------
+  !> Initialize uv-theory equation of state
+  !----------------------------------------------------------------------------
+  subroutine init_uv(model,parameter_reference)
+    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "BH", "WCA"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    !
+    call init_mie_uv("uv-theory",model,parameter_reference)
+  end subroutine init_uv
+
+  
+  !----------------------------------------------------------------------------
   !> Initialize Lennard-Jones equation of state using perturbation theory
   !----------------------------------------------------------------------------
   subroutine init_lj(model,parameter_reference)
@@ -1365,4 +1376,97 @@ contains
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_lj_ljs
 
+
+  !----------------------------------------------------------------------------
+  !> Initialize uv-theory equation of state for Mie potentials
+  !----------------------------------------------------------------------------
+  subroutine init_mie_uv(potential,model,parameter_reference)
+    use compdata, only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK, ref_len
+    use stringmod,  only: uppercase
+    use volume_shift, only: NOSHIFT
+    use saft_interface, only: saft_type_eos_init
+    use ideal, only: set_reference_energies
+    !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), intent(in) :: potential !< Potential selection: "LJ", "LJS"
+    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF", "BH", "WCA"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, ncbeos, i, ierr, index, len_model
+    character(len=3)                 :: comps_upper
+    type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
+    character(len=ref_len)           :: param_ref
+    character(len=7)                 :: model_local
+
+    ! Initialize Pets eos
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
+      index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+    ! Set component list
+    comps_upper="AR"
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    !
+    ! if (present(model)) then
+    !   len_model = min(3,len_trim(model))
+    !   model_local = trim(potential)//"-"//uppercase(model(1:len_model))
+    ! else
+    !   model_local = trim(potential)//"-UV"
+    ! endif
+    call allocate_eos(ncomp, "uv-mie-wca")
+
+    ! Number of phases
+    act_mod_ptr%nph = 2
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    act_mod_ptr%nc = ncomp
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    act_mod_ptr%eosLib = THERMOPACK
+
+    ! Set local variable for parameter reference
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "DEFAULT"
+    endif
+
+    ! Initialize components module
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    ! Set reference entalpies and entropies
+    call set_reference_energies(act_mod_ptr%comps)
+
+    ! Initialize Thermopack
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+
+    call saft_type_eos_init(nce,act_mod_ptr%comps,&
+         act_eos_ptr,param_ref,silent_init=.true.)
+
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
+
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+    ! TODO: uncomment this after debugging uv-theory
+    ! Initialize fallback eos
+    act_mod_ptr%need_alternative_eos = .false.
+    call init_fallback_and_redefine_criticals(silent=.true.)
+  end subroutine init_mie_uv
+
+  
 end module eoslibinit

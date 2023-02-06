@@ -30,7 +30,7 @@ module pair_potentials
      procedure, public :: init => mie_potential_hd_init
   end type mie_potential_hd
 
-  
+
   !> PURE COMPONENT PARAMETERS.
   ! ---------------------------------------------------------------------------
   type :: mie_data
@@ -60,6 +60,42 @@ module pair_potentials
        ref="DEFAULT")/)
 
 contains
+
+  !> Get the index in the MieArray of the component having uid given by
+  !> compName. idx=0 if component isn't in database.
+  function getMiedataIdx(eosidx,compName,ref) result(idx)
+    use stringmod, only: str_eq, string_match
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: compName, ref
+    integer :: idx, idx_default
+    logical :: found
+
+    found = .false.
+    idx = 1
+    idx_default = -1
+    do while (idx <= nMie)
+       if ((eosidx == Miearray(idx)%eosidx) .and. &
+            str_eq(compName, Miearray(idx)%compName)) then
+          if (string_match(ref,Miearray(idx)%ref)) then
+             found = .true.
+             exit
+          else if (string_match("DEFAULT",Miearray(idx)%ref)) then
+             idx_default = idx
+          endif
+       endif
+       idx = idx + 1
+    enddo
+
+    if (.not. found .and. idx_default > 0) then
+       idx = idx_default
+       found = .true.
+    endif
+    if (.not. found) then
+       print *, "ERROR FOR COMPONENT ", compname
+       call stoperror("The Mie parameters don't exist.")
+    end if
+
+  end function getMiedataIdx
 
   subroutine mie_potential_init(this, lama, lamr, sigma, epsdivk)
     class(mie_potential), intent(inout) :: this

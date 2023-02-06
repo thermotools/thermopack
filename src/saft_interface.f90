@@ -27,7 +27,7 @@ module saft_interface
   use thermopack_constants, only: verbose
   use compdata, only: gendata
   use eosdata, only: cpaSRK, cpaPR, eosPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
-       eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF
+       eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, eosMie_UV_WCA
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
@@ -59,6 +59,7 @@ contains
     use saftvrmie_interface, only: init_saftvrmie
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, init_ljs_bh, ljs_wca_eos, init_ljs_wca
+    use uv_theory, only: uv_theory_eos, init_uv_theory
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
     use pets, only: PETS_eos
     integer, intent(in)           :: nc          !< Number of components.
@@ -153,10 +154,12 @@ contains
       call init_ljs_bh(nc,comp,p_eos,param_ref)
     class is ( ljs_wca_eos )
       call init_ljs_wca(nc,comp,p_eos,param_ref)
+    class is ( uv_theory_eos )
+      call init_uv_theory(nc,comp,p_eos,param_ref)
     class is ( PETS_eos )
       call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
     class default
-      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+      call stoperror("init_saft_type_eos: Wrong eos...")
     end select
 
     ! Init calls above will clean eos class memory before init
@@ -455,6 +458,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
          ljs_wca_eos, calcFres_WCA
+    use uv_theory, only: uv_theory_eos, calcFres_uv
     ! Input.
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
@@ -481,6 +485,12 @@ contains
       endif
     class is (ljs_wca_eos)
       call calcFres_WCA(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
+    class is (uv_theory_eos)
+      call calcFres_uv(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
            F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
@@ -1030,7 +1040,8 @@ contains
          eos%assoc%saft_model == eosLJS_WCA .or. &
          eos%assoc%saft_model == eosLJS_UF .or. &
          eos%assoc%saft_model == eosLJS_UV .or. &
-         eos%assoc%saft_model == eosLJ_UF) then
+         eos%assoc%saft_model == eosLJ_UF .or. &
+         eos%assoc%saft_model == eosMie_UV_WCA) then
       conv_num = conversion_numerator(eos,nc,T,n)
       if (phase .eq. VAPPH) then
         zeta = 1e-10

@@ -47,7 +47,7 @@ Module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 24
+  integer, parameter :: max_n_eos = 25
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -222,6 +222,14 @@ Module eosdata
        eos_subidx = eosLJ_UF, &
        short_label = "LJ-UF", &
        label = "LJ equation of state using UF perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_WCA, &
+       short_label = "uv-mie-wca", &
+       label = "uv-theory using WCA for Mie potentials", &
        need_alternative_eos = .true. &
        ),&
        !
