@@ -32,7 +32,6 @@ contains
        zeta2 = zeta2 + term*diameters(i)**2
        zeta3 = zeta3 + term*diameters(i)**3
     end do
-
     ! Precalculate
     pref = 1.0/zeta0
     en_m_zeta3 = 1.0 - zeta3

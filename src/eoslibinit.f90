@@ -1388,6 +1388,7 @@ contains
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
     use ideal, only: set_reference_energies
+    use uv_theory, only: uv_theory_eos
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: potential !< Potential selection: "LJ", "LJS"
     character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF", "BH", "WCA"
@@ -1464,8 +1465,12 @@ contains
 
     ! TODO: uncomment this after debugging uv-theory
     ! Initialize fallback eos
-    act_mod_ptr%need_alternative_eos = .false.
+    act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
+    select type ( p_eos => act_eos_ptr )
+    type is ( uv_theory_eos )
+       print *, "eoslibinit:assigned:", p_eos%mie(1,1)%lamr
+    end select
   end subroutine init_mie_uv
 
   
