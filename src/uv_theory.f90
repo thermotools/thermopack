@@ -105,10 +105,35 @@ module uv_theory
 
   public :: uv_theory_eos
   public :: calcFres_uv
-  
+  public :: calc_uv_WCA_eta
 contains
 
+ 
+  function calc_uv_WCA_eta(eos,nc,T,V,n) result(eta)
+    ! Input
+    type(uv_theory_eos), intent(in) :: eos
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    ! Output
+    real :: eta !< Packing fraction [-]
+    ! Locals
+    real :: sumn
+    type(hyperdual) :: eta_hd, rhonum_hd, T_hd, z_hd(nc)
 
+    z_hd = 0.0
+    T_hd = 0.0
+    rhonum_hd = 0.0
+    sumn = sum(n)
+    z_hd%f0 = n/sumn
+    T_hd%f0 = T
+    rhonum_hd%f0 = sumn*N_AVOGADRO/V
+    call calc_eta_dhs(eos, nc, T=T_hd, rho=rhonum_hd, z=z_hd, eta=eta_hd)
+    eta = eta_hd%f0
+  end function calc_uv_WCA_eta
+
+  
   subroutine init_uv_theory(nc,comp,uv,ref)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
@@ -130,23 +155,13 @@ contains
     lamr = 12.0
     lama = 6.0
 
-    ! ! ! Set component data
-    ! print *, nc, ref
-    ! print *, idx, sigma, eps_divk, lamr, lama
-    ! print *, uv%lambda_r
-    ! print *, uv%mie(1,1)%lama
-
-    print *, lamr%f0, sigma%f0, epsdivk%f0
-
+    ! Set component data
     ! call mie_pure%init(lama=6.0, lamr=MieArray(idx)%lamr, &
     !      sigma=MieArray(idx)%sigma, epsdivk=MieArray(idx)%eps_divk)
     call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
 
     uv%mie(1,1) = mie_pure
 
-    !print *, "assigned?", mie_pure%lamr
-    print *, "assigned?", uv%mie(1,1)%lamr
-    
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
@@ -171,7 +186,6 @@ contains
     real, optional, intent(inout) :: f_T,f_V,f_TT,f_VV,f_TV
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
     ! Locals
-    print *, "T,V,n", T,V,n
     call hyperdual_fres_wrapper(fun,eos,nc,T,V,n,f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
   contains
@@ -189,7 +203,7 @@ contains
       rho = sum(n)/V
       select type ( p_eos => eos )
       type is ( uv_theory_eos )
-         call calc_a_uv(p_eos, nc, T, rho=rho, z=z, a=f)
+         call calc_a_uv(p_eos, nc, T, rho=rho*N_Avogadro, z=z, a=f)
         
       end select
       f = a*sum(n)
@@ -203,7 +217,7 @@ contains
     integer, intent(in)                :: nc
     class(uv_theory_eos), intent(inout) :: eos
     type(hyperdual), intent(in)  :: T             !< temperature (K)
-    type(hyperdual), intent(in)  :: rho           !< density (mol/m^3)
+    type(hyperdual), intent(in)  :: rho           !< number density (1/m^3)
     type(hyperdual), intent(in)  :: z(nc)         !< mole fractions (-)
     type(hyperdual), intent(out) :: a             !< helmholtz energy a=A/NRT (-)
     ! Locals
@@ -214,9 +228,7 @@ contains
     type(hyperdual) :: lama, lamr
     integer :: i,j
 
-    print *, "finally arrived!"
-    print *, "assigned?", eos%mie(1,1)%lamr
-    print *, eos%mie(1,1)%lamr
+    
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     do i = 1,nc
@@ -265,11 +277,12 @@ contains
     ! Calculate total helmholtz energy
     a = a0 + phi*Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
 
-    print *, "a0", a0
-    print *, "phi", phi
-    print *, "Delta_a1u", Delta_a1u
-    print *, "Delta_B2u",  Delta_B2u
-    print *, "Delta_B2",  Delta_B2
+    ! print *, "a_hs", a_hs
+    ! print *, "delta_a0", delta_a0
+    ! print *, "phi", phi
+    ! print *, "Delta_a1u", Delta_a1u
+    ! print *, "Delta_B2u",  Delta_B2u
+    ! print *, "Delta_B2",  Delta_B2
   end subroutine calc_a_uv
 
 
@@ -383,8 +396,8 @@ contains
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
     type(uv_theory_eos), intent(in) :: eos ! uv-theory eos
     integer, intent(in) :: nc ! number of components
-    type(hyperdual), intent(in) :: T      ! reduced temperature (-)
-    type(hyperdual), intent(in) :: rho    ! reduced density (-)
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
     type(hyperdual), intent(in) :: z(nc)    ! mole fractions
     type(hyperdual), intent(out) :: delta_a1u
     type(hyperdual), intent(out) :: delta_b2u
@@ -407,7 +420,7 @@ contains
     call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
 
     ! Calculate Delta_a1u (Eq S42 in [1])
-    beta = 1.0/(kB_const*T)
+    beta = 1.0/T ! the kB factor is subsumed in epsdivk 
     Delta_a1u = 2*PI*rho*beta*(epsdivk*sigma3_double)*Iu
     
     Delta_b2u = 2*PI*beta*(epsdivk*sigma3_double)*Iu_zerodensity
@@ -432,16 +445,18 @@ contains
     nu = mie%lamr
     sigma = mie%sigma
     eps_divk = mie%epsdivk
-    rm = mie%rmin
+    rm = mie%rmin_adim
     rs = rm
 
-    ! Calculate zero-density limit of Iu
+    ! Calculate zero-density limit of Iu (Eq S54 in [1])
     call qhs_WCA_Mie(T_r=T_r, mie=mie, qhs=qhs)
+    qhs = qhs/sigma
     alpha_rm = alpha_x(rm, mie)
     Iu_zerodensity = (qhs**3-rm**3)/3.0 - alpha_rm
 
     ! Calculate length scale tau (Eq S33)
     call dhs_WCA_Mie(T_r=T_r,mie=mie, dhs=dhs)
+    dhs = dhs/sigma
     tau = rs - dhs
 
     ! Calculate remaining Padé approximation for the density-dependent term
@@ -467,7 +482,7 @@ contains
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
     integer, intent(in) :: nc !< Number of components
     type(uv_theory_eos), intent(in) :: eos
-    type(hyperdual), intent(in) :: T         ! reduced temperature
+    type(hyperdual), intent(in) :: T         ! temperature (K)
     type(hyperdual), intent(in) :: z(nc)
     type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2
     ! Locals
@@ -502,8 +517,9 @@ contains
     nu = mie%lamr
     sigma = mie%sigma
     eps_divk = mie%epsdivk
-    rm = mie%rmin
+    rm = mie%rmin_adim
     rs = rm
+    rc = 5.0
 
     ! Precalculate quantities
     call qhs_WCA_Mie(T_r, mie, qhs)
@@ -537,7 +553,7 @@ contains
     alpha_x = mie%cmie * (x**(3.0-n)/(n-3.0) - x**(3.0-nu)/(nu-3.0))
   end function alpha_x
 
-  subroutine calc_eta_dhs(nc, eos, T, rho, z, eta)
+  subroutine calc_eta_dhs(eos, nc, T, rho, z, eta)
     integer, intent(in) :: nc !< Number of components
     type(uv_theory_eos), intent(in) :: eos
     type(hyperdual), intent(in) :: T, rho, z(nc)
@@ -565,7 +581,7 @@ contains
     type(hyperdual) :: IA, IB, I0f, eta, etaA, etaB, qhs_r, dhs_r, Tij_r, tau, rs_r
     integer :: i, j
 
-    call calc_eta_dhs(nc, eos, T, rho, x, eta)
+    call calc_eta_dhs(eos, nc, T, rho, x, eta)
 
     delta_a0 = 0.0
     do i=1,nc
@@ -686,81 +702,95 @@ end module uv_theory
 
 
 
-subroutine test_Fres_derivatives()
-  use uv_theory
-  use thermopack_constants, only: N_AVOGADRO
-  implicit none
-  ! Locals
-  integer :: nc=1
-  real :: n(1),n0(1),T,V,eps
-  real :: F,F_T,F_V,F_TT,F_VV,F_TV
-  real, dimension(1) :: F_n,F_Tn,F_Vn
-  real, dimension(1,1) :: F_nn
-  real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
-  real, dimension(1) :: Fp_n,Fp_Tn,Fp_Vn
-  real, dimension(1,1) :: Fp_nn
-  real :: Fm,Fm_T,Fm_V,Fm_TT,Fm_VV,Fm_TV
-  real, dimension(1) :: Fm_n,Fm_Tn,Fm_Vn
-  real, dimension(1,1) :: Fm_nn
-  type(uv_theory_eos) :: eos
-  real, parameter :: sigma_param = 2.801e-10, eps_divk_param = 33.921
-  !allocate(uv_theory_eos :: eos)
-  !call eos%allocate_and_init(nc,"uv-theory")
-  eps = 1.0e-5
-  ! eos%enable_A1 = .true.
-  ! eos%enable_A2 = .true.
-  ! eos%enable_A3 = .true.
-  ! eos%enable_A4 = .true.
-  ! eos%enable_hs = .true.
-  ! eos%enable_cavity = .true.
+! subroutine test_Fres_derivatives()
+!   use thermopack_var, only: nce, get_active_eos, thermo_model, &
+!        get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
+!        active_thermo_model_is_associated, numAssocSites
+!   use uv_theory
+!   use thermopack_constants, only: N_AVOGADRO
+!   implicit none
+!   ! Locals
+!   integer :: nc=1
+!   real :: n(1),n0(1),T,V,eps
+!   real :: F,F_T,F_V,F_TT,F_VV,F_TV
+!   real, dimension(1) :: F_n,F_Tn,F_Vn
+!   real, dimension(1,1) :: F_nn
+!   real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
+!   real, dimension(1) :: Fp_n,Fp_Tn,Fp_Vn
+!   real, dimension(1,1) :: Fp_nn
+!   real :: Fm,Fm_T,Fm_V,Fm_TT,Fm_VV,Fm_TV
+!   real, dimension(1) :: Fm_n,Fm_Tn,Fm_Vn
+!   real, dimension(1,1) :: Fm_nn
+!   type(uv_theory_eos), pointer :: eos
+!   real, parameter :: sigma_param = 2.801e-10, eps_divk_param = 33.921
 
-  T = eps_divk_param
-  n = 1.2
-  n0 = n
-  V = n(1)*N_AVOGADRO*sigma_param**3/0.5
-  V = 1.0
-  print *,V
 
-  ! select type ( p_eos => eos )
-  ! type is ( uv_theory_eos )
-  !    print *, "here, right?"
-  call calcFres_uv(eos,1,T,V,n,F,F_T,F_V,F_n,F_TT,&
-       F_VV,F_TV,F_Tn,F_Vn,F_nn)
-  call calcFres_uv(eos,1,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
-       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-  call calcFres_uv(eos,1,T,V-V*eps,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
-       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
-  ! end select
-  print *,"Testing the residual reduced Helmholtz energy"
-  print *,"V"
-  print *,F
-  print *,F_V,(Fp - Fm)/(2*V*eps)
-  print *,F_VV,(Fp_V - Fm_V)/(2*V*eps)
-  print *,F_TV,(Fp_T - Fm_T)/(2*V*eps)
-  print *,F_Vn,(Fp_n - Fm_n)/(2*V*eps)
+!   type(thermo_model), pointer      :: act_mod_ptr
+!   class(base_eos_param), pointer   :: act_eos_ptr
+!   character(len=ref_len)           :: param_ref
+!   character(len=7)                 :: model_local
 
-  print *,"n1"
-  n(1) = n0(1) + eps
-  call calcFres_uv(eos,1,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
-       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-  n(1) = n0(1) - eps
-  call calcFres_uv(eos,1,T,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
-       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
-  print *,F_n(1),(Fp - Fm)/(2*eps)
-  print *,F_Tn(1),(Fp_T - Fm_T)/(2*eps)
-  print *,F_Vn(1),(Fp_V - Fm_V)/(2*eps)
-  print *,F_nn(1,:),(Fp_n - Fm_n)/(2*eps)
+!   act_mod_ptr => get_active_thermo_model()
+!   eos = act_mod_ptr%eos(1)%p_eos
+    
+!   !allocate(uv_theory_eos :: eos)
+!   !call eos%allocate_and_init(nc,"uv-theory")
+!   eps = 1.0e-5
+!   ! eos%enable_A1 = .true.
+!   ! eos%enable_A2 = .true.
+!   ! eos%enable_A3 = .true.
+!   ! eos%enable_A4 = .true.
+!   ! eos%enable_hs = .true.
+!   ! eos%enable_cavity = .true.
 
-  print *,"T"
-  n = n0
-  call calcFres_uv(eos,1,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
-       Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-  call calcFres_uv(eos,1,T-T*eps,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
-       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+!   T = eps_divk_param
+!   n = 1.2
+!   n0 = n
+!   V = n(1)*N_AVOGADRO*sigma_param**3/0.5
+!   V = 1.0
+!   print *,V
 
-  print *,F_T,(Fp - Fm)/(2*T*eps)
-  print *,F_TT,(Fp_T - Fm_T)/(2*T*eps)
-  print *,F_TV,(Fp_V - Fm_V)/(2*T*eps)
-  print *,F_Tn,(Fp_n - Fm_n)/(2*T*eps)
-  stop
-end subroutine test_Fres_derivatives
+
+!   ! select type ( p_eos => eos )
+!   ! type is ( uv_theory_eos )
+!   !    print *, "here, right?"
+!   call calcFres_uv(eos,1,T,V,n,F,F_T,F_V,F_n,F_TT,&
+!        F_VV,F_TV,F_Tn,F_Vn,F_nn)
+!   call calcFres_uv(eos,1,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+!        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+!   call calcFres_uv(eos,1,T,V-V*eps,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+!        Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+!   ! end select
+!   print *,"Testing the residual reduced Helmholtz energy"
+!   print *,"V"
+!   print *,F
+!   print *,F_V,(Fp - Fm)/(2*V*eps)
+!   print *,F_VV,(Fp_V - Fm_V)/(2*V*eps)
+!   print *,F_TV,(Fp_T - Fm_T)/(2*V*eps)
+!   print *,F_Vn,(Fp_n - Fm_n)/(2*V*eps)
+
+!   print *,"n1"
+!   n(1) = n0(1) + eps
+!   call calcFres_uv(eos,1,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+!        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+!   n(1) = n0(1) - eps
+!   call calcFres_uv(eos,1,T,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+!        Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+!   print *,F_n(1),(Fp - Fm)/(2*eps)
+!   print *,F_Tn(1),(Fp_T - Fm_T)/(2*eps)
+!   print *,F_Vn(1),(Fp_V - Fm_V)/(2*eps)
+!   print *,F_nn(1,:),(Fp_n - Fm_n)/(2*eps)
+
+!   print *,"T"
+!   n = n0
+!   call calcFres_uv(eos,1,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
+!        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+!   call calcFres_uv(eos,1,T-T*eps,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+!        Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+
+!   print *,F_T,(Fp - Fm)/(2*T*eps)
+!   print *,F_TT,(Fp_T - Fm_T)/(2*T*eps)
+!   print *,F_TV,(Fp_V - Fm_V)/(2*T*eps)
+!   print *,F_Tn,(Fp_n - Fm_n)/(2*T*eps)
+!   stop
+! end subroutine test_Fres_derivatives
