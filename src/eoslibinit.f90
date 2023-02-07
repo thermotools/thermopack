@@ -506,6 +506,8 @@ contains
     use thermopack_constants,      only: tpTmin, Rgas
     use cbAlpha,      only: getAcentricAlphaParam
     use cubic_eos,    only: cb_eos
+    use saft_interface, only: estimate_critical_parameters
+    use eosdata, only: eosCPA, isSAFTEOS
     logical, intent(in) :: silent_init
     real, optional, intent(in) :: Tc_in(nce), vc_in(nce)
     ! Locals
@@ -516,11 +518,14 @@ contains
     real :: Pc  !< Specified critical pressure [Pa]
     real :: Acf !< Specified acentric factor [-]
     real :: Z(nce)
+    logical :: isSAFT
     type(thermo_model), pointer :: act_mod_ptr
-    class(base_eos_param), pointer :: act_eos_ptr
+    class(base_eos_param), pointer :: act_eos_ptr, act_alt_eos_ptr
 
     act_mod_ptr => get_active_thermo_model()
-    act_eos_ptr => get_active_alt_eos()
+    act_alt_eos_ptr => get_active_alt_eos()
+    act_eos_ptr => get_active_eos()
+    isSAFT = isSAFTEOS(act_eos_ptr%eosidx) .and. act_mod_ptr%eosidx /= eosCPA
     Tmin = tpTmin
     tpTmin = 2.0
     do i=1,nce
@@ -530,13 +535,17 @@ contains
       Vc = -1.0
       if (present(Tc_in)) Tc = Tc_in(i)
       if (present(Vc_in)) Vc = Vc_in(i)
-      call calcCriticalTV(Tc,Vc,Z,ierr)
+      call calcCriticalTV(Tc,Vc,Z,ierr,p=Pc)
+      if (ierr /= 0 .and. isSAFT) then
+        ! Maybe sigma and eps are redefined and the initial guess is bad?
+        call estimate_critical_parameters(i, Tc, vc)
+        call calcCriticalTV(Tc,Vc,Z,ierr,p=Pc)
+      endif
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
              trim(act_mod_ptr%comps(i)%p_comp%ident)
       else
-        Pc = pressure(Tc,Vc,Z)
-        select type (p_eos => act_eos_ptr)
+        select type (p_eos => act_alt_eos_ptr)
         class is (cb_eos)
           p_eos%single(i)%Tc = Tc
           p_eos%single(i)%Pc = Pc
