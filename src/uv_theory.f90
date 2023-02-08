@@ -187,7 +187,7 @@ contains
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
     ! Locals
     call hyperdual_fres_wrapper(fun,eos,nc,T,V,n,f,f_T,f_V,f_n,&
-       f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
+         f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
   contains
     function fun(eos,nc,T,V,n) result(f)
       !class(uv_theory_eos), intent(inout) :: eos
@@ -196,47 +196,47 @@ contains
       type(hyperdual), intent(in)  :: T             !< temperature (K)
       type(hyperdual), intent(in)  :: V             !< volume (m^3)
       type(hyperdual), intent(in)  :: n(nc)         !< mole numbers (mol)
-      type(hyperdual) :: f             !< Fres=Ares/RT (mol)
+      type(hyperdual) :: f                          !< Fres=Ares/RT (mol)
       ! Locals
-      type(hyperdual) :: rho, z(nc), a
-      z = n/sum(n)
-      rho = sum(n)/V
+      type(hyperdual) :: rhovec(nc)
+      rhovec = N_Avogadro*n/V
       select type ( p_eos => eos )
       type is ( uv_theory_eos )
-         call calc_a_uv(p_eos, nc, T, rho=rho*N_Avogadro, z=z, a=f)
-        
+         call calc_a_uv(p_eos, nc, T, rhovec=rhovec, a=f)
       end select
-      f = a*sum(n)
+      f = f*sum(n)
     end function fun
   end subroutine calcFres_uv
   
   
 
-  subroutine calc_a_uv(eos, nc, T, rho, z, a)
+  subroutine calc_a_uv(eos, nc, T, rhovec, a)
     !> The reduced helmholtz energy from uv-theory
     integer, intent(in)                :: nc
     class(uv_theory_eos), intent(inout) :: eos
     type(hyperdual), intent(in)  :: T             !< temperature (K)
-    type(hyperdual), intent(in)  :: rho           !< number density (1/m^3)
-    type(hyperdual), intent(in)  :: z(nc)         !< mole fractions (-)
+    type(hyperdual), intent(in)  :: rhovec(nc)    !< number density (1/m^3)
     type(hyperdual), intent(out) :: a             !< helmholtz energy a=A/NRT (-)
     ! Locals
-    type(hyperdual) :: rho_r, epsdivk_x, T_x, denom
+    type(hyperdual) :: z(nc), rho, rho_r, epsdivk_x, T_x, denom
     type(hyperdual) :: a0, a_hs, delta_a0, Delta_a1u
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
     type(hyperdual) :: dhs, diameters(nc)
     type(hyperdual) :: lama, lamr
     integer :: i,j
 
-    
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
+    rho = 0.0
     do i = 1,nc
+       rho = rho + rhovec(i)
        if (eos%mie(i,i)%lamr /= lamr .or. eos%mie(i,i)%lama /= lama) then
           stop "Invalid Mie exponents in uv-theory"
        end if
     end do
 
+    z = rhovec/rho
+    
     ! Calculate one-fluid parameters
     rho_r = 0.0
     epsdivk_x = 0.0
@@ -257,7 +257,7 @@ contains
     do i=1,nc
        diameters(i) = dhs*eos%mie(i,i)%sigma/eos%mie(1,1)%sigma
     end do
-    call calc_a_hardsphere_bmcsl(nc, rho, z, diameters, a_hs)
+    call calc_ares_hardsphere_bmcsl(nc, rhovec, diameters, a_hs)
 
     ! Calculate perturbation part of reference system
     call Delta_a0_WCA_Mie(eos, nc, T, rho, z, delta_a0)
@@ -279,10 +279,12 @@ contains
 
     ! print *, "a_hs", a_hs
     ! print *, "delta_a0", delta_a0
+    print *, "a0       ", a_hs%f0 + delta_a0%f0
     ! print *, "phi", phi
-    ! print *, "Delta_a1u", Delta_a1u
-    ! print *, "Delta_B2u",  Delta_B2u
-    ! print *, "Delta_B2",  Delta_B2
+    print *, "Delta_a1u", Delta_a1u%f0
+    ! ! print *, "Delta_B2u",  Delta_B2u
+    ! ! print *, "Delta_B2",  Delta_B2
+    ! print *, "B2term",  (Delta_B2 - Delta_B2u)*rho
   end subroutine calc_a_uv
 
 

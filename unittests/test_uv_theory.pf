@@ -1,0 +1,144 @@
+module test_uv_theory
+  !use uv_theory
+  use eostv, only: free_energy_tv
+  use single_phase, only: TV_CalcFres
+  use volume_shift, only: initVolumeShift, vshift_F_terms, PENELOUX
+  use eoslibinit
+  use critical, only: calcCritical, calcCriticalTV
+  use thermopack_constants, only: RGAS, VAPPH, LIQPH
+  use eos, only: specificVolume
+  use eosTV, only: pressure
+  use thermopack_var
+  use pfunit_mod
+  implicit none
+  public
+
+  logical :: VERBOSE = .TRUE.
+contains
+
+  @Test
+  subroutine test_derivs()
+    integer, parameter :: nc = 1
+    real :: P, T, n(nc), v, rho
+    real :: F,F_T,F_V,F_n(nc), F_VVV
+    real :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
+    real :: pF,pF_T,pF_V,pF_n(nc), pF_VVV
+    real :: pF_TT,pF_TV,pF_Tn(nc),pF_VV,pF_Vn(nc),pF_nn(nc,nc)
+    real :: mF,mF_T,mF_V,mF_n(nc), mF_VVV
+    real :: mF_TT,mF_TV,mF_Tn(nc),mF_VV,mF_Vn(nc),mF_nn(nc,nc)
+
+    real, parameter :: EPS = 1E-6
+    real :: npert(nc)
+    real :: Teps, Veps, Neps
+
+    integer :: i, j
+    class(base_eos_param), pointer :: cbeos
+    class(thermo_model), pointer :: act_mod_ptr
+
+    ! Define state
+    T=100; rho=3e4
+    n = (/1.0/)
+
+    rho = 3.4
+    T = 100
+    n = (/1.5/)
+    V = n(1)/rho
+
+    ! Test state points
+    call init_uv(model="WCA",parameter_reference="DEFAULT")
+    call free_energy_tv(T,V,n,F)
+    !print *, "y", F
+    !call specificVolume(T,P,n,VAPPH,V)
+
+    ! Test numerical derivatives
+    cbeos => get_active_eos()
+    act_mod_ptr => get_active_thermo_model()
+    !call specificVolume(T,P,n,VAPPH,V)
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT, F_TV,F_VV,F_Tn,F_Vn,F_nn,recalculate=.True.)
+    print *, "calcfres", F
+    ! T derivatives
+    Teps = T*EPS
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T+Teps,V,n,&
+         pF,pF_T,pF_V,pF_n,pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T-Teps,V,n,&
+         mF,mF_T,mF_V,mF_n,mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+    if (VERBOSE) then
+       print *, "F_t"
+       print *, (pF-mF)/(2*Teps)
+       print *, F_t
+
+       print *, "F_tt"
+       print *, (pF_t-mF_t)/(2*Teps)
+       print *, F_tt
+
+       print *, "F_tv"
+       print *, (pF_v-mF_v)/(2*Teps)
+       print *, F_tv
+    end if
+    @assertTrue(abs(F_tv - (pF_v-mF_v)/(2*Teps)) < (1e-7*abs(F_tv)+1e-15))
+    @assertTrue(abs(F_tt - (pF_t-mF_t)/(2*Teps)) < (1e-7*abs(F_tt)+1e-15))
+    @assertTrue(abs(F_t - (pF-mF)/(2*Teps)) < (1e-7*abs(F_t)+1e-15))
+
+    ! V derivatives
+    Veps = V*EPS
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V+Veps,n,&
+         pF,pF_T,pF_V,pF_n,pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V-Veps,n,&
+         mF,mF_T,mF_V,mF_n,mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+    if (VERBOSE) then
+       print *, "F_V"
+       print *, (pF-mF)/(2*Veps)
+       print *, F_V
+
+       print *, "F_VV"
+       print *, (pF_V-mF_V)/(2*Veps)
+       print *, F_VV
+
+    end if
+    @assertTrue(abs(F_V - (pF-mF)/(2*Veps)) < (1e-5*abs(F_V)+1e-15))
+    @assertTrue(abs(F_VV - (pF_V-mF_V)/(2*Veps)) < (1e-5*abs(F_VV)+1e-15))
+
+    ! n derivatives
+    neps = EPS
+    do i=1,nc
+       npert = n
+       npert(i) = n(i)+neps
+       call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,npert,pF,pF_T,pF_V,pF_n,&
+            pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+       npert(i) = n(i)-neps
+       call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,npert,mF,mF_T,mF_V,mF_n,&
+            mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+
+       j = nc+1-i
+       if (VERBOSE) then
+          print *, "F_Tn"
+          print *, (pF_T-mF_T)/(2*neps)
+          print *, F_Tn(i)
+
+          print *, "F_Vn"
+          print *, (pF_V-mF_V)/(2*neps)
+          print *, F_Vn(i)
+
+          print *, "F_n"
+          print *, (pF-mF)/(2*neps)
+          print *, F_n(i)
+
+          print *, "F_nn like"
+          print *, (pF_n(i)-mF_n(i))/(2*neps)
+          print *, F_nn(i,i)
+
+          print *, "F_nn cross"
+          print *, (pF_n(j)-mF_n(j))/(2*neps)
+          print *, F_nn(i,j)
+          print *, F_nn(j,i)
+       end if
+
+       @assertTrue(abs(F_Vn(i) - (pF_V-mF_V)/(2*neps)) < (1e-5*abs(F_Vn(i))+1e-15))
+       @assertTrue(abs(F_Tn(i) - (pF_T-mF_T)/(2*neps)) < (1e-7*abs(F_Tn(i))+1e-15))
+       @assertTrue(abs(F_n(i) - (pF-mF)/(2*neps)) < (1e-6*abs(F_n(i))+1e-15))
+       @assertTrue(abs(F_nn(i,j) - (pF_n(j)-mF_n(j))/(2*neps)) < (1e-5*abs(F_nn(i,j))+1e-15))
+    end do
+
+  end subroutine test_derivs
+
+end module test_uv_theory
