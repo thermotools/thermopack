@@ -17,12 +17,20 @@ module lj_splined
   use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   use hardsphere_wca, only: calc_dhs_WCA, calc_cavity_integral_LJ_Fres, &
        calcZetaX_vdW_no_segments
+  use hyperdual_mod
   implicit none
   private
   save
 
   ! Van der Waals alpha for ljs potential
   real, parameter :: alpha_ljs = 0.5357287350120993
+  ! Potential parameters
+  real, parameter :: XS_ljs = (26.0D0/7.0D0)**(1.0D0/6.0D0)
+  real, parameter :: XC_ljs = 67.0D0/48.0D0 * XS_ljs
+  real, parameter :: A_ljs = -24192.0D0/3211.0D0/XS_ljs**2
+  real, parameter :: B_ljs = -387072.0D0/61009.0D0/XS_ljs**3
+  !
+  real, parameter :: x_min_ljs = 2.0D0**(1.0D0/6.0D0)
 
   type, extends(saftvrmie_eos) :: ljs_bh_eos
     ! Model control
@@ -68,6 +76,7 @@ module lj_splined
     logical :: is_uf_theory
     logical :: enable_virial_term = .true.
     logical :: use_temperature_dependent_u_fraction = .false.
+    logical :: use_high_temp_b2 = .false.
   contains
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_ljx_ux_eos
@@ -130,7 +139,7 @@ module lj_splined
   ! Testing
   public :: calc_uf_wca, calc_uf_wca_tvn, ljx_ux_eos
   public :: calcFresLJ_uf_theory, calcFresLJs_uv_theory
-  public :: uv_q_of_t, uv_hs_b2, ljs_b2, uv_a1_u_mult_t
+  public :: uv_q_of_t_hd, uv_hs_b2, ljs_b2, uv_a1_u_mult_t
   public :: uv_a1_b2, uv_phi, calc_ljs_wca_ai
   public :: get_bh_ljs_eos_pointer
   public :: uv_delta_b2_overall, calc_uv_wca, uv_a1_u
@@ -2009,13 +2018,14 @@ contains
       this%is_uf_theory = other%is_uf_theory
       this%enable_virial_term = other%enable_virial_term
       this%use_temperature_dependent_u_fraction = other%use_temperature_dependent_u_fraction
+      this%use_high_temp_b2 = other%use_high_temp_b2
     class default
     end select
   end subroutine assign_ljx_ux_eos
 
-  subroutine ljs_uv_model_control(use_temperature_dependent_u_fraction)
+  subroutine ljs_uv_model_control(use_temperature_dependent_u_fraction, use_high_temp_b2)
     use thermopack_var, only: base_eos_param, thermo_model, get_active_thermo_model
-    logical, intent(in) :: use_temperature_dependent_u_fraction
+    logical, intent(in) :: use_temperature_dependent_u_fraction, use_high_temp_b2
     ! Locals
     class(base_eos_param), pointer :: eos
     type(thermo_model), pointer :: p_eos_cont
@@ -2028,6 +2038,7 @@ contains
           select type( p_eos => eos )
           class is ( ljx_ux_eos )
             p_eos%use_temperature_dependent_u_fraction = use_temperature_dependent_u_fraction
+            p_eos%use_high_temp_b2 = use_high_temp_b2
           end select
         else
            print *,"ljs_uv_model_control: eos not acociated"
@@ -2699,7 +2710,8 @@ contains
     prefac = N_AVOGADRO*sigma**3
     rho_star = prefac*sumn/V
     call calc_uv_WCA(sigma,eps_divk,rho_star,T,dhs,al,ar,at,arr,att,art,&
-         eos%enable_virial_term, eos%use_temperature_dependent_u_fraction)
+         eos%enable_virial_term, eos%use_temperature_dependent_u_fraction, &
+         eos%use_high_temp_b2)
     ! Convert to TVn differentials (F = n*a)
     an = al + sumn*ar*prefac/V
     al = al*sumn
@@ -2721,39 +2733,32 @@ contains
   end subroutine calc_uv_WCA_TVN
 
   ! Alternative hard sphere diameter
-  subroutine uv_q_of_T(T, sigma, eps_divk, q, q_T, q_TT)
-    real, intent(in) :: T !
+  function uv_q_of_t_hd(T, sigma, eps_divk) result(q)
+    type(hyperdual), intent(in) :: T !
     real, intent(in) :: sigma !
     real, intent(in) :: eps_divk !
-    real, intent(out) :: q, q_T, q_TT
+    type(hyperdual) :: q
     !
-    real :: C(0:3)
+    real(dp) :: C(0:3)
     integer, parameter :: m = 12, n = 6
-    real, parameter :: m_matrix(4) = (/ 1, (m-7), (m-7)**2, (m-7)**3/)
-    real :: c_matrix(3,4) = reshape((/&
-           1.92840364363978E+00, 5.20120816141761E-01, 0.0, &
+    real(dp), parameter :: m_matrix(4) = (/ 1, (m-7), (m-7)**2, (m-7)**3/)
+    real(dp) :: c_matrix(3,4) = reshape((/&
+           1.92840364363978_dp, 5.20120816141761E-01, 0.0_dp, &
            4.43165896265079E-01, 1.82526759234412E-01, 1.29885156087242E-02, &
-           0.0, 1.10319989659929E-02, 6.41039871789327E-03, &
-           0.0, -7.97813995328348E-05, 1.85866741090323E-05 &
+           0.0_dp, 1.10319989659929E-02, 6.41039871789327E-03, &
+           0.0_dp, -7.97813995328348E-05, 1.85866741090323E-05 &
            /), (/3, 4 /))
-    real :: rs, sqrt_T, f, f_T, f_TT, ex, Ts
+    type(hyperdual) :: sqrt_T, f, Ts
+    real :: ex
     Ts = T/eps_divk
-    rs = 2**(real(1)/real(6))
     C(0) = sqrt(2*pi*m/n)
     C(1:3) =  matmul(c_matrix,m_matrix)
     sqrt_T = sqrt(Ts)
-    ex = - real(1)/(2*m)
-    f = 1 + C(0)*sqrt_T + C(1)*Ts + C(2)*Ts*sqrt_T + C(3)*Ts**2
-    f_T = 0.5*C(0)/sqrt_T + C(1) + 1.5*C(2)*sqrt_T + 2*C(3)*Ts
-    f_TT = -0.25*C(0)/(Ts*sqrt_T) + 0.75*C(2)/sqrt_T + 2*C(3)
-    q = f**ex
-    q_T = ex*f**(ex-1)*f_T
-    q_TT = ex*(ex-1)*f**(ex-2)*f_T**2 + ex*f**(ex-1)*f_TT
+    ex = - 1.0_dp/(2*m)
+    f = 1.0_dp + C(0)*sqrt_T + C(1)*Ts + C(2)*Ts*sqrt_T + C(3)*Ts**2
     !
-    q = rs*q
-    q_T = rs*q_T/eps_divk
-    q_TT = rs*q_TT/eps_divk**2
-  end subroutine uv_q_of_T
+    q = x_min_ljs*f**ex
+  end function uv_q_of_t_hd
 
   ! Hardsphere second virial
   subroutine uv_hs_b2(T, sigma, eps_divk, b2, b2_T, b2_TT)
@@ -2762,13 +2767,48 @@ contains
     real, intent(in) :: eps_divk !
     real, intent(out) :: b2, b2_T, b2_TT
     !
-    real :: q, q_T, q_TT, prefac
-    call uv_q_of_T(T, sigma, eps_divk, q, q_T, q_TT)
+    type(hyperdual) :: b2_hd, T_hd
+    T_hd%f0 = T
+    T_hd%f1 = 1.0_dp
+    T_hd%f2 = 1.0_dp
+    T_hd%f12 = 0.0_dp
+    b2_hd = uv_hs_b2_hd(T_hd, sigma, eps_divk)
+    b2 = b2_hd%f0
+    b2_T = b2_hd%f1
+    b2_TT = b2_hd%f12
+  end subroutine uv_hs_b2
+
+  ! Hardsphere second virial
+  subroutine ljs_b2_high_temp(T, sigma, eps_divk, b2, b2_T, b2_TT)
+    real, intent(in) :: T !
+    real, intent(in) :: sigma !
+    real, intent(in) :: eps_divk !
+    real, intent(out) :: b2, b2_T, b2_TT
+    !
+    type(hyperdual) :: T_hd, b20
+    T_hd%f0 = T
+    T_hd%f1 = 1.0_dp
+    T_hd%f2 = 1.0_dp
+    T_hd%f12 = 0.0_dp
+    b20 = ljs_b2_high_temp_hd(T_hd, sigma, eps_divk)
+    b2 = b20%f0
+    b2_T = b20%f1
+    b2_TT = b20%f12
+  end subroutine ljs_b2_high_temp
+
+  ! Hardsphere second virial
+  function uv_hs_b2_hd(T, sigma, eps_divk) result(b2)
+    type(hyperdual), intent(in) :: T !
+    real, intent(in) :: sigma !
+    real, intent(in) :: eps_divk !
+    type(hyperdual) :: b2
+    !
+    type(hyperdual) :: q
+    real(dp) :: prefac
+    q = uv_q_of_T_hd(T, sigma, eps_divk)
     prefac = 2*pi/3
     b2 = prefac*q**3
-    b2_T = 3*prefac*q**2*q_T
-    b2_TT = 6*prefac*q*q_T**2 + 3*prefac*q**2*q_TT
-  end subroutine uv_hs_b2
+  end function uv_hs_b2_hd
 
   ! Lennard-Jones spline second virial
   subroutine ljs_b2(T, eps_divk, b2, b2_T, b2_TT)
@@ -2787,6 +2827,22 @@ contains
          6*BI(3)*bs*bs_T**2 + 3*BI(3)*bs**2*bs_TT + &
          12*BI(4)*bs**2*bs_T**2 + 4*BI(4)*bs**3*bs_TT
   end subroutine ljs_b2
+
+  ! Lennard-Jones spline second virial - corrected to work at high temperarures
+  function ljs_b2_high_temp_hd(T, sigma, eps_divk) result(b2)
+    type(hyperdual), intent(in) :: T !
+    real, intent(in) :: eps_divk, sigma !
+    type(hyperdual) :: b2
+    !
+    type(hyperdual) :: beta, beta_eff, Y, Y_eff
+    type(hyperdual) :: b20_WCA
+    b20_WCA = uv_hs_b2_hd(T, sigma, eps_divk)
+    beta = eps_divk/T
+    beta_eff = beta*(1.0_dp - 0.65208924_dp/(1.0_dp + 0.06910413_dp*beta**1.367_dp))
+    Y = exp(beta) - 1.0_dp
+    Y_eff = exp(beta_eff) - 1.0_dp
+    b2 = b20_WCA*(1.0_dp+Y) - 2.0_dp*PI*( Y*x_min_ljs**3/3.0_dp + Y_eff*(xc_ljs**3-x_min_ljs**3)/3.0_dp)
+  end function ljs_b2_high_temp_hd
 
   !
   subroutine uv_a1_u_mult_T(eps_divk,d,rho,a1,a1_r,a1_d,a1_rr,a1_dd,a1_rd,a1_rdd)
@@ -2942,7 +2998,9 @@ contains
   end subroutine uv_phi
 
   ! u-fraction uv theory
-  subroutine uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+  subroutine uv_delta_b2_overall(use_high_temp_b2,sigma,eps_divk,&
+       T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+    logical, intent(in) :: use_high_temp_b2
     real, intent(in) :: sigma !
     real, intent(in) :: eps_divk !
     type(saftvrmie_dhs), intent(in) :: dhs !< The hard-sphere diameter
@@ -2954,7 +3012,11 @@ contains
     real :: b2_ljs,b2_ljs_T,b2_ljs_TT
     real :: b2_hs,b2_hs_T,b2_hs_TT
     call uv_a1_b2(dhs,sigma,eps_divk,T,b2_a1,b2_a1_T,b2_a1_TT)
-    call ljs_b2(T, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
+    if (use_high_temp_b2) then
+      call ljs_b2_high_temp(T, sigma, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
+    else
+      call ljs_b2(T, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
+    endif
     call uv_hs_b2(T, sigma, eps_divk, b2_hs, b2_hs_T, b2_hs_TT)
     b2 = b2_ljs - b2_hs - b2_a1
     b2_T = b2_ljs_T - b2_hs_T - b2_a1_T
@@ -2972,14 +3034,15 @@ contains
   !!
   !! \author Morten Hammer, 2021-03
   subroutine calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a,a_r,a_t,a_rr,a_tt,a_rt,&
-       enable_virial_term, use_temperature_dependent_u_fraction)
+       enable_virial_term, use_temperature_dependent_u_fraction, use_high_temp_b2)
     ! Input
     real, intent(in) :: sigma !
     real, intent(in) :: eps_divk !
     real, intent(in) :: T !< Reduced temperature
     real, intent(in) :: rho !< Reduced density rho^* = N*sigma^3/V
     type(saftvrmie_dhs), intent(in) :: dhs !< The hard-sphere diameter
-    logical, intent(in) :: enable_virial_term, use_temperature_dependent_u_fraction
+    logical, intent(in) :: enable_virial_term, use_temperature_dependent_u_fraction, &
+         use_high_temp_b2
     ! Output
     real, intent(out) :: a,a_r,a_t,a_rr,a_tt,a_rt
     ! Locals
@@ -2988,7 +3051,8 @@ contains
     real :: b2,b2_r,b2_t,b2_rr,b2_tt,b2_rt
     !
     if (enable_virial_term) then
-      call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+      call uv_delta_b2_overall(use_high_temp_b2, sigma,eps_divk,&
+           T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
       if (use_temperature_dependent_u_fraction) then
         call uv_phi_temp(eps_divk,T,rho,u,u_r,u_T,u_rr,u_TT,u_rT)
       else
@@ -3312,7 +3376,7 @@ subroutine test_uv_LJs()
   ! real, dimension(1) :: Fm_n,Fm_Tn,Fm_Vn
   ! real, dimension(1,1) :: Fm_nn
   real :: dT, T0, dV, V0
-  real :: q, q_T, q_TT, q1, q1_T, q1_TT, q2, q2_T, q2_TT
+  !real :: q, q_T, q_TT, q1, q1_T, q1_TT, q2, q2_T, q2_TT
   real :: b, b_T, b_TT, b1, b1_T, b1_TT, b2, b2_T, b2_TT
   real :: d,rho,a1,a1_r,a1_d,a1_rr,a1_dd,a1_rd,a1_rdd
   real :: a12,a12_r,a12_d,a12_rr,a12_dd,a12_rd,a12_rdd
@@ -3338,12 +3402,12 @@ subroutine test_uv_LJs()
   eps = 1.0e-5
 
   dT = T*eps
-  call uv_q_of_T(T, sigma, eps_divk, q, q_T, q_TT)
-  call uv_q_of_T(T + dT, sigma, eps_divk, q2, q2_T, q2_TT)
-  call uv_q_of_T(T - dT, sigma, eps_divk, q1, q1_T, q1_TT)
-  print *,q
-  print *,q_T,(q2-q1)/(2*dT)
-  print *,q_TT,(q2_T-q1_T)/(2*dT)
+  !call uv_q_of_T(T, sigma, eps_divk, q, q_T, q_TT)
+  !call uv_q_of_T(T + dT, sigma, eps_divk, q2, q2_T, q2_TT)
+  !call uv_q_of_T(T - dT, sigma, eps_divk, q1, q1_T, q1_TT)
+  !print *,q
+  !print *,q_T,(q2-q1)/(2*dT)
+  !print *,q_TT,(q2_T-q1_T)/(2*dT)
 
   call uv_hs_b2(T, sigma, eps_divk, b, b_T, b_TT)
   call uv_hs_b2(T + dT, sigma, eps_divk, b2, b2_T, b2_TT)
@@ -3412,13 +3476,13 @@ subroutine test_uv_LJs()
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b,b_r,b_T,b_rr,b_TT,b_rT)
+  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b,b_r,b_T,b_rr,b_TT,b_rT)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
+  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b
   print *,b_T,(b2-b1)/(2*dT)
   print *,b_TT,(b2_T-b1_T)/(2*dT)
@@ -3426,8 +3490,8 @@ subroutine test_uv_LJs()
   !
   T = T0
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho+eps,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
-  call uv_delta_b2_overall(sigma,eps_divk,T,dhs,rho-eps,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
+  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho+eps,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho-eps,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b_r,(b2-b1)/(2*eps)
   print *,b_rr,(b2_r-b1_r)/(2*eps)
   print *,b_rT,(b2_T-b1_T)/(2*eps)
@@ -3462,15 +3526,18 @@ subroutine test_uv_LJs()
   call allocate_saftvrmie_dhs(1,dhs)
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a1,a1_r,a1_t,a1_rr,a1_tt,a1_rt,&
-    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+       enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
+       use_high_temp_b2=.false.)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
-    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
+       use_high_temp_b2=.false.)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
-    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
+       use_high_temp_b2=.false.)
   print *,a1
   print *,a1_T,(a12-a11)/(2*dT)
   print *,a1_TT,(a12_T-a11_T)/(2*dT)
@@ -3478,9 +3545,11 @@ subroutine test_uv_LJs()
   T = T0
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho+eps,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
-    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
+       use_high_temp_b2=.false.)
   call calc_uv_WCA(sigma,eps_divk,rho-eps,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
-    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false.)
+    enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
+       use_high_temp_b2=.false.)
   print *,a1_r,(a12-a11)/(2*eps)
   print *,a1_rr,(a12_r-a11_r)/(2*eps)
   print *,a1_rT,(a12_T-a11_T)/(2*eps)

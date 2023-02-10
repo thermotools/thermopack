@@ -267,17 +267,21 @@ class ljs_uv(ljs_wca_base):
     # Model options
     #################################
     def model_control(self,
-                      use_temperature_dependent_u_fraction=False):
+                      use_temperature_dependent_u_fraction=False,
+                      use_high_temp_b2=False):
         """Model control. Enable/disable model terms.
 
         Args:
             use_temperature_dependent_u_fraction (bool): Enable/disable use of temperature dependent u-fraction.
+            use_high_temp_b2 (bool): Enable/disable use of corrected b2 model.
         """
         self.activate()
         use_temperature_dependent_u_fraction_c = c_int(use_temperature_dependent_u_fraction)
+        use_high_temp_b2_c = c_int(use_high_temp_b2)
 
-        self.s_ljs_uv_model_control.argtypes = [POINTER(c_int)]
+        self.s_ljs_uv_model_control.argtypes = [POINTER(c_int), POINTER(c_int)]
 
         self.s_ljs_uv_model_control.restype = None
 
-        self.s_ljs_uv_model_control(byref(use_temperature_dependent_u_fraction_c))
+        self.s_ljs_uv_model_control(byref(use_temperature_dependent_u_fraction_c),
+                                    byref(use_high_temp_b2_c))

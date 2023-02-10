@@ -224,7 +224,6 @@ contains
     real, intent(in) :: T_r, V_r, n_r(2)
     class(base_eos_param), intent(inout) :: p_eos
     !
-    type(hyperdual) :: T, V, n(2), ff
     real :: f_r, n1_r(2)
     real :: f_T,f_V,f_TT,f_VV,f_TV
     real :: f_n(2),f_Tn(2),f_Vn(2),f_nn(2,2)
@@ -279,13 +278,6 @@ contains
 
   subroutine play_with_hyperdual_numbers()
     type(hyperdual) :: T, V, n(2), ff
-    real :: T_r, V_r, n_r(2), f_r, n1_r(2)
-    real :: f_T,f_V,f_TT,f_VV,f_TV
-    real :: f_n(2),f_Tn(2),f_Vn(2),f_nn(2,2)
-    real :: eps = 1.0e-5, dT, dV, dn
-    real :: f1_r, f1_T, f1_V, f1_n(2)
-    real :: f2_r, f2_T, f2_V, f2_n(2)
-    integer :: i
     T%f0 = 3.0
     T%f1 = 1.0
     T%f2 = 0.0
