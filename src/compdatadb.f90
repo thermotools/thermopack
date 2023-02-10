@@ -1,9 +1,11 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2022-11-29T18:17:46.642809
+!! Time stamp: 2023-02-10T15:05:30.382959
 
 module compdatadb
-  use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb
+  use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
+  use assocschemeutils
+  use cubic_eos
   implicit none
   public
 
@@ -77,6 +79,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa1 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="BUT1OL", &
+      ref="Default/Oliveira2008", &
+      bib_reference="10.1016/j.fluid.2008.02.020", &
+      a0=1.80190000e+06, &
+      b=8.13090000e-02, &
+      eps=2.00690000e+04, &
+      beta=3.66940000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.87660000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
   type (gendatadb), parameter :: cx2 = &
       gendatadb(ident = "HEX1OL", &
       formula = "C6H14O", &
@@ -145,6 +161,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa2 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="HEX1OL", &
+      ref="Default/Oliveira2008", &
+      bib_reference="10.1016/j.fluid.2008.02.020", &
+      a0=2.83860000e+06, &
+      b=1.13130000e-01, &
+      eps=2.27590000e+04, &
+      beta=1.67270000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.69590000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
       )
 
   type (gendatadb), parameter :: cx3 = &
@@ -217,6 +247,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa3 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="PENT1OL", &
+      ref="Default/Oliveira2008", &
+      bib_reference="10.1016/j.fluid.2008.02.020", &
+      a0=2.35520000e+06, &
+      b=9.71790000e-02, &
+      eps=1.86660000e+04, &
+      beta=2.67240000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/1.06900000e+00,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
   type (gendatadb), parameter :: cx4 = &
       gendatadb(ident = "PROP1OL", &
       formula = "C3H8O", &
@@ -285,6 +329,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa4 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="PROP1OL", &
+      ref="Default/Oliveira2008", &
+      bib_reference="10.1016/j.fluid.2008.02.020", &
+      a0=1.14240000e+06, &
+      b=6.37880000e-02, &
+      eps=2.19130000e+04, &
+      beta=7.73600000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.01340000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
       )
 
   type (gendatadb), parameter :: cx5 = &
@@ -755,6 +813,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa5 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NH3", &
+      ref="Default/SINTEF", &
+      bib_reference="", &
+      a0=3.73160000e+05, &
+      b=2.07666000e-02, &
+      eps=7.60835000e+03, &
+      beta=7.93725000e-04, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.17324000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
   type (gendatadb), parameter :: cx12 = &
       gendatadb(ident = "AR", &
       formula = "AR", &
@@ -1016,6 +1088,48 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa6 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="CO2", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=3.50790000e+05, &
+      b=2.72000000e-02, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
+      )
+
+  type(CPAdata), parameter :: cpa7 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="CO2", &
+      ref="SINTEF", &
+      bib_reference="", &
+      a0=3.50790000e+05, &
+      b=2.72000000e-02, &
+      eps=0.00000000e+00, &
+      beta=5.00000000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_1EA &
+      )
+
+  type(CPAdata), parameter :: cpa8 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="CO2", &
+      ref="SINTEF2", &
+      bib_reference="", &
+      a0=2.99377508e+05, &
+      b=2.68729432e-02, &
+      eps=1.28604049e+04, &
+      beta=9.08545617e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/4.62138711e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_1 &
       )
 
   type (gendatadb), parameter :: cx15 = &
@@ -1625,6 +1739,34 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa9 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="ETOH", &
+      ref="SINTEF/Queimada2005", &
+      bib_reference="10.1016/j.fluid.2004.08.011", &
+      a0=8.67160000e+05, &
+      b=4.91100000e-02, &
+      eps=2.15320000e+04, &
+      beta=8.00000000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.36900000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
+  type(CPAdata), parameter :: cpa10 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="ETOH", &
+      ref="Default/Oliveira2008", &
+      bib_reference="10.1016/j.fluid.2008.02.020", &
+      a0=6.84150000e+05, &
+      b=4.75080000e-02, &
+      eps=2.13360000e+04, &
+      beta=1.92120000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.39230000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
       )
 
   type (gendatadb), parameter :: cx25 = &
@@ -2602,6 +2744,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa11 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="MEOH", &
+      ref="Default/Kontogeorgis2008", &
+      bib_reference="10.2516/ogst:2008025", &
+      a0=4.05310000e+05, &
+      b=3.09780000e-02, &
+      eps=2.45910000e+04, &
+      beta=1.61000000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/4.31020000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
   type (gendatadb), parameter :: cx38 = &
       gendatadb(ident = "MTC5", &
       formula = "C6H12", &
@@ -3560,6 +3716,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa12 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="C3", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=9.11875000e+05, &
+      b=5.78340000e-02, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/6.30700000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
       )
 
   type (gendatadb), parameter :: cx52 = &
@@ -5699,6 +5869,34 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa13 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="H2O", &
+      ref="Default/Queimada2005", &
+      bib_reference="10.1016/j.fluid.2004.08.011", &
+      a0=1.22770000e+05, &
+      b=1.45150000e-02, &
+      eps=1.66550000e+04, &
+      beta=6.92000000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/6.73590000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_4C &
+      )
+
+  type(CPAdata), parameter :: cpa14 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="H2O", &
+      ref="SINTEF", &
+      bib_reference="", &
+      a0=4.67542000e+05, &
+      b=1.57983000e-02, &
+      eps=4.44953000e+03, &
+      beta=6.21918000e-03, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.76671000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B &
+      )
+
   type (gendatadb), parameter :: cx83 = &
       gendatadb(ident = "XE", &
       formula = "XE", &
@@ -5831,6 +6029,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa15 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC4", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=1.31427400e+06, &
+      b=7.20810000e-02, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.07710000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
+      )
+
   type (gendatadb), parameter :: cx85 = &
       gendatadb(ident = "NC10", &
       formula = "C10H22", &
@@ -5899,6 +6111,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa16 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC10", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=4.73890000e+06, &
+      b=1.78650000e-01, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/1.13243000e+00,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
       )
 
   type (gendatadb), parameter :: cx86 = &
@@ -6279,6 +6505,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa17 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC7", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=2.91780000e+06, &
+      b=1.25350000e-01, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.13700000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
+      )
+
   type (gendatadb), parameter :: cx91 = &
       gendatadb(ident = "NC16", &
       formula = "C16H34", &
@@ -6458,6 +6698,20 @@ module compdatadb
       c_type=1 &
       )
 
+  type(CPAdata), parameter :: cpa18 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC6", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=2.36810000e+06, &
+      b=1.07890000e-01, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/8.31300000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
+      )
+
   type (gendatadb), parameter :: cx93 = &
       gendatadb(ident = "NC9", &
       formula = "C9H20", &
@@ -6526,6 +6780,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa19 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC9", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=4.12506100e+06, &
+      b=1.60350000e-01, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/1.04628000e+00,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
       )
 
   type (gendatadb), parameter :: cx94 = &
@@ -6694,6 +6962,20 @@ module compdatadb
       ciB=0.00000000e+00, &
       ciC=0.00000000e+00, &
       c_type=1 &
+      )
+
+  type(CPAdata), parameter :: cpa20 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC8", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=3.48750000e+06, &
+      b=1.42440000e-01, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.94150000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
       )
 
   type (gendatadb), parameter :: cx96 = &
@@ -6896,6 +7178,20 @@ module compdatadb
       cid="NC5", &
       ref="Chapoy2005", &
       coeff=(/9.01000000e-01, -3.05000000e-01, 5.42000000e-01/) &
+      )
+
+  type(CPAdata), parameter :: cpa21 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NC5", &
+      ref="Default/Kontogeorgis-Folas2010", &
+      bib_reference="10.1002/9780470747537", &
+      a0=1.81980000e+06, &
+      b=9.10080000e-02, &
+      eps=0.00000000e+00, &
+      beta=0.00000000e+00, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/7.98580000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = no_assoc &
       )
 
   type (gendatadb), parameter :: cx99 = &
@@ -7467,6 +7763,15 @@ module compdatadb
       c171,c172,c173,c174,c175, &
       c176,c177,c178,c179,c180, &
       c181,c182,c183,c184 &
+  /)
+
+  integer, parameter :: nCPAmodels =21
+  type(CPAdata), dimension(nCPAmodels), parameter :: CPAarray = (/&
+      cpa1,cpa2,cpa3,cpa4,cpa5, &
+      cpa6,cpa7,cpa8,cpa9,cpa10, &
+      cpa11,cpa12,cpa13,cpa14,cpa15, &
+      cpa16,cpa17,cpa18,cpa19,cpa20, &
+      cpa21 &
   /)
 
 end module compdatadb

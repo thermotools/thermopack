@@ -101,6 +101,17 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/SINTEF",
+      "bib_reference": "",
+      "a0": 3.73160e+05,
+      "b": 2.07666e-02,
+      "alphaParams": [7.17324e-1,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 7.60835e+03,
+      "beta": 7.93725e-04,
+      "assoc_scheme": "2B"
     }
   },
   "PR": {

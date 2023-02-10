@@ -120,6 +120,39 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/Kontogeorgis-Folas2010",
+      "bib_reference": "10.1002/9780470747537",
+      "a0": 3.5079E5,
+      "b": 2.72E-02,
+      "alphaParams": [0.7602,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.0,
+      "assoc_scheme": "NONE"
+    },
+    "CPA-2": {
+      "ref": "SINTEF",
+      "bib_reference": "",
+      "a0": 3.5079E5,
+      "b": 2.72E-02,
+      "alphaParams": [0.7602,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.05,
+      "assoc_scheme": "1EA"
+    },
+    "CPA-3": {
+      "ref": "SINTEF2",
+      "bib_reference": "",
+      "a0": 2.99377508e+05,
+      "b": 2.68729432e-02,
+      "alphaParams": [4.62138711e-01,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 1.28604049e+04,
+      "beta": 9.08545617e-03,
+      "assoc_scheme": "1"
     }
   },
   "PR": {

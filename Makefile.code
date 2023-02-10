@@ -85,6 +85,11 @@ OBJE = \
        $(ODIR)/association_var.o \
        $(ODIR)/thermopack_var.o \
        $(ODIR)/hyperdual_utility.o \
+       $(ODIR)/eosdata.o \
+       $(ODIR)/assocschemeutils.o \
+       $(ODIR)/unifacdata.o \
+       $(ODIR)/unifac.o \
+       $(ODIR)/cubic_eos.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -98,13 +103,8 @@ OBJE = \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
        $(ODIR)/pets.o \
-       $(ODIR)/eosdata.o \
-       $(ODIR)/assocschemeutils.o \
        $(ODIR)/pc_saft_parameters.o \
-       $(ODIR)/unifacdata.o \
-       $(ODIR)/unifac.o \
        $(ODIR)/eos_parameters.o \
-       $(ODIR)/cubic_eos.o \
        $(ODIR)/mixdatadb.o \
        $(ODIR)/cbalpha.o \
        $(ODIR)/cbbeta.o \
