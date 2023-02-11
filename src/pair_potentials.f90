@@ -52,7 +52,7 @@ module pair_potentials
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
-       mie_data(eosidx = eosMie_UV_WCA, &
+       mie_data(eosidx = eosMie_UV_BH, &
        compName="AR", &
        lamr=12, &
        sigma=3.42E-10, &

@@ -1417,7 +1417,8 @@ contains
     ! else
     !   model_local = trim(potential)//"-UV"
     ! endif
-    call allocate_eos(ncomp, "uv-mie-wca")
+
+    call allocate_eos(ncomp, trim(model))
 
     ! Number of phases
     act_mod_ptr%nph = 2
@@ -1463,14 +1464,9 @@ contains
       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
-    ! TODO: uncomment this after debugging uv-theory
-    ! Initialize fallback eos
-    act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
-    select type ( p_eos => act_eos_ptr )
-    type is ( uv_theory_eos )
-       print *, "eoslibinit:assigned:", p_eos%mie(1,1)%lamr
-    end select
+    ! ! Initialize fallback eos
+    ! act_mod_ptr%need_alternative_eos = .true.
+    ! call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_mie_uv
 
   

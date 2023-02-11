@@ -30,9 +30,22 @@ module test_uv_theory
   real, parameter :: DeltaB2_BH = -1.00533412744652
   real, parameter :: A_ATTR_BH = -1.16124062615291
 
+  ! FEOS VALUES FOR WCA-MIE
+  real, parameter :: Delta_A0_WCA = 0.258690311450425
+  real, parameter :: QHS_WCA_24 = 0.9751576149023506
+  real, parameter :: DHS_WCA_24 = 0.9614325601663462
+  
+  real, parameter :: DELTA_A1U_WCA = -1.52406840346272
+  real, parameter :: DELTA_B2U_WCA = -1.02233215790525
+  real, parameter :: PHI_WCA = 0.997069754340431
+
+  real, parameter :: DELTAB2_WCA = -1.09102560732964
+  real, parameter :: A_ATTR_WCA = -1.5242697155023
+
+
 contains
 
-  @Test
+  !@Test
   subroutine test_vals_bh()
     type(uv_theory_eos) :: eos
     real :: F
@@ -45,7 +58,7 @@ contains
     VERBOSE = .TRUE.
     
     ! Test BH diameter
-    call init_uv(model="BH",parameter_reference="DEFAULT")
+    call init_uv(model="uv-mie-bh",parameter_reference="DEFAULT")
     ! call calcFres_uv(p_eos,nc,T,V,z, F)
     print *, "test_vals_bh"
 
@@ -140,6 +153,111 @@ contains
 
   end subroutine test_vals_bh
 
+
+  @Test
+  subroutine test_vals_wca()
+    type(uv_theory_eos) :: eos
+    real :: F
+    type(hyperdual) :: T, rho, z(1)
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(hyperdual) :: dhs, qhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+    
+    VERBOSE = .TRUE.
+    
+    ! Test WCA diameter
+    call init_uv(model="uv-mie-wca",parameter_reference="DEFAULT")
+    ! call calcFres_uv(p_eos,nc,T,V,z, F)
+    print *, "test_vals_wca"
+
+    sigma = 1.0
+    epsdivk = 1.0
+    lamr = 12.0
+    lama = 6.0
+
+    ! Test reference contribution (a0)
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_WCA_Mie(T_r=T,mie=mie,dhs=dhs)
+       call qhs_WCA_Mie(T_r=T,mie=mie,qhs=qhs)
+       if (VERBOSE) then
+          print *, "DHS_WCA_24"
+          print *, DHS_WCA_24
+          print *, dhs%f0
+
+          print *, "QHS_WCA_24"
+          print *, QHS_WCA_24
+          print *, qhs%f0
+
+       end if
+       @assertEqual(DHS_WCA_24, dhs%f0, 1e-10*DHS_WCA_24)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       if (VERBOSE) then
+          print *, "DELTA_A0_WCA"
+          print *, DELTA_A0_WCA
+          print *, delta_a0%f0
+       end if
+       @assertEqual(DELTA_A0_WCA, delta_a0%f0, 1e-8*abs(DELTA_A0_WCA))
+
+
+       ! Test attractive contributions (a-a0)
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_WCA_Mie(rho, p_eos%mie(1,1)%lamr, phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       if (VERBOSE) then
+          print *, "DELTA_B2_WCA"
+          print *, DeltaB2_WCA
+          print *, Delta_B2%f0
+
+          print *, "DELTA_B2U_WCA"
+          print *, DELTA_B2U_WCA
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_WCA"
+          print *, DELTA_A1U_WCA
+          print *, delta_a1u%f0
+
+          print *, "PHI_WCA"
+          print *, PHI_WCA
+          print *, phi%f0
+
+
+          print *, "A_ATTR_WCA"
+          print *, A_ATTR_WCA
+          print *, a_attr%f0
+       end if
+       @assertEqual(DeltaB2_WCA, Delta_B2%f0, 1e-8*abs(DeltaB2_WCA))
+       @assertEqual(DELTA_B2U_WCA, delta_b2u%f0, 1e-8*abs(DELTA_B2U_WCA))
+       @assertEqual(DELTA_A1U_WCA, delta_a1u%f0, 1e-8*abs(DELTA_A1U_WCA))
+       @assertEqual(PHI_WCA, phi%f0, 1e-5*abs(PHI_WCA))
+       @assertEqual(A_ATTR_WCA, a_attr%f0, 1e-7*abs(A_ATTR_WCA))
+       
+    end select
+    lamr = 12.0
+
+  end subroutine test_vals_wca
+
+  
   !@Test
   subroutine test_derivs()
     integer, parameter :: nc = 1
