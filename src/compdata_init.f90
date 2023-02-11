@@ -73,9 +73,9 @@ contains
       if (idx_default > 0) then
         idx = idx_default
         if (verbose) print *,trim(compid)//&
-             "Did not find Cp correlation with reference "//&
+             ": did not find Cp correlation with reference "//&
              trim(ref)//&
-             "Using default Cp correlation."
+             ". Using default Cp correlation."
       else
         idx = 0
       endif

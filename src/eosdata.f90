@@ -51,7 +51,7 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 27
+  integer, parameter :: max_n_eos = 28
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -258,6 +258,14 @@ module eosdata
        eos_subidx = eosMie_UV_WCA, &
        short_label = "uv-mie-wca", &
        label = "uv-theory using WCA for Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_BH, &
+       short_label = "uv-mie-bh", &
+       label = "uv-theory using BH for Mie potentials", &
        need_alternative_eos = .true. &
        ),&
        !

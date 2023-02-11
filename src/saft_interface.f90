@@ -29,7 +29,7 @@ module saft_interface
   use eosdata, only: cpaSRK, cpaPR, eosPC_SAFT, eosOPC_SAFT, &
        eosSPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
        eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
-       eosPCP_SAFT, eosSPCP_SAFT
+       eosPCP_SAFT, eosSPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
@@ -1085,7 +1085,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calc_ljs_bh_zeta, &
          ljs_wca_eos, calc_ljx_wca_zeta
-    use uv_theory, only: uv_theory_eos, calc_uv_WCA_eta
+    use uv_theory, only: uv_theory_eos, calc_uv_Mie_eta
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
@@ -1109,7 +1109,7 @@ contains
     class is(ljs_wca_eos)
       conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(uv_theory_eos)
-       conv_num = calc_uv_wca_eta(p_eos, nc, T, V=1.0, n=n)
+       conv_num = calc_uv_mie_eta(p_eos, nc, T, V=1.0, n=n)
       !conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(saftvrmie_eos)
       conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
@@ -1162,6 +1162,7 @@ contains
          eos%assoc%saft_model == eosLJS_UF .or. &
          eos%assoc%saft_model == eosLJS_UV .or. &
          eos%assoc%saft_model == eosLJ_UF .or. &
+         eos%assoc%saft_model == eosMie_UV_BH .or. &
          eos%assoc%saft_model == eosMie_UV_WCA) then
       conv_num = conversion_numerator(eos,nc,T,n)
       if (phase .eq. VAPPH) then

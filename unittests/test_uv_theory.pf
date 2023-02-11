@@ -1,22 +1,146 @@
 module test_uv_theory
-  !use uv_theory
-  use eostv, only: free_energy_tv
-  use single_phase, only: TV_CalcFres
-  use volume_shift, only: initVolumeShift, vshift_F_terms, PENELOUX
-  use eoslibinit
-  use critical, only: calcCritical, calcCriticalTV
-  use thermopack_constants, only: RGAS, VAPPH, LIQPH
-  use eos, only: specificVolume
-  use eosTV, only: pressure
-  use thermopack_var
+  use hyperdual_mod
+  use single_phase
+  use uv_theory!, only: calcFres_uv, uv_theory_eos, dhs_BH_Mie
+  use eoslibinit, only: init_thermo, init_saftvrmie, init_uv
+  use thermopack_constants
+  use critical, only: calcCriticalTV
+  use eosTV, only: pressure, free_energy_tv
+  use saft_interface, only: calcSaftFder_res_nonassoc
+  use saftvrmie_dispersion, only: calcA1
+  use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
+       thermo_model, get_active_thermo_model
+  use pair_potentials, only: mie_potential_hd
   use pfunit_mod
   implicit none
   public
 
-  logical :: VERBOSE = .TRUE.
+  real, parameter :: SIGMA_CH4 = 3.7039e-10
+  real, parameter :: EPSDIVK_CH4 = 150.03
+
+  ! The following values are from the feos library
+  real, parameter :: DHS_BH_12 = 0.95777257352360246
+  real, parameter :: DHS_BH_24 = 0.95583586434435486
+  real, parameter :: DELTA_A0_BH = -0.0611105573289734
+
+  real, parameter :: DELTA_A1U_BH = -1.1470186919354
+  real, parameter :: PHI_BH = 0.743451055308332
+  real, parameter :: DELTA_B2U_BH = -0.949898568221715
+
+  real, parameter :: DeltaB2_BH = -1.00533412744652
+  real, parameter :: A_ATTR_BH = -1.16124062615291
+
 contains
 
   @Test
+  subroutine test_vals_bh()
+    type(uv_theory_eos) :: eos
+    real :: F
+    type(hyperdual) :: T, rho, z(1)
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(hyperdual) :: dhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+    
+    VERBOSE = .TRUE.
+    
+    ! Test BH diameter
+    call init_uv(model="BH",parameter_reference="DEFAULT")
+    ! call calcFres_uv(p_eos,nc,T,V,z, F)
+    print *, "test_vals_bh"
+
+    sigma = 1.0
+    epsdivk = 1.0
+    lamr = 12.0
+    lama = 6.0
+
+    ! Test reference contribution (a0)
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+
+       lamr = 24.0
+       T = 5.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_BH_Mie(T_r=T,mie=mie,dhs=dhs)
+       if (VERBOSE) then
+          print *, "DHS_BH_24"
+          print *, DHS_BH_24
+          print *, dhs%f0
+       end if
+       @assertEqual(DHS_BH_24, dhs%f0, 1e-10*DHS_BH_24)
+
+       lamr = 12.0
+       T = 2.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_BH_Mie(T_r=T,mie=mie,dhs=dhs)
+       if (VERBOSE) then
+          print *, "DHS_BH_12"
+          print *, DHS_BH_12
+          print *, dhs%f0
+       end if
+       @assertEqual(DHS_BH_12, dhs%f0, 1e-10*DHS_BH_24)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       if (VERBOSE) then
+          print *, "DELTA_A0_BH"
+          print *, DELTA_A0_BH
+          print *, delta_a0%f0
+       end if
+       @assertEqual(DELTA_A0_BH, delta_a0%f0, 1e-8*abs(DELTA_A0_BH))
+
+
+       ! Test attractive contributions (a-a0)
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_BH_Mie(T, rho, p_eos%mie(1,1), phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       if (VERBOSE) then
+          print *, "DELTA_B2_BH"
+          print *, DeltaB2_BH
+          print *, Delta_B2%f0
+
+          print *, "DELTA_B2U_BH"
+          print *, DELTA_B2U_BH
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_BH"
+          print *, DELTA_A1U_BH
+          print *, delta_a1u%f0
+
+          print *, "PHI_BH"
+          print *, PHI_BH
+          print *, phi%f0
+
+
+          print *, "A_ATTR_BH"
+          print *, A_ATTR_BH
+          print *, a_attr%f0
+       end if
+       @assertEqual(DeltaB2_BH, Delta_B2%f0, 1e-8*abs(DeltaB2_BH))
+       @assertEqual(DELTA_B2U_BH, delta_b2u%f0, 1e-8*abs(DELTA_B2U_BH))
+       @assertEqual(DELTA_A1U_BH, delta_a1u%f0, 1e-8*abs(DELTA_A1U_BH))
+       @assertEqual(PHI_BH, phi%f0, 1e-5*abs(PHI_BH))
+       @assertEqual(A_ATTR_BH, a_attr%f0, 1e-8*abs(A_ATTR_BH))
+       
+    end select
+    lamr = 12.0
+
+  end subroutine test_vals_bh
+
+  !@Test
   subroutine test_derivs()
     integer, parameter :: nc = 1
     real :: P, T, n(nc), v, rho
