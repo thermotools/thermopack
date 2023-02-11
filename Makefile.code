@@ -101,6 +101,7 @@ OBJE = \
        $(ODIR)/gergdatadb.o \
        $(ODIR)/gergmixdb.o \
        $(ODIR)/satdensdatadb.o \
+       $(ODIR)/nistdatadb.o \
        $(ODIR)/saturated_densities.o \
        $(ODIR)/multiparameter_base.o \
        $(ODIR)/multiparameter_c3.o \
@@ -110,6 +111,7 @@ OBJE = \
        $(ODIR)/multiparameter_r134a.o \
        $(ODIR)/multiparameter_lj.o \
        $(ODIR)/gerg.o \
+       $(ODIR)/nist.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -488,6 +490,8 @@ $(ODIR)/gerg.o: $(SRC)/gerg.f90 \
 	@$(call make_object, $(SRC)/gerg.f90)
 $(ODIR)/gergdatadb.o: $(SRC)/gergdatadb.f90
 	@$(call make_object, $(SRC)/gergdatadb.f90)
+$(ODIR)/nistdatadb.o: $(SRC)/nistdatadb.f90
+	@$(call make_object, $(SRC)/nistdatadb.f90)
 $(ODIR)/gergmix.o: $(SRC)/gergmix.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
@@ -888,3 +892,8 @@ $(ODIR)/wong_sandler.o: $(SRC)/wong_sandler.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/excess_gibbs.f90 $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/wong_sandler.f90)
+$(ODIR)/nist.o: $(SRC)/nist.f90 \
+	$(SRC)/gerg.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
+	$(SRC)/nistdatadb.f90
+	@$(call make_object, $(SRC)/nist.f90)

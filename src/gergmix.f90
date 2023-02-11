@@ -145,6 +145,7 @@ contains
       delta = rho/this%nist(i)%meos%rc
       tau = this%nist(i)%meos%tc/T
       alp0i = this%nist(i)%meos%alpha0_hd_taudelta(delta,tau)
+      !print *,"alph0i",i,alp0i%f0
       alp0 = alp0 + x(i)*(this%nist(i)%meos%alpha0_hd_taudelta(delta,tau) + log(x(i)))
     enddo
   end function alpha0_hd
@@ -160,8 +161,10 @@ contains
     alpr = 0.0_dp
     do i=1,nce
       alpri = this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
+      !print *,"ari",i,alpri%f0
       alpr = alpr + x(i)*this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
     enddo
+    !print *,"alpha_r",this%calc_del_alpha_r(x, tau, delta)
     alpr = alpr + this%calc_del_alpha_r(x, tau, delta)
   end function alphaRes_hd
 
@@ -282,7 +285,16 @@ contains
         curvatureSign = 1
         b = get_b_linear_mix(x)
         rho = 1.0/(1.01 * b)
+        !p_alt_eos => get_active_alt_eos()
+        !select type ( p_eos => p_alt_eos )
+        !type is ( cb_eos ) ! cubic equations of state
+        !  call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
+        !  rho = p_spec/(z*Rgas*t_spec)
+        !class default ! Saft eos
+        !  call stoperror("Error in initializeSearch")
+        !end select
         call this%pressure(rho, x, T_spec, p, p_rho=dpdrho)
+        !print *,"p,dpdrho",p,dpdrho
         do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
           rho = 2*rho
           curvatureSign = 0
@@ -342,6 +354,7 @@ contains
     enddo
     delta = delta + x(nce)*x(nce)*this%inv_rho_pow(nce,nce)/8.0_dp
     delta = delta*rho
+    !print *,"delta",delta%f0
   end function calc_delta
 
   function calc_tau(this, x, T) result(tau)
@@ -361,6 +374,7 @@ contains
     enddo
     tau = tau + x(nce)*x(nce)*this%tc_prod_sqrt(nce,nce)
     tau = tau/T
+    !print *,"tau",tau%f0
   end function calc_tau
 
   function calc_del_alpha_r(this, x, tau, delta) result(del_alpha_r)
@@ -378,16 +392,23 @@ contains
         del_alpha_r_ij = 0.0_dp
         if (this%mix_data_index(i,j) > 0) then
           idb = this%mix_data_index(i,j)
+          !print *,gerg_mix_datadb(idb)%num_mix,gerg_mix_datadb(idb)%num_exp
           do k=1,gerg_mix_datadb(idb)%num_mix - gerg_mix_datadb(idb)%num_exp
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)
+            !print *,"k",k,gerg_mix_datadb(idb)%n_mix(k),gerg_mix_datadb(idb)%d_mix(k),gerg_mix_datadb(idb)%t_mix(k)
           enddo
           do k=1+gerg_mix_datadb(idb)%num_mix-gerg_mix_datadb(idb)%num_exp,gerg_mix_datadb(idb)%num_mix
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)* &
                  exp(-gerg_mix_datadb(idb)%eta_mix(k)*(delta-gerg_mix_datadb(idb)%epsilon_mix(k))**2 &
                  - gerg_mix_datadb(idb)%beta_mix(k)*(delta-gerg_mix_datadb(idb)%gamma_mix(k)))
+            !print *,"k",k,gerg_mix_datadb(idb)%n_mix(k),gerg_mix_datadb(idb)%d_mix(k),gerg_mix_datadb(idb)%t_mix(k),&
+            !     gerg_mix_datadb(idb)%eta_mix(k),gerg_mix_datadb(idb)%epsilon_mix(k),&
+            !     gerg_mix_datadb(idb)%beta_mix(k),gerg_mix_datadb(idb)%gamma_mix(k)
           enddo
+          !print *,"Fij",gerg_mix_datadb(idb)%Fij
+          !print *,"del_alpha_r_ij",del_alpha_r_ij%f0
           del_alpha_r = del_alpha_r + x(i)*x(j)*gerg_mix_datadb(idb)%Fij*del_alpha_r_ij
         endif
       enddo
@@ -422,6 +443,8 @@ contains
     select type ( eos => p_eos )
     class is(meos_gergmix)
       x = n/sum(n)
+      !tau = eos%calc_tau(x, T)
+      !delta = eos%calc_delta(x, 1.0_dp/V)
       rho = sum(n)/V
       f = sum(n)*eos%alpha0_hd(x, rho, T)
     class default
