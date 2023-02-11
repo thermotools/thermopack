@@ -34,7 +34,7 @@ contains
   subroutine assocIndices_bookkeeping (assoc, nc, saft_model, assocSchemes_db)
     use eosdata, only: eosPC_SAFT, eosSAFT_VR_MIE, eosPeTS, eosLJS_BH, &
          get_eos_short_label_from_subidx, eosLJS_WCA, eosLJS_UV, eosLJ_UF,&
-         eosMie_UV_WCA
+         eosMie_UV_WCA, eosMie_UV_BH
     type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
@@ -93,6 +93,7 @@ contains
            saft_model == eosLJS_BH .or. &
            saft_model == eosLJS_WCA .or. &
            saft_model == eosMie_UV_WCA .or. &
+           saft_model == eosMie_UV_BH .or. &
            saft_model == eosLJS_UV .or. &
            saft_model == eosLJ_UF) then
         if (verbose) print *, "Using " // get_eos_short_label_from_subidx(saft_model) &

@@ -128,7 +128,7 @@ contains
         allocate(ljs_wca_eos :: p_eos, stat=istat)
       case(eosLJS_UV, eosLJS_UF, eosLJ_UF)
         allocate(p_eos, source=ljx_ux_eos_constructor(eosstr), stat=istat)
-      case(eosMie_UV_WCA)
+      case(eosMie_UV_WCA, eosMie_UV_BH)
         allocate(p_eos, source=uv_eos_constructor(nc, eosstr), stat=istat)
         !allocate(uv_theory_eos :: p_eos, stat=istat)
       case default

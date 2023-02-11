@@ -19,6 +19,10 @@ module uv_theory
   implicit none
   save
 
+  ! ! Parameters controlling the variant of uv-theory to use
+  ! integer, parameter :: BH_IDX = 1
+  ! integer, parameter :: WCA_IDX = 2
+
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
   real, parameter :: C_PHI_WCA_MIE(3) = (/ 1.4419, 1.1169, 16.8810 /)
@@ -45,11 +49,12 @@ module uv_theory
        -2.905719617, -1.778798984, -1.556827067, -4.308085347, &
        0.429154871, 20.765871545, 9.341250676, -33.787719418 /), &
        shape=(/4,4/), order=(/2,1/))
-  real, parameter :: C_ETA_A_BH_MIE(3,4) = RESHAPE( (/ &
+  real, parameter :: C_ETA_A_BH_MIE(4,4) = RESHAPE( (/ &
        -1.217417282, 6.754987582, -0.5919326153, -28.99719604, &
        1.579548775, -26.93879416, 0.3998915410, 106.9446266, &
-       -1.993990512, 44.11863355, -40.10916106, -29.61308489 /), &
-       shape=(/3,4/), order=(/2,1/))
+       -1.993990512, 44.11863355, -40.10916106, -29.61308489, &
+       0.0, 0.0, 0.0, 0.0/), &
+       shape=(/4,4/), order=(/2,1/))
 
   ! Coefficient matrices for effective packing fraction \eta_B (Eqs S35, S36 in [1])
   real, parameter :: C_ETA_B_WCA_MIE(3,2) = RESHAPE( (/ &
@@ -81,35 +86,37 @@ module uv_theory
 
   ! Coefficients for calculation of DeltaB2 (Table S5 in [1])
   real, parameter :: C_DELTAB2_WCA(6) = (/ 1.45805207053190E-03, 3.57786067657446E-02, &
-       1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)
+       1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)  
   real, parameter :: A_DELTAB2_WCA = 1.05968091375869
   real, parameter :: B_DELTAB2_WCA = 3.41106168592999
+  real, parameter :: C_DELTAB2_BH(6) = (/ 1.50542979585173E-03, 3.90426109607451E-02, &
+       3.23388827421376E-04, 1.29508541592689E-02, 5.25749466058948E-05, 5.26748277148572E-04 /)
+  integer, parameter :: A_DELTAB2_BH = 1
+  integer, parameter :: B_DELTAB2_BH = 2
+  integer, parameter :: C_EXPONENT_DELTAB2_BH = 4
 
 
   type, extends(base_eos_param) :: uv_theory_eos
      ! Mie potential parameters
      type(mie_potential_hd), allocatable :: mie(:,:)
-     ! real, allocatable :: lambda_r(:,:)        !< Repulsive exponent [-]
-     ! real, allocatable :: lambda_a(:,:)        !< Attractive exponent [-]
-     ! real, allocatable :: sigma(:,:)           !< [m]
-     ! real, allocatable :: eps_divk(:,:)        !< [K]
-     ! real, allocatable :: Cmie(:,:)            !< Mie potential prefactor [-]
-     ! real, allocatable :: rmin(:,:)            !< Location of minimum [m]
+     type(hyperdual), allocatable :: dhs(:,:)
+     type(hyperdual), allocatable :: qhs(:,:)
+     type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double
    contains
      procedure, public :: dealloc => uv_dealloc
      procedure, public :: allocate_and_init => uv_allocate_and_init
-     procedure, public :: calc_onefluid_params
      ! Assignment operator
      procedure, pass(this), public :: assign_eos => assign_uv_eos
   end type uv_theory_eos
 
+
   public :: uv_theory_eos
   public :: calcFres_uv
-  public :: calc_uv_WCA_eta
+  public :: calc_uv_Mie_eta
 contains
 
- 
-  function calc_uv_WCA_eta(eos,nc,T,V,n) result(eta)
+
+  function calc_uv_Mie_eta(eos,nc,T,V,n) result(eta)
     ! Input
     type(uv_theory_eos), intent(in) :: eos
     integer, intent(in) :: nc !< Number of components
@@ -131,9 +138,9 @@ contains
     rhonum_hd%f0 = sumn*N_AVOGADRO/V
     call calc_eta_dhs(eos, nc, T=T_hd, rho=rhonum_hd, z=z_hd, eta=eta_hd)
     eta = eta_hd%f0
-  end function calc_uv_WCA_eta
+  end function calc_uv_Mie_eta
 
-  
+
   subroutine init_uv_theory(nc,comp,uv,ref)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
@@ -147,20 +154,22 @@ contains
     integer :: idx
 
     ! Deallocate old memory and init new memory
-    call uv%allocate_and_init(nc, eos_label="UV-MIE-WCA")
+    call uv%allocate_and_init(nc, eos_label="UV-MIE")
 
+
+    ! Set component data from database
     idx = getMiedataIdx(uv%subeosidx,trim(comp(1)%p_comp%ident),ref)
+    if (idx < 1) call stoperror("Cannot find Mie potential in database")
+    ! call mie_pure%init(lama=6.0, lamr=MieArray(idx)%lamr, &
+    !      sigma=MieArray(idx)%sigma, epsdivk=MieArray(idx)%eps_divk)
+
+    ! Temporarily hard-coding potential parameters
     sigma = 3.42e-10
     epsdivk = 124.0
     lamr = 12.0
     lama = 6.0
-
-    ! Set component data
-    ! call mie_pure%init(lama=6.0, lamr=MieArray(idx)%lamr, &
-    !      sigma=MieArray(idx)%sigma, epsdivk=MieArray(idx)%eps_divk)
     call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-
-    uv%mie(1,1) = mie_pure
+    call uv_set_mie_pot(uv, 1,1,mie_pure)
 
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
@@ -207,8 +216,68 @@ contains
       f = f*sum(n)
     end function fun
   end subroutine calcFres_uv
-  
-  
+
+  subroutine preCalcUVTheory(eos, nc, T, z)
+    !> The reduced helmholtz energy from uv-theory
+    integer, intent(in)                 :: nc
+    class(uv_theory_eos), intent(inout) :: eos
+    type(hyperdual), intent(in)  :: T             !< temperature (K)
+    type(hyperdual), intent(in)  :: z(nc)         !< mole fractions (1/m^3)
+    ! Locals
+    type(hyperdual) :: T11_r
+    type(hyperdual) :: diameters(nc)
+    type(hyperdual) :: lama, lamr
+
+    type(hyperdual) :: sigma3
+    type(hyperdual) :: sigma3_single   !< Cubed one-fluid diameter
+    type(hyperdual) :: sigma3_double   !< Cubed one-fluid diameter
+    type(hyperdual) :: epsdivk_x       !< One-fluid energy scale
+    type(hyperdual) :: sigma_x         !< One-fluid energy scale
+    integer :: i,j
+
+    T11_r = T/eos%mie(1,1)%epsdivk
+    if (eos%subeosidx == eosMie_UV_WCA) then
+       call dhs_WCA_Mie(T11_r,eos%mie(1,1), diameters(1))
+    else if (eos%subeosidx == eosMie_UV_BH) then
+       call dhs_BH_Mie(T11_r,eos%mie(1,1), diameters(1))
+    end if
+
+    do i=2,nc
+       diameters(i) = diameters(1)*eos%mie(i,i)%sigma/eos%mie(1,1)%sigma
+    end do
+
+    do i=1,nc
+       do j=1,nc
+          eos%dhs(i,j) = (diameters(i) + diameters(j))/2.0
+       end do
+    end do
+
+    ! Calculate one-fluid Mie parameters
+    epsdivk_x = 0.0
+    sigma3_single = 0.0
+    sigma3_double = 0.0
+    do i=1,nc
+       sigma3_single = sigma3_single + z(i) * eos%mie(i,i)%sigma**3.0
+       do j=1,nc
+          sigma3_double = sigma3_double + z(i)*z(j) * eos%mie(i,j)%sigma**3.0
+          epsdivk_x = epsdivk_x + eos%mie(i,j)%epsdivk * z(i)*z(j) * eos%mie(i,j)%sigma**3.0
+       end do
+    end do
+    eos%epsdivk_x = epsdivk_x / sigma3_double
+    eos%sigma_x = sigma3_single**(1.0/3)
+    eos%sigma3_single = sigma3_single
+    eos%sigma3_double = sigma3_double
+    
+  end subroutine preCalcUVTheory
+
+
+  subroutine uv_set_mie_pot(eos, i,j,mie)
+    type(uv_theory_eos), intent(inout) :: eos
+    integer, intent(in) :: i,j
+    type(mie_potential_hd), intent(in) :: mie
+    eos%mie(i,j) = mie
+  end subroutine uv_set_mie_pot
+
 
   subroutine calc_a_uv(eos, nc, T, rhovec, a)
     !> The reduced helmholtz energy from uv-theory
@@ -218,73 +287,63 @@ contains
     type(hyperdual), intent(in)  :: rhovec(nc)    !< number density (1/m^3)
     type(hyperdual), intent(out) :: a             !< helmholtz energy a=A/NRT (-)
     ! Locals
-    type(hyperdual) :: z(nc), rho, rho_r, epsdivk_x, T_x, denom
+    type(hyperdual) :: z(nc), rho, rho_r, T_x
     type(hyperdual) :: a0, a_hs, delta_a0, Delta_a1u
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
-    type(hyperdual) :: dhs, diameters(nc)
-    type(hyperdual) :: lama, lamr
+    type(hyperdual) :: lama, lamr, dhs_i(nc)
     integer :: i,j
 
+    ! Precalculations
+    rho = sum (rhovec)
+    z = rhovec/rho
+    call preCalcUVTheory(eos,nc,T,z)
+    
+   
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     rho = 0.0
     do i = 1,nc
-       rho = rho + rhovec(i)
+       dhs_i(i) = eos%dhs(i,i)
        if (eos%mie(i,i)%lamr /= lamr .or. eos%mie(i,i)%lama /= lama) then
           stop "Invalid Mie exponents in uv-theory"
        end if
     end do
 
-    z = rhovec/rho
-    
-    ! Calculate one-fluid parameters
-    rho_r = 0.0
-    epsdivk_x = 0.0
-    denom = 0.0
-    do i=1,nc
-       rho_r = rho_r + rho*z(i)*eos%mie(i,i)%sigma**3
-       do j=1,nc
-          epsdivk_x = epsdivk_x + z(i)*z(j)*eos%mie(i,j)%sigma**3*eos%mie(i,j)%epsdivk
-          denom = denom + z(i)*z(j)*eos%mie(i,j)%sigma**3
-       end do
-    end do
-    epsdivk_x = epsdivk_x/denom
-    T_x = T/epsdivk_x
+    ! Calculate the u-fraction phi
+    T_x = T/eos%epsdivk_x
+    if (eos%subeosidx == eosMie_UV_WCA) then
+       call phi_WCA_Mie(rho_r, lamr, phi)
+    else if (eos%subeosidx == eosMie_UV_BH) then
+       call phi_BH_Mie(T_x, rho_r, eos%mie(1,1), phi)
+    end if
 
-    ! Calculate hard sphere part of reference system (Boublik-Mansoori
-    ! for additive hard spheres)
-    call dhs_WCA_Mie(T,eos%mie(1,1), dhs)
-    do i=1,nc
-       diameters(i) = dhs*eos%mie(i,i)%sigma/eos%mie(1,1)%sigma
-    end do
-    call calc_ares_hardsphere_bmcsl(nc, rhovec, diameters, a_hs)
+    call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs)
 
     ! Calculate perturbation part of reference system
-    call Delta_a0_WCA_Mie(eos, nc, T, rho, z, delta_a0)
+    call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
 
     ! Calculate contribution from reference system
     a0 = a_hs + delta_a0
 
     ! Calculate Delta a1u and Delta B2u
-    call delta_a1u_b2u_WCA_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
 
     ! Calculate Delta B2
-    call DeltaB2_WCA_Mie(eos,nc,T,z, Delta_B2)
+    call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
 
-    ! Calculate u fraction phi
-    call phi_WCA_Mie(rho_r, lamr, phi)
 
     ! Calculate total helmholtz energy
-    a = a0 + phi*Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
+    a = a0 + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
 
-    ! print *, "a_hs", a_hs
-    ! print *, "delta_a0", delta_a0
-    print *, "a0       ", a_hs%f0 + delta_a0%f0
-    ! print *, "phi", phi
-    print *, "Delta_a1u", Delta_a1u%f0
-    ! ! print *, "Delta_B2u",  Delta_B2u
-    ! ! print *, "Delta_B2",  Delta_B2
-    ! print *, "B2term",  (Delta_B2 - Delta_B2u)*rho
+    ! print *, "dhs      ", eos%dhs%f0
+    ! print *, "a_hs     ", a_hs%f0
+    ! print *, "delta_a0 ", delta_a0%f0
+    ! print *, "a0       ", a_hs%f0 + delta_a0%f0
+    ! ! print *, "phi", phi
+    ! print *, "Delta_a1u", Delta_a1u%f0
+    ! ! ! print *, "Delta_B2u",  Delta_B2u
+    ! ! ! print *, "Delta_B2",  Delta_B2
+    ! ! print *, "B2term",  (Delta_B2 - Delta_B2u)*rho
   end subroutine calc_a_uv
 
 
@@ -296,39 +355,9 @@ contains
     class is (uv_theory_eos)
        call this%assign_base_eos_param(other)
        this%mie = other%mie
-       ! this%lambda_r = other%lambda_r
-       ! this%lambda_a = other%lambda_a
-       ! this%sigma = other%sigma
-       ! this%eps_divk = other%eps_divk
-       ! this%Cmie = other%Cmie
-       ! this%rmin = other%rmin
     class default
     end select
   end subroutine assign_uv_eos
-
-
-  subroutine calc_onefluid_params(this,nc,z, epsdivk, sigma3_single, sigma3_double)
-    class(uv_theory_eos), intent(in) :: this
-    integer, intent(in) :: nc                           !< Number of components.
-    type(hyperdual), intent(in) :: z(nc)                !< Mole fractions
-    type(hyperdual), intent(out) :: sigma3_single   !< Cubed one-fluid diameter
-    type(hyperdual), intent(out) :: sigma3_double   !< Cubed one-fluid diameter
-    type(hyperdual), intent(out) :: epsdivk         !< One-fluid energy scale
-    ! Locals
-    integer :: i, j
-
-    epsdivk = 0.0
-    sigma3_single = 0.0
-    sigma3_double = 0.0
-    do i=1,nc
-       sigma3_single = sigma3_single + z(i) * this%mie(i,i)%sigma**3
-       do j=1,nc
-          sigma3_double = sigma3_double + z(i)*z(j) * this%mie(i,j)%sigma**3
-          epsdivk = epsdivk + z(i)*z(j) * this%mie(i,j)%sigma**3 * this%mie(i,j)%epsdivk
-       end do
-    end do
-    epsdivk = epsdivk / sigma3_double
-  end subroutine calc_onefluid_params
 
 
   subroutine uv_dealloc(eos)
@@ -337,28 +366,17 @@ contains
     integer :: stat
     call base_eos_dealloc(eos)
 
-    ! if (allocated(eos%lambda_r)) deallocate(eos%lambda_r,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate lambda_r")
-
-    ! deallocate(eos%lambda_a,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
-
-    ! deallocate(eos%sigma,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
-
-    ! deallocate(eos%eps_divk,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
-
-    ! deallocate(eos%CMie,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
-
-    ! deallocate(eos%rmin,stat=stat)
-    ! if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate")
-
     select type (p_eos => eos)
     class is (uv_theory_eos)
        if (allocated(eos%mie)) deallocate(eos%mie,stat=stat)
        if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
+
+       if (allocated(eos%dhs)) deallocate(eos%dhs,stat=stat)
+       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
+
+       if (allocated(eos%qhs)) deallocate(eos%qhs,stat=stat)
+       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
+
     end select
 
   end subroutine uv_dealloc
@@ -367,16 +385,11 @@ contains
     class(uv_theory_eos), intent(inout) :: eos
     integer, intent(in) :: nc
     character(len=*), intent(in) :: eos_label !< EOS label
-    ! Locals
-
     call eos%dealloc()
     allocate(eos%mie(nc,nc))
-    ! allocate(eos%lambda_r(nc,nc))
-    ! allocate(eos%lambda_a(nc,nc))
-    ! allocate(eos%sigma(nc,nc))
-    ! allocate(eos%eps_divk(nc,nc))
-    ! allocate(eos%Cmie(nc,nc))
-    ! allocate(eos%rmin(nc,nc))
+    allocate(eos%dhs(nc,nc))
+    allocate(eos%qhs(nc,nc))
+
   end subroutine uv_allocate_and_init
 
   !> Allocate memory for cubic eos
@@ -392,9 +405,7 @@ contains
 
   end function uv_eos_constructor
 
-  
-
-  subroutine delta_a1u_b2u_WCA_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+  subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
     type(uv_theory_eos), intent(in) :: eos ! uv-theory eos
     integer, intent(in) :: nc ! number of components
@@ -410,24 +421,25 @@ contains
 
     ! Calc effective one-fluid parameters
     !this,nc,z, epsdivk, sigma3_single, sigma3_double
-    call eos%calc_onefluid_params(nc,z, epsdivk=epsdivk, &
-         sigma3_single=sigma3_single, sigma3_double=sigma3_double)
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
-    call mie_x%init(lama=lama, lamr=lamr, sigma=(sigma3_single)**(1.0/3.0), epsdivk=epsdivk)
-    rho_r = rho*sigma3_single
-    T_r = T/epsdivk
+    call mie_x%init(lama=lama, lamr=lamr, sigma=eos%sigma_x, epsdivk=eos%epsdivk_x)
+    rho_r = rho*eos%sigma3_single
+    T_r = T/eos%epsdivk_x
 
     ! Calc correlation integral of effective pure fluid
-    call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
+    if (eos%subeosidx == eosMie_UV_WCA) then
+       call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
+    else if (eos%subeosidx == eosMie_UV_BH) then
+       call Iu_BH_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
+    end if
 
     ! Calculate Delta_a1u (Eq S42 in [1])
-    beta = 1.0/T ! the kB factor is subsumed in epsdivk 
-    Delta_a1u = 2*PI*rho*beta*(epsdivk*sigma3_double)*Iu
-    
-    Delta_b2u = 2*PI*beta*(epsdivk*sigma3_double)*Iu_zerodensity
+    beta = 1.0/T ! the kB factor is subsumed in epsdivk
+    Delta_b2u = 2*PI*beta*(eos%epsdivk_x*eos%sigma3_double)*Iu_zerodensity
+    Delta_a1u = Delta_b2u*rho*Iu/Iu_zerodensity
 
-  end subroutine delta_a1u_b2u_WCA_Mie
+  end subroutine delta_a1u_b2u_Mie
 
 
   subroutine Iu_WCA_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu)
@@ -479,40 +491,85 @@ contains
 
   end subroutine Iu_WCA_Mie
 
+  subroutine Iu_BH_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu)
+    !> Correlation integral of pure fluids going into the u-term in uv-theory (Eq S54 in [1])
+    type(hyperdual), intent(in) :: T_r      ! reduced temperature (-)
+    type(hyperdual), intent(in) :: rho_r    ! reduced density (-)
+    type(mie_potential_hd), intent(in) :: mie ! Mie potential
+    type(hyperdual), intent(out) :: Iu_zerodensity, Iu ! correlation integral and its zero density limit
+    ! Locals
+    type(hyperdual) :: n, nu, sigma, eps_divk                   ! Mie attractive exponent
+    type(hyperdual) :: rm, rs, one
+    type(hyperdual) :: C(3), C11, C12, C13, dhs, tau
 
-  subroutine DeltaB2_WCA_Mie(eos,nc,T,z, DeltaB2)
+    ! Extract Mie parameters for component ic
+    n = mie%lama
+    nu = mie%lamr
+    sigma = mie%sigma
+    eps_divk = mie%epsdivk
+    rs = 1.0
+
+    ! Calculate length scale tau (Eq S33)
+    call dhs_BH_Mie(T_r=T_r,mie=mie, dhs=dhs)
+    dhs = dhs/sigma
+    tau = rs - dhs
+    
+    ! Calculate C2 and C3 (Eq. S50)
+    C = (C_IU_BH_MIE(:,1) + C_IU_BH_MIE(:,2)/nu) &
+         - (C_IU_BH_MIE(:,3) + C_IU_BH_MIE(:,4)/nu)*tau
+
+    ! Calculate C1 (Eq. S49)
+    C11 = dhs**(6.0-nu) * ((2**(3-nu%f0)-dhs**(nu%f0-3.0))/(3.0 - nu))  + (1.0-8.0*dhs**3)/24.0
+    C12 = -0.75 * ((dhs**(6.0-nu) * (2.0**(4-nu%f0)-dhs**(nu-4.0))/(4.0 - nu))  + (1.0-4.0*dhs**2)/8.0)
+    C13 = 1/16.0 * ( ((2*dhs)**(6.0-nu) - 1.0)/(6.0 - nu) - log(2*dhs) )
+    C(1) = (4*PI/3)*(C11 + C12 + C13)
+
+    ! Calculate correlation integral (Eq S48)
+    one = 1.0
+    Iu_zerodensity = - alpha_x(x=one, mie=mie)
+    Iu = Iu_zerodensity + mie%Cmie*(C(1)*rho_r + C(2)*rho_r**2)/(1.0+C(3)*rho_r)**2
+    
+  end subroutine Iu_BH_Mie
+
+  
+
+  subroutine DeltaB2_Mie(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
     integer, intent(in) :: nc !< Number of components
     type(uv_theory_eos), intent(in) :: eos
     type(hyperdual), intent(in) :: T         ! temperature (K)
-    type(hyperdual), intent(in) :: z(nc)
-    type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2
+    type(hyperdual), intent(in) :: z(nc)     ! mole fractions (-)
+    type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2 (m^3)
     ! Locals
     type(hyperdual) :: T_r, DeltaB2ij
     integer :: i, j
+    logical :: is_BH
 
+    is_BH = (eos%subeosidx==eosMie_UV_BH)
+    
     DeltaB2 = 0.0
     do i=1,nc
        do j=1,nc
           T_r = T/eos%mie(i,j)%epsdivk
-          call DeltaB2_pure_WCA_Mie(T_r=T_r, mie=eos%mie(i,j), DeltaB2=DeltaB2ij)
+          call DeltaB2_pure_Mie(is_BH, T_r=T_r, mie=eos%mie(i,j), DeltaB2=DeltaB2ij)
           DeltaB2 = DeltaB2 + z(i)*z(j)*DeltaB2ij
        end do
     end do
-  end subroutine DeltaB2_WCA_Mie
+  end subroutine DeltaB2_Mie
 
 
   ! TODO: double-check whether parameters are reduced used correctly
-  subroutine DeltaB2_pure_WCA_Mie(T_r, mie, DeltaB2)
+  subroutine DeltaB2_pure_Mie(is_BH, T_r, mie, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
+    logical, intent(in) :: is_BH              ! True for BH, False for WCA
     type(mie_potential_hd), intent(in) :: mie ! Mie potential
-    type(hyperdual), intent(in) :: T_r         ! reduced temperature
-    type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2
+    type(hyperdual), intent(in) :: T_r        ! reduced temperature (-)
+    type(hyperdual), intent(out) :: DeltaB2   ! Perturbation contribution to B2 m^3
     ! Locals
     type(hyperdual) :: C0, C1, C2, C3
-    real :: a, b
+    real :: a_expo, b_expo, c_expo, C_DELTAB2(6)
     type(hyperdual) :: rm, rc, rs, alpha_rs, alpha_rc, beta, beta_eff, qhs
-    type(hyperdual) :: sigma, eps_divk, n,nu
+    type(hyperdual) :: sigma, eps_divk, n,nu, wca_term
 
     ! Extract Mie parameters
     n = mie%lama
@@ -520,29 +577,45 @@ contains
     sigma = mie%sigma
     eps_divk = mie%epsdivk
     rm = mie%rmin_adim
-    rs = rm
     rc = 5.0
 
     ! Precalculate quantities
-    call qhs_WCA_Mie(T_r, mie, qhs)
-    qhs = qhs/mie%sigma
-    alpha_rs = alpha_x(rm, mie)
+    if (is_BH) then
+       rs = 1.0
+       call dhs_BH_Mie(T_r, mie, qhs)
+       qhs = qhs/mie%sigma
+       C_DELTAB2 = C_DELTAB2_BH
+       a_expo = A_DELTAB2_BH
+       b_expo = B_DELTAB2_BH
+       c_expo = C_EXPONENT_DELTAB2_BH
+       wca_term = 0.0
+
+    else ! wca
+       rs = rm
+       call qhs_WCA_Mie(T_r, mie, qhs)
+       qhs = qhs/mie%sigma
+       C_DELTAB2 = C_DELTAB2_WCA
+       a_expo = A_DELTAB2_WCA
+       b_expo = B_DELTAB2_WCA
+       c_expo = 1.0 ! this value won't matter
+       wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0) 
+    end if
+    alpha_rs = alpha_x(rs, mie)
     alpha_rc = alpha_x(rc, mie)
     beta = 1.0/T_r
-
-    ! Calculate beta_eff (Eq S58 in [1])
     C0 = 1.0 - 3*(alpha_rs-alpha_rc)/(rc**3-rs**3)
-    C1 = C_DELTAB2_WCA(1) + C_DELTAB2_WCA(2)/nu
-    C2 = C_DELTAB2_WCA(3) + C_DELTAB2_WCA(4)/nu
-    C3 = C_DELTAB2_WCA(5) + C_DELTAB2_WCA(6)/nu
-    a = A_DELTAB2_WCA
-    b = B_DELTAB2_WCA
-    beta_eff = beta*(1.0 - C0/(1.0 + C1*beta**a + C2*beta**b + 0.0))
 
-    DeltaB2 = -2*PI*sigma**3*( (rm**3-qhs**3)/3.0*(exp(beta)-1.0) + &
-         (rc**3-rm**3)/3.0*(exp(beta_eff)-1.0) + beta*alpha_rc)
+    
+    ! Calculate beta_eff (Eq S58 in [1])
+    C1 = C_DELTAB2(1) + C_DELTAB2(2)/nu
+    C2 = C_DELTAB2(3) + C_DELTAB2(4)/nu
+    C3 = C_DELTAB2(5) + C_DELTAB2(6)/nu
+    beta_eff = beta*(1.0 - C0/(1.0 + C1*beta**a_expo + C2*beta**b_expo + C3*beta**c_expo))
 
-  end subroutine DeltaB2_Pure_WCA_Mie
+    DeltaB2 = -2*PI*sigma**3*(wca_term + (rc**3-rs**3)/3.0*(exp(beta_eff)-1.0) + beta*alpha_rc)
+
+    
+  end subroutine DeltaB2_pure_Mie
 
 
   type(hyperdual) function alpha_x(x, mie)
@@ -565,20 +638,25 @@ contains
     integer :: i
     eta = 0.0
     do i=1,nc
-       call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
-       eta = eta + pi/6*rho*z(i)*dhs**3
+       if (eos%subeosidx==eosMie_UV_BH) then
+          call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
+       else
+          call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
+       end if
+       eta = eta + z(i)*dhs**3
     end do
+    eta = pi/6*rho*eta
   end subroutine calc_eta_dhs
 
-  subroutine Delta_a0_WCA_Mie(eos, nc, T, rho, x, delta_a0)
+  subroutine Delta_a0_mie(eos, nc, T, rho, x, delta_a0)
     !> Perturbation contribution delta_a0 to the reference Helmholtz
     !> energy a0, defined by a_0 = ahs_d + delta_a0. See Eq S40 in [1].
     integer, intent(in) :: nc !< Number of components
     type(uv_theory_eos), intent(in) :: eos
-    type(hyperdual), intent(in) :: T
-    type(hyperdual), intent(in) :: rho
-    type(hyperdual), intent(in) :: x(nc)
-    type(hyperdual), intent(out) :: delta_a0
+    type(hyperdual), intent(in) :: T         ! temperature (K)
+    type(hyperdual), intent(in) :: rho       ! number density (1/m3)
+    type(hyperdual), intent(in) :: x(nc)     ! mole fractions (-)
+    type(hyperdual), intent(out) :: delta_a0 ! (-)
     ! Locals
     type(hyperdual) :: IA, IB, I0f, eta, etaA, etaB, qhs_r, dhs_r, Tij_r, tau, rs_r
     integer :: i, j
@@ -589,71 +667,77 @@ contains
     do i=1,nc
        do j=1,nc
           Tij_r = T/eos%mie(i,j)%epsdivk
-          rs_r = eos%mie(i,j)%rmin_adim
+          dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
+          
+          if (eos%subeosidx == eosMie_UV_WCA) then 
+             rs_r = eos%mie(i,j)%rmin_adim
+             call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
+             qhs_r = qhs_r/eos%mie(i,j)%sigma
 
-          call dhs_WCA_Mie(Tij_r, eos%mie(i,j), dhs_r)
-          dhs_r = dhs_r/eos%mie(i,j)%sigma
-          call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
-          qhs_r = qhs_r/eos%mie(i,j)%sigma
+             tau = rs_r - dhs_r ! adimensional length scale
+             call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_WCA_MIE)
+             call etaB_Mie(eta, tau, etaB, C_ETA_B_WCA_MIE)
+          else if (eos%subeosidx == eosMie_UV_BH) then
+             rs_r = 1.0
+             qhs_r = dhs_r
 
-          tau = eos%mie(i,j)%rmin_adim - dhs_r ! adimensional length scale
-          call etaA_WCA_Mie(eta, tau, eos%mie(i,j), etaA)
-          call etaB_WCA_Mie(eta, tau, etaB)
-
-          IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)/3.0
-          IB = (1.0-etaB/2.0)/(1.0-etaB)**3 * (rs_r**3-dhs_r**3)/3.0
-          I0f = IA-IB
+             tau = rs_r - dhs_r ! adimensional length scale
+             call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_BH_MIE)
+             call etaB_Mie(eta, tau, etaB, C_ETA_B_BH_MIE)
+          end if
+             
+          IA = (1.0-etaA/2.0)/(1.0-etaA)**3 
+          IB = (1.0-etaB/2.0)/(1.0-etaB)**3
+          I0f = (IA-IB)*(rs_r**3-qhs_r**3)
           delta_a0 = delta_a0 + x(i)*x(j)*eos%mie(i,j)%sigma**3 * I0f
        end do
     end do
-    delta_a0 = -2*PI*rho*delta_a0
-  end subroutine Delta_A0_WCA_Mie
+    delta_a0 = -(2*PI/3)*rho*delta_a0
+  end subroutine Delta_a0_mie
 
-
-  subroutine etaA_WCA_Mie(eta, tau, mie, etaA)
+  subroutine etaA_Mie(eta, tau, mie, etaA, C_ETA_A_MIE)
     !> Intermediate quantity to calculate the soft-repulsive
     !> perturbation term \Delta a0. The effective packing fraction
     !> used to calculate I_A
-    !real, intent(in) :: rs_r
     type(mie_potential_hd), intent(in) :: mie ! Mie potential
     type(hyperdual), intent(in) :: tau   ! adimensional length scale
     type(hyperdual), intent(in) :: eta   ! packing fraction
+    real, intent(in) :: C_ETA_A_MIE(4,4) ! coefficientS for BH or WCA
     type(hyperdual), intent(out) :: etaA ! effective packing fraction A
     ! Locals
     type(hyperdual) :: C(4), nu
     nu = mie%lamr
-    C =     (C_ETA_A_WCA_MIE(:,1)+C_ETA_A_WCA_MIE(:,2)/nu)*tau
-    C = C + (C_ETA_A_WCA_MIE(:,3)+C_ETA_A_WCA_MIE(:,4)/nu)*tau**2
+    C =     (C_ETA_A_MIE(:,1)+C_ETA_A_MIE(:,2)/nu)*tau
+    C = C + (C_ETA_A_MIE(:,3)+C_ETA_A_MIE(:,4)/nu)*tau**2
 
     etaA = eta + C(1)*eta + C(2)*eta**2 + C(3)*eta**3 + C(4)*eta**4
-  end subroutine etaA_WCA_Mie
+  end subroutine etaA_Mie
 
-  subroutine etaB_WCA_Mie(eta, tau, etaB)
+
+  subroutine etaB_Mie(eta, tau, etaB, C_ETA_B_MIE)
     !> Intermediate quantity to calculate the soft-repulsive
     !> perturbation term \Delta a0. The effective packing fraction
     !> used to calculate I_A
-    !real, intent(in) :: rs_r
     type(hyperdual), intent(in) :: tau   ! adimensional length scale
     type(hyperdual), intent(in) :: eta   ! packing fraction
+    real, intent(in) :: C_ETA_B_MIE(3,2) ! coefficients for BH or WCA
     type(hyperdual), intent(out) :: etaB ! effective packing fraction B
+
     ! Locals
     type(hyperdual) :: C(3)
     integer :: i
 
     ! Eq S36 in [1]
-    do i=1,3
-       C(i) = C_ETA_B_WCA_MIE(i,1)*tau + C_ETA_B_WCA_MIE(i,2)*tau**2
-    end do
+    C = C_ETA_B_MIE(:,1)*tau + C_ETA_B_MIE(:,2)*tau**2
 
-    ! \TODO: double-check
     etaB = eta + C(1)*eta + C(2)*eta**2 + C(3)*eta**3
-  end subroutine etaB_WCA_Mie
+  end subroutine etaB_Mie
 
   subroutine dhs_WCA_Mie(T_r,mie,dhs)
     !> The effective hard sphere diameter used for WCA
-    type(hyperdual), intent(in) :: T_r     ! reduced temperature (-)
+    type(hyperdual), intent(in) :: T_r        ! reduced temperature (-)
     type(mie_potential_hd), intent(in) :: mie ! Mie potential
-    type(hyperdual), intent(out) :: dhs    ! hard-sphere diameter (m)
+    type(hyperdual), intent(out) :: dhs       ! hard-sphere diameter (m)
     ! Locals
     type(hyperdual) :: c, nu
 
@@ -662,6 +746,37 @@ contains
     c = (nu/6.0)**(-nu/(12.0-2*nu)) - 1.0
     dhs = mie%rmin*(1.0/(1.0+c*T_r**0.5))**(2.0/nu)
   end subroutine dhs_WCA_Mie
+
+  subroutine dhs_BH_Mie(T_r,mie,dhs)
+    !> The effective hard sphere diameter used for BH
+    type(hyperdual), intent(in) :: T_r     ! reduced temperature (-)
+    type(mie_potential_hd), intent(in) :: mie ! Mie potential
+    type(hyperdual), intent(out) :: dhs    ! hard-sphere diameter (m)
+    ! Locals
+    type(hyperdual) :: ap, nu, T14, C0, C1, C2, C3, C4, D, one, six, seven
+    type(mie_potential_hd) :: mie_76 ! Mie potential
+
+    ! Assemble C coefficients (Eqs S24 and S26)
+    nu = mie%lamr
+    C0 = -2*nu/((mie%lama-nu)*mie%cmie)
+    one = 1.0
+    six = 6.0
+    seven = 7.0
+    call mie_76%init(lama=six, lamr=seven, sigma=mie%sigma, epsdivk=mie%epsdivk)
+    ap = 1.0/alpha_x(one, mie) - 1.0/alpha_x(one, mie_76)
+    C1 =                   C_DHS_BH_MIE(1)*ap
+    C2 = C_DHS_BH_MIE(2) + C_DHS_BH_MIE(3)*ap
+    C3 = C_DHS_BH_MIE(4) + C_DHS_BH_MIE(5)*ap + C_DHS_BH_MIE(6)*ap*ap
+    C4 = C_DHS_BH_MIE(7) + C_DHS_BH_MIE(8)*ap + C_DHS_BH_MIE(9)*ap*ap
+
+    ! Eq S24
+    T14 = T_r**(1.0/4)
+    D = C1*T14 + C2*T_r/T14 + C3*T_r*T14
+
+    ! Hard-sphere diameter (S23)
+    dhs = mie%sigma*(1.0 + C0*T_r + D*log(1.0+T_r) + C4*T_r*T_r)**(-1.0/(2.0*nu))
+  end subroutine dhs_BH_Mie
+
 
   subroutine qhs_WCA_Mie(T_r,mie,qhs)
     !> The effective hard sphere diameter used for the WCA perturbation contribution to DeltaB2
@@ -686,7 +801,7 @@ contains
 
 
   subroutine phi_WCA_Mie(rho_r,lamr, phi)
-    !> Eq 13 in [1]    
+    !> Eq 13 in [1]
     type(hyperdual), intent(in) :: rho_r   ! reduced density (-)
     type(hyperdual), intent(in) :: lamr    ! repulsive exponent (-)
     type(hyperdual), intent(out) :: phi    ! u fraction (-)
@@ -699,6 +814,34 @@ contains
     tanhx = (e2x-1.0)/(e2x+1.0)
     phi = tanhx
   end subroutine phi_WCA_Mie
+
+  subroutine phi_BH_Mie(T_r,rho_r,mie, phi)
+    !> Eq 14 in [1]
+    type(hyperdual), intent(in) :: T_r    ! reduced temperature
+    type(hyperdual), intent(in) :: rho_r  ! reduced density
+    type(mie_potential_hd), intent(in) :: mie ! Mie potential
+    type(hyperdual), intent(out) :: phi ! u fraction
+    ! Locals
+    type(hyperdual) :: beta, sigma_beta, prefac
+    type(hyperdual) :: x, e2x, tanhx
+    real :: C(4)
+
+    ! Coefficient vectors (Eq 16)
+    C = C1_PHI_BH_MIE + C2_PHI_BH_MIE/mie%lamr%f0
+
+    ! Calculate prefactor
+    beta = 1.0/T_r
+    sigma_beta = sqrt(C(2)*beta**2 / (1.0 + C(2)*beta**2))
+    prefac = C(1) + sigma_beta*(1.0-C(1))
+
+    ! Calculate tanh factor
+    x = C(3)*rho_r**A_PHI_BH_MIE + C(4)*rho_r**B_PHI_BH_MIE
+    e2x = exp(2*x)
+    tanhx = (e2x-1.0)/(e2x+1.0)
+
+    ! Calculate phi
+    phi = prefac*tanhx
+  end subroutine phi_BH_Mie
 
 end module uv_theory
 
@@ -734,7 +877,7 @@ end module uv_theory
 
 !   act_mod_ptr => get_active_thermo_model()
 !   eos = act_mod_ptr%eos(1)%p_eos
-    
+
 !   !allocate(uv_theory_eos :: eos)
 !   !call eos%allocate_and_init(nc,"uv-theory")
 !   eps = 1.0e-5
