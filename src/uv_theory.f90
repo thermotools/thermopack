@@ -86,7 +86,7 @@ module uv_theory
 
   ! Coefficients for calculation of DeltaB2 (Table S5 in [1])
   real, parameter :: C_DELTAB2_WCA(6) = (/ 1.45805207053190E-03, 3.57786067657446E-02, &
-       1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)  
+       1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)
   real, parameter :: A_DELTAB2_WCA = 1.05968091375869
   real, parameter :: B_DELTAB2_WCA = 3.41106168592999
   real, parameter :: C_DELTAB2_BH(6) = (/ 1.50542979585173E-03, 3.90426109607451E-02, &
@@ -267,7 +267,7 @@ contains
     eos%sigma_x = sigma3_single**(1.0/3)
     eos%sigma3_single = sigma3_single
     eos%sigma3_double = sigma3_double
-    
+
   end subroutine preCalcUVTheory
 
 
@@ -297,8 +297,8 @@ contains
     rho = sum (rhovec)
     z = rhovec/rho
     call preCalcUVTheory(eos,nc,T,z)
-    
-   
+
+
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     rho = 0.0
@@ -513,7 +513,7 @@ contains
     call dhs_BH_Mie(T_r=T_r,mie=mie, dhs=dhs)
     dhs = dhs/sigma
     tau = rs - dhs
-    
+
     ! Calculate C2 and C3 (Eq. S50)
     C = (C_IU_BH_MIE(:,1) + C_IU_BH_MIE(:,2)/nu) &
          - (C_IU_BH_MIE(:,3) + C_IU_BH_MIE(:,4)/nu)*tau
@@ -528,10 +528,10 @@ contains
     one = 1.0
     Iu_zerodensity = - alpha_x(x=one, mie=mie)
     Iu = Iu_zerodensity + mie%Cmie*(C(1)*rho_r + C(2)*rho_r**2)/(1.0+C(3)*rho_r)**2
-    
+
   end subroutine Iu_BH_Mie
 
-  
+
 
   subroutine DeltaB2_Mie(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
@@ -546,7 +546,7 @@ contains
     logical :: is_BH
 
     is_BH = (eos%subeosidx==eosMie_UV_BH)
-    
+
     DeltaB2 = 0.0
     do i=1,nc
        do j=1,nc
@@ -558,7 +558,6 @@ contains
   end subroutine DeltaB2_Mie
 
 
-  ! TODO: double-check whether parameters are reduced used correctly
   subroutine DeltaB2_pure_Mie(is_BH, T_r, mie, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
     logical, intent(in) :: is_BH              ! True for BH, False for WCA
@@ -580,6 +579,7 @@ contains
     rc = 5.0
 
     ! Precalculate quantities
+    beta = 1.0/T_r
     if (is_BH) then
        rs = 1.0
        call dhs_BH_Mie(T_r, mie, qhs)
@@ -598,14 +598,12 @@ contains
        a_expo = A_DELTAB2_WCA
        b_expo = B_DELTAB2_WCA
        c_expo = 1.0 ! this value won't matter
-       wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0) 
+       wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0)
     end if
     alpha_rs = alpha_x(rs, mie)
     alpha_rc = alpha_x(rc, mie)
-    beta = 1.0/T_r
     C0 = 1.0 - 3*(alpha_rs-alpha_rc)/(rc**3-rs**3)
 
-    
     ! Calculate beta_eff (Eq S58 in [1])
     C1 = C_DELTAB2(1) + C_DELTAB2(2)/nu
     C2 = C_DELTAB2(3) + C_DELTAB2(4)/nu
@@ -614,7 +612,7 @@ contains
 
     DeltaB2 = -2*PI*sigma**3*(wca_term + (rc**3-rs**3)/3.0*(exp(beta_eff)-1.0) + beta*alpha_rc)
 
-    
+
   end subroutine DeltaB2_pure_Mie
 
 
@@ -668,8 +666,8 @@ contains
        do j=1,nc
           Tij_r = T/eos%mie(i,j)%epsdivk
           dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
-          
-          if (eos%subeosidx == eosMie_UV_WCA) then 
+
+          if (eos%subeosidx == eosMie_UV_WCA) then
              rs_r = eos%mie(i,j)%rmin_adim
              call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
              qhs_r = qhs_r/eos%mie(i,j)%sigma
@@ -685,10 +683,10 @@ contains
              call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_BH_MIE)
              call etaB_Mie(eta, tau, etaB, C_ETA_B_BH_MIE)
           end if
-             
-          IA = (1.0-etaA/2.0)/(1.0-etaA)**3 
-          IB = (1.0-etaB/2.0)/(1.0-etaB)**3
-          I0f = (IA-IB)*(rs_r**3-qhs_r**3)
+
+          IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)
+          IB = (1.0-etaB/2.0)/(1.0-etaB)**3 * (rs_r**3-dhs_r**3)
+          I0f = IA-IB
           delta_a0 = delta_a0 + x(i)*x(j)*eos%mie(i,j)%sigma**3 * I0f
        end do
     end do
