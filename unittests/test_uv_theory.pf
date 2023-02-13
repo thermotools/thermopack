@@ -34,7 +34,7 @@ module test_uv_theory
   real, parameter :: Delta_A0_WCA = 0.258690311450425
   real, parameter :: QHS_WCA_24 = 0.9751576149023506
   real, parameter :: DHS_WCA_24 = 0.9614325601663462
-  
+
   real, parameter :: DELTA_A1U_WCA = -1.52406840346272
   real, parameter :: DELTA_B2U_WCA = -1.02233215790525
   real, parameter :: PHI_WCA = 0.997069754340431
@@ -42,7 +42,8 @@ module test_uv_theory
   real, parameter :: DELTAB2_WCA = -1.09102560732964
   real, parameter :: A_ATTR_WCA = -1.5242697155023
 
-
+  real, parameter :: ARES_WCA_24 = 2.972986567516
+  real, parameter :: ARES_BH_24 = 2.993577305779432
 contains
 
   !@Test
@@ -54,14 +55,10 @@ contains
     type(hyperdual) :: dhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
-    
-    VERBOSE = .TRUE.
-    
-    ! Test BH diameter
-    call init_uv(model="uv-mie-bh",parameter_reference="DEFAULT")
-    ! call calcFres_uv(p_eos,nc,T,V,z, F)
-    print *, "test_vals_bh"
 
+    VERBOSE = .TRUE.
+
+    call init_uv(model="uv-mie-bh",parameter_reference="DEFAULT")
     sigma = 1.0
     epsdivk = 1.0
     lamr = 12.0
@@ -108,7 +105,6 @@ contains
        end if
        @assertEqual(DELTA_A0_BH, delta_a0%f0, 1e-8*abs(DELTA_A0_BH))
 
-
        ! Test attractive contributions (a-a0)
        lamr = 24.0
        T = 4.0/epsdivk
@@ -119,7 +115,10 @@ contains
        call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
        call phi_BH_Mie(T, rho, p_eos%mie(1,1), phi)
        call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
        a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       !print *,a
+       !print *,a_attr
        if (VERBOSE) then
           print *, "DELTA_B2_BH"
           print *, DeltaB2_BH
@@ -137,17 +136,33 @@ contains
           print *, PHI_BH
           print *, phi%f0
 
-
           print *, "A_ATTR_BH"
           print *, A_ATTR_BH
           print *, a_attr%f0
+
        end if
        @assertEqual(DeltaB2_BH, Delta_B2%f0, 1e-8*abs(DeltaB2_BH))
        @assertEqual(DELTA_B2U_BH, delta_b2u%f0, 1e-8*abs(DELTA_B2U_BH))
        @assertEqual(DELTA_A1U_BH, delta_a1u%f0, 1e-8*abs(DELTA_A1U_BH))
        @assertEqual(PHI_BH, phi%f0, 1e-5*abs(PHI_BH))
        @assertEqual(A_ATTR_BH, a_attr%f0, 1e-8*abs(A_ATTR_BH))
-       
+
+       ! Test full Ares/NkT with realistic potential
+       lamr = 24.0
+       epsdivk = EPSDIVK_CH4
+       sigma = 1.0*SIGMA_CH4
+       T = 4.0*epsdivk
+       z(1) = 1.0
+       rho = 1.0/(sigma**3)
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
+       if (VERBOSE) then
+          print *, "ARES_BH_24"
+          print *, ARES_BH_24
+          print *, a%f0
+       end if
+       @assertEqual(ARES_BH_24, a%f0, 1e-8*abs(ARES_BH_24))
+
     end select
     lamr = 12.0
 
@@ -163,14 +178,10 @@ contains
     type(hyperdual) :: dhs, qhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
-    
-    VERBOSE = .TRUE.
-    
-    ! Test WCA diameter
-    call init_uv(model="uv-mie-wca",parameter_reference="DEFAULT")
-    ! call calcFres_uv(p_eos,nc,T,V,z, F)
-    print *, "test_vals_wca"
 
+    VERBOSE = .TRUE.
+
+    call init_uv(model="uv-mie-wca",parameter_reference="DEFAULT")
     sigma = 1.0
     epsdivk = 1.0
     lamr = 12.0
@@ -223,6 +234,8 @@ contains
        call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
        call phi_WCA_Mie(rho, p_eos%mie(1,1)%lamr, phi)
        call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_a_uv(p_eos,nc,T,rho*z, a)
+
        a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
        if (VERBOSE) then
           print *, "DELTA_B2_WCA"
@@ -241,23 +254,38 @@ contains
           print *, PHI_WCA
           print *, phi%f0
 
-
           print *, "A_ATTR_WCA"
           print *, A_ATTR_WCA
           print *, a_attr%f0
+
        end if
        @assertEqual(DeltaB2_WCA, Delta_B2%f0, 1e-8*abs(DeltaB2_WCA))
        @assertEqual(DELTA_B2U_WCA, delta_b2u%f0, 1e-8*abs(DELTA_B2U_WCA))
        @assertEqual(DELTA_A1U_WCA, delta_a1u%f0, 1e-8*abs(DELTA_A1U_WCA))
-       @assertEqual(PHI_WCA, phi%f0, 1e-5*abs(PHI_WCA))
+       @assertEqual(PHI_WCA, phi%f0, 1e-7*abs(PHI_WCA))
        @assertEqual(A_ATTR_WCA, a_attr%f0, 1e-7*abs(A_ATTR_WCA))
-       
+
+       ! Test full Ares/NkT with realistic potential
+       lamr = 24.0
+       epsdivk = EPSDIVK_CH4
+       sigma = 1.0*SIGMA_CH4
+       T = 4.0*epsdivk
+       z(1) = 1.0
+       rho = 1.0/(sigma**3)
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
+       if (VERBOSE) then
+          print *, "ARES_WCA_24"
+          print *, ARES_WCA_24
+          print *, a%f0
+       end if
+       @assertEqual(ARES_WCA_24, a%f0, 1e-10*abs(ARES_WCA_24))
+
     end select
-    lamr = 12.0
 
   end subroutine test_vals_wca
 
-  
+
   !@Test
   subroutine test_derivs()
     integer, parameter :: nc = 1
@@ -288,14 +316,10 @@ contains
 
     ! Test state points
     call init_uv(model="WCA",parameter_reference="DEFAULT")
-    call free_energy_tv(T,V,n,F)
-    !print *, "y", F
-    !call specificVolume(T,P,n,VAPPH,V)
 
     ! Test numerical derivatives
     cbeos => get_active_eos()
     act_mod_ptr => get_active_thermo_model()
-    !call specificVolume(T,P,n,VAPPH,V)
     call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT, F_TV,F_VV,F_Tn,F_Vn,F_nn,recalculate=.True.)
     print *, "calcfres", F
     ! T derivatives
