@@ -96,8 +96,8 @@ module uv_theory
   type, extends(base_eos_param) :: uv_theory_eos
      ! Mie potential parameters
      type(mie_potential_hd), allocatable :: mie(:,:)
-     type(hyperdual), allocatable :: dhs(:,:)
-     type(hyperdual), allocatable :: qhs(:,:)
+     type(hyperdual), allocatable :: dhs(:,:) !< for caching; currently not used
+     type(hyperdual), allocatable :: qhs(:,:) !< for caching; currently not used
      type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double
    contains
      procedure, public :: dealloc => uv_dealloc
@@ -354,14 +354,21 @@ contains
 
     select type (p_eos => eos)
     class is (uv_theory_eos)
-       if (allocated(eos%mie)) deallocate(eos%mie,stat=stat)
-       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
 
-       if (allocated(eos%dhs)) deallocate(eos%dhs,stat=stat)
-       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
+       if (allocated(eos%mie)) then
+          deallocate(eos%mie,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
+       end if
 
-       if (allocated(eos%qhs)) deallocate(eos%qhs,stat=stat)
-       if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
+       if (allocated(eos%dhs)) then
+          deallocate(eos%dhs,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
+       end if
+
+       if (allocated(eos%qhs)) then
+          deallocate(eos%qhs,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
+       end if
 
     end select
 
@@ -806,6 +813,8 @@ contains
     x = (C(1) + (C(2) + C(3)/lamr)*rho_r)*rho_r
     e2x = exp(2*x)
     tanhx = (e2x-1.0)/(e2x+1.0)
+
+    ! Calculate phi
     phi = tanhx
   end subroutine phi_WCA_Mie
 
@@ -824,7 +833,7 @@ contains
     ! Coefficients (Eq 16)
     if (mie%lamr%f0==12.0) then
        a_expo = 1.0
-       b_expo = 2.0
+       b_expo = 3.0
        C = C_PHI_BH_LJ
     else
        a_expo = A_PHI_BH_MIE
@@ -836,6 +845,8 @@ contains
     beta = 1.0/T_r
     sigma_beta = sqrt(C(2)*beta**2 / (1.0 + C(2)*beta**2))
     prefac = C(1) + sigma_beta*(1.0-C(1))
+
+    ! Calculate tanh factor
     x = C(3)*rho_r**a_expo + C(4)*rho_r**b_expo
     e2x = exp(2*x)
     tanhx = (e2x-1.0)/(e2x+1.0)

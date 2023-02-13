@@ -46,7 +46,7 @@ module test_uv_theory
   real, parameter :: ARES_BH_24 = 2.993577305779432
 contains
 
-  !@Test
+  @Test
   subroutine test_vals_bh()
     type(uv_theory_eos) :: eos
     real :: F
@@ -55,8 +55,6 @@ contains
     type(hyperdual) :: dhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
-
-    VERBOSE = .TRUE.
 
     call init_uv(model="uv-mie-bh",parameter_reference="DEFAULT")
     sigma = 1.0
@@ -178,8 +176,6 @@ contains
     type(hyperdual) :: dhs, qhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
-
-    VERBOSE = .TRUE.
 
     call init_uv(model="uv-mie-wca",parameter_reference="DEFAULT")
     sigma = 1.0

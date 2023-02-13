@@ -37,7 +37,7 @@ contains
     en_m_zeta3 = 1.0 - zeta3
     ln_term = log(abs(en_m_zeta3))
 
-    ! The reduced Helholtz energy
+    ! The reduced, residual Helmholtz energy
     a = pref * ((3.0*zeta1*zeta2)/en_m_zeta3 + &
          (zeta2**3)/(zeta3*(en_m_zeta3**2)) + &
          (((zeta2**3)/(zeta3**2)) - zeta0) * ln_term)
