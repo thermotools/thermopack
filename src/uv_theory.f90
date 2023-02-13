@@ -138,44 +138,56 @@ contains
   end function calc_uv_Mie_eta
 
 
-  subroutine init_uv_theory(nc,comp,uv,ref)
+  subroutine init_uv_theory(nc,comp,eos,ref)
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
-    integer, intent(in) :: nc          !< Number of components.
-    type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector.
-    class(uv_theory_eos), intent(inout) :: uv
-    character(len=*), intent(in) :: ref   !< Parameter sets to use for components
+    integer, intent(in) :: nc                           !< Number of components
+    type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector
+    class(uv_theory_eos), intent(inout) :: eos !< Equation of state
+    character(len=*), intent(in) :: ref        !< Parameter sets to use for components
     ! Locals
     type(mie_potential_hd) :: mie_pure
     type(hyperdual) :: lamr, lama, sigma, epsdivk
-    integer :: idx
+    integer :: i, j, idx
 
     ! Deallocate old memory and init new memory
-    call uv%allocate_and_init(nc, eos_label="UV-MIE")
+    call eos%allocate_and_init(nc, eos_label="UV-MIE")
 
+    ! Set pure component data from database
+    do i=1,nc
+       ! Assign pure Mie potential
+       idx = getMiedataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
+       lama = 6.0
+       lamr = MieArray(idx)%lamr
+       sigma = MieArray(idx)%sigma
+       epsdivk = MieArray(idx)%eps_divk
+       if (idx < 1) call stoperror("Cannot find Mie potential in database")
+       call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+       call uv_set_mie_pot(eos, i,i, mie_pure)
 
-    ! Set component data from database
-    idx = getMiedataIdx(uv%subeosidx,trim(comp(1)%p_comp%ident),ref)
-    if (idx < 1) call stoperror("Cannot find Mie potential in database")
-    ! call mie_pure%init(lama=6.0, lamr=MieArray(idx)%lamr, &
-    !      sigma=MieArray(idx)%sigma, epsdivk=MieArray(idx)%eps_divk)
+       ! Set ideal gas Cp
+       comp(i)%p_comp%id_cp%cptype = 8
+       comp(i)%p_comp%id_cp%cp(:) = 0.0
+       comp(i)%p_comp%id_cp%cp(1) = 2.5
+    end do
 
-    ! Temporarily hard-coding potential parameters
-    sigma = 3.42e-10
-    epsdivk = 124.0
-    lamr = 12.0
-    lama = 6.0
-    call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-    call uv_set_mie_pot(uv, 1,1,mie_pure)
-
-    ! Set consistent Rgas
+    ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+    do i=1,nc
+       do j = i+1,nc
+          lama = 6.0
+          lamr = eos%mie(i,i)%lamr
+          sigma = (eos%mie(i,i)%sigma + eos%mie(j,j)%sigma)/2.0
+          epsdivk = sqrt(eos%mie(i,i)%epsdivk*eos%mie(j,j)%epsdivk)
+          call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+          call uv_set_mie_pot(eos, i,j, mie_pure)
+          call uv_set_mie_pot(eos, j,i, mie_pure)
+       end do
+    end do
+    
+    ! Ensure consistent gas constants
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
 
-    ! Set ideal gas Cp
-    comp(1)%p_comp%id_cp%cptype = 8
-    comp(1)%p_comp%id_cp%cp(:) = 0.0
-    comp(1)%p_comp%id_cp%cp(1) = 2.5
   end subroutine init_uv_theory
 
 
@@ -204,8 +216,8 @@ contains
       type(hyperdual), intent(in)  :: n(nc)         !< mole numbers (mol)
       type(hyperdual) :: f                          !< Fres=Ares/RT (mol)
       ! Locals
-      type(hyperdual) :: rhovec(nc), sumn
-      integer :: i
+      type(hyperdual) :: rhovec(nc)
+
       rhovec = N_Avogadro*n/V
       select type ( p_eos => eos )
       type is ( uv_theory_eos )
@@ -224,13 +236,10 @@ contains
     ! Locals
     type(hyperdual) :: T11_r
     type(hyperdual) :: diameters(nc)
-    type(hyperdual) :: lama, lamr
 
-    type(hyperdual) :: sigma3
     type(hyperdual) :: sigma3_single   !< Cubed one-fluid diameter
     type(hyperdual) :: sigma3_double   !< Cubed one-fluid diameter
     type(hyperdual) :: epsdivk_x       !< One-fluid energy scale
-    type(hyperdual) :: sigma_x         !< One-fluid energy scale
     integer :: i,j
 
     T11_r = T/eos%mie(1,1)%epsdivk
@@ -289,7 +298,7 @@ contains
     type(hyperdual) :: a0, a_hs, delta_a0, Delta_a1u
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
     type(hyperdual) :: lama, lamr, dhs_i(nc)
-    integer :: i,j
+    integer :: i
 
     ! Precalculations
     rho = sum(rhovec)
@@ -409,7 +418,7 @@ contains
     type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
     ! Locals
     type(hyperdual) :: beta, lamr, lama
-    type(hyperdual) :: epsdivk, sigma3_single, sigma3_double, Iu, Iu_zerodensity, rho_r, T_r
+    type(hyperdual) :: Iu, Iu_zerodensity, rho_r, T_r
     type(mie_potential_hd) :: mie_x
 
     ! Calc effective one-fluid parameters
@@ -491,7 +500,7 @@ contains
     type(hyperdual), intent(out) :: Iu_zerodensity, Iu ! correlation integral and its zero density limit (-)
     ! Locals
     type(hyperdual) :: n, nu, sigma, eps_divk
-    type(hyperdual) :: rm, rs, one
+    type(hyperdual) :: rs, one
     type(hyperdual) :: C(3), C11, C12, C13, dhs, tau
 
     ! Extract Mie parameters for component ic
@@ -716,7 +725,6 @@ contains
 
     ! Locals
     type(hyperdual) :: C(3)
-    integer :: i
 
     ! Eq S36 in [1]
     C = C_ETA_B_MIE(:,1)*tau + C_ETA_B_MIE(:,2)*tau**2

@@ -746,9 +746,10 @@ contains
 
   !> Calculate residual reduced Helmholtz and differentials
   !!
-  !! \param T - Temprature [K]
+  !! \param T - Temperature [K]
   !! \param v - Specific volume [m3/mol]
   !! \param n - Mole numbers [mol]
+  !! \retval F - F = Ares/RT [mol]
   subroutine TV_CalcFres(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV,recalculate)
     use cubic, only: calcCbFder_res_SI
