@@ -1,13 +1,9 @@
 module test_uv_theory
   use hyperdual_mod
   use single_phase
-  use uv_theory!, only: calcFres_uv, uv_theory_eos, dhs_BH_Mie
-  use eoslibinit, only: init_thermo, init_saftvrmie, init_uv
+  use uv_theory
+  use eoslibinit, only: init_uv
   use thermopack_constants
-  use critical, only: calcCriticalTV
-  use eosTV, only: pressure, free_energy_tv
-  use saft_interface, only: calcSaftFder_res_nonassoc
-  use saftvrmie_dispersion, only: calcA1
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
        thermo_model, get_active_thermo_model
   use pair_potentials, only: mie_potential_hd
@@ -15,7 +11,7 @@ module test_uv_theory
   implicit none
   public
 
-  ! VALUES FROM THE  FEOS LIBRARY
+  ! VALUES FROM THE FEOS LIBRARY
   real, parameter :: SIGMA_CH4 = 3.7039e-10
   real, parameter :: EPSDIVK_CH4 = 150.03
 
@@ -49,7 +45,7 @@ contains
     real :: F
     type(hyperdual) :: T, rho, z(1)
     type(hyperdual) :: lamr, lama, sigma, epsdivk
-    type(hyperdual) :: dhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(hyperdual) :: dhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
 
@@ -110,10 +106,8 @@ contains
        call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
        call phi_BH_Mie(T, rho, p_eos%mie(1,1), phi)
        call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
-       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
        a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
-       !print *,a
-       !print *,a_attr
        if (VERBOSE) then
           print *, "DELTA_B2_BH"
           print *, DeltaB2_BH
@@ -150,13 +144,13 @@ contains
        z(1) = 1.0
        rho = 1.0/(sigma**3)
        call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
-       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
        if (VERBOSE) then
           print *, "ARES_BH_24"
           print *, ARES_BH_24
-          print *, a%f0
+          print *, a_res%f0
        end if
-       @assertEqual(ARES_BH_24, a%f0, 1e-8*abs(ARES_BH_24))
+       @assertEqual(ARES_BH_24, a_res%f0, 1e-8*abs(ARES_BH_24))
 
     end select
     lamr = 12.0
@@ -170,7 +164,7 @@ contains
     real :: F
     type(hyperdual) :: T, rho, z(1)
     type(hyperdual) :: lamr, lama, sigma, epsdivk
-    type(hyperdual) :: dhs, qhs, a, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(hyperdual) :: dhs, qhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
 
@@ -227,7 +221,7 @@ contains
        call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
        call phi_WCA_Mie(rho, p_eos%mie(1,1)%lamr, phi)
        call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
-       call calc_a_uv(p_eos,nc,T,rho*z, a)
+       call calc_ares_uv(p_eos,nc,T,rho*z, a_res)
 
        a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
        if (VERBOSE) then
@@ -266,13 +260,13 @@ contains
        z(1) = 1.0
        rho = 1.0/(sigma**3)
        call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
-       call calc_a_uv(p_eos,nc,T,rhovec=rho*z, a=a)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
        if (VERBOSE) then
           print *, "ARES_WCA_24"
           print *, ARES_WCA_24
-          print *, a%f0
+          print *, a_res%f0
        end if
-       @assertEqual(ARES_WCA_24, a%f0, 1e-10*abs(ARES_WCA_24))
+       @assertEqual(ARES_WCA_24, a_res%f0, 1e-10*abs(ARES_WCA_24))
 
     end select
 

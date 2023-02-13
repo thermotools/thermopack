@@ -221,7 +221,7 @@ contains
       rhovec = N_Avogadro*n/V
       select type ( p_eos => eos )
       type is ( uv_theory_eos )
-         call calc_a_uv(p_eos, nc, T, rhovec=rhovec, a=f)
+         call calc_ares_uv(p_eos, nc, T, rhovec=rhovec, a_res=f)
       end select
       f = f*sum(n)
     end function fun
@@ -286,16 +286,16 @@ contains
   end subroutine uv_set_mie_pot
 
 
-  subroutine calc_a_uv(eos, nc, T, rhovec, a)
-    !> The reduced helmholtz energy from uv-theory
+  subroutine calc_ares_uv(eos, nc, T, rhovec, a_res)
+    !> The reduced, residual helmholtz energy from uv-theory
     integer, intent(in)                :: nc
     class(uv_theory_eos), intent(inout) :: eos
     type(hyperdual), intent(in)  :: T             !< temperature (K)
     type(hyperdual), intent(in)  :: rhovec(nc)    !< number density (1/m^3)
-    type(hyperdual), intent(out) :: a             !< helmholtz energy a=A/NRT (-)
+    type(hyperdual), intent(out) :: a_res         !< a=Ares/NRT (-)
     ! Locals
     type(hyperdual) :: z(nc), rho, rho_r, T_x
-    type(hyperdual) :: a0, a_hs, delta_a0, Delta_a1u
+    type(hyperdual) :: a0_res, a_hs_res, delta_a0, Delta_a1u
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
     type(hyperdual) :: lama, lamr, dhs_i(nc)
     integer :: i
@@ -304,8 +304,6 @@ contains
     rho = sum(rhovec)
     z = rhovec/rho
     call preCalcUVTheory(eos,nc,T,z)
-
-
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     do i = 1,nc
@@ -324,13 +322,13 @@ contains
        call phi_BH_Mie(T_x, rho_r, eos%mie(1,1), phi)
     end if
 
-    call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs)
+    call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
 
     ! Calculate perturbation part of reference system
     call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
 
     ! Calculate contribution from reference system
-    a0 = a_hs + delta_a0
+    a0_res = a_hs_res + delta_a0
 
     ! Calculate Delta a1u and Delta B2u
     call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
@@ -338,8 +336,8 @@ contains
     ! Calculate Delta B2
     call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
     ! Calculate total helmholtz energy
-    a = a0 + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
-  end subroutine calc_a_uv
+    a_res = a0_res + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
+  end subroutine calc_ares_uv
 
 
   subroutine assign_uv_eos(this, other)
