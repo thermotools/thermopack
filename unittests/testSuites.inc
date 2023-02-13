@@ -1,3 +1,4 @@
+ADD_TEST_SUITE(test_uv_theory_suite)
 ADD_TEST_SUITE(test_saftvrmie_suite)
 ADD_TEST_SUITE(test_tp_flash_suite)
 ADD_TEST_SUITE(test_uv_flash_suite)
