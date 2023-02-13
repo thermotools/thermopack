@@ -31,6 +31,9 @@ module lj_splined
   real, parameter :: B_ljs = -387072.0D0/61009.0D0/XS_ljs**3
   !
   real, parameter :: x_min_ljs = 2.0D0**(1.0D0/6.0D0)
+  !
+  real :: C_phi(5) = (/0.11072527, 2.5809656, 1.2333385, &
+       2.3534453, 4.1241290/)
 
   type, extends(saftvrmie_eos) :: ljs_bh_eos
     ! Model control
@@ -76,7 +79,7 @@ module lj_splined
     logical :: is_uf_theory
     logical :: enable_virial_term = .true.
     logical :: use_temperature_dependent_u_fraction = .false.
-    logical :: use_high_temp_b2 = .false.
+    logical :: integral_b2 = .false.
   contains
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_ljx_ux_eos
@@ -135,6 +138,7 @@ module lj_splined
   public :: calc_ljs_wca_ai_tr, calcFresLJs_WCA
   public :: ljs_uv_model_control, ljs_wca_model_control
   public :: ljs_wca_set_pure_params, ljs_wca_get_pure_params
+  public :: ljs_set_u_fraction_param
 
   ! Testing
   public :: calc_uf_wca, calc_uf_wca_tvn, ljx_ux_eos
@@ -143,9 +147,15 @@ module lj_splined
   public :: uv_a1_b2, uv_phi, calc_ljs_wca_ai
   public :: get_bh_ljs_eos_pointer
   public :: uv_delta_b2_overall, calc_uv_wca, uv_a1_u
-  public :: calc_uv_wca_tvn
+  public :: calc_uv_wca_tvn, ljs_b2_potential, ljs_b2_high_temp
+  public :: ljs_potential
 
 contains
+
+  subroutine ljs_set_u_fraction_param(C)
+    real, intent(in) :: C(5)
+    C_phi = C
+  end subroutine ljs_set_u_fraction_param
 
   !> Calculate the Wilhelmsen polynomials for the LJ/s
   !! dispersion terms.
@@ -2018,14 +2028,14 @@ contains
       this%is_uf_theory = other%is_uf_theory
       this%enable_virial_term = other%enable_virial_term
       this%use_temperature_dependent_u_fraction = other%use_temperature_dependent_u_fraction
-      this%use_high_temp_b2 = other%use_high_temp_b2
+      this%integral_b2 = other%integral_b2
     class default
     end select
   end subroutine assign_ljx_ux_eos
 
-  subroutine ljs_uv_model_control(use_temperature_dependent_u_fraction, use_high_temp_b2)
+  subroutine ljs_uv_model_control(use_temperature_dependent_u_fraction, integral_b2)
     use thermopack_var, only: base_eos_param, thermo_model, get_active_thermo_model
-    logical, intent(in) :: use_temperature_dependent_u_fraction, use_high_temp_b2
+    logical, intent(in) :: use_temperature_dependent_u_fraction, integral_b2
     ! Locals
     class(base_eos_param), pointer :: eos
     type(thermo_model), pointer :: p_eos_cont
@@ -2038,7 +2048,7 @@ contains
           select type( p_eos => eos )
           class is ( ljx_ux_eos )
             p_eos%use_temperature_dependent_u_fraction = use_temperature_dependent_u_fraction
-            p_eos%use_high_temp_b2 = use_high_temp_b2
+            p_eos%integral_b2 = integral_b2
           end select
         else
            print *,"ljs_uv_model_control: eos not acociated"
@@ -2711,7 +2721,7 @@ contains
     rho_star = prefac*sumn/V
     call calc_uv_WCA(sigma,eps_divk,rho_star,T,dhs,al,ar,at,arr,att,art,&
          eos%enable_virial_term, eos%use_temperature_dependent_u_fraction, &
-         eos%use_high_temp_b2)
+         eos%integral_b2)
     ! Convert to TVn differentials (F = n*a)
     an = al + sumn*ar*prefac/V
     al = al*sumn
@@ -2828,6 +2838,70 @@ contains
          12*BI(4)*bs**2*bs_T**2 + 4*BI(4)*bs**3*bs_TT
   end subroutine ljs_b2
 
+  ! Lennard-Jones spline potential in reduced variables
+  subroutine ljs_potential(r, n, u)
+    integer, intent(in) :: n !
+    real, intent(in) :: r(n) !
+    real, intent(out) :: u(n) !
+    ! Locals
+    integer :: i
+    real :: r6
+    !
+    do i=1,n
+      if (r(i) < XS_ljs) then
+        r6 = r(i)**6
+        u(i) = 4.0_dp*(1.0_dp/(r6*r6)-(1.0_dp/r6))
+      else if (r(i) < XC_ljs) then
+        u(i) = (A_ljs*(r(i)-XC_ljs)**2+B_ljs*(r(i)-XC_ljs)**3)
+      else
+        u(i) = 0.0_dp
+      endif
+    enddo
+  end subroutine ljs_potential
+
+  ! Lennard-Jones spline second virial
+  function ljs_b2_potential_hd(T, eps_divk) result(b2)
+    use quadratures
+    type(hyperdual), intent(in) :: T !
+    real, intent(in) :: eps_divk !
+    type(hyperdual) :: b2
+    ! Locals
+    type(hyperdual) :: beta_s, f(max_n_quadrature)
+    integer :: cavity_quadrature = GAUSS_KRONROD_61 ! Modify to improve accuarcy
+    integer :: n_quad
+    real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
+    real :: r(max_n_quadrature), u(max_n_quadrature)
+    real :: r_c_half
+    !
+    ! Get quadrature points
+    call get_quadrature_positions(cavity_quadrature,x_vec,n_quad)
+    call get_quadrature_weights(cavity_quadrature,w_vec,n_quad)
+    !
+    beta_s = eps_divk/T
+    r_c_half = 0.5_dp*XC_ljs
+    r(1:n_quad) = r_c_half*x_vec(1:n_quad) + r_c_half
+    call ljs_potential(r, n_quad, u)
+    f(1:n_quad) = exp(-beta_s*u(1:n_quad)) - 1.0_dp
+    b2 = -2.0_dp*pi*r_c_half*sum(f(1:n_quad)*w_vec(1:n_quad)*r(1:n_quad)**2)
+  end function ljs_b2_potential_hd
+
+  ! Hardsphere second virial
+  subroutine ljs_b2_potential(T, eps_divk, b2, b2_T, b2_TT)
+    real, intent(in) :: T !
+    real, intent(in) :: eps_divk !
+    real, intent(out) :: b2, b2_T, b2_TT
+    !
+    type(hyperdual) :: T_hd, b2_hd
+    T_hd%f0 = T
+    T_hd%f1 = 1.0_dp
+    T_hd%f2 = 1.0_dp
+    T_hd%f12 = 0.0_dp
+    b2_hd = ljs_b2_potential_hd(T_hd, eps_divk)
+    b2 = b2_hd%f0
+    b2_T = b2_hd%f1
+    b2_TT = b2_hd%f12
+  end subroutine ljs_b2_potential
+
   ! Lennard-Jones spline second virial - corrected to work at high temperarures
   function ljs_b2_high_temp_hd(T, sigma, eps_divk) result(b2)
     type(hyperdual), intent(in) :: T !
@@ -2838,7 +2912,8 @@ contains
     type(hyperdual) :: b20_WCA
     b20_WCA = uv_hs_b2_hd(T, sigma, eps_divk)
     beta = eps_divk/T
-    beta_eff = beta*(1.0_dp - 0.65208924_dp/(1.0_dp + 0.06910413_dp*beta**1.367_dp))
+    !beta_eff = beta*(1.0_dp - 0.65208924_dp/(1.0_dp + 0.06910413_dp*beta**1.367_dp))
+    beta_eff = beta*(1.0_dp - 0.66904431_dp/(1.0_dp + 0.10224158_dp*beta))
     Y = exp(beta) - 1.0_dp
     Y_eff = exp(beta_eff) - 1.0_dp
     b2 = b20_WCA*(1.0_dp+Y) - 2.0_dp*PI*( Y*x_min_ljs**3/3.0_dp + Y_eff*(xc_ljs**3-x_min_ljs**3)/3.0_dp)
@@ -2976,13 +3051,11 @@ contains
     real, intent(in) :: rho !
     real, intent(out) :: u,u_r,u_T,u_rr,u_TT,u_rT
     ! Locals
-    real, parameter :: C(5) = (/0.11072527, 2.5809656, 1.2333385, &
-         2.3534453, 4.1241290/)
     real :: tanhx, tanhx_r, tanhx_rr
     real :: x, x_r, x_rr, e2x, denum
-    x = C(1)*rho + C(2)*rho**C(3) + C(4)*rho**C(5)
-    x_r = C(1) + C(2)*C(3)*rho**(C(3)-1) + C(4)*C(5)*rho**(C(5)-1)
-    x_rr = C(2)*C(3)*(C(3)-1)*rho**(C(3)-2) + C(4)*C(5)*(C(5)-1)*rho**(C(5)-2)
+    x = C_phi(1)*rho + C_phi(2)*rho**C_phi(3) + C_phi(4)*rho**C_phi(5)
+    x_r = C_phi(1) + C_phi(2)*C_phi(3)*rho**(C_phi(3)-1) + C_phi(4)*C_phi(5)*rho**(C_phi(5)-1)
+    x_rr = C_phi(2)*C_phi(3)*(C_phi(3)-1)*rho**(C_phi(3)-2) + C_phi(4)*C_phi(5)*(C_phi(5)-1)*rho**(C_phi(5)-2)
     e2x = exp(2*x)
     tanhx = (e2x-1)/(e2x+1)
     denum = (e2x+1)**2
@@ -2998,9 +3071,9 @@ contains
   end subroutine uv_phi
 
   ! u-fraction uv theory
-  subroutine uv_delta_b2_overall(use_high_temp_b2,sigma,eps_divk,&
+  subroutine uv_delta_b2_overall(integral_b2,sigma,eps_divk,&
        T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
-    logical, intent(in) :: use_high_temp_b2
+    logical, intent(in) :: integral_b2
     real, intent(in) :: sigma !
     real, intent(in) :: eps_divk !
     type(saftvrmie_dhs), intent(in) :: dhs !< The hard-sphere diameter
@@ -3012,8 +3085,9 @@ contains
     real :: b2_ljs,b2_ljs_T,b2_ljs_TT
     real :: b2_hs,b2_hs_T,b2_hs_TT
     call uv_a1_b2(dhs,sigma,eps_divk,T,b2_a1,b2_a1_T,b2_a1_TT)
-    if (use_high_temp_b2) then
-      call ljs_b2_high_temp(T, sigma, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
+    if (integral_b2) then
+      !call ljs_b2_high_temp(T, sigma, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
+      call ljs_b2_potential(T, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
     else
       call ljs_b2(T, eps_divk, b2_ljs, b2_ljs_T, b2_ljs_TT)
     endif
@@ -3034,7 +3108,7 @@ contains
   !!
   !! \author Morten Hammer, 2021-03
   subroutine calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a,a_r,a_t,a_rr,a_tt,a_rt,&
-       enable_virial_term, use_temperature_dependent_u_fraction, use_high_temp_b2)
+       enable_virial_term, use_temperature_dependent_u_fraction, integral_b2)
     ! Input
     real, intent(in) :: sigma !
     real, intent(in) :: eps_divk !
@@ -3042,7 +3116,7 @@ contains
     real, intent(in) :: rho !< Reduced density rho^* = N*sigma^3/V
     type(saftvrmie_dhs), intent(in) :: dhs !< The hard-sphere diameter
     logical, intent(in) :: enable_virial_term, use_temperature_dependent_u_fraction, &
-         use_high_temp_b2
+         integral_b2
     ! Output
     real, intent(out) :: a,a_r,a_t,a_rr,a_tt,a_rt
     ! Locals
@@ -3051,7 +3125,7 @@ contains
     real :: b2,b2_r,b2_t,b2_rr,b2_tt,b2_rt
     !
     if (enable_virial_term) then
-      call uv_delta_b2_overall(use_high_temp_b2, sigma,eps_divk,&
+      call uv_delta_b2_overall(integral_b2, sigma,eps_divk,&
            T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
       if (use_temperature_dependent_u_fraction) then
         call uv_phi_temp(eps_divk,T,rho,u,u_r,u_T,u_rr,u_TT,u_rT)
@@ -3476,13 +3550,13 @@ subroutine test_uv_LJs()
   dT = T*eps
   call allocate_saftvrmie_dhs(1,dhs)
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b,b_r,b_T,b_rr,b_TT,b_rT)
+  call uv_delta_b2_overall(eos%integral_b2,sigma,eps_divk,T,dhs,rho,b,b_r,b_T,b_rr,b_TT,b_rT)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+  call uv_delta_b2_overall(eos%integral_b2,sigma,eps_divk,T,dhs,rho,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
+  call uv_delta_b2_overall(eos%integral_b2,sigma,eps_divk,T,dhs,rho,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b
   print *,b_T,(b2-b1)/(2*dT)
   print *,b_TT,(b2_T-b1_T)/(2*dT)
@@ -3490,8 +3564,8 @@ subroutine test_uv_LJs()
   !
   T = T0
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
-  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho+eps,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
-  call uv_delta_b2_overall(eos%use_high_temp_b2,sigma,eps_divk,T,dhs,rho-eps,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
+  call uv_delta_b2_overall(eos%integral_b2,sigma,eps_divk,T,dhs,rho+eps,b2,b2_r,b2_T,b2_rr,b2_TT,b2_rT)
+  call uv_delta_b2_overall(eos%integral_b2,sigma,eps_divk,T,dhs,rho-eps,b1,b1_r,b1_T,b1_rr,b1_TT,b1_rT)
   print *,b_r,(b2-b1)/(2*eps)
   print *,b_rr,(b2_r-b1_r)/(2*eps)
   print *,b_rT,(b2_T-b1_T)/(2*eps)
@@ -3527,17 +3601,17 @@ subroutine test_uv_LJs()
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a1,a1_r,a1_t,a1_rr,a1_tt,a1_rt,&
        enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
-       use_high_temp_b2=.false.)
+       integral_b2=.false.)
   T = T0 + dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
-       use_high_temp_b2=.false.)
+       integral_b2=.false.)
   T = T0 - dT
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
-       use_high_temp_b2=.false.)
+       integral_b2=.false.)
   print *,a1
   print *,a1_T,(a12-a11)/(2*dT)
   print *,a1_TT,(a12_T-a11_T)/(2*dT)
@@ -3546,10 +3620,10 @@ subroutine test_uv_LJs()
   call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
   call calc_uv_WCA(sigma,eps_divk,rho+eps,T,dhs,a12,a12_r,a12_t,a12_rr,a12_tt,a12_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
-       use_high_temp_b2=.false.)
+       integral_b2=.false.)
   call calc_uv_WCA(sigma,eps_divk,rho-eps,T,dhs,a11,a11_r,a11_t,a11_rr,a11_tt,a11_rt,&
     enable_virial_term=.true., use_temperature_dependent_u_fraction=.false., &
-       use_high_temp_b2=.false.)
+       integral_b2=.false.)
   print *,a1_r,(a12-a11)/(2*eps)
   print *,a1_rr,(a12_r-a11_r)/(2*eps)
   print *,a1_rT,(a12_T-a11_T)/(2*eps)

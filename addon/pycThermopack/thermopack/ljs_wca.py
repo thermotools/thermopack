@@ -243,9 +243,12 @@ class ljs_uv(ljs_wca_base):
         # Load dll/so
         super(ljs_uv, self).__init__()
 
-        # Options methods
-        self.s_ljs_uv_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_uv_model_control"))
-
+        # Option method
+        self.s_ljs_uv_model_control = getattr(self.tp, self.get_export_name("lj_splined",
+                                                                            "ljs_uv_model_control"))
+        # Tuning method
+        self.s_ljs_set_u_fraction_param = getattr(self.tp, self.get_export_name("lj_splined",
+                                                                                "ljs_set_u_fraction_param"))
         self.init(parameter_reference, minimum_temperature)
 
     #################################
@@ -268,20 +271,38 @@ class ljs_uv(ljs_wca_base):
     #################################
     def model_control(self,
                       use_temperature_dependent_u_fraction=False,
-                      use_high_temp_b2=False):
+                      integral_b2=False):
         """Model control. Enable/disable model terms.
 
         Args:
             use_temperature_dependent_u_fraction (bool): Enable/disable use of temperature dependent u-fraction.
-            use_high_temp_b2 (bool): Enable/disable use of corrected b2 model.
+            integral_b2 (bool): Enable/disable use of B2 integrated from potential.
         """
         self.activate()
         use_temperature_dependent_u_fraction_c = c_int(use_temperature_dependent_u_fraction)
-        use_high_temp_b2_c = c_int(use_high_temp_b2)
+        integral_b2_c = c_int(integral_b2)
 
         self.s_ljs_uv_model_control.argtypes = [POINTER(c_int), POINTER(c_int)]
 
         self.s_ljs_uv_model_control.restype = None
 
         self.s_ljs_uv_model_control(byref(use_temperature_dependent_u_fraction_c),
-                                    byref(use_high_temp_b2_c))
+                                    byref(integral_b2_c))
+
+    #################################
+    # Tuning options
+    #################################
+    def set_u_fraction_param(self,param=[0.11072527, 2.5809656, 1.2333385, 2.3534453, 4.1241290]):
+        """Tune u-fraction for UV theory
+
+        Args:
+            param (bool): Parameters for u-fraction.
+        """
+        self.activate()
+        param_c = (c_double * len(param))(*param)
+
+        self.s_ljs_set_u_fraction_param.argtypes = [POINTER(c_double)]
+
+        self.s_ljs_set_u_fraction_param.restype = None
+
+        self.s_ljs_set_u_fraction_param(param_c)

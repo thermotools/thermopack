@@ -194,6 +194,7 @@ append_export("ljs_uv_model_control", "lj_splined")
 append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
+append_export("ljs_set_u_fraction_param", "lj_splined")
 
 append_export("setphtolerance", "ph_solver")
 append_export("twophasephflash", "ph_solver")
