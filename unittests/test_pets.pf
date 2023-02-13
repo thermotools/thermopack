@@ -23,7 +23,7 @@ contains
     end interface
     !
     class(PETS_eos), intent(in) :: eos
-    real, intent(in) :: rho,T,x(2)
+    real, intent(in) :: rho,T,x(nce)
     logical, intent(in), optional :: verbose
     !
     call test_1st_der(rout_nonopt,eos,rho,T,x,verbose)
@@ -212,42 +212,17 @@ contains
     x = (/1.0/)
     t_verbose = .true.
     verbose => NULL()
-    ! print *, " "
-    ! call calc_d(T, d)
-    ! print *, "d    ", d
-    ! call eta_pets(rho, T, x, var)
-    ! print *, "eta  ", var
-    ! call I_1(rho,T,x,var)
-    ! print *, "I_1  ", var
-    ! call I_2(rho,T,x,var)
-    ! print *, "I_2  ", var
-    ! call C_1(rho,T,x,var)
-    ! print *, "C_1  ", var
-    ! call alpha_pets_hs(rho, T, x, var, alp_rho=var2)
-    ! print *, "alphs", var
-    ! print *, "alphs_rho", var2
-    ! call alpha_disp(rho, T, x, var, alp_rho=var2)
-    ! print *, "alpdi", var
-    ! print *, "alpdi_rho", var2
-    ! call alpha_PETS(rho, T, x, var)
-    ! print *, "alp  ", var
-    ! call F_PETS_TVn(T,1/rho,x, var, F_V=var2)
-    ! print *, "F    ", var
-    ! print *, "F_V  ", var2
-    ! print *, "P(bar)", 8.314*T*(rho + -var2)/1e5
-    ! call nonassoc_pressure(nce,comp,cbeos(1),T,1/rho,x,var)
-    ! print *, var/1e5
     select type ( p_eos => eos )
     class is ( PETS_eos )
-      call test_T_der(p_eos,T, calc_d_pets, verbose)
-      call test_1st_der(eta_pets,p_eos,rho,T,x,verbose)
-      call test_1st_der(C_1,p_eos,rho,T,x, verbose)
-      call test_1st_der(I_1,p_eos,rho,T,x, verbose)
-      call test_1st_der(I_2,p_eos,rho,T,x, verbose)
-      call test_1st_der(alpha_pets_hs,p_eos,rho,T,x, verbose)
-        !call test_1st_der_opt(alpha_disp,rho,T,x, verbose)
-        !call test_1st_der_opt(alpha_PETS,rho,T,x, verbose)
-        !call test_1st_der_opt(F_PETS_TVn,rho=T,T=sum(x)/rho,x=x, verbose=verbose)
+      call test_T_der(p_eos,T, calc_d_pets, verbose=verbose)
+      call test_1st_der(eta_pets,p_eos,rho,T,x,verbose=verbose)
+      call test_1st_der(C_1,p_eos,rho,T,x, verbose=verbose)
+      call test_1st_der(I_1,p_eos,rho,T,x, verbose=verbose)
+      call test_1st_der(I_2,p_eos,rho,T,x, verbose=verbose)
+      call test_1st_der(alpha_pets_hs,p_eos,rho,T,x, verbose=verbose)
+      call test_1st_der_opt(alpha_disp,p_eos, rho,T,x, verbose=verbose)
+      call test_1st_der_opt(alpha_PETS,p_eos, rho,T,x, verbose=verbose)
+      call test_1st_der_opt(F_PETS_TVn,p_eos, rho=T,T=sum(x)/rho,x=x, verbose=verbose)
     end select
   end subroutine test_der_pets
 
