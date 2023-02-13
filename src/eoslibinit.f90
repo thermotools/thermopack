@@ -1294,17 +1294,6 @@ contains
   end subroutine init_ljs
 
   !----------------------------------------------------------------------------
-  !> Initialize uv-theory equation of state
-  !----------------------------------------------------------------------------
-  subroutine init_uv(model,parameter_reference)
-    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "BH", "WCA"
-    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
-    !
-    call init_mie_uv("uv-theory",model,parameter_reference)
-  end subroutine init_uv
-
-  
-  !----------------------------------------------------------------------------
   !> Initialize Lennard-Jones equation of state using perturbation theory
   !----------------------------------------------------------------------------
   subroutine init_lj(model,parameter_reference)
@@ -1337,7 +1326,7 @@ contains
     character(len=ref_len)           :: param_ref
     character(len=7)                 :: model_local
 
-    ! Initialize Pets eos
+    ! Initialize LJs eos
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
       index = add_eos()
@@ -1408,7 +1397,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize uv-theory equation of state for Mie potentials
   !----------------------------------------------------------------------------
-  subroutine init_mie_uv(potential,model,parameter_reference)
+  subroutine init_uv(comps, model, parameter_reference)
     use compdata, only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -1418,7 +1407,7 @@ contains
     use ideal, only: set_reference_energies
     use uv_theory, only: uv_theory_eos
     !$ use omp_lib, only: omp_get_max_threads
-    character(len=*), intent(in) :: potential !< Potential selection: "LJ", "LJS"
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF", "BH", "WCA"
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
@@ -1435,16 +1424,10 @@ contains
       index = add_eos()
     endif
     act_mod_ptr => get_active_thermo_model()
+
     ! Set component list
-    comps_upper="AR"
+    comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
-    !
-    ! if (present(model)) then
-    !   len_model = min(3,len_trim(model))
-    !   model_local = trim(potential)//"-"//uppercase(model(1:len_model))
-    ! else
-    !   model_local = trim(potential)//"-UV"
-    ! endif
 
     call allocate_eos(ncomp, trim(model))
 
@@ -1495,7 +1478,7 @@ contains
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
-  end subroutine init_mie_uv
+  end subroutine init_uv
 
   
 end module eoslibinit

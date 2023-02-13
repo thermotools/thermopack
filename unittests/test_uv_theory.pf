@@ -15,18 +15,17 @@ module test_uv_theory
   implicit none
   public
 
+  ! VALUES FROM THE  FEOS LIBRARY
   real, parameter :: SIGMA_CH4 = 3.7039e-10
   real, parameter :: EPSDIVK_CH4 = 150.03
 
-  ! The following values are from the feos library
+  ! FEOS VALUES FOR BH-MIE
   real, parameter :: DHS_BH_12 = 0.95777257352360246
   real, parameter :: DHS_BH_24 = 0.95583586434435486
   real, parameter :: DELTA_A0_BH = -0.0611105573289734
-
   real, parameter :: DELTA_A1U_BH = -1.1470186919354
   real, parameter :: PHI_BH = 0.743451055308332
   real, parameter :: DELTA_B2U_BH = -0.949898568221715
-
   real, parameter :: DeltaB2_BH = -1.00533412744652
   real, parameter :: A_ATTR_BH = -1.16124062615291
 
@@ -34,16 +33,14 @@ module test_uv_theory
   real, parameter :: Delta_A0_WCA = 0.258690311450425
   real, parameter :: QHS_WCA_24 = 0.9751576149023506
   real, parameter :: DHS_WCA_24 = 0.9614325601663462
-
   real, parameter :: DELTA_A1U_WCA = -1.52406840346272
   real, parameter :: DELTA_B2U_WCA = -1.02233215790525
   real, parameter :: PHI_WCA = 0.997069754340431
-
   real, parameter :: DELTAB2_WCA = -1.09102560732964
   real, parameter :: A_ATTR_WCA = -1.5242697155023
-
   real, parameter :: ARES_WCA_24 = 2.972986567516
   real, parameter :: ARES_BH_24 = 2.993577305779432
+
 contains
 
   @Test
@@ -56,7 +53,7 @@ contains
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
 
-    call init_uv(model="uv-mie-bh",parameter_reference="DEFAULT")
+    call init_uv(comps="AR", model="uv-mie-bh",parameter_reference="DEFAULT")
     sigma = 1.0
     epsdivk = 1.0
     lamr = 12.0
@@ -177,7 +174,7 @@ contains
     type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
 
-    call init_uv(model="uv-mie-wca",parameter_reference="DEFAULT")
+    call init_uv(comps="AR", model="uv-mie-wca",parameter_reference="DEFAULT")
     sigma = 1.0
     epsdivk = 1.0
     lamr = 12.0
@@ -282,7 +279,7 @@ contains
   end subroutine test_vals_wca
 
 
-  !@Test
+  @Test
   subroutine test_derivs()
     integer, parameter :: nc = 1
     real :: P, T, n(nc), v, rho
@@ -311,7 +308,7 @@ contains
     V = n(1)/rho
 
     ! Test state points
-    call init_uv(model="WCA",parameter_reference="DEFAULT")
+    call init_uv(comps="AR", model="uv-mie-wca",parameter_reference="DEFAULT")
 
     ! Test numerical derivatives
     cbeos => get_active_eos()
