@@ -19,7 +19,8 @@ contains
     use thermopack_var, only: base_eos_param
     use cubic_eos, only: cpa_eos
     use utilities, only: get_thread_index
-    class(base_eos_param), intent(in) :: eos
+    use saftvrmie_association, only: g_rdf_saftvrmie_ij_TVN
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: T,V,n(nc)  !< [K], [m^3], [mol]
     integer, intent(in) :: i,j     !< component indices [-]
@@ -38,8 +39,8 @@ contains
     class is(PCSAFT_eos)
       call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     class is(saftvrmie_eos)
-      call calc_gij_boublik(nc,T,V,n,i,j,p_eos%saftvrmie_var,g,g_T,g_V,g_n,&
-           g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      call g_rdf_saftvrmie_ij_TVN(T,v,n,i,j,p_eos%saftvrmie_var,&
+           g,g_v,g_vv,g_T,g_TT,g_Tv,g_n,g_vn,g_Tn,g_nn)
     class default
       call stoperror("master_saft_rdf: Wrong eos...")
     end select
