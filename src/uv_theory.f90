@@ -10,8 +10,8 @@
 ! ---------------------------------------------------------------------
 module uv_theory
   use hyperdual_mod
-  use numconstants, only: PI
   use pair_potentials
+  use numconstants, only: PI
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
   use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH
   use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
@@ -80,7 +80,6 @@ module uv_theory
        0.0512327656, 6.6667943569, 47.1109947616, -0.5011125797, -34.8918383146, 189.5498636006 &
        /), shape=(/6,6/), order=(/2,1/))
 
-
   ! Coefficients for calculation of DeltaB2 (Table S5 in [1])
   real, parameter :: C_DELTAB2_WCA(6) = (/ 1.45805207053190E-03, 3.57786067657446E-02, &
        1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)
@@ -92,12 +91,11 @@ module uv_theory
   integer, parameter :: B_DELTAB2_BH = 2
   integer, parameter :: C_EXPONENT_DELTAB2_BH = 4
 
-
   type, extends(base_eos_param) :: uv_theory_eos
      ! Mie potential parameters
      type(mie_potential_hd), allocatable :: mie(:,:)
-     type(hyperdual), allocatable :: dhs(:,:) !< for caching; currently not used
-     type(hyperdual), allocatable :: qhs(:,:) !< for caching; currently not used
+     type(hyperdual), allocatable :: dhs(:,:)
+     type(hyperdual), allocatable :: qhs(:,:)
      type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double
    contains
      procedure, public :: dealloc => uv_dealloc
@@ -106,12 +104,73 @@ module uv_theory
      procedure, pass(this), public :: assign_eos => assign_uv_eos
   end type uv_theory_eos
 
-
   public :: uv_theory_eos
   public :: calcFres_uv
-  public :: calc_uv_Mie_eta
+  public :: set_potential_parameters
+  public :: calc_uv_mie_eta
+
 contains
 
+  subroutine assign_uv_eos(this, other)
+    class(uv_theory_eos), intent(inout) :: this
+    class(*), intent(in) :: other
+    !
+    select type (other)
+    class is (uv_theory_eos)
+       call this%assign_base_eos_param(other)
+       this%mie = other%mie
+    class default
+    end select
+  end subroutine assign_uv_eos
+
+  subroutine uv_dealloc(eos)
+    class(uv_theory_eos), intent(inout) :: eos
+    ! Locals
+    integer :: stat
+    call base_eos_dealloc(eos)
+
+    select type (p_eos => eos)
+    class is (uv_theory_eos)
+
+       if (allocated(eos%mie)) then
+          deallocate(eos%mie,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
+       end if
+
+       if (allocated(eos%dhs)) then
+          deallocate(eos%dhs,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
+       end if
+
+       if (allocated(eos%qhs)) then
+          deallocate(eos%qhs,stat=stat)
+          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
+       end if
+
+    end select
+  end subroutine uv_dealloc
+
+  subroutine uv_allocate_and_init(eos,nc,eos_label)
+    class(uv_theory_eos), intent(inout) :: eos
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label !< EOS label
+    call eos%dealloc()
+    allocate(eos%mie(nc,nc))
+    allocate(eos%dhs(nc,nc))
+    allocate(eos%qhs(nc,nc))
+  end subroutine uv_allocate_and_init
+
+  !> Allocate memory for uv-theory eos
+  function uv_eos_constructor(nc,eos_label) result(uv)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(uv_theory_eos) :: uv
+    ! Locals
+
+    call uv%allocate_and_init(nc,eos_label)
+  end function uv_eos_constructor
 
   function calc_uv_Mie_eta(eos,nc,T,V,n) result(eta)
     ! Input
@@ -146,9 +205,8 @@ contains
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
     character(len=*), intent(in) :: ref        !< Parameter sets to use for components
     ! Locals
-    type(mie_potential_hd) :: mie_pure
-    type(hyperdual) :: lamr, lama, sigma, epsdivk
-    integer :: i, j, idx
+    type(hyperdual) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc)
+    integer :: i, idx
 
     ! Deallocate old memory and init new memory
     call eos%allocate_and_init(nc, eos_label="UV-MIE")
@@ -157,13 +215,9 @@ contains
     do i=1,nc
        ! Assign pure Mie potential
        idx = getMiedataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
-       lama = 6.0
-       lamr = MieArray(idx)%lamr
-       sigma = MieArray(idx)%sigma
-       epsdivk = MieArray(idx)%eps_divk
-       if (idx < 1) call stoperror("Cannot find Mie potential in database")
-       call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-       call uv_set_mie_pot(eos, i,i, mie_pure)
+       lamr_vec(i) = MieArray(idx)%lamr
+       sigma_vec(i) = MieArray(idx)%sigma
+       epsdivk_vec(i) = MieArray(idx)%eps_divk
 
        ! Set ideal gas Cp
        comp(i)%p_comp%id_cp%cptype = 8
@@ -171,30 +225,54 @@ contains
        comp(i)%p_comp%id_cp%cp(1) = 2.5
     end do
 
-    ! Set cross potentials using standard, Lorentz-Berthelot combining rules
-    do i=1,nc
-       do j = i+1,nc
-          lama = 6.0
-          lamr = eos%mie(i,i)%lamr
-          sigma = (eos%mie(i,i)%sigma + eos%mie(j,j)%sigma)/2.0
-          epsdivk = sqrt(eos%mie(i,i)%epsdivk*eos%mie(j,j)%epsdivk)
-          call mie_pure%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-          call uv_set_mie_pot(eos, i,j, mie_pure)
-          call uv_set_mie_pot(eos, j,i, mie_pure)
-       end do
-    end do
-    
     ! Ensure consistent gas constants
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
 
+    ! Set Mie potentials, including cross potential parameters
+    call set_potential_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
   end subroutine init_uv_theory
 
+  subroutine set_potential_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+    class(uv_theory_eos), intent(inout) :: eos !< Equation of state
+    integer, intent(in)         :: nc                           !< Number of components
+    type(hyperdual), intent(in) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc) !< Mie parameters
+    ! Locals
+    type(mie_potential_hd) :: mie
+    type(hyperdual) :: lama, lamr, sigma, epsdivk
+    integer :: i, j
+
+    ! Set pure component potentials
+    do i=1,nc
+       ! Assign pure Mie potential
+       lama = 6.0
+       lamr = lamr_vec(i)
+       call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+       eos%mie(i,i) = mie
+       !call uv_set_mie_pot(eos, i,i, mie)
+
+       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+       do j = i+1,nc
+          sigma = (sigma_vec(i) + sigma_vec(j))/2.0
+          epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
+          call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+          eos%mie(i,j) = mie !call uv_set_mie_pot(eos, i,j, mie)
+          eos%mie(j,i) = mie !call uv_set_mie_pot(eos, j,i, mie)
+       end do
+    end do
+  end subroutine set_potential_parameters
+
+  subroutine uv_set_mie_pot(eos, i,j,mie)
+    type(uv_theory_eos), intent(inout) :: eos
+    integer, intent(in) :: i,j
+    type(mie_potential_hd), intent(in) :: mie
+    eos%mie(i,j) = mie
+  end subroutine uv_set_mie_pot
 
   subroutine calcFres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
     use hyperdual_utility, only: hyperdual_fres_wrapper
-    !> The reduced helmholtz energy from uv-theory
+    !> The Fres function from uv-theory
     type(uv_theory_eos), intent(inout) :: eos
     integer, intent(in)                :: nc
     real, intent(in)  :: T             !< temperature (K)
@@ -203,10 +281,11 @@ contains
     real, intent(out) :: f             !< Fres=Ares/RT (mol)
     real, optional, intent(inout) :: f_T,f_V,f_TT,f_VV,f_TV
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
-    ! Locals
     call hyperdual_fres_wrapper(fun,eos,nc,T,V,n,f,f_T,f_V,f_n,&
          f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
+
   contains
+
     function fun(eos,nc,T,V,n) result(f)
       !class(uv_theory_eos), intent(inout) :: eos
       class(base_eos_param), intent(inout) :: eos
@@ -274,16 +353,7 @@ contains
     eos%sigma_x = sigma3_single**(1.0/3)
     eos%sigma3_single = sigma3_single
     eos%sigma3_double = sigma3_double
-
   end subroutine preCalcUVTheory
-
-
-  subroutine uv_set_mie_pot(eos, i,j,mie)
-    type(uv_theory_eos), intent(inout) :: eos
-    integer, intent(in) :: i,j
-    type(mie_potential_hd), intent(in) :: mie
-    eos%mie(i,j) = mie
-  end subroutine uv_set_mie_pot
 
 
   subroutine calc_ares_uv(eos, nc, T, rhovec, a_res)
@@ -303,6 +373,7 @@ contains
     ! Precalculations
     rho = sum(rhovec)
     z = rhovec/rho
+
     call preCalcUVTheory(eos,nc,T,z)
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
@@ -340,71 +411,6 @@ contains
   end subroutine calc_ares_uv
 
 
-  subroutine assign_uv_eos(this, other)
-    class(uv_theory_eos), intent(inout) :: this
-    class(*), intent(in) :: other
-    !
-    select type (other)
-    class is (uv_theory_eos)
-       call this%assign_base_eos_param(other)
-       this%mie = other%mie
-    class default
-    end select
-  end subroutine assign_uv_eos
-
-
-  subroutine uv_dealloc(eos)
-    class(uv_theory_eos), intent(inout) :: eos
-    ! Locals
-    integer :: stat
-    call base_eos_dealloc(eos)
-
-    select type (p_eos => eos)
-    class is (uv_theory_eos)
-
-       if (allocated(eos%mie)) then
-          deallocate(eos%mie,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
-       end if
-
-       if (allocated(eos%dhs)) then
-          deallocate(eos%dhs,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
-       end if
-
-       if (allocated(eos%qhs)) then
-          deallocate(eos%qhs,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
-       end if
-
-    end select
-
-  end subroutine uv_dealloc
-
-  subroutine uv_allocate_and_init(eos,nc,eos_label)
-    class(uv_theory_eos), intent(inout) :: eos
-    integer, intent(in) :: nc
-    character(len=*), intent(in) :: eos_label !< EOS label
-    call eos%dealloc()
-    allocate(eos%mie(nc,nc))
-    allocate(eos%dhs(nc,nc))
-    allocate(eos%qhs(nc,nc))
-
-  end subroutine uv_allocate_and_init
-
-  !> Allocate memory for cubic eos
-  function uv_eos_constructor(nc,eos_label) result(uv)
-    ! Input:
-    integer, intent(in) :: nc
-    character(len=*), intent(in) :: eos_label
-    ! Created object:
-    type(uv_theory_eos) :: uv
-    ! Locals
-
-    call uv%allocate_and_init(nc,eos_label)
-
-  end function uv_eos_constructor
-
   subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
     type(uv_theory_eos), intent(in) :: eos ! uv-theory eos
@@ -437,7 +443,6 @@ contains
     beta = 1.0/T ! the kB factor is subsumed in epsdivk
     Delta_b2u = 2*PI*beta*(eos%epsdivk_x*eos%sigma3_double)*Iu_zerodensity
     Delta_a1u = Delta_b2u*rho*Iu/Iu_zerodensity
-
   end subroutine delta_a1u_b2u_Mie
 
 
@@ -464,7 +469,7 @@ contains
     ! Calculate zero-density limit of Iu (Eq S54 in [1])
     call qhs_WCA_Mie(T_r=T_r, mie=mie, qhs=qhs)
     qhs = qhs/sigma
-    alpha_rm = alpha_x(rm, mie)
+    alpha_rm = mie%alpha_x(rm)
     Iu_zerodensity = (qhs**3-rm**3)/3.0 - alpha_rm
 
     ! Calculate length scale tau (Eq S33)
@@ -487,7 +492,6 @@ contains
     pade = pade_num/(1.0 + C(4)*rho_r + C(5)*rho_r**2 + C(6)*rho_r**3)
 
     Iu = Iu_zerodensity + pade
-
   end subroutine Iu_WCA_Mie
 
   subroutine Iu_BH_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu)
@@ -525,9 +529,8 @@ contains
 
     ! Calculate correlation integral (Eq S48)
     one = 1.0
-    Iu_zerodensity = - alpha_x(x=one, mie=mie)
+    Iu_zerodensity = - mie%alpha_x(x=one)
     Iu = Iu_zerodensity + mie%Cmie*(C(1)*rho_r + C(2)*rho_r**2)/(1.0+C(3)*rho_r)**2
-
   end subroutine Iu_BH_Mie
 
 
@@ -555,7 +558,6 @@ contains
        end do
     end do
   end subroutine DeltaB2_Mie
-
 
   subroutine DeltaB2_pure_Mie(is_BH, T_r, mie, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
@@ -599,8 +601,8 @@ contains
        c_expo = 1.0 ! this value won't matter
        wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0)
     end if
-    alpha_rs = alpha_x(rs, mie)
-    alpha_rc = alpha_x(rc, mie)
+    alpha_rs = mie%alpha_x(rs)
+    alpha_rc = mie%alpha_x(rc)
     C0 = 1.0 - 3*(alpha_rs-alpha_rc)/(rc**3-rs**3)
 
     ! Calculate beta_eff (Eq S58 in [1])
@@ -610,20 +612,7 @@ contains
     beta_eff = beta*(1.0 - C0/(1.0 + C1*beta**a_expo + C2*beta**b_expo + C3*beta**c_expo))
 
     DeltaB2 = -2*PI*sigma**3*(wca_term + (rc**3-rs**3)/3.0*(exp(beta_eff)-1.0) + beta*alpha_rc)
-
-
   end subroutine DeltaB2_pure_Mie
-
-
-  type(hyperdual) function alpha_x(x, mie)
-    type(hyperdual), intent(in) :: x
-    type(mie_potential_hd), intent(in) :: mie ! Mie potential
-    ! Locals
-    type(hyperdual) :: n, nu
-    n = mie%lama
-    nu = mie%lamr
-    alpha_x = mie%cmie * (x**(3.0-n)/(n-3.0) - x**(3.0-nu)/(nu-3.0))
-  end function alpha_x
 
   subroutine calc_eta_dhs(eos, nc, T, rho, z, eta)
     !> Hard-sphere packing fraction
@@ -760,7 +749,7 @@ contains
     six = 6.0
     seven = 7.0
     call mie_76%init(lama=six, lamr=seven, sigma=mie%sigma, epsdivk=mie%epsdivk)
-    ap = 1.0/alpha_x(one, mie) - 1.0/alpha_x(one, mie_76)
+    ap = 1.0/mie%alpha_x(one) - 1.0/mie_76%alpha_x(one)
     C1 =                   C_DHS_BH_MIE(1)*ap
     C2 = C_DHS_BH_MIE(2) + C_DHS_BH_MIE(3)*ap
     C3 = C_DHS_BH_MIE(4) + C_DHS_BH_MIE(5)*ap + C_DHS_BH_MIE(6)*ap*ap
