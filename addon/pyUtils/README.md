@@ -8,3 +8,5 @@ This folder contains suplements to thermopack.
   
 **./datadb**: Read files from ../../fluids and ../../binaries and generate compdatadb.f90/mixdatadb.f90/saftvrmie_datadb.f90 for thermopack. Must be copied manually to ../../src/. 
     Also generates the file Component-name-mapping.md for the wiki.
+
+**./docs**: Scripts to copy and combine different readme - files, so that documentation only has to be written one place.
