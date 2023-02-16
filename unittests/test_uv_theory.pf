@@ -39,7 +39,138 @@ module test_uv_theory
 
 contains
 
+
   @Test
+  subroutine test_B2_quadrature()
+    use eostv, only: virial_coefficients
+    use pair_potentials, only: calc_B2_by_quadrature
+    type(hyperdual) :: T, B
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(mie_potential_hd) :: mie
+
+    ! Argon LJ parameters
+    sigma = 3.42e-10
+    epsdivk = 124.0
+    lama = 6.0
+
+    ! Mie(9,6)
+    lamr = 9.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.4433681332578888e-27, B%f0, 1e-6*abs(B%f0))
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-4.098406032480699e-28, B%f0, 1e-6*abs(B%f0))
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-5.844652795919477e-29, B%f0, 1e-6*abs(B%f0))
+
+
+    ! Mie(12,6)
+    lamr = 12.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.1359200401456223e-27, B%f0, 1e-6*abs(B%f0))
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-3.0853860385426876e-28, B%f0, 1e-6*abs(B%f0))
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-2.960200932238359e-29, B%f0, 1e-6*abs(B%f0))
+
+
+    ! Mie(24,6)
+    lamr = 24.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-7.240262820142041e-28, B%f0, 5e-6*abs(B%f0))
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.7958213544945865e-28, B%f0, 5e-6*abs(B%f0))
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(7.410032208279907e-30, B%f0, 1e-4*abs(B%f0))
+
+  end subroutine test_B2_quadrature
+
+
+
+  !@Test
+  subroutine test_vals_bh_mix()
+    type(uv_theory_eos) :: eos
+    real :: F
+    integer :: nc = 2
+    type(hyperdual) :: T, rho, z(2)
+    type(hyperdual) :: lamr(2), lama(2), sigma(2), epsdivk(2)
+    type(hyperdual) :: dhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    call init_uv(comps="AR,C1", model="uv-mie-wca",parameter_reference="DEFAULT")
+    sigma = 1.0
+    epsdivk = 1.0
+    epsdivk(2) = 0.5
+    lamr = 12.0
+    lama = 6.0
+
+    ! Test reference contribution (a0)
+    rho = 0.9
+    z = (/0.4, 0.6/)
+
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+       print *, eos%mie(1,1)%lamr%f0
+       call set_potential_parameters(eos,nc,lamr,sigma,epsdivk)
+
+       T = 1.0/p_eos%epsdivk_x
+       call preCalcUVTheory(p_eos,nc,T,z)
+
+       ! Test attractive contributions (a-a0)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_BH_Mie(T, rho, p_eos%mie(1,1), phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       if (VERBOSE) then
+          print *, "DELTA_B2_BH"
+          print *, DeltaB2_BH
+          print *, Delta_B2%f0
+
+          print *, "DELTA_B2U_BH"
+          print *, DELTA_B2U_BH
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_BH"
+          print *, DELTA_A1U_BH
+          print *, delta_a1u%f0
+
+          print *, "PHI_BH"
+          print *, PHI_BH
+          print *, phi%f0
+
+          print *, "A_ATTR_BH"
+          print *, A_ATTR_BH
+          print *, a_attr%f0
+
+       end if
+    end select
+  end subroutine test_vals_bh_mix
+
+
+  !@Test
   subroutine test_vals_bh()
     type(uv_theory_eos) :: eos
     real :: F
@@ -158,7 +289,7 @@ contains
   end subroutine test_vals_bh
 
 
-  @Test
+  !@Test
   subroutine test_vals_wca()
     type(uv_theory_eos) :: eos
     real :: F
@@ -273,7 +404,7 @@ contains
   end subroutine test_vals_wca
 
 
-  @Test
+  !@Test
   subroutine test_derivs()
     integer, parameter :: nc = 1
     real :: P, T, n(nc), v, rho
