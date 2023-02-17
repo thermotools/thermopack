@@ -1,6 +1,6 @@
 !> Automatically generated to file saftvrmie_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-02-14T14:15:18.923559
+!! Time stamp: 2023-02-17T10:49:36.448349
 
 module saftvrmie_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -1477,6 +1477,15 @@ module saftvrmie_datadb
       kijvalue = 0.12  &
       )
 
+  type (Miekijdata), parameter :: SVRM_KIJ_16 = &
+      Miekijdata(eosidx = eosSAFT_VR_MIE, &
+      ref = "Default/Dufal2015", &
+      bib_ref = "10.1080/00268976.2015.1029027", &
+      uid1 = "H2O", &
+      uid2 = "MEOH", &
+      kijvalue = 0.02  &
+      )
+
   type (Miekijdata), parameter :: SVRM_LIJ_1 = &
       Miekijdata(eosidx = eosSAFT_VR_MIE, &
       ref = "AASEN2019-FH1", &
@@ -1585,11 +1594,12 @@ module saftvrmie_datadb
       kijvalue = -0.05  &
       )
 
-  integer, parameter :: Miemaxkij = 15
+  integer, parameter :: Miemaxkij = 16
   type (Miekijdata), dimension(Miemaxkij), parameter :: Miekijdb = (/&
       SVRM_KIJ_1,SVRM_KIJ_2,SVRM_KIJ_3,SVRM_KIJ_4,SVRM_KIJ_5, &
       SVRM_KIJ_6,SVRM_KIJ_7,SVRM_KIJ_8,SVRM_KIJ_9,SVRM_KIJ_10, &
-      SVRM_KIJ_11,SVRM_KIJ_12,SVRM_KIJ_13,SVRM_KIJ_14,SVRM_KIJ_15 &
+      SVRM_KIJ_11,SVRM_KIJ_12,SVRM_KIJ_13,SVRM_KIJ_14,SVRM_KIJ_15, &
+      SVRM_KIJ_16 &
   /)
 
   integer, parameter :: Miemaxlij = 12

@@ -34,10 +34,39 @@ def plot_single_component_saturation(comp):
     leg = plt.legend(loc="best",numpoints=1, frameon=False)
 
 
+def plot_binary_Txy_H2O_CH3OH():
+    svrm = saftvrmie("H2O,MEOH")
+    # Set kij=0.04
+    pressure = 1.01325e5
+    x = np.linspace(0.0, 1.0, 20)
+    Tb = np.zeros_like(x)
+    Td = np.zeros_like(x)
+    Yb = np.zeros_like(x)
+    Xd = np.zeros_like(x)
+    for i, xi in enumerate(x):
+        z = np.array([max(0.0, 1.0 - xi), xi])
+        Tb[i], Y = svrm.bubble_temperature(pressure, z)
+        Yb[i] = Y[1]
+        Td[i], X = svrm.dew_temperature(pressure, z)
+        Xd[i] = X[1]
+
+    plt.figure()
+    plt.plot(Yb, Tb, color="b", label="SAFT-VR Mie")
+    plt.plot(Xd, Td, color="b")
+    exp_data = np.loadtxt("./data/H2O-MEOH.dat", skiprows=1)
+    plt.plot(exp_data[:,0], exp_data[:,2], label="Ramalho et al. (1961)", linestyle="None", marker="o", color="g")
+    plt.plot(exp_data[:,1], exp_data[:,2], linestyle="None", marker="o", color="g")
+    plt.xlabel(r"$x_{\rm{CH3OH}}$")
+    plt.ylabel(r"$T$ (K)")
+    plt.title("H2O-CH3OH Txy at P=1 atm")
+    leg = plt.legend(loc="best",numpoints=1, frameon=False)
+
+
 if __name__ == "__main__":
     plot_single_component_saturation("H2O")
     plot_single_component_saturation("NH3")
     plot_single_component_saturation("H2S")
     plot_single_component_saturation("MEOH")
     plot_single_component_saturation("N2H4")
+    plot_binary_Txy_H2O_CH3OH()
     plt.show()
