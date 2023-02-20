@@ -1,3 +1,14 @@
+<!--- 
+Generated at: 2023-02-20T08:19:31.535888
+This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
+The file is created by joining the contents of the files
+    thermopack/doc/markdown/
+        header.md
+        pypi_toc.md
+        cite_acknowl_licence.md
+        pypi_structure.md
+        getting_started.md
+--->
 # Thermopack
 
 Thermopack is a thermodynamics library for multi-component and
@@ -22,7 +33,6 @@ building block for the Thermopack graphical user interface, where it
 is possible to plot thermodynamic phase diagrams with the most
 frequently used equations of state. The graphical user interface is
 currently running on the Windows and Linux operating systems.
-
 # Table of contents
   * [Program structure](#program-structure)
   * [Please cite](#please-cite)
@@ -36,28 +46,7 @@ currently running on the Windows and Linux operating systems.
     * [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
     * [Isopleths](#Isopleths)
     * [Critical point](#critical-point)
-
-# Program structure
-The core of ThermoPack is the Fortran module. For more information on that, see the [GitHub page](https://github.com/thermotools/thermopack).
-This page contains an introduction to the ThermoPack python-wrapper, which is an object-oriented implementation of a variety of equations of state (EoS), 
-with integrated methods for computing thermodynamic properties.
-
-Each EoS in thermopack is a class, which inherits from the `thermopack` class found in `thermo.py`. The primary documentation
-for the thermopack python wrapper consists of the [docstrings of the thermopack class](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py).
-This class contains all generic methods used to compute thermodynamic properties, phase equilibria, etc. The inheriting 
-classes simply ensure that the correct part of the Fortran-module is linked when performing calculations, and provide 
-some extended functionality for handling EoS parameters and such. See the [wiki](https://github.com/thermotools/thermopack/wiki/) 
-for more information on this. 
-
-Fluid parameters are compiled into the Fortran-module, and are not directly accessible through the Python-wrapper. 
-The entire fluid parameter database used by thermopack may be found in the [`/fluids` directory](https://github.com/thermotools/thermopack/tree/main/fluids) 
-in the GitHub repo. In order to model fluids not currently supported in the module available through `pip`, thermopack
-must be compiled from source with the new parameters. See the [wiki](https://github.com/thermotools/thermopack/wiki/) 
-for information on how to add new fluids, and the [GitHub README](https://github.com/thermotools/thermopack) for a guide 
-on how to compile from source. Please feel free to leave a PR for new parameter sets such that these can be included in 
-future releases of thermopack.
-
-# Please cite
+## Please cite
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
 the following articles:
@@ -91,21 +80,39 @@ rules:
 [Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid](https://doi.org/10.1063/5.0082690)  
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
-# Authors and contact persons
+## Authors and contact persons
 Morten Hammer (morten.hammer@sintef.no)<br>
 Ailo Aasen (ailo.aasen@sintef.no)<br>
 Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
 
-# License
+## License
 Thermopack is distributed under the [MIT
 license](https://github.com/thermotools/thermopack/blob/main/LICENSE-MIT)
 and [Apache
 2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE-APACHE).
 
-# Acknowledgments
+## Acknowledgments
 A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
 development of thermopack. We gratefully acknowledge their contributions.
+# Program structure
+The core of ThermoPack is the Fortran module. For more information on that, see the [GitHub page](https://github.com/thermotools/thermopack).
+This page contains an introduction to the ThermoPack python-wrapper, which is an object-oriented implementation of a variety of equations of state (EoS), 
+with integrated methods for computing thermodynamic properties.
 
+Each EoS in thermopack is a class, which inherits from the `thermopack` class found in `thermo.py`. The primary documentation
+for the thermopack python wrapper consists of the [docstrings of the thermopack class](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py).
+This class contains all generic methods used to compute thermodynamic properties, phase equilibria, etc. The inheriting 
+classes simply ensure that the correct part of the Fortran-module is linked when performing calculations, and provide 
+some extended functionality for handling EoS parameters and such. See the [wiki](https://github.com/thermotools/thermopack/wiki/) 
+for more information on this. 
+
+Fluid parameters are compiled into the Fortran-module, and are not directly accessible through the Python-wrapper. 
+The entire fluid parameter database used by thermopack may be found in the [`/fluids` directory](https://github.com/thermotools/thermopack/tree/main/fluids) 
+in the GitHub repo. In order to model fluids not currently supported in the module available through `pip`, thermopack
+must be compiled from source with the new parameters. See the [wiki](https://github.com/thermotools/thermopack/wiki/) 
+for information on how to add new fluids, and the [GitHub README](https://github.com/thermotools/thermopack) for a guide 
+on how to compile from source. Please feel free to leave a PR for new parameter sets such that these can be included in 
+future releases of thermopack.
 # Getting started
 This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo.
 
@@ -301,4 +308,5 @@ vc = Vc / sum(n) # Critical specific volume computed from critical volume and mo
 ```
 
 The solver accepts initial guesses for the critical values through the `kwargs` `temp`, and `v`. The error tolerance can be set via the `tol` `kwarg` (default is `tol=1e-7`).
+
 
