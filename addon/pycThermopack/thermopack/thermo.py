@@ -546,74 +546,6 @@ class thermo(object):
 
         return w.value
 
-    def critical_temperature(self, i):
-        '''
-        Get critical temperature of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: critical temperature (K)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return tci.value
-
-    def critical_pressure(self, i):
-        '''
-        Get critical pressure of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: critical pressure (Pa)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return pci.value
-
     def get_phase_flags(self):
         """Get phase identifiers used by thermopack
 
@@ -1684,7 +1616,7 @@ class thermo(object):
             dpdt (No type, optional): Flag to activate calculation. Defaults to None.
             dpdv (No type, optional): Flag to activate calculation. Defaults to None.
             dpdn (No type, optional): Flag to activate calculation. Defaults to None.
-            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') pressure. Defaults to 'IR'.
 
         Returns:
             float: Pressure (Pa)
@@ -1755,7 +1687,7 @@ class thermo(object):
             dedt (No type, optional): Flag to activate calculation. Defaults to None.
             dedv (No type, optional): Flag to activate calculation. Defaults to None.
             dedn (No type, optional): Flag to activate calculation. Defaults to None.
-            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') internal energy. Defaults to 'IR'.
 
         Returns:
             float: Energy (J)
@@ -3213,6 +3145,73 @@ class thermo(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+    def critical_temperature(self, i):
+        '''
+        Get critical temperature of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: critical temperature (K)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value
+
+    def critical_pressure(self, i):
+        '''
+        Get critical pressure of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return pci.value
 
     #################################
     # Virial interfaces
