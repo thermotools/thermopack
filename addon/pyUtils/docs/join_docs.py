@@ -37,7 +37,7 @@ def get_header(files):
     return header
 
 def write_pypi_readme():
-    files = ['header', 'pypi_toc', 'cite_acknowl_licence', 'pypi_structure', 'getting_started']
+    files = ['header', 'pypi_toc', 'cite_acknowl_licence', 'pypi_structure', 'getting_started', 'more_advanced']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
@@ -47,7 +47,7 @@ def write_pypi_readme():
         out_file.write(out_file_str)
 
 def write_github_readme():
-    files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started']
+    files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started', 'more_advanced']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
