@@ -1,0 +1,134 @@
+{
+  "ident": "BUTANAL",
+  "formula": "C4H8O",
+  "cas_number": "123-72-8",
+  "name": "BUTANAL",
+  "aliases": [
+    "Butanal",
+    "Butyraldehyde"
+  ],
+  "mol_weight": 72.107,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+    "temperature": 537.20,
+    "pressure": 44.10e5,
+    "compressibility": 0.249
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "NIST Webbook",
+    "temperature": 176.8,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+    "acf": 0.2826
+  },
+  "boiling_temperature": {
+    "bib_reference": "NIST Webbook",
+    "temperature": 348.0
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "None",
+    "correlation": 100,
+    "cp": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "entropy": 0.0
+  },
+  "standard_formation_energy": {
+    "bib_reference": "",
+    "enthalpy": 0.0,
+    "gibbs": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2593
+  },
+  "dipole_moment": {
+    "mu": 2.72,
+    "bib_reference": "Gross and Vrabec (2006). doi: 10.1002/aic.10683"
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "SRK": {
+    "TWU-1": {
+      "ref": "tcRK",
+      "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.2816,
+        0.8544,
+        2.4799
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcRK",
+      "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+      "ciA": 1.95438e-05,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
+    }
+  },
+  "PR": {
+    "TWU-1": {
+      "ref": "tcPR",
+      "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+      "correlation": [
+        0.1976,
+        0.8500,
+        2.5493
+      ]
+    },
+    "volume_shift": {
+      "ref": "tcPR",
+      "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",
+      "ciA": 4.0436e-06,
+      "ciB": 0.0,
+      "ciC": 0.0,
+      "correlation": 1
+    }
+  },
+  "PC-SAFT-1": {
+    "m": 2.8825,
+    "sigma": 3.4698E-10,
+    "eps_depth_divk": 247.09,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Gross and Vrabec (2006). Doi: 10.1002/aic.10683",
+    "ref": "Default/Gross2006"
+  }
+}

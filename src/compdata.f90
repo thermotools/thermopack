@@ -83,6 +83,8 @@ module compdata
     real :: tantmin !< Vapour pressure correlation lower temperature limit [K]
     real :: tantmax !< Vapour pressure correlation upper temperature limit [K]
     real :: zra !< Rackett compressibility factor
+    real :: mu_dipole !< Electric dipole moment (D)
+    real :: q_quadrupole !< Electric quadrupole moment (ÅD)
   contains
     ! Assignment operator
     procedure, pass(This), public :: assign_comp => assign_gendatadb
@@ -200,6 +202,8 @@ contains
       this%tantmax = pc%tantmax
 
       this%zra = pc%zra
+      this%mu_dipole = pc%mu_dipole
+      this%q_quadrupole = pc%q_quadrupole
 
       this%ttr = pc%ttr
       this%ptr = pc%ptr

@@ -2,9 +2,9 @@
   "ident": "C2_1",
   "formula": "C2H4",
   "cas_number": "74-85-1",
-  "name": "ETYLENE",
+  "name": "ETHYLENE",
   "aliases": [
-    "Etylene",
+    "Ethylene",
     "R1150"
   ],
   "mol_weight": 28.054,
@@ -75,6 +75,14 @@
     "bib_reference": "",
     "Zra": 0.2815
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 2.0,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
   "SRK": {
     "MC-1": {
       "ref": "Chapoy2005",
@@ -96,5 +104,16 @@
         0.349
       ]
     }
+  },
+  "PC-SAFT-1": {
+    "m": 1.5477,
+    "sigma": 3.4475E-10,
+    "eps_depth_divk": 179.19,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "Q": 1.9155,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005"
   }
 }

@@ -74,6 +74,14 @@
     "bib_reference": "10.1016/j.fluid.2016.09.003",
     "Zra": 0.243
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -111,5 +119,35 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.3609,
+    "sigma": 3.1895E-10,
+    "eps_depth_divk": 207.560,
+    "eps": 22413.213735129506,
+    "beta": 0.017121679962,
+    "assoc_scheme": "2C",
+    "bib_reference": "de Villiers et al. (2011). Doi: 10.1021/ie200521k",
+    "ref": "Default/deVilliers2011"
+  },
+  "PC-SAFT-2": {
+    "m": 1.2309,
+    "sigma": 4.1057E-10,
+    "eps_depth_divk": 316.910,
+    "eps": 23372.120708881121,
+    "beta": 0.00331438025,
+    "assoc_scheme": "2B",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "ref": "Tang_Gross2010"
+  },
+  "PC-SAFT-3": {
+    "m": 2.3827,
+    "sigma": 3.1771E-10,
+    "eps_depth_divk": 198.240,
+    "eps": 22061.595111007806,
+    "beta": 0.032384,
+    "assoc_scheme": "2B",
+    "bib_reference": "Gross & Sadowski (2002). Doi: 10.1021/ie010954d",
+    "ref": "Gross_Sadowski2002"
   }
 }

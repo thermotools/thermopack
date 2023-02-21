@@ -1,5 +1,6 @@
 """Module for defining files defining symbols to export from thermopack"""
 from datetime import datetime
+from shutil import copy
 
 
 def get_export_statement(platform, compiler, export_info):
@@ -195,6 +196,10 @@ append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
 
+append_export("fres_multipol", "multipol")
+
+append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
+
 append_export("setphtolerance", "ph_solver")
 append_export("twophasephflash", "ph_solver")
 
@@ -208,18 +213,25 @@ append_export("get_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("set_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
+append_export("get_feynman_hibbs_order", "saftvrmie_containers")
 
 append_export("model_control_hs", "saftvrmie_interface")
 append_export("model_control_a1", "saftvrmie_interface")
 append_export("model_control_a2", "saftvrmie_interface")
 append_export("model_control_a3", "saftvrmie_interface")
 append_export("model_control_chain", "saftvrmie_interface")
+append_export("hard_sphere_reference", "saftvrmie_interface")
 
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
 append_export("setcpaformulation", "saft_interface")
+append_export("calc_saft_dispersion", "saft_interface")
+append_export("calc_hard_sphere_diameter", "saft_interface")
+append_export("pc_saft_get_pure_params", "saft_interface")
+append_export("pc_saft_set_pure_params", "saft_interface")
+append_export("de_broglie_wavelength", "saft_interface")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
@@ -273,3 +285,6 @@ if __name__ == "__main__":
     write_def_file(GENERIC, LD_GCC, LINUX, "libthermopack_export.version")
     write_def_file(GENERIC, LD_CLANG, MACOS, "libthermopack_export.symbols")
     write_def_file(IFORT, LD_MSVC, WINDOWS, "thermopack.def")
+    copy('libthermopack_export.version', '../../../libthermopack_export.version')
+    copy('libthermopack_export.symbols', '../../../libthermopack_export.symbols')
+    copy('thermopack.def', '../../../MSVStudio/thermopack.def')
