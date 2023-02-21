@@ -1,4 +1,5 @@
 # Import ctypes
+import copy
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
@@ -91,43 +92,14 @@ class saft(thermo.thermo):
         a_c = c_double(0.0)
         n_c = (c_double * len(n))(*n)
 
-        null_pointer = POINTER(c_double)()
-        if a_t is None:
-            a_t_c = null_pointer
-        else:
-            a_t_c = c_double(0.0)
-        if a_v is None:
-            a_v_c = null_pointer
-        else:
-            a_v_c = c_double(0.0)
-        if a_n is None:
-            a_n_c = null_pointer
-        else:
-            a_n_c = (c_double * len(n))(0.0)
-        if a_tt is None:
-            a_tt_c = null_pointer
-        else:
-            a_tt_c = c_double(0.0)
-        if a_vv is None:
-            a_vv_c = null_pointer
-        else:
-            a_vv_c = c_double(0.0)
-        if a_tv is None:
-            a_tv_c = null_pointer
-        else:
-            a_tv_c = c_double(0.0)
-        if a_tn is None:
-            a_tn_c = null_pointer
-        else:
-            a_tn_c = (c_double * len(n))(0.0)
-        if a_vn is None:
-            a_vn_c = null_pointer
-        else:
-            a_vn_c = (c_double * len(n))(0.0)
-        if a_nn is None:
-            a_nn_c = null_pointer
-        else:
-            a_nn_c = (c_double * len(n)**2)(0.0)
+        optional_flags = [a_t, a_v, a_n,
+                          a_tt, a_vv, a_tv,
+                          a_tn, a_vn, a_nn]
+        optional_arrayshapes = [(0,), (0,), (len(n),),
+                               (0,), (0,), (0,),
+                               (len(n),), (len(n),), (len(n), len(n))]
+        optional_ptrs = self.get_optional_pointers(optional_flags, optional_arrayshapes)
+        a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c = optional_ptrs
 
         self.s_calc_saft_dispersion.argtypes = [POINTER(c_double),
                                                 POINTER(c_double),
@@ -160,28 +132,8 @@ class saft(thermo.thermo):
                                     a_nn_c)
 
         return_tuple = (a_c.value, )
-        if not a_t is None:
-            return_tuple += (a_t_c.value, )
-        if not a_v is None:
-            return_tuple += (a_v_c.value, )
-        if not a_n is None:
-            return_tuple += (np.array(a_n_c), )
-        if not a_tt is None:
-            return_tuple += (a_tt_c.value, )
-        if not a_tv is None:
-            return_tuple += (a_tv_c.value, )
-        if not a_vv is None:
-            return_tuple += (a_vv_c.value, )
-        if not a_tn is None:
-            return_tuple += (np.array(a_tn_c), )
-        if not a_vn is None:
-            return_tuple += (np.array(a_vn_c), )
-        if not a_nn is None:
-            a_nn = np.zeros((len(n), len(n)))
-            for i in range(len(n)):
-                for j in range(len(n)):
-                    a_nn[i][j] = a_nn_c[i + j*len(n)]
-            return_tuple += (a_nn, )
+        optional_ptrs= [a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c]
+        return_tuple = self.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
         return return_tuple
 

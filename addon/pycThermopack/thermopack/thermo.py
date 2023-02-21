@@ -1,6 +1,7 @@
 import sys
 from ctypes import *
 from os import path
+import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
@@ -583,6 +584,31 @@ class thermo(object):
         self.SOLIDPH = iSOLIDPH.value
         self.FAKEPH = iFAKEPH.value
 
+    def get_optional_pointers(self, optional_flags, optional_arrayshapes):
+        null_pointer = POINTER(c_double)()
+        optional_ptrs = [null_pointer for _ in optional_flags]
+        for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
+            if flag is None:
+                continue
+            if np.product(shape) > 0:
+                optional_ptrs[i] = (c_double * np.product(shape))(0.0)
+            else:
+                optional_ptrs[i] = c_double(0.0)
+        return optional_ptrs
+
+    def fill_return_tuple(self, return_tuple, optional_ptrs, optional_flags, optional_arrayshapes):
+        for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
+            if flag is None:
+                continue
+            if np.product(shape) > 0:
+                # Need to transpose because fortran is column-major
+                # Note : Reshape and transpose will do nothing if optional_pointers[i] is 1D
+                return_array = np.array(optional_ptrs[i]).reshape(shape).transpose()
+                return_tuple += (copy.deepcopy(return_array), )
+            else:
+                return_tuple += (optional_ptrs[i].value, )
+
+        return return_tuple
     def get_phase_type(self, i_phase):
         """Get phase type
 

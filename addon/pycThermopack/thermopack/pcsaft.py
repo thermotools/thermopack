@@ -28,7 +28,7 @@ class pcsaft(saft.saft):
             comps (str, optional): Comma separated list of component names
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             simplified (bool): Use simplified PC-SAFT (sPC-SAFT: 10.1021/ie020753p) (Default False)
-            polar (bool): Use dipole and quadrupole contributions PCP-SAFT (10.1002/aic.10502, 10.1002/aic.10683 and 10.1021/jp072619u) (Default True)
+            polar (bool): Use dipole and quadrupole contributions PCP-SAFT (10.1002/aic.10502, 10.1002/aic.10683 and 10.1021/jp072619u) (Default False)
         """
         # Load dll/so
         saft.saft.__init__(self)
@@ -201,7 +201,7 @@ class pcsaft(saft.saft):
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
-        """Calculate logarithm og g at contact gitvne temperature, volume and mol numbers.
+        """Calculate logarithm of the radial distribution function at contact gitvne temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -229,16 +229,10 @@ class pcsaft(saft.saft):
         n_c = (c_double * len(n))(*n)
         i_c = c_int(i)
 
-        null_pointer = POINTER(c_double)()
-        lng_t_c = null_pointer if lng_t is None else c_double(0.0)
-        lng_v_c = null_pointer if lng_v is None else c_double(0.0)
-        lng_n_c = null_pointer if lng_n is None else (c_double * len(n))(0.0)
-        lng_tt_c = null_pointer if lng_tt is None else c_double(0.0)
-        lng_vv_c = null_pointer if lng_vv is None else c_double(0.0)
-        lng_tv_c = null_pointer if lng_tv is None else c_double(0.0)
-        lng_tn_c = null_pointer if lng_tn is None else (c_double * len(n))(0.0)
-        lng_vn_c = null_pointer if lng_vn is None else (c_double * len(n))(0.0)
-        lng_nn_c = null_pointer if lng_nn is None else (c_double * len(n)**2)(0.0)
+        optional_flags = [lng_t, lng_v, lng_n, lng_tt, lng_vv, lng_tv, lng_tn, lng_vn, lng_nn]
+        optional_arrayshapes = [(0,), (0,), (len(n),), (0,), (0,), (0,), (len(n),), (len(n),), (len(n), len(n))]
+        optional_ptrs = self.get_optional_pointers(optional_flags, optional_arrayshapes)
+        lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c = optional_ptrs
 
         self.s_lng_ii_pc_saft_tvn.argtypes = [POINTER(c_double),
                                               POINTER(c_double),
@@ -273,27 +267,7 @@ class pcsaft(saft.saft):
                                   lng_nn_c)
 
         return_tuple = (lng_c.value, )
-        if not lng_t is None:
-            return_tuple += (lng_t_c.value, )
-        if not lng_v is None:
-            return_tuple += (lng_v_c.value, )
-        if not lng_n is None:
-            return_tuple += (np.array(lng_n_c), )
-        if not lng_tt is None:
-            return_tuple += (lng_tt_c.value, )
-        if not lng_tv is None:
-            return_tuple += (lng_tv_c.value, )
-        if not lng_vv is None:
-            return_tuple += (lng_vv_c.value, )
-        if not lng_tn is None:
-            return_tuple += (np.array(lng_tn_c), )
-        if not lng_vn is None:
-            return_tuple += (np.array(lng_vn_c), )
-        if not lng_nn is None:
-            lng_nn = np.zeros((len(n), len(n)))
-            for i in range(len(n)):
-                for j in range(len(n)):
-                    lng_nn[i][j] = lng_nn_c[i + j*len(n)]
-            return_tuple += (lng_nn, )
+        optional_ptrs = [lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c]
+        return_tuple = self.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
         return return_tuple
