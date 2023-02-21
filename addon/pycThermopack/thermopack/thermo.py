@@ -1,3 +1,34 @@
+"""
+This is the core of the pythod interface to ThermoPack. All equation of state classes on the python side inherit from
+the thermo class in this file. Please note that the docstrings of the methods in this file are used to generate
+the markdown-documentation found elsewhere (the ThermoTools wiki, etc.). Therefore, new methods that are implemented
+must conform to the following style guide for docstrings:
+
+    1 : The first line of the docstring must include a "section name" (i.e. No leading blank line)
+    2 : The leading description of the method must follow directly on the line following the "section name"
+        (i.e. no intermediate blank line).
+    3 : There must be (at least) one blank line following the leading description
+    4 : The argument list, and return list, must be preceded by a line containing the word "Args" or "Returns"
+    5 : The argument list, and return list, must be written as 'param_name (type) : Description', where the essential
+        part is the colon is included as a separator.
+
+    An example is:
+
+        def myfunc(self, p1, p2, p3, p4=None, p5=<something>):
+                '''Section name
+                Description of what this function does (a kind of header). We can write lots of stuff here
+                NOTE the double lineshift here:
+
+                Args:
+                     p1 (int) : The lineshift before 'Args' is necessary.
+                     p2 (float) : The colons here are also necessary.
+                     p3 (bool) : SomethingSomething
+                     p4 (Optional, list) : etc.
+                     p5 (Optional, <Something>) : This is the last argument
+                Returns:
+                    (float) : The colon here is also necessary.
+                '''
+"""
 # Support for python2
 from __future__ import print_function
 
