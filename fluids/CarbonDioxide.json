@@ -200,7 +200,7 @@
   "PC-SAFT-4": {
     "m": 1.5131,
     "sigma": 3.1869E-10,
-    "eps_depth_divk": 163.333,
+    "eps_depth_divk": 163.33,
     "eps": 0.0,
     "beta": 0.0,
     "assoc_scheme": "None",

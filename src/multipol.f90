@@ -5,7 +5,8 @@
 module multipol
   use hyperdual_mod
   use pc_saft_nonassoc, only: sPCSAFT_eos
-  use thermopack_var, only: base_eos_param, get_active_eos, nce
+  use thermopack_var, only: base_eos_param, get_active_eos, nce, thermo_model, &
+       get_active_thermo_model
   use thermopack_constants, only: N_AVOGADRO, kB_const
   use numconstants, only: PI, small
   use multipol_var, only: multipol_param
@@ -15,7 +16,7 @@ module multipol
 
   public :: hyperdual_fres_multipol
   public :: add_hyperdual_fres_multipol
-  public :: fres_multipol
+  public :: fres_multipol, multipol_model_control
 
 contains
 
@@ -157,7 +158,7 @@ contains
     else
       f_QQ = a_2
     endif
-  contains
+ contains
     subroutine add_to_a2(is,js,fac)
       integer :: is, js
       real :: fac
@@ -258,7 +259,7 @@ contains
     type(hyperdual) :: a_2, a_3, prefactor_2, prefactor_3
     integer :: i, j, k, ii, jj, kk
     prefactor_2 = -(9.0/4.0)*PI*N_AVOGADRO/V/T**2
-    prefactor_3 = -(PI*N_AVOGADRO)**2/V**2/T**3
+    prefactor_3 = -(PI*N_AVOGADRO)**2/V**2/T**3 ! Minus sign according to article. FeOS currently uses a postive sign.
     a_2 = 0.0
     a_3 = 0.0
     do ii=1,mpol_param%num_mu
@@ -435,5 +436,23 @@ contains
     call add_hyperdual_fres_multipol(eos,nce,T,V,n,F)
 
   end subroutine fres_multipol
+
+  subroutine multipol_model_control(QQ,DD,DQ)
+    ! Input.
+    logical, intent(in) :: QQ,DD,DQ ! Control what terms are calculated
+    ! Locals
+    type(thermo_model), pointer :: p_eos_cont
+    integer :: i
+    p_eos_cont => get_active_thermo_model()
+    if (allocated(p_eos_cont%eos)) then
+      do i=1,size(p_eos_cont%eos)
+        if (associated(p_eos_cont%eos(i)%p_eos%mpol_param)) then
+          p_eos_cont%eos(i)%p_eos%mpol_param%enable_QQ = QQ
+          p_eos_cont%eos(i)%p_eos%mpol_param%enable_DD = DD
+          p_eos_cont%eos(i)%p_eos%mpol_param%enable_DQ = DQ
+        endif
+      enddo
+    endif
+  end subroutine multipol_model_control
 
 end module multipol

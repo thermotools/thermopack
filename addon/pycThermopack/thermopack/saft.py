@@ -33,6 +33,8 @@ class saft(thermo.thermo):
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
         self.s_fres_multipol = getattr(
             self.tp, self.get_export_name("multipol", "fres_multipol"))
+        self.s_multipol_model_control = getattr(
+            self.tp, self.get_export_name("multipol", "multipol_model_control"))
 
         self.m = None
         self.sigma = None
@@ -223,8 +225,7 @@ class saft(thermo.thermo):
         print(f"sigma: {self.sigma[c-1]}")
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
 
-
-    def fres_multipol(self, temp, volume, n, qq=True, dd=True, dq=True):
+    def fres_polar(self, temp, volume, n, qq=True, dd=True, dq=True):
         """Calculate reduced Helmholtz energy contribution from polar model
 
         Args:
@@ -266,3 +267,26 @@ class saft(thermo.thermo):
                              byref(f_c))
 
         return f_c.value
+
+    def polar_model_control(self, qq, dd, dq):
+        """Dictate what terms are included with for polar model
+
+        Args:
+            qq (bool): Include quadrupole-quadrupole contribution?
+            dd (bool): Include dipole-dipole contribution?
+            dq (bool): Include dipole-quadrupole contribution?
+        """
+        self.activate()
+        qq_c = c_int(1 if qq else 0)
+        dd_c = c_int(1 if dd else 0)
+        dq_c = c_int(1 if dq else 0)
+
+        self.s_multipol_model_control.argtypes = [POINTER(c_int),
+                                                  POINTER(c_int),
+                                                  POINTER(c_int)]
+
+        self.s_multipol_model_control.restype = None
+
+        self.s_multipol_model_control(byref(qq_c),
+                                      byref(dd_c),
+                                      byref(dq_c))

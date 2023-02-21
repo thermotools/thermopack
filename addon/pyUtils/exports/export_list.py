@@ -197,6 +197,7 @@ append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
 
 append_export("fres_multipol", "multipol")
+append_export("multipol_model_control", "multipol")
 
 append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
 

@@ -96,7 +96,7 @@ contains
     real, intent(in) :: eps_divk_ij(nce,nce)  !<
     ! Locals.
     integer :: i, j, k, n
-    real :: mij, mijk
+    real :: mij, mijk, mi, mj, mk
     self%m = m
     self%sigma_ij = sigma_ij
     self%sigma_ij_3 = self%sigma_ij**3
@@ -130,8 +130,10 @@ contains
     end do
 
     do i=1,nce
+      mi = min(m(i),2.0)
       do j=1,nce
-        mij = sqrt(m(i)*m(j))
+        mj = min(m(j),2.0)
+        mij = sqrt(mi*mj)
         do n=0,4
           self%a_ij_QQ(n,i,j) = AQ(0,n) + AQ(1,n)*(mij-1)/mij + AQ(2,n)*(mij-1)/mij*(mij-2)/mij
           self%b_ij_QQ(n,i,j) = (BQ(0,n) + BQ(1,n)*(mij-1)/mij + BQ(2,n)*(mij-1)/mij*(mij-2)/mij)&
@@ -141,25 +143,23 @@ contains
             self%b_ij_DQ(n,i,j) = (BDQ(0,n) + BDQ(1,n)*(mij-1)/mij + BDQ(2,n)*(mij-1)/mij*(mij-2)/mij)&
                  *self%eps_divk_ij(i,j)
           endif
-          mij = min(mij,2.0)
           self%a_ij_DD(n,i,j) = AD(0,n) + AD(1,n)*(mij-1)/mij + AD(2,n)*(mij-1)/mij*(mij-2)/mij
           self%b_ij_DD(n,i,j) = (BD(0,n) + BD(1,n)*(mij-1)/mij + BD(2,n)*(mij-1)/mij*(mij-2)/mij)&
                *self%eps_divk_ij(i,j)
         enddo
         do k=1,nce
-          mijk = (m(i)*m(j)*m(k))**(1.0/3.0)
+          mk = min(m(k),2.0)
+          mijk = (mi*mj*mk)**(1.0/3.0)
           do n=0,3
             self%c_ijk_QQ(n,i,j,k) = CQ(0,n) + CQ(1,n)*(mijk-1)/mijk + CQ(2,n)*(mijk-1)/mijk*(mijk-2)/mijk
             if (n < 3) then
               self%c_ijk_DQ(n,i,j,k) = CDQ(0,n) + CDQ(1,n)*(mijk-1)/mijk
             endif
-            mijk = min(mijk,2.0)
             self%c_ijk_DD(n,i,j,k) = CD(0,n) + CD(1,n)*(mijk-1)/mijk + CD(2,n)*(mijk-1)/mijk*(mijk-2)/mijk
           enddo
         enddo
       enddo
     enddo
-
   end subroutine init_multipol_param
 
   !> Allocate memory for multipol_param
