@@ -9,11 +9,9 @@ Intent: Several "submodules" of documentation are used both in the wiki, the mai
 Usage: To add new documentation, create a new markdown file in thermopoack/doc/markdown, and add the filename
         (sans the file ending) to the appropriate `files` lists in the functions in this file.
 """
-import os
 from datetime import datetime
+from tools import THERMOPACK_ROOT, MARKDOWN_DIR
 
-THERMOPACK_ROOT = os.path.dirname(__file__) + '/../../..'
-MARKDOWN_DIR = THERMOPACK_ROOT + '/doc/markdown/'
 
 def gen_file_str(files):
     out_file_str = ''
