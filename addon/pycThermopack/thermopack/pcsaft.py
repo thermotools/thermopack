@@ -13,7 +13,6 @@ from . import thermo, saft
 
 c_len_type = thermo.c_len_type
 
-
 class pcsaft(saft.saft):
     """
     Interface to PC-SAFT model
@@ -271,3 +270,11 @@ class pcsaft(saft.saft):
         return_tuple = self.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
         return return_tuple
+
+class PCP_SAFT(pcsaft):
+    def __init__(self, comps, parameter_reference="Default"):
+        super().__init__(comps, parameter_reference=parameter_reference, polar=True, simplified=False)
+
+class SPC_SAFT(pcsaft):
+    def __init__(self, comps, parameter_reference="Default"):
+        super().__init__(comps, parameter_reference=parameter_reference, polar=False, simplified=True)
