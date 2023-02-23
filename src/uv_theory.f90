@@ -96,7 +96,7 @@ module uv_theory
      type(mie_potential_hd), allocatable :: mie(:,:)
      type(hyperdual), allocatable :: dhs(:,:)
      type(hyperdual), allocatable :: qhs(:,:)
-     type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double
+     type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
    contains
      procedure, public :: dealloc => uv_dealloc
      procedure, public :: allocate_and_init => uv_allocate_and_init
@@ -313,28 +313,24 @@ contains
     type(hyperdual), intent(in)  :: T             !< temperature (K)
     type(hyperdual), intent(in)  :: z(nc)         !< mole fractions (1/m^3)
     ! Locals
-    type(hyperdual) :: T11_r
-    type(hyperdual) :: diameters(nc)
-
     type(hyperdual) :: sigma3_single   !< Cubed one-fluid diameter
     type(hyperdual) :: sigma3_double   !< Cubed one-fluid diameter
     type(hyperdual) :: epsdivk_x       !< One-fluid energy scale
     integer :: i,j
 
-    T11_r = T/eos%mie(1,1)%epsdivk
-    if (eos%subeosidx == eosMie_UV_WCA) then
-       call dhs_WCA_Mie(T11_r,eos%mie(1,1), diameters(1))
-    else if (eos%subeosidx == eosMie_UV_BH) then
-       call dhs_BH_Mie(T11_r,eos%mie(1,1), diameters(1))
-    end if
-
-    do i=2,nc
-       diameters(i) = diameters(1)*eos%mie(i,i)%sigma/eos%mie(1,1)%sigma
+    ! Precalculate diameters for the additive hard-sphere reference
+    ! system
+    do i=1,nc
+       if (eos%subeosidx == eosMie_UV_WCA) then
+          call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+       else if (eos%subeosidx == eosMie_UV_BH) then
+          call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+       end if
     end do
-
+    
     do i=1,nc
        do j=1,nc
-          eos%dhs(i,j) = (diameters(i) + diameters(j))/2.0
+          eos%dhs(i,j) = (eos%dhs(i,i) + eos%dhs(j,j))/2.0
        end do
     end do
 
@@ -342,7 +338,9 @@ contains
     epsdivk_x = 0.0
     sigma3_single = 0.0
     sigma3_double = 0.0
+    eos%dhs_x = 0.0
     do i=1,nc
+       eos%dhs_x = eos%dhs_x + z(i)*eos%dhs(i,i)**3
        sigma3_single = sigma3_single + z(i) * eos%mie(i,i)%sigma**3.0
        do j=1,nc
           sigma3_double = sigma3_double + z(i)*z(j) * eos%mie(i,j)%sigma**3.0
@@ -353,6 +351,8 @@ contains
     eos%sigma_x = sigma3_single**(1.0/3)
     eos%sigma3_single = sigma3_single
     eos%sigma3_double = sigma3_double
+    eos%dhs_x = (eos%dhs_x)**(1.0/3) !< Eq S46 in [1]
+    eos%dhs_x_adim = eos%dhs_x/eos%sigma_x
   end subroutine preCalcUVTheory
 
 
@@ -390,7 +390,7 @@ contains
     if (eos%subeosidx == eosMie_UV_WCA) then
        call phi_WCA_Mie(rho_r, lamr, phi)
     else if (eos%subeosidx == eosMie_UV_BH) then
-       call phi_BH_Mie(T_x, rho_r, eos%mie(1,1), phi)
+       call phi_BH_Mie(T_x, rho_r, eos%mie(1,1)%lamr, phi)
     end if
 
     call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
@@ -413,7 +413,7 @@ contains
 
   subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
-    type(uv_theory_eos), intent(in) :: eos ! uv-theory eos
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
     integer, intent(in) :: nc ! number of components
     type(hyperdual), intent(in) :: T      ! temperature (K)
     type(hyperdual), intent(in) :: rho    ! density (1/m^3)
@@ -421,7 +421,7 @@ contains
     type(hyperdual), intent(out) :: delta_a1u ! a1 (-)
     type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
     ! Locals
-    type(hyperdual) :: beta, lamr, lama
+    type(hyperdual) :: beta, lamr, lama, dhs
     type(hyperdual) :: Iu, Iu_zerodensity, rho_r, T_r
     type(mie_potential_hd) :: mie_x
 
@@ -434,28 +434,29 @@ contains
 
     ! Calc correlation integral of effective pure fluid
     if (eos%subeosidx == eosMie_UV_WCA) then
-       call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
+       call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
     else if (eos%subeosidx == eosMie_UV_BH) then
-       call Iu_BH_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu)
+       call Iu_BH_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
     end if
 
     ! Calculate Delta_a1u (Eq S42 in [1])
-    beta = 1.0/T ! the kB factor is subsumed in epsdivk
-    Delta_b2u = 2*PI*beta*(eos%epsdivk_x*eos%sigma3_double)*Iu_zerodensity
-    Delta_a1u = Delta_b2u*rho*Iu/Iu_zerodensity
+    beta = 1.0/T_r ! the kB factor is subsumed in epsdivk
+    Delta_b2u = 2*PI * beta * eos%sigma3_double * Iu_zerodensity
+    Delta_a1u = Delta_b2u * rho * Iu/Iu_zerodensity
   end subroutine delta_a1u_b2u_Mie
 
 
-  subroutine Iu_WCA_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu)
+  subroutine Iu_WCA_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu, dhs)
     !> Correlation integral of pure fluids going into the u-term in uv-theory (Eq S54 in [1])
     type(mie_potential_hd), intent(in) :: mie ! Mie potential
     type(hyperdual), intent(in) :: T_r      ! reduced temperature (-)
     type(hyperdual), intent(in) :: rho_r    ! reduced density (-)
     type(hyperdual), intent(out) :: Iu_zerodensity, Iu ! correlation integral and its zero density limit (-)
+    type(hyperdual), intent(in) :: dhs      ! hard-sphere diameter (-)
     ! Locals
     type(hyperdual) :: n, nu, sigma, eps_divk
     type(hyperdual) :: rm, rs, alpha_rm
-    type(hyperdual) :: C(6), pade_num, pade, qhs, dhs, tau, tauvec(6)
+    type(hyperdual) :: C(6), pade_num, pade, qhs, tau, tauvec(6)
     integer :: i, j
 
     ! Extract Mie parameters for component ic
@@ -473,8 +474,6 @@ contains
     Iu_zerodensity = (qhs**3-rm**3)/3.0 - alpha_rm
 
     ! Calculate length scale tau (Eq S33)
-    call dhs_WCA_Mie(T_r=T_r,mie=mie, dhs=dhs)
-    dhs = dhs/sigma
     tau = rs - dhs
 
     ! Calculate remaining Padé approximation for the density-dependent term
@@ -494,16 +493,17 @@ contains
     Iu = Iu_zerodensity + pade
   end subroutine Iu_WCA_Mie
 
-  subroutine Iu_BH_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu)
+  subroutine Iu_BH_Mie(T_r, rho_r, mie, Iu_zerodensity, Iu, dhs)
     !> Correlation integral of pure fluids going into the u-term in uv-theory (Eq S54 in [1])
     type(hyperdual), intent(in) :: T_r      ! reduced temperature (-)
     type(hyperdual), intent(in) :: rho_r    ! reduced density (-)
     type(mie_potential_hd), intent(in) :: mie ! Mie potential
     type(hyperdual), intent(out) :: Iu_zerodensity, Iu ! correlation integral and its zero density limit (-)
+    type(hyperdual) :: dhs
     ! Locals
     type(hyperdual) :: n, nu, sigma, eps_divk
     type(hyperdual) :: rs, one
-    type(hyperdual) :: C(3), C11, C12, C13, dhs, tau
+    type(hyperdual) :: C(3), C11, C12, C13, tau
 
     ! Extract Mie parameters for component ic
     n = mie%lama
@@ -513,8 +513,6 @@ contains
     rs = 1.0
 
     ! Calculate length scale tau (Eq S33)
-    call dhs_BH_Mie(T_r=T_r,mie=mie, dhs=dhs)
-    dhs = dhs/sigma
     tau = rs - dhs
 
     ! Calculate C2 and C3 (Eq. S50)
@@ -531,6 +529,7 @@ contains
     one = 1.0
     Iu_zerodensity = - mie%alpha_x(x=one)
     Iu = Iu_zerodensity + mie%Cmie*(C(1)*rho_r + C(2)*rho_r**2)/(1.0+C(3)*rho_r)**2
+
   end subroutine Iu_BH_Mie
 
 
@@ -548,7 +547,6 @@ contains
     logical :: is_BH
 
     is_BH = (eos%subeosidx==eosMie_UV_BH)
-
     DeltaB2 = 0.0
     do i=1,nc
        do j=1,nc
@@ -654,8 +652,8 @@ contains
     do i=1,nc
        do j=1,nc
           Tij_r = T/eos%mie(i,j)%epsdivk
-          dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
-
+          dhs_r = eos%dhs(i,j)/eos%mie(i,j)%sigma
+          !dhs_r = 0.5*(eos%dhs(i,i) + eos%dhs(j,j))
           if (eos%subeosidx == eosMie_UV_WCA) then
              rs_r = eos%mie(i,j)%rmin_adim
              call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
@@ -666,11 +664,14 @@ contains
              call etaB_Mie(eta, tau, etaB, C_ETA_B_WCA_MIE)
           else if (eos%subeosidx == eosMie_UV_BH) then
              rs_r = 1.0
-             qhs_r = dhs_r
-
+             dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
              tau = rs_r - dhs_r ! adimensional length scale
              call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_BH_MIE)
              call etaB_Mie(eta, tau, etaB, C_ETA_B_BH_MIE)
+
+             ! feos uses different definitions of tau for BH and WCA...
+             dhs_r = eos%dhs(i,j)/eos%mie(i,j)%sigma
+             qhs_r = dhs_r
           end if
 
           IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)
@@ -813,11 +814,11 @@ contains
     phi = tanhx
   end subroutine phi_WCA_Mie
 
-  subroutine phi_BH_Mie(T_r,rho_r,mie, phi)
+  subroutine phi_BH_Mie(T_r,rho_r, lamr, phi)
     !> Eq 14 in [1]
     type(hyperdual), intent(in) :: T_r        ! reduced temperature (-)
     type(hyperdual), intent(in) :: rho_r      ! reduced density (-)
-    type(mie_potential_hd), intent(in) :: mie ! Mie potential
+    type(hyperdual), intent(in) :: lamr    ! repulsive exponent (-)
     type(hyperdual), intent(out) :: phi       ! u fraction (-)
     ! Locals
     type(hyperdual) :: beta, sigma_beta, prefac
@@ -826,14 +827,14 @@ contains
     real :: a_expo, b_expo
 
     ! Coefficients (Eq 16)
-    if (mie%lamr%f0==12.0) then
+    if (lamr%f0==12.0) then
        a_expo = 1.0
        b_expo = 3.0
        C = C_PHI_BH_LJ
     else
        a_expo = A_PHI_BH_MIE
        b_expo = B_PHI_BH_MIE
-       C = C1_PHI_BH_MIE + C2_PHI_BH_MIE/mie%lamr%f0
+       C = C1_PHI_BH_MIE + C2_PHI_BH_MIE/lamr%f0
     end if
 
     ! Calculate prefactor
