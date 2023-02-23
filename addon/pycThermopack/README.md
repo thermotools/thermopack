@@ -1,8 +1,12 @@
 # Introduction
 
-pycThermopack: Python interface for Thermopack using ctypes
+Python interface for Thermopack using ctypes (thermopack)
 
-For examples on how to use, see [../pyExamples/](../pyExamples/README.md).
+For examples on how to use, see
+[../pyExamples/](../pyExamples/README.md). Also the function headers
+of the EoS classes [../thermopack/](../thermopack), as well as the base class
+`thermo.py`, will help you understand what thermopack can do.
+
 
 Note that the files `../../libthermopack_export.version` (Linux) and
 `../../MSVStudio/thermopack.def` (Windows) define which symbols are exported
@@ -26,7 +30,7 @@ to install `matploblib`.
 ## Linux
 
 To prepare pycThermopack, a `libthermopack.so` file must be copied to
-the pyctp folder. This is done as follows:
+the thermopack folder. This is done as follows:
 
 ```sh
 # Either
@@ -42,7 +46,7 @@ python makescript.py optim
 python3 makescript.py optim
 ```
 
-One may also, optionally, install `pyctp` on a user or system level, which
+One may also, optionally, install `thermopack` on a user or system level, which
 allows one to import pycThermopack from anywhere. If this is desired, one can
 either install at system level or at user level with
 [pip](https://pypi.org/project/pip/). Use `pip3` for Python 3, as `pip` often
@@ -70,7 +74,7 @@ pip3 install -e --user .
 
 Compile using Microsoft Visual Studio solution file (requires Intel Fortran
 license) in `../../MSVStudio`, and `libthermopack.dll` will be copied to the
-pyctp folder.
+thermopack folder.
 
 Make sure the symbol mapping is correct for the python interface
 ```bash
@@ -87,7 +91,7 @@ thermopack folder and run the following commands:
 pacman -S mingw-w64-x86_64-python
 pacman -S mingw-w64-x86_64-python-numpy
 pacman -S mingw-w64-x86_64-python-matplotlib
-cp bin/dynamic/libthermopack_optim_gfortran_MSYS.so addon/pycThermopack/pyctp/thermopack.dll
+cp bin/dynamic/libthermopack_optim_gfortran_MSYS.so addon/pycThermopack/thermopack/thermopack.dll
 cd addon/pycThermopack
 python map_platform_specifics.py
 cd ../../pyExamples
@@ -116,3 +120,29 @@ The GUI application requires the following Python packages:
 * `pint` for managing units
 * `matplotlib`
 * `numpy`
+
+# Building thermopack wheel for pypi
+
+After copying the dynamic library to the thermopack folder the license
+files should be made available in the pycThermopack folder. To
+generate the manylinux2014 wheel the `auditwheel repair` command
+should be executed.
+
+```sh
+ln -s ../../LICENCE-MIT
+ln -s ../../LICENCE-APACHE
+python map_platform_specifics.py
+python -m pip wheel .
+auditwheel repair thermopack-2.0.0-py3-none-any.whl -w .
+```
+
+Note that the following Python packages `pip`, `setuptools` and
+`wheel` are required to build the wheel.
+
+# For Mac
+
+Instead of `auditwheel ...` run
+```
+delocate-wheel -w fixed_wheels -v thermopack-2.0.0-py3-none-any.whl
+```
+

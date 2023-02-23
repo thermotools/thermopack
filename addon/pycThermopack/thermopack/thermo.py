@@ -9,7 +9,7 @@ from . import plotutils, utils, platform_specifics
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
-class thermopack(object):
+class thermo(object):
     """
     Interface to thermopack
     """
@@ -51,8 +51,12 @@ class thermopack(object):
         self.nc = None
         self.minimum_temperature_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tptmin"))
+        self.maximum_temperature_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
         self.minimum_pressure_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tppmin"))
+        self.maximum_pressure_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tppmax"))
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(
@@ -632,7 +636,7 @@ class thermopack(object):
 
     def set_tmin(self, temp):
         """Set minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Args:
             temp (float): Temperature (K)
@@ -642,7 +646,7 @@ class thermopack(object):
 
     def get_tmin(self):
         """Get minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Returns:
             float: Temperature (K)
@@ -650,14 +654,63 @@ class thermopack(object):
         temp = self.minimum_temperature_c.value
         return temp
 
+    def set_tmax(self, temp):
+        """Set maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 999 K.
+
+        Args:
+            temp (float): Temperature (K)
+        """
+        if temp is not None:
+            self.maximum_temperature_c.value = temp
+
+    def get_tmax(self):
+        """Get maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 999 K.
+
+        Returns:
+            float: Temperature (K)
+        """
+        temp = self.maximum_temperature_c.value
+        return temp
+
     def set_pmin(self, press):
-        """Get minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        """Set minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.minimum_pressure_c.value = press
+
+    def get_pmin(self):
+        """Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 10 Pa.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.minimum_pressure_c.value
+        return press
+
+    def set_pmax(self, press):
+        """Set minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 100 MPa.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        self.maximum_pressure_c.value = press
+
+    def get_pmax(self):
+        """Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 100 MPa.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.maximum_pressure_c.value
+        return press
 
     #################################
     # Phase properties

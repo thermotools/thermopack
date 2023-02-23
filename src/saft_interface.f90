@@ -45,6 +45,7 @@ module saft_interface
   public :: pc_saft_set_kij, pc_saft_get_kij, pc_saft_get_pure_params, pc_saft_set_pure_params
   public :: calcSaftFder_res_nonassoc
   public :: pets_get_pure_params, pets_set_pure_params
+  public :: estimate_critical_parameters
 
 contains
 
@@ -1763,5 +1764,62 @@ contains
     logical, intent(in) :: simplified
     useSimplifiedCPA = simplified
   end subroutine setCPAformulation
+
+  !> Estimate critical parameters based on reduced values
+  subroutine estimate_critical_parameters(i, Tc, vc)
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use lj_splined, only: ljs_bh_eos, ljs_wca_eos
+    use pets, only: PETS_eos
+    use thermopack_constants, only: N_Avogadro
+    integer, intent(in) :: i
+    real, intent(out) :: Tc, vc
+    ! Locals
+    real :: rhos, Ts
+    real :: sigma, eps, alpha
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      ! Treat as LJ fluid
+      rhos = 0.312
+      Ts = 1.312
+      !Ps = 0.119
+      sigma = p_eos%sigma(i,i)
+      eps = p_eos%eps_depth_divk(i,i)
+    class is ( saftvrmie_eos )
+      alpha = p_eos%saftvrmie_param%alpha_ij(i,i)
+      sigma = p_eos%saftvrmie_param%sigma_ij(i,i)
+      eps = p_eos%saftvrmie_param%eps_divk_ij(i,i)
+      Ts = 1.173*alpha + 0.254 ! Ramrattan 2015 correlation (10/ggxvnw)
+      rhos = min(max(-0.0813*alpha + 0.3884,0.3), 0.4)
+      !Ps = -1.0
+    class is ( ljs_bh_eos )
+      rhos = 0.333
+      Ts = 0.885
+      !Ps = 0.075
+      sigma = p_eos%saftvrmie_param%sigma_ij(i,i)
+      eps = p_eos%saftvrmie_param%eps_divk_ij(i,i)
+    class is( ljs_wca_eos )
+      rhos = 0.333
+      Ts = 0.885
+      !Ps = 0.075
+      sigma = p_eos%sigma
+      eps = p_eos%eps_divk
+    class is ( PETS_eos )
+      Ts = 1.086
+      rhos = 0.319
+      !Ps = -1.0
+      sigma = p_eos%sigma_pets
+      eps = p_eos%epsdivk_pets
+    class default
+      call stoperror("estimate_critical_parameters: Wrong eos.")
+    end select
+
+    Tc = Ts*eps
+    vc = (sigma**3*N_Avogadro)/rhos
+    !Pc =
+  end subroutine estimate_critical_parameters
 
 end module saft_interface

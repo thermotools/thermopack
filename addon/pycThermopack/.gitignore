@@ -1,0 +1,6 @@
+*.whl
+LICENSE*
+*.egg-info/
+build/
+thermopack/platform_specifics.py
+pyctp/platform_specifics.py

@@ -15,7 +15,7 @@ from abc import abstractmethod
 c_len_type = thermo.c_len_type
 
 
-class ljs_wca_base(thermo.thermopack):
+class ljs_wca_base(thermo.thermo):
     """
     Interface to LJS-WCA
     """

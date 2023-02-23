@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.quantum_cubic import qcubic
+from thermopack.quantum_cubic import qcubic
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)

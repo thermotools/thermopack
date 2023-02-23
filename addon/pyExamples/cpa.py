@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.cpa import cpa
+from thermopack.cpa import cpa
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
