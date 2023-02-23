@@ -20,8 +20,8 @@ module nist
     real, allocatable, dimension(:) :: t_id
     !
     ! Parameters for the residual gas part alpha^r
-    integer :: nCrit = 0
-    integer :: nCritDelta = 0
+    integer :: n_gauss = 0
+    integer :: n_gao = 0
     !
     real, allocatable, dimension(:) :: n_crit
     real, allocatable, dimension(:) :: t_crit
@@ -44,7 +44,6 @@ module nist
 
     procedure, public :: alpha0Derivs_taudelta => alpha0Derivs_NIST
     procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_NIST
-    !procedure, public :: satDeltaEstimate => satDeltaEstimate_NIST
     procedure, public :: init => init_NIST
     procedure, private :: alphaResPrefactors => alphaResPrefactors_NIST
     procedure, public :: allocate_param
@@ -69,6 +68,7 @@ contains
     type(thermo_model), pointer :: p_thermo
     integer :: i_comp, i
 
+    print *,"Entering nist init"
     i_comp = -1
     do i=1,maxnist
       if (str_eq(comp_name, nistdb(i)%ident)) then
@@ -94,8 +94,8 @@ contains
       nist_comp%n_sinh = 0
       nist_comp%upPol = nistdb(i_comp)%n_poly_eos
       nist_comp%upExp = nistdb(i_comp)%n_exp_eos + nistdb(i_comp)%n_poly_eos
-      nist_comp%nCrit = nistdb(i_comp)%n_crit_eos
-      nist_comp%nCritDelta = nistdb(i_comp)%n_crit_delta_eos
+      nist_comp%n_gauss = nistdb(i_comp)%n_gauss_eos
+      nist_comp%n_gao = nistdb(i_comp)%n_gao_eos
       nist_comp%n1_id = nistdb(i_comp)%n1_id
       nist_comp%n_id = nistdb(i_comp)%n_id
 
@@ -115,22 +115,22 @@ contains
       !
       nist_comp%l_exp = nistdb(i_comp)%l_eos(nist_comp%upPol+1:nist_comp%upExp)
       !
-      nist_comp%n_crit = nistdb(i_comp)%n_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%nCrit)
-      nist_comp%t_crit = nistdb(i_comp)%t_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%nCrit)
-      nist_comp%d_crit = nistdb(i_comp)%d_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%nCrit)
-      nist_comp%eta_crit = nistdb(i_comp)%eta_eos(1:nist_comp%nCrit)
-      nist_comp%beta_crit = nistdb(i_comp)%beta_eos(1:nist_comp%nCrit)
-      nist_comp%gamma_crit = nistdb(i_comp)%gamma_eos(1:nist_comp%nCrit)
-      nist_comp%epsilon_crit = nistdb(i_comp)%epsilon_eos(1:nist_comp%nCrit)
+      nist_comp%n_crit = nistdb(i_comp)%n_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%t_crit = nistdb(i_comp)%t_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%d_crit = nistdb(i_comp)%d_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%eta_crit = nistdb(i_comp)%eta_eos(1:nist_comp%n_gauss)
+      nist_comp%beta_crit = nistdb(i_comp)%beta_eos(1:nist_comp%n_gauss)
+      nist_comp%gamma_crit = nistdb(i_comp)%gamma_eos(1:nist_comp%n_gauss)
+      nist_comp%epsilon_crit = nistdb(i_comp)%epsilon_eos(1:nist_comp%n_gauss)
       !
-      nist_comp%n_cd = nistdb(i_comp)%n_cd(1:nist_comp%nCritDelta)
-      nist_comp%a_cd = nistdb(i_comp)%a_cd(1:nist_comp%nCritDelta)
-      nist_comp%b_cd = nistdb(i_comp)%b_cd(1:nist_comp%nCritDelta)
-      nist_comp%beta_cd = nistdb(i_comp)%beta_cd(1:nist_comp%nCritDelta)
-      nist_comp%big_a_cd = nistdb(i_comp)%big_a_cd(1:nist_comp%nCritDelta)
-      nist_comp%big_b_cd = nistdb(i_comp)%big_b_cd(1:nist_comp%nCritDelta)
-      nist_comp%big_c_cd = nistdb(i_comp)%big_c_cd(1:nist_comp%nCritDelta)
-      nist_comp%big_d_cd = nistdb(i_comp)%big_d_cd(1:nist_comp%nCritDelta)
+      nist_comp%n_cd = nistdb(i_comp)%n_cd(1:nist_comp%n_gao)
+      nist_comp%a_cd = nistdb(i_comp)%a_cd(1:nist_comp%n_gao)
+      nist_comp%b_cd = nistdb(i_comp)%b_cd(1:nist_comp%n_gao)
+      nist_comp%beta_cd = nistdb(i_comp)%beta_cd(1:nist_comp%n_gao)
+      nist_comp%big_a_cd = nistdb(i_comp)%big_a_cd(1:nist_comp%n_gao)
+      nist_comp%big_b_cd = nistdb(i_comp)%big_b_cd(1:nist_comp%n_gao)
+      nist_comp%big_c_cd = nistdb(i_comp)%big_c_cd(1:nist_comp%n_gao)
+      nist_comp%big_d_cd = nistdb(i_comp)%big_d_cd(1:nist_comp%n_gao)
       !
       ! Calculate critcal pressure
       !nist_comp%rc
@@ -180,22 +180,22 @@ contains
     if (allocated(this%c_id)) deallocate(this%c_id)
     if (allocated(this%c_id)) deallocate(this%t_id)
     !
-    allocate(this%n_crit(1:this%nCrit))
-    allocate(this%t_crit(1:this%nCrit))
-    allocate(this%d_crit(1:this%nCrit))
-    allocate(this%eta_crit(1:this%nCrit))
-    allocate(this%beta_crit(1:this%nCrit))
-    allocate(this%gamma_crit(1:this%nCrit))
-    allocate(this%epsilon_crit(1:this%nCrit))
+    allocate(this%n_crit(1:this%n_gauss))
+    allocate(this%t_crit(1:this%n_gauss))
+    allocate(this%d_crit(1:this%n_gauss))
+    allocate(this%eta_crit(1:this%n_gauss))
+    allocate(this%beta_crit(1:this%n_gauss))
+    allocate(this%gamma_crit(1:this%n_gauss))
+    allocate(this%epsilon_crit(1:this%n_gauss))
     !
-    allocate(this%n_cd(1:this%nCritDelta))
-    allocate(this%a_cd(1:this%nCritDelta))
-    allocate(this%b_cd(1:this%nCritDelta))
-    allocate(this%beta_cd(1:this%nCritDelta))
-    allocate(this%big_a_cd(1:this%nCritDelta))
-    allocate(this%big_b_cd(1:this%nCritDelta))
-    allocate(this%big_c_cd(1:this%nCritDelta))
-    allocate(this%big_d_cd(1:this%nCritDelta))
+    allocate(this%n_cd(1:this%n_gao))
+    allocate(this%a_cd(1:this%n_gao))
+    allocate(this%b_cd(1:this%n_gao))
+    allocate(this%beta_cd(1:this%n_gao))
+    allocate(this%big_a_cd(1:this%n_gao))
+    allocate(this%big_b_cd(1:this%n_gao))
+    allocate(this%big_c_cd(1:this%n_gao))
+    allocate(this%big_d_cd(1:this%n_gao))
     !
     allocate(this%c_id(this%n_id))
     allocate(this%t_id(this%n_id))
@@ -210,7 +210,7 @@ contains
     real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
     !
     alp0 = 0
-    stop
+    call stoperror("alpha0Derivs not implemented")
   end subroutine alpha0Derivs_NIST
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
@@ -241,7 +241,7 @@ contains
     !
     prefactors_pol = 0
     prefactors_exp = 0
-    stop
+    call stoperror("alphaResPrefactors not implemented")
   end subroutine alphaResPrefactors_NIST
 
   subroutine alphaResDerivs_NIST (this, delta, tau, alpr)
@@ -250,7 +250,7 @@ contains
     real, intent(out) :: alpr(0:2,0:2) !< alpr(i,j) = (d_delta)^i(d_tau)^j alphaRes
     !
     alpr = 0
-    stop
+    call stoperror("alphaResDerivs not implemented")
   end subroutine alphaResDerivs_NIST
 
   function alphaRes_hd_NIST(this, delta, tau) result(alpr)
@@ -271,14 +271,14 @@ contains
       alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
     enddo
 
-    do i=1,this%nCrit
+    do i=1,this%n_gauss
       j = i + this%upExp
       alpr = alpr + this%N_exp(j) * tau**this%t_exp(j) * delta**this%d_exp(j) * &
            exp(-this%eta_crit(i)*(delta-this%epsilon_crit(i))**2 - &
            this%beta_crit(i)*(delta-this%gamma_crit(i))**2)
     enddo
 
-    do i=1,this%nCritDelta
+    do i=1,this%n_gao
       del = ((1.0_dp - tau) + this%big_a_cd(i)*((delta-1.0_dp)**2)**(1.0_dp/(2.0_dp*this%beta_cd(i))))**2 + &
            this%big_b_cd(i)*((delta-1.0_dp)**2)**this%a_cd(i)
       alpr = alpr + this%n_cd(i) * del**this%b_cd(i) * delta * &
@@ -303,8 +303,8 @@ contains
       this%c_id = other%c_id
       this%t_id = other%t_id
       !
-      this%nCrit = other%nCrit
-      this%nCritDelta = other%nCritDelta
+      this%n_gauss = other%n_gauss
+      this%n_gao = other%n_gao
       !
       this%n_crit = other%n_crit
       this%t_crit = other%t_crit

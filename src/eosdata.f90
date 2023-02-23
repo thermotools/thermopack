@@ -42,6 +42,7 @@ module eosdata
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
   integer, parameter :: meosGERG_mix = 10   !< Multicomponent GERG
+  integer, parameter :: meos_helm_mix = 11  !< Multicomponent multiparameter EoS with Helmholtz mixing
 
   type eos_label_mapping
     integer :: eos_idx
@@ -51,7 +52,7 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 29
+  integer, parameter :: max_n_eos = 30
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -282,6 +283,14 @@ module eosdata
        eos_subidx = meosGERG_mix, &
        short_label = "GERG2008_MIX", &
        label = "GERG2008 mixture model", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meos_helm_mix, &
+       eos_subidx = meos_helm_mix, &
+       short_label = "MEOS", &
+       label = "MEOS mixture model", &
        need_alternative_eos = .true. &
        ) &
        /)

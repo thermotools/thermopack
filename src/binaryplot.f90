@@ -4915,7 +4915,7 @@ contains
     use nonlinear_solvers, only: nonlinear_solver, limit_dx,&
          premterm_at_dx_zero, setXv, nonlinear_solve
     use eosTV, only: pressure
-    use thermo_utils, only: get_b_linear_mix
+    use cubic_eos, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]

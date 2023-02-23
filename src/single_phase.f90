@@ -113,7 +113,7 @@ contains
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_enthalpy
     use single_component, only: enthalpy_single
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix, single_eos
+    use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -153,7 +153,7 @@ contains
       call enthalpy_single(nce,comp,p_eos,T,P,ne,phase,residual,&
            enthalpy,dhdt,dhdp,dhdz)
       return ! Already includes ideal contibution
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_enthalpy(nc, p_eos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
     class default
@@ -208,7 +208,7 @@ contains
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_entropy
     use single_component, only: entropy_single
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix, single_eos
+    use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -247,7 +247,7 @@ contains
     type is ( single_eos )
       call entropy_single(nce,comp,p_eos,T,P,ne,phase,residual,&
            entropy,dsdt,dsdp,dsdz)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_entropy(nc, p_eos, T, p, ne, phase, &
            entropy, dsdt, dsdp, dsdz)
     class default
@@ -451,7 +451,7 @@ contains
     use compdata, only: gendata_pointer
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_fugacity
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix
+    use eos_parameters, only: meos_idealmix
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -469,7 +469,7 @@ contains
     select type ( p_eos => cbeos )
     type is ( lk_eos ) ! Lee-Kesler equations of state
       call lkCalcFug(nc,comp,p_eos,T,p,z,phase,lnfug,dlnfugdt,dlnfugdp,dlnfugdn,v)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_fugacity(nc, p_eos, T, p, Z, phase, &
            lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
     class default
@@ -506,7 +506,7 @@ contains
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param, Rgas
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_Gres
-    use eos_parameters, only: meos_mix
+    use eos_parameters, only: meos_idealmix
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -546,7 +546,7 @@ contains
       if (present(dGdn)) then
         call stoperror("TP_CalcGibbs: Mole number differentials not available")
       endif
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_Gres(nc, p_eos, T, p, n, phase, &
            g,dgdt,dgdp)
       if (present(dGdn)) then
@@ -785,7 +785,7 @@ contains
     use single_component, only: Fres_single
     use thermopack_var, only: base_eos_param
     !use pets, only: PETS_eos
-    use eos_parameters, only: single_eos, meos_mix
+    use eos_parameters, only: single_eos, meos_idealmix
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
@@ -856,7 +856,7 @@ contains
         type is ( single_eos )
           call Fres_single(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-        type is ( meos_mix )
+        type is ( meos_idealmix )
           call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
@@ -1104,7 +1104,7 @@ contains
     use single_component, only: Zfac_single
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_zfac
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, base_eos_param
-    use eos_parameters, only: single_eos, meos_mix
+    use eos_parameters, only: single_eos, meos_idealmix
     !use pets, only: PETS_eos
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
@@ -1153,7 +1153,7 @@ contains
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
       call lkCalcZfac(nce,comp,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_zfac(nc, p_eos, T, p, ne, phase, &
            Zfac, dZdt, dZdp, dZdz)
     class default ! Saft eos

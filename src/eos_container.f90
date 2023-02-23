@@ -11,6 +11,7 @@ module eos_container
   use pc_saft_nonassoc, only: PCSAFT_eos, sPCSAFT_eos
   use extcsp, only: extcsp_eos
   use gergmix, only: constructor_GERGMIX
+  use meosmix, only: constructor_meos
 
 contains
 
@@ -58,7 +59,6 @@ contains
       deallocate(p_active_model%cubic_eos_alternative, stat=istat)
       if (istat /= 0) call stoperror("Not able to deallocate p_active_model%cubic_eos_alternative")
     endif
-
     ! Set container data
     p_active_model%need_alternative_eos = eos_label_db(idx_db)%need_alternative_eos
     p_active_model%label = eos_label_db(idx_db)%label
@@ -144,10 +144,13 @@ contains
            source=pets_eos_constructor(nc, eosstr), stat=istat)
     case(meosNist_mix)
       allocate(p_eos, &
-           source=meos_mix_constructor(nc, eosstr), stat=istat)
+           source=meos_idealmix_constructor(nc, eosstr), stat=istat)
     case(meosGERG_mix)
       allocate(p_eos, &
            source=constructor_GERGMIX(nc), stat=istat)
+    case(meos_helm_mix)
+      allocate(p_eos, &
+           source=constructor_meos(nc), stat=istat)
     case default
       istat = 1
     end select

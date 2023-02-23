@@ -7,7 +7,7 @@
 
 module multiparameter_idealmix
   use thermopack_constants
-  use eos_parameters, only: meos_mix
+  use eos_parameters, only: meos_idealmix
 
   public :: calc_multiparameter_idealmix_zfac
   public :: calc_multiparameter_idealmix_entropy
@@ -43,7 +43,7 @@ contains
        Zfac, dZdt, dZdp, dZdz)
 
     integer, intent(in) :: nc
-    class(meos_mix), intent(in) :: meos
+    class(meos_idealmix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -116,7 +116,7 @@ contains
        h, dhdt, dhdp, dhdz)
 
     integer, intent(in) :: nc
-    class(meos_mix), intent(in) :: meos
+    class(meos_idealmix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -194,7 +194,7 @@ contains
        s, dsdt, dsdp, dsdz)
 
     integer, intent(in) :: nc
-    class(meos_mix), intent(in) :: meos
+    class(meos_idealmix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -271,7 +271,7 @@ contains
        fug,dlnfdt,dlnfdp,dlnfdz)
 
     integer, intent(in) :: nc
-    class(meos_mix), intent(in) :: meos
+    class(meos_idealmix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T
@@ -339,7 +339,7 @@ contains
        gr, dgrdt, dgrdp)
 
     integer, intent(in) :: nc
-    class(meos_mix), intent(in) :: meos
+    class(meos_idealmix), intent(in) :: meos
 
     ! input
     real, intent(in) :: T

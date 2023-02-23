@@ -1185,9 +1185,11 @@ contains
       eos_local = trim(eos)//"_MIX"
     endif
     !
+    print *,"0"
     complist => act_mod_ptr%complist
     call allocate_eos(ncomp, eos_local)
 
+    print *,"1"
     ! Number of phases
     act_mod_ptr%nph = 3
 

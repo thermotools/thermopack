@@ -7,12 +7,12 @@ module thermo_utils
        WATER, TREND
   use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
        get_active_thermo_model, get_active_alt_eos, Rgas
+  use cubic_eos, only: get_b_linear_mix
 
   implicit none
   public :: guessPhase, isWaterComponent, waterComponentFraction
   public :: guessPhaseTV, get_n_solids
   public :: isSingleComp, maxComp, isTwoComp
-  public :: get_b_linear_mix
   public :: phase_is_fake
   public :: wilsonK, wilsonKdiff, wilsonKi, calcLnPhiOffset
 
@@ -446,50 +446,6 @@ module thermo_utils
       XX(2,:) = X
     endif
   end subroutine phaseToPhaseVec
-
-  !-----------------------------------------------------------------------------
-  !> Get linear combination of b_i
-  !>
-  !> \author MH, 2020-07
-  !-----------------------------------------------------------------------------
-  function get_b_linear_mix(Z) result(b_mix)
-    use cubic_eos, only: cb_eos
-    use eosdata, only: eosCPA
-    implicit none
-    ! Input:
-    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
-    ! Output:
-    real                            :: b_mix          !< m3/mol
-    ! Locals
-    integer :: i
-    type(thermo_model), pointer :: act_mod_ptr
-    class(base_eos_param), pointer :: act_eos_ptr
-
-    act_mod_ptr => get_active_thermo_model()
-    b_mix = 0
-    if (act_mod_ptr%need_alternative_eos .and. act_mod_ptr%eosidx /= eosCPA) then
-      act_eos_ptr => get_active_alt_eos()
-      select type (p_eos => act_eos_ptr)
-      class is (cb_eos)
-        do i=1,nc
-          b_mix = b_mix + z(i)*p_eos%single(i)%b
-        enddo
-      class default
-        call stoperror("get_b_linear_mix (alt): Should not be here")
-      end select
-    else
-      act_eos_ptr => get_active_eos()
-      select type (p_eos => act_eos_ptr)
-      class is (cb_eos)
-        do i=1,nc
-          b_mix = b_mix + z(i)*p_eos%single(i)%b
-        enddo
-      class default
-        call stoperror("get_b_linear_mix: Should not be here")
-      end select
-    endif
-    b_mix = b_mix*1.0e-3 ! L/mol -> m3/mol
-  end function get_b_linear_mix
 
   !-----------------------------------------------------------------------------
   !> Is the solver returning FAKEPH solution

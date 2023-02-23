@@ -102,6 +102,7 @@ OBJE = \
        $(ODIR)/gergmixdb.o \
        $(ODIR)/satdensdatadb.o \
        $(ODIR)/nistdatadb.o \
+       $(ODIR)/meosmixdb.o \
        $(ODIR)/saturated_densities.o \
        $(ODIR)/multiparameter_base.o \
        $(ODIR)/multiparameter_c3.o \
@@ -131,6 +132,7 @@ OBJE = \
        $(ODIR)/ideal.o \
        $(ODIR)/cpa_parameters.o \
        $(ODIR)/gergmix.o \
+       $(ODIR)/meosmix.o \
        $(ODIR)/cbselect.o \
        $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \
@@ -497,8 +499,16 @@ $(ODIR)/gergmix.o: $(SRC)/gergmix.f90 \
 	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
 	$(SRC)/gergdatadb.f90 $(SRC)/gergmixdb.f90 $(SRC)/gerg.f90
 	@$(call make_object, $(SRC)/gergmix.f90)
+$(ODIR)/meosmix.o: $(SRC)/meosmix.f90 \
+	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
+	$(SRC)/nistdatadb.f90 $(SRC)/meosmixdb.f90 $(SRC)/nist.f90 \
+	$(SRC)/gergmix.f90
+	@$(call make_object, $(SRC)/meosmix.f90)
 $(ODIR)/gergmixdb.o: $(SRC)/gergmixdb.f90
 	@$(call make_object, $(SRC)/gergmixdb.f90)
+$(ODIR)/meosmixdb.o: $(SRC)/meosmixdb.f90
+	@$(call make_object, $(SRC)/meosmixdb.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \

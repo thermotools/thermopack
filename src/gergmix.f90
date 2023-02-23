@@ -30,7 +30,7 @@ module gergmix
 
   contains
 
-    procedure, private :: allocate_param
+    procedure, public :: allocate_param
     procedure, public :: alpha0_hd
     procedure, public :: alphaRes_hd
     procedure, public :: Zfac => Zfac_gergmix
@@ -39,11 +39,11 @@ module gergmix
     procedure, pass(This), public :: assign_meos => assign_meos_gergmix
 
     ! Privates
-    procedure, private ::  calc_delta
-    procedure, private ::  calc_tau
-    procedure, private ::  calc_del_alpha_r
-    procedure, private ::  pressure
-    procedure, private ::  densitySolver
+    procedure, public ::  calc_delta
+    procedure, public ::  calc_tau
+    procedure, public ::  calc_del_alpha_r
+    procedure, public ::  pressure
+    procedure, public ::  densitySolver
 
   end type meos_gergmix
 
@@ -190,8 +190,7 @@ contains
     use thermopack_constants
     use numconstants, only: machine_prec
     use cubic, only: cbCalcZfac
-    use cubic_eos, only: cb_eos
-    use thermo_utils, only: get_b_linear_mix
+    use cubic_eos, only: cb_eos, get_b_linear_mix
     class(meos_gergmix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
     integer, intent(in) :: phase_spec !< Phase flag.
@@ -208,7 +207,6 @@ contains
     ! Relative accuracy in density solver.
     real, parameter :: releps_p = machine_prec*1e8
     real, parameter :: releps_rho = machine_prec*1e6
-    class(base_eos_param), pointer :: p_alt_eos
 
     pMin = 0 ! Minimum allowable pressure during iteration.
     dpdrhoMin = 0 ! Minimum allowable pressure derivative during iteration.
@@ -274,7 +272,7 @@ contains
     !> This routine computes initial rho and dpdrho, as well as setting parameters
     !> for the stability test (pMin, dpdrhoMin, curvatureSign).
     subroutine initializeSearch ()
-      real :: z, b
+      real :: b
       converged = .false.
 
       if( currentPhase == VAPPH) then

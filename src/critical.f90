@@ -12,6 +12,7 @@ module critical
        tpPmin, tpPmax, tpTmin, tpTmax
   use eos, only : thermo, pseudo_safe
   use eosTV, only : thermo_tv, pressure
+  use cubic_eos, only: get_b_linear_mix
   implicit none
   private
   save
@@ -1645,7 +1646,7 @@ contains
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
-    use thermo_utils, only: isSingleComp, get_b_linear_mix
+    use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
@@ -1903,7 +1904,6 @@ contains
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -2242,7 +2242,6 @@ contains
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Zc !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
