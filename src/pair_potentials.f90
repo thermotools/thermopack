@@ -4,7 +4,7 @@ module pair_potentials
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
   use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH
 
-  !> Base class for multiparameter equations of state
+  !> Base class for pair potential
   type, abstract :: pair_potential
    contains
      procedure(calc_pot_intf), public, deferred  :: value
@@ -104,8 +104,8 @@ module pair_potentials
        ref="DEFAULT"), &
                                 !
        mie_data(eosidx = eosMie_UV_BH, &
-       compName="Mie24", &
-       lamr=24, &
+       compName="C1", &
+       lamr=12, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT")/)
@@ -157,8 +157,8 @@ contains
     this%epsdivk = epsdivk
 
     this%CMie = lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama))
-    this%rmin = sigma*(lamr/lama)**(1.0/(lamr-lama))
-    this%rmin_adim = this%rmin/sigma
+    this%rmin_adim = (lamr/lama)**(1.0/(lamr-lama))
+    this%rmin = sigma*this%rmin_adim
     this%alpha = this%CMie*(1.0/(lama - 3.0) - 1.0/(lamr - 3.0))
   end subroutine mie_potential_hd_init
 
@@ -196,7 +196,7 @@ contains
   end function B2_integrand
 
   type(hyperdual) function calc_B2_by_quadrature(pot, beta) result(B2)
-    !< Second virial coefficient (m^3)
+    !> Second virial coefficient (m^3)
     use quadratures
     class(mie_potential_hd), intent(in) :: pot !< Pair potential
     type(hyperdual), intent(in)       :: beta  !< 1/kT (J)
@@ -214,7 +214,7 @@ contains
 
     ! Calculate lower and upper integration limits
     rmin = 0.3*pot%sigma%f0
-    rmax = 1*pot%rmin%f0
+    rmax = pot%rmin%f0
     rmid   = (rmax + rmin)/2
     xscale = (rmax - rmin)/2
 
@@ -229,7 +229,7 @@ contains
     end do
 
     ! Numerical integration between rmin and rmax
-    rmin = 1*pot%rmin%f0
+    rmin = pot%rmin%f0
     rmax = 5*pot%rmin%f0
     rmid   = (rmax + rmin)/2
     xscale = (rmax - rmin)/2

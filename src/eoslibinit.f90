@@ -1396,9 +1396,9 @@ contains
     endif
     act_mod_ptr => get_active_thermo_model()
 
-    ! Set component list
-    comps_upper=trim(uppercase(comps))
-    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    ! Component list.
+    call initCompList(trim(uppercase(comps)),ncomp,act_mod_ptr%complist)
+    allocate(complist, source=act_mod_ptr%complist)
 
     call allocate_eos(ncomp, trim(model))
 
@@ -1451,5 +1451,5 @@ contains
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_uv
 
-  
+
 end module eoslibinit
