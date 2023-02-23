@@ -3,13 +3,13 @@
 import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
-from pyctp.ljs_wca import ljs_wca, ljs_uv
-from pyctp.ljs_bh import ljs_bh
+from thermopack.ljs_wca import ljs_wca, ljs_uv
+from thermopack.ljs_bh import ljs_bh
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
-from pyctp_example_utils import calc_reduced_T, calc_reduced_rho, \
+from thermopack_example_utils import calc_reduced_T, calc_reduced_rho, \
     calc_reduced_P
 
 def plot_phase_envelope(LJS, labels, title):

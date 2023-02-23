@@ -13,7 +13,7 @@ from . import thermo
 
 c_len_type = thermo.c_len_type
 
-class pets(thermo.thermopack):
+class pets(thermo.thermo):
     """
     Interface to PETS
     """
