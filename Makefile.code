@@ -101,7 +101,7 @@ OBJE = \
        $(ODIR)/gergdatadb.o \
        $(ODIR)/gergmixdb.o \
        $(ODIR)/satdensdatadb.o \
-       $(ODIR)/nistdatadb.o \
+       $(ODIR)/meosdatadb.o \
        $(ODIR)/meosmixdb.o \
        $(ODIR)/saturated_densities.o \
        $(ODIR)/multiparameter_base.o \
@@ -112,7 +112,7 @@ OBJE = \
        $(ODIR)/multiparameter_r134a.o \
        $(ODIR)/multiparameter_lj.o \
        $(ODIR)/gerg.o \
-       $(ODIR)/nist.o \
+       $(ODIR)/pure_fluid_meos.o \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
@@ -492,8 +492,8 @@ $(ODIR)/gerg.o: $(SRC)/gerg.f90 \
 	@$(call make_object, $(SRC)/gerg.f90)
 $(ODIR)/gergdatadb.o: $(SRC)/gergdatadb.f90
 	@$(call make_object, $(SRC)/gergdatadb.f90)
-$(ODIR)/nistdatadb.o: $(SRC)/nistdatadb.f90
-	@$(call make_object, $(SRC)/nistdatadb.f90)
+$(ODIR)/meosdatadb.o: $(SRC)/meosdatadb.f90
+	@$(call make_object, $(SRC)/meosdatadb.f90)
 $(ODIR)/gergmix.o: $(SRC)/gergmix.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
@@ -502,7 +502,7 @@ $(ODIR)/gergmix.o: $(SRC)/gergmix.f90 \
 $(ODIR)/meosmix.o: $(SRC)/meosmix.f90 \
 	$(SRC)/multiparameter_base.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
-	$(SRC)/nistdatadb.f90 $(SRC)/meosmixdb.f90 $(SRC)/nist.f90 \
+	$(SRC)/meosdatadb.f90 $(SRC)/meosmixdb.f90 $(SRC)/pure_fluid_meos.f90 \
 	$(SRC)/gergmix.f90
 	@$(call make_object, $(SRC)/meosmix.f90)
 $(ODIR)/gergmixdb.o: $(SRC)/gergmixdb.f90
@@ -902,8 +902,8 @@ $(ODIR)/wong_sandler.o: $(SRC)/wong_sandler.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/excess_gibbs.f90 $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/wong_sandler.f90)
-$(ODIR)/nist.o: $(SRC)/nist.f90 \
+$(ODIR)/pure_fluid_meos.o: $(SRC)/pure_fluid_meos.f90 \
 	$(SRC)/gerg.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saturated_densities.f90 $(SRC)/stringmod.f90 \
-	$(SRC)/nistdatadb.f90
-	@$(call make_object, $(SRC)/nist.f90)
+	$(SRC)/meosdatadb.f90
+	@$(call make_object, $(SRC)/pure_fluid_meos.f90)

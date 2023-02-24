@@ -1,17 +1,17 @@
-!> Automatically generated file nistdatadb.f90
-!! Time stamp: 2023-02-24T20:18:29.023721
+!> Automatically generated file meosdatadb.f90
+!! Time stamp: 2023-02-24T20:35:40.574980
 
-module nistdatadb
+module meosdatadb
   use thermopack_constants, only: uid_len, comp_name_len
   implicit none
   public
 
-  integer, parameter :: nist_max_n = 54
-  integer, parameter :: nist_max_n_gauss = 14
-  integer, parameter :: nist_max_n_nona = 3
-  integer, parameter :: nist_id_max_n = 13
+  integer, parameter :: meos_max_n = 54
+  integer, parameter :: meos_max_n_gauss = 14
+  integer, parameter :: meos_max_n_nona = 3
+  integer, parameter :: meos_id_max_n = 13
 
-  type :: nistdata
+  type :: meosdata
     character(len=uid_len) :: ident !< The component ID
     character(len=comp_name_len) :: name !< The component name
     real :: mw !< Mole weight (g/mol)
@@ -30,30 +30,30 @@ module nistdatadb
     integer :: n_exp_eos !<
     integer :: n_gauss_eos !<
     integer :: n_nona_eos !<
-    real :: n_eos(nist_max_n) !<
-    real :: t_eos(nist_max_n) !<
-    integer :: d_eos(nist_max_n) !<
-    integer :: l_eos(nist_max_n) !<
-    real :: eta_eos(nist_max_n_gauss) !<
-    real :: beta_eos(nist_max_n_gauss) !<
-    real :: gamma_eos(nist_max_n_gauss) !<
-    real :: epsilon_eos(nist_max_n_gauss) !<
-    real :: n_na(nist_max_n_nona) !<
-    real :: a_na(nist_max_n_nona) !<
-    real :: b_na(nist_max_n_nona) !<
-    real :: beta_na(nist_max_n_nona) !<
-    real :: big_a_na(nist_max_n_nona) !<
-    real :: big_b_na(nist_max_n_nona) !<
-    real :: big_c_na(nist_max_n_nona) !<
-    real :: big_d_na(nist_max_n_nona) !<
+    real :: n_eos(meos_max_n) !<
+    real :: t_eos(meos_max_n) !<
+    integer :: d_eos(meos_max_n) !<
+    integer :: l_eos(meos_max_n) !<
+    real :: eta_eos(meos_max_n_gauss) !<
+    real :: beta_eos(meos_max_n_gauss) !<
+    real :: gamma_eos(meos_max_n_gauss) !<
+    real :: epsilon_eos(meos_max_n_gauss) !<
+    real :: n_na(meos_max_n_nona) !<
+    real :: a_na(meos_max_n_nona) !<
+    real :: b_na(meos_max_n_nona) !<
+    real :: beta_na(meos_max_n_nona) !<
+    real :: big_a_na(meos_max_n_nona) !<
+    real :: big_b_na(meos_max_n_nona) !<
+    real :: big_c_na(meos_max_n_nona) !<
+    real :: big_d_na(meos_max_n_nona) !<
     integer :: n1_id !<
     integer :: n_id !<
-    real :: c_id(nist_id_max_n) !<
-    real :: t_id(nist_id_max_n) !<
-  end type nistdata
+    real :: c_id(meos_id_max_n) !<
+    real :: t_id(meos_id_max_n) !<
+  end type meosdata
 
-  type (nistdata), parameter :: nist_1 = &
-      nistdata(ident = "PXYL", &
+  type (meosdata), parameter :: meos_1 = &
+      meosdata(ident = "PXYL", &
       name = "pxylene", &
       mw = 106.165, &
       tc = 616.168, &
@@ -194,8 +194,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_2 = &
-      nistdata(ident = "C2", &
+  type (meosdata), parameter :: meos_2 = &
+      meosdata(ident = "C2", &
       name = "ethane", &
       mw = 30.06904, &
       tc = 305.322, &
@@ -336,8 +336,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_3 = &
-      nistdata(ident = "CO", &
+  type (meosdata), parameter :: meos_3 = &
+      meosdata(ident = "CO", &
       name = "co", &
       mw = 28.0101, &
       tc = 132.86, &
@@ -478,8 +478,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_4 = &
-      nistdata(ident = "O-H2", &
+  type (meosdata), parameter :: meos_4 = &
+      meosdata(ident = "O-H2", &
       name = "orthohyd", &
       mw = 2.01594, &
       tc = 33.22, &
@@ -620,8 +620,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_5 = &
-      nistdata(ident = "IC5", &
+  type (meosdata), parameter :: meos_5 = &
+      meosdata(ident = "IC5", &
       name = "ipentane", &
       mw = 72.14878, &
       tc = 460.35, &
@@ -762,8 +762,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_6 = &
-      nistdata(ident = "NC10", &
+  type (meosdata), parameter :: meos_6 = &
+      meosdata(ident = "NC10", &
       name = "decane", &
       mw = 142.28168, &
       tc = 617.7, &
@@ -904,8 +904,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_7 = &
-      nistdata(ident = "ETOH", &
+  type (meosdata), parameter :: meos_7 = &
+      meosdata(ident = "ETOH", &
       name = "ethanol", &
       mw = 46.06844, &
       tc = 514.71, &
@@ -1046,8 +1046,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_8 = &
-      nistdata(ident = "KR", &
+  type (meosdata), parameter :: meos_8 = &
+      meosdata(ident = "KR", &
       name = "krypton", &
       mw = 83.798, &
       tc = 209.48, &
@@ -1188,8 +1188,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_9 = &
-      nistdata(ident = "IC4", &
+  type (meosdata), parameter :: meos_9 = &
+      meosdata(ident = "IC4", &
       name = "isobutan", &
       mw = 58.1222, &
       tc = 407.81, &
@@ -1330,8 +1330,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_10 = &
-      nistdata(ident = "C1", &
+  type (meosdata), parameter :: meos_10 = &
+      meosdata(ident = "C1", &
       name = "methane", &
       mw = 16.0428, &
       tc = 190.564, &
@@ -1472,8 +1472,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_11 = &
-      nistdata(ident = "NC6", &
+  type (meosdata), parameter :: meos_11 = &
+      meosdata(ident = "NC6", &
       name = "hexane", &
       mw = 86.17536, &
       tc = 507.82, &
@@ -1614,8 +1614,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_12 = &
-      nistdata(ident = "N2", &
+  type (meosdata), parameter :: meos_12 = &
+      meosdata(ident = "N2", &
       name = "nitrogen", &
       mw = 28.01348, &
       tc = 126.192, &
@@ -1756,8 +1756,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_13 = &
-      nistdata(ident = "NC12", &
+  type (meosdata), parameter :: meos_13 = &
+      meosdata(ident = "NC12", &
       name = "c12", &
       mw = 170.33484, &
       tc = 658.1, &
@@ -1898,8 +1898,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_14 = &
-      nistdata(ident = "D2", &
+  type (meosdata), parameter :: meos_14 = &
+      meosdata(ident = "D2", &
       name = "d2", &
       mw = 4.0282, &
       tc = 38.34, &
@@ -2040,8 +2040,8 @@ module nistdatadb
       1187.6 &
       /) )
 
-  type (nistdata), parameter :: nist_15 = &
-      nistdata(ident = "SO2", &
+  type (meosdata), parameter :: meos_15 = &
+      meosdata(ident = "SO2", &
       name = "so2", &
       mw = 64.0638, &
       tc = 430.64, &
@@ -2182,8 +2182,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_16 = &
-      nistdata(ident = "NC8", &
+  type (meosdata), parameter :: meos_16 = &
+      meosdata(ident = "NC8", &
       name = "octane", &
       mw = 114.229, &
       tc = 568.74, &
@@ -2324,8 +2324,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_17 = &
-      nistdata(ident = "AR", &
+  type (meosdata), parameter :: meos_17 = &
+      meosdata(ident = "AR", &
       name = "argon", &
       mw = 39.948, &
       tc = 150.687, &
@@ -2466,8 +2466,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_18 = &
-      nistdata(ident = "NC22", &
+  type (meosdata), parameter :: meos_18 = &
+      meosdata(ident = "NC22", &
       name = "c22", &
       mw = 310.601, &
       tc = 792.2, &
@@ -2608,8 +2608,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_19 = &
-      nistdata(ident = "ALLENE", &
+  type (meosdata), parameter :: meos_19 = &
+      meosdata(ident = "ALLENE", &
       name = "propadiene", &
       mw = 40.06386, &
       tc = 398.0, &
@@ -2750,8 +2750,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_20 = &
-      nistdata(ident = "P-H2", &
+  type (meosdata), parameter :: meos_20 = &
+      meosdata(ident = "P-H2", &
       name = "parahyd", &
       mw = 2.01588, &
       tc = 32.938, &
@@ -2892,8 +2892,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_21 = &
-      nistdata(ident = "H2S", &
+  type (meosdata), parameter :: meos_21 = &
+      meosdata(ident = "H2S", &
       name = "h2s", &
       mw = 34.08088, &
       tc = 373.1, &
@@ -3034,8 +3034,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_22 = &
-      nistdata(ident = "NE", &
+  type (meosdata), parameter :: meos_22 = &
+      meosdata(ident = "NE", &
       name = "neon", &
       mw = 20.179, &
       tc = 44.4, &
@@ -3176,8 +3176,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_23 = &
-      nistdata(ident = "CYCLOHEX", &
+  type (meosdata), parameter :: meos_23 = &
+      meosdata(ident = "CYCLOHEX", &
       name = "cyclohex", &
       mw = 84.15948, &
       tc = 553.6, &
@@ -3318,8 +3318,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_24 = &
-      nistdata(ident = "O2", &
+  type (meosdata), parameter :: meos_24 = &
+      meosdata(ident = "O2", &
       name = "oxygen", &
       mw = 31.9988, &
       tc = 154.581, &
@@ -3460,8 +3460,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_25 = &
-      nistdata(ident = "H2", &
+  type (meosdata), parameter :: meos_25 = &
+      meosdata(ident = "H2", &
       name = "hydrogen", &
       mw = 2.01588, &
       tc = 33.145, &
@@ -3602,8 +3602,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_26 = &
-      nistdata(ident = "NC16", &
+  type (meosdata), parameter :: meos_26 = &
+      meosdata(ident = "NC16", &
       name = "c16", &
       mw = 226.441, &
       tc = 722.1, &
@@ -3744,8 +3744,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_27 = &
-      nistdata(ident = "F6S", &
+  type (meosdata), parameter :: meos_27 = &
+      meosdata(ident = "F6S", &
       name = "sf6", &
       mw = 146.0554192, &
       tc = 318.7232, &
@@ -3886,8 +3886,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_28 = &
-      nistdata(ident = "HE", &
+  type (meosdata), parameter :: meos_28 = &
+      meosdata(ident = "HE", &
       name = "helium", &
       mw = 4.002602, &
       tc = 5.1953, &
@@ -4028,8 +4028,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_29 = &
-      nistdata(ident = "H2O", &
+  type (meosdata), parameter :: meos_29 = &
+      meosdata(ident = "H2O", &
       name = "water", &
       mw = 18.015268, &
       tc = 647.096, &
@@ -4170,8 +4170,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_30 = &
-      nistdata(ident = "13BD", &
+  type (meosdata), parameter :: meos_30 = &
+      meosdata(ident = "13BD", &
       name = "13butadiene", &
       mw = 54.09044, &
       tc = 425.135, &
@@ -4312,8 +4312,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_31 = &
-      nistdata(ident = "ACETONE", &
+  type (meosdata), parameter :: meos_31 = &
+      meosdata(ident = "ACETONE", &
       name = "acetone", &
       mw = 58.07914, &
       tc = 508.1, &
@@ -4454,8 +4454,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_32 = &
-      nistdata(ident = "NH3", &
+  type (meosdata), parameter :: meos_32 = &
+      meosdata(ident = "NH3", &
       name = "ammonia", &
       mw = 17.03052, &
       tc = 405.56, &
@@ -4596,8 +4596,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_33 = &
-      nistdata(ident = "BENZENE", &
+  type (meosdata), parameter :: meos_33 = &
+      meosdata(ident = "BENZENE", &
       name = "benzene", &
       mw = 78.11184, &
       tc = 562.02, &
@@ -4738,8 +4738,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_34 = &
-      nistdata(ident = "N2O", &
+  type (meosdata), parameter :: meos_34 = &
+      meosdata(ident = "N2O", &
       name = "n2o", &
       mw = 44.0128, &
       tc = 309.52, &
@@ -4880,8 +4880,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_35 = &
-      nistdata(ident = "CO2", &
+  type (meosdata), parameter :: meos_35 = &
+      meosdata(ident = "CO2", &
       name = "co2", &
       mw = 44.0098, &
       tc = 304.1282, &
@@ -5022,8 +5022,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_36 = &
-      nistdata(ident = "MEG", &
+  type (meosdata), parameter :: meos_36 = &
+      meosdata(ident = "MEG", &
       name = "eglycol", &
       mw = 62.06784, &
       tc = 719.0, &
@@ -5164,8 +5164,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_37 = &
-      nistdata(ident = "NC7", &
+  type (meosdata), parameter :: meos_37 = &
+      meosdata(ident = "NC7", &
       name = "heptane", &
       mw = 100.202, &
       tc = 540.2, &
@@ -5306,8 +5306,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_38 = &
-      nistdata(ident = "NC4", &
+  type (meosdata), parameter :: meos_38 = &
+      meosdata(ident = "NC4", &
       name = "butane", &
       mw = 58.1222, &
       tc = 425.125, &
@@ -5448,8 +5448,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_39 = &
-      nistdata(ident = "OXYL", &
+  type (meosdata), parameter :: meos_39 = &
+      meosdata(ident = "OXYL", &
       name = "oxylene", &
       mw = 106.165, &
       tc = 630.259, &
@@ -5590,8 +5590,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_40 = &
-      nistdata(ident = "C3", &
+  type (meosdata), parameter :: meos_40 = &
+      meosdata(ident = "C3", &
       name = "propane", &
       mw = 44.09562, &
       tc = 369.89, &
@@ -5732,8 +5732,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_41 = &
-      nistdata(ident = "TOLUENE", &
+  type (meosdata), parameter :: meos_41 = &
+      meosdata(ident = "TOLUENE", &
       name = "toluene", &
       mw = 92.13842, &
       tc = 591.75, &
@@ -5874,8 +5874,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_42 = &
-      nistdata(ident = "NC5", &
+  type (meosdata), parameter :: meos_42 = &
+      meosdata(ident = "NC5", &
       name = "pentane", &
       mw = 72.14878, &
       tc = 469.7, &
@@ -6016,8 +6016,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_43 = &
-      nistdata(ident = "3MP", &
+  type (meosdata), parameter :: meos_43 = &
+      meosdata(ident = "3MP", &
       name = "3methylpentane", &
       mw = 86.17536, &
       tc = 506.0, &
@@ -6158,8 +6158,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_44 = &
-      nistdata(ident = "NC9", &
+  type (meosdata), parameter :: meos_44 = &
+      meosdata(ident = "NC9", &
       name = "nonane", &
       mw = 128.2551, &
       tc = 594.55, &
@@ -6300,8 +6300,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_45 = &
-      nistdata(ident = "XE", &
+  type (meosdata), parameter :: meos_45 = &
+      meosdata(ident = "XE", &
       name = "xenon", &
       mw = 131.293, &
       tc = 289.733, &
@@ -6442,8 +6442,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_46 = &
-      nistdata(ident = "NC11", &
+  type (meosdata), parameter :: meos_46 = &
+      meosdata(ident = "NC11", &
       name = "c11", &
       mw = 156.30826, &
       tc = 638.8, &
@@ -6584,8 +6584,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_47 = &
-      nistdata(ident = "EBZN", &
+  type (meosdata), parameter :: meos_47 = &
+      meosdata(ident = "EBZN", &
       name = "ebenzene", &
       mw = 106.165, &
       tc = 617.12, &
@@ -6726,8 +6726,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_48 = &
-      nistdata(ident = "C3_1", &
+  type (meosdata), parameter :: meos_48 = &
+      meosdata(ident = "C3_1", &
       name = "cyclopro", &
       mw = 42.081, &
       tc = 398.3, &
@@ -6868,8 +6868,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_49 = &
-      nistdata(ident = "PRLN", &
+  type (meosdata), parameter :: meos_49 = &
+      meosdata(ident = "PRLN", &
       name = "propylen", &
       mw = 42.07974, &
       tc = 364.211, &
@@ -7010,8 +7010,8 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  type (nistdata), parameter :: nist_50 = &
-      nistdata(ident = "MXYL", &
+  type (meosdata), parameter :: meos_50 = &
+      meosdata(ident = "MXYL", &
       name = "mxylene", &
       mw = 106.165, &
       tc = 616.89, &
@@ -7152,17 +7152,17 @@ module nistdatadb
       0.0d0 &
       /) )
 
-  integer, parameter :: maxnist = 50
-  type (nistdata), dimension(maxnist), parameter :: nistdb = (/&
-      nist_1,nist_2,nist_3,nist_4,nist_5,nist_6, &
-      nist_7,nist_8,nist_9,nist_10,nist_11,nist_12, &
-      nist_13,nist_14,nist_15,nist_16,nist_17,nist_18, &
-      nist_19,nist_20,nist_21,nist_22,nist_23,nist_24, &
-      nist_25,nist_26,nist_27,nist_28,nist_29,nist_30, &
-      nist_31,nist_32,nist_33,nist_34,nist_35,nist_36, &
-      nist_37,nist_38,nist_39,nist_40,nist_41,nist_42, &
-      nist_43,nist_44,nist_45,nist_46,nist_47,nist_48, &
-      nist_49,nist_50 &
+  integer, parameter :: maxmeos = 50
+  type (meosdata), dimension(maxmeos), parameter :: meosdb = (/&
+      meos_1,meos_2,meos_3,meos_4,meos_5,meos_6, &
+      meos_7,meos_8,meos_9,meos_10,meos_11,meos_12, &
+      meos_13,meos_14,meos_15,meos_16,meos_17,meos_18, &
+      meos_19,meos_20,meos_21,meos_22,meos_23,meos_24, &
+      meos_25,meos_26,meos_27,meos_28,meos_29,meos_30, &
+      meos_31,meos_32,meos_33,meos_34,meos_35,meos_36, &
+      meos_37,meos_38,meos_39,meos_40,meos_41,meos_42, &
+      meos_43,meos_44,meos_45,meos_46,meos_47,meos_48, &
+      meos_49,meos_50 &
       /)
 
-end module nistdatadb
+end module meosdatadb
