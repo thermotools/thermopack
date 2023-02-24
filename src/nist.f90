@@ -21,24 +21,24 @@ module nist
     !
     ! Parameters for the residual gas part alpha^r
     integer :: n_gauss = 0
-    integer :: n_gao = 0
+    integer :: n_nona = 0
     !
-    real, allocatable, dimension(:) :: n_crit
-    real, allocatable, dimension(:) :: t_crit
-    integer, allocatable, dimension(:) :: d_crit
-    real, allocatable, dimension(:) :: eta_crit
-    real, allocatable, dimension(:) :: beta_crit
-    real, allocatable, dimension(:) :: gamma_crit
-    real, allocatable, dimension(:) :: epsilon_crit
+    real, allocatable, dimension(:) :: n_g
+    real, allocatable, dimension(:) :: t_g
+    integer, allocatable, dimension(:) :: d_g
+    real, allocatable, dimension(:) :: eta_g
+    real, allocatable, dimension(:) :: beta_g
+    real, allocatable, dimension(:) :: gamma_g
+    real, allocatable, dimension(:) :: epsilon_g
     !
-    real, allocatable, dimension(:) :: n_cd
-    real, allocatable, dimension(:) :: a_cd
-    real, allocatable, dimension(:) :: b_cd
-    real, allocatable, dimension(:) :: beta_cd
-    real, allocatable, dimension(:) :: big_a_cd
-    real, allocatable, dimension(:) :: big_b_cd
-    real, allocatable, dimension(:) :: big_c_cd
-    real, allocatable, dimension(:) :: big_d_cd
+    real, allocatable, dimension(:) :: n_na
+    real, allocatable, dimension(:) :: a_na
+    real, allocatable, dimension(:) :: b_na
+    real, allocatable, dimension(:) :: beta_na
+    real, allocatable, dimension(:) :: big_a_na
+    real, allocatable, dimension(:) :: big_b_na
+    real, allocatable, dimension(:) :: big_c_na
+    real, allocatable, dimension(:) :: big_d_na
     !
   contains
 
@@ -46,9 +46,10 @@ module nist
     procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_NIST
     procedure, public :: init => init_NIST
     procedure, private :: alphaResPrefactors => alphaResPrefactors_NIST
-    procedure, public :: allocate_param
+    procedure, public :: allocate_param => allocate_param_nist
     procedure, public :: alpha0_hd_taudelta => alpha0_hd_NIST
     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_NIST
+    procedure, public :: mp_pressure => mp_pressure_NIST
 
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_nist
@@ -67,8 +68,7 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i_comp, i
-
-    print *,"Entering nist init"
+    real :: p1, p2, p_rho, p_T
     i_comp = -1
     do i=1,maxnist
       if (str_eq(comp_name, nistdb(i)%ident)) then
@@ -91,11 +91,11 @@ contains
 
       ! Set indices
       nist_comp%n_cosh = 0
-      nist_comp%n_sinh = 0
+      nist_comp%n_sinh = 4 ! Avoid error allocating GERG arrays
       nist_comp%upPol = nistdb(i_comp)%n_poly_eos
       nist_comp%upExp = nistdb(i_comp)%n_exp_eos + nistdb(i_comp)%n_poly_eos
       nist_comp%n_gauss = nistdb(i_comp)%n_gauss_eos
-      nist_comp%n_gao = nistdb(i_comp)%n_gao_eos
+      nist_comp%n_nona = nistdb(i_comp)%n_nona_eos
       nist_comp%n1_id = nistdb(i_comp)%n1_id
       nist_comp%n_id = nistdb(i_comp)%n_id
 
@@ -115,26 +115,26 @@ contains
       !
       nist_comp%l_exp = nistdb(i_comp)%l_eos(nist_comp%upPol+1:nist_comp%upExp)
       !
-      nist_comp%n_crit = nistdb(i_comp)%n_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
-      nist_comp%t_crit = nistdb(i_comp)%t_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
-      nist_comp%d_crit = nistdb(i_comp)%d_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
-      nist_comp%eta_crit = nistdb(i_comp)%eta_eos(1:nist_comp%n_gauss)
-      nist_comp%beta_crit = nistdb(i_comp)%beta_eos(1:nist_comp%n_gauss)
-      nist_comp%gamma_crit = nistdb(i_comp)%gamma_eos(1:nist_comp%n_gauss)
-      nist_comp%epsilon_crit = nistdb(i_comp)%epsilon_eos(1:nist_comp%n_gauss)
+      nist_comp%n_g = nistdb(i_comp)%n_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%t_g = nistdb(i_comp)%t_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%d_g = nistdb(i_comp)%d_eos(nist_comp%upExp + 1:nist_comp%upExp + nist_comp%n_gauss)
+      nist_comp%eta_g = nistdb(i_comp)%eta_eos(1:nist_comp%n_gauss)
+      nist_comp%beta_g = nistdb(i_comp)%beta_eos(1:nist_comp%n_gauss)
+      nist_comp%gamma_g = nistdb(i_comp)%gamma_eos(1:nist_comp%n_gauss)
+      nist_comp%epsilon_g = nistdb(i_comp)%epsilon_eos(1:nist_comp%n_gauss)
       !
-      nist_comp%n_cd = nistdb(i_comp)%n_cd(1:nist_comp%n_gao)
-      nist_comp%a_cd = nistdb(i_comp)%a_cd(1:nist_comp%n_gao)
-      nist_comp%b_cd = nistdb(i_comp)%b_cd(1:nist_comp%n_gao)
-      nist_comp%beta_cd = nistdb(i_comp)%beta_cd(1:nist_comp%n_gao)
-      nist_comp%big_a_cd = nistdb(i_comp)%big_a_cd(1:nist_comp%n_gao)
-      nist_comp%big_b_cd = nistdb(i_comp)%big_b_cd(1:nist_comp%n_gao)
-      nist_comp%big_c_cd = nistdb(i_comp)%big_c_cd(1:nist_comp%n_gao)
-      nist_comp%big_d_cd = nistdb(i_comp)%big_d_cd(1:nist_comp%n_gao)
+      nist_comp%n_na = nistdb(i_comp)%n_na(1:nist_comp%n_nona)
+      nist_comp%a_na = nistdb(i_comp)%a_na(1:nist_comp%n_nona)
+      nist_comp%b_na = nistdb(i_comp)%b_na(1:nist_comp%n_nona)
+      nist_comp%beta_na = nistdb(i_comp)%beta_na(1:nist_comp%n_nona)
+      nist_comp%big_a_na = nistdb(i_comp)%big_a_na(1:nist_comp%n_nona)
+      nist_comp%big_b_na = nistdb(i_comp)%big_b_na(1:nist_comp%n_nona)
+      nist_comp%big_c_na = nistdb(i_comp)%big_c_na(1:nist_comp%n_nona)
+      nist_comp%big_d_na = nistdb(i_comp)%big_d_na(1:nist_comp%n_nona)
       !
       ! Calculate critcal pressure
-      !nist_comp%rc
-      call nist_comp%mp_pressure(nist_comp%rc, nist_comp%tc, nist_comp%pc)
+      call nist_comp%mp_pressure(nist_comp%rc, nist_comp%tc, nist_comp%pc) !, p_rho, p_T
+
       ! Set reference entropy/enthalpy
       !nist_comp%a1_id = 0.0_dp
       !nist_comp%a2_id = 0.0_dp
@@ -155,52 +155,52 @@ contains
     ! DUMMY
   end subroutine init_NIST
 
-  subroutine allocate_param(this)
+  subroutine allocate_param_nist(this)
     class(meos_nist), intent(inout) :: this
     !
     call this%meos_gerg%allocate_param()
     !
-    if (allocated(this%n_crit)) deallocate(this%n_crit)
-    if (allocated(this%t_crit)) deallocate(this%t_crit)
-    if (allocated(this%d_crit)) deallocate(this%d_crit)
-    if (allocated(this%eta_crit)) deallocate(this%eta_crit)
-    if (allocated(this%beta_crit)) deallocate(this%beta_crit)
-    if (allocated(this%gamma_crit)) deallocate(this%gamma_crit)
-    if (allocated(this%epsilon_crit)) deallocate(this%epsilon_crit)
+    if (allocated(this%n_g)) deallocate(this%n_g)
+    if (allocated(this%t_g)) deallocate(this%t_g)
+    if (allocated(this%d_g)) deallocate(this%d_g)
+    if (allocated(this%eta_g)) deallocate(this%eta_g)
+    if (allocated(this%beta_g)) deallocate(this%beta_g)
+    if (allocated(this%gamma_g)) deallocate(this%gamma_g)
+    if (allocated(this%epsilon_g)) deallocate(this%epsilon_g)
     !
-    if (allocated(this%n_cd)) deallocate(this%n_cd)
-    if (allocated(this%a_cd)) deallocate(this%a_cd)
-    if (allocated(this%b_cd)) deallocate(this%b_cd)
-    if (allocated(this%beta_cd)) deallocate(this%beta_cd)
-    if (allocated(this%big_a_cd)) deallocate(this%big_a_cd)
-    if (allocated(this%big_b_cd)) deallocate(this%big_b_cd)
-    if (allocated(this%big_c_cd)) deallocate(this%big_c_cd)
-    if (allocated(this%big_d_cd)) deallocate(this%big_d_cd)
+    if (allocated(this%n_na)) deallocate(this%n_na)
+    if (allocated(this%a_na)) deallocate(this%a_na)
+    if (allocated(this%b_na)) deallocate(this%b_na)
+    if (allocated(this%beta_na)) deallocate(this%beta_na)
+    if (allocated(this%big_a_na)) deallocate(this%big_a_na)
+    if (allocated(this%big_b_na)) deallocate(this%big_b_na)
+    if (allocated(this%big_c_na)) deallocate(this%big_c_na)
+    if (allocated(this%big_d_na)) deallocate(this%big_d_na)
     !
     if (allocated(this%c_id)) deallocate(this%c_id)
     if (allocated(this%c_id)) deallocate(this%t_id)
     !
-    allocate(this%n_crit(1:this%n_gauss))
-    allocate(this%t_crit(1:this%n_gauss))
-    allocate(this%d_crit(1:this%n_gauss))
-    allocate(this%eta_crit(1:this%n_gauss))
-    allocate(this%beta_crit(1:this%n_gauss))
-    allocate(this%gamma_crit(1:this%n_gauss))
-    allocate(this%epsilon_crit(1:this%n_gauss))
+    allocate(this%n_g(1:this%n_gauss))
+    allocate(this%t_g(1:this%n_gauss))
+    allocate(this%d_g(1:this%n_gauss))
+    allocate(this%eta_g(1:this%n_gauss))
+    allocate(this%beta_g(1:this%n_gauss))
+    allocate(this%gamma_g(1:this%n_gauss))
+    allocate(this%epsilon_g(1:this%n_gauss))
     !
-    allocate(this%n_cd(1:this%n_gao))
-    allocate(this%a_cd(1:this%n_gao))
-    allocate(this%b_cd(1:this%n_gao))
-    allocate(this%beta_cd(1:this%n_gao))
-    allocate(this%big_a_cd(1:this%n_gao))
-    allocate(this%big_b_cd(1:this%n_gao))
-    allocate(this%big_c_cd(1:this%n_gao))
-    allocate(this%big_d_cd(1:this%n_gao))
+    allocate(this%n_na(1:this%n_nona))
+    allocate(this%a_na(1:this%n_nona))
+    allocate(this%b_na(1:this%n_nona))
+    allocate(this%beta_na(1:this%n_nona))
+    allocate(this%big_a_na(1:this%n_nona))
+    allocate(this%big_b_na(1:this%n_nona))
+    allocate(this%big_c_na(1:this%n_nona))
+    allocate(this%big_d_na(1:this%n_nona))
     !
     allocate(this%c_id(this%n_id))
     allocate(this%t_id(this%n_id))
     !
-  end subroutine allocate_param
+  end subroutine allocate_param_nist
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
@@ -259,7 +259,7 @@ contains
     type(hyperdual), intent(in) :: delta, tau
     type(hyperdual) :: alpr !< alpr
     ! Internal
-    integer :: i, j
+    integer :: i
     type(hyperdual) :: del
     !
     alpr = 0.0_dp
@@ -272,20 +272,18 @@ contains
     enddo
 
     do i=1,this%n_gauss
-      j = i + this%upExp
-      alpr = alpr + this%N_exp(j) * tau**this%t_exp(j) * delta**this%d_exp(j) * &
-           exp(-this%eta_crit(i)*(delta-this%epsilon_crit(i))**2 - &
-           this%beta_crit(i)*(delta-this%gamma_crit(i))**2)
+      alpr = alpr + this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
+           exp(this%eta_g(i)*(delta-this%epsilon_g(i))**2 + &
+           this%beta_g(i)*(tau-this%gamma_g(i))**2)
     enddo
 
-    do i=1,this%n_gao
-      del = ((1.0_dp - tau) + this%big_a_cd(i)*((delta-1.0_dp)**2)**(1.0_dp/(2.0_dp*this%beta_cd(i))))**2 + &
-           this%big_b_cd(i)*((delta-1.0_dp)**2)**this%a_cd(i)
-      alpr = alpr + this%n_cd(i) * del**this%b_cd(i) * delta * &
-           exp(-this%big_c_cd(i)*(delta-1.0_dp)**2 - &
-           this%big_d_cd(i)*(tau-1.0_dp)**2)
+    do i=1,this%n_nona
+      del = ((1.0_dp - tau) + this%big_a_na(i)*((delta-1.0_dp)**2)**(1.0_dp/(2.0_dp*this%beta_na(i))))**2 + &
+           this%big_b_na(i)*((delta-1.0_dp)**2)**this%a_na(i)
+      alpr = alpr + this%n_na(i) * del**this%b_na(i) * delta * &
+           exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
+           this%big_d_na(i)*(tau-1.0_dp)**2)
     enddo
-
   end function alphaRes_hd_NIST
 
   subroutine assign_meos_nist(this,other)
@@ -304,28 +302,56 @@ contains
       this%t_id = other%t_id
       !
       this%n_gauss = other%n_gauss
-      this%n_gao = other%n_gao
+      this%n_nona = other%n_nona
       !
-      this%n_crit = other%n_crit
-      this%t_crit = other%t_crit
-      this%d_crit = other%d_crit
-      this%eta_crit = other%eta_crit
-      this%beta_crit = other%beta_crit
-      this%gamma_crit = other%gamma_crit
-      this%epsilon_crit = other%epsilon_crit
+      this%n_g = other%n_g
+      this%t_g = other%t_g
+      this%d_g = other%d_g
+      this%eta_g = other%eta_g
+      this%beta_g = other%beta_g
+      this%gamma_g = other%gamma_g
+      this%epsilon_g = other%epsilon_g
       !
-      this%n_cd = other%n_cd
-      this%a_cd = other%a_cd
-      this%b_cd = other%b_cd
-      this%beta_cd = other%beta_cd
-      this%big_a_cd = other%big_a_cd
-      this%big_b_cd = other%big_b_cd
-      this%big_c_cd = other%big_c_cd
-      this%big_d_cd = other%big_d_cd
+      this%n_na = other%n_na
+      this%a_na = other%a_na
+      this%b_na = other%b_na
+      this%beta_na = other%beta_na
+      this%big_a_na = other%big_a_na
+      this%big_b_na = other%big_b_na
+      this%big_c_na = other%big_c_na
+      this%big_d_na = other%big_d_na
       !
     class default
       call stoperror("assign_meos_nist: Should not be here....")
     end select
   end subroutine assign_meos_nist
+
+  !> Pressure and (optionally) its derivatives
+  subroutine mp_pressure_NIST(this, rho, T, p, p_rho, p_T)
+    use hyperdual_mod
+    class(meos_nist) :: this
+    real, intent(in) :: rho, T
+    real, intent(out) :: p
+    real, optional, intent(out) :: p_rho, p_T
+    ! Internal
+    type(hyperdual) :: T_hd, v_hd, f_res_hd, delta_hd, tau_hd
+    T_hd = T
+    v_hd%f0 = 1.0/rho
+    v_hd%f1 = 1.0_dp
+    v_hd%f2 = 1.0_dp
+    delta_hd = 1.0_dp/(v_hd*this%rc)
+    tau_hd = this%tc/T_hd
+    f_res_hd = this%alphaRes_hd_taudelta(delta_hd, tau_hd)
+    p = -this%Rgas_meos*T*(f_res_hd%f1 - rho)
+    if (present(p_rho)) p_rho = this%Rgas_meos*T*(f_res_hd%f12/rho**2 + 1.0_dp)
+    if (present(p_T)) then
+      v_hd%f2 = 0.0_dp
+      delta_hd = 1.0_dp/(v_hd*this%rc)
+      T_hd%f2 = 1.0_dp
+      tau_hd = this%tc/T_hd
+      f_res_hd = this%alphaRes_hd_taudelta(delta_hd, tau_hd)
+      p_T = -this%Rgas_meos*(T*f_res_hd%f12 + f_res_hd%f1 - rho)
+    endif
+  end subroutine mp_pressure_NIST
 
 end module nist

@@ -56,7 +56,7 @@ module gerg
     procedure, public :: satDeltaEstimate => satDeltaEstimate_GERG
     procedure, public :: init => init_GERG
     procedure, private :: alphaResPrefactors => alphaResPrefactors_GERG
-    procedure, public :: allocate_param
+    procedure, public :: allocate_param => allocate_param_GERG
     procedure, public :: alpha0_hd_taudelta => alpha0_hd_GERG
     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_GERG
 
@@ -152,7 +152,7 @@ contains
     ! DUMMY
   end subroutine init_GERG
 
-  subroutine allocate_param(this)
+  subroutine allocate_param_GERG(this)
     class(meos_gerg), intent(inout) :: this
     !
     if (allocated(this%v)) deallocate(this%v)
@@ -183,7 +183,7 @@ contains
     !
     allocate(this%l_exp(this%upPol+1:this%upExp))
 
-  end subroutine allocate_param
+  end subroutine allocate_param_GERG
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.

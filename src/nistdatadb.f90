@@ -1,5 +1,5 @@
 !> Automatically generated file nistdatadb.f90
-!! Time stamp: 2023-02-18T21:10:44.426555
+!! Time stamp: 2023-02-24T20:18:29.023721
 
 module nistdatadb
   use thermopack_constants, only: uid_len, comp_name_len
@@ -8,7 +8,7 @@ module nistdatadb
 
   integer, parameter :: nist_max_n = 54
   integer, parameter :: nist_max_n_gauss = 14
-  integer, parameter :: nist_max_n_gao = 3
+  integer, parameter :: nist_max_n_nona = 3
   integer, parameter :: nist_id_max_n = 13
 
   type :: nistdata
@@ -29,7 +29,7 @@ module nistdatadb
     integer :: n_poly_eos !<
     integer :: n_exp_eos !<
     integer :: n_gauss_eos !<
-    integer :: n_gao_eos !<
+    integer :: n_nona_eos !<
     real :: n_eos(nist_max_n) !<
     real :: t_eos(nist_max_n) !<
     integer :: d_eos(nist_max_n) !<
@@ -38,14 +38,14 @@ module nistdatadb
     real :: beta_eos(nist_max_n_gauss) !<
     real :: gamma_eos(nist_max_n_gauss) !<
     real :: epsilon_eos(nist_max_n_gauss) !<
-    real :: n_cd(nist_max_n_gao) !<
-    real :: a_cd(nist_max_n_gao) !<
-    real :: b_cd(nist_max_n_gao) !<
-    real :: beta_cd(nist_max_n_gao) !<
-    real :: big_a_cd(nist_max_n_gao) !<
-    real :: big_b_cd(nist_max_n_gao) !<
-    real :: big_c_cd(nist_max_n_gao) !<
-    real :: big_d_cd(nist_max_n_gao) !<
+    real :: n_na(nist_max_n_nona) !<
+    real :: a_na(nist_max_n_nona) !<
+    real :: b_na(nist_max_n_nona) !<
+    real :: beta_na(nist_max_n_nona) !<
+    real :: big_a_na(nist_max_n_nona) !<
+    real :: big_b_na(nist_max_n_nona) !<
+    real :: big_c_na(nist_max_n_nona) !<
+    real :: big_d_na(nist_max_n_nona) !<
     integer :: n1_id !<
     integer :: n_id !<
     real :: c_id(nist_id_max_n) !<
@@ -70,7 +70,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.0010786811,-0.103161822,0.0421544125, &
       1.47865376,-2.4266,-0.46575193, &
@@ -153,28 +153,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -212,7 +212,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 34, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.83440745735241,-1.4287360607171,0.34430242210927, &
       -0.42096677920265,0.012094500886549,-0.57976201597341, &
@@ -295,28 +295,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -354,7 +354,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.90554,-2.4515,0.53149, &
       0.024173,0.072156,0.00018818, &
@@ -437,28 +437,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 2, &
@@ -496,7 +496,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.01,-6.83148,2.11505, &
       4.38353,0.211292,-1.00939, &
@@ -579,28 +579,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -638,7 +638,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       1.0963,-3.0402,1.0317, &
       -0.15410,0.11535,0.00029809, &
@@ -721,28 +721,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -780,7 +780,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       1.0461,-2.4807,0.74372, &
       -0.52579,0.15315,0.00032865, &
@@ -863,28 +863,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -922,7 +922,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 10, &
       n_gauss_eos = 9, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.058200796,0.94391227,-0.80941908, &
       0.55359038,-1.4269032,0.13448717, &
@@ -1005,28 +1005,28 @@ module nistdatadb
       0.441,0.793,0.313,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1064,7 +1064,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.83561,-2.3725,0.54567, &
       0.014361,0.066502,0.0001931, &
@@ -1147,28 +1147,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1206,7 +1206,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 16, &
       n_gauss_eos = 2, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       2.0686820727966,-3.6400098615204,0.51968754427244, &
       0.17745845870123,-0.12361807851599,0.045145314010528, &
@@ -1289,28 +1289,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1348,7 +1348,7 @@ module nistdatadb
       n_poly_eos = 13, &
       n_exp_eos = 23, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.04367901028,0.6709236199,-1.765577859, &
       0.8582330241,-1.206513052,0.512046722, &
@@ -1431,28 +1431,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1490,7 +1490,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.0446249,1.740621,-2.050688, &
       -0.7724346,0.2116422,-3.187864, &
@@ -1573,28 +1573,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1632,7 +1632,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 26, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.924803575275,-0.492448489428,0.661883336938, &
       -1.92902649201,-0.0622469309629,0.349943957581, &
@@ -1715,28 +1715,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 4, &
@@ -1774,7 +1774,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       1.38031,-2.85352,0.288897, &
       -0.165993,0.0923993,2.82772e-4, &
@@ -1857,28 +1857,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -1916,7 +1916,7 @@ module nistdatadb
       n_poly_eos = 8, &
       n_exp_eos = 6, &
       n_gauss_eos = 7, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.006267958,10.53609,-10.14149, &
       0.3560610,0.1824472,-1.129638, &
@@ -1999,28 +1999,28 @@ module nistdatadb
       1.076,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2058,7 +2058,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 6, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.01744413,1.814878,-2.246338, &
       -0.4602906,0.1097049,-0.9485769, &
@@ -2141,28 +2141,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 2, &
@@ -2200,7 +2200,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.042240369,1.4800888,-2.0975357, &
       -0.72303256,0.26084383,-1.6713762, &
@@ -2283,28 +2283,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2342,7 +2342,7 @@ module nistdatadb
       n_poly_eos = 12, &
       n_exp_eos = 25, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.08872230499,0.705148051673,-1.68201156541, &
       -0.149090144315,-0.120248046009,-0.121649787986, &
@@ -2425,28 +2425,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2484,7 +2484,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.04239455,2.370432,-4.30263, &
       -0.4039603,0.4005704,-2.643419, &
@@ -2567,28 +2567,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2626,7 +2626,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.7231448,-1.790058,-0.06836828, &
       0.07947672,0.000040778,0.1760558, &
@@ -2709,28 +2709,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2768,7 +2768,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.01,-7.33375,2.60375, &
       4.66279,0.682390,-1.47078, &
@@ -2851,28 +2851,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -2910,7 +2910,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.87641,-2.0367,0.21634, &
       -0.050199,0.066994,0.00019076, &
@@ -2993,28 +2993,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 2, &
@@ -3052,7 +3052,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 6, &
       n_gauss_eos = 6, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.031522418,3.7716418,-4.27399448, &
       -0.756466758,0.066679921,-0.356928434, &
@@ -3135,28 +3135,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3194,7 +3194,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 10, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.05483581,1.607734,-2.375928, &
       -0.5137709,0.1858417,-0.9007515, &
@@ -3277,28 +3277,28 @@ module nistdatadb
       0.68,1.11,1.47,0.99,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3336,7 +3336,7 @@ module nistdatadb
       n_poly_eos = 13, &
       n_exp_eos = 19, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.3983768749,-1.846157454,0.4183473197, &
       0.02370620711,0.09771730573,0.03017891294, &
@@ -3419,28 +3419,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3478,7 +3478,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.01,-6.93643,2.1101, &
       4.52059,0.732564,-1.34086, &
@@ -3561,28 +3561,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3620,7 +3620,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.03965879,1.945813,-3.738575, &
       -0.3428167,0.3427022,-2.519592, &
@@ -3703,28 +3703,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3762,7 +3762,7 @@ module nistdatadb
       n_poly_eos = 10, &
       n_exp_eos = 12, &
       n_gauss_eos = 14, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.54958259132835,-0.87905033269396,-0.84656969731452, &
       0.27692381593529,-4.9864958372345,4.8879127058055, &
@@ -3845,28 +3845,28 @@ module nistdatadb
       1.0,1.0,1.0,1.0,1.0,1.0, &
       1.0,1.0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -3904,7 +3904,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 11, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.015559018,3.0638932,-4.2420844, &
       0.054418088,-0.18971904,0.087856262, &
@@ -3987,28 +3987,28 @@ module nistdatadb
       2.5346,3.6763,4.5245,5.039,0.959,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4046,7 +4046,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 44, &
       n_gauss_eos = 3, &
-      n_gao_eos = 2, &
+      n_nona_eos = 2, &
       n_eos = (/ &
       0.012533547935523,7.8957634722828,-8.7803203303561, &
       0.31802509345418,-0.26145533859358,-0.0078199751687981, &
@@ -4129,28 +4129,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       -0.14874640856724,0.31806110878444,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       3.5,3.5,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.85,0.95,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.3,0.3,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.32,0.32,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.2,0.2,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       28.0,32.0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       700.0,800.0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4188,7 +4188,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.84958959,-2.028566,0.03757012, &
       0.06081274,0.000204315,0.066043135, &
@@ -4271,28 +4271,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4330,7 +4330,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.90041,-2.1267,-0.083409, &
       0.065683,0.00016527,-0.039663, &
@@ -4413,28 +4413,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4472,7 +4472,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 3, &
       n_gauss_eos = 10, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.006132232,1.7395866,-2.2261792, &
       -0.30127553,0.08967023,-0.076387037, &
@@ -4555,28 +4555,28 @@ module nistdatadb
       2.96,3.02,0.9574,0.9576,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4614,7 +4614,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.03512459,2.2338,-3.10542612, &
       -0.577233,0.25101,-0.705518, &
@@ -4697,28 +4697,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4756,7 +4756,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.88045,-2.4235,0.38237, &
       0.068917,0.00020367,0.13122, &
@@ -4839,28 +4839,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -4898,7 +4898,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 27, &
       n_gauss_eos = 5, &
-      n_gao_eos = 3, &
+      n_nona_eos = 3, &
       n_eos = (/ &
       0.388568232032,2.93854759427,-5.58671885349, &
       -0.767531995925,0.317290055804,0.548033158978, &
@@ -4981,28 +4981,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       -0.666422765408,0.726086323499,0.0550686686128 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       3.5,3.5,3.0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.875,0.925,0.875 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.3,0.3,0.3 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.7,0.7,0.7 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.3,0.3,1.0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       10.0,10.0,12.5 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       275.0,275.0,275.0 &
       /), &
       n1_id = 1, &
@@ -5040,7 +5040,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 7, &
       n_gauss_eos = 7, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.019393376,1.2215576,1.2751617, &
       -3.6681302,-1.4660821,0.24628603, &
@@ -5123,28 +5123,28 @@ module nistdatadb
       0.9,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5182,7 +5182,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.04021974,1.417638,-1.822198, &
       -0.8536007,0.265174,-1.968992, &
@@ -5265,28 +5265,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5324,7 +5324,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 16, &
       n_gauss_eos = 2, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       2.5536998241635,-4.4585951806696,0.82425886369063, &
       0.11215007011442,-0.035910933680333,0.016790508518103, &
@@ -5407,28 +5407,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5466,7 +5466,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.0036765156,-0.13918171,0.014104203, &
       1.5398899,-2.3600925,-0.44359159, &
@@ -5549,28 +5549,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5608,7 +5608,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 6, &
       n_gauss_eos = 7, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.042910051,1.7313671,-2.4516524, &
       0.34157466,-0.46047898,-0.66847295, &
@@ -5691,28 +5691,28 @@ module nistdatadb
       0.948,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5750,7 +5750,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.96464,-2.7855,0.86712, &
       -0.18860,0.11804,0.00025181, &
@@ -5833,28 +5833,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -5892,7 +5892,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 6, &
       n_gauss_eos = 5, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.042952795,2.4923999,-2.603872, &
       -0.83829913,0.19223378,-3.0778196, &
@@ -5975,28 +5975,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6034,7 +6034,7 @@ module nistdatadb
       n_poly_eos = 5, &
       n_exp_eos = 5, &
       n_gauss_eos = 6, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.006178288,0.763315017,-0.5546657, &
       -1.0604327,0.23117181,-1.8757299, &
@@ -6117,28 +6117,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6176,7 +6176,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       1.1151,-2.7020,0.83416, &
       -0.38828,0.13760,0.00028185, &
@@ -6259,28 +6259,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6318,7 +6318,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.83115,-2.3553,0.53904, &
       0.014382,0.066309,0.00019649, &
@@ -6401,28 +6401,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6460,7 +6460,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 8, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       -0.66172706,1.3375396,-2.5608399, &
       0.10678910,0.00028873614,0.049587209, &
@@ -6543,28 +6543,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6602,7 +6602,7 @@ module nistdatadb
       n_poly_eos = 7, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.0018109418,-0.076824284,0.041823789, &
       1.5059649,-2.4122441,-0.47788846, &
@@ -6685,28 +6685,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6744,7 +6744,7 @@ module nistdatadb
       n_poly_eos = 16, &
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       -1.37016097588,2.12444673002,-0.578908942724, &
       -1.15633726379,2.52574014413,-2.82265442929, &
@@ -6827,28 +6827,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -6886,7 +6886,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 6, &
       n_gauss_eos = 9, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.04341002,1.136592,-0.8528611, &
       0.5216669,-1.382953,0.1214347, &
@@ -6969,28 +6969,28 @@ module nistdatadb
       0.38,0.91,0.7,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
@@ -7028,7 +7028,7 @@ module nistdatadb
       n_poly_eos = 6, &
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
-      n_gao_eos = 0, &
+      n_nona_eos = 0, &
       n_eos = (/ &
       0.000012791017,0.041063111,1.505996, &
       -2.3095875,-0.46969,0.171031, &
@@ -7111,28 +7111,28 @@ module nistdatadb
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0 &
       /), &
-      n_cd = (/ &
+      n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      a_cd = (/ &
+      a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      b_cd = (/ &
+      b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_cd = (/ &
+      beta_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_a_cd = (/ &
+      big_a_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_b_cd = (/ &
+      big_b_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_c_cd = (/ &
+      big_c_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      big_d_cd = (/ &
+      big_d_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
       n1_id = 1, &
