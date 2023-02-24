@@ -861,7 +861,7 @@ contains
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-        type is ( meos_gergmix ) ! GERG2008
+        class is ( meos_gergmix ) ! GERG2008
           call hyperdual_fres_wrapper(hd_fres_GERGMIX,p_eos,nc,T,V_eos,n,eF,ef_T,ef_V,ef_n,&
                ef_TT,ef_VV,ef_TV,ef_Tn,ef_Vn,ef_nn)
         class default ! Saft eos
@@ -1146,7 +1146,7 @@ contains
       call cbCalcZfac(nce,p_eos,T,p,ne,phase,Zfac,gflag_opt_local,dZdt,dZdp,dZdz)
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
-    type is ( meos_gergmix )
+    class is ( meos_gergmix )
       call p_eos%Zfac(T,p,ne,phase,Zfac)
       call calc_Zfac_differentials()
     type is ( extcsp_eos ) ! Corresponding State Principle
@@ -1320,7 +1320,7 @@ contains
     type is ( single_eos )
       call Fid_single(nc,comp,p_seos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-    type is ( meos_gergmix ) ! GERG2008
+    class is ( meos_gergmix ) ! GERG2008
       call hyperdual_fres_wrapper(hd_fid_GERGMIX,p_seos,nc,T,V,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
     class default
