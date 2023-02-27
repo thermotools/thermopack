@@ -1378,6 +1378,7 @@ contains
   !> Initialize uv-theory equation of state for Mie potentials
   !----------------------------------------------------------------------------
   subroutine init_uv(comps, model, parameter_reference)
+    use stringmod, only: str_upcase
     use compdata, only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -1388,20 +1389,19 @@ contains
     use uv_theory, only: uv_theory_eos
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
-    character(len=*), optional, intent(in) :: model !< Model selection: "UV" (Default), "UF", "BH", "WCA"
+    character(len=*), optional, intent(in) :: model !< Model selection: "BH" (Default), "WCA"
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
-    integer                          :: ncomp, ncbeos, i, ierr, index, len_model
-    character(len=3)                 :: comps_upper
+    integer                          :: ncomp, ncbeos, i, ierr, idx
     type(thermo_model), pointer      :: act_mod_ptr
     class(base_eos_param), pointer   :: act_eos_ptr
     character(len=ref_len)           :: param_ref
-    character(len=7)                 :: model_local
+    character(len=10)                :: model_local
 
     ! Initialize Pets eos
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
-      index = add_eos()
+      idx = add_eos()
     endif
     act_mod_ptr => get_active_thermo_model()
 
@@ -1409,12 +1409,24 @@ contains
     call initCompList(trim(uppercase(comps)),ncomp,act_mod_ptr%complist)
     allocate(complist, source=act_mod_ptr%complist)
 
-    call allocate_eos(ncomp, trim(model))
+    ! Set default model
+    if (present(model)) then
+      model_local = trim(model)
+      call str_upcase(model_local)
+      if ( index(model_local,"UV") > 0 ) then
+        model_local = trim(model)
+      else
+        model_local = "UV-MIE-"//trim(model)
+      endif
+    else
+      model_local = "UV-MIE-BH"
+    endif
+    call allocate_eos(ncomp, trim(model_local))
 
     ! Number of phases
     act_mod_ptr%nph = 2
 
-    ! Assign active mode variables
+    ! Assign active model variables
     ncsym = ncomp
     nce = ncomp
     nc = ncomp

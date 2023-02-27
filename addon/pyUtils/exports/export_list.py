@@ -155,6 +155,7 @@ append_export("init_volume_translation", "eoslibinit")
 append_export("redefine_critical_parameters", "eoslibinit")
 append_export("init_lj", "eoslibinit")
 append_export("init_ljs", "eoslibinit")
+append_export("init_uv", "eoslibinit")
 
 append_export("internal_energy_tv", "eostv")
 append_export("entropy_tv", "eostv")
