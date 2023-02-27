@@ -93,6 +93,17 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/Oliveira2008",
+      "bib_reference": "10.1016/j.fluid.2008.02.020",
+      "a0": 1.8019E+6,
+      "b": 8.1309E-2,
+      "alphaParams": [0.98766,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 20069.0,
+      "beta": 3.6694E-3,
+      "assoc_scheme": "2B"
     }
   },
   "PR": {

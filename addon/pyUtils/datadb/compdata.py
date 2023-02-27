@@ -7,7 +7,10 @@ import math
 import json
 from datetime import datetime
 from data_utils import I, N_TAGS_PER_LINE, \
-    sci_print_float, print_float
+    sci_print_float, print_float, \
+    get_assoc_scheme_parameter, \
+    get_alpha_index_parameter
+
 
 def get_keys_from_base_name(d,name):
     key_list = []
@@ -160,6 +163,37 @@ class component(object):
 
         return code_lines
 
+    def get_CPA_fortran_code(self,eos,CPAtag):
+        """
+        Output:
+        code_lines - Code lines
+        """
+        d = self.comp[eos][CPAtag]
+        code_lines = []
+        code_lines.append(I + "type(CPAdata), parameter :: CPATAG = &")
+        code_lines.append(3*I + "CPAdata(eosid=\"" + "CPA-"+ eos + "\", &")
+        code_lines.append(3*I + "compName=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
+        code_lines.append(3*I + "bib_reference=\"" + d["bib_reference"] + "\", &")
+        code_lines.append(3*I + 'a0={:.8e}, &'.format(d["a0"]))
+        code_lines.append(3*I + 'b={:.8e}, &'.format(d["b"]))
+        code_lines.append(3*I + 'eps={:.8e}, &'.format(d["eps"]))
+        code_lines.append(3*I + 'beta={:.8e}, &'.format(d["beta"]))
+        code_lines.append(3*I + 'alphacorridx = {}, &'.format(
+            get_alpha_index_parameter(d["alphaCorr"])))
+
+        alp = []
+        for numbers in d["alphaParams"]:
+            alpi = '{:.8e}'.format(numbers)
+            alp.append(alpi)
+        code_lines.append(3*I + "alphaParams = (/" + alp[0] + "," + alp[1] + "," + alp[2] + "/), &")
+        code_lines.append(3*I + 'assoc_scheme = {} &'.format(
+            get_assoc_scheme_parameter(d["assoc_scheme"])))
+        code_lines.append(3*I + ")")
+        code_lines.append("")
+
+        return code_lines
+
     def get_MC_fortran_code(self,eos,MCtag):
         """
         Output:
@@ -192,6 +226,8 @@ class component(object):
                         cl = self.get_MC_fortran_code(eos,key)
                     elif "volume_shift" in key:
                         cl = self.get_VS_fortran_code(eos,key)
+                    elif "CPA" in key:
+                        cl = self.get_CPA_fortran_code(eos,key)
                     else:
                         "Unknown key ({}) in {} for {}".format(key,self.comp["ident"],eos)
                     for line in cl:
@@ -216,6 +252,7 @@ class comp_list(object):
         self.nTWU = None
         self.nMC = None
         self.nVS = None
+        self.nCPA = None
         if path is None:
             path = "../../../fluids/"
         file_list = os.listdir(path)
@@ -238,7 +275,9 @@ class comp_list(object):
         code_lines.append("!! Time stamp: " + now)
         code_lines.append("")
         code_lines.append("module compdatadb")
-        code_lines.append(I+"use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb")
+        code_lines.append(I+"use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata")
+        code_lines.append(I+"use assocschemeutils")
+        code_lines.append(I+"use cubic_eos")
         code_lines.append(I+"implicit none")
         code_lines.append(I+"public")
         code_lines.append("")
@@ -248,6 +287,7 @@ class comp_list(object):
         self.nTWU = 1
         self.nMC = 1
         self.nVS = 1
+        self.nCPA = 1
         for comp in self.comp_list:
             comp_code_lines = comp.get_fortran_code()
             for il, line in enumerate(comp_code_lines):
@@ -257,6 +297,7 @@ class comp_list(object):
                 new_line = self.replace_TWU_tag(new_line)
                 new_line = self.replace_MC_tag(new_line)
                 new_line = self.replace_VS_tag(new_line)
+                new_line = self.replace_CPA_tag(new_line)
                 code_lines.append(new_line)
         # Correct count to actual number of entries
         self.nComp -= 1
@@ -264,6 +305,7 @@ class comp_list(object):
         self.nTWU -= 1
         self.nMC -= 1
         self.nVS -= 1
+        self.nCPA -= 1
 
         cl = self.get_comp_array_fortran_code()
         for line in cl:
@@ -282,6 +324,10 @@ class comp_list(object):
             code_lines.append(line)
 
         cl = self.get_vs_array_fortran_code()
+        for line in cl:
+            code_lines.append(line)
+
+        cl = self.get_cpa_array_fortran_code()
         for line in cl:
             code_lines.append(line)
 
@@ -367,6 +413,17 @@ class comp_list(object):
         code_lines.append(I+"integer, parameter :: maxMCdb =" + str(self.nMC))
         code_lines.append(I+"type (alphadatadb), dimension(maxMCdb), parameter :: alphaMCdb = (/&")
         code_lines = self.get_array_fortran_code(code_lines,self.nMC,self.get_MC_tag)
+        return code_lines
+
+    def get_cpa_array_fortran_code(self):
+        """Set up component array
+        Output:
+        code_lines - Code lines
+        """
+        code_lines = [""]
+        code_lines.append(I+"integer, parameter :: nCPAmodels =" + str(self.nCPA))
+        code_lines.append(I+"type(CPAdata), dimension(nCPAmodels), parameter :: CPAarray = (/&")
+        code_lines = self.get_array_fortran_code(code_lines,self.nCPA,self.get_CPA_tag)
         return code_lines
 
     def get_comp_tag(self,i_comp=None):
@@ -463,6 +520,26 @@ class comp_list(object):
             line = line.replace("VSTAG",vstag)
             self.nVS += 1
         return line
+
+    def get_CPA_tag(self,i_cpa=None):
+        """FORTRAN CPA parameter name
+        """
+        cpatag = "cpa"
+        if i_cpa is None:
+            cpatag += str(self.nCPA)
+        else:
+            cpatag += str(i_cpa)
+        return cpatag
+
+    def replace_CPA_tag(self, line):
+        """Replace CPATAG with FORTRAN CPA parameter name
+        """
+        cpatag = self.get_CPA_tag()
+        if "CPATAG" in line:
+            line = line.replace("CPATAG",cpatag)
+            self.nCPA += 1
+        return line
+
 
 if __name__ == "__main__":
     compl = comp_list()
