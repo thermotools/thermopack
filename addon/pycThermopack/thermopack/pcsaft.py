@@ -10,6 +10,7 @@ from sys import platform, exit
 from os import path
 # Import thermo
 from . import thermo, saft
+from . import utils
 
 c_len_type = thermo.c_len_type
 
@@ -200,7 +201,8 @@ class pcsaft(saft.saft):
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
-        """Calculate logarithm of the radial distribution function at contact gitvne temperature, volume and mol numbers.
+        """Calculate logarithm of the radial distribution function at contact given temperature, volume and mol numbers.
+        Differentials are computed as functions of (T, V, n).
 
         Args:
             temp (float): Temperature (K)
@@ -230,7 +232,7 @@ class pcsaft(saft.saft):
 
         optional_flags = [lng_t, lng_v, lng_n, lng_tt, lng_vv, lng_tv, lng_tn, lng_vn, lng_nn]
         optional_arrayshapes = [(0,), (0,), (len(n),), (0,), (0,), (0,), (len(n),), (len(n),), (len(n), len(n))]
-        optional_ptrs = self.get_optional_pointers(optional_flags, optional_arrayshapes)
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
         lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c = optional_ptrs
 
         self.s_lng_ii_pc_saft_tvn.argtypes = [POINTER(c_double),
@@ -267,7 +269,7 @@ class pcsaft(saft.saft):
 
         return_tuple = (lng_c.value, )
         optional_ptrs = [lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c]
-        return_tuple = self.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
         return return_tuple
 

@@ -3,6 +3,7 @@ import copy
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
+from . import utils
 # Import platform to detect OS
 from sys import platform, exit
 # Import os utils
@@ -98,7 +99,7 @@ class saft(thermo.thermo):
         optional_arrayshapes = [(0,), (0,), (len(n),),
                                (0,), (0,), (0,),
                                (len(n),), (len(n),), (len(n), len(n))]
-        optional_ptrs = self.get_optional_pointers(optional_flags, optional_arrayshapes)
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
         a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c = optional_ptrs
 
         self.s_calc_saft_dispersion.argtypes = [POINTER(c_double),
@@ -133,7 +134,7 @@ class saft(thermo.thermo):
 
         return_tuple = (a_c.value, )
         optional_ptrs= [a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c]
-        return_tuple = self.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
         return return_tuple
 
