@@ -9,7 +9,6 @@ contains
 
   function assoc_covol(ic)
     use pc_saft_nonassoc, only: PCSAFT_eos
-    use saftvrmie_containers, only: saftvrmie_param
     use cubic_eos, only: cb_eos
     use thermopack_constants, only: N_AVOGADRO
     use thermopack_var, only: base_eos_param, get_active_eos
@@ -18,9 +17,8 @@ contains
     ! Locals
     class(base_eos_param), pointer :: eos
     eos => get_active_eos()
-    if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. &
-         eos%assoc%saft_model == eosLJS_BH) then
-      assoc_covol = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,ic)
+    if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
+      assoc_covol = N_AVOGADRO
     else
       select type ( p_eos => eos )
       class is ( cb_eos )
@@ -36,7 +34,6 @@ contains
 
   function assoc_covol_binary(ic,jc)
     use pc_saft_nonassoc, only: PCSAFT_eos
-    use saftvrmie_containers, only: saftvrmie_param
     use thermopack_constants, only: N_AVOGADRO
     use thermopack_var, only: base_eos_param, get_active_eos
     use cubic_eos, only: cb_eos
@@ -46,7 +43,7 @@ contains
     class(base_eos_param), pointer :: eos
     eos => get_active_eos()
     if (eos%assoc%saft_model == eosSAFT_VR_MIE) then
-      assoc_covol_binary = N_AVOGADRO*saftvrmie_param%sigma_ij_cube(ic,jc)
+      assoc_covol_binary = N_AVOGADRO
     else
       select type ( p_eos => eos )
       class is ( cb_eos )

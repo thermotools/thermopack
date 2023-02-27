@@ -159,5 +159,33 @@
       "ciC": 0.0,
       "correlation": 2
     }
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.0,
+    "sigma": 3.0555E-10,
+    "eps_depth_divk": 418.00,
+    "lambda_a": 6.0000,
+    "lambda_r": 35.823,
+    "mass": 2.992E-26,
+    "eps": 1600.0,
+    "beta": 496.66E-30,
+    "assoc_scheme": "4C",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
+  },
+  "SAFTVRMIE-2": {
+    "m": 1.25656,
+    "sigma": 2.802422E-10,
+    "eps_depth_divk": 3.512321E+02,
+    "lambda_a": 6.0000,
+    "lambda_r": 2.512615E+01,
+    "mass": 2.992E-26,
+    "eps": 1.630570E+03,
+    "beta": 177.6236E-30,
+    "assoc_scheme": "4C",
+    "fh_order": 0,
+    "bib_reference": "Unpublished water parameters (courtesy of Edward Graham)",
+    "ref": "Graham"
   }
 }

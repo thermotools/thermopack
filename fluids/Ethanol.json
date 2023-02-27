@@ -133,5 +133,33 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "SAFTVRMIE-1": {
+    "m": 2.25648939,
+    "sigma": 3.2903E-10,
+    "eps_depth_divk": 238.97,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.282,
+    "mass": 0.0,
+    "eps": 2247.3,
+    "beta": 4.2794E-29,
+    "assoc_scheme": "3B",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
+  },
+  "SAFTVRMIE-2": {
+    "m": 1.7639,
+    "sigma": 3.6025E-10,
+    "eps_depth_divk": 307.92,
+    "lambda_a": 6.0000,
+    "lambda_r": 17.968,
+    "mass": 0.0,
+    "eps": 2380.0,
+    "beta": 150.18E-30,
+    "assoc_scheme": "3B",
+    "fh_order": 0,
+    "bib_reference": "Polishuk (2018) - 10.1016/j.molliq.2018.05.112",
+    "ref": "Polishuk"
   }
 }
