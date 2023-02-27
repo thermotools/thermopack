@@ -111,6 +111,17 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/Kontogeorgis-Folas2010",
+      "bib_reference": "10.1002/9780470747537",
+      "a0": 13.14274E+5,
+      "b": 0.072081,
+      "alphaParams": [0.70771,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.0,
+      "assoc_scheme": "NONE"
     }
   },
   "PR": {

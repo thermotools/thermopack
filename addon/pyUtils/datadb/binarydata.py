@@ -7,7 +7,7 @@ import math
 import json
 from datetime import datetime
 from data_utils import I, N_TAGS_PER_LINE, \
-    sci_print_float, print_float
+    sci_print_float, print_float, get_mix_model_parameter
 
 class binaries(object):
     """Read binary data form file, manipulate, save and generate
@@ -22,6 +22,8 @@ class binaries(object):
         self.eos = os.path.basename(filepath).split("_")[0]
         if "SAFTVRMIE" in os.path.basename(filepath):
             self.mixing = "SAFTVRMIE"
+        elif "CPA" in os.path.basename(filepath):
+            self.mixing = "CPA"
         elif "kij" in os.path.basename(filepath) or "lij" in os.path.basename(filepath):
             self.mixing = "vdW"
         else:
@@ -55,6 +57,28 @@ class binaries(object):
 
         return code_lines
 
+    def get_CPA_fortran_code(self, tag):
+        """
+        Output:
+        code_lines - Code lines
+        """
+        code_lines = []
+        code_lines.append(I+"type(CPAkijdata), parameter :: CPATAG" + " = &")
+        code_lines.append(3*I+"CPAkijdata(eosid = \"" + self.bins[tag]["eos"] + "\", &")
+        code_lines.append(3*I+"ref = \"" + self.bins[tag]["ref"] + "\", &")
+        code_lines.append(3*I+"bib_ref = \"" + self.bins[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I+"uid1 = \"" + self.bins[tag]["comp1"] + "\", &")
+        code_lines.append(3*I+"uid2 = \"" + self.bins[tag]["comp2"] + "\", &")
+        code_lines.append(3*I + 'kij_a = {:.8f}'.format(self.bins[tag]["kij_a"]) + ",  &")
+        code_lines.append(3*I + 'kij_eps = {:.8f}'.format(self.bins[tag]["kij_eps"]) + ",  &")
+        code_lines.append(3*I + 'kij_beta = {:.8f}'.format(self.bins[tag]["kij_beta"]) + ",  &")
+        code_lines.append(3*I + 'eps_comb_rule = {}'.format(get_mix_model_parameter(self.bins[tag]["eps_comb_rule"])) + ",  &")
+        code_lines.append(3*I + 'beta_comb_rule = {}'.format(get_mix_model_parameter(self.bins[tag]["beta_comb_rule"])) + "  &")
+        code_lines.append(3*I + ")")
+        code_lines.append("")
+
+        return code_lines
+
     def get_lij_fortran_code(self, tag):
         """
         Output:
@@ -83,6 +107,7 @@ class binaries(object):
         code_lines = []
         code_lines.append(I + "type (interGEdatadb), parameter :: GETAG" + " = &")
         code_lines.append(3*I + "interGEdatadb(eosid = \"" + self.eos + "\", &")
+
         code_lines.append(3*I + "mruleid = \"" + mixing + "\", &")
         code_lines.append(3*I + "ref = \"" + self.bins[tag]["ref"] + "\", &")
         code_lines.append(3*I + "bib_ref = \"" + self.bins[tag]["bib_reference"] + "\", &")
@@ -90,7 +115,8 @@ class binaries(object):
         code_lines.append(3*I + "uid2 = \"" + self.bins[tag]["comp2"] + "\", &")
         code_lines.append(3*I + 'kijvalue = {:.8f}'.format(self.bins[tag]["kij"]) + ", &")
         correlation = "1"
-        assert self.bins[tag]["correlation"] == "Default"
+        if self.bins[tag]["correlation"] != "Default":
+            correlation = "2"
         code_lines.append(3*I + "correlation = " + correlation + ", &")
         code_lines.append(3*I + 'alphaijvalue = (/{:.8e}, {:.8e}/)'.format(self.bins[tag]["alphaij"], self.bins[tag]["alphaji"]) + ", &")
         ge = []
@@ -119,6 +145,7 @@ class binaries(object):
         code_lines_vdW = []
         code_lines_GE = []
         code_lines_lij = []
+        code_lines_cpa = []
         if self.mixing != "SAFTVRMIE":
             for key in self.bins:
                 if "vdW" in key or "LK" in key:
@@ -129,11 +156,15 @@ class binaries(object):
                     cl = self.get_lij_fortran_code(key)
                     for line in cl:
                         code_lines_lij.append(line)
+                elif "CPA" in key:
+                    cl = self.get_CPA_fortran_code(key)
+                    for line in cl:
+                        code_lines_cpa.append(line)
                 else:
                     cl = self.get_GE_fortran_code(key)
                     for line in cl:
                         code_lines_GE.append(line)
-        return code_lines_vdW, code_lines_GE, code_lines_lij
+        return code_lines_vdW, code_lines_GE, code_lines_lij, code_lines_cpa
 
 
 class binary_list(object):
@@ -171,7 +202,8 @@ class binary_list(object):
         header.append("!! Time stamp: " + now)
         header.append("")
         header.append("module mixdatadb")
-        header.append(I+"use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb")
+        header.append(I+"use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb, CPAkijdata")
+        header.append(I+"use assocschemeutils, only: ariComb, geoComb")
         header.append(I+"implicit none")
         header.append(I+"public")
         header.append("")
@@ -179,13 +211,16 @@ class binary_list(object):
         self.nVDW = 1
         self.nGE = 1
         self.nLIJ = 1
+        self.nCPA = 1
         code_lines_vdW = []
         code_lines_GE = []
         code_lines_lij = []
+        code_lines_cpa = []
         code_lines_saftvrmie = []
         for bins in self.bin_list:
             #print(bins.filepath)
-            bin_code_lines_vdW, bin_code_lines_GE, bin_code_lines_lij = bins.get_fortran_code()
+            bin_code_lines_vdW, bin_code_lines_GE, bin_code_lines_lij, \
+                bin_code_lines_cpa = bins.get_fortran_code()
             for line in bin_code_lines_vdW:
                 new_line = self.replace_VDW_tag(line)
                 code_lines_vdW.append(new_line)
@@ -195,13 +230,18 @@ class binary_list(object):
             for line in bin_code_lines_lij:
                 new_line = self.replace_LIJ_tag(line)
                 code_lines_lij.append(new_line)
+            for line in bin_code_lines_cpa:
+                new_line = self.replace_CPA_tag(line)
+                code_lines_cpa.append(new_line)
         # Correct count to actual number of entries
         self.nVDW -= 1
         self.nGE -= 1
         self.nLIJ -= 1
+        self.nCPA -= 1
 
         # Combine lists
-        code_lines = header + code_lines_vdW + code_lines_GE + code_lines_lij
+        code_lines = header + code_lines_vdW + code_lines_GE + code_lines_lij \
+             + code_lines_cpa
 
         cl = self.get_VDW_array_fortran_code()
         for line in cl:
@@ -212,6 +252,10 @@ class binary_list(object):
             code_lines.append(line)
 
         cl = self.get_LIJ_array_fortran_code()
+        for line in cl:
+            code_lines.append(line)
+
+        cl = self.get_CPA_array_fortran_code()
         for line in cl:
             code_lines.append(line)
 
@@ -277,6 +321,17 @@ class binary_list(object):
         code_lines = self.get_array_fortran_code(code_lines,self.nLIJ,self.get_LIJ_tag)
         return code_lines
 
+    def get_CPA_array_fortran_code(self):
+        """Set up component array
+        Output:
+        code_lines - Code lines
+        """
+        code_lines = [""]
+        code_lines.append(I+"integer, parameter :: CPAmaxkij =" + str(self.nCPA))
+        code_lines.append(I+"type(CPAkijdata), dimension(CPAmaxkij), parameter :: CPAkijdb = (/&")
+        code_lines = self.get_array_fortran_code(code_lines,self.nCPA,self.get_CPA_tag)
+        return code_lines
+
     def get_VDW_tag(self,i_vdw=None):
         """FORTRAN component parameter name
         """
@@ -332,6 +387,25 @@ class binary_list(object):
         if "LIJTAG" in line:
             line = line.replace("LIJTAG",lijtag)
             self.nLIJ += 1
+        return line
+
+    def get_CPA_tag(self,i_cpa=None):
+        """FORTRAN CPA  parameter name
+        """
+        cpatag = "cpa"
+        if i_cpa is None:
+            cpatag += str(self.nCPA)
+        else:
+            cpatag += str(i_cpa)
+        return cpatag
+
+    def replace_CPA_tag(self, line):
+        """Replace CPATAG with FORTRAN parameter name
+        """
+        cpatag = self.get_CPA_tag()
+        if "CPATAG" in line:
+            line = line.replace("CPATAG",cpatag)
+            self.nCPA += 1
         return line
 
 

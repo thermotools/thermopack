@@ -62,6 +62,28 @@ module compdata
     procedure, public :: set_zero_vol_trs => cidatadb_set_zero_vol_trs
   end type cidatadb
 
+  !> Pure component parameters.
+  !> This data structure stores pure component parameters for the CPA-SRK and
+  !> CPA-PR equations of state.
+  !------------------------------------------------------------------------------------------------
+  type :: CPAdata
+    character(len=eosid_len) :: eosid
+    character (len=uid_len) :: compName
+    ! SRK fitted parameters.
+    real :: a0 !< [Pa*L^2/mol^2]. The usual a0 parameter.
+    real :: b  !< [L/mol]. The usual b parameter.
+    real :: alphaParams(3) !< Up to three parameters for use in alpha corr.
+    integer :: alphacorridx !< Either cpaClassicIdx, cpaTwuIdx, cpaMcIdx.
+    ! Association parameters.
+    real :: eps  !< [J/mol]. Caveat: people sometimes tabulate epsilon/R.
+    real :: beta !< [-]
+    ! Association scheme.
+    integer :: assoc_scheme
+    ! Fitting method used to obtain the parameters.
+    character(len=ref_len) :: ref
+    character(len=bibref_len) :: bib_reference
+  end type CPAdata
+
   type :: gendatadb
     character (len=uid_len) :: ident !< The component ID
     character (len=formula_len) :: formula !< Chemical formula
