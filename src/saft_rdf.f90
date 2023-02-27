@@ -11,6 +11,7 @@ module saft_rdf
 
 contains
 
+  !> Radial distribution function (RDF) interface for association.
   subroutine master_saft_rdf(eos,nc,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !> Depends on component indices i,j only for eosBH_pert
     use pc_saft_nonassoc, only: g_spc_saft_tvn, g_pc_saft_tvn, PCSAFT_eos, sPCSAFT_eos

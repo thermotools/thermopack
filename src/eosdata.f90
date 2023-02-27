@@ -23,8 +23,8 @@ module eosdata
   integer, parameter :: eosPC_SAFT = 5      !< PC-SAFT equation of state
   integer, parameter :: eosSPC_SAFT = 51    !< Simplefied PC-SAFT equation of state
   integer, parameter :: eosOPC_SAFT = 52    !< Original PC-SAFT equation of state
-  integer, parameter :: eosPCP_SAFT = 53    !< Original PC-SAFT equation of state
-  integer, parameter :: eosSPCP_SAFT = 54   !< Original PC-SAFT equation of state
+  integer, parameter :: eosPCP_SAFT = 53    !< Original PC-SAFT formulation with polar contributions
+  integer, parameter :: eosSPCP_SAFT = 54   !< Simplefied PC-SAFT equation of state with polar contributions
   integer, parameter :: eos_single = 6      !< Single component multiparamater eos
   integer, parameter :: meosMbwr19 = 611    !< MBWR19 (Bender) multiparameter equation of state
   integer, parameter :: meosMbwr32 = 612    !< MBWR32 multiparameter equation of state

@@ -777,7 +777,9 @@ contains
   subroutine hard_sphere_reference(hs_ref, exact_binary_dhs, enable_hs_extra)
     use saftvrmie_containers, only: svrm_opt
     ! Input
-    integer, intent(in) :: hs_ref !< Hard-sphere reference
+    integer, intent(in) :: hs_ref !< Hard-sphere reference. Options:
+    ! LAFITTE_HS_REF=1, SINGLE_COMP_HS_REF=2, ADDITIVE_HS_REF=3, NON_ADD_HS_REF=4
+    ! See Hammer et al 2020 (doi: 10.1063/1.5142771) for details on hard-sphere references.
     logical, optional, intent(in) :: exact_binary_dhs !< How to calculate cross d_ij
     logical, optional, intent(in) :: enable_hs_extra !< Correction of A_HS due to non-additive d_ij
     !
@@ -2670,6 +2672,7 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_a_chain_pure
 
+!> Test SAFT-VR Mie EOS differentials by one-sided numerical differentiation. Used for debugging only.
 subroutine test_fres(Ti,Vi,ni)
   use thermopack_constants
   use saftvrmie_containers
