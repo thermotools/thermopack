@@ -37,18 +37,41 @@ contains
   subroutine init_saftvrmie(nc,comp,eos,ref,mixing)
     use thermopack_var, only: gendata_pointer, base_eos_param
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use AssocSchemeUtils, only: no_assoc
+    use saftvrmie_association, only: calc_aij
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     class(base_eos_param), intent(inout) :: eos       !< Underlying cubic equation of state.
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
-    !cbeos%name = "SAFT-VR-MIE"
+    integer :: i,j
     select type(p_eos => eos)
     type is (saftvrmie_eos)
       call init_saftvrmie_containers(nc,comp,p_eos,ref,mixing)
+      !
+      ! Is any of the components self-assocociating
+      saftvrmie_param%isSelfAssociating = .false.
+      do i=1,nc
+        if (saftvrmie_param%comp(i)%assoc_scheme /= no_assoc) then
+          saftvrmie_param%isSelfAssociating = .true.
+          exit
+        endif
+      end do
+      if (saftvrmie_param%isSelfAssociating) then
+        call saftvrmie_param%hbc%allocate(nc)
+        saftvrmie_param%hbc%sigma_ij%d = saftvrmie_param%sigma_ij
+        do i=1,nc
+          do j=1,nc
+            if (saftvrmie_param%comp(i)%assoc_scheme /= no_assoc .and. &
+                 saftvrmie_param%comp(j)%assoc_scheme /= no_assoc) then
+              call calc_aij(saftvrmie_param%lambda_r_ij(i,j), saftvrmie_param%hbc%aij(:,:,i,j))
+            endif
+          enddo
+        enddo
+      endif
+      ! NOTE: Association is added in the saft_interface module
     end select
-    ! Association is added in the saft_interface module
 
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const

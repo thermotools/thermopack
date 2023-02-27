@@ -119,6 +119,14 @@
     "bib_reference": "10.1063/1.5136079",
     "kij": 0.12
   },
+  "KIJ-16": {
+    "eos" : "SAFTVRMIE",
+    "uid1": "H2O",
+    "uid2": "MEOH",
+    "ref": "Default/Dufal2015",
+    "bib_reference": "10.1080/00268976.2015.1029027",
+    "kij": 0.02
+  },
   "LIJ-1": {
     "eos" : "SAFTVRMIE",
     "uid1": "He",

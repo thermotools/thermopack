@@ -108,6 +108,28 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/Queimada2005",
+      "bib_reference": "10.1016/j.fluid.2004.08.011",
+      "a0": 1.2277E+5,
+      "b": 1.4515e-02,
+      "alphaParams": [0.67359,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 166.55e2,
+      "beta": 69.2E-03,
+      "assoc_scheme": "4C"
+    },
+    "CPA-2": {
+      "ref": "SINTEF",
+      "bib_reference": "",
+      "a0": 4.67542e+05,
+      "b": 1.57983e-02,
+      "alphaParams": [7.76671e-01,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 4.44953e+03,
+      "beta": 6.21918e-03,
+      "assoc_scheme": "2B"
     }
   },
   "PR": {
@@ -165,5 +187,33 @@
     "assoc_scheme": "2B",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
     "ref": "Kontogeorgis_Folas2001"
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.0,
+    "sigma": 3.0555E-10,
+    "eps_depth_divk": 418.00,
+    "lambda_a": 6.0000,
+    "lambda_r": 35.823,
+    "mass": 2.992E-26,
+    "eps": 1600.0,
+    "beta": 496.66E-30,
+    "assoc_scheme": "4C",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
+  },
+  "SAFTVRMIE-2": {
+    "m": 1.25656,
+    "sigma": 2.802422E-10,
+    "eps_depth_divk": 3.512321E+02,
+    "lambda_a": 6.0000,
+    "lambda_r": 2.512615E+01,
+    "mass": 2.992E-26,
+    "eps": 1.630570E+03,
+    "beta": 177.6236E-30,
+    "assoc_scheme": "4C",
+    "fh_order": 0,
+    "bib_reference": "Unpublished water parameters (courtesy of Edward Graham)",
+    "ref": "Graham"
   }
 }

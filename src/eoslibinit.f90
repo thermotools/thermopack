@@ -930,6 +930,7 @@ contains
     type(thermo_model), pointer      :: act_mod_ptr
     character(len=ref_len)           :: param_ref
     character(len=10)                :: label
+    logical                          :: polar_local
 
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
@@ -941,7 +942,9 @@ contains
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     label = "PC-SAFT"
+    polar_local = .false.
     if (present(polar)) then
+      polar_local = polar
       if (polar) label = "PCP-SAFT"
     endif
     if (present(simplified)) then
@@ -971,7 +974,7 @@ contains
     else
       param_ref = "DEFAULT"
     endif
-    if (polar .and. str_eq(param_ref,"DEFAULT")) then
+    if (polar_local .and. str_eq(param_ref,"DEFAULT")) then
       param_ref = "Gross2005/Gross2006" ! Make sure PCP entries are used
     endif
 

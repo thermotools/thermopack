@@ -603,8 +603,7 @@ contains
          mixing='Classic',comp_string="CO2",nphases=2,saft_ref="Gross2005")
     p_eos => get_active_eos()
     f = hyperdual_fres_multipol(p_eos,nc,T,V,n)
-    @assertEqual(-0.04385592808886066, f%f0, 0.04385592808886066*1.0e-10)
-
+    @assertEqual(-0.04385611664750655, f%f0, 0.04385611664750655*1.0e-10)
   end subroutine test_multipol_qq
 
   @Test
@@ -647,7 +646,7 @@ contains
     p_eos%mpol_param%enable_QQ = .false.
     p_eos%mpol_param%enable_DD = .false.
     f = hyperdual_fres_multipol(p_eos,nc,T,V,n)
-    @assertEqual(-2.0403851147736074E-002, f%f0, 1.0e-8)
+    @assertEqual(-2.2452749809708863E-002, f%f0, 1.0e-8)
 
   end subroutine test_multipol_dq
 

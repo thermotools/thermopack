@@ -288,42 +288,42 @@ contains
     assoc%beta_kl = 0.0
 
     do k=1,numAssocSites
-       do l=1,numAssocSites
+      do l=1,numAssocSites
 
-          ! Get component indices.
-          ic = site_to_compidx(assoc,k)
-          jc = site_to_compidx(assoc,l)
+        ! Get component indices.
+        ic = site_to_compidx(assoc,k)
+        jc = site_to_compidx(assoc,l)
 
-          if (ic == jc) then
-             ! Association between like molecules.
-             call compidx_to_sites(assoc,ic,k_first,k_last)
-             if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
-                assoc%eps_kl(k,l) = epsVal(ic)
-                assoc%beta_kl(k,l) = betaVal(ic)
-             end if
-          else
-             ! Cross-association between unlike molecules. (Would also work for
-             ! like molecules.)
-             call compidx_to_sites(assoc,ic,k_first,k_last)
-             call compidx_to_sites(assoc,jc,l_first,l_last)
-             if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
-                  assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
-                epsi = epsVal(ic)
-                betai = betaVal(ic)
-                sigi = sigmaVal(ic)
-                epsj = epsVal(jc)
-                betaj = betaVal(jc)
-                sigj = sigmaVal(jc)
-                assoc%eps_kl(k,l) = (epsi+epsj)/2
-                assoc%beta_kl(k,l) = sqrt(betai*betaj)*( 2*sqrt(sigi*sigj)/(sigi+sigj) )**3
-                if (saft_model==eosSAFT_VR_MIE) then
-                   print *, "NB: USING AN ARBITRARY COMBINING RULE FOR BONDING-VOLUME"
-                   print *, "CONSIDER SETTING BONDING VOLUME EXPLICITLY"
-                end if
-             end if
+        if (ic == jc) then
+          ! Association between like molecules.
+          call compidx_to_sites(assoc,ic,k_first,k_last)
+          if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
+            assoc%eps_kl(k,l) = epsVal(ic)
+            assoc%beta_kl(k,l) = betaVal(ic)
           end if
-
-       end do
+        else
+          ! Cross-association between unlike molecules. (Would also work for
+          ! like molecules.)
+          call compidx_to_sites(assoc,ic,k_first,k_last)
+          call compidx_to_sites(assoc,jc,l_first,l_last)
+          if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
+               assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
+            epsi = epsVal(ic)
+            betai = betaVal(ic)
+            sigi = sigmaVal(ic)
+            epsj = epsVal(jc)
+            betaj = betaVal(jc)
+            sigj = sigmaVal(jc)
+            if (saft_model == eosSAFT_VR_MIE) then
+              assoc%eps_kl(k,l) = sqrt(epsi*epsj)
+              assoc%beta_kl(k,l) = ((betai**(1.0/3.0) + betaj**(1.0/3.0))/2)**3
+            else
+              assoc%eps_kl(k,l) = (epsi+epsj)/2
+              assoc%beta_kl(k,l) = sqrt(betai*betaj)*( 2*sqrt(sigi*sigj)/(sigi+sigj) )**3
+            endif
+          endif
+        endif
+      end do
     end do
   end subroutine saft_setAssocParams
 

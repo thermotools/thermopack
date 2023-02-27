@@ -41,7 +41,7 @@ class svrm_component(component):
         code_lines.append(3*I + 'lambda_r = {}'.format(print_float(self.comp[tag]["lambda_r"])) + ", &")
         code_lines.append(3*I + 'mass = {}'.format(sci_print_float(self.comp[tag]["mass"])) + ", &")
         code_lines.append(3*I + 'eps = {}'.format(print_float(self.comp[tag]["eps"])) + ", &")
-        code_lines.append(3*I + 'beta = {}'.format(print_float(self.comp[tag]["beta"])) + ", &")
+        code_lines.append(3*I + 'beta = {:.4E}'.format(self.comp[tag]["beta"]) + ", &")
         code_lines.append(3*I + 'assoc_scheme = {}, &'.format(
             get_assoc_scheme_parameter(self.comp[tag]["assoc_scheme"])))
         code_lines.append(3*I + 'fh_order = {}'.format(str(self.comp[tag]["fh_order"])) + ", &")
