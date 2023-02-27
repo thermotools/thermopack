@@ -8,7 +8,7 @@ module pair_potentials
   type, abstract :: pair_potential
    contains
      procedure(calc_pot_intf), public, deferred  :: value
-     procedure(calc_B2_intf), public, deferred   :: B2
+     !procedure(calc_B2_intf), public, deferred   :: B2
      procedure(alpha_x_intf), public, deferred   :: alpha_x
   end type pair_potential
 
@@ -56,9 +56,25 @@ module pair_potentials
    contains
      procedure, public :: init => mie_potential_hd_init
      procedure, public :: value => mie_potential_hd_calc
-     procedure, public :: B2 => calc_B2_by_quadrature
+     !procedure, public :: B2 => calc_B2_by_quadrature
      procedure, public :: alpha_x => mie_potential_hd_calc_alpha_x
   end type mie_potential_hd
+
+  type, extends(pair_potential) :: sutherlandsum
+     !> u(r) = sum_i C(i)*eps*(sigma/r)**lam(i)
+     integer         :: nt                  !< Number of Sutherland terms [-]
+     type(hyperdual), allocatable :: C(:)   !< Coefficients of term [-]
+     type(hyperdual), allocatable :: lam(:) !< Exponents [-]
+     type(hyperdual) :: sigma               !< Diameter [m]
+     type(hyperdual) :: epsdivk             !< Energy divided by kB [K]
+     ! type(hyperdual) :: rmin        !< location of minimum [m]
+     ! type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
+   contains
+     procedure, public :: init => sutherlandsum_init
+     procedure, public :: value => sutherlandsum_calc
+     !procedure, public :: B2 => calc_B2_by_quadrature
+     procedure, public :: alpha_x => sutherlandsum_calc_alpha_x
+  end type sutherlandsum
 
   !> PURE COMPONENT PARAMETERS.
   ! ---------------------------------------------------------------------------
@@ -187,6 +203,71 @@ contains
     end if
   end function mie_potential_hd_calc_alpha_x
 
+
+  subroutine sutherlandsum_init(this, nt, C, lam, sigma, epsdivk)
+    class(sutherlandsum), intent(inout) :: this
+    integer, intent(in)         :: nt          !< Number of terms (-)
+    type(hyperdual), intent(in) :: C(nt)       !< Coefficients (-)
+    type(hyperdual), intent(in) :: lam(nt)     !< Exponents (-)
+    type(hyperdual), intent(in) :: sigma       !< Diameter (m)
+    type(hyperdual), intent(in) :: epsdivk     !< Energy (K)
+    ! Locals
+    integer :: stat
+
+    this%lam = lam
+    this%sigma = sigma
+    this%epsdivk = epsdivk
+
+    if (allocated(this%C)) then
+       deallocate(this%C,stat=stat)
+       if (stat /= 0) call stoperror("Unable to deallocate Sutherland coefficients")
+    end if
+    allocate(this%C(nt))
+    this%C = C
+
+    if (allocated(this%lam)) then
+       deallocate(this%lam,stat=stat)
+       if (stat /= 0) call stoperror("Unable to deallocate Sutherland exponents")
+    end if
+    allocate(this%lam(nt))
+    this%lam = lam
+
+  end subroutine sutherlandsum_init
+
+
+  function sutherlandsum_calc(this, r) result(pot)
+    class(sutherlandsum), intent(in) :: this
+    type(hyperdual), intent(in) :: r !< Separation (m)
+    type(hyperdual) :: pot           !< Potential value (J)
+    ! Locals
+    integer :: i
+
+    pot = 0.0
+    do i=1,this%nt
+       pot = pot + this%C(i) * this%epsdivk*(this%sigma/r)**this%lam(i)
+    end do
+  end function sutherlandsum_calc
+
+  type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
+    !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
+    class(sutherlandsum), intent(in) :: this !< This potential
+    type(hyperdual), intent(in) :: x         !< lower integration limit (-)
+    logical, intent(in), optional :: adim    !< adimensional value for alpha, or in ((J/K)*m^3)?
+    ! Locals
+    type(hyperdual) :: n, nu
+
+    do i=1,this%nt
+       n = this%lam(i)
+       alpha_x = alpha_x + this%C(i) * (x**(3.0-n)/(n-3.0))
+    end do
+    if (present(adim)) then
+       if (.not. adim) then
+          alpha_x = alpha_x * this%epsdivk * this%sigma**3
+       end if
+    end if
+  end function sutherlandsum_calc_alpha_x
+
+
  function B2_integrand(r, beta, pot) result(val)
     type(hyperdual), intent(in)         :: r    !< Separation (m)
     type(hyperdual), intent(in)         :: beta !< 1/kT (J)
@@ -199,7 +280,7 @@ contains
     !> Second virial coefficient (m^3)
     use quadratures
     class(mie_potential_hd), intent(in) :: pot !< Pair potential
-    type(hyperdual), intent(in)       :: beta  !< 1/kT (J)
+    type(hyperdual), intent(in)         :: beta  !< 1/kT (J)
     ! Locals
     type(hyperdual) :: r
     integer :: B2_quadrature = GAUSS_KRONROD_31 ! Modify to improve accuracy
