@@ -33,7 +33,6 @@ contains
     ! Locals
     integer :: idx_db
 
-
     idx_db = get_mix_db_idx(mrulestr)
     if (idx_db < 0) then
       call stoperror('unknown mixing rule')

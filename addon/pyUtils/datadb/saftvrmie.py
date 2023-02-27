@@ -10,6 +10,7 @@ from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, saft_eos_to_idx, \
     get_assoc_scheme_parameter
 from binarydata import binaries, binary_list
+from shutil import copy
 
 class svrm_component(component):
     """Read component data from file, manipulate, save and generate
@@ -363,3 +364,4 @@ if __name__ == "__main__":
     code_lines += bin_code
     code_lines += footer
     save_SVRM_fortran_file(code_lines)
+    copy('saftvrmie_datadb.f90', '../../../src/saftvrmie_datadb.f90')

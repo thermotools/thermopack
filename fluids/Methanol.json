@@ -74,6 +74,14 @@
     "bib_reference": "",
     "Zra": 0.2334
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -122,6 +130,16 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.100,
+    "sigma": 2.7998E-10,
+    "eps_depth_divk": 197.230,
+    "eps": 21077.162737018461,
+    "beta": 0.430921792317,
+    "assoc_scheme": "2C",
+    "bib_reference": "de Villiers et al. (2011). Doi: 10.1021/ie200521k",
+    "ref": "Default/deVilliers2011"
   },
   "SAFTVRMIE-1": {
     "m": 1.7989,

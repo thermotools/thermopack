@@ -1,6 +1,3 @@
-# Support for python2
-from __future__ import print_function
-
 import sys
 from ctypes import *
 from os import path
@@ -483,7 +480,7 @@ class thermo(object):
         """Get component name
 
         Args:
-            int: Component FORTRAN index
+            index (int): Component FORTRAN index
 
         Returns:
             comp (str): Component name
@@ -526,6 +523,12 @@ class thermo(object):
         '''
         self.activate()
         comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
         self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
                                                 POINTER(c_double),
                                                 POINTER(c_double),
@@ -533,12 +536,6 @@ class thermo(object):
                                                 POINTER(c_double),
                                                 POINTER(c_double)]
         self.s_eos_getCriticalParam.restype = None
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
 
         self.s_eos_getCriticalParam(byref(comp_c),
                                     byref(tci),
@@ -549,18 +546,23 @@ class thermo(object):
 
         return w.value
 
-    def get_critcal_parameters(self, i):
+    def critical_temperature(self, i):
         '''
-        Get pure fluid critical parameters of component i
+        Get critical temperature of component i
         Args:
             i (int) component FORTRAN index
         returns:
-            float: Critical temperature (K)
-            float: Critical volume (m3/mol)
-            float: Critical pressure (Pa)
+            float: critical temperature (K)
         '''
         self.activate()
         comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
         self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
                                                 POINTER(c_double),
                                                 POINTER(c_double),
@@ -569,11 +571,39 @@ class thermo(object):
                                                 POINTER(c_double)]
         self.s_eos_getCriticalParam.restype = None
 
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value
+
+    def critical_pressure(self, i):
+        '''
+        Get critical pressure of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
         w = c_double(0.0)
         tci = c_double(0.0)
         pci = c_double(0.0)
         vci = c_double(0.0)
         tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
 
         self.s_eos_getCriticalParam(byref(comp_c),
                                     byref(tci),
@@ -582,7 +612,7 @@ class thermo(object):
                                     byref(vci),
                                     byref(tnbi))
 
-        return tci.value, vci.value, pci.value
+        return pci.value
 
     def get_phase_flags(self):
         """Get phase identifiers used by thermopack
@@ -1643,7 +1673,8 @@ class thermo(object):
     # Temperature-volume property interfaces
     #################################
 
-    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None):
+    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None,
+                    property_flag="IR"):
         """Calculate pressure given temperature, volume and mol numbers.
 
         Args:
@@ -1653,6 +1684,7 @@ class thermo(object):
             dpdt (No type, optional): Flag to activate calculation. Defaults to None.
             dpdv (No type, optional): Flag to activate calculation. Defaults to None.
             dpdn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
 
         Returns:
             float: Pressure (Pa)
@@ -1679,6 +1711,7 @@ class thermo(object):
             dpdn_c = (c_double * len(n))(0.0)
 
         recalculate_c = POINTER(c_int)(c_int(1))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -1698,7 +1731,8 @@ class thermo(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c)
+                               recalculate_c,
+                               contribution_c)
 
         return_tuple = (P, )
         if not dpdt is None:
@@ -2417,7 +2451,7 @@ class thermo(object):
         """Calculate dew temperature given pressure and composition
 
         Args:
-            temp (float): Pressure (Pa)
+            press (float): Pressure (Pa)
             z (float): Compositon (-)
 
         Raises:
@@ -3283,7 +3317,7 @@ class thermo(object):
         """Calculate Joule-Thompson inversion curve
 
         Args:
-            temp (float): Temperature (K)
+            z (array like): Compozition
             nmax (int): Array size
 
         Returns:

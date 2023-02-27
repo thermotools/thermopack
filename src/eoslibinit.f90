@@ -911,7 +911,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize PC-SAFT EoS. Use: call init_pcsaft('CO2,N2')
   !----------------------------------------------------------------------------
-  subroutine init_pcsaft(comps,parameter_reference)
+  subroutine init_pcsaft(comps,parameter_reference,simplified,polar)
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
@@ -919,11 +919,18 @@ contains
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    logical, optional, intent(in) :: simplified !< Use simplified PC-SAFT (Von Solms et al. 2003: 10.1021/ie020753p)
+    logical, optional, intent(in) :: polar !< Use PCP-SAFT:
+    ! Gross 2005: 10.1002/aic.10502
+    ! Gross and Vrabec 2006: 10.1002/aic.10683
+    ! Vrabec and Gross 2008: 10.1021/jp072619u
     ! Locals
     integer                          :: ncomp, index, ierr
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
     character(len=ref_len)           :: param_ref
+    character(len=10)                :: label
+    logical                          :: polar_local
 
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
@@ -934,7 +941,17 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
-    call allocate_eos(ncomp, "PC-SAFT")
+    label = "PC-SAFT"
+    polar_local = .false.
+    if (present(polar)) then
+      polar_local = polar
+      if (polar) label = "PCP-SAFT"
+    endif
+    if (present(simplified)) then
+      if (simplified) label = "s"//trim(label)
+    endif
+
+    call allocate_eos(ncomp, trim(label))
 
     ! Number of phases
     act_mod_ptr%nph = 3
@@ -956,6 +973,9 @@ contains
       param_ref = parameter_reference
     else
       param_ref = "DEFAULT"
+    endif
+    if (polar_local .and. str_eq(param_ref,"DEFAULT")) then
+      param_ref = "Gross2005/Gross2006" ! Make sure PCP entries are used
     endif
 
     ! Initialize components module

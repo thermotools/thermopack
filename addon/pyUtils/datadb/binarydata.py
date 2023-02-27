@@ -1,5 +1,4 @@
 """Module manipulating binary interaction data in thermopack"""
-from __future__ import print_function
 import numpy as np
 from sys import exit
 import os
@@ -8,6 +7,7 @@ import json
 from datetime import datetime
 from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, get_mix_model_parameter
+from shutil import copy
 
 class binaries(object):
     """Read binary data form file, manipulate, save and generate
@@ -22,6 +22,8 @@ class binaries(object):
         self.eos = os.path.basename(filepath).split("_")[0]
         if "SAFTVRMIE" in os.path.basename(filepath):
             self.mixing = "SAFTVRMIE"
+        elif "PC-SAFT" in os.path.basename(filepath):
+            self.mixing = "PC-SAFT"
         elif "CPA" in os.path.basename(filepath):
             self.mixing = "CPA"
         elif "kij" in os.path.basename(filepath) or "lij" in os.path.basename(filepath):
@@ -146,7 +148,7 @@ class binaries(object):
         code_lines_GE = []
         code_lines_lij = []
         code_lines_cpa = []
-        if self.mixing != "SAFTVRMIE":
+        if self.mixing != "SAFTVRMIE" and self.mixing != "PC-SAFT":
             for key in self.bins:
                 if "vdW" in key or "LK" in key:
                     cl = self.get_vdW_fortran_code(key)
@@ -412,4 +414,4 @@ class binary_list(object):
 if __name__ == "__main__":
     binl = binary_list()
     binl.save_fortran_file("mixdatadb.f90")
-
+    copy('mixdatadb.f90', '../../../src/mixdatadb.f90')

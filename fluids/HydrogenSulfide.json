@@ -74,6 +74,14 @@
     "bib_reference": "",
     "Zra": 0.2855
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -129,6 +137,26 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 1.6941,
+    "sigma": 3.0214E-10,
+    "eps_depth_divk": 226.790,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
+  },
+  "PC-SAFT-2": {
+    "m": 1.355,
+    "sigma": 3.309E-10,
+    "eps_depth_divk": 234.250,
+    "eps": 6491.932412254049,
+    "beta": 0.0010,
+    "assoc_scheme": "2B",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "ref": "Default/Tang_Gross2010"
   },
   "SAFTVRMIE-1": {
     "m": 1.0,

@@ -11,9 +11,10 @@ module saft_rdf
 
 contains
 
+  !> Radial distribution function (RDF) interface for association.
   subroutine master_saft_rdf(eos,nc,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !> Depends on component indices i,j only for eosBH_pert
-    use pc_saft_nonassoc, only: g_spc_saft_tvn, PCSAFT_eos
+    use pc_saft_nonassoc, only: g_spc_saft_tvn, g_pc_saft_tvn, PCSAFT_eos, sPCSAFT_eos
     use saftvrmie_hardsphere, only: calc_gij_boublik
     use saftvrmie_containers, only: saftvrmie_eos
     use thermopack_var, only: base_eos_param
@@ -37,6 +38,8 @@ contains
       if (present(g_TV)) g_TV = 0.0
       if (present(g_Tn)) g_Tn = 0.0
     class is(PCSAFT_eos)
+      call g_pc_saft_TVn(p_eos,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+    class is(sPCSAFT_eos)
       call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     class is(saftvrmie_eos)
       call g_rdf_saftvrmie_ij_TVN(T,v,n,i,j,p_eos%saftvrmie_var,&

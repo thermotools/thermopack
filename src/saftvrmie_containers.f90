@@ -22,6 +22,7 @@ module saftvrmie_containers
     !> Second temperature differential of hard sphere diameter
     real, allocatable, dimension(:,:) :: d_TT
   contains
+    procedure, public :: update_symmetric_diameters
     ! Assignment operator
     procedure, public :: assign_saftvrmie_dhs
     generic, public :: assignment(=) => assign_saftvrmie_dhs
@@ -251,7 +252,7 @@ module saftvrmie_containers
   public :: cleanup_saftvrmie_param_container
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
-  public :: svrm_opt
+  public :: svrm_opt, get_feynman_hibbs_order
 
 Contains
 
@@ -374,6 +375,15 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
   end subroutine get_saftvrmie_pure_fluid_param
 
+  !> Get quantum parameters for SAFT-VRQ Mie
+  subroutine get_feynman_hibbs_order(ic,fh,fh_hs)
+    integer, intent(in)  :: ic          !< Component index
+    integer, intent(out)    :: fh       !< Specifies order of quantum corr. included
+    integer, intent(out)    :: fh_hs    !< Specifies the Q-corr of the reference hard-sphere
+    !
+    fh = svrm_opt%quantum_correction
+    fh_hs = svrm_opt%quantum_correction_hs
+  end subroutine get_feynman_hibbs_order
 
   !> Set the de Boer parameter Lambda, by adjusting the mass of the component
   !> \author Ailo Aasen, May 2018
@@ -1616,6 +1626,24 @@ Contains
     this%d_T = other%d_T
     this%d_TT = other%d_TT
   end subroutine assign_saftvrmie_dhs
+
+  subroutine update_symmetric_diameters(this)
+    class(saftvrmie_dhs), intent(inout) :: this
+    !
+    integer :: i, j
+    ! Loop over all components and obtain the mixture values
+    do i=1,size(this%d,dim=1)-1
+      do j=i+1,size(this%d,dim=1)
+        this%d(i,j)=0.5*(this%d(i,i)+this%d(j,j))
+        this%d_T(i,j)=0.5*(this%d_T(i,i)+this%d_T(j,j))
+        this%d_TT(i,j)=0.5*(this%d_TT(i,i)+this%d_TT(j,j))
+        !
+        this%d(j,i)=this%d(i,j)
+        this%d_T(j,i)=this%d_T(i,j)
+        this%d_TT(j,i)=this%d_TT(i,j)
+      end do
+    end do
+  end subroutine update_symmetric_diameters
 
   subroutine assign_saftvrmie_zeta(this,other)
     class(saftvrmie_zeta), intent(inout) :: this

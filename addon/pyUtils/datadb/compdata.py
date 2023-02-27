@@ -10,7 +10,7 @@ from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, \
     get_assoc_scheme_parameter, \
     get_alpha_index_parameter
-
+from shutil import copy
 
 def get_keys_from_base_name(d,name):
     key_list = []
@@ -95,7 +95,9 @@ class component(object):
         code_lines.append(3*I + 'ant = (/{:.8e}, {:.8e}, {:.8e}/)'.format(self.comp["saturation"]["ant"][0], self.comp["saturation"]["ant"][1], self.comp["saturation"]["ant"][2]) + ", &")
         code_lines.append(3*I + 'Tantmin = {:.4f}'.format(self.comp["saturation"]["Tmin"]) + ", &")
         code_lines.append(3*I + 'Tantmax = {:.4f}'.format(self.comp["saturation"]["Tmax"]) + ", &")
-        code_lines.append(3*I + 'Zra = {:.6f}'.format(self.comp["rackett_factor"]["Zra"]) + " &")
+        code_lines.append(3*I + 'Zra = {:.6f}'.format(self.comp["rackett_factor"]["Zra"]) + ", &")
+        code_lines.append(3*I + 'mu_dipole = {:.6f}'.format(self.comp["dipole_moment"]["mu"]) + ", &")
+        code_lines.append(3*I + 'q_quadrupole = {:.6f}'.format(self.comp["quadrupole_moment"]["Q"]) + " &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -544,3 +546,4 @@ class comp_list(object):
 if __name__ == "__main__":
     compl = comp_list()
     compl.save_fortran_file("compdatadb.f90")
+    copy('compdatadb.f90', '../../../src/compdatadb.f90')

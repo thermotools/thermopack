@@ -7,8 +7,13 @@ sci_print_float = lambda x, p=None : np.format_float_scientific(x, precision=p, 
 print_float = lambda x, p=None : np.format_float_positional(x, precision=p, trim=".")
 
 def saft_eos_to_idx(eos):
-    if (eos.replace(" ", "").replace("-", "").replace("_", "") == "SAFTVRMIE"):
+    mod_eos = eos.replace(" ", "").replace("-", "").replace("_", "").upper()
+    if (mod_eos == "SAFTVRMIE"):
         eosidx = "eosSAFT_VR_MIE"
+    elif (mod_eos == "PCSAFT"):
+        eosidx = "eosPC_SAFT"
+    elif (mod_eos == "SPCSAFT"):
+        eosidx = "eosSPC_SAFT"
     else:
         eosidx = "eosUNKNOWN"
     return eosidx
