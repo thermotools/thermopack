@@ -35,6 +35,7 @@ from __future__ import print_function
 import sys
 from ctypes import *
 from os import path
+import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
@@ -82,6 +83,8 @@ class thermo(object):
         self.nc = None
         self.minimum_temperature_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tptmin"))
+        self.maximum_temperature_c = c_double.in_dll(
+            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
         self.minimum_pressure_c = c_double.in_dll(
             self.tp, self.get_export_name("thermopack_constants", "tppmin"))
         self.maximum_pressure_c = c_double.in_dll(
@@ -528,7 +531,7 @@ class thermo(object):
         Get component name
 
         Args:
-            int: Component FORTRAN index
+            index (int): Component FORTRAN index
 
         Returns:
             comp (str): Component name
@@ -572,6 +575,12 @@ class thermo(object):
         '''
         self.activate()
         comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
         self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
                                                 POINTER(c_double),
                                                 POINTER(c_double),
@@ -579,12 +588,6 @@ class thermo(object):
                                                 POINTER(c_double),
                                                 POINTER(c_double)]
         self.s_eos_getCriticalParam.restype = None
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
 
         self.s_eos_getCriticalParam(byref(comp_c),
                                     byref(tci),
@@ -594,41 +597,6 @@ class thermo(object):
                                     byref(tnbi))
 
         return w.value
-
-    def get_critcal_parameters(self, i):
-        '''Utility
-        Get pure fluid critical parameters of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: Critical temperature (K)
-            float: Critical volume (m3/mol)
-            float: Critical pressure (Pa)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return tci.value, vci.value, pci.value
 
     def get_phase_flags(self):
         """Utility
@@ -668,6 +636,7 @@ class thermo(object):
         self.SOLIDPH = iSOLIDPH.value
         self.FAKEPH = iFAKEPH.value
 
+
     def get_phase_type(self, i_phase):
         """Utility
         Get phase type
@@ -685,7 +654,7 @@ class thermo(object):
     def set_tmin(self, temp):
         """Utility
         Set minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Args:
             temp (float): Temperature (K)
@@ -696,7 +665,7 @@ class thermo(object):
     def get_tmin(self):
         """Utility
         Get minimum temperature in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 80 K.
 
         Returns:
             float: Temperature (K)
@@ -704,25 +673,69 @@ class thermo(object):
         temp = self.minimum_temperature_c.value
         return temp
 
+    def set_tmax(self, temp):
+        """Utility
+        Set maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 999 K.
+
+        Args:
+            temp (float): Temperature (K)
+        """
+        if temp is not None:
+            self.maximum_temperature_c.value = temp
+
+    def get_tmax(self):
+        """Utility
+        Get maximum temperature in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 999 K.
+
+        Returns:
+            float: Temperature (K)
+        """
+        temp = self.maximum_temperature_c.value
+        return temp
+
     def set_pmin(self, press):
         """Utility
         Set minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.minimum_pressure_c.value = press
 
+    def get_pmin(self):
+        """Utility
+        Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 10 Pa.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.minimum_pressure_c.value
+        return press
+
     def set_pmax(self, press):
         """Utility
         Set minimum pressure in Thermopack. Used to limit search
-        domain for numerical solvers.
+        domain for numerical solvers. Default value set on init is 100 MPa.
 
         Args:
             press (float): Pressure (Pa)
         """
         self.maximum_pressure_c.value = press
+
+    def get_pmax(self):
+        """Utility
+        Get minimum pressure in Thermopack. Used to limit search
+        domain for numerical solvers. Default value set on init is 100 MPa.
+
+        Args:
+            press (float): Pressure (Pa)
+        """
+        press = self.maximum_pressure_c.value
+        return press
 
     #################################
     # Phase properties
@@ -1673,7 +1686,7 @@ class thermo(object):
     # Temperature-volume property interfaces
     #################################
 
-    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None):
+    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None, property_flag='IR'):
         """TV-property
         Calculate pressure given temperature, volume and mol numbers.
 
@@ -1684,6 +1697,7 @@ class thermo(object):
             dpdt (No type, optional): Flag to activate calculation. Defaults to None.
             dpdv (No type, optional): Flag to activate calculation. Defaults to None.
             dpdn (No type, optional): Flag to activate calculation. Defaults to None.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') pressure. Defaults to 'IR'.
 
         Returns:
             float: Pressure (Pa)
@@ -1710,6 +1724,7 @@ class thermo(object):
             dpdn_c = (c_double * len(n))(0.0)
 
         recalculate_c = POINTER(c_int)(c_int(1))
+        contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -1729,7 +1744,8 @@ class thermo(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c)
+                               recalculate_c,
+                               contribution_c)
 
         return_tuple = (P, )
         if not dpdt is None:
@@ -1753,7 +1769,7 @@ class thermo(object):
             dedt (No type, optional): Flag to activate calculation. Defaults to None.
             dedv (No type, optional): Flag to activate calculation. Defaults to None.
             dedn (No type, optional): Flag to activate calculation. Defaults to None.
-            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') internal energy. Defaults to 'IR'.
 
         Returns:
             float: Energy (J)
@@ -2460,7 +2476,7 @@ class thermo(object):
         Calculate dew temperature given pressure and composition
 
         Args:
-            temp (float): Pressure (Pa)
+            press (float): Pressure (Pa)
             z (float): Compositon (-)
 
         Raises:
@@ -2985,7 +3001,9 @@ class thermo(object):
                    maximum_temperature=500.0,
                    nmax=100):
         """Isoline
-        Get isobar at specified pressure.
+        Get isobar at specified pressure. Use as
+        `T, v, s, h = get_isobar(p, z)`, where `(T, v, s, h)` is the temperature, specific volume, specific entropy and
+        specific enthalpy along the isobar with pressure `p` and molar composition `z`.
 
         Args:
             press (float): Pressure (Pa)
@@ -2995,7 +3013,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on iso-bar. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, specific volume, specific entropy, specific enthalpy)
+            along the isobar.
         """
         self.activate()
         press_c = c_double(press)
@@ -3049,7 +3068,9 @@ class thermo(object):
                       maximum_temperature=500.0,
                       nmax=100):
         """Isoline
-        Get isenthalpy given specified enthalpy.
+        Get isenthalpic line at specified enthalpy. Use as
+        `T, p, v, s = get_isenthalp(h, z)`, where `(T, p, v, s)` is the temperature, pressure, specific volume and
+        specific entropy along the isenthalp with specific enthalpy `h` and molar composition `z`.
 
         Args:
             enthalpy (float): Enthalpy (J/mol)
@@ -3061,7 +3082,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on isenthalp. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific entropy) along the
+            isenthalp.
         """
         self.activate()
         enthalpy_c = c_double(enthalpy)
@@ -3121,7 +3143,9 @@ class thermo(object):
                       maximum_temperature=500.0,
                       nmax=100):
         """Isoline
-        Get isentrope at specified entropy.
+        Get isentrope at specified entropy. Use as
+        `T, p, v, h = get_isenthalp(s, z)`, where `(T, p, v, h)` is the temperature, pressure, specific volume and
+        specific enthalpy along the isentrope with specific entropy `s` and molar composition `z`.
 
         Args:
             entropy (float): Entropy (J/mol/K)
@@ -3133,7 +3157,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on isentrope. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific enthalpy) along the
+            isentrope.
         """
         self.activate()
         entropy_c = c_double(entropy)
@@ -3233,6 +3258,75 @@ class thermo(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+    def critical_temperature(self, i):
+        '''Stability interface
+        Get critical temperature of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical temperature (K)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value
+
+    def critical_pressure(self, i):
+        '''Stability interface
+        Get critical pressure of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return pci.value
 
     #################################
     # Virial interfaces
@@ -3341,7 +3435,7 @@ class thermo(object):
         Calculate Joule-Thompson inversion curve
 
         Args:
-            temp (float): Temperature (K)
+            z (array like): Compozition
             nmax (int): Array size
 
         Returns:

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-02-21T19:53:11.841275
+Generated at: 2023-02-28T18:21:11.242141
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -17,7 +17,7 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtNone-dlnphidvNone-dlnphidnNone)
     * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
     * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
-    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone)
+    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
   * [Tp-property interfaces](#Tp-property-interfaces)
     * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
     * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
@@ -42,18 +42,20 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
-    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure15000000.0-minimum_pressure100000.0-maximum_dz0.003-maximum_dlns0.01)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_bp_term](#get_bp_termself-i_term)
-    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure15000000.0-minimum_temperatureNone-step_sizeNone-calc_vFalse)
-    * [global_binary_plot](#global_binary_plotself-maximum_pressure15000000.0-minimum_pressure100000.0-minimum_temperature150.0-maximum_temperature500.0-include_azeotropesFalse)
-    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure15000000.0-minimum_temperature170.0-calc_esvFalse)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_sizeNone-calc_vFalse)
+    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
+    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvFalse)
   * [Isolines](#Isolines)
-    * [get_isenthalp](#get_isenthalpself-enthalpy-z-minimum_pressure100000.0-maximum_pressure15000000.0-minimum_temperature200.0-maximum_temperature500.0-nmax100)
-    * [get_isentrope](#get_isentropeself-entropy-z-minimum_pressure100000.0-maximum_pressure15000000.0-minimum_temperature200.0-maximum_temperature500.0-nmax100)
-    * [get_isobar](#get_isobarself-press-z-minimum_temperature200.0-maximum_temperature500.0-nmax100)
-    * [get_isotherm](#get_isothermself-temp-z-minimum_pressure100000.0-maximum_pressure15000000.0-nmax100)
+    * [get_isenthalp](#get_isenthalpself-enthalpy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isentrope](#get_isentropeself-entropy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isobar](#get_isobarself-press-z-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isotherm](#get_isothermself-temp-z-minimum_pressure1000000-maximum_pressure150000000-nmax100)
   * [Stability interfaces](#Stability-interfaces)
-    * [critical](#criticalself-n-temp0.0-v0.0-tol1e-07)
+    * [critical](#criticalself-n-temp00-v00-tol1e-07)
+    * [critical_pressure](#critical_pressureself-i)
+    * [critical_temperature](#critical_temperatureself-i)
   * [Virial interfaces](#Virial-interfaces)
     * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
     * [second_virial_matrix](#second_virial_matrixself-temp)
@@ -64,11 +66,13 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
     * [get_comp_name](#get_comp_nameself-index)
-    * [get_critcal_parameters](#get_critcal_parametersself-i)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
+    * [get_pmax](#get_pmaxself)
+    * [get_pmin](#get_pminself)
+    * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silentTrue-Tc_initialsNone-vc_initialsNone)
@@ -76,6 +80,7 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
+    * [set_tmax](#set_tmaxself-temp)
     * [set_tmin](#set_tminself-temp)
   * [Internal methods](#Internal-methods)
     * [\_\_del\_\_](#__del__self)
@@ -341,9 +346,9 @@ Calculate internal energy given temperature, volume and mol numbers.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (integer, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (str, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual ('R'), ideal ('I') or total ('IR') internal energy. Defaults to 'IR'.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -357,7 +362,7 @@ Calculate internal energy given temperature, volume and mol numbers.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None)`
+### `pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None, property_flag='IR')`
 Calculate pressure given temperature, volume and mol numbers.
 
 #### Args:
@@ -385,6 +390,10 @@ Calculate pressure given temperature, volume and mol numbers.
 &nbsp;&nbsp;&nbsp;&nbsp; **dpdn (No type, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (str, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual ('R'), ideal ('I') or total ('IR') pressure. Defaults to 'IR'.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1233,7 +1242,7 @@ Calculate dew temperature given pressure and composition
 
 #### Args:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
 
@@ -1485,7 +1494,7 @@ Calculate phase envelope including solid lines
 Computing isolines.
 
 ### `get_isenthalp(self, enthalpy, z, minimum_pressure=100000.0, maximum_pressure=15000000.0, minimum_temperature=200.0, maximum_temperature=500.0, nmax=100)`
-Get isenthalpy given specified enthalpy.
+Get isenthalpic line at specified enthalpy. Use as `T, p, v, s = get_isenthalp(h, z)`, where `(T, p, v, s)` is the temperature, pressure, specific volume and specific entropy along the isenthalp with specific enthalpy `h` and molar composition `z`.
 
 #### Args:
 
@@ -1521,12 +1530,16 @@ Get isenthalpy given specified enthalpy.
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Multiple numpy arrays.
+&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, pressure, specific volume, specific entropy) along the
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; isenthalp.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `get_isentrope(self, entropy, z, minimum_pressure=100000.0, maximum_pressure=15000000.0, minimum_temperature=200.0, maximum_temperature=500.0, nmax=100)`
-Get isentrope at specified entropy.
+Get isentrope at specified entropy. Use as `T, p, v, h = get_isenthalp(s, z)`, where `(T, p, v, h)` is the temperature, pressure, specific volume and specific enthalpy along the isentrope with specific entropy `s` and molar composition `z`.
 
 #### Args:
 
@@ -1562,12 +1575,16 @@ Get isentrope at specified entropy.
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Multiple numpy arrays.
+&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, pressure, specific volume, specific enthalpy) along the
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; isentrope.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `get_isobar(self, press, z, minimum_temperature=200.0, maximum_temperature=500.0, nmax=100)`
-Get isobar at specified pressure.
+Get isobar at specified pressure. Use as `T, v, s, h = get_isobar(p, z)`, where `(T, v, s, h)` is the temperature, specific volume, specific entropy and specific enthalpy along the isobar with pressure `p` and molar composition `z`.
 
 #### Args:
 
@@ -1595,7 +1612,11 @@ Get isobar at specified pressure.
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Multiple numpy arrays.
+&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, specific volume, specific entropy, specific enthalpy)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; along the isobar.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1685,6 +1706,40 @@ Calculate critical point in variables T and V
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `critical_pressure(self, i)`
+Get critical pressure of component i
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  component FORTRAN index (first index is 1)
+
+#### returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  critical pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `critical_temperature(self, i)`
+Get critical temperature of component i
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  component FORTRAN index (first index is 1)
+
+#### returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  critical temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ## Virial interfaces
 
 Retrieve various virial coefficients.
@@ -1763,9 +1818,9 @@ Calculate Joule-Thompson inversion curve
 
 #### Args:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **z (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compozition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **nmax (int):** 
 
@@ -1822,7 +1877,7 @@ Get component name
 
 #### Args:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **int:** 
+&nbsp;&nbsp;&nbsp;&nbsp; **index (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component FORTRAN index
 
@@ -1833,11 +1888,6 @@ Get component name
 &nbsp;&nbsp;&nbsp;&nbsp; **comp (str):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component name
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-### `get_critcal_parameters(self, i)`
-Get pure fluid critical parameters of component i Args: i (int) component FORTRAN index returns: float: Critical temperature (K) float: Critical volume (m3/mol) float: Critical pressure (Pa) 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1909,8 +1959,41 @@ Get phase type
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `get_pmax(self)`
+Get minimum pressure in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 100 MPa.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_pmin(self)`
+Get minimum pressure in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 10 Pa.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_tmax(self)`
+Get maximum temperature in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 999 K.
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `get_tmin(self)`
-Get minimum temperature in Thermopack. Used to limit search domain for numerical solvers.
+Get minimum temperature in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 80 K.
 
 #### Returns:
 
@@ -1989,7 +2072,7 @@ Set specific ideal entropy reference value
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `set_pmax(self, press)`
-Set minimum pressure in Thermopack. Used to limit search domain for numerical solvers.
+Set minimum pressure in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 100 MPa.
 
 #### Args:
 
@@ -2000,7 +2083,7 @@ Set minimum pressure in Thermopack. Used to limit search domain for numerical so
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `set_pmin(self, press)`
-Set minimum pressure in Thermopack. Used to limit search domain for numerical solvers.
+Set minimum pressure in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 10 Pa.
 
 #### Args:
 
@@ -2010,8 +2093,19 @@ Set minimum pressure in Thermopack. Used to limit search domain for numerical so
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `set_tmax(self, temp)`
+Set maximum temperature in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 999 K.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `set_tmin(self, temp)`
-Set minimum temperature in Thermopack. Used to limit search domain for numerical solvers.
+Set minimum temperature in Thermopack. Used to limit search domain for numerical solvers. Default value set on init is 80 K.
 
 #### Args:
 

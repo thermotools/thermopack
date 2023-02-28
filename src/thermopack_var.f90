@@ -7,6 +7,7 @@ module thermopack_var
   use compdata, only: gendata_pointer
   use utilities, only: get_thread_index
   use association_var, only: association
+  use multipol_var, only: multipol_param
   implicit none
   save
   !
@@ -38,6 +39,7 @@ module thermopack_var
     logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
     !
     type(association), pointer :: assoc => NULL()
+    type(multipol_param), pointer :: mpol_param => NULL()
 
   contains
     procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
@@ -289,6 +291,11 @@ contains
       if (istat /= 0) print *,"Error deallocating eos%assoc"
       eos%assoc => NULL()
     endif
+    if (associated(eos%mpol_param)) then
+      deallocate(eos%mpol_param, stat=istat)
+      if (istat /= 0) print *,"Error deallocating eos%mpol_param"
+      eos%mpol_param => NULL()
+    endif
   end subroutine base_eos_dealloc
 
   subroutine assign_base_eos_param(this, other)
@@ -309,6 +316,14 @@ contains
         if (istat /= 0) print *,"Error allocating assoc"
       endif
       this%assoc = other%assoc
+    endif
+
+    if (associated(other%mpol_param)) then
+      if (.not. associated(this%mpol_param)) then
+        allocate(this%mpol_param, stat=istat)
+        if (istat /= 0) print *,"Error allocating mpol_param"
+      endif
+      this%mpol_param = other%mpol_param
     endif
 
   end subroutine assign_base_eos_param

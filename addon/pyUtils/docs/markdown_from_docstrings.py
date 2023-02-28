@@ -40,7 +40,7 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
         to extract the list of class methods.
 
     6 : Use
-            method_dict = plit_methods_by_section(sections, my_methods)
+            method_dict = split_methods_by_section(sections, my_methods)
         to split the methods into a single list for each method, placed in a dict
 
     7 : Use
@@ -264,8 +264,11 @@ def thermo_to_markdown():
     ofile_text += get_toc(sections, section_headers, method_dict)
     ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
 
-    with open(MARKDOWN_DIR + 'thermo_methods.md', 'w') as ofile:
+    filename = 'thermo_methods.md'
+    with open(MARKDOWN_DIR + filename, 'w') as ofile:
         ofile.write(ofile_text)
+
+    print('Wrote', filename, 'to', MARKDOWN_DIR + filename)
 
 if __name__ == '__main__':
     thermo_to_markdown()

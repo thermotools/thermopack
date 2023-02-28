@@ -246,6 +246,25 @@ contains
 
   end subroutine test_fres_tv_PCSAFT
 
+  @Test
+  subroutine test_fres_tv_PCPSAFT()
+    ! Test residual reduced Helmholtz function differentials
+    ! MH, 2017-02
+    real :: T0, P0
+    integer, parameter :: ncomp = 2
+    real, dimension(ncomp) :: n0
+    character(len=20) :: components
+
+    n0(1:ncomp) = [1.0, 1.0]
+    P0 = 5.0e6
+    T0 = 300.0
+    components = "CO2,DME"
+
+    call test_fres_tv_model(ncomp,"PCP-SAFT",trim(components),T0,P0,n0,&
+         saft_ref="Gross2005/Gross2006")
+
+  end subroutine test_fres_tv_PCPSAFT
+
   ! @Test
   ! subroutine test_fres_tv_EOSCG()
   !   ! Test residual reduced Helmholtz function differentials
@@ -316,7 +335,7 @@ contains
     sumn = sum(n0)
     x = n0/sumn
     ! Test model
-    silent_init = .False.
+    silent_init = .true.
 
     call init_thermo(trim(model), trim(mixing_l), trim(alpha_l),&
          trim(components), 1, saft_ref=saft_ref_l)
@@ -342,25 +361,29 @@ contains
     n = n0
     v = v0
     call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
-    @assertEqual(F_T,(F2-F)/dt,10.0*eps*abs(F_T))
-    @assertEqual(F_TT,(F2_T-F_T)/dt,10.0*eps*abs(F_TT))
-    @assertEqual(F_TV,(F2_V-F_V)/dt,10.0*eps*abs(F_TV))
+    t = t0 - dt
+    call Fres(T,V,n,F=F1,F_T=F1_T,F_V=F1_V,F_n=F1_n)
+    @assertEqual(F_T,(F2-F1)/dt/2,0.01*eps*abs(F_T))
+    @assertEqual(F_TT,(F2_T-F1_T)/dt/2,0.01*eps*abs(F_TT))
+    @assertEqual(F_TV,(F2_V-F1_V)/dt/2,0.01*eps*abs(F_TV))
     do i=1,ncomp
-      @assertEqual(F_Tn(i),(F2_n(i)-F_n(i))/dt,10.0*eps*abs(F_Tn(i)))
+      @assertEqual(F_Tn(i),(F2_n(i)-F1_n(i))/dt/2,0.01*eps*abs(F_Tn(i)))
     enddo
     ! Volume differentials
     t = t0
     n = n0
     v = v0 + dv
     call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n,F_VV=F2_VV)
-    @assertEqual(F_V,(F2-F)/dv,16.0*eps*abs(F_V))
-    @assertEqual(F_VV,(F2_V-F_V)/dv,15.0*eps*abs(F_VV))
+    v = v0 - dv
+    call Fres(T,V,n,F=F1,F_T=F1_T,F_V=F1_V,F_n=F1_n,F_VV=F1_VV)
+    @assertEqual(F_V,(F2-F1)/dv/2,0.01*eps*abs(F_V))
+    @assertEqual(F_VV,(F2_V-F1_V)/dv/2,0.1*eps*abs(F_VV))
     if (isCubic) then
-      @assertEqual(F_VVV,(F2_VV-F_VV)/dv,10.0*eps*abs(F_VVV))
+      @assertEqual(F_VVV,(F2_VV-F1_VV)/dv/2,0.01*eps*abs(F_VVV))
     endif
-    @assertEqual(F_TV,(F2_T-F_T)/dv,10.0*eps*abs(F_TV))
+    @assertEqual(F_TV,(F2_T-F1_T)/dv/2,0.01*eps*abs(F_TV))
     do i=1,ncomp
-      @assertEqual(F_Vn(i),(F2_n(i)-F_n(i))/dv,100.0*eps*abs(F_Vn(i)))
+      @assertEqual(F_Vn(i),(F2_n(i)-F1_n(i))/dv/2,0.01*eps*abs(F_Vn(i)))
     enddo
 
     ! Mole number differentials
@@ -370,11 +393,13 @@ contains
       n = n0
       n(j) = n0(j) + dn(j)
       call Fres(T,V,n,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
-      @assertEqual(F_n(j),(F2-F)/dn(j),50.0*eps*abs(F_n(j)))
-      @assertEqual(F_Vn(j),(F2_V-F_V)/dn(j),100.0*eps*abs(F_Vn(j)))
-      @assertEqual(F_Tn(j),(F2_T-F_T)/dn(j),10.0*eps*abs(F_Tn(j)))
+      n(j) = n0(j) - dn(j)
+      call Fres(T,V,n,F=F1,F_T=F1_T,F_V=F1_V,F_n=F1_n)
+      @assertEqual(F_n(j),(F2-F1)/dn(j)/2,0.01*eps*abs(F_n(j)))
+      @assertEqual(F_Vn(j),(F2_V-F1_V)/dn(j)/2,0.01*eps*abs(F_Vn(j)))
+      @assertEqual(F_Tn(j),(F2_T-F1_T)/dn(j)/2,0.01*eps*abs(F_Tn(j)))
       do i=1,ncomp
-        @assertEqual(F_nn(i,j),(F2_n(i)-F_n(i))/dn(j),20.0*eps*abs(F_nn(i,j)))
+        @assertEqual(F_nn(i,j),(F2_n(i)-F1_n(i))/dn(j)/2,0.01*eps*abs(F_nn(i,j)))
       enddo
     enddo
 

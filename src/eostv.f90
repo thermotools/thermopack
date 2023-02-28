@@ -29,7 +29,8 @@ contains
   !>
   !> \author MH, 2012-03-14
   !----------------------------------------------------------------------
-  function pressure(t,v,n,dpdv,dpdt,d2pdv2,dpdn,recalculate) result(p)
+  function pressure(t,v,n,dpdv,dpdt,d2pdv2,dpdn,&
+       recalculate,contribution) result(p)
     use single_phase, only: TV_CalcPressure
     use cbHelm, only: cbPvv, cbPi
     implicit none
@@ -42,6 +43,7 @@ contains
     real, optional, intent(out) :: d2pdv2 !< Pa/m6 - Second pressure differential wrpt. specific volume
     real, optional, dimension(nc), intent(out) :: dpdn !< Pa/mol - Second pressure differential wrpt. specific mole numbers
     logical, optional, intent(in) :: recalculate !< flag for Thermopack: if true, recalculate cbeos-structure
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     real :: p !< Pa - Pressure
     ! Locals
     real :: d2Pdrho2, rho, dPdrho
@@ -61,9 +63,17 @@ contains
       ! Thermopack
       act_eos_ptr => get_active_eos()
       call TV_CalcPressure(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,p,&
-           dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc)
+           dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc,&
+           contribution=contribution)
     case (TREND)
       ! TREND
+      if (present(contribution)) then
+        if (contribution /= PROP_OVERALL) then
+          write(*,*) "EoSlib error in eostv::pressure_tv: "&
+               //"Currently only total pressure supported by TREND"
+          call stoperror('')
+        endif
+      endif
       p = trend_pressure(n,t,v,dpdv,dpdt,dpdn)
       if (present(d2pdv2)) then
         rho = 1.0/v
