@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-02-20T08:19:31.535888
+Generated at: 2023-02-28T13:04:49.108151
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -8,6 +8,7 @@ The file is created by joining the contents of the files
         cite_acknowl_licence.md
         pypi_structure.md
         getting_started.md
+        more_advanced.md
 --->
 # Thermopack
 
@@ -44,8 +45,10 @@ currently running on the Windows and Linux operating systems.
   * [Doing calculations](#doing-calculations)
     * [pVT-properties](#pVT-properties)
     * [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
-    * [Isopleths](#Isopleths)
+    * [Isolines](#Isolines)
     * [Critical point](#critical-point)
+  * [Advanced usage](#More-advanced-usage---Python)
+    * [Interaction parameters](#Interaction-parameters) 
 ## Please cite
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
@@ -265,9 +268,9 @@ p_bub, x_bub = eos.bubble_pressure(273, x) # Calculates bubble pressure and bubb
 T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature and bubble composition at 1 bar
 ```
 
-## Isopleths
+## Isolines
 
-Various isopleths can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
+Various isolines can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
 
 ```Python
 eos = pcsaft('NC6,NC12')
@@ -309,4 +312,28 @@ vc = Vc / sum(n) # Critical specific volume computed from critical volume and mo
 
 The solver accepts initial guesses for the critical values through the `kwargs` `temp`, and `v`. The error tolerance can be set via the `tol` `kwarg` (default is `tol=1e-7`).
 
+
+# More advanced usage - Python
+
+## Interaction parameters
+
+In thermopack we're able to both set and get a wide array of coefficients and parameters depending on the models we are utilizing. 
+
+### Cubic equations of state
+#### Setting and getting the attractive energy interaction parameter $k_{ij}$ and co-volume interaction parameter $l_{ij}$
+Starting with the attractive energy interaction parameter (kij). The parameter can be set using the function `set_kij` after intialising the equation and state. The function requires that you first write in the number of the components and subsequently the new interaction parameter i.e. (component number 1, component number 2, new kij value). If we're curious as to what parameter the EOS is already using we can see this by using the function `get_kij` which returns the value as a float given the component numbers as input i.e. (component number 1, component number 2).
+```Python
+cs = cubic('CO2,N2',"SRK","Classic","Classic")
+#We set the interaction parameter to be -0.032
+cs.set_kij(1,2,-0.032)
+#We want to see what the interaction parameter is which returns that kij = -0.032
+kij = cs.get_kij(1,2)
+```
+The procedure for setting and getting co-volume interaction parameters is analogous to the getting and setting of attractive energy parameters. Simply use the functions `set_lij` and `get_lij` instead.
+```Python
+#We set the parameter to be -0.032
+cs.set_lij(1,2,-0.032)
+#We want to see what the parameter is which returns that lij = -0.032
+lij = cs.get_lij(1,2)
+```
 

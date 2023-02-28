@@ -10,5 +10,7 @@
   * [Doing calculations](#doing-calculations)
     * [pVT-properties](#pVT-properties)
     * [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
-    * [Isopleths](#Isopleths)
+    * [Isolines](#Isolines)
     * [Critical point](#critical-point)
+  * [Advanced usage - Python](#More-advanced-usage---Python)
+    * [Interaction parameters](#Interaction-parameters) 

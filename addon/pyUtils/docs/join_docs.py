@@ -45,11 +45,12 @@ def write_pypi_readme():
         out_file.write(out_file_str)
 
 def write_github_readme():
-    files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started', 'more_advanced']
+    files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started',
+             'more_advanced']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
-    out_file_path = THERMOPACK_ROOT + 'README.md'
+    out_file_path = THERMOPACK_ROOT + '/README.md'
     with open(out_file_path, 'w') as out_file:
         out_file.write(header)
         out_file.write(out_file_str)

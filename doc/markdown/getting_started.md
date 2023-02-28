@@ -150,9 +150,9 @@ p_bub, x_bub = eos.bubble_pressure(273, x) # Calculates bubble pressure and bubb
 T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature and bubble composition at 1 bar
 ```
 
-## Isopleths
+## Isolines
 
-Various isopleths can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
+Various isolines can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
 
 ```Python
 eos = pcsaft('NC6,NC12')
