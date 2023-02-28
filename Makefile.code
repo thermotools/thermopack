@@ -86,6 +86,11 @@ OBJE = \
        $(ODIR)/multipol_var.o \
        $(ODIR)/thermopack_var.o \
        $(ODIR)/hyperdual_utility.o \
+       $(ODIR)/eosdata.o \
+       $(ODIR)/assocschemeutils.o \
+       $(ODIR)/unifacdata.o \
+       $(ODIR)/unifac.o \
+       $(ODIR)/cubic_eos.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -98,15 +103,10 @@ OBJE = \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
-       $(ODIR)/eosdata.o \
-       $(ODIR)/assocschemeutils.o \
        $(ODIR)/pets.o \
        $(ODIR)/pc_saft_datadb.o \
        $(ODIR)/pc_saft_parameters.o \
-       $(ODIR)/unifacdata.o \
-       $(ODIR)/unifac.o \
        $(ODIR)/eos_parameters.o \
-       $(ODIR)/cubic_eos.o \
        $(ODIR)/mixdatadb.o \
        $(ODIR)/cbalpha.o \
        $(ODIR)/cbbeta.o \
@@ -129,6 +129,7 @@ OBJE = \
        $(ODIR)/saftvrmie_hardsphere.o \
        $(ODIR)/saftvrmie_dispersion.o \
        $(ODIR)/saftvrmie_chain.o \
+       $(ODIR)/saftvrmie_association.o \
        $(ODIR)/saftvrmie_interface.o \
        $(ODIR)/hardsphere_wca.o \
        $(ODIR)/lj_splined.o \
@@ -624,8 +625,8 @@ $(ODIR)/saft_association.o: $(SRC)/saft_association.f90 \
 	@$(call make_object, $(SRC)/saft_association.f90)
 $(ODIR)/saft_globals.o: $(SRC)/saft_globals.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/pc_saft_nonassoc.f90 \
-	$(SRC)/saftvrmie_containers.f90 $(SRC)/cubic_eos.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90
+	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90
 	@$(call make_object, $(SRC)/saft_globals.f90)
 $(ODIR)/saft_interface.o: $(SRC)/saft_interface.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/compdata.f90 \
@@ -646,8 +647,13 @@ $(ODIR)/saft_rdf.o: $(SRC)/saft_rdf.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/saftvrmie_hardsphere.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
-	$(SRC)/saft_globals.f90
+	$(SRC)/saftvrmie_association.f90 $(SRC)/saft_globals.f90
 	@$(call make_object, $(SRC)/saft_rdf.f90)
+$(ODIR)/saftvrmie_association.o: $(SRC)/saftvrmie_association.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/saftvrmie_utils.f90 \
+	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_dispersion.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/saftvrmie_association.f90
+	@$(call make_object, $(SRC)/saftvrmie_association.f90)
 $(ODIR)/saftvrmie_chain.o: $(SRC)/saftvrmie_chain.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/saftvrmie_dispersion.f90 \
@@ -678,6 +684,7 @@ $(ODIR)/saftvrmie_hardsphere.o: $(SRC)/saftvrmie_hardsphere.f90 \
 $(ODIR)/saftvrmie_interface.o: $(SRC)/saftvrmie_interface.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saftvrmie_options.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/assocschemeutils.f90 $(SRC)/saftvrmie_association.f90 \
 	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/saftvrmie_dispersion.f90 \
 	$(SRC)/saftvrmie_chain.f90 $(SRC)/saftvrmie_interface.f90 \
 	$(SRC)/saftvrmie_utils.f90

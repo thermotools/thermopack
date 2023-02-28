@@ -1,9 +1,10 @@
 !> Automatically generated to file mixdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-02-20T09:35:57.369680
+!! Time stamp: 2023-02-27T15:11:46.339247
 
 module mixdatadb
-  use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb
+  use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb, CPAkijdata
+  use assocschemeutils, only: ariComb, geoComb
   implicit none
   public
 
@@ -7377,6 +7378,132 @@ module mixdatadb
       polyji = (/1.05000000e+02, 0.00000000e+00, 0.00000000e+00/) &
       )
 
+  type (interGEdatadb), parameter :: ge11 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "H2O", &
+      uid2 = "NA+", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/-2.23150000e+02, 1.57300000e+03, 3.40000000e+02/), &
+      polyji = (/-2.23150000e+02, 1.57300000e+03, 3.40000000e+02/) &
+      )
+
+  type (interGEdatadb), parameter :: ge12 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "H2O", &
+      uid2 = "CL-", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/-2.23150000e+02, 1.57300000e+03, 3.40000000e+02/), &
+      polyji = (/-2.23150000e+02, 1.57300000e+03, 3.40000000e+02/) &
+      )
+
+  type (interGEdatadb), parameter :: ge13 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "MEOH", &
+      uid2 = "NA+", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/3.22400000e+02, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/3.22400000e+02, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge14 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "MEOH", &
+      uid2 = "CL-", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/3.22400000e+02, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/3.22400000e+02, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge15 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "NA+", &
+      uid2 = "CL-", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/0.00000000e+00, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/0.00000000e+00, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge16 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "CO2", &
+      uid2 = "NA+", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/7.24800000e+02, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/7.24800000e+02, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge17 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "CO2", &
+      uid2 = "CL-", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/7.24800000e+02, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/7.24800000e+02, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge18 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "C1", &
+      uid2 = "NA+", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/1.12800000e+03, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/1.12800000e+03, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
+  type (interGEdatadb), parameter :: ge19 = &
+      interGEdatadb(eosid = "SRK", &
+      mruleid = "HV2", &
+      ref = "Default/Maribo-Mogensen", &
+      bib_ref = "10.1002/aic.14829", &
+      uid1 = "C1", &
+      uid2 = "CL-", &
+      kijvalue = 0.00000000, &
+      correlation = 2, &
+      alphaijvalue = (/0.00000000e+00, 0.00000000e+00/), &
+      polyij = (/1.12800000e+03, 0.00000000e+00, 1.00000000e+00/), &
+      polyji = (/1.12800000e+03, 0.00000000e+00, 1.00000000e+00/) &
+      )
+
   type (lijdatadb), parameter :: lij1 = &
       lijdatadb(eosid = "PR", &
       mruleid = "vdW", &
@@ -7385,6 +7512,162 @@ module mixdatadb
       uid1 = "H2", &
       uid2 = "HE", &
       lijvalue = -0.16000000  &
+      )
+
+  type(CPAkijdata), parameter :: cpa1 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "H2O", &
+      kij_a = 0.11350000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa2 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC4", &
+      uid2 = "H2O", &
+      kij_a = 0.08750000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa3 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC5", &
+      uid2 = "H2O", &
+      kij_a = 0.06150000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa4 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC6", &
+      uid2 = "H2O", &
+      kij_a = 0.03550000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa5 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC7", &
+      uid2 = "H2O", &
+      kij_a = 0.00950000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa6 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC8", &
+      uid2 = "H2O", &
+      kij_a = -0.01650000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa7 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "NC10", &
+      uid2 = "H2O", &
+      kij_a = -0.06850000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa8 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "C3", &
+      uid2 = "MEOH", &
+      kij_a = 0.05900000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa9 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "MEOH", &
+      uid2 = "H2O", &
+      kij_a = -0.09000000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa10 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "ETOH", &
+      uid2 = "H2O", &
+      kij_a = -0.11000000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa11 = &
+      CPAkijdata(eosid = "CPA-SRK", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kij_a = 0.04626056,  &
+      kij_eps = 0.06022255,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  type(CPAkijdata), parameter :: cpa12 = &
+      CPAkijdata(eosid = "CPA-PR", &
+      ref = "DEFAULT", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "H2O", &
+      kij_a = 0.03000000,  &
+      kij_eps = 0.00000000,  &
+      kij_beta = 0.00000000,  &
+      eps_comb_rule = geoComb,  &
+      beta_comb_rule = geoComb  &
       )
 
 
@@ -7537,15 +7820,24 @@ module mixdatadb
       vdw721,vdw722,vdw723 &
   /)
 
-  integer, parameter :: maxinterGEij =10
+  integer, parameter :: maxinterGEij =19
   type (interGEdatadb), dimension(maxinterGEij), parameter :: interGEdb = (/&
       ge1,ge2,ge3,ge4,ge5, &
-      ge6,ge7,ge8,ge9,ge10 &
+      ge6,ge7,ge8,ge9,ge10, &
+      ge11,ge12,ge13,ge14,ge15, &
+      ge16,ge17,ge18,ge19 &
   /)
 
   integer, parameter :: maxlij =1
   type (lijdatadb), dimension(maxlij), parameter :: lijdb = (/&
       lij1 &
+  /)
+
+  integer, parameter :: CPAmaxkij =12
+  type(CPAkijdata), dimension(CPAmaxkij), parameter :: CPAkijdb = (/&
+      cpa1,cpa2,cpa3,cpa4,cpa5, &
+      cpa6,cpa7,cpa8,cpa9,cpa10, &
+      cpa11,cpa12 &
   /)
 
 end module mixdatadb

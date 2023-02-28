@@ -20,7 +20,8 @@ module multipol
 
 contains
 
-  ! The segment diameter d_i.
+  !> Calculate the PC-SAFT hard-sphere segment diameter d_i.
+  !! \author Morten Hammer, 2022
   function hyperdual_calc_d_hs_pc_saft(eos,nce,T) result(d_hs)
     class(sPCSAFT_eos), intent(in) :: eos
     integer, intent(in) :: nce
@@ -33,6 +34,8 @@ contains
     end do
   end function hyperdual_calc_d_hs_pc_saft
 
+  !> Calculate the PC-SAFT packing fraction using the hard-sphere diameter.
+  !! \author Morten Hammer, 2022
   function hyperdual_packing_fraction_pc_saft(eos,nce,V,n,d_hs) result(eta)
     use hyperdual_mod
     implicit none
@@ -45,6 +48,8 @@ contains
     eta = N_AVOGADRO*PI/6/V*sum(eos%m*n*d_hs**3)
   end function hyperdual_packing_fraction_pc_saft
 
+  !> Calculate reduced helmholtz energy from quadrupoles and dipoles
+  !! \author Morten Hammer, 2022
   function hyperdual_fres_multipol(p_eos,nce,T,V,n) result(f)
     use hyperdual_mod
     use thermopack_var, only: base_eos_param
@@ -90,6 +95,8 @@ contains
     f = f_DD + f_QQ + f_DQ
   end function hyperdual_fres_multipol
 
+  !> Calculate correlation integral J2
+  !! \author Morten Hammer, 2022
   function hyperdual_j2_ij(nce,T,eta,a_ij,b_ij,i,j,lmax) result(j2_ij)
     use hyperdual_mod
     implicit none
@@ -105,6 +112,8 @@ contains
     enddo
   end function hyperdual_j2_ij
 
+  !> Calculate correlation integral J3
+  !! \author Morten Hammer, 2022
   function hyperdual_j3_ijk(nce,eta,c_ijk,i,j,k,lmax) result(j3_ijk)
     use hyperdual_mod
     implicit none
@@ -122,6 +131,8 @@ contains
 
   !> Quadrupol-quadrupol interaction
   !! Gross 2005: 10.1002/aic.10502
+  !!
+  !! \author Morten Hammer, 2022
   function hyperdual_f_qq(nce,T,V,n,eta,mpol_param) result(f_QQ)
     use hyperdual_mod
     implicit none
@@ -185,6 +196,8 @@ contains
 
   !> Dipol-dipol interaction
   !! Gross and Vrabec 2006: 10.1002/aic.10683
+  !!
+  !! \author Morten Hammer, 2022
   function hyperdual_f_dd(nce,T,V,n,eta,mpol_param) result(f_DD)
     use hyperdual_mod
     implicit none
@@ -248,6 +261,8 @@ contains
 
   !> Quadrupol-dipol interaction
   !! Vrabec and Gross 2008: 10.1021/jp072619u
+  !!
+  !! \author Morten Hammer, 2022
   function hyperdual_f_dq(nce,T,V,n,eta,mpol_param) result(f_DQ)
     use hyperdual_mod
     implicit none
@@ -318,6 +333,10 @@ contains
     end subroutine add_to_a3_Q
   end function hyperdual_f_dq
 
+  !> Real variable wrapper around hyperdual numbers. Calculate reduced Helmholtz energy
+  !! and differentials,
+  !!
+  !! \author Morten Hammer, 2022
   subroutine add_hyperdual_fres_multipol(eos,nc,T,V,n,F,F_T,&
        F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     use hyperdual_utility, only: hyperdual_fres_wrapper
@@ -415,6 +434,9 @@ contains
     endif
   end subroutine add_hyperdual_fres_multipol
 
+  !> Test function for polar reduced Helmholtz energy
+  !!
+  !! \author Morten Hammer, 2023-02
   subroutine fres_multipol(T,V,n,QQ,DD,DQ,F)
     ! Input.
     real, intent(in) :: T,V,n(nce)
@@ -437,6 +459,9 @@ contains
 
   end subroutine fres_multipol
 
+  !> Enable/disable polar contributions
+  !!
+  !! \author Morten Hammer, 2023-02
   subroutine multipol_model_control(QQ,DD,DQ)
     ! Input.
     logical, intent(in) :: QQ,DD,DQ ! Control what terms are calculated

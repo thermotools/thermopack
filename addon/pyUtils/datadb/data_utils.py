@@ -30,3 +30,19 @@ def get_assoc_scheme_parameter(assoc_scheme):
         param = "assoc_scheme_{}".format(assoc_scheme)
     return param
 
+def get_alpha_index_parameter(alpha_corr):
+    """
+        alpha_corr - Classic, TWU, MC, etc.
+        Output:
+        param - Thermopack parameter defined in cubic_eos.f90
+    """
+    return f"cbAlpha{alpha_corr}Idx"
+
+def get_mix_model_parameter(model):
+    """
+        model - ARITHMETIC or GEOMETRIC
+        Output:
+        param - Thermopack parameter defined in assocschemeutils.f90
+    """
+    assert model == "GEOMETRIC" or model == "ARITHMETIC"
+    return "ariComb" if model == "ARITHMETIC" else "geoComb"

@@ -10,17 +10,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Instanciate and init PC-SAFT (doi: 10/dt7kgb) object
-#pcs = pcsaft("C1,CO2")
-pcs = pcsaft("C1,CO2", parameter_reference="Gross2005/Gross2006", polar=True) # PCP-SAFT
+pcs = pcsaft("C1,CO2")
 
+# Use PCP-SAFT instead?
+pcps = pcsaft("C1,CO2", parameter_reference="Gross2005/Gross2006", polar=True)
+pcps.set_kij(1,2,-0.12) # No rigorous tuning
 
-LLE, L1VE, L2VE = pcs.get_binary_pxy(223.71)
-plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="b", label="$T$=223.71 K")
-plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="b")
+models = [pcs, pcps]
+for im, m in enumerate(models):
+    LLE, L1VE, L2VE = m.get_binary_pxy(223.71)
+    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="b",
+             label="$T$=223.71 K" if im == 0 else None,
+             ls= "-" if im == 0 else "--")
+    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="b",
+             ls= "-" if im == 0 else "--")
 
-LLE, L1VE, L2VE = pcs.get_binary_pxy(241.33)
-plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="g", label="$T$=241.33 K")
-plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="g")
+    LLE, L1VE, L2VE = m.get_binary_pxy(241.33)
+    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="g",
+             label="$T$=241.33 K" if im == 0 else None,
+             ls= "-" if im == 0 else "--")
+    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="g",
+             ls= "-" if im == 0 else "--")
+
+    LLE, L1VE, L2VE = m.get_binary_pxy(271.48)
+    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="r",
+             label="$T$=271.48 K" if im == 0 else None,
+             ls= "-" if im == 0 else "--")
+    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="r",
+             ls= "-" if im == 0 else "--")
+
+    LLE, L1VE, L2VE = m.get_binary_pxy(293.4)
+    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="k",
+             label="$T$=293.4 K" if im == 0 else None,
+             ls= "-" if im == 0 else "--")
+    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="k",
+             ls= "-" if im == 0 else "--")
+
 
 # Data: doi: 10.1021/ie50531a036
 P = np.array([2.392480783,3.102640785,4.074801564,4.702224479,5.26069982,6.267334386,6.839599242,7.570443515,7.901391866])
@@ -28,14 +53,6 @@ x = np.array([0.0413,0.086,0.137,0.166,0.191,0.286,0.322,0.426,0.501])
 y = np.array([0.404,0.521,0.605,0.629,0.652,0.676,0.686,0.68,0.672])
 plt.plot(x, P, color="g", marker="o", ls="None", label="Donnelly 1954 (241.33 K)")
 plt.plot(y, P, color="g", marker="o", ls="None")
-
-LLE, L1VE, L2VE = pcs.get_binary_pxy(271.48)
-plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="r", label="$T$=271.48 K")
-plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="r")
-
-LLE, L1VE, L2VE = pcs.get_binary_pxy(293.4)
-plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="k", label="$T$=293.4 K")
-plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="k")
 
 # Data: doi: 10.1016/0378-3812(92)85150-7
 P = np.array([5.73,6.14,6.23,6.32,6.64,6.82,7.18,7.32,7.4,7.43,7.72,7.89,7.98])
@@ -46,10 +63,9 @@ plt.plot(y, P, color="k", marker="o", ls="None")
 
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$x/y$")
-plt.title("PC-SAFT binary Pxy phase diagram for CO2 and CH4")
+plt.title("PC-SAFT (-) and PCP-SAFT (--) binary Pxy phase diagram for CO2 and CH4")
 leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
-
 
 # Plot phase envelope
 z = np.array([0.1,0.9])

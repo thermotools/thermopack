@@ -70,7 +70,10 @@ contains
   subroutine calc_bmcsl_lngij(nc,T,V,n,i,j,dhs,zeta, &
        lng,lng_T,lng_V,lng_n,lng_TT,lng_TV,lng_Tn,lng_VV,lng_Vn,lng_nn)
     !------------------------------------------------------------------------
-    !  2022-04, Morten Hammer
+    !> Calculate log value of g (RDF) at contact using
+    !! the expression of Boublik (10.1063/1.1673824).
+    !!
+    !! \author Morten Hammer, 2022-04
     !----------------------------------------------------------------------------
     integer, intent(in) :: nc      !< number of components
     real, intent(in) :: T,V,n(nc)  !< temperature [K], volume [m^3], N_i [mol]

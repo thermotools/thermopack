@@ -293,6 +293,13 @@ contains
     !$ i_thread = 1 + omp_get_thread_num()
   end function get_thread_index
 
+  !> Test differentials by two-sided numerical differentiation. External subroutine
+  !! assumed to take the following input/output:
+  !! fun(real: T, real: V, real: n(:), real: a, real: a_T,
+  !!     real: a_V, real: a_n(:), real: a_TT, real: a_TV, real: a_VV,
+  !!     real: a_Tn(:), real: a_Vn(:), real: a_nn(:,:))
+  !!
+  !! \author Morten Hammer
   subroutine test_tvn_method(fun,nc,T,V,n)
     external :: fun
     integer, intent(in) :: nc
