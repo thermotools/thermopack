@@ -4,7 +4,7 @@
   * [Authors and contact persons](#authors-and-contact-persons)
   * [License](#license)
   * [Acknowledgments](#acknowledgments)
-  * [Getting started](#getting-started)
+  * [Getting started](#getting-started---python)
     * [Initialising an equation of state](#Initialising-an-equation-of-state)
   * [Doing calculations](#doing-calculations)
     * [pVT-properties](#pVT-properties)

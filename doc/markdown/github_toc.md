@@ -5,7 +5,7 @@
   * [Acknowledgments](#acknowledgments)
   * [Program structure](#program-structure)
   * [Building from Source](#Building-from-source)
-  * [Getting started](#getting-started)
+  * [Getting started - Python](#getting-started---python)
     * [Initialising an equation of state](#Initialising-an-equation-of-state)
   * [Doing calculations](#doing-calculations)
     * [pVT-properties](#pVT-properties)

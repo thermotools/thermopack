@@ -1,4 +1,4 @@
-# Getting started
+# Getting started - Python
 This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo.
 
 ## Initialising an equation of state
