@@ -6,11 +6,38 @@ module pair_potentials
 
   !> Base class for pair potential
   type, abstract :: pair_potential
+     type(hyperdual) :: sigma       !< length scale [m]
+     type(hyperdual) :: epsdivk     !< energy scale divided by kB [K]
    contains
-     procedure(calc_pot_intf), public, deferred  :: value
+     procedure(calc_pot_intf), public, deferred  :: calc
+     procedure(calc_potderivs_intf), public, deferred  :: calc_r_derivs
      !procedure(calc_B2_intf), public, deferred   :: B2
      procedure(alpha_x_intf), public, deferred   :: alpha_x
   end type pair_potential
+
+  abstract interface
+     function calc_pot_intf (this, r) result(value)
+       use hyperdual_mod, only: hyperdual
+       import pair_potential
+       class(pair_potential), intent(in) :: this
+       type(hyperdual), intent(in) :: r !< Separation (m)
+       type(hyperdual) :: value         !< Potential value (J)
+     end function calc_pot_intf
+  end interface
+
+  abstract interface
+     subroutine calc_potderivs_intf (this, r, pot, pot_r, pot_rr, pot_rrr)
+       use hyperdual_mod, only: hyperdual
+       import pair_potential
+       class(pair_potential), intent(in) :: this
+       type(hyperdual), intent(in) :: r                  !< Separation (m)
+       type(hyperdual), intent(out) :: pot               !< Potential value (K)
+       type(hyperdual), intent(out), optional :: pot_r   !< 1st derivative of potential wrt separation (K/m)
+       type(hyperdual), intent(out), optional :: pot_rr  !< 2nd derivative of potential wrt separation (K/m^2)
+       type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K/m^3)
+     end subroutine calc_potderivs_intf
+  end interface
+
 
   abstract interface
      type(hyperdual) function calc_B2_intf(pot, beta) result(B2)
@@ -21,16 +48,6 @@ module pair_potentials
        type(hyperdual), intent(in)       :: beta  !< 1/kT (J)
        !type(hyperdual), intent(out)      :: B2     !< Second virial coefficient (m^3)
      end function calc_B2_intf
-  end interface
-
-  abstract interface
-     function calc_pot_intf (this, r) result(value)
-       use hyperdual_mod, only: hyperdual
-       import pair_potential
-       class(pair_potential), intent(in) :: this
-       type(hyperdual), intent(in) :: r !< Separation (m)
-       type(hyperdual) :: value         !< Potential value (J)
-     end function calc_pot_intf
   end interface
 
   abstract interface
@@ -47,16 +64,15 @@ module pair_potentials
   type, extends(pair_potential) :: mie_potential_hd
      type(hyperdual) :: lamr        !< repulsive exponent [-]
      type(hyperdual) :: lama        !< attractive exponent [-]
-     type(hyperdual) :: sigma       !< diameter [m]
-     type(hyperdual) :: epsdivk     !< energy divided by kB [K]
      type(hyperdual) :: Cmie        !< Mie potential prefactor [-]
      type(hyperdual) :: rmin        !< location of minimum [m]
      type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
      type(hyperdual) :: alpha       !< adimensional van der waals energy [-]
    contains
      procedure, public :: init => mie_potential_hd_init
-     procedure, public :: value => mie_potential_hd_calc
-     !procedure, public :: B2 => calc_B2_by_quadrature
+     procedure, public :: calc => mie_potential_hd_calc
+     procedure, public :: calc_r_derivs => mie_potential_hd_calc_r_derivs
+     procedure, public :: B2 => calc_B2_by_quadrature
      procedure, public :: alpha_x => mie_potential_hd_calc_alpha_x
   end type mie_potential_hd
 
@@ -65,13 +81,12 @@ module pair_potentials
      integer         :: nt                  !< Number of Sutherland terms [-]
      type(hyperdual), allocatable :: C(:)   !< Coefficients of term [-]
      type(hyperdual), allocatable :: lam(:) !< Exponents [-]
-     type(hyperdual) :: sigma               !< Diameter [m]
-     type(hyperdual) :: epsdivk             !< Energy divided by kB [K]
-     ! type(hyperdual) :: rmin        !< location of minimum [m]
-     ! type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
+     type(hyperdual) :: rmin        !< location of minimum [m]
+     type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
    contains
      procedure, public :: init => sutherlandsum_init
-     procedure, public :: value => sutherlandsum_calc
+     procedure, public :: calc => sutherlandsum_calc
+     procedure, public :: calc_r_derivs => sutherlandsum_calc_r_derivs
      !procedure, public :: B2 => calc_B2_by_quadrature
      procedure, public :: alpha_x => sutherlandsum_calc_alpha_x
   end type sutherlandsum
@@ -128,6 +143,21 @@ module pair_potentials
 
 contains
 
+  function approx_lamr_from_alpha(alpha) result(lamr)
+    !> Find the repulsive exponent lamr such that Mie(lamr,6) has the
+    !> specified alpha. Maximum deviation for alpha \in [0.520, 1.125]
+    !> is 0.006. This corresponds to lamr \in [9, 36].
+    type(hyperdual), intent(in) :: alpha !< vdw energy (-)
+    type(hyperdual)             :: lamr  !< repulsive exponent (-)
+    ! Locals
+    real, parameter :: A = 18.864
+    real, parameter :: B = 4.541
+    real, parameter :: C = 0.382
+
+    lamr = 2*A/(-B + sqrt(B**2-4*A*(C-alpha)))
+  end function approx_lamr_from_alpha
+
+
   !> Get the index in the MieArray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
   function getMiedataIdx(eosidx,compName,ref) result(idx)
@@ -163,6 +193,10 @@ contains
     end if
   end function getMiedataIdx
 
+
+
+
+
   subroutine mie_potential_hd_init(this, lama, lamr, sigma, epsdivk)
     class(mie_potential_hd), intent(inout) :: this
     type(hyperdual), intent(in) :: lama, lamr, sigma, epsdivk
@@ -186,11 +220,43 @@ contains
     pot = this%Cmie * this%epsdivk * ( (this%sigma/r)**this%lamr - (this%sigma/r)**this%lama )
   end function mie_potential_hd_calc
 
+  subroutine mie_potential_hd_calc_r_derivs(this, r, pot, pot_r, pot_rr, pot_rrr)
+    class(mie_potential_hd), intent(in) :: this
+    type(hyperdual), intent(in) :: r                  !< Separation (m)
+    type(hyperdual), intent(out) :: pot               !< Potential value (K)
+    type(hyperdual), intent(out), optional :: pot_r   !< 1st derivative of potential wrt separation (K/m)
+    type(hyperdual), intent(out), optional :: pot_rr  !< 2nd derivative of potential wrt separation (K/m^2)
+    type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K//m^3)
+    ! Locals
+    integer :: i
+    type(hyperdual) :: prefac, ur, urr, rep_term, att_term
+    pot = 0.0
+    ur = 0.0
+    urr = 0.0
+
+    rep_term = this%Cmie * this%epsdivk*(this%sigma/r)**this%lamr
+    att_term =-this%Cmie * this%epsdivk*(this%sigma/r)**this%lama
+    pot = rep_term + att_term
+
+    if (present(pot_r)) then
+       pot_r = -(rep_term * this%lamr + att_term * this%lama)/r
+    end if
+    if (present(pot_rr)) then
+       pot_rr = (rep_term * this%lamr*(this%lamr+1.0) + att_term* this%lama*(this%lama+1.0))/r**2
+    end if
+    if (present(pot_rrr)) then
+       pot_rrr = -(rep_term * this%lamr*(this%lamr+1.0)*(this%lamr+2.0) &
+            + att_term* this%lama*(this%lama+1.0)*(this%lama+2.0)) / r**3
+    end if
+
+  end subroutine mie_potential_hd_calc_r_derivs
+
+
   type(hyperdual) function mie_potential_hd_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
     class(mie_potential_hd), intent(in) :: this !< This potential
     type(hyperdual), intent(in) :: x           !< lower integration limit (-)
-    logical, intent(in), optional :: adim                !< adimensional value for alpha, or in ((J/K)*m^3)?
+    logical, intent(in), optional :: adim      !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
     type(hyperdual) :: n, nu
     n = this%lama
@@ -214,7 +280,7 @@ contains
     ! Locals
     integer :: stat
 
-    this%lam = lam
+    this%nt = nt
     this%sigma = sigma
     this%epsdivk = epsdivk
 
@@ -248,11 +314,56 @@ contains
     end do
   end function sutherlandsum_calc
 
+
+  subroutine sutherlandsum_calc_r_derivs(this, r, pot, pot_r, pot_rr, pot_rrr)
+    class(sutherlandsum), intent(in) :: this
+    type(hyperdual), intent(in) :: r                  !< Separation (m)
+    type(hyperdual), intent(out) :: pot               !< Potential value (K)
+    type(hyperdual), intent(out), optional :: pot_r   !< 1st derivative of potential wrt separation (K/m)
+    type(hyperdual), intent(out), optional :: pot_rr  !< 2nd derivative of potential wrt separation (K/m^2)
+    type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K/m^3)
+    ! Locals
+    integer :: i
+    type(hyperdual) :: prefac, ur, urr, urrr, term
+    pot = 0.0
+    ur = 0.0
+    urr = 0.0
+    urrr = 0.0
+    do i=1,this%nt
+       term = this%C(i) * this%epsdivk*(this%sigma/r)**this%lam(i)
+       pot = pot + term
+
+       term = -term*this%lam(i)
+       ur  = ur  + term
+       term = -term*(this%lam(i)+1.0)
+       urr = urr + term
+       term = -term*(this%lam(i)+2.0)
+       urrr = urrr + term
+    end do
+    if (present(pot_r)) then
+       pot_r = ur/r
+    end if
+    if (present(pot_rr)) then
+       pot_rr = urr/r**2
+    end if
+    if (present(pot_rrr)) then
+       pot_rrr = urrr/r**3
+    end if
+  end subroutine sutherlandsum_calc_r_derivs
+
+  subroutine sutherlandsum_update_coeffs(this, coeffs)
+    !> Update Sutherland coefficients with coefficients possibly depending on temperature
+    class(sutherlandsum), intent(inout) :: this !< This potential
+    type(hyperdual), intent(in)    :: coeffs(:) !< Coefficients (-)
+
+    this%C = coeffs
+  end subroutine sutherlandsum_update_coeffs
+
   type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
     class(sutherlandsum), intent(in) :: this !< This potential
     type(hyperdual), intent(in) :: x         !< lower integration limit (-)
-    logical, intent(in), optional :: adim    !< adimensional value for alpha, or in ((J/K)*m^3)?
+    logical, intent(in), optional :: adim    !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
     type(hyperdual) :: n, nu
 
@@ -267,14 +378,6 @@ contains
     end if
   end function sutherlandsum_calc_alpha_x
 
-
- function B2_integrand(r, beta, pot) result(val)
-    type(hyperdual), intent(in)         :: r    !< Separation (m)
-    type(hyperdual), intent(in)         :: beta !< 1/kT (J)
-    class(mie_potential_hd), intent(in) :: pot  !< Pair potential
-    type(hyperdual)                     :: val  !< Integrand (m^2)
-    val = -2.0*PI*(exp(-beta*pot%value(r)) - 1.0) * r*r
-  end function B2_integrand
 
   type(hyperdual) function calc_B2_by_quadrature(pot, beta) result(B2)
     !> Second virial coefficient (m^3)
@@ -322,6 +425,190 @@ contains
     ! Add analytic correction for the region rmax...infty, where
     ! exp(-beta*u(r))-1 \approx -beta u(r)
     B2 = B2 + (-2*PI) * beta*pot%alpha_x(rmax/pot%sigma)*pot%epsdivk*pot%sigma**3
+
+  contains
+
+    function B2_integrand(r, beta, pot) result(val)
+      type(hyperdual), intent(in)         :: r    !< Separation (m)
+      type(hyperdual), intent(in)         :: beta !< 1/kT (J)
+      class(mie_potential_hd), intent(in) :: pot  !< Pair potential
+      type(hyperdual)                     :: val  !< Integrand (m^2)
+      val = -2.0*PI*(exp(-beta*pot%calc(r)) - 1.0) * r*r
+    end function B2_integrand
+
   end function calc_B2_by_quadrature
+
+
+  subroutine calc_bh_diameter(pot,beta,dhs)
+    !> Barker-Henderson diameter
+    use quadratures
+    class(pair_potential), intent(in) :: pot  !< pair potential
+    type(hyperdual), intent(in)         :: beta !< 1/T (1/K)
+    type(hyperdual), intent(out)        :: dhs  !< BH diameter (m)
+    ! Locals
+    type(hyperdual) :: r, sigmaeff
+    integer :: hs_diam_quadrature = GAUSS_KRONROD_31 ! Modify to improve accuracy
+    integer :: i, n_quad
+    real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
+    real :: rmin, rmax ! lower and upper integration limits
+    real :: rmid, xscale
+
+    ! Get quadrature points
+    call get_quadrature_positions(hs_diam_quadrature,x_vec,n_quad)
+    call get_quadrature_weights(hs_diam_quadrature,w_vec,n_quad)
+
+    ! Calculate effective sigma
+    sigmaeff = calc_sigmaeff(pot)
+
+    ! Calculate lower and upper integration limits
+    rmin = 0.2*pot%sigma%f0
+    rmax = sigmaeff%f0
+    rmid   = (rmax + rmin)/2.0
+    xscale = (rmax - rmin)/2.0
+
+    ! Get quadrature points
+    call get_quadrature_positions(hs_diam_quadrature,x_vec,n_quad)
+    call get_quadrature_weights(hs_diam_quadrature,w_vec,n_quad)
+
+    ! Analytic integration between 0 and rmin, where boltzmann factor
+    ! is approximately zero
+    dhs = rmin
+
+    ! Numerical integration between rmin and rmax
+    r = 0.0
+    do i=1,n_quad
+       r = rmid + xscale*x_vec(i)
+       dhs = dhs + xscale*(1.0 - exp(-beta*pot%calc(r)))*w_vec(i)
+    end do
+
+  end subroutine calc_bh_diameter
+
+
+  function calc_sigmaeff(pot) result(sigmaeff)
+    !> Calculate effective sigma, defined as the position where the
+    !> interaction potential equals zero.
+    use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
+    class(pair_potential), intent(in) :: pot      !< Pair potential
+    type(hyperdual)                   :: sigmaeff !< Effective diameter (m)
+    ! Locals
+    type(nonlinear_solver) :: solver
+    type(hyperdual) :: r, pot0, dpot0, d2pot0
+    real :: sigma_scaled, xinit, xmin, xmax, param(1)
+
+    ! Set the limits and the initial condition
+    param(1) = pot%sigma%f0
+    xinit = 0.99
+    xmin = 0.001
+    xmax = 10
+    sigma_scaled = 1.0
+    solver%rel_tol = 1e-12
+    solver%abs_tol = 1e-12
+
+    ! Call solver
+    call newton_secondorder_singlevar(resid_with_derivs,xinit,xmin,xmax,solver,sigma_scaled,param)
+    if (solver%exitflag /= 0) then
+       call stoperror("Not able to solve for effective sigma")
+    endif
+
+    ! Set real component of sigmaeff
+    sigmaeff = 0.0
+    sigmaeff%f0 = sigma_scaled*pot%sigma%f0
+
+    ! Calculate the remaining hyperdual components, obtained by
+    ! expanding u(r=sigma,beta) in sigma for "fixed" beta
+    call pot%calc_r_derivs(sigmaeff, pot0, dpot0, d2pot0)
+    sigmaeff%f1 = -pot0%f1/dpot0%f0
+    sigmaeff%f2 = -pot0%f2/dpot0%f0
+    sigmaeff%f12 = -(pot0%f12 + (dpot0%f1*sigmaeff%f2+dpot0%f2*sigmaeff%f1) + d2pot0%f0*sigmaeff%f1*sigmaeff%f2)/dpot0%f0
+
+  contains
+
+    subroutine resid_with_derivs(rstar,f,param,dfdr,d2fdr2)
+      use numconstants, only: machine_prec
+      real, intent(in) :: rstar
+      real, intent(in) :: param(1)
+      real, intent(out) ::f,dfdr,d2fdr2
+      ! Locals
+      type(hyperdual) :: sigma, f_hd, dfdr_hd, d2fdr2_hd
+
+      sigma = param(1)
+      call pot%calc_r_derivs(rstar*sigma, f_hd, dfdr_hd, d2fdr2_hd)
+      f = f_hd%f0
+      dfdr = dfdr_hd%f0*sigma%f0
+      d2fdr2 = d2fdr2_hd%f0*sigma%f0**2
+    end subroutine resid_with_derivs
+
+  end function calc_sigmaeff
+
+
+  subroutine calc_rmin_and_epseff(pot, rmin, epseff)
+    !> Calculate rmin and epseff. Here rmin is defined as the position
+    !> where the interaction potential is at a minimum, and epseff is
+    !> the absolute value of the minimum.
+    use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
+    class(pair_potential), intent(in) :: pot    !< Pair potential
+    type(hyperdual), intent(out)      :: rmin   !< Position of minimum (m)
+    type(hyperdual), intent(out)      :: epseff !< Effective well-depth (K)
+    ! Locals
+    type(nonlinear_solver) :: solver
+    type(hyperdual) :: pot0, dpot0, d2pot0, d3pot0
+    real :: sigma_scaled, xinit, xmin, xmax, param(1)
+
+    ! Set the limits and the initial condition
+    param(1) = pot%sigma%f0
+    xinit = 1.1
+    xmin = 0.01
+    xmax = 10
+    sigma_scaled = 1.0
+    solver%rel_tol = 1e-12
+    solver%abs_tol = 1e-12
+
+    ! Call solver
+    call newton_secondorder_singlevar(resid_with_derivs,xinit,xmin,xmax,solver,sigma_scaled,param)
+    if (solver%exitflag /= 0) then
+       call stoperror("Not able to solve for effective eps")
+    endif
+
+    ! Set real component rmin
+    rmin = 0.0
+    rmin%f0 = sigma_scaled*pot%sigma%f0
+
+    ! Calculate the remaining hyperdual components of rmin, obtained by
+    ! expanding u(r=rmin,beta) in rmin for "fixed" beta
+    call pot%calc_r_derivs(rmin, pot0, dpot0, d2pot0)
+    rmin%f1 = -dpot0%f1/d2pot0%f0
+    rmin%f2 = -dpot0%f2/d2pot0%f0
+    rmin%f12 = -(dpot0%f12 + (d2pot0%f1*rmin%f2+d2pot0%f2*rmin%f1) + d3pot0%f0*rmin%f1*rmin%f2)/d2pot0%f0
+
+    ! Calculate effective epsilon
+    epseff = abs(pot%calc(rmin))
+
+  contains
+
+    subroutine fun(x, param, f, df)
+      implicit none
+      real, intent(in)  :: x                     !< function argument x
+      real, dimension(:), intent(in) :: param    !< additional parameters
+      real, intent(out) :: f                     !< function value f(x)
+      real, intent(out), optional :: df          !< derivative value df(x)/dx
+    end subroutine fun
+
+    subroutine resid_with_derivs(rstar,f,param,dfdr,d2fdr2)
+      use numconstants, only: machine_prec
+      real, intent(in) :: rstar
+      real, intent(in) :: param(1)
+      real, intent(out) ::f,dfdr,d2fdr2
+      ! Locals
+      type(hyperdual) :: sigma, f_hd, dfdr_hd, d2fdr2_hd, d3fdr3_hd
+
+      sigma = param(1)
+      call pot%calc_r_derivs(rstar*sigma, f_hd, dfdr_hd, d2fdr2_hd, d3fdr3_hd)
+      f = dfdr_hd%f0*sigma%f0
+      dfdr = d2fdr2_hd%f0*sigma%f0**2
+      d2fdr2 = d3fdr3_hd%f0*sigma%f0**3
+    end subroutine resid_with_derivs
+
+  end subroutine calc_rmin_and_epseff
+
 
 end module pair_potentials

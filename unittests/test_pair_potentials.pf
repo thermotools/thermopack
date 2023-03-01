@@ -1,0 +1,210 @@
+module test_pair_potentials
+  use hyperdual_mod
+  use thermopack_constants
+  use pair_potentials
+  use pfunit_mod
+  implicit none
+
+contains
+
+  @Test
+  subroutine test_numerical_quadratures()
+    type(hyperdual) :: T, B, dhs
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(mie_potential_hd) :: mie
+
+    type(hyperdual) :: sigmaeff
+    real :: s0
+
+    ! Argon LJ parameters
+    sigma = 3.42e-10
+    s0 = sigma%f0
+    epsdivk = 124.0
+    lama = 6.0
+
+
+    ! Mie(9,6)
+    lamr = 9.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.4433681332578888e-27, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9841463482126139, dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-4.098406032480699e-28, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9726493449858173 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-5.844652795919477e-29, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9425756077010216 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 3000.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(3.7313636587095273e-29, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.8311836879400372, dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+
+    ! Mie(12,6)
+    lamr = 12.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.1359200401456223e-27, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9866285849039045 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-3.0853860385426876e-28, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9769362002467941 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-2.960200932238359e-29, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9515926782144941 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 3000.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(4.4271922873879973e-29, B%f0, 1e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.857690990546408, dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+
+    ! Mie(24,6)
+    lamr = 24.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    T = 50.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-7.240262820142041e-28, B%f0, 5e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9916247036211329 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 100.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(-1.7958213544945865e-28, B%f0, 5e-6*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9856006061979966 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 300.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(7.410032208279907e-30, B%f0, 1e-4*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9699818910297289 , dhs%f0/s0, 1e-7*dhs%f0/s0)
+
+    T = 3000.0
+    B = mie%B2(beta=1.0/T)
+    @assertEqual(5.771902215890376e-29 , B%f0, 1e-4*abs(B%f0))
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    @assertEqual(0.9130720100197577 , dhs%f0/s0, 1e-6*dhs%f0/s0)
+  end subroutine test_numerical_quadratures
+
+
+  @Test
+  subroutine test_sigmaeff_epseff()
+    use pair_potentials, only: Sutherlandsum, calc_sigmaeff
+    type(hyperdual) :: T
+    type(hyperdual) :: C(2), lam(2), sigma, epsdivk
+    type(hyperdual) :: lama, lamr, sigmaeff, epseff
+    type(hyperdual) :: rmin
+    !type(sutherlandsum) :: pot
+    type(mie_potential_hd) :: mie
+
+    lama = 6.0
+    lamr = 12.0
+    sigma = 1.0
+    epsdivk = 1.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+    print *, "sigmaeff"
+
+    sigmaeff = calc_sigmaeff(mie)
+    print *, sigmaeff
+
+    print *, "rmin"
+    call calc_rmin_and_epseff(mie, rmin, epseff)
+    print *, rmin
+    print *, epseff
+
+  end subroutine test_sigmaeff_epseff
+
+
+  @Test
+  subroutine test_pot_derivs()
+    !> Test that Mie and SutherlandSum are able to represent the
+    !> Lennard-Jones potential
+    type(hyperdual) :: r, u, ur, urr, urrr, v, vr, vrr, vrrr
+    type(hyperdual) :: C(2), lam(2), sigma, epsdivk
+    type(hyperdual) :: lama, lamr, sigmaeff
+    type(sutherlandsum) :: pot
+    type(mie_potential_hd) :: mie
+
+    ! Lennard-Jones made from Mie potential
+    lama = 6.0
+    lamr = 12.0
+    sigma = 3.0
+    epsdivk = 80.0
+    call mie%init(lama, lamr, sigma, epsdivk)
+
+    ! Lennard-Jones made from SutherlandSum potential
+    C(1) = mie%Cmie
+    C(2) = -mie%Cmie
+    lam(1) = lamr
+    lam(2) = lama
+    call pot%init(nt=2, C=C, lam=lam, sigma=sigma, epsdivk=epsdivk)
+
+    ! Zero
+    r = 1.0 * sigma
+    call mie%calc_r_derivs(r, u, ur, urr)
+    call pot%calc_r_derivs(r, v, vr, vrr)
+    @assertEqual(0.0, u%f0, 1e-10)
+    @assertEqual(v%f0, u%f0, 1e-10)
+    @assertEqual(vr%f0, ur%f0, 1e-10/sigma%f0)
+    @assertEqual(vrr%f0, urr%f0, 1e-10/sigma%f0**2)
+    @assertEqual(vrrr%f0, urrr%f0, 1e-10/sigma%f0**3)
+
+    ! Minimum
+    r = 2.0**(1.0/6) * sigma
+    call mie%calc_r_derivs(r=r, pot=u, pot_r=ur, pot_rr=urr, pot_rrr=urrr)
+    call pot%calc_r_derivs(r, v, vr, vrr, vrrr)
+    @assertEqual(-epsdivk%f0, u%f0, 1e-10*epsdivk%f0)
+    @assertEqual(0.0, ur%f0, 1e-10/sigma%f0)
+    @assertEqual(v%f0, u%f0, 1e-10)
+    @assertEqual(vr%f0, ur%f0, 1e-10/sigma%f0)
+    @assertEqual(vrr%f0, urr%f0, 1e-10/sigma%f0**2)
+    @assertEqual(vrrr%f0, urrr%f0, 1e-10/sigma%f0**3)
+
+    ! Inflection point
+    r = (26.0/7)**(1.0/6) * sigma
+    call mie%calc_r_derivs(r=r, pot=u, pot_r=ur, pot_rr=urr, pot_rrr=urrr)
+    call pot%calc_r_derivs(r, v, vr, vrr, vrrr)
+    @assertEqual(0.0, urr%f0, 1e-10/sigma%f0**2)
+    @assertEqual(v%f0, u%f0, 1e-10)
+    @assertEqual(vr%f0, ur%f0, 1e-10/sigma%f0)
+    @assertEqual(vrr%f0, urr%f0, 1e-10/sigma%f0**2)
+    @assertEqual(vrrr%f0, urrr%f0, 1e-10/sigma%f0**3)
+
+    ! Point of zero third derivative
+    r = (26.0/4)**(1.0/6) * sigma
+    call mie%calc_r_derivs(r=r, pot=u, pot_r=ur, pot_rr=urr, pot_rrr=urrr)
+    call pot%calc_r_derivs(r, v, vr, vrr, vrrr)
+    @assertEqual(0.0, vrrr%f0, 1e-10/sigma%f0**3)
+    @assertEqual(v%f0, u%f0, 1e-10)
+    @assertEqual(vr%f0, ur%f0, 1e-10/sigma%f0)
+    @assertEqual(vrr%f0, urr%f0, 1e-10/sigma%f0**2)
+    @assertEqual(vrrr%f0, urrr%f0, 1e-10/sigma%f0**3)
+
+  end subroutine test_pot_derivs
+
+
+end module test_pair_potentials
