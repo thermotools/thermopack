@@ -14,13 +14,18 @@ ROOT = .
 FULLROOT = $(shell pwd)
 SRC = $(ROOT)/src
 TEST = $(ROOT)/unittests
-PFUNIT ?= /usr/local/linux/pfunit
 ODIR = ./objects/$(TARGET)
 BDIR = ./bin
 DDIR = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
+ifdef PFUNIT_DIR
+  PFUNIT = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/PFUNIT*/))
+  FARGPARSE = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/FARGPARSE*/))
+  GFTL_SHARED = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/GFTL_SHARED*/))
+  GFTL = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/GFTL-*/))
+endif
 ifeq ($(UNAME),Darwin)
   LD = clang
   AR := /usr/bin/ar -r -c
@@ -252,7 +257,10 @@ run_unittests:
 	fi
 
 unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
-	$(LD) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -I$(PFUNIT)/mod -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lpfunit $(LIBS) -Iunittests -DBUILD_ROBUST
+	$(LD) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
+	-I$(GFTL)/include/v1 -I$(GFTL_SHARED)/include/v1 -I$(FARGPARSE)/include \
+	-L$(FARGPARSE)/lib -lfargparse -L$(GFTL_SHARED)/lib -lgftl-shared-v2 -lgomp -lpthread $(LIBS) -Iunittests -DBUILD_ROBUST
+
 
 trend_$(TARGET):
 ifdef $(THERMOPACK_WITH_TREND)

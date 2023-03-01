@@ -1,5 +1,5 @@
 module test_state_func
-  use pfunit_mod
+  use funit
   implicit none
 
 contains

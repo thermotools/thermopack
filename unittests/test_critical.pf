@@ -3,7 +3,7 @@ module test_critical
   use critical, only: calcCritical, calcCriticalTV
   use thermopack_constants, only: VAPPH
   use eosTV, only: pressure
-  use pfunit_mod
+  use funit
   implicit none
   public
 
