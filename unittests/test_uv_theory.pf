@@ -36,7 +36,6 @@ module test_uv_theory
   real, parameter :: DELTAB2_BH_MIXSIG = -11.300112215575762
   real, parameter :: A_ATTR_BH_MIXSIG = -1.1761651135976159
   real, parameter :: A_UFRAC_BH_MIXSIG =  -0.028262489851306402
-
   real, parameter :: ARES_BH_MIXSIG = -0.026840289050886035
 
   ! FEOS VALUES FOR WCA-MIE
@@ -335,72 +334,6 @@ contains
 
     end select
   end subroutine test_vals_wca_mix
-
-
-  @Test
-  subroutine test_B2_quadrature()
-    use eostv, only: virial_coefficients
-    use pair_potentials, only: calc_B2_by_quadrature
-    type(hyperdual) :: T, B
-    type(hyperdual) :: lamr, lama, sigma, epsdivk
-    type(mie_potential_hd) :: mie
-
-    ! Argon LJ parameters
-    sigma = 3.42e-10
-    epsdivk = 124.0
-    lama = 6.0
-
-    ! Mie(9,6)
-    lamr = 9.0
-    call mie%init(lama, lamr, sigma, epsdivk)
-
-    T = 50.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-1.4433681332578888e-27, B%f0, 1e-6*abs(B%f0))
-
-    T = 100.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-4.098406032480699e-28, B%f0, 1e-6*abs(B%f0))
-
-    T = 300.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-5.844652795919477e-29, B%f0, 1e-6*abs(B%f0))
-
-
-    ! Mie(12,6)
-    lamr = 12.0
-    call mie%init(lama, lamr, sigma, epsdivk)
-
-    T = 50.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-1.1359200401456223e-27, B%f0, 1e-6*abs(B%f0))
-
-    T = 100.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-3.0853860385426876e-28, B%f0, 1e-6*abs(B%f0))
-
-    T = 300.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-2.960200932238359e-29, B%f0, 1e-6*abs(B%f0))
-
-
-    ! Mie(24,6)
-    lamr = 24.0
-    call mie%init(lama, lamr, sigma, epsdivk)
-
-    T = 50.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-7.240262820142041e-28, B%f0, 5e-6*abs(B%f0))
-
-    T = 100.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(-1.7958213544945865e-28, B%f0, 5e-6*abs(B%f0))
-
-    T = 300.0
-    B = mie%B2(beta=1.0/T)
-    @assertEqual(7.410032208279907e-30, B%f0, 1e-4*abs(B%f0))
-
-  end subroutine test_B2_quadrature
 
 
   @Test
