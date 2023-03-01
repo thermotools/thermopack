@@ -376,7 +376,9 @@ $(ODIR)/cpa_parameters.o: $(SRC)/cpa_parameters.f90 \
 	$(SRC)/stringmod.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/cpa_parameters.f90)
 $(ODIR)/pair_potentials.o: $(SRC)/pair_potentials.f90 \
-	$(SRC)/eosdata.f90 $(SRC)/thermopack_constants.f90
+	$(SRC)/eosdata.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/nonlinear_solvers.f90
 	@$(call make_object, $(SRC)/pair_potentials.f90)
 $(ODIR)/critical.o: $(SRC)/critical.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
