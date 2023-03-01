@@ -16,6 +16,10 @@ module multiparameter_base
   real, parameter :: releps_p = machine_prec*1e8
   real, parameter :: releps_rho = machine_prec*1e6
 
+  ! Relative accuracy in density solver.
+  integer, parameter :: REF_NO_SOLVE=1, REF_EVALUATE_ID=2, &
+       REF_SOLVE_FOR_T=3, REF_SOLVE_FOR_P=4
+
   !> Base class for multiparameter equations of state
   type, abstract :: meos
     !> Parameters in SI units. These are set in the deferred init routine.
@@ -54,6 +58,10 @@ module multiparameter_base
     procedure, public :: cv ! Isochoric heat capacity [J/(mol*K)]
     procedure, public :: cp ! Isobaric heat capacity[J/(mol*K)]
     procedure, public :: speed_of_sound !< [m/s]
+
+    ! Reference state
+    procedure, public :: get_ref_state_spec => get_ref_state_spec_default
+    procedure, public :: set_ref_state => set_ref_state_default
 
     ! Private methods
     procedure(satDeltaEstimate_intf), public, deferred :: satDeltaEstimate !< An estimate delta_sat(tau_sat) for use in density solver.
@@ -817,5 +825,23 @@ contains
       this%Rgas_fit = other%Rgas_fit
     end select
   end subroutine assign_meos_base
+
+  subroutine get_ref_state_spec_default(this, T, P, phase, solve)
+    class(meos) :: this
+    real, intent(out) :: T, P
+    integer, intent(out) :: phase
+    integer, intent(out) :: solve
+    !
+    T = 0
+    P = 0
+    phase = 1
+    solve = REF_NO_SOLVE
+  end subroutine get_ref_state_spec_default
+
+  subroutine set_ref_state_default(this, T, P, v, h, s)
+    class(meos) :: this
+    real, intent(in) :: T, P, v, h, s
+    ! Already ddefined properly.....
+  end subroutine set_ref_state_default
 
 end module multiparameter_base

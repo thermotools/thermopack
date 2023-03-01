@@ -1,5 +1,5 @@
 !> Automatically generated file meosdatadb.f90
-!! Time stamp: 2023-02-24T20:35:40.574980
+!! Time stamp: 2023-03-01T20:09:38.847662
 
 module meosdatadb
   use thermopack_constants, only: uid_len, comp_name_len
@@ -14,9 +14,12 @@ module meosdatadb
   type :: meosdata
     character(len=uid_len) :: ident !< The component ID
     character(len=comp_name_len) :: name !< The component name
+    character(len=comp_name_len) :: default_ref_state !< The default reference state
+    character(len=comp_name_len) :: doi !< Digital Object Identifier
     real :: mw !< Mole weight (g/mol)
     real :: ttr !< Triple point temperature (K)
     real :: ptr !< Triple point pressure (kPa)
+    real :: t_nbp !< Normal boiling point temperature (K)
     real :: tc !< Critical temperature (K)
     real :: pc !< Critical pressure (kPa)
     real :: rhoc !< Critical density (mol/l)
@@ -26,41 +29,44 @@ module meosdatadb
     real :: acf !< Acentric factor
     real :: t_max !< Maximum temperature (K)
     real :: p_max !< Maximum pressure (kPa)
-    integer :: n_poly_eos !<
-    integer :: n_exp_eos !<
-    integer :: n_gauss_eos !<
-    integer :: n_nona_eos !<
-    real :: n_eos(meos_max_n) !<
-    real :: t_eos(meos_max_n) !<
-    integer :: d_eos(meos_max_n) !<
-    integer :: l_eos(meos_max_n) !<
-    real :: eta_eos(meos_max_n_gauss) !<
-    real :: beta_eos(meos_max_n_gauss) !<
-    real :: gamma_eos(meos_max_n_gauss) !<
-    real :: epsilon_eos(meos_max_n_gauss) !<
-    real :: n_na(meos_max_n_nona) !<
-    real :: a_na(meos_max_n_nona) !<
-    real :: b_na(meos_max_n_nona) !<
-    real :: beta_na(meos_max_n_nona) !<
-    real :: big_a_na(meos_max_n_nona) !<
-    real :: big_b_na(meos_max_n_nona) !<
-    real :: big_c_na(meos_max_n_nona) !<
-    real :: big_d_na(meos_max_n_nona) !<
-    integer :: n1_id !<
-    integer :: n_id !<
-    real :: c_id(meos_id_max_n) !<
-    real :: t_id(meos_id_max_n) !<
+    integer :: n_poly_eos !< Number of polynomial terms
+    integer :: n_exp_eos !< Number of exponential terms
+    integer :: n_gauss_eos !< Number of Gaussian bell-shaped terms
+    integer :: n_nona_eos !< Number of non-analytical terms
+    real :: n_eos(meos_max_n) !< Prefactor
+    real :: t_eos(meos_max_n) !< Tau exponent
+    integer :: d_eos(meos_max_n) !< Delta exponent
+    integer :: l_eos(meos_max_n) !< Exponential delta exponent
+    real :: eta_eos(meos_max_n_gauss) !< Prefactor delta term
+    real :: beta_eos(meos_max_n_gauss) !< Prefactor tau term
+    real :: gamma_eos(meos_max_n_gauss) !< Tau correction
+    real :: epsilon_eos(meos_max_n_gauss) !< Delta correction
+    real :: n_na(meos_max_n_nona) !< Prefactor non-analytical terms
+    real :: a_na(meos_max_n_nona) !< Non-analytical parameter a
+    real :: b_na(meos_max_n_nona) !< Non-analytical parameter b
+    real :: beta_na(meos_max_n_nona) !< Non-analytical parameter beta
+    real :: big_a_na(meos_max_n_nona) !< Non-analytical parameter A
+    real :: big_b_na(meos_max_n_nona) !< Non-analytical parameter B
+    real :: big_c_na(meos_max_n_nona) !< Non-analytical parameter C
+    real :: big_d_na(meos_max_n_nona) !< Non-analytical parameter D
+    integer :: n1_id !< Number of polynomial terms
+    integer :: n_id !< Overall number of ID terms
+    real :: c_id(meos_id_max_n) !< Polynomial parameter/Einstein function parameter
+    real :: t_id(meos_id_max_n) !< Einstein function exp-parameter
   end type meosdata
 
   type (meosdata), parameter :: meos_1 = &
       meosdata(ident = "PXYL", &
       name = "pxylene", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3703506", &
       mw = 106.165, &
       tc = 616.168, &
       pc = 3531.5, &
       rhoc = 2.69392, &
       ttr = 286.4, &
       ptr = 0.580, &
+      t_nbp = 411.470, &
       tr = 616.168, &
       rhor = 2.69392, &
       Rgas = 8.314472, &
@@ -197,12 +203,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_2 = &
       meosdata(ident = "C2", &
       name = "ethane", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.1859286", &
       mw = 30.06904, &
       tc = 305.322, &
       pc = 4872.2, &
       rhoc = 6.856886685, &
       ttr = 90.368, &
       ptr = 0.001142, &
+      t_nbp = 184.569, &
       tr = 305.322, &
       rhor = 6.856886685, &
       Rgas = 8.314472, &
@@ -339,12 +348,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_3 = &
       meosdata(ident = "CO", &
       name = "co", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 28.0101, &
       tc = 132.86, &
       pc = 3494.0, &
       rhoc = 10.85, &
       ttr = 68.16, &
       ptr = 15.53, &
+      t_nbp = 81.64, &
       tr = 132.86, &
       rhor = 10.85, &
       Rgas = 8.314472, &
@@ -481,12 +493,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_4 = &
       meosdata(ident = "O-H2", &
       name = "orthohyd", &
+      default_ref_state = "IDGAS", &
+      doi = "10.1063/1.3160306", &
       mw = 2.01594, &
       tc = 33.22, &
       pc = 1310.65, &
       rhoc = 15.445, &
       ttr = 14.008, &
       ptr = 7.560, &
+      t_nbp = 20.38, &
       tr = 33.22, &
       rhor = 15.445, &
       Rgas = 8.314472, &
@@ -623,12 +638,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_5 = &
       meosdata(ident = "IC5", &
       name = "ipentane", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 72.14878, &
       tc = 460.35, &
       pc = 3378.0, &
       rhoc = 3.271, &
       ttr = 112.65, &
       ptr = 0.00000008952, &
+      t_nbp = 300.98, &
       tr = 460.35, &
       rhor = 3.271, &
       Rgas = 8.314472, &
@@ -765,12 +783,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_6 = &
       meosdata(ident = "NC10", &
       name = "decane", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 142.28168, &
       tc = 617.7, &
       pc = 2103.0, &
       rhoc = 1.64, &
       ttr = 243.5, &
       ptr = 0.001404, &
+      t_nbp = 447.27, &
       tr = 617.7, &
       rhor = 1.64, &
       Rgas = 8.314472, &
@@ -907,12 +928,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_7 = &
       meosdata(ident = "ETOH", &
       name = "ethanol", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.4895394", &
       mw = 46.06844, &
       tc = 514.71, &
       pc = 6268.0, &
       rhoc = 5.93, &
       ttr = 159.0, &
       ptr = 0.0000007184, &
+      t_nbp = 351.57, &
       tr = 514.71, &
       rhor = 5.93, &
       Rgas = 8.314472, &
@@ -1049,12 +1073,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_8 = &
       meosdata(ident = "KR", &
       name = "krypton", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 83.798, &
       tc = 209.48, &
       pc = 5525.0, &
       rhoc = 10.85, &
       ttr = 115.775, &
       ptr = 73.53, &
+      t_nbp = 119.73, &
       tr = 209.48, &
       rhor = 10.85, &
       Rgas = 8.314472, &
@@ -1191,12 +1218,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_9 = &
       meosdata(ident = "IC4", &
       name = "isobutan", &
+      default_ref_state = "IIR", &
+      doi = "10.1063/1.1901687", &
       mw = 58.1222, &
       tc = 407.81, &
       pc = 3629.0, &
       rhoc = 3.879756788, &
       ttr = 113.73, &
       ptr = 0.00002289, &
+      t_nbp = 261.401, &
       tr = 407.81, &
       rhor = 3.879756788, &
       Rgas = 8.314472, &
@@ -1333,12 +1363,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_10 = &
       meosdata(ident = "C1", &
       name = "methane", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.555898", &
       mw = 16.0428, &
       tc = 190.564, &
       pc = 4599.2, &
       rhoc = 10.139128, &
       ttr = 90.6941, &
       ptr = 11.696, &
+      t_nbp = 111.667, &
       tr = 190.564, &
       rhor = 10.139128, &
       Rgas = 8.31451, &
@@ -1475,12 +1508,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_11 = &
       meosdata(ident = "NC6", &
       name = "hexane", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 86.17536, &
       tc = 507.82, &
       pc = 3044.1, &
       rhoc = 2.706, &
       ttr = 177.83, &
       ptr = 0.001189, &
+      t_nbp = 341.866, &
       tr = 507.82, &
       rhor = 2.706, &
       Rgas = 8.3144598, &
@@ -1617,12 +1653,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_12 = &
       meosdata(ident = "N2", &
       name = "nitrogen", &
+      default_ref_state = "IDGAS", &
+      doi = "10.1063/1.1349047", &
       mw = 28.01348, &
       tc = 126.192, &
       pc = 3395.8, &
       rhoc = 11.1839, &
       ttr = 63.151, &
       ptr = 12.5198, &
+      t_nbp = 77.3550, &
       tr = 126.192, &
       rhor = 11.1839, &
       Rgas = 8.31451, &
@@ -1759,12 +1798,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_13 = &
       meosdata(ident = "NC12", &
       name = "c12", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/ef0341062", &
       mw = 170.33484, &
       tc = 658.1, &
       pc = 1817.0, &
       rhoc = 1.33, &
       ttr = 263.6, &
       ptr = 0.0006262, &
+      t_nbp = 489.442, &
       tr = 658.1, &
       rhor = 1.33, &
       Rgas = 8.314472, &
@@ -1901,12 +1943,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_14 = &
       meosdata(ident = "D2", &
       name = "d2", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.4864752", &
       mw = 4.0282, &
       tc = 38.34, &
       pc = 1679.6, &
       rhoc = 17.23, &
       ttr = 18.724, &
       ptr = 17.189, &
+      t_nbp = 23.661, &
       tr = 38.34, &
       rhor = 17.23, &
       Rgas = 8.3144598, &
@@ -2043,12 +2088,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_15 = &
       meosdata(ident = "SO2", &
       name = "so2", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/acs.jced.6b00195", &
       mw = 64.0638, &
       tc = 430.64, &
       pc = 7886.6, &
       rhoc = 8.078, &
       ttr = 197.7, &
       ptr = 1.6661, &
+      t_nbp = 263.137, &
       tr = 430.64, &
       rhor = 8.078, &
       Rgas = 8.3144598, &
@@ -2185,12 +2233,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_16 = &
       meosdata(ident = "NC8", &
       name = "octane", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 114.229, &
       tc = 568.74, &
       pc = 2483.59, &
       rhoc = 2.031, &
       ttr = 216.37, &
       ptr = 0.0020746, &
+      t_nbp = 398.794, &
       tr = 568.74, &
       rhor = 2.031, &
       Rgas = 8.3144598, &
@@ -2327,12 +2378,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_17 = &
       meosdata(ident = "AR", &
       name = "argon", &
+      default_ref_state = "IDGAS", &
+      doi = "10.1063/1.556037", &
       mw = 39.948, &
       tc = 150.687, &
       pc = 4863.0, &
       rhoc = 13.40742965, &
       ttr = 83.8058, &
       ptr = 68.891, &
+      t_nbp = 87.302, &
       tr = 150.687, &
       rhor = 13.40742965, &
       Rgas = 8.31451, &
@@ -2469,12 +2523,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_18 = &
       meosdata(ident = "NC22", &
       name = "c22", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 310.601, &
       tc = 792.2, &
       pc = 1174.0, &
       rhoc = 0.723, &
       ttr = 317.04, &
       ptr = 0.000003913, &
+      t_nbp = 641.298, &
       tr = 792.2, &
       rhor = 0.723, &
       Rgas = 8.3144598, &
@@ -2611,12 +2668,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_19 = &
       meosdata(ident = "ALLENE", &
       name = "propadiene", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 40.06386, &
       tc = 398.0, &
       pc = 5215.6, &
       rhoc = 5.9, &
       ttr = 136.65, &
       ptr = 0.018343, &
+      t_nbp = 240.874, &
       tr = 398.0, &
       rhor = 5.9, &
       Rgas = 8.3144598, &
@@ -2753,12 +2813,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_20 = &
       meosdata(ident = "P-H2", &
       name = "parahyd", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3160306", &
       mw = 2.01588, &
       tc = 32.938, &
       pc = 1285.8, &
       rhoc = 15.538, &
       ttr = 13.8033, &
       ptr = 7.041, &
+      t_nbp = 20.271, &
       tr = 32.938, &
       rhor = 15.538, &
       Rgas = 8.314472, &
@@ -2895,12 +2958,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_21 = &
       meosdata(ident = "H2S", &
       name = "h2s", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 34.08088, &
       tc = 373.1, &
       pc = 9000.0, &
       rhoc = 10.19, &
       ttr = 187.7, &
       ptr = 23.25, &
+      t_nbp = 212.85, &
       tr = 373.1, &
       rhor = 10.19, &
       Rgas = 8.314472, &
@@ -3037,12 +3103,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_22 = &
       meosdata(ident = "NE", &
       name = "neon", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 20.179, &
       tc = 44.4, &
       pc = 2661.63, &
       rhoc = 24.1, &
       ttr = 24.5561, &
       ptr = 43.355, &
+      t_nbp = 27.1000, &
       tr = 44.4, &
       rhor = 24.1, &
       Rgas = 8.3144598, &
@@ -3179,12 +3248,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_23 = &
       meosdata(ident = "CYCLOHEX", &
       name = "cyclohex", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.4900538", &
       mw = 84.15948, &
       tc = 553.6, &
       pc = 4080.5, &
       rhoc = 3.224, &
       ttr = 279.86, &
       ptr = 5.3487, &
+      t_nbp = 353.865, &
       tr = 553.6, &
       rhor = 3.224, &
       Rgas = 8.3144598, &
@@ -3321,12 +3393,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_24 = &
       meosdata(ident = "O2", &
       name = "oxygen", &
+      default_ref_state = "IDGAS", &
+      doi = "10.1016/0378-3812(85)87016-3", &
       mw = 31.9988, &
       tc = 154.581, &
       pc = 5043.0, &
       rhoc = 13.63, &
       ttr = 54.361, &
       ptr = 0.14628, &
+      t_nbp = 90.1878, &
       tr = 154.581, &
       rhor = 13.63, &
       Rgas = 8.31434, &
@@ -3463,12 +3538,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_25 = &
       meosdata(ident = "H2", &
       name = "hydrogen", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3160306", &
       mw = 2.01588, &
       tc = 33.145, &
       pc = 1296.4, &
       rhoc = 15.508, &
       ttr = 13.957, &
       ptr = 7.3578, &
+      t_nbp = 20.369, &
       tr = 33.145, &
       rhor = 15.508, &
       Rgas = 8.314472, &
@@ -3605,12 +3683,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_26 = &
       meosdata(ident = "NC16", &
       name = "c16", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 226.441, &
       tc = 722.1, &
       pc = 1479.85, &
       rhoc = 1.0, &
       ttr = 291.329, &
       ptr = 0.00009387, &
+      t_nbp = 559.903, &
       tr = 722.1, &
       rhor = 1.0, &
       Rgas = 8.3144598, &
@@ -3747,12 +3828,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_27 = &
       meosdata(ident = "F6S", &
       name = "sf6", &
+      default_ref_state = "IIR", &
+      doi = "10.1063/1.3037344", &
       mw = 146.0554192, &
       tc = 318.7232, &
       pc = 3754.983, &
       rhoc = 5.0823174112, &
       ttr = 223.555, &
       ptr = 231.429, &
+      t_nbp = 204.9, &
       tr = 318.7232, &
       rhor = 5.0823174112, &
       Rgas = 8.314472, &
@@ -3889,12 +3973,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_28 = &
       meosdata(ident = "HE", &
       name = "helium", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 4.002602, &
       tc = 5.1953, &
       pc = 228.32, &
       rhoc = 17.3837, &
       ttr = 2.1768, &
       ptr = 5.0393, &
+      t_nbp = 4.2238, &
       tr = 5.1953, &
       rhor = 17.3837, &
       Rgas = 8.3144598, &
@@ -4031,12 +4118,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_29 = &
       meosdata(ident = "H2O", &
       name = "water", &
+      default_ref_state = "TRIPLE_POINT", &
+      doi = "10.1063/1.1461829", &
       mw = 18.015268, &
       tc = 647.096, &
       pc = 22064.0, &
       rhoc = 17.8737279956, &
       ttr = 273.16, &
       ptr = 0.61248, &
+      t_nbp = 373.1243, &
       tr = 647.096, &
       rhor = 17.8737279956, &
       Rgas = 8.314371357587, &
@@ -4173,12 +4263,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_30 = &
       meosdata(ident = "13BD", &
       name = "13butadiene", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 54.09044, &
       tc = 425.135, &
       pc = 4305.3, &
       rhoc = 4.53, &
       ttr = 164.25, &
       ptr = 0.069922, &
+      t_nbp = 268.661, &
       tr = 425.135, &
       rhor = 4.53, &
       Rgas = 8.3144598, &
@@ -4315,12 +4408,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_31 = &
       meosdata(ident = "ACETONE", &
       name = "acetone", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 58.07914, &
       tc = 508.1, &
       pc = 4692.4, &
       rhoc = 4.7, &
       ttr = 178.5, &
       ptr = 0.002326, &
+      t_nbp = 329.22, &
       tr = 508.1, &
       rhor = 4.7, &
       Rgas = 8.314472, &
@@ -4457,12 +4553,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_32 = &
       meosdata(ident = "NH3", &
       name = "ammonia", &
+      default_ref_state = "TRIPLE_POINT", &
+      doi = "", &
       mw = 17.03052, &
       tc = 405.56, &
       pc = 11363.4, &
       rhoc = 13.696, &
       ttr = 195.49, &
       ptr = 6.05438, &
+      t_nbp = 239.832, &
       tr = 405.56, &
       rhor = 13.696, &
       Rgas = 8.3144598, &
@@ -4599,12 +4698,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_33 = &
       meosdata(ident = "BENZENE", &
       name = "benzene", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 78.11184, &
       tc = 562.02, &
       pc = 4907.277, &
       rhoc = 3.901, &
       ttr = 278.674, &
       ptr = 4.785, &
+      t_nbp = 353.219, &
       tr = 562.02, &
       rhor = 3.901, &
       Rgas = 8.314472, &
@@ -4741,12 +4843,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_34 = &
       meosdata(ident = "N2O", &
       name = "n2o", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 44.0128, &
       tc = 309.52, &
       pc = 7245.0, &
       rhoc = 10.27, &
       ttr = 182.33, &
       ptr = 87.84, &
+      t_nbp = 184.68, &
       tr = 309.52, &
       rhor = 10.27, &
       Rgas = 8.314472, &
@@ -4883,12 +4988,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_35 = &
       meosdata(ident = "CO2", &
       name = "co2", &
+      default_ref_state = "IIR", &
+      doi = "10.1063/1.555991", &
       mw = 44.0098, &
       tc = 304.1282, &
       pc = 7377.3, &
       rhoc = 10.6249063, &
       ttr = 216.592, &
       ptr = 517.95, &
+      t_nbp = 194.686, &
       tr = 304.1282, &
       rhor = 10.6249063, &
       Rgas = 8.31451, &
@@ -5025,12 +5133,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_36 = &
       meosdata(ident = "MEG", &
       name = "eglycol", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 62.06784, &
       tc = 719.0, &
       pc = 10508.7, &
       rhoc = 5.88, &
       ttr = 260.6, &
       ptr = 0.0002366, &
+      t_nbp = 470.313, &
       tr = 719.0, &
       rhor = 5.88, &
       Rgas = 8.3144598, &
@@ -5167,12 +5278,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_37 = &
       meosdata(ident = "NC7", &
       name = "heptane", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 100.202, &
       tc = 540.2, &
       pc = 2735.73, &
       rhoc = 2.33, &
       ttr = 182.55, &
       ptr = 0.00017426, &
+      t_nbp = 371.550, &
       tr = 540.2, &
       rhor = 2.33, &
       Rgas = 8.3144598, &
@@ -5309,12 +5423,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_38 = &
       meosdata(ident = "NC4", &
       name = "butane", &
+      default_ref_state = "IIR", &
+      doi = "10.1063/1.1901687", &
       mw = 58.1222, &
       tc = 425.125, &
       pc = 3796.0, &
       rhoc = 3.922769613, &
       ttr = 134.895, &
       ptr = 0.0006656, &
+      t_nbp = 272.660, &
       tr = 425.125, &
       rhor = 3.922769613, &
       Rgas = 8.314472, &
@@ -5451,12 +5568,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_39 = &
       meosdata(ident = "OXYL", &
       name = "oxylene", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3703506", &
       mw = 106.165, &
       tc = 630.259, &
       pc = 3737.5, &
       rhoc = 2.6845, &
       ttr = 247.985, &
       ptr = 0.0228, &
+      t_nbp = 417.521, &
       tr = 630.259, &
       rhor = 2.6845, &
       Rgas = 8.314472, &
@@ -5593,12 +5713,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_40 = &
       meosdata(ident = "C3", &
       name = "propane", &
+      default_ref_state = "IIR", &
+      doi = "10.1021/je900217v", &
       mw = 44.09562, &
       tc = 369.89, &
       pc = 4251.2, &
       rhoc = 5.0, &
       ttr = 85.525, &
       ptr = 0.000000172, &
+      t_nbp = 231.036, &
       tr = 369.89, &
       rhor = 5.0, &
       Rgas = 8.314472, &
@@ -5735,12 +5858,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_41 = &
       meosdata(ident = "TOLUENE", &
       name = "toluene", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 92.13842, &
       tc = 591.75, &
       pc = 4126.3, &
       rhoc = 3.169, &
       ttr = 178.0, &
       ptr = 0.00003939, &
+      t_nbp = 383.75, &
       tr = 591.75, &
       rhor = 3.169, &
       Rgas = 8.314472, &
@@ -5877,12 +6003,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_42 = &
       meosdata(ident = "NC5", &
       name = "pentane", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 72.14878, &
       tc = 469.7, &
       pc = 3367.5, &
       rhoc = 3.21, &
       ttr = 143.47, &
       ptr = 0.000078028, &
+      t_nbp = 309.209, &
       tr = 469.7, &
       rhor = 3.21, &
       Rgas = 8.3144598, &
@@ -6019,12 +6148,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_43 = &
       meosdata(ident = "3MP", &
       name = "3methylpentane", &
+      default_ref_state = "NBP", &
+      doi = "", &
       mw = 86.17536, &
       tc = 506.0, &
       pc = 3184.5, &
       rhoc = 2.78, &
       ttr = 110.263, &
       ptr = 0.0000000002, &
+      t_nbp = 336.379, &
       tr = 506.0, &
       rhor = 2.78, &
       Rgas = 8.3144598, &
@@ -6161,12 +6293,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_44 = &
       meosdata(ident = "NC9", &
       name = "nonane", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 128.2551, &
       tc = 594.55, &
       pc = 2281.0, &
       rhoc = 1.81, &
       ttr = 219.7, &
       ptr = 0.0004444, &
+      t_nbp = 423.91, &
       tr = 594.55, &
       rhor = 1.81, &
       Rgas = 8.314472, &
@@ -6303,12 +6438,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_45 = &
       meosdata(ident = "XE", &
       name = "xenon", &
+      default_ref_state = "NBP", &
+      doi = "10.1021/je050186n", &
       mw = 131.293, &
       tc = 289.733, &
       pc = 5842.0, &
       rhoc = 8.4, &
       ttr = 161.405, &
       ptr = 81.77, &
+      t_nbp = 165.05, &
       tr = 289.733, &
       rhor = 8.4, &
       Rgas = 8.314472, &
@@ -6445,12 +6583,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_46 = &
       meosdata(ident = "NC11", &
       name = "c11", &
+      default_ref_state = "NBP", &
+      doi = "10.1134/S0040601511080027", &
       mw = 156.30826, &
       tc = 638.8, &
       pc = 1990.4, &
       rhoc = 1.5149, &
       ttr = 247.541, &
       ptr = 0.0004461, &
+      t_nbp = 468.934, &
       tr = 638.8, &
       rhor = 1.5149, &
       Rgas = 8.314472, &
@@ -6587,12 +6728,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_47 = &
       meosdata(ident = "EBZN", &
       name = "ebenzene", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3703506", &
       mw = 106.165, &
       tc = 617.12, &
       pc = 3622.4, &
       rhoc = 2.741016, &
       ttr = 178.2, &
       ptr = 0.000004002, &
+      t_nbp = 409.314, &
       tr = 617.12, &
       rhor = 2.741016, &
       Rgas = 8.314472, &
@@ -6729,12 +6873,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_48 = &
       meosdata(ident = "C3_1", &
       name = "cyclopro", &
+      default_ref_state = "IIR", &
+      doi = "", &
       mw = 42.081, &
       tc = 398.3, &
       pc = 5579.7, &
       rhoc = 6.1429149, &
       ttr = 145.7, &
       ptr = 0.07, &
+      t_nbp = 241.670, &
       tr = 398.3, &
       rhor = 6.1429149, &
       Rgas = 8.3143, &
@@ -6871,12 +7018,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_49 = &
       meosdata(ident = "PRLN", &
       name = "propylen", &
+      default_ref_state = "IIR", &
+      doi = "", &
       mw = 42.07974, &
       tc = 364.211, &
       pc = 4555.0, &
       rhoc = 5.457, &
       ttr = 87.953, &
       ptr = 0.0000007471, &
+      t_nbp = 225.531, &
       tr = 364.211, &
       rhor = 5.457, &
       Rgas = 8.314472, &
@@ -7013,12 +7163,15 @@ module meosdatadb
   type (meosdata), parameter :: meos_50 = &
       meosdata(ident = "MXYL", &
       name = "mxylene", &
+      default_ref_state = "NBP", &
+      doi = "10.1063/1.3703506", &
       mw = 106.165, &
       tc = 616.89, &
       pc = 3534.6, &
       rhoc = 2.665, &
       ttr = 225.3, &
       ptr = 0.003123, &
+      t_nbp = 412.214, &
       tr = 616.89, &
       rhor = 2.665, &
       Rgas = 8.314472, &

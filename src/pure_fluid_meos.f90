@@ -1,15 +1,21 @@
 module pure_fluid_meos
   !>
-  use multiparameter_base, only: meos
+  use multiparameter_base, only: meos, REF_NO_SOLVE, REF_EVALUATE_ID, &
+       REF_SOLVE_FOR_T, REF_SOLVE_FOR_P
   use gerg, only: meos_gerg
-  use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, Rgas_default
+  use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, Rgas_default, comp_name_len
   use thermopack_var, only: Rgas
+  use hyperdual_mod
+  use stringmod, only: str_eq
   implicit none
   save
   private
 
   !> Generig multiparameter equations of state.
   type, extends(meos_gerg) :: meos_pure
+    !
+    real :: t_nbp = 0.0
+    character(len=comp_name_len) :: ref_state
     !
     ! Parameters for the ideal gas part alpha^0
     integer :: n1_id = 0
@@ -50,7 +56,9 @@ module pure_fluid_meos
     procedure, public :: alpha0_hd_taudelta => alpha0_hd_meos_pure
     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_meos_pure
     procedure, public :: mp_pressure => mp_pressure_meos_pure
-
+    procedure, public :: satDeltaEstimate => satDeltaEstimate_meos_pure
+    procedure, public :: get_ref_state_spec => get_ref_state_spec_meos_pure
+    procedure, public :: set_ref_state => set_ref_state_meos_pure
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_pure
   end type meos_pure
@@ -68,7 +76,9 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i_comp, i
+    real :: T, P
     real :: p1, p2, p_rho, p_T
+    type(hyperdual) :: fid, tau, delta
     i_comp = -1
     do i=1,maxmeos
       if (str_eq(comp_name, meosdb(i)%ident)) then
@@ -88,6 +98,9 @@ contains
       meos_comp%tc = meosdb(i_comp)%tc
       meos_comp%rc = meosdb(i_comp)%rhoc*1.0e3 !  -> mol/l -> mol/m3
       meos_comp%acf = meosdb(i_comp)%acf !< Acentric factor
+
+      meos_comp%t_nbp = meosdb(i_comp)%t_nbp
+      meos_comp%ref_state = meosdb(i_comp)%default_ref_state
 
       ! Set indices
       meos_comp%n_cosh = 0
@@ -132,22 +145,127 @@ contains
       meos_comp%big_c_na = meosdb(i_comp)%big_c_na(1:meos_comp%n_nona)
       meos_comp%big_d_na = meosdb(i_comp)%big_d_na(1:meos_comp%n_nona)
       !
+
+      ! delta = 1.0/(4.7453400662606833E-005*meos_comp%rc)
+      ! delta%f1 = 1.0_dp
+      ! tau = meos_comp%tc/273.15
+      ! !delta = 1.0_dp
+      ! !tau = 1.0_dp
+      ! print *,"tau,delta",tau%f0,delta%f0
+      ! !fid = meos_comp%alpha0_hd_taudelta(delta, tau)
+      ! fid = meos_comp%alphaRes_hd_taudelta(delta, tau)
+      ! print *,fid%f0,fid%f1 !fid%f0+1.0983334426647977
+
+      ! delta = 1.0/(4.5070148786350883E-004*meos_comp%rc)
+      ! delta%f1 = 1.0_dp
+      ! print *,"tau,delta",tau%f0,delta%f0
+      ! fid = meos_comp%alphaRes_hd_taudelta(delta, tau)
+      ! print *,fid%f0,fid%f1
+      ! stop
+
+
+      ! Set Rgas
+      p_thermo => get_active_thermo_model()
+      p_thermo%Rgas = meos_comp%Rgas_meos
+      p_thermo%kRgas = 1000.0*p_thermo%Rgas !< J/kmol/K
+
       ! Calculate critcal pressure
       call meos_comp%mp_pressure(meos_comp%rc, meos_comp%tc, meos_comp%pc) !, p_rho, p_T
 
-      ! Set reference entropy/enthalpy
-      !meos_comp%a1_id = 0.0_dp
-      !meos_comp%a2_id = 0.0_dp
+      ! Set reference entropy/enthalpy - to be updated later
+      meos_comp%a1_id = 0.0_dp
+      meos_comp%a2_id = 0.0_dp
 
     else
       print *,"No parameters for component ",trim(comp_name)
     endif
 
-    ! Set consistent Rgas
-    p_thermo => get_active_thermo_model()
-    p_thermo%Rgas = Rgas_default
-    p_thermo%kRgas = 1000.0*Rgas_default !< J/kmol/K
   end function constructor_meos_pure
+
+  subroutine get_ref_state_spec_meos_pure(this, T, P, phase, solve)
+    class(meos_pure) :: this
+    real, intent(out) :: T, P
+    integer, intent(out) :: phase
+    integer, intent(out) :: solve
+    !
+    P = -1.0
+    if (str_eq(this%ref_state, "IIR")) then
+      ! The value of specific enthalpy is set to 200 kJ/kg and the value
+      ! of specific entropy is set to 1.0 kJ/kg-K for saturated liquid at 0 C (273.15 K).
+      ! This is the standard reference state for the
+      ! International Institute of Refrigeration (IIR).
+      T = 273.15
+      solve = REF_SOLVE_FOR_P
+    else if (str_eq(this%ref_state, "NBP")) then
+      ! Enthalpy and entropy to zero for the saturated liquid at the normal boiling point (NBP)
+      P = 1.01325e5
+      T = this%t_nbp
+      solve = REF_SOLVE_FOR_T
+    else if (str_eq(this%ref_state, "ASHRAE")) then
+      ! Setting enthalpy and entropy to zero for the saturated liquid at -40 °C.
+      T = 273.15 - 40.0
+      solve = REF_SOLVE_FOR_P
+    else if (str_eq(this%ref_state, "IDGAS")) then
+      ! Setting the gas enthalpy and entropy to zero at 298.15 K and 1 atm
+      P = 1.01325e5
+      T = 298.15
+      solve = REF_EVALUATE_ID
+    else if (str_eq(this%ref_state, "TRIPLE_POINT")) then
+      ! Setting internal energy and entropy to zero for liquid at the triple point
+      T = this%t_triple
+      P = this%p_triple
+      solve = REF_SOLVE_FOR_P
+    else
+      call stoperror("pure_fluid_meos: Wrong reference state")
+    endif
+
+  end subroutine get_ref_state_spec_meos_pure
+
+  subroutine set_ref_state_meos_pure(this, T, P, v, h, s)
+    class(meos_pure) :: this
+    real, intent(in) :: T, P, v, h, s
+    ! Locals
+    real :: s_ref, h_ref, dh, ds
+
+    if (str_eq(this%ref_state, "IIR")) then
+      ! The value of specific enthalpy is set to 200 kJ/kg and the value
+      ! of specific entropy is set to 1.0 kJ/kg-K for saturated liquid at 0 C (273.15 K).
+      ! This is the standard reference state for the
+      ! International Institute of Refrigeration (IIR).
+      s_ref = 1.0_dp*this%molarMass ! kJ/kg-K * g/mol = J/mol/K
+      h_ref = 200.0_dp*this%molarMass ! kJ/kg * g/mol = J/mol
+    else if (str_eq(this%ref_state, "NBP")) then
+      ! Enthalpy and entropy to zero for the saturated liquid at the normal boiling point (NBP)
+      s_ref = 0
+      h_ref = 0
+    else if (str_eq(this%ref_state, "ASHRAE")) then
+      ! Setting enthalpy and entropy to zero for the saturated liquid at -40 °C.
+      s_ref = 0
+      h_ref = 0
+    else if (str_eq(this%ref_state, "IDGAS")) then
+      ! Setting the gas enthalpy and entropy to zero at 298.15 K and 1 atm
+      s_ref = 0
+      h_ref = 0
+    else if (str_eq(this%ref_state, "TRIPLE_POINT")) then
+      ! Setting internal energy and entropy to zero for liquid at the triple point
+      s_ref = 0
+      h_ref = P*v
+    else
+      call stoperror("pure_fluid_meos: Wrong reference state")
+    endif
+
+    ! Correct entropy
+    this%a1_id = this%a1_id -(s_ref-s)/this%Rgas_meos
+
+    ! Correct enthalpy
+    this%a2_id = this%a2_id + (h_ref-h)/(this%Rgas_meos*this%tc)
+
+    ! print *,"h_ref",h_ref,h
+    ! print *,"s_ref",s_ref,s
+    ! print *,"T,P,rho",T,P,1/v
+    ! print *,"a1, a2",this%a1_id,this%a2_id
+    ! stop
+  end subroutine set_ref_state_meos_pure
 
   subroutine init_meos_pure(this, use_Rgas_fit)
     class(meos_pure) :: this
@@ -260,29 +378,56 @@ contains
     type(hyperdual) :: alpr !< alpr
     ! Internal
     integer :: i
-    type(hyperdual) :: del
+    type(hyperdual) :: del, xxx
     !
     alpr = 0.0_dp
     do i=1,this%upPol
+      !print *,i,this%N_pol(i),this%t_pol(i),this%d_pol(i)
       alpr = alpr + this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
+      xxx = this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
+      !xxx = delta**this%d_pol(i)
+      print *,"reg",i,xxx%f0!,tau%f0
+      !stop
     enddo
+    !print *,alpr%f0
 
     do i=this%upPol+1,this%upExp
+      !print *,i,this%N_exp(i),this%t_exp(i),this%d_exp(i), this%l_exp(i)
       alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
+      xxx = this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
+      print *,"reg",i,xxx%f0
     enddo
+    !print *,alpr%f0
+    !stop
 
     do i=1,this%n_gauss
+      !print *,i,this%N_g(i),this%t_g(i),this%d_g(i)!, this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i)
+      !print *,i, this%eta_g(i), this%epsilon_g(i)
+      !print *,i, this%beta_g(i), this%gamma_g(i)
       alpr = alpr + this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
            exp(this%eta_g(i)*(delta-this%epsilon_g(i))**2 + &
            this%beta_g(i)*(tau-this%gamma_g(i))**2)
+      xxx = this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
+           exp(this%eta_g(i)*(delta-this%epsilon_g(i))**2 + &
+           this%beta_g(i)*(tau-this%gamma_g(i))**2)
+      print *,"Gauss",i,xxx%f0
     enddo
+    !print *,alpr%f0
+    !stop
 
     do i=1,this%n_nona
+      !print *,i, this%big_a_na(i), this%big_b_na(i), this%big_c_na(i), this%big_d_na(i)
+      !print *,this%beta_na(i), this%n_na(i), this%a_na(i), this%b_na(i)
       del = ((1.0_dp - tau) + this%big_a_na(i)*((delta-1.0_dp)**2)**(1.0_dp/(2.0_dp*this%beta_na(i))))**2 + &
            this%big_b_na(i)*((delta-1.0_dp)**2)**this%a_na(i)
+      !print *,"del",del%f0
       alpr = alpr + this%n_na(i) * del**this%b_na(i) * delta * &
            exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
            this%big_d_na(i)*(tau-1.0_dp)**2)
+      xxx = this%n_na(i) * del**this%b_na(i) * delta * &
+           exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
+           this%big_d_na(i)*(tau-1.0_dp)**2)
+      print *,"NA",i,xxx%f0
     enddo
   end function alphaRes_hd_meos_pure
 
@@ -353,5 +498,28 @@ contains
       p_T = -this%Rgas_meos*(T*f_res_hd%f12 + f_res_hd%f1 - rho)
     endif
   end subroutine mp_pressure_meos_pure
+
+  function satDeltaEstimate_meos_pure(this,tau,phase) result(deltaSat)
+    use thermopack_constants, only: LIQPH, VAPPH
+    class(meos_pure) :: this
+    real, intent(in) :: tau
+    integer, intent(in) :: phase
+    real :: deltaSat
+    ! Internals
+    real :: b, rho
+
+    if (tau<1.0) then
+       deltaSat = 1.0
+     else if ( phase == LIQPH ) then
+       b = 0.0778*this%Rgas_meos*this%tc/this%pc ! Peng-Robinson
+       rho = 1.0/(1.01 * b)
+       deltaSat = rho/this%rc
+    else if ( phase == VAPPH ) then
+      deltaSat = 0.1
+    else
+      call stoperror("satDeltaEstimate_meos_pure: only LIQPH and VAPPH allowed!")
+    end if
+
+  end function satDeltaEstimate_meos_pure
 
 end module pure_fluid_meos

@@ -160,7 +160,7 @@ contains
     type(hyperdual) :: alpri !< alpr
     alpr = 0.0_dp
     do i=1,nce
-      alpri = this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
+      !alpri = this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
       !print *,"ari",i,alpri%f0
       alpr = alpr + x(i)*this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
     enddo
@@ -364,6 +364,7 @@ contains
     integer :: i, j
     tau = 0.0_dp
     do i=1,nce-1
+      !print *,"Tc",this%tc_prod_sqrt(i,i)
       tau = tau + x(i)*x(i)*this%tc_prod_sqrt(i,i)
       do j=i+1,nce
         tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
@@ -465,6 +466,7 @@ contains
       x = n/sum(n)
       tau = eos%calc_tau(x, T)
       delta = eos%calc_delta(x, sum(n)/V)
+      !print *,"tau,delta",tau%f0,delta%f0
       f = sum(n)*eos%alphaRes_hd(x, delta, tau)
     class default
       call stoperror("Error in hd_fres_GERGMIX")

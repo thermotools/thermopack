@@ -239,4 +239,17 @@ contains
     end select
   end subroutine assign_single_eos_set
 
+  function get_single_eos_pointer(eos) result(p_single_eos)
+    class(base_eos_param), pointer :: eos
+    class(single_eos), pointer :: p_single_eos
+    p_single_eos => NULL()
+    if (.not. associated(eos)) return
+    select type(p_eos => eos)
+    class is (single_eos)
+      p_single_eos => p_eos
+    class default
+      call stoperror("Error casting to single_eos")
+    end select
+  end function get_single_eos_pointer
+
 end module eos_parameters

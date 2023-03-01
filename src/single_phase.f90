@@ -801,42 +801,23 @@ contains
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
     logical, optional, intent(in) :: recalculate
     ! Locals
-    real :: eF,eF_T,eF_V,eF_n(nc), eF_VVV
-    real :: eF_TT,eF_TV,eF_Tn(nc),eF_VV,eF_Vn(nc),eF_nn(nc,nc)
-    logical :: isCubic, do_all_derivs
+    real :: eF
+    logical :: isCubic
     real :: v_eos
     isCubic = .false.
 
     ! Calculate EoS volume to evaluate F from individual models
     v_eos = eosVolumeFromShiftedVolume(nc,comp,cbeos%volumeShiftId,t,v,n)
 
-    isCubic = .false.
+    call get_eos_F(v_eos,eF,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
 
-    do_all_derivs = present(F_TT) .or. present(F_TV) .or. present(F_Tn) .or. &
-         present(F_VV) .or. present(F_Vn) .or. present(F_nn) .or. present(F_VVV)
-
-    if (do_all_derivs) then
-      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
-    else
-      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
-    end if
     ! Correct the F from the individual models according to the volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-           eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,F_T,F_V,F_n,F_TT,&
+           F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
     end if
 
     if (present(F)) F = eF
-    if (present(F_T)) F_T = eF_T
-    if (present(F_V)) F_V = eF_V
-    if (present(F_n)) F_n = eF_n
-    if (present(F_TT)) F_TT = eF_TT
-    if (present(F_TV)) F_TV = eF_TV
-    if (present(F_Tn)) F_Tn = eF_Tn
-    if (present(F_Vn)) F_Vn = eF_Vn
-    if (present(F_VV)) F_VV = eF_VV
-    if (present(F_VVV)) F_VVV = eF_VVV
-    if (present(F_nn)) F_nn = eF_nn
 
   contains
     subroutine get_eos_F(veos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
@@ -861,7 +842,7 @@ contains
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-        class is ( meos_gergmix ) ! GERG2008
+        class is ( meos_gergmix ) ! GERG2008/MEOSMIC
           call hyperdual_fres_wrapper(hd_fres_GERGMIX,p_eos,nc,T,V_eos,n,eF,ef_T,ef_V,ef_n,&
                ef_TT,ef_VV,ef_TV,ef_Tn,ef_Vn,ef_nn)
         class default ! Saft eos

@@ -1161,6 +1161,12 @@ contains
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    use eos_parameters, only: single_eos, get_single_eos_pointer
+    use multiparameter_base, only: REF_NO_SOLVE, REF_EVALUATE_ID, &
+         REF_SOLVE_FOR_T, REF_SOLVE_FOR_P
+    use saturation, only: safe_bubT, safe_bubP
+    use eostv, only: entropy_tv, enthalpy_tv, Fideal
+    use eos, only: specificvolume
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos !< Equation of state
@@ -1169,6 +1175,10 @@ contains
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
     character(len=len_trim(eos)+4)   :: eos_local !< Equation of state
+    real :: T_ref, P_ref, v_ref, s_ref, h_ref, tmin, FI, FI_T
+    real, allocatable :: x_ref(:), y_ref(:)
+    integer :: phase_ref, solve_ref
+    type(single_eos), pointer :: p_single_eos
 
     ! Initialize MEOS
     if (.not. active_thermo_model_is_associated()) then
@@ -1206,22 +1216,52 @@ contains
 
     ! Initialize components module
     call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
-    ! Set reference entalpies and entropies
-    call set_reference_energies(act_mod_ptr%comps)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
-
-    ncbeos = 1
-    !$ ncbeos = omp_get_max_threads()
-    do i=2,ncbeos
-      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
-    enddo
 
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
 
+    ! Calculate reference states
+    ! Set reference entalpies and entropies
+    ! call set_reference_energies(act_mod_ptr%comps)
+    allocate(x_ref(nce),y_ref(nce))
+    p_single_eos => get_single_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+    if (allocated(p_single_eos%nist)) then
+      tmin = tptmin
+      tptmin = 2.0
+      do i=1,nce
+        x_ref = 0
+        x_ref(i) = 1
+        call p_single_eos%nist(i)%meos%get_ref_state_spec(T_ref,P_ref,phase_ref,solve_ref)
+        if (solve_ref == REF_SOLVE_FOR_P) then
+          P_ref = safe_bubP(T_ref,x_ref,y_ref,ierr)
+        else if (solve_ref == REF_SOLVE_FOR_T) then
+          T_ref = safe_bubT(P_ref,x_ref,y_ref,ierr)
+        endif
+        if (solve_ref == REF_EVALUATE_ID) then
+          v_ref = T_ref*p_single_eos%nist(i)%meos%Rgas_meos/P_ref
+          call Fideal(T_ref,v_ref,x_ref,F=FI,F_T=FI_T)
+          h_ref = (1.d0 - T_ref*FI_T ) * p_single_eos%nist(i)%meos%Rgas_meos * T_ref
+          s_ref = -(T_ref*FI_T + FI) * p_single_eos%nist(i)%meos%Rgas_meos
+          call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+        else if (solve_ref /= REF_NO_SOLVE) then
+          call specificvolume(T_ref,P_ref,x_ref,phase_ref,v_ref)
+          call enthalpy_tv(T_ref,v_ref,x_ref,h_ref)
+          call entropy_tv(T_ref,v_ref,x_ref,s_ref)
+          call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+        endif
+      enddo
+      deallocate(x_ref,y_ref)
+      tptmin = tmin
+    endif
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
   end subroutine init_multiparameter
 
   !----------------------------------------------------------------------------

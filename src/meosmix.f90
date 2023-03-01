@@ -42,47 +42,53 @@ contains
     call mmix%allocate_param(nc)
 
     mmix%mix_data_index = -1
-    do i=1,nce-1
+    do i=1,nc
       rhoc_i = mmix%nist(i)%meos%rc
       Tc_i = mmix%nist(i)%meos%tc
-      do j=i+1,nce
+      do j=i,nc
         rhoc_j = mmix%nist(j)%meos%rc
         Tc_j = mmix%nist(j)%meos%tc
-        mmix%inv_rho_pow(i,j) = (1/rhoc_i**(1.0_dp/3.0_dp) + 1/rhoc_j**(1.0_dp/3.0_dp))**3
+        mmix%inv_rho_pow(i,j) = (1.0_dp/rhoc_i**(1.0_dp/3.0_dp) + 1.0_dp/rhoc_j**(1.0_dp/3.0_dp))**3
         mmix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
         !
-        do k=1,max_meos_mix_reducing
-          if (str_eq(meos_mix_reducingdb(k)%ident1, complist(i)) .and. &
-               str_eq(meos_mix_reducingdb(k)%ident2, complist(j))) then
-           mmix%beta_T(i,j) = meos_mix_reducingdb(k)%beta_T
-           mmix%beta_v(i,j) = meos_mix_reducingdb(k)%beta_v
-           mmix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
-           mmix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
-           exit
-         else if (str_eq(meos_mix_reducingdb(k)%ident1, complist(j)) .and. &
-               str_eq(meos_mix_reducingdb(k)%ident2, complist(i))) then
-            mmix%beta_T(i,j) = 1.0/meos_mix_reducingdb(k)%beta_T
-            mmix%beta_v(i,j) = 1.0/meos_mix_reducingdb(k)%beta_v
-            mmix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
-            mmix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
-            exit
-          endif
-        enddo
-        do k=1,max_meos_mix_data
-          if ((str_eq(meos_mix_datadb(k)%ident1, complist(i)) .and. &
-               str_eq(meos_mix_datadb(k)%ident2, complist(j))) .or. &
-               (str_eq(meos_mix_datadb(k)%ident1, complist(j)) .and. &
-               str_eq(meos_mix_datadb(k)%ident2, complist(i)))) then
-            mmix%mix_data_index(i,j) = k
-            exit
-          endif
-        enddo
+        if (j > i) then
+          do k=1,max_meos_mix_reducing
+            if (str_eq(meos_mix_reducingdb(k)%ident1, complist(i)) .and. &
+                 str_eq(meos_mix_reducingdb(k)%ident2, complist(j))) then
+              mmix%beta_T(i,j) = meos_mix_reducingdb(k)%beta_T
+              mmix%beta_v(i,j) = meos_mix_reducingdb(k)%beta_v
+              mmix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
+              mmix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
+              exit
+            else if (str_eq(meos_mix_reducingdb(k)%ident1, complist(j)) .and. &
+                 str_eq(meos_mix_reducingdb(k)%ident2, complist(i))) then
+              mmix%beta_T(i,j) = 1.0/meos_mix_reducingdb(k)%beta_T
+              mmix%beta_v(i,j) = 1.0/meos_mix_reducingdb(k)%beta_v
+              mmix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
+              mmix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
+              exit
+            endif
+          enddo
+          do k=1,max_meos_mix_data
+            if ((str_eq(meos_mix_datadb(k)%ident1, complist(i)) .and. &
+                 str_eq(meos_mix_datadb(k)%ident2, complist(j))) .or. &
+                 (str_eq(meos_mix_datadb(k)%ident1, complist(j)) .and. &
+                 str_eq(meos_mix_datadb(k)%ident2, complist(i)))) then
+              mmix%mix_data_index(i,j) = k
+              exit
+            endif
+          enddo
+        endif
       enddo
     enddo
 
     ! Set consistent Rgas
     p_thermo => get_active_thermo_model()
-    p_thermo%Rgas = Rgas_default
+    if (nc == 1) then
+      p_thermo%Rgas = mmix%nist(1)%meos%Rgas_meos
+    else
+      p_thermo%Rgas = Rgas_default
+    endif
     p_thermo%kRgas = 1000.0*p_thermo%Rgas !< J/kmol/K
   end function constructor_meos
 
@@ -109,9 +115,10 @@ contains
     type(hyperdual), intent(in) :: rho, T, x(nce)
     type(hyperdual) :: alp0 !< alp0
     ! Internals
-    type(hyperdual) :: rmix
-    rmix = this%rgas_mix(x)
-    alp0 = rmix*this%meos_gergmix%alpha0_hd(x, rho, T)/Rgas
+    !type(hyperdual) :: rmix
+    !rmix = this%rgas_mix(x)
+    !alp0 = rmix*this%meos_gergmix%alpha0_hd(x, rho, T)/Rgas
+    alp0 = this%meos_gergmix%alpha0_hd(x, rho, T)
   end function alpha0_hd
 
   function alphaRes_hd(this, x, delta, tau) result(alpr)
@@ -121,8 +128,11 @@ contains
     type(hyperdual) :: alpr !< alpr
     ! Internal
     type(hyperdual) :: rmix
-    rmix = this%rgas_mix(x)
-    alpr = rmix*this%meos_gergmix%alphaRes_hd(x, delta, tau)/Rgas
+    !rmix = this%rgas_mix(x)
+    !print *,rmix%f0/Rgas-1.0_dp
+    !stop
+    !alpr = rmix*this%meos_gergmix%alphaRes_hd(x, delta, tau)/Rgas
+    alpr = this%meos_gergmix%alphaRes_hd(x, delta, tau)
   end function alphaRes_hd
 
   function calc_del_alpha_r(this, x, tau, delta) result(del_alpha_r)
