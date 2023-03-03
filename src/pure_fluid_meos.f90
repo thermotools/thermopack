@@ -80,9 +80,6 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i_comp, i
-    real :: T, P
-    real :: p1, p2, p_rho, p_T
-    type(hyperdual) :: fid, tau, delta
     i_comp = -1
     do i=1,maxmeos
       if (str_eq(comp_name, meosdb(i)%ident)) then
@@ -152,32 +149,13 @@ contains
       meos_comp%big_c_na = meosdb(i_comp)%big_c_na(1:meos_comp%n_nona)
       meos_comp%big_d_na = meosdb(i_comp)%big_d_na(1:meos_comp%n_nona)
       !
-
-      ! delta = 1.0/(4.7453400662606833E-005*meos_comp%rc)
-      ! delta%f1 = 1.0_dp
-      ! tau = meos_comp%tc/273.15
-      ! !delta = 1.0_dp
-      ! !tau = 1.0_dp
-      ! print *,"tau,delta",tau%f0,delta%f0
-      ! !fid = meos_comp%alpha0_hd_taudelta(delta, tau)
-      ! fid = meos_comp%alphaRes_hd_taudelta(delta, tau)
-      ! print *,fid%f0,fid%f1 !fid%f0+1.0983334426647977
-
-      ! delta = 1.0/(4.5070148786350883E-004*meos_comp%rc)
-      ! delta%f1 = 1.0_dp
-      ! print *,"tau,delta",tau%f0,delta%f0
-      ! fid = meos_comp%alphaRes_hd_taudelta(delta, tau)
-      ! print *,fid%f0,fid%f1
-      ! stop
-
-
       ! Set Rgas
       p_thermo => get_active_thermo_model()
       p_thermo%Rgas = meos_comp%Rgas_meos
       p_thermo%kRgas = 1000.0*p_thermo%Rgas !< J/kmol/K
 
       ! Calculate critcal pressure
-      call meos_comp%mp_pressure(meos_comp%rc, meos_comp%tc, meos_comp%pc) !, p_rho, p_T
+      call meos_comp%mp_pressure(meos_comp%rc, meos_comp%tc, meos_comp%pc)
 
       ! Set reference entropy/enthalpy - to be updated later
       meos_comp%a1_id = 0.0_dp
@@ -185,6 +163,7 @@ contains
 
     else
       print *,"No parameters for component ",trim(comp_name)
+      call stoperror("")
     endif
 
   end function constructor_meos_pure
@@ -232,7 +211,7 @@ contains
     class(meos_pure) :: this
     real, intent(in) :: T, P, v, h, s
     ! Locals
-    real :: s_ref, h_ref, dh, ds
+    real :: s_ref, h_ref
 
     if (str_eq(this%ref_state, "IIR")) then
       ! The value of specific enthalpy is set to 200 kJ/kg and the value
@@ -267,11 +246,6 @@ contains
     ! Correct enthalpy
     this%a2_id = this%a2_id + (h_ref-h)/(this%Rgas_meos*this%tc)
 
-    ! print *,"h_ref",h_ref,h
-    ! print *,"s_ref",s_ref,s
-    ! print *,"T,P,rho",T,P,1/v
-    ! print *,"a1, a2",this%a1_id,this%a2_id
-    ! stop
   end subroutine set_ref_state_meos_pure
 
   subroutine init_meos_pure(this, use_Rgas_fit)
@@ -393,63 +367,30 @@ contains
     type(hyperdual) :: alpr !< alpr
     ! Internal
     integer :: i
-    type(hyperdual) :: del, xxx
+    type(hyperdual) :: del
     !
-    !print *,"entering",tau%f0,delta%f0
     alpr = 0.0_dp
     do i=1,this%upPol
-      !print *,i,this%N_pol(i),this%t_pol(i),this%d_pol(i)
       alpr = alpr + this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
-      !xxx = this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
-      !xxx = delta**this%d_pol(i)
-      !print *,"reg",i,xxx%f0!,tau%f0
-      !stop
     enddo
-    !print *,alpr%f0
 
     do i=this%upPol+1,this%upExp
-      !print *,i,this%N_exp(i),this%t_exp(i),this%d_exp(i), this%l_exp(i)
       alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-this%g_exp(i)*delta**this%l_exp(i))
-      !xxx = this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-this%g_exp(i)*delta**this%l_exp(i))
-      !print *,"g",i,this%g_exp(i)
-      !print *,"terms",i,this%N_exp(i),tau%f0**this%t_exp(i),delta%f0**this%d_exp(i),exp(-this%g_exp(i)*delta%f0**this%l_exp(i))
-      !print *,"reg",i,xxx%f0
     enddo
-    !print *,alpr%f0
-    !stop
 
     do i=1,this%n_gauss
-      !print *,i,this%N_g(i),this%t_g(i),this%d_g(i)!, this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i)
-      !print *,i, this%eta_g(i), this%epsilon_g(i)
-      !print *,i, this%beta_g(i), this%gamma_g(i)
       alpr = alpr + this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
            exp(this%eta_g(i)*(delta-this%epsilon_g(i))**this%delexp_g(i) + &
            this%beta_g(i)*(tau-this%gamma_g(i))**this%tauexp_g(i))
-      !xxx = this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
-      !     exp(this%eta_g(i)*(delta-this%epsilon_g(i))**this%delexp_g(i) + &
-      !     this%beta_g(i)*(tau-this%gamma_g(i))**this%tauexp_g(i))
-      !print *,"Gauss",i,xxx%f0
-      !print *,"tau exp",i,this%tauexp_g(i),this%delexp_g(i)
     enddo
-    !print *,alpr%f0
-    !stop
 
     do i=1,this%n_nona
-      !print *,i, this%big_a_na(i), this%big_b_na(i), this%big_c_na(i), this%big_d_na(i)
-      !print *,this%beta_na(i), this%n_na(i), this%a_na(i), this%b_na(i)
       del = ((1.0_dp - tau) + this%big_a_na(i)*((delta-1.0_dp)**2)**(1.0_dp/(2.0_dp*this%beta_na(i))))**2 + &
            this%big_b_na(i)*((delta-1.0_dp)**2)**this%a_na(i)
-      !print *,"del",del%f0
       alpr = alpr + this%n_na(i) * del**this%b_na(i) * delta * &
            exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
            this%big_d_na(i)*(tau-1.0_dp)**2)
-      !xxx = this%n_na(i) * del**this%b_na(i) * delta * &
-      !     exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
-      !     this%big_d_na(i)*(tau-1.0_dp)**2)
-      !print *,"NA",i,xxx%f0
     enddo
-    !print *,"ss",alpr%f0
-    !stop
 
   end function alphaRes_hd_meos_pure
 

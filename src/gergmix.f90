@@ -146,7 +146,6 @@ contains
       delta = rho/this%nist(i)%meos%rc
       tau = this%nist(i)%meos%tc/T
       alp0i = this%nist(i)%meos%alpha0_hd_taudelta(delta,tau)
-      !print *,"alph0i",i,alp0i%f0
       if (x(i)%f0 > logCutOff) then
         xi = x(i)
       else
@@ -163,14 +162,10 @@ contains
     type(hyperdual) :: alpr !< alpr
     ! Internal
     integer :: i
-    type(hyperdual) :: alpri !< alpr
     alpr = 0.0_dp
     do i=1,nce
-      !alpri = this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
-      !print *,"ari",i,alpri%f0
       alpr = alpr + x(i)*this%nist(i)%meos%alphaRes_hd_taudelta(delta,tau)
     enddo
-    !print *,"alpha_r",this%calc_del_alpha_r(x, tau, delta)
     alpr = alpr + this%calc_del_alpha_r(x, tau, delta)
   end function alphaRes_hd_gergmix
 
@@ -358,7 +353,6 @@ contains
     enddo
     delta = delta + x(nce)*x(nce)*this%inv_rho_pow(nce,nce)/8.0_dp
     delta = delta*rho
-    !print *,"delta",delta%f0
   end function calc_delta
 
   function calc_tau(this, x, T) result(tau)
@@ -379,7 +373,6 @@ contains
     enddo
     tau = tau + x(nce)*x(nce)*this%tc_prod_sqrt(nce,nce)
     tau = tau/T
-    !print *,"tau",tau%f0
   end function calc_tau
 
   function calc_del_alpha_r_gergmix(this, x, tau, delta) result(del_alpha_r)
@@ -397,23 +390,16 @@ contains
         del_alpha_r_ij = 0.0_dp
         if (this%mix_data_index(i,j) > 0) then
           idb = this%mix_data_index(i,j)
-          !print *,gerg_mix_datadb(idb)%num_mix,gerg_mix_datadb(idb)%num_exp
           do k=1,gerg_mix_datadb(idb)%num_mix - gerg_mix_datadb(idb)%num_exp
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)
-            !print *,"k",k,gerg_mix_datadb(idb)%n_mix(k),gerg_mix_datadb(idb)%d_mix(k),gerg_mix_datadb(idb)%t_mix(k)
           enddo
           do k=1+gerg_mix_datadb(idb)%num_mix-gerg_mix_datadb(idb)%num_exp,gerg_mix_datadb(idb)%num_mix
             del_alpha_r_ij = del_alpha_r_ij + gerg_mix_datadb(idb)%n_mix(k)*delta**gerg_mix_datadb(idb)%d_mix(k)*&
                  tau**gerg_mix_datadb(idb)%t_mix(k)* &
                  exp(-gerg_mix_datadb(idb)%eta_mix(k)*(delta-gerg_mix_datadb(idb)%epsilon_mix(k))**2 &
                  - gerg_mix_datadb(idb)%beta_mix(k)*(delta-gerg_mix_datadb(idb)%gamma_mix(k)))
-            !print *,"k",k,gerg_mix_datadb(idb)%n_mix(k),gerg_mix_datadb(idb)%d_mix(k),gerg_mix_datadb(idb)%t_mix(k),&
-            !     gerg_mix_datadb(idb)%eta_mix(k),gerg_mix_datadb(idb)%epsilon_mix(k),&
-            !     gerg_mix_datadb(idb)%beta_mix(k),gerg_mix_datadb(idb)%gamma_mix(k)
           enddo
-          !print *,"Fij",gerg_mix_datadb(idb)%Fij
-          !print *,"del_alpha_r_ij",del_alpha_r_ij%f0
           del_alpha_r = del_alpha_r + x(i)*x(j)*gerg_mix_datadb(idb)%Fij*del_alpha_r_ij
         endif
       enddo
@@ -448,8 +434,6 @@ contains
     select type ( eos => p_eos )
     class is(meos_gergmix)
       x = n/sum(n)
-      !tau = eos%calc_tau(x, T)
-      !delta = eos%calc_delta(x, 1.0_dp/V)
       rho = sum(n)/V
       f = sum(n)*eos%alpha0_hd(x, rho, T)
     class default
@@ -472,7 +456,6 @@ contains
       x = n/sum(n)
       tau = eos%calc_tau(x, T)
       delta = eos%calc_delta(x, sum(n)/V)
-      !print *,"tau,delta",tau%f0,delta%f0
       f = sum(n)*eos%alphaRes_hd(x, delta, tau)
     class default
       call stoperror("Error in hd_fres_GERGMIX")

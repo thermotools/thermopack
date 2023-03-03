@@ -15,9 +15,6 @@ module meosmix
   type, extends(meos_gergmix) :: meos_mix
 
   contains
-    ! procedure, public :: alpha0_hd => alpha0_hd_meos_mix
-    ! procedure, public :: alphaRes_hd => alphaRes_hd_meos_mix
-    !
     procedure, public :: rgas_mix
     procedure, public :: calc_del_alpha_r => calc_del_alpha_r_meos_mix
 
@@ -107,34 +104,6 @@ contains
     enddo
   end function rgas_mix
 
-  ! ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! ! which explains why this routine may seem a bit hard-coded.
-  ! function alpha0_hd_meos_mix(this, x, rho, T) result(alp0)
-  !   use hyperdual_mod
-  !   class(meos_mix) :: this
-  !   type(hyperdual), intent(in) :: rho, T, x(nce)
-  !   type(hyperdual) :: alp0 !< alp0
-  !   ! Internals
-  !   !type(hyperdual) :: rmix
-  !   !rmix = this%rgas_mix(x)
-  !   !alp0 = rmix*this%meos_gergmix%alpha0_hd(x, rho, T)/Rgas
-  !   alp0 = this%meos_gergmix%alpha0_hd(x, rho, T)
-  ! end function alpha0_hd_meos_mix
-
-  ! function alphaRes_hd_meos_mix(this, x, delta, tau) result(alpr)
-  !   use hyperdual_mod
-  !   class(meos_mix) :: this
-  !   type(hyperdual), intent(in) :: delta, tau, x(nce)
-  !   type(hyperdual) :: alpr !< alpr
-  !   ! Internal
-  !   type(hyperdual) :: rmix
-  !   !rmix = this%rgas_mix(x)
-  !   !print *,rmix%f0/Rgas-1.0_dp
-  !   !stop
-  !   !alpr = rmix*this%meos_gergmix%alphaRes_hd(x, delta, tau)/Rgas
-  !   alpr = this%meos_gergmix%alphaRes_hd(x, delta, tau)
-  ! end function alphaRes_hd_meos_mix
-
   function calc_del_alpha_r_meos_mix(this, x, tau, delta) result(del_alpha_r)
     use hyperdual_mod
     class(meos_mix) :: this
@@ -153,11 +122,9 @@ contains
           n_gauss = meos_mix_datadb(idb)%num_mix
           n_exp = n_gauss - meos_mix_datadb(idb)%num_gauss
           n_poly = n_exp - meos_mix_datadb(idb)%num_exp
-          !print *,meos_mix_datadb(idb)%num_mix,meos_mix_datadb(idb)%num_exp
           do k=1,n_poly
             del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
                  tau**meos_mix_datadb(idb)%t_mix(k)
-            !print *,"k",k,meos_mix_datadb(idb)%n_mix(k),meos_mix_datadb(idb)%d_mix(k),meos_mix_datadb(idb)%t_mix(k)
           enddo
           do k=n_poly+1,n_exp
             del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
@@ -169,12 +136,7 @@ contains
                  tau**meos_mix_datadb(idb)%t_mix(k)* &
                  exp(-meos_mix_datadb(idb)%eta_mix(k)*(delta-meos_mix_datadb(idb)%epsilon_mix(k))**2 &
                  - meos_mix_datadb(idb)%beta_mix(k)*(delta-meos_mix_datadb(idb)%gamma_mix(k)))
-            !print *,"k",k,meos_mix_datadb(idb)%n_mix(k),meos_mix_datadb(idb)%d_mix(k),meos_mix_datadb(idb)%t_mix(k),&
-            !     meos_mix_datadb(idb)%eta_mix(k),meos_mix_datadb(idb)%epsilon_mix(k),&
-            !     meos_mix_datadb(idb)%beta_mix(k),meos_mix_datadb(idb)%gamma_mix(k)
           enddo
-          !print *,"Fij",meos_mix_datadb(idb)%Fij
-          !print *,"del_alpha_r_ij",del_alpha_r_ij%f0
           del_alpha_r = del_alpha_r + x(i)*x(j)*meos_mix_datadb(idb)%Fij*del_alpha_r_ij
         endif
       enddo

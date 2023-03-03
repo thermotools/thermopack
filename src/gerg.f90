@@ -138,6 +138,7 @@ contains
       gerg_comp%rhoVap_triple = gerg_comp%dv%density(gerg_comp%t_triple)
     else
       print *,"No parameters for component ",trim(comp_name)
+      call stoperror("")
     endif
 
     ! Set consistent Rgas
@@ -233,20 +234,12 @@ contains
     type(hyperdual) :: exps
     RR = Rgas_star/this%Rgas_fit
     alp0 = log(delta) + RR*(this%n(1) + this%n(2)*tau + this%n(3)*log(tau))
-    !print *,"cc",RR*this%n(1),RR*this%n(2),RR*this%n(3)
     do i=4,this%n_cosh
-      !exps = exp(this%b(i)*tau)
       exps = cosh(this%b(i)*tau)
-      !print *,"cos",tau,exps%f0,this%b(i),RR*this%v(i),RR*this%v(i)*log(exps%f0)
-      !print *,"cos",RR*this%v(i)*log(exps/2.0_dp + 1.0_dp/(2.0_dp*exps)),RR*this%v(i)
-      !alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp + 1.0_dp/(2.0_dp*exps))
       alp0 = alp0 + RR*this%v(i)*log(exps)
     enddo
     do i=this%n_cosh+1,this%n_sinh
-      !exps = exp(this%b(i)*tau)
       exps = abs(sinh(this%b(i)*tau))
-      !print *,"sin",RR*this%v(i)*log(exps%f0),RR*this%v(i)
-      !alp0 = alp0 + RR*this%v(i)*log(exps/2.0_dp - 1.0_dp/(2.0_dp*exps))
       alp0 = alp0 + RR*this%v(i)*log(exps)
     enddo
   end function alpha0_hd_GERG
