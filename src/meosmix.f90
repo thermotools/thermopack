@@ -15,11 +15,11 @@ module meosmix
   type, extends(meos_gergmix) :: meos_mix
 
   contains
-    procedure, public :: alpha0_hd
-    procedure, public :: alphaRes_hd
+    ! procedure, public :: alpha0_hd => alpha0_hd_meos_mix
+    ! procedure, public :: alphaRes_hd => alphaRes_hd_meos_mix
     !
     procedure, public :: rgas_mix
-    procedure, public :: calc_del_alpha_r
+    procedure, public :: calc_del_alpha_r => calc_del_alpha_r_meos_mix
 
   end type meos_mix
 
@@ -107,35 +107,35 @@ contains
     enddo
   end function rgas_mix
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
-  function alpha0_hd(this, x, rho, T) result(alp0)
-    use hyperdual_mod
-    class(meos_mix) :: this
-    type(hyperdual), intent(in) :: rho, T, x(nce)
-    type(hyperdual) :: alp0 !< alp0
-    ! Internals
-    !type(hyperdual) :: rmix
-    !rmix = this%rgas_mix(x)
-    !alp0 = rmix*this%meos_gergmix%alpha0_hd(x, rho, T)/Rgas
-    alp0 = this%meos_gergmix%alpha0_hd(x, rho, T)
-  end function alpha0_hd
+  ! ! The functional form of the ideal gas function varies among multiparameter EoS,
+  ! ! which explains why this routine may seem a bit hard-coded.
+  ! function alpha0_hd_meos_mix(this, x, rho, T) result(alp0)
+  !   use hyperdual_mod
+  !   class(meos_mix) :: this
+  !   type(hyperdual), intent(in) :: rho, T, x(nce)
+  !   type(hyperdual) :: alp0 !< alp0
+  !   ! Internals
+  !   !type(hyperdual) :: rmix
+  !   !rmix = this%rgas_mix(x)
+  !   !alp0 = rmix*this%meos_gergmix%alpha0_hd(x, rho, T)/Rgas
+  !   alp0 = this%meos_gergmix%alpha0_hd(x, rho, T)
+  ! end function alpha0_hd_meos_mix
 
-  function alphaRes_hd(this, x, delta, tau) result(alpr)
-    use hyperdual_mod
-    class(meos_mix) :: this
-    type(hyperdual), intent(in) :: delta, tau, x(nce)
-    type(hyperdual) :: alpr !< alpr
-    ! Internal
-    type(hyperdual) :: rmix
-    !rmix = this%rgas_mix(x)
-    !print *,rmix%f0/Rgas-1.0_dp
-    !stop
-    !alpr = rmix*this%meos_gergmix%alphaRes_hd(x, delta, tau)/Rgas
-    alpr = this%meos_gergmix%alphaRes_hd(x, delta, tau)
-  end function alphaRes_hd
+  ! function alphaRes_hd_meos_mix(this, x, delta, tau) result(alpr)
+  !   use hyperdual_mod
+  !   class(meos_mix) :: this
+  !   type(hyperdual), intent(in) :: delta, tau, x(nce)
+  !   type(hyperdual) :: alpr !< alpr
+  !   ! Internal
+  !   type(hyperdual) :: rmix
+  !   !rmix = this%rgas_mix(x)
+  !   !print *,rmix%f0/Rgas-1.0_dp
+  !   !stop
+  !   !alpr = rmix*this%meos_gergmix%alphaRes_hd(x, delta, tau)/Rgas
+  !   alpr = this%meos_gergmix%alphaRes_hd(x, delta, tau)
+  ! end function alphaRes_hd_meos_mix
 
-  function calc_del_alpha_r(this, x, tau, delta) result(del_alpha_r)
+  function calc_del_alpha_r_meos_mix(this, x, tau, delta) result(del_alpha_r)
     use hyperdual_mod
     class(meos_mix) :: this
     type(hyperdual), intent(in) :: x(nce), tau, delta
@@ -179,6 +179,6 @@ contains
         endif
       enddo
     enddo
-  end function calc_del_alpha_r
+  end function calc_del_alpha_r_meos_mix
 
 end module meosmix
