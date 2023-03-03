@@ -29,6 +29,8 @@ module pure_fluid_meos
     integer :: n_gauss = 0
     integer :: n_nona = 0
     !
+    real, allocatable, dimension(:) :: g_exp
+    !
     real, allocatable, dimension(:) :: n_g
     real, allocatable, dimension(:) :: t_g
     integer, allocatable, dimension(:) :: d_g
@@ -36,6 +38,8 @@ module pure_fluid_meos
     real, allocatable, dimension(:) :: beta_g
     real, allocatable, dimension(:) :: gamma_g
     real, allocatable, dimension(:) :: epsilon_g
+    integer, allocatable, dimension(:) :: tauexp_g
+    integer, allocatable, dimension(:) :: delexp_g
     !
     real, allocatable, dimension(:) :: n_na
     real, allocatable, dimension(:) :: a_na
@@ -127,6 +131,7 @@ contains
       meos_comp%d_exp = meosdb(i_comp)%d_eos(meos_comp%upPol+1:meos_comp%upExp)
       !
       meos_comp%l_exp = meosdb(i_comp)%l_eos(meos_comp%upPol+1:meos_comp%upExp)
+      meos_comp%g_exp = meosdb(i_comp)%g_eos(meos_comp%upPol+1:meos_comp%upExp)
       !
       meos_comp%n_g = meosdb(i_comp)%n_eos(meos_comp%upExp + 1:meos_comp%upExp + meos_comp%n_gauss)
       meos_comp%t_g = meosdb(i_comp)%t_eos(meos_comp%upExp + 1:meos_comp%upExp + meos_comp%n_gauss)
@@ -135,6 +140,8 @@ contains
       meos_comp%beta_g = meosdb(i_comp)%beta_eos(1:meos_comp%n_gauss)
       meos_comp%gamma_g = meosdb(i_comp)%gamma_eos(1:meos_comp%n_gauss)
       meos_comp%epsilon_g = meosdb(i_comp)%epsilon_eos(1:meos_comp%n_gauss)
+      meos_comp%tauexp_g = meosdb(i_comp)%tau_exp_eos(1:meos_comp%n_gauss)
+      meos_comp%delexp_g = meosdb(i_comp)%del_exp_eos(1:meos_comp%n_gauss)
       !
       meos_comp%n_na = meosdb(i_comp)%n_na(1:meos_comp%n_nona)
       meos_comp%a_na = meosdb(i_comp)%a_na(1:meos_comp%n_nona)
@@ -278,6 +285,8 @@ contains
     !
     call this%meos_gerg%allocate_param()
     !
+    if (allocated(this%g_exp)) deallocate(this%g_exp)
+    !
     if (allocated(this%n_g)) deallocate(this%n_g)
     if (allocated(this%t_g)) deallocate(this%t_g)
     if (allocated(this%d_g)) deallocate(this%d_g)
@@ -285,6 +294,8 @@ contains
     if (allocated(this%beta_g)) deallocate(this%beta_g)
     if (allocated(this%gamma_g)) deallocate(this%gamma_g)
     if (allocated(this%epsilon_g)) deallocate(this%epsilon_g)
+    if (allocated(this%tauexp_g)) deallocate(this%tauexp_g)
+    if (allocated(this%delexp_g)) deallocate(this%delexp_g)
     !
     if (allocated(this%n_na)) deallocate(this%n_na)
     if (allocated(this%a_na)) deallocate(this%a_na)
@@ -298,6 +309,8 @@ contains
     if (allocated(this%c_id)) deallocate(this%c_id)
     if (allocated(this%c_id)) deallocate(this%t_id)
     !
+    allocate(this%g_exp(this%upPol+1:this%upExp))
+    !
     allocate(this%n_g(1:this%n_gauss))
     allocate(this%t_g(1:this%n_gauss))
     allocate(this%d_g(1:this%n_gauss))
@@ -305,6 +318,8 @@ contains
     allocate(this%beta_g(1:this%n_gauss))
     allocate(this%gamma_g(1:this%n_gauss))
     allocate(this%epsilon_g(1:this%n_gauss))
+    allocate(this%tauexp_g(1:this%n_gauss))
+    allocate(this%delexp_g(1:this%n_gauss))
     !
     allocate(this%n_na(1:this%n_nona))
     allocate(this%a_na(1:this%n_nona))
@@ -380,22 +395,25 @@ contains
     integer :: i
     type(hyperdual) :: del, xxx
     !
+    !print *,"entering",tau%f0,delta%f0
     alpr = 0.0_dp
     do i=1,this%upPol
       !print *,i,this%N_pol(i),this%t_pol(i),this%d_pol(i)
       alpr = alpr + this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
-      xxx = this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
+      !xxx = this%N_pol(i) * tau**this%t_pol(i)*delta**this%d_pol(i)
       !xxx = delta**this%d_pol(i)
-      print *,"reg",i,xxx%f0!,tau%f0
+      !print *,"reg",i,xxx%f0!,tau%f0
       !stop
     enddo
     !print *,alpr%f0
 
     do i=this%upPol+1,this%upExp
       !print *,i,this%N_exp(i),this%t_exp(i),this%d_exp(i), this%l_exp(i)
-      alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
-      xxx = this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-delta**this%l_exp(i))
-      print *,"reg",i,xxx%f0
+      alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-this%g_exp(i)*delta**this%l_exp(i))
+      !xxx = this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-this%g_exp(i)*delta**this%l_exp(i))
+      !print *,"g",i,this%g_exp(i)
+      !print *,"terms",i,this%N_exp(i),tau%f0**this%t_exp(i),delta%f0**this%d_exp(i),exp(-this%g_exp(i)*delta%f0**this%l_exp(i))
+      !print *,"reg",i,xxx%f0
     enddo
     !print *,alpr%f0
     !stop
@@ -405,12 +423,13 @@ contains
       !print *,i, this%eta_g(i), this%epsilon_g(i)
       !print *,i, this%beta_g(i), this%gamma_g(i)
       alpr = alpr + this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
-           exp(this%eta_g(i)*(delta-this%epsilon_g(i))**2 + &
-           this%beta_g(i)*(tau-this%gamma_g(i))**2)
-      xxx = this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
-           exp(this%eta_g(i)*(delta-this%epsilon_g(i))**2 + &
-           this%beta_g(i)*(tau-this%gamma_g(i))**2)
-      print *,"Gauss",i,xxx%f0
+           exp(this%eta_g(i)*(delta-this%epsilon_g(i))**this%delexp_g(i) + &
+           this%beta_g(i)*(tau-this%gamma_g(i))**this%tauexp_g(i))
+      !xxx = this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
+      !     exp(this%eta_g(i)*(delta-this%epsilon_g(i))**this%delexp_g(i) + &
+      !     this%beta_g(i)*(tau-this%gamma_g(i))**this%tauexp_g(i))
+      !print *,"Gauss",i,xxx%f0
+      !print *,"tau exp",i,this%tauexp_g(i),this%delexp_g(i)
     enddo
     !print *,alpr%f0
     !stop
@@ -424,11 +443,14 @@ contains
       alpr = alpr + this%n_na(i) * del**this%b_na(i) * delta * &
            exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
            this%big_d_na(i)*(tau-1.0_dp)**2)
-      xxx = this%n_na(i) * del**this%b_na(i) * delta * &
-           exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
-           this%big_d_na(i)*(tau-1.0_dp)**2)
-      print *,"NA",i,xxx%f0
+      !xxx = this%n_na(i) * del**this%b_na(i) * delta * &
+      !     exp(-this%big_c_na(i)*(delta-1.0_dp)**2 - &
+      !     this%big_d_na(i)*(tau-1.0_dp)**2)
+      !print *,"NA",i,xxx%f0
     enddo
+    !print *,"ss",alpr%f0
+    !stop
+
   end function alphaRes_hd_meos_pure
 
   subroutine assign_meos_pure(this,other)
@@ -449,6 +471,8 @@ contains
       this%n_gauss = other%n_gauss
       this%n_nona = other%n_nona
       !
+      this%g_exp = other%g_exp
+      !
       this%n_g = other%n_g
       this%t_g = other%t_g
       this%d_g = other%d_g
@@ -456,6 +480,8 @@ contains
       this%beta_g = other%beta_g
       this%gamma_g = other%gamma_g
       this%epsilon_g = other%epsilon_g
+      this%tauexp_g = other%tauexp_g
+      this%delexp_g = other%delexp_g
       !
       this%n_na = other%n_na
       this%a_na = other%a_na
