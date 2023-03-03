@@ -31,8 +31,8 @@ module gergmix
   contains
 
     procedure, public :: allocate_param
-    procedure, public :: alpha0_hd
-    procedure, public :: alphaRes_hd
+    procedure, public :: alpha0_hd => alpha0_hd_gergmix
+    procedure, public :: alphaRes_hd => alphaRes_hd_gergmix
     procedure, public :: Zfac => Zfac_gergmix
 
     ! Assignment operator
@@ -41,7 +41,7 @@ module gergmix
     ! Privates
     procedure, public ::  calc_delta
     procedure, public ::  calc_tau
-    procedure, public ::  calc_del_alpha_r
+    procedure, public ::  calc_del_alpha_r => calc_del_alpha_r_gergmix
     procedure, public ::  pressure
     procedure, public ::  densitySolver
 
@@ -131,14 +131,15 @@ contains
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
   ! which explains why this routine may seem a bit hard-coded.
-  function alpha0_hd(this, x, rho, T) result(alp0)
+  function alpha0_hd_gergmix(this, x, rho, T) result(alp0)
     use hyperdual_mod
     class(meos_gergmix) :: this
     type(hyperdual), intent(in) :: rho, T, x(nce)
     type(hyperdual) :: alp0 !< alp0
     ! Internals
+    real, parameter :: logCutOff = 1.0e-100
     integer :: i
-    type(hyperdual) :: delta, tau
+    type(hyperdual) :: delta, tau, xi
     type(hyperdual) :: alp0i !< alpr
     alp0 = 0.0_dp
     do i=1,nce
@@ -146,11 +147,16 @@ contains
       tau = this%nist(i)%meos%tc/T
       alp0i = this%nist(i)%meos%alpha0_hd_taudelta(delta,tau)
       !print *,"alph0i",i,alp0i%f0
-      alp0 = alp0 + x(i)*(this%nist(i)%meos%alpha0_hd_taudelta(delta,tau) + log(x(i)))
+      if (x(i)%f0 > logCutOff) then
+        xi = x(i)
+      else
+        xi = logCutOff
+      endif
+      alp0 = alp0 + x(i)*(this%nist(i)%meos%alpha0_hd_taudelta(delta,tau) + log(xi))
     enddo
-  end function alpha0_hd
+  end function alpha0_hd_gergmix
 
-  function alphaRes_hd(this, x, delta, tau) result(alpr)
+  function alphaRes_hd_gergmix(this, x, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_gergmix) :: this
     type(hyperdual), intent(in) :: delta, tau, x(nce)
@@ -166,7 +172,7 @@ contains
     enddo
     !print *,"alpha_r",this%calc_del_alpha_r(x, tau, delta)
     alpr = alpr + this%calc_del_alpha_r(x, tau, delta)
-  end function alphaRes_hd
+  end function alphaRes_hd_gergmix
 
   subroutine pressure(this, rho, x, T_spec, p, p_rho)
     use hyperdual_mod
@@ -376,7 +382,7 @@ contains
     !print *,"tau",tau%f0
   end function calc_tau
 
-  function calc_del_alpha_r(this, x, tau, delta) result(del_alpha_r)
+  function calc_del_alpha_r_gergmix(this, x, tau, delta) result(del_alpha_r)
     use hyperdual_mod
     class(meos_gergmix) :: this
     type(hyperdual), intent(in) :: x(nce), tau, delta
@@ -412,7 +418,7 @@ contains
         endif
       enddo
     enddo
-  end function calc_del_alpha_r
+  end function calc_del_alpha_r_gergmix
 
   subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac)
     implicit none
