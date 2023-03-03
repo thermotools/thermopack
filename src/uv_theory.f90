@@ -24,7 +24,10 @@ module uv_theory
   integer, parameter :: A0_LAFITTE = 2
   integer, parameter :: A1_VANWESTEN = 1
   integer, parameter :: A1_LAFITTE = 2
-  
+
+  logical :: LAFITTE = .False.
+  !logical :: LAFITTE = .True.
+
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
   real, parameter :: C_PHI_WCA_MIE(3) = (/ 1.4419, 1.1169, 16.8810 /)
@@ -102,6 +105,7 @@ module uv_theory
      type(mie_potential_hd), allocatable :: mie(:,:)
      type(hyperdual), allocatable :: dhs(:,:)
      type(hyperdual), allocatable :: qhs(:,:)
+     type(sutherlandsum), allocatable :: sutsum(:,:)
      type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
 
      ! Model control
@@ -147,6 +151,11 @@ contains
           if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate mie")
        end if
 
+       if (allocated(eos%sutsum)) then
+          deallocate(eos%sutsum,stat=stat)
+          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate pot")
+       end if
+
        if (allocated(eos%dhs)) then
           deallocate(eos%dhs,stat=stat)
           if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate dhs")
@@ -166,6 +175,7 @@ contains
     character(len=*), intent(in) :: eos_label !< EOS label
     call eos%dealloc()
     allocate(eos%mie(nc,nc))
+    allocate(eos%sutsum(nc,nc))
     allocate(eos%dhs(nc,nc))
     allocate(eos%qhs(nc,nc))
   end subroutine uv_allocate_and_init
@@ -332,9 +342,14 @@ contains
     ! system
     do i=1,nc
        if (eos%subeosidx == eosMie_UV_WCA) then
+          LAFITTE = .FALSE.
           call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
        else if (eos%subeosidx == eosMie_UV_BH) then
-          call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+          if (LAFITTE) then
+             call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
+          else
+             call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+          end if
        end if
     end do
 
@@ -363,15 +378,6 @@ contains
     eos%sigma3_double = sigma3_double
     eos%dhs_x = (eos%dhs_x)**(1.0/3) !< Eq S46 in [1]
     eos%dhs_x_adim = eos%dhs_x/eos%sigma_x
-
-    ! if (eos%a0_method==A0_LAFITTE .or. eos%a1_method==A1_LAFITTE) then
-    !    ! Calculate BH diameters
-    !    do i=1,nc
-    !       do j=1,nc
-    !          call calc_bh_diameter(eos%mie(i,j), beta=1/T, dhs=eos%dhs_lafitte(i,j))
-    !       end do
-    !    end do
-    ! end if
   end subroutine preCalcUVTheory
 
 
@@ -415,25 +421,31 @@ contains
     call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
 
     ! Calculate perturbation part of reference system
-    ! ! if (eos%a0_method == A0_VANWESTEN) then
-    ! call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
-    ! ! else if (eos%a1_method == A1_LAFITTE) then
-    ! !    ! Calc dhs_bh_params
-    ! !    pass !call Delta_a0_lafitte(eos, nc, T, rho, z, delta_a0)
-    ! ! end if
+    if (LAFITTE) then
+       delta_a0 = 0.0
+    else
+       call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
+       !print *, "delta_a0", delta_a0
+    end if
 
     ! Calculate contribution from reference system
     a0_res = a_hs_res + delta_a0
 
     ! Calculate Delta a1u and Delta B2u
-    if (eos%a1_method == A1_VANWESTEN) then
-       call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
-    else if (eos%a1_method == A1_LAFITTE) then
+    if (LAFITTE) then
        call delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    else
+       call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     end if
 
     ! Calculate Delta B2
-    call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
+    if (LAFITTE) then
+       call DeltaB2_quadrature(eos,nc,T,z, Delta_B2)
+    else
+       call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
+    end if
+    ! call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
+    ! print *, "DeltaB2   ", Delta_B2%f0
 
     ! Calculate total helmholtz energy
     a_res = a0_res + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
@@ -611,7 +623,24 @@ contains
 
   end subroutine Iu_BH_Mie
 
+  
+  subroutine DeltaB2_quadrature(eos,nc,T,z, DeltaB2)
+    !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
+    integer, intent(in) :: nc !< Number of components
+    type(uv_theory_eos), intent(in) :: eos
+    type(hyperdual), intent(in) :: T         ! temperature (K)
+    type(hyperdual), intent(in) :: z(nc)     ! mole fractions (-)
+    type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2 (m^3)
+    ! Locals
+    integer :: i, j
 
+    DeltaB2 = 0.0
+    do i=1,nc
+       do j=1,nc
+          DeltaB2 = DeltaB2 + z(i)*z(j)*eos%mie(i,j)%B2(beta=1.0/T) - (2*PI/3 * eos%dhs(i,j)**3)
+       end do
+    end do
+  end subroutine DeltaB2_Quadrature
 
   subroutine DeltaB2_Mie(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
