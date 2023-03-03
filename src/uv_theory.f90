@@ -13,12 +13,18 @@ module uv_theory
   use pair_potentials
   use numconstants, only: PI
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
-  use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH
+  use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH, eosMie_UV_LAFITTE
   use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   use hardsphere_bmcsl
   implicit none
   save
 
+  ! Model control options
+  integer, parameter :: A0_VANWESTEN = 1
+  integer, parameter :: A0_LAFITTE = 2
+  integer, parameter :: A1_VANWESTEN = 1
+  integer, parameter :: A1_LAFITTE = 2
+  
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
   real, parameter :: C_PHI_WCA_MIE(3) = (/ 1.4419, 1.1169, 16.8810 /)
@@ -97,6 +103,10 @@ module uv_theory
      type(hyperdual), allocatable :: dhs(:,:)
      type(hyperdual), allocatable :: qhs(:,:)
      type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
+
+     ! Model control
+     integer :: A0_METHOD = A0_VANWESTEN
+     integer :: A1_METHOD = A1_VANWESTEN
    contains
      procedure, public :: dealloc => uv_dealloc
      procedure, public :: allocate_and_init => uv_allocate_and_init
@@ -134,17 +144,17 @@ contains
 
        if (allocated(eos%mie)) then
           deallocate(eos%mie,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate mie")
+          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate mie")
        end if
 
        if (allocated(eos%dhs)) then
           deallocate(eos%dhs,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate dhs")
+          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate dhs")
        end if
 
        if (allocated(eos%qhs)) then
           deallocate(eos%qhs,stat=stat)
-          if (stat /= 0) call stoperror("saftvrmie_dealloc: Not able to deallocate qhs")
+          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate qhs")
        end if
 
     end select
@@ -353,6 +363,15 @@ contains
     eos%sigma3_double = sigma3_double
     eos%dhs_x = (eos%dhs_x)**(1.0/3) !< Eq S46 in [1]
     eos%dhs_x_adim = eos%dhs_x/eos%sigma_x
+
+    ! if (eos%a0_method==A0_LAFITTE .or. eos%a1_method==A1_LAFITTE) then
+    !    ! Calculate BH diameters
+    !    do i=1,nc
+    !       do j=1,nc
+    !          call calc_bh_diameter(eos%mie(i,j), beta=1/T, dhs=eos%dhs_lafitte(i,j))
+    !       end do
+    !    end do
+    ! end if
   end subroutine preCalcUVTheory
 
 
@@ -396,22 +415,32 @@ contains
     call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
 
     ! Calculate perturbation part of reference system
-    call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
+    ! ! if (eos%a0_method == A0_VANWESTEN) then
+    ! call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
+    ! ! else if (eos%a1_method == A1_LAFITTE) then
+    ! !    ! Calc dhs_bh_params
+    ! !    pass !call Delta_a0_lafitte(eos, nc, T, rho, z, delta_a0)
+    ! ! end if
 
     ! Calculate contribution from reference system
     a0_res = a_hs_res + delta_a0
 
     ! Calculate Delta a1u and Delta B2u
-    call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    if (eos%a1_method == A1_VANWESTEN) then
+       call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    else if (eos%a1_method == A1_LAFITTE) then
+       call delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    end if
 
     ! Calculate Delta B2
     call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
+
     ! Calculate total helmholtz energy
     a_res = a0_res + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
   end subroutine calc_ares_uv
 
 
-  subroutine delta_a1u_b2u_rigorous(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+  subroutine delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     use sutherland_a1tilde
     !> The u contribution computed directly according to BH, without the one-fluid approximation
     type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
@@ -449,14 +478,17 @@ contains
           epsij = eos%mie(i,j)%epsdivk
           call calc_a1tilde_sutherland(x0ij,zetax,lrij,epsij, a1til_rep,a1til_rep0)
           call calc_a1tilde_sutherland(x0ij,zetax,laij,epsij, a1til_att,a1til_att0)
-          a1ij0 = prefac      * (a1til_rep0 - a1til_att0)
-          a1ij = (prefac*rho) * (a1til_rep  - a1til_att)
+          a1ij0 = prefac      * (a1til_att0 - a1til_rep0)
+          a1ij = (prefac*rho) * (a1til_att  - a1til_rep)
           delta_a1u = delta_a1u + z(i)*z(j)*a1ij
           delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
        end do
     end do
 
-  end subroutine delta_a1u_b2u_rigorous
+    ! uv-theory incorporates the beta factor directly into a1
+    delta_a1u = delta_a1u/T
+    delta_b2u = delta_b2u/T
+  end subroutine delta_a1u_b2u_lafitte
 
   subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
