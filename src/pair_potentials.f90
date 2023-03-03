@@ -11,8 +11,9 @@ module pair_potentials
    contains
      procedure(calc_pot_intf), public, deferred  :: calc
      procedure(calc_potderivs_intf), public, deferred  :: calc_r_derivs
-     !procedure(calc_B2_intf), public, deferred   :: B2
      procedure(alpha_x_intf), public, deferred   :: alpha_x
+     procedure, public :: calc_bh_diameter
+     procedure, public :: B2 => calc_B2_by_quadrature
   end type pair_potential
 
   abstract interface
@@ -37,19 +38,7 @@ module pair_potentials
        type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K/m^3)
      end subroutine calc_potderivs_intf
   end interface
-
-
-  abstract interface
-     type(hyperdual) function calc_B2_intf(pot, beta) result(B2)
-       use hyperdual_mod
-       use quadratures
-       import pair_potential
-       class(pair_potential), intent(in) :: pot !< Pair potential
-       type(hyperdual), intent(in)       :: beta  !< 1/kT (J)
-       !type(hyperdual), intent(out)      :: B2     !< Second virial coefficient (m^3)
-     end function calc_B2_intf
-  end interface
-
+  
   abstract interface
      type(hyperdual) function alpha_x_intf(this, x, adim) result(alpha_x)
        !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
@@ -72,7 +61,6 @@ module pair_potentials
      procedure, public :: init => mie_potential_hd_init
      procedure, public :: calc => mie_potential_hd_calc
      procedure, public :: calc_r_derivs => mie_potential_hd_calc_r_derivs
-     procedure, public :: B2 => calc_B2_by_quadrature
      procedure, public :: alpha_x => mie_potential_hd_calc_alpha_x
   end type mie_potential_hd
 
@@ -104,7 +92,7 @@ module pair_potentials
      character(len=ref_len) :: ref
   end type mie_data
 
-  integer, parameter :: nMie = 5
+  integer, parameter :: nMie = 7
   type(mie_data), dimension(nMie), parameter :: MieArray = (/ &
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="AR", &
@@ -112,6 +100,13 @@ module pair_potentials
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
+                                !
+       mie_data(eosidx = eosMie_UV_WCA, &
+       compName="AR", &
+       lamr=12.26, &
+       sigma=3.41E-10, &
+       eps_divk=118.7, &
+       ref="SVRMIE"), &
                                 !
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="C1", &
@@ -133,6 +128,13 @@ module pair_potentials
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
+                                !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="AR", &
+       lamr=12.26, &
+       sigma=3.41E-10, &
+       eps_divk=118.7, &
+       ref="SVRMIE"), &
                                 !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="C1", &
@@ -382,23 +384,26 @@ contains
   type(hyperdual) function calc_B2_by_quadrature(pot, beta) result(B2)
     !> Second virial coefficient (m^3)
     use quadratures
-    class(mie_potential_hd), intent(in) :: pot !< Pair potential
-    type(hyperdual), intent(in)         :: beta  !< 1/kT (J)
+    class(pair_potential), intent(in)   :: pot !< Pair potential
+    type(hyperdual), intent(in)           :: beta  !< 1/kT (J)
     ! Locals
-    type(hyperdual) :: r
+    type(hyperdual) :: r, potrmin
     integer :: B2_quadrature = GAUSS_KRONROD_31 ! Modify to improve accuracy
     integer :: i, n_quad
     real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
     real :: rmin, rmax ! lower and upper integration limits
     real :: rmid, xscale
 
+    ! Potential minimum
+    call calc_rmin_and_epseff(pot, rmin=potrmin)
+    
     ! Get quadrature points
     call get_quadrature_positions(B2_quadrature,x_vec,n_quad)
     call get_quadrature_weights(B2_quadrature,w_vec,n_quad)
 
     ! Calculate lower and upper integration limits
-    rmin = 0.3*pot%sigma%f0
-    rmax = pot%rmin%f0
+    rmin = 0.4*pot%sigma%f0
+    rmax = potrmin%f0
     rmid   = (rmax + rmin)/2
     xscale = (rmax - rmin)/2
 
@@ -413,8 +418,8 @@ contains
     end do
 
     ! Numerical integration between rmin and rmax
-    rmin = pot%rmin%f0
-    rmax = 5*pot%rmin%f0
+    rmin = rmax
+    rmax = 5*potrmin%f0
     rmid   = (rmax + rmin)/2
     xscale = (rmax - rmin)/2
     do i=1,n_quad
@@ -431,7 +436,7 @@ contains
     function B2_integrand(r, beta, pot) result(val)
       type(hyperdual), intent(in)         :: r    !< Separation (m)
       type(hyperdual), intent(in)         :: beta !< 1/kT (J)
-      class(mie_potential_hd), intent(in) :: pot  !< Pair potential
+      class(pair_potential), intent(in)   :: pot  !< Pair potential
       type(hyperdual)                     :: val  !< Integrand (m^2)
       val = -2.0*PI*(exp(-beta*pot%calc(r)) - 1.0) * r*r
     end function B2_integrand
@@ -461,7 +466,7 @@ contains
     sigmaeff = calc_sigmaeff(pot)
 
     ! Calculate lower and upper integration limits
-    rmin = 0.2*pot%sigma%f0
+    rmin = 0.4*sigmaeff%f0
     rmax = sigmaeff%f0
     rmid   = (rmax + rmin)/2.0
     xscale = (rmax - rmin)/2.0
@@ -547,11 +552,11 @@ contains
     !> the absolute value of the minimum.
     use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
     class(pair_potential), intent(in) :: pot    !< Pair potential
-    type(hyperdual), intent(out)      :: rmin   !< Position of minimum (m)
-    type(hyperdual), intent(out)      :: epseff !< Effective well-depth (K)
+    type(hyperdual), intent(out), optional :: rmin   !< Position of minimum (m)
+    type(hyperdual), intent(out), optional :: epseff !< Effective well-depth (K)
     ! Locals
     type(nonlinear_solver) :: solver
-    type(hyperdual) :: pot0, dpot0, d2pot0, d3pot0
+    type(hyperdual) :: pot0, dpot0, d2pot0, d3pot0, rminloc, epseffloc
     real :: sigma_scaled, xinit, xmin, xmax, param(1)
 
     ! Set the limits and the initial condition
@@ -570,19 +575,20 @@ contains
     endif
 
     ! Set real component rmin
-    rmin = 0.0
-    rmin%f0 = sigma_scaled*pot%sigma%f0
+    rminloc = 0.0
+    rminloc%f0 = sigma_scaled*pot%sigma%f0
 
     ! Calculate the remaining hyperdual components of rmin, obtained by
     ! expanding u(r=rmin,beta) in rmin for "fixed" beta
-    call pot%calc_r_derivs(rmin, pot0, dpot0, d2pot0)
-    rmin%f1 = -dpot0%f1/d2pot0%f0
-    rmin%f2 = -dpot0%f2/d2pot0%f0
-    rmin%f12 = -(dpot0%f12 + (d2pot0%f1*rmin%f2+d2pot0%f2*rmin%f1) + d3pot0%f0*rmin%f1*rmin%f2)/d2pot0%f0
+    call pot%calc_r_derivs(rminloc, pot0, dpot0, d2pot0)
+    rminloc%f1 = -dpot0%f1/d2pot0%f0
+    rminloc%f2 = -dpot0%f2/d2pot0%f0
+    rminloc%f12 = -(dpot0%f12 + (d2pot0%f1*rmin%f2+d2pot0%f2*rmin%f1) + d3pot0%f0*rmin%f1*rmin%f2)/d2pot0%f0
 
     ! Calculate effective epsilon
-    epseff = abs(pot%calc(rmin))
-
+    if (present(rmin)) rmin = rminloc
+    if (present(epseff)) epseff = abs(pot%calc(rminloc))
+    
   contains
 
     subroutine fun(x, param, f, df)

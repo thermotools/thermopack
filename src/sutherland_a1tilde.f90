@@ -21,7 +21,7 @@ contains
     type(hyperdual), intent(in) :: lambda !< Sutherland exponent (-)
     type(hyperdual), intent(in) :: eps    !< Sutherland energy (K)
     ! Output
-    type(hyperdual), intent(out) :: a1    !< First order perturbation term a1 ()
+    type(hyperdual), intent(out) :: a1    !< a1/eta (-)
     type(hyperdual), intent(out), optional :: a1_zerodensity
     ! Locals
     type(hyperdual) :: B, B_zerodensity
