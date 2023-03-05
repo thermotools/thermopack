@@ -1,5 +1,5 @@
 # Getting started - Python
-This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo.
+This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
 
 ## Initialising an equation of state
 An EoS is initialized by passing in the fluid identifiers of the mixture, for example
@@ -54,7 +54,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
 For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [wiki](https://github.com/thermotools/thermopack/wiki/Extended_CSP-equations-of-state).
 
 # Doing calculations
-Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the docstrings in the `thermopack` class, [found in `/addon/pycThermopack/thermopack/thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here, a small subset of the functionality is demonstrated.
+Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). Here, a small subset of the functionality is demonstrated.
 
 Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 
@@ -78,7 +78,27 @@ vl, dvdp = eos.specific_volume(T, p, x, eos.LIQPH, dvdt=True) # Liquid phase mol
 _, dvdn = eos.specific_volume(T, p, x, eos.LIQPH, dvdn=True) # Liquid phase partial molar volumes
 ```
 
-Similarly, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. 
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TV-property-interfaces) and the [Tp-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) of the [`thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy).
+
+Please note that heat capacities are not available directly, but must be computed as derivatives of enthalpy and internal energy, as
+
+```Python
+from thermopack.cubic import cubic
+eos = cubic('C1,C3,NC6', 'SRK') # SRK EoS for a mixture of methane, propane and n-hexane
+
+T = 300 # Kelvin
+p = 1e5 # Pascal
+x = [0.2, 0.1, 0.7] # Molar composition
+_, Cp_vap = eos.enthalpy(T, p, x, eos.VAPPH, dhdt=True) # Vapour phase heat capacity at constant pressure, computed as (dH/dT)_{T,p,n}
+_, Cp_liq = eos.enthalpy(T, p, x, eos.LIQPH, dhdt=True) # Liquid phase heat capacity at constant pressure, computed as (dH/dT)_{T,p,n}
+
+vg, = eos.specific_volume(T, p, x, eos.VAPPH) # Computing vapour phase specific volume
+vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Liquid phase specific volume
+
+_, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{T,V,n}
+_, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{T,V,n}
+
+```
 
 ## Phase diagrams and Equilibria
 
@@ -96,7 +116,7 @@ x = [0.1, 0.25, 0.65] # Molar composition
 x, y, vapfrac, liqfrac, phasekey = eos.two_phase_tpflash(T, p, x) # x and y are vapour and liquid composition respectively
 ```
 
-Note that some of the methods also output other information, such as the temperature of the flash, see the docstrings of the `thermo` class in `thermo.py` for more details.
+Note that some of the methods also output other information, such as the temperature of the flash, see the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
 
 ### Phase envelopes
 
@@ -185,7 +205,7 @@ T_iso_s, p_iso_s, v_iso_s, h_iso_s = eos.get_isentrope(5, x, minimum_pressure=1e
 
 Thermopack has a critical point solver, which is called as
 
-```
+```Python
 eos = saftvrqmie('HE,NE') # Use FH-corrected Mie potentials for Helium calculations!
 n = [5, 10]
 Tc, pc, Vc = eos.critical(n) # Compute the critical temperature, pressure and volume given mole numbers

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-02-28T18:21:11.242141
+Generated at: 2023-03-05T20:13:03.494924
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -97,6 +97,17 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
 ## TV-property interfaces
 
 Computing properties as a function of temperature and volume. Derivatives returned by methods in this section are computed as functions of (T, V, n).
+
+### Table of contents
+  * [TV-property interfaces](#TV-property-interfaces)
+    * [chemical_potential_tv](#chemical_potential_tvself-temp-volume-n-dmudtNone-dmudvNone-dmudnNone-property_flagIR)
+    * [enthalpy_tv](#enthalpy_tvself-temp-volume-n-dhdtNone-dhdvNone-dhdnNone-property_flagIR)
+    * [entropy_tv](#entropy_tvself-temp-volume-n-dsdtNone-dsdvNone-dsdnNone-property_flagIR)
+    * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtNone-dlnphidvNone-dlnphidnNone)
+    * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
+    * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
+    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
+
 
 ### `chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None, dmudn=None, property_flag='IR')`
 Calculate chemical potential given temperature, volume and mol numbers.
@@ -410,6 +421,21 @@ Calculate pressure given temperature, volume and mol numbers.
 ## Tp-property interfaces
 
 Computing properties as a function of temperature and pressure. Derivatives returned by methods in this section are computed as functions of (T, p, n).
+
+### Table of contents
+  * [Tp-property interfaces](#Tp-property-interfaces)
+    * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
+    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
+    * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
+    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
+    * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtNone)
+    * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtNone-dsdpNone)
+    * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtNone-dvdpNone-dvdnNone)
+    * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betaV-betaL-phase)
+    * [thermo](#thermoself-temp-press-x-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone-ophaseNone-vNone)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
+    * [zfac](#zfacself-temp-press-x-phase-dzdtNone-dzdpNone-dzdnNone)
+
 
 ### `enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False)`
 Calculate specific single-phase enthalpy Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp and dhdn only are flags to enable calculation.
@@ -880,6 +906,16 @@ Calculate single-phase compressibility Note that the order of the output match t
 
 Methods for flash calculations.
 
+### Table of contents
+  * [Flash interfaces](#Flash-interfaces)
+    * [guess_phase](#guess_phaseself-temp-press-z)
+    * [set_ph_tolerance](#set_ph_toleranceself-tol)
+    * [two_phase_phflash](#two_phase_phflashself-press-z-enthalpy-tempNone)
+    * [two_phase_psflash](#two_phase_psflashself-press-z-entropy-tempNone)
+    * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
+    * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempNone-pressNone)
+
+
 ### `guess_phase(self, temp, press, z)`
 If only one root exsist for the equation of state the phase type can be determined from either the psedo-critical volume or a volume ratio to the co-volume
 
@@ -1125,6 +1161,19 @@ Do isoenergetic-isochoric (UV) flash
 ## Saturation interfaces
 
 Bubble- and dew point calculations and phase envelopes.
+
+### Table of contents
+  * [Saturation interfaces](#Saturation-interfaces)
+    * [bubble_pressure](#bubble_pressureself-temp-z)
+    * [bubble_temperature](#bubble_temperatureself-press-z)
+    * [dew_pressure](#dew_pressureself-temp-z)
+    * [dew_temperature](#dew_temperatureself-press-z)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_bp_term](#get_bp_termself-i_term)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_sizeNone-calc_vFalse)
+    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
+    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvFalse)
+
 
 ### `bubble_pressure(self, temp, z)`
 Calculate bubble pressure given temperature and composition
@@ -1493,6 +1542,14 @@ Calculate phase envelope including solid lines
 
 Computing isolines.
 
+### Table of contents
+  * [Isolines](#Isolines)
+    * [get_isenthalp](#get_isenthalpself-enthalpy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isentrope](#get_isentropeself-entropy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isobar](#get_isobarself-press-z-minimum_temperature2000-maximum_temperature5000-nmax100)
+    * [get_isotherm](#get_isothermself-temp-z-minimum_pressure1000000-maximum_pressure150000000-nmax100)
+
+
 ### `get_isenthalp(self, enthalpy, z, minimum_pressure=100000.0, maximum_pressure=15000000.0, minimum_temperature=200.0, maximum_temperature=500.0, nmax=100)`
 Get isenthalpic line at specified enthalpy. Use as `T, p, v, s = get_isenthalp(h, z)`, where `(T, p, v, s)` is the temperature, pressure, specific volume and specific entropy along the isenthalp with specific enthalpy `h` and molar composition `z`.
 
@@ -1657,6 +1714,13 @@ Get iso-therm at specified temperature
 
 Critical point solver.
 
+### Table of contents
+  * [Stability interfaces](#Stability-interfaces)
+    * [critical](#criticalself-n-temp00-v00-tol1e-07)
+    * [critical_pressure](#critical_pressureself-i)
+    * [critical_temperature](#critical_temperatureself-i)
+
+
 ### `critical(self, n, temp=0.0, v=0.0, tol=1e-07)`
 Calculate critical point in variables T and V
 
@@ -1744,6 +1808,13 @@ Get critical temperature of component i
 
 Retrieve various virial coefficients.
 
+### Table of contents
+  * [Virial interfaces](#Virial-interfaces)
+    * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
+    * [second_virial_matrix](#second_virial_matrixself-temp)
+    * [virial_coeffcients](#virial_coeffcientsself-temp-n)
+
+
 ### `binary_third_virial_matrix(self, temp)`
 Calculate composition-independent virial coefficients C, defined as P = RT*rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0. Including cross coefficients Currently the code only support binary mixtures
 
@@ -1813,6 +1884,11 @@ Calculate (composition-dependent) virial coefficients B and C, defined as P/RT =
 
 Joule-Thompson inversion curves.
 
+### Table of contents
+  * [Joule-Thompson interface](#Joule-Thompson-interface)
+    * [joule_thompson_inversion](#joule_thompson_inversionself-z-nmax1000)
+
+
 ### `joule_thompson_inversion(self, z, nmax=1000)`
 Calculate Joule-Thompson inversion curve
 
@@ -1847,6 +1923,29 @@ Calculate Joule-Thompson inversion curve
 ## Utility methods
 
 Methods for setting ... and getting ...
+
+### Table of contents
+  * [Utility methods](#Utility-methods)
+    * [acentric_factor](#acentric_factorself-i)
+    * [compmoleweight](#compmoleweightself-comp)
+    * [get_comp_name](#get_comp_nameself-index)
+    * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
+    * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
+    * [get_phase_flags](#get_phase_flagsself)
+    * [get_phase_type](#get_phase_typeself-i_phase)
+    * [get_pmax](#get_pmaxself)
+    * [get_pmin](#get_pminself)
+    * [get_tmax](#get_tmaxself)
+    * [get_tmin](#get_tminself)
+    * [getcompindex](#getcompindexself-comp)
+    * [redefine_critical_parameters](#redefine_critical_parametersself-silentTrue-Tc_initialsNone-vc_initialsNone)
+    * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
+    * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
+    * [set_pmax](#set_pmaxself-press)
+    * [set_pmin](#set_pminself-press)
+    * [set_tmax](#set_tmaxself-temp)
+    * [set_tmin](#set_tminself-temp)
+
 
 ### `acentric_factor(self, i)`
 Get acentric factor of component i Args: i (int) component FORTRAN index returns: float: acentric factor 
@@ -2118,6 +2217,20 @@ Set minimum temperature in Thermopack. Used to limit search domain for numerical
 ## Internal methods
 
 Methods for handling communication with the Fortran library.
+
+### Table of contents
+  * [Internal methods](#Internal-methods)
+    * [\_\_del\_\_](#__del__self)
+    * [\_\_init\_\_](#__init__self)
+    * [activate](#activateself)
+    * [add_eos](#add_eosself)
+    * [delete_eos](#delete_eosself)
+    * [get_export_name](#get_export_nameself-module-method)
+    * [get_model_id](#get_model_idself)
+    * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referenceDefault)
+    * [init_solid](#init_solidself-scomp)
+    * [init_thermo](#init_thermoself-eos-mixing-alpha-comps-nphases-liq_vap_discr_methodNone-csp_eosNone-csp_ref_compNone-kij_refDefault-alpha_refDefault-saft_refDefault-b_exponentNone-TrendEosForCpNone-cptypeNone-silentNone)
+
 
 ### `__del__(self)`
 Delete FORTRAN memory allocated for this instance 

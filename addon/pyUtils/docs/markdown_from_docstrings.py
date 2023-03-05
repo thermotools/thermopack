@@ -201,6 +201,7 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
+        md_text +=  '#' + get_toc([sec], section_headers, method_dict) + '\n'
         md_text += to_markdown(method_dict[sec])
 
     if 'Other' in method_dict.keys():
