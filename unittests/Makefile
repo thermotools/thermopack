@@ -26,4 +26,4 @@ testSuites.inc: $(SRCS)
 	$(FC) -c $(FFLAGS) $(EXTRA_FLAGS) $<
 
 clean:
-	$(RM) *$(OBJ_EXT) *.mod
+	$(RM) *$(OBJ_EXT) *.mod *.smod
