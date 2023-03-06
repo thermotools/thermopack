@@ -4,6 +4,8 @@ module gerg
   !! O. Kunz and W. Wagner
   !! Journal of Chemical & Engineering Data 2012 57 (11), 3032-3091
   !! DOI: 10.1021/je300655b
+  !!
+  !! \author Morten Hammer, 2023
   use multiparameter_base, only: meos
   use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH
   use thermopack_var, only: Rgas
@@ -16,41 +18,37 @@ module gerg
 
   !> GERG-2008 multiparameter equations of state.
   type, extends(meos) :: meos_gerg
-    ! index of component in gergdb
-    integer :: i_comp = 0
+    !
+    integer :: i_comp = 0 !> index of component in gergdatadb
     !
     ! Parameters for the ideal gas part alpha^0
-    integer :: n_cosh = 0
-    integer :: n_sinh = 0
-    !
-    real :: n(3)
-    real, allocatable, dimension(:) :: v
-    real, allocatable, dimension(:) :: b
+    integer :: n_cosh = 0 !> Number of cosh terms +3
+    integer :: n_sinh = 0 !> Number of cosh and sinh terms + 3
+    real :: n(3)  !> Constants
+    real, allocatable, dimension(:) :: v !> Prefactor ideal terms
+    real, allocatable, dimension(:) :: b !> Cosh/sinh parameter for ideal terms
     !
     ! Parameters for the residual gas part alpha^r
-    integer :: upPol = 0
-    integer :: upExp = 0
+    integer :: upPol = 0 !> Number of polynomial terms
+    integer :: upExp = 0 !> Number of polynomial and exponential terms
     !
-    real, allocatable, dimension(:) :: N_pol
-    real, allocatable, dimension(:) :: N_exp
+    real, allocatable, dimension(:) :: N_pol !> Prefactor polynomial terms
+    real, allocatable, dimension(:) :: N_exp !> Prefactor exponential terms
     !
-    real, allocatable, dimension(:) :: t_pol
-    real, allocatable, dimension(:) :: t_exp
+    real, allocatable, dimension(:) :: t_pol !> Tau exponent polynomial terms
+    real, allocatable, dimension(:) :: t_exp !> Tau exponent for prefactor in exponential terms
     !
-    integer, allocatable, dimension(:) :: d_pol
-    integer, allocatable, dimension(:) :: d_exp
+    integer, allocatable, dimension(:) :: d_pol !> Delta exponent polynomial terms
+    integer, allocatable, dimension(:) :: d_exp !> Delta exponent for prefactor in exponential terms
     !
-    integer, allocatable, dimension(:) :: l_exp
+    integer, allocatable, dimension(:) :: l_exp !> Exponent of delta in exponential term
 
     ! Ancillary equations to compute saturation densities
-    type(sat_densities) :: dl
-    type(sat_densities) :: dv
+    type(sat_densities) :: dl !> Parameters liquid saturated density
+    type(sat_densities) :: dv !> Parameters vapor saturated density
 
   contains
 
-    !procedure, public :: alpha_to_F_conversion => alpha_to_F_conversion_lj
-    !procedure, public :: calc_F => calc_F_lj
-    !procedure, public :: calc_Fid => calc_Fid_lj
     procedure, public :: alpha0Derivs_taudelta => alpha0Derivs_GERG
     procedure, public :: alphaResDerivs_taudelta => alphaResDerivs_GERG
     procedure, public :: satDeltaEstimate => satDeltaEstimate_GERG
@@ -68,6 +66,7 @@ module gerg
 
 contains
 
+  !> Contruct pure fluid gerg eos
   function constructor_GERG(comp_name) result(gerg_comp)
     use stringmod, only: str_eq
     use gergdatadb, only: maxgerg, gergdb
@@ -131,7 +130,6 @@ contains
       call gerg_comp%dv%init(comp_name, VAPPH)
 
       ! Calculate critcal pressure
-      !gerg_comp%rc
       call gerg_comp%mp_pressure(gerg_comp%rc, gerg_comp%tc, gerg_comp%pc)
       ! Estimats for triple densities
       gerg_comp%rhoLiq_triple = gerg_comp%dl%density(gerg_comp%t_triple)
@@ -186,8 +184,7 @@ contains
 
   end subroutine allocate_param_GERG
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  !> Specific reduced Helmholtz energy - ideal gas contributuion
   subroutine alpha0Derivs_GERG(this, delta, tau, alp0)
     class(meos_gerg) :: this
     real, intent(in) :: delta, tau
@@ -221,8 +218,7 @@ contains
 
   end subroutine alpha0Derivs_GERG
 
-    ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  !> Specific reduced Helmholtz energy - ideal gas contributuion. Hyperdual numbers.
   function alpha0_hd_GERG(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_gerg) :: this
@@ -256,6 +252,7 @@ contains
 
   end subroutine alphaResPrefactors_GERG
 
+  !> Specific residual reduced Helmholtz energy
   subroutine alphaResDerivs_GERG (this, delta, tau, alpr)
     class(meos_gerg) :: this
     real, intent(in) :: delta, tau
@@ -297,6 +294,7 @@ contains
 
   end subroutine alphaResDerivs_GERG
 
+  !> Specific residual reduced Helmholtz energy. Hyperdual numbers.
   function alphaRes_hd_GERG(this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_gerg) :: this
@@ -316,6 +314,7 @@ contains
 
   end function alphaRes_hd_GERG
 
+  !> Estimate saturated densities for density solver
   function satDeltaEstimate_GERG(this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH
     class(meos_gerg) :: this

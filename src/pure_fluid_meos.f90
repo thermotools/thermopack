@@ -1,5 +1,8 @@
 module pure_fluid_meos
-  !>
+  !> Multiparameter pure fluid EOS. Functional forms include polinomial, exponential,
+  !! Gauss (bell shaped) and non-analytical terms.
+  !!
+  !! \author Morten Hammer, 2023
   use multiparameter_base, only: meos, REF_NO_SOLVE, REF_EVALUATE_ID, &
        REF_SOLVE_FOR_T, REF_SOLVE_FOR_P
   use gerg, only: meos_gerg
@@ -11,44 +14,44 @@ module pure_fluid_meos
   save
   private
 
-  !> Generig multiparameter equations of state.
+  !> Constructor for generic multiparameter equations of state.
   type, extends(meos_gerg) :: meos_pure
     !
-    real :: t_nbp = 0.0
-    character(len=comp_name_len) :: ref_state
+    real :: t_nbp = 0.0 !> Normal boiling point temperature
+    character(len=comp_name_len) :: ref_state !> Reference state
     !
     ! Parameters for the ideal gas part alpha^0
-    integer :: n1_id = 0
-    integer :: n_id = 0
-    real :: a1_id = 0
-    real :: a2_id = 0
-    real, allocatable, dimension(:) :: c_id
-    real, allocatable, dimension(:) :: t_id
+    integer :: n1_id = 0 !> Number of polynomial terms in ideal gas Cp
+    integer :: n_id = 0 !> Number of polynomial terms and number of Einstein terms  in ideal gas Cp
+    real :: a1_id = 0 !> Integration constant entropy
+    real :: a2_id = 0 !> Integration constant enthalpy
+    real, allocatable, dimension(:) :: c_id !> Prefactor parameter
+    real, allocatable, dimension(:) :: t_id !> Tau exponent
     !
     ! Parameters for the residual gas part alpha^r
-    integer :: n_gauss = 0
-    integer :: n_nona = 0
+    integer :: n_gauss = 0 !> Number of Gauss terms
+    integer :: n_nona = 0 !> Number of non-analytical terms
     !
-    real, allocatable, dimension(:) :: g_exp
+    real, allocatable, dimension(:) :: g_exp !> Scaling inside exponential term
     !
-    real, allocatable, dimension(:) :: n_g
-    real, allocatable, dimension(:) :: t_g
-    integer, allocatable, dimension(:) :: d_g
-    real, allocatable, dimension(:) :: eta_g
-    real, allocatable, dimension(:) :: beta_g
-    real, allocatable, dimension(:) :: gamma_g
-    real, allocatable, dimension(:) :: epsilon_g
-    integer, allocatable, dimension(:) :: tauexp_g
-    integer, allocatable, dimension(:) :: delexp_g
+    real, allocatable, dimension(:) :: n_g !> Prefactor for Gauss terms
+    real, allocatable, dimension(:) :: t_g !> Tau exponent for polynomial prefactor in Gauss terms
+    integer, allocatable, dimension(:) :: d_g !> Delta exponent for polynomial prefactor in Gauss terms
+    real, allocatable, dimension(:) :: eta_g !> Delta term prefactor inside exponential function of the Gauss terms
+    real, allocatable, dimension(:) :: beta_g !> Tau term prefactor inside exponential function of the Gauss terms
+    real, allocatable, dimension(:) :: gamma_g !> Tau offset inside exponential function of the Gauss terms
+    real, allocatable, dimension(:) :: epsilon_g !> Delta offset inside exponential function of the Gauss terms
+    integer, allocatable, dimension(:) :: tauexp_g !> Tau term exponent inside exponential function of the Gauss terms
+    integer, allocatable, dimension(:) :: delexp_g !> Delta term exponent inside exponential function of the Gauss terms
     !
-    real, allocatable, dimension(:) :: n_na
-    real, allocatable, dimension(:) :: a_na
-    real, allocatable, dimension(:) :: b_na
-    real, allocatable, dimension(:) :: beta_na
-    real, allocatable, dimension(:) :: big_a_na
-    real, allocatable, dimension(:) :: big_b_na
-    real, allocatable, dimension(:) :: big_c_na
-    real, allocatable, dimension(:) :: big_d_na
+    real, allocatable, dimension(:) :: n_na !> Prefactor for non-analytical terms
+    real, allocatable, dimension(:) :: a_na !> a-parameter non-analytical terms
+    real, allocatable, dimension(:) :: b_na !> b-parameter non-analytical terms
+    real, allocatable, dimension(:) :: beta_na !> beta-parameter non-analytical terms
+    real, allocatable, dimension(:) :: big_a_na !> A-parameter non-analytical terms
+    real, allocatable, dimension(:) :: big_b_na !> B-parameter non-analytical terms
+    real, allocatable, dimension(:) :: big_c_na !> C-parameter non-analytical terms
+    real, allocatable, dimension(:) :: big_d_na !> D-parameter non-analytical terms
     !
   contains
 
@@ -71,6 +74,7 @@ module pure_fluid_meos
 
 contains
 
+  !> meos_pure constructor
   function constructor_meos_pure(comp_name) result(meos_comp)
     use stringmod, only: str_eq
     use meosdatadb, only: maxmeos, meosdb
@@ -168,6 +172,7 @@ contains
 
   end function constructor_meos_pure
 
+  !> Get information on reference state
   subroutine get_ref_state_spec_meos_pure(this, T, P, phase, solve)
     class(meos_pure) :: this
     real, intent(out) :: T, P
@@ -207,6 +212,7 @@ contains
 
   end subroutine get_ref_state_spec_meos_pure
 
+  !> Set calculated reference state
   subroutine set_ref_state_meos_pure(this, T, P, v, h, s)
     class(meos_pure) :: this
     real, intent(in) :: T, P, v, h, s
@@ -309,8 +315,7 @@ contains
     !
   end subroutine allocate_param_meos_pure
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  !> Specific reduced Helmholtz energy - ideal gas contributuion
   subroutine alpha0Derivs_meos_pure(this, delta, tau, alp0)
     class(meos_pure) :: this
     real, intent(in) :: delta, tau
@@ -320,8 +325,7 @@ contains
     call stoperror("alpha0Derivs not implemented")
   end subroutine alpha0Derivs_meos_pure
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  !> Specific reduced Helmholtz energy - ideal gas contributuion. HYperdual numbers.
   function alpha0_hd_meos_pure(this, delta, tau) result(alp0)
     use hyperdual_mod
     class(meos_pure) :: this
@@ -351,6 +355,7 @@ contains
     call stoperror("alphaResPrefactors not implemented")
   end subroutine alphaResPrefactors_meos_pure
 
+  !> Specific reduced residual Helmholtz energy
   subroutine alphaResDerivs_meos_pure (this, delta, tau, alpr)
     class(meos_pure) :: this
     real, intent(in) :: delta, tau
@@ -360,6 +365,7 @@ contains
     call stoperror("alphaResDerivs not implemented")
   end subroutine alphaResDerivs_meos_pure
 
+  !> Specific reduced residual Helmholtz energy - hyperdual numbers
   function alphaRes_hd_meos_pure(this, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_pure) :: this
@@ -466,6 +472,7 @@ contains
     endif
   end subroutine mp_pressure_meos_pure
 
+  !> Provide initial guess for liquid and vapor densities
   function satDeltaEstimate_meos_pure(this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH
     class(meos_pure) :: this

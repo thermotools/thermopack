@@ -1,5 +1,7 @@
 module meosmix
   !> Mixture of multiparamater EoSs
+  !!
+  !! \author Morten Hammer, 2023
   use gergmix, only: meos_gergmix
   use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, Rgas_default
   use thermopack_var, only: Rgas, nce, complist, base_eos_param, &
@@ -24,10 +26,10 @@ module meosmix
 
 contains
 
+  !> Constructor for mixture of multiparameter equations of state.
   function constructor_meos(nc) result(mmix)
     use stringmod, only: str_eq
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    !character(len=*), intent(in) :: comp_name
     integer, intent(in) :: nc
     type(meos_mix) :: mmix
     ! Locals
@@ -84,13 +86,13 @@ contains
     if (nc == 1) then
       p_thermo%Rgas = mmix%nist(1)%meos%Rgas_meos
     else
+      ! Instead of mixing Rgas, use default Rgas
       p_thermo%Rgas = Rgas_default
     endif
     p_thermo%kRgas = 1000.0*p_thermo%Rgas !< J/kmol/K
   end function constructor_meos
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  ! Component fraction averaged Rgas
   function rgas_mix(this, x) result(rmix)
     use hyperdual_mod
     class(meos_mix) :: this
@@ -104,6 +106,7 @@ contains
     enddo
   end function rgas_mix
 
+  ! Deparure function for mixing
   function calc_del_alpha_r_meos_mix(this, x, tau, delta) result(del_alpha_r)
     use hyperdual_mod
     class(meos_mix) :: this

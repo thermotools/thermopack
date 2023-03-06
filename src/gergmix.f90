@@ -4,6 +4,8 @@ module gergmix
   !! O. Kunz and W. Wagner
   !! Journal of Chemical & Engineering Data 2012 57 (11), 3032-3091
   !! DOI: 10.1021/je300655b
+  !!
+  !! \author Morten Hammer, 2023
   use eos_parameters, only: single_eos
   use gerg, only: meos_gerg
   use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH
@@ -20,13 +22,13 @@ module gergmix
   !> GERG-2008 multiparameter equations of state.
   type, extends(single_eos) :: meos_gergmix
 
-    real, allocatable, dimension(:, :) :: inv_rho_pow
-    real, allocatable, dimension(:, :) :: tc_prod_sqrt
-    real, allocatable, dimension(:, :) :: beta_T
-    real, allocatable, dimension(:, :) :: beta_v
-    real, allocatable, dimension(:, :) :: gamma_T
-    real, allocatable, dimension(:, :) :: gamma_v
-    integer, allocatable, dimension(:, :) :: mix_data_index
+    real, allocatable, dimension(:, :) :: inv_rho_pow !> Binary mixed critical density
+    real, allocatable, dimension(:, :) :: tc_prod_sqrt !> Binary mixed critical temperature
+    real, allocatable, dimension(:, :) :: beta_T !> Binary temperature mixing parameter
+    real, allocatable, dimension(:, :) :: beta_v !> Binary density mixing parameter
+    real, allocatable, dimension(:, :) :: gamma_T !> Binary temperature mixing parameter
+    real, allocatable, dimension(:, :) :: gamma_v !> Binary density mixing parameter
+    integer, allocatable, dimension(:, :) :: mix_data_index !> Index in database
 
   contains
 
@@ -52,6 +54,7 @@ module gergmix
 
 contains
 
+  !> Contruct GERG2008 mixture EOS
   function constructor_GERGMIX(nc) result(gerg_mix)
     use stringmod, only: str_eq
     use thermopack_var, only: get_active_thermo_model, thermo_model
@@ -129,8 +132,7 @@ contains
          this%mix_data_index(nc,nc))
   end subroutine allocate_param
 
-  ! The functional form of the ideal gas function varies among multiparameter EoS,
-  ! which explains why this routine may seem a bit hard-coded.
+  !> Specific reduced Helmholtz energy - ideal gas contributuion
   function alpha0_hd_gergmix(this, x, rho, T) result(alp0)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -155,6 +157,7 @@ contains
     enddo
   end function alpha0_hd_gergmix
 
+  !> Specific residual reduced Helmholtz energy
   function alphaRes_hd_gergmix(this, x, delta, tau) result(alpr)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -169,6 +172,7 @@ contains
     alpr = alpr + this%calc_del_alpha_r(x, tau, delta)
   end function alphaRes_hd_gergmix
 
+  !> Pressure method using hyperdual numbers for differentials
   subroutine pressure(this, rho, x, T_spec, p, p_rho)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -187,6 +191,7 @@ contains
     if (present(p_rho)) p_rho = Rgas*T_spec*(f_res%f12/rho**2 + 1.0_dp)
   end subroutine pressure
 
+  !> Density solver. Specified T,P and composition,
   subroutine densitySolver(this, x, T_spec, p_spec, phase_spec, rho, phase_found)
     use thermopack_constants
     use numconstants, only: machine_prec
@@ -336,6 +341,7 @@ contains
     end select
   end subroutine assign_meos_gergmix
 
+  !> Calculate mixture delta
   function calc_delta(this, x, rho) result(delta)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -355,6 +361,7 @@ contains
     delta = delta*rho
   end function calc_delta
 
+  !> Calculate mixture tau
   function calc_tau(this, x, T) result(tau)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -364,7 +371,6 @@ contains
     integer :: i, j
     tau = 0.0_dp
     do i=1,nce-1
-      !print *,"Tc",this%tc_prod_sqrt(i,i)
       tau = tau + x(i)*x(i)*this%tc_prod_sqrt(i,i)
       do j=i+1,nce
         tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
@@ -375,6 +381,7 @@ contains
     tau = tau/T
   end function calc_tau
 
+  !> Calculate departure function for mixing
   function calc_del_alpha_r_gergmix(this, x, tau, delta) result(del_alpha_r)
     use hyperdual_mod
     class(meos_gergmix) :: this
@@ -421,6 +428,7 @@ contains
     zfac = P/(sum(z)*Rgas*T*rho)
   end subroutine Zfac_Gergmix
 
+  !> Calculate reduced ideal gas Helmholtz energy - TVn interface
   function hd_fid_GERGMIX(p_eos,nc,T,V,n) result(f)
     use hyperdual_mod
     use thermopack_var, only: base_eos_param
@@ -441,6 +449,7 @@ contains
     end select
   end function hd_fid_GERGMIX
 
+  !> Calculate reduced recidual Helmholtz energy - TVn interface
   function hd_fres_GERGMIX(p_eos,nc,T,V,n) result(f)
     use hyperdual_mod
     use thermopack_var, only: base_eos_param
