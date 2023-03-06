@@ -220,7 +220,7 @@ contains
     endif
 
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
-    type is (single_eos)
+    class is (single_eos)
       if (allocated(p_eos%mbwr_meos)) then
         redefine_critical = .true.
       else if (allocated(p_eos%nist)) then
