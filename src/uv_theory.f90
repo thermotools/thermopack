@@ -13,20 +13,14 @@ module uv_theory
   use pair_potentials
   use numconstants, only: PI
   use thermopack_constants, only: kB_const,N_AVOGADRO, ref_len, uid_len
-  use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH, eosMie_UV_LAFITTE
+  use eosdata, only: eosMie_UV_WCA, eosMie_UV_BH!, eosMie_UV_LAITTE
   use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
   use hardsphere_bmcsl
   implicit none
   save
 
-  ! Model control options
-  integer, parameter :: A0_VANWESTEN = 1
-  integer, parameter :: A0_LAFITTE = 2
-  integer, parameter :: A1_VANWESTEN = 1
-  integer, parameter :: A1_LAFITTE = 2
-
-  logical :: LAFITTE = .False.
-  !logical :: LAFITTE = .True.
+  !logical :: LAFITTE = .False.
+  logical :: LAFITTE = .True.
 
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
@@ -106,11 +100,10 @@ module uv_theory
      type(hyperdual), allocatable :: dhs(:,:)
      type(hyperdual), allocatable :: qhs(:,:)
      type(sutherlandsum), allocatable :: sutsum(:,:)
+     !class(pair_potential), allocatable :: pot(:,:)
      type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
 
      ! Model control
-     integer :: A0_METHOD = A0_VANWESTEN
-     integer :: A1_METHOD = A1_VANWESTEN
    contains
      procedure, public :: dealloc => uv_dealloc
      procedure, public :: allocate_and_init => uv_allocate_and_init
@@ -120,7 +113,7 @@ module uv_theory
 
   public :: uv_theory_eos
   public :: calcFres_uv
-  public :: set_potential_parameters
+  public :: set_mie_parameters
   public :: calc_uv_mie_eta
 
 contains
@@ -138,9 +131,10 @@ contains
   end subroutine assign_uv_eos
 
   subroutine uv_dealloc(eos)
+    ! integer, intent(in) :: nc
     class(uv_theory_eos), intent(inout) :: eos
     ! Locals
-    integer :: stat
+    integer :: stat!, i, j
     call base_eos_dealloc(eos)
 
     select type (p_eos => eos)
@@ -152,6 +146,11 @@ contains
        end if
 
        if (allocated(eos%sutsum)) then
+          !do i=1,nc
+          !   do j=1,nc
+          !call eos%sutsum%dealloc()
+           !  end do
+          !end do
           deallocate(eos%sutsum,stat=stat)
           if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate pot")
        end if
@@ -226,6 +225,7 @@ contains
     character(len=*), intent(in) :: ref        !< Parameter sets to use for components
     ! Locals
     type(hyperdual) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc)
+    type(hyperdual) :: lam_mat(nc,2), C_mat(nc,2)
     integer :: i, idx
 
     ! Deallocate old memory and init new memory
@@ -250,10 +250,20 @@ contains
     kRgas = Rgas*1.0e3
 
     ! Set Mie potentials, including cross potential parameters
-    call set_potential_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+    call set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+
+    ! Set SutherlandSum potentials, including cross potential parameters
+    do i=1,nc
+       C_mat(i,1) = eos%mie(i,i)%Cmie
+       C_mat(i,2) = -C_mat(i,1)
+       lam_mat(i,1) = lamr_vec(i)
+       lam_mat(i,2) = 6.0
+    end do
+    call set_sutsum_parameters(eos,nc,nt=2,C_mat=C_mat,lam_mat=lam_mat, &
+         sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
   end subroutine init_uv_theory
 
-  subroutine set_potential_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+  subroutine set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
     integer, intent(in)         :: nc                           !< Number of components
     type(hyperdual), intent(in) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc) !< Mie parameters
@@ -269,7 +279,6 @@ contains
        lamr = lamr_vec(i)
        call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
        eos%mie(i,i) = mie
-       !call uv_set_mie_pot(eos, i,i, mie)
 
        ! Set cross potentials using standard, Lorentz-Berthelot combining rules
        do j = i+1,nc
@@ -280,14 +289,31 @@ contains
           eos%mie(j,i) = mie !call uv_set_mie_pot(eos, j,i, mie)
        end do
     end do
-  end subroutine set_potential_parameters
+  end subroutine set_mie_parameters
 
-  subroutine uv_set_mie_pot(eos, i,j,mie)
-    type(uv_theory_eos), intent(inout) :: eos
-    integer, intent(in) :: i,j
-    type(mie_potential_hd), intent(in) :: mie
-    eos%mie(i,j) = mie
-  end subroutine uv_set_mie_pot
+  subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec)
+    class(uv_theory_eos), intent(inout) :: eos !< Equation of state
+    integer, intent(in)         :: nc, nt      !< Number of components, number of Sutherland terms
+    type(hyperdual), intent(in) :: C_mat(nc, nt), lam_mat(nc,nt), sigma_vec(nc), epsdivk_vec(nc) !< Potential parameters
+    ! Locals
+    type(Sutherlandsum) :: sutsum
+    type(hyperdual) :: sigma, epsdivk
+    integer :: i, j
+    ! Set pure component potentials
+    do i=1,nc
+       ! Assign pure SutherlandSum potential
+       call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+       eos%sutsum(i,i) = sutsum
+       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+       do j = i+1,nc
+          sigma = (sigma_vec(i) + sigma_vec(j))/2.0
+          epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
+          call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+          eos%sutsum(i,j) = sutsum
+          eos%sutsum(j,i) = sutsum
+       end do
+    end do
+  end subroutine set_sutsum_parameters
 
   subroutine calcFres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
@@ -346,6 +372,8 @@ contains
           call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
        else if (eos%subeosidx == eosMie_UV_BH) then
           if (LAFITTE) then
+             !call eos%sutsum(i,i)%display()
+             call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
              call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
           else
              call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
@@ -409,6 +437,7 @@ contains
        end if
     end do
 
+    ! TODO: fix this for SutherlandSum
     ! Calculate the u-fraction phi
     T_x = T/eos%epsdivk_x
     rho_r = rho*eos%sigma3_single
@@ -425,7 +454,6 @@ contains
        delta_a0 = 0.0
     else
        call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
-       !print *, "delta_a0", delta_a0
     end if
 
     ! Calculate contribution from reference system
@@ -433,7 +461,7 @@ contains
 
     ! Calculate Delta a1u and Delta B2u
     if (LAFITTE) then
-       call delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+       call delta_a1u_b2u_sutsum(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     else
        call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     end if
@@ -444,12 +472,62 @@ contains
     else
        call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
     end if
-    ! call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
-    ! print *, "DeltaB2   ", Delta_B2%f0
 
     ! Calculate total helmholtz energy
     a_res = a0_res + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
   end subroutine calc_ares_uv
+
+  subroutine delta_a1u_b2u_sutsum(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    use sutherland_a1tilde
+    !> The u contribution computed directly according to BH, without the one-fluid approximation
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+    integer, intent(in) :: nc ! number of components
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+    type(hyperdual), intent(out) :: delta_a1u ! a1 (-)
+    type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+    ! Locals
+    type(hyperdual) :: lamij, epsij, zetax, prefac, x0ij
+    type(hyperdual) :: a1til, a1til0, a1ij, a1ij0
+    type(hyperdual) :: dhs_bh(nc,nc)
+    integer :: i, j, k
+
+    ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+    zetax = 0.0
+    do i=1,nc
+       do j=1,nc
+          call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+          zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+       end do
+    end do
+    zetax = (PI/6) * rho * zetax
+
+    ! Calculate double-sum of a1 contributions
+    delta_a1u = 0.0
+    delta_b2u = 0.0
+    do i=1,nc
+       do j=1,nc
+          x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+          epsij = eos%sutsum(i,j)%epsdivk
+          a1ij0 = 0.0
+          a1ij = 0.0
+          prefac = - (PI/6) * dhs_bh(i,j)**3
+          do k=1, eos%sutsum(i,j)%nt
+             lamij = eos%sutsum(i,j)%lam(k)
+             call calc_a1tilde_sutherland(x0ij,zetax,lamij,epsij, a1til,a1til0)
+             a1ij0 = a1ij0 + eos%sutsum(i,j)%C(k)* prefac      * a1til0
+             a1ij = a1ij  + eos%sutsum(i,j)%C(k) *(prefac*rho) * a1til
+          end do
+          delta_a1u = delta_a1u + z(i)*z(j)*a1ij
+          delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
+       end do
+    end do
+
+    ! uv-theory incorporates the beta factor directly into a1
+    delta_a1u = delta_a1u/T
+    delta_b2u = delta_b2u/T
+  end subroutine delta_a1u_b2u_sutsum
 
 
   subroutine delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
@@ -623,7 +701,6 @@ contains
 
   end subroutine Iu_BH_Mie
 
-  
   subroutine DeltaB2_quadrature(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])
     integer, intent(in) :: nc !< Number of components
@@ -633,14 +710,13 @@ contains
     type(hyperdual), intent(out) :: DeltaB2  ! Perturbation contribution to B2 (m^3)
     ! Locals
     integer :: i, j
-
     DeltaB2 = 0.0
     do i=1,nc
        do j=1,nc
-          DeltaB2 = DeltaB2 + z(i)*z(j)*eos%mie(i,j)%B2(beta=1.0/T) - (2*PI/3 * eos%dhs(i,j)**3)
+          DeltaB2 = DeltaB2 + z(i)*z(j)*eos%sutsum(i,j)%B2(beta=1.0/T) - (2*PI/3 * eos%dhs(i,j)**3)
        end do
     end do
-  end subroutine DeltaB2_Quadrature
+  end subroutine DeltaB2_quadrature
 
   subroutine DeltaB2_Mie(eos,nc,T,z, DeltaB2)
     !> Perturbation contribution to the v-term in uv-theory (Eq S57 in [1])

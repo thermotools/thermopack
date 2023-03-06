@@ -103,7 +103,7 @@ contains
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
     type is (uv_theory_eos)
-       call set_potential_parameters(p_eos,nc,lamr,sigma,epsdivk)
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
        call preCalcUVTheory(p_eos,nc,T,z)
 
        call calc_ares_hardsphere_bmcsl(nc, rho*z, (/p_eos%dhs(1,1), p_eos%dhs(2,2)/), a_hs_res)
@@ -197,7 +197,7 @@ contains
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
     type is (uv_theory_eos)
-       call set_potential_parameters(p_eos,nc,lamr,sigma,epsdivk)
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
 
        call preCalcUVTheory(p_eos,nc,T,z)
        rho_r = rho*p_eos%sigma_x**3
@@ -265,7 +265,7 @@ contains
        T = 1.5
        z = (/0.4, 0.6/)
        rho = 0.1
-       call set_potential_parameters(p_eos,nc,lamr,sigma,epsdivk)
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
        call preCalcUVTheory(p_eos,nc,T,z)
 
        rho_r = rho*p_eos%sigma_x**3
