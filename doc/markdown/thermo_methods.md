@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-05T20:13:03.494924
+Generated at: 2023-03-07T20:22:17.759430
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -20,16 +20,17 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
   * [Tp-property interfaces](#Tp-property-interfaces)
     * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
-    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
     * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
-    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtNone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtNone-dsdpNone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtNone-dvdpNone-dvdnNone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betaV-betaL-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone-ophaseNone-vNone)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
     * [zfac](#zfacself-temp-press-x-phase-dzdtNone-dzdpNone-dzdnNone)
+  * [TVp-property interfaces](#TVp-property-interfaces)
+    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
+    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
   * [Flash interfaces](#Flash-interfaces)
     * [guess_phase](#guess_phaseself-temp-press-z)
     * [set_ph_tolerance](#set_ph_toleranceself-tol)
@@ -425,15 +426,12 @@ Computing properties as a function of temperature and pressure. Derivatives retu
 ### Table of contents
   * [Tp-property interfaces](#Tp-property-interfaces)
     * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
-    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
     * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
-    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtNone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtNone-dsdpNone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtNone-dvdpNone-dvdnNone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betaV-betaL-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone-ophaseNone-vNone)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
     * [zfac](#zfacself-temp-press-x-phase-dzdtNone-dzdpNone-dzdnNone)
 
 
@@ -484,51 +482,6 @@ Calculate specific single-phase enthalpy Note that the order of the output match
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag='IR')`
-Calculate enthalpy given temperature, volume and mol numbers.
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdn (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (integer, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-#### Returns:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Enthalpy (J)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally enthalpy differentials
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
 ### `entropy(self, temp, press, x, phase, dsdt=None, dsdp=None, dsdn=None, residual=False)`
 Calculate specific single-phase entropy Note that the order of the output match the default order of input for the differentials. Note further that dsdt, dhsp and dsdn only are flags to enable calculation.
 
@@ -573,51 +526,6 @@ Calculate specific single-phase entropy Note that the order of the output match 
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific entropy (J/mol/K), and optionally differentials
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-### `entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None, dsdn=None, property_flag='IR')`
-Calculate entropy given temperature, pressure and mol numbers.
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dsdt (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dsdp (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dsdn (No type, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (integer, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-#### Returns:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Entropy (J/K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally entropy differentials
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -822,43 +730,6 @@ Calculate logarithm of fugacity coefficient given composition, temperature and p
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
-Calculate logarithm of fugacity coefficient given molar numbers, temperature and pressure. Note that the order of the output match the default order of input for the differentials. Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **v (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar numbers (mol)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdp (logical, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdn (logical, optional):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
-
-#### Returns:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  fugacity coefficient (-), and optionally differentials
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
 ### `zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None)`
 Calculate single-phase compressibility Note that the order of the output match the default order of input for the differentials. Note further that dzdt, dzdp and dzdn only are flags to enable calculation.
 
@@ -899,6 +770,144 @@ Calculate single-phase compressibility Note that the order of the output match t
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compressibility (-), and optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## TVp-property interfaces
+
+Computing properties given Temperature, volume and mole numbers, but evaluate derivatives as functions of (T, p, n). See [Advanced Usage => The different property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.
+
+### Table of contents
+  * [TVp-property interfaces](#TVp-property-interfaces)
+    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
+    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
+
+
+### `enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag='IR')`
+Calculate enthalpy given temperature, volume and mol numbers.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdn (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (integer, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Enthalpy (J)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally enthalpy differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None, dsdn=None, property_flag='IR')`
+Calculate entropy given temperature, pressure and mol numbers.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dsdt (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dsdp (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dsdn (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **property_flag (integer, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Entropy (J/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally entropy differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
+Calculate logarithm of fugacity coefficient given molar numbers, temperature and pressure. Note that the order of the output match the default order of input for the differentials. Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **v (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdp (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdn (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  fugacity coefficient (-), and optionally differentials
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

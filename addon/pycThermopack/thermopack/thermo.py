@@ -2184,7 +2184,7 @@ class thermo(object):
 
     def entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None,
                     dsdn=None, property_flag="IR"):
-        """Tp-property
+        """TVp-property
         Calculate entropy given temperature, pressure and mol numbers.
 
         Args:
@@ -2253,7 +2253,7 @@ class thermo(object):
         return return_tuple
 
     def enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag="IR"):
-        """Tp-property
+        """TVp-property
         Calculate enthalpy given temperature, volume and mol numbers.
 
         Args:
@@ -2323,7 +2323,7 @@ class thermo(object):
 
     def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
-        """Tp-property
+        """TVp-property
         Calculate logarithm of fugacity coefficient given molar numbers,
         temperature and pressure.
         Note that the order of the output match the default order of input for the differentials.

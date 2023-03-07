@@ -218,6 +218,7 @@ def thermo_to_markdown():
 
     sections = ['TV-property',
                 'Tp-property',
+                'TVp-property',
                 'Flash interface',
                 'Saturation interface',
                 'Isoline',
@@ -231,6 +232,7 @@ def thermo_to_markdown():
                        'Utility' : 'Utility methods',
                        'TV-property' : 'TV-property interfaces',
                        'Tp-property' : 'Tp-property interfaces',
+                       'TVp-property' : 'TVp-property interfaces',
                        'Flash interface' : 'Flash interfaces',
                        'Saturation interface' : 'Saturation interfaces',
                        'Isoline' : 'Isolines',
@@ -245,6 +247,9 @@ def thermo_to_markdown():
                                       'returned by methods in this section are computed as functions of (T, V, n).',
                        'Tp-property': 'Computing properties as a function of temperature and pressure. Derivatives '
                                       'returned by methods in this section are computed as functions of (T, p, n).',
+                       'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
+                                        ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
+                                        ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
                        'Isoline': 'Computing isolines.',

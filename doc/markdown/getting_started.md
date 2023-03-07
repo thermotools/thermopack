@@ -89,14 +89,14 @@ eos = cubic('C1,C3,NC6', 'SRK') # SRK EoS for a mixture of methane, propane and 
 T = 300 # Kelvin
 p = 1e5 # Pascal
 x = [0.2, 0.1, 0.7] # Molar composition
-_, Cp_vap = eos.enthalpy(T, p, x, eos.VAPPH, dhdt=True) # Vapour phase heat capacity at constant pressure, computed as (dH/dT)_{T,p,n}
-_, Cp_liq = eos.enthalpy(T, p, x, eos.LIQPH, dhdt=True) # Liquid phase heat capacity at constant pressure, computed as (dH/dT)_{T,p,n}
+_, Cp_vap = eos.enthalpy(T, p, x, eos.VAPPH, dhdt=True) # Vapour phase heat capacity at constant pressure, computed as (dH/dT)_{p,n}
+_, Cp_liq = eos.enthalpy(T, p, x, eos.LIQPH, dhdt=True) # Liquid phase heat capacity at constant pressure, computed as (dH/dT)_{p,n}
 
 vg, = eos.specific_volume(T, p, x, eos.VAPPH) # Computing vapour phase specific volume
 vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Liquid phase specific volume
 
-_, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{T,V,n}
-_, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{T,V,n}
+_, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
+_, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
 
 ```
 
