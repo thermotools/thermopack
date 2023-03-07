@@ -154,6 +154,9 @@ module thermopack_var
        real_to_apparent_differentials, TP_lnfug_apparent
   public :: base_eos_dealloc, delete_all_eos
   public :: add_eos, delete_eos, activate_model, get_eos_identification
+  public :: set_tmin, get_tmin, set_tmax, get_tmax
+  public :: set_pmin, get_pmin, set_pmax, get_pmax
+  public :: get_rgas
 
 contains
 
@@ -431,6 +434,78 @@ contains
       endif
     endif
   end subroutine get_eos_identification
+
+  subroutine set_tmin(tmin)
+    real, intent(in) :: tmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tptmin = tmin
+  end subroutine set_tmin
+
+  function get_tmin() result(tmin)
+    real :: tmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    tmin = p_model%tptmin
+  end function get_tmin
+
+  subroutine set_tmax(tmax)
+    real, intent(in) :: tmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tptmax = tmax
+  end subroutine set_tmax
+
+  function get_tmax() result(tmax)
+    real :: tmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    tmax = p_model%tptmax
+  end function get_tmax
+
+  subroutine set_pmin(pmin)
+    real, intent(in) :: pmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tppmin = pmin
+  end subroutine set_pmin
+
+  function get_pmin() result(pmin)
+    real :: pmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    pmin = p_model%tppmin
+  end function get_pmin
+
+  subroutine set_pmax(pmax)
+    real, intent(in) :: pmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tppmax = pmax
+  end subroutine set_pmax
+
+  function get_pmax() result(pmax)
+    real :: pmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    pmax = p_model%tppmax
+  end function get_pmax
+
+  function get_rgas() result(Rgas)
+    real :: Rgas
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    Rgas = p_model%Rgas
+  end function get_rgas
 
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)
