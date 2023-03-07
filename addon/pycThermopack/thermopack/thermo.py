@@ -3335,7 +3335,7 @@ class thermo(object):
             tol (float, optional): Error tolerance (-). Defaults to 1.0e-8.
 
         Raises:
-            Exception: Failure to solve for critcal point
+            Exception: Failure to solve for critical point
 
         Returns:
             float: Temperature (K)
@@ -3369,6 +3369,7 @@ class thermo(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+
     def critical_temperature(self, i):
         '''Stability interface
         Get critical temperature of component i
@@ -3438,6 +3439,39 @@ class thermo(object):
                                     byref(tnbi))
 
         return pci.value
+
+    def critical_volume(self, i):
+        '''
+        Get specific critical volume of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: specific critical volume
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return vci.value
 
     #################################
     # Virial interfaces
