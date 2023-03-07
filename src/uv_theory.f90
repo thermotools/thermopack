@@ -372,7 +372,7 @@ contains
           call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
        else if (eos%subeosidx == eosMie_UV_BH) then
           if (LAFITTE) then
-             !call eos%sutsum(i,i)%display()
+             call eos%sutsum(i,i)%update_beta(beta=1.0/T)
              call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
              call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
           else
