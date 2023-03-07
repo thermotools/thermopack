@@ -14,6 +14,7 @@ module pair_potentials
      procedure(alpha_x_intf), public, deferred   :: alpha_x
      procedure, public :: calc_bh_diameter
      procedure, public :: B2 => calc_B2_by_quadrature
+     procedure(display_intf), public, deferred :: display
   end type pair_potential
 
   abstract interface
@@ -50,6 +51,14 @@ module pair_potentials
      end function alpha_x_intf
   end interface
 
+  abstract interface
+     subroutine display_intf (this)
+       use hyperdual_mod, only: hyperdual
+       import pair_potential
+       class(pair_potential), intent(in) :: this
+     end subroutine display_intf
+  end interface
+
   type, extends(pair_potential) :: mie_potential_hd
      type(hyperdual) :: lamr        !< repulsive exponent [-]
      type(hyperdual) :: lama        !< attractive exponent [-]
@@ -75,8 +84,8 @@ module pair_potentials
      procedure, public :: init => sutherlandsum_init
      procedure, public :: calc => sutherlandsum_calc
      procedure, public :: calc_r_derivs => sutherlandsum_calc_r_derivs
-     !procedure, public :: B2 => calc_B2_by_quadrature
      procedure, public :: alpha_x => sutherlandsum_calc_alpha_x
+     procedure, public :: display => sutherlandsum_display
   end type sutherlandsum
 
   !> PURE COMPONENT PARAMETERS.
@@ -196,9 +205,6 @@ contains
   end function getMiedataIdx
 
 
-
-
-
   subroutine mie_potential_hd_init(this, lama, lamr, sigma, epsdivk)
     class(mie_potential_hd), intent(inout) :: this
     type(hyperdual), intent(in) :: lama, lamr, sigma, epsdivk
@@ -230,7 +236,6 @@ contains
     type(hyperdual), intent(out), optional :: pot_rr  !< 2nd derivative of potential wrt separation (K/m^2)
     type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K//m^3)
     ! Locals
-    integer :: i
     type(hyperdual) :: prefac, ur, urr, rep_term, att_term
     pot = 0.0
     ur = 0.0
@@ -326,7 +331,7 @@ contains
     type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K/m^3)
     ! Locals
     integer :: i
-    type(hyperdual) :: prefac, ur, urr, urrr, term
+    type(hyperdual) :: ur, urr, urrr, term
     pot = 0.0
     ur = 0.0
     urr = 0.0
@@ -367,11 +372,13 @@ contains
     type(hyperdual), intent(in) :: x         !< lower integration limit (-)
     logical, intent(in), optional :: adim    !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
-    type(hyperdual) :: n, nu
+    integer :: k
+    type(hyperdual) :: n
 
-    do i=1,this%nt
-       n = this%lam(i)
-       alpha_x = alpha_x + this%C(i) * (x**(3.0-n)/(n-3.0))
+    alpha_x = 0.0
+    do k=1,this%nt
+       n = this%lam(k)
+       alpha_x = alpha_x - this%C(k) * (x**(3.0-n)/(n-3.0))
     end do
     if (present(adim)) then
        if (.not. adim) then
@@ -379,6 +386,22 @@ contains
        end if
     end if
   end function sutherlandsum_calc_alpha_x
+
+
+  subroutine sutherlandsum_display(this)
+    !> Print potential parameters
+    class(sutherlandsum), intent(in) :: this !< This potential
+    ! Locals
+    integer :: k
+    WRITE ( unit=* , fmt='(a)') '-------------------------------------------------------------------------------------'
+    WRITE(unit=*,fmt='(a)')  'SutherlandSum potential'
+    WRITE(unit=*,fmt='(a4, 4a18)')  'term', 'C', 'lambda', 'epsdivk', 'sigma'
+    do k=1,this%nt
+       WRITE(unit=*,fmt='(i4, 3f18.8,es18.8)') k, this%C(k)%f0, this%lam(k)%f0, this%epsdivk%f0, this%sigma%f0
+    end do
+    WRITE ( unit=* , fmt='(a)') '-------------------------------------------------------------------------------------'
+
+  end subroutine sutherlandsum_display
 
 
   type(hyperdual) function calc_B2_by_quadrature(pot, beta) result(B2)
@@ -396,7 +419,7 @@ contains
 
     ! Potential minimum
     call calc_rmin_and_epseff(pot, rmin=potrmin)
-    
+
     ! Get quadrature points
     call get_quadrature_positions(B2_quadrature,x_vec,n_quad)
     call get_quadrature_weights(B2_quadrature,w_vec,n_quad)
@@ -497,7 +520,7 @@ contains
     type(hyperdual)                   :: sigmaeff !< Effective diameter (m)
     ! Locals
     type(nonlinear_solver) :: solver
-    type(hyperdual) :: r, pot0, dpot0, d2pot0
+    type(hyperdual) :: pot0, dpot0, d2pot0
     real :: sigma_scaled, xinit, xmin, xmax, param(1)
 
     ! Set the limits and the initial condition
@@ -556,7 +579,7 @@ contains
     type(hyperdual), intent(out), optional :: epseff !< Effective well-depth (K)
     ! Locals
     type(nonlinear_solver) :: solver
-    type(hyperdual) :: pot0, dpot0, d2pot0, d3pot0, rminloc, epseffloc
+    type(hyperdual) :: pot0, dpot0, d2pot0, d3pot0, rminloc
     real :: sigma_scaled, xinit, xmin, xmax, param(1)
 
     ! Set the limits and the initial condition
@@ -588,7 +611,7 @@ contains
     ! Calculate effective epsilon
     if (present(rmin)) rmin = rminloc
     if (present(epseff)) epseff = abs(pot%calc(rminloc))
-    
+
   contains
 
     subroutine fun(x, param, f, df)
