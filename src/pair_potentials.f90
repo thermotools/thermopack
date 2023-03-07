@@ -39,7 +39,7 @@ module pair_potentials
        type(hyperdual), intent(out), optional :: pot_rrr !< 3rd derivative of potential wrt separation (K/m^3)
      end subroutine calc_potderivs_intf
   end interface
-  
+
   abstract interface
      type(hyperdual) function alpha_x_intf(this, x, adim) result(alpha_x)
        !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
@@ -71,22 +71,29 @@ module pair_potentials
      procedure, public :: calc => mie_potential_hd_calc
      procedure, public :: calc_r_derivs => mie_potential_hd_calc_r_derivs
      procedure, public :: alpha_x => mie_potential_hd_calc_alpha_x
+     procedure, public :: display => mie_potential_hd_display
   end type mie_potential_hd
 
   type, extends(pair_potential) :: sutherlandsum
      !> u(r) = sum_i C(i)*eps*(sigma/r)**lam(i)
      integer         :: nt                  !< Number of Sutherland terms [-]
-     type(hyperdual), allocatable :: C(:)   !< Coefficients of term [-]
+     real, allocatable :: Cconst(:)         !< Coefficients of terms [-]
+     type(hyperdual), allocatable :: C(:)   !< Coefficients of terms [-]
      type(hyperdual), allocatable :: lam(:) !< Exponents [-]
      type(hyperdual) :: rmin        !< location of minimum [m]
      type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
+     integer, allocatable :: bexp(:)!< beta exponents
+     logical :: beta_dependence     !< whether bexp!=0
    contains
      procedure, public :: init => sutherlandsum_init
      procedure, public :: calc => sutherlandsum_calc
      procedure, public :: calc_r_derivs => sutherlandsum_calc_r_derivs
      procedure, public :: alpha_x => sutherlandsum_calc_alpha_x
      procedure, public :: display => sutherlandsum_display
+     procedure, public :: dealloc => sutherlandsum_dealloc
+     procedure, public :: update_beta => sutherlandsum_update_beta
   end type sutherlandsum
+
 
   !> PURE COMPONENT PARAMETERS.
   ! ---------------------------------------------------------------------------
@@ -276,14 +283,26 @@ contains
     end if
   end function mie_potential_hd_calc_alpha_x
 
+  subroutine mie_potential_hd_display(this)
+    !> Print potential parameters
+    class(mie_potential_hd), intent(in) :: this !< This potential
+    ! Locals
+    WRITE ( unit=* , fmt='(a)') '-------------------------------------------------------------------------------------'
+    WRITE(unit=*,fmt='(a)')  'Mie potential'
+    WRITE(unit=*,fmt='(5a17)')  'C', 'lambda_r', 'lambda_a', 'epsdivk', 'sigma'
+    WRITE(unit=*,fmt='(4f17.8,es17.8)') this%Cmie%f0, this%lamr%f0, this%lama%f0, this%epsdivk%f0, this%sigma%f0
+    WRITE ( unit=* , fmt='(a)') '-------------------------------------------------------------------------------------'
 
-  subroutine sutherlandsum_init(this, nt, C, lam, sigma, epsdivk)
+  end subroutine mie_potential_hd_display
+
+  subroutine sutherlandsum_init(this, nt, C, lam, sigma, epsdivk, beta_expo)
     class(sutherlandsum), intent(inout) :: this
     integer, intent(in)         :: nt          !< Number of terms (-)
     type(hyperdual), intent(in) :: C(nt)       !< Coefficients (-)
     type(hyperdual), intent(in) :: lam(nt)     !< Exponents (-)
     type(hyperdual), intent(in) :: sigma       !< Diameter (m)
     type(hyperdual), intent(in) :: epsdivk     !< Energy (K)
+    integer, intent(in), optional :: beta_expo(nt)  !< Energy (K)
     ! Locals
     integer :: stat
 
@@ -291,22 +310,54 @@ contains
     this%sigma = sigma
     this%epsdivk = epsdivk
 
+    call sutherlandsum_dealloc(this)
+
+    allocate(this%C(nt))
+    this%C = C%f0
+
+    allocate(this%lam(nt))
+    this%lam = lam
+
+    allocate(this%bexp(nt))
+    if (present(beta_expo)) then
+       this%beta_dependence = .true.
+       allocate(this%bexp(nt))
+       allocate(this%Cconst(nt))
+       this%bexp = beta_expo
+       this%Cconst = C%f0
+    else
+       this%beta_dependence = .false.
+       this%bexp = 0
+    end if
+
+  end subroutine sutherlandsum_init
+
+  subroutine sutherlandsum_dealloc(this)
+    class(sutherlandsum), intent(inout) :: this
+    ! Locals
+    integer :: stat
+
     if (allocated(this%C)) then
        deallocate(this%C,stat=stat)
        if (stat /= 0) call stoperror("Unable to deallocate Sutherland coefficients")
     end if
-    allocate(this%C(nt))
-    this%C = C
+
+    if (allocated(this%Cconst)) then
+       deallocate(this%Cconst,stat=stat)
+       if (stat /= 0) call stoperror("Unable to deallocate Sutherland coefficients Cconst")
+    end if
 
     if (allocated(this%lam)) then
        deallocate(this%lam,stat=stat)
        if (stat /= 0) call stoperror("Unable to deallocate Sutherland exponents")
     end if
-    allocate(this%lam(nt))
-    this%lam = lam
 
-  end subroutine sutherlandsum_init
+    if (allocated(this%bexp)) then
+       deallocate(this%bexp,stat=stat)
+       if (stat /= 0) call stoperror("Unable to deallocate beta exponents")
+    end if
 
+  end subroutine sutherlandsum_dealloc
 
   function sutherlandsum_calc(this, r) result(pot)
     class(sutherlandsum), intent(in) :: this
@@ -358,13 +409,19 @@ contains
     end if
   end subroutine sutherlandsum_calc_r_derivs
 
-  subroutine sutherlandsum_update_coeffs(this, coeffs)
+  subroutine sutherlandsum_update_beta(this, beta)
     !> Update Sutherland coefficients with coefficients possibly depending on temperature
     class(sutherlandsum), intent(inout) :: this !< This potential
-    type(hyperdual), intent(in)    :: coeffs(:) !< Coefficients (-)
+    type(hyperdual), intent(in)         :: beta !< 1/T (1/K)
+    ! Locals
+    integer :: i
 
-    this%C = coeffs
-  end subroutine sutherlandsum_update_coeffs
+    if (.not. this%beta_dependence) return
+
+    do i=1,this%nt
+       this%C(i) = this%Cconst(i) * beta**(this%bexp(i))
+    end do
+  end subroutine sutherlandsum_update_beta
 
   type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
