@@ -120,6 +120,10 @@ Note that some of the methods also output other information, such as the tempera
 
 ### Phase envelopes
 
+ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
+
+#### Tp- and Tv- phase envelopes
+
 Phase envelopes can be generated directly with the method `get_envelope_twophase()` as
 
 ```python
@@ -131,31 +135,81 @@ T, p, v = eos.get_envelope_twophase(1e5, x, calc_v=True) # Also return the speci
 plt.plot(1 / v, T) # rho-T projection of the phase envelope
 ```
 
-To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method as
+#### pxy-phase envelopes
+
+To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method. The pxy-phase diagram trace method assumes that there can be up to three phases present, two liquid and one vapour. The method `get_binary_pxy` therefore returns three tuples, that we call `LLE`, `L1VE` and `L2VE`. Each of these tuples corresponds to a phase boundary: The `LLE` tuple corresponds to the (Liquid 1 - Liquid 2) phase boundary, the `L1VE` tuple corresponds to the (Liquid 1 - Vapour) phase boundary, and the `L2VE` tuple corresponds to the (Liquid 2 - Vapour) phase boundary.
+
+Each of these tuples contains three arrays `(x, y, p)`: The first array (`x`) is the liquid composition along the phase boundary (Liquid 1 for `LLE`), the second array (`y`) is the vapour composition along the phase boundary (Liquid 2 for `LLE`), the third array (`p`) is the pressure along the phase boundary.
+
+**Note**: If one or more of the phase boundaries does not exist, the corresponding tuple will be `(None, None, None)`.
+
+**Note**: The compositions returned by `get_binary_pxy` refer to the mole fraction of component 1.
+
+For a mixture with a Liquid-Liquid equilibrium and two Liquid-Vapour equilibria, we can plot the entire pxy-phase diagram as:
 
 ```python
 import matplotlib.pyplot as plt
 from thermopack.cpa import cpa
 
-eos = cpa('NC12,H2O', 'SRK')  # CPA eos for Dodecane/water mixture
+eos = cpa('NC12,H2O', 'SRK')  # CPA-SRK eos for Dodecane/water mixture
 T = 350  # kelvin
 LLE, L1VE, L2VE = eos.get_binary_pxy(T)  # Returns three tuples containing three arrays each
 
 # Liquid-liquid phase boundaries
-plt.plot(LLE[0], LLE[2], label='Liquid 1 composition')
-plt.plot(LLE[1], LLE[2], label='Liquid 2 composition')
+# LLE[2] is the pressure along the liquid-liquid phase boundary
+plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the phase boundary
+plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (NC12) in Liquid 2 along the phase boundary
 
 # Liquid 1-vapour phase boundaries
-plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line')
-plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line')
+# L1VE[2] is the pressure along the Liquid 1 - Vapour phase boundary
+plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the Liquid 1 - Vapour phase boundary
+plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 1 - Vapour phase boundary
 
 # Liquid 2-vapour phase boundaries
-plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line')
-plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line')
+# L2VE[2] is the pressure along the Liquid 2 - Vapour phase boundary
+plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (NC12) in Liquid 2 along the Liquid 2 - Vapour phase boundary
+plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 2 - Vapour phase boundary
 
 plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
 plt.xlabel('Molar composition')
 ```
+
+If we are unsure whether one or more of the equilibria exists, we need to check whether the corresponding tuple contains `None`, as:
+
+```Python
+import matplotlib.pyplot as plt
+from thermopack.cubic import cubic
+
+eos = cubic('C3,NC6', 'PR') # PR EoS for propane/n-hexane mixture
+
+T = 300 # Kelvin
+
+LLE, L1VE, L2VE = eos.get_binary_pxy(T)
+
+if None in LLE: # If there are fewer than two liquid phases, LLE = (None, None, None)
+    print('There are fewer than two liquid phases at all evaluated pressures!')
+else:
+    plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the phase boundary
+    plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (C3) in Liquid 2 along the phase boundary
+
+if None in L1VE: # If no phase boundaries are found, L1VE = (None, None, None)
+    print('There is no Liquid - Vapour equilibria at any of the evaluated pressures!')
+else:
+    plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the Liquid 1 - Vapour phase boundary
+    plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 1 - Vapour phase boundary
+
+if None in L2VE: # If LLE = (None, None, None) then L2VE will also be L2VE = (None, None, None), because there is no Liquid 2
+    print('There are fewer than two liquid phases at all evaluated pressures!')
+else:
+    plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (C3) in Liquid 2 along the Liquid 2 - Vapour phase boundary
+    plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 2 - Vapour phase boundary
+
+plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
+plt.xlabel('Molar composition')
+```
+
+The minimum and maximum pressure of the phase envelope trace can be set with the kwargs `minimum_pressure` and `maximum_pressure`. For the full details, see the [docs for the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001).
+
 
 ### Dew- and bubble points
 

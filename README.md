@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-02-28T13:04:49.108694
+Generated at: 2023-03-08T09:58:03.131573
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -42,7 +42,7 @@ currently running on the Windows and Linux operating systems.
   * [Acknowledgments](#acknowledgments)
   * [Program structure](#program-structure)
   * [Building from Source](#Building-from-source)
-  * [Getting started](#getting-started)
+  * [Getting started - Python](#getting-started---python)
     * [Initialising an equation of state](#Initialising-an-equation-of-state)
   * [Doing calculations](#doing-calculations)
     * [pVT-properties](#pVT-properties)
@@ -275,8 +275,8 @@ available Dockerfiles to run Thermopack with docker.
 
 ### CMake setup
 See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
-# Getting started
-This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo.
+# Getting started - Python
+This is a very short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
 
 ## Initialising an equation of state
 An EoS is initialized by passing in the fluid identifiers of the mixture, for example
@@ -331,7 +331,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
 For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [wiki](https://github.com/thermotools/thermopack/wiki/Extended_CSP-equations-of-state).
 
 # Doing calculations
-Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the docstrings in the `thermopack` class, [found in `/addon/pycThermopack/thermopack/thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here, a small subset of the functionality is demonstrated.
+Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). Here, a small subset of the functionality is demonstrated.
 
 Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 
@@ -355,7 +355,27 @@ vl, dvdp = eos.specific_volume(T, p, x, eos.LIQPH, dvdt=True) # Liquid phase mol
 _, dvdn = eos.specific_volume(T, p, x, eos.LIQPH, dvdn=True) # Liquid phase partial molar volumes
 ```
 
-Similarly, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. 
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TV-property-interfaces) and the [Tp-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) of the [`thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy).
+
+Please note that heat capacities are not available directly, but must be computed as derivatives of enthalpy and internal energy, as
+
+```Python
+from thermopack.cubic import cubic
+eos = cubic('C1,C3,NC6', 'SRK') # SRK EoS for a mixture of methane, propane and n-hexane
+
+T = 300 # Kelvin
+p = 1e5 # Pascal
+x = [0.2, 0.1, 0.7] # Molar composition
+_, Cp_vap = eos.enthalpy(T, p, x, eos.VAPPH, dhdt=True) # Vapour phase heat capacity at constant pressure, computed as (dH/dT)_{p,n}
+_, Cp_liq = eos.enthalpy(T, p, x, eos.LIQPH, dhdt=True) # Liquid phase heat capacity at constant pressure, computed as (dH/dT)_{p,n}
+
+vg, = eos.specific_volume(T, p, x, eos.VAPPH) # Computing vapour phase specific volume
+vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Liquid phase specific volume
+
+_, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
+_, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
+
+```
 
 ## Phase diagrams and Equilibria
 
@@ -373,9 +393,13 @@ x = [0.1, 0.25, 0.65] # Molar composition
 x, y, vapfrac, liqfrac, phasekey = eos.two_phase_tpflash(T, p, x) # x and y are vapour and liquid composition respectively
 ```
 
-Note that some of the methods also output other information, such as the temperature of the flash, see the docstrings of the `thermo` class in `thermo.py` for more details.
+Note that some of the methods also output other information, such as the temperature of the flash, see the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
 
 ### Phase envelopes
+
+ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
+
+#### Tp- and Tv- phase envelopes
 
 Phase envelopes can be generated directly with the method `get_envelope_twophase()` as
 
@@ -388,31 +412,81 @@ T, p, v = eos.get_envelope_twophase(1e5, x, calc_v=True) # Also return the speci
 plt.plot(1 / v, T) # rho-T projection of the phase envelope
 ```
 
-To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method as
+#### pxy-phase envelopes
+
+To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method. The pxy-phase diagram trace method assumes that there can be up to three phases present, two liquid and one vapour. The method `get_binary_pxy` therefore returns three tuples, that we call `LLE`, `L1VE` and `L2VE`. Each of these tuples corresponds to a phase boundary: The `LLE` tuple corresponds to the (Liquid 1 - Liquid 2) phase boundary, the `L1VE` tuple corresponds to the (Liquid 1 - Vapour) phase boundary, and the `L2VE` tuple corresponds to the (Liquid 2 - Vapour) phase boundary.
+
+Each of these tuples contains three arrays `(x, y, p)`: The first array (`x`) is the liquid composition along the phase boundary (Liquid 1 for `LLE`), the second array (`y`) is the vapour composition along the phase boundary (Liquid 2 for `LLE`), the third array (`p`) is the pressure along the phase boundary.
+
+**Note**: If one or more of the phase boundaries does not exist, the corresponding tuple will be `(None, None, None)`.
+
+**Note**: The compositions returned by `get_binary_pxy` refer to the mole fraction of component 1.
+
+For a mixture with a Liquid-Liquid equilibrium and two Liquid-Vapour equilibria, we can plot the entire pxy-phase diagram as:
 
 ```python
 import matplotlib.pyplot as plt
 from thermopack.cpa import cpa
 
-eos = cpa('NC12,H2O', 'SRK')  # CPA eos for Dodecane/water mixture
+eos = cpa('NC12,H2O', 'SRK')  # CPA-SRK eos for Dodecane/water mixture
 T = 350  # kelvin
 LLE, L1VE, L2VE = eos.get_binary_pxy(T)  # Returns three tuples containing three arrays each
 
 # Liquid-liquid phase boundaries
-plt.plot(LLE[0], LLE[2], label='Liquid 1 composition')
-plt.plot(LLE[1], LLE[2], label='Liquid 2 composition')
+# LLE[2] is the pressure along the liquid-liquid phase boundary
+plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the phase boundary
+plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (NC12) in Liquid 2 along the phase boundary
 
 # Liquid 1-vapour phase boundaries
-plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line')
-plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line')
+# L1VE[2] is the pressure along the Liquid 1 - Vapour phase boundary
+plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the Liquid 1 - Vapour phase boundary
+plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 1 - Vapour phase boundary
 
 # Liquid 2-vapour phase boundaries
-plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line')
-plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line')
+# L2VE[2] is the pressure along the Liquid 2 - Vapour phase boundary
+plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (NC12) in Liquid 2 along the Liquid 2 - Vapour phase boundary
+plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 2 - Vapour phase boundary
 
 plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
 plt.xlabel('Molar composition')
 ```
+
+If we are unsure whether one or more of the equilibria exists, we need to check whether the corresponding tuple contains `None`, as:
+
+```Python
+import matplotlib.pyplot as plt
+from thermopack.cubic import cubic
+
+eos = cubic('C3,NC6', 'PR') # PR EoS for propane/n-hexane mixture
+
+T = 300 # Kelvin
+
+LLE, L1VE, L2VE = eos.get_binary_pxy(T)
+
+if None in LLE: # If there are fewer than two liquid phases, LLE = (None, None, None)
+    print('There are fewer than two liquid phases at all evaluated pressures!')
+else:
+    plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the phase boundary
+    plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (C3) in Liquid 2 along the phase boundary
+
+if None in L1VE: # If no phase boundaries are found, L1VE = (None, None, None)
+    print('There is no Liquid - Vapour equilibria at any of the evaluated pressures!')
+else:
+    plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the Liquid 1 - Vapour phase boundary
+    plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 1 - Vapour phase boundary
+
+if None in L2VE: # If LLE = (None, None, None) then L2VE will also be L2VE = (None, None, None), because there is no Liquid 2
+    print('There are fewer than two liquid phases at all evaluated pressures!')
+else:
+    plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (C3) in Liquid 2 along the Liquid 2 - Vapour phase boundary
+    plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 2 - Vapour phase boundary
+
+plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
+plt.xlabel('Molar composition')
+```
+
+The minimum and maximum pressure of the phase envelope trace can be set with the kwargs `minimum_pressure` and `maximum_pressure`. For the full details, see the [docs for the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001).
+
 
 ### Dew- and bubble points
 
@@ -462,7 +536,7 @@ T_iso_s, p_iso_s, v_iso_s, h_iso_s = eos.get_isentrope(5, x, minimum_pressure=1e
 
 Thermopack has a critical point solver, which is called as
 
-```
+```Python
 eos = saftvrqmie('HE,NE') # Use FH-corrected Mie potentials for Helium calculations!
 n = [5, 10]
 Tc, pc, Vc = eos.critical(n) # Compute the critical temperature, pressure and volume given mole numbers
@@ -496,3 +570,49 @@ cs.set_lij(1,2,-0.032)
 lij = cs.get_lij(1,2)
 ```
 
+## The different property interfaces (TV-) (Tp-) and (TVp-)
+
+Property calculations in ThermoPack can be done either through the [TV-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#tv-property-interfaces), the [Tp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) or the [TVp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TVp-property-interfaces).
+
+The difference between the TV- and Tp- interface is only what variables the properties are computed as functions of, and what variables are held constant in the derivatives. TV-interface methods compute properties as functions of $(T, V, n)$, while Tp-interface methods compute properties as functions of $(T, p, n)$. 
+
+The **TVp-interface** methods on the other hand take $(T, V, n)$ as arguments, and evaluate derivatives **as functions of $(T, p, n)$**. To demonstrate with an example:
+
+```Python
+import numpy as np
+from thermopack.cubic import cubic
+
+eos = cubic('O2,N2', 'PR') # PR EoS for O2/N2 mixture
+
+T = 300 # Kelvin
+p = 1e5 # Pascal
+x = np.array([0.21, 0.79]) # Molar composition (of air)
+n_tot = 10 # Total number of moles
+n = n_tot * x # Vector of mole numbers
+
+v, = eos.specific_volume(T, p, x, eos.VAPPH) # Compute specific volume of vapour phase
+V = v * n_tot # Total volume
+
+
+# Computing the TOTAL Enthalpy (J), given (T, V, n)
+# The differentials are computed for H = H(T, V, n), with 
+# "subscripts" indicating the variables held constant
+H_tvn, dHdT_Vn, dHdn_TV = eos.enthalpy_tv(T, V, n, dhdt=True, dhdn=True) 
+
+# Computing the SPECIFIC VAPOUR phase enthalpy (J / mol), given (T, p, n) 
+# The differentials are computed for h_vap = h_vap(T, p, n), with the 
+# "subscripts" indicating the variables held constant
+h_vap_tpn, dh_vap_dt_pn, dh_vap_dn_Tp = eos.enthalpy(T, p, n, eos.VAPPH, dhdt=True, dhdn=True)
+
+# Computing the SPECIFIC LIQUID phase enthalpy (J / mol), given (T, p, n) 
+# The differentials are computed for h_liq = h_liq(T, p, n), with the 
+# "subscripts" indicating the variables held constant
+h_liq_tpn, dh_liq_dt_pn, dh_liq_dn_Tp = eos.enthalpy(T, p, n, eos.LIQPH, dhdt=True, dhdn=True)
+
+# Computing the TOTAL Enthalpy (J), given (T, V, n)
+# NOTE : The differentials are computed for H = H(T, p, n)
+#        NOT for H = H(T, V, n)
+H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
+```
+
+Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
