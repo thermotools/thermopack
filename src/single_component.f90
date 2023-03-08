@@ -104,8 +104,8 @@ contains
         if(present(dhdz)) dhdz_id = dhdz + dhdz_id
       endif
      case (meosNist, meosLJ, meosLJTS, meosGERG)
-      call seos%nist(1)%meos%calc_enthalpy(t, p, Z, phase, enthalpy, &
-           dhdt, dhdp, dhdz, residual=residual)
+       call seos%nist(1)%meos%calc_enthalpy(t, p, Z, phase, enthalpy, &
+            dhdt, dhdp, dhdz, residual=residual)
     end select Choice_EoS
   end subroutine enthalpy_single
 

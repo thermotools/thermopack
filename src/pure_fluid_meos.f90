@@ -247,7 +247,7 @@ contains
     endif
 
     ! Correct entropy
-    this%a1_id = this%a1_id -(s_ref-s)/this%Rgas_meos
+    this%a1_id = this%a1_id - (s_ref-s)/this%Rgas_meos
 
     ! Correct enthalpy
     this%a2_id = this%a2_id + (h_ref-h)/(this%Rgas_meos*this%tc)

@@ -976,7 +976,7 @@ contains
 
   !----------------------------------------------------------------------
   !> Calculate enthalpy given composition, temperature and density.
-  !> Differentials at constanr pressure
+  !> Differentials at constant pressure
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpy_tvp(t,v,n,h,dhdt,dhdp,dhdn,contribution)
