@@ -262,7 +262,7 @@ Thermopack has a critical point solver, which is called as
 ```Python
 eos = saftvrqmie('HE,NE') # Use FH-corrected Mie potentials for Helium calculations!
 n = [5, 10]
-Tc, pc, Vc = eos.critical(n) # Compute the critical temperature, pressure and volume given mole numbers
+Tc, Vc, pc = eos.critical(n) # Compute the critical temperature, pressure and volume given mole numbers
 vc = Vc / sum(n) # Critical specific volume computed from critical volume and mole numbers.
 ```
 
