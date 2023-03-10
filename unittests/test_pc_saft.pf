@@ -1,5 +1,5 @@
 module test_pc_saft
-  use pfunit_mod
+  use funit
   use thermopack_var
   use pc_saft_nonassoc
   use eoslibinit, only: init_thermo

@@ -2,7 +2,7 @@ module test_saturation
   use eoslibinit, only: init_thermo
   use thermopack_constants, only:  continueOnError
   use saturation, only: safe_bubP, safe_dewP
-  use pfunit_mod
+  use funit
   implicit none
   public
 

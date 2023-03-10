@@ -1,7 +1,7 @@
 module test_eosTV
   use eoslibinit, only: init_thermo, init_cubic, silent_init
   use eosTV, only: internal_energy_tv, free_energy_tv, pressure
-  use pfunit_mod
+  use funit
   implicit none
   public
 
