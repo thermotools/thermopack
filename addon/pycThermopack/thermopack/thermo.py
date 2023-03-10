@@ -2563,7 +2563,7 @@ class thermo(object):
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
-            ndarray (optional): Specific volume (m3/mol)
+            ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
         """
         self.activate()
         nmax = 1000
@@ -2684,17 +2684,17 @@ class thermo(object):
             tuple of arrays: LLE, L1VE, L2VE
 
             LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] : Liquid 1 composition (mole fraction of component 1)
-                LLE[1] : Liquid 2 composition (mole fraction of component 1)
-                LLE[2] : Pressure [Pa]
+                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
+                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
+                LLE[2] -> Pressure [Pa]
             L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] : Bubble line composition (mole fraction of component 1) 
-                L1VE[1] : Dew line composition (mole fraction of component 1)
-                L1VE[2] : Pressure [Pa]
+                L1VE[0] -> Bubble line composition (mole fraction of component 1)
+                L1VE[1] -> Dew line composition (mole fraction of component 1)
+                L1VE[2] -> Pressure [Pa]
             L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] : Bubble line composition (mole fraction of component 1) 
-                L2VE[1] : Dew line composition (mole fraction of component 1)
-                L2VE[2] : Pressure [Pa]
+                L2VE[0] -> Bubble line composition (mole fraction of component 1)
+                L2VE[1] -> Dew line composition (mole fraction of component 1)
+                L2VE[2] -> Pressure [Pa]
 
             If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
