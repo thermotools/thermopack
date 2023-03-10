@@ -523,6 +523,54 @@ class comp_list(object):
             self.nVS += 1
         return line
 
+
+    def save_wiki_name_mapping(self,filename):
+        """Generate table with name to comp. id. mapping
+        Arguments:
+        filename - path to file
+        """
+        wiki_header_lines = []
+        wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
+        wiki_header_lines.append("&nbsp;\n")
+        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT' column indicates which fluids SAFT-EoS parameters are available for.\n")
+        wiki_header_lines.append("&nbsp;\n")
+        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT |")
+        wiki_header_lines.append("| ------------------------ | ----------- | ---- |")
+
+        wiki_lines = []
+        for comp in self.comp_list:
+            name = comp.comp["name"].lower()
+            if name[:2] in ("n-", "m-", "o-", "p-"):
+                name = name[:2] + name[2:].capitalize()
+            elif name[0].isdigit():
+                for i in range(1,len(name)):
+                    if name[i].isalpha():
+                        name = name[:i] + name[i:].capitalize()
+                        break
+            else:
+                name = name.capitalize()
+
+            has_saft_params = False
+            for k in comp.comp.keys():
+                if 'SAFTVRMIE' in k:
+                    has_saft_params = True
+                    break
+
+            if has_saft_params is True:
+                has_saft_params = ':heavy_check_mark:'
+            else:
+                has_saft_params = ' '
+
+            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_saft_params + " |"
+            wiki_lines.append(line)
+        wiki_lines.sort()
+        wiki_lines = wiki_header_lines + wiki_lines
+        with open(filename, "w") as f:
+            for line in wiki_lines:
+                f.write(line)
+                f.write("\n")
+
+
     def get_CPA_tag(self,i_cpa=None):
         """FORTRAN CPA parameter name
         """
@@ -546,4 +594,5 @@ class comp_list(object):
 if __name__ == "__main__":
     compl = comp_list()
     compl.save_fortran_file("compdatadb.f90")
+    compl.save_wiki_name_mapping("Component-name-mapping.md")
     copy('compdatadb.f90', '../../../src/compdatadb.f90')
