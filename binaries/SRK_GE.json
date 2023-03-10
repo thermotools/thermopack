@@ -150,5 +150,113 @@
        0.00000000E+00
     ],
     "kij": -6.30000000E-02
+  },
+  "HV2-6": {
+    "comp1": "H2O",
+    "comp2": "NA+",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [-223.15,1573.0,340.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [-223.15,1573.0,340.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-7": {
+    "comp1": "H2O",
+    "comp2": "CL-",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [-223.15,1573.0,340.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [-223.15,1573.0,340.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-8": {
+    "comp1": "MEOH",
+    "comp2": "NA+",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [322.4,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [322.4,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-9": {
+    "comp1": "MEOH",
+    "comp2": "CL-",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [322.4,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [322.4,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-10": {
+    "comp1": "NA+",
+    "comp2": "CL-",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [0.0,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [0.0,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-11": {
+    "comp1": "CO2",
+    "comp2": "NA+",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [724.8,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [724.8,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-12": {
+    "comp1": "CO2",
+    "comp2": "CL-",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [724.8,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [724.8,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-13": {
+    "comp1": "C1",
+    "comp2": "NA+",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [1128.0,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [1128.0,0.0,1.0],
+    "kij": 0.00000000E+00
+  },
+  "HV2-14": {
+    "comp1": "C1",
+    "comp2": "CL-",
+    "ref": "Default/Maribo-Mogensen",
+    "bib_reference": "10.1002/aic.14829",
+    "correlation": "Maribo-Mogensen",
+    "alphaij":  0.00000000E+00,
+    "polyij": [1128.0,0.0,1.0],
+    "alphaji":  0.00000000E+00,
+    "polyji": [1128.0,0.0,1.0],
+    "kij": 0.00000000E+00
   }
 }

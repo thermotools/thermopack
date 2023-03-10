@@ -316,7 +316,7 @@ subroutine thermopack_setkijandji(i,j,kij)
   use cubic_eos, only: cb_eos, cpa_eos
   use saftvrmie_containers, only: set_saftvrmie_eps_kij, saftvrmie_eos
   use saft_interface, only: pc_saft_set_kij
-  use pc_saft_nonassoc, only: PCSAFT_eos
+  use pc_saft_nonassoc, only: sPCSAFT_eos
   implicit none
   integer, intent(in) :: i,j
   real, intent(in) :: kij
@@ -331,7 +331,7 @@ subroutine thermopack_setkijandji(i,j,kij)
     p_eos%kij(j,i) = kij
   type is(cpa_eos)
     call stoperror("Not able to set binary kij for CPA eos.")
-  type is(PCSAFT_eos)
+  type is(sPCSAFT_eos)
     call pc_saft_set_kij(i,j,kij)
   type is(single_eos)
     call stoperror("Not able to set binary kij for single comp. eos.")
@@ -368,7 +368,7 @@ subroutine thermopack_setlijandji(i,j,lij)
   use cubic_eos, only: cb_eos, cpa_eos
   use saftvrmie_containers, only: set_saftvrmie_sigma_lij, saftvrmie_eos
   use saft_interface, only: pc_saft_set_kij
-  use pc_saft_nonassoc, only: PCSAFT_eos
+  use pc_saft_nonassoc, only: sPCSAFT_eos
   implicit none
   integer, intent(in) :: i,j
   real, intent(in) :: lij
@@ -383,7 +383,7 @@ subroutine thermopack_setlijandji(i,j,lij)
      p_eos%lij(j,i) = lij
   type is(cpa_eos)
     call stoperror("Not able to set binary lij for CPA eos.")
-  type is(PCSAFT_eos)
+  type is(sPCSAFT_eos)
     call stoperror("Not able to set binary lij for PC-SAFT eos.")
   type is(single_eos)
     call stoperror("Not able to set binary lij for single comp. eos.")

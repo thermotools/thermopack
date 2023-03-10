@@ -3,9 +3,9 @@ import sys
 sys.path.insert(0,'../pycThermopack/')
 import matplotlib.pyplot as plt
 import numpy as np
-from pyctp.extended_csp import ext_csp
-from pyctp.pcsaft import pcsaft
-from pyctp.tcPR import tcPR
+from thermopack.extended_csp import ext_csp
+from thermopack.pcsaft import pcsaft
+from thermopack.tcPR import tcPR
 
 
 tc_pr = tcPR("CO2,N2")
@@ -28,8 +28,7 @@ for i, eos in enumerate(eoss):
     plt.plot([Tc], [Pc*1.0e-6], color=colors[i], marker="o")
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
-leg = plt.legend(loc="best", numpoints=1)
-leg.get_frame().set_linewidth(0.0)
+leg = plt.legend(loc="best", numpoints=1, frameon=False)
 plt.title("CO$_2$-N$_2$ phase diagram")
 plt.show()
 plt.clf()

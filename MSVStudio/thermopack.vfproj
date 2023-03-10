@@ -91,6 +91,7 @@
 		<File RelativePath="..\src\multiparameter_base.f90"/>
 		<File RelativePath="..\src\multiparameter_c3.f90"/>
 		<File RelativePath="..\src\multiparameter_idealmix.f90"/>
+		<File RelativePath="..\src\multiparameter_lj.f90"/>
 		<File RelativePath="..\src\multiparameter_normal_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_ortho_h2.f90"/>
 		<File RelativePath="..\src\multiparameter_para_h2.f90"/>

@@ -15,9 +15,6 @@ MSVStudio/Release/*
 MSVStudio/*.u2d
 MSVStudio/*.suo
 
-pyctp.egg-info
-addon/pycThermopack/pyctp/platform_specifics.py
-
 src/*.bck
 *suite__genmod.f90
 
@@ -51,8 +48,9 @@ TAGS
 *~
 *\#
 
-.DS_Store
-*/.DS_Store
-.idea/
+*.DS_Store
 local_testing/
 venv/
+venv*
+*.idea
+*.vscode

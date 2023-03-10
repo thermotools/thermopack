@@ -10,4 +10,4 @@ optim:
 	$(PYTHON) ./makescript.py optim
 
 clean:
-	@rm -f pyctp/libthermopack.*
+	@rm -f thermopack/libthermopack.*

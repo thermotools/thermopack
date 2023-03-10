@@ -403,7 +403,7 @@ contains
     ! Locals
     real :: a3_r,a3_x,a3_rr,a3_xx,a3_rx,fac,rho
     real :: eps !< Well depth div. kB (K)
-    real :: tau, tau_T, tau_TT !< 
+    real :: tau, tau_T, tau_TT !<
     real :: s !< Sigma
     integer :: difflevel
     if (eos%use_Lafitte_a3) then
@@ -3529,9 +3529,11 @@ end subroutine test_uv_LJs
 
 subroutine test_uv_LJs_Fres()
   use lj_splined
+  use thermopack_var
+  use thermopack_constants
   implicit none
   ! Locals
-  real :: sigma, eps_divk
+  !real :: sigma, eps_divk
   real :: n(1),n0(1),T,V,eps
   real :: F,F_T,F_V,F_TT,F_VV,F_TV
   real, dimension(1) :: F_n,F_Tn,F_Vn
@@ -3539,53 +3541,83 @@ subroutine test_uv_LJs_Fres()
   real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
   real, dimension(1) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(1,1) :: Fp_nn
+  real :: Fm,Fm_T,Fm_V,Fm_TT,Fm_VV,Fm_TV
+  real, dimension(1) :: Fm_n,Fm_Tn,Fm_Vn
+  real, dimension(1,1) :: Fm_nn
   class(ljx_ux_eos), pointer :: eos
-  allocate(eos, source=ljx_ux_eos_constructor("LJS-UF"))
-  n = (/1.2/)
+  class(base_eos_param), pointer :: xxeos
+  !allocate(eos, source=ljx_ux_eos_constructor("LJS-UF"))
+  n = (/1.0/)
   n0 = n
-  V = 1.0e-4
-  T = 30.0
-  sigma = 3.5e-10
-  eps_divk = 30.0
+  ! T*=125.67
+  ! rho_s=0.6
+  V = 4.0149299295600481E-005
+  T = 15583.080000000000
+  ! T*=10.0
+  ! rho_s=0.9
+  ! T=1240.0000000000000
+  ! V=2.6766199530400317E-005
+
+  ! T*=0.5
+  ! rho_s=0.9
+  ! T=124.0*0.5
+  ! V=2.6766199530400317E-005
+
+  !sigma = 3.5e-10
+  !eps_divk = 30.0
   eps = 1.0e-5
 
-  T=41.986558345917246
-  V=4.6966099964624520E-005
+  xxeos => get_active_eos()
+  select type(p_eos => xxeos)
+  class is(ljx_ux_eos)
+    eos => p_eos
+  class default
+    call stoperror("Wrong model initilized")
+  end select
+
   eos%enable_hs = .true.  !> Option to enable/disable hard-sphere contribution
   eos%enable_cavity = .true.
   eos%enable_A1 = .true.  !> Option to enable/disable A1 contribution
-
+  eos%use_temperature_dependent_u_fraction = .false.
+  !print *,eos%eps_divk, eos%sigma
   call calcFresLJs_uv_theory(eos,1,T,V,n,F,F_T,F_V,F_n,F_TT,&
        F_VV,F_TV,F_Tn,F_Vn,F_nn)
   call calcFresLJs_uv_theory(eos,1,T,V+V*eps,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+  call calcFresLJs_uv_theory(eos,1,T,V-V*eps,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
 
   print *,"Testing the residual reduced Helmholtz energy"
   print *,"V"
-  print *,F
-  print *,F_V,(Fp - F)/(V*eps)
-  print *,F_VV,(Fp_V - F_V)/(V*eps)
-  print *,F_TV,(Fp_T - F_T)/(V*eps)
-  print *,F_Vn,(Fp_n - F_n)/(V*eps)
+  print *,"Fres",F
+  print *,F_V,(Fp - Fm)/(2*V*eps)
+  print *,F_VV,(Fp_V - Fm_V)/(2*V*eps)
+  print *,F_TV,(Fp_T - Fm_T)/(2*V*eps)
+  print *,F_Vn,(Fp_n - Fm_n)/(2*V*eps)
 
   print *,"n1"
   n(1) = n(1) + eps
   call calcFresLJs_uv_theory(eos,1,T,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
-  print *,F_n(1),(Fp - F)/eps
-  print *,F_Tn(1),(Fp_T - F_T)/eps
-  print *,F_Vn(1),(Fp_V - F_V)/eps
-  print *,F_nn(1,:),(Fp_n - F_n)/eps
+  n(1) = n0(1) - eps
+  call calcFresLJs_uv_theory(eos,1,T,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
+  print *,F_n(1),(Fp - Fm)/eps/2
+  print *,F_Tn(1),(Fp_T - Fm_T)/eps/2
+  print *,F_Vn(1),(Fp_V - Fm_V)/eps/2
+  print *,F_nn(1,:),(Fp_n - Fm_n)/eps/2
 
   print *,"T"
   n = n0
   call calcFresLJs_uv_theory(eos,1,T+T*eps,V,n,Fp,Fp_T,Fp_V,Fp_n,Fp_TT,&
        Fp_VV,Fp_TV,Fp_Tn,Fp_Vn,Fp_nn)
+  call calcFresLJs_uv_theory(eos,1,T-T*eps,V,n,Fm,Fm_T,Fm_V,Fm_n,Fm_TT,&
+       Fm_VV,Fm_TV,Fm_Tn,Fm_Vn,Fm_nn)
 
-  print *,F_T,(Fp - F)/(T*eps)
-  print *,F_TT,(Fp_T - F_T)/(T*eps)
-  print *,F_TV,(Fp_V - F_V)/(T*eps)
-  print *,F_Tn,(Fp_n - F_n)/(T*eps)
+  print *,F_T,(Fp - Fm)/(2*T*eps)
+  print *,F_TT,(Fp_T - Fm_T)/(2*T*eps)
+  print *,F_TV,(Fp_V - Fm_V)/(2*T*eps)
+  print *,F_Tn,(Fp_n - Fm_n)/(2*T*eps)
 
   stop
 end subroutine test_uv_LJs_Fres

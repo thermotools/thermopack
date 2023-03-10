@@ -654,4 +654,29 @@ contains
     end select
   end subroutine assign_pets
 
+  subroutine getPetsPureParams(nc,comp,eosidx,param_ref,found,m,sigma,eps_depth_divk,eps,beta,scheme)
+    use compdata, only: gendata_pointer
+    use AssocSchemeUtils, only: no_assoc
+    use stringmod, only: str_eq
+    ! Input
+    integer, intent(in) :: nc
+    type(gendata_pointer), intent(in) :: comp(nc)
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: param_ref
+    ! Output
+    logical, intent(out) :: found(nc)
+    real, intent(out) :: m(nc), sigma(nc), eps_depth_divk(nc), eps(nc), beta(nc)
+    integer, intent(out) :: scheme(nc)
+    !
+    if (nc /= 1 .or. .not. str_eq(comp(1)%p_comp%ident, "AR")) &
+         call stoperror("PETS model only for pure Argon")
+    found = .true.
+    m = 1
+    sigma = 3.42E-10
+    eps_depth_divk = 136.0
+    eps = 0
+    beta = 0
+    scheme = no_assoc
+  end subroutine getPetsPureParams
+
 end module pets

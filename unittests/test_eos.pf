@@ -3,7 +3,7 @@ module test_eos
   use thermopack_var, only: nce, base_eos_param, get_active_eos, &
        get_active_comps
   use compdata, only: gendata_pointer
-  use pfunit_mod
+  use funit
   implicit none
   public
 
