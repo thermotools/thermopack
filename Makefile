@@ -91,7 +91,7 @@ ifeq ($(OSTYPE),Unix)
   debug_gfortran_flags = "$(gf_common) \
                           -g -fbounds-check -fbacktrace \
                           -ffpe-trap=invalid,zero,overflow \
-                          -mieee-fp -Wno-unused-dummy-argument -Wall \
+                          -Wno-unused-dummy-argument -Wall \
                           -arch arm64" \
                          NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"

@@ -256,7 +256,9 @@ run_unittests:
 	fi
 
 unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
-	$(LD) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -I$(PFUNIT)/mod -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lpfunit $(LIBS) -Iunittests -DBUILD_ROBUST
+	$(FC) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
+	-I$(GFTL)/include/v1 -I$(GFTL_SHARED)/include/v1 -I$(FARGPARSE)/include \
+	-L$(FARGPARSE)/lib -lfargparse -L$(GFTL_SHARED)/lib -lgftl-shared-v2 -lgomp -lpthread $(LIBS) -Iunittests -DBUILD_ROBUST
 
 trend_$(TARGET):
 ifdef $(THERMOPACK_WITH_TREND)
