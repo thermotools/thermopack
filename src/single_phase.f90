@@ -12,8 +12,7 @@ module single_phase
   public :: TP_CalcFugacity, TP_CalcGibbs
   public :: TP_CalcPseudo, TV_CalcFres, TV_CalcFid
   public :: TV_CalcFugacity
-  ! Move code to eostv:
-  public :: TV_CalcPressure
+
 contains
   !---------------------------------------------------------------------- >
   !> The function returns the moleweight of a mixture
@@ -552,83 +551,6 @@ contains
     endif
 
   end subroutine TP_CalcGibbs
-
-  !> Calculate pressure given composition, temperature and density
-  !!
-  !! \param T - Temprature [K]
-  !! \param v - Specific volume [m3/mol]
-  !!
-  subroutine TV_CalcPressure(nc,comp,cbeos,T,v,n,p,&
-       dpdv,dpdt,d2pdv2,dpdn,recalculate,contribution)
-    use cubic
-    use eosdata
-    use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
-    use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param, Rgas
-    implicit none
-    integer, intent(in) :: nc
-    type (gendata_pointer), intent(in), dimension(:) :: comp
-    class(base_eos_param), intent(inout) :: cbeos
-    real, intent(in) :: t, v, n(nc)
-    real, intent(inout) :: p
-    real, optional, intent(inout) :: dpdv, dpdt, d2pdv2
-    real, dimension(nc), optional, intent(out) :: dpdn
-    logical, optional, intent(in) :: recalculate
-    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
-    ! Locals
-    real :: sumne
-    real :: F_V
-    logical :: res, ideal
-    real, dimension(nce) :: ne
-    real, pointer :: F_Vne_p(:)
-    real, target :: F_Vne(nce)
-    if (present(dpdn)) then
-      F_Vne_p => F_Vne
-    else
-      F_Vne_p => NULL()
-    endif
-    call apparent_to_real_mole_numbers(n,ne)
-    sumne = sum(ne)
-
-    res = .true.
-    ideal = .true.
-    if (present(contribution)) then
-      if (contribution == PROP_RESIDUAL) then
-        ideal = .false.
-      else if (contribution == PROP_IDEAL) then
-        res = .false.
-      endif
-    endif
-
-    if (res) then
-      call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_TV=dpdt,&
-           F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2,recalculate=recalculate)
-      P = -Rgas*T*F_V
-      if (present(dPdV)) dPdV = -Rgas*T*dPdV
-      if (present(dPdT)) dPdT = -Rgas*T*dPdT
-      if (present(dPdn)) F_Vne = -Rgas*T*F_Vne
-      if (present(d2PdV2)) d2PdV2 = -Rgas*T*d2PdV2
-    else
-      P = 0
-      if (present(dPdV)) dPdV = 0
-      if (present(dPdT)) dPdT = 0
-      if (present(dPdn)) F_Vne = 0
-      if (present(d2PdV2)) d2PdV2 = 0
-    endif
-    if (ideal) then
-      P = P + sumne*Rgas*T/V
-      if (present(dPdV)) dPdV = dPdV - sumne*Rgas*T/V**2
-      if (present(dPdT)) dPdT = dPdT + P/T
-      if (present(dPdn)) F_Vne = F_Vne + Rgas*T/V
-      if (present(d2PdV2)) d2PdV2 = d2PdV2 + 2.0*sumne*Rgas*T/V**3
-    endif
-
-    if (present(dPdn)) then
-      call real_to_apparent_diff(F_Vne,dPdn)
-    endif
-
-  end subroutine TV_CalcPressure
 
   !> Calculate pseudo critical properties.
   subroutine TP_CalcPseudo(nc,comp,cbeos,n,tpc,ppc,zpc,vpc)
@@ -1181,7 +1103,7 @@ contains
   !----------------------------------------------------------------------
   !> Calculate enthalpy given composition, temperature and volume.
   !! Differentials at constant pressure.
-  !! \author MH, 2023-03
+  !! \author Morten Hammer, 2023-03
   !----------------------------------------------------------------------
   subroutine calc_enthalpy_from_f(eos,t,v,n,h,dhdt,dhdp,dhdn,contribution)
     use thermopack_var, only: nce, base_eos_param, get_active_comps, gendata_pointer, Rgas
@@ -1286,7 +1208,7 @@ contains
   !----------------------------------------------------------------------
   !> Calculate entropy given composition, temperature and volume.
   !! Differentials at constant pressure.
-  !! \author MH, 2023-03
+  !! \author Morten Hammer, 2023-03
   !----------------------------------------------------------------------
   subroutine calc_entropy_from_f(eos,t,v,n,s,dsdt,dsdp,dsdn,contribution)
     use thermopack_var, only: nce, base_eos_param, get_active_comps, gendata_pointer, Rgas

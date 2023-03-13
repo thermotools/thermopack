@@ -1,5 +1,5 @@
 !> Automatically generated file meosmixdb.f90
-!! Time stamp: 2023-03-06T14:23:44.205077
+!! Time stamp: 2023-03-13T11:56:13.197783
 
 module meosmixdb
   use thermopack_constants, only: uid_len
@@ -130,7 +130,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_13 = &
       meos_mix_reducing(ident1 = "NC4", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -201,7 +201,7 @@ module meosmixdb
       gamma_T = 1.01473019)
 
   type(meos_mix_reducing), parameter :: meos_red_22 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC9", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -1098,7 +1098,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_134 = &
       meos_mix_reducing(ident1 = "BENZENE", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1.004, &
       beta_T = 1., &
@@ -1186,7 +1186,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_145 = &
       meos_mix_reducing(ident1 = "NC7", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1.0019167, &
       gamma_v = 1.0026789, &
       beta_T = 0.998329, &
@@ -1202,7 +1202,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_147 = &
       meos_mix_reducing(ident1 = "O2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1306,7 +1306,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_160 = &
       meos_mix_reducing(ident1 = "CO2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1.047, &
       gamma_v = 1.134, &
       beta_T = 1., &
@@ -1345,7 +1345,7 @@ module meosmixdb
       gamma_T = 1.)
 
   type(meos_mix_reducing), parameter :: meos_red_165 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC8", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -1434,7 +1434,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_176 = &
       meos_mix_reducing(ident1 = "CO", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1458,7 +1458,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_179 = &
       meos_mix_reducing(ident1 = "IC4", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1762,7 +1762,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_217 = &
       meos_mix_reducing(ident1 = "R41", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.975390031650, &
@@ -1890,7 +1890,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_233 = &
       meos_mix_reducing(ident1 = "ACETONE", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 0.9962, &
       beta_T = 1., &
@@ -1945,7 +1945,7 @@ module meosmixdb
       gamma_T = 0.99262)
 
   type(meos_mix_reducing), parameter :: meos_red_240 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "MXYL", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -2250,7 +2250,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_278 = &
       meos_mix_reducing(ident1 = "R23", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.969090002199, &
@@ -2506,7 +2506,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_310 = &
       meos_mix_reducing(ident1 = "C1", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 0.961, &
       gamma_v = 1.085, &
       beta_T = 0.967, &
@@ -2634,14 +2634,14 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_326 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 0.9979, &
       beta_T = 1., &
       gamma_T = 1.)
 
   type(meos_mix_reducing), parameter :: meos_red_327 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "EBZN", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -2778,7 +2778,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_344 = &
       meos_mix_reducing(ident1 = "PRLN", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1.024, &
       beta_T = 1.021450459653, &
@@ -2841,7 +2841,7 @@ module meosmixdb
       gamma_T = 1.)
 
   type(meos_mix_reducing), parameter :: meos_red_352 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC10", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -2946,7 +2946,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_365 = &
       meos_mix_reducing(ident1 = "R32", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.015980045339, &
@@ -3234,7 +3234,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_401 = &
       meos_mix_reducing(ident1 = "AR", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3330,7 +3330,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_413 = &
       meos_mix_reducing(ident1 = "NC6", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3657,7 +3657,7 @@ module meosmixdb
       gamma_T = 1.)
 
   type(meos_mix_reducing), parameter :: meos_red_454 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "PXYL", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -3706,7 +3706,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_460 = &
       meos_mix_reducing(ident1 = "R14", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.920319984215, &
@@ -3730,7 +3730,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_463 = &
       meos_mix_reducing(ident1 = "NC5", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3762,7 +3762,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_467 = &
       meos_mix_reducing(ident1 = "H2S", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3858,7 +3858,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_479 = &
       meos_mix_reducing(ident1 = "ETOH", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.982318271120, &
@@ -3882,7 +3882,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_482 = &
       meos_mix_reducing(ident1 = "IC5", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4042,7 +4042,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_502 = &
       meos_mix_reducing(ident1 = "N2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4210,7 +4210,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_523 = &
       meos_mix_reducing(ident1 = "SO2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011330031476, &
@@ -4369,7 +4369,7 @@ module meosmixdb
       gamma_T = 1.197564208)
 
   type(meos_mix_reducing), parameter :: meos_red_543 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC12", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -4754,7 +4754,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_591 = &
       meos_mix_reducing(ident1 = "C2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4897,7 +4897,7 @@ module meosmixdb
       gamma_T = 1.)
 
   type(meos_mix_reducing), parameter :: meos_red_609 = &
-      meos_mix_reducing(ident1 = "TOLUENE", &
+      meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "OXYL", &
       beta_v = 1., &
       gamma_v = 1., &
@@ -5098,7 +5098,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_634 = &
       meos_mix_reducing(ident1 = "MEOH", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1.183, &
       beta_T = 0.947867298578, &
@@ -5162,7 +5162,7 @@ module meosmixdb
 
   type(meos_mix_reducing), parameter :: meos_red_642 = &
       meos_mix_reducing(ident1 = "C3", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -5617,7 +5617,7 @@ module meosmixdb
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix7 = &
-      meos_mix_data(ident1 = "TOLUENE", &
+      meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC9", &
       Fij = -1.06, &
       num_mix = 10, &
@@ -6762,7 +6762,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix29 = &
       meos_mix_data(ident1 = "BENZENE", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 0.068, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6814,7 +6814,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix30 = &
       meos_mix_data(ident1 = "NC7", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = -0.6281548, &
       num_mix = 12, &
       n_mix = (/ &
@@ -6970,7 +6970,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix33 = &
       meos_mix_data(ident1 = "CO2", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 1.257, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7021,7 +7021,7 @@ module meosmixdb
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix34 = &
-      meos_mix_data(ident1 = "TOLUENE", &
+      meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC8", &
       Fij = -0.704, &
       num_mix = 10, &
@@ -8010,7 +8010,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix53 = &
       meos_mix_data(ident1 = "C1", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 1.313, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8062,7 +8062,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix54 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 0.5865, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8165,7 +8165,7 @@ module meosmixdb
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix56 = &
-      meos_mix_data(ident1 = "TOLUENE", &
+      meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC10", &
       Fij = -1.395, &
       num_mix = 10, &
@@ -8738,7 +8738,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix67 = &
       meos_mix_data(ident1 = "NC6", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = -0.213, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9258,7 +9258,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix77 = &
       meos_mix_data(ident1 = "ETOH", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 0.282, &
       num_mix = 10, &
       n_mix = (/ &
@@ -10662,7 +10662,7 @@ module meosmixdb
 
   type(meos_mix_data), parameter :: meos_mix104 = &
       meos_mix_data(ident1 = "MEOH", &
-      ident2 = "TOLUENE", &
+      ident2 = "TOLU", &
       Fij = 5.902, &
       num_mix = 10, &
       n_mix = (/ &

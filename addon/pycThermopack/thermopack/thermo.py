@@ -665,7 +665,7 @@ class thermo(object):
         self.s_get_rgas.argtypes = []
         self.s_get_rgas.restype = c_double
         rgas = self.s_get_rgas()
-        return rgas.value
+        return rgas
 
     def set_tmin(self, temp):
         """Utility
@@ -1756,7 +1756,6 @@ class thermo(object):
         else:
             dpdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
         contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER(c_double),
@@ -1777,7 +1776,6 @@ class thermo(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c,
                                contribution_c)
 
         return_tuple = (P, )

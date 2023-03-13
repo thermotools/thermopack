@@ -238,6 +238,17 @@ contains
       ! Setting the gas enthalpy and entropy to zero at 298.15 K and 1 atm
       s_ref = 0
       h_ref = 0
+      ! Legacy support for AR, N2 and O2
+      if (str_eq(this%compName, "AR")) then
+        h_ref = 6197.0
+        s_ref = 154.737
+      else if (str_eq(this%compName, "N2")) then
+        h_ref = 8670.0
+        s_ref = 191.5
+      else if (str_eq(this%compName, "O2")) then
+        h_ref = 8680.0
+        s_ref = 205.043
+      endif
     else if (str_eq(this%ref_state, "TRIPLE_POINT")) then
       ! Setting internal energy and entropy to zero for liquid at the triple point
       s_ref = 0
@@ -332,10 +343,17 @@ contains
     type(hyperdual), intent(in) :: delta, tau
     type(hyperdual) :: alp0 !< alp0
     ! Internals
-    integer :: i
-    alp0 = log(delta) + this%a1_id + this%a2_id*tau + (this%c_id(1) - 1.0_dp)*log(tau)
-    do i=2,this%n1_id
-      alp0 = alp0 - this%c_id(i) * this%tc**this%t_id(i) * tau**(this%t_id(i)) / &
+    integer :: i, i_start
+    alp0 = log(delta) + this%a1_id + this%a2_id*tau - log(tau)
+
+    if (this%t_id(1) < 1.0e-12) then
+      i_start = 2
+      alp0 = alp0 + this%c_id(1)*log(tau)
+    else
+      i_start = 1
+     endif
+    do i=i_start,this%n1_id
+      alp0 = alp0 - this%c_id(i) * this%tc**this%t_id(i) * tau**(-this%t_id(i)) / &
            (this%t_id(i)*(this%t_id(i) + 1.0_dp))
     enddo
     do i=this%n1_id+1,this%n_id
