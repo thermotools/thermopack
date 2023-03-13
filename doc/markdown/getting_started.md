@@ -123,15 +123,15 @@ _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capa
 As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
 
 ### Flash calculations
-Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`. They are used as
+Flash calculations of several kinds are handled by the methods `two_phase_tpflash()`, `two_phase_psflash()`, `two_phase_phflash()` and `two_phase_uvflash()`. They are used as
 
 ```python
 from thermopack.saftvrqmie import saftvrqmie
-eos = saftvrqmie('H2,HE,NE') # Helium/Neon mixture
+eos = saftvrqmie('H2,HE,NE') # Hydrogen/Helium/Neon mixture
 T = 35 # Kelvin
 p = 10e5 # Pascal (10 bar)
-x = [0.1, 0.25, 0.65] # Molar composition
-x, y, vapfrac, liqfrac, phasekey = eos.two_phase_tpflash(T, p, x) # x and y are vapour and liquid composition respectively
+z = [0.1, 0.25, 0.65] # Total Molar composition
+x, y, vapfrac, liqfrac, phasekey = eos.two_phase_tpflash(T, p, z) # x and y are vapour and liquid composition respectively
 ```
 
 Note that some of the methods also output other information, such as the temperature of the flash, see the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
