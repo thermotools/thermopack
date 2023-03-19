@@ -1,5 +1,5 @@
 !> Automatically generated file meosdatadb.f90
-!! Time stamp: 2023-03-13T21:02:11.507825
+!! Time stamp: 2023-03-18T23:41:11.047130
 
 module meosdatadb
   use thermopack_constants, only: uid_len, comp_name_len, bibref_len
@@ -33,6 +33,7 @@ module meosdatadb
     integer :: n_exp_eos !< Number of exponential terms
     integer :: n_gauss_eos !< Number of Gaussian bell-shaped terms
     integer :: n_nona_eos !< Number of non-analytical terms
+    integer :: n_assoc_eos !< Number of association terms
     real :: n_eos(meos_max_n) !< Prefactor
     real :: t_eos(meos_max_n) !< Tau exponent
     integer :: d_eos(meos_max_n) !< Delta exponent
@@ -44,6 +45,7 @@ module meosdatadb
     real :: epsilon_eos(meos_max_n_gauss) !< Delta correction
     integer :: tau_exp_eos(meos_max_n_gauss) !< Tau term exponent
     integer :: del_exp_eos(meos_max_n_gauss) !< Delta term exponent
+    real :: b_assoc_eos(2) !< Association b
     real :: n_na(meos_max_n_nona) !< Prefactor non-analytical terms
     real :: a_na(meos_max_n_nona) !< Non-analytical parameter a
     real :: b_na(meos_max_n_nona) !< Non-analytical parameter b
@@ -80,6 +82,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.0010786811,-0.103161822,0.0421544125, &
       1.47865376,-2.4266,-0.46575193, &
@@ -192,6 +195,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -255,6 +261,7 @@ module meosdatadb
       n_exp_eos = 34, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.83440745735241,-1.4287360607171,0.34430242210927, &
       -0.42096677920265,0.012094500886549,-0.57976201597341, &
@@ -367,6 +374,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -430,6 +440,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.90554,-2.4515,0.53149, &
       0.024173,0.072156,0.00018818, &
@@ -542,6 +553,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -605,6 +619,7 @@ module meosdatadb
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.01,-6.83148,2.11505, &
       4.38353,0.211292,-1.00939, &
@@ -717,6 +732,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -780,6 +798,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.0963,-3.0402,1.0317, &
       -0.15410,0.11535,0.00029809, &
@@ -892,6 +911,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -955,6 +977,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.0461,-2.4807,0.74372, &
       -0.52579,0.15315,0.00032865, &
@@ -1067,6 +1090,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -1130,6 +1156,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -44.386484873,9.26505600935,-0.551709104376, &
       0.504676623431,-0.732431415692,-0.868403860387, &
@@ -1242,6 +1269,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -1305,6 +1335,7 @@ module meosdatadb
       n_exp_eos = 10, &
       n_gauss_eos = 9, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.058200796,0.94391227,-0.80941908, &
       0.55359038,-1.4269032,0.13448717, &
@@ -1417,6 +1448,9 @@ module meosdatadb
       2,2,2,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -1480,6 +1514,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.83561,-2.3725,0.54567, &
       0.014361,0.066502,0.0001931, &
@@ -1592,6 +1627,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -1655,6 +1693,7 @@ module meosdatadb
       n_exp_eos = 16, &
       n_gauss_eos = 2, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       2.0686820727966,-3.6400098615204,0.51968754427244, &
       0.17745845870123,-0.12361807851599,0.045145314010528, &
@@ -1767,6 +1806,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -1830,6 +1872,7 @@ module meosdatadb
       n_exp_eos = 23, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.04367901028,0.6709236199,-1.765577859, &
       0.8582330241,-1.206513052,0.512046722, &
@@ -1942,6 +1985,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2005,6 +2051,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.0446249,1.740621,-2.050688, &
       -0.7724346,0.2116422,-3.187864, &
@@ -2117,6 +2164,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2180,6 +2230,7 @@ module meosdatadb
       n_exp_eos = 26, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.924803575275,-0.492448489428,0.661883336938, &
       -1.92902649201,-0.0622469309629,0.349943957581, &
@@ -2292,6 +2343,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2355,6 +2409,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.38031,-2.85352,0.288897, &
       -0.165993,0.0923993,2.82772e-4, &
@@ -2467,6 +2522,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2530,6 +2588,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 7, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.006267958,10.53609,-10.14149, &
       0.3560610,0.1824472,-1.129638, &
@@ -2642,6 +2701,9 @@ module meosdatadb
       2,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2705,6 +2767,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 6, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.01744413,1.814878,-2.246338, &
       -0.4602906,0.1097049,-0.9485769, &
@@ -2817,6 +2880,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -2880,6 +2946,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.042240369,1.4800888,-2.0975357, &
       -0.72303256,0.26084383,-1.6713762, &
@@ -2992,6 +3059,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3055,6 +3125,7 @@ module meosdatadb
       n_exp_eos = 12, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       7.041529,-8.259512,0.00805304, &
       -0.08617615,0.00633341,-0.1863285, &
@@ -3167,6 +3238,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3230,6 +3304,7 @@ module meosdatadb
       n_exp_eos = 25, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.08872230499,0.705148051673,-1.68201156541, &
       -0.149090144315,-0.120248046009,-0.121649787986, &
@@ -3342,6 +3417,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3405,6 +3483,7 @@ module meosdatadb
       n_exp_eos = 11, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.046634,-0.5451165,-0.002448595, &
       -0.04877002,0.03520158,0.00162275, &
@@ -3517,6 +3596,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3580,6 +3662,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.04239455,2.370432,-4.30263, &
       -0.4039603,0.4005704,-2.643419, &
@@ -3692,6 +3775,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3755,6 +3841,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.7231448,-1.790058,-0.06836828, &
       0.07947672,0.000040778,0.1760558, &
@@ -3867,6 +3954,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -3930,6 +4020,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.04592563,1.546958,-2.355237, &
       -0.4827835,0.1758022,-1.210006, &
@@ -4042,6 +4133,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4105,6 +4199,7 @@ module meosdatadb
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.01,-7.33375,2.60375, &
       4.66279,0.682390,-1.47078, &
@@ -4217,6 +4312,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4280,6 +4378,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.8157856,-1.85265,-0.115457, &
       0.0938171,0.00006405,0.2031037, &
@@ -4392,6 +4491,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4455,6 +4557,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 6, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.03982797,1.812227,-2.537512, &
       -0.5333254,0.1677031,-1.323801, &
@@ -4567,6 +4670,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4630,6 +4736,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.87641,-2.0367,0.21634, &
       -0.050199,0.066994,0.00019076, &
@@ -4742,6 +4849,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4805,6 +4915,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 6, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.031522418,3.7716418,-4.27399448, &
       -0.756466758,0.066679921,-0.356928434, &
@@ -4917,6 +5028,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -4980,6 +5094,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.1632,-2.8123,0.77202, &
       -0.14331,0.10227,0.00024629, &
@@ -5092,6 +5207,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -5155,6 +5273,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 10, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.05483581,1.607734,-2.375928, &
       -0.5137709,0.1858417,-0.9007515, &
@@ -5267,6 +5386,9 @@ module meosdatadb
       2,2,2,2,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -5330,6 +5452,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -0.340776521414,0.32300139842,-0.0424950537596, &
       1.0793887971,-1.99243619673,-0.155135133506, &
@@ -5442,6 +5565,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -5505,6 +5631,7 @@ module meosdatadb
       n_exp_eos = 19, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.3983768749,-1.846157454,0.4183473197, &
       0.02370620711,0.09771730573,0.03017891294, &
@@ -5617,6 +5744,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -5680,6 +5810,7 @@ module meosdatadb
       n_exp_eos = 2, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.01,-6.93643,2.1101, &
       4.52059,0.732564,-1.34086, &
@@ -5792,6 +5923,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -5855,6 +5989,7 @@ module meosdatadb
       n_exp_eos = 11, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -0.01262962,2.168373,-3.330033, &
       0.1610361,-0.9666145e-4,0.0119131, &
@@ -5967,6 +6102,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6030,6 +6168,7 @@ module meosdatadb
       n_exp_eos = 19, &
       n_gauss_eos = 8, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -2.80062505988,12.5636372418,-13.0310563173, &
       3.2659313406,-4.11425343805,3.46397741254, &
@@ -6142,6 +6281,9 @@ module meosdatadb
       2,4,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6205,6 +6347,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.3270,-3.8433,0.922, &
       0.11360,0.00036195,1.1001, &
@@ -6317,6 +6460,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6380,6 +6526,7 @@ module meosdatadb
       n_exp_eos = 15, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       2.075343402,-2.962525996,0.01001589616, &
       0.01781347612,0.02556929157,0.002352142637, &
@@ -6492,6 +6639,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6555,6 +6705,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.03965879,1.945813,-3.738575, &
       -0.3428167,0.3427022,-2.519592, &
@@ -6667,6 +6818,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6730,6 +6884,7 @@ module meosdatadb
       n_exp_eos = 12, &
       n_gauss_eos = 14, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.54958259132835,-0.87905033269396,-0.84656969731452, &
       0.27692381593529,-4.9864958372345,4.8879127058055, &
@@ -6842,6 +6997,9 @@ module meosdatadb
       2,2,2,2,2,2, &
       2,2 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -6905,6 +7063,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 11, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.015559018,3.0638932,-4.2420844, &
       0.054418088,-0.18971904,0.087856262, &
@@ -7017,6 +7176,9 @@ module meosdatadb
       2,2,2,2,2,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -7080,6 +7242,7 @@ module meosdatadb
       n_exp_eos = 44, &
       n_gauss_eos = 3, &
       n_nona_eos = 2, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.012533547935523,7.8957634722828,-8.7803203303561, &
       0.31802509345418,-0.26145533859358,-0.0078199751687981, &
@@ -7192,6 +7355,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       -0.14874640856724,0.31806110878444,0.0d0 &
       /), &
@@ -7255,6 +7421,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.20873,-3.54460,0.745302, &
       0.114128,4.36572e-4,0.988385, &
@@ -7367,6 +7534,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -7430,6 +7600,7 @@ module meosdatadb
       n_exp_eos = 14, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.25993633881,-2.60818574641,0.00982122542463, &
       -1.06085385839,1.2282036351,0.118000776439, &
@@ -7542,6 +7713,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -7605,6 +7779,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.84958959,-2.028566,0.03757012, &
       0.06081274,0.000204315,0.066043135, &
@@ -7717,6 +7892,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -7780,6 +7958,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.90041,-2.1267,-0.083409, &
       0.065683,0.00016527,-0.039663, &
@@ -7892,6 +8071,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -7937,7 +8119,7 @@ module meosdatadb
       meosdata(ident = "NH3", &
       name = "ammonia", &
       default_ref_state = "TRIPLE_POINT", &
-      bibref = "Unpublished. Gao, Wu,  Bell, and Lemmon (2019). Thermodynamic Properties of Ammo", &
+      bibref = "Gao et al. (2023). doi:10.1063/5.0128269", &
       mw = 17.03052, &
       tc = 405.56, &
       pc = 11363.4, &
@@ -7953,8 +8135,9 @@ module meosdatadb
       p_max = 1000000.0, &
       n_poly_eos = 5, &
       n_exp_eos = 3, &
-      n_gauss_eos = 10, &
+      n_gauss_eos = 12, &
       n_nona_eos = 0, &
+      n_assoc_eos = 2, &
       n_eos = (/ &
       0.006132232,1.7395866,-2.2261792, &
       -0.30127553,0.08967023,-0.076387037, &
@@ -7962,7 +8145,7 @@ module meosdatadb
       -5.7844357,2.4817542,-2.3739168, &
       0.01493697,-3.7749264,0.0006254348, &
       -0.000017359,-0.13462033,0.07749072839, &
-      0.0d0,0.0d0,0.0d0, &
+      -1.6909858,0.93739074,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
@@ -7982,7 +8165,7 @@ module meosdatadb
       1.3,3.1,1.4395, &
       1.623,0.643,1.13, &
       4.5,1.0,4.0, &
-      0.0d0,0.0d0,0.0d0, &
+      4.3315,4.015,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
@@ -7999,7 +8182,7 @@ module meosdatadb
       4,1,1,2,3,3, &
       2,3,1,1,1,2, &
       2,1,3,3,1,1, &
-      0,0,0,0,0,0, &
+      1,1,0,0,0,0, &
       0,0,0,0,0,0, &
       0,0,0,0,0,0, &
       0,0,0,0,0,0, &
@@ -8010,7 +8193,7 @@ module meosdatadb
       0,0,0,0,0,2, &
       2,1,2,2,2,2, &
       2,2,2,2,2,2, &
-      0,0,0,0,0,0, &
+      2,2,0,0,0,0, &
       0,0,0,0,0,0, &
       0,0,0,0,0,0, &
       0,0,0,0,0,0, &
@@ -8039,33 +8222,36 @@ module meosdatadb
       /), &
       eta_eos = (/ &
       -0.42776,-0.6424,-0.8175,-0.7995,-0.91,-0.3574, &
-      -1.21,-4.14,-22.56,-22.68,0.0d0,0.0d0, &
+      -1.21,-4.14,-22.56,-22.68,-2.8452,-2.8342, &
       0.0d0,0.0d0 &
       /), &
       beta_eos = (/ &
       -1.708,-1.4865,-2.0915,-2.43,-0.488,-1.1, &
-      -0.85,-1.14,-945.64,-993.85,0.0d0,0.0d0, &
+      -0.85,-1.14,-945.64,-993.85,0.3696,0.2962, &
       0.0d0,0.0d0 &
       /), &
       gamma_eos = (/ &
       1.036,1.2777,1.083,1.2906,0.928,0.934, &
-      0.919,1.852,1.05897,1.05277,0.0d0,0.0d0, &
+      0.919,1.852,1.05897,1.05277,1.108,1.313, &
       0.0d0,0.0d0 &
       /), &
       epsilon_eos = (/ &
       -0.0726,-0.1274,0.7527,0.57,2.2,-0.243, &
-      2.96,3.02,0.9574,0.9576,0.0d0,0.0d0, &
+      2.96,3.02,0.9574,0.9576,0.4478,0.44689, &
       0.0d0,0.0d0 &
       /), &
       tau_exp_eos = (/ &
       2,2,2,2,2,2, &
-      2,2,2,2,0,0, &
+      2,2,2,2,2,2, &
       0,0 &
       /), &
       del_exp_eos = (/ &
       2,2,2,2,2,2, &
-      2,2,2,2,0,0, &
+      2,2,2,2,2,2, &
       0,0 &
+      /), &
+      b_assoc_eos = (/ &
+      1.244,0.6826 &
       /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
@@ -8130,6 +8316,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.03512459,2.2338,-3.10542612, &
       -0.577233,0.25101,-0.705518, &
@@ -8242,6 +8429,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -8305,6 +8495,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.88045,-2.4235,0.38237, &
       0.068917,0.00020367,0.13122, &
@@ -8417,6 +8608,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -8480,6 +8674,7 @@ module meosdatadb
       n_exp_eos = 27, &
       n_gauss_eos = 5, &
       n_nona_eos = 3, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.388568232032,2.93854759427,-5.58671885349, &
       -0.767531995925,0.317290055804,0.548033158978, &
@@ -8592,6 +8787,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       -0.666422765408,0.726086323499,0.0550686686128 &
       /), &
@@ -8655,6 +8853,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -0.334698748966,0.586690904687,-0.147068929692, &
       1.03999039623,-2.45792025288,0.799614557889, &
@@ -8767,6 +8966,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -8830,6 +9032,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 7, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.019393376,1.2215576,1.2751617, &
       -3.6681302,-1.4660821,0.24628603, &
@@ -8942,6 +9145,9 @@ module meosdatadb
       2,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9005,6 +9211,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.04021974,1.417638,-1.822198, &
       -0.8536007,0.265174,-1.968992, &
@@ -9117,6 +9324,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9180,6 +9390,7 @@ module meosdatadb
       n_exp_eos = 16, &
       n_gauss_eos = 2, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       2.5536998241635,-4.4585951806696,0.82425886369063, &
       0.11215007011442,-0.035910933680333,0.016790508518103, &
@@ -9292,6 +9503,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9355,6 +9569,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.0036765156,-0.13918171,0.014104203, &
       1.5398899,-2.3600925,-0.44359159, &
@@ -9467,6 +9682,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9530,6 +9748,7 @@ module meosdatadb
       n_exp_eos = 13, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.05586817,0.498223,0.02458698, &
       0.0008570145,0.0004788584,-1.800808, &
@@ -9642,6 +9861,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9705,6 +9927,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 7, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.042910051,1.7313671,-2.4516524, &
       0.34157466,-0.46047898,-0.66847295, &
@@ -9817,6 +10040,9 @@ module meosdatadb
       2,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -9880,6 +10106,7 @@ module meosdatadb
       n_exp_eos = 15, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.0695645445236,25.2275419999,-202.351148311, &
       350.063090302,-223.134648863,48.8345904592, &
@@ -9992,6 +10219,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10055,6 +10285,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.96464,-2.7855,0.86712, &
       -0.18860,0.11804,0.00025181, &
@@ -10167,6 +10398,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10230,6 +10464,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.0038,-2.7662,0.42921, &
       0.081363,0.00024174,0.48246, &
@@ -10342,6 +10577,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10405,6 +10643,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 5, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.042952795,2.4923999,-2.603872, &
       -0.83829913,0.19223378,-3.0778196, &
@@ -10517,6 +10756,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10580,6 +10822,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 6, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.006178288,0.763315017,-0.5546657, &
       -1.0604327,0.23117181,-1.8757299, &
@@ -10692,6 +10935,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10755,6 +11001,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.1151,-2.7020,0.83416, &
       -0.38828,0.13760,0.00028185, &
@@ -10867,6 +11114,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -10930,6 +11180,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.83115,-2.3553,0.53904, &
       0.014382,0.066309,0.00019649, &
@@ -11042,6 +11293,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11105,6 +11359,7 @@ module meosdatadb
       n_exp_eos = 8, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -0.66172706,1.3375396,-2.5608399, &
       0.10678910,0.00028873614,0.049587209, &
@@ -11217,6 +11472,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11280,6 +11538,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.0018109418,-0.076824284,0.041823789, &
       1.5059649,-2.4122441,-0.47788846, &
@@ -11392,6 +11651,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11455,6 +11717,7 @@ module meosdatadb
       n_exp_eos = 12, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       7.7736443,-8.70185,-0.27779799, &
       0.14609220,0.0089581616,-0.20552116, &
@@ -11567,6 +11830,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11630,6 +11896,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       -1.37016097588,2.12444673002,-0.578908942724, &
       -1.15633726379,2.52574014413,-2.82265442929, &
@@ -11742,6 +12009,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11805,6 +12075,7 @@ module meosdatadb
       n_exp_eos = 6, &
       n_gauss_eos = 9, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.04341002,1.136592,-0.8528611, &
       0.5216669,-1.382953,0.1214347, &
@@ -11917,6 +12188,9 @@ module meosdatadb
       2,2,2,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -11980,6 +12254,7 @@ module meosdatadb
       n_exp_eos = 7, &
       n_gauss_eos = 0, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       1.6264,-2.8337,0.0010932, &
       0.037136,0.00018724,-0.22189, &
@@ -12092,6 +12367,9 @@ module meosdatadb
       0,0,0,0,0,0, &
       0,0 &
       /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
+      /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &
       /), &
@@ -12155,6 +12433,7 @@ module meosdatadb
       n_exp_eos = 5, &
       n_gauss_eos = 4, &
       n_nona_eos = 0, &
+      n_assoc_eos = 0, &
       n_eos = (/ &
       0.000012791017,0.041063111,1.505996, &
       -2.3095875,-0.46969,0.171031, &
@@ -12266,6 +12545,9 @@ module meosdatadb
       2,2,2,2,0,0, &
       0,0,0,0,0,0, &
       0,0 &
+      /), &
+      b_assoc_eos = (/ &
+      0.0d0,0.0d0 &
       /), &
       n_na = (/ &
       0.0d0,0.0d0,0.0d0 &

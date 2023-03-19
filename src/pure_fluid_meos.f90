@@ -31,6 +31,7 @@ module pure_fluid_meos
     ! Parameters for the residual gas part alpha^r
     integer :: n_gauss = 0 !> Number of Gauss terms
     integer :: n_nona = 0 !> Number of non-analytical terms
+    integer :: n_assoc = 0 !> Number of association terms
     !
     real, allocatable, dimension(:) :: g_exp !> Scaling inside exponential term
     !
@@ -43,6 +44,7 @@ module pure_fluid_meos
     real, allocatable, dimension(:) :: epsilon_g !> Delta offset inside exponential function of the Gauss terms
     integer, allocatable, dimension(:) :: tauexp_g !> Tau term exponent inside exponential function of the Gauss terms
     integer, allocatable, dimension(:) :: delexp_g !> Delta term exponent inside exponential function of the Gauss terms
+    real, allocatable, dimension(:) :: b_assoc_g !> b parameter for modefied Gauss terms used with associating fluids
     !
     real, allocatable, dimension(:) :: n_na !> Prefactor for non-analytical terms
     real, allocatable, dimension(:) :: a_na !> a-parameter non-analytical terms
@@ -114,6 +116,7 @@ contains
       meos_comp%upExp = meosdb(i_comp)%n_exp_eos + meosdb(i_comp)%n_poly_eos
       meos_comp%n_gauss = meosdb(i_comp)%n_gauss_eos
       meos_comp%n_nona = meosdb(i_comp)%n_nona_eos
+      meos_comp%n_assoc = meosdb(i_comp)%n_assoc_eos
       meos_comp%n1_id = meosdb(i_comp)%n1_id
       meos_comp%n_id = meosdb(i_comp)%n_id
 
@@ -143,6 +146,7 @@ contains
       meos_comp%epsilon_g = meosdb(i_comp)%epsilon_eos(1:meos_comp%n_gauss)
       meos_comp%tauexp_g = meosdb(i_comp)%tau_exp_eos(1:meos_comp%n_gauss)
       meos_comp%delexp_g = meosdb(i_comp)%del_exp_eos(1:meos_comp%n_gauss)
+      meos_comp%b_assoc_g = meosdb(i_comp)%b_assoc_eos(1:meos_comp%n_assoc)
       !
       meos_comp%n_na = meosdb(i_comp)%n_na(1:meos_comp%n_nona)
       meos_comp%a_na = meosdb(i_comp)%a_na(1:meos_comp%n_nona)
@@ -263,6 +267,17 @@ contains
     ! Correct enthalpy
     this%a2_id = this%a2_id + (h_ref-h)/(this%Rgas_meos*this%tc)
 
+    if (str_eq(this%compName, "R14")) then
+      this%a2_id = 13.487701815002357
+      this%a1_id = -8.5389854294167122
+    endif
+
+    !print *,trim(this%compName),this%a1_id, this%a2_id
+    !print *,"a1,a2",this%a1_id,this%a2_id
+    !this%a1_id = -14.8563435687485
+    !this%a2_id = 20.1558709204447
+    !stop
+
   end subroutine set_ref_state_meos_pure
 
   subroutine init_meos_pure(this, use_Rgas_fit)
@@ -287,6 +302,7 @@ contains
     if (allocated(this%epsilon_g)) deallocate(this%epsilon_g)
     if (allocated(this%tauexp_g)) deallocate(this%tauexp_g)
     if (allocated(this%delexp_g)) deallocate(this%delexp_g)
+    if (allocated(this%b_assoc_g)) deallocate(this%b_assoc_g)
     !
     if (allocated(this%n_na)) deallocate(this%n_na)
     if (allocated(this%a_na)) deallocate(this%a_na)
@@ -311,6 +327,7 @@ contains
     allocate(this%epsilon_g(1:this%n_gauss))
     allocate(this%tauexp_g(1:this%n_gauss))
     allocate(this%delexp_g(1:this%n_gauss))
+    allocate(this%b_assoc_g(1:this%n_assoc))
     !
     allocate(this%n_na(1:this%n_nona))
     allocate(this%a_na(1:this%n_nona))
@@ -390,7 +407,7 @@ contains
     type(hyperdual), intent(in) :: delta, tau
     type(hyperdual) :: alpr !< alpr
     ! Internal
-    integer :: i
+    integer :: i, j
     type(hyperdual) :: del
     !
     alpr = 0.0_dp
@@ -402,10 +419,17 @@ contains
       alpr = alpr + this%N_exp(i) * tau**this%t_exp(i) * delta**this%d_exp(i) * exp(-this%g_exp(i)*delta**this%l_exp(i))
     enddo
 
-    do i=1,this%n_gauss
+    do i=1,this%n_gauss-this%n_assoc
       alpr = alpr + this%N_g(i) * tau**this%t_g(i) * delta**this%d_g(i) * &
            exp(this%eta_g(i)*(delta-this%epsilon_g(i))**this%delexp_g(i) + &
            this%beta_g(i)*(tau-this%gamma_g(i))**this%tauexp_g(i))
+    enddo
+
+    do i=1,this%n_assoc
+      j = this%n_gauss-this%n_assoc + i
+      alpr = alpr + this%N_g(j) * tau**this%t_g(j) * delta**this%d_g(j) * &
+           exp(this%eta_g(j)*(delta-this%epsilon_g(j))**this%delexp_g(j) + &
+           1.0_dp/(this%beta_g(j)*(tau-this%gamma_g(j))**this%tauexp_g(j) + this%b_assoc_g(i)))
     enddo
 
     do i=1,this%n_nona
@@ -435,6 +459,7 @@ contains
       !
       this%n_gauss = other%n_gauss
       this%n_nona = other%n_nona
+      this%n_assoc = other%n_assoc
       !
       this%g_exp = other%g_exp
       !
@@ -447,6 +472,7 @@ contains
       this%epsilon_g = other%epsilon_g
       this%tauexp_g = other%tauexp_g
       this%delexp_g = other%delexp_g
+      this%b_assoc_g = other%b_assoc_g
       !
       this%n_na = other%n_na
       this%a_na = other%a_na

@@ -97,22 +97,26 @@ contains
       allocate(meos_ptr, &
            source=constructor_lj(comp,shift_and_truncate=.true.), &
            stat=istat)
-    else if (str_eq(comp, "C3")) then
-      allocate(meos_c3 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"N-H2")) then
-      allocate(meos_normal_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"O-H2")) then
-      allocate(meos_ortho_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"P-H2")) then
-      allocate(meos_para_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"R134A")) then
-      allocate(meos_r134a :: meos_ptr, stat=istat)
+    else if (str_eq(eos_label,'NIST_MEOS')) then
+      if (str_eq(comp, "C3")) then
+        allocate(meos_c3 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"N-H2")) then
+        allocate(meos_normal_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"O-H2")) then
+        allocate(meos_ortho_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"P-H2")) then
+        allocate(meos_para_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"R134A")) then
+        allocate(meos_r134a :: meos_ptr, stat=istat)
+      else
+        call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+      endif
     elseif (str_eq(eos_label,'GERG2008') .or. str_eq(eos_label,'GERG')) then
       allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
     elseif (str_eq(eos_label,'MEOS')) then
       allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
     else
-      call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+      call stoperror("Wrong input for multiparameter EoS.")
     end if
     if (istat /= 0) call stoperror("Not able to allocate meos_ptr")
   end subroutine single_eos_alloc
