@@ -34,6 +34,8 @@ Module eosdata
   integer, parameter :: eosLJS_UV = 723     !< Lennard-Jones splined equation of state using Van Westen UV perturbation theory
   integer, parameter :: eosLJS_UF = 724     !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
+  integer, parameter :: eosMie_UV_WCA = 741 !< Mie equation of state using Van Westen uv perturbation theory, Weeks-Chandler-Andersen based
+  integer, parameter :: eosMie_UV_BH = 742  !< Nue equation of state using Van Westen uv perturbation theory, Barker-Henderson based
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
 
@@ -45,7 +47,7 @@ Module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 24
+  integer, parameter :: max_n_eos = 26
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -220,6 +222,22 @@ Module eosdata
        eos_subidx = eosLJ_UF, &
        short_label = "LJ-UF", &
        label = "LJ equation of state using UF perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_WCA, &
+       short_label = "uv-mie-wca", &
+       label = "uv-theory using WCA for Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_BH, &
+       short_label = "uv-mie-bh", &
+       label = "uv-theory using BH for Mie potentials", &
        need_alternative_eos = .true. &
        ),&
        !

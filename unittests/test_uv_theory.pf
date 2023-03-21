@@ -1,0 +1,694 @@
+module test_uv_theory
+  use hyperdual_mod
+  use single_phase
+  use uv_theory
+  use eoslibinit, only: init_uv
+  use thermopack_constants
+  use hardsphere_bmcsl, only: calc_ares_hardsphere_bmcsl
+  use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
+       thermo_model, get_active_thermo_model
+  use pair_potentials, only: mie_potential_hd
+  use pfunit_mod
+  implicit none
+  public
+
+  ! VALUES FROM THE FEOS LIBRARY
+  real, parameter :: SIGMA_CH4 = 3.7039e-10
+  real, parameter :: EPSDIVK_CH4 = 150.03
+
+  ! FEOS VALUES FOR BH-MIE
+  real, parameter :: DHS_BH_12 = 0.95777257352360246
+  real, parameter :: DHS_BH_24 = 0.95583586434435486
+  real, parameter :: DELTA_A0_BH = -0.0611105573289734
+  real, parameter :: DELTA_A1U_BH = -1.1470186919354
+  real, parameter :: PHI_BH = 0.743451055308332
+  real, parameter :: DELTA_B2U_BH = -0.949898568221715
+  real, parameter :: DeltaB2_BH = -1.00533412744652
+  real, parameter :: A_ATTR_BH = -1.16124062615291
+  real, parameter :: ARES_BH_24 = 2.993577305779432
+
+  real, parameter :: DHS_X_BH_MIXSIG = 0.0
+  real, parameter :: DELTA_A0_BH_MIXSIG = -0.004146307107169713
+  real, parameter :: ARES_HS_BH_MIXSIG = 1.1534711316538995
+  real, parameter :: PHI_BH_MIXSIG = 0.7377162748735802
+  real, parameter :: DELTA_B2U_BH_MIXSIG = -10.222558134106011
+  real, parameter :: DELTA_A1U_BH_MIXSIG = -1.1479026237463095
+  real, parameter :: DELTAB2_BH_MIXSIG = -11.300112215575762
+  real, parameter :: A_ATTR_BH_MIXSIG = -1.1761651135976159
+  real, parameter :: A_UFRAC_BH_MIXSIG =  -0.028262489851306402
+  real, parameter :: ARES_BH_MIXSIG = -0.026840289050886035
+
+  ! FEOS VALUES FOR WCA-MIE
+  real, parameter :: DELTA_A0_WCA = 0.258690311450425
+  real, parameter :: QHS_WCA_24 = 0.9751576149023506
+  real, parameter :: DHS_WCA_24 = 0.9614325601663462
+  real, parameter :: DELTA_A1U_WCA = -1.52406840346272
+  real, parameter :: DELTA_B2U_WCA = -1.02233215790525
+  real, parameter :: PHI_WCA = 0.997069754340431
+  real, parameter :: DELTAB2_WCA = -1.09102560732964
+  real, parameter :: A_ATTR_WCA = -1.5242697155023
+  real, parameter :: ARES_WCA_24 = 2.972986567516
+
+  real, parameter :: DELTA_A0_WCA_MIX = 0.308268896386771
+  real, parameter :: ARES_HS_WCA_MIX = 3.8636904888563084
+  real, parameter :: PHI_WCA_MIX = 0.99750066585468078
+  real, parameter :: DELTA_B2U_WCA_MIX = -3.9309384983526585
+  real, parameter :: DELTA_A1U_WCA_MIX = -4.7678301069070645
+  real, parameter :: DELTAB2_WCA_MIX = -4.7846399638747954
+  real, parameter :: A_ATTR_WCA_MIX = -4.7697504236074844
+  real, parameter :: ARES_WCA_MIX = -0.597791038364405
+
+  real, parameter :: DHS_X_WCA_MIXSIG = 0.95196953178057431
+  real, parameter :: DELTA_A0_WCA_MIXSIG = 0.11819460863381262
+  real, parameter :: ARES_HS_WCA_MIXSIG = 1.1794643799011062
+  real, parameter :: PHI_WCA_MIXSIG = 0.8921130847250245
+  real, parameter :: DELTA_B2U_WCA_MIXSIG = -10.841841323394299
+  real, parameter :: DELTA_A1U_WCA_MIXSIG = -1.3182160310774731
+  real, parameter :: DELTAB2_WCA_MIXSIG = -12.106977583257606
+  real, parameter :: A_ATTR_WCA_MIXSIG = -1.3318659166866607
+  real, parameter :: A_UFRAC_WCA_MIXSIG = -0.0136498856091876
+  real, parameter :: ARES_WCA_MIXSIG = -0.034206207363139396
+
+contains
+
+  @Test
+  subroutine test_vals_bh_mix()
+    type(uv_theory_eos) :: eos
+    real :: F
+    integer :: nc = 2
+    type(hyperdual) :: T, T_r, rho, rho_r, z(2)
+    type(hyperdual) :: lamr(2), lama(2), sigma(2), epsdivk(2)
+    type(hyperdual) :: dhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr, a_hs_res, a_ufrac
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    call init_uv(comps="AR,C1", model="uv-mie-bh",parameter_reference="DEFAULT")
+    sigma = 1.0
+    epsdivk = 1.0
+    epsdivk(2) = 0.5
+    lamr = 12.0+1e-10 ! Avoid activating the LJ-specific parameters
+    lama = 6.0
+
+    ! CASE WITH DIFFERENT EPS AND DIFFERENT SIGMA
+    sigma = 1.0
+    sigma(2) = 2.0
+    epsdivk = 1.0
+    epsdivk(2) = 0.5
+    lamr = 12.0+1e-10 ! Avoid activating the LJ-specific parameters
+    lama = 6.0
+
+    T = 1.5
+    z = (/0.4, 0.6/)
+    rho = 0.1
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+
+       call calc_ares_hardsphere_bmcsl(nc, rho*z, (/p_eos%dhs(1,1), p_eos%dhs(2,2)/), a_hs_res)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+
+       rho_r = rho*p_eos%sigma_x**3
+       T_r = T/p_eos%epsdivk_x
+       call phi_BH_Mie(T_r, rho_r, p_eos%mie(1,1)%lamr, phi)
+
+       a_ufrac = (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       a_attr = Delta_a1u + a_ufrac
+       if (VERBOSE) then
+          print *, " "
+          print *, "BHMIX DIFFERENT EPS AND DIFFERENT SIGMA"
+
+          print *, "ARES_HS_BH_MIXSIG"
+          print *, ARES_HS_BH_MIXSIG
+          print *, a_hs_res%f0
+
+          print *, "DELTA_A0_BH_MIXSIG"
+          print *, DELTA_A0_BH_MIXSIG
+          print *, delta_a0%f0
+
+          print *, "DELTAB2_BH_MIXSIG"
+          print *, DeltaB2_BH_MIXSIG
+          print *, Delta_B2%f0
+
+          print *, "PHI_BH_MIXSIG"
+          print *, PHI_BH_MIXSIG
+          print *, phi%f0
+
+          print *, "DELTA_B2U_BH_MIXSIG"
+          print *, DELTA_B2U_BH_MIXSIG
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_BH_MIXSIG"
+          print *, DELTA_A1U_BH_MIXSIG
+          print *, delta_a1u%f0
+
+          print *, "A_ATTR_BH_MIXSIG"
+          print *, A_ATTR_BH_MIXSIG
+          print *, a_attr%f0
+
+          print *, "A_UFRAC_BH_MIXSIG"
+          print *, A_UFRAC_BH_MIXSIG
+          print *, a_ufrac%f0
+
+          print *, "ARES_BH_MIXSIG"
+          print *, ARES_BH_MIXSIG
+          print *, a_res%f0
+
+       end if
+       @assertEqual(ARES_HS_BH_MIXSIG, a_hs_res%f0, 1e-6*abs(ARES_HS_BH_MIXSIG))
+       @assertEqual(DELTA_A0_BH_MIXSIG, delta_a0%f0, 1e-8*abs(DELTA_A0_BH_MIXSIG))
+       @assertEqual(DELTAB2_BH_MIXSIG, delta_b2%f0, 1e-8*abs(DELTAB2_BH_MIXSIG))
+       @assertEqual(PHI_BH_MIXSIG, phi%f0, 1e-4*abs(PHI_BH_MIXSIG))
+       @assertEqual(DELTA_B2U_BH_MIXSIG, delta_b2u%f0, 1e-8*abs(DELTA_B2U_BH_MIXSIG))
+       @assertEqual(DELTA_A1U_BH_MIXSIG, delta_a1u%f0, 1e-8*abs(DELTA_A1U_BH_MIXSIG))
+       @assertEqual(A_UFRAC_BH_MIXSIG, a_ufrac%f0, 5e-5*abs(A_UFRAC_BH_MIXSIG))
+       @assertEqual(A_ATTR_BH_MIXSIG, a_attr%f0, 5e-6*abs(A_ATTR_BH_MIXSIG))
+       @assertEqual(ARES_BH_MIXSIG, a_res%f0, 1e-6*abs(ARES_BH_MIXSIG))
+    end select
+  end subroutine test_vals_bh_mix
+
+
+  @Test
+  subroutine test_vals_wca_mix()
+    type(uv_theory_eos) :: eos
+    real :: F
+    integer :: nc = 2
+    type(hyperdual) :: T, rho, rho_r, z(2)
+    type(hyperdual) :: lamr(2), lama(2), sigma(2), epsdivk(2)
+    type(hyperdual) :: dhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr, a_hs_res, a_ufrac
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    call init_uv(comps="AR,C1", model="uv-mie-wca",parameter_reference="DEFAULT")
+    sigma = 1.0
+    epsdivk = 1.0
+    epsdivk(2) = 0.5
+    lamr = 12.0+1e-10 ! Avoid activating the LJ-specific parameters
+    lama = 6.0
+
+    T = 1.0
+    rho = 0.9
+    z = (/0.4, 0.6/)
+
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
+
+       call preCalcUVTheory(p_eos,nc,T,z)
+       rho_r = rho*p_eos%sigma_x**3
+       call calc_ares_hardsphere_bmcsl(nc, rho*z, (/p_eos%dhs(1,1), p_eos%dhs(2,2)/), a_hs_res)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_WCA_Mie(rho_r, p_eos%mie(1,1)%lamr, phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       a_ufrac = (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       a_attr = Delta_a1u + a_ufrac
+       if (VERBOSE) then
+
+          print *, "ARES_HS_WCA_MIX"
+          print *, ARES_HS_WCA_MIX
+          print *, a_hs_res%f0
+
+          print *, "DELTA_A0_WCA_MIX"
+          print *, DELTA_A0_WCA_MIX
+          print *, delta_a0%f0
+
+          print *, "DELTAB2_WCA_MIX"
+          print *, DeltaB2_WCA_MIX
+          print *, Delta_B2%f0
+
+          print *, "PHI_WCA_MIX"
+          print *, PHI_WCA_MIX
+          print *, phi%f0
+
+          print *, "DELTA_B2U_WCA_MIX"
+          print *, DELTA_B2U_WCA_MIX
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_WCA_MIX"
+          print *, DELTA_A1U_WCA_MIX
+          print *, delta_a1u%f0
+
+          print *, "A_ATTR_WCA_MIX"
+          print *, A_ATTR_WCA_MIX
+          print *, a_attr%f0
+
+          print *, "ARES_WCA_MIX"
+          print *, ARES_WCA_MIX
+          print *, a_res%f0
+
+       end if
+       @assertEqual(ARES_HS_WCA_MIX, a_hs_res%f0, 1e-6*abs(ARES_HS_WCA_MIX))
+       @assertEqual(DELTA_A0_WCA_MIX, delta_a0%f0, 1e-8*abs(DELTA_A0_WCA_MIX))
+       @assertEqual(DELTAB2_WCA_MIX, delta_b2%f0, 1e-8*abs(DELTAB2_WCA_MIX))
+       @assertEqual(PHI_WCA_MIX, phi%f0, 1e-6*abs(PHI_WCA_MIX))
+       @assertEqual(DELTA_B2U_WCA_MIX, delta_b2u%f0, 1e-8*abs(DELTA_B2U_WCA_MIX))
+       @assertEqual(DELTA_A1U_WCA_MIX, delta_a1u%f0, 1e-8*abs(DELTA_A1U_WCA_MIX))
+       @assertEqual(A_ATTR_WCA_MIX, a_attr%f0, 5e-8*abs(A_ATTR_WCA_MIX))
+       @assertEqual(ARES_WCA_MIX, a_res%f0, 1e-6*abs(ARES_WCA_MIX))
+
+
+       ! CASE WITH DIFFERENT EPS AND DIFFERENT SIGMA
+       sigma = 1.0
+       sigma(2) = 2.0
+       epsdivk = 1.0
+       epsdivk(2) = 0.5
+       lamr = 12.0+1e-10 ! Avoid activating the LJ-specific parameters
+       lama = 6.0
+
+       T = 1.5
+       z = (/0.4, 0.6/)
+       rho = 0.1
+       call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+
+       rho_r = rho*p_eos%sigma_x**3
+       call calc_ares_hardsphere_bmcsl(nc, rho*z, (/p_eos%dhs(1,1), p_eos%dhs(2,2)/), a_hs_res)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_WCA_Mie(rho_r, p_eos%mie(1,1)%lamr, phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       a_ufrac = (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       a_attr = Delta_a1u + a_ufrac
+       if (VERBOSE) then
+          print *, " "
+          print *, "WCAMIX DIFFERENT EPS AND DIFFERENT SIGMA"
+
+          print *, "ARES_HS_WCA_MIXSIG"
+          print *, ARES_HS_WCA_MIXSIG
+          print *, a_hs_res%f0
+
+          print *, "DHS_X_WCA_MIXSIG"
+          print *, DHS_X_WCA_MIXSIG
+          print *, p_eos%dhs_x_adim%f0
+
+          print *, "DELTA_A0_WCA_MIXSIG"
+          print *, DELTA_A0_WCA_MIXSIG
+          print *, delta_a0%f0
+
+          print *, "DELTAB2_WCA_MIXSIG"
+          print *, DeltaB2_WCA_MIXSIG
+          print *, Delta_B2%f0
+
+          print *, "PHI_WCA_MIXSIG"
+          print *, PHI_WCA_MIXSIG
+          print *, phi%f0
+
+          print *, "DELTA_B2U_WCA_MIXSIG"
+          print *, DELTA_B2U_WCA_MIXSIG
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_WCA_MIXSIG"
+          print *, DELTA_A1U_WCA_MIXSIG
+          print *, delta_a1u%f0
+
+          print *, "A_ATTR_WCA_MIXSIG"
+          print *, A_ATTR_WCA_MIXSIG
+          print *, a_attr%f0
+
+          print *, "A_UFRAC_WCA_MIXSIG"
+          print *, A_UFRAC_WCA_MIXSIG
+          print *, a_ufrac%f0
+
+          print *, "ARES_WCA_MIXSIG"
+          print *, ARES_WCA_MIXSIG
+          print *, a_res%f0
+
+       end if
+       @assertEqual(ARES_HS_WCA_MIXSIG, a_hs_res%f0, 1e-6*abs(ARES_HS_WCA_MIXSIG))
+       @assertEqual(DELTA_A0_WCA_MIXSIG, delta_a0%f0, 1e-8*abs(DELTA_A0_WCA_MIXSIG))
+       @assertEqual(DELTAB2_WCA_MIXSIG, delta_b2%f0, 1e-8*abs(DELTAB2_WCA_MIXSIG))
+       @assertEqual(PHI_WCA_MIXSIG, phi%f0, 1e-4*abs(PHI_WCA_MIXSIG))
+       @assertEqual(DELTA_B2U_WCA_MIXSIG, delta_b2u%f0, 1e-8*abs(DELTA_B2U_WCA_MIXSIG))
+       @assertEqual(DELTA_A1U_WCA_MIXSIG, delta_a1u%f0, 1e-8*abs(DELTA_A1U_WCA_MIXSIG))
+       @assertEqual(A_UFRAC_WCA_MIXSIG, a_ufrac%f0, 1e-4*abs(A_UFRAC_WCA_MIXSIG))
+       @assertEqual(A_ATTR_WCA_MIXSIG, a_attr%f0, 5e-6*abs(A_ATTR_WCA_MIXSIG))
+       @assertEqual(ARES_WCA_MIXSIG, a_res%f0, 1e-6*abs(ARES_WCA_MIXSIG))
+
+    end select
+  end subroutine test_vals_wca_mix
+
+
+  @Test
+  subroutine test_vals_bh()
+    type(uv_theory_eos) :: eos
+    real :: F
+    type(hyperdual) :: T, rho, z(1)
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(hyperdual) :: dhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    call init_uv(comps="AR", model="uv-mie-bh",parameter_reference="DEFAULT")
+    sigma = 1.0
+    epsdivk = 1.0
+    lamr = 12.0
+    lama = 6.0
+
+    ! Test reference contribution (a0)
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+
+       lamr = 24.0
+       T = 5.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_BH_Mie(T_r=T,mie=mie,dhs=dhs)
+       if (VERBOSE) then
+          print *, "DHS_BH_24"
+          print *, DHS_BH_24
+          print *, dhs%f0
+       end if
+       @assertEqual(DHS_BH_24, dhs%f0, 1e-10*DHS_BH_24)
+
+       lamr = 12.0
+       T = 2.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_BH_Mie(T_r=T,mie=mie,dhs=dhs)
+       if (VERBOSE) then
+          print *, "DHS_BH_12"
+          print *, DHS_BH_12
+          print *, dhs%f0
+       end if
+       @assertEqual(DHS_BH_12, dhs%f0, 1e-10*DHS_BH_24)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       if (VERBOSE) then
+          print *, "DELTA_A0_BH"
+          print *, DELTA_A0_BH
+          print *, delta_a0%f0
+       end if
+       @assertEqual(DELTA_A0_BH, delta_a0%f0, 1e-8*abs(DELTA_A0_BH))
+
+       ! Test attractive contributions (a-a0)
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_BH_Mie(T, rho, p_eos%mie(1,1)%lamr, phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       if (VERBOSE) then
+          print *, "DELTA_B2_BH"
+          print *, DeltaB2_BH
+          print *, Delta_B2%f0
+
+          print *, "DELTA_B2U_BH"
+          print *, DELTA_B2U_BH
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_BH"
+          print *, DELTA_A1U_BH
+          print *, delta_a1u%f0
+
+          print *, "PHI_BH"
+          print *, PHI_BH
+          print *, phi%f0
+
+          print *, "A_ATTR_BH"
+          print *, A_ATTR_BH
+          print *, a_attr%f0
+
+       end if
+       @assertEqual(DeltaB2_BH, Delta_B2%f0, 1e-8*abs(DeltaB2_BH))
+       @assertEqual(DELTA_B2U_BH, delta_b2u%f0, 1e-8*abs(DELTA_B2U_BH))
+       @assertEqual(DELTA_A1U_BH, delta_a1u%f0, 1e-8*abs(DELTA_A1U_BH))
+       @assertEqual(PHI_BH, phi%f0, 1e-5*abs(PHI_BH))
+       @assertEqual(A_ATTR_BH, a_attr%f0, 1e-8*abs(A_ATTR_BH))
+
+       ! Test full Ares/NkT with realistic potential
+       lamr = 24.0
+       epsdivk = EPSDIVK_CH4
+       sigma = 1.0*SIGMA_CH4
+       T = 4.0*epsdivk
+       z(1) = 1.0
+       rho = 1.0/(sigma**3)
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       if (VERBOSE) then
+          print *, "ARES_BH_24"
+          print *, ARES_BH_24
+          print *, a_res%f0
+       end if
+       @assertEqual(ARES_BH_24, a_res%f0, 1e-8*abs(ARES_BH_24))
+
+    end select
+    lamr = 12.0
+
+  end subroutine test_vals_bh
+
+
+  @Test
+  subroutine test_vals_wca()
+    type(uv_theory_eos) :: eos
+    real :: F
+    type(hyperdual) :: T, rho, z(1)
+    type(hyperdual) :: lamr, lama, sigma, epsdivk
+    type(hyperdual) :: dhs, qhs, a_res, delta_a0, delta_a1u, delta_b2, delta_b2u, phi, a_attr
+    type(mie_potential_hd) :: mie
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    call init_uv(comps="AR", model="uv-mie-wca",parameter_reference="DEFAULT")
+    sigma = 1.0
+    epsdivk = 1.0
+    lamr = 12.0
+    lama = 6.0
+
+    ! Test reference contribution (a0)
+    act_eos_ptr => get_active_eos()
+    select type(p_eos => act_eos_ptr)
+    type is (uv_theory_eos)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       call mie%init(lama, lamr, sigma, epsdivk)
+       call dhs_WCA_Mie(T_r=T,mie=mie,dhs=dhs)
+       call qhs_WCA_Mie(T_r=T,mie=mie,qhs=qhs)
+       if (VERBOSE) then
+          print *, "DHS_WCA_24"
+          print *, DHS_WCA_24
+          print *, dhs%f0
+
+          print *, "QHS_WCA_24"
+          print *, QHS_WCA_24
+          print *, qhs%f0
+
+       end if
+       @assertEqual(DHS_WCA_24, dhs%f0, 1e-10*DHS_WCA_24)
+
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call Delta_a0_Mie(p_eos, nc, T, rho, z, delta_a0)
+       if (VERBOSE) then
+          print *, "DELTA_A0_WCA"
+          print *, DELTA_A0_WCA
+          print *, delta_a0%f0
+       end if
+       @assertEqual(DELTA_A0_WCA, delta_a0%f0, 1e-8*abs(DELTA_A0_WCA))
+
+
+       ! Test attractive contributions (a-a0)
+       lamr = 24.0
+       T = 4.0/epsdivk
+       z(1) = 1.0
+       rho = 1.0
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call preCalcUVTheory(p_eos,nc,T,z)
+       call delta_a1u_b2u_Mie(p_eos, nc, T, rho, z, Delta_a1u, Delta_B2u)
+       call phi_WCA_Mie(rho, p_eos%mie(1,1)%lamr, phi)
+       call DeltaB2_Mie(p_eos,nc,T,z, Delta_B2)
+       call calc_ares_uv(p_eos,nc,T,rho*z, a_res)
+
+       a_attr = Delta_a1u + (1.0-phi) * (Delta_B2 - Delta_B2u) * rho
+       if (VERBOSE) then
+          print *, "DELTA_B2_WCA"
+          print *, DeltaB2_WCA
+          print *, Delta_B2%f0
+
+          print *, "DELTA_B2U_WCA"
+          print *, DELTA_B2U_WCA
+          print *, delta_b2u%f0
+
+          print *, "DELTA_A1U_WCA"
+          print *, DELTA_A1U_WCA
+          print *, delta_a1u%f0
+
+          print *, "PHI_WCA"
+          print *, PHI_WCA
+          print *, phi%f0
+
+          print *, "A_ATTR_WCA"
+          print *, A_ATTR_WCA
+          print *, a_attr%f0
+
+       end if
+       @assertEqual(DeltaB2_WCA, Delta_B2%f0, 1e-8*abs(DeltaB2_WCA))
+       @assertEqual(DELTA_B2U_WCA, delta_b2u%f0, 1e-8*abs(DELTA_B2U_WCA))
+       @assertEqual(DELTA_A1U_WCA, delta_a1u%f0, 1e-8*abs(DELTA_A1U_WCA))
+       @assertEqual(PHI_WCA, phi%f0, 1e-7*abs(PHI_WCA))
+       @assertEqual(A_ATTR_WCA, a_attr%f0, 1e-7*abs(A_ATTR_WCA))
+
+       ! Test full Ares/NkT with realistic potential
+       lamr = 24.0
+       epsdivk = EPSDIVK_CH4
+       sigma = 1.0*SIGMA_CH4
+       T = 4.0*epsdivk
+       z(1) = 1.0
+       rho = 1.0/(sigma**3)
+       call p_eos%mie(1,1)%init(lama, lamr, sigma, epsdivk)
+       call calc_ares_uv(p_eos,nc,T,rhovec=rho*z, a_res=a_res)
+       if (VERBOSE) then
+          print *, "ARES_WCA_24"
+          print *, ARES_WCA_24
+          print *, a_res%f0
+       end if
+       @assertEqual(ARES_WCA_24, a_res%f0, 1e-10*abs(ARES_WCA_24))
+
+    end select
+
+  end subroutine test_vals_wca
+
+
+  @Test
+  subroutine test_derivs()
+    integer, parameter :: nc = 1
+    real :: P, T, n(nc), v, rho
+    real :: F,F_T,F_V,F_n(nc), F_VVV
+    real :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
+    real :: pF,pF_T,pF_V,pF_n(nc), pF_VVV
+    real :: pF_TT,pF_TV,pF_Tn(nc),pF_VV,pF_Vn(nc),pF_nn(nc,nc)
+    real :: mF,mF_T,mF_V,mF_n(nc), mF_VVV
+    real :: mF_TT,mF_TV,mF_Tn(nc),mF_VV,mF_Vn(nc),mF_nn(nc,nc)
+
+    real, parameter :: EPS = 1E-8
+    real :: npert(nc)
+    real :: Teps, Veps, Neps
+
+    integer :: i, j
+    class(base_eos_param), pointer :: cbeos
+    class(thermo_model), pointer :: act_mod_ptr
+
+    ! Define state
+    T=100; rho=3e4
+    n = (/1.0/)
+
+    rho = 3.4
+    T = 100
+    n = (/1.5/)
+    V = n(1)/rho
+
+    ! Test state points
+    call init_uv(comps="AR", model="uv-mie-wca",parameter_reference="DEFAULT")
+
+    ! Test numerical derivatives
+    cbeos => get_active_eos()
+    act_mod_ptr => get_active_thermo_model()
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT, F_TV,F_VV,F_Tn,F_Vn,F_nn,recalculate=.True.)
+
+    ! T derivatives
+    Teps = T*EPS
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T+Teps,V,n,&
+         pF,pF_T,pF_V,pF_n,pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T-Teps,V,n,&
+         mF,mF_T,mF_V,mF_n,mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+    if (VERBOSE) then
+       print *, "F_t"
+       print *, (pF-mF)/(2*Teps)
+       print *, F_t
+
+       print *, "F_tt"
+       print *, (pF_t-mF_t)/(2*Teps)
+       print *, F_tt
+
+       print *, "F_tv"
+       print *, (pF_v-mF_v)/(2*Teps)
+       print *, F_tv
+    end if
+    @assertEqual(F_tv, (pF_v-mF_v)/(2*Teps), (1e-5*abs(F_tv)+1e-15))
+    @assertEqual(F_tt, (pF_t-mF_t)/(2*Teps), (1e-5*abs(F_tt)+1e-15))
+    @assertEqual(F_t, (pF-mF)/(2*Teps), (1e-5*abs(F_t)+1e-15))
+
+    ! V derivatives
+    Veps = V*EPS
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V+Veps,n,&
+         pF,pF_T,pF_V,pF_n,pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+    call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V-Veps,n,&
+         mF,mF_T,mF_V,mF_n,mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+    if (VERBOSE) then
+       print *, "F_V"
+       print *, (pF-mF)/(2*Veps)
+       print *, F_V
+
+       print *, "F_VV"
+       print *, (pF_V-mF_V)/(2*Veps)
+       print *, F_VV
+
+    end if
+    @assertEqual(F_V, (pF-mF)/(2*Veps), (1e-5*abs(F_V)+1e-15))
+    @assertEqual(F_VV, (pF_V-mF_V)/(2*Veps), (1e-5*abs(F_VV)+1e-15))
+
+    ! n derivatives
+    neps = EPS
+    do i=1,nc
+       npert = n
+       npert(i) = n(i)+neps
+       call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,npert,pF,pF_T,pF_V,pF_n,&
+            pF_TT, pF_TV,pF_VV,pF_Tn,pF_Vn,pF_nn,recalculate=.True.)
+       npert(i) = n(i)-neps
+       call TV_CalcFres(nc,act_mod_ptr%comps,cbeos,T,V,npert,mF,mF_T,mF_V,mF_n,&
+            mF_TT, mF_TV,mF_VV,mF_Tn,mF_Vn,mF_nn,recalculate=.True.)
+
+       j = nc+1-i
+       if (VERBOSE) then
+          print *, "F_Tn"
+          print *, (pF_T-mF_T)/(2*neps)
+          print *, F_Tn(i)
+
+          print *, "F_Vn"
+          print *, (pF_V-mF_V)/(2*neps)
+          print *, F_Vn(i)
+
+          print *, "F_n"
+          print *, (pF-mF)/(2*neps)
+          print *, F_n(i)
+
+          print *, "F_nn like"
+          print *, (pF_n(i)-mF_n(i))/(2*neps)
+          print *, F_nn(i,i)
+
+          print *, "F_nn cross"
+          print *, (pF_n(j)-mF_n(j))/(2*neps)
+          print *, F_nn(i,j)
+          print *, F_nn(j,i)
+       end if
+
+    @assertTrue(abs(F_Vn(i) - (pF_V-mF_V)/(2*neps)) < (1e-5*abs(F_Vn(i))+1e-15))
+    @assertTrue(abs(F_Tn(i) - (pF_T-mF_T)/(2*neps)) < (1e-7*abs(F_Tn(i))+1e-15))
+    @assertTrue(abs(F_n(i) - (pF-mF)/(2*neps)) < (1e-6*abs(F_n(i))+1e-15))
+    @assertTrue(abs(F_nn(i,j) - (pF_n(j)-mF_n(j))/(2*neps)) < (1e-5*abs(F_nn(i,j))+1e-15))
+ end do
+
+  end subroutine test_derivs
+
+end module test_uv_theory

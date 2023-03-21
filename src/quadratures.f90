@@ -1,9 +1,16 @@
 module quadratures
+  !> Module with coefficients and weights for numerical quadrature
+  !> over the interval [-1,1]. The defining equation is given by
+  !> \int_{-1}^{1}f(x)dx = \sum_i w_i*f(x_i). Here x_i is obtained by
+  !> calling get_quadrature_positions, and w_i is obtained by calling
+  !> get_quadrature_weights.
   implicit none
   private
   save
 
   integer, parameter :: max_n_quadrature = 61
+
+  !> The available quadratures. More points generally means higher accuracy.
   integer, parameter :: GAUSS_10 = 1, GAUSS_KRONROD_21 = 2, GAUSS_15 = 3, &
        GAUSS_KRONROD_31 = 4, GAUSS_20 = 5, GAUSS_KRONROD_41 = 6, &
        GAUSS_25 = 7, GAUSS_KRONROD_51 = 8, GAUSS_30 = 9, GAUSS_KRONROD_61 = 10

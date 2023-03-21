@@ -92,9 +92,9 @@ contains
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
-    real, intent(in) :: v !< m3 - Specific volume
+    real, intent(in) :: v !< m3 - Volume
     real, dimension(1:nc), intent(in) :: n !< Mol numbers
-    real, intent(out) :: u !< J - Specific internal energy
+    real, intent(out) :: u !< J - Internal energy
     real, optional, intent(out) :: dudt !< J/K - Energy differential wrpt. temperature
     real, optional, intent(out) :: dudv !< J/m3 - Energy differential wrpt. volume
     real, optional, intent(out) :: dudn(nc) !< J/mol - Energy differential wrpt. mol numbers
@@ -176,7 +176,7 @@ contains
     real, intent(in) :: t !< K - Temperature
     real, intent(in) :: v !< m3 - Volume
     real, dimension(1:nc), intent(in) :: n !< Mol numbers
-    real, intent(out) :: y !< J - Free energy
+    real, intent(out) :: y !< J - Helmholtz free energy
     real, optional, intent(out) :: dydt !< J/K - Differential wrt. temperature
     real, optional, intent(out) :: dydv !< J/m3 - Differential wrt. specific volume
     real, optional, intent(out) :: dydn(nc) !< J/mol - Helmholtz differential wrpt. mol numbers
