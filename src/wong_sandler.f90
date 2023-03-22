@@ -93,7 +93,7 @@ contains
     ! Variable
     !  Used(f)      df/dt,      df/dni   Variable
     !  zSum         0.0           1.0       sum(zComp) is genrally not 1
-    !  aa(i)        aat(i)        0.0       a_i=0.46*(RT)²/Pc* Alpha
+    !  aa(i)        aat(i)        0.0       a_i=0.46*(RT)ï¿½/Pc* Alpha
     !  bb(i)        0.0           0.0       b_i
     !  rr(i)        rrt(i)        0.0       b_i - a_i/(R*T)
     !  kWS(i,j)     kWSt(i,j)     0.0       kij: Binary parameter
@@ -124,6 +124,7 @@ contains
 
     !------Q-----Eq(A8)-------------------
     Q = 0.0
+    Qi = 0.0
     Qt = 0.0
     Qtt = 0.0
     Qit = 0.0
