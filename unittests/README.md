@@ -2,12 +2,11 @@
 
 ## Compiling and Running tests
 
-To compile the test-suite the environment variable `PFUNIT_DIR` must be set to the path of the directory containing the directories `PFUNIT-4.x` and `FARGPARSE-1.x`, where `x` is some subversion number. If `pFUnit` has been built follwing the readme-instructions found there at the time of writing, this corresponds to
+The test-suite is set up and maintained to be compatible with the [`pFUnit` fork under the ThermoTools project](https://github.com/thermotools/pFUnit). To build the test suite you must first clone and build `pFUnit`.
+
+To compile the test-suite the environment variable `PFUNIT_DIR` must be set to the path of the directory containing the directories `PFUNIT-4.x` and `FARGPARSE-1.x`, where `x` is some subversion number. This corresponds to running
 ```bash
 $ export PFUNIT_DIR="<some_path>/pFUnit/build/installed"
-```
-then, the test-suite can be compiled by running
-```bash
 $ make unittests_debug
 ```
 from the thermopack root directory.
@@ -16,6 +15,9 @@ The test suit is run by runnning the executable
 ```bash
 $ ./run_unittests
 ```
+
+### Known possible issues
+If your `PYTHONPATH` is not set up the way `pFUnit` expects, you may need to make the changes to `pFUnitParser.py` referenced in [PR#34](https://github.com/thermotools/thermopack/pull/34).
 
 ## Writing tests
 
