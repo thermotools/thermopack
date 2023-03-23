@@ -184,7 +184,6 @@ contains
     integer, intent(out) :: phase
     integer, intent(out) :: solve
     ! Locals
-    character(len=comp_name_len) :: rs
     if (.not. str_eq(ref_state,"DEFAULT")) then
       this%ref_state = ref_state
     endif

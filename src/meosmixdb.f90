@@ -1,14 +1,15 @@
 !> Automatically generated file meosmixdb.f90
-!! Time stamp: 2023-03-23T14:18:41.847551
+!! Time stamp: 2023-03-23T14:50:21.734496
 
 module meosmixdb
-  use thermopack_constants, only: uid_len
+  use thermopack_constants, only: uid_len, bibref_len
   implicit none
   public
 
   type :: meos_mix_reducing
     character(len=uid_len) :: ident1 !< The component ID
     character(len=uid_len) :: ident2 !< The component ID
+    character(len=bibref_len) :: bibref !< Digital Object Identifier (DOI) or reference
     real :: beta_v !< Reducing density parameter
     real :: gamma_v !< Reducing density parameter
     real :: beta_T !< Reducing temperature parameter
@@ -18,6 +19,7 @@ module meosmixdb
   type :: meos_mix_data
     character(len=uid_len) :: ident1 !< The component ID
     character(len=uid_len) :: ident2 !< The component ID
+    character(len=bibref_len) :: bibref !< Digital Object Identifier (DOI) or reference
     real :: Fij !< Departure function parameter
     integer :: num_mix !< Number of parameters
     real :: n_mix(12) !<
@@ -35,6 +37,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_1 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NH3", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 0.739937, &
       gamma_v = 1.447261, &
       beta_T = 1.057512, &
@@ -43,6 +46,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_2 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "NH3", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 1.0103, &
       gamma_v = 0.7298, &
       beta_T = 0.98824, &
@@ -51,6 +55,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_3 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -59,6 +64,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_4 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "H2", &
+      bibref = "Beckmueller et al. (2020)                                                                           ", &
       beta_v = 1.198000, &
       gamma_v = 0.842000, &
       beta_T = 0.979000, &
@@ -67,6 +73,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_5 = &
       meos_mix_reducing(ident1 = "R115", &
       ident2 = "R114", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0021192, &
       beta_T = 1., &
@@ -75,6 +82,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_6 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -83,6 +91,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_7 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.954, &
@@ -91,6 +100,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_8 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.012599087, &
       gamma_v = 1.040161207, &
       beta_T = 1.011090031, &
@@ -99,6 +109,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_9 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01, &
@@ -107,6 +118,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_10 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "NC6", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.2% from 12 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003723815355, &
@@ -115,6 +127,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_11 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -123,6 +136,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_12 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "IC5", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.02% from 26 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.029261916280, &
@@ -131,6 +145,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_13 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -139,6 +154,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_14 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC7", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0533466, &
       beta_T = 1., &
@@ -147,6 +163,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_15 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "C3", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.77% from 32 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.012002347845, &
@@ -155,6 +172,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_16 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "NC10", &
+      bibref = "Mixing rules of nitrogen/decane used as an estimate.", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.957934447, &
@@ -163,6 +181,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_17 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "NC5", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.12% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003552576119, &
@@ -171,6 +190,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_18 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.82% from 53 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99896, &
@@ -179,6 +199,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_19 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.195952177, &
       beta_T = 1., &
@@ -187,6 +208,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_20 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "C3", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.997607277, &
       gamma_v = 1.00303472, &
       beta_T = 0.996199694, &
@@ -195,6 +217,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_21 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC9", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from trend found in C1-C10)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -203,6 +226,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_22 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 0.973386152, &
       beta_T = 1.00768862, &
@@ -211,6 +235,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_23 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.006767176, &
       beta_T = 1., &
@@ -219,6 +244,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_24 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.56% from 24 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9996901, &
@@ -227,6 +253,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_25 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.6340970, &
       beta_T = 1., &
@@ -235,6 +262,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_26 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.001516371, &
       gamma_v = 1.013511439, &
       beta_T = 0.99764101, &
@@ -243,6 +271,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_27 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "PRLN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.36% from 80 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003673444808, &
@@ -251,6 +280,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_28 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "NC5", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.161980013944, &
@@ -259,6 +289,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_29 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R1234YF", &
+      bibref = "E.W. Lemmon, NIST (2013); based on simulation data from Gabriele Raabe", &
       beta_v = 1., &
       gamma_v = 1.015, &
       beta_T = 1.017, &
@@ -267,6 +298,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_30 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010) (estimated from propane and pentane mixed with dodecane)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -275,6 +307,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_31 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99, &
@@ -283,6 +316,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_32 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.3341, &
       beta_T = 1.107297087809, &
@@ -291,6 +325,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_33 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.019174227, &
       beta_T = 1., &
@@ -299,6 +334,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_34 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.005, &
       beta_T = 1., &
@@ -307,6 +343,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_35 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.000151132, &
       gamma_v = 1.183394668, &
       beta_T = 1.02002879, &
@@ -315,6 +352,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_36 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -323,6 +361,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_37 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R32", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.36% from 16 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00116, &
@@ -331,6 +370,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_38 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.006616886, &
       beta_T = 1., &
@@ -339,6 +379,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_39 = &
       meos_mix_reducing(ident1 = "NE", &
       ident2 = "XE", &
+      bibref = "E.W. Lemmon, NIST (2017)", &
       beta_v = 0.894, &
       gamma_v = 1.213, &
       beta_T = 1., &
@@ -347,6 +388,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_40 = &
       meos_mix_reducing(ident1 = "OXYL", &
       ident2 = "NC9", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.15% from 40 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.002908434460, &
@@ -355,6 +397,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_41 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "CYCLOHEX", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 0.994035785288, &
       gamma_v = 1.2, &
       beta_T = 0.989119683482, &
@@ -363,6 +406,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_42 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "NC9", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.048, &
       beta_T = 1.021450459653, &
@@ -371,6 +415,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_43 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "H2", &
+      bibref = "Beckmueller et al. (2020)", &
       beta_v = 1.037000, &
       gamma_v = 1.040000, &
       beta_T = 1.078000, &
@@ -379,6 +424,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_44 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.32% from 34 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.98799, &
@@ -387,6 +433,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_45 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "CO", &
+      bibref = "Herrig (2018) - Linear Combining Rules / see Herrig (2018) PhD thesis", &
       beta_v = 1.000000000, &
       gamma_v = 1.007241430, &
       beta_T = 1.000000000, &
@@ -395,6 +442,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_46 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.016363451570, &
@@ -403,6 +451,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_47 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.169701102, &
       beta_T = 1., &
@@ -411,6 +460,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_48 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.927, &
@@ -419,6 +469,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_49 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "NC7", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.43% from 4 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011920422578, &
@@ -427,6 +478,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_50 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -435,6 +487,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_51 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "H2O", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.034, &
       beta_T = 0.995024875622, &
@@ -443,6 +496,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_52 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -451,6 +505,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_53 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.42% from 11 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01308, &
@@ -459,6 +514,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_54 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.002284353, &
       beta_T = 1., &
@@ -467,6 +523,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_55 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.978473581213, &
@@ -475,6 +532,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_56 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.984104227, &
       gamma_v = 1.053040574, &
       beta_T = 0.985331233, &
@@ -483,6 +541,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_57 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "C3_1", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.05% from 15 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.934273835661, &
@@ -491,6 +550,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_58 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -499,6 +559,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_59 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.018, &
@@ -507,6 +568,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_60 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -515,6 +577,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_61 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "O2", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 1.000000, &
       gamma_v = 1.000002, &
       beta_T = 1.000000, &
@@ -523,6 +586,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_62 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "MEG", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9108, &
       beta_T = 0.9975, &
@@ -531,6 +595,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_63 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R41", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 0.9771864, &
       beta_T = 1., &
@@ -539,6 +604,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_64 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.044, &
       gamma_v = 1.152, &
       beta_T = 0.99, &
@@ -547,6 +613,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_65 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010) (estimated from propane and pentane mixed with dodecane)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -555,6 +622,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_66 = &
       meos_mix_reducing(ident1 = "KR", &
       ident2 = "C2", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.992161920825, &
@@ -563,6 +631,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_67 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "NC5", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.01% from 26 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.034960981971, &
@@ -571,6 +640,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_68 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9903, &
       beta_T = 1., &
@@ -579,6 +649,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_69 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.979105972, &
       gamma_v = 1.045375122, &
       beta_T = 0.99417491, &
@@ -587,6 +658,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_70 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "NC8", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 0.986193293886, &
       gamma_v = 1.036, &
       beta_T = 0.985221674877, &
@@ -595,6 +667,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_71 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -603,6 +676,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_72 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.990197049213, &
@@ -611,6 +685,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_73 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "NC6", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.81% from 21 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.980786394531, &
@@ -619,6 +694,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_74 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "H2O", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.931, &
@@ -627,6 +703,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_75 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "MEOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.08% from 14 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.992270215025, &
@@ -635,6 +712,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_76 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC12", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.6% from 52 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.109742428782, &
@@ -643,6 +721,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_77 = &
       meos_mix_reducing(ident1 = "R14", &
       ident2 = "C2", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.39% from 29 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.985386715016, &
@@ -651,6 +730,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_78 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.096, &
       gamma_v = 1.014, &
       beta_T = 0.997, &
@@ -659,6 +739,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_79 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R143A", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.72% from 16 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.008095, &
@@ -667,6 +748,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_80 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.060243344, &
       beta_T = 1., &
@@ -675,6 +757,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_81 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "IC4", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0454476, &
       beta_T = 1., &
@@ -683,6 +766,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_82 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "SO2", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 1.000000, &
       gamma_v = 1.000000, &
       beta_T = 1.000000, &
@@ -691,6 +775,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_83 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R116", &
+      bibref = "E.W. Lemmon, NIST (2004)", &
       beta_v = 1., &
       gamma_v = 1.0229397, &
       beta_T = 1., &
@@ -699,6 +784,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_84 = &
       meos_mix_reducing(ident1 = "F6S", &
       ident2 = "C3", &
+      bibref = "E.W. Lemmon, NIST (2008)", &
       beta_v = 1.007559212995, &
       gamma_v = 1.0150842, &
       beta_T = 0.990884850262, &
@@ -707,6 +793,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_85 = &
       meos_mix_reducing(ident1 = "KR", &
       ident2 = "PRLN", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0390195, &
       beta_T = 1., &
@@ -715,6 +802,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_86 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "N2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.998721377, &
       gamma_v = 1.013950311, &
       beta_T = 0.99809883, &
@@ -723,6 +811,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_87 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 0.851343711, &
       beta_T = 1., &
@@ -731,6 +820,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_88 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.000880464, &
       gamma_v = 1.00041444, &
       beta_T = 1.000077547, &
@@ -739,6 +829,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_89 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.006268954, &
       beta_T = 1., &
@@ -747,6 +838,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_90 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.057666085, &
       beta_T = 1., &
@@ -755,6 +847,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_91 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -763,6 +856,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_92 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.975187766, &
       gamma_v = 1.171714677, &
       beta_T = 0.973091413, &
@@ -771,6 +865,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_93 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -779,6 +874,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_94 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.002480637, &
       beta_T = 1., &
@@ -787,6 +883,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_95 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "SO2", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.2% from 52 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.002379950717, &
@@ -795,6 +892,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_96 = &
       meos_mix_reducing(ident1 = "R14", &
       ident2 = "R23", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0002627, &
       beta_T = 1., &
@@ -803,6 +901,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_97 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC4", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from trend found in C1-C10)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -811,6 +910,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_98 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC8", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.124, &
       beta_T = 1.074113856069, &
@@ -819,6 +919,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_99 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.84% from 36 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99933, &
@@ -827,6 +928,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_100 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.011759763, &
       beta_T = 1., &
@@ -835,6 +937,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_101 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R143A", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.63% from 61 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.02027, &
@@ -843,6 +946,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_102 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "R12", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0007214, &
       beta_T = 1., &
@@ -851,6 +955,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_103 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.3% from 16 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9934926, &
@@ -859,6 +964,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_104 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "CO2", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0099333, &
       beta_T = 1., &
@@ -867,6 +973,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_105 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.170217596, &
       beta_T = 1., &
@@ -875,6 +982,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_106 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.002728434, &
       beta_T = 1., &
@@ -883,6 +991,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_107 = &
       meos_mix_reducing(ident1 = "MXYL", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.1% from 13 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999100809272, &
@@ -891,6 +1000,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_108 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from nitrogen and argon)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -899,6 +1009,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_109 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "R41", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.08% from 31 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0229865, &
@@ -907,6 +1018,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_110 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.98% from 119 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0034, &
@@ -915,6 +1027,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_111 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.223638763, &
       beta_T = 1., &
@@ -923,6 +1036,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_112 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC12", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0167, &
       beta_T = 1., &
@@ -931,6 +1045,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_113 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "NH3", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 0.756526, &
       gamma_v = 1.041113, &
       beta_T = 1.146326, &
@@ -939,6 +1054,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_114 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC6", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -947,6 +1063,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_115 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from trend found in C1-C10)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -955,6 +1072,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_116 = &
       meos_mix_reducing(ident1 = "F6S", &
       ident2 = "R32", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.48% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0017029, &
@@ -963,6 +1081,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_117 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R116", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.28% from 77 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.03808, &
@@ -971,6 +1090,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_118 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "C2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.978880168, &
       gamma_v = 1.042352891, &
       beta_T = 1.007671428, &
@@ -979,6 +1099,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_119 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "MEOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.41% from 17 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.007049345418, &
@@ -987,6 +1108,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_120 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 0.835763343, &
       beta_T = 1., &
@@ -995,6 +1117,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_121 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 0.551405318, &
       beta_T = 0.897162268, &
@@ -1003,6 +1126,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_122 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.001508227, &
       beta_T = 1., &
@@ -1011,6 +1135,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_123 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.86% from 190 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.97813, &
@@ -1019,6 +1144,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_124 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "R116", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.26% from 60 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.03539, &
@@ -1027,6 +1153,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_125 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.021668316, &
       beta_T = 1., &
@@ -1035,6 +1162,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_126 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "R114", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.17% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00332, &
@@ -1043,6 +1171,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_127 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC9", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from octane/cyclohexane and dodecane/cyclohexan", &
       beta_v = 1., &
       gamma_v = 1.009, &
       beta_T = 1., &
@@ -1051,6 +1180,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_128 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.004, &
       beta_T = 1., &
@@ -1059,6 +1189,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_129 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1067,6 +1198,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_130 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.994740603, &
       gamma_v = 1.116549372, &
       beta_T = 0.957473785, &
@@ -1075,6 +1207,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_131 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC10", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.956937799043, &
@@ -1083,6 +1216,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_132 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "R114", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0085162, &
       beta_T = 1., &
@@ -1091,6 +1225,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_133 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1099,6 +1234,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_134 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.342647661, &
       beta_T = 1., &
@@ -1107,6 +1243,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_135 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.084740904, &
       beta_T = 1., &
@@ -1115,6 +1252,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_136 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from argon/benzene)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01, &
@@ -1123,6 +1261,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_137 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "ETOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.63% from 6 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.048646721406, &
@@ -1131,6 +1270,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_138 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1139,6 +1279,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_139 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "TOLU", &
+      bibref = "E.W. Lemmon, NIST (2012)", &
       beta_v = 1.0019167, &
       gamma_v = 1.0026789, &
       beta_T = 0.998329, &
@@ -1147,6 +1288,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_140 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.046905515, &
       beta_T = 1., &
@@ -1155,6 +1297,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_141 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1163,6 +1306,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_142 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0007007, &
       beta_T = 1., &
@@ -1171,6 +1315,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_143 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.999157205, &
       gamma_v = 1.006179146, &
       beta_T = 0.999130554, &
@@ -1179,6 +1324,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_144 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.99% from 51 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0043, &
@@ -1187,6 +1333,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_145 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.927, &
@@ -1195,6 +1342,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_146 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC16", &
+      bibref = "I.H. Bell, NIST (2017)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9833, &
@@ -1203,6 +1351,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_147 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "R21", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0139360, &
       beta_T = 1., &
@@ -1211,6 +1360,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_148 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NH3", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9599, &
@@ -1219,6 +1369,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_149 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.695358382, &
       gamma_v = 1.120233729, &
       beta_T = 1.064818089, &
@@ -1227,6 +1378,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_150 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1235,6 +1387,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_151 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.828967164, &
       gamma_v = 1.087956749, &
       beta_T = 0.988937417, &
@@ -1243,6 +1396,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_152 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R143A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0178106, &
       beta_T = 1., &
@@ -1251,6 +1405,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_153 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.012994431, &
       gamma_v = 0.988591117, &
       beta_T = 0.974550548, &
@@ -1259,6 +1414,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_154 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.047, &
       gamma_v = 1.134, &
       beta_T = 1., &
@@ -1267,6 +1423,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_155 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.016, &
@@ -1275,6 +1432,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_156 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC7", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0198, &
       beta_T = 1., &
@@ -1283,6 +1441,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_157 = &
       meos_mix_reducing(ident1 = "H2O", &
       ident2 = "MEG", &
+      bibref = "I.H. Bell and E.W. Lemmon, NIST (2018)", &
       beta_v = 1.009003234965, &
       gamma_v = 1.066166, &
       beta_T = 1.006062026742, &
@@ -1291,6 +1450,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_158 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1299,6 +1459,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_159 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC8", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1307,6 +1468,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_160 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.078877166, &
       beta_T = 1., &
@@ -1315,6 +1477,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_161 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.7% from 138 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.042500015116, &
@@ -1323,6 +1486,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_162 = &
       meos_mix_reducing(ident1 = "N2O", &
       ident2 = "NC12", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 4.99% from 58 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.965763677628, &
@@ -1331,6 +1495,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_163 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.008972412, &
       beta_T = 1., &
@@ -1339,6 +1504,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_164 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.906630564, &
       gamma_v = 1.024085837, &
       beta_T = 1.016034583, &
@@ -1347,6 +1513,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_165 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1355,6 +1522,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_166 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.243461678, &
       beta_T = 1., &
@@ -1363,6 +1531,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_167 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1371,6 +1540,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_168 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon and R.T Jacobsen, J. Phys. Chem. Ref. Data, 33(2):593-620, 2004.", &
       beta_v = 1., &
       gamma_v = 1.0016349, &
       beta_T = 1., &
@@ -1379,6 +1549,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_169 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from nitrogen and oxygen)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1387,6 +1558,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_170 = &
       meos_mix_reducing(ident1 = "HE", &
       ident2 = "NE", &
+      bibref = "E.W. Lemmon, NIST (2016)", &
       beta_v = 1.0097, &
       gamma_v = 0.899, &
       beta_T = 1.168, &
@@ -1395,6 +1567,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_171 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.001357085, &
       beta_T = 1., &
@@ -1403,6 +1576,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_172 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1411,6 +1585,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_173 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC11", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from octane/cyclohexane and dodecane/cyclohexan", &
       beta_v = 1., &
       gamma_v = 1.014, &
       beta_T = 1., &
@@ -1419,6 +1594,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_174 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 4.99% from 265 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99471, &
@@ -1427,6 +1603,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_175 = &
       meos_mix_reducing(ident1 = "HE", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1435,6 +1612,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_176 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "H2O", &
+      bibref = "Gernert (2013)", &
       beta_v = 0.9404260, &
       gamma_v = 0.7667560, &
       beta_T = 0.956090, &
@@ -1443,6 +1621,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_177 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.1177, &
       beta_T = 0.978377849525, &
@@ -1451,6 +1630,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_178 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.252151449, &
       beta_T = 1., &
@@ -1459,6 +1639,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_179 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1467,6 +1648,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_180 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "AR", &
+      bibref = "Neumann (2017) - Published in Lovseth et al. (2018) / see also Herrig (2018) PhD thesis", &
       beta_v = 1.0037659, &
       gamma_v = 1.0138330, &
       beta_T = 0.998705, &
@@ -1475,6 +1657,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_181 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.52% from 76 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9992206, &
@@ -1483,6 +1666,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_182 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "F6S", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.51% from 9 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.994449974691, &
@@ -1491,6 +1675,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_183 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "R12", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0020049, &
       beta_T = 1., &
@@ -1499,6 +1684,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_184 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.957934447, &
@@ -1507,6 +1693,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_185 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "CO2", &
+      bibref = "Kunz and Wagner (2006) - original GERG-2004 mixture model used in EOS-CG!", &
       beta_v = 0.977794634, &
       gamma_v = 1.047578256, &
       beta_T = 1.005894529, &
@@ -1515,6 +1702,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_186 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.8% from 53 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00315, &
@@ -1523,6 +1711,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_187 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "NC12", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.5% from 61 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.007170043540, &
@@ -1531,6 +1720,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_188 = &
       meos_mix_reducing(ident1 = "R116", &
       ident2 = "C3", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.7% from 61 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.983661384405, &
@@ -1539,6 +1729,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_189 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.993851009, &
       gamma_v = 1.026085655, &
       beta_T = 0.998688946, &
@@ -1547,6 +1738,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_190 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.987, &
@@ -1555,6 +1747,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_191 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.962050831, &
       gamma_v = 1.156655935, &
       beta_T = 0.977431529, &
@@ -1563,6 +1756,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_192 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.8% from 79 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00112, &
@@ -1571,6 +1765,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_193 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.52% from 151 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9996002, &
@@ -1579,6 +1774,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_194 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "IC5", &
+      bibref = "E.W. Lemmon, NIST (2006)", &
       beta_v = 1., &
       gamma_v = 1.0683958, &
       beta_T = 1., &
@@ -1587,6 +1783,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_195 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.034630259, &
       gamma_v = 1.014678542, &
       beta_T = 0.990954281, &
@@ -1595,6 +1792,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_196 = &
       meos_mix_reducing(ident1 = "H2O", &
       ident2 = "AR", &
+      bibref = "Gernert (2013)", &
       beta_v = 0.9403980, &
       gamma_v = 1.0509520, &
       beta_T = 0.679104, &
@@ -1603,6 +1801,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_197 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.982, &
@@ -1611,6 +1810,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_198 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0141263, &
       beta_T = 1., &
@@ -1619,6 +1819,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_199 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "MEG", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1627,6 +1828,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_200 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "IC5", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from trend found in C1-C10)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1635,6 +1837,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_201 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1643,6 +1846,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_202 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "NC7", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.007, &
       beta_T = 1., &
@@ -1651,6 +1855,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_203 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "C3", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0000536, &
       beta_T = 1., &
@@ -1659,6 +1864,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_204 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "KR", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0037297, &
       beta_T = 1., &
@@ -1667,6 +1873,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_205 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.17% from 9 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.105729892302, &
@@ -1675,6 +1882,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_206 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "NH3", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 0.739937224, &
       gamma_v = 1.707, &
       beta_T = 1.057511717, &
@@ -1683,6 +1891,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_207 = &
       meos_mix_reducing(ident1 = "R41", &
       ident2 = "TOLU", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.19% from 9 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.975390031650, &
@@ -1691,6 +1900,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_208 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.07400611, &
       beta_T = 1., &
@@ -1699,6 +1909,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_209 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0177, &
       beta_T = 1., &
@@ -1707,6 +1918,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_210 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.219206702, &
       beta_T = 1., &
@@ -1715,6 +1927,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_211 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.88% from 25 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9965519, &
@@ -1723,6 +1936,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_212 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1731,6 +1945,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_213 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from nitrogen and argon)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1739,6 +1954,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_214 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 4.08% from 11 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99745, &
@@ -1747,6 +1963,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_215 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "NC4", &
+      bibref = "E.W. Lemmon, NIST (2006)", &
       beta_v = 1., &
       gamma_v = 0.7952703, &
       beta_T = 1., &
@@ -1755,6 +1972,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_216 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.024311498, &
       gamma_v = 1.068406078, &
       beta_T = 1.027000795, &
@@ -1763,6 +1981,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_217 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.33% from 30 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.972370008958, &
@@ -1771,6 +1990,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_218 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "IC4", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0362036, &
       beta_T = 1., &
@@ -1779,6 +1999,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_219 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.66% from 16 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99082, &
@@ -1787,6 +2008,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_220 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "NC7", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 4.97% from 597 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.980959959569, &
@@ -1795,6 +2017,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_221 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "TOLU", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9962, &
       beta_T = 1., &
@@ -1803,6 +2026,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_222 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0011016, &
       beta_T = 1., &
@@ -1811,6 +2035,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_223 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.24, &
       beta_T = 0.97, &
@@ -1819,6 +2044,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_224 = &
       meos_mix_reducing(ident1 = "EBZN", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.57% from 48 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001530037438, &
@@ -1827,6 +2053,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_225 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.188334783, &
       beta_T = 1., &
@@ -1835,6 +2062,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_226 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.028994325, &
       beta_T = 1., &
@@ -1843,6 +2071,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_227 = &
       meos_mix_reducing(ident1 = "PXYL", &
       ident2 = "NC10", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.89% from 57 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001011021131, &
@@ -1851,6 +2080,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_228 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.35% from 70 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0035123, &
@@ -1859,6 +2089,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_229 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.002972346, &
       beta_T = 1., &
@@ -1867,6 +2098,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_230 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1875,6 +2107,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_231 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.38% from 32 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9898638, &
@@ -1883,6 +2116,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_232 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.004722194313, &
@@ -1891,6 +2125,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_233 = &
       meos_mix_reducing(ident1 = "D2", &
       ident2 = "N2", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.43% from 7 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.015610027687, &
@@ -1899,6 +2134,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_234 = &
       meos_mix_reducing(ident1 = "R116", &
       ident2 = "PRLN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.25% from 13 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.986183568209, &
@@ -1907,6 +2143,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_235 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -1915,6 +2152,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_236 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.936811219, &
       gamma_v = 1.010593999, &
       beta_T = 0.992573556, &
@@ -1923,6 +2161,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_237 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0003354, &
       beta_T = 1., &
@@ -1931,6 +2170,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_238 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.190354273, &
       beta_T = 1., &
@@ -1939,6 +2179,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_239 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R12", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0256397, &
       beta_T = 1., &
@@ -1947,6 +2188,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_240 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.01815965, &
       beta_T = 1., &
@@ -1955,6 +2197,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_241 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "IC4", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0064788, &
       beta_T = 1., &
@@ -1963,6 +2206,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_242 = &
       meos_mix_reducing(ident1 = "MXYL", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.25% from 78 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00073, &
@@ -1971,6 +2215,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_243 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 0.713, &
       gamma_v = 1.137, &
       beta_T = 0.972, &
@@ -1979,6 +2224,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_244 = &
       meos_mix_reducing(ident1 = "H2O", &
       ident2 = "NC12", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.5514, &
       beta_T = 1.080146899978, &
@@ -1987,6 +2233,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_245 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2006) - original GERG-2004 mixture model used in EOS-CG!", &
       beta_v = 0.999521770, &
       gamma_v = 0.997082328, &
       beta_T = 0.997190589, &
@@ -1995,6 +2242,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_246 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.022, &
       gamma_v = 1.026, &
       beta_T = 1.013, &
@@ -2003,6 +2251,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_247 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.199769134, &
       beta_T = 1., &
@@ -2011,6 +2260,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_248 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.98641583, &
       gamma_v = 1.100576129, &
       beta_T = 0.99286813, &
@@ -2019,6 +2269,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_249 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.086, &
       beta_T = 1., &
@@ -2027,6 +2278,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_250 = &
       meos_mix_reducing(ident1 = "R124", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0005123, &
       beta_T = 1., &
@@ -2035,6 +2287,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_251 = &
       meos_mix_reducing(ident1 = "H2O", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2043,6 +2296,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_252 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.232939523, &
       beta_T = 1., &
@@ -2051,6 +2305,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_253 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.910394249, &
       gamma_v = 1.256844157, &
       beta_T = 1.004692366, &
@@ -2059,6 +2314,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_254 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.045439935, &
       beta_T = 1., &
@@ -2067,6 +2323,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_255 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "H2O", &
+      bibref = "Herrig (2018) / see Herrig (2018) PhD thesis", &
       beta_v = 1.176, &
       gamma_v = 1.038, &
       beta_T = 1.263, &
@@ -2075,6 +2332,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_256 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.016370338, &
       beta_T = 1., &
@@ -2083,6 +2341,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_257 = &
       meos_mix_reducing(ident1 = "KR", &
       ident2 = "CO2", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.948047023132, &
@@ -2091,6 +2350,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_258 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "CYCLOHEX", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.03% from 2 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.038507871890, &
@@ -2099,6 +2359,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_259 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "PRLN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.04% from 51 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.009784814856, &
@@ -2107,6 +2368,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_260 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "R114", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0187337, &
       beta_T = 1., &
@@ -2115,6 +2377,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_261 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "AR", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0065020, &
       gamma_v = 1.0013410, &
       beta_T = 0.999039, &
@@ -2123,6 +2386,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_262 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.03, &
@@ -2131,6 +2395,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_263 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.044919431, &
       gamma_v = 1.019921513, &
       beta_T = 0.996484021, &
@@ -2139,6 +2404,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_264 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "TOLU", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.65% from 9 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.969090002199, &
@@ -2147,6 +2413,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_265 = &
       meos_mix_reducing(ident1 = "OXYL", &
       ident2 = "NC10", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.41% from 16 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001351824964, &
@@ -2155,6 +2422,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_266 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "ETOH", &
+      bibref = "E.W. Lemmon, NIST (2015)", &
       beta_v = 1.064, &
       gamma_v = 0.964, &
       beta_T = 1.016, &
@@ -2163,6 +2431,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_267 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.40455409, &
       beta_T = 1., &
@@ -2171,6 +2440,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_268 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.184340443, &
       beta_T = 1., &
@@ -2179,6 +2449,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_269 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.186067025, &
       beta_T = 1., &
@@ -2187,6 +2458,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_270 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R1234ZE", &
+      bibref = "E.W. Lemmon, NIST (2013); based on simulation data from Gabriele Raabe", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2195,6 +2467,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_271 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.04% from 20 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9989112, &
@@ -2203,6 +2476,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_272 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.343685343, &
       beta_T = 1., &
@@ -2211,6 +2485,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_273 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 0.87018496, &
       beta_T = 1.049594632, &
@@ -2219,6 +2494,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_274 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.88% from 54 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99807, &
@@ -2227,6 +2503,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_275 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0035574, &
       beta_T = 1., &
@@ -2235,6 +2512,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_276 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0626246, &
       beta_T = 1., &
@@ -2243,6 +2521,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_277 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.000024335, &
       beta_T = 1., &
@@ -2251,6 +2530,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_278 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "PRLN", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.998, &
@@ -2259,6 +2539,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_279 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "CYCLOHEX", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.57% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999011, &
@@ -2267,6 +2548,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_280 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "C3", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.00482707, &
       gamma_v = 1.038470657, &
       beta_T = 0.989680305, &
@@ -2275,6 +2557,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_281 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "N2", &
+      bibref = "Neumann and Herrig (2017) / see Herrig (2018) PhD thesis", &
       beta_v = 0.903624500, &
       gamma_v = 1.215580800, &
       beta_T = 1.045874000, &
@@ -2283,6 +2566,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_282 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "R115", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0082859, &
       beta_T = 1., &
@@ -2291,6 +2575,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_283 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "PRLN", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0085527, &
       beta_T = 1., &
@@ -2299,6 +2584,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_284 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.159131722, &
       beta_T = 1., &
@@ -2307,6 +2593,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_285 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "ETOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.97% from 22 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.025031263454, &
@@ -2315,6 +2602,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_286 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003109639884, &
@@ -2323,6 +2611,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_287 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.992, &
@@ -2331,6 +2620,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_288 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "O2", &
+      bibref = "Neumann and Herrig (2017) / see Herrig (2018) PhD thesis", &
       beta_v = 1.219246300, &
       gamma_v = 1.660631700, &
       beta_T = 0.927961000, &
@@ -2339,6 +2629,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_289 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2347,6 +2638,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_290 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2355,6 +2647,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_291 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.179, &
       beta_T = 0.994, &
@@ -2363,6 +2656,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_292 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "C3", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001001001001, &
@@ -2371,6 +2665,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_293 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2379,6 +2674,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_294 = &
       meos_mix_reducing(ident1 = "R116", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0010759, &
       beta_T = 1., &
@@ -2387,6 +2683,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_295 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 0.961, &
       gamma_v = 1.085, &
       beta_T = 0.967, &
@@ -2395,6 +2692,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_296 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.026169373, &
       gamma_v = 1.104043935, &
       beta_T = 1.02969078, &
@@ -2403,6 +2701,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_297 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2411,6 +2710,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_298 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.205469976, &
       gamma_v = 1.164585914, &
       beta_T = 1.011806317, &
@@ -2419,6 +2719,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_299 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "AR", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0066970, &
       gamma_v = 1.0015490, &
       beta_T = 0.999442, &
@@ -2427,6 +2728,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_300 = &
       meos_mix_reducing(ident1 = "NE", &
       ident2 = "AR", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.051, &
       beta_T = 1.004, &
@@ -2435,6 +2737,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_301 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.87, &
       beta_T = 0.933, &
@@ -2443,6 +2746,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_302 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R124", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.56% from 19 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99517, &
@@ -2451,6 +2755,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_303 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.2% from 51 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99788, &
@@ -2459,6 +2764,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_304 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.925367171, &
       gamma_v = 1.10607204, &
       beta_T = 0.932969831, &
@@ -2467,6 +2773,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_305 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.994, &
@@ -2475,6 +2782,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_306 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.94833012, &
       gamma_v = 1.124508039, &
       beta_T = 0.992127525, &
@@ -2483,6 +2791,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_307 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.032807063, &
       beta_T = 1., &
@@ -2491,6 +2800,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_308 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2499,6 +2809,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_309 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NH3", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 1.006058, &
       gamma_v = 1.069834, &
       beta_T = 1.022371, &
@@ -2507,6 +2818,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_310 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.047298475, &
       beta_T = 1., &
@@ -2515,6 +2827,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_311 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "TOLU", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9979, &
       beta_T = 1., &
@@ -2523,6 +2836,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_312 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.97% from 78 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9971283, &
@@ -2531,6 +2845,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_313 = &
       meos_mix_reducing(ident1 = "R21", &
       ident2 = "ETOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.41% from 4 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.020543541490, &
@@ -2539,6 +2854,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_314 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "R1234YF", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.2% from 35 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9997601, &
@@ -2547,6 +2863,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_315 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "CO", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0000000, &
       gamma_v = 1.0013170, &
       beta_T = 1.002409, &
@@ -2555,6 +2872,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_316 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2563,6 +2881,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_317 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2571,6 +2890,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_318 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "NC4", &
+      bibref = "E.W. Lemmon, NIST (2006)", &
       beta_v = 1., &
       gamma_v = 1.0047311, &
       beta_T = 1., &
@@ -2579,6 +2899,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_319 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2587,6 +2908,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_320 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2595,6 +2917,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_321 = &
       meos_mix_reducing(ident1 = "NE", &
       ident2 = "KR", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.02385, &
@@ -2603,6 +2926,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_322 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "IC5", &
+      bibref = "E.W. Lemmon, NIST (2006)", &
       beta_v = 1., &
       gamma_v = 1.0146590, &
       beta_T = 1., &
@@ -2611,6 +2935,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_323 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.214638734, &
       beta_T = 1., &
@@ -2619,6 +2944,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_324 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.033086292, &
       gamma_v = 1.146089637, &
       beta_T = 0.937777823, &
@@ -2627,6 +2953,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_325 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "NC7", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.24% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.007912110064, &
@@ -2635,6 +2962,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_326 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2643,6 +2971,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_327 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC9", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.970873786408, &
@@ -2651,6 +2980,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_328 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from argon)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2659,6 +2989,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_329 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.024, &
       beta_T = 1.021450459653, &
@@ -2667,6 +2998,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_330 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9958, &
@@ -2675,6 +3007,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_331 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2683,6 +3016,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_332 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 0.881405683, &
       beta_T = 1., &
@@ -2691,6 +3025,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_333 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.27% from 26 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0007, &
@@ -2699,6 +3034,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_334 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.58% from 30 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01414, &
@@ -2707,6 +3043,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_335 = &
       meos_mix_reducing(ident1 = "OXYL", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.14% from 13 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001903616872, &
@@ -2715,6 +3052,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_336 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2723,6 +3061,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_337 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC10", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2731,6 +3070,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_338 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "KR", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0043319, &
       beta_T = 1., &
@@ -2739,6 +3079,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_339 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC7", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0015, &
       beta_T = 1., &
@@ -2747,6 +3088,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_340 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.2935310, &
       beta_T = 1., &
@@ -2755,6 +3097,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_341 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.005833836250, &
@@ -2763,6 +3106,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_342 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R32", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0058521, &
       beta_T = 1., &
@@ -2771,6 +3115,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_343 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.147595688, &
       beta_T = 1., &
@@ -2779,6 +3124,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_344 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.039372957, &
       beta_T = 1., &
@@ -2787,6 +3133,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_345 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "CYCLOHEX", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0530481, &
       beta_T = 1., &
@@ -2795,6 +3142,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_346 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "H2O", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0281970, &
       gamma_v = 0.8734600, &
       beta_T = 1.253060, &
@@ -2803,6 +3151,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_347 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.14353473, &
       beta_T = 1., &
@@ -2811,6 +3160,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_348 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.976951968, &
       gamma_v = 1.027845529, &
       beta_T = 0.993688386, &
@@ -2819,6 +3169,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_349 = &
       meos_mix_reducing(ident1 = "MXYL", &
       ident2 = "NC9", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.26% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.002270041417, &
@@ -2827,6 +3178,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_350 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "TOLU", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.49% from 9 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.015980045339, &
@@ -2835,6 +3187,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_351 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R115", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0424065, &
       beta_T = 1., &
@@ -2843,6 +3196,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_352 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0023, &
@@ -2851,6 +3205,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_353 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 0.95667731, &
       beta_T = 1., &
@@ -2859,6 +3214,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_354 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC6", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9683251, &
       beta_T = 1., &
@@ -2867,6 +3223,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_355 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "CO", &
+      bibref = "Gernert (2013) - no adjusted parameters", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2875,6 +3232,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_356 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2883,6 +3241,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_357 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2891,6 +3250,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_358 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "C1", &
+      bibref = "Zosimenko and Herrig (2017) / see Herrig (2018) PhD thesis                                          ", &
       beta_v = 1.3155340, &
       gamma_v = 1.1195433, &
       beta_T = 0.999432, &
@@ -2899,6 +3259,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_359 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC8", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0069, &
       beta_T = 1., &
@@ -2907,6 +3268,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_360 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.999, &
       beta_T = 1., &
@@ -2915,6 +3277,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_361 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2923,6 +3286,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_362 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -2931,6 +3295,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_363 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.3% from 12 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00096, &
@@ -2939,6 +3304,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_364 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.119954454, &
       beta_T = 1., &
@@ -2947,6 +3313,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_365 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.102764612, &
       beta_T = 1., &
@@ -2955,6 +3322,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_366 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.034910633, &
       beta_T = 1., &
@@ -2963,6 +3331,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_367 = &
       meos_mix_reducing(ident1 = "D2", &
       ident2 = "NE", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.22% from 78 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.98882, &
@@ -2971,6 +3340,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_368 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon and R.T Jacobsen, J. Phys. Chem. Ref. Data, 33(2):593-620, 2004.", &
       beta_v = 1., &
       gamma_v = 1.0137207, &
       beta_T = 1., &
@@ -2979,6 +3349,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_369 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "C3_1", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.85% from 13 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0024359, &
@@ -2987,6 +3358,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_370 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NH3", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9721, &
@@ -2995,6 +3367,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_371 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R12", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0187876, &
       beta_T = 1., &
@@ -3003,6 +3376,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_372 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.37% from 48 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99846, &
@@ -3011,6 +3385,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_373 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "ACETONE", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.01% from 2 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.042122595302, &
@@ -3019,6 +3394,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_374 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.034995284, &
       beta_T = 1., &
@@ -3027,6 +3403,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_375 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3035,6 +3412,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_376 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "H2O", &
+      bibref = "Herrig and Koerber (2018) / see Herrig (2018) PhD thesis                                            ", &
       beta_v = 0.945818, &
       gamma_v = 1.189702, &
       beta_T = 0.960526, &
@@ -3043,6 +3421,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_377 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3051,6 +3430,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_378 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99884, &
@@ -3059,6 +3439,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_379 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "D2", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.87% from 150 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0087153, &
@@ -3067,6 +3448,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_380 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "R11", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0018062, &
       beta_T = 1., &
@@ -3075,6 +3457,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_381 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "IC4", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from propane/ammonia and butane/ammonia)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.048657718121, &
@@ -3083,6 +3466,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_382 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "N2O", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9525, &
@@ -3091,6 +3475,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_383 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "R134A", &
+      bibref = "I.H. Bell, NIST (2018)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.055547, &
@@ -3099,6 +3484,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_384 = &
       meos_mix_reducing(ident1 = "NC10", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3107,6 +3493,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_385 = &
       meos_mix_reducing(ident1 = "AR", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from oxygen)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3115,6 +3502,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_386 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.93% from 102 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00114, &
@@ -3123,6 +3511,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_387 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "R115", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0043338, &
       beta_T = 1., &
@@ -3131,6 +3520,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_388 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3139,6 +3529,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_389 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.017880545, &
       beta_T = 1., &
@@ -3147,6 +3538,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_390 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3155,6 +3547,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_391 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3163,6 +3556,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_392 = &
       meos_mix_reducing(ident1 = "R143A", &
       ident2 = "NC4", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.87% from 112 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999070864096, &
@@ -3171,6 +3565,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_393 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "BENZENE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9826, &
       beta_T = 1., &
@@ -3179,6 +3574,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_394 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.010817909, &
       gamma_v = 1.030988277, &
       beta_T = 0.990197354, &
@@ -3187,6 +3583,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_395 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "MEG", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9095, &
       beta_T = 1., &
@@ -3195,6 +3592,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_396 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "H2", &
+      bibref = "Herrig (2018) - Linear Combining Rules / see Herrig (2018) PhD thesis", &
       beta_v = 1.000000000, &
       gamma_v = 1.035170959, &
       beta_T = 1.000000000, &
@@ -3203,6 +3601,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_397 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3211,6 +3610,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_398 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.037, &
@@ -3219,6 +3619,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_399 = &
       meos_mix_reducing(ident1 = "R114", &
       ident2 = "BENZENE", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.38% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.998821390759, &
@@ -3227,6 +3628,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_400 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3235,6 +3637,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_401 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.155145836, &
       beta_T = 1., &
@@ -3243,6 +3646,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_402 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "R14", &
+      bibref = "E.W. Lemmon, NIST (2014)", &
       beta_v = 1., &
       gamma_v = 1.1693, &
       beta_T = 1., &
@@ -3251,6 +3655,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_403 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "NC10", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.059, &
       beta_T = 1.004016064257, &
@@ -3259,6 +3664,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_404 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.28% from 27 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00071, &
@@ -3267,6 +3673,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_405 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.02076168, &
       beta_T = 1., &
@@ -3275,6 +3682,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_406 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.9979, &
       beta_T = 1., &
@@ -3283,6 +3691,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_407 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "C2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.997547866, &
       gamma_v = 1.006617867, &
       beta_T = 0.996336508, &
@@ -3291,6 +3700,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_408 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "NC6", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.130454442686, &
@@ -3299,6 +3709,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_409 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC7", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.008064516129, &
@@ -3307,6 +3718,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_410 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.049219137, &
       beta_T = 1., &
@@ -3315,6 +3727,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_411 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R11", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0321197, &
       beta_T = 1., &
@@ -3323,6 +3736,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_412 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1.002852287, &
       gamma_v = 1.141895355, &
       beta_T = 0.947716769, &
@@ -3331,6 +3745,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_413 = &
       meos_mix_reducing(ident1 = "PXYL", &
       ident2 = "NC9", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.22% from 11 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999390371873, &
@@ -3339,6 +3754,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_414 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.958015294, &
       gamma_v = 1.052643846, &
       beta_T = 0.981844797, &
@@ -3347,6 +3763,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_415 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.00081052, &
       beta_T = 1., &
@@ -3355,6 +3772,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_416 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.908113163, &
       gamma_v = 1.033366041, &
       beta_T = 0.985962886, &
@@ -3363,6 +3781,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_417 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3371,6 +3790,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_418 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3379,6 +3799,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_419 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3387,6 +3808,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_420 = &
       meos_mix_reducing(ident1 = "MXYL", &
       ident2 = "NC10", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.15% from 44 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999650122457, &
@@ -3395,6 +3817,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_421 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R12", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.93% from 25 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01811, &
@@ -3403,6 +3826,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_422 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0002214, &
       beta_T = 1., &
@@ -3411,6 +3835,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_423 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.8906, &
       beta_T = 1.016156894625, &
@@ -3419,6 +3844,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_424 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "C3", &
+      bibref = "E.W. Lemmon, NIST (2006)", &
       beta_v = 1., &
       gamma_v = 1.0198058, &
       beta_T = 1., &
@@ -3427,6 +3853,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_425 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "MEOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.63% from 13 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.068855683106, &
@@ -3435,6 +3862,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_426 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010) (estimated from octane and decane mixed with dodecane)", &
       beta_v = 1., &
       gamma_v = 1.005, &
       beta_T = 0.999, &
@@ -3443,6 +3871,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_427 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "KR", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0003826, &
       beta_T = 1., &
@@ -3451,6 +3880,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_428 = &
       meos_mix_reducing(ident1 = "NE", &
       ident2 = "O2", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0260610, &
       beta_T = 1., &
@@ -3459,6 +3889,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_429 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC8", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.979431929481, &
@@ -3467,6 +3898,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_430 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "CO", &
+      bibref = "Souza and Herrig (2018) / see Souza et al. (2019) and Herrig (2018) PhD thesis                      ", &
       beta_v = 1.0338017, &
       gamma_v = 1.0001623, &
       beta_T = 0.989782, &
@@ -3475,6 +3907,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_431 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.01% from 19 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9430937, &
@@ -3483,6 +3916,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_432 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3491,6 +3925,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_433 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC10", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.957, &
       beta_T = 1.095290251917, &
@@ -3499,6 +3934,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_434 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "H2O", &
+      bibref = "Gernert (2013)", &
       beta_v = 0.9262450, &
       gamma_v = 0.7334430, &
       beta_T = 1.048054, &
@@ -3507,6 +3943,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_435 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "BENZENE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0266, &
       beta_T = 1.015847216579, &
@@ -3515,6 +3952,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_436 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.54% from 53 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0008507, &
@@ -3523,6 +3961,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_437 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0000015, &
       beta_T = 1., &
@@ -3531,6 +3970,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_438 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "NC7", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from hexane/ammonia and octane/ammonia)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.178828244725, &
@@ -3539,6 +3979,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_439 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.026, &
       gamma_v = 1.236, &
       beta_T = 0.996, &
@@ -3547,6 +3988,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_440 = &
       meos_mix_reducing(ident1 = "EBZN", &
       ident2 = "NC9", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.21% from 50 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003750010038, &
@@ -3555,6 +3997,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_441 = &
       meos_mix_reducing(ident1 = "R14", &
       ident2 = "TOLU", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.69% from 8 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.920319984215, &
@@ -3563,6 +4006,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_442 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC12", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0915, &
       beta_T = 1.044, &
@@ -3571,6 +4015,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_443 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "NC10", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.008064516129, &
@@ -3579,6 +4024,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_444 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3587,6 +4033,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_445 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "BENZENE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.029654036244, &
@@ -3595,6 +4042,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_446 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3603,6 +4051,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_447 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "NC4", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.055631795630, &
@@ -3611,6 +4060,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_448 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3619,6 +4069,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_449 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.995676258, &
       gamma_v = 1.098361281, &
       beta_T = 0.970918061, &
@@ -3627,6 +4078,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_450 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.93% from 14 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.98697, &
@@ -3635,6 +4087,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_451 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC6", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.021450459653, &
@@ -3643,6 +4096,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_452 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011, &
@@ -3651,6 +4105,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_453 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3659,6 +4114,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_454 = &
       meos_mix_reducing(ident1 = "NC9", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.082905109, &
       beta_T = 1., &
@@ -3667,6 +4123,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_455 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "SO2", &
+      bibref = "Neumann and Herrig (2017) / see Herrig (2018) PhD thesis", &
       beta_v = 0.8898650, &
       gamma_v = 1.0057783, &
       beta_T = 1.020063, &
@@ -3675,6 +4132,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_456 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "SO2", &
+      bibref = "Bell & Herrig (2015)", &
       beta_v = 1.000000000, &
       gamma_v = 1.000000000, &
       beta_T = 1.004300000, &
@@ -3683,6 +4141,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_457 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "IC5", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from butane/ammonia and pentane/ammonia)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.106194690265, &
@@ -3691,6 +4150,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_458 = &
       meos_mix_reducing(ident1 = "R1234YF", &
       ident2 = "R1234ZE", &
+      bibref = "E.W. Lemmon, NIST (2015); fit of data from Honeywell", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3699,6 +4159,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_459 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.982318271120, &
@@ -3707,6 +4168,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_460 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.040459289, &
       gamma_v = 0.999432118, &
       beta_T = 0.994364425, &
@@ -3715,6 +4177,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_461 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2006) - original GERG-2004 mixture model used in EOS-CG!", &
       beta_v = 1.000000000, &
       gamma_v = 1.159720623, &
       beta_T = 1.000000000, &
@@ -3723,6 +4186,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_462 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3731,6 +4195,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_463 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "NC8", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.016, &
       beta_T = 1., &
@@ -3739,6 +4204,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_464 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "R124", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0031148, &
       beta_T = 1., &
@@ -3747,6 +4213,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_465 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.754473958, &
       gamma_v = 1.339283552, &
       beta_T = 0.985891113, &
@@ -3755,6 +4222,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_466 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3763,6 +4231,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_467 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.007469726, &
       gamma_v = 1.071917985, &
       beta_T = 0.984068272, &
@@ -3771,6 +4240,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_468 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "R23", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.47% from 44 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00597, &
@@ -3779,6 +4249,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_469 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.079648053, &
       beta_T = 1., &
@@ -3787,6 +4258,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_470 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011, &
@@ -3795,6 +4267,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_471 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.038, &
       beta_T = 0.991, &
@@ -3803,6 +4276,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_472 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2013)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3811,6 +4285,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_473 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3819,6 +4294,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_474 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "MEG", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.0723, &
       gamma_v = 0.8637, &
       beta_T = 0.9942, &
@@ -3827,6 +4303,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_475 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.010493989, &
       beta_T = 1., &
@@ -3835,6 +4312,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_476 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.73% from 39 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00392, &
@@ -3843,6 +4321,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_477 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "IC4", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0051783, &
       beta_T = 1., &
@@ -3851,6 +4330,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_478 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9917, &
@@ -3859,6 +4339,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_479 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "AR", &
+      bibref = "Herrig (2018) - Linear Combining Rules / see Herrig (2018) PhD thesis", &
       beta_v = 1.000000000, &
       gamma_v = 1.021291140, &
       beta_T = 1.000000000, &
@@ -3867,6 +4348,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_480 = &
       meos_mix_reducing(ident1 = "R116", &
       ident2 = "R143A", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.38% from 78 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01003, &
@@ -3875,6 +4357,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_481 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3883,6 +4366,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_482 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.846647561, &
       gamma_v = 0.864141549, &
       beta_T = 0.76837763, &
@@ -3891,6 +4375,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_483 = &
       meos_mix_reducing(ident1 = "BENZENE", &
       ident2 = "NC9", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.005025125628, &
@@ -3899,6 +4384,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_484 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "C2", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0034307, &
       beta_T = 1., &
@@ -3907,6 +4393,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_485 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "R1234ZE", &
+      bibref = "E.W. Lemmon, NIST (2015); fit of data from Honeywell", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3915,6 +4402,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_486 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.99% from 95 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00091, &
@@ -3923,6 +4411,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_487 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.087272232, &
       beta_T = 1., &
@@ -3931,6 +4420,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_488 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.100405929, &
       beta_T = 0.95637945, &
@@ -3939,6 +4429,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_489 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from pentane/cyclohexane)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3947,6 +4438,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_490 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.999243146, &
       gamma_v = 1.001156119, &
       beta_T = 0.998012298, &
@@ -3955,6 +4447,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_491 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3963,6 +4456,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_492 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.116694577, &
       beta_T = 1., &
@@ -3971,6 +4465,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_493 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3979,6 +4474,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_494 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -3987,6 +4483,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_495 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.19% from 30 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.981810006018, &
@@ -3995,6 +4492,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_496 = &
       meos_mix_reducing(ident1 = "R12", &
       ident2 = "NC8", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.02% from 2 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.003482082827, &
@@ -4003,6 +4501,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_497 = &
       meos_mix_reducing(ident1 = "EBZN", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.35% from 125 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.000120014402, &
@@ -4011,6 +4510,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_498 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R1234ZE", &
+      bibref = "R. Akasaka, FPE, 2013, DOI:10.1016/j.fluid.2013.07.057", &
       beta_v = 1.00586, &
       gamma_v = 0.982707, &
       beta_T = 1.00343, &
@@ -4019,6 +4519,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_499 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC10", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0563, &
       beta_T = 1.044, &
@@ -4027,6 +4528,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_500 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.057872566, &
       beta_T = 1., &
@@ -4035,6 +4537,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_501 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "TOLU", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.74% from 27 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011330031476, &
@@ -4043,6 +4546,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_502 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.969501055, &
       gamma_v = 0.932629867, &
       beta_T = 0.692868765, &
@@ -4051,6 +4555,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_503 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 0.599484191, &
       beta_T = 1., &
@@ -4059,6 +4564,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_504 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "IC4", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.971817298348, &
@@ -4067,6 +4573,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_505 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.012, &
       beta_T = 1., &
@@ -4075,6 +4582,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_506 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "NC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.002779804, &
       beta_T = 1., &
@@ -4083,6 +4591,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_507 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "H2", &
+      bibref = "Beckmueller et al. (2020)                                                                           ", &
       beta_v = 1.086000, &
       gamma_v = 0.804000, &
       beta_T = 1.010000, &
@@ -4091,6 +4600,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_508 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "SO2", &
+      bibref = "Bell & Herrig (2015)", &
       beta_v = 1.000000000, &
       gamma_v = 1.000000000, &
       beta_T = 1.015760000, &
@@ -4099,6 +4609,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_509 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4107,6 +4618,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_510 = &
       meos_mix_reducing(ident1 = "C3_1", &
       ident2 = "R134A", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.32% from 31 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.01623, &
@@ -4115,6 +4627,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_511 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4123,6 +4636,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_512 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "C3", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.974424681, &
       gamma_v = 1.081025408, &
       beta_T = 1.002677329, &
@@ -4131,6 +4645,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_513 = &
       meos_mix_reducing(ident1 = "R1234YF", &
       ident2 = "IC4", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.16% from 49 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.992752903802, &
@@ -4139,6 +4654,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_514 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 0.997008973081, &
       gamma_v = 0.97, &
       beta_T = 0.981354268891, &
@@ -4147,6 +4663,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_515 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.076551882, &
       gamma_v = 1.081909003, &
       beta_T = 1.023339824, &
@@ -4155,6 +4672,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_516 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0835, &
       beta_T = 1., &
@@ -4163,6 +4681,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_517 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "MEOH", &
+      bibref = "E.W. Lemmon, NIST (2015)", &
       beta_v = 0.534, &
       gamma_v = 1.529, &
       beta_T = 0.998, &
@@ -4171,6 +4690,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_518 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4179,6 +4699,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_519 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "MEOH", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.038637307852, &
@@ -4187,6 +4708,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_520 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.108143673, &
       beta_T = 1., &
@@ -4195,6 +4717,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_521 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "NC12", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.82% from 19 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.004944326084, &
@@ -4203,6 +4726,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_522 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "H2O", &
+      bibref = "I.H. Bell, NIST (2017) - autofitting code based on data from TDE", &
       beta_v = 1.008091, &
       gamma_v = 0.923029, &
       beta_T = 0.98882, &
@@ -4211,6 +4735,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_523 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC9", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0466, &
       beta_T = 1.0246, &
@@ -4219,6 +4744,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_524 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "NC9", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.001370076, &
       beta_T = 1., &
@@ -4227,6 +4753,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_525 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "O2", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0000000, &
       gamma_v = 1.0844600, &
       beta_T = 1.000000, &
@@ -4235,6 +4762,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_526 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "H2O", &
+      bibref = "Koerber and Herrig (2018) / see Herrig (2018) PhD thesis                                            ", &
       beta_v = 1.094032, &
       gamma_v = 0.962547, &
       beta_T = 1.019562, &
@@ -4243,6 +4771,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_527 = &
       meos_mix_reducing(ident1 = "HE", &
       ident2 = "KR", &
+      bibref = "E.W. Lemmon, NIST (2017)", &
       beta_v = 1.052, &
       gamma_v = 2.016, &
       beta_T = 0.790, &
@@ -4251,6 +4780,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_528 = &
       meos_mix_reducing(ident1 = "F6S", &
       ident2 = "NC5", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0605, &
       beta_T = 1.041666666667, &
@@ -4259,6 +4789,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_529 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4267,6 +4798,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_530 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC6", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.002995876, &
       beta_T = 1., &
@@ -4275,6 +4807,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_531 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "ETOH", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.015537727227, &
@@ -4283,6 +4816,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_532 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.25% from 42 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0061476, &
@@ -4291,6 +4825,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_533 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "NC9", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.118, &
       beta_T = 1.074113856069, &
@@ -4299,6 +4834,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_534 = &
       meos_mix_reducing(ident1 = "ETOH", &
       ident2 = "H2O", &
+      bibref = "Eckermann and Lemmon (2018)                                                                         ", &
       beta_v = 1.0124, &
       gamma_v = 0.9558, &
       beta_T = 0.9866, &
@@ -4307,6 +4843,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_535 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "R114", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0521610, &
       beta_T = 1., &
@@ -4315,6 +4852,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_536 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.27% from 71 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99904, &
@@ -4323,6 +4861,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_537 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "NC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.999795868, &
       gamma_v = 1.003264179, &
       beta_T = 1.000310289, &
@@ -4331,6 +4870,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_538 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC11", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from decane and dodecane)", &
       beta_v = 1., &
       gamma_v = 1.075, &
       beta_T = 1.044, &
@@ -4339,6 +4879,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_539 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "NC4", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2% from 37 bubble-point p", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.024338277473, &
@@ -4347,6 +4888,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_540 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R142B", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0305781, &
       beta_T = 1., &
@@ -4355,6 +4897,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_541 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.007, &
       beta_T = 1., &
@@ -4363,6 +4906,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_542 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "NC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.99608261, &
       gamma_v = 1.146949309, &
       beta_T = 0.994515234, &
@@ -4371,6 +4915,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_543 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "N2O", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 3.36% from 49 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.98876, &
@@ -4379,6 +4924,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_544 = &
       meos_mix_reducing(ident1 = "NE", &
       ident2 = "N2", &
+      bibref = "E.W. Lemmon, NIST (2016)", &
       beta_v = 0.915750915751, &
       gamma_v = 0.988, &
       beta_T = 1.025641025641, &
@@ -4387,6 +4933,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_545 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "H2", &
+      bibref = "Beckmueller et al. (2020)                                                                           ", &
       beta_v = 0.993000, &
       gamma_v = 0.773000, &
       beta_T = 1.027000, &
@@ -4395,6 +4942,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_546 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "NC8", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.231678778175, &
@@ -4403,6 +4951,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_547 = &
       meos_mix_reducing(ident1 = "R134A", &
       ident2 = "ETOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.85% from 15 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.029039494536, &
@@ -4411,6 +4960,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_548 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "IC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.011240388, &
       gamma_v = 1.054319053, &
       beta_T = 0.980315756, &
@@ -4419,6 +4969,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_549 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "C3", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.996898004, &
       gamma_v = 1.047596298, &
       beta_T = 1.033620538, &
@@ -4427,6 +4978,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_550 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.87% from 79 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.00184, &
@@ -4435,6 +4987,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_551 = &
       meos_mix_reducing(ident1 = "KR", &
       ident2 = "NH3", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.66% from 8 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.011818, &
@@ -4443,6 +4996,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_552 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4451,6 +5005,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_553 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "AR", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4459,6 +5014,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_554 = &
       meos_mix_reducing(ident1 = "EBZN", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.38% from 204 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.999479970571, &
@@ -4467,6 +5023,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_555 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.048, &
@@ -4475,6 +5032,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_556 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.047, &
       beta_T = 1., &
@@ -4483,6 +5041,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_557 = &
       meos_mix_reducing(ident1 = "P-H2", &
       ident2 = "O-H2", &
+      bibref = "ideal mixture", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4491,6 +5050,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_558 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "ACETONE", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4499,6 +5059,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_559 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "NC8", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.0352, &
       beta_T = 1.0196, &
@@ -4507,6 +5068,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_560 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "H2O", &
+      bibref = "#Note:  The TR1 model shows up first below, but the program uses the last set of parameters,", &
       beta_v = 1.044759, &
       gamma_v = 1.189754, &
       beta_T = 0.933585, &
@@ -4515,6 +5077,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_561 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4523,6 +5086,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_562 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "O2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4531,6 +5095,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_563 = &
       meos_mix_reducing(ident1 = "H2", &
       ident2 = "NE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2016)", &
       beta_v = 0.8285, &
       gamma_v = 1.2007, &
       beta_T = 1.00705, &
@@ -4539,6 +5104,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_564 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4547,6 +5113,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_565 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "MXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 4.78% from 49 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.984390035020, &
@@ -4555,6 +5122,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_566 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.02, &
       beta_T = 1., &
@@ -4563,6 +5131,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_567 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "CO2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.999518072, &
       gamma_v = 1.002806594, &
       beta_T = 1.02262449, &
@@ -4571,6 +5140,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_568 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4579,6 +5149,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_569 = &
       meos_mix_reducing(ident1 = "R32", &
       ident2 = "R1234YF", &
+      bibref = "R. Akasaka, FPE, 2013, DOI:10.1016/j.fluid.2013.07.057", &
       beta_v = 0.993346, &
       gamma_v = 1.02211, &
       beta_T = 1.00052, &
@@ -4587,6 +5158,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_570 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "NC10", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1.002553544, &
       beta_T = 1., &
@@ -4595,6 +5167,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_571 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4603,6 +5176,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_572 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "H2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.305249405, &
       beta_T = 1., &
@@ -4611,6 +5185,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_573 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.978, &
       beta_T = 0.904, &
@@ -4619,6 +5194,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_574 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "C2", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.002525718, &
       gamma_v = 1.032876701, &
       beta_T = 1.013871147, &
@@ -4627,6 +5203,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_575 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4635,6 +5212,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_576 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC7", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.009928206, &
       beta_T = 1., &
@@ -4643,6 +5221,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_577 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "MEG", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.9877, &
@@ -4651,6 +5230,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_578 = &
       meos_mix_reducing(ident1 = "R21", &
       ident2 = "MEOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.74% from 4 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.969208253777, &
@@ -4659,6 +5239,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_579 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.154135439, &
       beta_T = 1., &
@@ -4667,6 +5248,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_580 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1.19, &
       gamma_v = 1.0106, &
       beta_T = 1., &
@@ -4675,6 +5257,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_581 = &
       meos_mix_reducing(ident1 = "TOLU", &
       ident2 = "OXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 1.16% from 67 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.001743, &
@@ -4683,6 +5266,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_582 = &
       meos_mix_reducing(ident1 = "N2", &
       ident2 = "R12", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0625855, &
       beta_T = 1., &
@@ -4691,6 +5275,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_583 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "NC8", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.069223964, &
       beta_T = 1., &
@@ -4699,6 +5284,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_584 = &
       meos_mix_reducing(ident1 = "PXYL", &
       ident2 = "NC11", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.14% from 12 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.000190036107, &
@@ -4707,6 +5293,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_585 = &
       meos_mix_reducing(ident1 = "H2S", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4715,6 +5302,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_586 = &
       meos_mix_reducing(ident1 = "R23", &
       ident2 = "ETOH", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.5% from 9 bubble-point ", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.104764850802, &
@@ -4723,6 +5311,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_587 = &
       meos_mix_reducing(ident1 = "R1234YF", &
       ident2 = "R134A", &
+      bibref = "E.W. Lemmon, NIST (2013)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4731,6 +5320,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_588 = &
       meos_mix_reducing(ident1 = "ACETONE", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 0.997, &
       beta_T = 1.005, &
@@ -4739,6 +5329,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_589 = &
       meos_mix_reducing(ident1 = "NC4", &
       ident2 = "BENZENE", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4747,6 +5338,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_590 = &
       meos_mix_reducing(ident1 = "R1234ZE", &
       ident2 = "NC5", &
+      bibref = "S.L. Outcalt and E.W. Lemmon, NIST (2012)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.007049345418, &
@@ -4755,6 +5347,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_591 = &
       meos_mix_reducing(ident1 = "C1", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 0.997340772, &
       gamma_v = 1.006102927, &
       beta_T = 0.987411732, &
@@ -4763,6 +5356,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_592 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "H2O", &
+      bibref = "Gernert (2013)", &
       beta_v = 1.0213920, &
       gamma_v = 0.8951560, &
       beta_T = 1.030538, &
@@ -4771,6 +5365,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_593 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "IC5", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.060793104, &
       gamma_v = 1.116793198, &
       beta_T = 1.019180957, &
@@ -4779,6 +5374,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_594 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "ETOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.025, &
       beta_T = 1.028, &
@@ -4787,6 +5383,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_595 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "F6S", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.61% from 81 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0366024, &
@@ -4795,6 +5392,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_596 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "MEOH", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.977, &
@@ -4803,6 +5401,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_597 = &
       meos_mix_reducing(ident1 = "XE", &
       ident2 = "C3", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.41% from 22 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.995113990308, &
@@ -4811,6 +5410,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_598 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.984613203, &
       gamma_v = 1.076539234, &
       beta_T = 0.962006651, &
@@ -4819,6 +5419,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_599 = &
       meos_mix_reducing(ident1 = "SO2", &
       ident2 = "H2S", &
+      bibref = "Herrig (2018) - Lorentz-Berthelot Combining Rules / see Herrig (2018) PhD thesis", &
       beta_v = 1.000000000, &
       gamma_v = 1.000000000, &
       beta_T = 1.000000000, &
@@ -4827,6 +5428,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_600 = &
       meos_mix_reducing(ident1 = "KR", &
       ident2 = "XE", &
+      bibref = "E.W. Lemmon, NIST (2002)", &
       beta_v = 1., &
       gamma_v = 1.0054519, &
       beta_T = 1., &
@@ -4835,6 +5437,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_601 = &
       meos_mix_reducing(ident1 = "CO", &
       ident2 = "H2S", &
+      bibref = "Kunz and Wagner (2012)", &
       beta_v = 0.795660392, &
       gamma_v = 1.101731308, &
       beta_T = 1.025536736, &
@@ -4843,6 +5446,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_602 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "H2S", &
+      bibref = "Neumann et al. (2020)", &
       beta_v = 1.000000, &
       gamma_v = 1.000000, &
       beta_T = 1.000000, &
@@ -4851,6 +5455,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_603 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "ACETONE", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 2.4% from 33 bubble-point", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.019919, &
@@ -4859,6 +5464,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_604 = &
       meos_mix_reducing(ident1 = "O2", &
       ident2 = "SO2", &
+      bibref = "Bell & Herrig (2015)", &
       beta_v = 1.000000000, &
       gamma_v = 1.000000000, &
       beta_T = 0.991148000, &
@@ -4867,6 +5473,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_605 = &
       meos_mix_reducing(ident1 = "CO2", &
       ident2 = "NC4", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1.174760923, &
       gamma_v = 1.222437324, &
       beta_T = 1.018171004, &
@@ -4875,6 +5482,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_606 = &
       meos_mix_reducing(ident1 = "MEOH", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1.183, &
       beta_T = 0.947867298578, &
@@ -4883,6 +5491,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_607 = &
       meos_mix_reducing(ident1 = "NC5", &
       ident2 = "CYCLOHEX", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4891,6 +5500,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_608 = &
       meos_mix_reducing(ident1 = "NC7", &
       ident2 = "PXYL", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.25% from 124 bubble-poi", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 0.99936, &
@@ -4899,6 +5509,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_609 = &
       meos_mix_reducing(ident1 = "IC4", &
       ident2 = "H2O", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4907,6 +5518,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_610 = &
       meos_mix_reducing(ident1 = "IC5", &
       ident2 = "NC12", &
+      bibref = "J. Watanasiri and E.W. Lemmon, NIST (2010) (estimated from propane and pentane mixed with dodecane)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4915,6 +5527,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_611 = &
       meos_mix_reducing(ident1 = "C2", &
       ident2 = "CO", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1.201417898, &
       beta_T = 1., &
@@ -4923,6 +5536,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_612 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "SO2", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4931,6 +5545,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_613 = &
       meos_mix_reducing(ident1 = "PRLN", &
       ident2 = "NC5", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010) (estimated from trend found in C1-C10)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4939,6 +5554,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_614 = &
       meos_mix_reducing(ident1 = "C3", &
       ident2 = "TOLU", &
+      bibref = "T.M. Blackham and E.W. Lemmon, NIST (2010)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4947,6 +5563,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_615 = &
       meos_mix_reducing(ident1 = "NC8", &
       ident2 = "HE", &
+      bibref = "Kunz and Wagner (2007)", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1., &
@@ -4955,6 +5572,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_616 = &
       meos_mix_reducing(ident1 = "NC6", &
       ident2 = "EBZN", &
+      bibref = "I.H. Bell and E.W. Lemmon, JCED, 2016. DOI:10.1021/acs.jced.6b00257; MAPD: 0.09% from 33 bubble-poin", &
       beta_v = 1., &
       gamma_v = 1., &
       beta_T = 1.0002601, &
@@ -4963,6 +5581,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_617 = &
       meos_mix_reducing(ident1 = "CYCLOHEX", &
       ident2 = "NC10", &
+      bibref = "I. Cullimore and E.W. Lemmon, NIST (2010) (estimated from octane/cyclohexane and dodecane/cyclohexan", &
       beta_v = 1., &
       gamma_v = 1.012, &
       beta_T = 1., &
@@ -5078,6 +5697,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix1 = &
       meos_mix_data(ident1 = "H2", &
       ident2 = "NH3", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 4, &
       n_mix = (/ &
@@ -5130,6 +5750,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix2 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "BENZENE", &
+      bibref = "", &
       Fij = 0.257, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5182,6 +5803,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix3 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "H2", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -5234,6 +5856,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix4 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "ETOH", &
+      bibref = "", &
       Fij = 1.486, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5286,6 +5909,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix5 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "NC7", &
+      bibref = "", &
       Fij = 9.577000, &
       num_mix = 4, &
       n_mix = (/ &
@@ -5338,6 +5962,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix6 = &
       meos_mix_data(ident1 = "C2", &
       ident2 = "C3", &
+      bibref = "", &
       Fij = 0.13042476515, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5390,6 +6015,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix7 = &
       meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC9", &
+      bibref = "", &
       Fij = -1.06, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5442,6 +6068,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix8 = &
       meos_mix_data(ident1 = "NC5", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 10.487000, &
       num_mix = 4, &
       n_mix = (/ &
@@ -5494,6 +6121,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix9 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "R1234YF", &
+      bibref = "", &
       Fij = -0.657, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5546,6 +6174,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix10 = &
       meos_mix_data(ident1 = "NH3", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = -0.08997, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5598,6 +6227,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix11 = &
       meos_mix_data(ident1 = "NC10", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = 0.35, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5650,6 +6280,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix12 = &
       meos_mix_data(ident1 = "C2", &
       ident2 = "IC4", &
+      bibref = "", &
       Fij = 0.260632376098, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5702,6 +6333,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix13 = &
       meos_mix_data(ident1 = "NE", &
       ident2 = "XE", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 10, &
       n_mix = (/ &
@@ -5754,6 +6386,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix14 = &
       meos_mix_data(ident1 = "ETOH", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 7, &
       n_mix = (/ &
@@ -5806,6 +6439,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix15 = &
       meos_mix_data(ident1 = "CO", &
       ident2 = "H2", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 4, &
       n_mix = (/ &
@@ -5858,6 +6492,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix16 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "ETOH", &
+      bibref = "", &
       Fij = 0.778, &
       num_mix = 10, &
       n_mix = (/ &
@@ -5910,6 +6545,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix17 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "R41", &
+      bibref = "", &
       Fij = -0.5483, &
       num_mix = 4, &
       n_mix = (/ &
@@ -5962,6 +6598,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix18 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "BENZENE", &
+      bibref = "", &
       Fij = 2.894, &
       num_mix = 9, &
       n_mix = (/ &
@@ -6014,6 +6651,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix19 = &
       meos_mix_data(ident1 = "ACETONE", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = -0.5274, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6066,6 +6704,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix20 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "NC4", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 10, &
       n_mix = (/ &
@@ -6118,6 +6757,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix21 = &
       meos_mix_data(ident1 = "PRLN", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 0.7604, &
       num_mix = 6, &
       n_mix = (/ &
@@ -6170,6 +6810,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix22 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "PRLN", &
+      bibref = "", &
       Fij = -0.362, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6222,6 +6863,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix23 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "N2", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 9, &
       n_mix = (/ &
@@ -6274,6 +6916,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix24 = &
       meos_mix_data(ident1 = "NC4", &
       ident2 = "IC4", &
+      bibref = "", &
       Fij = -0.0551240293009, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6326,6 +6969,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix25 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = -0.358, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6378,6 +7022,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix26 = &
       meos_mix_data(ident1 = "AR", &
       ident2 = "NH3", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 3, &
       n_mix = (/ &
@@ -6430,6 +7075,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix27 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "C2", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 6, &
       n_mix = (/ &
@@ -6482,6 +7128,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix28 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC9", &
+      bibref = "", &
       Fij = -0.358, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6534,6 +7181,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix29 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 0.068, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6586,6 +7234,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix30 = &
       meos_mix_data(ident1 = "NC7", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = -0.6281548, &
       num_mix = 12, &
       n_mix = (/ &
@@ -6638,6 +7287,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix31 = &
       meos_mix_data(ident1 = "C2", &
       ident2 = "NC4", &
+      bibref = "", &
       Fij = 0.281570073085, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6690,6 +7340,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix32 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = 0.898, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6742,6 +7393,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix33 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 1.257, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6794,6 +7446,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix34 = &
       meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC8", &
+      bibref = "", &
       Fij = -0.704, &
       num_mix = 10, &
       n_mix = (/ &
@@ -6846,6 +7499,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix35 = &
       meos_mix_data(ident1 = "R143A", &
       ident2 = "R134A", &
+      bibref = "", &
       Fij = 0.5557, &
       num_mix = 4, &
       n_mix = (/ &
@@ -6898,6 +7552,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix36 = &
       meos_mix_data(ident1 = "HE", &
       ident2 = "NE", &
+      bibref = "", &
       Fij = -3.25, &
       num_mix = 6, &
       n_mix = (/ &
@@ -6950,6 +7605,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix37 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC11", &
+      bibref = "", &
       Fij = -0.358, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7002,6 +7658,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix38 = &
       meos_mix_data(ident1 = "CO", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 0.9897000, &
       num_mix = 5, &
       n_mix = (/ &
@@ -7054,6 +7711,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix39 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "ACETONE", &
+      bibref = "", &
       Fij = 1.6093, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7106,6 +7764,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix40 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "AR", &
+      bibref = "", &
       Fij = 1.0000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -7158,6 +7817,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix41 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "CO2", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 6, &
       n_mix = (/ &
@@ -7210,6 +7870,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix42 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "BENZENE", &
+      bibref = "", &
       Fij = 0.955, &
       num_mix = 9, &
       n_mix = (/ &
@@ -7262,6 +7923,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix43 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "NC7", &
+      bibref = "", &
       Fij = -0.675, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7314,6 +7976,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix44 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = 0.735, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7366,6 +8029,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix45 = &
       meos_mix_data(ident1 = "C2", &
       ident2 = "ACETONE", &
+      bibref = "", &
       Fij = 2.1862, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7418,6 +8082,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix46 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 1.276, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7470,6 +8135,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix47 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1.0000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -7522,6 +8188,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix48 = &
       meos_mix_data(ident1 = "KR", &
       ident2 = "CO2", &
+      bibref = "", &
       Fij = 0.6362, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7574,6 +8241,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix49 = &
       meos_mix_data(ident1 = "C3", &
       ident2 = "ETOH", &
+      bibref = "", &
       Fij = 1.15, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7626,6 +8294,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix50 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "R1234ZE", &
+      bibref = "", &
       Fij = -0.084, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7678,6 +8347,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix51 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "C3", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 9, &
       n_mix = (/ &
@@ -7730,6 +8400,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix52 = &
       meos_mix_data(ident1 = "C3", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 2.715, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7782,6 +8453,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix53 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 1.313, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7834,6 +8506,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix54 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 0.5865, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7886,6 +8559,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix55 = &
       meos_mix_data(ident1 = "H2S", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = -1.808, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7938,6 +8612,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix56 = &
       meos_mix_data(ident1 = "TOLU", &
       ident2 = "NC10", &
+      bibref = "", &
       Fij = -1.395, &
       num_mix = 10, &
       n_mix = (/ &
@@ -7990,6 +8665,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix57 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC7", &
+      bibref = "", &
       Fij = -0.2539, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8042,6 +8718,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix58 = &
       meos_mix_data(ident1 = "IC5", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 43.215000, &
       num_mix = 4, &
       n_mix = (/ &
@@ -8094,6 +8771,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix59 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = 15.061, &
       num_mix = 4, &
       n_mix = (/ &
@@ -8146,6 +8824,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix60 = &
       meos_mix_data(ident1 = "O2", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 0.6017000, &
       num_mix = 5, &
       n_mix = (/ &
@@ -8198,6 +8877,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix61 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "NC6", &
+      bibref = "", &
       Fij = 11.089885, &
       num_mix = 4, &
       n_mix = (/ &
@@ -8250,6 +8930,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix62 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC8", &
+      bibref = "", &
       Fij = -0.358, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8302,6 +8983,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix63 = &
       meos_mix_data(ident1 = "NC6", &
       ident2 = "BENZENE", &
+      bibref = "", &
       Fij = -0.92, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8354,6 +9036,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix64 = &
       meos_mix_data(ident1 = "R32", &
       ident2 = "R134A", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 4, &
       n_mix = (/ &
@@ -8406,6 +9089,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix65 = &
       meos_mix_data(ident1 = "H2S", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -8458,6 +9142,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix66 = &
       meos_mix_data(ident1 = "ETOH", &
       ident2 = "MEG", &
+      bibref = "", &
       Fij = 0.3312, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8510,6 +9195,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix67 = &
       meos_mix_data(ident1 = "NC6", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = -0.213, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8562,6 +9248,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix68 = &
       meos_mix_data(ident1 = "NC4", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 1.068, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8614,6 +9301,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix69 = &
       meos_mix_data(ident1 = "NC6", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = -0.3672, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8666,6 +9354,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix70 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "C2", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 12, &
       n_mix = (/ &
@@ -8718,6 +9407,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix71 = &
       meos_mix_data(ident1 = "NC9", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = 0.15, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8770,6 +9460,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix72 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "CO", &
+      bibref = "", &
       Fij = 1.0000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -8822,6 +9513,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix73 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "NC10", &
+      bibref = "", &
       Fij = -7.124, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8874,6 +9566,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix74 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1.0000000, &
       num_mix = 5, &
       n_mix = (/ &
@@ -8926,6 +9619,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix75 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 1.77, &
       num_mix = 10, &
       n_mix = (/ &
@@ -8978,6 +9672,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix76 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "NC10", &
+      bibref = "", &
       Fij = -2.444, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9030,6 +9725,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix77 = &
       meos_mix_data(ident1 = "ETOH", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 0.282, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9082,6 +9778,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix78 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "NC8", &
+      bibref = "", &
       Fij = -0.924, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9134,6 +9831,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix79 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = -0.6475, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9186,6 +9884,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix80 = &
       meos_mix_data(ident1 = "NC6", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = 1.14, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9238,6 +9937,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix81 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "NC12", &
+      bibref = "", &
       Fij = -1.539, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9290,6 +9990,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix82 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "MEG", &
+      bibref = "", &
       Fij = -1.703, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9342,6 +10043,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix83 = &
       meos_mix_data(ident1 = "BENZENE", &
       ident2 = "NC9", &
+      bibref = "", &
       Fij = -1.193, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9394,6 +10096,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix84 = &
       meos_mix_data(ident1 = "C3", &
       ident2 = "IC4", &
+      bibref = "", &
       Fij = -0.0551609771024, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9446,6 +10149,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix85 = &
       meos_mix_data(ident1 = "R32", &
       ident2 = "R1234ZE", &
+      bibref = "", &
       Fij = -0.265419, &
       num_mix = 9, &
       n_mix = (/ &
@@ -9498,6 +10202,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix86 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "H2", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 8, &
       n_mix = (/ &
@@ -9550,6 +10255,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix87 = &
       meos_mix_data(ident1 = "ETOH", &
       ident2 = "BENZENE", &
+      bibref = "", &
       Fij = -0.162, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9602,6 +10308,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix88 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = -0.3986, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9654,6 +10361,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix89 = &
       meos_mix_data(ident1 = "HE", &
       ident2 = "KR", &
+      bibref = "", &
       Fij = 1.41, &
       num_mix = 4, &
       n_mix = (/ &
@@ -9706,6 +10414,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix90 = &
       meos_mix_data(ident1 = "ETOH", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 6, &
       n_mix = (/ &
@@ -9758,6 +10467,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix91 = &
       meos_mix_data(ident1 = "C3", &
       ident2 = "NC4", &
+      bibref = "", &
       Fij = 0.0312572600489, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9810,6 +10520,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix92 = &
       meos_mix_data(ident1 = "NE", &
       ident2 = "N2", &
+      bibref = "", &
       Fij = 1.7, &
       num_mix = 6, &
       n_mix = (/ &
@@ -9862,6 +10573,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix93 = &
       meos_mix_data(ident1 = "N2", &
       ident2 = "H2", &
+      bibref = "", &
       Fij = 1.000000, &
       num_mix = 8, &
       n_mix = (/ &
@@ -9914,6 +10626,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix94 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "IC4", &
+      bibref = "", &
       Fij = 0.771035405688, &
       num_mix = 10, &
       n_mix = (/ &
@@ -9966,6 +10679,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix95 = &
       meos_mix_data(ident1 = "NH3", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 7, &
       n_mix = (/ &
@@ -10018,6 +10732,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix96 = &
       meos_mix_data(ident1 = "H2", &
       ident2 = "NE", &
+      bibref = "", &
       Fij = 0.1617, &
       num_mix = 10, &
       n_mix = (/ &
@@ -10070,6 +10785,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix97 = &
       meos_mix_data(ident1 = "C1", &
       ident2 = "CO2", &
+      bibref = "", &
       Fij = 1., &
       num_mix = 6, &
       n_mix = (/ &
@@ -10122,6 +10838,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix98 = &
       meos_mix_data(ident1 = "R32", &
       ident2 = "R1234YF", &
+      bibref = "", &
       Fij = -0.277708, &
       num_mix = 6, &
       n_mix = (/ &
@@ -10174,6 +10891,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix99 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "CYCLOHEX", &
+      bibref = "", &
       Fij = 0.0184, &
       num_mix = 10, &
       n_mix = (/ &
@@ -10226,6 +10944,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix100 = &
       meos_mix_data(ident1 = "CO2", &
       ident2 = "H2O", &
+      bibref = "", &
       Fij = 1.0000000, &
       num_mix = 8, &
       n_mix = (/ &
@@ -10278,6 +10997,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix101 = &
       meos_mix_data(ident1 = "C2", &
       ident2 = "MEOH", &
+      bibref = "", &
       Fij = 2.751, &
       num_mix = 10, &
       n_mix = (/ &
@@ -10330,6 +11050,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix102 = &
       meos_mix_data(ident1 = "MEOH", &
       ident2 = "TOLU", &
+      bibref = "", &
       Fij = 5.902, &
       num_mix = 10, &
       n_mix = (/ &
@@ -10382,6 +11103,7 @@ module meosmixdb
   type(meos_mix_data), parameter :: meos_mix103 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
       ident2 = "NC10", &
+      bibref = "", &
       Fij = -0.358, &
       num_mix = 10, &
       n_mix = (/ &
