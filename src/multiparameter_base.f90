@@ -826,8 +826,9 @@ contains
     end select
   end subroutine assign_meos_base
 
-  subroutine get_ref_state_spec_default(this, T, P, phase, solve)
+  subroutine get_ref_state_spec_default(this, ref_state, T, P, phase, solve)
     class(meos) :: this
+    character(len=*), intent(in) :: ref_state
     real, intent(out) :: T, P
     integer, intent(out) :: phase
     integer, intent(out) :: solve

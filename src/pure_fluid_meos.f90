@@ -165,9 +165,9 @@ contains
       ! Calculate critcal pressure
       call meos_comp%mp_pressure(meos_comp%rc, meos_comp%tc, meos_comp%pc)
 
-      ! Set reference entropy/enthalpy - to be updated later
-      meos_comp%a1_id = 0.0_dp
-      meos_comp%a2_id = 0.0_dp
+      ! Set reference entropy/enthalpy
+      meos_comp%a1_id = meosdb(i_comp)%a1_id
+      meos_comp%a2_id = meosdb(i_comp)%a2_id
 
     else
       print *,"No parameters for component ",trim(comp_name)
@@ -177,12 +177,17 @@ contains
   end function constructor_meos_pure
 
   !> Get information on reference state
-  subroutine get_ref_state_spec_meos_pure(this, T, P, phase, solve)
+  subroutine get_ref_state_spec_meos_pure(this, ref_state, T, P, phase, solve)
     class(meos_pure) :: this
+    character(len=*), intent(in) :: ref_state
     real, intent(out) :: T, P
     integer, intent(out) :: phase
     integer, intent(out) :: solve
-    !
+    ! Locals
+    character(len=comp_name_len) :: rs
+    if (.not. str_eq(ref_state,"DEFAULT")) then
+      this%ref_state = ref_state
+    endif
     P = -1.0
     if (str_eq(this%ref_state, "IIR")) then
       ! The value of specific enthalpy is set to 200 kJ/kg and the value
@@ -266,17 +271,6 @@ contains
 
     ! Correct enthalpy
     this%a2_id = this%a2_id + (h_ref-h)/(this%Rgas_meos*this%tc)
-
-    if (str_eq(this%compName, "R14")) then
-      this%a2_id = 13.487701815002357
-      this%a1_id = -8.5389854294167122
-    endif
-
-    !print *,trim(this%compName),this%a1_id, this%a2_id
-    !print *,"a1,a2",this%a1_id,this%a2_id
-    !this%a1_id = -14.8563435687485
-    !this%a2_id = 20.1558709204447
-    !stop
 
   end subroutine set_ref_state_meos_pure
 

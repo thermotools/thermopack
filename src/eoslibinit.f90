@@ -1155,7 +1155,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize multiparamaters eos
   !----------------------------------------------------------------------------
-  subroutine init_multiparameter(comps, eos)
+  subroutine init_multiparameter(comps, eos, ref_state)
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
@@ -1170,6 +1170,7 @@ contains
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in) :: eos !< Equation of state
+    character(len=*), intent(in) :: ref_state !< Reference state ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
     ! Locals
     integer                          :: ncomp, index, ierr, ncbeos, i
     character(len=len_trim(comps))   :: comps_upper
@@ -1225,37 +1226,39 @@ contains
     call init_fallback_and_redefine_criticals(silent=.true.)
 
     ! Calculate reference states
-    ! Set reference entalpies and entropies
-    ! call set_reference_energies(act_mod_ptr%comps)
-    allocate(x_ref(nce),y_ref(nce))
-    p_single_eos => get_single_eos_pointer(act_mod_ptr%eos(1)%p_eos)
-    if (allocated(p_single_eos%nist)) then
-      tmin = tptmin
-      tptmin = 2.0
-      do i=1,nce
-        x_ref = 0
-        x_ref(i) = 1
-        call p_single_eos%nist(i)%meos%get_ref_state_spec(T_ref,P_ref,phase_ref,solve_ref)
-        if (solve_ref == REF_SOLVE_FOR_P) then
-          P_ref = safe_bubP(T_ref,x_ref,y_ref,ierr)
-        else if (solve_ref == REF_SOLVE_FOR_T) then
-          T_ref = safe_bubT(P_ref,x_ref,y_ref,ierr)
-        endif
-        if (solve_ref == REF_EVALUATE_ID) then
-          v_ref = T_ref*p_single_eos%nist(i)%meos%Rgas_meos/P_ref
-          call Fideal(T_ref,v_ref,x_ref,F=FI,F_T=FI_T)
-          h_ref = (1.d0 - T_ref*FI_T ) * p_single_eos%nist(i)%meos%Rgas_meos * T_ref
-          s_ref = -(T_ref*FI_T + FI) * p_single_eos%nist(i)%meos%Rgas_meos
-          call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
-        else if (solve_ref /= REF_NO_SOLVE) then
-          call specificvolume(T_ref,P_ref,x_ref,phase_ref,v_ref)
-          call enthalpy_tv(T_ref,v_ref,x_ref,h_ref)
-          call entropy_tv(T_ref,v_ref,x_ref,s_ref)
-          call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
-        endif
-      enddo
-      deallocate(x_ref,y_ref)
-      tptmin = tmin
+    if (str_eq(eos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then
+      ! Set reference entalpies and entropies
+      ! call set_reference_energies(act_mod_ptr%comps)
+      allocate(x_ref(nce),y_ref(nce))
+      p_single_eos => get_single_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+      if (allocated(p_single_eos%nist)) then
+        tmin = tptmin
+        tptmin = 2.0
+        do i=1,nce
+          x_ref = 0
+          x_ref(i) = 1
+          call p_single_eos%nist(i)%meos%get_ref_state_spec(ref_state,T_ref,P_ref,phase_ref,solve_ref)
+          if (solve_ref == REF_SOLVE_FOR_P) then
+            P_ref = safe_bubP(T_ref,x_ref,y_ref,ierr)
+          else if (solve_ref == REF_SOLVE_FOR_T) then
+            T_ref = safe_bubT(P_ref,x_ref,y_ref,ierr)
+          endif
+          if (solve_ref == REF_EVALUATE_ID) then
+            v_ref = T_ref*p_single_eos%nist(i)%meos%Rgas_meos/P_ref
+            call Fideal(T_ref,v_ref,x_ref,F=FI,F_T=FI_T)
+            h_ref = (1.d0 - T_ref*FI_T ) * p_single_eos%nist(i)%meos%Rgas_meos * T_ref
+            s_ref = -(T_ref*FI_T + FI) * p_single_eos%nist(i)%meos%Rgas_meos
+            call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+          else if (solve_ref /= REF_NO_SOLVE) then
+            call specificvolume(T_ref,P_ref,x_ref,phase_ref,v_ref)
+            call enthalpy_tv(T_ref,v_ref,x_ref,h_ref)
+            call entropy_tv(T_ref,v_ref,x_ref,s_ref)
+            call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+          endif
+        enddo
+        deallocate(x_ref,y_ref)
+        tptmin = tmin
+      endif
     endif
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()

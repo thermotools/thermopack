@@ -1,5 +1,5 @@
 !> Automatically generated file meosdatadb.f90
-!! Time stamp: 2023-03-18T23:41:11.047130
+!! Time stamp: 2023-03-23T12:38:31.823273
 
 module meosdatadb
   use thermopack_constants, only: uid_len, comp_name_len, bibref_len
@@ -58,6 +58,8 @@ module meosdatadb
     integer :: n_id !< Overall number of ID terms
     real :: c_id(meos_id_max_n) !< Polynomial parameter/Einstein function parameter
     real :: t_id(meos_id_max_n) !< Einstein function exp-parameter
+    real :: a1_id !< Integration constant for entropy
+    real :: a2_id !< Integration constant for enthalpy
   end type meosdata
 
   type (meosdata), parameter :: meos_1 = &
@@ -237,7 +239,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 5.9815277224498971, &
+      a2_id = -0.5247807538556827 )
 
   type (meosdata), parameter :: meos_2 = &
       meosdata(ident = "C2", &
@@ -416,7 +420,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.0938209725939316, &
+      a2_id = 3.2503021100636769 )
 
   type (meosdata), parameter :: meos_3 = &
       meosdata(ident = "CO", &
@@ -595,7 +601,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.3728307183251847, &
+      a2_id = 3.3683452997752736 )
 
   type (meosdata), parameter :: meos_4 = &
       meosdata(ident = "O-H2", &
@@ -774,7 +782,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -5.6016156823632457, &
+      a2_id = 5.1318379867780717 )
 
   type (meosdata), parameter :: meos_5 = &
       meosdata(ident = "IC5", &
@@ -953,7 +963,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 2.5822358374928172, &
+      a2_id = 1.1609085086424664 )
 
   type (meosdata), parameter :: meos_6 = &
       meosdata(ident = "NC10", &
@@ -1132,7 +1144,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 13.936202857079877, &
+      a2_id = -10.5265173263752523 )
 
   type (meosdata), parameter :: meos_7 = &
       meosdata(ident = "R21", &
@@ -1311,7 +1325,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -13.1877035704659669, &
+      a2_id = 9.1813742728328709 )
 
   type (meosdata), parameter :: meos_8 = &
       meosdata(ident = "ETOH", &
@@ -1490,7 +1506,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.6443990342909416, &
+      a2_id = 5.0708070582887474 )
 
   type (meosdata), parameter :: meos_9 = &
       meosdata(ident = "KR", &
@@ -1669,7 +1687,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.7506404605274408, &
+      a2_id = 3.7798013718120207 )
 
   type (meosdata), parameter :: meos_10 = &
       meosdata(ident = "IC4", &
@@ -1848,7 +1868,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -5.9995196315283579, &
+      a2_id = 5.0189508361247883 )
 
   type (meosdata), parameter :: meos_11 = &
       meosdata(ident = "C1", &
@@ -2027,7 +2049,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -2.9705496667947529, &
+      a2_id = 2.8907453831087553 )
 
   type (meosdata), parameter :: meos_12 = &
       meosdata(ident = "NC6", &
@@ -2206,7 +2230,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 12.3137913581698513, &
+      a2_id = -1.3163412546284243 )
 
   type (meosdata), parameter :: meos_13 = &
       meosdata(ident = "N2", &
@@ -2385,7 +2411,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -12.7695270804627707, &
+      a2_id = -0.0078416296806012 )
 
   type (meosdata), parameter :: meos_14 = &
       meosdata(ident = "NC12", &
@@ -2564,7 +2592,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 20.5642558466316814, &
+      a2_id = -15.593070164198167 )
 
   type (meosdata), parameter :: meos_15 = &
       meosdata(ident = "D2", &
@@ -2743,7 +2773,9 @@ module meosdatadb
       5034.2,269.9,229.9, &
       666.4,452.8,192.0, &
       1187.6 &
-      /) )
+      /), &
+      a1_id = -2.0677350466039846, &
+      a2_id = 2.4237150686246927 )
 
   type (meosdata), parameter :: meos_16 = &
       meosdata(ident = "SO2", &
@@ -2922,7 +2954,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.541423325625578, &
+      a2_id = 4.4732288061807504 )
 
   type (meosdata), parameter :: meos_17 = &
       meosdata(ident = "NC8", &
@@ -3101,7 +3135,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 16.93282505786505, &
+      a2_id = -4.06060362648397 )
 
   type (meosdata), parameter :: meos_18 = &
       meosdata(ident = "R23", &
@@ -3280,7 +3316,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -8.3138729985195088, &
+      a2_id = 6.5508807867641732 )
 
   type (meosdata), parameter :: meos_19 = &
       meosdata(ident = "AR", &
@@ -3459,7 +3497,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -10.2938148004759711, &
+      a2_id = -0.0003415237881503 )
 
   type (meosdata), parameter :: meos_20 = &
       meosdata(ident = "R32", &
@@ -3638,7 +3678,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -8.2581043885434511, &
+      a2_id = 6.3531025573429387 )
 
   type (meosdata), parameter :: meos_21 = &
       meosdata(ident = "NC22", &
@@ -3817,7 +3859,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 66.7339510994363536, &
+      a2_id = -44.1656208449909968 )
 
   type (meosdata), parameter :: meos_22 = &
       meosdata(ident = "ALLENE", &
@@ -3996,7 +4040,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -2.7836228624391168, &
+      a2_id = 3.2416044956386374 )
 
   type (meosdata), parameter :: meos_23 = &
       meosdata(ident = "R1234YF", &
@@ -4175,7 +4221,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -12.8379485300797782, &
+      a2_id = 8.0426156173728476 )
 
   type (meosdata), parameter :: meos_24 = &
       meosdata(ident = "P-H2", &
@@ -4354,7 +4402,9 @@ module meosdatadb
       5395.0,10185.0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -1.4485885457134948, &
+      a2_id = 1.8845208741487571 )
 
   type (meosdata), parameter :: meos_25 = &
       meosdata(ident = "ACETYLENE", &
@@ -4533,7 +4583,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.4118831161847254, &
+      a2_id = 3.3339613727891444 )
 
   type (meosdata), parameter :: meos_26 = &
       meosdata(ident = "R1234ZE", &
@@ -4712,7 +4764,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -12.5583513312376738, &
+      a2_id = 8.7912317462661171 )
 
   type (meosdata), parameter :: meos_27 = &
       meosdata(ident = "H2S", &
@@ -4891,7 +4945,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.0740759852320352, &
+      a2_id = 3.7632130988924168 )
 
   type (meosdata), parameter :: meos_28 = &
       meosdata(ident = "NE", &
@@ -5070,7 +5126,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.0384719151147275, &
+      a2_id = 3.253690479855404 )
 
   type (meosdata), parameter :: meos_29 = &
       meosdata(ident = "R116", &
@@ -5249,7 +5307,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -10.7088893891341712, &
+      a2_id = 8.9149145291965084 )
 
   type (meosdata), parameter :: meos_30 = &
       meosdata(ident = "CYCLOHEX", &
@@ -5428,7 +5488,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 0.9891146198409615, &
+      a2_id = 1.6359656987149183 )
 
   type (meosdata), parameter :: meos_31 = &
       meosdata(ident = "R114", &
@@ -5607,7 +5669,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -11.3866923427291784, &
+      a2_id = 10.9321087031209583 )
 
   type (meosdata), parameter :: meos_32 = &
       meosdata(ident = "O2", &
@@ -5786,7 +5850,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -14.7168366664971053, &
+      a2_id = -0.0110839854084588 )
 
   type (meosdata), parameter :: meos_33 = &
       meosdata(ident = "H2", &
@@ -5965,7 +6031,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -1.4579850777108838, &
+      a2_id = 1.8880764164897215 )
 
   type (meosdata), parameter :: meos_34 = &
       meosdata(ident = "R124", &
@@ -6144,7 +6212,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -11.6694278205254687, &
+      a2_id = 9.8760554938431273 )
 
   type (meosdata), parameter :: meos_35 = &
       meosdata(ident = "MEOH", &
@@ -6323,7 +6393,9 @@ module meosdatadb
       5296.17127,273.36934,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.4231521797113365, &
+      a2_id = 5.4815623918310443 )
 
   type (meosdata), parameter :: meos_36 = &
       meosdata(ident = "R218", &
@@ -6502,7 +6574,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -15.6587666987777396, &
+      a2_id = 11.4531605140032475 )
 
   type (meosdata), parameter :: meos_37 = &
       meosdata(ident = "R12", &
@@ -6681,7 +6755,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -14.7178947415560639, &
+      a2_id = 9.4030125798124899 )
 
   type (meosdata), parameter :: meos_38 = &
       meosdata(ident = "NC16", &
@@ -6860,7 +6936,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 45.9620674049700142, &
+      a2_id = -26.1883393966868319 )
 
   type (meosdata), parameter :: meos_39 = &
       meosdata(ident = "F6S", &
@@ -7039,7 +7117,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -15.4089857348096295, &
+      a2_id = 10.8151609115241314 )
 
   type (meosdata), parameter :: meos_40 = &
       meosdata(ident = "HE", &
@@ -7218,7 +7298,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 0.1733487932835764, &
+      a2_id = 0.4674522201550815 )
 
   type (meosdata), parameter :: meos_41 = &
       meosdata(ident = "H2O", &
@@ -7397,7 +7479,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -8.3204464837678032, &
+      a2_id = 6.6832105275977254 )
 
   type (meosdata), parameter :: meos_42 = &
       meosdata(ident = "R115", &
@@ -7576,7 +7660,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -13.4050037923356555, &
+      a2_id = 10.0015536023086682 )
 
   type (meosdata), parameter :: meos_43 = &
       meosdata(ident = "R11", &
@@ -7755,7 +7841,9 @@ module meosdatadb
       502.854,346.746,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -17.7938110160538514, &
+      a2_id = 10.0839710927509554 )
 
   type (meosdata), parameter :: meos_44 = &
       meosdata(ident = "13BD", &
@@ -7934,7 +8022,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -1.0260215656338829, &
+      a2_id = 2.7310597807829633 )
 
   type (meosdata), parameter :: meos_45 = &
       meosdata(ident = "ACETONE", &
@@ -8113,7 +8203,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 0.3015070258580721, &
+      a2_id = 2.7317365462703083 )
 
   type (meosdata), parameter :: meos_46 = &
       meosdata(ident = "NH3", &
@@ -8292,7 +8384,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -6.59406093943886, &
+      a2_id = 5.60101151987913 )
 
   type (meosdata), parameter :: meos_47 = &
       meosdata(ident = "BENZENE", &
@@ -8471,7 +8565,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -0.673584364528315, &
+      a2_id = 2.5555552197611604 )
 
   type (meosdata), parameter :: meos_48 = &
       meosdata(ident = "N2O", &
@@ -8650,7 +8746,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.4262724194662564, &
+      a2_id = 4.3120468016770888 )
 
   type (meosdata), parameter :: meos_49 = &
       meosdata(ident = "CO2", &
@@ -8829,7 +8927,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -6.124871063353245, &
+      a2_id = 5.1155963185961815 )
 
   type (meosdata), parameter :: meos_50 = &
       meosdata(ident = "R14", &
@@ -9008,7 +9108,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -8.5391328033953542, &
+      a2_id = 13.4878238763322749 )
 
   type (meosdata), parameter :: meos_51 = &
       meosdata(ident = "MEG", &
@@ -9187,7 +9289,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -1.2230958209345886, &
+      a2_id = 3.8389800933704281 )
 
   type (meosdata), parameter :: meos_52 = &
       meosdata(ident = "NC7", &
@@ -9366,7 +9470,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 17.46311465657638, &
+      a2_id = -2.9932383994019123 )
 
   type (meosdata), parameter :: meos_53 = &
       meosdata(ident = "NC4", &
@@ -9545,7 +9651,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -5.4249697888268713, &
+      a2_id = 4.9194999371032626 )
 
   type (meosdata), parameter :: meos_54 = &
       meosdata(ident = "OXYL", &
@@ -9724,7 +9832,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 10.1373795661858708, &
+      a2_id = -0.9128323735238781 )
 
   type (meosdata), parameter :: meos_55 = &
       meosdata(ident = "R134A", &
@@ -9903,7 +10013,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -1.0195506821162033, &
+      a2_id = 9.0471440883402678 )
 
   type (meosdata), parameter :: meos_56 = &
       meosdata(ident = "C3", &
@@ -10082,7 +10194,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.9705912033525124, &
+      a2_id = 4.293524424315649 )
 
   type (meosdata), parameter :: meos_57 = &
       meosdata(ident = "R22", &
@@ -10261,7 +10375,9 @@ module meosdatadb
       1605.67848,1162.53424,857.51288, &
       605.72638,530.90982,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -11.8534837123339809, &
+      a2_id = 8.086928987282386 )
 
   type (meosdata), parameter :: meos_58 = &
       meosdata(ident = "TOLU", &
@@ -10440,7 +10556,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 3.5241204689061192, &
+      a2_id = 1.1360804066266901 )
 
   type (meosdata), parameter :: meos_59 = &
       meosdata(ident = "R142B", &
@@ -10619,7 +10737,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -12.6016704500950851, &
+      a2_id = 8.316026972375175 )
 
   type (meosdata), parameter :: meos_60 = &
       meosdata(ident = "NC5", &
@@ -10798,7 +10918,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 8.5092528322783494, &
+      a2_id = 0.0643058406269243 )
 
   type (meosdata), parameter :: meos_61 = &
       meosdata(ident = "3MP", &
@@ -10977,7 +11099,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 4.6479377291134423, &
+      a2_id = -0.9065150384577076 )
 
   type (meosdata), parameter :: meos_62 = &
       meosdata(ident = "NC9", &
@@ -11156,7 +11280,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 10.792727988975912, &
+      a2_id = -8.2418358074837137 )
 
   type (meosdata), parameter :: meos_63 = &
       meosdata(ident = "XE", &
@@ -11335,7 +11461,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -3.8227169849622977, &
+      a2_id = 3.8416390607135864 )
 
   type (meosdata), parameter :: meos_64 = &
       meosdata(ident = "NC11", &
@@ -11514,7 +11642,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 32.12928483616682, &
+      a2_id = -10.75942326931605 )
 
   type (meosdata), parameter :: meos_65 = &
       meosdata(ident = "EBZN", &
@@ -11693,7 +11823,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 5.7040936889063971, &
+      a2_id = -0.5241459501533468 )
 
   type (meosdata), parameter :: meos_66 = &
       meosdata(ident = "R143A", &
@@ -11872,7 +12004,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 5.9030332880254637, &
+      a2_id = 7.3072591981034742 )
 
   type (meosdata), parameter :: meos_67 = &
       meosdata(ident = "C3_1", &
@@ -12051,7 +12185,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -7.346431336306658, &
+      a2_id = 5.3030265687291829 )
 
   type (meosdata), parameter :: meos_68 = &
       meosdata(ident = "PRLN", &
@@ -12230,7 +12366,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -5.1823353913028285, &
+      a2_id = 4.3639943544853246 )
 
   type (meosdata), parameter :: meos_69 = &
       meosdata(ident = "R41", &
@@ -12409,7 +12547,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = -4.8676501221130053, &
+      a2_id = 4.2527989117950007 )
 
   type (meosdata), parameter :: meos_70 = &
       meosdata(ident = "MXYL", &
@@ -12588,7 +12728,9 @@ module meosdatadb
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0 &
-      /) )
+      /), &
+      a1_id = 12.6528905042467272, &
+      a2_id = -0.4597586328446329 )
 
   integer, parameter :: maxmeos = 70
   type (meosdata), dimension(maxmeos), parameter :: meosdb = (/&
