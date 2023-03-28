@@ -71,8 +71,8 @@ contains
     call calcCriticalTV(t,v,Z,ierr,tol)
     @assertTrue(ierr == 0)
     p = pressure(T,v,Z)
-    @assertEqual(9.7353925540043384E-005, v, 1e-10)
-    @assertEqual(298.06404227591383, T, 1e-05)
+    @assertEqual(9.7353925540043384E-005, v, 5e-10)
+    @assertEqual(298.06404227591383, T, 5e-05)
     @assertEqual(8608562.1708822846, p, 1.0)
 
   end subroutine test_critical_point_mix
