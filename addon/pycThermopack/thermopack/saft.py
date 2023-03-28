@@ -20,8 +20,8 @@ class saft(thermo.thermo):
     """
 
     def __init__(self):
-        """
-        Initialize cubic specific function pointers
+        """Internal
+        Initialize saft specific function pointers
         """
         # Load dll/so
         super(saft, self).__init__()
@@ -43,7 +43,8 @@ class saft(thermo.thermo):
         self.eps_div_kb = None
 
     def hard_sphere_diameters(self, temp):
-        """Calculate hard-sphere diameters given temperature, volume and mol numbers.
+        """Utility
+        Calculate hard-sphere diameters given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -67,8 +68,9 @@ class saft(thermo.thermo):
 
     def a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate dispersion contribution given temperature, volume and mol numbers.
-           a = A_disp/(nRT)
+        """Utility
+        Calculate dispersion contribution given temperature, volume and mol numbers. $a = A_{disp}/(nRT)$
+
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -139,7 +141,8 @@ class saft(thermo.thermo):
         return return_tuple
 
     def de_broglie_wavelength(self, c, temp):
-        """Calculate de Broglie wavelength
+        """Utility
+        Calculate de Broglie wavelength
 
         Args:
             c (int): Component index (FORTRAN)
@@ -166,7 +169,8 @@ class saft(thermo.thermo):
         return lambda_c.value
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)
@@ -179,7 +183,8 @@ class saft(thermo.thermo):
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
 
     def fres_polar(self, temp, volume, n, qq=True, dd=True, dq=True):
-        """Calculate reduced Helmholtz energy contribution from polar model
+        """Utility
+        Calculate reduced Helmholtz energy contribution from polar model
 
         Args:
             temp (float): Temperature (K)
@@ -222,7 +227,8 @@ class saft(thermo.thermo):
         return f_c.value
 
     def polar_model_control(self, qq, dd, dq):
-        """Dictate what terms are included with for polar model
+        """Utility
+        Dictate what terms are included with for polar model
 
         Args:
             qq (bool): Include quadrupole-quadrupole contribution?

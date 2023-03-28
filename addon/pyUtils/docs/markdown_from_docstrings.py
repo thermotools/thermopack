@@ -58,7 +58,11 @@ import inspect
 from warnings import warn
 from datetime import datetime
 from thermopack.thermo import thermo
-from tools import remove_illegal_link_chars, THERMOPACK_ROOT, MARKDOWN_DIR
+from thermopack.saft import saft
+from thermopack.saftvrmie import saftvrmie
+from thermopack.pcsaft import pcsaft
+from thermopack.saftvrqmie import saftvrqmie
+from tools import remove_illegal_link_chars, check_is_changed, write_file, THERMOPACK_ROOT, MARKDOWN_DIR
 
 
 def get_autogen_header(classname):
@@ -271,10 +275,140 @@ def thermo_to_markdown():
     ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
 
     filename = 'thermo_methods.md'
-    with open(MARKDOWN_DIR + filename, 'w') as ofile:
-        ofile.write(ofile_text)
+    write_file(MARKDOWN_DIR + filename, ofile_text)
 
-    print('Wrote', filename, 'to', MARKDOWN_DIR + filename)
+def saft_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Utility',
+                'Internal']
+
+    section_headers = {'Internal' : 'Internal methods',
+                       'Utility' : 'Utility methods'}
+
+    section_intro = {'Internal': 'Methods for handling communication with the Fortran library.',
+                       'Utility': 'Methods for computing specific parameters and contributions to the residual\n'
+                                  'Helmholtz energy for SAFT-type equations of state'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    thermo_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    saft_specific_methods = sorted(list(set(saft_methods) - set(thermo_methods)))
+    method_dict = split_methods_by_section(sections, saft_specific_methods)
+
+    ofile_text = get_autogen_header('saft')
+    ofile_text += '# Methods in the saft class (`saft.py`)\n\n'
+    ofile_text += 'The `saft` class, found in `addon/pycThermopack/saft.py`, is an "abstract" class, that is inherited\n' \
+                  'by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic utility methods to\n' \
+                  'compute quantities of interest when investigating SAFT-type equations of state.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saft_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def saftvrmie_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Constructor',
+                'Utility',
+                'Model control']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods',
+                       'Model control': 'Model control'}
+
+    section_intro= {'Constructor' : 'Methods to initialise SAFT-VR Mie model.',
+                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.',
+                        'Model control' : 'Control which contributions to the residual Helmholtz energy are included,\n'
+                                          'and the hard-sphere reference term.'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
+    saftvrmie_specific_methods = sorted(list(set(saftvrmie_methods) - set(saft_methods)))
+    method_dict = split_methods_by_section(sections, saftvrmie_specific_methods)
+
+    ofile_text = get_autogen_header('saftvrmie')
+    ofile_text += '# Methods in the saftvrmie class (`saftvrmie.py`)\n\n'
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/saftvrmie.py`, is the interface to the \n' \
+                  'SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
+                  '`thermo` class. This class implements methods for modifying fluid parameters and which terms\n' \
+                  'are included in the model.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saftvrmie_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def saftvrqmie_to_markdown():
+    """
+    Generate markdown documentation file for the saftvrqmie class.
+    """
+
+    sections = ['Constructor',
+                'Utility']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    section_intro= {'Constructor' : 'Methods to initialise SAFT-VRQ Mie model.',
+                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
+
+    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
+    saftvrqmie_methods = inspect.getmembers(saftvrqmie, predicate=inspect.isfunction)
+    saftvrqmie_specific_methods = sorted(list(set(saftvrqmie_methods) - set(saftvrmie_methods)))
+    method_dict = split_methods_by_section(sections, saftvrqmie_specific_methods)
+
+    ofile_text = get_autogen_header('saftvrqmie')
+    ofile_text += '# Methods in the saftvrqmie class (`saftvrqmie.py`)\n\n'
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/saftvrqmie.py`, is the interface to the \n' \
+                  'SAFT-VRQ Mie Equation of State.\n*NOTE*: This class inherits the `saftvrmie` class, and thereby has\n' \
+                  'access to the `model control` and `utility` methods found there. The `saftvrmie` class inherits\n' \
+                  'the `saft` class, which in turn inherits the `thermo` class.\n' \
+                  'This class implements utility methods specific to the SAFT-VRQ Mie EoS.\n\n'
+
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saftvrqmie_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def pcsaft_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Constructor',
+                'Utility']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    section_intro= {'Constructor' : 'Methods to initialise PC-SAFT model.',
+                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    pcsaft_methods = inspect.getmembers(pcsaft, predicate=inspect.isfunction)
+    pcsaft_specific_methods = sorted(list(set(pcsaft_methods) - set(saft_methods)))
+    method_dict = split_methods_by_section(sections, pcsaft_specific_methods)
+
+    ofile_text = get_autogen_header('pcsaft')
+    ofile_text += '# Methods in the pcsaft class (`pcsaft.py`)\n\n'
+    ofile_text += 'The `pcsaft` class, found in `addon/pycThermopack/pcsaft.py`, is the interface to the \n' \
+                  'PC-SAFT Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
+                  '`thermo` class. This class implements utility methods to access mixing parameters etc.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'pcsaft_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
 
 if __name__ == '__main__':
     thermo_to_markdown()
+    saft_to_markdown()
+    saftvrmie_to_markdown()
+    saftvrqmie_to_markdown()
+    pcsaft_to_markdown()
