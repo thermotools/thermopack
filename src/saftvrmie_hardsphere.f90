@@ -145,17 +145,21 @@ Contains
        g_nn=0.0
     endif
 
-    ! Compute the exact d_ij's according to BH-theory
-    storage_container_dhs=svrm_opt%exact_binary_dhs  ! Store logical
-    svrm_opt%exact_binary_dhs=.true.                 ! Reset logical
+    if (.not. svrm_opt%exact_binary_dhs) then
+      ! Compute the exact d_ij's according to BH-theory
+      storage_container_dhs=svrm_opt%exact_binary_dhs  ! Store logical
+      svrm_opt%exact_binary_dhs=.true.                 ! Reset logical
 
-    ! Calculate exact hard-sphere diameters
-    call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
-         s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
-         dhs_exact%d_T,dhs_exact%d_TT)
+      ! Calculate exact hard-sphere diameters
+      call calc_hardsphere_diameter(nc,T,s_vc,s_vc%sigma_eff%d,&
+           s_vc%sigma_eff%d_T,s_vc%sigma_eff%d_TT,dhs_exact%d,&
+           dhs_exact%d_T,dhs_exact%d_TT)
 
-    svrm_opt%exact_binary_dhs=storage_container_dhs  ! Reset logical
-
+      svrm_opt%exact_binary_dhs=storage_container_dhs  ! Reset logical
+    else
+      ! Set symmetric values for d
+      call dhs%update_symmetric_diameters()
+    endif
     ! Pre-calculate
     two_pi_div_V=2.0*pi/V
 
@@ -164,7 +168,7 @@ Contains
        ! of the variables, i.e. a_ij=a_ji. We have multiplied the
        ! contributions from the double sum with 2.0 to account for that.
        do j= 1,nc
-          do i= 1,nc
+         do i= 1,nc
              ! Compute the pair-correlation function and derivatives:
              call calc_hardsphere_mixture_gij(nc,T,V,n,i,j,dhs,zeta,g,g_T,g_V,g_n,&
                   g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
@@ -255,14 +259,14 @@ Contains
        endif
     endif
 
-    ! Add the extra double-sum terms to the first order n-derivatives
-    if (present(a_V)) then
-       a_n=a_n
-    endif
-    ! Add the extra double-sum terms to the second order n-derivatives
-    if (present(a_V)) then
-       a_nn=a_nn
-    endif
+    ! ! Add the extra double-sum terms to the first order n-derivatives
+    ! if (present(a_n)) then
+    !    a_n=a_n
+    ! endif
+    ! ! Add the extra double-sum terms to the second order n-derivatives
+    ! if (present(a_nn)) then
+    !    a_nn=a_nn
+    ! endif
 
     ! Multiply with Avogadros number to have the right
     ! dimensions (a=A/RT)
@@ -291,7 +295,7 @@ Contains
        a_Vn=a_Vn*N_AVOGADRO
     endif
     if (present(a_n)) then
-       a_n=a_n*N_AVOGADRO
+      a_n=a_n*N_AVOGADRO
     endif
     if (present(a_nn)) then
        a_nn=a_nn*N_AVOGADRO

@@ -32,8 +32,9 @@ module AssocSchemeUtils
 contains
 
   subroutine assocIndices_bookkeeping (assoc, nc, saft_model, assocSchemes_db)
-    use eosdata, only: eosPC_SAFT, eosSAFT_VR_MIE, eosPeTS, eosLJS_BH, &
-         get_eos_short_label_from_subidx, eosLJS_WCA, eosLJS_UV, eosLJ_UF
+    use eosdata, only: eosSPC_SAFT, eosOPC_SAFT, eosSAFT_VR_MIE, eosPeTS, eosLJS_BH, &
+         get_eos_short_label_from_subidx, eosLJS_WCA, eosLJS_UV, eosLJ_UF, &
+         eosSPCP_SAFT, eosPCP_SAFT
     type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
@@ -86,7 +87,10 @@ contains
 
     if (assoc%numAssocSites .eq. 0) then
        ! No associating components: exit routine.
-      if ( saft_model == eosPC_SAFT .or. &
+      if ( saft_model == eosSPC_SAFT .or. &
+           saft_model == eosOPC_SAFT .or. &
+           saft_model == eosSPCP_SAFT .or. &
+           saft_model == eosPCP_SAFT .or. &
            saft_model == eosSAFT_VR_MIE .or. &
            saft_model == eosPeTS .or. &
            saft_model == eosLJS_BH .or. &

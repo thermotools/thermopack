@@ -74,6 +74,14 @@
     "bib_reference": "",
     "Zra": 0.2698
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "MC-1": {
       "ref": "Chapoy2005",
@@ -129,5 +137,26 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.4653,
+    "sigma": 3.6478E-10,
+    "eps_depth_divk": 287.350,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
+  },
+  "PC-SAFT-2": {
+    "m": 2.2463,
+    "sigma": 3.7852E-10,
+    "eps_depth_divk": 296.24,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "Q": 5.5907,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005ADJQ"
   }
 }

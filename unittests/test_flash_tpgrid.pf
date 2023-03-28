@@ -2,7 +2,7 @@ module test_flash_tpgrid
   use eoslibinit, only: init_thermo
   use thermopack_constants, only: continueOnError
   use ps_solver
-  use pfunit_mod
+  use funit
   implicit none
   public
 

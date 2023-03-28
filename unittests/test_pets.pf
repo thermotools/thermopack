@@ -1,6 +1,6 @@
 module test_pets
   use thermopack_var, only: nce
-  use pfunit_mod
+  use funit
   use eoslibinit, only: init_thermo
   use pets
   use saft_interface

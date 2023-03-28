@@ -930,6 +930,7 @@ contains
     match = .false.
 
     if (len_trim(string) > 0) then
+      ! Upcase strings
       sub_string_up = trim(sub_string)
       call str_upcase(sub_string_up)
       allocate(character(len=len_trim(string)) :: string_up, before, stat=istat)
@@ -939,7 +940,7 @@ contains
       do
         if(len_trim(string_up) == 0) exit
         call split(string_up,"/",before)
-        if (index(trim(before), trim(sub_string_up)) > 0) then
+        if (index(trim(sub_string_up), trim(before)) > 0) then
           match = .true.
           exit
         endif
