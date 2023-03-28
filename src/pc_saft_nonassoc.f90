@@ -10,15 +10,27 @@ module pc_saft_nonassoc
   use thermopack_var, only: nce, base_eos_param, base_eos_dealloc
   use thermopack_constants, only: N_AVOGADRO
   use numconstants, only: PI
+  use hardsphere_bmcsl, only: hs_diameter, packing_fraction_hs
   implicit none
   save
 
-  type, extends(base_eos_param) :: PCSAFT_eos
+  type, extends(base_eos_param) :: sPCSAFT_eos
     ! All dimensions will be allocated to nce.
     real, allocatable :: m(:)                 !< [-]
     real, allocatable :: sigma(:,:)           !< [m]
     real, allocatable :: eps_depth_divk(:,:)  !< [K]
     real, allocatable :: sigma_cube(:,:)      !< [m^3]
+  contains
+    procedure, public :: dealloc => spcsaft_dealloc
+    procedure, public :: allocate_and_init => spcsaft_allocate_and_init
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_spcsaft
+  end type sPCSAFT_eos
+
+  type, extends(sPCSAFT_eos) :: PCSAFT_eos
+    ! All dimensions will be allocated to nce.
+    type(hs_diameter) :: dhs
+    type(packing_fraction_hs) :: zeta
   contains
     procedure, public :: dealloc => pcsaft_dealloc
     procedure, public :: allocate_and_init => pcsaft_allocate_and_init
@@ -51,14 +63,17 @@ module pc_saft_nonassoc
   ! 2. a and b can probably be calculated simultaneously.
   ! 3. A lot of routines should be able to optionally accept e.g. d_i(T).
 
+  logical :: enable_hs = .true.
+  logical :: enable_disp = .true.
+
 contains
 
   !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
   !> coming from PC-SAFT's hard-chain and dispersion contributions. All
   !> variables are in base SI units. F is defined by
   !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
-  subroutine F_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+  subroutine F_sPC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
     ! Output.
     real, intent(out), optional :: F !< [mol]
@@ -82,13 +97,13 @@ contains
          present(F_VV) .or. present(F_Vn) .or. present(F_nn)
 
     if (sec_der_present) then
-       call alpha_PC(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n,&
-            alp_rhorho=alp_rhorho,alp_rhoT=alp_rhoT,alp_rhon=alp_rhon,&
-            alp_TT=alp_TT,alp_Tn=alp_Tn,alp_nn=alp_nn)
+      call alpha_PC(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n,&
+           alp_rhorho=alp_rhorho,alp_rhoT=alp_rhoT,alp_rhon=alp_rhon,&
+           alp_TT=alp_TT,alp_Tn=alp_Tn,alp_nn=alp_nn)
     else if (fir_der_present) then
-       call alpha_PC(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n)
+      call alpha_PC(eos,rho,T,n,alp=alp,alp_rho=alp_rho,alp_T=alp_T,alp_n=alp_n)
     else
-       call alpha_PC(eos,rho,T,n,alp=alp)
+      call alpha_PC(eos,rho,T,n,alp=alp)
     end if
 
     if (present(F)) F = sumn*alp
@@ -101,20 +116,20 @@ contains
     if (present(F_VV)) F_VV = 2*sumn**2/V**3*alp_rho + sumn**3/V**4*alp_rhorho
     if (present(F_Vn)) F_Vn = -2*sumn*alp_rho/V**2-sumn**2*alp_rhorho/V**3-sumn**2*alp_rhon/V**2
     if (present(F_nn)) then
-       do i=1,nce
-          do j=1,nce
-             F_nn(i,j) = sumn*alp_nn(i,j) + sumn*(alp_rhon(j)+alp_rhon(i))/V + alp_n(i) + alp_n(j) &
-                  + sumn*alp_rhorho/V**2 + 2*alp_rho/V
-          end do
-       end do
+      do i=1,nce
+        do j=1,nce
+          F_nn(i,j) = sumn*alp_nn(i,j) + sumn*(alp_rhon(j)+alp_rhon(i))/V + alp_n(i) + alp_n(j) &
+               + sumn*alp_rhorho/V**2 + 2*alp_rho/V
+        end do
+      end do
     end if
 
-  end subroutine F_PC_SAFT_TVn
+  end subroutine F_SPC_SAFT_TVn
 
   !> alpha_PC = alp^{hard_chain} + alpha^{dispersion}
   subroutine alpha_PC(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce)  !< [mol/m^3], [K], [mol]
     real, intent(out), optional :: alp !< [-]
     real, intent(out), optional :: alp_rho, alp_T, alp_n(nce)
@@ -136,58 +151,64 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n,&
-            alp_hc_rhorho,alp_hc_rhoT,alp_hc_rhon,&
-            alp_hc_TT,alp_hc_Tn,alp_hc_nn)
-       call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
-            alp_d_rhorho,alp_d_rhoT,alp_d_rhon,&
-            alp_d_TT,alp_d_Tn,alp_d_nn)
+      if (enable_hs) &
+           call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n,&
+           alp_hc_rhorho,alp_hc_rhoT,alp_hc_rhon,&
+           alp_hc_TT,alp_hc_Tn,alp_hc_nn)
+      if (enable_disp) &
+           call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n,&
+           alp_d_rhorho,alp_d_rhoT,alp_d_rhon,&
+           alp_d_TT,alp_d_Tn,alp_d_nn)
     else if (fir_der_present) then
-       call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n)
-       call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
+      if (enable_hs) &
+      call alpha_spc_saft_hc(eos,rho,T,n,alp_hc,alp_hc_rho,alp_hc_T,alp_hc_n)
+      if (enable_disp) &
+           call alpha_disp(eos,rho,T,n,alp_d,alp_d_rho,alp_d_T,alp_d_n)
     else
-       call alpha_spc_saft_hc(eos,rho,T,n,alp_hc)
-       call alpha_disp(eos,rho,T,n,alp_d)
+      if (enable_hs) &
+           call alpha_spc_saft_hc(eos,rho,T,n,alp_hc)
+      if (enable_disp) &
+      call alpha_disp(eos,rho,T,n,alp_d)
     end if
 
     if (present(alp)) then
-       alp = alp_hc + alp_d
+      alp = alp_hc + alp_d
     end if
 
     if (present(alp_rho)) then
-       alp_rho = alp_hc_rho + alp_d_rho
+      alp_rho = alp_hc_rho + alp_d_rho
     end if
 
     if (present(alp_T)) then
-       alp_T = alp_hc_T + alp_d_T
+      alp_T = alp_hc_T + alp_d_T
     end if
 
     if (present(alp_n)) then
-       alp_n = alp_hc_n + alp_d_n
+      alp_n = alp_hc_n + alp_d_n
     end if
 
     if (present(alp_rhorho)) then
-       alp_rhorho = alp_hc_rhorho + alp_d_rhorho
+      alp_rhorho = alp_hc_rhorho + alp_d_rhorho
     end if
 
     if (present(alp_rhoT)) then
-       alp_rhoT = alp_hc_rhoT + alp_d_rhoT
+      alp_rhoT = alp_hc_rhoT + alp_d_rhoT
     end if
 
     if (present(alp_rhon)) then
-       alp_rhon = alp_hc_rhon + alp_d_rhon
+      alp_rhon = alp_hc_rhon + alp_d_rhon
     end if
 
     if (present(alp_TT)) then
-       alp_TT = alp_hc_TT + alp_d_TT
+      alp_TT = alp_hc_TT + alp_d_TT
     end if
 
     if (present(alp_Tn)) then
-       alp_Tn = alp_hc_Tn + alp_d_Tn
+      alp_Tn = alp_hc_Tn + alp_d_Tn
     end if
 
     if (present(alp_nn)) then
-       alp_nn = alp_hc_nn + alp_d_nn
+      alp_nn = alp_hc_nn + alp_d_nn
     end if
 
   end subroutine alpha_PC
@@ -196,7 +217,7 @@ contains
   !> The reduced, molar Helmholtz energy contribution from dispersion.
   subroutine alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce)  !< [mol/m^3], [K], [mol]
 
     real, intent(out), optional :: alp ! [-]
@@ -224,117 +245,227 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n,I1_rhorho,I1_rhoT,I1_rhon,I1_TT,I1_Tn,I1_nn)
-       call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n,I2_rhorho,I2_rhoT,I2_rhon,I2_TT,I2_Tn,I2_nn)
-       call m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n,m2e1s3_TT,m2e1s3_Tn,m2e1s3_nn)
-       call m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n,m2e2s3_TT,m2e2s3_Tn,m2e2s3_nn)
-       call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n,&
-            C1_rhorho,C1_rhoT,C1_rhon,C1_TT,C1_Tn,C1_nn)
+      call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n,I1_rhorho,I1_rhoT,I1_rhon,I1_TT,I1_Tn,I1_nn)
+      call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n,I2_rhorho,I2_rhoT,I2_rhon,I2_TT,I2_Tn,I2_nn)
+      call m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n,m2e1s3_TT,m2e1s3_Tn,m2e1s3_nn)
+      call m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n,m2e2s3_TT,m2e2s3_Tn,m2e2s3_nn)
+      call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n,&
+           C1_rhorho,C1_rhoT,C1_rhon,C1_TT,C1_Tn,C1_nn)
     else if (fir_der_present) then
-       call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n)
-       call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n)
-       call m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n)
-       call m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n)
-       call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n)
+      call I_1(eos,rho,T,n,I1,I1_rho,I1_T,I1_n)
+      call I_2(eos,rho,T,n,I2,I2_rho,I2_T,I2_n)
+      call m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n)
+      call m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n)
+      call C_1(eos,rho,T,n,C1,C1_rho,C1_T,C1_n)
     else
-       call I_1(eos,rho,T,n,I1)
-       call I_2(eos,rho,T,n,I2)
-       call m2e1s3_mean(eos,T,n,m2e1s3)
-       call m2e2s3_mean(eos,T,n,m2e2s3)
-       call C_1(eos,rho,T,n,C1)
+      call I_1(eos,rho,T,n,I1)
+      call I_2(eos,rho,T,n,I2)
+      call m2e1s3_mean(eos,T,n,m2e1s3)
+      call m2e2s3_mean(eos,T,n,m2e2s3)
+      call C_1(eos,rho,T,n,C1)
     end if
 
     call m_bar(eos,n,mbar,mbar_n,mbar_nn)
 
     if (present(alp)) then
-       alp = -PI*rho*(2*I1*m2e1s3 + mbar*C1*I2*m2e2s3)
-       alp = alp*N_AVOGADRO
+      alp = -PI*rho*(2*I1*m2e1s3 + mbar*C1*I2*m2e2s3)
+      alp = alp*N_AVOGADRO
     end if
 
     if (present(alp_rho)) then
-       alp_rho = -2*PI*(I1+rho*I1_rho)*m2e1s3
-       alp_rho = alp_rho - PI*mbar*(C1*I2+rho*C1_rho*I2+rho*C1*I2_rho)*m2e2s3
-       alp_rho = alp_rho*N_AVOGADRO
+      alp_rho = -2*PI*(I1+rho*I1_rho)*m2e1s3
+      alp_rho = alp_rho - PI*mbar*(C1*I2+rho*C1_rho*I2+rho*C1*I2_rho)*m2e2s3
+      alp_rho = alp_rho*N_AVOGADRO
     end if
 
     if (present(alp_T)) then
-       alp_T = -2*PI*rho*(I1_T*m2e1s3 + I1*m2e1s3_T)
-       alp_T = alp_T- PI*rho*mbar*(C1_T*I2*m2e2s3 + C1*I2_T*m2e2s3 + C1*I2*m2e2s3_T)
-       alp_T = alp_T*N_AVOGADRO
+      alp_T = -2*PI*rho*(I1_T*m2e1s3 + I1*m2e1s3_T)
+      alp_T = alp_T- PI*rho*mbar*(C1_T*I2*m2e2s3 + C1*I2_T*m2e2s3 + C1*I2*m2e2s3_T)
+      alp_T = alp_T*N_AVOGADRO
     end if
 
     if (present(alp_n)) then
-       alp_n = -2*PI*rho*(I1_n*m2e1s3 + I1*m2e1s3_n)
-       alp_n = alp_n - PI*rho*(mbar_n*C1*I2 + mbar*C1_n*I2 + mbar*C1*I2_n)*m2e2s3 - &
-            PI*rho*mbar*C1*I2*m2e2s3_n
-       alp_n = alp_n*N_AVOGADRO
+      alp_n = -2*PI*rho*(I1_n*m2e1s3 + I1*m2e1s3_n)
+      alp_n = alp_n - PI*rho*(mbar_n*C1*I2 + mbar*C1_n*I2 + mbar*C1*I2_n)*m2e2s3 - &
+           PI*rho*mbar*C1*I2*m2e2s3_n
+      alp_n = alp_n*N_AVOGADRO
     end if
 
     if (present(alp_rhorho)) then
-       alp_rhorho = -2*PI*(2*I1_rho+rho*I1_rhorho)*m2e1s3
-       alp_rhorho = alp_rhorho - PI*mbar*(2*C1_rho*I2 + 2*C1*I2_rho + 2*rho*C1_rho*I2_rho &
-            + rho*C1_rhorho*I2 +rho*C1*I2_rhorho)*m2e2s3
-       alp_rhorho = alp_rhorho*N_AVOGADRO
+      alp_rhorho = -2*PI*(2*I1_rho+rho*I1_rhorho)*m2e1s3
+      alp_rhorho = alp_rhorho - PI*mbar*(2*C1_rho*I2 + 2*C1*I2_rho + 2*rho*C1_rho*I2_rho &
+           + rho*C1_rhorho*I2 +rho*C1*I2_rhorho)*m2e2s3
+      alp_rhorho = alp_rhorho*N_AVOGADRO
     end if
 
     if (present(alp_rhoT)) then
-       alp_rhoT = -2*PI*(I1_T+rho*I1_rhoT)*m2e1s3 -2*PI*(I1+rho*I1_rho)*m2e1s3_T
-       alp_rhoT = alp_rhoT + 2*PI*mbar*(C1*I2 + rho*C1_rho*I2 + rho*C1*I2_rho)*m2e2s3/T - &
-            PI*mbar*(C1_T*I2 + C1*I2_T + rho*C1_rhoT*I2 + &
-            rho*C1_rho*I2_T + rho*C1_T*I2_rho + rho*C1*I2_rhoT)*m2e2s3
-       alp_rhoT = alp_rhoT*N_AVOGADRO
+      alp_rhoT = -2*PI*(I1_T+rho*I1_rhoT)*m2e1s3 -2*PI*(I1+rho*I1_rho)*m2e1s3_T
+      alp_rhoT = alp_rhoT + 2*PI*mbar*(C1*I2 + rho*C1_rho*I2 + rho*C1*I2_rho)*m2e2s3/T - &
+           PI*mbar*(C1_T*I2 + C1*I2_T + rho*C1_rhoT*I2 + &
+           rho*C1_rho*I2_T + rho*C1_T*I2_rho + rho*C1*I2_rhoT)*m2e2s3
+      alp_rhoT = alp_rhoT*N_AVOGADRO
     end if
 
     if (present(alp_rhon)) then
-       alp_rhon = -2*PI*(I1_n*m2e1s3 + I1*m2e1s3_n) &
-            - 2*PI*rho*(I1_rhon*m2e1s3 + I1_rho*m2e1s3_n)
-       alp_rhon = alp_rhon - PI*(mbar_n*C1*I2 + mbar*C1_n*I2 + mbar*C1*I2_n)*m2e2s3 &
-            - PI*mbar*C1*I2*m2e2s3_n &
-            - PI*rho*(mbar_n*C1_rho*I2 + mbar*C1_rhon*I2 + mbar*C1_rho*I2_n &
-            + mbar_n*C1*I2_rho + mbar*C1_n*I2_rho + mbar*C1*I2_rhon)*m2e2s3 &
-            -pi*rho*mbar*(C1_rho*I2 + C1*I2_rho)*m2e2s3_n
-       alp_rhon = alp_rhon*N_AVOGADRO
+      alp_rhon = -2*PI*(I1_n*m2e1s3 + I1*m2e1s3_n) &
+           - 2*PI*rho*(I1_rhon*m2e1s3 + I1_rho*m2e1s3_n)
+      alp_rhon = alp_rhon - PI*(mbar_n*C1*I2 + mbar*C1_n*I2 + mbar*C1*I2_n)*m2e2s3 &
+           - PI*mbar*C1*I2*m2e2s3_n &
+           - PI*rho*(mbar_n*C1_rho*I2 + mbar*C1_rhon*I2 + mbar*C1_rho*I2_n &
+           + mbar_n*C1*I2_rho + mbar*C1_n*I2_rho + mbar*C1*I2_rhon)*m2e2s3 &
+           -pi*rho*mbar*(C1_rho*I2 + C1*I2_rho)*m2e2s3_n
+      alp_rhon = alp_rhon*N_AVOGADRO
     end if
 
     if (present(alp_TT)) then
-       alp_TT = -2*PI*rho*(I1_TT*m2e1s3 + 2*I1_T*m2e1s3_T + I1*m2e1s3_TT)
-       alp_TT = alp_TT - PI*rho*mbar*(&
-            C1_TT*I2*m2e2s3 + C1*I2_TT*m2e2s3 + C1*I2*m2e2s3_TT &
-            + 2*(C1_T*I2_T*m2e2s3 + C1_T*I2*m2e2s3_T + C1*I2_T*m2e2s3_T))
-       alp_TT = alp_TT*N_AVOGADRO
+      alp_TT = -2*PI*rho*(I1_TT*m2e1s3 + 2*I1_T*m2e1s3_T + I1*m2e1s3_TT)
+      alp_TT = alp_TT - PI*rho*mbar*(&
+           C1_TT*I2*m2e2s3 + C1*I2_TT*m2e2s3 + C1*I2*m2e2s3_TT &
+           + 2*(C1_T*I2_T*m2e2s3 + C1_T*I2*m2e2s3_T + C1*I2_T*m2e2s3_T))
+      alp_TT = alp_TT*N_AVOGADRO
     end if
 
     if (present(alp_Tn)) then
-       alp_Tn = -2*PI*rho*(I1_Tn-I1_n/T)*m2e1s3 - 2*PI*rho*(I1_T-I1/T)*m2e1s3_n
-       alp_Tn = alp_Tn - PI*rho*(mbar_n*m2e2s3 + mbar*m2e2s3_n)*(C1_T*I2 + C1*I2_T - 2*C1*I2/T) &
-            - PI*rho*mbar*(C1_Tn*I2 + C1_n*I2_T - 2*C1_n*I2/T &
-            + C1_T*I2_n + C1*I2_Tn - 2*C1*I2_n/T)*m2e2s3
-       alp_Tn = alp_Tn*N_AVOGADRO
+      alp_Tn = -2*PI*rho*(I1_Tn-I1_n/T)*m2e1s3 - 2*PI*rho*(I1_T-I1/T)*m2e1s3_n
+      alp_Tn = alp_Tn - PI*rho*(mbar_n*m2e2s3 + mbar*m2e2s3_n)*(C1_T*I2 + C1*I2_T - 2*C1*I2/T) &
+           - PI*rho*mbar*(C1_Tn*I2 + C1_n*I2_T - 2*C1_n*I2/T &
+           + C1_T*I2_n + C1*I2_Tn - 2*C1*I2_n/T)*m2e2s3
+      alp_Tn = alp_Tn*N_AVOGADRO
     end if
 
     if (present(alp_nn)) then
-       do k=1,nce
-          do l=1,nce
-             alp_nn(k,l) = -2*PI*rho*(I1_nn(k,l)*m2e1s3 &
-                  + I1_n(l)*m2e1s3_n(k) + I1_n(k)*m2e1s3_n(l) + I1*m2e1s3_nn(l,k))
-             alp_nn(k,l) = alp_nn(k,l) - PI*rho*mbar*C1*I2*m2e2s3_nn(k,l) &
-                  - PI*rho*(mbar_n(k)*C1*I2 + mbar*(C1_n(k)*I2 + C1*I2_n(k)))*m2e2s3_n(l) &
-                  - PI*rho*(mbar_n(l)*C1*I2 + mbar*(C1_n(l)*I2 + C1*I2_n(l)))*m2e2s3_n(k) &
-                  - PI*rho*(mbar_nn(k,l)*C1*I2 + mbar_n(k)*(C1_n(l)*I2 + C1*I2_n(l)) &
-                  + mbar_n(l)*(C1_n(k)*I2 + C1*I2_n(k)) &
-                  + mbar*(C1_n(k)*I2_n(l) + C1_n(l)*I2_n(k)) &
-                  + mbar*(C1_nn(k,l)*I2 + C1*I2_nn(l,k)))*m2e2s3
-          end do
-       end do
-       alp_nn = alp_nn*N_AVOGADRO
+      do k=1,nce
+        do l=1,nce
+          alp_nn(k,l) = -2*PI*rho*(I1_nn(k,l)*m2e1s3 &
+               + I1_n(l)*m2e1s3_n(k) + I1_n(k)*m2e1s3_n(l) + I1*m2e1s3_nn(l,k))
+          alp_nn(k,l) = alp_nn(k,l) - PI*rho*mbar*C1*I2*m2e2s3_nn(k,l) &
+               - PI*rho*(mbar_n(k)*C1*I2 + mbar*(C1_n(k)*I2 + C1*I2_n(k)))*m2e2s3_n(l) &
+               - PI*rho*(mbar_n(l)*C1*I2 + mbar*(C1_n(l)*I2 + C1*I2_n(l)))*m2e2s3_n(k) &
+               - PI*rho*(mbar_nn(k,l)*C1*I2 + mbar_n(k)*(C1_n(l)*I2 + C1*I2_n(l)) &
+               + mbar_n(l)*(C1_n(k)*I2 + C1*I2_n(k)) &
+               + mbar*(C1_n(k)*I2_n(l) + C1_n(l)*I2_n(k)) &
+               + mbar*(C1_nn(k,l)*I2 + C1*I2_nn(l,k)))*m2e2s3
+        end do
+      end do
+      alp_nn = alp_nn*N_AVOGADRO
     end if
 
   end subroutine alpha_disp
 
+  !> alpha^{dispersion} TVn
+  !! alpha = A/(nRT)
+  subroutine alpha_disp_PC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_TV,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class(sPCSAFT_eos), intent(in) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
+    real, intent(out), optional :: alp !< [-]
+    real, intent(out), optional :: alp_V, alp_T, alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_TV, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals.
+    real :: alp_rho, alp_rhorho, alp_rhoT, alp_rhon(nce)
+    real :: rho, sumn
+    integer :: i, j
+
+    sumn = sum(n)
+    rho = sumn/V
+
+    call alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n,&
+         alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+
+    if (present(alp_V)) alp_V = -(sumn/V**2)*alp_rho
+    if (present(alp_n)) alp_n = alp_rho/V + alp_n
+    if (present(alp_TV)) alp_TV = -(sumn/V**2)*alp_rhoT
+    if (present(alp_Tn)) alp_Tn = alp_rhoT/V + alp_Tn
+    if (present(alp_VV)) alp_VV = 2*sumn/V**3*alp_rho + sumn**2/V**4*alp_rhorho
+    if (present(alp_Vn)) alp_Vn = -alp_rho/V**2-sumn*alp_rhorho/V**3-sumn*alp_rhon/V**2
+    if (present(alp_nn)) then
+      do i=1,nce
+        do j=1,nce
+          alp_nn(i,j) = alp_nn(i,j) + (alp_rhon(j)+alp_rhon(i))/V + alp_rhorho/V**2
+        end do
+      end do
+    end if
+
+  end subroutine alpha_disp_PC_TVn
+
+  !> F = A/(RT)
+  subroutine F_disp_PC_TVn(eos,T,V,n,F,F_V,F_T,F_n, &
+       F_VV,F_TV,F_Vn,F_TT,F_Tn,F_nn)
+    class(sPCSAFT_eos), intent(in) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
+    real, intent(out), optional :: F !< [-]
+    real, intent(out), optional :: F_V, F_T, F_n(nce)
+    real, intent(out), optional :: F_VV, F_TV, F_Vn(nce), F_TT
+    real, intent(out), optional :: F_Tn(nce), F_nn(nce,nce)
+    ! Locals.
+    real :: alp
+    real, target :: alp_T, alp_rho, alp_rhorho, alp_rhoT, alp_rhon(nce)
+    real, target :: alp_TT, alp_n(nce), alp_Tn(nce), alp_nn(nce,nce)
+    real, pointer :: p_alp_T, p_alp_rho, p_alp_rhorho, p_alp_rhoT, p_alp_rhon(:)
+    real, pointer :: p_alp_TT, p_alp_n(:), p_alp_Tn(:), p_alp_nn(:,:)
+    real :: rho, sumn
+    integer :: i, j
+
+    sumn = sum(n)
+    rho = sumn/V
+
+    p_alp_rho => NULL()
+    p_alp_T => NULL()
+    p_alp_n => NULL()
+    !
+    p_alp_rhorho => NULL()
+    p_alp_rhoT => NULL()
+    p_alp_rhon => NULL()
+    p_alp_TT => NULL()
+    p_alp_Tn => NULL()
+    p_alp_nn => NULL()
+
+    if (present(F_VV) .or. present(F_TV) .or. present(F_Vn) .or. &
+         present(F_TT) .or. present(F_Tn) .or. present(F_nn)) then
+      p_alp_rho => alp_rho
+      p_alp_T => alp_T
+      p_alp_n => alp_n
+      !
+      p_alp_rhorho => alp_rhorho
+      p_alp_rhoT => alp_rhoT
+      p_alp_rhon => alp_rhon
+      p_alp_TT => alp_TT
+      p_alp_Tn => alp_Tn
+      p_alp_nn => alp_nn
+    else if (present(F_V) .or. present(F_T) .or. present(F_n)) then
+      p_alp_rho => alp_rho
+      p_alp_T => alp_T
+      p_alp_n => alp_n
+    endif
+
+    call alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n,&
+         alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+
+    if (present(F)) F = sumn*alp
+    if (present(F_T)) F_T = sumn*alp_T
+    if (present(F_V)) F_V = -(sumn/V)**2*alp_rho
+    if (present(F_n)) F_n = alp + sumn*alp_rho/V + sumn*alp_n
+    if (present(F_TT)) F_TT = sumn*alp_TT
+    if (present(F_TV)) F_TV = -(sumn/V)**2*alp_rhoT
+    if (present(F_Tn)) F_Tn = alp_T + sumn*alp_rhoT/V + sumn*alp_Tn
+    if (present(F_VV)) F_VV = 2*sumn**2/V**3*alp_rho + sumn**3/V**4*alp_rhorho
+    if (present(F_Vn)) F_Vn = -2*sumn*alp_rho/V**2-sumn**2*alp_rhorho/V**3-sumn**2*alp_rhon/V**2
+    if (present(F_nn)) then
+      do i=1,nce
+        do j=1,nce
+          F_nn(i,j) = sumn*alp_nn(i,j) + sumn*(alp_rhon(j)+alp_rhon(i))/V + alp_n(i) + alp_n(j) &
+               + sumn*alp_rhorho/V**2 + 2*alp_rho/V
+        end do
+      end do
+    end if
+
+  end subroutine F_disp_PC_TVn
+
   ! The reduced, molar Helmholtz energy reference contribution from hard-chains.
   subroutine alpha_spc_saft_hc(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce)  !< [mol/m^3], [K], [mol]
     real, intent(out), optional :: alp !< [-]
     real, intent(out), optional :: alp_rho,alp_T,alp_n(nce)
@@ -362,17 +493,17 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call g_ij_spc_saft(eos,rho,T,n,g,g_rho,g_T,g_n,g_rhorho,g_rhoT,g_rhon, &
-            g_TT,g_Tn,g_nn)
-       call alpha_spc_saft_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n,&
-            alp_hs_rhorho,alp_hs_rhoT,alp_hs_rhon,&
-            alp_hs_TT,alp_hs_Tn,alp_hs_nn)
+      call g_ij_spc_saft(eos,rho,T,n,g,g_rho,g_T,g_n,g_rhorho,g_rhoT,g_rhon, &
+           g_TT,g_Tn,g_nn)
+      call alpha_spc_saft_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n,&
+           alp_hs_rhorho,alp_hs_rhoT,alp_hs_rhon,&
+           alp_hs_TT,alp_hs_Tn,alp_hs_nn)
     else if (fir_der_present) then
-       call g_ij_spc_saft(eos,rho,T,n,g,g_rho,g_T,g_n)
-       call alpha_spc_saft_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n)
+      call g_ij_spc_saft(eos,rho,T,n,g,g_rho,g_T,g_n)
+      call alpha_spc_saft_hs(eos,rho,T,n,alp_hs,alp_hs_rho,alp_hs_T,alp_hs_n)
     else
-       call g_ij_spc_saft(eos,rho,T,n,g)
-       call alpha_spc_saft_hs(eos,rho,T,n,alp_hs)
+      call g_ij_spc_saft(eos,rho,T,n,g)
+      call alpha_spc_saft_hs(eos,rho,T,n,alp_hs)
     end if
     call m_bar(eos,n,mbar,mbar_n,mbar_nn)
 
@@ -380,99 +511,99 @@ contains
 
     sumn = sum(n)
     if (present(alp)) then
-       bigG = 0.0
-       do i=1,nce
-          bigG = bigG + n(i)*(eos%m(i)-1)
-       end do
-       bigG = bigG*logg/sumn
-       alp = mbar*alp_hs - bigG
+      bigG = 0.0
+      do i=1,nce
+        bigG = bigG + n(i)*(eos%m(i)-1)
+      end do
+      bigG = bigG*logg/sumn
+      alp = mbar*alp_hs - bigG
     end if
 
     if (present(alp_rho)) then
-       bigG_rho = 0.0
-       do i=1,nce
-          bigG_rho = bigG_rho + n(i)*(eos%m(i)-1)
-       end do
-       bigG_rho = bigG_rho*g_rho/(sumn*g)
-       alp_rho = mbar*alp_hs_rho - bigG_rho
+      bigG_rho = 0.0
+      do i=1,nce
+        bigG_rho = bigG_rho + n(i)*(eos%m(i)-1)
+      end do
+      bigG_rho = bigG_rho*g_rho/(sumn*g)
+      alp_rho = mbar*alp_hs_rho - bigG_rho
     end if
 
     if (present(alp_T)) then
-       bigG_T = 0.0
-       do i=1,nce
-          bigG_T = bigG_T + n(i)*(eos%m(i)-1)
-       end do
-       bigG_T = bigG_T*g_T/(sumn*g)
-       alp_T = mbar*alp_hs_T - bigG_T
+      bigG_T = 0.0
+      do i=1,nce
+        bigG_T = bigG_T + n(i)*(eos%m(i)-1)
+      end do
+      bigG_T = bigG_T*g_T/(sumn*g)
+      alp_T = mbar*alp_hs_T - bigG_T
     end if
 
     if (present(alp_n)) then
-       bigG_x = 0.0
-       do i=1,nce
-          bigG_x = bigG_x + n(i)*(eos%m(i)-1)*g_n/g
-          bigG_x(i) = bigG_x(i) + (eos%m(i)-1)*logg
-       end do
-       bigG_n = (bigG_x-bigG)/sumn
-       alp_n = mbar_n*alp_hs + mbar*alp_hs_n - bigG_n
+      bigG_x = 0.0
+      do i=1,nce
+        bigG_x = bigG_x + n(i)*(eos%m(i)-1)*g_n/g
+        bigG_x(i) = bigG_x(i) + (eos%m(i)-1)*logg
+      end do
+      bigG_n = (bigG_x-bigG)/sumn
+      alp_n = mbar_n*alp_hs + mbar*alp_hs_n - bigG_n
     end if
 
     if (present(alp_rhorho)) then
-       alp_rhorho = mbar*alp_hs_rhorho
-       do i=1,nce
-          alp_rhorho = alp_rhorho - n(i)*(eos%m(i)-1)*(-(g_rho/g)**2 + g_rhorho/g)/sumn
-       end do
+      alp_rhorho = mbar*alp_hs_rhorho
+      do i=1,nce
+        alp_rhorho = alp_rhorho - n(i)*(eos%m(i)-1)*(-(g_rho/g)**2 + g_rhorho/g)/sumn
+      end do
     end if
 
     if (present(alp_rhoT)) then
-       alp_rhoT = mbar*alp_hs_rhoT
-       do i=1,nce
-          alp_rhoT = alp_rhoT - n(i)*(eos%m(i)-1)*(-g_rho*g_T/g**2 + g_rhoT/g)/sumn
-       end do
+      alp_rhoT = mbar*alp_hs_rhoT
+      do i=1,nce
+        alp_rhoT = alp_rhoT - n(i)*(eos%m(i)-1)*(-g_rho*g_T/g**2 + g_rhoT/g)/sumn
+      end do
     end if
 
     if (present(alp_rhon)) then
-       bigG_rhox = 0.0
-       do k=1,nce
-          bigG_rhox(k) = bigG_rhox(k) + (eos%m(k)-1)*g_rho/g
-          do i=1,nce
-             bigG_rhox(k) = bigG_rhox(k) + n(i)*(eos%m(i)-1)*(-g_rho*g_n(k)/g**2 + g_rhon(k)/g)
-          end do
-       end do
-       alp_rhon = mbar_n*alp_hs_rho + mbar*alp_hs_rhon - (bigG_rhox - bigG_rho)/sumn
+      bigG_rhox = 0.0
+      do k=1,nce
+        bigG_rhox(k) = bigG_rhox(k) + (eos%m(k)-1)*g_rho/g
+        do i=1,nce
+          bigG_rhox(k) = bigG_rhox(k) + n(i)*(eos%m(i)-1)*(-g_rho*g_n(k)/g**2 + g_rhon(k)/g)
+        end do
+      end do
+      alp_rhon = mbar_n*alp_hs_rho + mbar*alp_hs_rhon - (bigG_rhox - bigG_rho)/sumn
     end if
 
     if (present(alp_Tn)) then
-       bigG_Tx = 0.0
-       do k=1,nce
-          bigG_Tx(k) = bigG_Tx(k) + (eos%m(k)-1)*g_T/g
-          do i=1,nce
-             bigG_Tx(k) = bigG_Tx(k) + n(i)*(eos%m(i)-1)*(-g_T*g_n(k)/g**2 + g_Tn(k)/g)
-          end do
-       end do
-       alp_Tn = mbar_n*alp_hs_T + mbar*alp_hs_Tn - (bigG_Tx - bigG_T)/sumn
+      bigG_Tx = 0.0
+      do k=1,nce
+        bigG_Tx(k) = bigG_Tx(k) + (eos%m(k)-1)*g_T/g
+        do i=1,nce
+          bigG_Tx(k) = bigG_Tx(k) + n(i)*(eos%m(i)-1)*(-g_T*g_n(k)/g**2 + g_Tn(k)/g)
+        end do
+      end do
+      alp_Tn = mbar_n*alp_hs_T + mbar*alp_hs_Tn - (bigG_Tx - bigG_T)/sumn
     end if
 
     if (present(alp_TT)) then
-       alp_TT = mbar*alp_hs_TT
-       do i=1,nce
-          alp_TT = alp_TT - n(i)*(eos%m(i)-1)*(-(g_T/g)**2 + g_TT/g)/sumn
-       end do
+      alp_TT = mbar*alp_hs_TT
+      do i=1,nce
+        alp_TT = alp_TT - n(i)*(eos%m(i)-1)*(-(g_T/g)**2 + g_TT/g)/sumn
+      end do
     end if
 
     if (present(alp_nn)) then
-       bigG_xx = 0.0
-       do k=1,nce
-          do l=1,nce
-             alp_nn(k,l) = mbar_nn(k,l)*alp_hs + mbar_n(k)*alp_hs_n(l) &
-                  + mbar_n(l)*alp_hs_n(k) + mbar*alp_hs_nn(k,l)
-             bigG_xx(k,l) = bigG_xx(k,l) + (eos%m(k)-1)*g_n(l)/g + (eos%m(l)-1)*g_n(k)/g
-             do i=1,nce
-                bigG_xx(k,l) = bigG_xx(k,l) &
-                     + n(i)*(eos%m(i)-1)*(-g_n(l)*g_n(k)/g**2 + g_nn(k,l)/g)
-             end do
-             alp_nn(k,l) = alp_nn(k,l) - (bigG_xx(k,l) - bigG_n(k) - bigG_n(l))/sumn
+      bigG_xx = 0.0
+      do k=1,nce
+        do l=1,nce
+          alp_nn(k,l) = mbar_nn(k,l)*alp_hs + mbar_n(k)*alp_hs_n(l) &
+               + mbar_n(l)*alp_hs_n(k) + mbar*alp_hs_nn(k,l)
+          bigG_xx(k,l) = bigG_xx(k,l) + (eos%m(k)-1)*g_n(l)/g + (eos%m(l)-1)*g_n(k)/g
+          do i=1,nce
+            bigG_xx(k,l) = bigG_xx(k,l) &
+                 + n(i)*(eos%m(i)-1)*(-g_n(l)*g_n(k)/g**2 + g_nn(k,l)/g)
           end do
-       end do
+          alp_nn(k,l) = alp_nn(k,l) - (bigG_xx(k,l) - bigG_n(k) - bigG_n(l))/sumn
+        end do
+      end do
     end if
 
   end subroutine alpha_spc_saft_hc
@@ -482,7 +613,7 @@ contains
   ! Should be pretty fast.
   subroutine alpha_spc_saft_hs(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
        alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: alp          !< [-]
     real, intent(out), optional :: alp_rho,alp_T,alp_n(nce)
@@ -500,11 +631,11 @@ contains
          present(alp_TT) .or. present(alp_Tn) .or. present(alp_nn)
 
     if (sec_der_present) then
-       call eta(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+      call eta(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
     else if (fir_der_present) then
-       call eta(eos,rho,T,n,e,e_rho,e_T,e_n)
+      call eta(eos,rho,T,n,e,e_rho,e_T,e_n)
     else
-       call eta(eos,rho,T,n,e)
+      call eta(eos,rho,T,n,e)
     end if
 
     alp = (4*e-3*e**2)/(1-e)**2
@@ -521,18 +652,18 @@ contains
     if (present(alp_TT)) alp_TT = alp_eta*e_TT + alp_etaeta*e_T**2
     if (present(alp_Tn)) alp_Tn = alp_eta*e_Tn + alp_etaeta*e_T*e_n
     if (present(alp_nn)) then
-       do i=1,nce
-          do j=i,nce
-             alp_nn(i,j) = alp_eta*e_nn(i,j) + alp_etaeta*e_n(i)*e_n(j)
-             alp_nn(j,i) = alp_nn(i,j)
-          end do
-       end do
+      do i=1,nce
+        do j=i,nce
+          alp_nn(i,j) = alp_eta*e_nn(i,j) + alp_etaeta*e_n(i)*e_n(j)
+          alp_nn(j,i) = alp_nn(i,j)
+        end do
+      end do
     end if
   end subroutine alpha_spc_saft_hs
 
 
   subroutine g_spc_saft_TVn(eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: V,T,n(nce)  !< [m^3], [K], [mol]
     real, intent(out) :: g  !< [-]
     real, intent(out), optional :: g_T,g_V,g_n(nce)
@@ -557,12 +688,12 @@ contains
          present(g_TT) .or. present(g_Tn) .or. present(g_nn)
 
     if (sec_der_present) then
-       call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h,g_rho=h_rho,g_T=h_T,g_n=h_n,&
-            g_rhorho=h_rhorho,g_rhoT=h_rhoT,g_rhon=h_rhon,g_TT=h_TT,g_Tn=h_Tn,g_nn=h_nn)
+      call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h,g_rho=h_rho,g_T=h_T,g_n=h_n,&
+           g_rhorho=h_rhorho,g_rhoT=h_rhoT,g_rhon=h_rhon,g_TT=h_TT,g_Tn=h_Tn,g_nn=h_nn)
     else if (fir_der_present) then
-       call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h,g_rho=h_rho,g_T=h_T,g_n=h_n)
+      call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h,g_rho=h_rho,g_T=h_T,g_n=h_n)
     else
-       call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h)
+      call g_ij_spc_saft(eos,rho=rho,T=T,n=n,g=h)
     end if
 
     V_1 = 1/V
@@ -581,12 +712,12 @@ contains
 
     if (present(g_n)) g_n = V_1*h_rho + h_n
     if (present(g_nn)) then
-       do i = 1,nce
-          do j = i,nce
-             g_nn(i,j) = V_2*h_rhorho + V_1*(h_rhon(i) + h_rhon(j)) + h_nn(i,j)
-             g_nn(j,i) = g_nn(i,j)
-          end do
-       end do
+      do i = 1,nce
+        do j = i,nce
+          g_nn(i,j) = V_2*h_rhorho + V_1*(h_rhon(i) + h_rhon(j)) + h_nn(i,j)
+          g_nn(j,i) = g_nn(i,j)
+        end do
+      end do
     end if
 
   end subroutine g_spc_saft_TVn
@@ -595,7 +726,7 @@ contains
   ! The radial pair distribution function between a segment on molecule i and a
   ! segment on molecule j for simplified PC-SAFT.
   subroutine g_ij_spc_saft(eos,rho,T,n,g,g_rho,g_T,g_n,g_rhorho,g_rhoT,g_rhon,g_TT,g_Tn,g_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho,T,n(nce)  !< [mol/m^3], [K], [mol]
     real, intent(out) :: g    !< [-]
     real, intent(out), optional :: g_rho,g_T,g_n(nce)
@@ -613,11 +744,11 @@ contains
          present(g_TT) .or. present(g_Tn) .or. present(g_nn)
 
     if (sec_der_present) then
-       call eta(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
+      call eta(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
     else if (fir_der_present) then
-       call eta(eos,rho,T,n,e,e_rho,e_T,e_n)
+      call eta(eos,rho,T,n,e,e_rho,e_T,e_n)
     else
-       call eta(eos,rho,T,n,e)
+      call eta(eos,rho,T,n,e)
     end if
 
     g = (1-e/2)/(1-e)**3
@@ -634,17 +765,19 @@ contains
     if (present(g_TT)) g_TT = g_eta*e_TT + g_etaeta*e_T**2
     if (present(g_Tn)) g_Tn = g_eta*e_Tn + g_etaeta*e_T*e_n
     if (present(g_nn)) then
-       do i=1,nce
-          do j=1,nce
-             g_nn(i,j) = g_eta*e_nn(i,j) + g_etaeta*e_n(i)*e_n(j)
-          end do
-       end do
+      do i=1,nce
+        do j=1,nce
+          g_nn(i,j) = g_eta*e_nn(i,j) + g_etaeta*e_n(i)*e_n(j)
+        end do
+      end do
     end if
 
   end subroutine g_ij_spc_saft
 
+  !> Equation A.13 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n,m2e2s3_TT,m2e2s3_Tn,m2e2s3_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T,n(nce) !< [K], [mol]
     real, intent(out) :: m2e2s3 !< [-]
     real, intent(out), optional :: m2e2s3_T,m2e2s3_n(nce)
@@ -669,7 +802,7 @@ contains
 
     ! T-derivative
     if (present(m2e2s3_T)) then
-       m2e2s3_T = -2*m2e2s3/T
+      m2e2s3_T = -2*m2e2s3/T
     end if
 
     ! n-derivative
@@ -710,9 +843,10 @@ contains
 
   end subroutine m2e2s3_mean
 
-
+  !> Equation A.12 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n,m2e1s3_TT,m2e1s3_Tn,m2e1s3_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T,n(nce) !< [K], [mol]
     real, intent(out) :: m2e1s3 !< [-]
     real, intent(out), optional :: m2e1s3_T, m2e1s3_n(nce)
@@ -738,20 +872,20 @@ contains
 
     ! T-derivative
     if (present(m2e1s3_T)) then
-       m2e1s3_T = -m2e1s3/T
+      m2e1s3_T = -m2e1s3/T
     end if
 
     ! n-derivative
     if (present(m2e1s3_n)) then
-       do k=1,nce
-         m2e1s3_n(k) = dot_product(n,D(:,k)+D(k,:))
-       end do
-       m2e1s3_n = m2e1s3_n/(T*sumn*sumn) - 2*m2e1s3/sumn
+      do k=1,nce
+        m2e1s3_n(k) = dot_product(n,D(:,k)+D(k,:))
+      end do
+      m2e1s3_n = m2e1s3_n/(T*sumn*sumn) - 2*m2e1s3/sumn
     end if
 
     ! TT-derivative
     if (present(m2e1s3_TT)) then
-       m2e1s3_TT = 2*m2e1s3/T**2
+      m2e1s3_TT = 2*m2e1s3/T**2
     end if
 
     ! Tn-derivative
@@ -766,24 +900,25 @@ contains
       end if
     end if
 
-     ! nn-derivative
-     if (present(m2e1s3_nn)) then
-       do k=1,nce
-         do l=k,nce
-           m2e1s3_nn(k,l) = 2*m2e1s3/sumn**2 - 2*m2e1s3_n(l)/sumn &
-                - (2/sumn**3)*dot_product(n,D(:,k)+D(k,:))/T + (D(k,l)+D(l,k))/(T*sumn**2)
-           m2e1s3_nn(l,k) = m2e1s3_nn(k,l)
-         end do
-       end do
-     end if
+    ! nn-derivative
+    if (present(m2e1s3_nn)) then
+      do k=1,nce
+        do l=k,nce
+          m2e1s3_nn(k,l) = 2*m2e1s3/sumn**2 - 2*m2e1s3_n(l)/sumn &
+               - (2/sumn**3)*dot_product(n,D(:,k)+D(k,:))/T + (D(k,l)+D(l,k))/(T*sumn**2)
+          m2e1s3_nn(l,k) = m2e1s3_nn(k,l)
+        end do
+      end do
+    end if
 
   end subroutine m2e1s3_mean
 
-
-  ! A power series approximation of a perturbation theory integral.
+  !> A power series approximation of a perturbation theory integral.
+  !! Equation A.16 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine I_1(eos,rho,T,n,i1,i1_rho,i1_t,i1_n,&
        i1_rhorho,i1_rhoT,i1_rhon,i1_TT,i1_Tn,i1_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: i1           !< [-]
     real, intent(out), optional :: i1_rho,i1_T,i1_n(nce)
@@ -802,82 +937,84 @@ contains
 
     i1 = 0.0
     do i=0,6
-       i1 = i1 + a(i)*e**i
+      i1 = i1 + a(i)*e**i
     end do
 
     i1_eta = 0.0
     i1_etaeta = 0.0
     do i=1,6
-       i1_eta = i1_eta+a(i)*i*e**(i-1)
-       i1_etaeta = i1_etaeta + i*(i-1)*a(i)*e**(i-2)
+      i1_eta = i1_eta+a(i)*i*e**(i-1)
+      i1_etaeta = i1_etaeta + i*(i-1)*a(i)*e**(i-2)
     end do
 
     if (present(i1_rho)) then
-       i1_rho = i1_eta*e_rho
+      i1_rho = i1_eta*e_rho
     end if
 
     if (present(i1_T)) then
-       i1_T = i1_eta*e_T
+      i1_T = i1_eta*e_T
     end if
 
     if (present(i1_n)) then
-       i1_n = i1_eta*e_n
-       do k=1,nce
-          do i=0,6
-             i1_n(k) = i1_n(k) + a_n(i,k)*e**i
-          end do
-       end do
+      i1_n = i1_eta*e_n
+      do k=1,nce
+        do i=0,6
+          i1_n(k) = i1_n(k) + a_n(i,k)*e**i
+        end do
+      end do
     end if
 
     if (present(i1_rhorho)) then
-       i1_rhorho = i1_etaeta*e_rho**2 + i1_eta*e_rhorho
+      i1_rhorho = i1_etaeta*e_rho**2 + i1_eta*e_rhorho
     end if
 
     if (present(i1_rhoT)) then
-       i1_rhoT = i1_etaeta*e_rho*e_T + i1_eta*e_rhoT
+      i1_rhoT = i1_etaeta*e_rho*e_T + i1_eta*e_rhoT
     end if
 
     if (present(i1_rhon)) then
-       i1_rhon = i1_etaeta*e_rho*e_n + i1_eta*e_rhon
-       do k=1,nce
-          do i=1,6
-             i1_rhon(k) = i1_rhon(k) + a_n(i,k)*i*e**(i-1)*e_rho
-          end do
-       end do
+      i1_rhon = i1_etaeta*e_rho*e_n + i1_eta*e_rhon
+      do k=1,nce
+        do i=1,6
+          i1_rhon(k) = i1_rhon(k) + a_n(i,k)*i*e**(i-1)*e_rho
+        end do
+      end do
     end if
 
     if (present(i1_TT)) then
-       i1_TT = i1_etaeta*e_T**2 + i1_eta*e_TT
+      i1_TT = i1_etaeta*e_T**2 + i1_eta*e_TT
     end if
 
     if (present(i1_Tn)) then
-       i1_Tn = i1_etaeta*e_T*e_n + i1_eta*e_Tn
-       do k=1,nce
-          do i=1,6
-             i1_Tn(k) = i1_Tn(k) + a_n(i,k)*i*e**(i-1)*e_T
-          end do
-       end do
+      i1_Tn = i1_etaeta*e_T*e_n + i1_eta*e_Tn
+      do k=1,nce
+        do i=1,6
+          i1_Tn(k) = i1_Tn(k) + a_n(i,k)*i*e**(i-1)*e_T
+        end do
+      end do
     end if
 
     if (present(i1_nn)) then
-       do k=1,nce
-          do l=k,nce
-             i1_nn(k,l) = i1_etaeta*e_n(k)*e_n(l) + i1_eta*e_nn(k,l)
-             do i=0,6
-                i1_nn(k,l) = i1_nn(k,l) + a_nn(i,l,k)*e**i +  &
-                     i*e**(i-1)*(a_n(i,k)*e_n(l) + a_n(i,l)*e_n(k))
-             end do
-             i1_nn(l,k) = i1_nn(k,l)
+      do k=1,nce
+        do l=k,nce
+          i1_nn(k,l) = i1_etaeta*e_n(k)*e_n(l) + i1_eta*e_nn(k,l)
+          do i=0,6
+            i1_nn(k,l) = i1_nn(k,l) + a_nn(i,l,k)*e**i +  &
+                 i*e**(i-1)*(a_n(i,k)*e_n(l) + a_n(i,l)*e_n(k))
           end do
-       end do
+          i1_nn(l,k) = i1_nn(k,l)
+        end do
+      end do
     end if
 
   end subroutine I_1
 
   !> A power series approximation of a perturbation theory integral.
+  !! Equation A.17 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine I_2(eos,rho,T,n,i2,i2_rho,i2_t,i2_n,&
        i2_rhorho,i2_rhoT,i2_rhon,i2_TT,i2_Tn,i2_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: i2           !< [-]
     real, intent(out), optional :: i2_rho,i2_T,i2_n(nce)
@@ -896,83 +1033,85 @@ contains
 
     i2 = 0.0
     do i=0,6
-       i2 = i2 + b(i)*e**i
+      i2 = i2 + b(i)*e**i
     end do
 
     i2_eta = 0.0
     i2_etaeta = 0.0
     do i=1,6
-       i2_eta = i2_eta+b(i)*i*e**(i-1)
-       i2_etaeta = i2_etaeta + i*(i-1)*b(i)*e**(i-2)
+      i2_eta = i2_eta+b(i)*i*e**(i-1)
+      i2_etaeta = i2_etaeta + i*(i-1)*b(i)*e**(i-2)
     end do
 
     if (present(i2_rho)) then
-       i2_rho = i2_eta*e_rho
+      i2_rho = i2_eta*e_rho
     end if
 
     if (present(i2_T)) then
-       i2_T = i2_eta*e_T
+      i2_T = i2_eta*e_T
     end if
 
     if (present(i2_n)) then
-       i2_n = i2_eta*e_n
-       do k=1,nce
-          do i=0,6
-             i2_n(k) = i2_n(k) + b_n(i,k)*e**i
-          end do
-       end do
+      i2_n = i2_eta*e_n
+      do k=1,nce
+        do i=0,6
+          i2_n(k) = i2_n(k) + b_n(i,k)*e**i
+        end do
+      end do
     end if
 
     if (present(i2_rhorho)) then
-       i2_rhorho = i2_etaeta*e_rho**2 + i2_eta*e_rhorho
+      i2_rhorho = i2_etaeta*e_rho**2 + i2_eta*e_rhorho
     end if
 
     if (present(i2_rhoT)) then
-       i2_rhoT = i2_etaeta*e_rho*e_T + i2_eta*e_rhoT
+      i2_rhoT = i2_etaeta*e_rho*e_T + i2_eta*e_rhoT
     end if
 
     if (present(i2_rhon)) then
-       i2_rhon = i2_etaeta*e_rho*e_n + i2_eta*e_rhon
-       do k=1,nce
-          do i=1,6
-             i2_rhon(k) = i2_rhon(k) + b_n(i,k)*i*e**(i-1)*e_rho
-          end do
-       end do
+      i2_rhon = i2_etaeta*e_rho*e_n + i2_eta*e_rhon
+      do k=1,nce
+        do i=1,6
+          i2_rhon(k) = i2_rhon(k) + b_n(i,k)*i*e**(i-1)*e_rho
+        end do
+      end do
     end if
 
     if (present(i2_TT)) then
-       i2_TT = i2_etaeta*e_T**2 + i2_eta*e_TT
+      i2_TT = i2_etaeta*e_T**2 + i2_eta*e_TT
     end if
 
     if (present(i2_Tn)) then
-       i2_Tn = i2_etaeta*e_T*e_n + i2_eta*e_Tn
-       do k=1,nce
-          do i=1,6
-             i2_Tn(k) = i2_Tn(k) + b_n(i,k)*i*e**(i-1)*e_T
-          end do
-       end do
+      i2_Tn = i2_etaeta*e_T*e_n + i2_eta*e_Tn
+      do k=1,nce
+        do i=1,6
+          i2_Tn(k) = i2_Tn(k) + b_n(i,k)*i*e**(i-1)*e_T
+        end do
+      end do
     end if
 
     if (present(i2_nn)) then
-       do k=1,nce
-          do l=k,nce
-             i2_nn(k,l) = i2_etaeta*e_n(k)*e_n(l) + i2_eta*e_nn(k,l)
-             do i=0,6
-                i2_nn(k,l) = i2_nn(k,l) + b_nn(i,k,l)*e**i + &
-                     i*e**(i-1)*(b_n(i,k)*e_n(l) + b_n(i,l)*e_n(k))
-             end do
-             i2_nn(l,k) = i2_nn(k,l)
+      do k=1,nce
+        do l=k,nce
+          i2_nn(k,l) = i2_etaeta*e_n(k)*e_n(l) + i2_eta*e_nn(k,l)
+          do i=0,6
+            i2_nn(k,l) = i2_nn(k,l) + b_nn(i,k,l)*e**i + &
+                 i*e**(i-1)*(b_n(i,k)*e_n(l) + b_n(i,l)*e_n(k))
           end do
-       end do
+          i2_nn(l,k) = i2_nn(k,l)
+        end do
+      end do
     end if
 
   end subroutine I_2
 
 
   !> The quantities a_i(m_bar) and its derivatives.
-  !> This is the only routine which accesses a_mat directly.
+  !! This is the only routine which accesses a_mat directly.
+  !! Equation A.18 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine a_i(eos,n,a,a_n,a_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real,intent(in):: n(nce)    !< [mol]
     real,intent(out)::a(0:6)   !< [-]
     real,intent(out),optional::a_n(0:6,nce), a_nn(0:6,nce,nce)
@@ -988,43 +1127,41 @@ contains
     G = H*(mbar-2)*mbar_inv
 
     do i=0,6
-       a(i) = a_mat(0,i) + H*a_mat(1,i) + G*a_mat(2,i)
+      a(i) = a_mat(0,i) + H*a_mat(1,i) + G*a_mat(2,i)
     end do
 
     if (present(a_n)) then
-       do k=1,nce
-          H = mbar_n(k)*mbar_inv**2
-          G = mbar_n(k)*(3*mbar-4)*mbar_inv**3
-          do i=0,6
-             a_n(i,k) = H*a_mat(1,i) + G*a_mat(2,i)
-          end do
-       end do
+      do k=1,nce
+        H = mbar_n(k)*mbar_inv**2
+        G = mbar_n(k)*(3*mbar-4)*mbar_inv**3
+        do i=0,6
+          a_n(i,k) = H*a_mat(1,i) + G*a_mat(2,i)
+        end do
+      end do
     end if
 
     if (present(a_nn)) then
-       do k=1,nce
-          do l=k,nce
-             H = mbar_n(k)*mbar_n(l)
-             G = mbar*mbar_nn(k,l)-2*H
-             do i=0,6
-                a_nn(i,k,l) = G*a_mat(1,i)*mbar_inv**3 &
-                     + ((3*mbar-4)*G + 4*H)*a_mat(2,i)*mbar_inv**4
-                a_nn(i,l,k) = a_nn(i,k,l)
-             end do
+      do k=1,nce
+        do l=k,nce
+          H = mbar_n(k)*mbar_n(l)
+          G = mbar*mbar_nn(k,l)-2*H
+          do i=0,6
+            a_nn(i,k,l) = G*a_mat(1,i)*mbar_inv**3 &
+                 + ((3*mbar-4)*G + 4*H)*a_mat(2,i)*mbar_inv**4
+            a_nn(i,l,k) = a_nn(i,k,l)
           end do
-       end do
+        end do
+      end do
     end if
 
   end subroutine a_i
 
-
-
-
-
-  ! The quantities b_i(m_bar) and its derivatives.
-  ! The only routine which accesses b_mat directly.
+  !> The quantities b_i(m_bar) and its derivatives.
+  !! The only routine which accesses b_mat directly.
+  !! Equation A.19 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine b_i(eos,n,b,b_n,b_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real,intent(in):: n(nce)    !< [mol]
     real,intent(out)::b(0:6)   !< [-]
     real,intent(out),optional::b_n(0:6,nce), b_nn(0:6,nce,nce)
@@ -1040,38 +1177,40 @@ contains
     G = H*(mbar-2)*mbar_inv
 
     do i=0,6
-       b(i) = b_mat(0,i) + H*b_mat(1,i) + G*b_mat(2,i)
+      b(i) = b_mat(0,i) + H*b_mat(1,i) + G*b_mat(2,i)
     end do
 
     if (present(b_n)) then
-       do k=1,nce
-          H = mbar_n(k)*mbar_inv**2
-          G = mbar_n(k)*(3*mbar-4)*mbar_inv**3
-          do i=0,6
-             b_n(i,k) = H*b_mat(1,i) + G*b_mat(2,i)
-          end do
-       end do
+      do k=1,nce
+        H = mbar_n(k)*mbar_inv**2
+        G = mbar_n(k)*(3*mbar-4)*mbar_inv**3
+        do i=0,6
+          b_n(i,k) = H*b_mat(1,i) + G*b_mat(2,i)
+        end do
+      end do
     end if
 
     if (present(b_nn)) then
-       do k=1,nce
-          do l=k,nce
-             H = mbar_n(k)*mbar_n(l)
-             G = mbar*mbar_nn(k,l)-2*H
-             do i=0,6
-                b_nn(i,k,l) = G*b_mat(1,i)*mbar_inv**3 &
-                     + ((3*mbar-4)*G + 4*H)*b_mat(2,i)*mbar_inv**4
-                b_nn(i,l,k) = b_nn(i,k,l)
-             end do
+      do k=1,nce
+        do l=k,nce
+          H = mbar_n(k)*mbar_n(l)
+          G = mbar*mbar_nn(k,l)-2*H
+          do i=0,6
+            b_nn(i,k,l) = G*b_mat(1,i)*mbar_inv**3 &
+                 + ((3*mbar-4)*G + 4*H)*b_mat(2,i)*mbar_inv**4
+            b_nn(i,l,k) = b_nn(i,k,l)
           end do
-       end do
+        end do
+      end do
     end if
 
   end subroutine b_i
 
-
+  !> Mean mixture segment number.
+  !! Equation A.5 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m_bar(eos,n,mbar,mbar_n,mbar_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in)  :: n(nce)          !< [mol]
     real, intent(out) :: mbar           !< [-]
     real, intent(out) :: mbar_n(nce)     !< [1/mol]
@@ -1083,18 +1222,18 @@ contains
     mbar = dot_product(n,eos%m)/sumn
     mbar_n = (eos%m-mbar)/sumn
     do i=1,nce
-       do j=1,nce
-          mbar_nn(i,j) = -(mbar_n(i)+mbar_n(j))/sumn
-       end do
+      do j=1,nce
+        mbar_nn(i,j) = -(mbar_n(i)+mbar_n(j))/sumn
+      end do
     end do
   end subroutine m_bar
 
 
-  ! The compressibility term, defined as
-  ! (1 + Z^{hc} + rho*dZ^{hc}/drho)^{-1}
+  !> The compressibility term, defined as
+  !! (1 + Z^{hc} + rho*dZ^{hc}/drho)^{-1}
   subroutine C_1(eos,rho,T,n,c1,c1_rho,c1_t,c1_n,&
        c1_rhorho,c1_rhoT,c1_rhon,c1_TT,c1_Tn,c1_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: C1           !< [-]
     real, intent(out), optional :: c1_rho,c1_t,c1_n(nce)
@@ -1118,12 +1257,12 @@ contains
          present(c1_Tn) .or. present(c1_nn)
 
     if (sec_der_present) then
-       call eta(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
-            e_rhorho=e_rhorho,e_rhoT=e_rhoT,e_rhon=e_rhon,e_TT=e_TT,e_Tn=e_Tn,e_nn=e_nn)
+      call eta(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n,&
+           e_rhorho=e_rhorho,e_rhoT=e_rhoT,e_rhon=e_rhon,e_TT=e_TT,e_Tn=e_Tn,e_nn=e_nn)
     else if ( fir_der_present ) then
-       call eta(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n)
+      call eta(eos,rho,T,n,e=e,e_rho=e_rho,e_T=e_T,e_n=e_n)
     else
-       call eta(eos,rho,T,n,e=e)
+      call eta(eos,rho,T,n,e=e)
     end if
 
     e2 = e*e
@@ -1136,16 +1275,16 @@ contains
     c1 = 1.0/(1 + mbar*O1 + (1-mbar)*O2)
 
     if (fir_der_present .or. sec_der_present) then
-       O1_eta = (-4*e2+20*e+8)/(1-e)**5
-       O2_eta = (2*e3+12*e2-48*e+40)/((1-e)*(2-e))**3
-       c1_eta = -(mbar*O1_eta + (1-mbar)*O2_eta)*c1**2
-       if (sec_der_present) then
-          O1_etaeta = ((-8*e+20)*(1-e) + (-4*e2+20*e+8)*5)/(1-e)**6
-          O2_etaeta = ((6*e2+24*e-48)*(1-e)*(2-e) + &
-               (2*e3+12*e2-48*e+40)*(2-e + 1-e)*3)/((1-e)*(2-e))**4
-          c1_etaeta = mbar*O1_etaeta + (1-mbar)*O2_etaeta
-          c1_etaeta = 2*c1_eta**2/c1 - c1_etaeta*c1**2
-       end if
+      O1_eta = (-4*e2+20*e+8)/(1-e)**5
+      O2_eta = (2*e3+12*e2-48*e+40)/((1-e)*(2-e))**3
+      c1_eta = -(mbar*O1_eta + (1-mbar)*O2_eta)*c1**2
+      if (sec_der_present) then
+        O1_etaeta = ((-8*e+20)*(1-e) + (-4*e2+20*e+8)*5)/(1-e)**6
+        O2_etaeta = ((6*e2+24*e-48)*(1-e)*(2-e) + &
+             (2*e3+12*e2-48*e+40)*(2-e + 1-e)*3)/((1-e)*(2-e))**4
+        c1_etaeta = mbar*O1_etaeta + (1-mbar)*O2_etaeta
+        c1_etaeta = 2*c1_eta**2/c1 - c1_etaeta*c1**2
+      end if
     end if
 
     if (present(c1_rho)) c1_rho = c1_eta*e_rho
@@ -1153,49 +1292,50 @@ contains
     if (present(c1_T)) c1_T = c1_eta*e_T
 
     if (present(c1_n)) then
-       c1_n = c1_eta*e_n - c1**2*mbar_n*(O1-O2)
+      c1_n = c1_eta*e_n - c1**2*mbar_n*(O1-O2)
     end if
 
     if (present(c1_rhorho)) then
-       c1_rhorho = c1_etaeta*e_rho**2 + c1_eta*e_rhorho
+      c1_rhorho = c1_etaeta*e_rho**2 + c1_eta*e_rhorho
     end if
 
     if (present(c1_rhoT)) then
-       c1_rhoT = c1_etaeta*e_rho*e_T + c1_eta*e_rhoT
+      c1_rhoT = c1_etaeta*e_rho*e_T + c1_eta*e_rhoT
     end if
 
     if (present(c1_TT)) then
-       c1_TT = c1_etaeta*e_T**2 + c1_eta*e_TT
+      c1_TT = c1_etaeta*e_T**2 + c1_eta*e_TT
     end if
 
     if (present(c1_rhon)) then
-       c1_rhon = c1_etaeta*e_rho*e_n + c1_eta*e_rhon &
-            - 2*c1*c1_rho*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_rho
+      c1_rhon = c1_etaeta*e_rho*e_n + c1_eta*e_rhon &
+           - 2*c1*c1_rho*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_rho
     end if
 
     if (present(c1_Tn)) then
-       c1_Tn = c1_etaeta*e_T*e_n + c1_eta*e_Tn &
-            - 2*c1*c1_T*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_T
+      c1_Tn = c1_etaeta*e_T*e_n + c1_eta*e_Tn &
+           - 2*c1*c1_T*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_T
     end if
 
     if (present(c1_nn)) then
-       do i=1,nce
-          do j=1,nce
-             c1_nn(i,j) = c1_etaeta*e_n(i)*e_n(j) + c1_eta*e_nn(i,j)&
-                  - 2*c1*c1_eta*(O1-O2)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
-                  - c1**2*(O1_eta-O2_eta)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
-                  + 2*c1**3*(O1-O2)**2*mbar_n(i)*mbar_n(j) - c1**2*mbar_nn(i,j)*(O1-O2)
-          end do
-       end do
+      do i=1,nce
+        do j=1,nce
+          c1_nn(i,j) = c1_etaeta*e_n(i)*e_n(j) + c1_eta*e_nn(i,j)&
+               - 2*c1*c1_eta*(O1-O2)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
+               - c1**2*(O1_eta-O2_eta)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
+               + 2*c1**3*(O1-O2)**2*mbar_n(i)*mbar_n(j) - c1**2*mbar_nn(i,j)*(O1-O2)
+        end do
+      end do
     end if
 
   end subroutine C_1
 
-
-  ! Calculates the functions zeta(0),...,zeta(3).
-  ! zeta(3) equals eta, the packing fraction.
+  !> Calculates the functions zeta(0),...,zeta(3).
+  !! zeta(3) equals eta, the packing fraction.
+  !! Equation A.8 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine zeta(eos,rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in)    :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out)   :: z(0:3)        !< [m^(i-3)]
     real, intent(out), optional :: z_rho(0:3), z_T(0:3), z_n(0:3,nce)
@@ -1215,100 +1355,100 @@ contains
 
     z = 0.0
     do i=1,nce
-       temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
-       z(0:3) = z(0:3) + n(i)*eos%m(i)*temp
+      temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
+      z(0:3) = z(0:3) + n(i)*eos%m(i)*temp
     end do
     z_div_rho = (PI/6)*z*N_AVOGADRO/sumn
     z = z_div_rho*rho
 
     if (present(z_rho)) then
-       z_rho = z_div_rho
+      z_rho = z_div_rho
     end if
 
     if (present(z_T)) then
-       z_T = 0.0
-       do i=1,nce
-          temp = (/0.0,1.0,d(i),d(i)**2 /)
-          z_T(1:3) = z_T(1:3) + n(i)*eos%m(i)*d_T(i)*temp(2:4)
-       end do
-       z_T(2) = 2*z_T(2)
-       z_T(3) = 3*z_T(3)
-       z_T = (PI/6)*rho*z_T*N_AVOGADRO/sumn
+      z_T = 0.0
+      do i=1,nce
+        temp = (/0.0,1.0,d(i),d(i)**2 /)
+        z_T(1:3) = z_T(1:3) + n(i)*eos%m(i)*d_T(i)*temp(2:4)
+      end do
+      z_T(2) = 2*z_T(2)
+      z_T(3) = 3*z_T(3)
+      z_T = (PI/6)*rho*z_T*N_AVOGADRO/sumn
     end if
 
     if (present(z_n)) then
-       do i=1,nce
-          temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
-          z_x(0:3,i) = eos%m(i)*temp
-       end do
-       z_x = (PI/6)*rho*z_x*N_AVOGADRO
-       do i=1,nce
-          z_n(:,i) = (z_x(:,i)-z)/sumn
-       end do
+      do i=1,nce
+        temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
+        z_x(0:3,i) = eos%m(i)*temp
+      end do
+      z_x = (PI/6)*rho*z_x*N_AVOGADRO
+      do i=1,nce
+        z_n(:,i) = (z_x(:,i)-z)/sumn
+      end do
     end if
 
     if (present(z_rhorho)) then
-       z_rhorho = 0.0
+      z_rhorho = 0.0
     end if
 
     if (present(z_rhoT)) then
-       if (present(z_T)) then
-          z_rhoT = z_T/rho
-       else
-          z_rhoT = 0.0
-          do i=1,nce
-             temp = (/0.0,1.0,d(i),d(i)**2 /)
-             z_rhoT(1:3) = z_rhoT(1:3) + n(i)*eos%m(i)*d_T(i)*temp(2:4)
-          end do
-          z_rhoT(2) = 2*z_rhoT(2)
-          z_rhoT(3) = 3*z_rhoT(3)
-          z_rhoT = (PI/6)*z_rhoT*N_AVOGADRO/sumn
-       end if
+      if (present(z_T)) then
+        z_rhoT = z_T/rho
+      else
+        z_rhoT = 0.0
+        do i=1,nce
+          temp = (/0.0,1.0,d(i),d(i)**2 /)
+          z_rhoT(1:3) = z_rhoT(1:3) + n(i)*eos%m(i)*d_T(i)*temp(2:4)
+        end do
+        z_rhoT(2) = 2*z_rhoT(2)
+        z_rhoT(3) = 3*z_rhoT(3)
+        z_rhoT = (PI/6)*z_rhoT*N_AVOGADRO/sumn
+      end if
     end if
 
     if (present(z_rhon)) then
-       do i=1,nce
-          temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
-          z_rhox(0:3,i) = eos%m(i)*temp
-       end do
-       z_rhox = (PI/6)*z_rhox*N_AVOGADRO
-       do i=1,nce
-          z_rhon(:,i) = (z_rhox(:,i)-z_rho)/sumn
-       end do
+      do i=1,nce
+        temp = (/ 1.0,d(i),d(i)**2,d(i)**3 /)
+        z_rhox(0:3,i) = eos%m(i)*temp
+      end do
+      z_rhox = (PI/6)*z_rhox*N_AVOGADRO
+      do i=1,nce
+        z_rhon(:,i) = (z_rhox(:,i)-z_rho)/sumn
+      end do
     end if
 
     if (present(z_TT)) then
-       z_TT = 0.0
-       do i=1,nce
-          z_TT(1) = z_TT(1) + n(i)*eos%m(i)*d_TT(i)
-          z_TT(2) = z_TT(2) + n(i)*eos%m(i)*(d_T(i)**2 + d(i)*d_TT(i))
-          z_TT(3) = z_TT(3) + n(i)*eos%m(i)*(2*d(i)*d_T(i)**2 + d(i)**2*d_TT(i))
-       end do
-       z_TT(1) = z_TT(1)*(PI/6)*rho*N_AVOGADRO/sumn
-       z_TT(2) = z_TT(2)*(PI/3)*rho*N_AVOGADRO/sumn
-       z_TT(3) = z_TT(3)*(PI/2)*rho*N_AVOGADRO/sumn
+      z_TT = 0.0
+      do i=1,nce
+        z_TT(1) = z_TT(1) + n(i)*eos%m(i)*d_TT(i)
+        z_TT(2) = z_TT(2) + n(i)*eos%m(i)*(d_T(i)**2 + d(i)*d_TT(i))
+        z_TT(3) = z_TT(3) + n(i)*eos%m(i)*(2*d(i)*d_T(i)**2 + d(i)**2*d_TT(i))
+      end do
+      z_TT(1) = z_TT(1)*(PI/6)*rho*N_AVOGADRO/sumn
+      z_TT(2) = z_TT(2)*(PI/3)*rho*N_AVOGADRO/sumn
+      z_TT(3) = z_TT(3)*(PI/2)*rho*N_AVOGADRO/sumn
     end if
 
     if (present(z_Tn)) then
-       z_Tx = 0.0
-       do k=1,nce
-          z_Tx(1,k) = eos%m(k)*d_T(k)
-          z_Tx(2,k) = 2*eos%m(k)*d(k)*d_T(k)
-          z_Tx(3,k) = 3*eos%m(k)*d(k)**2*d_T(k)
-       end do
-       z_Tx = (PI/6)*rho*z_Tx*N_AVOGADRO
-       do i=1,nce
-          z_Tn(:,i) = (z_Tx(:,i)-z_T)/sumn
-       end do
+      z_Tx = 0.0
+      do k=1,nce
+        z_Tx(1,k) = eos%m(k)*d_T(k)
+        z_Tx(2,k) = 2*eos%m(k)*d(k)*d_T(k)
+        z_Tx(3,k) = 3*eos%m(k)*d(k)**2*d_T(k)
+      end do
+      z_Tx = (PI/6)*rho*z_Tx*N_AVOGADRO
+      do i=1,nce
+        z_Tn(:,i) = (z_Tx(:,i)-z_T)/sumn
+      end do
     end if
 
     if (present(z_nn)) then
-       do i=1,nce
-          do j=1,nce
-             z_nn(:,i,j) = -(z_n(:,i)+z_n(:,j))
-          end do
-       end do
-       z_nn = z_nn/sumn
+      do i=1,nce
+        do j=1,nce
+          z_nn(:,i,j) = -(z_n(:,i)+z_n(:,j))
+        end do
+      end do
+      z_nn = z_nn/sumn
     end if
 
   end subroutine zeta
@@ -1316,7 +1456,7 @@ contains
 
   ! The packing fraction eta and its derivatives.
   subroutine eta(eos,rho,T,n,e,e_rho,e_T,e_n,e_rhorho,e_rhoT,e_rhon,e_TT,e_Tn,e_nn)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
     real, intent(out) :: e            !< [-]
     real, intent(out), optional :: e_rho, e_T, e_n(nce)
@@ -1334,79 +1474,79 @@ contains
 
     e = 0.0
     do i=1,nce
-       e = e + n(i)*eos%m(i)*d(i)**3
+      e = e + n(i)*eos%m(i)*d(i)**3
     end do
     e_div_rho = (PI/6)*e*N_AVOGADRO/sumn
     e = e_div_rho*rho
 
     if (present(e_rho)) then
-       e_rho = e_div_rho
+      e_rho = e_div_rho
     end if
 
     if (present(e_T)) then
-       e_T = 0.0
-       do i=1,nce
-          e_T = e_T + n(i)*eos%m(i)*d(i)**2*d_T(i)
-       end do
-       e_T = (PI/2)*rho*e_T*N_AVOGADRO/sumn
+      e_T = 0.0
+      do i=1,nce
+        e_T = e_T + n(i)*eos%m(i)*d(i)**2*d_T(i)
+      end do
+      e_T = (PI/2)*rho*e_T*N_AVOGADRO/sumn
     end if
 
     if (present(e_n)) then
-       do k=1,nce
-          e_x(k) = eos%m(k)*d(k)**3
-       end do
-       e_x = (PI/6)*rho*e_x*N_AVOGADRO
-       e_n = (e_x-e)/sumn
+      do k=1,nce
+        e_x(k) = eos%m(k)*d(k)**3
+      end do
+      e_x = (PI/6)*rho*e_x*N_AVOGADRO
+      e_n = (e_x-e)/sumn
     end if
 
     if (present(e_rhorho)) then
-       e_rhorho = 0.0
+      e_rhorho = 0.0
     end if
 
     if (present(e_rhoT)) then
-       if (present(e_T)) then
-          e_rhoT = e_T/rho
-       else
-          e_rhoT = 0.0
-          do i=1,nce
-             e_rhoT = e_rhoT + n(i)*eos%m(i)*d_T(i)*d(i)**2
-          end do
-          e_rhoT = (PI/2)*e_rhoT*N_AVOGADRO/sumn
-       end if
+      if (present(e_T)) then
+        e_rhoT = e_T/rho
+      else
+        e_rhoT = 0.0
+        do i=1,nce
+          e_rhoT = e_rhoT + n(i)*eos%m(i)*d_T(i)*d(i)**2
+        end do
+        e_rhoT = (PI/2)*e_rhoT*N_AVOGADRO/sumn
+      end if
     end if
 
     if (present(e_rhon)) then
-       do i=1,nce
-          e_rhox(i) = eos%m(i)*d(i)**3
-       end do
-       e_rhox = (PI/6)*e_rhox*N_AVOGADRO
-       e_rhon = (e_rhox-e_rho)/sumn
+      do i=1,nce
+        e_rhox(i) = eos%m(i)*d(i)**3
+      end do
+      e_rhox = (PI/6)*e_rhox*N_AVOGADRO
+      e_rhon = (e_rhox-e_rho)/sumn
     end if
 
     if (present(e_TT)) then
-       e_TT = 0.0
-       do i=1,nce
-          e_TT = e_TT + n(i)*eos%m(i)*(2*d(i)*d_T(i)**2 + d(i)**2*d_TT(i))
-       end do
-       e_TT = e_TT*(PI/2)*rho*N_AVOGADRO/sumn
+      e_TT = 0.0
+      do i=1,nce
+        e_TT = e_TT + n(i)*eos%m(i)*(2*d(i)*d_T(i)**2 + d(i)**2*d_TT(i))
+      end do
+      e_TT = e_TT*(PI/2)*rho*N_AVOGADRO/sumn
     end if
 
     if (present(e_Tn)) then
-       e_Tx = 0.0
-       do k=1,nce
-          e_Tx(k) = 3*eos%m(k)*d(k)**2*d_T(k)
-       end do
-       e_Tx = (PI/6)*rho*e_Tx*N_AVOGADRO
-       e_Tn = (e_Tx-e_T)/sumn
+      e_Tx = 0.0
+      do k=1,nce
+        e_Tx(k) = 3*eos%m(k)*d(k)**2*d_T(k)
+      end do
+      e_Tx = (PI/6)*rho*e_Tx*N_AVOGADRO
+      e_Tn = (e_Tx-e_T)/sumn
     end if
 
     if (present(e_nn)) then
-       do i=1,nce
-          do j=1,nce
-             e_nn(i,j) = -(e_n(i) + e_n(j))
-          end do
-       end do
-       e_nn = e_nn/sumn
+      do i=1,nce
+        do j=1,nce
+          e_nn(i,j) = -(e_n(i) + e_n(j))
+        end do
+      end do
+      e_nn = e_nn/sumn
     end if
   end subroutine eta
 
@@ -1415,7 +1555,7 @@ contains
   ! These diameters are often needed, but since they require computing an
   ! exponential, calc_d should not be called unecessary.
   subroutine calc_d(eos,T,d,d_T,d_TT)
-    class(PCSAFT_eos), intent(in) :: eos
+    class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T            !< [mol/m^3], [K], [mol]
     real, intent(out) :: d(nce)       !< [m]
     real, intent(out), optional :: d_T(nce)
@@ -1428,37 +1568,427 @@ contains
     Tinv = 1/T
 
     do i=1,nce
-       sig_expo(i) = eos%sigma(i,i)*exp(-3*eos%eps_depth_divk(i,i)*Tinv)
-       d(i) = eos%sigma(i,i) - 0.12*sig_expo(i)
+      sig_expo(i) = eos%sigma(i,i)*exp(-3*eos%eps_depth_divk(i,i)*Tinv)
+      d(i) = eos%sigma(i,i) - 0.12*sig_expo(i)
     end do
 
 
     if (present(d_T)) then
-       do i = 1,nce
-          d_T(i) = -0.36*eos%eps_depth_divk(i,i)*Tinv*Tinv*sig_expo(i)
-       end do
+      do i = 1,nce
+        d_T(i) = -0.36*eos%eps_depth_divk(i,i)*Tinv*Tinv*sig_expo(i)
+      end do
     end if
 
     if (present(d_TT)) then
-       do i=1,nce
-          d_TT(i) = sig_expo(i)*(0.72*eos%eps_depth_divk(i,i) - &
-               Tinv*1.08*eos%eps_depth_divk(i,i)**2)*Tinv**3
-       end do
+      do i=1,nce
+        d_TT(i) = sig_expo(i)*(0.72*eos%eps_depth_divk(i,i) - &
+             Tinv*1.08*eos%eps_depth_divk(i,i)**2)*Tinv**3
+      end do
     end if
 
   end subroutine calc_d
 
-  ! subroutine cleanup_pc_saft_nonassoc()
-  !   if (allocated(m)) deallocate(m)
-  !   if (allocated(sigma)) deallocate(sigma)
-  !   if (allocated(sigma_cube)) deallocate(sigma_cube)
-  !   if (allocated(eps_depth_divk)) deallocate(eps_depth_divk)
-  ! end subroutine cleanup_pc_saft_nonassoc
+  ! The segment diameter d_i and its derivatives.
+  ! These diameters are often needed, but since they require computing an
+  ! exponential, calc_d should not be called unecessary.
+  subroutine calc_dhs(eos, T)
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: T            !< [K]
+    !
+    if (eos%dhs%T_update /= T) then
+      ! Avoid updating all the time with mu-V-T dft
+      call calc_d(eos,T,eos%dhs%d,eos%dhs%d_T,eos%dhs%d_TT)
+      eos%dhs%T_update = T
+    endif
+  end subroutine calc_dhs
 
-  subroutine pcsaft_allocate_and_init(eos,nc,eos_label)
+  subroutine g_pc_saft_TVn(eos,T,V,n,i,j,g,g_T,g_V,g_n,&
+       g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_zeta_and_derivatives, &
+         calc_bmcsl_gij
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: V,T,n(nce)  !< [m^3], [K], [mol]
+    integer, intent(in) :: i,j     !< component indices [-]
+    real, intent(out) :: g  !< [-]
+    real, intent(out), optional :: g_T,g_V,g_n(nce)
+    real, intent(out), optional :: g_VV,g_TV,g_Vn(nce)
+    real, intent(out), optional :: g_TT,g_Tn(nce),g_nn(nce,nce)
+    !
+    call calc_dhs(eos, T)
+    call calc_bmcsl_zeta_and_derivatives(nce,V,n,eos%dhs,eos%zeta,eos%m)
+    call calc_bmcsl_gij(nce,T,V,n,i,j,eos%dhs,eos%zeta, &
+         g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+  end subroutine g_pc_saft_TVn
+
+  !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
+  !> coming from PC-SAFT's hard-sphere. All
+  !> variables are in base SI units. F is defined by
+  !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
+  !> zeta must be updated!!!!
+  subroutine F_HS_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_helmholtzenergy
+    class(PCSAFT_eos), intent(in) :: eos
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: F !< [mol]
+    real, intent(out), optional :: F_T,F_V,F_n(nce)
+    real, intent(out), optional :: F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+    ! Locals
+    real :: mbar, mbar_n(nce)
+    integer :: i, j
+
+    ! Get HS contribution
+    mbar = dot_product(n,eos%m)
+    mbar_n = eos%m
+
+    call calc_bmcsl_helmholtzenergy(nce,T,V,n,eos%zeta,F,F_T,F_V,F_n,&
+         F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+
+    if (present(F_TT)) F_TT = mbar*F_TT
+    if (present(F_TV)) F_TV = mbar*F_TV
+    if (present(F_Tn)) F_Tn = mbar*F_Tn +  mbar_n*F_T
+    if (present(F_VV)) F_VV = mbar*F_VV
+    if (present(F_Vn)) F_Vn = mbar*F_Vn + mbar_n*F_V
+    if (present(F_nn)) then
+      do i=1,nce
+        do j=1,nce
+          F_nn(i,j) = mbar*F_nn(i,j) + mbar_n(i)*F_n(j)  + mbar_n(j)*F_n(i)
+        enddo
+      enddo
+    endif
+    if (present(F_T)) F_T = mbar*F_T
+    if (present(F_V)) F_V = mbar*F_V
+    if (present(F_n)) F_n = mbar*F_n + mbar_n*F
+    if (present(F)) F = mbar*F
+  end subroutine F_HS_PC_SAFT_TVn
+
+  !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
+  !> coming from PC-SAFT's chain term. All
+  !> variables are in base SI units. F is defined by
+  !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
+  !> dhs and zeta must be updated!!!!
+  subroutine F_chain_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_lngij
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: F !< [mol]
+    real, intent(out), optional :: F_T,F_V,F_n(nce)
+    real, intent(out), optional :: F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+    ! Locals
+    integer :: i
+    real :: lng
+    real, target :: lng_T, lng_V, lng_VV, lng_TV, lng_Vn(nce)
+    real, target :: lng_TT, lng_n(nce), lng_Tn(nce), lng_nn(nce,nce)
+    real, pointer :: p_lng_T, p_lng_V, p_lng_VV, p_lng_TV, p_lng_Vn(:)
+    real, pointer :: p_lng_TT, p_lng_n(:), p_lng_Tn(:), p_lng_nn(:,:)
+
+    p_lng_V => NULL()
+    p_lng_T => NULL()
+    p_lng_n => NULL()
+    !
+    p_lng_VV => NULL()
+    p_lng_TV => NULL()
+    p_lng_Vn => NULL()
+    p_lng_TT => NULL()
+    p_lng_Tn => NULL()
+    p_lng_nn => NULL()
+
+    if (present(F_VV) .or. present(F_TV) .or. present(F_Vn) .or. &
+         present(F_TT) .or. present(F_Tn) .or. present(F_nn)) then
+      p_lng_V => lng_V
+      p_lng_T => lng_T
+      p_lng_n => lng_n
+      !
+      p_lng_VV => lng_VV
+      p_lng_TV => lng_TV
+      p_lng_Vn => lng_Vn
+      p_lng_TT => lng_TT
+      p_lng_Tn => lng_Tn
+      p_lng_nn => lng_nn
+    else if (present(F_V) .or. present(F_T) .or. present(F_n)) then
+      p_lng_V => lng_V
+      p_lng_T => lng_T
+      p_lng_n => lng_n
+    endif
+
+    if (present(F)) F = 0
+    if (present(F_T)) F_T = 0
+    if (present(F_V)) F_V = 0
+    if (present(F_n)) F_n = 0
+    if (present(F_TT)) F_TT = 0
+    if (present(F_TV)) F_TV = 0
+    if (present(F_Tn)) F_Tn = 0
+    if (present(F_VV)) F_VV = 0
+    if (present(F_Vn)) F_Vn = 0
+    if (present(F_nn)) F_nn = 0
+
+    ! Get HC contribution
+    do i=1,nce
+      if (eos%m(i) - 1 > 0.0) then
+        call calc_bmcsl_lngij(nce,T,V,n,i,i,eos%dhs,eos%zeta, &
+             lng=lng,lng_T=p_lng_T,lng_V=p_lng_V,lng_n=p_lng_n,&
+             lng_TT=p_lng_TT,lng_TV=p_lng_TV,lng_Tn=p_lng_Tn,&
+             lng_VV=p_lng_VV,lng_Vn=p_lng_Vn,lng_nn=p_lng_nn)
+
+        if (present(F)) F = F - n(i)*(eos%m(i) - 1)*lng
+        if (present(F_T)) F_T = F_T - n(i)*(eos%m(i) - 1)*lng_T
+        if (present(F_V)) F_V = F_V - n(i)*(eos%m(i) - 1)*lng_V
+        if (present(F_TT)) F_TT = F_TT - n(i)*(eos%m(i) - 1)*lng_TT
+        if (present(F_TV)) F_TV = F_TV - n(i)*(eos%m(i) - 1)*lng_TV
+        if (present(F_VV)) F_VV = F_VV - n(i)*(eos%m(i) - 1)*lng_VV
+        if (present(F_n)) then
+          F_n(i) = F_n(i) - ((eos%m(i) - 1)*lng)
+          F_n = F_n - n(i)*(eos%m(i) - 1)*lng_n
+        endif
+        if (present(F_Tn)) then
+          F_Tn(i) = F_Tn(i) - ((eos%m(i) - 1)*lng_T)
+          F_Tn = F_Tn - n(i)*(eos%m(i) - 1)*lng_Tn
+        endif
+        if (present(F_Vn)) then
+          F_Vn(i) = F_Vn(i) - ((eos%m(i) - 1)*lng_V)
+          F_Vn = F_Vn - n(i)*(eos%m(i) - 1)*lng_Vn
+        endif
+        if (present(F_nn)) then
+          F_nn(i,:) = F_nn(i,:) - ((eos%m(i) - 1)*lng_n)
+          F_nn(:,i) = F_nn(:,i) - ((eos%m(i) - 1)*lng_n)
+          F_nn = F_nn - n(i)*(eos%m(i) - 1)*lng_nn
+        endif
+      endif
+    enddo
+
+  end subroutine F_Chain_PC_SAFT_TVn
+
+  !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
+  !> coming from PC-SAFT's HC term. All
+  !> variables are in base SI units. F is defined by
+  !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
+  !> dhs and zeta must be updated!!!!
+  subroutine F_HC_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_zeta_and_derivatives
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: F !< [mol]
+    real, intent(out), optional :: F_T,F_V,F_n(nce)
+    real, intent(out), optional :: F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+    ! Locals
+    real, target :: F_HS !< [-]
+    real, target :: F_HS_V, F_HS_T, F_HS_n(nce)
+    real, target :: F_HS_VV, F_HS_TV, F_HS_Vn(nce), F_HS_TT
+    real, target :: F_HS_Tn(nce), F_HS_nn(nce,nce)
+    real, pointer :: pF_HS !< [-]
+    real, pointer :: pF_HS_V, pF_HS_T, pF_HS_n(:)
+    real, pointer :: pF_HS_VV, pF_HS_TV, pF_HS_Vn(:), pF_HS_TT
+    real, pointer :: pF_HS_Tn(:), pF_HS_nn(:,:)
+
+    if (present(F)) then
+      pF_HS => F_HS
+    else
+      pF_HS => NULL()
+    endif
+    if (present(F_V)) then
+      pF_HS_V => F_HS_V
+    else
+      pF_HS_V => NULL()
+    endif
+    if (present(F_T)) then
+      pF_HS_T => F_HS_T
+    else
+      pF_HS_T => NULL()
+    endif
+    if (present(F_TT)) then
+      pF_HS_TT => F_HS_TT
+    else
+      pF_HS_TT => NULL()
+    endif
+    if (present(F_VV)) then
+      pF_HS_VV => F_HS_VV
+    else
+      pF_HS_VV => NULL()
+    endif
+    if (present(F_TV)) then
+      pF_HS_TV => F_HS_TV
+    else
+      pF_HS_TV => NULL()
+    endif
+    if (present(F_n)) then
+      pF_HS_n => F_HS_n
+    else
+      pF_HS_n => NULL()
+    endif
+    if (present(F_Tn)) then
+      pF_HS_Tn => F_HS_Tn
+    else
+      pF_HS_Tn => NULL()
+    endif
+    if (present(F_Vn)) then
+      pF_HS_Vn => F_HS_Vn
+    else
+      pF_HS_Vn => NULL()
+    endif
+    if (present(F_nn)) then
+      pF_HS_nn => F_HS_nn
+    else
+      pF_HS_nn => NULL()
+    endif
+
+    call calc_dhs(eos, T)
+    call calc_bmcsl_zeta_and_derivatives(nce,V,n,eos%dhs,eos%zeta,eos%m)
+    call F_HS_PC_SAFT_TVn(eos,T,V,n,F_HS,F_HS_T,F_HS_V,F_HS_n,F_HS_TT,F_HS_TV,&
+         F_HS_Tn,F_HS_VV,F_HS_Vn,F_HS_nn)
+    call F_chain_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+
+    if (present(F)) F = F + F_HS
+    if (present(F_T)) F_T = F_T + F_HS_T
+    if (present(F_V)) F_V = F_V + F_HS_V
+    if (present(F_n)) F_n = F_n + F_HS_n
+    if (present(F_TT)) F_TT = F_TT + F_HS_TT
+    if (present(F_TV)) F_TV = F_TV + F_HS_TV
+    if (present(F_Tn)) F_Tn = F_Tn + F_HS_Tn
+    if (present(F_VV)) F_VV = F_VV + F_HS_VV
+    if (present(F_Vn)) F_Vn = F_Vn + F_HS_Vn
+    if (present(F_nn)) F_nn = F_nn + F_HS_nn
+
+  end subroutine F_HC_PC_SAFT_TVn
+
+  !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
+  !> coming from PC-SAFT's hard-chain and dispersion contributions. All
+  !> variables are in base SI units. F is defined by
+  !> F(T,V,n) = sumn*alpha_PC(rho,T,n) = sumn*alpha_PC(sumn/V,T,n)
+  subroutine F_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: F !< [mol]
+    real, intent(out), optional :: F_T,F_V,F_n(nce)
+    real, intent(out), optional :: F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+    ! Locals.
+    real, target :: F_disp !< [-]
+    real, target :: F_disp_V, F_disp_T, F_disp_n(nce)
+    real, target :: F_disp_VV, F_disp_TV, F_disp_Vn(nce), F_disp_TT
+    real, target :: F_disp_Tn(nce), F_disp_nn(nce,nce)
+    real, pointer :: pF_disp !< [-]
+    real, pointer :: pF_disp_V, pF_disp_T, pF_disp_n(:)
+    real, pointer :: pF_disp_VV, pF_disp_TV, pF_disp_Vn(:), pF_disp_TT
+    real, pointer :: pF_disp_Tn(:), pF_disp_nn(:,:)
+    !
+
+    if (present(F)) then
+      pF_disp => F_disp
+    else
+      pF_disp => NULL()
+    endif
+    if (present(F_V)) then
+      pF_disp_V => F_disp_V
+    else
+      pF_disp_V => NULL()
+    endif
+    if (present(F_T)) then
+      pF_disp_T => F_disp_T
+    else
+      pF_disp_T => NULL()
+    endif
+    if (present(F_TT)) then
+      pF_disp_TT => F_disp_TT
+    else
+      pF_disp_TT => NULL()
+    endif
+    if (present(F_VV)) then
+      pF_disp_VV => F_disp_VV
+    else
+      pF_disp_VV => NULL()
+    endif
+    if (present(F_TV)) then
+      pF_disp_TV => F_disp_TV
+    else
+      pF_disp_TV => NULL()
+    endif
+    if (present(F_n)) then
+      pF_disp_n => F_disp_n
+    else
+      pF_disp_n => NULL()
+    endif
+    if (present(F_Tn)) then
+      pF_disp_Tn => F_disp_Tn
+    else
+      pF_disp_Tn => NULL()
+    endif
+    if (present(F_Vn)) then
+      pF_disp_Vn => F_disp_Vn
+    else
+      pF_disp_Vn => NULL()
+    endif
+    if (present(F_nn)) then
+      pF_disp_nn => F_disp_nn
+    else
+      pF_disp_nn => NULL()
+    endif
+
+    if (enable_hs) then
+      ! Get HC contribution
+      call F_HC_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+    else
+      if (present(F)) F = 0
+      if (present(F_T)) F_T = 0
+      if (present(F_V)) F_V = 0
+      if (present(F_n)) F_n = 0
+      if (present(F_TT)) F_TT = 0
+      if (present(F_TV)) F_TV = 0
+      if (present(F_Tn)) F_Tn = 0
+      if (present(F_VV)) F_VV = 0
+      if (present(F_Vn)) F_Vn = 0
+      if (present(F_nn)) F_nn = 0
+    endif
+
+    if (enable_disp) then
+      ! Get dispersion contribution
+      call F_disp_PC_TVn(eos,T,V,n,F_disp,F_disp_V,F_disp_T,F_disp_n, &
+           F_disp_VV,F_disp_TV,F_disp_Vn,F_disp_TT,F_disp_Tn,F_disp_nn)
+      if (present(F)) F = F + F_disp
+      if (present(F_T)) F_T = F_T + F_disp_T
+      if (present(F_V)) F_V = F_V + F_disp_V
+      if (present(F_n)) F_n = F_n + F_disp_n
+      if (present(F_TT)) F_TT = F_TT + F_disp_TT
+      if (present(F_TV)) F_TV = F_TV + F_disp_TV
+      if (present(F_Tn)) F_Tn = F_Tn + F_disp_Tn
+      if (present(F_VV)) F_VV = F_VV + F_disp_VV
+      if (present(F_Vn)) F_Vn = F_Vn + F_disp_Vn
+      if (present(F_nn)) F_nn = F_nn + F_disp_nn
+    endif
+
+  end subroutine F_PC_SAFT_TVn
+
+  !> Get ln(g_ii) with differentials
+  !! Boublik (doi: 10.1063/1.1673824) RDF at contact for molecule i in a mixture
+  subroutine lng_ii_PC_SAFT_TVn(T,V,n,i,lng,lng_T,lng_V,lng_n,lng_TT,lng_TV,lng_Tn,lng_VV,lng_Vn,lng_nn)
+    use hardsphere_bmcsl, only: calc_bmcsl_lngij, calc_bmcsl_zeta_and_derivatives
+    use thermopack_var, only: get_active_eos, base_eos_param, nce
+    real, intent(in) :: T,V,n(nce) ! temp. [K], vol. [m^3], mole numbers [mol]
+    ! Output.
+    real, intent(out), optional :: lng !< [mol]
+    real, intent(out), optional :: lng_T,lng_V,lng_n(nce)
+    real, intent(out), optional :: lng_TT,lng_TV,lng_Tn(nce),lng_VV,lng_Vn(nce),lng_nn(nce,nce)
+    ! Locals
+    integer :: i
+    class(PCSAFT_eos), pointer :: eos
+    class(base_eos_param), pointer :: base_eos
+    base_eos => get_active_eos()
+    eos => get_PCSAFT_eos_pointer(base_eos)
+
+    call calc_dhs(eos, T)
+    call calc_bmcsl_zeta_and_derivatives(nce,V,n,eos%dhs,eos%zeta,eos%m)
+    call calc_bmcsl_lngij(nce,T,V,n,i,i,eos%dhs,eos%zeta, &
+         lng=lng,lng_T=lng_T,lng_V=lng_V,lng_n=lng_n,&
+         lng_TT=lng_TT,lng_TV=lng_TV,lng_Tn=lng_Tn,&
+         lng_VV=lng_VV,lng_Vn=lng_Vn,lng_nn=lng_nn)
+
+  end subroutine lng_ii_PC_SAFT_TVn
+
+  subroutine spcsaft_allocate_and_init(eos,nc,eos_label)
     use utilities, only: allocate_nc_x_nc, allocate_nc
     ! Passed object:
-    class(pcsaft_eos), intent(inout) :: eos
+    class(spcsaft_eos), intent(inout) :: eos
     ! Input:
     integer, intent(in) :: nc !< Number of components
     character(len=*), intent(in) :: eos_label !< EOS label
@@ -1468,15 +1998,15 @@ contains
     call allocate_nc_x_nc(eos%sigma,nc,"eos%sigma")
     call allocate_nc_x_nc(eos%sigma_cube,nc,"eos%sigma_cube")
     call allocate_nc_x_nc(eos%eps_depth_divk,nc,"eos%eps_depth_divk")
-  end subroutine pcsaft_allocate_and_init
+  end subroutine spcsaft_allocate_and_init
 
-  subroutine assign_pcsaft(This, other)
-    class(PCSAFT_eos), intent(inout) :: this
+  subroutine assign_spcsaft(This, other)
+    class(sPCSAFT_eos), intent(inout) :: this
     class(*), intent(in)           :: other
     ! Locals
     integer :: nc
     select type (other)
-    class is (PCSAFT_eos)
+    class is (sPCSAFT_eos)
       if (allocated(other%m)) then
         nc = size(other%m)
         call this%allocate_and_init(nc,other%eosid)
@@ -1489,19 +2019,206 @@ contains
     class default
       print *,"assign_pcsaft: Should not be here"
     end select
-  end subroutine assign_pcsaft
+  end subroutine assign_spcsaft
 
   !! \author Morten H
-  subroutine pcsaft_dealloc(eos)
+  subroutine spcsaft_dealloc(eos)
     use utilities, only: deallocate_real, deallocate_real_2
     ! Passed object:
-    class(pcsaft_eos), intent(inout) :: eos
+    class(spcsaft_eos), intent(inout) :: eos
     !
     call base_eos_dealloc(eos)
     call deallocate_real(eos%m,"eos%m")
     call deallocate_real_2(eos%sigma,"eos%sigma")
     call deallocate_real_2(eos%sigma_cube,"eos%sigma_cube")
     call deallocate_real_2(eos%eps_depth_divk,"eos%eps_depth_divk")
+  end subroutine spcsaft_dealloc
+
+  subroutine pcsaft_allocate_and_init(eos,nc,eos_label)
+    use utilities, only: allocate_nc_x_nc, allocate_nc
+    ! Passed object:
+    class(pcsaft_eos), intent(inout) :: eos
+    ! Input:
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+    call eos%sPCSAFT_eos%allocate_and_init(nc,eos_label)
+    call eos%dhs%allocate(nc)
+    call eos%zeta%allocate(nc)
+  end subroutine pcsaft_allocate_and_init
+
+  subroutine assign_pcsaft(This, other)
+    class(PCSAFT_eos), intent(inout) :: this
+    class(*), intent(in)           :: other
+    !
+    select type (other)
+    class is (PCSAFT_eos)
+      call assign_spcsaft(This, other)
+      if (allocated(other%m)) then
+        this%dhs = other%dhs
+        this%zeta = other%zeta
+      endif
+    class default
+      print *,"assign_pcsaft: Should not be here"
+    end select
+  end subroutine assign_pcsaft
+
+  !! \author Morten H
+  subroutine pcsaft_dealloc(eos)
+    ! Passed object:
+    class(pcsaft_eos), intent(inout) :: eos
+    !
+    call eos%spcsaft_eos%dealloc()
+    call eos%dhs%deallocate()
+    call eos%zeta%deallocate()
   end subroutine pcsaft_dealloc
 
+  function get_PCSAFT_eos_pointer(base_eos) result(eos)
+    class(base_eos_param), pointer, intent(in) :: base_eos
+    class(PCSAFT_eos), pointer :: eos
+    eos => NULL()
+    if (.not. associated(base_eos)) return
+    select type(p_eos => base_eos)
+    type is (PCSAFT_eos)
+      eos => p_eos
+    class default
+      call stoperror("Error casting to PCSAFT_eos")
+    end select
+  end function get_PCSAFT_eos_pointer
+
 end module pc_saft_nonassoc
+
+!> Test differentials of PC-SAFT Hard-Chain Reference Contribution.
+!! Comparison of numerical and analytical differentials.
+subroutine test_PCSAFT_Fres_HC()
+  use thermopack_var, only: get_active_thermo_model, thermo_model, nce
+  use pc_saft_nonassoc, only: get_PCSAFT_eos_pointer, PCSAFT_eos, &
+       F_PC_SAFT_TVn, F_HC_PC_SAFT_TVn
+  implicit none
+  ! Locals
+  real, dimension(nce) :: n, n0
+  real :: eps, dV, dT, dn, t, v
+  real :: F,F_T,F_V,F_n(nce),F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+  real :: a,a_T,a_V,a_n(nce),a_TT,a_TV,a_Tn(nce),a_VV,a_Vn(nce),a_nn(nce,nce)
+  real :: b,b_T,b_V,b_n(nce),b_TT,b_TV,b_Tn(nce),b_VV,b_Vn(nce),b_nn(nce,nce)
+  type(thermo_model), pointer :: act_mod_ptr
+  class(PCSAFT_eos), pointer :: eos
+  integer :: i
+  !Test for "C2,C3"
+  act_mod_ptr => get_active_thermo_model()
+  eos => get_PCSAFT_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+
+  do i=1,nce
+    n(i) = 0.8/i
+  enddo
+  V=1.0e-4
+  T=200.0
+  eps = 1.0e-5
+
+  call F_HC_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+  dV = V*eps
+  dT = T*eps
+  ! Temperature
+  call F_HC_PC_SAFT_TVn(eos,T-dT,V,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+  call F_HC_PC_SAFT_TVn(eos,T+dT,V,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+  print *,"F_T",F_T,(b-a)/dT/2
+  print *,"F_TT",F_TT,(b_T-a_T)/dT/2
+  print *,"F_VT",F_TV,(b_V-a_V)/dT/2
+  print *,"F_Tn",F_Tn,(b_n-a_n)/dT/2
+
+  ! Volume
+  call F_HC_PC_SAFT_TVn(eos,T,V-dV,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+  call F_HC_PC_SAFT_TVn(eos,T,V+dV,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+  print *,"F_V",F_V,(b-a)/dV/2
+  print *,"F_VV",F_VV,(b_V-a_V)/dV/2
+  print *,"F_VT",F_TV,(b_T-a_T)/dV/2
+  print *,"F_Vn",F_Vn,(b_n-a_n)/dV/2
+
+  ! n(1)
+  do i=1,nce
+    print *,"i",i
+    n0 = n
+    dn = n0(i)*eps
+    n = n0
+    n(i) = n0(i) - dn
+    call F_HC_PC_SAFT_TVn(eos,T,V,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+    n(i) = n0(i) + dn
+    call F_HC_PC_SAFT_TVn(eos,T,V,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+    print *,"F_n",F_n(i),(b-a)/dn/2
+    print *,"F_Tn",F_Tn(i),(b_T-a_T)/dn/2
+    print *,"F_Vn",F_Vn(i),(b_V-a_V)/dn/2
+    print *,"F_nn",F_nn(:,i),(b_n-a_n)/dn/2
+  enddo
+  stop
+end subroutine test_PCSAFT_Fres_HC
+
+!> Test differentials of PC-SAFT reduced Helmholtz energy.
+!! Comparison of numerical and analytical differentials.
+subroutine test_PCSAFT_Fres()
+  use thermopack_var, only: get_active_thermo_model, thermo_model, nce
+  use pc_saft_nonassoc, only: get_PCSAFT_eos_pointer, PCSAFT_eos, &
+       F_PC_SAFT_TVn, F_SPC_SAFT_TVn
+  implicit none
+  ! Locals
+  real, dimension(nce) :: n, n0
+  real :: eps, dV, dT, dn, t, v, sF
+  real :: F,F_T,F_V,F_n(nce),F_TT,F_TV,F_Tn(nce),F_VV,F_Vn(nce),F_nn(nce,nce)
+  real :: a,a_T,a_V,a_n(nce),a_TT,a_TV,a_Tn(nce),a_VV,a_Vn(nce),a_nn(nce,nce)
+  real :: b,b_T,b_V,b_n(nce),b_TT,b_TV,b_Tn(nce),b_VV,b_Vn(nce),b_nn(nce,nce)
+  type(thermo_model), pointer :: act_mod_ptr
+  class(PCSAFT_eos), pointer :: eos
+  integer :: i
+  !Test for "C2,C3"
+  act_mod_ptr => get_active_thermo_model()
+  eos => get_PCSAFT_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+
+  do i=1,nce
+    n(i) = 0.8/i
+  enddo
+  V=1.0e-4
+  T=200.0
+  eps = 1.0e-5
+
+  call F_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
+  dV = V*eps
+  dT = T*eps
+  ! Temperature
+  call F_PC_SAFT_TVn(eos,T-dT,V,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+  call F_PC_SAFT_TVn(eos,T+dT,V,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+  print *,"F_T",F_T,(b-a)/dT/2
+  print *,"F_TT",F_TT,(b_T-a_T)/dT/2
+  print *,"F_VT",F_TV,(b_V-a_V)/dT/2
+  print *,"F_Tn",F_Tn,(b_n-a_n)/dT/2
+
+  ! Volume
+  call F_PC_SAFT_TVn(eos,T,V-dV,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+  call F_PC_SAFT_TVn(eos,T,V+dV,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+  print *,"F_V",F_V,(b-a)/dV/2
+  print *,"F_VV",F_VV,(b_V-a_V)/dV/2
+  print *,"F_VT",F_TV,(b_T-a_T)/dV/2
+  print *,"F_Vn",F_Vn,(b_n-a_n)/dV/2
+
+  ! n(1)
+  do i=1,nce
+    n0 = n
+    dn = n0(i)*eps
+    n = n0
+    n(i) = n0(i) - dn
+    call F_PC_SAFT_TVn(eos,T,V,n,a,a_T,a_V,a_n,a_TT,a_TV,a_Tn,a_VV,a_Vn,a_nn)
+    n(i) = n0(i) + dn
+    call F_PC_SAFT_TVn(eos,T,V,n,b,b_T,b_V,b_n,b_TT,b_TV,b_Tn,b_VV,b_Vn,b_nn)
+    print *,"F_n",F_n(i),(b-a)/dn/2
+    print *,"F_Tn",F_Tn(i),(b_T-a_T)/dn/2
+    print *,"F_Vn",F_Vn(i),(b_V-a_V)/dn/2
+    print *,"F_nn",F_nn(:,i),(b_n-a_n)/dn/2
+  enddo
+
+  do i=1,nce
+    n = 0
+    n(i) = 1.0
+    call F_PC_SAFT_TVn(eos,T,V,n,F)
+    call F_SPC_SAFT_TVn(eos,T,V,n,sF)
+    print *,F,sF
+  enddo
+  stop
+end subroutine test_PCSAFT_Fres

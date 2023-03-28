@@ -35,10 +35,11 @@ contains
   !> e.g. by not calculating the exponential in every loop iteration
   subroutine Delta_kl(eos,nc,T,V,n,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
-    use saft_globals, only: assoc_covol_binary, eosSAFT_VR_MIE
+    use saft_globals, only: assoc_covol_binary
+    use eosdata, only: eosOPC_SAFT, eosSAFT_VR_MIE
     use saft_rdf
     ! Input.
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: T
     real, intent(in) :: V
@@ -63,7 +64,7 @@ contains
     integer :: k,l
     integer :: ii, jj, k1, k2, l1, l2
     real :: d1, d2
-    real :: covol, expo
+    real :: covol, covol_T, covol_TT, expo
     logical :: fir_der_present, sec_der_present
     real :: boltzmann_fac(numAssocSites, numAssocSites)
     integer :: difflevel
@@ -111,15 +112,16 @@ contains
           ic = site_to_compidx(assoc,k)
           jc = site_to_compidx(assoc,l)
           if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
-          if (assoc%saft_model==eosSAFT_VR_MIE) then
-             call master_saft_rdf(eos,nc,T,V,n,ic,jc,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+          if (assoc%saft_model==eosSAFT_VR_MIE .or. assoc%saft_model == eosOPC_SAFT) then
+            call master_saft_rdf(eos,nc,T,V,n,ic,jc,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
           end if
 
-          covol = assoc_covol_binary(ic,jc)
+          call assoc_covol_binary(ic,jc,covol,covol_T,covol_TT)
           expo = boltzmann_fac(k,l)
 
           h = assoc%beta_kl(k,l)*covol*(expo-1)
-          h_T = -assoc%eps_kl(k,l)*expo*covol*assoc%beta_kl(k,l)/(Rgas*T*T)
+          h_T = -assoc%eps_kl(k,l)*expo*covol*assoc%beta_kl(k,l)/(Rgas*T*T) + &
+               assoc%beta_kl(k,l)*covol_T*(expo-1)
 
           Delta(k,l) = g*h
           Delta(l,k) = Delta(k,l)
@@ -141,7 +143,9 @@ contains
 
           if (present(Delta_TT)) then
              h_TT = (2+assoc%eps_kl(k,l)/(Rgas*T))*&
-                  assoc%eps_kl(k,l)/(Rgas*T**3)*expo*assoc%beta_kl(k,l)*covol
+                  assoc%eps_kl(k,l)/(Rgas*T**3)*expo*assoc%beta_kl(k,l)*covol + &
+                  -2*assoc%eps_kl(k,l)*expo*covol_T*assoc%beta_kl(k,l)/(Rgas*T*T) + &
+                  assoc%beta_kl(k,l)*covol_TT*(expo-1)
              Delta_TT(k,l) = g_TT*h + 2*g_T*h_T + g*h_TT
              Delta_TT(l,k) = Delta_TT(k,l)
           end if
@@ -311,7 +315,7 @@ contains
 
   !> Computes the K matrix from Michelsen paper. Needed when solving for X.
   subroutine K_mich (eos,nc,T,V,n,K_mich_kl,m_opt,Delta_opt)
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: T
     real, intent(in) :: V
@@ -349,7 +353,7 @@ contains
   subroutine solve_for_X_k(eos,nc,param,X_k,maxit,tol)
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, premReturn, setXv
     use numconstants, only: machine_prec
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, dimension(2+nc), intent(inout) :: param
     real, dimension(numAssocSites), intent(inout) :: X_k
@@ -431,7 +435,7 @@ contains
 
   subroutine succ_subs (eos,nc,T,V,n,X,n_iter)
     use numconstants, only: machine_prec
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in)  :: nc
     real, intent(in)     :: T,V
     real, intent(in)     :: n(nc)
@@ -455,7 +459,7 @@ contains
   subroutine X_derivatives_knowing_X (eos,nc,T,V,n,X,X_T,X_V,X_n,&
        X_TT,X_TV,X_VV,X_Tn,X_Vn,X_nn)
     ! Input.
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in)            :: T, V, n(nc), X(numAssocSites)
     ! Output.
@@ -691,7 +695,7 @@ contains
        Q_XT,Q_XV,Q_Xn,Q_XX,Q_TT,Q_TV,Q_Tn,Q_VV,Q_Vn,Q_nn,&
        Q_XXX,Q_XXT,Q_XXV,Q_XXn,Q_XTT,Q_XVV,Q_XTV,Q_XTn,Q_XVn,Q_Xnn,X_calculated)
     ! Input.
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in)         :: nc
     real, intent(in)            :: T,V,n(nc)
     real, intent(in)            :: X_k(numAssocSites)
@@ -1188,7 +1192,7 @@ contains
   !> energy, along with its derivatives.
   subroutine calcFder_assoc(eos,nc,X_k,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     ! Input.
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: X_k(numAssocSites)
     real, intent(in) :: T
@@ -1232,7 +1236,7 @@ contains
 
   !> Gives the association contribution to pressure.
   subroutine assoc_pressure(eos,nc,T,V,n,X_k,P,dPdV,dPdT,dPdn)
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     real, intent(in)  :: T
     real, intent(in)  :: V
@@ -1353,7 +1357,7 @@ contains
   !> Successive substitution method.
   subroutine fun_succ_subst (eos,T,V,n,X)
     use thermopack_var, only: nce
-    class(base_eos_param), intent(in) :: eos
+    class(base_eos_param), intent(inout) :: eos
     real, intent(inout)  :: X(numAssocSites)
     ! Locals.
     integer :: k,l

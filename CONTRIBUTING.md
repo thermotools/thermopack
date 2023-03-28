@@ -41,7 +41,7 @@ Thermopack requires analytical differentials in temperature, volume and mol numb
 
 ## Tests
 
-New functionality should be accompanied by unit tests. The test files should be written for pFUnit, a unit testing framework enabling JUnit-like testing of serial and MPI-parallel software written in Fortran. The new tests should be included in [thermopack/unittests](https://github.com/thermotools/thermopack/tree/main/unittest). The compilation (`make unittest_mode_compiler`) depends on the variable PFUNIT pointing to a working installation of pFUnit.
+New functionality should be accompanied by unit tests. The test files should be written for pFUnit, a unit testing framework enabling JUnit-like testing of serial and MPI-parallel software written in Fortran. The new tests should be included in [thermopack/unittests](https://github.com/thermotools/thermopack/tree/main/unittest). The compilation (`make unittest_mode_compiler`) depends on the variable PFUNIT_DIR pointing to a directory containing a working installation of pFUnit (tested with pFUnit 4.6).
 
 The new code need to compile, in debug, optim and openmp mode, and run using the gfortran (Linux) and the Intel FORTRAN (Linux/Windows) compilers. The existing and new unittests should pass when compiled with both gfortran and Intel FORTRAN compiled in debug, optim and opnemp mode. So if possible, new code should have been tested as extensively as possible.
 

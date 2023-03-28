@@ -1,6 +1,6 @@
 module test_active_model
   use eoslibinit, only: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_extcsp
-  use pfunit_mod
+  use funit
   use thermopack_var, only: add_eos, activate_model, delete_eos
   use critical, only: calcCriticalTV
   implicit none

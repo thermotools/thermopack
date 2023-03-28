@@ -13,7 +13,7 @@
                 left=2.3cm,     right=2.3cm,
                 headheight=1cm, footskip=2.5ex]{geometry}
 
-\newcommand{\MainLogo}{Sintef_lb}
+\newcommand{\MainLogo}{../thermomemo/Sintef_lb}
 \newcommand{\Website}{www.sintef.no/energi}
 \newcommand*{\Institute} {}
 \newcommand*{\Department}{}

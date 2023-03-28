@@ -1,5 +1,5 @@
 module test_state_func
-  use pfunit_mod
+  use funit
   implicit none
 
 contains
@@ -50,6 +50,8 @@ contains
         ! Perturb s at constant v
         s1 = s0 + ds
         iphase1 = iphase0
+        t1 = t0
+        p1 = p0
         call twophasesvflash(t1,p1,z,betav,betal,x,y,s1,v0,iphase1)
         dsdt_v_num = ds/(t1 - t0)
         dsdp_v_num = ds/(p1 - p0)

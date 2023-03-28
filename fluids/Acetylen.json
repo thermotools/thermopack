@@ -76,6 +76,35 @@
     "bib_reference": "",
     "Zra": -1.0
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 4.6,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
   "SRK": {},
-  "PR": {}
+  "PR": {},
+  "PC-SAFT-1": {
+    "m": 1.5477,
+    "sigma": 3.3428E-10,
+    "eps_depth_divk": 174.48,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005"
+  },
+  "PC-SAFT-2": {
+    "m": 1.5587,
+    "sigma": 3.3325E-10,
+    "eps_depth_divk": 174.68,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "Q": 4.5415,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005ADJQ"
+  }
 }

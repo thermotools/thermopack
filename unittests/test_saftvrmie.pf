@@ -1,6 +1,6 @@
 module test_saftvrmie
   use eoslibinit, only: init_thermo
-  use pfunit_mod
+  use funit
   use saft_interface
   use saftvrmie_interface
   use saftvrmie_containers

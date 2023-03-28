@@ -3,7 +3,9 @@
 import re
 from subprocess import check_output
 import sys
-from ctypes import c_int, POINTER
+import copy
+from ctypes import c_int, POINTER, c_double
+import numpy as np
 
 def gcc_major_version_greater_than(GCC_version):
     """Returns if GCC major version number is greater than specefied version
@@ -43,3 +45,51 @@ def get_contribution_flag(property_flag):
         raise ValueError("property_flag has wrong value."\
                          " Expected I,R or IR, got " + prop_flag)
     return contribution_c
+
+def get_optional_pointers(optional_flags, optional_arrayshapes):
+    """
+    Gets a list of pointers to double or nullptr, to pass to fortran for optional arguments.
+
+    Args:
+        optional_flags (list) : What optional values to compute, only compute those that are not None
+        optional_arrayshapes (list<tuple>) : The shape of each pointer. Use (0,) for singular values.
+    Returns:
+        (list<c_double>) : Pointers to be passed to Fortran-side to compute optional values
+    """
+    null_pointer = POINTER(c_double)()
+    optional_ptrs = [null_pointer for _ in optional_flags]
+    for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
+        if flag is None:
+            continue
+        if np.product(shape) > 0:
+            optional_ptrs[i] = (c_double * np.product(shape))(0.0)
+        else:
+            optional_ptrs[i] = c_double(0.0)
+    return optional_ptrs
+
+def fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes):
+    """
+    Takes the values held py the pointers in the list optional_ptrs, and adds them to the tuple return_tuple. For use
+    with get_optional_pointers(). Pass the list of pointers that hold optional return values to this function, to fill
+    the return tuple with the values that have been computed.
+
+    Args:
+        return_tuple (tuple) : A (possibly empty) tuple of return values
+        optional_ptrs (list<c_double>) : Pointers to computed values
+        optional_flags (list<bool>) : The flags for what optional values to compute, in the same order as optional_ptrs
+        optional_arrayshapes (list<tuple>) : The shape of the return values. Use (0,) for singular values
+    Returns:
+        (tuple) : The tuple to be returned by the thermopack method
+    """
+    for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
+        if flag is None:
+            continue
+        if np.product(shape) > 0:
+            # Need to transpose because fortran is column-major
+            # Note : Reshape and transpose will do nothing if optional_pointers[i] is 1D
+            return_array = np.array(optional_ptrs[i]).reshape(shape).transpose()
+            return_tuple += (copy.deepcopy(return_array), )
+        else:
+            return_tuple += (optional_ptrs[i].value, )
+
+    return return_tuple

@@ -78,7 +78,7 @@ and is given by the nonlinear equation
 Here $\Delta^{A_i B_j}$ is called the bond association strength, and is given by
 \begin{align}
     \Delta^{A_i B_j} =& N_{\rm avo} g_{ij} d_{ij}^3 \kappa^{A_i B_j} [\exp(\epsilon^{A_i B_j}/kT) - 1] &&\text{(PC-SAFT)}\\ \label{ascStrength}
-    \Delta^{A_i B_j} =& N_{\rm avo} \tfrac{\pi}{6} g \sigma_{ij}^3 \kappa^{A_i B_j} [\exp(\epsilon^{A_i B_j}/kT) - 1] &&\text{(sPC-SAFT)}
+    \Delta^{A_i B_j} =& N_{\rm avo} g \sigma_{ij}^3 \kappa^{A_i B_j} [\exp(\epsilon^{A_i B_j}/kT) - 1] &&\text{(sPC-SAFT)}
 \end{align}
 The quantities $\sigma_{ij}$, $\kappa^{A_i B_j}$ and $\epsilon^{A_i B_j}$ in
 \eqref{ascStrength} are binary parameters obtained by using mixing rules on
@@ -130,8 +130,8 @@ compressibility expression, defined as
 \end{equation}
 We have furthermore used the abbreviations
 \begin{align}
-  \overline{m^2\epsilon \sigma^3} &:= \sum_{ij} \sigma_{ij} x_i x_j m_i m_j \frac{\epsilon_{ij}}{kT} \sigma_{ij}^3 \\
-  \overline{m^2\epsilon^2\sigma^3} &:= \sum_{ij} \sigma_{ij} x_i x_j m_i m_j \lp \frac{\epsilon_{ij}}{kT} \rp^2 \sigma_{ij}^3/kT.
+  \overline{m^2\epsilon \sigma^3} &:= \sum_{ij} x_i x_j m_i m_j \frac{\epsilon_{ij}}{kT} \sigma_{ij}^3 \\
+  \overline{m^2\epsilon^2\sigma^3} &:= \sum_{ij} x_i x_j m_i m_j \lp \frac{\epsilon_{ij}}{kT} \rp^2 \sigma_{ij}^3.
 \end{align}
 The parameters for a pair of unlike segments are determined by conventional
 one-fluid mixing rules:
