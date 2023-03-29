@@ -80,7 +80,7 @@ module extcsp
   public :: shape_diff
   public :: csp_Zfac, csp_refPressure
   public :: csp_calcFres
-  public :: csp_testpressure, csp_mainTestRoutine
+  public :: csp_mainTestRoutine
   public :: extcsp_eos
 
 contains
@@ -873,53 +873,6 @@ contains
     end if
   end subroutine csp_refPressure
 
-  !-----------------------------------------------------------------------------
-  !> Computes the pressure and its derivatives for the mixture. The routine
-  !> starts from scratch, and so it doesn't benefit from e.g. already calculated
-  !> shape factors.
-  !> \author
-  !> Ailo A, 2015-01
-  !-----------------------------------------------------------------------------
-  subroutine csp_mixtPressure(eos,T,v,n,P,dPdV,dPdT,dpdz)
-    use thermopack_var, only: nce
-    use thermopack_constants, only: Rgas
-    implicit none
-    ! in/out
-    class(extcsp_eos), intent(inout) :: eos !< CSP eos
-    ! input
-    real, intent(in) :: T                        !< Mixture temperature [K]
-    real, intent(in) :: v                        !< Mixture molar volume [m3/mol]
-    real, dimension(nce), intent(in) :: n         !< Mole composition of mixture [mol]
-    ! output
-    real, intent(out) :: P                       !< Pressure [Pa]
-    real, optional, intent(out) :: dPdv, dPdT  !< Pressure differentials [Pa*mol/m^3], [Pa/K], [Pa*mol^2/m^6]
-    real, dimension(nce), optional, intent(out) :: dpdz !< Pressure differentials [PaYmol]
-    ! Locals
-    real :: H, F, P0, T0, v0, sumn
-    real :: V_m3
-    sumn = sum(n)
-
-    V_m3 = v!*sumn ! volume [m3]
-    ! compute shape factors and their differentials
-    call shape_factors(eos,H,F,T,n,eos%sd)
-    ! compute v0 and T0
-    v0 = 1e3*V_m3/H  ! must multiply by 1e3 to get liters/mol
-    T0 = sumn*T/F
-    ! compute P0
-    call csp_refPressure(eos,T0,v0,n,P0)
-    ! calculate red. res. Helmholtz energy F and its derivatives
-    call calcRefEqDiff(eos,T0,v0,eos%sd)
-    call calcCombinedDiff(T0,v0,n,eos%sd)
-    ! calculate P and its derivatives
-    P = Rgas*T*(-eos%sd%FF_V + sumn/V_m3)
-    if (present(dPdT)) dPdT = P/T - Rgas*T*eos%sd%FF_TV
-    if (present(dPdv)) dPdV = -Rgas*T*(eos%sd%FF_VV + sumn/V_m3**2) ! Pa*mol/m3
-
-    if (present(dPdz)) then
-      dPdz = Rgas*T*(-eos%sd%FF_Vi + 1.0/V_m3)
-    endif
-  end subroutine csp_mixtPressure
-
   subroutine checkStateFunctionDerivatives(StateFunction,eos,T,P,n,phase_in)
     use thermopack_var, only: nce
     implicit none
@@ -1078,8 +1031,6 @@ contains
     ! COMMENT OUT ALL BUT THE INTERESTING TEST
     print *,"*********CALLING TEST_SHAPE_FACTORS*********"
     call test_shape_factors(nce,T,P,n,2)
-    print *,"*********CALLING CSP_TESTPRESSURE*********"
-    call csp_testPressure(T,v,n)
     print *,"*********CALLING CHECKSTATEFUNCTIONDERIVATIVES*********"
     print *,"********* ZFAC *********"
     select type (p_eos => act_eos_ptr)
@@ -1247,73 +1198,6 @@ contains
       enddo
     end select
   end subroutine test_shape_factors
-
-  subroutine csp_testPressure(T,v,n)
-    use thermopack_var, only: nce, get_active_eos, base_eos_param
-    implicit none
-    ! input
-    real, intent(in) :: T                        !< Mixture temperature [K]
-    real, intent(in) :: v                        !< Mixture molar volume [L/mol]
-    real, dimension(nce), intent(in) :: n         !< Mole composition of mixture [mol]
-    ! locals
-    real  :: P                       !< Pressure [Pa]
-    real  :: dPdv, dPdT    !< Pressure differentials [Pa*mol/m^3], [Pa/K]
-    real  :: sumn
-    real :: dv, dt, dpdv_num, dpdt_num, p_pert, eps_v, eps_t
-    real :: dPdn(nce), dn, dPdn_num(nce), eps_n(nce), nn(nce)
-    integer :: i
-    class(base_eos_param), pointer :: act_eos_ptr
-    sumn = sum(n)
-
-    dv = 1.0e-6*v
-    dt = 1.0e-6*T
-    dn = 1.0e-6
-
-    act_eos_ptr => get_active_eos()
-    select type (p_eos => act_eos_ptr)
-    class is(extcsp_eos)
-      print *, "TESTING CSP_REFPRESSURE"
-      call csp_refPressure(p_eos,T,v,n,P,dPdV,dPdT)
-
-      call csp_refPressure(p_eos,T,v+dv,n,P_pert)
-      dpdv_num = (p_pert-p)/dv
-      eps_v = abs(dpdv-dpdv_num)
-
-      call csp_refPressure(p_eos,T+dt,v,n,P_pert)
-      dpdt_num = (p_pert-p)/dt
-      eps_t = abs(dpdt-dpdt_num)
-
-      print *, "eps,", " releps, ", "value, ", "num_value"
-      print *, eps_v, eps_v/abs(dpdv), dpdv, dpdv_num, "(dpdv)"
-      print *, eps_t, eps_t/abs(dpdt), dpdt, dpdt_num,  "(dpdt)"
-
-      print *, "TESTING CSP_MIXTPRESSURE"
-      call csp_mixtPressure(p_eos,T,v,n,P,dPdV,dPdT,dPdn)
-      print *,'p',P
-      call csp_mixtPressure(p_eos,T,v+dv,n,P_pert)
-      dpdv_num = (p_pert-p)/dv
-      eps_v = abs(dpdv-dpdv_num)
-
-      call csp_mixtPressure(p_eos,T+dt,v,n,P_pert)
-      dpdt_num = (p_pert-p)/dt
-      eps_t = abs(dpdt-dpdt_num)
-
-      do i=1,nce
-        nn = n
-        nn(i) = nn(i) + dn
-        call csp_mixtPressure(p_eos,T,v,nn,P_pert)
-        dpdn_num(i) = (p_pert-p)/dn
-        eps_n(i) = abs(dpdn(i)-dpdn_num(i))
-      enddo
-
-      print *, "eps,", " releps, ", "value, ", "num_value"
-      print *, eps_v, eps_v/abs(dpdv), dpdv, dpdv_num, "(dpdv)"
-      print *, eps_t, eps_t/abs(dpdt), dpdt, dpdt_num,  "(dpdt)"
-      do i=1,nce
-        print *, eps_n(i), eps_n(i)/abs(dpdn(i)), dpdn(i), dpdn_num(i),  "(dpdn)", i
-      enddo
-    end select
-  end subroutine csp_testPressure
 
   !> Calculates the reduced residual Helmholtz energy F,
   !> along with its derivatives.

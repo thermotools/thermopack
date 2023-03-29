@@ -53,7 +53,6 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
   !! \param dZdt Temperature derivative [1/K]
   !! \param dZdp Pressure derivative [1/Pa]
   !! \param dZdz Composition derivative [-]
@@ -92,7 +91,6 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
   !! \param residual Return only the residual part if .true.
   !! \param dhdt Temperature derivative [J/molK]
   !! \param dhdp Pressure derivative [J/molPa]
@@ -187,7 +185,7 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
+  !!        Gibbs free energy is to be returned
   !! \param residual Return only the residual part if .true.
   !! \param dsdt Temperature derivative [J/molK]
   !! \param dsdp Pressure derivative [J/molPa]
@@ -437,7 +435,6 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
   !! \param dlnfdt Temperature derivative [1/K] (dlog(f)/dT)
   !! \param dlnfdp Pressure derivative [1/Pa]   (dlog(f)/dP)
   !! \param dlnfdz Composition derivative [1/mol] (dlog(f)/dNi)
@@ -490,7 +487,6 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
   !! \param g Gibbs energy [J/mol]
   !! \param dgdt Temperature derivative [J/mol/K]
   !! \param dgdp Pressure derivative [J/mol/Pa]
@@ -504,7 +500,6 @@ contains
     use eosdata
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas
-    use single_component, only: Gres_single
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff, base_eos_param
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_Gres
@@ -1082,7 +1077,6 @@ contains
   !!       1: Normal
   !!       2: if the metastable maxima or minima of the z-factor are to be returned
   !!       3: If possibilities of having three roots, return the one having minimum
-  !!        Gibbs free energy is to be returned - calls cbGres
   !! \param dZdt Temperature derivative [1/K]
   !! \param dZdp Pressure derivative [1/Pa]
   !! \param dZdz Composition derivative [-]

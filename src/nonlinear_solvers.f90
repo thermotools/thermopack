@@ -91,7 +91,7 @@ contains
 
    !-----------------------------------------------------------------------------
    !> Interface for solver
-   !> 
+   !>
    !> \author MH, August 2012
    !-----------------------------------------------------------------------------
    subroutine nonlinear_solve(solver,fun,jac,hess,limit,premterm,setXvar,&
@@ -138,7 +138,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> NR solver
-  !> 
+  !>
   !> \author MH, August 2012
   !-----------------------------------------------------------------------------
   subroutine newton(solver,fun,jac,hess,limit,premterm,setXvar,&
@@ -250,7 +250,7 @@ contains
         solver%exitflag = 3
         return
       endif
-      
+
       if (converged(solver,i,norm_resid0,norm_resid)) exit
       norm_resid0 = norm_resid
 
@@ -320,7 +320,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Test for convergence
-  !> 
+  !>
   !> \author MH, August 2012
   !-----------------------------------------------------------------------------
   logical function converged(solver,iterations,resid0,resid)
@@ -546,7 +546,7 @@ contains
   !-----------------------------------------------------------------------------
   !> Limit change in x, dx, to keep x between extreme values:
   !> xmin <= x <= xmax
-  !> 
+  !>
   !> \author MH, August 2012
   !-----------------------------------------------------------------------------
   subroutine limit_dx(n,x,xmin,xmax,dx,np,param)
@@ -577,7 +577,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> No premature return
-  !> 
+  !>
   !> \author MH, 2013-10-08
   !-----------------------------------------------------------------------------
   function premReturn(X,dX,param,n,np) result(doReturn)
@@ -586,7 +586,7 @@ contains
     integer, intent(in)                :: np !< Dimension of param
     real, dimension(n), intent(in)     :: X !< Vapour mole numbers [mole]
     real, dimension(np), intent(in)    :: param !< Parameter vector
-    real, dimension(n), intent(in)     :: dX !< 
+    real, dimension(n), intent(in)     :: dX !<
     logical                            :: doReturn !< Terminate minimization?
     !
     doReturn = .false.
@@ -614,7 +614,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Set variables
-  !> 
+  !>
   !> \author MH, 2013-02-27
   !-----------------------------------------------------------------------------
   subroutine setXv(n,nparam,X,dX,Xmin,Xmax,param,alpha)
@@ -676,7 +676,7 @@ contains
   !-----------------------------------------------------------------------------
   !> Subroutine to find the inverse of a square matrix
   !> Modified after freely available routine written by Ashwith J. Rego
-  !> 
+  !>
   !> \author MH, August 2012
   !-----------------------------------------------------------------------------
   subroutine inverse(matrix, inv, n, errorflag)
@@ -801,7 +801,7 @@ contains
   !! REF:
   !! AN IMPROVED PEGASUS METHOD FOR ROOT FINDING
   !! RICHARD F. KING
-  !! BIT Numerical Mathematics, 13 (1973), 423-427 
+  !! BIT Numerical Mathematics, 13 (1973), 423-427
   !! \author MH, August 2012
   !-----------------------------------------------------------------------------
   subroutine pegasus(xlow,xhigh,fun,x,solver,param)
@@ -881,7 +881,7 @@ contains
         x1 = x2
         f1 = f2
       else
-        pass_through_to_step_5 = .true.  
+        pass_through_to_step_5 = .true.
       endif
 
     enddo
@@ -935,13 +935,13 @@ contains
     real, intent(out)             :: x
     ! Internal:
     real                          :: xl,xh,xm,fl,fh,fm,s,xnew,fnew
-    
 
-    if (solver%verbose) then 
-      write(*,*) "Entering Ridders' method" 
+
+    if (solver%verbose) then
+      write(*,*) "Entering Ridders' method"
       write(*,*) "Bracket: ",xmin,xmax
     endif
-    
+
     solver%error_on_exit = 0.0
     fl = eval(xmin,func,param)
     fh = eval(xmax,func,param)
@@ -957,7 +957,7 @@ contains
 
     xl = xmin
     xh = xmax
-    x = 2.0*xmax  
+    x = 2.0*xmax
     if (fl*fh < 0) then ! If f1 and f2 have opposite signs.
       do
         solver%iter = solver%iter + 1
@@ -972,20 +972,20 @@ contains
         xnew = xm+(xm-xl)*sign(1.0,fl-fh)*fm/s
         fnew = eval(xnew,func,param)
 
-        if (solver%verbose) then 
+        if (solver%verbose) then
           write(*,*) "x=",xnew, " fnew=",fnew
           write(*,*) "Rel. error in x: ",abs((xnew-x)/xnew)
         endif
 
         if ((abs((xnew-x)/xnew) < solver%rel_tol) .or. (fnew==0.0)) then
-          if (solver%verbose) write(*,*) "Converged" 
+          if (solver%verbose) write(*,*) "Converged"
           x = xnew
           solver%exitflag = 0
           solver%error_on_exit = abs(fnew)
           exit
         end if
         x = xnew
-        
+
         if (fm*fnew < 0.0) then ! If fm and fnew have opposite signs.
           xl = xm
           fl = fm
@@ -998,13 +998,13 @@ contains
           xl = xnew
           fl = fnew
         else
-          call stoperror("Ridders' method: Error...") 
+          call stoperror("Ridders' method: Error...")
         end if
         if (solver%iter >= solver%max_it) then
           solver%exitflag = 1
           solver%error_on_exit = abs(fnew)
           return
-          !call stoperror("Ridders' method: Did not converge to specified accuracy in specified number of iterations.") 
+          !call stoperror("Ridders' method: Did not converge to specified accuracy in specified number of iterations.")
         end if
 
       end do

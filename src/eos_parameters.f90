@@ -15,37 +15,6 @@ Module eos_parameters
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
 
-  ! type, abstract :: base_eos_param
-  !   ! Base class for holding eos-data
-  !   character (len=eosid_len) :: eosid !< Eos identefyer
-  !   !character (len=eos_name_len) :: label !< Name of EOS
-  !   integer :: eosidx !< Eos group index
-  !   integer :: subeosidx !< Eos sub-index
-  !   integer :: volumeShiftId = 0 !< 0: No volume shift, 1:Peneloux shift
-  !   logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
-
-  ! contains
-  !   procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
-  !   ! Assignment operator
-  !   !generic,   public, deferred   :: assignment(=)
-
-  ! end type base_eos_param
-
-  ! abstract interface
-  !   subroutine allocate_and_init_intf(eos,nc,eos_label)
-  !     import base_eos_param
-  !     ! Passed object:
-  !     class(base_eos_param), intent(inout) :: eos
-  !     ! Input:
-  !     integer, intent(in) :: nc !< Number of components
-  !     character(len=*), intent(in) :: eos_label !< EOS label
-  !   end subroutine allocate_and_init_intf
-  ! end interface
-
-  ! type :: eos_param_pointer
-  !   class(base_eos_param), pointer :: p_eos
-  ! end type eos_param_pointer
-
   type, extends(base_eos_param) :: single_eos
     ! Multiparameter equations of state for pure components
     type(eosmbwr), allocatable :: mbwr_meos(:)
@@ -64,22 +33,7 @@ Module eos_parameters
 
   end type meos_mix
 
-  ! type, extends(base_eos_param) :: saftvrmie_eos
-
-  ! !   private
-
-  ! ! contains
-  ! end type saftvrmie_eos
-
 contains
-
-  ! ! Functions for allocate statement:
-  ! function cpaeos_constructor(....) result(cpa_eos)
-  !   ! Input:
-  !   ! Created object:
-  !   type(cpaeos) :: cpa_eos
-  !   ! Locals
-  ! end function cpaeos_constructor
 
   subroutine single_eos_allocate_and_init(eos,nc,eos_label)
     ! Passed object:

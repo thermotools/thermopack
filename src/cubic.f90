@@ -19,9 +19,8 @@ module cubic
   end type cbBig
 
   public ::  &
-       cbCalcZfac, cbCalcPressure, cbCalcFug, cbCalcEntropy,&
-       cbGres,cbCalcEnthalpy, cbCalcPseudo, cbCalcFreeEnergy
-  public :: cbCalcDerivatives_svol, cbCalcFres
+       cbCalcZfac, cbCalcPressure, cbCalcPseudo
+  public :: cbCalcDerivatives_svol
   public :: cbDumpEosData
 contains
 
@@ -362,7 +361,7 @@ contains
   ! \param v - Specific volume [m3/kmol] (you read correctly, it is not SI)
   !
   !
-  subroutine cbCalcPressure (nc,cbeos,T,v,z,p,dpdv,dpdt,d2pdv2,dpdz,recalculate)
+  subroutine cbCalcPressure(nc,cbeos,T,v,z,p,dpdv,dpdt,d2pdv2,dpdz,recalculate)
     use cubic_eos, only: cb_eos
     use cbmix, only: cbCalcMixtureParams
     use cbHelm, only: cbPress, cbPrst, cbPv, cbPvv, cbPi
@@ -728,7 +727,6 @@ contains
   !!            1: Normal
   !!            2: if the metastable maxima or minima of the z-factor are to be returned
   !!            3: If possibilities of having three roots, return the one having minimum
-  !!               Gibbs free energy is to be returned - calls cbGres
   !! \param dZdt - Compressibility factor differential wrpt. temperature
   !! \param dZdp - Compressibility factor differential wrpt. pressure
   !! \param dZdz - Compressibility factor differential wrpt. mole numbers
@@ -903,7 +901,6 @@ contains
   !!            1: Normal
   !!            2: if the metastable maxima or minima of the z-factor are to be returned
   !!            3: If possibilities of having three roots, return the one having minimum
-  !!               Gibbs free energy is to be returned - calls cbGres
   !! \param dZdt - Compressibility factor differential wrpt. temperature
   !! \param dZdp - Compressibility factor differential wrpt. pressure
   !! \param dZdz - Compressibility factor differential wrpt. mole numbers
@@ -1019,276 +1016,6 @@ contains
       dgrdp = (zfac-1.0)*kRgas*T/P
     endif
   end subroutine cbGres
-
-  !> The subroutine finds the fugacity coefficients and derivatives
-  !!
-  !! \param T - Temperature [K]
-  !! \param P - Pressure [Pa]
-  !! \param Zfac - Compressibility factor
-  !! \param dlnfdt - Fugacity coefficients differential wrpt. temperature
-  !! \param dlnfdp - Fugacity coefficients differential wrpt. pressure
-  !! \param dlnfdz - Fugacity coefficients differential wrpt. mole numbers
-  !! \param res_fug - Fugacity coefficients
-  !!
-  !! \author Oivind Wilhelmsen
-  !! \date 2012-06-13
-
-  subroutine cbCalcFug(nc,cbeos,T,p,Zfac,res_fug,dlnfdt,dlnfdp,dlnfdz)
-    use thermopack_constants, only: kRgas
-    use cubic_eos, only: cb_eos
-    use cbHelm, only: cbFt, cbFit, cbPrst, cbPi, cbFij, cbFi
-    implicit none
-    integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
-    real, intent (in)  :: T,P,Zfac   ! Only compressibility without derivatives
-    real, dimension(nc), intent (out) :: res_fug
-    real, dimension(nc), optional, intent (out) :: dlnfdt, dlnfdp
-    real, dimension(nc,nc), optional, intent (out) :: dlnfdz
-
-    ! Local variables
-    real :: dfdni(nc), Term, dpdni(nc), d2fdnidt(nc), d2fdnidnj(nc,nc), dpdt
-    integer :: i,j
-
-    call cbFi(nc,cbeos,dfdni)
-    do i=1,nc
-      Term = dfdni(i)-log(Zfac)
-
-      if(Term .GT. 500.0) then
-        Term = 500.0
-      endif
-
-      res_fug(i)=exp(Term)  ! The fugacity coefficients
-    end do
-
-    if(present(dlnfdt)) then  ! Temperature derivatives
-      dpdt = cbPrst(cbeos)
-      call cbFit(nc, cbeos, d2fdnidt)
-      call cbPi(nc, cbeos, dpdni)
-      dlnfdt=d2fdnidt+dpdni*dpdt/(kRgas*T*cbeos%pv)+1.0/T
-    end if
-
-    if(present(dlnfdp)) then ! Pressure derivative
-      call cbPi(nc, cbeos, dpdni)
-      dlnfdp=-dpdni/(kRgas*T*cbeos%pv)-1.0/P
-    end if
-
-    if(present(dlnfdz)) then ! Composition derivative
-      call cbPi(nc, cbeos, dpdni)
-      call cbFij(nc,cbeos,d2fdnidnj)
-      do i=1,nc
-        do j=1,nc
-          dlnfdz(j,i)= d2fdnidnj(j,i)+dpdni(i)*dpdni(j)/(kRgas*T*cbeos%pv)+1.0
-        end do
-      end do
-    end if
-
-  end subroutine cbCalcFug
-
-  !> The subroutine finds the entropy residual of cubic Equations of State
-  !! optionally the derivatives
-  !!
-  !! \param T - Temperature [K]
-  !! \param P - Pressure [Pa]
-  !! \param Z - Composition [-]
-  !! \param phase - Phase (1=liquid, 2=vapour)
-  !! \param gflag_opt The TPlib "Gunder" flag
-  !!            1: Normal
-  !!            2: if the metastable maxima or minima of the z-factor are to be returned
-  !!            3: If possibilities of having three roots, return the one having minimum
-  !!               Gibbs free energy is to be returned - calls cbGres
-  !! \param res_entropy - Residual entropy
-  !! \param dsdt - Residual entropy differential wrpt. temperature
-  !! \param dsdp - Residual entropy differential wrpt. pressure
-  !! \param dsdz - Residual entropy differential wrpt. mole numbers
-  !!
-  !! \author Oivind Wilhelmsen
-  !! \date 2012-06-13
-
-  subroutine cbCalcEntropy(nc,cbeos,T,p,Z,phase,res_entropy,gflag_opt,dsdt,dsdp,dsdz)
-    use thermopack_constants, only: kRgas
-    use cubic_eos, only: cb_eos
-    use cbHelm, only: cbFtt, cbFit, cbPrst, cbFt, cbPi, cbFi
-    implicit none
-    integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
-    real, intent (in)  :: T,P
-    real, dimension(nc), intent (in)  :: Z
-    real, intent (out) :: res_entropy
-    integer, intent(in) :: gflag_opt
-    integer, intent(in) :: phase
-    real, intent(out),optional :: dsdt,dsdp
-    real, dimension(nc), intent(out),optional ::dsdz
-    ! Local variables
-    real :: dfdt, dpdt, d2fdt2, CVres, dpdni(nc), d2fdnidt(nc), dfdni(nc), Term ! Nc+3
-    integer :: i
-    real :: Zfac
-
-    call cbCalcZfac(nc,cbeos,T,P,Z,phase,Zfac,gflag_opt)
-    dpdt=cbPrst(cbeos)
-    dfdt=cbFt(cbeos)
-    res_entropy=(-kRgas)*(T*dfdt+cbeos%ff-log(abs(Zfac)))
-
-    if(present(dsdt)) then  ! Temperature derivative
-      d2fdt2 = cbFtt(cbeos)
-      CVres=(-kRgas)*T*(T*d2fdt2+2.0*dfdt)
-      dsdt=CVres/T-dpdt**2/cbeos%pv-kRgas/T
-    end if
-
-    if(present(dsdp)) then    !Pressure derivative
-      dsdp=dpdt/cbeos%pv+kRgas/P
-    end if
-
-    if(present(dsdz)) then ! Composition derivative
-      call cbFiT(nc, cbeos, d2fdnidt)
-      call cbPi(nc, cbeos, dpdni)
-      call cbFi(nc, cbeos, dfdni)
-      do i=1,nc
-        dsdz(i)=d2fdnidt(i)+dpdni(i)*dpdt/(kRgas*T*cbeos%pv)+1.0/T
-        dsdz(i)=-dsdz(i)*kRgas*T**2  ! dHresdT
-
-        term = dfdni(i)-log(abs(Zfac)) ! log(fug_i)
-        dsdz(i)=dsdz(i)/T-kRgas*term ! dHresdT/T-Rlog(fug_i)
-      end do
-    end if
-
-  end subroutine cbCalcEntropy
-
-  !> The subroutine finds the enthalpy residual of cubic Equations of State
-  !! optionally the derivatives
-  !!
-  !! \param T - Temperature [K]
-  !! \param P - Pressure [Pa]
-  !! \param Z - Composition [-]
-  !! \param phase - Phase (1=liquid, 2=vapour)
-  !! \param gflag_opt The TPlib "Gunder" flag
-  !!            1: Normal
-  !!            2: if the metastable maxima or minima of the z-factor are to be returned
-  !!            3: If possibilities of having three roots, return the one having minimum
-  !!               Gibbs free energy is to be returned - calls cbGres
-  !! \param res_enthalpy - Residual enthalpy
-  !! \param dhdt - Residual enthalpy differential wrpt. temperature
-  !! \param dhdp - Residual enthalpy differential wrpt. pressure
-  !! \param dhdz - Residual enthalpy differential wrpt. mole numbers
-  !!
-  !! \author Oivind Wilhelmsen
-  !! \date 2012-06-14
-
-  subroutine cbCalcEnthalpy(nc,cbeos,T,p,Z,phase,res_enthalpy,gflag_opt,dhdt,dhdp,dhdz)
-    use thermopack_constants, only: kRgas
-    use cubic_eos, only: cb_eos
-    use cbHelm, only: cbFt, cbFtt, cbFit, cbPrst, cbPi
-    implicit none
-    integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
-    real, intent (in)  :: T,P
-    real, dimension(nc), intent (in)  :: Z
-    integer, intent(in) :: gflag_opt
-    real, intent (out) :: res_enthalpy
-    integer, intent(in) :: phase
-    real, intent(out), optional :: dhdt, dhdp
-    real, dimension(nc), intent(out), optional ::dhdz
-
-    ! Local variables
-    real :: Ures, Ares, Sres, Cvres, dfdt, d2fdt2, dpdt, dpdni(nc), &
-         d2fdnidt(nc)
-    real :: Zfac
-
-    call cbCalcZfac(nc,cbeos,T,P,Z,phase,Zfac,gflag_opt)
-
-    dfdt = cbFt(cbeos)
-    Ares = kRgas*T*(cbeos%ff-log(abs(Zfac)))
-    Sres = (-kRgas)*(T*dfdt+cbeos%ff-log(abs(Zfac)))
-    Ures = (-kRgas)*T**2*(dfdt)
-    res_enthalpy = Ures + kRgas*T*(Zfac-1.0)
-    if (cbeos%cubic_verbose) then
-      write (*,*) 'cbCalcEnthalpy'
-      write (*,*) 'dfdt: ',dfdt
-      write (*,*) 'Ares: ',Ares
-      write (*,*) 'Sres: ',Sres
-      write (*,*) 'Ures: ',Ures
-      write (*,*) 'Zfac: ',Zfac
-    endif
-    if (present(dhdt)) then ! Temperature derivative
-      dpdt = cbPrst(cbeos)
-      d2fdt2 = cbFtt( cbeos)
-      CVres = (-kRgas)*T*(T*d2fdt2+2.0*dfdt)
-      dhdt = CVres-T*dpdt**2/cbeos%pv-kRgas
-    end if
-
-    if (present(dhdp)) then ! Pressure derivative
-      dpdt = cbPrst(cbeos)
-      dhdp = Zfac*kRgas*T/P+T*dpdt/cbeos%pv
-    end if
-
-    if (present(dhdz)) then ! Composition derivative
-      dpdt=cbPrst(cbeos)
-      call cbFit(nc, cbeos, d2fdnidt)
-      call cbPi(nc, cbeos, dpdni)
-      dhdz=d2fdnidt+dpdni*dpdt/(kRgas*T*cbeos%pv)+1.0/T
-      dhdz=(-dhdz)*kRgas*T**2
-    end if
-
-  end subroutine cbCalcEnthalpy
-
-  !----------------------------------------------------------------------
-  !> The subroutine finds the innerenergy residual of cubic Equations of State
-  !! optionally the derivatives
-  !!
-  !! \param T The temperature [K]
-  !! \param v The specific volume [m3/kmole]
-  !! \param Z The mole fraction [-]
-  !! \param dudt Temperature derivative [J/kmoleK]
-  !! \param dudv Pressure derivative [J/m3]
-  !!       0: No derivatives
-  !!       1: Analytical derivatives
-  !!
-  !! \retval energy The internal energy with derivatives [-]
-  !!
-  !! \author Morten Hammer
-  subroutine cbCalcInnerEnergy(nc,cbeos,T,v,Z,u,dudt,dudv,recalculate)
-    use thermopack_constants, only: kRgas
-    use cubic_eos, only: cb_eos
-    use cbmix, only: cbCalcMixtureParams
-    use cbHelm, only: cbFtt, cbFvt, cbFt
-    implicit none
-    integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
-    real, intent (in)  :: T,v,Z(1:nc)
-    real, intent (out) :: u
-    real, optional, intent(out) :: dudt, dudv
-    logical, optional, intent(in) :: recalculate
-
-    ! Local variables
-    real :: Cvres, dfdt, d2fdt2, d2fdtdv
-    logical :: recalculate_loc
-    !
-
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
-    else
-      recalculate_loc = .true.
-    end if
-
-    if (recalculate_loc) then
-      call cbCalcMixtureParams(nc,cbeos,T,Z)
-      call cbCalcDerivatives_svol(nc,cbeos,T,v)
-    end if
-
-    dfdt = cbFt(cbeos)
-    u = (-kRgas)*T**2*(dfdt)
-
-    if (present(dudt)) then
-      d2fdt2 = cbFtt(cbeos)
-      CVres = (-kRgas)*T*(T*d2fdt2+2.0*dfdt)
-      dudt = CVres
-    endif
-
-    if (present(dudv)) then
-      d2fdtdv = cbFvt(cbeos)
-      dudv = (-kRgas)*T**2*(d2fdtdv)
-    endif
-
-  end subroutine cbCalcInnerEnergy
 
   !> The subroutine calculates the pseudocritical temperature, pressure, acentric factor
   !! compressibility and volume as function of composition.
@@ -1585,113 +1312,7 @@ contains
 
   end subroutine cbDumpEosData
 
-  !----------------------------------------------------------------------
-  !> Subroutine finds Helmholtz free energy residual of cubic EoS
-  !! optionally the derivatives
-  !! with respect to T, v
-  !!
-  !! \param T Temperature [K]
-  !! \param v Specific volume [m3/kmol]
-  !! \param Z Mole fraction [-]
-  !! \param dYdt Temperature derivative [J/kmolK]
-  !! \param dYdv Pressure derivative [J/m3]
-  !!       0: No derivatives
-  !!       1: Analytical derivatives
-  !!
-  !! \retval Y Free energy with derivatives [-]
-  !!
-  !! \author GL, 2015-01-22
-  subroutine cbCalcFreeEnergy(nc,cbeos,T,v,Z,Y,dYdt,dYdv,recalculate)
-    use thermopack_constants, only: kRgas
-    use cubic_eos, only: cb_eos
-    use cbmix, only: cbCalcMixtureParams
-    use cbHelm, only: cbFt
-    implicit none
-    integer, intent(in) :: nc
-    class(cb_eos), intent(inout) :: cbeos
-    real, intent (in)  :: T, v, Z(1:nc)
-    real, intent (out) :: Y
-    real, optional, intent(out) :: dYdt, dYdv
-    logical, optional, intent(in) :: recalculate
-    ! Local variables
-    real :: f, dfdt, dfdv
-    logical :: recalculate_loc
-
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
-    else
-      recalculate_loc = .true.
-    end if
-
-    if (recalculate_loc) then
-      call cbCalcMixtureParams(nc, cbeos, T, Z)
-      call cbCalcDerivatives_svol(nc, cbeos, T, v)
-    end if
-
-    f = cbeos%ff
-    dfdt = cbFt(cbeos)
-    dfdv = cbeos%ffv
-
-    Y = kRgas*T*f
-
-    if (present(dYdt)) then
-      dYdt = kRgas*(f + T*dfdt)
-    endif
-
-    if (present(dYdv)) then
-      dYdv = kRgas*T*dfdv
-    endif
-
-  end subroutine cbCalcFreeEnergy
-
-  !> Calculate resudial reduced Helmholtz and differentials
-  !!
-  !! \param T - Temperature [K]
-  !! \param v - Specific volume [m3/kmol]
-  !! \param n - Mole numbers [mol]
-  !! \param F... - Resudial reduced Helmholtz differentiuals
-  !!
-  !! \author Morten Hammer
-  !! \date 2015-09
-  subroutine cbCalcFres(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
-       F_TV,F_VV,F_Tn,F_Vn,F_nn,recalculate)
-    use cubic_eos, only: cb_eos
-    use cbHelm, only: cbF, cbFv, cbFvv, cbFt, cbFtt, cbFvt, &
-         cbFi, cbFij, cbFiv, cbFit
-    use cbmix, only: cbCalcMixtureParams
-    implicit none
-    integer, intent(in) :: nc
-    real, intent(in) :: T,V,n(nc)
-    ! Output.
-    class(cb_eos), intent(inout) :: cbeos
-    real, optional, intent(out) :: F,F_T,F_V,F_n(nc)
-    real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
-    logical, optional, intent(in) :: recalculate
-    ! Locals
-    logical :: recalculate_loc
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
-    else
-      recalculate_loc = .true.
-    endif
-    if (recalculate_loc) then
-      call cbCalcMixtureParams(nc,cbeos,t,n)
-      call cbCalcDerivatives_svol(nc, cbeos, T, v)
-    endif
-
-    if (present(F)) F = cbF(cbeos)
-    if (present(F_T)) F_T = cbFt(cbeos)
-    if (present(F_V)) F_V = cbFv(cbeos)
-    if (present(F_n)) call cbFi(nc,cbeos,F_n)
-    if (present(F_TT)) F_TT = cbFtt(cbeos)
-    if (present(F_TV)) F_TV = cbFvt(cbeos)
-    if (present(F_Tn)) call cbFit(nc,cbeos,F_Tn)
-    if (present(F_VV)) F_VV = cbFvv(cbeos)
-    if (present(F_Vn)) call cbFiv(nc,cbeos,F_Vn)
-    if (present(F_nn)) call cbFij(nc,cbeos,F_nn)
-  end subroutine cbCalcFres
-
-    !> Calculates the contibution to the reduced residual Helmholtz energy F
+  !> Calculates the contibution to the reduced residual Helmholtz energy F
   !> coming from the cubic eos, along with its derivatives.
   !> Note!!! Input and output in SI units
   subroutine calcCbFder_res_SI(nc,cbeos,T,V,n,F,F_T,F_V,F_n,F_TT,&
