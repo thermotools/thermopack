@@ -123,18 +123,43 @@ _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capa
 As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
 
 ### Flash calculations
-Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`. They are used as
+Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`.
 
+See the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
+
+An example calculation using `twophase_tpflash()` may be done as
 ```python
 from thermopack.saftvrqmie import saftvrqmie
-eos = saftvrqmie('H2,HE,NE') # Helium/Neon mixture
+# SAFT-VRQ Mie for Hydrogen/Helium/Neon mixture 
+eos = saftvrqmie('H2,HE,NE', minimum_temperature=20) # NB: Set minimum temperature low enough when working at very low temperatures
 T = 35 # Kelvin
-p = 10e5 # Pascal (10 bar)
-x = [0.1, 0.25, 0.65] # Molar composition
-x, y, vapfrac, liqfrac, phasekey = eos.two_phase_tpflash(T, p, x) # x and y are vapour and liquid composition respectively
+p = 3e6 # Pascal (30 bar)
+z = [0.1, 0.25, 0.65] # Molar composition
+flsh = eos.two_phase_tpflash(T, p, x) # flsh is a FlashResult object
+print(flsh)
+### Output: ###
+# FlashResult object for Tp-flash
+# Containing the attributes (description, name, value):
+#   	Flash type                     flash_type : Tp  
+#   	Total composition              z     : [0.1, 0.25, 0.65]  
+#   	Temperature [K]                T     : 35  
+#   	pressure [Pa]                  p     : 3000000.0  
+#   	Liquid phase composition       x     : [0.05407302 0.03859287 0.90733411]  
+#   	Vapour phase composition       y     : [0.14642524 0.46370066 0.3898741 ]  
+#   	Vapour fraction                betaV : 0.497302408174766  
+#   	Liquid fraction                betaL : 0.5026975918252341  
+#   	Phase indentifier index        phase : 0  
+```
+the result of the flash is accessed from the attributes of the `FlashResult` object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
+```
+# Continued
+x = flsh.x # Liquid composition
+y = flsh.y # Vapour composition
+betaL = flsh.betaL # 
+# ... etc
 ```
 
-Note that some of the methods also output other information, such as the temperature of the flash, see the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
+The `FlashResult` object returned by the different flash routines all contain the same attributes. 
 
 ### Phase envelopes
 
