@@ -59,6 +59,8 @@ class cubic(thermo.thermo):
         self.s_get_covolumes = getattr(self.tp, self.get_export_name("cubic_eos", "get_covolumes"))
         self.s_get_energy_constants = getattr(self.tp, self.get_export_name("cubic_eos", "get_energy_constants"))
 
+        self.s_set_alpha_corr = getattr(self.tp, self.get_export_name("", "thermopack_set_alpha_corr"))
+
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
         elif self is cubic:
@@ -502,3 +504,32 @@ class cubic(thermo.thermo):
         self.s_get_energy_constants.restype = None
         self.s_get_energy_constants(a_c)
         return np.array(a_c)
+
+
+    def set_alpha_corr(self, ic, corrname, coeffs):
+        """Set alpha correlation
+
+        Args:
+            ic (in): Component number
+            corrname (string): Name of correlation
+            coeffs (ndarray): Coefficients in correlation
+        """
+
+        numparam_c = c_int(len(coeffs))
+        ic_c = c_int(ic)
+        corrname_string_c = c_char_p(corrname.strip().encode('ascii'))
+        corrname_string_len_c = c_len_type(len(corrname))
+        coeffs_c = (c_double * len(coeffs)) (*coeffs)
+        self.s_set_alpha_corr.argtypes = [POINTER(c_int),
+                                          POINTER(c_int),
+                                          c_char_p,
+                                          POINTER(c_double),
+                                          c_len_type]
+
+        self.s_set_alpha_corr.restype = None
+
+        self.s_set_alpha_corr(numparam_c,
+                              ic_c,
+                              corrname_string_c,
+                              coeffs_c,
+                              corrname_string_len_c)
