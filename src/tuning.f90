@@ -249,27 +249,31 @@ subroutine thermopack_setMCparam(i,c_1,c_2,c_3)
   end select
 end subroutine thermopack_setMCparam
 
-subroutine thermopack_setClassicFitparam(i,c_1)
+subroutine thermopack_set_alpha_corr(numparam, i, corrname, c)
+  use cubic_eos, only: get_alpha_db_idx, cb_eos
   use cbAlpha, only: setSingleAlphaCorr
   use thermopack_var
   use cubic_eos, only: cb_eos
   implicit none
-  integer, intent(in) :: i
-  real, intent(in) :: c_1
+  integer, intent(in)           :: numparam
+  integer, intent(in)           :: i
+  character(len=*), intent(in)  :: corrname
+  real, intent(in)              :: c(numparam)
   ! Locals
   integer :: alphaIdx
   class(base_eos_param), pointer :: act_eos_ptr
   !
   act_eos_ptr => get_active_eos()
-  !
+  alphaIdx = get_alpha_db_idx(corrname)
   select type(p_eos => act_eos_ptr)
   class is (cb_eos)
     alphaIdx = p_eos%single(i)%alphaMethod
-    call setSingleAlphaCorr(i, p_eos, alphaIdx=alphaIdx, alphaParams=(/c_1/))
+    call setSingleAlphaCorr(i, p_eos, alphaIdx=alphaIdx, alphaParams=c)
   class default
-    print *,"thermopack_setClassicFitparam: Wrong model - no ClassicFit parameters"
+    print *,"thermopack_set_alpha_corr: Only for cubic eos"
   end select
-end subroutine thermopack_setClassicFitparam
+end subroutine thermopack_set_alpha_corr
+
 
 !> Tuning of vdW kij interaction parameters
 subroutine thermopack_getkij(i,j,kij)

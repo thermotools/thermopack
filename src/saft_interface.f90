@@ -155,7 +155,7 @@ contains
       call init_ljs_bh(nc,comp,p_eos,param_ref)
     class is ( ljs_wca_eos )
       call init_ljs_wca(nc,comp,p_eos,param_ref)
-    class is ( uv_theory_eos )
+   class is ( uv_theory_eos )
       call init_uv_theory(nc,comp,p_eos,param_ref)
     class is ( PETS_eos )
       call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
