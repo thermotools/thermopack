@@ -32,7 +32,7 @@ module thermopack_constants
   !> Liquid phase type identifiers
   integer, parameter :: NONWATER=-1, WATER=-2
   !> Library used to solve EoS
-  integer, parameter :: THERMOPACK=1, TREND=2
+  integer, parameter :: THERMOPACK=1
   !> Method to discriminate between liquid and vapor in the event of an
   !> undefined single phase
   integer, parameter :: PSEUDO_CRIT_ZFAC=1, PSEUDO_CRIT_MOLAR_VOLUME=2, &

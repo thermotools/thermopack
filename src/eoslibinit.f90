@@ -13,9 +13,6 @@ module eoslibinit
   !
   logical :: silent_init = .false. ! Disable output for unit testing
   !
-  ! Include TREND interface
-  include 'trend_interface.f95'
-  !
   private
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
@@ -74,8 +71,8 @@ contains
   !----------------------------------------------------------------------
   subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
        liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
-       saft_ref,b_exponent,TrendEosForCp,cptype,silent)
-    use thermopack_constants, only: clen, TREND, THERMOPACK
+       saft_ref,b_exponent,cptype,silent)
+    use thermopack_constants, only: clen, THERMOPACK
     use cbselect,   only: SelectCubicEOS
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
@@ -92,7 +89,6 @@ contains
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
     character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set identifiers
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
-    character(len=*), optional, intent(in) :: TrendEosForCp !< Option to init trend for ideal gas properties.
     integer, optional, intent(in) :: cptype !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
@@ -148,16 +144,6 @@ contains
       enddo
     endif
 
-    if (str_eq(eos, "EOSCG") .or. &
-         str_eq(eos, "EOS-CG") .or. &
-         str_eq(eos, "GERG2008") .or. &
-         str_eq(eos, "GERG-2008") .or. &
-         str_eq(eos, "EOSCG-GERG")) then
-      act_mod_ptr%eosLib = TREND
-    else
-      act_mod_ptr%eosLib = THERMOPACK
-    endif
-
     ! Initialize the selected EoS-library
     select case (act_mod_ptr%eosLib)
     case (THERMOPACK)
@@ -167,13 +153,6 @@ contains
            nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
            kij_ref,Alpha_ref,saft_ref,&
            b_exponent)
-      if (present(TrendEosForCp)) then
-        ! Initialize Trend for ideal properties
-        call init_trend(trim(uppercase(TrendEosForCp)),ncomp,nphases,.false.)
-      endif
-    case (TREND)
-      ! Initialize Trend
-      call init_trend(trim(uppercase(eos)),ncomp,nphases,.true.)
     case default
       write(message,*) 'Wrong EoS library'
       call stoperror(trim(message))
@@ -186,7 +165,7 @@ contains
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
   subroutine init_fallback_and_redefine_criticals(silent)
-    use thermopack_constants, only: TREND, THERMOPACK
+    use thermopack_constants, only: THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
@@ -205,16 +184,6 @@ contains
     if (.not. act_mod_ptr%need_alternative_eos) return
 
     redefine_critical = isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)
-
-    if (act_mod_ptr%EoSLib == TREND) then
-      ! Use TREND parameters to get better critical point in alternative model
-      do i=1,nce
-        call trend_getcrit(i,Tci,Pci,oi)
-        act_mod_ptr%comps(i)%p_comp%tc = Tci
-        act_mod_ptr%comps(i)%p_comp%pc = Pci
-        act_mod_ptr%comps(i)%p_comp%acf = oi
-      enddo
-    endif
 
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     type is (single_eos)
@@ -711,86 +680,6 @@ contains
       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
   end subroutine init_thermopack
-
-  !----------------------------------------------------------------------
-  !> Initialize trend
-  !>
-  !> \author MH, 2013-04-10, EA 2014-02
-  !----------------------------------------------------------------------
-  subroutine init_trend(eos,ncomp,nphase,doFallbackInit)
-    !use thermopack_constants, only: Rgas,TREND,verbose
-    !use thermopack_var, only: complist,nph
-    !use stringmod, only: chartoascii
-    !use compname_translation, only: translate_compname
-#ifdef __INTEL_COMPILER
-    use ifport
-#endif
-    ! Input:
-    character(len=*), intent(in)    :: eos            !< String defining equation of state
-    integer, intent(in)             :: ncomp          !< Number of components
-    integer, intent(in)             :: nphase         !< Number of phases
-    logical, intent(in)             :: doFallbackInit !< Init thermopack as fallback
-    !Internal:
-    ! integer                         :: i
-    ! integer                         :: mix
-    ! character (12)                  :: comps(ncomp)
-    ! character(len=255)              :: path,trendroot
-    ! integer                         :: npath,int_path(255),int_comps(12*ncomp),ncomps
-
-    ! if (doFallbackInit) then
-    !   ! Also initialize Thermopack cubic EoS, to be used for initial estimates.
-    !   if (verbose) then
-    !     write(*,*) "Initializing EoS-lib Thermopack for initial estimates. (SRK, Classic)"
-    !   endif
-    !   call init_thermopack("SRK","Classic","Classic", nphase)
-    ! endif
-    ! ! Setting EoSLib flag
-    ! if (verbose) then
-    !   write(*,*) "Initializing EoS-lib TREND"
-    ! endif
-    ! EoSLib = TREND
-    ! call set_constants() ! Depend on EoSLib
-    ! ! Setting global nph number
-    ! nph = nphase
-    ! do i=1,ncomp
-    !   call translate_compname(trim(complist(i)), TREND, comps(i))
-    !   char_comps((i-1)*12+1:i*12) = comps(i)
-    ! enddo
-    ! ! Setting mixing rules
-    ! if (verbose) then
-    !   write(*,*) "OBS: Mixing rule and alpha-correlation input ignored."
-    ! endif
-    ! mix = 1 ! Lorentz-Berthelot or modified Helmholtz mixing rules
-    ! call getenv("TRENDROOT",trendroot)
-    ! if (trim(trendroot) == "") then
-    !    trendroot = "./trend/"
-    ! endif
-    ! ! Setting path based on input EoS-string:
-    ! ! They are all "Multi-parameter explicit Helmholtz" EoS, but with different parameters.
-    ! select case(trim(eos))
-    ! case ("EOSCG")
-    !   ! The EoS for CCS mixtures, parameters fitted by Johannes Gernert.
-    !   ! Will fail when selecting components not covered in the original fitting.
-    !    path = trim(trendroot)//"EOS_CG/"
-    ! case ("GERG2008")
-    !   ! The GERG-2008 EoS for natural gas mixtures.
-    !   path = trim(trendroot)//"GERG-2008/"
-    ! case ("EOSCG-GERG")
-    !   ! Primarily EOSCG, but now falling back to GERG2008 for unsupported components.
-    !   path = trim(trendroot)//"/"
-    ! case default
-    !   call stoperror("No such EoS in TREND (EOSCG,GERG2008,EOSCG-GERG): "//trim(eos))
-    ! end select
-    ! if (verbose) then
-    !   write(*,*) "Will look for dirs FLUIDS and BINARY_MIX_FILES in: "//trim(path)
-    ! endif
-    ! npath = len(trim(path))
-    ! call chartoascii(int_path,path,npath)
-    ! ncomps = 12*ncomp
-    ! call chartoascii(int_comps,char_comps,ncomps)
-    ! call trend_init_no_char(ncomp,int_path,npath,int_comps,ncomps,mix,Rgas)
-
-  end subroutine init_trend
 
   !----------------------------------------------------------------------------
   !> Initialize SAFT-VR-MIE EoS. Use: call init_saftvrmie('CO2,N2')

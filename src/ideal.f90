@@ -30,15 +30,12 @@ module ideal
   !!                                                                          *
   !!             -10 : Leachman (NIST) and Valenta expression H2              *
   !!                                                                          *
-  !!             -11 : Use TREND model                                        *
-  !!             -12 : Shomate Equation (Note that: Ts=T/1000)                *
+  !!             -11 : Shomate Equation (Note that: Ts=T/1000)                *
   !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
   !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
   !! \endverbatim
   implicit none
   save
-  ! Include TREND interface
-  include 'trend_interface.f95'
 
   !> Log cut-off value
   real, parameter :: logCutOff = 1.0e-100
@@ -188,7 +185,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: cpideal_h2
@@ -269,9 +266,6 @@ contains
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       Cp_id = CPideal_H2(comp%ident, T)
 
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,Cp=Cp_id)
-
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*Ts+comp%id_cp%cp(3)*Ts**2+comp%id_cp%cp(4)*Ts**3+ &
@@ -323,7 +317,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: hideal_h2
@@ -413,10 +407,6 @@ contains
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       H_id = Hideal_H2 (comp%ident, T) + comp%href
 
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,h=H_id)
-      H_id = H_id
-
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
       H_id=comp%id_cp%cp(1)*Ts+comp%id_cp%cp(2)*Ts**2.0/2.0 + &
@@ -441,7 +431,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI
     use thermopack_constants, only: verbose, Rgas
     use idealh2, only: sideal_h2
@@ -528,10 +518,6 @@ contains
 
     case (CP_H2_KMOL) !   ! Leachman (NIST) and Valenti expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       S_id = sideal_H2 (comp%ident, T) + comp%sref  ! + rgas * log(rho*T/ rho0*T0)
-
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,s=S_id)
-      S_id = S_id
 
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
@@ -1043,7 +1029,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    use thermopack_constants, only: THERMOPACK, Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1065,10 +1051,6 @@ contains
       ! Thermopack
       h = Hideal_apparent(act_mod_ptr%comps,j,T)
       call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
-    case (TREND)
-      ! TREND
-      h = trend_ideal_enthalpy(T,j)
-      s = trend_ideal_entropy(T,P,j)
     case default
       write(*,*) 'EosLib error in ideal::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1090,7 +1072,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nc
-    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    use thermopack_constants, only: THERMOPACK, Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1112,12 +1094,6 @@ contains
     case (THERMOPACK)
       ! Thermopack
       call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
-    case (TREND)
-      ! TREND
-      s = trend_ideal_entropy(T,P,j)
-      if (present(dsdt)) then
-        dsdt = trend_ideal_Cp(T,j) / T ! J/mol/K^2
-      end if
     case default
       write(*,*) 'EoSlib error in ideal::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1135,7 +1111,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEnthalpySingle(t,j,h,dhdt)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1154,12 +1130,6 @@ contains
       if (present(dhdt)) then
         dhdt = CPideal_apparent(act_mod_ptr%comps, j, T)
       endif
-    case (TREND)
-      ! TREND
-      h = trend_ideal_enthalpy(T,j)
-      if (present(dhdt)) then
-        dhdt = trend_ideal_Cp(T,j) ! J/mol/K^2
-      end if
     case default
       write(*,*) 'EoSlib error in ideal::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1174,7 +1144,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropy_ne(t,p,n,s,dsdt,dsdp,dsdn)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nce
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                    !< K - Temperature
@@ -1193,10 +1163,6 @@ contains
     case (THERMOPACK)
       call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
            dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::idealEntropy_ne: dsdn not yet implemented for TREND.'
-      call stoperror("")
     case default
       write(*,*) 'EoSlib error in ideal::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1211,7 +1177,7 @@ contains
   !----------------------------------------------------------------------
   subroutine set_entropy_reference_value(i,s0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1224,10 +1190,6 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       act_mod_ptr%comps(i)%p_comp%sref = s0
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::set_entropy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
     case default
       write(*,*) 'EoSlib error in ideal::set_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1242,7 +1204,7 @@ contains
   !----------------------------------------------------------------------
   subroutine get_entropy_reference_value(i,s0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1255,10 +1217,6 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       s0 = act_mod_ptr%comps(i)%p_comp%sref
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::get_entropy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
     case default
       write(*,*) 'EoSlib error in ideal::get_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1273,7 +1231,7 @@ contains
   !----------------------------------------------------------------------
   subroutine set_enthalpy_reference_value(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1286,10 +1244,6 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       act_mod_ptr%comps(i)%p_comp%href = h0
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::set_enthalpy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
     case default
       write(*,*) 'EoSlib error in ideal::set_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
@@ -1304,7 +1258,7 @@ contains
   !----------------------------------------------------------------------
   subroutine get_enthalpy_reference_value(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
+    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1317,10 +1271,6 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       h0 = act_mod_ptr%comps(i)%p_comp%href
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::get_enthalpy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
     case default
       write(*,*) 'EoSlib error in ideal::get_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')

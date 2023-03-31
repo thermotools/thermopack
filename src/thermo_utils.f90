@@ -4,7 +4,7 @@
 
 module thermo_utils
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
-       WATER, TREND
+       WATER
   use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
        get_active_thermo_model, get_active_alt_eos
 
@@ -497,7 +497,6 @@ module thermo_utils
   !> \author MH, 2020-01
   !-----------------------------------------------------------------------------
   function phase_is_fake(T,P,Z,phase) result(isFake)
-    use trend_solver, only: trend_phase_is_fake
     implicit none
     ! Input:
     real, intent(in)                :: Z(nc)          !< Molar compozition [-]
@@ -510,11 +509,7 @@ module thermo_utils
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
 
-    if (act_mod_ptr%EoSLib == TREND) then
-      isFake = trend_phase_is_fake(T,P,Z,phase)
-    else
-      isFake = .false.
-    endif
+    isFake = .false.
   end function phase_is_fake
 
 end module thermo_utils

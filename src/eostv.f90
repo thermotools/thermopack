@@ -11,9 +11,6 @@ module eosTV
   implicit none
   save
   !
-  ! Include TREND interface
-  include 'trend_interface.f95'
-  !
   private
   public :: pressure, internal_energy_tv, free_energy_tv, entropy_tv
   public :: thermo_tv, Fres, Fideal, chemical_potential_tv
@@ -65,26 +62,6 @@ contains
       call TV_CalcPressure(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,p,&
            dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc,&
            contribution=contribution)
-    case (TREND)
-      ! TREND
-      if (present(contribution)) then
-        if (contribution /= PROP_OVERALL) then
-          write(*,*) "EoSlib error in eostv::pressure_tv: "&
-               //"Currently only total pressure supported by TREND"
-          call stoperror('')
-        endif
-      endif
-      p = trend_pressure(n,t,v,dpdv,dpdt,dpdn)
-      if (present(d2pdv2)) then
-        rho = 1.0/v
-        d2Pdrho2 = trend_d2Pdrho2(n,T,rho)
-        if (present(dpdv)) then
-          dPdrho = -dPdv*v**2
-        else
-          dPdrho = trend_dpdrho(n,T,rho)
-        endif
-        d2pdv2 = rho**4*d2Pdrho2 + 2.0*rho**3*dPdrho
-      endif
     case default
       write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
@@ -483,9 +460,6 @@ contains
       act_eos_ptr => get_active_eos()
       call TV_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,lnphi,&
            lnphiT,lnphiV,lnphin)
-    case (TREND)
-      ! TREND
-      call trend_thermoTV(T,v,n,lnphi,lnphiT,lnphiV,lnphin)
     case default
       write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
@@ -575,9 +549,6 @@ contains
            T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn,&
            F_VVV=F_VVV,recalculate=recalculate)
-    case (TREND)
-      ! TREND
-      call trend_calcFres(T,v,ne,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     case default
       write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')
@@ -663,9 +634,6 @@ contains
       act_eos_ptr => get_active_eos()
       call TV_CalcFid(nce,act_mod_ptr%comps,act_eos_ptr,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-    case (TREND)
-      ! TREND
-      call trend_CalcFid(T,V,ne,F,F_T,F_V,F_TT,F_TV,F_VV,F_n,F_Tn,F_Vn,F_nn)
     case default
       write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',act_mod_ptr%EoSlib
       call stoperror('')

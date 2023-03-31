@@ -268,7 +268,6 @@ contains
   subroutine genericProperty(t,p,Z,phase,propflag,prop)
     use eos
     use eosTV, only: pressure
-    use trend_solver, only: trend_density
     !$ use omp_lib
     implicit none
     integer, intent(in) :: phase !< Phase identifier
@@ -850,19 +849,9 @@ contains
 
     act_mod_ptr => get_active_thermo_model()
     ! Locate critical point and set property at critical point
-    if (act_mod_ptr%EoSlib /= TREND) then
-      t_c = 0.0
-      v_c = 0.0
-      call calcCriticalTV(t_c,v_c,Z,ierr,tol=1.0e-7,p=p_c)
-    else
-      ierr = 0
-      ! Get phase envelope, including critical point in T,p
-      call envelopePlot(z,300.0,1.0e5,spec=1,beta_in=1.0,Pmax=2.0e7,nmax=n_max,&
-           Ta=Ta,pa=pa,Ki=Ki,betai=betai,n=nenv,crit=crit)
-      T_c = crit(1)
-      p_c = crit(2)
-      call specificvolume(t_c,p_c,Z,LIQPH,v_c)
-    endif
+    t_c = 0.0
+    v_c = 0.0
+    call calcCriticalTV(t_c,v_c,Z,ierr,tol=1.0e-7,p=p_c)
     if (ierr == 0) then
       lnv_c = log(v_c)
       call entropy_tv(t_c,v_c,z,s_c)

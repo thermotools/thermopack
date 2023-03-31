@@ -21,8 +21,7 @@ module compdata
        CP_POLY4_SI=8, &
        CP_MOGENSEN_SI=9, &
        CP_H2_KMOL=10, &
-       CP_TREND_SI=11, &
-       CP_SHOMATE_SI=12
+       CP_SHOMATE_SI=11
 
   !> Ideal heat capacity at constant pressure
   type :: cpdata
