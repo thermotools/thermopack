@@ -116,6 +116,13 @@ append_export("thermopack_getwsparam")
 append_export("thermopack_setwsparam")
 append_export("thermopack_get_volume_shift_parameters")
 append_export("thermopack_set_volume_shift_parameters")
+append_export("thermopack_setclassicfitparam")
+append_export("thermopack_settwuparam")
+append_export("thermopack_gettwuparam")
+append_export("thermopack_set_alpha_corr")
+
+
+
 
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")
@@ -195,6 +202,9 @@ append_export("ljs_uv_model_control", "lj_splined")
 append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
+
+append_export("reset_sutsum_external_ij", "uv_theory")
+
 
 append_export("setphtolerance", "ph_solver")
 append_export("twophasephflash", "ph_solver")

@@ -19,8 +19,8 @@ module uv_theory
   implicit none
   save
 
-  !logical :: LAFITTE = .False.
-  logical :: LAFITTE = .True.
+  logical :: LAFITTE = .False.
+  !logical :: LAFITTE = .True.
 
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
@@ -146,11 +146,6 @@ contains
        end if
 
        if (allocated(eos%sutsum)) then
-          !do i=1,nc
-          !   do j=1,nc
-          !call eos%sutsum%dealloc()
-           !  end do
-          !end do
           deallocate(eos%sutsum,stat=stat)
           if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate pot")
        end if
@@ -217,6 +212,7 @@ contains
 
 
   subroutine init_uv_theory(nc,comp,eos,ref)
+    use stringmod, only: str_eq
     use compdata, only: gendata_pointer
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
     integer, intent(in) :: nc                           !< Number of components
@@ -230,6 +226,22 @@ contains
 
     ! Deallocate old memory and init new memory
     call eos%allocate_and_init(nc, eos_label="UV-MIE")
+    
+    if (str_eq(ref,"SUTHERLAND")) then
+       LAFITTE = .true.
+
+       ! ! Set pure component data from database
+       ! do i=1,nc
+       !    ! Assign pure SutherlandSum potential
+       !    idx = getSutdataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
+       !    b(i) = MieArray(idx)%lamr
+       !    sigma_vec(i) = MieArray(idx)%sigma
+       !    epsdivk_vec(i) = MieArray(idx)%eps_divk
+       ! end do
+    else
+       LAFITTE = .false.
+    end if
+
 
     ! Set pure component data from database
     do i=1,nc
@@ -291,10 +303,11 @@ contains
     end do
   end subroutine set_mie_parameters
 
-  subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec)
+  subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec,beta_expo)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
     integer, intent(in)         :: nc, nt      !< Number of components, number of Sutherland terms
     type(hyperdual), intent(in) :: C_mat(nc, nt), lam_mat(nc,nt), sigma_vec(nc), epsdivk_vec(nc) !< Potential parameters
+    integer, intent(in), optional :: beta_expo(nc,nt)
     ! Locals
     type(Sutherlandsum) :: sutsum
     type(hyperdual) :: sigma, epsdivk
@@ -302,18 +315,79 @@ contains
     ! Set pure component potentials
     do i=1,nc
        ! Assign pure SutherlandSum potential
-       call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+       if (present(beta_expo)) then
+          call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+               sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
+       else
+          call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+               sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+       end if
        eos%sutsum(i,i) = sutsum
+       
        ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+       ! NB: unclear what the best cross potential should be
        do j = i+1,nc
           sigma = (sigma_vec(i) + sigma_vec(j))/2.0
           epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
-          call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+          if (present(beta_expo)) then
+             call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+                  sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
+          else
+             call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+                  sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+          end if
           eos%sutsum(i,j) = sutsum
           eos%sutsum(j,i) = sutsum
        end do
     end do
   end subroutine set_sutsum_parameters
+  
+
+  subroutine reset_sutsum_external_ij(i,j,nt,C_vec,lam_vec,sigma,epsdivk,beta_expo)
+    integer, intent(in)         :: nt,i,j      !< Number of Sutherland terms, interaction pair
+    real, intent(in) :: C_vec(nt), lam_vec(nt), sigma, epsdivk !< Potential parameters
+    integer, intent(in), optional :: beta_expo(nt)
+    ! Locals
+    type(Sutherlandsum) :: sutsum
+    class(base_eos_param), pointer :: eos
+    type(hyperdual) :: C_vec_hd(nt), lam_vec_hd(nt), sigma_hd, epsdivk_hd !< Potential parameters
+    eos => get_active_eos()
+
+    select type( p_eos => eos )
+    class is ( uv_theory_eos )
+       if (allocated(p_eos%sutsum)) then
+          C_vec_hd = 0.0
+          C_vec_hd%f0 = C_vec
+
+          lam_vec_hd = 0.0
+          lam_vec_hd%f0 = lam_vec
+
+          sigma_hd = 0.0
+          sigma_hd%f0 = sigma
+
+          epsdivk_hd = 0.0
+          epsdivk_hd%f0 = epsdivk
+
+          ! Deallocate to avoid memory leak
+          call sutherlandsum_dealloc(p_eos%sutsum(i,j))
+          call sutherlandsum_dealloc(p_eos%sutsum(j,i))
+
+          ! Set cross potentials using Lorentz-Berthelot combining rules
+          ! NB: unclear what the best default cross potential actually is
+          if (present(beta_expo)) then
+             call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
+                  sigma=sigma_hd, epsdivk=epsdivk_hd, beta_expo=beta_expo)
+          else
+             call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
+                  sigma=sigma_hd, epsdivk=epsdivk_hd)
+          end if
+          p_eos%sutsum(i,j) = sutsum
+          p_eos%sutsum(j,i) = sutsum
+       else
+          call stoperror ("Sutherland-sum potential not allocated.")
+       end if
+    end select
+  end subroutine reset_sutsum_external_ij
 
   subroutine calcFres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
        f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
@@ -372,7 +446,7 @@ contains
           call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
        else if (eos%subeosidx == eosMie_UV_BH) then
           if (LAFITTE) then
-             call eos%sutsum(i,i)%update_beta(beta=1.0/T)
+             call eos%sutsum(i,i)%update_T(T=T)
              call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
              call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
           else
@@ -421,6 +495,7 @@ contains
     type(hyperdual) :: a0_res, a_hs_res, delta_a0, Delta_a1u
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
     type(hyperdual) :: lama, lamr, dhs_i(nc)
+    type(hyperdual) :: alpha, one
     integer :: i
 
     ! Precalculations
@@ -444,7 +519,14 @@ contains
     if (eos%subeosidx == eosMie_UV_WCA) then
        call phi_WCA_Mie(rho_r, lamr, phi)
     else if (eos%subeosidx == eosMie_UV_BH) then
-       call phi_BH_Mie(T_x, rho_r, eos%mie(1,1)%lamr, phi)
+       if (eos%sutsum(1,1)%beta_dependence) then
+          if (nc /= 1) call stoperror("Only defined for nc=1")
+          one = 1.0
+          alpha = eos%sutsum(1,1)%alpha_x(x=one)
+          call phi_BH_alphavdw(T_x, rho_r, alpha, phi)
+       else
+          call phi_BH_Mie(T_x, rho_r, eos%mie(1,1)%lamr, phi)
+       end if
     end if
 
     call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
