@@ -2790,6 +2790,130 @@ class thermo(object):
 
         return LLE, L1VE, L2VE
 
+    def get_binary_txy(self,
+                       pressure,
+                       minimum_temperaturte=0.0,
+                       maximum_dz=0.003,
+                       maximum_dlns=0.005):
+        """Saturation interface
+        Calculate binary isobaric three phase envelope
+
+        Args:
+            pressure (float): Pressure (Pa)
+            minimum_temperature (float, optional): Exit on minimum temperature (K).
+            maximum_dz (float, optional): [description]. Defaults to 0.003.
+            maximum_dlns (float, optional): [description]. Defaults to 0.01.
+
+        Returns:
+            tuple of arrays: LLE, L1VE, L2VE
+
+            LLE : Liquid 1 - Liquid 2 Equilibrium
+                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
+                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
+                LLE[2] -> Pressure [Pa]
+            L1VE : Liquid 1 - Vapour Equilibrium
+                L1VE[0] -> Bubble line composition (mole fraction of component 1)
+                L1VE[1] -> Dew line composition (mole fraction of component 1)
+                L1VE[2] -> Pressure [Pa]
+            L2VE : Liquid 2 - Vapour Equilibrium
+                L2VE[0] -> Bubble line composition (mole fraction of component 1)
+                L2VE[1] -> Dew line composition (mole fraction of component 1)
+                L2VE[2] -> Pressure [Pa]
+
+            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+        """
+        # Redefinition of module parameter:
+        self.activate()
+        nmax = 10000
+        #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
+
+        temp_c = c_double(0.0)
+        min_temp_c = c_double(minimum_temperaturte)
+        ispec_c = c_int(2)
+        press_c = c_double(pressure)
+        max_press_c = c_double(0.0)
+        min_press_c = c_double(0.0)
+        dz_max_c = c_double(maximum_dz)
+        dlns_max_c = c_double(maximum_dlns)
+        filename = "binaryVLLE.dat"
+        filename_c = c_char_p(filename.encode('ascii'))
+        filename_len = c_len_type(len(filename))
+        res_c = (c_double * (nmax*9))(0.0)
+        nres_c = (c_int * 3)(0)
+        wsf_c = c_int(1)
+
+        self.s_binary_plot.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_char_p),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int),
+                                       POINTER(c_int),
+                                       POINTER(c_double),
+                                       c_len_type]
+
+        self.s_binary_plot.restype = None
+
+        self.s_binary_plot(byref(temp_c),
+                           byref(press_c),
+                           byref(ispec_c),
+                           byref(min_temp_c),
+                           byref(max_press_c),
+                           byref(dz_max_c),
+                           filename_c,
+                           byref(dlns_max_c),
+                           res_c,
+                           nres_c,
+                           byref(wsf_c),
+                           byref(min_press_c),
+                           filename_len)
+
+        nLLE = nres_c[0]
+        nL1VE = nres_c[1]
+        nL2VE = nres_c[2]
+
+        if nLLE > 0:
+            xLLE = np.zeros(nLLE)
+            wLLE = np.zeros(nLLE)
+            pLLE = np.zeros(nLLE)
+            for i in range(nLLE):
+                xLLE[i] = res_c[i*9]
+                wLLE[i] = res_c[i*9+1]
+                pLLE[i] = res_c[i*9+2]
+            LLE = (xLLE, wLLE, pLLE)
+        else:
+            LLE = (None, None, None)
+
+        if nL1VE > 0:
+            xL1VE = np.zeros(nL1VE)
+            wL1VE = np.zeros(nL1VE)
+            pL1VE = np.zeros(nL1VE)
+            for i in range(nL1VE):
+                xL1VE[i] = res_c[i*9+3]
+                wL1VE[i] = res_c[i*9+4]
+                pL1VE[i] = res_c[i*9+5]
+            L1VE = (xL1VE, wL1VE, pL1VE)
+        else:
+            L1VE = (None, None, None)
+
+        if nL2VE > 0:
+            xL2VE = np.zeros(nL2VE)
+            wL2VE = np.zeros(nL2VE)
+            pL2VE = np.zeros(nL2VE)
+            for i in range(nL2VE):
+                xL2VE[i] = res_c[i*9+6]
+                wL2VE[i] = res_c[i*9+7]
+                pL2VE[i] = res_c[i*9+8]
+            L2VE = (xL2VE, wL2VE, pL2VE)
+        else:
+            L2VE = (None, None, None)
+
+        return LLE, L1VE, L2VE
+
     def get_bp_term(self,
                     i_term):
         """Saturation interface
