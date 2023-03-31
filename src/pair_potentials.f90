@@ -77,8 +77,8 @@ module pair_potentials
   type, extends(pair_potential) :: sutherlandsum
      !> u(r) = sum_i C(i)*eps*(sigma/r)**lam(i)
      integer         :: nt                  !< Number of Sutherland terms [-]
-     real, allocatable :: Cconst(:)         !< Coefficients of terms [-]
-     type(hyperdual), allocatable :: C(:)   !< Coefficients of terms [-]
+     real, allocatable :: Cconst(:)         !< Coefficients of terms
+     type(hyperdual), allocatable :: C(:)   !< Coefficients of terms, possibly with beta dependence [-]
      type(hyperdual), allocatable :: lam(:) !< Exponents [-]
      type(hyperdual) :: rmin        !< location of minimum [m]
      type(hyperdual) :: rmin_adim   !< rmin/sigma [-]
@@ -91,12 +91,26 @@ module pair_potentials
      procedure, public :: alpha_x => sutherlandsum_calc_alpha_x
      procedure, public :: display => sutherlandsum_display
      procedure, public :: dealloc => sutherlandsum_dealloc
-     procedure, public :: update_beta => sutherlandsum_update_beta
+     procedure, public :: update_T => sutherlandsum_update_T
   end type sutherlandsum
 
 
   !> PURE COMPONENT PARAMETERS.
   ! ---------------------------------------------------------------------------
+
+  type :: sutherlandsum_betalinear_data
+     !> Mie potential with two beta-dependent terms
+     integer :: eosidx
+     character(len=uid_len) :: compName
+     ! Pure component parameters.
+     real :: C(4)          !< [-] Sutherland coefficients
+     real :: lam(4)        !< [-] Repulsive exponent
+     real :: sigma         !< [m] Temperature-independent segment diameter
+     real :: eps_divk      !< [K] Well depth divided by k_B
+     ! Parameter set
+     character(len=ref_len) :: ref
+  end type sutherlandsum_betalinear_data
+
   type :: mie_data
      integer :: eosidx
      character(len=uid_len) :: compName
@@ -108,7 +122,26 @@ module pair_potentials
      character(len=ref_len) :: ref
   end type mie_data
 
-  integer, parameter :: nMie = 7
+  integer, parameter :: nSut = 2
+  type(sutherlandsum_betalinear_data), dimension(nSut), parameter :: SutArray = (/ &
+       sutherlandsum_betalinear_data(eosidx = eosMie_UV_BH, &
+       compName="CO2", &
+       C=(/4.0, -4.0, -1.4*0.387, 0.0/), &
+       lam=(/12.0,6.0,10.0,0.0/), &
+       sigma=3.785E-10, &
+       eps_divk=3.491e-21/kB_const, &
+       ref="DEFAULT/MOGNETTI2008"), &
+       !
+       sutherlandsum_betalinear_data(eosidx = eosMie_UV_BH, &
+       compName="H2", &
+       C=(/4.0, -4.0, 0.0, 0.0/), &
+       lam=(/9.0,6.0,11.0,8.0/), &
+       sigma=3.0243e-10, &
+       eps_divk=26.706, &
+       ref="DEFAULT/AASEN2019") &
+       /)
+
+  integer, parameter :: nMie = 10
   type(mie_data), dimension(nMie), parameter :: MieArray = (/ &
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="AR", &
@@ -116,42 +149,63 @@ module pair_potentials
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
-                                !
+       !
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="AR", &
        lamr=12.26, &
        sigma=3.41E-10, &
        eps_divk=118.7, &
        ref="SVRMIE"), &
-                                !
+       !
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="C1", &
        lamr=12, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
-                                !
+       !
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="NE", &
        lamr=24, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
-                                !
+       !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="AR", &
        lamr=12, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
-                                !
+       !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="AR", &
        lamr=12.26, &
        sigma=3.41E-10, &
        eps_divk=118.7, &
        ref="SVRMIE"), &
-                                !
+       !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="AR", &
+       lamr=12.26, &
+       sigma=3.41E-10, &
+       eps_divk=118.7, &
+       ref="SUTHERLAND"), &
+       !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="CO2", &
+       lamr=12.0, &
+       sigma=3.82E-10, &
+       eps_divk=230.22, &
+       ref="SUTHERLAND"), &
+       !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="CO2", &
+       lamr=12.0, &
+       sigma=3.82E-10, &
+       eps_divk=230.22, &
+       ref="DEFAULT"), &
+       !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="C1", &
        lamr=12, &
@@ -175,8 +229,43 @@ contains
     lamr = 2*A/(-B + sqrt(B**2-4*A*(C-alpha)))
   end function approx_lamr_from_alpha
 
+  !> Get the index in the SutArray of the component having uid given by
+  !> compName. idx=0 if component isn't in database.
+  function getSutdataIdx(eosidx,compName,ref) result(idx)
+    use stringmod, only: str_eq, string_match
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: compName, ref
+    integer :: idx, idx_default
+    logical :: found
 
-  !> Get the index in the MieArray of the component having uid given by
+    found = .false.
+    idx = 1
+    idx_default = -1
+    do while (idx <= nSut)
+       if ((eosidx == Sutarray(idx)%eosidx) .and. &
+            str_eq(compName, Sutarray(idx)%compName)) then
+          if (string_match(ref,Sutarray(idx)%ref)) then
+             found = .true.
+             exit
+          else if (string_match("DEFAULT",Sutarray(idx)%ref)) then
+             idx_default = idx
+          endif
+       endif
+       idx = idx + 1
+    enddo
+
+    if (.not. found .and. idx_default > 0) then
+       idx = idx_default
+       found = .true.
+    endif
+    if (.not. found) then
+       print *, "ERROR FOR COMPONENT ", compname
+       call stoperror("The Sut parameters don't exist.")
+    end if
+  end function getSutdataIdx
+
+
+   !> Get the index in the MieArray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
   function getMiedataIdx(eosidx,compName,ref) result(idx)
     use stringmod, only: str_eq, string_match
@@ -209,8 +298,7 @@ contains
        print *, "ERROR FOR COMPONENT ", compname
        call stoperror("The Mie parameters don't exist.")
     end if
-  end function getMiedataIdx
-
+  end function getMiedataIdx 
 
   subroutine mie_potential_hd_init(this, lama, lamr, sigma, epsdivk)
     class(mie_potential_hd), intent(inout) :: this
@@ -222,6 +310,7 @@ contains
     this%epsdivk = epsdivk
 
     this%CMie = lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama))
+    !print *, lamr%f0, this%CMie%f0
     this%rmin_adim = (lamr/lama)**(1.0/(lamr-lama))
     this%rmin = sigma*this%rmin_adim
     this%alpha = this%CMie*(1.0/(lama - 3.0) - 1.0/(lamr - 3.0))
@@ -319,10 +408,9 @@ contains
     this%lam = lam
 
     allocate(this%bexp(nt))
+    allocate(this%Cconst(nt))
     if (present(beta_expo)) then
        this%beta_dependence = .true.
-       allocate(this%bexp(nt))
-       allocate(this%Cconst(nt))
        this%bexp = beta_expo
        this%Cconst = C%f0
     else
@@ -409,19 +497,21 @@ contains
     end if
   end subroutine sutherlandsum_calc_r_derivs
 
-  subroutine sutherlandsum_update_beta(this, beta)
+  subroutine sutherlandsum_update_T(this, T)
     !> Update Sutherland coefficients with coefficients possibly depending on temperature
     class(sutherlandsum), intent(inout) :: this !< This potential
-    type(hyperdual), intent(in)         :: beta !< 1/T (1/K)
+    type(hyperdual), intent(in)         :: T    !< (K)
     ! Locals
     integer :: i
+    type(hyperdual) :: beta
 
     if (.not. this%beta_dependence) return
 
+    beta = this%epsdivk/T
     do i=1,this%nt
        this%C(i) = this%Cconst(i) * beta**(this%bexp(i))
     end do
-  end subroutine sutherlandsum_update_beta
+  end subroutine sutherlandsum_update_T
 
   type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
