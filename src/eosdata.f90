@@ -35,7 +35,8 @@ Module eosdata
   integer, parameter :: eosLJS_UF = 724     !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosMie_UV_WCA = 741 !< Mie equation of state using Van Westen uv perturbation theory, Weeks-Chandler-Andersen based
-  integer, parameter :: eosMie_UV_BH = 742  !< Nue equation of state using Van Westen uv perturbation theory, Barker-Henderson based
+  integer, parameter :: eosMie_UV_BH = 742  !< Mie equation of state using Van Westen uv perturbation theory, Barker-Henderson based
+  !integer, parameter :: eosMie_UV_LAFITTE = 743  !< Mie equation of state using uv perturbation theory, with Lafitte implementation of a1
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
 

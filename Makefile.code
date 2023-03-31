@@ -791,7 +791,7 @@ $(ODIR)/thermo_utils.o: $(SRC)/thermo_utils.f90 \
 	@$(call make_object, $(SRC)/thermo_utils.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90 \
 	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_constants.f90 \
-	$(SRC)/critical.f90 $(SRC)/eostv.f90
+	$(SRC)/critical.f90 $(SRC)/eostv.f90 $(SRC)/uv_theory.f90 $(SRC)/pair_potentials.f90 $(SRC)/saft_interface.f90
 	@$(call make_object, $(SRC)/thermopack.f90)
 $(ODIR)/thermopack_constants.o: $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/thermopack_constants.f90)
