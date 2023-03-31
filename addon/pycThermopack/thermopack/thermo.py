@@ -295,7 +295,7 @@ class thermo(object):
     def init_thermo(self, eos, mixing, alpha, comps, nphases,
                     liq_vap_discr_method=None, csp_eos=None, csp_ref_comp=None,
                     kij_ref="Default", alpha_ref="Default", saft_ref="Default",
-                    b_exponent=None, TrendEosForCp=None, cptype=None,
+                    b_exponent=None, cptype=None,
                     silent=None):
         """Internal
         Initialize thermopack
@@ -313,7 +313,6 @@ class thermo(object):
             alpha_ref (str, optional): Data set identifiers. Defaults to "Default".
             saft_ref (str, optional): Data set identifiers. Defaults to "Default".
             b_exponent (float, optional): Exponent used in co-volume mixing. Defaults to None.
-            TrendEosForCp (str, optional): Option to init trend for ideal gas properties. Defaults to None.
             cptype (int array, optional): Equation type number for Cp. Defaults to None.
             silent (bool, optional): Supress messages during init?. Defaults to None.
         """
@@ -357,12 +356,6 @@ class thermo(object):
             b_exponent_c = POINTER(c_double)()
         else:
             b_exponent_c = POINTER(c_double)(c_double(b_exponent))
-        if TrendEosForCp is None:
-            TrendEosForCp_c = c_char_p()
-            TrendEosForCp_len = c_len_type(0)
-        else:
-            TrendEosForCp_c = c_char_p(TrendEosForCp.encode('ascii'))
-            TrendEosForCp_len = c_len_type(len(TrendEosForCp))
         if cptype is None:
             cptype_c = null_pointer
         else:
@@ -389,7 +382,6 @@ class thermo(object):
                                                 c_char_p,
                                                 c_char_p,
                                                 POINTER(c_double),
-                                                c_char_p,
                                                 POINTER(c_int),
                                                 POINTER(c_int),
                                                 c_len_type, c_len_type,
@@ -412,7 +404,6 @@ class thermo(object):
                                     alpha_ref_c,
                                     saft_ref_c,
                                     b_exponent_c,
-                                    TrendEosForCp_c,
                                     cptype_c,
                                     silent_c,
                                     eos_len,
@@ -423,8 +414,7 @@ class thermo(object):
                                     csp_ref_comp_len,
                                     kij_ref_len,
                                     alpha_ref_len,
-                                    saft_ref_len,
-                                    TrendEosForCp_len)
+                                    saft_ref_len)
 
     def init_peneloux_volume_translation(self, parameter_reference="Default"):
         """Internal
