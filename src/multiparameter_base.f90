@@ -650,13 +650,14 @@ contains
 
   end subroutine alphaIdDerivs_Tv
 
-  subroutine densitySolver(this, T_spec, p_spec, phase_spec, rho, phase_found)
+  subroutine densitySolver(this, T_spec, p_spec, phase_spec, rho, phase_found, ierr)
     use thermopack_constants
     class(meos) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec !< Temperature (K) and pressure (Pa)
     integer, intent(in) :: phase_spec !< Phase flag.
     real, intent(out) :: rho !< Density (mol/m^3)
     integer, optional, intent(out) :: phase_found
+    integer, optional, intent(out) :: ierr
     ! Internals
     integer :: iter, maxiter=200
     real :: rhoOld, pOld, dpdrhoOld
@@ -672,6 +673,7 @@ contains
     nPhaseSwitches = 0 ! No phase switches so far
     iter = 0
     call initializeSearch() ! Set initial rho, p, dpdrho
+    if (present(ierr)) ierr = 0
 
     ! Newton iteration loop
     do while (.true.)
@@ -696,14 +698,18 @@ contains
         exit
       else if ( iter == maxiter ) then
         if (.not. continueOnError) then
-          print *, "iter ", iter
-          print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
-          print *, "rho, rhoOld ", rho, rhoOld
-          print *, "p, pOld ", p, pOld
-          print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
-          print *, "currentPhase", currentPhase
-          print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
-          call stoperror("multiparameter_eos::densitySolver: iter == max_iter.")
+          if (present(ierr)) then
+            ierr = 1
+          else
+            print *, "iter ", iter
+            print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
+            print *, "rho, rhoOld ", rho, rhoOld
+            print *, "p, pOld ", p, pOld
+            print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
+            print *, "currentPhase", currentPhase
+            print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
+            call stoperror("multiparameter_eos::densitySolver: iter == max_iter.")
+          end if
         end if
       end if
     end do

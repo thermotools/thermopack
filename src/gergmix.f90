@@ -45,7 +45,8 @@ module gergmix
     procedure, public ::  calc_tau
     procedure, public ::  calc_del_alpha_r => calc_del_alpha_r_gergmix
     procedure, public ::  pressure
-    procedure, public ::  densitySolver
+    procedure, public ::  densitySolver => densitySolver_gergmix
+    procedure, public ::  fake_density => fake_density_gergmix
 
   end type meos_gergmix
 
@@ -173,12 +174,12 @@ contains
   end function alphaRes_hd_gergmix
 
   !> Pressure method using hyperdual numbers for differentials
-  subroutine pressure(this, rho, x, T_spec, p, p_rho)
+  subroutine pressure(this, rho, x, T_spec, p, p_rho, p_rhorho)
     use hyperdual_mod
     class(meos_gergmix) :: this
     real, intent(in) :: rho, T_spec, x(nce)
     real, intent(out) :: p
-    real, optional, intent(out) :: p_rho
+    real, optional, intent(out) :: p_rho, p_rhorho
     ! Internal
     type(hyperdual) :: T, v, n(nce), f_res
     n = x
@@ -189,10 +190,11 @@ contains
     f_res = hd_fres_GERGMIX(this,nce,T,V,n)
     p = -Rgas*T_spec*(f_res%f1 - rho)
     if (present(p_rho)) p_rho = Rgas*T_spec*(f_res%f12/rho**2 + 1.0_dp)
+    !if (present(p_rhorho)) p_rhorho = -Rgas*T_spec*(f_res%f123/rho**4 + 2.0_dp*f_res%f12/rho**3)
   end subroutine pressure
 
   !> Density solver. Specified T,P and composition,
-  subroutine densitySolver(this, x, T_spec, p_spec, phase_spec, rho, phase_found)
+  subroutine densitySolver_gergmix(this, x, T_spec, p_spec, phase_spec, rho, phase_found, ierr)
     use thermopack_constants
     use numconstants, only: machine_prec
     use cubic, only: cbCalcZfac
@@ -202,6 +204,7 @@ contains
     integer, intent(in) :: phase_spec !< Phase flag.
     real, intent(out) :: rho !< Density (mol/m^3)
     integer, optional, intent(out) :: phase_found
+    integer, optional, intent(out) :: ierr
     ! Internals
     integer :: iter, maxiter=200
     real :: rhoOld, pOld, dpdrhoOld
@@ -220,6 +223,7 @@ contains
     nPhaseSwitches = 0 ! No phase switches so far
     iter = 0
     call initializeSearch() ! Set initial rho, p, dpdrho
+    if (present(ierr)) ierr = 0
 
     ! Newton iteration loop
     do while (.true.)
@@ -235,6 +239,10 @@ contains
         if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
              curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
           call switchPhase()
+          if (nPhaseSwitches == 2) then
+            call this%fake_density(x, T_spec, p_spec, rho, phase_found, ierr)
+            return
+          endif
           continue
         end if
       end if
@@ -244,14 +252,17 @@ contains
         exit
       else if ( iter == maxiter ) then
         if (.not. continueOnError) then
-          print *, "iter ", iter
-          print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
-          print *, "rho, rhoOld ", rho, rhoOld
-          print *, "p, pOld ", p, pOld
-          print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
-          print *, "currentPhase", currentPhase
-          print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
-          call stoperror("GERG2008_MIX::densitySolver: iter == max_iter.")
+          if (present(ierr)) then
+            ierr = 1
+            print *, "iter ", iter
+            print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
+            print *, "rho, rhoOld ", rho, rhoOld
+            print *, "p, pOld ", p, pOld
+            print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
+            print *, "currentPhase", currentPhase
+            print *, "curvature", (rho-rhoOld)*(dpdrho-dpdrhoOld)
+            call stoperror("GERG2008_MIX::densitySolver: iter == max_iter.")
+          end if
         end if
       end if
     end do
@@ -318,7 +329,7 @@ contains
 
     end subroutine initializeSearch
 
-  end subroutine densitySolver
+  end subroutine densitySolver_gergmix
 
   subroutine assign_meos_gergmix(this,other)
     class(meos_gergmix), intent(inout) :: this
@@ -427,6 +438,21 @@ contains
     call eos%densitySolver(z, T, P, phase, rho, phase_found)
     zfac = P/(sum(z)*Rgas*T*rho)
   end subroutine Zfac_Gergmix
+
+  !> Calculate fake phase
+  subroutine fake_density_gergmix(this, x, T_spec, p_spec, rho, phase_found, ierr)
+    class(meos_gergmix) :: this !< The calling class.
+    real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
+    real, intent(out) :: rho !< Density (mol/m^3)
+    integer, optional, intent(out) :: phase_found
+    integer, optional, intent(out) :: ierr
+    if (present(ierr)) then
+      ierr = 2
+      return
+    else
+      call stoperror("fake_density_gergmix: No stable phase?")
+    endif
+  end subroutine fake_density_gergmix
 
   !> Calculate reduced ideal gas Helmholtz energy - TVn interface
   function hd_fid_GERGMIX(p_eos,nc,T,V,n) result(f)

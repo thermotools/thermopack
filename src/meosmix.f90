@@ -3,7 +3,7 @@ module meosmix
   !!
   !! \author Morten Hammer, 2023
   use gergmix, only: meos_gergmix
-  use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, Rgas_default
+  use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, FAKEPH, Rgas_default
   use thermopack_var, only: Rgas, nce, complist, base_eos_param, &
        get_active_alt_eos
   use meosmixdb, only: max_meos_mix_reducing, meos_mix_reducingdb, &
@@ -19,6 +19,8 @@ module meosmix
   contains
     procedure, public :: rgas_mix
     procedure, public :: calc_del_alpha_r => calc_del_alpha_r_meos_mix
+    procedure, private :: density_extrema
+    procedure, public :: fake_density => fake_density_meosmix
 
   end type meos_mix
 
@@ -145,5 +147,106 @@ contains
       enddo
     enddo
   end function calc_del_alpha_r_meos_mix
+
+  !> Find density extrema
+  function density_extrema(this,T,z,phase) result(rho_extr)
+    use numconstants, only: machine_prec
+    use cubic_eos, only: get_b_linear_mix
+    implicit none
+    ! Input:
+    class(meos_mix), intent(inout)  :: this
+    real, intent(in)                :: z(nce)        !< Overall molar compozition [-]
+    real, intent(in)                :: T            !< Temperature [K]
+    integer, intent(in)             :: phase        !< Desired phase
+    ! Output:
+    real                            :: rho_extr !< Density of P_EoS extremum (Negative if not found) [mol/m3]
+    ! Locals
+    real                            :: drho,dpdrho,d2pdrho2,rhomin,&
+                                       rhomax,s,p
+    integer                         :: n_iter
+    integer, parameter              :: max_iter_extr = 200
+    real, parameter                 :: rho_extrem_rel_tol = machine_prec*1000.0
+    real                            :: gradient_descent_drho,&
+                                       newton_max_drho
+
+    rhomin = 1.0e-10
+    rhomax = 1.0/get_b_linear_mix(z)
+    gradient_descent_drho = (rhomax-rhomin)/10.0
+    newton_max_drho = (rhomax-rhomin)/10.0
+
+    select case(phase)
+      case(LIQPH)
+        rho_extr = rhomax
+        s = 1.0 !Looking for minimum
+      case(VAPPH)
+        rho_extr = rhomin
+        s = -1.0 !Looking for maximum
+    end select
+
+    n_iter = 0
+    do  ! Find first extremum
+      n_iter = n_iter+1
+      call this%pressure(rho_extr, z, T, p, dpdrho, d2pdrho2)
+      if ( (phase==VAPPH .and. d2pdrho2 < 0.0)  .or.  &
+           (phase==LIQPH .and. d2pdrho2 > 0.0)        &
+         ) then
+        ! Newton optimization
+        drho = - dpdrho/d2pdrho2
+        ! Limit the step
+        if (abs(drho) > newton_max_drho) then
+          drho = sign(newton_max_drho,drho)
+        endif
+      else
+        ! Gradient descent, constant step.
+        drho = -s*sign(1.0,dpdrho)*gradient_descent_drho
+      endif
+
+      ! Update rho
+      rho_extr = rho_extr + drho
+
+      ! Check convergence of extremum search
+      if (abs(drho/rho_extr)<rho_extrem_rel_tol) then
+        ! Converged
+        return
+      elseif ((n_iter == max_iter_extr) .or.       &
+           (phase==LIQPH .and. rho_extr < rhomin) .or.  &
+           (phase==VAPPH .and. rho_extr > rhomax)       &
+           ) then
+        ! Found no extremum
+        rho_extr = -1.0
+        return
+      endif
+    end do
+
+  end function density_extrema
+
+  !> Density solver. Specified T,P and composition,
+  subroutine fake_density_meosmix(this, x, T_spec, p_spec, rho, phase_found, ierr)
+    use utilities, only: fallback_density
+    class(meos_mix) :: this !< The calling class.
+    real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
+    real, intent(out) :: rho !< Density (mol/m^3)
+    integer, optional, intent(out) :: phase_found
+    integer, optional, intent(out) :: ierr
+    ! Internals
+    real :: rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq
+    print *,"Need third order differentials before activation"
+    stop
+    ! No stable root. Determine fake root.
+    rho_extr_liq = this%density_extrema(T_spec,x,phase=LIQPH)
+    rho_extr_vap = this%density_extrema(T_spec,x,phase=VAPPH)
+    if (rho_extr_liq < 0.0 .or. rho_extr_vap < 0.0) then
+      if (present(ierr)) then
+        ierr = 3
+      else
+        call stoperror("fake_density_meosmix failed.")
+      endif
+    else
+      if (present(ierr)) ierr = 0
+      call this%pressure(rho_extr_liq, x, T_spec, P_extr_liq, p_rhorho=d2P_drho2_extr_liq)
+      rho = fallback_density(p_spec,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq)
+      if (present(phase_found)) phase_found = FAKEPH
+    endif
+  end subroutine fake_density_meosmix
 
 end module meosmix
