@@ -221,31 +221,39 @@ contains
   end function density_extrema
 
   !> Density solver. Specified T,P and composition,
-  subroutine fake_density_meosmix(this, x, T_spec, p_spec, rho, phase_found, ierr)
+  subroutine fake_density_meosmix(this, x, T_spec, p_spec, rho, ierr, phase_found)
     use utilities, only: fallback_density
     class(meos_mix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
     real, intent(out) :: rho !< Density (mol/m^3)
+    !real, intent(out) :: rho_extr_liq, rho_extr_vap !< Density extrema (mol/m^3)
+    integer, intent(out) :: ierr
     integer, optional, intent(out) :: phase_found
-    integer, optional, intent(out) :: ierr
     ! Internals
-    real :: rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq
-    print *,"Need third order differentials before activation"
-    stop
+    real :: rho_extr_liq, rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq,P_extr_vap
+    ierr = 0
     ! No stable root. Determine fake root.
     rho_extr_liq = this%density_extrema(T_spec,x,phase=LIQPH)
     rho_extr_vap = this%density_extrema(T_spec,x,phase=VAPPH)
     if (rho_extr_liq < 0.0 .or. rho_extr_vap < 0.0) then
-      if (present(ierr)) then
-        ierr = 3
-      else
-        call stoperror("fake_density_meosmix failed.")
-      endif
+      ierr = 3
     else
-      if (present(ierr)) ierr = 0
       call this%pressure(rho_extr_liq, x, T_spec, P_extr_liq, p_rhorho=d2P_drho2_extr_liq)
-      rho = fallback_density(p_spec,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq)
-      if (present(phase_found)) phase_found = FAKEPH
+      call this%pressure(rho_extr_vap, x, T_spec, P_extr_vap)
+      ! Test pressures
+      if (P_extr_liq > p_spec .and. P_extr_vap < p_spec) then
+        ! Calculate fallback density
+        rho = fallback_density(p_spec,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq)
+        if (present(phase_found)) phase_found = FAKEPH
+      else
+        if (P_extr_liq < p_spec) then
+          ierr = 4 ! A liqiud solution exist
+        else if (P_extr_vap > p_spec) then
+          ierr = -4 ! A vapour solution exist
+        else
+          ierr = 5 ! Both phases should exist
+        endif
+      endif
     endif
   end subroutine fake_density_meosmix
 

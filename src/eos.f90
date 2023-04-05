@@ -81,7 +81,8 @@ contains
              t,p,x,ph,tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
       else if (ph == MINGIBBSPH) then
         call TP_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,&
-             t,p,x,LIQPH,g_tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
+             t,p,x,LIQPH,g_tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v,phase_found=ophase)
+        if (ophase == FAKEPH) return
         if (present(lnfugt)) then
           lnfugt2 = lnfugt
         endif

@@ -187,10 +187,14 @@ contains
     v%f0 = 1.0/rho
     v%f1 = 1.0_dp
     v%f2 = 1.0_dp
+    if (present(p_rhorho)) then
+      v%f3 = 1.0_dp
+      v%order = 3
+    endif
     f_res = hd_fres_GERGMIX(this,nce,T,V,n)
     p = -Rgas*T_spec*(f_res%f1 - rho)
     if (present(p_rho)) p_rho = Rgas*T_spec*(f_res%f12/rho**2 + 1.0_dp)
-    !if (present(p_rhorho)) p_rhorho = -Rgas*T_spec*(f_res%f123/rho**4 + 2.0_dp*f_res%f12/rho**3)
+    if (present(p_rhorho)) p_rhorho = -Rgas*T_spec*(f_res%f123/rho**4 + 2.0_dp*f_res%f12/rho**3)
   end subroutine pressure
 
   !> Density solver. Specified T,P and composition,
@@ -206,7 +210,8 @@ contains
     integer, optional, intent(out) :: phase_found
     integer, optional, intent(out) :: ierr
     ! Internals
-    integer :: iter, maxiter=200
+    integer :: iter, ierr_local
+    integer, parameter :: maxiter=200
     real :: rhoOld, pOld, dpdrhoOld
     real :: p, dpdrho
     real :: pMin, dpdrhoMin
@@ -230,7 +235,6 @@ contains
       rhoOld = rho
       pOld = p
       dpdrhoOld = dpdrho
-
       rho = rho - (p-p_spec)/dpdrho
       if (rho<0) then
         call switchPhase()
@@ -238,11 +242,14 @@ contains
         call this%pressure(rho, x, T_spec, p, dpdrho)
         if ( p<pMin .or. dpdrho < dpdrhoMin .or. &
              curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
-          call switchPhase()
-          if (nPhaseSwitches == 2) then
-            call this%fake_density(x, T_spec, p_spec, rho, phase_found, ierr)
-            return
+          if (nPhaseSwitches == 1) then
+            ! Look for fake phase
+            call this%fake_density(x, T_spec, p_spec, rho, ierr_local, phase_found)
+            if (ierr_local == 0) then
+              return
+            endif
           endif
+          call switchPhase()
           continue
         end if
       end if
@@ -254,6 +261,8 @@ contains
         if (.not. continueOnError) then
           if (present(ierr)) then
             ierr = 1
+            return
+          else
             print *, "iter ", iter
             print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
             print *, "rho, rhoOld ", rho, rhoOld
@@ -321,7 +330,7 @@ contains
       ! This should only happen at extremely low temperatures where the eos is
       ! unphysical. In this case, turn off all robustness measures, and just
       ! try to find a root.
-      if ( nPhaseSwitches == 2 ) then
+      if ( nPhaseSwitches >= 2 ) then
         curvatureSign = 0
         pMin = -1e100
         dpdrhoMin = -1e100
@@ -424,34 +433,30 @@ contains
     enddo
   end function calc_del_alpha_r_gergmix
 
-  subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac)
+  subroutine Zfac_gergmix(eos,T,P,Z,phase,Zfac,phase_found)
     implicit none
     class(meos_gergmix), intent(inout) :: eos
     real, dimension(nce), intent(in) :: Z
     real, intent(in) :: T, P
     integer, intent(in) :: phase
+    integer, optional, intent(out) :: phase_found
     real, intent(out) :: Zfac
     ! Locals
     real :: rho
-    integer :: phase_found
     !
     call eos%densitySolver(z, T, P, phase, rho, phase_found)
     zfac = P/(sum(z)*Rgas*T*rho)
   end subroutine Zfac_Gergmix
 
   !> Calculate fake phase
-  subroutine fake_density_gergmix(this, x, T_spec, p_spec, rho, phase_found, ierr)
+  subroutine fake_density_gergmix(this, x, T_spec, p_spec, rho, ierr, phase_found)
     class(meos_gergmix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
     real, intent(out) :: rho !< Density (mol/m^3)
+    !real, intent(out) :: rho_extr_liq, rho_extr_vap !< Density extrema (mol/m^3)
+    integer, intent(out) :: ierr
     integer, optional, intent(out) :: phase_found
-    integer, optional, intent(out) :: ierr
-    if (present(ierr)) then
-      ierr = 2
-      return
-    else
-      call stoperror("fake_density_gergmix: No stable phase?")
-    endif
+    ierr = 4
   end subroutine fake_density_gergmix
 
   !> Calculate reduced ideal gas Helmholtz energy - TVn interface

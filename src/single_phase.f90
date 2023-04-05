@@ -63,7 +63,7 @@ contains
   !! \retval Zfac The Z-factor [-]
   !!
   !! \author Oivind W
-  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz) result (Zfac)
+  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz,phase_found) result (Zfac)
     use compdata, only: gendata_pointer
     use thermopack_var, only: base_eos_param
     implicit none
@@ -76,10 +76,11 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: dZdt, dZdp
     real, optional, dimension(nc), intent(out) :: dZdz
+    integer, optional, intent(out) :: phase_found !< Phase flag
     real :: Zfac
 
     Zfac = fork_Zfac_calculation(nc,comp,cbeos,T,P,Z/sum(Z),phase,gflag_opt,&
-         dZdt,dZdp,dZdz)
+         dZdt,dZdp,dZdz,phase_found)
 
   end function TP_CalcZfac
 
@@ -394,7 +395,7 @@ contains
   !!
   !! \author Oivind W
   subroutine TP_CalcFugacity(nc,comp,cbeos,T,P,Z,phase,lnfug,&
-       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v)
+       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v,phase_found)
     use cubic
     use LeeKesler, only: lkCalcFug
     use eosdata
@@ -415,6 +416,9 @@ contains
     real, optional, dimension(nc), intent(out) :: dlnfugdt, dlnfugdp
     real, optional, dimension(nc,nc), intent(out) :: dlnfugdn
     real, optional, intent(out) :: v !< Specific volume [mol/m3]
+    integer, optional, intent(out) :: phase_found !< Phase flag
+
+    if (present(phase_found)) phase_found = phase
 
     select type ( p_eos => cbeos )
     type is ( lk_eos ) ! Lee-Kesler equations of state
@@ -424,7 +428,7 @@ contains
            lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
     class default
       call TP_lnfug(nc,comp,cbeos,phase,T,P,z,lnfug,&
-           dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v)
+           dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v,phase_found=phase_found)
     end select
   end subroutine TP_CalcFugacity
 
@@ -738,7 +742,7 @@ contains
   !! \author Morten Hammer, 2017-02
   !-----------------------------------------------------------------------------
   subroutine TP_lnfug(nc,comp,cbeos,phase,T,P,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn,&
-       gflag_opt,v_out)
+       gflag_opt,v_out,phase_found)
     use compdata, only: gendata_pointer
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          TP_lnfug_apparent, base_eos_param, Rgas
@@ -752,6 +756,7 @@ contains
     real, intent(in) :: n(nc)                           !< Mole numbers [mols]
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: v_out !< Specific volume [mol/m3]
+    integer, optional, intent(out) :: phase_found !< Phase flag
     ! Output
     real, intent(out) :: lnfug(nc)
     real, optional, intent(out) :: dlnfugdt(nc), dlnfugdp(nc), dlnfugdn(nc,nc)
@@ -769,7 +774,7 @@ contains
     call apparent_to_real_mole_numbers(n,ne)
     sumne = sum(ne)
     ze = ne/sumne
-    zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ze,phase,gflag_opt)
+    zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ze,phase,gflag_opt,phase_found=phase_found)
     V = zFac*sumne*Rgas*T/P
     if (present(v_out)) then
       v_out = v
@@ -947,7 +952,7 @@ contains
   !! \author Oivind W
   !! \author Morten Hammer
   function fork_Zfac_calculation(nc,comp,cbeos,T,P,n,phase,gflag_opt,&
-       dZdt,dZdp,dZdz) result (Zfac)
+       dZdt,dZdp,dZdz,phase_found) result (Zfac)
     use cubic, only: cbCalcZfac
     use LeeKesler, only: lkCalcZfac
     use extcsp, only: csp_zfac, extcsp_eos
@@ -974,6 +979,7 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: dZdt, dZdp
     real, optional, dimension(nc), intent(out) :: dZdz
+    integer, optional, intent(out) :: phase_found !< Phase flag
     real :: Zfac
     ! Locals
     integer :: gflag_opt_local
@@ -985,7 +991,7 @@ contains
     if (present(gflag_opt)) then
       gflag_opt_local = gflag_opt
     end if
-
+    if (present(phase_found)) phase_found = phase
     call apparent_to_real_mole_numbers(n,ne)
     is_apparent_mode = (nc /= nce)
     if (is_apparent_mode) then
@@ -1001,7 +1007,7 @@ contains
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
     class is ( meos_gergmix )
-      call p_eos%Zfac(T,p,ne,phase,Zfac)
+      call p_eos%Zfac(T,p,ne,phase,Zfac,phase_found)
       call calc_Zfac_differentials()
     type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
