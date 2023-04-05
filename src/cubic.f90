@@ -1393,7 +1393,7 @@ contains
       ft=cbeos%suma-omegaA_mix/omegaB_mix*kRgas*Tpc*cbeos%sumb
       dft=cbeos%at-omegaA_mix/omegaB_mix*kRgas* ( cbeos%sumb + Tpc * cbeos%bt)
       ddft=cbeos%att
-      Argum=(1.0D-2)*ft*ddft/dft**2
+      Argum=1.0D0-2.0D0*ft*ddft/dft**2
       if(Argum < 0.0) Argum=1.0
       Argum=sqrt(Argum)
       dTpc=(-ft)/dft*2.0/(1.0+Argum)
