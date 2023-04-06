@@ -5,10 +5,11 @@ module meosmix
   use gergmix, only: meos_gergmix
   use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH, FAKEPH, Rgas_default
   use thermopack_var, only: Rgas, nce, complist, base_eos_param, &
-       get_active_alt_eos
+       get_active_alt_eos, get_active_eos
   use meosmixdb, only: max_meos_mix_reducing, meos_mix_reducingdb, &
        max_meos_mix_data, meos_mix_datadb
   use iso_fortran_env, only: dp => REAL64
+  use numconstants, only: machine_prec
   implicit none
   save
   private
@@ -17,11 +18,10 @@ module meosmix
   type, extends(meos_gergmix) :: meos_mix
 
   contains
-    procedure, public :: rgas_mix
-    procedure, public :: calc_del_alpha_r => calc_del_alpha_r_meos_mix
-    procedure, private :: density_extrema
-    procedure, public :: fake_density => fake_density_meosmix
-
+    procedure, public  :: rgas_mix
+    procedure, public  :: calc_del_alpha_r => calc_del_alpha_r_meos_mix
+    procedure, private :: pressure_extrema
+    procedure, public  :: fake_density => fake_density_meosmix
   end type meos_mix
 
   public :: meos_mix, constructor_meos
@@ -148,9 +148,8 @@ contains
     enddo
   end function calc_del_alpha_r_meos_mix
 
-  !> Find density extrema
-  function density_extrema(this,T,z,phase) result(rho_extr)
-    use numconstants, only: machine_prec
+  !> Find pressure extrema of p(rho)
+  function pressure_extrema(this,T,z,phase) result(rho_extr)
     use cubic_eos, only: get_b_linear_mix
     implicit none
     ! Input:
@@ -218,23 +217,25 @@ contains
       endif
     end do
 
-  end function density_extrema
+  end function pressure_extrema
 
-  !> Density solver. Specified T,P and composition,
-  subroutine fake_density_meosmix(this, x, T_spec, p_spec, rho, ierr, phase_found)
+  !> Calculate extremas in pressure and determine if a fake root is needed
+  subroutine fake_density_meosmix(this, x, T_spec, p_spec, phase_spec, rho, ierr, phase_found)
     use utilities, only: fallback_density
     class(meos_mix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
-    real, intent(out) :: rho !< Density (mol/m^3)
-    !real, intent(out) :: rho_extr_liq, rho_extr_vap !< Density extrema (mol/m^3)
+    integer, intent(in) :: phase_spec !< Phase flag
+   real, intent(out) :: rho !< Density (mol/m^3)
     integer, intent(out) :: ierr
-    integer, optional, intent(out) :: phase_found
+    integer, optional, intent(out) :: phase_found !< Phase flag of detected phase
     ! Internals
     real :: rho_extr_liq, rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq,P_extr_vap
+    real :: rho_bracket, rho_extr
+    integer :: ophase
     ierr = 0
     ! No stable root. Determine fake root.
-    rho_extr_liq = this%density_extrema(T_spec,x,phase=LIQPH)
-    rho_extr_vap = this%density_extrema(T_spec,x,phase=VAPPH)
+    rho_extr_liq = this%pressure_extrema(T_spec,x,phase=LIQPH)
+    rho_extr_vap = this%pressure_extrema(T_spec,x,phase=VAPPH)
     if (rho_extr_liq < 0.0 .or. rho_extr_vap < 0.0) then
       ierr = 3
     else
@@ -246,15 +247,106 @@ contains
         rho = fallback_density(p_spec,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq)
         if (present(phase_found)) phase_found = FAKEPH
       else
-        if (P_extr_liq < p_spec) then
-          ierr = 4 ! A liqiud solution exist
+        if ((P_extr_liq < p_spec) .and. (P_extr_vap > p_spec)) then
+          ! Both phases should exist
+          ophase = phase_spec
+          if (ophase == VAPPH) then
+            rho_extr = rho_extr_vap
+          else
+            rho_extr = rho_extr_liq
+          endif
+        else if (P_extr_liq < p_spec) then
+          ! A liqiud solution exist
+          ophase = LIQPH
+          rho_extr = rho_extr_liq
         else if (P_extr_vap > p_spec) then
-          ierr = -4 ! A vapour solution exist
-        else
-          ierr = 5 ! Both phases should exist
+          ophase = VAPPH
+          rho_extr = rho_extr_vap
         endif
+        call find_bracketed_density_root(T_spec,P_spec,x,ophase,rho_extr,rho_bracket,ierr)
+        if (present(phase_found)) phase_found = ophase
+        if (ierr == 0) rho = rho_bracket
       endif
     endif
   end subroutine fake_density_meosmix
+
+  !> Find a bracketed root of P(rho)-P.
+  !> \author Morten Hammer, 2023-04
+  subroutine find_bracketed_density_root(T,P,z,phase,rho_extr,rho,ierr)
+    use nonlinear_solvers, only: nonlinear_solver,bracketing_solver,&
+                                 NS_RIDDERS
+    implicit none
+    ! Input:
+    real,intent(in)         :: T,P,z(nce),rho_extr
+    integer, intent(in)     :: phase
+    ! Output:
+    real,intent(out)        :: rho
+    integer, intent(out)    :: ierr
+    ! Internal:
+    integer, parameter      :: max_iter = 1000
+    real, parameter         :: rho_rel_tol = machine_prec*100.0
+    type(nonlinear_solver)  :: solver
+    real, dimension(nce+2)  :: param
+    real                    :: rho_min, rho_max, fun_ext, drho
+    integer                 :: i
+
+    ! Close to extremum use bracketing solver
+    param(1) = p
+    param(2) = T
+    param(3:nce+2) = z(1:nce)
+
+    solver%rel_tol = rho_rel_tol
+    solver%max_it = max_iter
+    solver%isolver = NS_RIDDERS
+
+    ! Locate density range
+    fun_ext = pressure_fun(rho_extr,param)
+    if (phase == VAPPH) then
+      drho = -0.1*rho_extr
+      rho_max = rho_extr
+    else
+      drho = 0.1*rho_extr
+      rho_min = rho_extr
+    endif
+    rho = rho_extr
+    do i=1,5
+      rho = rho + drho
+      if (pressure_fun(rho,param)*fun_ext < 0) exit
+    enddo
+    if (phase == VAPPH) then
+      rho_min = rho
+    else
+      rho_max = rho
+    endif
+
+    call bracketing_solver(rho_min,rho_max,pressure_fun,rho,solver,param)
+    ierr = solver%exitflag
+
+  end subroutine find_bracketed_density_root
+
+  !> Calculate error in pressure
+  !> \author Morten Hammer, 2023-04
+  function pressure_fun(var,param) result(f)
+    implicit none
+    real, intent(in)                   :: var !< Density [mol/m3]
+    real, dimension(nce+2), intent(in) :: param !< Parameter vector
+    real                               :: f !< Function value [Pa]
+    ! Locals
+    real                               :: p, t, p_spec, rho
+    real, dimension(nce)               :: Z
+    class(base_eos_param), pointer     :: base_eos
+    rho = var
+    p_spec = param(1)
+    t = param(2)
+    Z(1:nce) = param(3:nce+2)
+    base_eos => get_active_eos()
+    select type ( eos => base_eos )
+    class is(meos_gergmix)
+      call eos%pressure(rho, z, T, p)
+    class default
+      call stoperror("meosmix pressure_fun")
+    end select
+    f = (p_spec - p)*1.0e-6
+  end function pressure_fun
 
 end module meosmix

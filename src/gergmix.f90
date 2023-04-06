@@ -244,7 +244,7 @@ contains
              curvatureSign*(rho-rhoOld)*(dpdrho-dpdrhoOld) < -2e-10*abs(rho*dpdrho) ) then
           if (nPhaseSwitches == 1) then
             ! Look for fake phase
-            call this%fake_density(x, T_spec, p_spec, rho, ierr_local, phase_found)
+            call this%fake_density(x, T_spec, p_spec, phase_spec, rho, ierr_local, phase_found)
             if (ierr_local == 0) then
               return
             endif
@@ -449,11 +449,11 @@ contains
   end subroutine Zfac_Gergmix
 
   !> Calculate fake phase
-  subroutine fake_density_gergmix(this, x, T_spec, p_spec, rho, ierr, phase_found)
+  subroutine fake_density_gergmix(this, x, T_spec, p_spec, phase_spec, rho, ierr, phase_found)
     class(meos_gergmix) :: this !< The calling class.
     real, intent(in) :: T_spec, p_spec, x(nce) !< Temperature (K) and pressure (Pa)
+    integer, intent(in) :: phase_spec !< Phase flag
     real, intent(out) :: rho !< Density (mol/m^3)
-    !real, intent(out) :: rho_extr_liq, rho_extr_vap !< Density extrema (mol/m^3)
     integer, intent(out) :: ierr
     integer, optional, intent(out) :: phase_found
     ierr = 4
