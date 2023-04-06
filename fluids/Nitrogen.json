@@ -83,6 +83,56 @@
     "Q": 1.43,
     "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
   },
+  "melting_line": {
+    "bib_reference": "DOI: 10.1063/1.1349047",
+    "correlation": "M1",
+    "minimum_temperature": 63.151,
+    "maximum_temperature": 2000.0,
+    "reducing_temperature": 63.151,
+    "reducing_pressure": 12.5198,
+    "n_coeff": 3,
+    "coeff": [
+      1.0,
+      12798.61,
+      -12798.61,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.78963,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_line": {
+    "bib_reference": "Lemmon, E.W. (1999)",
+    "correlation": "S3",
+    "minimum_temperature": 0.0,
+    "maximum_temperature": 63.151,
+    "reducing_temperature": 63.151,
+    "reducing_pressure": 12.523,
+    "n_coeff": 1,
+    "coeff": [
+      -13.088692,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

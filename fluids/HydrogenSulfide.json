@@ -82,6 +82,31 @@
     "Q": 0.0,
     "bib_reference": ""
   },
+  "sublimation_line": {
+    "bib_reference": "DOI: 10.1016/j.pss.2009.09.011",
+    "correlation": "S2",
+    "minimum_temperature": 0.0,
+    "maximum_temperature": 187.7,
+    "reducing_temperature": 1.0,
+    "reducing_pressure": 1000.0,
+    "n_coeff": 5,
+    "coeff": [
+      6.6247,
+      -7.260e2,
+      -3.504e5,
+      2.724e7,
+      -8.582e8,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      -4.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

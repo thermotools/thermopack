@@ -84,6 +84,31 @@
     "Q": 0.0,
     "bib_reference": ""
   },
+  "melting_line": {
+    "bib_reference": "DOI: 10.1063/1.1725068",
+    "correlation": "M1",
+    "minimum_temperature": 112.65,
+    "maximum_temperature": 2000.0,
+    "reducing_temperature": 112.65,
+    "reducing_pressure": 0.8952e-7,
+    "n_coeff": 2,
+    "coeff": [
+      -7127700000000.0,
+      7127700000001.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.563,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "MC-1": {
       "ref": "Default",

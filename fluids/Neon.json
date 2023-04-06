@@ -82,6 +82,56 @@
     "Q": 0.0,
     "bib_reference": ""
   },
+  "melting_line": {
+    "bib_reference": "Lemmon, E.W. (2010)",
+    "correlation": "M1",
+    "minimum_temperature": 0.0,
+    "maximum_temperature": 10000.0,
+    "reducing_temperature": 24.556,
+    "reducing_pressure": 43.36814,
+    "n_coeff": 2,
+    "coeff": [
+      1.0,
+      4437.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.33,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_line": {
+    "bib_reference": "DOI: 10.1007/978-1-4613-9856-1_76",
+    "correlation": "S2",
+    "minimum_temperature": 0.0,
+    "maximum_temperature": 10000.0,
+    "reducing_temperature": 1.0,
+    "reducing_pressure": 1000.0,
+    "n_coeff": 5,
+    "coeff": [
+      8.3071,
+      -3.08555e2,
+      9.8602e2,
+      -9.0693e3,
+      3.5142e4,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      -4.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
