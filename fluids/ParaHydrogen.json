@@ -76,6 +76,14 @@
     "bib_reference": "",
     "Zra": 0.306
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {},
   "PR": {},
   "SAFTVRMIE-1": {

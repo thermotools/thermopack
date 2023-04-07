@@ -4,6 +4,7 @@ from __future__ import print_function
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
+import warnings
 # Import platform to detect OS
 from sys import platform, exit
 # Import os utils
@@ -60,6 +61,14 @@ class cubic(thermo.thermo):
 
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
+        else:
+            missing_args = []
+            if comps is None:
+                missing_args.append('comps')
+            if eos is None:
+                missing_args.append('eos')
+            warnings.warn('Cubic EoS not completely initialized, due to missing parameter(s) :'+str(missing_args)+'.\n'
+                          'Complete initialisation by explicitly calling this classes "init" method.', Warning)
 
     #################################
     # Init

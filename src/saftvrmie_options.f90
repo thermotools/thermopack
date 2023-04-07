@@ -78,6 +78,7 @@ module saftvrmie_options
     procedure, public :: truncation_correction_model_control
     procedure, public :: check_model_consitency
     procedure, public :: set_Lafitte_option
+    procedure, public :: set_hs_reference
     procedure, public :: print
     ! Assignment operator
     procedure, public :: assign_saftvrmie_model_options
@@ -110,26 +111,8 @@ contains
        call stoperror("Unknown model options for SAFT-VR Mie")
     end select
     if (present(hs_reference)) then
-       ! Override HS reference
-       select case(hs_reference)
-       case(LAFITTE_HS_REF)
-          ! As already set
-       case(SINGLE_COMP_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_PURE_DIJ
-          svrm_o%zeta_mixing_rule = ZETA_LEONARD
-          svrm_o%exact_binary_dhs = .true.
-       case(ADDITIVE_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
-          svrm_o%zeta_mixing_rule = ZETA_LAFITTE
-          svrm_o%exact_binary_dhs = .false.
-          svrm_o%enable_hs_extra = .true.
-       case(NON_ADD_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_SANTOS
-          svrm_o%pure_hs_EoS = PURE_HS_CS
-          svrm_o%exact_binary_dhs = .true.
-       case default
-          call stoperror("Unknown HS model options for SAFT-VR Mie")
-       end select
+      ! Override HS reference
+      call svrm_o%set_hs_reference(hs_reference)
     endif
   end subroutine saftvrmieaij_model_options
 
@@ -154,6 +137,36 @@ contains
     svrm_o%quantum_correct_A2 = .true.
     svrm_o%Khs_EoS = KHS_EOS_LAFITTE
   end subroutine set_Lafitte_option
+
+  subroutine set_hs_reference(svrm_o, hs_reference)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
+    integer, intent(in) :: hs_reference
+    ! Override HS reference
+    select case(hs_reference)
+    case(LAFITTE_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .false.
+      svrm_o%enable_hs_extra = .false.
+    case(SINGLE_COMP_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_PURE_DIJ
+      svrm_o%zeta_mixing_rule = ZETA_LEONARD
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .false.
+    case(ADDITIVE_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .false.
+      svrm_o%enable_hs_extra = .true.
+    case(NON_ADD_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_SANTOS
+      svrm_o%pure_hs_EoS = PURE_HS_CS
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .false.
+    case default
+      call stoperror("Unknown HS model options for SAFT-VR Mie")
+    end select
+  end subroutine set_hs_reference
 
   !> Set r_cut, and enable truncation correction
   !!

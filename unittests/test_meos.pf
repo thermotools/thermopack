@@ -4,7 +4,7 @@ module test_meos
   !> 1. Analytical derivatives are checked against numerical derivatives,for alphaIdeal(delta,tau), alphaRes(delta,tau), alphaRes(T,v), alpha(T,v). Will detect if derivative formulas are correct.
   !> 2. Computed property values are checked against numbers given in papers. Will detect if the numerical coefficients are correct.
   !> 3. Saturation properties are compared against numbers given in papers. Will detect if the density solver is correct.
-  use pfunit_mod
+  use funit
   use thermopack_var
   use thermopack_constants
   use multiparameter_base
