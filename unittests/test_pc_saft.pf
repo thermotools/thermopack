@@ -1,5 +1,5 @@
 module test_pc_saft
-  use pfunit_mod
+  use funit
   use thermopack_var
   use pc_saft_nonassoc
   use eoslibinit, only: init_thermo
@@ -585,5 +585,69 @@ contains
 
 
   end subroutine test_mixture_density_accuracy
+
+  @Test
+  subroutine test_multipol_qq
+    use hyperdual_mod
+    use multipol, only: hyperdual_fres_multipol
+    type(hyperdual):: V, T, n(1), f
+    integer :: nc
+    class(base_eos_param), pointer :: p_eos
+
+    nc = 1
+    n = (/1.0/)
+    T = 350.0
+    V = 1.0e-27*6.02214076e23
+
+    call init_thermo(alpha='Classic',eos='PCP-SAFT',&
+         mixing='Classic',comp_string="CO2",nphases=2,saft_ref="Gross2005")
+    p_eos => get_active_eos()
+    f = hyperdual_fres_multipol(p_eos,nc,T,V,n)
+    @assertEqual(-0.04385611664750655, f%f0, 0.04385611664750655*1.0e-10)
+  end subroutine test_multipol_qq
+
+  @Test
+  subroutine test_multipol_dd
+    use hyperdual_mod
+    use multipol, only: hyperdual_fres_multipol
+    type(hyperdual):: V, T, n(1), f
+    integer :: nc
+    class(base_eos_param), pointer :: p_eos
+
+    nc = 1
+    n = (/1.0/)
+    T = 350.0
+    V = 1.0e-27*6.02214076e23
+
+    call init_thermo(alpha='Classic',eos='PCP-SAFT',&
+         mixing='Classic',comp_string="DME",nphases=2,saft_ref="Gross2006")
+    p_eos => get_active_eos()
+    f = hyperdual_fres_multipol(p_eos,nc,T,V,n)
+    @assertEqual(-1.40501033595417E-002, f%f0, 1.40501033595417E-002*1.0e-6)
+
+  end subroutine test_multipol_dd
+
+  @Test
+  subroutine test_multipol_dq
+    use hyperdual_mod
+    use multipol, only: hyperdual_fres_multipol
+    type(hyperdual):: V, T, n(2), f
+    integer :: nc
+    class(base_eos_param), pointer :: p_eos
+
+    nc = 2
+    n = 1.0
+    T = 350.0
+    V = 1.0e-27*6.02214076e23
+
+    call init_thermo(alpha='Classic',eos='PCP-SAFT',&
+         mixing='Classic',comp_string="DME,CO2",nphases=2,saft_ref="Gross2006/Gross2005")
+    p_eos => get_active_eos()
+    p_eos%mpol_param%enable_QQ = .false.
+    p_eos%mpol_param%enable_DD = .false.
+    f = hyperdual_fres_multipol(p_eos,nc,T,V,n)
+    @assertEqual(-2.2452749809708863E-002, f%f0, 1.0e-8)
+
+  end subroutine test_multipol_dq
 
 end module test_pc_saft

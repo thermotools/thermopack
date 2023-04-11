@@ -9,10 +9,10 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from .thermo import thermopack, c_len_type
+from .thermo import thermo, c_len_type
 
 
-class multiparam(thermopack):
+class multiparam(thermo):
     """
     Interface to multiparameter EOS
     """

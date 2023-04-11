@@ -2,7 +2,7 @@ module test_uv_flash
   use eoslibinit, only: init_thermo
   use thermopack_constants, only: continueOnError, LIQPH, VAPPH, SINGLEPH, TWOPH
   use uv_solver
-  use pfunit_mod
+  use funit
   implicit none
   public
 
@@ -158,10 +158,12 @@ contains
 
   @Test
   subroutine test_twoPhaseUVflash_5c()
+    !use eos, only: enthalpy
     ! Test UV flash a five-component mixture
     real, dimension(5) :: z, x, y
     real :: p, T, betaL, beta, u, v
     integer :: phase
+    !real :: h, hl, hg
 
     continueOnError = .true.
 
@@ -169,7 +171,7 @@ contains
 
     T = 298.09621346011721
     p = 7062289.7496999148
-    u = 3112.9195760054172
+    u = 3069.5644937746470
     v = 1.4877859376553640E-004
     Z = [0.94980650312939319, 4.9991460192386570E-003, &
          2.0000656425762893E-004, 4.9997302858171425E-003, &
@@ -184,12 +186,28 @@ contains
     beta = 0.9993
     betaL = 1 - beta
     call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
-    !print *,T, p, beta, betaL, phase
+    !print *,"T, p, beta, betaL, phase",T, p, beta, betaL, phase
+    !print *,"x",x
+    !print *,"y",y
     !stop
     @assertTrue(T > 0)
     @assertTrue(p > 0)
     @assertTrue(beta > 0)
     @assertTrue(betaL > 0)
+    ! x = [0.96836812134465555,        2.5679963715870718E-003,   &
+    !      2.1875276274485573E-004,   4.2248322630584999E-003,   2.4620297257953956E-002]
+    ! y = [0.94980253465437170,        4.9996657991704932E-003,   &
+    !      2.0000255631933474E-004,   4.9998959590581296E-003,   3.9997901031080342E-002]
+    ! p = 7062462.0603463287
+    ! t = 298.09736872541976
+    ! call enthalpy(298.09736872541976,7062462.0603463287,x,1,hl)
+    ! call enthalpy(298.09736872541976,7062462.0603463287,y,2,hg)
+    ! beta = 0.99978624564427243
+    ! betaL = 2.1375435572731154E-004
+    ! h = beta*hg+betal*hl
+    ! u = h - p*v
+    ! print *,u
+    ! stop
 
   end subroutine test_twoPhaseUVflash_5c
 

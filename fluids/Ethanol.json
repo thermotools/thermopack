@@ -74,6 +74,14 @@
     "bib_reference": "10.1016/j.fluid.2016.09.003",
     "Zra": 0.243
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -91,6 +99,28 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "SINTEF/Queimada2005",
+      "bib_reference": "10.1016/j.fluid.2004.08.011",
+      "a0": 8.6716E+5,
+      "b": 0.049110,
+      "alphaParams": [0.73690,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 21.532E3,
+      "beta": 8E-3,
+      "assoc_scheme": "2B"
+    },
+    "CPA-2": {
+      "ref": "Default/Oliveira2008",
+      "bib_reference": "10.1016/j.fluid.2008.02.020",
+      "a0": 0.68415E+6,
+      "b": 4.7508E-2,
+      "alphaParams": [0.93923 ,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 21336.0,
+      "beta": 1.9212E-2,
+      "assoc_scheme": "2B"
     }
   },
   "PR": {
@@ -141,5 +171,33 @@
     "assoc_scheme": "2B",
     "bib_reference": "Gross & Sadowski (2002). Doi: 10.1021/ie010954d",
     "ref": "Gross_Sadowski2002"
+  },
+  "SAFTVRMIE-1": {
+    "m": 2.25648939,
+    "sigma": 3.2903E-10,
+    "eps_depth_divk": 238.97,
+    "lambda_a": 6.0000,
+    "lambda_r": 12.282,
+    "mass": 0.0,
+    "eps": 2247.3,
+    "beta": 4.2794E-29,
+    "assoc_scheme": "3B",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
+  },
+  "SAFTVRMIE-2": {
+    "m": 1.7639,
+    "sigma": 3.6025E-10,
+    "eps_depth_divk": 307.92,
+    "lambda_a": 6.0000,
+    "lambda_r": 17.968,
+    "mass": 0.0,
+    "eps": 2380.0,
+    "beta": 150.18E-30,
+    "assoc_scheme": "3B",
+    "fh_order": 0,
+    "bib_reference": "Polishuk (2018) - 10.1016/j.molliq.2018.05.112",
+    "ref": "Polishuk"
   }
 }

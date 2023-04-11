@@ -11,6 +11,7 @@ module saft_rdf
 
 contains
 
+  !> Radial distribution function (RDF) interface for association.
   subroutine master_saft_rdf(eos,nc,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !> Depends on component indices i,j only for eosBH_pert
     use pc_saft_nonassoc, only: g_spc_saft_tvn, g_pc_saft_tvn, PCSAFT_eos, sPCSAFT_eos, calc_dhs
@@ -20,6 +21,7 @@ contains
     use cubic_eos, only: cpa_eos
     use utilities, only: get_thread_index
     use hardsphere_bmcsl, only: calc_bmcsl_gij_FMT
+    use saftvrmie_association, only: g_rdf_saftvrmie_ij_TVN
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
     integer, intent(in) :: i,j     !< component indices [-]
@@ -58,8 +60,8 @@ contains
     class is(sPCSAFT_eos)
       call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     class is(saftvrmie_eos)
-      call calc_gij_boublik(nc,T,V,n,i,j,p_eos%saftvrmie_var,g,g_T,g_V,g_n,&
-           g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      call g_rdf_saftvrmie_ij_TVN(T,v,n,i,j,p_eos%saftvrmie_var,&
+           g,g_v,g_vv,g_T,g_TT,g_Tv,g_n,g_vn,g_Tn,g_nn)
     class default
       call stoperror("master_saft_rdf: Wrong eos...")
     end select

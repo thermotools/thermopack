@@ -810,6 +810,8 @@ contains
 
   end subroutine g_ij_spc_saft
 
+  !> Equation A.13 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m2e2s3_mean(eos,T,n,m2e2s3,m2e2s3_T,m2e2s3_n,m2e2s3_TT,m2e2s3_Tn,m2e2s3_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T,n(nce) !< [K], [mol]
@@ -877,7 +879,8 @@ contains
 
   end subroutine m2e2s3_mean
 
-
+  !> Equation A.12 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m2e1s3_mean(eos,T,n,m2e1s3,m2e1s3_T,m2e1s3_n,m2e1s3_TT,m2e1s3_Tn,m2e1s3_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in) :: T,n(nce) !< [K], [mol]
@@ -946,8 +949,9 @@ contains
 
   end subroutine m2e1s3_mean
 
-
-  ! A power series approximation of a perturbation theory integral.
+  !> A power series approximation of a perturbation theory integral.
+  !! Equation A.16 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine I_1(eos,rho,T,n,i1,i1_rho,i1_t,i1_n,&
        i1_rhorho,i1_rhoT,i1_rhon,i1_TT,i1_Tn,i1_nn)
     class(sPCSAFT_eos), intent(in) :: eos
@@ -1042,6 +1046,8 @@ contains
   end subroutine I_1
 
   !> A power series approximation of a perturbation theory integral.
+  !! Equation A.17 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine I_2(eos,rho,T,n,i2,i2_rho,i2_t,i2_n,&
        i2_rhorho,i2_rhoT,i2_rhon,i2_TT,i2_Tn,i2_nn)
     class(sPCSAFT_eos), intent(in) :: eos
@@ -1137,7 +1143,9 @@ contains
 
 
   !> The quantities a_i(m_bar) and its derivatives.
-  !> This is the only routine which accesses a_mat directly.
+  !! This is the only routine which accesses a_mat directly.
+  !! Equation A.18 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine a_i(eos,n,a,a_n,a_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real,intent(in):: n(nce)    !< [mol]
@@ -1184,12 +1192,10 @@ contains
 
   end subroutine a_i
 
-
-
-
-
-  ! The quantities b_i(m_bar) and its derivatives.
-  ! The only routine which accesses b_mat directly.
+  !> The quantities b_i(m_bar) and its derivatives.
+  !! The only routine which accesses b_mat directly.
+  !! Equation A.19 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine b_i(eos,n,b,b_n,b_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real,intent(in):: n(nce)    !< [mol]
@@ -1236,7 +1242,9 @@ contains
 
   end subroutine b_i
 
-
+  !> Mean mixture segment number.
+  !! Equation A.5 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine m_bar(eos,n,mbar,mbar_n,mbar_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in)  :: n(nce)          !< [mol]
@@ -1257,8 +1265,8 @@ contains
   end subroutine m_bar
 
 
-  ! The compressibility term, defined as
-  ! (1 + Z^{hc} + rho*dZ^{hc}/drho)^{-1}
+  !> The compressibility term, defined as
+  !! (1 + Z^{hc} + rho*dZ^{hc}/drho)^{-1}
   subroutine C_1(eos,rho,T,n,c1,c1_rho,c1_t,c1_n,&
        c1_rhorho,c1_rhoT,c1_rhon,c1_TT,c1_Tn,c1_nn)
     class(sPCSAFT_eos), intent(in) :: eos
@@ -1358,9 +1366,10 @@ contains
 
   end subroutine C_1
 
-
-  ! Calculates the functions zeta(0),...,zeta(3).
-  ! zeta(3) equals eta, the packing fraction.
+  !> Calculates the functions zeta(0),...,zeta(3).
+  !! zeta(3) equals eta, the packing fraction.
+  !! Equation A.8 of the PC-SAFT article (doi: 10.1021/ie0003887)
+  !! See also PC-SAFT implementation memo in doc folder.
   subroutine zeta(eos,rho,T,n,z,z_rho,z_T,z_n,z_rhorho,z_rhoT,z_rhon,z_TT,z_Tn,z_nn)
     class(sPCSAFT_eos), intent(in) :: eos
     real, intent(in)    :: rho, T, n(nce) !< [mol/m^3], [K], [mol]
@@ -1878,26 +1887,6 @@ contains
     call F_HS_PC_SAFT_TVn(eos,T,V,n,F_HS,F_HS_T,F_HS_V,F_HS_n,F_HS_TT,F_HS_TV,&
          F_HS_Tn,F_HS_VV,F_HS_Vn,F_HS_nn)
     call F_chain_PC_SAFT_TVn(eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
-    ! if (present(F)) F = 0
-    ! if (present(F_T)) F_T = 0
-    ! if (present(F_V)) F_V = 0
-    ! if (present(F_n)) F_n = 0
-    ! if (present(F_TT)) F_TT = 0
-    ! if (present(F_TV)) F_TV = 0
-    ! if (present(F_Tn)) F_Tn = 0
-    ! if (present(F_VV)) F_VV = 0
-    ! if (present(F_Vn)) F_Vn = 0
-    ! if (present(F_nn)) F_nn = 0
-    ! if (present(F)) F_HS = 0
-    ! if (present(F_T)) F_HS_T = 0
-    ! if (present(F_V)) F_HS_V = 0
-    ! if (present(F_n)) F_HS_n = 0
-    ! if (present(F_TT)) F_HS_TT = 0
-    ! if (present(F_TV)) F_HS_TV = 0
-    ! if (present(F_Tn)) F_HS_Tn = 0
-    ! if (present(F_VV)) F_HS_VV = 0
-    ! if (present(F_Vn)) F_HS_Vn = 0
-    ! if (present(F_nn)) F_HS_nn = 0
 
     if (present(F)) F = F + F_HS
     if (present(F_T)) F_T = F_T + F_HS_T
@@ -2057,6 +2046,7 @@ contains
   end subroutine F_PC_SAFT_TVn
 
   !> Get ln(g_ii) with differentials
+  !! Boublik (doi: 10.1063/1.1673824) RDF at contact for molecule i in a mixture
   subroutine lng_ii_PC_SAFT_TVn(T,V,n,i,lng,lng_T,lng_V,lng_n,lng_TT,lng_TV,lng_Tn,lng_VV,lng_Vn,lng_nn)
     use hardsphere_bmcsl, only: calc_bmcsl_lngij, calc_bmcsl_zeta_and_derivatives
     use thermopack_var, only: get_active_eos, base_eos_param, nce
@@ -2184,6 +2174,8 @@ contains
 
 end module pc_saft_nonassoc
 
+!> Test differentials of PC-SAFT Hard-Chain Reference Contribution.
+!! Comparison of numerical and analytical differentials.
 subroutine test_PCSAFT_Fres_HC()
   use thermopack_var, only: get_active_thermo_model, thermo_model, nce
   use pc_saft_nonassoc, only: get_PCSAFT_eos_pointer, PCSAFT_eos, &
@@ -2246,7 +2238,8 @@ subroutine test_PCSAFT_Fres_HC()
   stop
 end subroutine test_PCSAFT_Fres_HC
 
-
+!> Test differentials of PC-SAFT reduced Helmholtz energy.
+!! Comparison of numerical and analytical differentials.
 subroutine test_PCSAFT_Fres()
   use thermopack_var, only: get_active_thermo_model, thermo_model, nce
   use pc_saft_nonassoc, only: get_PCSAFT_eos_pointer, PCSAFT_eos, &

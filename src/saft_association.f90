@@ -37,7 +37,7 @@ contains
   subroutine Delta_kl(eos,nc,Delta,Delta_T,Delta_V,Delta_n,&
        Delta_TT,Delta_TV,Delta_Tn,Delta_VV,Delta_Vn,Delta_nn)
     use saft_globals, only: assoc_covol_binary
-    use eosdata, only: eosSAFT_VR_MIE, eosOPC_SAFT
+    use eosdata, only: eosOPC_SAFT, eosSAFT_VR_MIE
     use saft_rdf
     ! Input.
     class(base_eos_param), intent(inout) :: eos
@@ -66,7 +66,7 @@ contains
     integer :: k,l
     integer :: ii, jj, k1, k2, l1, l2
     real :: d1, d2
-    real :: covol, expo, covol_T, covol_TT
+    real :: covol, covol_T, covol_TT, expo
     logical :: fir_der_present, sec_der_present
     real :: boltzmann_fac(numAssocSites, numAssocSites)
     real :: T

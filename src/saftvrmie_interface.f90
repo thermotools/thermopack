@@ -39,18 +39,41 @@ contains
   subroutine init_saftvrmie(nc,comp,eos,ref,mixing)
     use thermopack_var, only: gendata_pointer, base_eos_param
     use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use AssocSchemeUtils, only: no_assoc
+    use saftvrmie_association, only: calc_aij
     integer, intent(in)           :: nc          !< Number of components.
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     class(base_eos_param), intent(inout) :: eos       !< Underlying cubic equation of state.
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
-    !cbeos%name = "SAFT-VR-MIE"
+    integer :: i,j
     select type(p_eos => eos)
     type is (saftvrmie_eos)
       call init_saftvrmie_containers(nc,comp,p_eos,ref,mixing)
+      !
+      ! Is any of the components self-assocociating
+      saftvrmie_param%isSelfAssociating = .false.
+      do i=1,nc
+        if (saftvrmie_param%comp(i)%assoc_scheme /= no_assoc) then
+          saftvrmie_param%isSelfAssociating = .true.
+          exit
+        endif
+      end do
+      if (saftvrmie_param%isSelfAssociating) then
+        call saftvrmie_param%hbc%allocate(nc)
+        saftvrmie_param%hbc%sigma_ij%d = saftvrmie_param%sigma_ij
+        do i=1,nc
+          do j=1,nc
+            if (saftvrmie_param%comp(i)%assoc_scheme /= no_assoc .and. &
+                 saftvrmie_param%comp(j)%assoc_scheme /= no_assoc) then
+              call calc_aij(saftvrmie_param%lambda_r_ij(i,j), saftvrmie_param%hbc%aij(:,:,i,j))
+            endif
+          enddo
+        enddo
+      endif
+      ! NOTE: Association is added in the saft_interface module
     end select
-    ! Association is added in the saft_interface module
 
     ! Set consistent Rgas
     Rgas = N_Avogadro*kB_const
@@ -574,7 +597,7 @@ contains
     endif
   end function calc_alpha_saftvrmie
 
-  !> Calculate reduced molar dispersion contribution to Helmholts free energy
+  !> Calculate reduced dispersion contribution to Helmholts free energy
   !!
   !! \author Morten Hammer, February 2022
   subroutine calc_saftvrmie_dispersion(eos,nc,T,V,n,F,F_T,F_V,F_n,F_TT,&
@@ -949,7 +972,9 @@ contains
   subroutine hard_sphere_reference(hs_ref, exact_binary_dhs, enable_hs_extra)
     use saftvrmie_containers, only: svrm_opt
     ! Input
-    integer, intent(in) :: hs_ref !< Hard-sphere reference
+    integer, intent(in) :: hs_ref !< Hard-sphere reference. Options:
+    ! LAFITTE_HS_REF=1, SINGLE_COMP_HS_REF=2, ADDITIVE_HS_REF=3, NON_ADD_HS_REF=4
+    ! See Hammer et al 2020 (doi: 10.1063/1.5142771) for details on hard-sphere references.
     logical, optional, intent(in) :: exact_binary_dhs !< How to calculate cross d_ij
     logical, optional, intent(in) :: enable_hs_extra !< Correction of A_HS due to non-additive d_ij
     !
@@ -2853,6 +2878,7 @@ subroutine test_a_chain_pure(Ti,Vi,ni,doInit,qc)
   stop
 end subroutine test_a_chain_pure
 
+!> Test SAFT-VR Mie EOS differentials by one-sided numerical differentiation. Used for debugging only.
 subroutine test_fres(Ti,Vi,ni)
   use thermopack_constants
   use saftvrmie_containers

@@ -1,6 +1,6 @@
 module test_saft
   use eoslibinit, only: init_thermo
-  use pfunit_mod
+  use funit
   use saft_interface
   use saft_association
   use thermopack_var, only: nce, base_eos_param, get_active_eos

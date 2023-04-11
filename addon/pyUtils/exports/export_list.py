@@ -207,6 +207,9 @@ append_export("extrapolate_mu_in_inverse_radius", "mut_solver")
 append_export("solve_laplace", "mut_solver")
 append_export("map_meta_isotherm", "mut_solver")
 
+append_export("fres_multipol", "multipol")
+append_export("multipol_model_control", "multipol")
+
 append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
 
 append_export("setphtolerance", "ph_solver")
@@ -253,6 +256,11 @@ append_export("calc_saft_hard_sphere", "saft_interface")
 append_export("test_fmt_compatibility", "saft_interface")
 append_export("setcpaformulation", "saft_interface")
 append_export("calc_assoc_phi", "saft_interface")
+append_export("calc_saft_dispersion", "saft_interface")
+append_export("calc_hard_sphere_diameter", "saft_interface")
+append_export("pc_saft_get_pure_params", "saft_interface")
+append_export("pc_saft_set_pure_params", "saft_interface")
+append_export("de_broglie_wavelength", "saft_interface")
 
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")

@@ -33,7 +33,7 @@ plt.title("SAFT-VR Mie phase diagram")
 
 # Set parameters for LJ
 m = 1
-sigma = 1.0e-10
+sigma = 3.0e-10
 eps = 30.0
 lambda_a = 6.0
 lambda_r = 12.0

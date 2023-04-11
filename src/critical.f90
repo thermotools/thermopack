@@ -634,7 +634,6 @@ contains
     !real :: Fun(2), dF(2,2), Fun2(2), numJac(2,2)
     type(nonlinear_solver) :: solver
     real :: tpc,ppc,zpc,vpc,b
-    logical :: needalt, isCPA
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
 
@@ -644,8 +643,6 @@ contains
     param(1:nc) = z
     param(nc+1:2*nc) = sqrt(z)
 
-    needalt = act_mod_ptr%need_alternative_eos
-    isCPA = (act_mod_ptr%eosidx == eosCPA)
     ! Calculate co-volume
     b = get_b_linear_mix(z)
     if (v <= 0.0) then
@@ -687,11 +684,7 @@ contains
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
     call get_templimits(xmin(1), xmax(1))
-    if (needalt .and. .not. isCPA) then
-      xmin(2) = 1.0e-8
-    else
-      xmin(2) = b + Small ! m3/mol
-    endif
+    xmin(2) = b + Small ! m3/mol
     xmax(2) = 100.0
     solver%ls_max_it = 3
     call nonlinear_solve(solver,critFunTV,critJacTV,critJacTV,limit_dx,&

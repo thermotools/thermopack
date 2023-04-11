@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -119,7 +117,6 @@ class saftvrqmie(saftvrmie):
                 self.get_pure_fluid_param(i+1)
 
         self.set_tmin(minimum_temperature)
-
 
     def get_feynman_hibbs_order(self, c):
         """Get Feynman-Hibbs order

@@ -8,6 +8,8 @@
 module pc_saft_parameters
   use thermopack_constants, only: Rgas => Rgas_default, verbose
   use pc_saft_datadb, only: nPCmodels, PCarray, PCmaxkij, PCkijdb
+  use eosdata, only: eosPC_SAFT, eosSPC_SAFT, eosOPC_SAFT, &
+       eosSPCP_SAFT, eosPCP_SAFT
   implicit none
   save
 
@@ -37,10 +39,10 @@ contains
     do while (idx <= nPCmodels)
       if ((eosidx==PCarray(idx)%eosidx) .and. &
            str_eq(compName, PCarray(idx)%compName)) then
-        if (string_match(param_ref,PCarray(idx)%ref)) then
+        if (string_match(PCarray(idx)%ref, param_ref)) then
           found = .true.
           exit
-        elseif (string_match("DEFAULT", PCarray(idx)%ref)) then
+        elseif (string_match(PCarray(idx)%ref, "DEFAULT")) then
           idx_default = idx
         endif
       endif
@@ -59,7 +61,6 @@ contains
         call stoperror("The PC-SAFT parameters don't exist.")
       endif
     end if
-
   end function getPCdataIdx
 
   !> Retrieve binary interaction parameter for components uid1 and uid2.
@@ -74,7 +75,7 @@ contains
     integer :: idx, idx_default, eosidx_local
     logical :: match_11_22, match_12_21, found
 
-    if (eosidx == eosOPC_SAFT) then
+    if (eosidx == eosOPC_SAFT .or. eosidx == eosPCP_SAFT) then
       eosidx_local = eosPC_SAFT
     else
       eosidx_local = eosidx
@@ -82,7 +83,8 @@ contains
     call getkij()
 
     ! Use PC-SAFT kij with sPC-SAFT
-    if (eosidx == eosSPC_SAFT .and. .not. found) then
+    if ((eosidx == eosSPC_SAFT .or. eosidx == eosSPCP_SAFT) &
+         .and. .not. found) then
       eosidx_local = eosPC_SAFT
       call getkij()
       if (found) print *,"Using PC-SAFT kij with simplified EOS: "//trim(uid1)//"-"//trim(uid2)
@@ -137,8 +139,9 @@ contains
   end subroutine getPcSaftKij_allComps
 
   subroutine getPcSaftPureParams_allComps(nc,comp,eosidx,param_ref,&
-       found,m,sigma,eps_depth_divk,eps,beta,scheme)
+       found,m,sigma,eps_depth_divk,eps,beta,scheme,mu,Q)
     use compdata, only: gendata_pointer
+    use numconstants, only: small
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
@@ -148,18 +151,22 @@ contains
     logical, intent(out) :: found(nc)
     real, intent(out) :: m(nc), sigma(nc), eps_depth_divk(nc), eps(nc), beta(nc)
     integer, intent(out) :: scheme(nc)
+    real, intent(out) :: mu(nc), Q(nc)
     ! Locals
     integer :: ic
 
     do ic=1,nc
       call getPcSaftpureParams_singleComp(comp(ic)%p_comp%ident,eosidx,param_ref,&
-           found(ic),m(ic),sigma(ic),eps_depth_divk(ic),eps(ic),beta(ic),scheme(ic))
+           found(ic),m(ic),sigma(ic),eps_depth_divk(ic),eps(ic),beta(ic),scheme(ic),&
+           mu(ic),Q(ic))
+      ! Check if electrical moments where overrided?
+      if (abs(mu(ic)) < small) mu(ic) = comp(ic)%p_comp%mu_dipole
+      if (abs(Q(ic)) < small) Q(ic) = comp(ic)%p_comp%q_quadrupole
     end do
-
   end subroutine getPcSaftPureParams_allComps
 
   subroutine getPcSaftpureParams_singleComp(compName,eosidx,param_ref,&
-       found,m,sigma,eps_depth_divk,eps,beta,scheme)
+       found,m,sigma,eps_depth_divk,eps,beta,scheme,mu,Q)
     ! Input
     character(len=*), intent(in) :: compName, param_ref
     integer, intent(in) :: eosidx
@@ -167,6 +174,7 @@ contains
     logical, intent(out) :: found
     real, intent(out) :: m, sigma, eps_depth_divk, eps, beta
     integer, intent(out) :: scheme
+    real, intent(out) :: mu, Q
     ! Locals
     integer :: idx
 
@@ -184,6 +192,8 @@ contains
     eps = PCarray(idx)%eps
     beta = PCarray(idx)%beta
     scheme = PCarray(idx)%assoc_scheme
+    mu = PCarray(idx)%mu
+    Q = PCarray(idx)%Q
   end subroutine getPcSaftpureParams_singleComp
 
 

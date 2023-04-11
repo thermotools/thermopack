@@ -10,6 +10,7 @@ from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, saft_eos_to_idx, \
     get_assoc_scheme_parameter
 from binarydata import binaries, binary_list
+from shutil import copy
 
 
 class pcsaft_component(component):
@@ -47,6 +48,10 @@ class pcsaft_component(component):
             3*I + 'beta = {}'.format(print_float(self.comp[tag]["beta"])) + ", &")
         code_lines.append(3*I + 'assoc_scheme = {}, &'.format(
             get_assoc_scheme_parameter(self.comp[tag]["assoc_scheme"])))
+        mu = self.comp[tag]["mu"] if "mu" in self.comp[tag] else 0.0
+        code_lines.append(3*I + 'mu = {}, &'.format(print_float(mu)))
+        Q = self.comp[tag]["Q"] if "Q" in self.comp[tag] else 0.0
+        code_lines.append(3*I + 'Q = {}, &'.format(print_float(Q)))
         code_lines.append(3*I + "bib_ref = \"" +
                           self.comp[tag]["bib_reference"] + "\", &")
         code_lines.append(3*I + "ref = \"" + self.comp[tag]["ref"] + "\" &")
@@ -269,6 +274,9 @@ def PCSAFT_class_definition():
     classes.append(2*I+"real :: eps  !< [J/mol].")
     classes.append(2*I+"real :: beta !< [-]. Also known as kappa in SAFT literature.")
     classes.append(2*I+"integer :: assoc_scheme !< Association scheme.")
+    classes.append(2*I+"! Electical moment parameters.")
+    classes.append(2*I+"real :: mu  !< Dipole-moment [D]")
+    classes.append(2*I+"real :: Q !< Quadrupol-moment [ÅD]")
     classes.append(2*I+"! Bibliograpic reference")
     classes.append(2*I+"character(len=bibref_len) :: bib_ref")
     classes.append(2*I+"! Parameter set")
@@ -335,3 +343,4 @@ if __name__ == "__main__":
     code_lines += bin_code
     code_lines += footer
     save_PCSAFT_fortran_file(code_lines)
+    copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')

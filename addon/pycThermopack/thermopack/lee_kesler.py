@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -9,10 +7,10 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from .thermo import thermopack, c_len_type
+from .thermo import thermo, c_len_type
 
 
-class lee_kesler(thermopack):
+class lee_kesler(thermo):
     """
     Interface to Lee-Kesler model
     """

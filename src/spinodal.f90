@@ -995,7 +995,7 @@ contains
     real :: rho_of_meta_extremum !< [mol/m^3]
     ! Locals:
     real               :: rho_min, rho_max, rho_init, rho, rho_old, drho, p_rho, p_rhorho, &
-         max_drho, p, s
+         max_drho, s
     real, parameter    :: rel_eps=1e-8, rho_extrem_rel_tol=machine_prec*1e3, &
          dpdrho_extrem_abs_tol=machine_prec*1e8
     integer            :: n_iter

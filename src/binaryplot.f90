@@ -1413,6 +1413,7 @@ contains
         ! Set the constant parameters of the objective function.
         param(1) = P
         call get_templimits(Tmin,Tmax)
+        Tmax = min(T, Tmax)
         ! Find f=0 inside the bracket.
         call bracketing_solver(Tmin,Tmax,fun_psat,T,solver_psat,param)
         ! Check for successful convergence
@@ -2304,10 +2305,10 @@ contains
     logical :: isSuperCritical
 
     if (spec == 'P') then
-      ofile = 'binaryPxy'
+      ofile = 'binaryTxy'
       ispec = PSPEC
     else if (spec == 'T') then
-      ofile = 'binaryTxy'
+      ofile = 'binaryPxy'
       ispec = TSPEC
     else
       call StopError('map_binary_envelope: wrong specification!')

@@ -151,7 +151,7 @@ contains
   !! Store results in saftvrmie_var
   !!
   !! \author Morten Hammer, February 2018
-  subroutine calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta)
+  subroutine calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta,is_rho)
     ! Input
     integer, intent(in) :: nc !< Number of components
     real, intent(in) :: T !< Temperature [K]
@@ -160,12 +160,16 @@ contains
     integer, intent(in) :: difflevel !< 0-2. Differential order
     type(saftvrmie_dhs), intent(in) :: dhs
     type(saftvrmie_zeta), intent(inout) :: zeta
+    logical, optional, intent(in) :: is_rho
     ! Output
     ! Locals
     integer :: i,k,l
     real :: prefactor, ns
     ns = sum(saftvrmie_param%ms*n)
     prefactor = pi*N_AVOGADRO/(6.0*V*ns)
+    if (present(is_rho)) then
+      if (is_rho) prefactor = N_AVOGADRO/(V*ns)
+    endif
     zeta%zx = 0.0
     do i=1,nc
        zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*&

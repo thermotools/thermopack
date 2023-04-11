@@ -113,9 +113,9 @@ contains
       allocate(p_eos, source=cpa_eos_constructor(nc, eosstr), stat=istat)
     case(eosPC_SAFT)
       select case(eos_subindex)
-      case(eosOPC_SAFT)
+      case(eosOPC_SAFT, eosPCP_SAFT)
         allocate(PCSAFT_eos :: p_eos, stat=istat)
-      case(eosSPC_SAFT)
+      case(eosSPC_SAFT,eosSPCP_SAFT)
         allocate(sPCSAFT_eos :: p_eos, stat=istat)
       case default
         istat = 1

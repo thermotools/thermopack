@@ -28,6 +28,30 @@ module cubic_eos
     real :: lijvalue
   end type lijdatadb
 
+  !> Temperature-independent interaction parameters for
+  !> * the a parameter in the vdW mixing rules,
+  !> * the eps parameter (can be modeled by arithmetic or geometric mean)
+  !> * the beta parameter (can be modeled by arithmetic or geometric mean)
+  !> Geometric mean is numbered 0, arithmetic mean is numbered 1.
+  !> (It also depends on the scheme used for the two components, but we assume that
+  !> each component only has one scheme stored in the database.)
+  ! ------------------------------------------------------------------------------------------------
+  type :: CPAkijdata
+    character(len=eosid_len) :: eosid
+    character(len=uid_len) :: uid1, uid2 ! Component names
+    character(len=ref_len) :: ref ! Set reference
+    character(len=bibref_len) :: bib_ref ! Set bib-reference
+    real :: kij_a ! Binary interaction parameter for cubic a parameter
+    ! Gives the combination models for eps and beta (in that order). 0 is
+    ! geometric mean, 1 is arithmetic mean. For example, eps_comb_rule=ariComb
+    ! and beta_comb_rule=geoComb mean that
+    ! eps_ij=0.5*(eps_i+eps_j), beta_ij=sqrt(beta_i*beta_j).
+    integer :: eps_comb_rule
+    integer :: beta_comb_rule
+    real :: kij_eps  ! kij for epsilon, e.g. eps_ij = (eps_i+eps_j)*(1-kij_eps)/2
+    real :: kij_beta ! kij for beta, e.g. beta_ij = sqrt(beta_i*beta_j)*(1-kij_beta)
+  end type CPAkijdata
+
   type :: interGEdatadb
     character(len=eosid_len) :: eosid
     character(len=eosid_len) :: mruleid

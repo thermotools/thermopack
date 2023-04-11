@@ -1,6 +1,6 @@
 module test_hyperdual
   !> \author Morten Hammer 2023
-  use pfunit_mod
+  use funit
   use thermopack_var
   use thermopack_constants
   use hyperdual_mod

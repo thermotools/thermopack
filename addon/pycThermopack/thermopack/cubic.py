@@ -1,18 +1,17 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
+import warnings
 # Import platform to detect OS
 from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from .thermo import thermopack, c_len_type
+from .thermo import thermo, c_len_type
 
 
-class cubic(thermopack):
+class cubic(thermo):
     """
     Interface to cubic
     """
@@ -59,6 +58,14 @@ class cubic(thermopack):
 
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
+        else:
+            missing_args = []
+            if comps is None:
+                missing_args.append('comps')
+            if eos is None:
+                missing_args.append('eos')
+            warnings.warn('Cubic EoS not completely initialized, due to missing parameter(s) :'+str(missing_args)+'.\n'
+                          'Complete initialisation by explicitly calling this classes "init" method.', Warning)
 
     #################################
     # Init

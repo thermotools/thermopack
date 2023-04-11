@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -18,15 +16,17 @@ class pcsaft(saft):
     """
     Interface to PC-SAFT model
     """
-    def __init__(self, comps=None, parameter_reference="Default"):
+    def __init__(self, comps=None, parameter_reference="Default", simplified=False, polar=False):
         """Initialize PC-SAFT model in thermopack
 
-        If no are specified, model must be initialized for specific components later by direct call to 'init'.
+        If no components are specified, model must be initialized for specific components later by direct call to 'init'.
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
         Args:
             comps (str, optional): Comma separated list of component names
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
+            simplified (bool): Use simplified PC-SAFT (sPC-SAFT: 10.1021/ie020753p) (Default False)
+            polar (bool): Use dipole and quadrupole contributions PCP-SAFT (10.1002/aic.10502, 10.1002/aic.10683 and 10.1021/jp072619u) (Default False)
         """
         # Load dll/so
         saft.__init__(self)
@@ -50,29 +50,32 @@ class pcsaft(saft):
         self.nc = None
 
         if comps is not None:
-            self.init(comps, parameter_reference=parameter_reference)
+            self.init(comps, parameter_reference=parameter_reference, simplified=simplified, polar=polar)
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, parameter_reference="Default", simplified=False):
+    def init(self, comps, parameter_reference="Default", simplified=False, polar=False):
         """Initialize PC-SAFT model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             simplified (bool): Use simplified PC-SAFT (sPC-SAFT: 10.1021/ie020753p) (Default False)
+            polar (bool): Use dipole and quadrupole contributions PCP-SAFT (10.1002/aic.10502, 10.1002/aic.10683 and 10.1021/jp072619u) (Default True)
         """
         self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
-        c_simplified = c_int(1 if simplified else 0)
+        simplified_c = c_int(1 if simplified else 0)
+        polar_c = c_int(1 if polar else 0)
 
         self.eoslibinit_init_pcsaft.argtypes = [c_char_p,
                                                 c_char_p,
+                                                POINTER( c_int ),
                                                 POINTER( c_int ),
                                                 c_len_type,
                                                 c_len_type]
@@ -81,7 +84,8 @@ class pcsaft(saft):
 
         self.eoslibinit_init_pcsaft(comp_string_c,
                                     ref_string_c,
-                                    byref( c_simplified ),
+                                    byref( simplified_c ),
+                                    byref( polar_c ),
                                     comp_string_len,
                                     ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
@@ -197,7 +201,8 @@ class pcsaft(saft):
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
-        """Calculate logarithm og g at contact gitvne temperature, volume and mol numbers.
+        """Calculate logarithm of the radial distribution function at contact given temperature, volume and mol numbers.
+        Differentials are computed as functions of (T, V, n).
 
         Args:
             temp (float): Temperature (K)
@@ -225,16 +230,10 @@ class pcsaft(saft):
         n_c = (c_double * len(n))(*n)
         i_c = c_int(i)
 
-        null_pointer = POINTER(c_double)()
-        lng_t_c = null_pointer if lng_t is None else c_double(0.0)
-        lng_v_c = null_pointer if lng_v is None else c_double(0.0)
-        lng_n_c = null_pointer if lng_n is None else (c_double * len(n))(0.0)
-        lng_tt_c = null_pointer if lng_tt is None else c_double(0.0)
-        lng_vv_c = null_pointer if lng_vv is None else c_double(0.0)
-        lng_tv_c = null_pointer if lng_tv is None else c_double(0.0)
-        lng_tn_c = null_pointer if lng_tn is None else (c_double * len(n))(0.0)
-        lng_vn_c = null_pointer if lng_vn is None else (c_double * len(n))(0.0)
-        lng_nn_c = null_pointer if lng_nn is None else (c_double * len(n)**2)(0.0)
+        optional_flags = [lng_t, lng_v, lng_n, lng_tt, lng_vv, lng_tv, lng_tn, lng_vn, lng_nn]
+        optional_arrayshapes = [(0,), (0,), (len(n),), (0,), (0,), (0,), (len(n),), (len(n),), (len(n), len(n))]
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
+        lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c = optional_ptrs
 
         self.s_lng_ii_pc_saft_tvn.argtypes = [POINTER(c_double),
                                               POINTER(c_double),
@@ -269,29 +268,6 @@ class pcsaft(saft):
                                   lng_nn_c)
 
         return_tuple = (lng_c.value, )
-        if not lng_t is None:
-            return_tuple += (lng_t_c.value, )
-        if not lng_v is None:
-            return_tuple += (lng_v_c.value, )
-        if not lng_n is None:
-            return_tuple += (np.array(lng_n_c), )
-        if not lng_tt is None:
-            return_tuple += (lng_tt_c.value, )
-        if not lng_tv is None:
-            return_tuple += (lng_tv_c.value, )
-        if not lng_vv is None:
-            return_tuple += (lng_vv_c.value, )
-        if not lng_tn is None:
-            return_tuple += (np.array(lng_tn_c), )
-        if not lng_vn is None:
-            return_tuple += (np.array(lng_vn_c), )
-        if not lng_nn is None:
-            lng_nn = np.zeros((len(n), len(n)))
-            for i in range(len(n)):
-                for j in range(len(n)):
-                    lng_nn[i][j] = lng_nn_c[i + j*len(n)]
-            return_tuple += (lng_nn, )
-
         return return_tuple
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
@@ -345,18 +321,15 @@ class pcsaft(saft):
                               phi_tn_c,
                               phi_nn_c)
 
-        return_dict = {}
-        if not phi is None:
-            return_dict["phi"] = phi_c.value
-        if not phi_T is None:
-            return_dict["phi_t"] = phi_t_c.value
-        if not phi_n is None:
-            return_dict["phi_n"] = np.array(phi_n_c).reshape((self.nc, 6), order='F')
-        if not phi_tt is None:
-            return_dict["phi_tt"] = phi_tt_c.value
-        if not phi_tn is None:
-            return_dict["phi_tn"] = np.array(phi_tn_c).reshape((self.nc, 6), order='F')
-        if not phi_nn is None:
-            return_dict["phi_nn"] = np.array(phi_nn_c).reshape((self.nc, self.nc, 6, 6), order='F')
+        optional_ptrs = [lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c]
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 
-        return return_dict
+        return return_tuple
+
+class PCP_SAFT(pcsaft):
+    def __init__(self, comps, parameter_reference="Default"):
+        super().__init__(comps, parameter_reference=parameter_reference, polar=True, simplified=False)
+
+class SPC_SAFT(pcsaft):
+    def __init__(self, comps, parameter_reference="Default"):
+        super().__init__(comps, parameter_reference=parameter_reference, polar=False, simplified=True)

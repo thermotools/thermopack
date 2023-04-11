@@ -75,6 +75,14 @@
     "bib_reference": "",
     "Zra": 0.2684
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "MC-1": {
       "ref": "Default",
@@ -93,6 +101,17 @@
         -0.305,
         0.542
       ]
+    },
+    "CPA-1": {
+      "ref": "Default/Kontogeorgis-Folas2010",
+      "bib_reference": "10.1002/9780470747537",
+      "a0": 18.198E+5,
+      "b": 0.091008,
+      "alphaParams": [0.79858,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.0,
+      "assoc_scheme": "NONE"
     }
   },
   "PR": {

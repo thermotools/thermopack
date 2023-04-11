@@ -406,7 +406,7 @@ contains
     ! Locals
     real :: a3_r,a3_x,a3_rr,a3_xx,a3_rx,fac,rho
     real :: eps !< Well depth div. kB (K)
-    real :: tau, tau_T, tau_TT !< 
+    real :: tau, tau_T, tau_TT !<
     real :: s !< Sigma
     integer :: difflevel
     if (eos%use_Lafitte_a3) then

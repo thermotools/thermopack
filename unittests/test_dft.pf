@@ -1,6 +1,6 @@
 module test_dft
   !> \author Morten Hammer 2023
-  use pfunit_mod
+  use funit
   use thermopack_var
   use thermopack_constants
   use saft_interface
@@ -24,8 +24,8 @@ contains
     integer, parameter :: ncomp = 1
     real :: n(ncomp)
     real :: T, V
-    real :: F,F_T,F_n(ncomp),F_TT
-    real :: phi,phi_T,phi_n(ncomp,0:5),phi_TT
+    real :: F
+    real :: phi
     real :: n_fmt(ncomp,0:5)
     real, allocatable :: Xk(:)
     class(base_eos_param), pointer :: eos

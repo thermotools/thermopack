@@ -30,11 +30,10 @@ module association_var
     !> Model parameters that control the association strength.
     real, allocatable, dimension(:,:) :: beta_kl  !< Effective association volume between site Ai and Bj (called \beta^{A_i B_j} in CPA).
     real, allocatable, dimension(:,:) :: eps_kl   !< Association energy.
-
     type(association_state) :: state
-
   contains
     procedure, public :: dealloc
+    procedure, public :: print
 !    procedure, public :: allocate_and_init => association_allocate_and_init
   end type association
 
@@ -45,8 +44,6 @@ contains
 
   subroutine dealloc(assoc)
     use utilities, only: deallocate_real_2
-    ! Input:
-    ! Created object:
     class(association), intent(inout) :: assoc
     ! Locals
     integer :: ierr
@@ -100,5 +97,17 @@ contains
   !  assoc_p%V = V
   !  assoc_p%n = n
   !end subroutine init_assoc_state
+
+  subroutine print(assoc)
+    class(association), intent(in) :: assoc
+    !
+    print *,"saft_model:",assoc%saft_model
+    print *,"numAssocSites:",assoc%numAssocSites
+    print *,"numAssocComps:",assoc%numAssocComps
+    print *,"compIdcs:",assoc%compIdcs
+    print *,"comp_vs_sites:",assoc%comp_vs_sites
+    print *,"beta_kl:",assoc%beta_kl
+    print *,"eps_kl:",assoc%eps_kl
+  end subroutine print
 
 end module association_var

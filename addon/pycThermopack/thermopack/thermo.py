@@ -1,18 +1,50 @@
+"""
+This is the core of the pythod interface to ThermoPack. All equation of state classes on the python side inherit from
+the thermo class in this file. Please note that the docstrings of the methods in this file are used to generate
+the markdown-documentation found elsewhere (the ThermoTools wiki, etc.). Therefore, new methods that are implemented
+must conform to the following style guide for docstrings:
+
+    1 : The first line of the docstring must include a "section name" (i.e. No leading blank line)
+    2 : The leading description of the method must follow directly on the line following the "section name"
+        (i.e. no intermediate blank line).
+    3 : There must be (at least) one blank line following the leading description
+    4 : The argument list, and return list, must be preceded by a line containing the word "Args" or "Returns"
+    5 : The argument list, and return list, must be written as 'param_name (type) : Description', where the essential
+        part is the colon is included as a separator.
+
+    An example is:
+
+        def myfunc(self, p1, p2, p3, p4=None, p5=<something>):
+                '''Section name
+                Description of what this function does (a kind of header). We can write lots of stuff here
+                NOTE the double lineshift here:
+
+                Args:
+                     p1 (int) : The lineshift before 'Args' is necessary.
+                     p2 (float) : The colons here are also necessary.
+                     p3 (bool) : SomethingSomething
+                     p4 (Optional, list) : etc.
+                     p5 (Optional, <Something>) : This is the last argument
+                Returns:
+                    (float) : The colon here is also necessary.
+                '''
+"""
 import sys
 from ctypes import *
 from os import path
+import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
-class thermopack(object):
+class thermo(object):
     """
     Interface to thermopack
     """
 
     def __init__(self):
-        """
+        """Internal
         Load libthermopack.(so/dll) and initialize function pointers
         """
         pf_specifics = platform_specifics.get_platform_specifics()
@@ -210,29 +242,39 @@ class thermopack(object):
         self.add_eos()
 
     def __del__(self):
-        """Delete FORTRAN memory allocated for this instance"""
+        """Internal
+        Delete FORTRAN memory allocated for this instance
+        """
         self.delete_eos()
 
     def activate(self):
-        """Activate this instance of thermopack parameters for calculation"""
+        """Internal
+        Activate this instance of thermopack parameters for calculation
+        """
         self.s_activate_model.argtypes = [POINTER(c_int)]
         self.s_activate_model.restype = None
         self.s_activate_model(self.model_index_c)
 
     def add_eos(self):
-        """Allocate FORTRAN memory for this class instance"""
+        """Internal
+        Allocate FORTRAN memory for this class instance
+        """
         self.s_add_eos.argtypes = None
         self.s_add_eos.restype = c_int
         self.model_index_c = c_int(self.s_add_eos())
 
     def delete_eos(self):
-        """de-allocate FORTRAN memory for this class instance"""
+        """Internal
+        de-allocate FORTRAN memory for this class instance
+        """
+        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
         self.model_index_c = None
 
     def get_model_id(self):
-        """Get model identification
+        """Internal
+        Get model identification
 
         Returns:
             str: Eos name
@@ -250,7 +292,8 @@ class thermopack(object):
         return eosid
 
     def get_export_name(self, module, method):
-        """Generate library export name based on module and method name
+        """Internal
+        Generate library export name based on module and method name
 
         Args:
             module (str): Name of module
@@ -274,7 +317,8 @@ class thermopack(object):
                     kij_ref="Default", alpha_ref="Default", saft_ref="Default",
                     b_exponent=None, TrendEosForCp=None, cptype=None,
                     silent=None):
-        """Initialize thermopack
+        """Internal
+        Initialize thermopack
 
         Args:
             eos (str): Equation of state
@@ -403,7 +447,8 @@ class thermopack(object):
                                     TrendEosForCp_len)
 
     def init_peneloux_volume_translation(self, parameter_reference="Default"):
-        """Initialialize Peneloux volume translations
+        """Internal
+        Initialialize Peneloux volume translations
 
         Args:
             parameter_reference (str): String defining parameter set, Defaults to "Default"
@@ -427,7 +472,8 @@ class thermopack(object):
                                                 ref_string_len)
 
     def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
-        """Recalculate critical properties of pure fluids
+        """Utility
+        Recalculate critical properties of pure fluids
 
         Args:
             silent (bool): Ignore warnings? Defaults to True
@@ -465,7 +511,8 @@ class thermopack(object):
     #################################
 
     def init_solid(self, scomp):
-        """Initialize pure solid
+        """Internal
+        Initialize pure solid
 
         Args:
             scomp (str): Component name
@@ -482,7 +529,8 @@ class thermopack(object):
     #################################
 
     def getcompindex(self, comp):
-        """Get component index
+        """Utility
+        Get component index
 
         Args:
             comp (str): Component name
@@ -499,7 +547,8 @@ class thermopack(object):
         return idx
 
     def get_comp_name(self, index):
-        """Get component name
+        """Utility
+        Get component name
 
         Args:
             index (int): Component FORTRAN index
@@ -520,7 +569,8 @@ class thermopack(object):
         return compname
 
     def compmoleweight(self, comp):
-        """Get component mole weight (g/mol)
+        """Utility
+        Get component mole weight (g/mol)
 
         Args:
             comp (int): Component FORTRAN index
@@ -536,7 +586,7 @@ class thermopack(object):
         return mw_i
 
     def acentric_factor(self, i):
-        '''
+        '''Utility
         Get acentric factor of component i
         Args:
             i (int) component FORTRAN index
@@ -568,110 +618,9 @@ class thermopack(object):
 
         return w.value
 
-    def get_critcal_parameters(self, i):
-        '''
-        Get pure fluid critical parameters of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: Critical temperature (K)
-            float: Critical volume (m3/mol)
-            float: Critical pressure (Pa)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return tci.value, vci.value, pci.value
-
-    def critical_temperature(self, i):
-        '''
-        Get critical temperature of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: critical temperature (K)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return tci.value
-
-    def critical_pressure(self, i):
-        '''
-        Get critical pressure of component i
-        Args:
-            i (int) component FORTRAN index
-        returns:
-            float: critical pressure (Pa)
-        '''
-        self.activate()
-        comp_c = c_int(i)
-
-        w = c_double(0.0)
-        tci = c_double(0.0)
-        pci = c_double(0.0)
-        vci = c_double(0.0)
-        tnbi = c_double(0.0)
-
-        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double),
-                                                POINTER(c_double)]
-        self.s_eos_getCriticalParam.restype = None
-
-        self.s_eos_getCriticalParam(byref(comp_c),
-                                    byref(tci),
-                                    byref(pci),
-                                    byref(w),
-                                    byref(vci),
-                                    byref(tnbi))
-
-        return pci.value
-
     def get_phase_flags(self):
-        """Get phase identifiers used by thermopack
+        """Utility
+        Get phase identifiers used by thermopack
 
         Returns:
             int: Phase int  identifiers
@@ -707,8 +656,10 @@ class thermopack(object):
         self.SOLIDPH = iSOLIDPH.value
         self.FAKEPH = iFAKEPH.value
 
+
     def get_phase_type(self, i_phase):
-        """Get phase type
+        """Utility
+        Get phase type
 
         Args:
             i_phase (int): Phase flag returned by thermopack
@@ -721,7 +672,8 @@ class thermopack(object):
         return phase_string_list[i_phase]
 
     def set_tmin(self, temp):
-        """Set minimum temperature in Thermopack. Used to limit search
+        """Utility
+        Set minimum temperature in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 80 K.
 
         Args:
@@ -731,7 +683,8 @@ class thermopack(object):
             self.minimum_temperature_c.value = temp
 
     def get_tmin(self):
-        """Get minimum temperature in Thermopack. Used to limit search
+        """Utility
+        Get minimum temperature in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 80 K.
 
         Returns:
@@ -741,7 +694,8 @@ class thermopack(object):
         return temp
 
     def set_tmax(self, temp):
-        """Set maximum temperature in Thermopack. Used to limit search
+        """Utility
+        Set maximum temperature in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 999 K.
 
         Args:
@@ -751,7 +705,8 @@ class thermopack(object):
             self.maximum_temperature_c.value = temp
 
     def get_tmax(self):
-        """Get maximum temperature in Thermopack. Used to limit search
+        """Utility
+        Get maximum temperature in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 999 K.
 
         Returns:
@@ -761,7 +716,8 @@ class thermopack(object):
         return temp
 
     def set_pmin(self, press):
-        """Set minimum pressure in Thermopack. Used to limit search
+        """Utility
+        Set minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
@@ -770,7 +726,8 @@ class thermopack(object):
         self.minimum_pressure_c.value = press
 
     def get_pmin(self):
-        """Get minimum pressure in Thermopack. Used to limit search
+        """Utility
+        Get minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 10 Pa.
 
         Args:
@@ -780,7 +737,8 @@ class thermopack(object):
         return press
 
     def set_pmax(self, press):
-        """Set minimum pressure in Thermopack. Used to limit search
+        """Utility
+        Set minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 100 MPa.
 
         Args:
@@ -789,7 +747,8 @@ class thermopack(object):
         self.maximum_pressure_c.value = press
 
     def get_pmax(self):
-        """Get minimum pressure in Thermopack. Used to limit search
+        """Utility
+        Get minimum pressure in Thermopack. Used to limit search
         domain for numerical solvers. Default value set on init is 100 MPa.
 
         Args:
@@ -803,9 +762,10 @@ class thermopack(object):
     #################################
 
     def specific_volume(self, temp, press, x, phase, dvdt=None, dvdp=None, dvdn=None):
-        """ Calculate single-phase specific volume
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dvdt, dvdp and dvdn only are flags to enable calculation.
+        """Tp-property
+        Calculate single-phase specific volume
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dvdt, dvdp and dvdn only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -871,9 +831,10 @@ class thermopack(object):
         return return_tuple
 
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
-        """ Calculate single-phase compressibility
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dzdt, dzdp and dzdn only are flags to enable calculation.
+        """Tp-property
+        Calculate single-phase compressibility
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dzdt, dzdp and dzdn only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -940,7 +901,8 @@ class thermopack(object):
 
     def thermo(self, temp, press, x, phase, dlnfugdt=None, dlnfugdp=None,
                dlnfugdn=None, ophase=None, v=None):
-        """ Calculate logarithm of fugacity coefficient given composition,
+        """Tp-property
+        Calculate logarithm of fugacity coefficient given composition,
         temperature and pressure.
         Note that the order of the output match the default order of input for the differentials.
         Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
@@ -1034,9 +996,10 @@ class thermopack(object):
         return return_tuple
 
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
-        """ Calculate specific single-phase enthalpy
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dhdt, dhdp and dhdn only are flags to enable calculation.
+        """Tp-property
+        Calculate specific single-phase enthalpy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp and dhdn only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -1111,9 +1074,10 @@ class thermopack(object):
         return return_tuple
 
     def entropy(self, temp, press, x, phase, dsdt=None, dsdp=None, dsdn=None, residual=False):
-        """ Calculate specific single-phase entropy
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dsdt, dhsp and dsdn only are flags to enable calculation.
+        """Tp-property
+        Calculate specific single-phase entropy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dsdt, dhsp and dsdn only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -1187,9 +1151,10 @@ class thermopack(object):
         return return_tuple
 
     def idealenthalpysingle(self, temp, j, dhdt=None):
-        """ Calculate specific ideal enthalpy
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dhdt only are flags to enable calculation.
+        """Tp-property
+        Calculate specific ideal enthalpy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -1229,9 +1194,10 @@ class thermopack(object):
         return return_tuple
 
     def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
-        """ Calculate specific ideal entropy
-            Note that the order of the output match the default order of input for the differentials.
-            Note further that dhdt, and dhdp only are flags to enable calculation.
+        """Tp-property
+        Calculate specific ideal entropy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, and dhdp only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
@@ -1283,7 +1249,8 @@ class thermopack(object):
         return return_tuple
 
     def set_ideal_entropy_reference_value(self, j, s0):
-        """ Set specific ideal entropy reference value
+        """Utility
+        Set specific ideal entropy reference value
 
         Args:
             j (integer): Component index
@@ -1303,7 +1270,8 @@ class thermopack(object):
                                                  byref(s0_c))
 
     def get_ideal_entropy_reference_value(self, j):
-        """ Get specific ideal entropy reference value
+        """Utility
+        Get specific ideal entropy reference value
 
         Args:
             j (integer): Component index
@@ -1327,7 +1295,8 @@ class thermopack(object):
         return s0_c.value
 
     def set_ideal_enthalpy_reference_value(self, j, h0):
-        """ Set specific ideal enthalpy reference value
+        """Utility
+        Set specific ideal enthalpy reference value
 
         Args:
             j (integer): Component index
@@ -1347,7 +1316,8 @@ class thermopack(object):
                                                   byref(h0_c))
 
     def get_ideal_enthalpy_reference_value(self, j):
-        """ Get specific ideal enthalpy reference value
+        """Utility
+        Get specific ideal enthalpy reference value
 
         Args:
             j (integer): Component index
@@ -1371,7 +1341,8 @@ class thermopack(object):
         return h0_c.value
 
     def speed_of_sound(self, temp, press, x, y, z, betaV, betaL, phase):
-        """Calculate speed of sound for single phase or two phase mixture assuming
+        """Tp-property
+        Calculate speed of sound for single phase or two phase mixture assuming
         mechanical, thermal and chemical equilibrium.
 
         Args:
@@ -1427,7 +1398,8 @@ class thermopack(object):
     #################################
 
     def set_ph_tolerance(self, tol):
-        """Set tolerance of isobaric-isentalpic (PH) flash
+        """Flash interface
+        Set tolerance of isobaric-isentalpic (PH) flash
 
         Args:
             tol (float): Tolerance
@@ -1438,7 +1410,8 @@ class thermopack(object):
         self.s_set_ph_tolerance(byref(tol_c))
 
     def two_phase_tpflash(self, temp, press, z):
-        """Do isothermal-isobaric (TP) flash
+        """Flash interface
+        Do isothermal-isobaric (TP) flash
 
         Args:
             temp (float): Temperature (K)
@@ -1446,11 +1419,7 @@ class thermopack(object):
             z (array_like): Overall molar composition
 
         Returns:
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (phase fractions, phase compositions and phase identifier)
         """
         self.activate()
         temp_c = c_double(temp)
@@ -1486,10 +1455,12 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp, press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'Tp')
+        return result
 
     def two_phase_psflash(self, press, z, entropy, temp=None):
-        """Do isentropic-isobaric (SP) flash
+        """Flash interface
+        Do isentropic-isobaric (SP) flash
 
         Args:
             press (float): Pressure (Pa)
@@ -1498,12 +1469,8 @@ class thermopack(object):
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
-            temp (float): Temperature (K)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         press_c = c_double(press)
@@ -1551,10 +1518,12 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'pS')
+        return result
 
     def two_phase_phflash(self, press, z, enthalpy, temp=None):
-        """Do isenthalpic-isobaric (HP) flash
+        """Flash interface
+        Do isenthalpic-isobaric (HP) flash
 
         Args:
             press (float): Pressure (Pa)
@@ -1563,12 +1532,8 @@ class thermopack(object):
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
-            temp (float): Temperature (K)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         press_c = c_double(press)
@@ -1617,10 +1582,12 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'pH')
+        return result
 
     def two_phase_uvflash(self, z, specific_energy, specific_volume, temp=None, press=None):
-        """Do isoenergetic-isochoric (UV) flash
+        """Flash interface
+        Do isoenergetic-isochoric (UV) flash
 
         Args:
             press (float): Pressure (Pa)
@@ -1631,13 +1598,8 @@ class thermopack(object):
             press (float, optional): Initial guess for pressure (Pa)
 
         Returns:
-            temp (float): Temperature (K)
-            press (float): Pressure (Pa)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, pressure, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         z_c = (c_double * len(z))(*z)
@@ -1685,10 +1647,12 @@ class thermopack(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value, 'UV')
+        return result
 
     def guess_phase(self, temp, press, z):
-        """If only one root exsist for the equation of state the phase type can be
+        """Flash interface
+        If only one root exsist for the equation of state the phase type can be
         determined from either the psedo-critical volume or a volume ratio to the co-volume
 
         Args:
@@ -1729,9 +1693,9 @@ class thermopack(object):
     # Temperature-volume property interfaces
     #################################
 
-    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None,
-                    property_flag="IR"):
-        """Calculate pressure given temperature, volume and mol numbers.
+    def pressure_tv(self, temp, volume, n, dpdt=None, dpdv=None, dpdn=None, property_flag='IR'):
+        """TV-property
+        Calculate pressure given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -1740,7 +1704,7 @@ class thermopack(object):
             dpdt (No type, optional): Flag to activate calculation. Defaults to None.
             dpdv (No type, optional): Flag to activate calculation. Defaults to None.
             dpdn (No type, optional): Flag to activate calculation. Defaults to None.
-            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') pressure. Defaults to 'IR'.
 
         Returns:
             float: Pressure (Pa)
@@ -1801,8 +1765,9 @@ class thermopack(object):
         return return_tuple
 
     def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None,
-                       dedn=None, property_flag="IR"):
-        """Calculate internal energy given temperature, volume and mol numbers.
+                           dedn=None, property_flag="IR"):
+        """TV-property
+        Calculate internal energy given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -1811,7 +1776,7 @@ class thermopack(object):
             dedt (No type, optional): Flag to activate calculation. Defaults to None.
             dedv (No type, optional): Flag to activate calculation. Defaults to None.
             dedn (No type, optional): Flag to activate calculation. Defaults to None.
-            property_flag (integer, optional): Calculate residual (R) and/or ideal (I) entropy. Defaults to IR.
+            property_flag (str, optional): Calculate residual ('R'), ideal ('I') or total ('IR') internal energy. Defaults to 'IR'.
 
         Returns:
             float: Energy (J)
@@ -1871,7 +1836,8 @@ class thermopack(object):
 
     def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None,
                    dsdn=None, property_flag="IR"):
-        """Calculate entropy given temperature, volume and mol numbers.
+        """TV-property
+        Calculate entropy given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -1940,7 +1906,8 @@ class thermopack(object):
 
     def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None,
                     dhdn=None, property_flag="IR"):
-        """Calculate enthalpy given temperature, volume and mol numbers.
+        """TV-property
+        Calculate enthalpy given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2009,7 +1976,8 @@ class thermopack(object):
 
     def helmholtz_tv(self, temp, volume, n, dadt=None, dadv=None,
                      dadn=None, property_flag="IR"):
-        """Calculate Helmholtz energy given temperature, volume and mol numbers.
+        """TV-property
+        Calculate Helmholtz energy given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2076,8 +2044,9 @@ class thermopack(object):
         return return_tuple
 
     def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None,
-                          dmudn=None, property_flag="IR"):
-        """Calculate chemical potential given temperature, volume and mol numbers.
+                              dmudn=None, property_flag="IR"):
+        """TV-property
+        Calculate chemical potential given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2149,7 +2118,8 @@ class thermopack(object):
         return return_tuple
 
     def fugacity_tv(self, temp, volume, n, dlnphidt=None, dlnphidv=None, dlnphidn=None):
-        """Calculate natural logarithm of fugacity given temperature, volume and mol numbers.
+        """TV-property
+        Calculate natural logarithm of fugacity given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2221,7 +2191,8 @@ class thermopack(object):
 
     def entropy_tvp(self, temp, volume, n, dsdt=None, dsdp=None,
                     dsdn=None, property_flag="IR"):
-        """Calculate entropy given temperature, pressure and mol numbers.
+        """TVp-property
+        Calculate entropy given temperature, pressure and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2289,7 +2260,8 @@ class thermopack(object):
         return return_tuple
 
     def enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag="IR"):
-        """Calculate enthalpy given temperature, volume and mol numbers.
+        """TVp-property
+        Calculate enthalpy given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -2358,7 +2330,8 @@ class thermopack(object):
 
     def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
-        """ Calculate logarithm of fugacity coefficient given molar numbers,
+        """TVp-property
+        Calculate logarithm of fugacity coefficient given molar numbers,
         temperature and pressure.
         Note that the order of the output match the default order of input for the differentials.
         Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
@@ -2430,7 +2403,8 @@ class thermopack(object):
     #################################
 
     def bubble_temperature(self, press, z):
-        """Calculate bubble temperature given pressure and composition
+        """Saturation interface
+        Calculate bubble temperature given pressure and composition
 
         Args:
             press (float): Pressure (Pa)
@@ -2467,7 +2441,8 @@ class thermopack(object):
         return temp, y
 
     def bubble_pressure(self, temp, z):
-        """Calculate bubble pressure given temperature and composition
+        """Saturation interface
+        Calculate bubble pressure given temperature and composition
 
         Args:
             temp (float): Temperature (K)
@@ -2504,7 +2479,8 @@ class thermopack(object):
         return press, y
 
     def dew_temperature(self, press, z):
-        """Calculate dew temperature given pressure and composition
+        """Saturation interface
+        Calculate dew temperature given pressure and composition
 
         Args:
             press (float): Pressure (Pa)
@@ -2541,7 +2517,8 @@ class thermopack(object):
         return temp, x
 
     def dew_pressure(self, temp, z):
-        """Calculate dew pressure given temperature and composition
+        """Saturation interface
+        Calculate dew pressure given temperature and composition
 
         Args:
             temp (float): Temperature (K)
@@ -2580,7 +2557,8 @@ class thermopack(object):
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None,
                               calc_v=False):
-        """Get the phase-envelope
+        """Saturation interface
+        Get the phase-envelope at a given composition
 
         Args:
             initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
@@ -2592,7 +2570,7 @@ class thermopack(object):
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
-            ndarray (optional): Specific volume (m3/mol)
+            ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
         """
         self.activate()
         nmax = 1000
@@ -2775,7 +2753,8 @@ class thermopack(object):
                        minimum_pressure=1.0e5,
                        maximum_dz=0.003,
                        maximum_dlns=0.01):
-        """Calculate binary three phase envelope
+        """Saturation interface
+        Calculate binary three phase envelope
 
         Args:
             temp (float): Temperature (K)
@@ -2788,17 +2767,17 @@ class thermopack(object):
             tuple of arrays: LLE, L1VE, L2VE
 
             LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] : Liquid 1 composition (mole fraction of component 1)
-                LLE[1] : Liquid 2 composition (mole fraction of component 1)
-                LLE[2] : Pressure [Pa]
+                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
+                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
+                LLE[2] -> Pressure [Pa]
             L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] : Bubble line composition (mole fraction of component 1) 
-                L1VE[1] : Dew line composition (mole fraction of component 1)
-                L1VE[2] : Pressure [Pa]
+                L1VE[0] -> Bubble line composition (mole fraction of component 1)
+                L1VE[1] -> Dew line composition (mole fraction of component 1)
+                L1VE[2] -> Pressure [Pa]
             L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] : Bubble line composition (mole fraction of component 1) 
-                L2VE[1] : Dew line composition (mole fraction of component 1)
-                L2VE[2] : Pressure [Pa]
+                L2VE[0] -> Bubble line composition (mole fraction of component 1)
+                L2VE[1] -> Dew line composition (mole fraction of component 1)
+                L2VE[2] -> Pressure [Pa]
 
             If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
@@ -2896,7 +2875,8 @@ class thermopack(object):
 
     def get_bp_term(self,
                     i_term):
-        """Get error description for binary plot error
+        """Saturation interface
+        Get error description for binary plot error
 
         Args:
             i_term (int): binary plot error identifyer
@@ -2989,7 +2969,8 @@ class thermopack(object):
                            minimum_temperature=150.0,
                            maximum_temperature=500.0,
                            include_azeotropes=False):
-        """Calculate global binary phase envelope
+        """Saturation interface
+        Calculate global binary phase envelope
 
         Args:
             maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
@@ -3041,7 +3022,8 @@ class thermopack(object):
 
     def solid_envelope_plot(self, initial_pressure, z, maximum_pressure=1.5e7,
                             minimum_temperature=170.0, calc_esv=False):
-        """Calculate phase envelope including solid lines
+        """Saturation interface
+        Calculate phase envelope including solid lines
 
         Args:
             initial_pressure (float): Start mapping from initial pressure (Pa).
@@ -3101,7 +3083,8 @@ class thermopack(object):
                      minimum_pressure=1.0e5,
                      maximum_pressure=1.5e7,
                      nmax=100):
-        """Get iso-therm at specified temperature
+        """Isoline
+        Get iso-therm at specified temperature
 
         Args:
             temp (float): Temperature (K)
@@ -3162,7 +3145,10 @@ class thermopack(object):
                    minimum_temperature=200.0,
                    maximum_temperature=500.0,
                    nmax=100):
-        """Get isobar at specified pressure.
+        """Isoline
+        Get isobar at specified pressure. Use as
+        `T, v, s, h = get_isobar(p, z)`, where `(T, v, s, h)` is the temperature, specific volume, specific entropy and
+        specific enthalpy along the isobar with pressure `p` and molar composition `z`.
 
         Args:
             press (float): Pressure (Pa)
@@ -3172,7 +3158,8 @@ class thermopack(object):
             nmax (int, optional): Maximum number of points on iso-bar. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, specific volume, specific entropy, specific enthalpy)
+            along the isobar.
         """
         self.activate()
         press_c = c_double(press)
@@ -3225,7 +3212,10 @@ class thermopack(object):
                       minimum_temperature=200.0,
                       maximum_temperature=500.0,
                       nmax=100):
-        """Get isenthalpy given specified enthalpy.
+        """Isoline
+        Get isenthalpic line at specified enthalpy. Use as
+        `T, p, v, s = get_isenthalp(h, z)`, where `(T, p, v, s)` is the temperature, pressure, specific volume and
+        specific entropy along the isenthalp with specific enthalpy `h` and molar composition `z`.
 
         Args:
             enthalpy (float): Enthalpy (J/mol)
@@ -3237,7 +3227,8 @@ class thermopack(object):
             nmax (int, optional): Maximum number of points on isenthalp. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific entropy) along the
+            isenthalp.
         """
         self.activate()
         enthalpy_c = c_double(enthalpy)
@@ -3296,7 +3287,10 @@ class thermopack(object):
                       minimum_temperature=200.0,
                       maximum_temperature=500.0,
                       nmax=100):
-        """Get isentrope at specified entropy.
+        """Isoline
+        Get isentrope at specified entropy. Use as
+        `T, p, v, h = get_isenthalp(s, z)`, where `(T, p, v, h)` is the temperature, pressure, specific volume and
+        specific enthalpy along the isentrope with specific entropy `s` and molar composition `z`.
 
         Args:
             entropy (float): Entropy (J/mol/K)
@@ -3308,7 +3302,8 @@ class thermopack(object):
             nmax (int, optional): Maximum number of points on isentrope. Defaults to 100.
 
         Returns:
-            Multiple numpy arrays.
+            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific enthalpy) along the
+            isentrope.
         """
         self.activate()
         entropy_c = c_double(entropy)
@@ -3364,7 +3359,8 @@ class thermopack(object):
     #################################
 
     def critical(self, n, temp=0.0, v=0.0, tol=1.0e-7):
-        """Calculate critical point in variables T and V
+        """Stability interface
+        Calculate critical point in variables T and V
 
         Args:
             n (array_like): Mol numbers (mol)
@@ -3407,6 +3403,75 @@ class thermopack(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+    def critical_temperature(self, i):
+        '''Stability interface
+        Get critical temperature of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical temperature (K)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value
+
+    def critical_pressure(self, i):
+        '''Stability interface
+        Get critical pressure of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return pci.value
 
     def spinodal(self,
                  z,
@@ -3849,7 +3914,8 @@ class thermopack(object):
     #################################
 
     def virial_coeffcients(self, temp, n):
-        """Calculate (composition-dependent) virial coefficients B and C,
+        """Virial interface
+        Calculate (composition-dependent) virial coefficients B and C,
         defined as P/RT = rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
 
         Args:
@@ -3880,7 +3946,8 @@ class thermopack(object):
         return B_c.value, C_c.value
 
     def second_virial_matrix(self, temp):
-        """Calculate composition-independent virial coefficients B,
+        """Virial interface
+        Calculate composition-independent virial coefficients B,
         defined as P = RT*rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
         Including cross coefficients.
 
@@ -3909,7 +3976,8 @@ class thermopack(object):
         return bmat
 
     def binary_third_virial_matrix(self, temp):
-        """Calculate composition-independent virial coefficients C,
+        """Virial interface
+        Calculate composition-independent virial coefficients C,
         defined as P = RT*rho + B*rho**2 + C*rho**3 + O(rho**4) as rho->0.
         Including cross coefficients
         Currently the code only support binary mixtures
@@ -3944,7 +4012,8 @@ class thermopack(object):
     #################################
 
     def joule_thompson_inversion(self, z, nmax=1000):
-        """Calculate Joule-Thompson inversion curve
+        """Joule-Thompson interface
+        Calculate Joule-Thompson inversion curve
 
         Args:
             z (array like): Compozition

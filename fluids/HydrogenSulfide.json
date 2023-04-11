@@ -74,6 +74,14 @@
     "bib_reference": "",
     "Zra": 0.2855
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -149,5 +157,19 @@
     "assoc_scheme": "2B",
     "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
     "ref": "Default/Tang_Gross2010"
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.0,
+    "sigma": 3.7820E-10,
+    "eps_depth_divk": 243.28,
+    "lambda_a": 6.0000,
+    "lambda_r": 31.311,
+    "mass": 5.659E-26,
+    "eps": 585.72,
+    "beta": 1880.4E-30,
+    "assoc_scheme": "4C",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
   }
 }

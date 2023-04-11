@@ -9,7 +9,7 @@ module test_quantumcubic
   use eosTV, only: pressure
   use cbAlpha, only: setSingleAlphaCorr
   use thermopack_var
-  use pfunit_mod
+  use funit
   implicit none
   public
 
