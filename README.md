@@ -86,9 +86,10 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## Authors and contact persons
-Morten Hammer (morten.hammer@sintef.no)<br>
+Morten Hammer (morten.hammer@sintef.no,morten.hammer@ntnu.no)<br>
 Ailo Aasen (ailo.aasen@sintef.no)<br>
-Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
+Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)<br>
+Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
 
 ## License
 Thermopack is distributed under the [MIT
