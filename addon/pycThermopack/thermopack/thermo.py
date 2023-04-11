@@ -2664,8 +2664,8 @@ class thermo(object):
             temp (float): Temperature (K)
             maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
             minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
-            maximum_dz (float, optional): [description]. Defaults to 0.003.
-            maximum_dlns (float, optional): [description]. Defaults to 0.01.
+            maximum_dz (float, optional): Maximum composition step. Defaults to 0.003.
+            maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
@@ -2788,8 +2788,8 @@ class thermo(object):
         Args:
             pressure (float): Pressure (Pa)
             minimum_temperature (float, optional): Exit on minimum temperature (K).
-            maximum_dz (float, optional): [description]. Defaults to 0.003.
-            maximum_dlns (float, optional): [description]. Defaults to 0.01.
+            maximum_dz (float, optional): Maximum composition step. Defaults to 0.003.
+            maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
             tuple of arrays: LLE, L1VE, L2VE
