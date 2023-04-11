@@ -1399,11 +1399,7 @@ class thermo(object):
             z (array_like): Overall molar composition
 
         Returns:
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (phase fractions, phase compositions and phase identifier)
         """
         self.activate()
         temp_c = c_double(temp)
@@ -1439,7 +1435,8 @@ class thermo(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp, press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'Tp')
+        return result
 
     def two_phase_psflash(self, press, z, entropy, temp=None):
         """Flash interface
@@ -1452,12 +1449,8 @@ class thermo(object):
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
-            temp (float): Temperature (K)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         press_c = c_double(press)
@@ -1505,7 +1498,8 @@ class thermo(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'pS')
+        return result
 
     def two_phase_phflash(self, press, z, enthalpy, temp=None):
         """Flash interface
@@ -1518,12 +1512,8 @@ class thermo(object):
             temp (float, optional): Initial guess for temperature (K)
 
         Returns:
-            temp (float): Temperature (K)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         press_c = c_double(press)
@@ -1572,7 +1562,8 @@ class thermo(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press, x, y, betaV_c.value, betaL_c.value, phase_c.value, 'pH')
+        return result
 
     def two_phase_uvflash(self, z, specific_energy, specific_volume, temp=None, press=None):
         """Flash interface
@@ -1587,13 +1578,8 @@ class thermo(object):
             press (float, optional): Initial guess for pressure (Pa)
 
         Returns:
-            temp (float): Temperature (K)
-            press (float): Pressure (Pa)
-            x (ndarray): Liquid molar composition
-            y (ndarray): Gas molar composition
-            betaV (float): Molar gas phase fraction
-            betaL (float): Molar liquid phase fraction
-            phase (int): Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+            FlashResult : Struct holding the result of the flash (Temperature, pressure, phase fractions,
+                            phase compositions and phase identifier)
         """
         self.activate()
         z_c = (c_double * len(z))(*z)
@@ -1641,7 +1627,8 @@ class thermo(object):
         x = np.array(x_c)
         y = np.array(y_c)
 
-        return temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value
+        result = utils.FlashResult(z, temp_c[0], press_c[0], x, y, betaV_c.value, betaL_c.value, phase_c.value, 'UV')
+        return result
 
     def guess_phase(self, temp, press, z):
         """Flash interface

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-09T11:30:12.942288
+Generated at: 2023-03-30T19:02:33.225408
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -984,29 +984,11 @@ Do isenthalpic-isobaric (HP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1035,29 +1017,11 @@ Do isentropic-isobaric (SP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1082,25 +1046,9 @@ Do isothermal-isobaric (TP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (phase fractions, phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1137,33 +1085,11 @@ Do isoenergetic-isochoric (UV) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, pressure, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
