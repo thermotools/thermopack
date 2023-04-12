@@ -101,8 +101,8 @@ class FlashResult:
     """
     def __init__(self, z, T, p, x, y, betaV, betaL, phase, flash_type):
         self.z = [_ for _ in z]
-        self.T, self.x, self.y, self.betaV, self.betaL, \
-        self.phase, self.flash_type = T, x, y, betaV, betaL, phase, flash_type
+        self.T, self.p, self.x, self.y, self.betaV, self.betaL, \
+        self.phase, self.flash_type = T, p, x, y, betaV, betaL, phase, flash_type
 
         self.iterable = [T, p, x, y, betaV, betaL, phase]
         self.contents = ['T', 'p', 'x', 'y', 'betaV', 'betaL', 'phase']
