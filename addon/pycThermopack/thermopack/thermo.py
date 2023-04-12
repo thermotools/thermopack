@@ -1511,7 +1511,7 @@ class thermo(object):
                                 byref(phase_c),
                                 byref(ierr_c))
 
-        if ierr_c.value != 0:
+        if ierr_c.value > 0 or ierr_c.value < -1:
             raise Exception("PS flash calclualtion failed")
 
         x = np.array(x_c)
