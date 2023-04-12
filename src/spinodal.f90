@@ -113,6 +113,97 @@ contains
   end subroutine solveStabLimitTV
 
   !--------------------------------------------------------------------------
+  !> Given temperature and initial volume find stability limit
+  !>
+  !> \author MH, 2023-04
+  !--------------------------------------------------------------------------
+  subroutine solveStabLimitT(T,v,z,ierr)
+    use thermopack_constants, only: get_templimits
+    use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
+         limit_dx, premReturn, setXv
+    implicit none
+    real, dimension(nc), intent(in) :: Z !< Overall compozition
+    real, intent(in) :: t !< Temperature [K]
+    real, intent(inout) :: v !< Specific volume [m3/mol]
+    integer, intent(out) :: ierr !< Error flag
+    ! Local
+    real :: param(nc+1)
+    type(nonlinear_solver) :: solver
+    real, dimension(1) :: x,xmin,xmax
+    solver%abs_tol = 1.0e-8
+    param(1:nc) = z
+    param(nc+1) = T
+    x = v
+    xmin = v*0.25
+    xmax = v*4.0
+    call nonlinear_solve(solver,stabfunT,stabjacT,stabjacT,&
+         limit_dx,premReturn,setXv,x,xmin,xmax,param)
+    ierr = solver%exitflag
+    v = x(1)
+  end subroutine solveStabLimitT
+
+  !--------------------------------------------------------------------------
+  !> Function value for calculating stability limit given temperature
+  !>
+  !> \author MH, 2023-04
+  !--------------------------------------------------------------------------
+  subroutine stabFunT(Fun,X,param)
+    implicit none
+    real, dimension(1), intent(out) :: Fun !< Function value
+    real, dimension(1), intent(in) :: X !< Variables
+    real, dimension(nc+1), intent(in) :: param !< Parameters
+    ! Locals
+    real, dimension(nc) :: Z !< Overall compozition
+    real :: t !< Temperature [K]
+    real :: v !< Specific volume [m3/mol]
+    real, dimension(nc) :: zs,lnfugz,lnfugTz,lnfugVz
+    real, dimension(nc) :: u
+    real, dimension(nc,nc) :: Bmat
+    real :: lambdaMin
+    z = param(1:nc)
+    t = param(nc+1)
+    v = X(1)
+    zs = sqrt(z)
+    call calcBmatrixTV(t,v,z,zs,Bmat,u,lambdaMin,lnfugz,lnfugTz,lnfugVz)
+    Fun = 0.5*lambdaMin
+  end subroutine stabFunT
+
+  !--------------------------------------------------------------------------
+  !> Differentials of b wrpt. v
+  !>
+  !> \author MH, 2023-04
+  !--------------------------------------------------------------------------
+  subroutine stabJacT(dF,X,param)
+    implicit none
+    real, dimension(1,1), intent(out) :: dF !< Function differential
+    real, dimension(1), intent(in) :: X !< Variables
+    real, dimension(nc+1), intent(in) :: param !< Parameters
+    ! Locals
+    ! Locals
+    real, dimension(nc) :: Z !< Overall compozition
+    real :: t !< Temperature [K]
+    real :: v !< Specific volume [m3/mol]
+    real, dimension(nc) :: zs,lnfugz,lnfugTz,lnfugVz
+    real, dimension(nc) :: u
+    real, dimension(nc,nc) :: Bmat
+    real :: bv, dv, lambdav
+    real :: lambdaMin,lambdaMin1
+    z = param(1:nc)
+    T = param(nc+1)
+    v = X(1)
+    zs = sqrt(z)
+    dv = v*eps
+    ! Central difference
+    v = X(1) - dv
+    call calcBmatrixTV(t,v,z,zs,Bmat,u,lambdaMin,lnfugz,lnfugTz,lnfugVz)
+    v = X(1) + dv
+    call calcBmatrixTV(t,v,z,zs,Bmat,u,lambdaMin1,lnfugz,lnfugTz,lnfugVz)
+    lambdav = (lambdaMin1-lambdaMin)/(2.0*dv)
+    bv = 0.5*lambdav
+    df(1,1) = bv
+  end subroutine stabJacT
+
+  !--------------------------------------------------------------------------
   !> Given pressure find initial point (T,v) for mapping stability line
   !>
   !> \author MH, 2016-02
@@ -608,11 +699,12 @@ contains
     real, optional, intent(in) :: Tliq_start
     ! Local
     real :: T, P, v
-    real :: deltav, deltaT, dlnv
+    real :: deltav, deltaT, dlnv, param(nc+4)
     integer :: i
     real :: TaLiq(nMaxSingle), TaGas(nMaxSingle) !< Temperature [K]
     real :: VaLiq(nMaxSingle), VaGas(nMaxSingle) !< Specific volume [m3/mol]
     real :: PaLiq(nMaxSingle), PaGas(nMaxSingle) !< Pressure [Pa]
+    type(nonlinear_solver) :: solver
 
     if (isSingleComp(Z)) then
       call singleCompStabilityLimit(P0,z,TaLiq,VaLiq,PaLiq,&
@@ -668,20 +760,43 @@ contains
         Tl(nl) = T
         Pl(nl) = p
         if (verbose) then
-          print *,T,P
+          print *,T,P,v,ierr
         endif
         if (T < Tmin .AND. deltaT < 0.0) then
           ! Solve for Tmin
-          v = vl(nl-1)
           T = Tmin
-          v = v + (T-Tl(nl-1))/deltaT
-          call solveStabLimitTV(T,v,Z,ierr)
+          v = v + (T-Tl(nl-1))*(vl(nl)-vl(nl-1))/(Tl(nl)-Tl(nl-1))
+          call solveStabLimitT(T,v,z,ierr)
           vl(nl) = v
           Tl(nl) = T
           Pl(nl) = p
           exit
         else if (P < P0 .AND. Pl(nl) - Pl(nl-1) < 0.0) then
-          ! Solve for P0?
+          ! Solve for P0:
+          param(1:nc) = z
+          param(nc+1) = Tl(nl-1)
+          param(nc+2) = vl(nl-1)
+          param(nc+3) = (Tl(nl)-Tl(nl-1))/(vl(nl)-vl(nl-1)) ! Interpolation
+          param(nc+4) = p0
+          solver%abs_tol = 1.0e-7
+          solver%isolver = NS_PEGASUS
+          call bracketing_solver(vl(nl-1),vl(nl),stabfunV,v,solver,param)
+          ierr = solver%exitflag
+          if (ierr /= 0) then
+            ierr = 22
+            return
+          endif
+          ! Calculate temperature:
+          T = Tl(nl-1) + param(nc+3)*(v-vl(nl-1))
+          call solveStabLimitTV(T,v,Z,ierr)
+          if (ierr /= 0) then
+            ierr = 21
+            return
+          endif
+          p = pressure(t,v,Z)
+          vl(nl) = v
+          Tl(nl) = T
+          Pl(nl) = p
           exit
         endif
       enddo
