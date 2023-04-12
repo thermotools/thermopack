@@ -267,7 +267,6 @@ class thermo(object):
         """Internal
         de-allocate FORTRAN memory for this class instance
         """
-        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
         self.model_index_c = None

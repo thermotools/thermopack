@@ -193,6 +193,7 @@ class saft(thermo):
                                     a_vn_c,
                                     a_nn_c)
 
+        return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
         return return_tuple
 
@@ -263,6 +264,7 @@ class saft(thermo):
                                    a_vn_c,
                                    a_nn_c)
 
+        return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
         return return_tuple
 
@@ -333,6 +335,7 @@ class saft(thermo):
                                      a_vn_c,
                                      a_nn_c)
 
+        return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
         return return_tuple
 

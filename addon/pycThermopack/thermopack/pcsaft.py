@@ -7,10 +7,10 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import c_len_type
 from .saft import saft
+from . import utils
 
-c_len_type = thermo.c_len_type
 
 class pcsaft(saft):
     """
@@ -268,6 +268,7 @@ class pcsaft(saft):
                                   lng_nn_c)
 
         return_tuple = (lng_c.value, )
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
         return return_tuple
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
