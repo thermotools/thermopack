@@ -82,13 +82,13 @@
     "Q": 0.0,
     "bib_reference": ""
   },
-  "melting_line": {
+  "melting_curve": {
     "bib_reference": "DOI: 10.1016/0031-8914(62)90096-4",
+    "ref": "DEFAULT",
     "correlation": "M1",
-    "minimum_temperature": 161.405,
+    "triple_temperature": 161.405,
     "maximum_temperature": 1300.0,
-    "reducing_temperature": 1.0,
-    "reducing_pressure": 101.325,
+    "reducing_pressure": 1.013250E+05,
     "n_coeff": 2,
     "coeff": [
       -2575.0728,
@@ -107,13 +107,13 @@
       0.0
     ]
   },
-  "sublimation_line": {
+  "sublimation_curve": {
     "bib_reference": "Lemmon, E.W. (2003)",
+    "ref": "DEFAULT",
     "correlation": "S3",
+    "triple_temperature": 161.405,
     "minimum_temperature": 0.0,
-    "maximum_temperature": 161.405,
-    "reducing_temperature": 161.405,
-    "reducing_pressure": 81.75,
+    "reducing_pressure": 8.175000E+04,
     "n_coeff": 2,
     "coeff": [
       -13.9,

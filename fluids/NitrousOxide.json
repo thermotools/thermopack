@@ -83,13 +83,13 @@
     "Q": 0.0,
     "bib_reference": ""
   },
-  "sublimation_line": {
+  "sublimation_curve": {
     "bib_reference": "Bell, I.H. (2018)",
+    "ref": "DEFAULT",
     "correlation": "S2",
+    "triple_temperature": 182.33,
     "minimum_temperature": 0.0,
-    "maximum_temperature": 182.33,
-    "reducing_temperature": 1.0,
-    "reducing_pressure": 1000.0,
+    "reducing_pressure": 1.000000E+06,
     "n_coeff": 4,
     "coeff": [
       1.37978754e1,

@@ -83,13 +83,13 @@
     "Q": 1.43,
     "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
   },
-  "melting_line": {
+  "melting_curve": {
     "bib_reference": "DOI: 10.1063/1.1349047",
+    "ref": "DEFAULT",
     "correlation": "M1",
-    "minimum_temperature": 63.151,
+    "triple_temperature": 63.151,
     "maximum_temperature": 2000.0,
-    "reducing_temperature": 63.151,
-    "reducing_pressure": 12.5198,
+    "reducing_pressure": 1.251980E+04,
     "n_coeff": 3,
     "coeff": [
       1.0,
@@ -108,13 +108,13 @@
       0.0
     ]
   },
-  "sublimation_line": {
+  "sublimation_curve": {
     "bib_reference": "Lemmon, E.W. (1999)",
+    "ref": "DEFAULT",
     "correlation": "S3",
+    "triple_temperature": 63.151,
     "minimum_temperature": 0.0,
-    "maximum_temperature": 63.151,
-    "reducing_temperature": 63.151,
-    "reducing_pressure": 12.523,
+    "reducing_pressure": 1.252300E+04,
     "n_coeff": 1,
     "coeff": [
       -13.088692,

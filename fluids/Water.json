@@ -82,56 +82,6 @@
     "Q": 0.0,
     "bib_reference": ""
   },
-  "melting_line": {
-    "bib_reference": "DOI: 10.1063/1.555947",
-    "correlation": "MH",
-    "minimum_temperature": 251.165,
-    "maximum_temperature": 1350.0,
-    "reducing_temperature": 273.16,
-    "reducing_pressure": 611.657,
-    "n_coeff": 4,
-    "coeff": [
-      0.119539337E7,
-      0.808183159E5,
-      0.333826860E4,
-      -0.299948,
-      0.0,
-      0.0
-    ],
-    "exponents": [
-      0.30000E1,
-      0.25750E2,
-      0.10375E3,
-      60,
-      0.0,
-      0.0
-    ]
-  },
-  "sublimation_line": {
-    "bib_reference": "DOI: 10.1063/1.3657937",
-    "correlation": "S2",
-    "minimum_temperature": 0.0,
-    "maximum_temperature": 273.16,
-    "reducing_temperature": 273.16,
-    "reducing_pressure": 0.611657,
-    "n_coeff": 3,
-    "coeff": [
-      -21.2144006,
-      27.3203819,
-      -6.10598130,
-      0.0,
-      0.0,
-      0.0
-    ],
-    "exponents": [
-      -0.99666666667,
-      0.20666667,
-      0.70333333,
-      0.0,
-      0.0,
-      0.0
-    ]
-  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

@@ -82,13 +82,13 @@
     "Q": 0.0,
     "bib_reference": ""
   },
-  "melting_line": {
+  "melting_curve": {
     "bib_reference": "DOI: 10.1016/j.fluid.2013.03.024",
+    "ref": "DEFAULT",
     "correlation": "M1",
-    "minimum_temperature": 175.61,
+    "triple_temperature": 175.61,
     "maximum_temperature": 620.0,
-    "reducing_temperature": 175.61,
-    "reducing_pressure": 0.000187,
+    "reducing_pressure": 1.870000E-01,
     "n_coeff": 4,
     "coeff": [
       1.0,

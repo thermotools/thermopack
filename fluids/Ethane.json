@@ -83,13 +83,13 @@
     "Q": 0.0,
     "bib_reference": ""
   },
-  "melting_line": {
+  "melting_curve": {
     "bib_reference": "DOI: 10.1063/1.1859286",
+    "ref": "DEFAULT",
     "correlation": "M1",
-    "minimum_temperature": 90.368,
+    "triple_temperature": 90.368,
     "maximum_temperature": 2000.0,
-    "reducing_temperature": 90.368,
-    "reducing_pressure": 0.0011421,
+    "reducing_pressure": 1.142100E+00,
     "n_coeff": 4,
     "coeff": [
       1.0,
@@ -108,13 +108,13 @@
       0.0
     ]
   },
-  "sublimation_line": {
+  "sublimation_curve": {
     "bib_reference": "DOI: 10.1007/978-1-4613-9856-1_76",
+    "ref": "DEFAULT",
     "correlation": "S2",
+    "triple_temperature": 90.368,
     "minimum_temperature": 20.0,
-    "maximum_temperature": 90.368,
-    "reducing_temperature": 1.0,
-    "reducing_pressure": 1000.0,
+    "reducing_pressure": 1.000000E+06,
     "n_coeff": 6,
     "coeff": [
       12.8111,

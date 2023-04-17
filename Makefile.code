@@ -86,6 +86,7 @@ OBJE = \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \
        $(ODIR)/apparent_composition.o \
+       $(ODIR)/solid_correlation_datadb.o \
        $(ODIR)/compdata.o \
        $(ODIR)/association_var.o \
        $(ODIR)/multipol_var.o \
@@ -367,7 +368,8 @@ $(ODIR)/compdata_init.o: $(SRC)/compdata_init.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/compdata_init.f90
 	@$(call make_object, $(SRC)/compdata_init.f90)
 $(ODIR)/compdatadb.o: $(SRC)/compdatadb.f90 \
-	$(SRC)/compdata.f90
+	$(SRC)/compdata.f90 $(SRC)/assocschemeutils.f90 \
+	$(SRC)/cubic_eos.f90
 	@$(call make_object, $(SRC)/compdatadb.f90)
 $(ODIR)/complexmodelinit.o: $(SRC)/complexmodelinit.f90 \
 	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_var.f90 \
@@ -380,8 +382,9 @@ $(ODIR)/consistency.o: $(SRC)/consistency.f90 \
 	$(SRC)/cbhelm.f90 $(SRC)/eosdata.f90
 	@$(call make_object, $(SRC)/consistency.f90)
 $(ODIR)/cpa_parameters.o: $(SRC)/cpa_parameters.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/eosdata.f90 \
-	$(SRC)/cubic_eos.f90 $(SRC)/assocschemeutils.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/cubic_eos.f90 \
+	$(SRC)/compdatadb.f90 $(SRC)/mixdatadb.f90 \
+	$(SRC)/assocschemeutils.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/stringmod.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/cpa_parameters.f90)
 $(ODIR)/critical.o: $(SRC)/critical.f90 \
@@ -539,7 +542,7 @@ $(ODIR)/mbwrdata.o: $(SRC)/mbwrdata.f90 \
 	$(SRC)/stringmod.f90
 	@$(call make_object, $(SRC)/mbwrdata.f90)
 $(ODIR)/mixdatadb.o: $(SRC)/mixdatadb.f90 \
-	$(SRC)/cubic_eos.f90
+	$(SRC)/cubic_eos.f90 $(SRC)/assocschemeutils.f90
 	@$(call make_object, $(SRC)/mixdatadb.f90)
 $(ODIR)/multiparameter_base.o: $(SRC)/multiparameter_base.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90
@@ -628,8 +631,9 @@ $(ODIR)/quadratures.o: $(SRC)/quadratures.f90
 $(ODIR)/saft_association.o: $(SRC)/saft_association.f90 \
 	$(SRC)/assocschemeutils.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/association_var.f90 \
-	$(SRC)/saft_globals.f90 $(SRC)/saft_rdf.f90 \
-	$(SRC)/nonlinear_solvers.f90 $(SRC)/numconstants.f90
+	$(SRC)/saft_globals.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/saft_rdf.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/saft_association.f90)
 $(ODIR)/saft_globals.o: $(SRC)/saft_globals.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/pc_saft_nonassoc.f90 \
@@ -753,6 +757,9 @@ $(ODIR)/single_phase.o: $(SRC)/single_phase.f90 \
 	$(SRC)/extcsp.f90 $(SRC)/saft_interface.f90 \
 	$(SRC)/volume_shift.f90
 	@$(call make_object, $(SRC)/single_phase.f90)
+$(ODIR)/solid_correlation_datadb.o: $(SRC)/solid_correlation_datadb.f90 \
+	$(SRC)/thermopack_constants.f90
+	@$(call make_object, $(SRC)/solid_correlation_datadb.f90)
 $(ODIR)/solid_saturation.o: $(SRC)/solid_saturation.f90 \
 	$(SRC)/saturation.f90 $(SRC)/saturation_curve.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
@@ -760,7 +767,8 @@ $(ODIR)/solid_saturation.o: $(SRC)/solid_saturation.f90 \
 	$(SRC)/solideos.f90 $(SRC)/utilities.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/vls.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/tp_solver.f90 \
-	$(SRC)/eostv.f90 $(SRC)/critical.f90
+	$(SRC)/eostv.f90 $(SRC)/critical.f90 \
+	$(SRC)/solid_correlation_datadb.f90
 	@$(call make_object, $(SRC)/solid_saturation.f90)
 $(ODIR)/solideos.o: $(SRC)/solideos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
