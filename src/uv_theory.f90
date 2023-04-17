@@ -611,6 +611,125 @@ contains
     delta_b2u = delta_b2u/T
   end subroutine delta_a1u_b2u_sutsum
 
+  subroutine delta_a2u_sutsum(eos, nc, T, rho, z, delta_a2u)
+   use sutherland_a1tilde
+   use sutherland_a2tilde
+   !> The u contribution computed directly according to BH, without the one-fluid approximation
+   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+   integer, intent(in) :: nc ! number of components
+   type(hyperdual), intent(in) :: T      ! temperature (K)
+   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+   type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
+   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+   ! Locals
+   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
+   type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
+   type(hyperdual) :: dhs_bh(nc,nc)
+   type(hyperdual) :: alphaij, one,Csum,Ck, K_hs, chi
+   integer :: i, j, k,l
+
+   ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+   zetax = 0.0
+   zetax_av = 0.0
+   do i=1,nc
+      do j=1,nc
+         call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+         zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+      end do
+   end do
+   zetax = (PI/6) * rho * zetax
+   zetax_av = (PI/6) * rho * zetax_av
+
+   ! Calculate double-sum of a1 contributions
+   delta_a2u = 0.0
+   one = 1.0
+   Csum = 0.0
+   !delta_b2u = 0.0
+   do i=1,nc
+      do j=1,nc
+         x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+         epsij = eos%sutsum(i,j)%epsdivk
+         !a2ij0 = 0.0
+         a2ij = 0.0
+         prefac = - (PI/6) * dhs_bh(i,j)**3
+         do k=1, eos%sutsum(i,j)%nt
+            Ck = eos%sutsum(i,j)%C(k)
+            Csum = Csum + Ck
+            lamk = eos%sutsum(i,j)%lam(k)
+            do l=1, eos%sutsum(i,j)%nt
+
+               laml = eos%sutsum(i,j)%lam(l)
+               lamij = laml+lamk
+               alphaij = eos%sutsum(i,j)%alpha_x(x=one)
+               !Cl =  eos%sutsum(i,j)%C(l)
+               call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lamij,epsij,alphaij, a2til,K_hs,chi)
+               a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
+               !0.5*K_hs*(1.0+chi)*
+               !a2ij0 = a2ij0 + eos%sutsum(i,j)%C(k)* prefac      * a2til0
+               !note that Ck is given 
+               !a2ij = a2ij  + eos%sutsum(i,j)%C(k)**2 *(prefac*rho) * a2til
+            end do
+            a2ij = a2ij*Csum**2 ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
+         end do
+         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
+         !delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
+      end do
+   end do
+
+   ! uv-theory incorporates the beta factor directly into a1
+   delta_a2u = delta_a2u/T**2
+   !delta_b2u = delta_b2u/T
+ end subroutine delta_a2u_sutsum
+
+
+ subroutine delta_a3u_sutsum(eos, nc, T, rho, z, delta_a3u)
+   use sutherland_a3tilde
+   !> The u contribution computed directly according to BH, without the one-fluid approximation
+   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+   integer, intent(in) :: nc ! number of components
+   type(hyperdual), intent(in) :: T      ! temperature (K)
+   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+   type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
+   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+   ! Locals
+   type(hyperdual) :: lamij, epsij, prefac, zetax_av
+   type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
+   type(hyperdual) :: dhs_bh(nc,nc)
+   type(hyperdual) :: alphaij, one
+   integer :: i, j, k
+   
+   zetax_av = 0.0
+   do i=1,nc
+      do j=1,nc
+         call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+         
+         zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+      end do
+   end do
+   zetax_av = (PI/6) * rho * zetax_av
+   delta_a3u = 0.0
+   one = 1.0
+   do i=1,nc
+      do j=1,nc
+         epsij = eos%sutsum(i,j)%epsdivk
+         a3ij = 0.0
+         prefac = - (PI/6) * dhs_bh(i,j)**3
+         do k=1, eos%sutsum(i,j)%nt
+            lamij = eos%sutsum(i,j)%lam(k)
+            alphaij = eos%sutsum(i,j)%alpha_x(x=one)
+            call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
+            a3ij = a3ij  + a3til
+         end do
+         delta_a3u = delta_a3u + z(i)*z(j)*a3ij
+      end do
+   end do
+
+   ! uv-theory incorporates the beta factor directly into a1
+   delta_a3u = delta_a3u/T**3
+ end subroutine delta_a3u_sutsum
 
   subroutine delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     use sutherland_a1tilde
@@ -661,6 +780,116 @@ contains
     delta_a1u = delta_a1u/T
     delta_b2u = delta_b2u/T
   end subroutine delta_a1u_b2u_lafitte
+
+
+  subroutine delta_a2u_lafitte(eos, nc, T, rho, z, delta_a2u)
+   use sutherland_a2tilde
+   !> The u contribution computed directly according to BH, without the one-fluid approximation
+   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+   integer, intent(in) :: nc ! number of components
+   type(hyperdual), intent(in) :: T      ! temperature (K)
+   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+   type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
+   ! Locals
+   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij
+   type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
+   type(hyperdual) :: dhs_bh(nc,nc)
+   type(hyperdual) :: alphaij, one, Csum, K_hs, chi
+   type(hyperdual) :: lrij,laij,lcombij, a2til_att, a2til_rep, a2til_repatt
+   integer :: i, j
+
+   ! Calculate zetax and zetax_av and eta0 using Barker-Henderson HS diameters
+   zetax = 0.0
+   zetax_av = 0.0
+   do i=1,nc
+      do j=1,nc
+         call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+         zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
+      end do
+   end do
+   zetax = (PI/6) * rho * zetax
+   zetax_av = (PI/6) * rho * zetax_av
+
+   ! Calculate double-sum of a2 contributions
+   delta_a2u = 0.0
+   one = 1.0
+   Csum = 0.0
+   do i=1,nc
+      do j=1,nc
+         Csum = eos%mie(i,j)%Cmie
+         prefac = (PI/6) * dhs_bh(i,j)**3
+         x0ij = eos%mie(i,j)%sigma / dhs_bh(i,j)
+         epsij = eos%mie(i,j)%epsdivk
+         lrij = eos%mie(i,j)%lamr
+         laij = eos%mie(i,j)%lama
+         lcombij = lrij+laij
+         alphaij = eos%mie(i,j)%alpha_x(x=one)
+         lrij = lrij*2.0
+         laij = laij*2.0
+         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lrij,epsij,alphaij, a2til_rep,K_hs,chi)
+         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,laij,epsij,alphaij, a2til_att,K_hs,chi)
+         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lcombij,epsij,alphaij, a2til_repatt,K_hs,chi)
+         a2ij = 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho)*(Csum**2) * (a2til_att -2.0*a2til_repatt + a2til_rep)
+         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
+      end do
+   end do
+
+   ! uv-theory incorporates the beta factor directly into a2
+   delta_a2u = delta_a2u/T**2
+   
+ end subroutine delta_a2u_lafitte
+
+ subroutine delta_a3u_lafitte(eos, nc, T, rho, z, delta_a3u)
+   use sutherland_a3tilde
+   !> The u contribution computed directly according to BH, without the one-fluid approximation
+   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+   integer, intent(in) :: nc ! number of components
+   type(hyperdual), intent(in) :: T      ! temperature (K)
+   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+   type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
+   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+   ! Locals
+   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
+   type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
+   type(hyperdual) :: dhs_bh(nc,nc)
+   type(hyperdual) :: alphaij, one, Csum, Ck, K_hs, chi
+   integer :: i, j
+
+   
+
+   ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+   zetax = 0.0
+   zetax_av = 0.0
+   do i=1,nc
+      do j=1,nc
+         !call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+         call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+         zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
+      end do
+   end do
+   zetax_av = (PI/6) * rho * zetax_av
+
+   ! Calculate double-sum of a1 contributions
+   delta_a3u = 0.0
+   one = 1.0
+   do i=1,nc
+      do j=1,nc
+
+         epsij = eos%mie(i,j)%epsdivk
+         alphaij = eos%mie(i,j)%alpha_x(x=one)
+         call calc_a3tilde_sutherland(zetax_av,epsij,alphaij,a3til)
+         delta_a3u = delta_a3u + z(i)*z(j)*a3til
+      end do
+   end do
+
+   ! uv-theory incorporates the beta factor directly into a1
+   delta_a3u = delta_a3u/T**3
+   
+ end subroutine delta_a3u_lafitte
+
 
   subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     !> Pertubation contribution to a1u going into the u-term in uv-theory (Eq S42 in [1])
