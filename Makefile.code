@@ -125,8 +125,8 @@ OBJE = \
        $(ODIR)/cpa_parameters.o \
        $(ODIR)/pair_potentials.o \
        $(ODIR)/sutherland_a1tilde.o \
-	   $(ODIR)/sutherland_a2tilde.o \
-	   $(ODIR)/sutherland_a3tilde.o \
+       $(ODIR)/sutherland_a2tilde.o \
+       $(ODIR)/sutherland_a3tilde.o \
        $(ODIR)/cbselect.o \
        $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \
@@ -141,7 +141,6 @@ OBJE = \
        $(ODIR)/saftvrmie_association.o \
        $(ODIR)/saftvrmie_interface.o \
        $(ODIR)/hardsphere_wca.o \
-       $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/lj_splined.o \
        $(ODIR)/uv_theory.o \
        $(ODIR)/saft_globals.o \
@@ -490,6 +489,7 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
+	$(SRC)/quadratures.f90 $(SRC)/hyperdual_mod.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
 $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
@@ -498,9 +498,6 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
-$(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
-	$(SRC)/quadratures.f90 $(SRC)/hyperdual_mod.f90
-	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
 $(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hyperdual_mod.f90)
 $(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \

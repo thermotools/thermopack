@@ -465,6 +465,7 @@ contains
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: F_sPC_SAFT_TVn, F_PC_SAFT_TVn, PCSAFT_eos, sPCSAFT_eos
     use pets, only: F_PeTS_TVn, PETS_eos
+    use uv_theory, only: uv_theory_eos, calcFres_uv
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &

@@ -9,7 +9,7 @@ module eos_container
   use saftvrmie_containers, only: saftvrmie_eos
   use lj_splined, only: ljs_bh_eos, ljs_wca_eos, ljx_ux_eos_constructor
   use uv_theory, only: uv_allocate_and_init, uv_eos_constructor
-  use pc_saft_nonassoc, only: PCSAFT_eos
+  use pc_saft_nonassoc, only: PCSAFT_eos, sPCSAFT_eos
   use extcsp, only: extcsp_eos
 
 contains
