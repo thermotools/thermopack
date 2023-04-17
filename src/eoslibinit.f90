@@ -20,7 +20,7 @@ module eoslibinit
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
-  public :: init_multiparameter, init_pets, init_ljs, init_lj
+  public :: init_multiparameter, init_pets, init_ljs, init_lj, init_uv
   public :: silent_init
   public :: redefine_critical_parameters
   public :: init_volume_translation
@@ -205,7 +205,6 @@ contains
     if (.not. act_mod_ptr%need_alternative_eos) return
 
     redefine_critical = isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)
-
     if (act_mod_ptr%EoSLib == TREND) then
       ! Use TREND parameters to get better critical point in alternative model
       do i=1,nce
@@ -1327,7 +1326,7 @@ contains
     character(len=ref_len)           :: param_ref
     character(len=7)                 :: model_local
 
-    ! Initialize Pets eos
+    ! Initialize LJs eos
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model have been allocated
       index = add_eos()
@@ -1393,5 +1392,105 @@ contains
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_lj_ljs
+
+
+  !----------------------------------------------------------------------------
+  !> Initialize uv-theory equation of state for Mie potentials
+  !----------------------------------------------------------------------------
+  subroutine init_uv(comps, model, parameter_reference)
+    use stringmod, only: str_upcase
+    use compdata, only: SelectComp, initCompList
+    use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
+    use thermopack_constants, only: THERMOPACK, ref_len
+    use stringmod,  only: uppercase
+    use volume_shift, only: NOSHIFT
+    use saft_interface, only: saft_type_eos_init
+    use ideal, only: set_reference_energies
+    use uv_theory, only: uv_theory_eos
+    !$ use omp_lib, only: omp_get_max_threads
+    character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
+    character(len=*), optional, intent(in) :: model !< Model selection: "BH" (Default), "WCA"
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    ! Locals
+    integer                          :: ncomp, ncbeos, i, ierr, idx
+    type(thermo_model), pointer      :: act_mod_ptr
+    class(base_eos_param), pointer   :: act_eos_ptr
+    character(len=ref_len)           :: param_ref
+    character(len=10)                :: model_local
+
+    ! Initialize Pets eos
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model have been allocated
+      idx = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+
+    ! Component list.
+    call initCompList(trim(uppercase(comps)),ncomp,act_mod_ptr%complist)
+    allocate(complist, source=act_mod_ptr%complist)
+
+    ! Set default model
+    if (present(model)) then
+      model_local = trim(model)
+      call str_upcase(model_local)
+      if ( index(model_local,"UV") > 0 ) then
+        model_local = trim(model)
+      else
+        model_local = "UV-MIE-"//trim(model)
+      endif
+    else
+      model_local = "UV-MIE-BH"
+    endif
+    call allocate_eos(ncomp, trim(model_local))
+
+    ! Number of phases
+    act_mod_ptr%nph = 2
+
+    ! Assign active model variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    act_mod_ptr%nc = ncomp
+    nph = act_mod_ptr%nph
+    complist => act_mod_ptr%complist
+    apparent => NULL()
+
+    ! Set eos library identifyer
+    act_mod_ptr%eosLib = THERMOPACK
+
+    ! Set local variable for parameter reference
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "DEFAULT"
+    endif
+
+    ! Initialize components module
+    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    ! Set reference entalpies and entropies
+    call set_reference_energies(act_mod_ptr%comps)
+
+    ! Initialize Thermopack
+    act_eos_ptr => act_mod_ptr%eos(1)%p_eos
+    act_eos_ptr%volumeShiftId = NOSHIFT
+    act_eos_ptr%isElectrolyteEoS = .false.
+
+    call saft_type_eos_init(nce,act_mod_ptr%comps,&
+         act_eos_ptr,param_ref,silent_init=.true.)
+
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
+
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+    ! Initialize fallback eos
+    act_mod_ptr%need_alternative_eos = .true.
+    call init_fallback_and_redefine_criticals(silent=.true.)
+  end subroutine init_uv
+
 
 end module eoslibinit

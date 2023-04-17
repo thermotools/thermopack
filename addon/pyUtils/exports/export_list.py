@@ -117,6 +117,13 @@ append_export("thermopack_getwsparam")
 append_export("thermopack_setwsparam")
 append_export("thermopack_get_volume_shift_parameters")
 append_export("thermopack_set_volume_shift_parameters")
+append_export("thermopack_setclassicfitparam")
+append_export("thermopack_settwuparam")
+append_export("thermopack_gettwuparam")
+append_export("thermopack_set_alpha_corr")
+
+
+
 
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")
@@ -156,6 +163,7 @@ append_export("init_volume_translation", "eoslibinit")
 append_export("redefine_critical_parameters", "eoslibinit")
 append_export("init_lj", "eoslibinit")
 append_export("init_ljs", "eoslibinit")
+append_export("init_uv", "eoslibinit")
 
 append_export("internal_energy_tv", "eostv")
 append_export("entropy_tv", "eostv")
@@ -200,6 +208,9 @@ append_export("fres_multipol", "multipol")
 append_export("multipol_model_control", "multipol")
 
 append_export("lng_ii_pc_saft_tvn", "pc_saft_nonassoc")
+
+append_export("reset_sutsum_external_ij", "uv_theory")
+
 
 append_export("setphtolerance", "ph_solver")
 append_export("twophasephflash", "ph_solver")

@@ -29,7 +29,7 @@ module saft_interface
   use eosdata, only: cpaSRK, cpaPR, eosPC_SAFT, eosOPC_SAFT, &
        eosSPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
        eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
-       eosPCP_SAFT, eosSPCP_SAFT
+       eosPCP_SAFT, eosSPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
        get_active_eos, base_eos_param, numassocsites
@@ -62,6 +62,7 @@ contains
     use saftvrmie_interface, only: init_saftvrmie
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, init_ljs_bh, ljs_wca_eos, init_ljs_wca
+    use uv_theory, only: uv_theory_eos, init_uv_theory
     use saftvrmie_parameters, only: getSaftVrMieAssocParams_allComps
     use pets, only: PETS_eos, getPetsPureParams
     use multipol_var, only: multipol_param, multipol_param_constructor
@@ -164,10 +165,12 @@ contains
       call init_ljs_bh(nc,comp,p_eos,param_ref)
     class is ( ljs_wca_eos )
       call init_ljs_wca(nc,comp,p_eos,param_ref)
+   class is ( uv_theory_eos )
+      call init_uv_theory(nc,comp,p_eos,param_ref)
     class is ( PETS_eos )
       call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
     class default
-      call stoperror("calcSaftFder_res_nonassoc: Wrong eos...")
+      call stoperror("init_saft_type_eos: Wrong eos...")
     end select
 
     ! Init calls above will clean eos class memory before init
@@ -462,6 +465,7 @@ contains
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: F_sPC_SAFT_TVn, F_PC_SAFT_TVn, PCSAFT_eos, sPCSAFT_eos
     use pets, only: F_PeTS_TVn, PETS_eos
+    use uv_theory, only: uv_theory_eos, calcFres_uv
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
@@ -495,6 +499,12 @@ contains
       endif
     class is (ljs_wca_eos)
       call calcFres_WCA(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
+           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+      if (present(F)) then
+        F = Fl
+      endif
+    class is (uv_theory_eos)
+      call calcFres_uv(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
            F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
@@ -1076,6 +1086,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calc_ljs_bh_zeta, &
          ljs_wca_eos, calc_ljx_wca_zeta
+    use uv_theory, only: uv_theory_eos, calc_uv_Mie_eta
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
@@ -1098,6 +1109,9 @@ contains
       conv_num = calc_ljs_bh_zeta(p_eos,nc,T,1.0,n)
     class is(ljs_wca_eos)
       conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
+    class is(uv_theory_eos)
+       conv_num = calc_uv_mie_eta(p_eos, nc, T, V=1.0, n=n)
+      !conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(saftvrmie_eos)
       conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
     class is ( PETS_eos )
@@ -1148,7 +1162,9 @@ contains
          eos%assoc%saft_model == eosLJS_WCA .or. &
          eos%assoc%saft_model == eosLJS_UF .or. &
          eos%assoc%saft_model == eosLJS_UV .or. &
-         eos%assoc%saft_model == eosLJ_UF) then
+         eos%assoc%saft_model == eosLJ_UF .or. &
+         eos%assoc%saft_model == eosMie_UV_BH .or. &
+         eos%assoc%saft_model == eosMie_UV_WCA) then
       conv_num = conversion_numerator(eos,nc,T,n)
       if (phase .eq. VAPPH) then
         zeta = 1e-10
@@ -1313,6 +1329,7 @@ contains
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
          ljs_wca_eos, calcFres_WCA
     use multipol, only: add_hyperdual_fres_multipol
+    use uv_theory, only: uv_theory_eos, calcFres_uv
     integer, intent(in) :: nc
     class(base_eos_param), intent(inout) :: eos
     real, intent(in) :: T, V
@@ -1337,6 +1354,8 @@ contains
       call calcFresLJs_bh(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
     class is(ljs_wca_eos)
       call calcFres_WCA(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
+    class is(uv_theory_eos)
+      call calcFres_uv(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
     class is ( PETS_eos )
       call F_PETS_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
    class is ( cb_eos )

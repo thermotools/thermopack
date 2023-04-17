@@ -107,7 +107,7 @@ class cpa(cubic.cubic):
             c2 (int): Component two
 
         Returns:
-            kij (array_like): i-j interaction parameter (2 parameters)
+            kij (array_like): i-j interaction parameter (a_kij, epskl_kij)
         """
         self.activate()
         c1_c = c_int(c1)
@@ -131,7 +131,7 @@ class cpa(cubic.cubic):
         Args:
             c1 (int): Component one
             c2 (int): Component two
-            kij (array_like): i-j interaction parameter (2 parameters)
+            kij (array_like): i-j interaction parameters (a_kij, epskl_kij)
         """
         self.activate()
         c1_c = c_int(c1)
