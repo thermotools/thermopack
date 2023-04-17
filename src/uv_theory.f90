@@ -34,81 +34,81 @@ module uv_theory
 
   ! Coefficient vectors for hard sphere diameter d (Table S23 in [1])
   real, parameter :: C_DHS_WCA_MIE(9) = (/ &
-       1.92840364363978E+00, 4.43165896265079E-01, 5.20120816141761E-01 , &
-       1.82526759234412E-01, 1.10319989659929E-02, -7.97813995328348E-05 , &
-       1.29885156087242E-02, 6.41039871789327E-03, 1.85866741090323E-05 /)
+    1.92840364363978E+00, 4.43165896265079E-01, 5.20120816141761E-01 , &
+    1.82526759234412E-01, 1.10319989659929E-02, -7.97813995328348E-05 , &
+    1.29885156087242E-02, 6.41039871789327E-03, 1.85866741090323E-05 /)
   real, parameter :: C_DHS_BH_MIE(9) = (/ &
-       1.09360455168912E-02, -2.00897880971934E-01, -1.27074910870683E-02 ,&
-       1.40422470174053E-02, 7.35946850956932E-02, 1.28463973950737E-02 ,&
-       3.71527116894441E-03, 5.05384813757953E-03, 4.91003312452622E-02 /)
+    1.09360455168912E-02, -2.00897880971934E-01, -1.27074910870683E-02 ,&
+    1.40422470174053E-02, 7.35946850956932E-02, 1.28463973950737E-02 ,&
+    3.71527116894441E-03, 5.05384813757953E-03, 4.91003312452622E-02 /)
 
   ! Coefficient vectors for effective packing fraction \eta_A (Table S2 in [1])
   real, parameter :: C_ETA_A_WCA_MIE(4,4) = RESHAPE( (/ &
-       -0.888512176, 0.265207151, -0.851803291, -1.380304110, &
-       -0.395548410, -0.626398537, -1.484059291, -3.041216688, &
-       -2.905719617, -1.778798984, -1.556827067, -4.308085347, &
-       0.429154871, 20.765871545, 9.341250676, -33.787719418 /), &
-       shape=(/4,4/), order=(/2,1/))
+    -0.888512176, 0.265207151, -0.851803291, -1.380304110, &
+    -0.395548410, -0.626398537, -1.484059291, -3.041216688, &
+    -2.905719617, -1.778798984, -1.556827067, -4.308085347, &
+    0.429154871, 20.765871545, 9.341250676, -33.787719418 /), &
+    shape=(/4,4/), order=(/2,1/))
   real, parameter :: C_ETA_A_BH_MIE(4,4) = RESHAPE( (/ &
-       -1.217417282, 6.754987582, -0.5919326153, -28.99719604, &
-       1.579548775, -26.93879416, 0.3998915410, 106.9446266, &
-       -1.993990512, 44.11863355, -40.10916106, -29.61308489, &
-       0.0, 0.0, 0.0, 0.0/), &
-       shape=(/4,4/), order=(/2,1/))
+    -1.217417282, 6.754987582, -0.5919326153, -28.99719604, &
+    1.579548775, -26.93879416, 0.3998915410, 106.9446266, &
+    -1.993990512, 44.11863355, -40.10916106, -29.61308489, &
+    0.0, 0.0, 0.0, 0.0/), &
+    shape=(/4,4/), order=(/2,1/))
 
   ! Coefficient matrices for effective packing fraction \eta_B (Eqs S35, S36 in [1])
   real, parameter :: C_ETA_B_WCA_MIE(3,2) = RESHAPE( (/ &
-       -0.883143456, -0.618156214,&
-       -0.589914255, -3.015264636,&
-       -2.152046477, 4.7038689542/), shape=(/3,2/), order=(/2,1/))
+    -0.883143456, -0.618156214,&
+    -0.589914255, -3.015264636,&
+    -2.152046477, 4.7038689542/), shape=(/3,2/), order=(/2,1/))
   real, parameter :: C_ETA_B_BH_MIE(3,2) = RESHAPE( (/ &
-       -0.960919783, -0.921097447, &
-       -0.547468020, -3.508014069, &
-       -2.253750186, 3.581161364/), shape=(/3,2/), order=(/2,1/))
+    -0.960919783, -0.921097447, &
+    -0.547468020, -3.508014069, &
+    -2.253750186, 3.581161364/), shape=(/3,2/), order=(/2,1/))
 
   ! Coefficient matrix for the dimensionless correlation integral I^u_BH (Table S3 in [1])
   real, parameter :: C_IU_BH_MIE(3,4) = RESHAPE( (/ &
-       0.0, 0.0, 0.0, 0.0, &
-       0.1689669965, -0.9915458191, 0.7431421806, -4.323495934, &
-       -0.5326281629, 2.660390140, -1.950702799, -0.000137219512 &
-       /), shape=(/3,4/), order=(/2,1/))
+    0.0, 0.0, 0.0, 0.0, &
+    0.1689669965, -0.9915458191, 0.7431421806, -4.323495934, &
+    -0.5326281629, 2.660390140, -1.950702799, -0.000137219512 &
+    /), shape=(/3,4/), order=(/2,1/))
 
   ! Coefficient matrix for the dimensionless correlation integral I^u_WCA (Table S4 in [1])
   real, parameter :: C_IU_WCA_MIE(6,6) = RESHAPE( (/ &
-       -0.2622378162, 0.6585817423, 5.5318022309, 0.6902354794, -3.6825190645, -1.7263213318, &
-       -0.1899241690, -0.5555205158, 9.1361398949, 0.7966155658, -6.1413017045 , 4.9553415149, &
-       0.1169786415, -0.2216804790, -2.0470861617, -0.3742261343, 0.9568416381 , 10.1401796764, &
-       0.5852642702, 2.0795520346, 19.0711829725, -2.3403594600, 2.5833371420, 432.3858674425, &
-       -0.6084232211, -7.2376034572, 19.0412933614, 3.2388986513, 75.4442555789, -588.3837110653, &
-       0.0512327656, 6.6667943569, 47.1109947616, -0.5011125797, -34.8918383146, 189.5498636006 &
-       /), shape=(/6,6/), order=(/2,1/))
+    -0.2622378162, 0.6585817423, 5.5318022309, 0.6902354794, -3.6825190645, -1.7263213318, &
+    -0.1899241690, -0.5555205158, 9.1361398949, 0.7966155658, -6.1413017045 , 4.9553415149, &
+    0.1169786415, -0.2216804790, -2.0470861617, -0.3742261343, 0.9568416381 , 10.1401796764, &
+    0.5852642702, 2.0795520346, 19.0711829725, -2.3403594600, 2.5833371420, 432.3858674425, &
+    -0.6084232211, -7.2376034572, 19.0412933614, 3.2388986513, 75.4442555789, -588.3837110653, &
+    0.0512327656, 6.6667943569, 47.1109947616, -0.5011125797, -34.8918383146, 189.5498636006 &
+    /), shape=(/6,6/), order=(/2,1/))
 
   ! Coefficients for calculation of DeltaB2 (Table S5 in [1])
   real, parameter :: C_DELTAB2_WCA(6) = (/ 1.45805207053190E-03, 3.57786067657446E-02, &
-       1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)
+    1.25869266841313E-04, 1.79889086453277E-03, 0.0, 0.0 /)
   real, parameter :: A_DELTAB2_WCA = 1.05968091375869
   real, parameter :: B_DELTAB2_WCA = 3.41106168592999
   real, parameter :: C_DELTAB2_BH(6) = (/ 1.50542979585173E-03, 3.90426109607451E-02, &
-       3.23388827421376E-04, 1.29508541592689E-02, 5.25749466058948E-05, 5.26748277148572E-04 /)
+    3.23388827421376E-04, 1.29508541592689E-02, 5.25749466058948E-05, 5.26748277148572E-04 /)
   integer, parameter :: A_DELTAB2_BH = 1
   integer, parameter :: B_DELTAB2_BH = 2
   integer, parameter :: C_EXPONENT_DELTAB2_BH = 4
 
   type, extends(base_eos_param) :: uv_theory_eos
-     ! Mie potential parameters
-     type(mie_potential_hd), allocatable :: mie(:,:)
-     type(hyperdual), allocatable :: dhs(:,:)
-     type(hyperdual), allocatable :: qhs(:,:)
-     type(sutherlandsum), allocatable :: sutsum(:,:)
-     !class(pair_potential), allocatable :: pot(:,:)
-     type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
+    ! Mie potential parameters
+    type(mie_potential_hd), allocatable :: mie(:,:)
+    type(hyperdual), allocatable :: dhs(:,:)
+    type(hyperdual), allocatable :: qhs(:,:)
+    type(sutherlandsum), allocatable :: sutsum(:,:)
+    !class(pair_potential), allocatable :: pot(:,:)
+    type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
 
-     ! Model control
-   contains
-     procedure, public :: dealloc => uv_dealloc
-     procedure, public :: allocate_and_init => uv_allocate_and_init
-     ! Assignment operator
-     procedure, pass(this), public :: assign_eos => assign_uv_eos
+    ! Model control
+  contains
+    procedure, public :: dealloc => uv_dealloc
+    procedure, public :: allocate_and_init => uv_allocate_and_init
+    ! Assignment operator
+    procedure, pass(this), public :: assign_eos => assign_uv_eos
   end type uv_theory_eos
 
   public :: uv_theory_eos
@@ -124,8 +124,8 @@ contains
     !
     select type (other)
     class is (uv_theory_eos)
-       call this%assign_base_eos_param(other)
-       this%mie = other%mie
+      call this%assign_base_eos_param(other)
+      this%mie = other%mie
     class default
     end select
   end subroutine assign_uv_eos
@@ -140,25 +140,25 @@ contains
     select type (p_eos => eos)
     class is (uv_theory_eos)
 
-       if (allocated(eos%mie)) then
-          deallocate(eos%mie,stat=stat)
-          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate mie")
-       end if
+      if (allocated(eos%mie)) then
+        deallocate(eos%mie,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate mie")
+      end if
 
-       if (allocated(eos%sutsum)) then
-          deallocate(eos%sutsum,stat=stat)
-          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate pot")
-       end if
+      if (allocated(eos%sutsum)) then
+        deallocate(eos%sutsum,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate pot")
+      end if
 
-       if (allocated(eos%dhs)) then
-          deallocate(eos%dhs,stat=stat)
-          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate dhs")
-       end if
+      if (allocated(eos%dhs)) then
+        deallocate(eos%dhs,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate dhs")
+      end if
 
-       if (allocated(eos%qhs)) then
-          deallocate(eos%qhs,stat=stat)
-          if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate qhs")
-       end if
+      if (allocated(eos%qhs)) then
+        deallocate(eos%qhs,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate qhs")
+      end if
 
     end select
   end subroutine uv_dealloc
@@ -226,35 +226,35 @@ contains
 
     ! Deallocate old memory and init new memory
     call eos%allocate_and_init(nc, eos_label="UV-MIE")
-    
-    if (str_eq(ref,"SUTHERLAND")) then
-       LAFITTE = .true.
 
-       ! ! Set pure component data from database
-       ! do i=1,nc
-       !    ! Assign pure SutherlandSum potential
-       !    idx = getSutdataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
-       !    b(i) = MieArray(idx)%lamr
-       !    sigma_vec(i) = MieArray(idx)%sigma
-       !    epsdivk_vec(i) = MieArray(idx)%eps_divk
-       ! end do
+    if (str_eq(ref,"SUTHERLAND")) then
+      LAFITTE = .true.
+
+      ! ! Set pure component data from database
+      ! do i=1,nc
+      !    ! Assign pure SutherlandSum potential
+      !    idx = getSutdataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
+      !    b(i) = MieArray(idx)%lamr
+      !    sigma_vec(i) = MieArray(idx)%sigma
+      !    epsdivk_vec(i) = MieArray(idx)%eps_divk
+      ! end do
     else
-       LAFITTE = .false.
+      LAFITTE = .false.
     end if
 
 
     ! Set pure component data from database
     do i=1,nc
-       ! Assign pure Mie potential
-       idx = getMiedataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
-       lamr_vec(i) = MieArray(idx)%lamr
-       sigma_vec(i) = MieArray(idx)%sigma
-       epsdivk_vec(i) = MieArray(idx)%eps_divk
+      ! Assign pure Mie potential
+      idx = getMiedataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
+      lamr_vec(i) = MieArray(idx)%lamr
+      sigma_vec(i) = MieArray(idx)%sigma
+      epsdivk_vec(i) = MieArray(idx)%eps_divk
 
-       ! Set ideal gas Cp
-       comp(i)%p_comp%id_cp%cptype = 8
-       comp(i)%p_comp%id_cp%cp(:) = 0.0
-       comp(i)%p_comp%id_cp%cp(1) = 2.5
+      ! Set ideal gas Cp
+      comp(i)%p_comp%id_cp%cptype = 8
+      comp(i)%p_comp%id_cp%cp(:) = 0.0
+      comp(i)%p_comp%id_cp%cp(1) = 2.5
     end do
 
     ! Ensure consistent gas constants
@@ -266,13 +266,13 @@ contains
 
     ! Set SutherlandSum potentials, including cross potential parameters
     do i=1,nc
-       C_mat(i,1) = eos%mie(i,i)%Cmie
-       C_mat(i,2) = -C_mat(i,1)
-       lam_mat(i,1) = lamr_vec(i)
-       lam_mat(i,2) = 6.0
+      C_mat(i,1) = eos%mie(i,i)%Cmie
+      C_mat(i,2) = -C_mat(i,1)
+      lam_mat(i,1) = lamr_vec(i)
+      lam_mat(i,2) = 6.0
     end do
     call set_sutsum_parameters(eos,nc,nt=2,C_mat=C_mat,lam_mat=lam_mat, &
-         sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
+      sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
   end subroutine init_uv_theory
 
   subroutine set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
@@ -286,20 +286,20 @@ contains
 
     ! Set pure component potentials
     do i=1,nc
-       ! Assign pure Mie potential
-       lama = 6.0
-       lamr = lamr_vec(i)
-       call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
-       eos%mie(i,i) = mie
+      ! Assign pure Mie potential
+      lama = 6.0
+      lamr = lamr_vec(i)
+      call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+      eos%mie(i,i) = mie
 
-       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
-       do j = i+1,nc
-          sigma = (sigma_vec(i) + sigma_vec(j))/2.0
-          epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
-          call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-          eos%mie(i,j) = mie !call uv_set_mie_pot(eos, i,j, mie)
-          eos%mie(j,i) = mie !call uv_set_mie_pot(eos, j,i, mie)
-       end do
+      ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+      do j = i+1,nc
+        sigma = (sigma_vec(i) + sigma_vec(j))/2.0
+        epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
+        call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+        eos%mie(i,j) = mie !call uv_set_mie_pot(eos, i,j, mie)
+        eos%mie(j,i) = mie !call uv_set_mie_pot(eos, j,i, mie)
+      end do
     end do
   end subroutine set_mie_parameters
 
@@ -314,34 +314,34 @@ contains
     integer :: i, j
     ! Set pure component potentials
     do i=1,nc
-       ! Assign pure SutherlandSum potential
-       if (present(beta_expo)) then
+      ! Assign pure SutherlandSum potential
+      if (present(beta_expo)) then
+        call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+          sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
+      else
+        call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
+          sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+      end if
+      eos%sutsum(i,i) = sutsum
+
+      ! Set cross potentials using standard, Lorentz-Berthelot combining rules
+      ! NB: unclear what the best cross potential should be
+      do j = i+1,nc
+        sigma = (sigma_vec(i) + sigma_vec(j))/2.0
+        epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
+        if (present(beta_expo)) then
           call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
-               sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
-       else
+            sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
+        else
           call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
-               sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
-       end if
-       eos%sutsum(i,i) = sutsum
-       
-       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
-       ! NB: unclear what the best cross potential should be
-       do j = i+1,nc
-          sigma = (sigma_vec(i) + sigma_vec(j))/2.0
-          epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
-          if (present(beta_expo)) then
-             call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
-                  sigma=sigma_vec(i), epsdivk=epsdivk_vec(i), beta_expo=beta_expo(i,:))
-          else
-             call sutsum%init(nt=nt, C=C_mat(i,:), lam=lam_mat(i,:), &
-                  sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
-          end if
-          eos%sutsum(i,j) = sutsum
-          eos%sutsum(j,i) = sutsum
-       end do
+            sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
+        end if
+        eos%sutsum(i,j) = sutsum
+        eos%sutsum(j,i) = sutsum
+      end do
     end do
   end subroutine set_sutsum_parameters
-  
+
 
   subroutine reset_sutsum_external_ij(i,j,nt,C_vec,lam_vec,sigma,epsdivk,beta_expo)
     integer, intent(in)         :: nt,i,j      !< Number of Sutherland terms, interaction pair
@@ -355,42 +355,42 @@ contains
 
     select type( p_eos => eos )
     class is ( uv_theory_eos )
-       if (allocated(p_eos%sutsum)) then
-          C_vec_hd = 0.0
-          C_vec_hd%f0 = C_vec
+      if (allocated(p_eos%sutsum)) then
+        C_vec_hd = 0.0
+        C_vec_hd%f0 = C_vec
 
-          lam_vec_hd = 0.0
-          lam_vec_hd%f0 = lam_vec
+        lam_vec_hd = 0.0
+        lam_vec_hd%f0 = lam_vec
 
-          sigma_hd = 0.0
-          sigma_hd%f0 = sigma
+        sigma_hd = 0.0
+        sigma_hd%f0 = sigma
 
-          epsdivk_hd = 0.0
-          epsdivk_hd%f0 = epsdivk
+        epsdivk_hd = 0.0
+        epsdivk_hd%f0 = epsdivk
 
-          ! Deallocate to avoid memory leak
-          call sutherlandsum_dealloc(p_eos%sutsum(i,j))
-          call sutherlandsum_dealloc(p_eos%sutsum(j,i))
+        ! Deallocate to avoid memory leak
+        call sutherlandsum_dealloc(p_eos%sutsum(i,j))
+        call sutherlandsum_dealloc(p_eos%sutsum(j,i))
 
-          ! Set cross potentials using Lorentz-Berthelot combining rules
-          ! NB: unclear what the best default cross potential actually is
-          if (present(beta_expo)) then
-             call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
-                  sigma=sigma_hd, epsdivk=epsdivk_hd, beta_expo=beta_expo)
-          else
-             call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
-                  sigma=sigma_hd, epsdivk=epsdivk_hd)
-          end if
-          p_eos%sutsum(i,j) = sutsum
-          p_eos%sutsum(j,i) = sutsum
-       else
-          call stoperror ("Sutherland-sum potential not allocated.")
-       end if
+        ! Set cross potentials using Lorentz-Berthelot combining rules
+        ! NB: unclear what the best default cross potential actually is
+        if (present(beta_expo)) then
+          call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
+            sigma=sigma_hd, epsdivk=epsdivk_hd, beta_expo=beta_expo)
+        else
+          call sutsum%init(nt=nt, C=C_vec_hd, lam=lam_vec_hd, &
+            sigma=sigma_hd, epsdivk=epsdivk_hd)
+        end if
+        p_eos%sutsum(i,j) = sutsum
+        p_eos%sutsum(j,i) = sutsum
+      else
+        call stoperror ("Sutherland-sum potential not allocated.")
+      end if
     end select
   end subroutine reset_sutsum_external_ij
 
   subroutine calcFres_uv(eos,nc,T,V,n, f,f_T,f_V,f_n,&
-       f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
+    f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
     use hyperdual_utility, only: hyperdual_fres_wrapper
     !> The Fres function from uv-theory
     type(uv_theory_eos), intent(inout) :: eos
@@ -402,7 +402,7 @@ contains
     real, optional, intent(inout) :: f_T,f_V,f_TT,f_VV,f_TV
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
     call hyperdual_fres_wrapper(fun,eos,nc,T,V,n,f,f_T,f_V,f_n,&
-         f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
+      f_TT,f_VV,f_TV,f_Tn,f_Vn,f_nn)
 
   contains
 
@@ -420,7 +420,7 @@ contains
       rhovec = N_Avogadro*n/V
       select type ( p_eos => eos )
       type is ( uv_theory_eos )
-         call calc_ares_uv(p_eos, nc, T, rhovec=rhovec, a_res=f)
+        call calc_ares_uv(p_eos, nc, T, rhovec=rhovec, a_res=f)
       end select
       f = f*sum(n)
     end function fun
@@ -441,24 +441,24 @@ contains
     ! Precalculate diameters for the additive hard-sphere reference
     ! system
     do i=1,nc
-       if (eos%subeosidx == eosMie_UV_WCA) then
-          LAFITTE = .FALSE.
-          call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
-       else if (eos%subeosidx == eosMie_UV_BH) then
-          if (LAFITTE) then
-             call eos%sutsum(i,i)%update_T(T=T)
-             call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
-             call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
-          else
-             call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
-          end if
-       end if
+      if (eos%subeosidx == eosMie_UV_WCA) then
+        LAFITTE = .FALSE.
+        call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+      else if (eos%subeosidx == eosMie_UV_BH) then
+        if (LAFITTE) then
+          call eos%sutsum(i,i)%update_T(T=T)
+          call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
+          call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
+        else
+          call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+        end if
+      end if
     end do
 
     do i=1,nc
-       do j=1,nc
-          eos%dhs(i,j) = (eos%dhs(i,i) + eos%dhs(j,j))/2.0
-       end do
+      do j=1,nc
+        eos%dhs(i,j) = (eos%dhs(i,i) + eos%dhs(j,j))/2.0
+      end do
     end do
 
     ! Calculate one-fluid Mie parameters
@@ -467,12 +467,12 @@ contains
     sigma3_double = 0.0
     eos%dhs_x = 0.0
     do i=1,nc
-       eos%dhs_x = eos%dhs_x + z(i)*eos%dhs(i,i)**3
-       sigma3_single = sigma3_single + z(i) * eos%mie(i,i)%sigma**3.0
-       do j=1,nc
-          sigma3_double = sigma3_double + z(i)*z(j) * eos%mie(i,j)%sigma**3.0
-          epsdivk_x = epsdivk_x + eos%mie(i,j)%epsdivk * z(i)*z(j) * eos%mie(i,j)%sigma**3.0
-       end do
+      eos%dhs_x = eos%dhs_x + z(i)*eos%dhs(i,i)**3
+      sigma3_single = sigma3_single + z(i) * eos%mie(i,i)%sigma**3.0
+      do j=1,nc
+        sigma3_double = sigma3_double + z(i)*z(j) * eos%mie(i,j)%sigma**3.0
+        epsdivk_x = epsdivk_x + eos%mie(i,j)%epsdivk * z(i)*z(j) * eos%mie(i,j)%sigma**3.0
+      end do
     end do
     eos%epsdivk_x = epsdivk_x / sigma3_double
     eos%sigma_x = sigma3_single**(1.0/3)
@@ -506,10 +506,10 @@ contains
     lamr = eos%mie(1,1)%lamr
     lama = eos%mie(1,1)%lama
     do i = 1,nc
-       dhs_i(i) = eos%dhs(i,i)
-       if (eos%mie(i,i)%lamr /= lamr .or. eos%mie(i,i)%lama /= lama) then
-          stop "Invalid Mie exponents in uv-theory"
-       end if
+      dhs_i(i) = eos%dhs(i,i)
+      if (eos%mie(i,i)%lamr /= lamr .or. eos%mie(i,i)%lama /= lama) then
+        stop "Invalid Mie exponents in uv-theory"
+      end if
     end do
 
     ! TODO: fix this for SutherlandSum
@@ -517,25 +517,25 @@ contains
     T_x = T/eos%epsdivk_x
     rho_r = rho*eos%sigma3_single
     if (eos%subeosidx == eosMie_UV_WCA) then
-       call phi_WCA_Mie(rho_r, lamr, phi)
+      call phi_WCA_Mie(rho_r, lamr, phi)
     else if (eos%subeosidx == eosMie_UV_BH) then
-       if (eos%sutsum(1,1)%beta_dependence) then
-          if (nc /= 1) call stoperror("Only defined for nc=1")
-          one = 1.0
-          alpha = eos%sutsum(1,1)%alpha_x(x=one)
-          call phi_BH_alphavdw(T_x, rho_r, alpha, phi)
-       else
-          call phi_BH_Mie(T_x, rho_r, eos%mie(1,1)%lamr, phi)
-       end if
+      if (eos%sutsum(1,1)%beta_dependence) then
+        if (nc /= 1) call stoperror("Only defined for nc=1")
+        one = 1.0
+        alpha = eos%sutsum(1,1)%alpha_x(x=one)
+        call phi_BH_alphavdw(T_x, rho_r, alpha, phi)
+      else
+        call phi_BH_Mie(T_x, rho_r, eos%mie(1,1)%lamr, phi)
+      end if
     end if
 
     call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
 
     ! Calculate perturbation part of reference system
     if (LAFITTE) then
-       delta_a0 = 0.0
+      delta_a0 = 0.0
     else
-       call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
+      call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
     end if
 
     ! Calculate contribution from reference system
@@ -543,16 +543,16 @@ contains
 
     ! Calculate Delta a1u and Delta B2u
     if (LAFITTE) then
-       call delta_a1u_b2u_sutsum(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+      call delta_a1u_b2u_sutsum(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     else
-       call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+      call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     end if
 
     ! Calculate Delta B2
     if (LAFITTE) then
-       call DeltaB2_quadrature(eos,nc,T,z, Delta_B2)
+      call DeltaB2_quadrature(eos,nc,T,z, Delta_B2)
     else
-       call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
+      call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
     end if
 
     ! Calculate total helmholtz energy
@@ -578,10 +578,10 @@ contains
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
     zetax = 0.0
     do i=1,nc
-       do j=1,nc
-          call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-          zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
-       end do
+      do j=1,nc
+        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+      end do
     end do
     zetax = (PI/6) * rho * zetax
 
@@ -589,21 +589,21 @@ contains
     delta_a1u = 0.0
     delta_b2u = 0.0
     do i=1,nc
-       do j=1,nc
-          x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
-          epsij = eos%sutsum(i,j)%epsdivk
-          a1ij0 = 0.0
-          a1ij = 0.0
-          prefac = - (PI/6) * dhs_bh(i,j)**3
-          do k=1, eos%sutsum(i,j)%nt
-             lamij = eos%sutsum(i,j)%lam(k)
-             call calc_a1tilde_sutherland(x0ij,zetax,lamij,epsij, a1til,a1til0)
-             a1ij0 = a1ij0 + eos%sutsum(i,j)%C(k)* prefac      * a1til0
-             a1ij = a1ij  + eos%sutsum(i,j)%C(k) *(prefac*rho) * a1til
-          end do
-          delta_a1u = delta_a1u + z(i)*z(j)*a1ij
-          delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
-       end do
+      do j=1,nc
+        x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+        epsij = eos%sutsum(i,j)%epsdivk
+        a1ij0 = 0.0
+        a1ij = 0.0
+        prefac = - (PI/6) * dhs_bh(i,j)**3
+        do k=1, eos%sutsum(i,j)%nt
+          lamij = eos%sutsum(i,j)%lam(k)
+          call calc_a1tilde_sutherland(x0ij,zetax,lamij,epsij, a1til,a1til0)
+          a1ij0 = a1ij0 + eos%sutsum(i,j)%C(k)* prefac      * a1til0
+          a1ij = a1ij  + eos%sutsum(i,j)%C(k) *(prefac*rho) * a1til
+        end do
+        delta_a1u = delta_a1u + z(i)*z(j)*a1ij
+        delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
+      end do
     end do
 
     ! uv-theory incorporates the beta factor directly into a1
@@ -612,114 +612,114 @@ contains
   end subroutine delta_a1u_b2u_sutsum
 
   subroutine delta_a2u_sutsum(eos, nc, T, rho, z, delta_a2u)
-   use sutherland_a1tilde
-   use sutherland_a2tilde
-   !> The u contribution computed directly according to BH, without the one-fluid approximation
-   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
-   integer, intent(in) :: nc ! number of components
-   type(hyperdual), intent(in) :: T      ! temperature (K)
-   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
-   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
-   type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
-   ! Locals
-   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
-   type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
-   type(hyperdual) :: dhs_bh(nc,nc)
-   type(hyperdual) :: alphaij, one,Ck, Cl, K_hs, chi
-   integer :: i, j, k,l
+    use sutherland_a1tilde
+    use sutherland_a2tilde
+    !> The u contribution computed directly according to BH, without the one-fluid approximation
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+    integer, intent(in) :: nc ! number of components
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+    type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
+    ! Locals
+    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
+    type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
+    type(hyperdual) :: dhs_bh(nc,nc)
+    type(hyperdual) :: alphaij, one,Ck, Cl, K_hs, chi
+    integer :: i, j, k,l
 
-   ! Calculate zetax and eta0 using Barker-Henderson HS diameters
-   zetax = 0.0
-   zetax_av = 0.0
-   do i=1,nc
+    ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+    zetax = 0.0
+    zetax_av = 0.0
+    do i=1,nc
       do j=1,nc
-         call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
-         zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+        zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
       end do
-   end do
-   zetax = (PI/6) * rho * zetax
-   zetax_av = (PI/6) * rho * zetax_av
+    end do
+    zetax = (PI/6) * rho * zetax
+    zetax_av = (PI/6) * rho * zetax_av
 
-   ! Calculate double-sum of a2 contributions
-   delta_a2u = 0.0
-   one = 1.0
-   do i=1,nc
+    ! Calculate double-sum of a2 contributions
+    delta_a2u = 0.0
+    one = 1.0
+    do i=1,nc
       do j=1,nc
-         a2ij = 0.0
-         x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
-         epsij = eos%sutsum(i,j)%epsdivk
-         prefac = (PI/6) * dhs_bh(i,j)**3
-         alphaij = eos%sutsum(i,j)%alpha_x(x=one)
-         do k=1, eos%sutsum(i,j)%nt
-            Ck = eos%sutsum(i,j)%C(k)
-            lamk = eos%sutsum(i,j)%lam(k)
-            do l=1, eos%sutsum(i,j)%nt
+        a2ij = 0.0
+        x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+        epsij = eos%sutsum(i,j)%epsdivk
+        prefac = (PI/6) * dhs_bh(i,j)**3
+        alphaij = eos%sutsum(i,j)%alpha_x(x=one)
+        do k=1, eos%sutsum(i,j)%nt
+          Ck = eos%sutsum(i,j)%C(k)
+          lamk = eos%sutsum(i,j)%lam(k)
+          do l=1, eos%sutsum(i,j)%nt
 
-               laml = eos%sutsum(i,j)%lam(l)
-               lamij = laml+lamk
-               Cl =  eos%sutsum(i,j)%C(l)
-               call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lamij,epsij,alphaij, a2til,K_hs,chi)
-               a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho) * a2til *Ck*Cl
-               !print *, lamij%f0, Cl%f0*Ck%f0, K_hs%f0, chi%f0, a2til%f0, zetax%f0, zetax_av%f0
-            end do
-            !a2ij = a2ij ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
-         end do
-         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
+            laml = eos%sutsum(i,j)%lam(l)
+            lamij = laml+lamk
+            Cl =  eos%sutsum(i,j)%C(l)
+            call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lamij,epsij,alphaij, a2til,K_hs,chi)
+            a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho) * a2til *Ck*Cl
+            !print *, lamij%f0, Cl%f0*Ck%f0, K_hs%f0, chi%f0, a2til%f0, zetax%f0, zetax_av%f0
+          end do
+          !a2ij = a2ij ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
+        end do
+        delta_a2u = delta_a2u + z(i)*z(j)*a2ij
       end do
-   end do
+    end do
 
-   ! uv-theory incorporates the beta factor directly into a1
-   delta_a2u = delta_a2u/T**2
- end subroutine delta_a2u_sutsum
+    ! uv-theory incorporates the beta factor directly into a1
+    delta_a2u = delta_a2u/T**2
+  end subroutine delta_a2u_sutsum
 
 
- subroutine delta_a3u_sutsum(eos, nc, T, rho, z, delta_a3u)
-   use sutherland_a3tilde
-   !> The u contribution computed directly according to BH, without the one-fluid approximation
-   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
-   integer, intent(in) :: nc ! number of components
-   type(hyperdual), intent(in) :: T      ! temperature (K)
-   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
-   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
-   type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
-   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
-   ! Locals
-   type(hyperdual) :: lamij, epsij, prefac, zetax_av
-   type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
-   type(hyperdual) :: dhs_bh(nc,nc)
-   type(hyperdual) :: alphaij, one
-   integer :: i, j, k
-   
-   zetax_av = 0.0
-   do i=1,nc
+  subroutine delta_a3u_sutsum(eos, nc, T, rho, z, delta_a3u)
+    use sutherland_a3tilde
+    !> The u contribution computed directly according to BH, without the one-fluid approximation
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+    integer, intent(in) :: nc ! number of components
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+    type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
+    !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+    ! Locals
+    type(hyperdual) :: lamij, epsij, prefac, zetax_av
+    type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
+    type(hyperdual) :: dhs_bh(nc,nc)
+    type(hyperdual) :: alphaij, one
+    integer :: i, j, k
+
+    zetax_av = 0.0
+    do i=1,nc
       do j=1,nc
-         call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-         
-         zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
-      end do
-   end do
-   zetax_av = (PI/6) * rho * zetax_av
-   delta_a3u = 0.0
-   one = 1.0
-   do i=1,nc
-      do j=1,nc
-         epsij = eos%sutsum(i,j)%epsdivk
-         a3ij = 0.0
-         prefac = - (PI/6) * dhs_bh(i,j)**3
-         do k=1, eos%sutsum(i,j)%nt
-            lamij = eos%sutsum(i,j)%lam(k)
-            alphaij = eos%sutsum(i,j)%alpha_x(x=one)
-            call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
-            a3ij = a3ij  + a3til
-         end do
-         delta_a3u = delta_a3u + z(i)*z(j)*a3ij
-      end do
-   end do
+        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
 
-   ! uv-theory incorporates the beta factor directly into a1
-   delta_a3u = delta_a3u/T**3
- end subroutine delta_a3u_sutsum
+        zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+      end do
+    end do
+    zetax_av = (PI/6) * rho * zetax_av
+    delta_a3u = 0.0
+    one = 1.0
+    do i=1,nc
+      do j=1,nc
+        epsij = eos%sutsum(i,j)%epsdivk
+        a3ij = 0.0
+        prefac = - (PI/6) * dhs_bh(i,j)**3
+        do k=1, eos%sutsum(i,j)%nt
+          lamij = eos%sutsum(i,j)%lam(k)
+          alphaij = eos%sutsum(i,j)%alpha_x(x=one)
+          call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
+          a3ij = a3ij  + a3til
+        end do
+        delta_a3u = delta_a3u + z(i)*z(j)*a3ij
+      end do
+    end do
+
+    ! uv-theory incorporates the beta factor directly into a1
+    delta_a3u = delta_a3u/T**3
+  end subroutine delta_a3u_sutsum
 
   subroutine delta_a1u_b2u_lafitte(eos, nc, T, rho, z, delta_a1u, delta_b2u)
     use sutherland_a1tilde
@@ -740,10 +740,10 @@ contains
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
     zetax = 0.0
     do i=1,nc
-       do j=1,nc
-          call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-          zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
-       end do
+      do j=1,nc
+        call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+      end do
     end do
     zetax = (PI/6) * rho * zetax
 
@@ -751,19 +751,19 @@ contains
     delta_a1u = 0.0
     delta_b2u = 0.0
     do i=1,nc
-       do j=1,nc
-          x0ij = eos%mie(i,j)%sigma / dhs_bh(i,j)
-          prefac = eos%mie(i,j)%Cmie * (PI/6) * dhs_bh(i,j)**3
-          lrij = eos%mie(i,j)%lamr
-          laij = eos%mie(i,j)%lama
-          epsij = eos%mie(i,j)%epsdivk
-          call calc_a1tilde_sutherland(x0ij,zetax,lrij,epsij, a1til_rep,a1til_rep0)
-          call calc_a1tilde_sutherland(x0ij,zetax,laij,epsij, a1til_att,a1til_att0)
-          a1ij0 = prefac      * (a1til_att0 - a1til_rep0)
-          a1ij = (prefac*rho) * (a1til_att  - a1til_rep)
-          delta_a1u = delta_a1u + z(i)*z(j)*a1ij
-          delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
-       end do
+      do j=1,nc
+        x0ij = eos%mie(i,j)%sigma / dhs_bh(i,j)
+        prefac = eos%mie(i,j)%Cmie * (PI/6) * dhs_bh(i,j)**3
+        lrij = eos%mie(i,j)%lamr
+        laij = eos%mie(i,j)%lama
+        epsij = eos%mie(i,j)%epsdivk
+        call calc_a1tilde_sutherland(x0ij,zetax,lrij,epsij, a1til_rep,a1til_rep0)
+        call calc_a1tilde_sutherland(x0ij,zetax,laij,epsij, a1til_att,a1til_att0)
+        a1ij0 = prefac      * (a1til_att0 - a1til_rep0)
+        a1ij = (prefac*rho) * (a1til_att  - a1til_rep)
+        delta_a1u = delta_a1u + z(i)*z(j)*a1ij
+        delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
+      end do
     end do
 
     ! uv-theory incorporates the beta factor directly into a1
@@ -773,113 +773,113 @@ contains
 
 
   subroutine delta_a2u_lafitte(eos, nc, T, rho, z, delta_a2u)
-   use sutherland_a2tilde
-   !> The u contribution computed directly according to BH, without the one-fluid approximation
-   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
-   integer, intent(in) :: nc ! number of components
-   type(hyperdual), intent(in) :: T      ! temperature (K)
-   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
-   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
-   type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
-   ! Locals
-   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij
-   type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
-   type(hyperdual) :: dhs_bh(nc,nc)
-   type(hyperdual) :: alphaij, one, Csum, K_hs, chi
-   type(hyperdual) :: lrij,laij,lcombij, a2til_att, a2til_rep, a2til_repatt
-   integer :: i, j
+    use sutherland_a2tilde
+    !> The u contribution computed directly according to BH, without the one-fluid approximation
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+    integer, intent(in) :: nc ! number of components
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+    type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
+    ! Locals
+    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij
+    type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
+    type(hyperdual) :: dhs_bh(nc,nc)
+    type(hyperdual) :: alphaij, one, Csum, K_hs, chi
+    type(hyperdual) :: lrij,laij,lcombij, a2til_att, a2til_rep, a2til_repatt
+    integer :: i, j
 
-   ! Calculate zetax and zetax_av and eta0 using Barker-Henderson HS diameters
-   zetax = 0.0
-   zetax_av = 0.0
-   do i=1,nc
+    ! Calculate zetax and zetax_av and eta0 using Barker-Henderson HS diameters
+    zetax = 0.0
+    zetax_av = 0.0
+    do i=1,nc
       do j=1,nc
-         call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
-         zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
+        call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+        zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
       end do
-   end do
-   zetax = (PI/6) * rho * zetax
-   zetax_av = (PI/6) * rho * zetax_av
+    end do
+    zetax = (PI/6) * rho * zetax
+    zetax_av = (PI/6) * rho * zetax_av
 
-   ! Calculate double-sum of a2 contributions
-   delta_a2u = 0.0
-   one = 1.0
-   Csum = 0.0
-   do i=1,nc
+    ! Calculate double-sum of a2 contributions
+    delta_a2u = 0.0
+    one = 1.0
+    Csum = 0.0
+    do i=1,nc
       do j=1,nc
-         Csum = eos%mie(i,j)%Cmie
-         prefac = (PI/6) * dhs_bh(i,j)**3
-         x0ij = eos%mie(i,j)%sigma / dhs_bh(i,j)
-         epsij = eos%mie(i,j)%epsdivk
-         lrij = eos%mie(i,j)%lamr
-         laij = eos%mie(i,j)%lama
-         lcombij = lrij+laij
-         alphaij = eos%mie(i,j)%alpha_x(x=one)
-         lrij = lrij*2.0
-         laij = laij*2.0
-         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lrij,epsij,alphaij, a2til_rep,K_hs,chi)
-         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,laij,epsij,alphaij, a2til_att,K_hs,chi)
-         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lcombij,epsij,alphaij, a2til_repatt,K_hs,chi)
-         a2ij = 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho)*(Csum**2) * (a2til_att -2.0*a2til_repatt + a2til_rep)
-         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
-         print *, lrij%f0, Csum%f0**2, K_hs%f0, chi%f0,  a2til_rep%f0, zetax%f0, zetax_av%f0
+        Csum = eos%mie(i,j)%Cmie
+        prefac = (PI/6) * dhs_bh(i,j)**3
+        x0ij = eos%mie(i,j)%sigma / dhs_bh(i,j)
+        epsij = eos%mie(i,j)%epsdivk
+        lrij = eos%mie(i,j)%lamr
+        laij = eos%mie(i,j)%lama
+        lcombij = lrij+laij
+        alphaij = eos%mie(i,j)%alpha_x(x=one)
+        lrij = lrij*2.0
+        laij = laij*2.0
+        call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lrij,epsij,alphaij, a2til_rep,K_hs,chi)
+        call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,laij,epsij,alphaij, a2til_att,K_hs,chi)
+        call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lcombij,epsij,alphaij, a2til_repatt,K_hs,chi)
+        a2ij = 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho)*(Csum**2) * (a2til_att -2.0*a2til_repatt + a2til_rep)
+        delta_a2u = delta_a2u + z(i)*z(j)*a2ij
+        print *, lrij%f0, Csum%f0**2, K_hs%f0, chi%f0,  a2til_rep%f0, zetax%f0, zetax_av%f0
       end do
-   end do
+    end do
 
-   ! uv-theory incorporates the beta factor directly into a2
-   delta_a2u = delta_a2u/T**2
-   
- end subroutine delta_a2u_lafitte
+    ! uv-theory incorporates the beta factor directly into a2
+    delta_a2u = delta_a2u/T**2
 
- subroutine delta_a3u_lafitte(eos, nc, T, rho, z, delta_a3u)
-   use sutherland_a3tilde
-   !> The u contribution computed directly according to BH, without the one-fluid approximation
-   type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
-   integer, intent(in) :: nc ! number of components
-   type(hyperdual), intent(in) :: T      ! temperature (K)
-   type(hyperdual), intent(in) :: rho    ! density (1/m^3)
-   type(hyperdual), intent(in) :: z(nc)    ! mole fractions
-   type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
-   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
-   ! Locals
-   type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
-   type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
-   type(hyperdual) :: dhs_bh(nc,nc)
-   type(hyperdual) :: alphaij, one, Csum, Ck, K_hs, chi
-   integer :: i, j
+  end subroutine delta_a2u_lafitte
 
-   
+  subroutine delta_a3u_lafitte(eos, nc, T, rho, z, delta_a3u)
+    use sutherland_a3tilde
+    !> The u contribution computed directly according to BH, without the one-fluid approximation
+    type(uv_theory_eos), intent(inout) :: eos ! uv-theory eos
+    integer, intent(in) :: nc ! number of components
+    type(hyperdual), intent(in) :: T      ! temperature (K)
+    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
+    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
+    type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
+    !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
+    ! Locals
+    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
+    type(hyperdual) :: a3til, a3til0, a3ij, a3ij0
+    type(hyperdual) :: dhs_bh(nc,nc)
+    type(hyperdual) :: alphaij, one, Csum, Ck, K_hs, chi
+    integer :: i, j
 
-   ! Calculate zetax and eta0 using Barker-Henderson HS diameters
-   zetax = 0.0
-   zetax_av = 0.0
-   do i=1,nc
+
+
+    ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+    zetax = 0.0
+    zetax_av = 0.0
+    do i=1,nc
       do j=1,nc
-         !call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-         call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-         zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
+        !call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        call calc_bh_diameter(eos%mie(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
+        zetax_av = zetax_av + z(i)*z(j)*eos%mie(i,j)%sigma**3
       end do
-   end do
-   zetax_av = (PI/6) * rho * zetax_av
+    end do
+    zetax_av = (PI/6) * rho * zetax_av
 
-   ! Calculate double-sum of a1 contributions
-   delta_a3u = 0.0
-   one = 1.0
-   do i=1,nc
+    ! Calculate double-sum of a1 contributions
+    delta_a3u = 0.0
+    one = 1.0
+    do i=1,nc
       do j=1,nc
 
-         epsij = eos%mie(i,j)%epsdivk
-         alphaij = eos%mie(i,j)%alpha_x(x=one)
-         call calc_a3tilde_sutherland(zetax_av,epsij,alphaij,a3til)
-         delta_a3u = delta_a3u + z(i)*z(j)*a3til
+        epsij = eos%mie(i,j)%epsdivk
+        alphaij = eos%mie(i,j)%alpha_x(x=one)
+        call calc_a3tilde_sutherland(zetax_av,epsij,alphaij,a3til)
+        delta_a3u = delta_a3u + z(i)*z(j)*a3til
       end do
-   end do
+    end do
 
-   ! uv-theory incorporates the beta factor directly into a1
-   delta_a3u = delta_a3u/T**3
-   
- end subroutine delta_a3u_lafitte
+    ! uv-theory incorporates the beta factor directly into a1
+    delta_a3u = delta_a3u/T**3
+
+  end subroutine delta_a3u_lafitte
 
 
   subroutine delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
@@ -905,9 +905,9 @@ contains
 
     ! Calc correlation integral of effective pure fluid
     if (eos%subeosidx == eosMie_UV_WCA) then
-       call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
+      call Iu_WCA_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
     else if (eos%subeosidx == eosMie_UV_BH) then
-       call Iu_BH_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
+      call Iu_BH_Mie(T_r, rho_r, mie_x, Iu_zerodensity, Iu, dhs=eos%dhs_x_adim)
     end if
 
     ! Calculate Delta_a1u (Eq S42 in [1])
@@ -954,9 +954,9 @@ contains
     tauvec(4:6) = tauvec(1:3)*tau
     C = 0.0
     do i=1,6
-       do j=1,6
-          C(i) = C(i) + C_IU_WCA_MIE(i,j)*tauvec(j)
-       end do
+      do j=1,6
+        C(i) = C(i) + C_IU_WCA_MIE(i,j)*tauvec(j)
+      end do
     end do
     pade_num = mie%cmie*(C(1)*rho_r + C(2)*rho_r**2 + C(3)*rho_r**3)
     pade = pade_num/(1.0 + C(4)*rho_r + C(5)*rho_r**2 + C(6)*rho_r**3)
@@ -988,7 +988,7 @@ contains
 
     ! Calculate C2 and C3 (Eq. S50)
     C = (C_IU_BH_MIE(:,1) + C_IU_BH_MIE(:,2)/nu) &
-         - (C_IU_BH_MIE(:,3) + C_IU_BH_MIE(:,4)/nu)*tau
+      - (C_IU_BH_MIE(:,3) + C_IU_BH_MIE(:,4)/nu)*tau
 
     ! Calculate C1 (Eq. S49)
     C11 = dhs**(6.0-nu) * ((2**(3-nu%f0)-dhs**(nu%f0-3.0))/(3.0 - nu))  + (1.0-8.0*dhs**3)/24.0
@@ -1014,9 +1014,9 @@ contains
     integer :: i, j
     DeltaB2 = 0.0
     do i=1,nc
-       do j=1,nc
-          DeltaB2 = DeltaB2 + z(i)*z(j)*eos%sutsum(i,j)%B2(beta=1.0/T) - (2*PI/3 * eos%dhs(i,j)**3)
-       end do
+      do j=1,nc
+        DeltaB2 = DeltaB2 + z(i)*z(j)*eos%sutsum(i,j)%B2(beta=1.0/T) - (2*PI/3 * eos%dhs(i,j)**3)
+      end do
     end do
   end subroutine DeltaB2_quadrature
 
@@ -1035,11 +1035,11 @@ contains
     is_BH = (eos%subeosidx==eosMie_UV_BH)
     DeltaB2 = 0.0
     do i=1,nc
-       do j=1,nc
-          T_r = T/eos%mie(i,j)%epsdivk
-          call DeltaB2_pure_Mie(is_BH, T_r=T_r, mie=eos%mie(i,j), DeltaB2=DeltaB2ij)
-          DeltaB2 = DeltaB2 + z(i)*z(j)*DeltaB2ij
-       end do
+      do j=1,nc
+        T_r = T/eos%mie(i,j)%epsdivk
+        call DeltaB2_pure_Mie(is_BH, T_r=T_r, mie=eos%mie(i,j), DeltaB2=DeltaB2ij)
+        DeltaB2 = DeltaB2 + z(i)*z(j)*DeltaB2ij
+      end do
     end do
   end subroutine DeltaB2_Mie
 
@@ -1066,24 +1066,24 @@ contains
     ! Precalculate quantities
     beta = 1.0/T_r
     if (is_BH) then
-       rs = 1.0
-       call dhs_BH_Mie(T_r, mie, qhs)
-       qhs = qhs/mie%sigma
-       C_DELTAB2 = C_DELTAB2_BH
-       a_expo = A_DELTAB2_BH
-       b_expo = B_DELTAB2_BH
-       c_expo = C_EXPONENT_DELTAB2_BH
-       wca_term = 0.0
+      rs = 1.0
+      call dhs_BH_Mie(T_r, mie, qhs)
+      qhs = qhs/mie%sigma
+      C_DELTAB2 = C_DELTAB2_BH
+      a_expo = A_DELTAB2_BH
+      b_expo = B_DELTAB2_BH
+      c_expo = C_EXPONENT_DELTAB2_BH
+      wca_term = 0.0
 
     else ! wca
-       rs = rm
-       call qhs_WCA_Mie(T_r, mie, qhs)
-       qhs = qhs/mie%sigma
-       C_DELTAB2 = C_DELTAB2_WCA
-       a_expo = A_DELTAB2_WCA
-       b_expo = B_DELTAB2_WCA
-       c_expo = 1.0 ! this value won't matter
-       wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0)
+      rs = rm
+      call qhs_WCA_Mie(T_r, mie, qhs)
+      qhs = qhs/mie%sigma
+      C_DELTAB2 = C_DELTAB2_WCA
+      a_expo = A_DELTAB2_WCA
+      b_expo = B_DELTAB2_WCA
+      c_expo = 1.0 ! this value won't matter
+      wca_term = (rm**3-qhs**3)/3.0*(exp(beta)-1.0)
     end if
     alpha_rs = mie%alpha_x(rs)
     alpha_rc = mie%alpha_x(rc)
@@ -1109,12 +1109,12 @@ contains
     integer :: i
     eta = 0.0
     do i=1,nc
-       if (eos%subeosidx==eosMie_UV_BH) then
-          call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
-       else
-          call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
-       end if
-       eta = eta + z(i)*dhs**3
+      if (eos%subeosidx==eosMie_UV_BH) then
+        call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
+      else
+        call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
+      end if
+      eta = eta + z(i)*dhs**3
     end do
     eta = pi/6*rho*eta
   end subroutine calc_eta_dhs
@@ -1136,35 +1136,35 @@ contains
 
     delta_a0 = 0.0
     do i=1,nc
-       do j=1,nc
-          Tij_r = T/eos%mie(i,j)%epsdivk
+      do j=1,nc
+        Tij_r = T/eos%mie(i,j)%epsdivk
+        dhs_r = eos%dhs(i,j)/eos%mie(i,j)%sigma
+        !dhs_r = 0.5*(eos%dhs(i,i) + eos%dhs(j,j))
+        if (eos%subeosidx == eosMie_UV_WCA) then
+          rs_r = eos%mie(i,j)%rmin_adim
+          call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
+          qhs_r = qhs_r/eos%mie(i,j)%sigma
+
+          tau = rs_r - dhs_r ! adimensional length scale
+          call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_WCA_MIE)
+          call etaB_Mie(eta, tau, etaB, C_ETA_B_WCA_MIE)
+        else if (eos%subeosidx == eosMie_UV_BH) then
+          rs_r = 1.0
+          dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
+          tau = rs_r - dhs_r ! adimensional length scale
+          call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_BH_MIE)
+          call etaB_Mie(eta, tau, etaB, C_ETA_B_BH_MIE)
+
+          ! feos uses different definitions of tau for BH and WCA...
           dhs_r = eos%dhs(i,j)/eos%mie(i,j)%sigma
-          !dhs_r = 0.5*(eos%dhs(i,i) + eos%dhs(j,j))
-          if (eos%subeosidx == eosMie_UV_WCA) then
-             rs_r = eos%mie(i,j)%rmin_adim
-             call qhs_WCA_Mie(Tij_r, eos%mie(i,j), qhs_r)
-             qhs_r = qhs_r/eos%mie(i,j)%sigma
+          qhs_r = dhs_r
+        end if
 
-             tau = rs_r - dhs_r ! adimensional length scale
-             call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_WCA_MIE)
-             call etaB_Mie(eta, tau, etaB, C_ETA_B_WCA_MIE)
-          else if (eos%subeosidx == eosMie_UV_BH) then
-             rs_r = 1.0
-             dhs_r = 0.5*(eos%dhs(i,i)/eos%mie(i,i)%sigma + eos%dhs(j,j)/eos%mie(j,j)%sigma)
-             tau = rs_r - dhs_r ! adimensional length scale
-             call etaA_Mie(eta, tau, eos%mie(i,j), etaA, C_ETA_A_BH_MIE)
-             call etaB_Mie(eta, tau, etaB, C_ETA_B_BH_MIE)
-
-             ! feos uses different definitions of tau for BH and WCA...
-             dhs_r = eos%dhs(i,j)/eos%mie(i,j)%sigma
-             qhs_r = dhs_r
-          end if
-
-          IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)
-          IB = (1.0-etaB/2.0)/(1.0-etaB)**3 * (rs_r**3-dhs_r**3)
-          I0f = IA-IB
-          delta_a0 = delta_a0 + x(i)*x(j)*eos%mie(i,j)%sigma**3 * I0f
-       end do
+        IA = (1.0-etaA/2.0)/(1.0-etaA)**3 * (rs_r**3-qhs_r**3)
+        IB = (1.0-etaB/2.0)/(1.0-etaB)**3 * (rs_r**3-dhs_r**3)
+        I0f = IA-IB
+        delta_a0 = delta_a0 + x(i)*x(j)*eos%mie(i,j)%sigma**3 * I0f
+      end do
     end do
     delta_a0 = -(2*PI/3)*rho*delta_a0
   end subroutine Delta_a0_mie
@@ -1284,11 +1284,11 @@ contains
 
     ! Coefficients (Eq 16)
     if (lamr%f0==12.0) then
-       C(1) = C_PHI_WCA_LJ(1)
-       C(2) = C_PHI_WCA_LJ(2)
-       C(3) = 0.0
+      C(1) = C_PHI_WCA_LJ(1)
+      C(2) = C_PHI_WCA_LJ(2)
+      C(3) = 0.0
     else
-       C = C_PHI_WCA_MIE
+      C = C_PHI_WCA_MIE
     end if
 
     ! Calculate tanh factor
@@ -1314,13 +1314,13 @@ contains
 
     ! Coefficients (Eq 16)
     if (lamr%f0==12.0) then
-       a_expo = 1.0
-       b_expo = 3.0
-       C = C_PHI_BH_LJ
+      a_expo = 1.0
+      b_expo = 3.0
+      C = C_PHI_BH_LJ
     else
-       a_expo = A_PHI_BH_MIE
-       b_expo = B_PHI_BH_MIE
-       C = C1_PHI_BH_MIE + C2_PHI_BH_MIE/lamr%f0
+      a_expo = A_PHI_BH_MIE
+      b_expo = B_PHI_BH_MIE
+      C = C1_PHI_BH_MIE + C2_PHI_BH_MIE/lamr%f0
     end if
 
     ! Calculate prefactor
