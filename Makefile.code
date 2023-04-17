@@ -125,6 +125,8 @@ OBJE = \
        $(ODIR)/cpa_parameters.o \
        $(ODIR)/pair_potentials.o \
        $(ODIR)/sutherland_a1tilde.o \
+	   $(ODIR)/sutherland_a2tilde.o \
+	   $(ODIR)/sutherland_a3tilde.o \
        $(ODIR)/cbselect.o \
        $(ODIR)/hardsphere_bmcsl.o \
        $(ODIR)/pc_saft_nonassoc.o \
@@ -544,6 +546,14 @@ $(ODIR)/sutherland_a1tilde.o: $(SRC)/sutherland_a1tilde.f90 \
 	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90 \
 	$(SRC)/thermopack_constants.f90	 
 	@$(call make_object, $(SRC)/sutherland_a1tilde.f90)
+$(ODIR)/sutherland_a2tilde.o: $(SRC)/sutherland_a2tilde.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/thermopack_constants.f90	 
+	@$(call make_object, $(SRC)/sutherland_a2tilde.f90)
+$(ODIR)/sutherland_a3tilde.o: $(SRC)/sutherland_a3tilde.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/thermopack_constants.f90	 
+	@$(call make_object, $(SRC)/sutherland_a3tilde.f90)
 $(ODIR)/uv_theory.o: $(SRC)/uv_theory.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_utils.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/eosdata.f90 \
@@ -829,7 +839,7 @@ $(ODIR)/thermo_utils.o: $(SRC)/thermo_utils.f90 \
 	@$(call make_object, $(SRC)/thermo_utils.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90 \
 	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_constants.f90 \
-	$(SRC)/critical.f90 $(SRC)/eostv.f90 $(SRC)/uv_theory.f90 $(SRC)/pair_potentials.f90 $(SRC)/saft_interface.f90
+	$(SRC)/critical.f90 $(SRC)/eostv.f90
 	@$(call make_object, $(SRC)/thermopack.f90)
 $(ODIR)/thermopack_constants.o: $(SRC)/thermopack_constants.f90
 	@$(call make_object, $(SRC)/thermopack_constants.f90)

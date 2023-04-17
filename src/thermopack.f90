@@ -86,8 +86,8 @@ program run_thermopack
      Delta_a2u = 0.0
      Delta_a3u = 0.0
      ! TODO for Tage: implement these routines.
-     !call delta_a2u_lafitte(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a2u)
-     !call delta_a3u_lafitte(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a3u)
+     call delta_a2u_lafitte(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a2u)
+     call delta_a3u_lafitte(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a3u)
      print *, "a2       ", Delta_a2u%f0*T**2
      print *, "a3       ", Delta_a3u%f0*T**3
      print *, ""
