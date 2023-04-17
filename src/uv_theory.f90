@@ -621,12 +621,11 @@ contains
    type(hyperdual), intent(in) :: rho    ! density (1/m^3)
    type(hyperdual), intent(in) :: z(nc)    ! mole fractions
    type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
-   !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
    ! Locals
    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
    type(hyperdual) :: a2til, a2til0, a2ij, a2ij0
    type(hyperdual) :: dhs_bh(nc,nc)
-   type(hyperdual) :: alphaij, one,Csum,Ck, K_hs, chi
+   type(hyperdual) :: alphaij, one,Ck, Cl, K_hs, chi
    integer :: i, j, k,l
 
    ! Calculate zetax and eta0 using Barker-Henderson HS diameters
@@ -642,45 +641,36 @@ contains
    zetax = (PI/6) * rho * zetax
    zetax_av = (PI/6) * rho * zetax_av
 
-   ! Calculate double-sum of a1 contributions
+   ! Calculate double-sum of a2 contributions
    delta_a2u = 0.0
    one = 1.0
-   Csum = 0.0
-   !delta_b2u = 0.0
    do i=1,nc
       do j=1,nc
+         a2ij = 0.0
          x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
          epsij = eos%sutsum(i,j)%epsdivk
-         !a2ij0 = 0.0
-         a2ij = 0.0
-         prefac = - (PI/6) * dhs_bh(i,j)**3
+         prefac = (PI/6) * dhs_bh(i,j)**3
+         alphaij = eos%sutsum(i,j)%alpha_x(x=one)
          do k=1, eos%sutsum(i,j)%nt
             Ck = eos%sutsum(i,j)%C(k)
-            Csum = Csum + Ck
             lamk = eos%sutsum(i,j)%lam(k)
             do l=1, eos%sutsum(i,j)%nt
 
                laml = eos%sutsum(i,j)%lam(l)
                lamij = laml+lamk
-               alphaij = eos%sutsum(i,j)%alpha_x(x=one)
-               !Cl =  eos%sutsum(i,j)%C(l)
+               Cl =  eos%sutsum(i,j)%C(l)
                call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lamij,epsij,alphaij, a2til,K_hs,chi)
-               a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
-               !0.5*K_hs*(1.0+chi)*
-               !a2ij0 = a2ij0 + eos%sutsum(i,j)%C(k)* prefac      * a2til0
-               !note that Ck is given 
-               !a2ij = a2ij  + eos%sutsum(i,j)%C(k)**2 *(prefac*rho) * a2til
+               a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho) * a2til *Ck*Cl
+               !print *, lamij%f0, Cl%f0*Ck%f0, K_hs%f0, chi%f0, a2til%f0, zetax%f0, zetax_av%f0
             end do
-            a2ij = a2ij*Csum**2 ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
+            !a2ij = a2ij ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
          end do
          delta_a2u = delta_a2u + z(i)*z(j)*a2ij
-         !delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
       end do
    end do
 
    ! uv-theory incorporates the beta factor directly into a1
    delta_a2u = delta_a2u/T**2
-   !delta_b2u = delta_b2u/T
  end subroutine delta_a2u_sutsum
 
 
@@ -833,6 +823,7 @@ contains
          call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lcombij,epsij,alphaij, a2til_repatt,K_hs,chi)
          a2ij = 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho)*(Csum**2) * (a2til_att -2.0*a2til_repatt + a2til_rep)
          delta_a2u = delta_a2u + z(i)*z(j)*a2ij
+         print *, lrij%f0, Csum%f0**2, K_hs%f0, chi%f0,  a2til_rep%f0, zetax%f0, zetax_av%f0
       end do
    end do
 
