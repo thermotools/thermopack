@@ -8,7 +8,7 @@ module test_uv_theory
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
        thermo_model, get_active_thermo_model
   use pair_potentials, only: mie_potential_hd
-  use pfunit_mod
+  use funit
   implicit none
   public
 
