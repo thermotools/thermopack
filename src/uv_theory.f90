@@ -655,15 +655,12 @@ contains
           Ck = eos%sutsum(i,j)%C(k)
           lamk = eos%sutsum(i,j)%lam(k)
           do l=1, eos%sutsum(i,j)%nt
-
             laml = eos%sutsum(i,j)%lam(l)
             lamij = laml+lamk
             Cl =  eos%sutsum(i,j)%C(l)
             call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lamij,epsij,alphaij, a2til,K_hs,chi)
             a2ij = a2ij  + 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho) * a2til *Ck*Cl
-            !print *, lamij%f0, Cl%f0*Ck%f0, K_hs%f0, chi%f0, a2til%f0, zetax%f0, zetax_av%f0
           end do
-          !a2ij = a2ij ! + 0.5*K_hs*(1.0+chi)*(prefac*rho) * a2til
         end do
         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
       end do
@@ -704,16 +701,12 @@ contains
     one = 1.0
     do i=1,nc
       do j=1,nc
-        epsij = eos%sutsum(i,j)%epsdivk
         a3ij = 0.0
+        epsij = eos%sutsum(i,j)%epsdivk
         prefac = - (PI/6) * dhs_bh(i,j)**3
-        do k=1, eos%sutsum(i,j)%nt
-          lamij = eos%sutsum(i,j)%lam(k)
-          alphaij = eos%sutsum(i,j)%alpha_x(x=one)
-          call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
-          a3ij = a3ij  + a3til
-        end do
-        delta_a3u = delta_a3u + z(i)*z(j)*a3ij
+        alphaij = eos%sutsum(i,j)%alpha_x(x=one)
+        call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
+        delta_a3u = delta_a3u + z(i)*z(j)*a3til
       end do
     end do
 
@@ -823,7 +816,6 @@ contains
         call calc_a2tilde_sutherland(x0ij,zetax,zetax_av,lcombij,epsij,alphaij, a2til_repatt,K_hs,chi)
         a2ij = 0.5*K_hs*(1.0+chi)*epsij*(prefac*rho)*(Csum**2) * (a2til_att -2.0*a2til_repatt + a2til_rep)
         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
-        print *, lrij%f0, Csum%f0**2, K_hs%f0, chi%f0,  a2til_rep%f0, zetax%f0, zetax_av%f0
       end do
     end do
 
