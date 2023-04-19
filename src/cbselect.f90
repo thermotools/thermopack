@@ -23,8 +23,8 @@ contains
   subroutine get_mixing_rule_index(eosidx, mrulestr, mruleidx)
     use eosdata
     use cubic_eos, only: mix_label_db, get_mix_db_idx, cbMixHuronVidal, &
-         cbMixVdW, cbMixHVCPA, cbMixHVCPA2, cbMixHuronVidal2, &
-         cbMixWongSandler, cbMixWSCPA, cbMixVdWCPA
+      cbMixVdW, cbMixHVCPA, cbMixHVCPA2, cbMixHuronVidal2, &
+      cbMixWongSandler, cbMixWSCPA, cbMixVdWCPA
     use stringmod, only: str_eq
     implicit none
     integer, intent(in) :: eosidx
@@ -49,7 +49,7 @@ contains
         mruleidx = cbMixHVCPA
       elseif (mruleidx ==  cbMixHuronVidal2) then
         mruleidx = cbMixHVCPA2
-     elseif (mruleidx == cbMixWongSandler) then
+      elseif (mruleidx == cbMixWongSandler) then
         mruleidx = cbMixWSCPA
       else
         call stoperror("Selected mixing rule not implemented for cubic part of the CPA model.")
@@ -58,7 +58,7 @@ contains
 
   end subroutine get_mixing_rule_index
 
- !----------------------------------------------------------------------
+  !----------------------------------------------------------------------
   !> Selection of equation of state and the mixing rule
   !! Data from the eos-database is copied to the global variable cbeos
   !! \param eosstr The equation of state as a character string e.g 'SRK' og 'PR'
@@ -104,9 +104,9 @@ contains
 
     ! Set beta correlation (CLASSIC means the regular cubic b parameter)
     if (present(betastr)) then
-       call tpInitBetaCorr(nc, comp, cbeos, betastr)
+      call tpInitBetaCorr(nc, comp, cbeos, betastr)
     else
-       call tpInitBetaCorr(nc, comp, cbeos, "CLASSIC")
+      call tpInitBetaCorr(nc, comp, cbeos, "CLASSIC")
     end if
 
   end subroutine SelectCubicEOS
@@ -138,12 +138,12 @@ contains
     end select
 
     if (cbeos%subeosidx /= cbSW .and. cbeos%subeosidx /= cbPT) then
-       call cbCalcM(cbeos)
+      call cbCalcM(cbeos)
 
-       ! Initialze mixing rule for the C-parameter
-       cbeos%ci = 0.0
-       cbeos%sumc = 0.0
-       cbeos%cij = 0.0
+      ! Initialze mixing rule for the C-parameter
+      cbeos%ci = 0.0
+      cbeos%sumc = 0.0
+      cbeos%cij = 0.0
     endif
 
     call cbCalcOmegaZc(nc,cbeos) !< Uses the calculated m1 and m2 for two-param eos
@@ -183,12 +183,12 @@ contains
     cbeos%mruleid = trim(mrulestr)
 
     if (isHVmixModel(cbeos%mruleidx) .or. cbeos%mruleidx == cbMixNRTL) then
-       call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
+      call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
     end if
 
     if (cbeos%mruleidx == cbMixWongSandler .or. cbeos%mruleidx == cbMixWSCPA .or. cbeos%mruleidx == cbMixHVWS) then
-       !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
-       call cbeos%mixWS%WS_allocate_and_init(nc)
+      !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
+      call cbeos%mixWS%WS_allocate_and_init(nc)
     endif
 
     if (cbeos%mruleidx == cbMixUNIFAC) then
@@ -342,7 +342,7 @@ contains
   subroutine tpSelectInteractionParameters (nc,comp,cbeos,param_reference)
     use eosdata
     use cubic_eos, only: cb_eos, cbMixReid, cbMixVdW, cbMixHuronVidal, &
-         cbmixHuronVidal2, cbmixNRTL, cbMixVdWCPA,cbMixHVCPA,cbMixHVCPA2
+      cbmixHuronVidal2, cbmixNRTL, cbMixVdWCPA,cbMixHVCPA,cbMixHVCPA2
     use compdata, only: gendata_pointer
     use stringmod, only: str_eq
     use CPA_parameters, only: getCPAkij_a, getCpaGEij
@@ -363,36 +363,36 @@ contains
         mixingrule: select case (cbeos%mruleidx)
         case (cbMixReid) !< Asymetric
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,cbeos%mruleid,&
-               param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
+            param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
           cbeos%kij(j,i) = getkij(cbeos,cbeos%eosid,cbeos%mruleid,&
-               param_reference,comp(j)%p_comp%ident,comp(i)%p_comp%ident)
+            param_reference,comp(j)%p_comp%ident,comp(i)%p_comp%ident)
         case (cbMixVdW)
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,cbeos%mruleid,&
-               param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
+            param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
           cbeos%kij(j,i) = cbeos%kij(i,j)
           cbeos%lij(i,j) = getlij(cbeos,cbeos%eosid,cbeos%mruleid,&
-               param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
+            param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident)
           cbeos%lij(j,i) = cbeos%lij(i,j)
           if (cbeos%lij(i,j)/=0) cbeos%simple_covolmixing = .false.
         case (cbMixHuronVidal, cbmixHuronVidal2, cbmixNRTL)
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,"Classic",&
-               param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident) !< First get the kij for vdW
+            param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident) !< First get the kij for vdW
           cbeos%kij(j,i) = cbeos%kij(i,j)
           call getInterDataGEij(cbeos%mixGE,cbeos%eosid,param_reference,&
-               comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found_ge) !< get both  the ij- and ji-pair
+            comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found_ge) !< get both  the ij- and ji-pair
         case (cbMixVdWCPA,cbMixHVCPA,cbMixHVCPA2)
           cbeos%kij(i,j) = getCPAkij_a(cbeos%subeosidx,comp(i)%p_comp%ident,&
-               comp(j)%p_comp%ident,found=found)
+            comp(j)%p_comp%ident,found=found)
           if ((.not. found) .and. (cbeos%subeosidx .eq. cpaSRK)) &
-               cbeos%kij(i,j) = getkij(cbeos,eosid="srk",mruleid="classic",&
-               ref=param_reference,uid1=comp(i)%p_comp%ident,uid2=comp(j)%p_comp%ident)
+            cbeos%kij(i,j) = getkij(cbeos,eosid="srk",mruleid="classic",&
+            ref=param_reference,uid1=comp(i)%p_comp%ident,uid2=comp(j)%p_comp%ident)
           if ((.not. found) .and. (cbeos%subeosidx .eq. cpaPR)) &
-               cbeos%kij(i,j) = getkij(cbeos,eosid="pr",mruleid="classic",&
-               ref=param_reference,uid1=comp(i)%p_comp%ident,uid2=comp(j)%p_comp%ident)
+            cbeos%kij(i,j) = getkij(cbeos,eosid="pr",mruleid="classic",&
+            ref=param_reference,uid1=comp(i)%p_comp%ident,uid2=comp(j)%p_comp%ident)
           cbeos%kij(j,i) = cbeos%kij(i,j)
           if (cbeos%mruleidx == cbMixHVCPA .OR. cbeos%mruleidx == cbMixHVCPA2) then
             call getCpaGEij(cbeos%mixGE,cbeos%eosid,param_reference,&
-                 comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found) !< get both  the ij- and ji-pair
+              comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found) !< get both  the ij- and ji-pair
           endif
         end select mixingrule
       enddo
@@ -423,15 +423,15 @@ contains
     idx = 1
     found = .false.
     do while (idx <= nc .and. .not. found)
-       if (trim(compid) /= comp(idx)%ident) then
-          idx = idx + 1
-       else
-          found = .true.
-       endif
-     enddo
-     if (.not. found) then
-       idx = -1
-     endif
+      if (trim(compid) /= comp(idx)%ident) then
+        idx = idx + 1
+      else
+        found = .true.
+      endif
+    enddo
+    if (.not. found) then
+      idx = -1
+    endif
     return
   end function getCompindex
 
@@ -482,8 +482,8 @@ contains
     idx_lowest = 100000
     do i=1,maxkij
       candidate_found = str_eq (eosid_local,kijdb(i)%eosid) .and. str_eq(mruleid,kijdb(i)%mruleid) &
-           .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
-           .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
+        .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
+        .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
       if (candidate_found) then
         if (.not. found) then ! we at least found one match
           kijvalue = kijdb(i)%kijvalue
@@ -526,9 +526,9 @@ contains
     idx_lowest = 100000
     do i=1,maxlij
       candidate_found = str_eq(eosid,lijdb(i)%eosid) &
-            .and. str_eq(mruleid,lijdb(i)%mruleid) &
-            .and. ((str_eq(uid1,lijdb(i)%uid1) .and. str_eq(uid2,lijdb(i)%uid2)) &
-            .or.  ( str_eq(uid1,lijdb(i)%uid2) .and. str_eq(uid2,lijdb(i)%uid1)))
+        .and. str_eq(mruleid,lijdb(i)%mruleid) &
+        .and. ((str_eq(uid1,lijdb(i)%uid1) .and. str_eq(uid2,lijdb(i)%uid2)) &
+        .or.  ( str_eq(uid1,lijdb(i)%uid2) .and. str_eq(uid2,lijdb(i)%uid1)))
       if (candidate_found) then
         call string_match_val(ref_local,lijdb(i)%ref,ref_match,match_val)
         if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
@@ -540,11 +540,11 @@ contains
   end function getlij
 
   subroutine getInterDataGEij(mGE, eosid, ref, uid1, uid2, &
-       indxi, indxj, found)
+    indxi, indxj, found)
     use mixdatadb
     use eosdata
     use cubic_eos, only: mixExcessGibbs, cbMixHuronVidal, cbMixHuronVidal2,&
-         cbMixNRTL
+      cbMixNRTL
     use stringmod, only: str_eq
     implicit none
     type(mixExcessGibbs), intent(inout) ::  mGE
@@ -564,19 +564,19 @@ contains
 
     do idx=1,maxinterGEij
       isUidMatch = (str_eq(uid1,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid2,interGEdb(idx)%uid2)) .OR. &
-           (str_eq(uid2,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid1,interGEdb(idx)%uid2))
+        str_eq(uid2,interGEdb(idx)%uid2)) .OR. &
+        (str_eq(uid2,interGEdb(idx)%uid1) .AND. &
+        str_eq(uid1,interGEdb(idx)%uid2))
       isHV = ((str_eq ('HV2',interGEdb(idx)%mruleid) &
-           .and. (mGE%mGE == cbMixHuronVidal2)) .OR. &
-           (str_eq ('HV1',interGEdb(idx)%mruleid) &
-           .and. mGE%mGE == cbMixHuronVidal))
+        .and. (mGE%mGE == cbMixHuronVidal2)) .OR. &
+        (str_eq ('HV1',interGEdb(idx)%mruleid) &
+        .and. mGE%mGE == cbMixHuronVidal))
       isNRTL = (str_eq ('NRTL',interGEdb(idx)%mruleid) &
-           .and. mGE%mGE == cbMixNRTL)
+        .and. mGE%mGE == cbMixNRTL)
 
       if ( isUidMatch .AND. &
-           str_eq (eosid,interGEdb(idx)%eosid) .AND.&
-           isHV .OR. isNRTL) then
+        str_eq (eosid,interGEdb(idx)%eosid) .AND.&
+        isHV .OR. isNRTL) then
         if (string_match(ref,interGEdb(idx)%ref)) then
           found = .true.
           exit ! Exit do loop
@@ -593,7 +593,7 @@ contains
 
     if (found) then
       if ( str_eq(uid1,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid2,interGEdb(idx)%uid2)) then
+        str_eq(uid2,interGEdb(idx)%uid2)) then
         i = indxi
         j = indxj
       else
@@ -616,7 +616,7 @@ contains
       else
         if (interGEdb(idx)%correlation == 2) then
           call stoperror('The Maribo-Mogensen correlation'//&
-               ' for component interaction require HV2')
+            ' for component interaction require HV2')
         endif
       endif
     endif

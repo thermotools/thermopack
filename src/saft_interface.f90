@@ -27,12 +27,12 @@ module saft_interface
   use thermopack_constants, only: verbose
   use compdata, only: gendata
   use eosdata, only: cpaSRK, cpaPR, eosPC_SAFT, eosOPC_SAFT, &
-       eosSPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
-       eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
-       eosPCP_SAFT, eosSPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
+    eosSPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
+    eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
+    eosPCP_SAFT, eosSPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param, numassocsites
+    get_active_eos, base_eos_param, numassocsites
   use association_var, only: association
   implicit none
   save
@@ -100,19 +100,19 @@ contains
     ! Fetch parameters from the database.
     if (assoc%saft_model == eosSAFT_VR_MIE) then
       call getSaftVrMieAssocParams_allComps(nc,comp,eos%subeosidx,param_ref,&
-           compinDB,eps_db,beta_db,assocSchemes_db)
+        compinDB,eps_db,beta_db,assocSchemes_db)
     else if (eos%eosidx == eosPC_SAFT) then
       call getPcSaftPureParams_allComps(nc,comp,eos%eosidx,param_ref,compInDB,&
-           m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db,&
-           mu_db_PCSAFT,Q_db_PCSAFT)
+        m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db,&
+        mu_db_PCSAFT,Q_db_PCSAFT)
     else if (assoc%saft_model == eosPeTS) then
       call getPetsPureParams(nc,comp,assoc%saft_model,param_ref,compInDB,&
-           m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
+        m_db,sigma_db,eps_depth_divk_db,eps_db,beta_db,assocSchemes_db)
     else
       assocSchemes_db = no_assoc
       call getCpaPureParams_allcomps(nc,comp,assoc%saft_model,param_ref,compInDB,&
-           a0_db,b_db,alphaParams_db,eps_db,beta_db,alpharCorrIdx_db,&
-           assocSchemes_db)
+        a0_db,b_db,alphaParams_db,eps_db,beta_db,alpharCorrIdx_db,&
+        assocSchemes_db)
     end if
 
     ! Set association scheme components. Must be done before setting cubic
@@ -137,10 +137,10 @@ contains
     if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosPeTS) then
       !....
     else if (eos%eosidx == eosPC_SAFT) then
-       call getPcSaftKij_allComps(nc,comp,assoc%saft_model,kij_PCSAFT)
+      call getPcSaftKij_allComps(nc,comp,assoc%saft_model,kij_PCSAFT)
     else
-       call getCpaKijAndCombRules_allComps(nc,comp,assoc%saft_model,kij_aEpsBeta_CPA,&
-            epsbeta_combrules_CPA)
+      call getCpaKijAndCombRules_allComps(nc,comp,assoc%saft_model,kij_aEpsBeta_CPA,&
+        epsbeta_combrules_CPA)
     end if
 
     ! Set nonassoc parameters
@@ -148,16 +148,16 @@ contains
     class is ( cb_eos )
       ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
       call cpa_set_cubic_params(nc,comp,p_eos,a0_db,b_db,&
-           alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
+        alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
     class is(sPCSAFT_eos)
       call pcsaft_set_nonassoc_params(p_eos,nc,m_db,sigma_db,&
-           eps_depth_divk_db,kij_PCSAFT)
+        eps_depth_divk_db,kij_PCSAFT)
       ! PCP-SAFT?
       if (eos%subeosidx == eosPCP_SAFT .OR. eos%subeosidx == eosSPCP_SAFT) then
         if (associated(p_eos%mpol_param)) deallocate(p_eos%mpol_param)
         allocate(p_eos%mpol_param, source=multipol_param_constructor(nce))
         call p_eos%mpol_param%init_multipol_param(nce,mu_db_PCSAFT,Q_db_PCSAFT,&
-             p_eos%m,p_eos%sigma,p_eos%eps_depth_divk)
+          p_eos%m,p_eos%sigma,p_eos%eps_depth_divk)
       endif
     class is ( saftvrmie_eos )
       call init_saftvrmie(nc,comp,p_eos,param_ref)
@@ -165,7 +165,7 @@ contains
       call init_ljs_bh(nc,comp,p_eos,param_ref)
     class is ( ljs_wca_eos )
       call init_ljs_wca(nc,comp,p_eos,param_ref)
-   class is ( uv_theory_eos )
+    class is ( uv_theory_eos )
       call init_uv_theory(nc,comp,p_eos,param_ref)
     class is ( PETS_eos )
       call pets_set_params(p_eos,sigma_db,eps_depth_divk_db)
@@ -188,10 +188,10 @@ contains
     allocate(eos%assoc%eps_kl(numAssocSites,numAssocSites))
 
     if (eos%assoc%saft_model == eosSAFT_VR_MIE .or. eos%eosidx == eosPC_SAFT) then
-       call saft_setAssocParams(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)
+      call saft_setAssocParams(eos%assoc,nc,eos%assoc%saft_model,assocSchemes_db,eps_db,beta_db,sigma_db)
     else
-       call cpa_setAssocParams(eos%assoc,nc,assocSchemes_db,eps_db,beta_db,&
-            epsbeta_combrules_CPA,kij_aEpsBeta_CPA(2:3,:,:))
+      call cpa_setAssocParams(eos%assoc,nc,assocSchemes_db,eps_db,beta_db,&
+        epsbeta_combrules_CPA,kij_aEpsBeta_CPA(2:3,:,:))
     end if
 
   end subroutine saft_type_eos_init
@@ -211,23 +211,23 @@ contains
 
     do ic = 1,nc
 
-       ! If component not self-associating: use standard cubic parameters.
-       if (comp(ic)%p_comp%assoc_scheme==no_assoc) cycle
+      ! If component not self-associating: use standard cubic parameters.
+      if (comp(ic)%p_comp%assoc_scheme==no_assoc) cycle
 
-       ! Set cubic a and b parameters. Database parameters have same units as
-       ! those in cbeos%single.
-       cbeos%single(ic)%b = b_in(ic)
-       cbeos%single(ic)%a = a0_in(ic)
+      ! Set cubic a and b parameters. Database parameters have same units as
+      ! those in cbeos%single.
+      cbeos%single(ic)%b = b_in(ic)
+      cbeos%single(ic)%a = a0_in(ic)
 
-       ! Set alpha correlation. Only classic_fit correlation tested.
-       call setSingleAlphaCorr(i=ic, cbeos=cbeos, &
-            alphaIdx=alphaCorrIdx_in(ic), &
-            alphaParams=alphaParams_in(1:3,ic))
+      ! Set alpha correlation. Only classic_fit correlation tested.
+      call setSingleAlphaCorr(i=ic, cbeos=cbeos, &
+        alphaIdx=alphaCorrIdx_in(ic), &
+        alphaParams=alphaParams_in(1:3,ic))
 
-       do jc = (ic+1),nc
-         cbeos%kij(ic,jc) = kij_in(ic,jc)
-         cbeos%kij(jc,ic) = kij_in(ic,jc)
-       end do
+      do jc = (ic+1),nc
+        cbeos%kij(ic,jc) = kij_in(ic,jc)
+        cbeos%kij(jc,ic) = kij_in(ic,jc)
+      end do
     end do
 
   end subroutine cpa_set_cubic_params
@@ -255,8 +255,8 @@ contains
 
         ! eps_depth_divk is the only pc-saft parameter with an interaction parameter kij.
         eos%eps_depth_divk(ic,jc) = &
-             sqrt(eps_depth_divk_in(ic)*eps_depth_divk_in(jc))*&
-             (1-kij_in(ic,jc))
+          sqrt(eps_depth_divk_in(ic)*eps_depth_divk_in(jc))*&
+          (1-kij_in(ic,jc))
         eos%eps_depth_divk(jc,ic) = eos%eps_depth_divk(ic,jc)
       end do
     end do
@@ -310,7 +310,7 @@ contains
           call compidx_to_sites(assoc,ic,k_first,k_last)
           call compidx_to_sites(assoc,jc,l_first,l_last)
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
-               assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
+            assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
             epsi = epsVal(ic)
             betai = betaVal(ic)
             sigi = sigmaVal(ic)
@@ -349,37 +349,37 @@ contains
     assoc%beta_kl = 0.0
 
     do k=1,numAssocSites
-       do l=1,numAssocSites
+      do l=1,numAssocSites
 
-          ! Get component indices.
-          ic = site_to_compidx(assoc, k)
-          jc = site_to_compidx(assoc, l)
+        ! Get component indices.
+        ic = site_to_compidx(assoc, k)
+        jc = site_to_compidx(assoc, l)
 
-          if (ic == jc) then
-             ! Association between like molecules.
-             call compidx_to_sites(assoc, ic,k_first,k_last)
-             if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
-                assoc%eps_kl(k,l) = epsVal(ic)
-                assoc%beta_kl(k,l) = betaVal(ic)
-             end if
-          else
-             ! Cross-association between unlike molecules. (Would also work for
-             ! like molecules.)
-             call compidx_to_sites(assoc,ic,k_first,k_last)
-             call compidx_to_sites(assoc,jc,l_first,l_last)
-             if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
-                  assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
-
-                kij_eps = epsBetaKij(1,ic,jc)
-                kij_beta = epsBetaKij(2,ic,jc)
-                assoc%eps_kl(k,l) = applyCombiningRule (epsBetaCombRules(1,ic,jc), &
-                     epsVal(ic), epsVal(jc)) * (1-kij_eps)
-                assoc%beta_kl(k,l) = applyCombiningRule(epsBetaCombRules(2,ic,jc), &
-                     betaVal(ic), betaVal(jc)) * (1-kij_beta)
-             end if
+        if (ic == jc) then
+          ! Association between like molecules.
+          call compidx_to_sites(assoc, ic,k_first,k_last)
+          if ( site_interaction_internal(k-k_first+1,l-k_first+1,assoc_scheme(ic)) ) then
+            assoc%eps_kl(k,l) = epsVal(ic)
+            assoc%beta_kl(k,l) = betaVal(ic)
           end if
+        else
+          ! Cross-association between unlike molecules. (Would also work for
+          ! like molecules.)
+          call compidx_to_sites(assoc,ic,k_first,k_last)
+          call compidx_to_sites(assoc,jc,l_first,l_last)
+          if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
+            assoc_scheme_I=assoc_scheme(ic), assoc_scheme_II=assoc_scheme(jc)) ) then
 
-       end do
+            kij_eps = epsBetaKij(1,ic,jc)
+            kij_beta = epsBetaKij(2,ic,jc)
+            assoc%eps_kl(k,l) = applyCombiningRule (epsBetaCombRules(1,ic,jc), &
+              epsVal(ic), epsVal(jc)) * (1-kij_eps)
+            assoc%beta_kl(k,l) = applyCombiningRule(epsBetaCombRules(2,ic,jc), &
+              betaVal(ic), betaVal(jc)) * (1-kij_beta)
+          end if
+        end if
+
+      end do
     end do
   end subroutine cpa_setAssocParams
 
@@ -387,11 +387,11 @@ contains
   !> contribution and the underlying equation (e.g. SRK)), together with its
   !> derivatives.
   subroutine calcSaftFder_res(nc,eos,T,V,n,F,F_T,F_V,F_n,F_TT,&
-       F_TV,F_VV,F_Tn,F_Vn,F_nn,Xk)
+    F_TV,F_VV,F_Tn,F_Vn,F_nn,Xk)
     use cubic_eos, only: cb_eos
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, &
-         calcFder_assoc, assemble_param
+      calcFder_assoc, assemble_param
     use saft_association, only: numAssocSites, solve_for_X_k, calcFder_assoc
     use eos_parameters, only: base_eos_param
     ! Input.
@@ -411,7 +411,7 @@ contains
 
     ! Calculate the non-association contribution.
     call calcSaftFder_res_nonassoc(nc,eos,T,V,n,F,F_T,&
-         F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+      F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
 
     if (numAssocSites > 0) then
       if (sum(n(eos%assoc%compIdcs)) > 1e-20) then
@@ -435,7 +435,7 @@ contains
           Xk = X_k ! Return X_k
         endif
         call calcFder_assoc(eos,nc=nc,X_k=X_k,T=T,V=V,n=n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-             F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+          F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
 
         ! Add the non-association and association contribution.
         if (present(F)) F = F + F_nonassoc
@@ -460,7 +460,7 @@ contains
   !> for the non-associationg part, together with its
   !> derivatives.
   subroutine calcSaftFder_res_nonassoc(nc,eos,T,V,n,F,F_T,&
-       F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     use cubic, only: calcCbFder_res_SI
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: F_sPC_SAFT_TVn, F_PC_SAFT_TVn, PCSAFT_eos, sPCSAFT_eos
@@ -469,7 +469,7 @@ contains
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
-         ljs_wca_eos, calcFres_WCA
+      ljs_wca_eos, calcFres_WCA
     use multipol, only: add_hyperdual_fres_multipol
     ! Input.
     integer, intent(in) :: nc
@@ -484,7 +484,7 @@ contains
     select type ( p_eos => eos )
     class is ( cb_eos )
       call calcCbFder_res_SI(nc,p_eos,T,V,n,F,F_T,F_V,F_n,&
-           F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+        F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
       !call calcFder_nonassoc_cpa(nc,comp,cbeos,T,V,n,F,F_T,F_V,F_n,&
       !      F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
     class is ( PCSAFT_eos )
@@ -493,25 +493,25 @@ contains
       call F_sPC_SAFT_TVn(p_eos,T,V,n,F,F_T,F_V,F_n,F_TT,F_TV,F_Tn,F_VV,F_Vn,F_nn)
     class is (ljs_bh_eos)
       call calcFresLJs_bh(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+        F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
       endif
     class is (ljs_wca_eos)
       call calcFres_WCA(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+        F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
       endif
     class is (uv_theory_eos)
       call calcFres_uv(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+        F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
       endif
     class is (saftvrmie_eos)
       call calcFresSAFTVRMie(p_eos,nc,T,V,n,Fl,F_T,F_V,F_n,F_TT,&
-           F_VV,F_TV,F_Tn,F_Vn,F_nn)
+        F_VV,F_TV,F_Tn,F_Vn,F_nn)
       if (present(F)) then
         F = Fl
       endif
@@ -524,15 +524,15 @@ contains
     ! Include polar contributions
     if (associated(eos%mpol_param)) then
       call add_hyperdual_fres_multipol(eos,nc,T,V,n,f=F,f_T=F_T,&
-           f_V=F_V,f_n=F_n,f_TT=F_TT,f_VV=F_VV,f_TV=F_TV,f_Tn=F_Tn,&
-           f_Vn=F_Vn,f_nn=F_nn)
+        f_V=F_V,f_n=F_n,f_TT=F_TT,f_VV=F_VV,f_TV=F_TV,f_Tn=F_Tn,&
+        f_Vn=F_Vn,f_nn=F_nn)
     endif
   end subroutine calcSaftFder_res_nonassoc
 
   !> Front-end procedure giving the combined pressure of the cubic contribution
   !> and the association contribution. Only works for mixtures with association.
   subroutine saft_total_pressure_assoc_mix(nc,eos,T,V,n,P,&
-       dPdV,dPdT,dPdn)
+    dPdV,dPdT,dPdn)
     use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     integer, intent(in) :: nc
@@ -551,7 +551,7 @@ contains
     X_k = 0.2 ! Initial guess.
     call solve_for_X_k(eos,nc,param,X_k)
     call saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
-         dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
+      dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
 
   end subroutine saft_total_pressure_assoc_mix
 
@@ -572,7 +572,7 @@ contains
 
     if (numAssocSites > 0) then
       call saft_total_pressure_assoc_mix(nc,cbeos,T,V,n,P,&
-           dPdV,dPdT,dPdn)
+        dPdV,dPdT,dPdn)
     else
       call nonassoc_pressure(nc,cbeos,T,V,n,P,dPdV,dPdT,dPdn)
     end if
@@ -584,7 +584,7 @@ contains
   !> Helmholtz energy, together with its derivatives.
   !>
   subroutine calc_saft_dispersion(T,V,n,a,a_T,&
-       a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
+    a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
     use cubic, only: calcCbFder_res_SI
     use cubic_eos, only: cb_eos
     use pc_saft_nonassoc, only: alpha_disp_PC_TVn, sPCSAFT_eos
@@ -603,10 +603,10 @@ contains
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
       call alpha_disp_PC_TVn(p_eos,T,V,n,a,alp_V=a_V,alp_T=a_T,alp_n=a_n, &
-           alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
+        alp_VV=a_VV,alp_TV=a_TV,alp_Vn=a_Vn,alp_TT=a_TT,alp_Tn=a_Tn,alp_nn=a_nn)
     class is (saftvrmie_eos)
       call calc_saftvrmie_dispersion(p_eos,nce,T,V,n,F=a,F_T=a_T,F_V=a_V,F_n=a_n,F_TT=a_TT,&
-           F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
+        F_VV=a_VV,F_TV=a_TV,F_Tn=a_Tn,F_Vn=a_Vn,F_nn=a_nn)
     class default
       call stoperror("calc_saft_dispersion: Wrong eos...")
     end select
@@ -816,7 +816,7 @@ contains
 
     if (present(dSdt) .or. present(dSdp) .or. present(dSdn)) then
       call calcSaftFder_res(nc=nc,eos=eos,T=T,V=V,n=n,F=F,F_n=F_n,F_T=F_T, &
-           F_VV=F_VV,F_TV=F_TV,F_TT=F_TT,F_Vn=F_Vn,F_Tn=F_Tn)
+        F_VV=F_VV,F_TV=F_TV,F_TT=F_TT,F_Vn=F_Vn,F_Tn=F_Tn)
       dPdV = -Rgas*T*(F_VV + sumn/V**2)
       dPdT = P/T-Rgas*T*F_TV
       dVdT = -dPdT/dPdV
@@ -935,7 +935,7 @@ contains
       dPdT = P/T-Rgas*T*F_TV
       dVdT = -dPdT/dPdV
       dGdT =  Rgas*(F + T*F_T - sumn*log(zfac)) &
-           + (P-P/zfac+Rgas*T*F_V)*dVdT
+        + (P-P/zfac+Rgas*T*F_V)*dVdT
     end if
 
     if (present(dGdn)) then
@@ -1085,7 +1085,7 @@ contains
     use saftvrmie_interface, only: calc_saftvrmie_zeta
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calc_ljs_bh_zeta, &
-         ljs_wca_eos, calc_ljx_wca_zeta
+      ljs_wca_eos, calc_ljx_wca_zeta
     use uv_theory, only: uv_theory_eos, calc_uv_Mie_eta
     ! Input.
     class(base_eos_param), intent(inout) :: eos
@@ -1110,7 +1110,7 @@ contains
     class is(ljs_wca_eos)
       conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(uv_theory_eos)
-       conv_num = calc_uv_mie_eta(p_eos, nc, T, V=1.0, n=n)
+      conv_num = calc_uv_mie_eta(p_eos, nc, T, V=1.0, n=n)
       !conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(saftvrmie_eos)
       conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
@@ -1154,17 +1154,17 @@ contains
 
     ! Compute conversion numerator and initialize the reduced density zeta.
     if (eos%assoc%saft_model == eosOPC_SAFT .or. &
-         eos%assoc%saft_model == eosSPC_SAFT .or. &
-         eos%assoc%saft_model == eosPCP_SAFT .or. &
-         eos%assoc%saft_model == eosSPCP_SAFT .or. &
-         eos%assoc%saft_model == eosSAFT_VR_MIE .or. &
-         eos%assoc%saft_model == eosLJS_BH .or. &
-         eos%assoc%saft_model == eosLJS_WCA .or. &
-         eos%assoc%saft_model == eosLJS_UF .or. &
-         eos%assoc%saft_model == eosLJS_UV .or. &
-         eos%assoc%saft_model == eosLJ_UF .or. &
-         eos%assoc%saft_model == eosMie_UV_BH .or. &
-         eos%assoc%saft_model == eosMie_UV_WCA) then
+      eos%assoc%saft_model == eosSPC_SAFT .or. &
+      eos%assoc%saft_model == eosPCP_SAFT .or. &
+      eos%assoc%saft_model == eosSPCP_SAFT .or. &
+      eos%assoc%saft_model == eosSAFT_VR_MIE .or. &
+      eos%assoc%saft_model == eosLJS_BH .or. &
+      eos%assoc%saft_model == eosLJS_WCA .or. &
+      eos%assoc%saft_model == eosLJS_UF .or. &
+      eos%assoc%saft_model == eosLJS_UV .or. &
+      eos%assoc%saft_model == eosLJ_UF .or. &
+      eos%assoc%saft_model == eosMie_UV_BH .or. &
+      eos%assoc%saft_model == eosMie_UV_WCA) then
       conv_num = conversion_numerator(eos,nc,T,n)
       if (phase .eq. VAPPH) then
         zeta = 1e-10
@@ -1244,15 +1244,15 @@ contains
       ! Not converged. Have we reached the maximum number of iterations?
       iter = iter + 1
       if (V_has_converged .or. iter > maxiter) then
-         if (verbose) then
-            print *, "The SAFT volume solver didn't fully converge. Sorry."
-            print *, "T", T
-            write(*,'(A,3ES15.5)') "P,P_spec, abs(P-P_spec)/P", P, P_spec, abs(P-P_spec)/P
-            write(*,'(A,3ES15.5)') "Vold, V, abs(V-Vold)/Vold", Vold, V, abs(V-Vold)/Vold
-            print *, "P_V<0?", P_V<0
-            print *, " "
-         endif
-         exit
+        if (verbose) then
+          print *, "The SAFT volume solver didn't fully converge. Sorry."
+          print *, "T", T
+          write(*,'(A,3ES15.5)') "P,P_spec, abs(P-P_spec)/P", P, P_spec, abs(P-P_spec)/P
+          write(*,'(A,3ES15.5)') "Vold, V, abs(V-Vold)/Vold", Vold, V, abs(V-Vold)/Vold
+          print *, "P_V<0?", P_V<0
+          print *, " "
+        endif
+        exit
       end if
 
       ! Not converged, and below maximum number of iterations. Use the sign of F
@@ -1287,7 +1287,7 @@ contains
   !> A back-end procedure giving the combined pressure of the cubic
   !> contribution and the association contribution.
   subroutine saft_total_pressure_knowing_X_k(nc,eos,T,V,n,X_k,P,&
-       dPdV,dPdT,dPdn)
+    dPdV,dPdT,dPdn)
     use thermopack_var, only: base_eos_param
     use saft_association, only: numAssocSites, numAssocSites, assoc_pressure
     integer, intent(in) :: nc
@@ -1307,7 +1307,7 @@ contains
     if (present(dPdT)) temp_t = dPdT
     if (present(dPdn)) temp_n = dPdn
     call nonassoc_pressure(nc,eos,T,V,n,P_nonassoc,&
-         dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
+      dPdV=dPdV,dPdT=dPdT,dPdn=dPdn)
 
     P = P_nonassoc + P_assoc
     if (present(dPdV)) dPdV = dPdV + temp_v
@@ -1327,7 +1327,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_interface, only: calcFresSAFTVRMie
     use lj_splined, only: ljs_bh_eos, calcFresLJs_bh, &
-         ljs_wca_eos, calcFres_WCA
+      ljs_wca_eos, calcFres_WCA
     use multipol, only: add_hyperdual_fres_multipol
     use uv_theory, only: uv_theory_eos, calcFres_uv
     integer, intent(in) :: nc
@@ -1358,10 +1358,10 @@ contains
       call calcFres_uv(p_eos,nc,T,V,n,F,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
     class is ( PETS_eos )
       call F_PETS_TVn(p_eos, T=T,V=V,n=n,F_V=F_V,F_VV=dPdV,F_TV=dPdT,F_Vn=dPdn)
-   class is ( cb_eos )
+    class is ( cb_eos )
       ! This routine takes in the volume in L/mole.
       call cbCalcPressure(nc,p_eos,T,1000*V/sumn,n/sumn,P,&
-           dPdv,dPdT,dpdz=dPdn)
+        dPdv,dPdT,dpdz=dPdn)
       correct_fres = .false.
       ! Convert to volume derivative from (specific volume)-derivative.
       if (present(dPdV)) dPdV = 1000*dPdv/sumn
@@ -1372,7 +1372,7 @@ contains
     ! Include polar contributions
     if (associated(eos%mpol_param)) then
       call add_hyperdual_fres_multipol(eos,nc,T,V,n,&
-           f_V=F_V,f_VV=dPdV,f_TV=dPdT,f_Vn=dPdn)
+        f_V=F_V,f_VV=dPdV,f_TV=dPdT,f_Vn=dPdn)
     endif
 
     if (correct_fres) then
@@ -1476,7 +1476,7 @@ contains
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
       kij = 1 - p_eos%eps_depth_divk(i,j)/sqrt(p_eos%eps_depth_divk(i,i)*&
-           p_eos%eps_depth_divk(j,j))
+        p_eos%eps_depth_divk(j,j))
     class default
       call stoperror("pc_saft_get_kij: Wrong type.")
     end select
@@ -1554,14 +1554,14 @@ contains
     aEps_kij_out = -1e10 ! Make sure things crash if this function fails.
 
     if (i == j) then
-       aEps_kij_out = 0.0
-       return
+      aEps_kij_out = 0.0
+      return
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
     call getCPAkij_epsbeta (p_assoc%saft_model,act_mod_ptr%comps(i)%p_comp%ident,&
-         act_mod_ptr%comps(j)%p_comp%ident,param_ref="DEFAULT",&
-         found=found,epsBetaCombRules=epsBetaCombRules, kijepsbeta=dummy)
+      act_mod_ptr%comps(j)%p_comp%ident,param_ref="DEFAULT",&
+      found=found,epsBetaCombRules=epsBetaCombRules, kijepsbeta=dummy)
 
     ! Get cubic interaction parameter.
     select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
@@ -1585,7 +1585,7 @@ contains
       do k=k_first,k_last
         do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
-               assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
+            assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
 
             denominator = applyCombiningRule(epsBetaCombRules(1), eps_i, eps_j)
             aEps_kij_out(2) = 1 - p_assoc%eps_kl(k,l)/denominator
@@ -1619,12 +1619,12 @@ contains
     p_assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     if (i == j) then
-       call stoperror("Trying to set interaction parameter between a component and itself!")
+      call stoperror("Trying to set interaction parameter between a component and itself!")
     end if
 
     ! Call this routine to get the combining rules for eps and beta.
     call getCpaKijAndCombRules_allComps(nce,act_mod_ptr%comps,p_assoc%saft_model,dummy,&
-         epsbeta_combrules)
+      epsbeta_combrules)
 
     ! Set cubic interaction parameter.
     select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
@@ -1646,11 +1646,11 @@ contains
       do k=k_first,k_last
         do l=l_first,l_last
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
-               assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
-             p_assoc%eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
-                  eps_i, eps_j) * (1-aEps_kij_in(2))
-             !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
-             !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
+            assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
+            p_assoc%eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
+              eps_i, eps_j) * (1-aEps_kij_in(2))
+            !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
+            !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
           end if
         end do
       end do
@@ -1707,9 +1707,9 @@ contains
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-        p_eos%m(ic) = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-        p_eos%sigma(ic,ic) = params(2) !< Covolume b. [b] = L/mol.
-        p_eos%eps_depth_divk(ic,ic) = params(3) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+      p_eos%m(ic) = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+      p_eos%sigma(ic,ic) = params(2) !< Covolume b. [b] = L/mol.
+      p_eos%eps_depth_divk(ic,ic) = params(3) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
     class default
       call stoperror("pc_saft_set_pure_params: Wrong type.")
     end select
@@ -1727,9 +1727,9 @@ contains
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-        params(1) = p_eos%m(ic) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-        params(2) = p_eos%sigma(ic,ic) !< Covolume b. [b] = L/mol.
-        params(3) = p_eos%eps_depth_divk(ic,ic) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+      params(1) = p_eos%m(ic) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
+      params(2) = p_eos%sigma(ic,ic) !< Covolume b. [b] = L/mol.
+      params(3) = p_eos%eps_depth_divk(ic,ic) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
     class default
       call stoperror("pc_saft_get_pure_params: Wrong type.")
     end select
@@ -1778,19 +1778,19 @@ contains
     call compidx_to_sites(assoc, ic,firstSiteIdx, lastSiteIdx)
 
     if ( firstSiteIdx == noSitesFlag  ) then
-       eps = -1.0
-       beta = -1.0
-       return
+      eps = -1.0
+      beta = -1.0
+      return
     end if
 
     do k=firstSiteIdx, lastSiteIdx
-       do l=firstSiteIdx, lastSiteIdx
-          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
-             eps = assoc%eps_kl(k,l)
-             beta = assoc%beta_kl(k,l)
-             return
-          end if
-       end do
+      do l=firstSiteIdx, lastSiteIdx
+        if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+          eps = assoc%eps_kl(k,l)
+          beta = assoc%beta_kl(k,l)
+          return
+        end if
+      end do
     end do
 
   end subroutine getActiveAssocParams
@@ -1805,16 +1805,16 @@ contains
 
     call compidx_to_sites(assoc,ic,firstSiteIdx, lastSiteIdx)
     if ( firstSiteIdx == noSitesFlag  .and. (eps>0.0 .or. beta>0.0) ) then
-       call stoperror("Trying to set association parameters for non-associating component.")
+      call stoperror("Trying to set association parameters for non-associating component.")
     end if
 
     do k=firstSiteIdx, lastSiteIdx
-       do l=firstSiteIdx, lastSiteIdx
-          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
-             assoc%eps_kl(k,l) = eps
-             assoc%beta_kl(k,l) = beta
-          end if
-       end do
+      do l=firstSiteIdx, lastSiteIdx
+        if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+          assoc%eps_kl(k,l) = eps
+          assoc%beta_kl(k,l) = beta
+        end if
+      end do
     end do
 
   end subroutine setActiveAssocParams
@@ -1834,59 +1834,59 @@ contains
     assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     if ( assoc%saft_model == eosOPC_SAFT .OR. &
-         assoc%saft_model == eosSPC_SAFT .OR. &
-         assoc%saft_model == eosPCP_SAFT .OR. &
-         assoc%saft_model == eosSPCP_SAFT) then
-       print *, "Model: PC-SAFT"
-       call pc_saft_get_pure_params(ic=1,params=params1)
-       call pc_saft_get_pure_params(ic=2,params=params2)
+      assoc%saft_model == eosSPC_SAFT .OR. &
+      assoc%saft_model == eosPCP_SAFT .OR. &
+      assoc%saft_model == eosSPCP_SAFT) then
+      print *, "Model: PC-SAFT"
+      call pc_saft_get_pure_params(ic=1,params=params1)
+      call pc_saft_get_pure_params(ic=2,params=params2)
     else
-       call cpa_get_pure_params(ic=1,params=params1)
-       call cpa_get_pure_params(ic=2,params=params2)
+      call cpa_get_pure_params(ic=1,params=params1)
+      call cpa_get_pure_params(ic=2,params=params2)
 
-       if (assoc%saft_model == cpaSRK) then
-          if (verbose) print *, "Model: CPA-SRK"
-       elseif (assoc%saft_model == cpaPR) then
-          if (verbose) print *, "Model: CPA-PR"
-       end if
+      if (assoc%saft_model == cpaSRK) then
+        if (verbose) print *, "Model: CPA-SRK"
+      elseif (assoc%saft_model == cpaPR) then
+        if (verbose) print *, "Model: CPA-PR"
+      end if
     end if
 
     if ( nce == 1 ) then
-       if (verbose) then
-          print *,"Component:", act_mod_ptr%comps(1)%p_comp%ident
-          print *,"Association scheme:",act_mod_ptr%comps(1)%p_comp%assoc_scheme
-       endif
+      if (verbose) then
+        print *,"Component:", act_mod_ptr%comps(1)%p_comp%ident
+        print *,"Association scheme:",act_mod_ptr%comps(1)%p_comp%assoc_scheme
+      endif
     else if ( nce == 2 ) then
-       if (verbose) then
-         print *,"Component 1, scheme:", act_mod_ptr%comps(1)%p_comp%ident, &
-              act_mod_ptr%comps(1)%p_comp%assoc_scheme
-         print *,"Component 2, scheme:", act_mod_ptr%comps(2)%p_comp%ident, &
-              act_mod_ptr%comps(2)%p_comp%assoc_scheme
-          write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
-          write(*,'(A, 5ES11.3)') "Component 2 pure params:", params2
-       endif
-       if ( assoc%saft_model == eosOPC_SAFT .OR. &
-            assoc%saft_model == eosSPC_SAFT .OR. &
-            assoc%saft_model == eosPCP_SAFT .OR. &
-            assoc%saft_model == eosSPCP_SAFT) then
-          call pc_saft_get_kij(1,2,pcSaft_kij)
-          if (verbose) write(*,'(A, ES11.3)') "kij", pcSaft_kij
-       else
-          call cpa_get_kij(1,2,cpa_aEps_kij)
-          if (verbose) write(*,'(A, 2ES11.3)') "kij a_cubic, eps_assoc: ", cpa_aEps_kij
-       end if
+      if (verbose) then
+        print *,"Component 1, scheme:", act_mod_ptr%comps(1)%p_comp%ident, &
+          act_mod_ptr%comps(1)%p_comp%assoc_scheme
+        print *,"Component 2, scheme:", act_mod_ptr%comps(2)%p_comp%ident, &
+          act_mod_ptr%comps(2)%p_comp%assoc_scheme
+        write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
+        write(*,'(A, 5ES11.3)') "Component 2 pure params:", params2
+      endif
+      if ( assoc%saft_model == eosOPC_SAFT .OR. &
+        assoc%saft_model == eosSPC_SAFT .OR. &
+        assoc%saft_model == eosPCP_SAFT .OR. &
+        assoc%saft_model == eosSPCP_SAFT) then
+        call pc_saft_get_kij(1,2,pcSaft_kij)
+        if (verbose) write(*,'(A, ES11.3)') "kij", pcSaft_kij
+      else
+        call cpa_get_kij(1,2,cpa_aEps_kij)
+        if (verbose) write(*,'(A, 2ES11.3)') "kij a_cubic, eps_assoc: ", cpa_aEps_kij
+      end if
 
-       if ( assoc%saft_model /= eosOPC_SAFT .AND. &
-            assoc%saft_model /= eosSPC_SAFT .AND. &
-            assoc%saft_model /= eosPCP_SAFT .AND. &
-            assoc%saft_model /= eosSPCP_SAFT) then
-         call getCPAkij_epsbeta (eosidx=assoc%saft_model,&
-              uid1=act_mod_ptr%comps(1)%p_comp%ident,&
-              uid2=act_mod_ptr%comps(2)%p_comp%ident,&
-              param_ref="DEFAULT",found=found,epsBetaCombRules=rules,&
-              kijepsbeta=cpa_kijepsbeta_db)
-          if (verbose) print *, "Eps/beta combining rules:", rules
-       end if
+      if ( assoc%saft_model /= eosOPC_SAFT .AND. &
+        assoc%saft_model /= eosSPC_SAFT .AND. &
+        assoc%saft_model /= eosPCP_SAFT .AND. &
+        assoc%saft_model /= eosSPCP_SAFT) then
+        call getCPAkij_epsbeta (eosidx=assoc%saft_model,&
+          uid1=act_mod_ptr%comps(1)%p_comp%ident,&
+          uid2=act_mod_ptr%comps(2)%p_comp%ident,&
+          param_ref="DEFAULT",found=found,epsBetaCombRules=rules,&
+          kijepsbeta=cpa_kijepsbeta_db)
+        if (verbose) print *, "Eps/beta combining rules:", rules
+      end if
 
     end if
 

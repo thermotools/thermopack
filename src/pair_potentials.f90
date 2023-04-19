@@ -46,8 +46,8 @@ module pair_potentials
        use hyperdual_mod, only: hyperdual
        import pair_potential
        class(pair_potential), intent(in) :: this !< potential
-       type(hyperdual), intent(in) :: x          !< lower integration limit (-)
-       logical, intent(in), optional :: adim     !< adimensional value for alpha, or in ((J/K)*m^3)?
+       type(hyperdual), optional, intent(in) :: x          !< lower integration limit (-)
+       logical, optional, intent(in) :: adim     !< adimensional value for alpha, or in ((J/K)*m^3)?
      end function alpha_x_intf
   end interface
 
@@ -173,7 +173,7 @@ module pair_potentials
        !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="AR", &
-       lamr=12, &
+       lamr=12.26, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
@@ -208,10 +208,10 @@ module pair_potentials
        !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="C1", &
-       lamr=12, &
-       sigma=3.42E-10, &
-       eps_divk=124.0, &
-       ref="DEFAULT")/)
+       lamr=12.65, &
+       sigma=3.7412E-10, &
+       eps_divk=153.36, &
+       ref="SVRMIE")/)
 
 contains
 
@@ -358,13 +358,15 @@ contains
   type(hyperdual) function mie_potential_hd_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
     class(mie_potential_hd), intent(in) :: this !< This potential
-    type(hyperdual), intent(in) :: x           !< lower integration limit (-)
+    type(hyperdual), optional, intent(in) :: x           !< lower integration limit (-)
     logical, intent(in), optional :: adim      !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
-    type(hyperdual) :: n, nu
+    type(hyperdual) :: n, nu, xloc
+    xloc = 1.0
+    if (present(x)) xloc = x
     n = this%lama
     nu = this%lamr
-    alpha_x = this%cmie * (x**(3.0-n)/(n-3.0) - x**(3.0-nu)/(nu-3.0))
+    alpha_x = this%cmie * (xloc**(3.0-n)/(n-3.0) - xloc**(3.0-nu)/(nu-3.0))
     if (present(adim)) then
        if (.not. adim) then
           alpha_x = alpha_x * this%epsdivk * this%sigma**3
@@ -516,16 +518,18 @@ contains
   type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
     class(sutherlandsum), intent(in) :: this !< This potential
-    type(hyperdual), intent(in) :: x         !< lower integration limit (-)
+    type(hyperdual), optional, intent(in) :: x         !< lower integration limit (-)
     logical, intent(in), optional :: adim    !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
     integer :: k
-    type(hyperdual) :: n
+    type(hyperdual) :: n, xloc
+    xloc = 1.0
+    if (present(x)) xloc = x
 
     alpha_x = 0.0
     do k=1,this%nt
        n = this%lam(k)
-       alpha_x = alpha_x - this%C(k) * (x**(3.0-n)/(n-3.0))
+       alpha_x = alpha_x - this%C(k) * (xloc**(3.0-n)/(n-3.0))
     end do
     if (present(adim)) then
        if (.not. adim) then

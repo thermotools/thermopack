@@ -33,8 +33,8 @@ contains
 
   subroutine assocIndices_bookkeeping (assoc, nc, saft_model, assocSchemes_db)
     use eosdata, only: eosSPC_SAFT, eosOPC_SAFT, eosSAFT_VR_MIE, eosPeTS, eosLJS_BH, &
-         get_eos_short_label_from_subidx, eosLJS_WCA, eosLJS_UV, eosLJ_UF, &
-         eosSPCP_SAFT, eosPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
+      get_eos_short_label_from_subidx, eosLJS_WCA, eosLJS_UV, eosLJ_UF, &
+      eosSPCP_SAFT, eosPCP_SAFT, eosMie_UV_WCA, eosMie_UV_BH
     type(association), intent(inout) :: assoc
     integer, intent(in) :: nc
     integer, intent(in) :: saft_model
@@ -51,33 +51,33 @@ contains
     assoc%numAssocComps = 0
     assoc%numAssocSites = 0
     do ic=1,nc
-       ! Count numAssocComps.
-       if (assocSchemes_db(ic) .ne. no_assoc) then
-          assoc%numAssocComps = assoc%numAssocComps + 1
-          assocCompIdcs(assoc%numAssocComps) = ic
-       end if
-       ! Count association sites, and construct a mapping from component
-       ! indices to site numbers.
-       select case (assocSchemes_db(ic))
-       case (assoc_scheme_1)
-          assoc%numAssocSites = assoc%numAssocSites + 1
-          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites
-          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
-       case (assoc_scheme_2A,assoc_scheme_2B,assoc_scheme_2C)
-          assoc%numAssocSites = assoc%numAssocSites + 2
-          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 1
-          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
-       case (assoc_scheme_3A,assoc_scheme_3B)
-          assoc%numAssocSites = assoc%numAssocSites + 3
-          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 2
-          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
-       case (assoc_scheme_4A,assoc_scheme_4B,assoc_scheme_4C)
-          assoc%numAssocSites = assoc%numAssocSites + 4
-          assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 3
-          assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
-       case (no_assoc)
-          assoc%comp_vs_sites(ic,:) = noSitesFlag
-       end select
+      ! Count numAssocComps.
+      if (assocSchemes_db(ic) .ne. no_assoc) then
+        assoc%numAssocComps = assoc%numAssocComps + 1
+        assocCompIdcs(assoc%numAssocComps) = ic
+      end if
+      ! Count association sites, and construct a mapping from component
+      ! indices to site numbers.
+      select case (assocSchemes_db(ic))
+      case (assoc_scheme_1)
+        assoc%numAssocSites = assoc%numAssocSites + 1
+        assoc%comp_vs_sites(ic,1) = assoc%numAssocSites
+        assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
+      case (assoc_scheme_2A,assoc_scheme_2B,assoc_scheme_2C)
+        assoc%numAssocSites = assoc%numAssocSites + 2
+        assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 1
+        assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
+      case (assoc_scheme_3A,assoc_scheme_3B)
+        assoc%numAssocSites = assoc%numAssocSites + 3
+        assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 2
+        assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
+      case (assoc_scheme_4A,assoc_scheme_4B,assoc_scheme_4C)
+        assoc%numAssocSites = assoc%numAssocSites + 4
+        assoc%comp_vs_sites(ic,1) = assoc%numAssocSites - 3
+        assoc%comp_vs_sites(ic,2) = assoc%numAssocSites
+      case (no_assoc)
+        assoc%comp_vs_sites(ic,:) = noSitesFlag
+      end select
     end do
 
     if (allocated(assoc%compidcs)) deallocate(assoc%compidcs)
@@ -86,21 +86,21 @@ contains
     assoc%compidcs(:) = assocCompIdcs(1:assoc%numAssocComps)
 
     if (assoc%numAssocSites .eq. 0) then
-       ! No associating components: exit routine.
+      ! No associating components: exit routine.
       if ( saft_model == eosSPC_SAFT .or. &
-           saft_model == eosOPC_SAFT .or. &
-           saft_model == eosSPCP_SAFT .or. &
-           saft_model == eosPCP_SAFT .or. &
-           saft_model == eosSAFT_VR_MIE .or. &
-           saft_model == eosPeTS .or. &
-           saft_model == eosLJS_BH .or. &
-           saft_model == eosLJS_WCA .or. &
-           saft_model == eosMie_UV_WCA .or. &
-           saft_model == eosMie_UV_BH .or. &
-           saft_model == eosLJS_UV .or. &
-           saft_model == eosLJ_UF) then
+        saft_model == eosOPC_SAFT .or. &
+        saft_model == eosSPCP_SAFT .or. &
+        saft_model == eosPCP_SAFT .or. &
+        saft_model == eosSAFT_VR_MIE .or. &
+        saft_model == eosPeTS .or. &
+        saft_model == eosLJS_BH .or. &
+        saft_model == eosLJS_WCA .or. &
+        saft_model == eosMie_UV_WCA .or. &
+        saft_model == eosMie_UV_BH .or. &
+        saft_model == eosLJS_UV .or. &
+        saft_model == eosLJ_UF) then
         if (verbose) print *, "Using " // get_eos_short_label_from_subidx(saft_model) &
-             // " with no associating components."
+          // " with no associating components."
         return
       else
         call stoperror("At least one CPA-component must self-associate.")
@@ -118,11 +118,11 @@ contains
 
     ic = 1
     do while (.true.)
-       if (assoc%comp_vs_sites(ic,2) >= k .and. k >= assoc%comp_vs_sites(ic,1)) then
-          site_to_compidx = ic
-          return
-       end if
-       ic = ic+1
+      if (assoc%comp_vs_sites(ic,2) >= k .and. k >= assoc%comp_vs_sites(ic,1)) then
+        site_to_compidx = ic
+        return
+      end if
+      ic = ic+1
     end do
   end FUNCTION site_to_compidx
 
@@ -144,12 +144,12 @@ contains
     integer, intent(in) :: ruleIdx
 
     if ( ruleIdx == ariComb ) then
-       applyCombiningRule = (val1+val2)/2
+      applyCombiningRule = (val1+val2)/2
     else if (ruleIdx == geoComb) then
-       applyCombiningRule = sqrt(val1*val2)
+      applyCombiningRule = sqrt(val1*val2)
     else
-       print *, "Comb rule inputted:", ruleIdx
-       call stoperror("No such combining rule.")
+      print *, "Comb rule inputted:", ruleIdx
+      call stoperror("No such combining rule.")
     end if
   end function applyCombiningRule
 
@@ -170,23 +170,23 @@ contains
     site_interaction_internal = .false.
     select case (assoc_scheme)
     case (assoc_scheme_1)
-       site_interaction_internal = .true.
+      site_interaction_internal = .true.
     case (assoc_scheme_2A)
-       site_interaction_internal = .true.
+      site_interaction_internal = .true.
     case (assoc_scheme_2B)
-       if (site1 .ne. site2) site_interaction_internal = .true.
+      if (site1 .ne. site2) site_interaction_internal = .true.
     case (assoc_scheme_2C)
-       if (site1==1 .or. site2==1) site_interaction_internal = .true.
+      if (site1==1 .or. site2==1) site_interaction_internal = .true.
     case (assoc_scheme_3A)
-       site_interaction_internal = .true.
+      site_interaction_internal = .true.
     case (assoc_scheme_3B)
-       if (site1 .eq. 3 .neqv. site2 .eq. 3) site_interaction_internal = .true.
+      if (site1 .eq. 3 .neqv. site2 .eq. 3) site_interaction_internal = .true.
     case (assoc_scheme_4A)
-       site_interaction_internal = .true.
+      site_interaction_internal = .true.
     case (assoc_scheme_4B)
-       if (site1 .eq. 4 .neqv. site2 .eq. 4) site_interaction_internal = .true.
+      if (site1 .eq. 4 .neqv. site2 .eq. 4) site_interaction_internal = .true.
     case (assoc_scheme_4C)
-       if ( (site1 .le. 2 .and. (site2 .ge. 3)) .or. (site2 .le. 2 .and. (site1 .ge. 3)) ) site_interaction_internal = .true.
+      if ( (site1 .le. 2 .and. (site2 .ge. 3)) .or. (site2 .le. 2 .and. (site1 .ge. 3)) ) site_interaction_internal = .true.
     end select
   end function site_interaction_internal
 
@@ -210,16 +210,16 @@ contains
 
     cross_site_interaction = .false.
     if (assoc_scheme_I == no_assoc .or. assoc_scheme_II == no_assoc) then
-       cross_site_interaction = .false.
-       return
+      cross_site_interaction = .false.
+      return
     end if
 
     pol1 = polarity(site1,assoc_scheme_I)
     pol2 = polarity(site2,assoc_scheme_II)
     if (pol1*pol2 > 0) then
-       cross_site_interaction = .false.
+      cross_site_interaction = .false.
     else
-       cross_site_interaction = .true.
+      cross_site_interaction = .true.
     end if
   end function cross_site_interaction
 
@@ -232,21 +232,21 @@ contains
     polarity = 0
     select case (scheme)
     case (assoc_scheme_1)
-       polarity = -1
+      polarity = -1
     case (assoc_scheme_2B)
-       if (site .eq. 1) polarity = -1
-       if (site .eq. 2) polarity = 1
+      if (site .eq. 1) polarity = -1
+      if (site .eq. 2) polarity = 1
     case (assoc_scheme_2C)
-       if (site .eq. 1) polarity = 0 ! bipolar site
-       if (site .eq. 2) polarity = -1
+      if (site .eq. 1) polarity = 0 ! bipolar site
+      if (site .eq. 2) polarity = -1
     case (assoc_scheme_3B)
-       if (site .le. 2) polarity = 1
-       if (site .eq. 3) polarity = -1
+      if (site .le. 2) polarity = 1
+      if (site .eq. 3) polarity = -1
     case (assoc_scheme_4C)
-       if (site .le. 2) polarity = -1
-       if (site .ge. 3) polarity = 1
+      if (site .le. 2) polarity = -1
+      if (site .ge. 3) polarity = 1
     case (assoc_scheme_1ea)
-       polarity = 1
+      polarity = 1
     end select
   end function polarity
 
@@ -256,15 +256,15 @@ contains
     if (site < 1) call stoperror("Specify a site using a positive integer.")
     select case (scheme)
     case (assoc_scheme_1)
-       if (site > 1) call stoperror("Index exceeds number of sites in scheme!")
+      if (site > 1) call stoperror("Index exceeds number of sites in scheme!")
     case (assoc_scheme_2A, assoc_scheme_2B, assoc_scheme_2C)
-       if (site > 2) call stoperror("Index exceeds number of sites in scheme!")
+      if (site > 2) call stoperror("Index exceeds number of sites in scheme!")
     case (assoc_scheme_3A,assoc_scheme_3B)
-       if (site > 3) call stoperror("Index exceeds number of sites in scheme!")
+      if (site > 3) call stoperror("Index exceeds number of sites in scheme!")
     case (assoc_scheme_4A,assoc_scheme_4B,assoc_scheme_4C)
-       if (site > 4) call stoperror("Index exceeds number of sites in scheme!")
+      if (site > 4) call stoperror("Index exceeds number of sites in scheme!")
     case (no_assoc)
-       call stoperror("Component has not been assigned an association scheme.")
+      call stoperror("Component has not been assigned an association scheme.")
     end select
 
   end subroutine check_site_and_scheme
