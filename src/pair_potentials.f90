@@ -662,6 +662,67 @@ contains
 
   end subroutine calc_bh_diameter
 
+  subroutine calc_BFC_diameter(pot,beta,dhs)
+    !> Hard-sphere diameter using the Boltzmann-factor criterion
+    !> proposed by Ben-Amotz and Stell (10.1021/jp037810s)
+    use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
+    type(hyperdual), intent(in)         :: beta !< 1/T (1/K)
+    type(hyperdual), intent(out)        :: dhs  !< HS diameter (m)
+    class(pair_potential), intent(in) :: pot      !< Pair potential
+    ! Locals
+    type(nonlinear_solver) :: solver
+    type(hyperdual) :: pot0, dpot0, d2pot0, sigmaeff, epsdivkeff, rmin
+    real :: r_scaled, xinit, xmin, xmax, param(1)
+
+    ! Calculate effective sigma and epsdivk
+    sigmaeff = calc_sigmaeff(pot)
+    call calc_rmin_and_epseff(pot, rmin, epsdivkeff)
+    
+    ! Set the limits and the initial condition
+    param(1) = pot%sigma%f0
+    xinit = sigmaeff%f0/param(1)
+    xmin = 0.4*sigmaeff%f0/param(1)
+    xmax = rmin%f0/param(1)
+    r_scaled = 1.0
+    solver%rel_tol = 1e-12
+    solver%abs_tol = 1e-12
+
+    ! Call solver
+    call newton_secondorder_singlevar(resid_with_derivs,xinit,xmin,xmax,solver,r_scaled,param)
+    if (solver%exitflag /= 0) then
+       call stoperror("Not able to solve for effective sigma")
+    endif
+
+    ! Set real component of sigmaeff
+    dhs%f0 = 0.0
+    dhs%f0 = r_scaled*param(1)
+
+    ! Calculate the remaining hyperdual components, obtained by
+    call pot%calc_r_derivs(dhs, pot0, dpot0, d2pot0)
+    dhs%f1 = -pot0%f1/dpot0%f0
+    dhs%f2 = -pot0%f2/dpot0%f0
+    dhs%f12 = -(pot0%f12 + (dpot0%f1*dhs%f2+dpot0%f2*dhs%f1) + d2pot0%f0*dhs%f1*dhs%f2)/dpot0%f0
+
+  contains
+
+    subroutine resid_with_derivs(rstar,f,param,dfdr,d2fdr2)
+      use numconstants, only: machine_prec
+      real, intent(in) :: rstar
+      real, intent(in) :: param(1)
+      real, intent(out) ::f,dfdr,d2fdr2
+      ! Locals
+      type(hyperdual) :: sigma, f_hd, dfdr_hd, d2fdr2_hd
+
+      sigma = param(1)
+      call pot%calc_r_derivs(rstar*sigma, f_hd, dfdr_hd, d2fdr2_hd)
+      f = f_hd%f0 + epsdivkeff%f0 - 1.0/beta%f0
+      dfdr = dfdr_hd%f0*sigma%f0
+      d2fdr2 = d2fdr2_hd%f0*sigma%f0**2
+    end subroutine resid_with_derivs
+
+  end subroutine calc_BFC_diameter
+
+  
 
   function calc_sigmaeff(pot) result(sigmaeff)
     !> Calculate effective sigma, defined as the position where the
@@ -691,10 +752,10 @@ contains
 
     ! Set real component of sigmaeff
     sigmaeff = 0.0
-    sigmaeff%f0 = sigma_scaled*pot%sigma%f0
+    sigmaeff%f0 = sigma_scaled*param(1)
 
     ! Calculate the remaining hyperdual components, obtained by
-    ! expanding u(r=sigma,beta) in sigma for "fixed" beta
+    ! expanding u(r=sigma,beta)=0 in sigma for "fixed" beta
     call pot%calc_r_derivs(sigmaeff, pot0, dpot0, d2pot0)
     sigmaeff%f1 = -pot0%f1/dpot0%f0
     sigmaeff%f2 = -pot0%f2/dpot0%f0
