@@ -671,7 +671,7 @@ contains
     class(pair_potential), intent(in) :: pot      !< Pair potential
     ! Locals
     type(nonlinear_solver) :: solver
-    type(hyperdual) :: pot0, dpot0, d2pot0, sigmaeff, epsdivkeff, rmin
+    type(hyperdual) :: pot0, dpot0, d2pot0, sigmaeff, epsdivkeff, rmin, T
     real :: r_scaled, xinit, xmin, xmax, param(1)
 
     ! Calculate effective sigma and epsdivk
@@ -698,10 +698,11 @@ contains
     dhs%f0 = r_scaled*param(1)
 
     ! Calculate the remaining hyperdual components, obtained by
+    T = 1.0/beta
     call pot%calc_r_derivs(dhs, pot0, dpot0, d2pot0)
-    dhs%f1 = -pot0%f1/dpot0%f0
-    dhs%f2 = -pot0%f2/dpot0%f0
-    dhs%f12 = -(pot0%f12 + (dpot0%f1*dhs%f2+dpot0%f2*dhs%f1) + d2pot0%f0*dhs%f1*dhs%f2)/dpot0%f0
+    dhs%f1 = (T%f1 - pot0%f1 - epsdivkeff%f1)/dpot0%f0
+    dhs%f1 = (T%f2 - pot0%f2 - epsdivkeff%f2)/dpot0%f0
+    dhs%f12 = -(-T%f12 + (epsdivkeff%f12+pot0%f12) + (dpot0%f1*dhs%f2+dpot0%f2*dhs%f1) + d2pot0%f0*dhs%f1*dhs%f2)/dpot0%f0
 
   contains
 
