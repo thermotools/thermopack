@@ -1487,9 +1487,9 @@ contains
       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
 
-    ! Initialize fallback eos
-    act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
+    ! ! Initialize fallback eos
+    ! act_mod_ptr%need_alternative_eos = .true.
+    ! call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_uv
 
 
