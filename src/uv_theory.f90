@@ -19,6 +19,10 @@ module uv_theory
   implicit none
   save
 
+  ! Combining rules
+  integer, parameter :: LORENTZ_BERTHELOT_IDX = 1
+  integer, parameter :: SAFTVRMIE_IDX = 2
+  
   logical :: LAFITTE = .False.
   !logical :: LAFITTE = .True.
 
@@ -222,7 +226,7 @@ contains
     ! Locals
     type(hyperdual) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc)
     type(hyperdual) :: lam_mat(nc,2), C_mat(nc,2)
-    integer :: i, idx
+    integer :: i, idx, combrule
 
     ! Deallocate old memory and init new memory
     call eos%allocate_and_init(nc, eos_label="UV-MIE")
@@ -238,8 +242,11 @@ contains
       !    sigma_vec(i) = MieArray(idx)%sigma
       !    epsdivk_vec(i) = MieArray(idx)%eps_divk
       ! end do
+    else if (str_eq(ref,"SVRMIE")) then
+      combrule = SAFTVRMIE_IDX
     else
       LAFITTE = .false.
+      combrule = LORENTZ_BERTHELOT_IDX
     end if
 
 
@@ -262,7 +269,7 @@ contains
     kRgas = Rgas*1.0e3
 
     ! Set Mie potentials, including cross potential parameters
-    call set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+    call set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec,combrule)
 
     ! Set SutherlandSum potentials, including cross potential parameters
     do i=1,nc
@@ -271,37 +278,84 @@ contains
       lam_mat(i,1) = lamr_vec(i)
       lam_mat(i,2) = 6.0
     end do
-    call set_sutsum_parameters(eos,nc,nt=2,C_mat=C_mat,lam_mat=lam_mat, &
-      sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
+    ! call set_sutsum_parameters(eos,nc,nt=2,C_mat=C_mat,lam_mat=lam_mat, &
+    !   sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
+    call set_sutsum_parameters_from_mie(eos,nc)
   end subroutine init_uv_theory
 
-  subroutine set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec)
+  subroutine set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec,combrule)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
-    integer, intent(in)         :: nc                           !< Number of components
-    type(hyperdual), intent(in) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc) !< Mie parameters
+    integer, intent(in)           :: nc !< Number of components
+    type(hyperdual), intent(in)   :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc) !< Mie parameters
+    integer, optional, intent(in) :: combrule !< Combinining rule for unlike interactions
+
     ! Locals
     type(mie_potential_hd) :: mie
     type(hyperdual) :: lama, lamr, sigma, epsdivk
-    integer :: i, j
+    type(hyperdual) :: lam_mat(nc,2), C_mat(nc,2)
+    integer :: i, j, combrule_loc
 
+    combrule_loc = LORENTZ_BERTHELOT_IDX ! Used in Ref [1]
+    if (present(combrule)) combrule_loc = combrule
+    
     ! Set pure component potentials
+    lama = 6.0
     do i=1,nc
       ! Assign pure Mie potential
-      lama = 6.0
       lamr = lamr_vec(i)
+      !print *, lamr_vec%f0, sigma_vec%f0, epsdivk_vec%f0
       call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
       eos%mie(i,i) = mie
 
       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
       do j = i+1,nc
         sigma = (sigma_vec(i) + sigma_vec(j))/2.0
-        epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
-        call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-        eos%mie(i,j) = mie !call uv_set_mie_pot(eos, i,j, mie)
-        eos%mie(j,i) = mie !call uv_set_mie_pot(eos, j,i, mie)
+        if (combrule_loc == LORENTZ_BERTHELOT_IDX) then
+          epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
+          lamr = lamr_vec(i) ! only one repulsive exponent allowed in uv-theory [1]
+        else
+          epsdivk = sqrt(sigma_vec(i)**3*sigma_vec(j)**3 * epsdivk_vec(i)*epsdivk_vec(j))/sigma**3
+          lamr = 3.0 + sqrt((lamr_vec(i)-3.0)*(lamr_vec(j)-3.0))
+        end if
+          call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+          eos%mie(i,j) = mie
+          eos%mie(j,i) = mie
       end do
     end do
+
+    ! Set SutherlandSum potentials, including cross potential parameters
+    do i=1,nc
+      C_mat(i,1) = eos%mie(i,i)%Cmie
+      C_mat(i,2) = -C_mat(i,1)
+      lam_mat(i,1) = lamr_vec(i)
+      lam_mat(i,2) = lama
+    end do
+
+    call set_sutsum_parameters_from_mie(eos,nc)
   end subroutine set_mie_parameters
+
+
+  subroutine set_sutsum_parameters_from_mie(eos,nc)
+    class(uv_theory_eos), intent(inout) :: eos !< Equation of state, with initialized Mie parameters
+    integer, intent(in)         :: nc          !< Number of components
+    ! Locals
+    type(hyperdual) :: C(2), lam(2) !< Potential parameters
+    type(Sutherlandsum) :: sutsum
+    integer :: i, j
+
+    do i=1,nc
+      do j=1,nc
+        C(1) = eos%mie(i,j)%Cmie
+        C(2) = -C(1)
+        lam(1) = eos%mie(i,j)%lamr
+        lam(2) = eos%mie(i,j)%lama
+        call sutsum%init(nt=2, C=C, lam=lam, &
+          sigma=eos%mie(i,j)%sigma, epsdivk=eos%mie(i,j)%epsdivk)
+        eos%sutsum(i,j) = sutsum
+        eos%sutsum(j,i) = sutsum
+      end do
+    end do
+  end subroutine set_sutsum_parameters_from_mie
 
   subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec,beta_expo)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
