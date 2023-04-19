@@ -83,11 +83,6 @@ contains
     class(base_eos_param), pointer :: act_eos_ptr
 
     call init_uv(comps="AR,C1", model="uv-mie-bh",parameter_reference="DEFAULT")
-    sigma = 1.0
-    epsdivk = 1.0
-    epsdivk(2) = 0.5
-    lamr = 12.0+1e-10 ! Avoid activating the LJ-specific parameters
-    lama = 6.0
 
     ! CASE WITH DIFFERENT EPS AND DIFFERENT SIGMA
     sigma = 1.0

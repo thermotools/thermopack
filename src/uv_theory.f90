@@ -357,6 +357,7 @@ contains
     end do
   end subroutine set_sutsum_parameters_from_mie
 
+  
   subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec,beta_expo)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
     integer, intent(in)         :: nc, nt      !< Number of components, number of Sutherland terms
@@ -505,6 +506,7 @@ contains
           call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
         else
           call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
+          !call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
         end if
       end if
     end do
@@ -629,10 +631,19 @@ contains
     integer :: i, j, k
 
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+    do i=1,nc
+      call calc_bh_diameter(eos%sutsum(i,i),beta=1.0/T,dhs=dhs_bh(i,i))
+    end do
+    do i=1,nc
+      do j=i+1,nc
+        dhs_bh(i,j) = 0.5*(dhs_bh(i,i) + dhs_bh(j,j))
+        dhs_bh(j,i) = dhs_bh(i,j)
+      end do
+    end do
+
     zetax = 0.0
     do i=1,nc
       do j=1,nc
-        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
       end do
     end do
@@ -681,11 +692,20 @@ contains
     integer :: i, j, k,l
 
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
+    do i=1,nc
+      call calc_bh_diameter(eos%sutsum(i,i),beta=1.0/T,dhs=dhs_bh(i,i))
+    end do
+    do i=1,nc
+      do j=i+1,nc
+        dhs_bh(i,j) = 0.5*(dhs_bh(i,i) + dhs_bh(j,j))
+        dhs_bh(j,i) = dhs_bh(i,j)
+      end do
+    end do
+    
     zetax = 0.0
     zetax_av = 0.0
     do i=1,nc
       do j=1,nc
-        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
         zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
         zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
       end do

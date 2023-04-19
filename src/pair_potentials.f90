@@ -173,7 +173,7 @@ module pair_potentials
        !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="AR", &
-       lamr=12, &
+       lamr=12.26, &
        sigma=3.42E-10, &
        eps_divk=124.0, &
        ref="DEFAULT"), &
@@ -208,7 +208,7 @@ module pair_potentials
        !
        mie_data(eosidx = eosMie_UV_BH, &
        compName="C1", &
-       lamr=12.26, &
+       lamr=12.65, &
        sigma=3.7412E-10, &
        eps_divk=153.36, &
        ref="SVRMIE")/)
