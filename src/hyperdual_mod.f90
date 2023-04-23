@@ -1118,7 +1118,7 @@ module hyperdual_mod
       type (hyperdual)             :: v2
 
       v2%order  = v1%order
-      if(v2%f0 >= 0.0) then
+      if(v1%f0 >= 0.0) then
         v2%f0   = v1%f0
         if (v2%order > 0) then
           v2%f1   = v1%f1
