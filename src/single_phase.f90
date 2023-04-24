@@ -658,7 +658,9 @@ contains
     use extcsp, only: csp_calcFres, extcsp_eos
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
-    use volume_shift, only: NOSHIFT, vshift_F_terms, eosVolumeFromShiftedVolume
+    use volume_shift, only: NOSHIFT, vshift_F_terms, &
+         eosVolumeFromShiftedVolume, &
+         vshift_F_differential_dependencies
     use single_component, only: Fres_single
     use thermopack_var, only: base_eos_param
     !use pets, only: PETS_eos
@@ -679,22 +681,41 @@ contains
     logical, optional, intent(in) :: recalculate
     ! Locals
     real :: eF
-    logical :: isCubic
+    real, target :: F_V_l,F_TV_l,F_VV_l,F_Vn_l(nc)
+    real, pointer :: F_V_p, F_TV_p, F_VV_p, F_Vn_p(:)
+    logical :: isCubic, include_F_V, include_F_TV, include_F_VV, include_F_Vn
     real :: v_eos
     isCubic = .false.
 
     ! Calculate EoS volume to evaluate F from individual models
     v_eos = eosVolumeFromShiftedVolume(nc,comp,cbeos%volumeShiftId,t,v,n)
+    ! Do we need additional differeintials for the volume translation?
+    call vshift_F_differential_dependencies(nc,cbeos%volumeShiftId,&
+       include_F_V,include_F_TV,include_F_VV,include_F_Vn,&
+       F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
 
-    call get_eos_F(v_eos,eF,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
+    F_V_p => NULL()
+    F_TV_p => NULL()
+    F_VV_p => NULL()
+    F_Vn_p => NULL()
+    if (present(F_V) .or. include_F_V) F_V_p => F_V_l
+    if (present(F_TV) .or. include_F_TV) F_TV_p => F_TV_l
+    if (present(F_VV) .or. include_F_VV) F_VV_p => F_VV_l
+    if (present(F_Vn) .or. include_F_Vn) F_Vn_p => F_Vn_l
+
+    call get_eos_F(v_eos,eF,F_T,F_V_p,F_n,F_TT,F_TV_p,F_VV_p,F_Tn,F_Vn_p,F_nn,F_VVV)
 
     ! Correct the F from the individual models according to the volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,F_T,F_V,F_n,F_TT,&
-           F_TV,F_VV,F_Tn,F_Vn,F_nn,F_VVV)
+      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,F_T,F_V_p,F_n,F_TT,&
+           F_TV_p,F_VV_p,F_Tn,F_Vn_p,F_nn,F_VVV)
     end if
 
     if (present(F)) F = eF
+    if (present(F_V)) F_V = F_V_l
+    if (present(F_TV)) F_TV = F_TV_l
+    if (present(F_VV)) F_VV = F_VV_l
+    if (present(F_Vn)) F_Vn = F_Vn_l
 
   contains
     subroutine get_eos_F(veos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)

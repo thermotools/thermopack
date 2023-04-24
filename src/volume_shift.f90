@@ -17,7 +17,8 @@ module volume_shift
        volumeShiftZfac, &
        NOSHIFT, PENELOUX, &
        redefine_volume_shift, &
-       vshift_F_terms
+       vshift_F_terms, &
+       vshift_F_differential_dependencies
 
 contains
 
@@ -274,5 +275,40 @@ contains
     if (present(F)) F = F + sumn*log(V/Veos)
 
   end subroutine vshift_F_terms
+
+  !----------------------------------------------------------------------
+  !> Which additional differentials are needed for volume shift correction=
+  !>
+  !>
+  !> \author Morten Hammer, April 2023
+  !----------------------------------------------------------------------
+  subroutine vshift_F_differential_dependencies(nc,volumeShiftId,&
+       include_F_V,include_F_TV,include_F_VV,include_F_Vn,&
+       F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    integer, intent(in) :: nc
+    integer, intent(in) :: volumeShiftId !< Volume shift identifier
+    real, optional, intent(inout) :: F_T,F_V,F_n(nc)
+    real, optional, intent(inout) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
+    logical, intent(out) :: include_F_V,include_F_TV,include_F_VV,include_F_Vn
+    include_F_V = .false.
+    include_F_TV = .false.
+    include_F_VV = .false.
+    include_F_Vn = .false.
+    if (volumeShiftId == NOSHIFT) return
+
+    if (.not. present(F_V)) include_F_V = present(F_T) .or. &
+         present(F_TT) .or. &
+         present(F_Tn) .or. &
+         present(F_n)
+    if (.not. present(F_VV)) include_F_VV = present(F_TT) .or. &
+         present(F_nn) .or. &
+         present(F_Tn) .or. &
+         present(F_Vn)  .or. &
+         present(F_TV)
+    if (.not. present(F_TV)) include_F_TV = present(F_TT) .or. &
+         present(F_Tn)
+    if (.not. present(F_Vn)) include_F_Vn = present(F_Tn) .or. &
+         present(F_nn)
+  end subroutine vshift_F_differential_dependencies
 
 end module volume_shift
