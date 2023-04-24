@@ -81,6 +81,7 @@ OBJE = \
        $(ODIR)/thermopack_constants.o \
        $(ODIR)/error.o \
        $(ODIR)/hyperdual_mod.o \
+       $(ODIR)/linear_numerics.o \
        $(ODIR)/optimizer.o \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \
@@ -90,6 +91,7 @@ OBJE = \
        $(ODIR)/multipol_var.o \
        $(ODIR)/thermopack_var.o \
        $(ODIR)/hyperdual_utility.o \
+       $(ODIR)/fmt.o \
        $(ODIR)/eosdata.o \
        $(ODIR)/assocschemeutils.o \
        $(ODIR)/unifacdata.o \
@@ -172,6 +174,8 @@ OBJE = \
        $(ODIR)/ps_solver.o \
        $(ODIR)/uv_solver.o \
        $(ODIR)/sv_solver.o \
+       $(ODIR)/spinodal.o \
+       $(ODIR)/mut_solver.o \
        $(ODIR)/isolines.o \
        $(ODIR)/binaryplot.o \
        $(ODIR)/speed_of_sound.o \
@@ -387,10 +391,10 @@ $(ODIR)/cpa_parameters.o: $(SRC)/cpa_parameters.f90 \
 $(ODIR)/critical.o: $(SRC)/critical.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/eos.f90 $(SRC)/eostv.f90 \
-	$(SRC)/nonlinear_solvers.f90 $(SRC)/puresaturation.f90 \
-	$(SRC)/thermo_utils.f90 $(SRC)/eosdata.f90 \
-	$(SRC)/cubic_eos.f90 $(SRC)/numconstants.f90 \
-	$(SRC)/utilities.f90 $(SRC)/critical.f90
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/thermo_utils.f90 \
+	$(SRC)/utilities.f90 $(SRC)/critical.f90 \
+	$(SRC)/cubic_eos.f90
 	@$(call make_object, $(SRC)/critical.f90)
 $(ODIR)/cubic.o: $(SRC)/cubic.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/cubic_eos.f90 \
@@ -475,10 +479,14 @@ $(ODIR)/external.o: $(SRC)/external.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/puresaturation.f90 \
 	$(SRC)/state_functions.f90 $(SRC)/compdata.f90
 	@$(call make_object, $(SRC)/external.f90)
+$(ODIR)/fmt.o: $(SRC)/fmt.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90
+	@$(call make_object, $(SRC)/fmt.f90)
 $(ODIR)/h2o_gibbs.o: $(SRC)/h2o_gibbs.f90
 	@$(call make_object, $(SRC)/h2o_gibbs.f90)
 $(ODIR)/hardsphere_bmcsl.o: $(SRC)/hardsphere_bmcsl.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90
+	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hardsphere_bmcsl.f90)
 $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/quadratures.f90 \
@@ -518,6 +526,9 @@ $(ODIR)/leekesler.o: $(SRC)/leekesler.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/compdata.f90 \
 	$(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/leekesler.f90)
+$(ODIR)/linear_numerics.o: $(SRC)/linear_numerics.f90 \
+	$(SRC)/hyperdual_mod.f90 $(SRC)/numconstants.f90
+	@$(call make_object, $(SRC)/linear_numerics.f90)
 $(ODIR)/lj_splined.o: $(SRC)/lj_splined.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_options.f90 \
 	$(SRC)/saftvrmie_utils.f90 $(SRC)/numconstants.f90 \
@@ -575,7 +586,15 @@ $(ODIR)/multipol.o: $(SRC)/multipol.f90 \
 $(ODIR)/multipol_var.o: $(SRC)/multipol_var.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/multipol_var.f90)
-$(ODIR)/nonlinear_solvers.o: $(SRC)/nonlinear_solvers.f90
+$(ODIR)/mut_solver.o: $(SRC)/mut_solver.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eostv.f90 \
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/linear_numerics.f90 \
+	$(SRC)/saturation.f90 $(SRC)/spinodal.f90 \
+	$(SRC)/eos.f90
+	@$(call make_object, $(SRC)/mut_solver.f90)
+$(ODIR)/nonlinear_solvers.o: $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/linear_numerics.f90
 	@$(call make_object, $(SRC)/nonlinear_solvers.f90)
 $(ODIR)/numconstants.o: $(SRC)/numconstants.f90
 	@$(call make_object, $(SRC)/numconstants.f90)
@@ -589,7 +608,8 @@ $(ODIR)/pc_saft_datadb.o: $(SRC)/pc_saft_datadb.f90 \
 $(ODIR)/pc_saft_nonassoc.o: $(SRC)/pc_saft_nonassoc.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/hardsphere_bmcsl.f90 \
-	$(SRC)/utilities.f90 $(SRC)/pc_saft_nonassoc.f90
+	$(SRC)/hyperdual_mod.f90 $(SRC)/utilities.f90 \
+	$(SRC)/pc_saft_nonassoc.f90
 	@$(call make_object, $(SRC)/pc_saft_nonassoc.f90)
 $(ODIR)/pc_saft_parameters.o: $(SRC)/pc_saft_parameters.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/pc_saft_datadb.f90 \
@@ -630,7 +650,9 @@ $(ODIR)/saft_association.o: $(SRC)/saft_association.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/association_var.f90 \
 	$(SRC)/saft_globals.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/saft_rdf.f90 $(SRC)/nonlinear_solvers.f90 \
-	$(SRC)/numconstants.f90
+	$(SRC)/numconstants.f90 $(SRC)/hyperdual_mod.f90 \
+	$(SRC)/linear_numerics.f90 $(SRC)/pc_saft_nonassoc.f90 \
+	$(SRC)/hardsphere_bmcsl.f90
 	@$(call make_object, $(SRC)/saft_association.f90)
 $(ODIR)/saft_globals.o: $(SRC)/saft_globals.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/pc_saft_nonassoc.f90 \
@@ -649,14 +671,17 @@ $(ODIR)/saft_interface.o: $(SRC)/saft_interface.f90 \
 	$(SRC)/cbalpha.f90 $(SRC)/saft_association.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/eos_parameters.f90 \
 	$(SRC)/cubic.f90 $(SRC)/multipol.f90 \
+	$(SRC)/hardsphere_wca.f90 $(SRC)/saftvrmie_hardsphere.f90 \
 	$(SRC)/cbmix.f90 $(SRC)/cbhelm.f90 \
-	$(SRC)/saft_globals.f90 $(SRC)/saft_rdf.f90
+	$(SRC)/saft_globals.f90 $(SRC)/saft_rdf.f90 \
+	$(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/saft_interface.f90)
 $(ODIR)/saft_rdf.o: $(SRC)/saft_rdf.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/saftvrmie_hardsphere.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
-	$(SRC)/saftvrmie_association.f90 $(SRC)/saft_globals.f90
+	$(SRC)/hardsphere_bmcsl.f90 $(SRC)/saftvrmie_association.f90 \
+	$(SRC)/saft_globals.f90
 	@$(call make_object, $(SRC)/saft_rdf.f90)
 $(ODIR)/saftvrmie_association.o: $(SRC)/saftvrmie_association.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/saftvrmie_utils.f90 \
@@ -776,6 +801,14 @@ $(ODIR)/speed_of_sound.o: $(SRC)/speed_of_sound.f90 \
 	$(SRC)/state_functions.f90 $(SRC)/solideos.f90 \
 	$(SRC)/eostv.f90
 	@$(call make_object, $(SRC)/speed_of_sound.f90)
+$(ODIR)/spinodal.o: $(SRC)/spinodal.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eos.f90 \
+	$(SRC)/eostv.f90 $(SRC)/critical.f90 \
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/puresaturation.f90 \
+	$(SRC)/thermo_utils.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/cubic_eos.f90 $(SRC)/ps_solver.f90
+	@$(call make_object, $(SRC)/spinodal.f90)
 $(ODIR)/stability.o: $(SRC)/stability.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/utilities.f90 \
