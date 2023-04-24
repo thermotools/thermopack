@@ -1349,7 +1349,7 @@ contains
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
                                  NS_PEGASUS
     use saturation, only: safe_bubP, safe_bubT
-    use thermopack_constants, only: get_templimits
+    use thermopack_var, only: tpTmin, tpTmax
     use puresaturation, only: PureSat
     implicit none
     real, intent(inout) :: T,P
@@ -1362,7 +1362,7 @@ contains
     real, parameter :: safetyDt = 1.0e-4
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat
-    integer :: ierrBub, imin, imax, i
+    integer :: ierrBub, imin, imax
     ierr = 0
     call getCriticalParam(1,tci(1),pci(1),oi(1))
     call getCriticalParam(2,tci(2),pci(2),oi(2))
@@ -1421,7 +1421,7 @@ contains
         if (solver_psat%exitflag /= 0) then
           ierr = solver_psat%exitflag
         endif
-      enddo
+      endif
       ! Determine pressures at max temperature
       imax = maxloc(Tbub,dim=1)
       imin = minloc(Tbub,dim=1)

@@ -595,7 +595,7 @@ contains
     real, optional, intent(out) :: lnphiT(nc) , lnphiV(nc), lnphin(nc,nc)
     logical, optional, intent(in) :: recalculate
     ! Locals
-    real :: Sid, Fid_n(nce), Fid_Vn, Fid_Tn, Fid_nn(nce), F_n(nce)
+    real :: Sid, Fid_n(nce), Fid_Vn, Fid_Tn, Fid_nn(nce), F_n(nce), F_V
     real, target :: F_Tn(nce),F_Vn(nce),F_nn(nce,nce)
     real, pointer :: F_Tn_p(:), F_Vn_p(:), F_nn_p(:,:)
     integer :: i
@@ -618,7 +618,7 @@ contains
     else
       F_nn_p => NULL()
     endif
-    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_n=F_n,F_Tn=F_Tn_p,&
+    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_n=F_n,F_Tn=F_Tn_p,&
          F_Vn=F_Vn_p,F_nn=F_nn_p,recalculate=recalculate)
     ! Ideal contribution
     call Sideal_Vn(nce, ne, T, v, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
@@ -764,7 +764,7 @@ contains
     real :: V     !< Volume [m^3].
     real :: sumne  !< Total mole number in mixture [mol]
     real :: zFac
-    real :: F_n(nce),F_Tn(nce),F_TV,F_VV,F_Vn(nce),F_nn(nce,nce)
+    real :: F_n(nce),F_Tn(nce),F_TV,F_VV,F_Vn(nce),F_nn(nce,nce),F_V
     real :: dPdV, dPdT, dPdn(nce)
     real :: dVdn(nce)
     real :: ne(nce), lnfug_real(nce), ze(nce)
@@ -781,13 +781,13 @@ contains
     endif
 
     if (present(dlnfugdt) .or. present(dlnfugdp) .or. present(dlnfugdn)) then
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_n=F_n,&
+      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_V=F_V,F_n=F_n,&
            F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
       dPdV = -Rgas*T*(F_VV + sumne/V**2)
       dPdn = Rgas*T*(-F_Vn + 1/V)
       dVdn = -dPdn/dPdV
     else
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_n=F_n)
+      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_V=F_V,F_n=F_n)
     end if
 
     lnfug_real = F_n - log(zFac)

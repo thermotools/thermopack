@@ -1711,7 +1711,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     xmin(2) = b + Small ! m3/mol
     xmax(2) = 100.0
     solver%ls_max_it = 3
