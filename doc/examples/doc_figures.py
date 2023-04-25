@@ -67,9 +67,9 @@ for i, h in enumerate(isenthalpes):
     isenthalp_rho.append(to_kg(v))
     isenthalp_T.append(T)
 
-eos2 = cpa('ACETONE,ETOH')
+eos2 = cpa('ACETONE,ETOH', 'SRK')
 
-pxy_temps = [] # [300, 325, 350, 375, 400, 425, 450]
+pxy_temps = [300, 325, 350, 375, 400, 425, 450]
 LLE_p, L1VE_p, L2VE_p = {}, {}, {}
 
 for T in pxy_temps:
@@ -134,6 +134,12 @@ def init(proj='Trho'):
         ax.set_ylabel(r'$C_p$ [J mol$^{-1}$ K$^{-1}$]')
         ax.set_xlim(30, 36)
         ax.set_ylim(35, 250)
+
+    elif proj == 'eos_nh3':
+        ax.set_xlabel(r'$T$ [K]')
+        ax.set_ylabel(r'Compressibility')
+        ax.set_xlim(350, 500)
+        ax.set_ylim(0.15, 0.85)
 
 def draw_isobars(idx, alpha, legend=False):
     if idx=='all':
@@ -233,7 +239,7 @@ def flashes(frame):
         plt.legend(title=r'$T$ [K]', loc='upper left')
         plt.suptitle('Flash calculations')
 
-    elif frame < 13 + len(pxy_temps) + 21:
+    elif frame < 13 + len(pxy_temps) + 20:
         init('pxy_flash')
         cmap = NormedCmap('cool', pxy_temps)
         T = pxy_temps[2]
@@ -241,7 +247,7 @@ def flashes(frame):
         plt.plot(L1VE_p[T][1], L1VE_p[T][2] / 1e5, color=cmap(T))
         pxy_flash_p = np.linspace(1.3, 2.1, 20) * 1e5
         pxy_flash_z = np.ones(20) * 0.4
-        flash_idx = frame - (13 + len(pxy_flash_p))
+        flash_idx = frame - (13 + len(pxy_temps))
 
         p, z = pxy_flash_p[flash_idx], pxy_flash_z[flash_idx]
         flsh = eos2.two_phase_tpflash(T, p, [z, 1 - z])
@@ -261,7 +267,7 @@ def flashes(frame):
 
         plt.suptitle('Flash calculations\n' + r'$T$ = ' + str(round(T, 2)) + ' K')
 
-    elif frame < 13 + len(pxy_temps) + 21 + len(Txy_pres) + 1:
+    elif frame < 13 + len(pxy_temps) + 20 + len(Txy_pres) + 1:
         init('Txy')
         cmap = NormedCmap('cividis', Txy_pres)
         for i in range(frame - (13 + len(pxy_temps) + 21)):
@@ -272,27 +278,55 @@ def flashes(frame):
         plt.suptitle('Txy-diagrams')
 
 def manyEoS(frame):
-    init('eos_h2')
-    eos_list = [cubic, cubic, cubic, cubic, qcubic, saftvrmie, saftvrqmie]
-    extra_init = ['SRK', 'PR', 'PT', 'SW', None, None, None]
-    name = ['SRK', 'PR', 'PT', 'SW', 'Quantum Cubic',
-            'SAFT-VR Mie', 'SAFT-VRQ Mie']
 
-    for EoS, extra, name in zip(eos_list[:frame], extra_init[:frame], name[:frame]):
-        if extra is None:
-            e = EoS('H2')
-        else:
-            e = EoS('H2', extra)
+    if frame < 7:
+        init('eos_h2')
+        eos_list = [cubic, cubic, qcubic, saftvrmie, saftvrqmie]
+        extra_init = ['SRK', 'PR', None, None, None]
+        name = ['SRK', 'PR', 'Quantum Cubic',
+                'SAFT-VR Mie', 'SAFT-VRQ Mie']
 
-        e.set_tmin(20)
-        T_list = np.linspace(30, 36, 100)
-        p = 16.5e5  # 1296400.0
-        cp_list = np.empty_like(T_list)
-        for i, T in enumerate(T_list):
-            _, cp_list[i] = e.enthalpy(T, p, [1], 2, dhdt=True)
+        for EoS, extra, name in zip(eos_list[:frame], extra_init[:frame], name[:frame]):
+            if extra is None:
+                e = EoS('H2')
+            else:
+                e = EoS('H2', extra)
 
-        plt.plot(T_list, cp_list, label=name)
-    plt.legend(title='EoS', ncol=2, loc='upper left')
+            e.set_tmin(20)
+            T_list = np.linspace(30, 36, 100)
+            p = 16.5e5  # 1296400.0
+            z_list = np.empty_like(T_list)
+            for i, T in enumerate(T_list):
+                _, z_list[i] = e.enthalpy(T, p, [1], 2, dhdt=True)
+
+            plt.plot(T_list, z_list, label=name)
+        plt.legend(title='EoS', ncol=2, loc='upper left')
+        plt.suptitle('Many classic and modern Equations of State')
+
+    elif frame < 7 + 9:
+        init('eos_nh3')
+        eos_list = [cubic, cubic, cubic, cubic, cpa, saftvrmie, saftvrqmie, pcsaft]
+        extra_init = ['SRK', 'PR', 'PT', 'SW', 'SRK', None, None, None]
+        name = ['SRK', 'PR', 'PT', 'SW', 'SRK-CPA',
+                'SAFT-VR Mie', 'SAFT-VRQ Mie', 'PC-SAFT']
+
+        eos_idx = frame - 7
+        for EoS, extra, name in zip(eos_list[:eos_idx], extra_init[:eos_idx], name[:eos_idx]):
+            if extra is None:
+                e = EoS('NH3')
+            else:
+                e = EoS('NH3', extra)
+
+
+            T_list = np.linspace(350, 500) # np.linspace(650, 750, 100)
+            p = 170e5 # 350e5  # 22048300.0 # 11470000.0
+            z_list = np.empty_like(T_list)
+            for i, T in enumerate(T_list):
+                z_list[i], = e.zfac(T, p, [1], 1)
+
+            plt.plot(T_list, z_list, label=name)
+        plt.legend(title='EoS', ncol=2, loc='upper left')
+        plt.suptitle('Many classic and modern Equations of State')
 
 def generate_fig(frame):
     global fig, ax, ln, legend
@@ -308,23 +342,21 @@ def generate_fig(frame):
 
     else:
         frame -= nTxy
-
-
-
+        manyEoS(frame)
 
 
 init()
 nisolines = 3 + len(isenthalpes) + len(isentropes) + len(isobars)
 nflashes = nisolines + 13
 npxy = nflashes + len(pxy_temps)
-npxy_flash = npxy + 21
+npxy_flash = npxy + 20
 nTxy = npxy_flash + len(Txy_pres) + 1
-nEoS = nTxy + 10
+nEoS = nTxy + 16
 nframes = nEoS
 
 # generate_fig(nframes - 1)
 # plt.show()
 # exit(0)
-ani = FuncAnimation(fig, generate_fig, frames=[i for i in range(nTxy, nframes)], blit=False, interval=500)
-# ani.save('animation.gif', writer='imagemagick', fps=2)
+ani = FuncAnimation(fig, generate_fig, frames=[i for i in range(nframes)], blit=False, interval=750)
+ani.save('animation.gif', writer='imagemagick')
 plt.show()
