@@ -1362,7 +1362,7 @@ contains
     real, parameter :: safetyDt = 1.0e-4
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat
-    integer :: ierrBub, imin, imax
+    integer :: ierrBub, imin, imax, i
     ierr = 0
     call getCriticalParam(1,tci(1),pci(1),oi(1))
     call getCriticalParam(2,tci(2),pci(2),oi(2))
@@ -1394,34 +1394,19 @@ contains
         P = P1 + P2
       endif
     else !(ispec == PSPEC)
-      if (tci(1) > tci(2)) then
-        T = tci(2) - safetyDt
-        Pmax = safe_bubP(T,w,y,ierrBub) + pci(1)
-      else
-        T = tci(1) - safetyDt
-        Pmax = safe_bubP(T,x,y,ierrBub) + pci(2)
-      endif
-      if (ierrBub /= 0) then
-        call stoperror("initialLLtp failed to converge safe_bubP")
-      endif
-      if (P > Pmax) then
-        ! No LLE
-        ierr = 1
-      else
-        solver_psat%abs_tol = 1.0e-5
-        solver_psat%max_it = 1000
-        solver_psat%isolver = NS_PEGASUS
-        ! Set the constant parameters of the objective function.
-        param(1) = P
-        Tmin = tpTmin
-        Tmax = tpTmax
-        ! Find f=0 inside the bracket.
-        call bracketing_solver(Tmin,Tmax,fun_psat,T,solver_psat,param)
-        ! Check for successful convergence
-        if (solver_psat%exitflag /= 0) then
-          ierr = solver_psat%exitflag
+      ! Locate upper temperature
+      Tbub = tci - safetyDt
+      Pbub = pci
+      do i=1,2
+        if (P < pci(i)) then
+          Tbub(i) = safe_bubT(P,z(i,:),y,ierrBub)
+          Pbub(i) = P
+          if (ierrBub/= 0) then
+            ierr = 1
+            return
+          endif
         endif
-      endif
+      enddo
       ! Determine pressures at max temperature
       imax = maxloc(Tbub,dim=1)
       imin = minloc(Tbub,dim=1)
