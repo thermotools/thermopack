@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-30T18:56:32.136359
+Generated at: 2023-04-25T20:49:49.213861
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -24,6 +24,8 @@ has been implemented in this software. Most of these equations of
 state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
+
+![](https://github.com/thermotools/thermopack/blob/wiki/doc/markdown/figures/readme_intro.gif?raw=true)
 
 Thermopack is available for everybody, free of charge under the
 MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
@@ -86,10 +88,9 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## Authors and contact persons
-Morten Hammer (morten.hammer@sintef.no,morten.hammer@ntnu.no)<br>
+Morten Hammer (morten.hammer@sintef.no)<br>
 Ailo Aasen (ailo.aasen@sintef.no)<br>
-Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)<br>
-Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
+Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
 
 ## License
 Thermopack is distributed under the [MIT
