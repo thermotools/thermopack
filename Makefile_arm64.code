@@ -14,28 +14,31 @@ ROOT = .
 FULLROOT = $(shell pwd)
 SRC = $(ROOT)/src
 TEST = $(ROOT)/unittests
-PFUNIT ?= /usr/local/linux/pfunit
 ODIR = ./objects/$(TARGET)
 BDIR = ./bin
 DDIR = $(BDIR)/dynamic
 INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
+ifdef PFUNIT_DIR
+  PFUNIT = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/PFUNIT*/))
+  FARGPARSE = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/FARGPARSE*/))
+  GFTL_SHARED = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/GFTL_SHARED*/))
+  GFTL = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/GFTL-*/))
+endif
 ifeq ($(UNAME),Darwin)
   LD = arch -arm64 clang
   AR := /usr/bin/ar -r -c
   RANLIB := /usr/bin/ranlib
   export LIBRARY_PATH = \
     $(shell /opt/homebrew/bin/gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
-  MOD = $(ODIR)
 else
   LD = $(FC)
   AR := ar -rc -o
   RANLIB := ranlib
-  MOD = -module $(ODIR)
 endif
 
-ifeq ($(FC),gfortran)
+ifeq ($(findstring gfortran, $(FC)), gfortran)
   MOD = -J $(ODIR) -I $(ODIR)
 else ifeq ($(FC),sunf90)
   MOD = -moddir=$(ODIR)
@@ -87,6 +90,11 @@ OBJE = \
        $(ODIR)/multipol_var.o \
        $(ODIR)/thermopack_var.o \
        $(ODIR)/hyperdual_utility.o \
+       $(ODIR)/eosdata.o \
+       $(ODIR)/assocschemeutils.o \
+       $(ODIR)/unifacdata.o \
+       $(ODIR)/unifac.o \
+       $(ODIR)/cubic_eos.o \
        $(ODIR)/compdatadb.o \
        $(ODIR)/compdata_init.o \
        $(ODIR)/multiparameter_base.o \
@@ -99,15 +107,10 @@ OBJE = \
        $(ODIR)/mbwrdata.o \
        $(ODIR)/mbwr.o \
        $(ODIR)/mbwr_additional.o \
-       $(ODIR)/eosdata.o \
-       $(ODIR)/assocschemeutils.o \
        $(ODIR)/pets.o \
        $(ODIR)/pc_saft_datadb.o \
        $(ODIR)/pc_saft_parameters.o \
-       $(ODIR)/unifacdata.o \
-       $(ODIR)/unifac.o \
        $(ODIR)/eos_parameters.o \
-       $(ODIR)/cubic_eos.o \
        $(ODIR)/mixdatadb.o \
        $(ODIR)/cbalpha.o \
        $(ODIR)/cbbeta.o \
@@ -130,6 +133,7 @@ OBJE = \
        $(ODIR)/saftvrmie_hardsphere.o \
        $(ODIR)/saftvrmie_dispersion.o \
        $(ODIR)/saftvrmie_chain.o \
+       $(ODIR)/saftvrmie_association.o \
        $(ODIR)/saftvrmie_interface.o \
        $(ODIR)/hardsphere_wca.o \
        $(ODIR)/lj_splined.o \
@@ -252,7 +256,9 @@ run_unittests:
 	fi
 
 unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
-	$(LD) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -I$(PFUNIT)/mod -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lpfunit $(LIBS) -Iunittests -DBUILD_ROBUST
+	$(FC) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
+	-I$(GFTL)/include/v1 -I$(GFTL_SHARED)/include/v1 -I$(FARGPARSE)/include \
+	-L$(FARGPARSE)/lib -lfargparse -L$(GFTL_SHARED)/lib -lgftl-shared-v2 -lgomp -lpthread $(LIBS) -Iunittests -DBUILD_ROBUST
 
 trend_$(TARGET):
 ifdef $(THERMOPACK_WITH_TREND)
@@ -625,8 +631,8 @@ $(ODIR)/saft_association.o: $(SRC)/saft_association.f90 \
 	@$(call make_object, $(SRC)/saft_association.f90)
 $(ODIR)/saft_globals.o: $(SRC)/saft_globals.f90 \
 	$(SRC)/eosdata.f90 $(SRC)/pc_saft_nonassoc.f90 \
-	$(SRC)/saftvrmie_containers.f90 $(SRC)/cubic_eos.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90
+	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90
 	@$(call make_object, $(SRC)/saft_globals.f90)
 $(ODIR)/saft_interface.o: $(SRC)/saft_interface.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/compdata.f90 \
@@ -647,8 +653,13 @@ $(ODIR)/saft_rdf.o: $(SRC)/saft_rdf.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/saftvrmie_hardsphere.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
-	$(SRC)/saft_globals.f90
+	$(SRC)/saftvrmie_association.f90 $(SRC)/saft_globals.f90
 	@$(call make_object, $(SRC)/saft_rdf.f90)
+$(ODIR)/saftvrmie_association.o: $(SRC)/saftvrmie_association.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/saftvrmie_utils.f90 \
+	$(SRC)/saftvrmie_containers.f90 $(SRC)/saftvrmie_dispersion.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/saftvrmie_association.f90
+	@$(call make_object, $(SRC)/saftvrmie_association.f90)
 $(ODIR)/saftvrmie_chain.o: $(SRC)/saftvrmie_chain.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/saftvrmie_dispersion.f90 \
@@ -679,6 +690,7 @@ $(ODIR)/saftvrmie_hardsphere.o: $(SRC)/saftvrmie_hardsphere.f90 \
 $(ODIR)/saftvrmie_interface.o: $(SRC)/saftvrmie_interface.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/saftvrmie_options.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/assocschemeutils.f90 $(SRC)/saftvrmie_association.f90 \
 	$(SRC)/saftvrmie_hardsphere.f90 $(SRC)/saftvrmie_dispersion.f90 \
 	$(SRC)/saftvrmie_chain.f90 $(SRC)/saftvrmie_interface.f90 \
 	$(SRC)/saftvrmie_utils.f90

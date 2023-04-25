@@ -54,3 +54,4 @@ venv/
 venv*
 *.idea
 *.vscode
+scripts/

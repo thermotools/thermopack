@@ -4,7 +4,7 @@ module test_eos_consistency
   !> thermodynamic identities.
   use eoslibinit, only: init_thermo, init_tcPR, silent_init
   use eos, only: specificvolume
-  use pfunit_mod
+  use funit
   implicit none
   public
 
