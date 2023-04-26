@@ -9,6 +9,7 @@ from thermopack.saftvrqmie import saftvrqmie
 from thermopack.quantum_cubic import qcubic
 from matplotlib.cm import get_cmap
 from plottools.cyclers import NormedCmap, MarkerCycler
+import os
 
 eos = cubic('C1,NC6,CO2', 'PR')
 
@@ -25,7 +26,7 @@ isobar_T = []
 isobar_rho_vap = []
 isobar_rho_liq = []
 isobars = np.linspace(0.1 * pc, 2 * pc, 10)
-T_list = np.linspace(min(Teq), 1.5 * Tc)
+T_list = np.linspace(min(Teq), 1.5 * Tc, 60)
 for i, p in enumerate(isobars):
     vg = []
     vl = []
@@ -237,7 +238,7 @@ def flashes(frame):
             plt.plot(L1VE_p[T][0], L1VE_p[T][2] / 1e5, label=T, color=cmap(T))
             plt.plot(L1VE_p[T][1], L1VE_p[T][2] / 1e5, color=cmap(T))
         plt.legend(title=r'$T$ [K]', loc='upper left')
-        plt.suptitle('Flash calculations')
+        plt.suptitle('pxy-diagrams')
 
     elif frame < 13 + len(pxy_temps) + 20:
         init('pxy_flash')
@@ -358,5 +359,5 @@ nframes = nEoS
 # plt.show()
 # exit(0)
 ani = FuncAnimation(fig, generate_fig, frames=[i for i in range(nframes)], blit=False, interval=750)
-ani.save('animation.gif', writer='imagemagick')
+ani.save(os.path.dirname(__file__) + '/../markdown/figures/readme_intro.gif', writer='imagemagick')
 plt.show()
