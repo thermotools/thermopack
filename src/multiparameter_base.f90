@@ -60,16 +60,16 @@ module multiparameter_base
     procedure, public :: speed_of_sound !< [m/s]
 
     ! Reference state
-    procedure, public :: get_ref_state_spec => get_ref_state_spec_default
-    procedure, public :: set_ref_state => set_ref_state_default
+    procedure, public :: get_ref_state_spec => get_ref_state_spec_default !< Get specification for the current reference state
+    procedure, public :: set_ref_state => set_ref_state_default !< Set reference state
 
     ! Private methods
     procedure(satDeltaEstimate_intf), public, deferred :: satDeltaEstimate !< An estimate delta_sat(tau_sat) for use in density solver.
     procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
     procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
     ! Hyperdual number interfaces
-    procedure(alpha0_hd_intf), public, deferred :: alpha0_hd_taudelta  !< alpha0
-    procedure(alphaRes_hd_intf), public, deferred :: alphaRes_hd_taudelta  !< alphaRes
+    procedure(alpha0_hd_intf), public, deferred :: alpha0_hd_taudelta  !< Calculate alpha0 using hyperdual numbers
+    procedure(alphaRes_hd_intf), public, deferred :: alphaRes_hd_taudelta  !< Calculate alphaRes using hyperdual numbers
 
     procedure, public :: assign_meos_base
     ! Assignment operator
@@ -99,11 +99,9 @@ module multiparameter_base
     function satDeltaEstimate_intf(this,tau,phase) result(deltaSat)
       import meos
       class(meos) :: this
-      real, intent(in) :: tau
-      integer, intent(in) :: phase
-      real :: deltaSat
-      ! Internals
-      real :: theta
+      real, intent(in) :: tau !< Reduced temperature (-)
+      integer, intent(in) :: phase !< Phase flag
+      real :: deltaSat !< Reduced density (-)
     end function satDeltaEstimate_intf
   end interface
 
@@ -111,7 +109,8 @@ module multiparameter_base
     subroutine alphaResDerivs_intf(this, delta, tau, alpr)
       import meos
       class(meos) :: this
-      real, intent(in) :: delta, tau
+      real, intent(in) :: delta !< Reduced density (-)
+      real, intent(in) :: tau !< Reduced temperature (-)
       real, intent(out) :: alpr(0:2,0:2) !< alpr(i,j) = [(d_delta)^i(d_tau)^j alphaRes]*delta^i*tau^j
     end subroutine alphaResDerivs_intf
   end interface
@@ -120,7 +119,8 @@ module multiparameter_base
     subroutine alpha0Derivs_intf(this,delta, tau, alp0)
       import meos
       class(meos) :: this
-      real, intent(in) :: delta, tau
+      real, intent(in) :: delta !< Reduced density (-)
+      real, intent(in) :: tau !< Reduced temperature (-)
       real, intent(out) :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
     end subroutine alpha0Derivs_intf
   end interface
@@ -130,8 +130,9 @@ module multiparameter_base
       use hyperdual_mod, only: hyperdual
       import meos
       class(meos) :: this
-      type(hyperdual), intent(in) :: delta, tau
-      type(hyperdual) :: alpr !< alpr
+      type(hyperdual), intent(in) :: delta !< Reduced density (-)
+      type(hyperdual), intent(in) :: tau !< Reduced temperature (-)
+      type(hyperdual) :: alpr !< Residual reduced Helmholtz energy
     end function alphaRes_hd_intf
   end interface
 
@@ -140,8 +141,9 @@ module multiparameter_base
       use hyperdual_mod, only: hyperdual
       import meos
       class(meos) :: this
-      type(hyperdual), intent(in) :: delta, tau
-      type(hyperdual) :: alp0 !< alp0
+      type(hyperdual), intent(in) :: delta !< Reduced density (-)
+      type(hyperdual), intent(in) :: tau !< Reduced temperature (-)
+      type(hyperdual) :: alp0 !< Ideal reduced Helmholtz energy
     end function alpha0_hd_intf
   end interface
 
