@@ -2257,11 +2257,11 @@ contains
     integer,           intent(out) :: ierr         ! Error flag
     ! Internal:
     integer :: i, i_comp, n_coeff
-    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr, p_triple_factor
-    real :: T_min_local
+    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr
+    real :: T_min_local, reducing_temperature, reducing_pressure
     T_sub = 0
     p_sub = 0
-    ierr = 1
+    ierr = 0
     i_comp = -1
     do i=1,n_sublimation_curves
       if (str_eq(complist(icomp), sublimation_corr_array(i)%compName)) then
@@ -2273,19 +2273,17 @@ contains
     !
     T_triple = sublimation_corr_array(i_comp)%triple_temperature
     n_coeff = sublimation_corr_array(i_comp)%n_coeff
-    p_triple = sublimation_corr_array(i_comp)%reducing_pressure
-    T_min_local = max(T_min, sublimation_corr_array(i_comp)%minimum_temperature)
+    reducing_pressure = sublimation_corr_array(i_comp)%reducing_pressure
+    reducing_temperature = sublimation_corr_array(i_comp)%reducing_temperature
+    T_min_local = max(min(T_min,0.9*T_triple), sublimation_corr_array(i_comp)%minimum_temperature)
+
     if (scale_to_eos) then
       z = 0
       z(icomp) = 1
       p_triple = safe_bubP(T_triple, z, y, ierr)
       if (ierr /= 0) return
-      ! S2
-      p_triple_factor = 1
       call sublimation_pressure(T_triple,p_triple_corr)
-      p_triple_factor = p_triple/p_triple_corr
-    else
-      p_triple_factor = p_triple
+      reducing_pressure = reducing_pressure*p_triple/p_triple_corr
     endif
 
     do i=1,nmax
@@ -2299,29 +2297,52 @@ contains
       real,              intent(in)  :: Ts  ! Sublimation temperatures (K)
       real,              intent(out) :: ps  ! Sublimation pressures (Pa)
       ! Internal:
-      integer :: j
+      integer :: j, k
       real :: t_red, sum
 
-      select case(sublimation_corr_array(i_comp)%correlation)
-      case("S3")
-        t_red = Ts/T_triple
-        sum = 0
-        do j=1,n_coeff
-          sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
-               (1-t_red)**sublimation_corr_array(i_comp)%exponents(j)
-        enddo
-        ps = p_triple*exp(sum/t_red)
+      t_red = Ts/reducing_temperature
+      sum = 0
+      j = 0
 
-      case("S2")
-        sum = 0
-        do j=1,n_coeff
-          sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
-               Ts**sublimation_corr_array(i_comp)%exponents(j)
-        enddo
-        ps = p_triple_factor*exp(sum)
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_1
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             t_red**sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_2
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             (1-t_red)**sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_3
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*log(t_red)**&
+             sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff&
+           - sublimation_corr_array(i_comp)%n_coeff_1&
+           - sublimation_corr_array(i_comp)%n_coeff_2&
+           - sublimation_corr_array(i_comp)%n_coeff_3
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             (t_red**sublimation_corr_array(i_comp)%exponents(j)-1)
+      enddo
+
+      select case(sublimation_corr_array(i_comp)%correlation(4:4))
+      case("1")
+        ! sum
+      case("2")
+        sum = exp(sum)
+      case("3")
+        sum = exp(sum/t_red)
       case default
         call stoperror("sublimation_pressure_correlation: Wrong correlation")
       end select
+      ps = reducing_pressure*sum
+
     end subroutine sublimation_pressure
   end subroutine sublimation_pressure_correlation
 
@@ -2345,11 +2366,11 @@ contains
     integer,           intent(out) :: ierr         ! Error flag
     ! Internal:
     integer :: i, i_comp, n_coeff
-    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr, p_triple_factor
-    real :: T_max_local
+    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr
+    real :: T_max_local, reducing_temperature, reducing_pressure
     T_melt = 0
     p_melt = 0
-    ierr = 1
+    ierr = 0
     i_comp = -1
     do i=1,n_melting_curves
       if (str_eq(complist(icomp), melting_corr_array(i)%compName)) then
@@ -2361,19 +2382,17 @@ contains
     !
     T_triple = melting_corr_array(i_comp)%triple_temperature
     n_coeff = melting_corr_array(i_comp)%n_coeff
-    p_triple = melting_corr_array(i_comp)%reducing_pressure
-    T_max_local = min(T_max, melting_corr_array(i_comp)%maximum_temperature)
-
+    reducing_pressure = melting_corr_array(i_comp)%reducing_pressure
+    p_triple = reducing_pressure
+    reducing_temperature = melting_corr_array(i_comp)%reducing_temperature
+    T_max_local = min(max(T_max,1.1*T_triple), melting_corr_array(i_comp)%maximum_temperature)
     if (scale_to_eos) then
       z = 0
       z(icomp) = 1
       p_triple = safe_bubP(t_triple, z, y, ierr)
       if (ierr /= 0) return
-      p_triple_factor = 1
       call melting_pressure(t_triple,p_triple_corr)
-      p_triple_factor = p_triple/p_triple_corr
-    else
-      p_triple_factor = p_triple
+      reducing_pressure = reducing_pressure*p_triple/p_triple_corr
     endif
 
     do i=1,nmax
@@ -2386,32 +2405,60 @@ contains
       real,              intent(in)  :: Tm  ! Melting temperatures (K)
       real,              intent(out) :: pm  ! Melting pressures (Pa)
       ! Internal:
-      integer :: j
+      integer :: j, k
       real :: t_red, sum
+      logical :: is_exp
+      is_exp = (melting_corr_array(i_comp)%correlation(4:4) == "2")
 
-      select case(melting_corr_array(i_comp)%correlation)
-      case("M1")
-        t_red = Tm/T_triple
+      t_red = Tm/reducing_temperature
+      select case(melting_corr_array(i_comp)%correlation(1:2))
+      case("ML")
         sum = 0
-        do j=1,n_coeff
+        j = 0
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_1
+         j = j + 1
+         sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+              t_red**melting_corr_array(i_comp)%exponents(j)
+        enddo
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_2
+          j = j + 1
           sum = sum + melting_corr_array(i_comp)%coeff(j)*&
                (t_red-1)**melting_corr_array(i_comp)%exponents(j)
         enddo
-        pm = p_triple*sum
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_3
+          j = j + 1
+          sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+               log(t_red)**melting_corr_array(i_comp)%exponents(j)
+        enddo
+
+        do k=1,melting_corr_array(i_comp)%n_coeff &
+             - melting_corr_array(i_comp)%n_coeff_1 &
+             - melting_corr_array(i_comp)%n_coeff_2 &
+             - melting_corr_array(i_comp)%n_coeff_3
+          j = j + 1
+          sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+               (t_red**melting_corr_array(i_comp)%exponents(j)-1)
+        enddo
 
       case("MP")
         ! Split at 22K - high temp first
         if (Tm > 22.0) then
-          pm = melting_corr_array(i_comp)%coeff(1) + &
+          sum = melting_corr_array(i_comp)%coeff(1) + &
                melting_corr_array(i_comp)%coeff(2)*Tm**melting_corr_array(i_comp)%exponents(2)
         else
-          pm = melting_corr_array(i_comp)%coeff(3) + &
+          sum = melting_corr_array(i_comp)%coeff(3) + &
                melting_corr_array(i_comp)%coeff(4)*Tm**melting_corr_array(i_comp)%exponents(4)
         endif
-        pm = pm*p_triple_factor
       case default
         call stoperror("melting_pressure_correlation: Wrong correlation")
       end select
+
+      if (is_exp) sum = exp(sum)
+      pm = reducing_pressure*sum
+
     end subroutine melting_pressure
 
   end subroutine melting_pressure_correlation

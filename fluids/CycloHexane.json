@@ -85,11 +85,15 @@
   "melting_curve": {
     "bib_reference": "DOI: 10.1063/1.4900538",
     "ref": "DEFAULT",
-    "correlation": "M1",
+    "correlation": "ML-1",
     "triple_temperature": 279.86,
     "maximum_temperature": 700.0,
     "reducing_pressure": 5.348700E+03,
+    "reducing_temperature": 279.86,
     "n_coeff": 3,
+    "n_coeff_1": 2,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
     "coeff": [
       1.0,
       75.0,

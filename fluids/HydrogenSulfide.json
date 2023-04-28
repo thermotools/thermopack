@@ -89,7 +89,11 @@
     "triple_temperature": 187.7,
     "minimum_temperature": 0.0,
     "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 187.7,
     "n_coeff": 5,
+    "n_coeff_1": 5,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
     "coeff": [
       6.6247,
       -7.260e2,

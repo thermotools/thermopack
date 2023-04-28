@@ -46,11 +46,19 @@ class solid_correlation(component):
         code_lines.append(
             3*I + 'reducing_pressure = {}'.format(print_float(self.comp[tag]["reducing_pressure"])) + ", &")
         code_lines.append(
+            3*I + 'reducing_temperature = {}'.format(print_float(self.comp[tag]["reducing_temperature"])) + ", &")
+        code_lines.append(
             3*I + 'n_coeff = {}'.format(self.comp[tag]["n_coeff"]) + ", &")
-        code_lines.append(3*I + "coeff = (/" + '{:.8e}'.format(self.comp[tag]["coeff"][0]) + "," + '{:.8e}'.format(self.comp[tag]["coeff"][1])
-                          + "," + '{:.8e}'.format(self.comp[tag]["coeff"][2]) + ", &")
-        code_lines.append(3*I + '{:.8e}'.format(self.comp[tag]["coeff"][3]) + "," + '{:.8e}'.format(self.comp[tag]["coeff"][4])
-                          + "," + '{:.8e}'.format(self.comp[tag]["coeff"][5]) + "/), &")
+        code_lines.append(
+            3*I + 'n_coeff_1 = {}'.format(self.comp[tag]["n_coeff_1"]) + ", &")
+        code_lines.append(
+            3*I + 'n_coeff_2 = {}'.format(self.comp[tag]["n_coeff_2"]) + ", &")
+        code_lines.append(
+            3*I + 'n_coeff_3 = {}'.format(self.comp[tag]["n_coeff_3"]) + ", &")
+        code_lines.append(3*I + "coeff = (/" + '{:.12e}'.format(self.comp[tag]["coeff"][0]) + "," + '{:.12e}'.format(self.comp[tag]["coeff"][1])
+                          + "," + '{:.12e}'.format(self.comp[tag]["coeff"][2]) + ", &")
+        code_lines.append(3*I + '{:.12e}'.format(self.comp[tag]["coeff"][3]) + "," + '{:.12e}'.format(self.comp[tag]["coeff"][4])
+                          + "," + '{:.12e}'.format(self.comp[tag]["coeff"][5]) + "/), &")
         code_lines.append(3*I + "exponents = (/" + '{:.6f}'.format(self.comp[tag]["exponents"][0]) + "," + '{:.6f}'.format(self.comp[tag]["exponents"][1])
                           + "," + '{:.6f}'.format(self.comp[tag]["exponents"][2]) + ", &")
         code_lines.append(3*I + '{:.6f}'.format(self.comp[tag]["exponents"][3]) + "," + '{:.6f}'.format(self.comp[tag]["exponents"][4])
@@ -72,6 +80,7 @@ class solid_correlation(component):
         code_lines = []
         for key in self.comp:
             if tag in key:
+                print(self.filepath)
                 corr = self.get_solid_correlation_fortran_code(key)
                 for line in corr:
                     code_lines.append(line)
@@ -104,7 +113,7 @@ class solid_correlation_comp_list(comp_list):
                     new_line = new_line.replace("CORRTAG","MELT"+str(self.n_corr_melt))
                 code_lines.append(new_line)
 
-        self.n_corr_sub = -1
+        self.n_corr_sub = 0
         for comp in self.comp_list:
             sc_code_lines = comp.get_fortran_code("sublimation_curve")
             for il, line in enumerate(sc_code_lines):
@@ -165,12 +174,16 @@ def solid_correlation_datadb_class_definition():
     classes.append(I+"! ---------------------------------------------------------------------------")
     classes.append(I+"type :: solid_correlation_data")
     classes.append(2*I+"character(len=uid_len) :: compName")
-    classes.append(2*I+"character(len=2) :: correlation !< Correlations type")
+    classes.append(2*I+"character(len=4) :: correlation !< Correlations type")
     classes.append(2*I+"real :: triple_temperature  !< [K]. Triple point temperature.")
     classes.append(2*I+"real :: minimum_temperature  !< [K]. Minimum temperature for sublimation line.")
     classes.append(2*I+"real :: maximum_temperature  !< [K]. Maximum temperature for melting line.")
     classes.append(2*I+"real :: reducing_pressure !< [Pa]. Pressure scaling parameter.")
+    classes.append(2*I+"real :: reducing_temperature !< [K]. Temperature reducing parameter.")
     classes.append(2*I+"integer :: n_coeff !< Number of coefficients")
+    classes.append(2*I+"integer :: n_coeff_1 !< Number of coefficients for type one terms")
+    classes.append(2*I+"integer :: n_coeff_2 !< Number of coefficients for type two terms")
+    classes.append(2*I+"integer :: n_coeff_3 !< Number of coefficients for type three terms")
     classes.append(2*I+"real :: coeff(6)  !< Correlation coefficients")
     classes.append(2*I+"real :: exponents(6) !< Correlation exponents.")
     classes.append(2*I+"character(len=bibref_len) :: bib_ref !< Bibliograpic reference.")
