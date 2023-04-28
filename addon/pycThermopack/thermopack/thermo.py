@@ -2541,7 +2541,7 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None,
-                              calc_v=False):
+                              calc_v=False, initial_temperature=None):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2552,6 +2552,8 @@ class thermo(object):
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
             step_size (float , optional): Tune step size of envelope trace. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
+                                                  Overrides initial pressure. Defaults to None (K).
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
@@ -2560,9 +2562,9 @@ class thermo(object):
         self.activate()
         nmax = 1000
         z_c = (c_double * len(z))(*z)
-        temp_c = c_double(0.0)
+        temp_c = c_double(initial_temperature if initial_temperature is not None else 0.0)
         press_c = c_double(initial_pressure)
-        spec_c = c_int(1)
+        spec_c = c_int(2 if initial_temperature is not None else 1)
         beta_in_c = c_double(1.0)
         max_press_c = c_double(maximum_pressure)
         nmax_c = c_int(nmax)

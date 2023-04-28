@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0,'../pycThermopack/')
 # Importing pyThermopack
 from thermopack.cubic import cubic
+from thermopack.tcPR import tcPR
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
 # Importing Matplotlib (plotting)
@@ -111,4 +112,24 @@ leg = plt.legend(loc="best", numpoints=1, frameon=False)
 ax.set_ylabel(r"$P$ (MPa)")
 ax.set_xlabel(r"$T$ (K)")
 plt.title("Pure CO2 solid-gas-liquid phase diagram")
+
+# Component with low triple point pressure
+cb = tcPR("IC4")
+cb.set_tmin(50.0)
+cb.set_pmin(1.0e-6) # Allow for low pressure solution
+Tc, vc, Pc = cb.critical(z)
+
+Tm, pm = cb.melting_pressure_correlation(1,maximum_temperature=Tc, nmax=200)
+T, P = cb.get_envelope_twophase(initial_pressure=0.0, z=z, initial_temperature=Tm[0]) # Get equidistant points in temperature
+plt.figure()
+ax = plt.gca()
+ax.set_yscale('log')
+ax.plot(Tm, pm*p_scaling, label="Melting curve (correlation)")
+plt.plot(T, P*p_scaling, label="Saturation curve")
+plt.plot([Tc], [Pc*p_scaling], "ko")
+leg = plt.legend(loc="best", numpoints=1, frameon=False)
+ax.set_ylabel(r"$P$ (MPa)")
+ax.set_xlabel(r"$T$ (K)")
+plt.title("Iso-Butane phase diagram")
 plt.show()
+
