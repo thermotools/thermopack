@@ -61,7 +61,7 @@ class cubic(thermo.thermo):
 
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
-        else:
+        elif self is cubic:
             missing_args = []
             if comps is None:
                 missing_args.append('comps')

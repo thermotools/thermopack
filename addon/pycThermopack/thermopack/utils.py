@@ -120,7 +120,7 @@ class FlashResult:
             return (_ for _ in self.iterable)
 
     def __getitem__(self, item):
-        return self.iterable[item]
+        return tuple(self.__iter__())[item]
 
     def __repr__(self):
         reprstr = 'FlashResult object for ' + self.flash_type + '-flash\n'
