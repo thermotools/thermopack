@@ -2407,8 +2407,6 @@ contains
       ! Internal:
       integer :: j, k
       real :: t_red, sum
-      logical :: is_exp
-      is_exp = (melting_corr_array(i_comp)%correlation(4:4) == "2")
 
       t_red = Tm/reducing_temperature
       select case(melting_corr_array(i_comp)%correlation(1:2))
@@ -2456,7 +2454,16 @@ contains
         call stoperror("melting_pressure_correlation: Wrong correlation")
       end select
 
-      if (is_exp) sum = exp(sum)
+      select case(melting_corr_array(i_comp)%correlation(4:4))
+      case("1")
+        ! sum
+      case("2")
+        sum = exp(sum)
+      case("3")
+        sum = exp(sum/t_red)
+      case default
+        call stoperror("melting_pressure_correlation: Wrong correlation")
+      end select
       pm = reducing_pressure*sum
 
     end subroutine melting_pressure
