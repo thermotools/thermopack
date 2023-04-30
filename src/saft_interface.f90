@@ -30,9 +30,8 @@ module saft_interface
        eosSPC_SAFT, eosPeTS, eosSAFT_VR_MIE, &
        eosLJS_BH, eosLJS_WCA, eosLJS_UF, eosLJS_UV, eosLJ_UF, &
        eosPCP_SAFT, eosSPCP_SAFT
-  use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: nce, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param, numassocsites
+       get_active_eos, base_eos_param, numassocsites, Rgas => Rgas_default
   use association_var, only: association
   implicit none
   save
@@ -1111,7 +1110,7 @@ contains
   !> (2006) "Robust and Efficient Solution Procedures for Association Models."
   subroutine saft_volume_solver (nc,eos,T,P_spec,n,phase,V)
     use thermopack_var, only: base_eos_param
-    use thermopack_constants, only: Rgas, VAPPH, verbose
+    use thermopack_constants, only: VAPPH, verbose
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
     use saft_association, only: numAssocSites, solve_for_X_k, assemble_param
     ! Input.

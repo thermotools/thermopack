@@ -3,7 +3,8 @@ module solid_saturation
   use saturation_curve
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpTmin, tpTmax, tpPmin, tpPmax
   use nonlinear_solvers
   !use nonlinear_solvers
   !use numconstants, only: machine_prec
@@ -98,7 +99,6 @@ contains
   !> \author MH, 2016-02
   !-----------------------------------------------------------------------------
   subroutine sat_fun_newton_threePh(G,Xvar,param)
-    use thermopack_constants, only: tpPmax,tpPmin
     use solideos, only: solid_thermo
     implicit none
     real, dimension(nc+3), intent(out) :: G !< Function values
@@ -327,7 +327,6 @@ contains
        mode,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, dimension(nc), intent(inout) :: K !< Equilibrium constants
@@ -379,7 +378,8 @@ contains
     Xvar(1:nc) = log(K)
     Xvar(nc+1) = log(t)
     Xvar(nc+2) = log(p)
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1:nc) = -1.0e100
     Xmax(1:nc) = 1.0e100
     Xmin(nc+1) = log(Tmin) !Tmin
@@ -687,7 +687,6 @@ contains
        ln_spec,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(inout) :: t !< Temperature
@@ -720,7 +719,8 @@ contains
     param(nc+4) = real(is)
     param(nc+5) = real(fluidPhase)
 
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1) = log(Tmin) !Tmin
     Xmax(1) = log(Tmax) !Tmax
     Xmin(2) = log(tpPmin) !Pmin
@@ -1540,7 +1540,6 @@ contains
   !> \author MH, 2016-03
   !-----------------------------------------------------------------------------
   subroutine solidFluidEqSingleComp(Z,Y,X,t,p,specification,phase,ierr,dTdP)
-    use thermopack_constants, only: tpTmin, tpTmax, tpPmin, tpPmax
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
     real, dimension(nc), intent(in) :: Z     ! Total composition

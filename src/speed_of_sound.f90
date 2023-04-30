@@ -8,8 +8,9 @@ module speed_of_sound
   !
   !
   use thermopack_constants, only: VAPPH,LIQPH,SOLIDPH, &
-       Rgas, TREND
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+       TREND
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       Rgas
   implicit none
   private
   save

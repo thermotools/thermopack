@@ -71,9 +71,8 @@ contains
 
   !-------------------------------------------
   subroutine WongSandlerMix(cbeos, T, zcomp)
-    use thermopack_var, only : nc
+    use thermopack_var, only : nc, kRgas
     use cubic_eos, only : cb_eos, isHVmixModel
-    use thermopack_constants, only: kRgas
     use excess_gibbs, only: gEinf, getInfinitLimitC, GetFraction
     use hyperdual_mod
     implicit none
@@ -264,9 +263,8 @@ contains
 
 
   subroutine calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
-    use thermopack_var, only : nc
+    use thermopack_var, only : nc, kRgas
     use cubic_eos, only : cb_eos
-    use thermopack_constants, only: kRgas
     use hyperdual_mod
     class(cb_eos), intent(inout) :: cbeos
     type(hyperdual), intent(in) :: Thd, nhd(nc)

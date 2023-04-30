@@ -6,6 +6,7 @@
 module isolines
   use saturation_point_locators, only: iso_cross_saturation_line
   use saturation_curve, only: ISO_P, ISO_T, ISO_S, ISO_H, iso_label
+  use thermopack_var, only: tpPmin, tpTmin, tpPmax, tpTmax
   implicit none
   private
   save
@@ -206,8 +207,7 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isenthalp(h,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,sa,ta,na)
-    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
-         tpTmin, tpTmax
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
     use eosTV, only: entropy_tv
     use eos, only: specificvolume
@@ -279,8 +279,7 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isentrope(s,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,ha,ta,na)
-    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
-         tpTmin, tpTmax
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
     use eosTV, only: enthalpy_tv
     use eos, only: specificvolume

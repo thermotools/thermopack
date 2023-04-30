@@ -143,10 +143,15 @@
 	*solidenvelopeplot*
 	*sound_velocity_2ph*
 	*guessphase*
-	*rgas*
-	*tptmin*
-	*tppmin*
-	*tppmax*
+	*get_rgas*
+	*set_tmin*
+	*get_tmin*
+	*set_pmin*
+	*get_pmin*
+	*set_pmax*
+	*get_pmax*
+	*set_pmin*
+	*get_pmin*
 	*add_eos*
 	*delete_eos*
 	*activate_model*

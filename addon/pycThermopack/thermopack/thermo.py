@@ -78,17 +78,25 @@ class thermo(object):
         # Init methods
         self.eoslibinit_init_thermo = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_thermo"))
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name(
-            "thermopack_constants", "rgas")).value
+        self.s_get_rgas = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_rgas"))
         self.nc = None
-        self.minimum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmin"))
-        self.maximum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
-        self.minimum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmin"))
-        self.maximum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmax"))
+        self.s_get_tmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_tmin"))
+        self.s_set_tmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_tmin"))
+        self.s_get_tmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_tmax"))
+        self.s_set_tmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_tmax"))
+        self.s_get_pmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_pmin"))
+        self.s_set_pmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_pmin"))
+        self.s_get_pmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_pmax"))
+        self.s_set_pmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_pmax"))
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(
@@ -651,6 +659,14 @@ class thermo(object):
                              "MINIMUM_GIBBS", "SINGLE", "SOLID", "FAKE"]
         return phase_string_list[i_phase]
 
+    @property
+    def Rgas(self):
+        self.activate()
+        self.s_get_rgas.argtypes = []
+        self.s_get_rgas.restype = c_double
+        rgas = self.s_get_rgas()
+        return rgas
+
     def set_tmin(self, temp):
         """Utility
         Set minimum temperature in Thermopack. Used to limit search
@@ -660,7 +676,11 @@ class thermo(object):
             temp (float): Temperature (K)
         """
         if temp is not None:
-            self.minimum_temperature_c.value = temp
+            self.activate()
+            temp_c = c_double(temp)
+            self.s_set_tmin.argtypes = [POINTER(c_double)]
+            self.s_set_tmin.restype = None
+            self.s_set_tmin(byref(temp_c))
 
     def get_tmin(self):
         """Utility
@@ -670,8 +690,11 @@ class thermo(object):
         Returns:
             float: Temperature (K)
         """
-        temp = self.minimum_temperature_c.value
-        return temp
+        self.activate()
+        self.s_get_tmin.argtypes = []
+        self.s_get_tmin.restype = c_double
+        tmin = self.s_get_tmin()
+        return tmin
 
     def set_tmax(self, temp):
         """Utility
@@ -682,7 +705,11 @@ class thermo(object):
             temp (float): Temperature (K)
         """
         if temp is not None:
-            self.maximum_temperature_c.value = temp
+            self.activate()
+            temp_c = c_double(temp)
+            self.s_set_tmax.argtypes = [POINTER(c_double)]
+            self.s_set_tmax.restype = None
+            self.s_set_tmax(byref(temp_c))
 
     def get_tmax(self):
         """Utility
@@ -692,8 +719,11 @@ class thermo(object):
         Returns:
             float: Temperature (K)
         """
-        temp = self.maximum_temperature_c.value
-        return temp
+        self.activate()
+        self.s_get_tmax.argtypes = []
+        self.s_get_tmax.restype = c_double
+        tmax = self.s_get_tmax()
+        return tmax
 
     def set_pmin(self, press):
         """Utility
@@ -703,7 +733,12 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        self.minimum_pressure_c.value = press
+        if press is not None:
+            self.activate()
+            press_c = c_double(press)
+            self.s_set_pmin.argtypes = [POINTER(c_double)]
+            self.s_set_pmin.restype = None
+            self.s_set_pmin(byref(press_c))
 
     def get_pmin(self):
         """Utility
@@ -713,8 +748,11 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        press = self.minimum_pressure_c.value
-        return press
+        self.activate()
+        self.s_get_pmin.argtypes = []
+        self.s_get_pmin.restype = c_double
+        pmin = self.s_get_pmin()
+        return pmin
 
     def set_pmax(self, press):
         """Utility
@@ -724,7 +762,12 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        self.maximum_pressure_c.value = press
+        if press is not None:
+            self.activate()
+            press_c = c_double(press)
+            self.s_set_pmax.argtypes = [POINTER(c_double)]
+            self.s_set_pmax.restype = None
+            self.s_set_pmax(byref(press_c))
 
     def get_pmax(self):
         """Utility
@@ -734,8 +777,11 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        press = self.maximum_pressure_c.value
-        return press
+        self.activate()
+        self.s_get_pmax.argtypes = []
+        self.s_get_pmax.restype = c_double
+        pmax = self.s_get_pmax()
+        return pmax
 
     #################################
     # Phase properties
@@ -1710,7 +1756,6 @@ class thermo(object):
         else:
             dpdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
         contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER(c_double),
@@ -1731,7 +1776,6 @@ class thermo(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c,
                                contribution_c)
 
         return_tuple = (P, )
@@ -3335,7 +3379,7 @@ class thermo(object):
             tol (float, optional): Error tolerance (-). Defaults to 1.0e-8.
 
         Raises:
-            Exception: Failure to solve for critcal point
+            Exception: Failure to solve for critical point
 
         Returns:
             float: Temperature (K)
@@ -3369,6 +3413,7 @@ class thermo(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+
     def critical_temperature(self, i):
         '''Stability interface
         Get critical temperature of component i
@@ -3438,6 +3483,39 @@ class thermo(object):
                                     byref(tnbi))
 
         return pci.value
+
+    def critical_volume(self, i):
+        '''
+        Get specific critical volume of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: specific critical volume
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return vci.value
 
     #################################
     # Virial interfaces

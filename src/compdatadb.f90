@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-02-27T15:11:39.380259
+!! Time stamp: 2023-03-13T11:59:48.180103
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -642,9 +642,9 @@ module compdatadb
       )
 
   type (gendatadb), parameter :: cx9 = &
-      gendatadb(ident = "ACETYLEN", &
+      gendatadb(ident = "ACETYLENE", &
       formula = "C2H2", &
-      name = "ACETYLEN", &
+      name = "ACETYLENE", &
       mw = 26.0380, &
       Tc = 308.3000, &
       Pc = 6140000.00, &
@@ -667,7 +667,7 @@ module compdatadb
       )
 
   type (cpdata), parameter :: cp9 = &
-      cpdata(cid = "ACETYLEN", &
+      cpdata(cid = "ACETYLENE", &
       ref = "Default", &
       bib_ref = "", &
       cptype = 4, &
