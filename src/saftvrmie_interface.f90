@@ -11,6 +11,7 @@ module saftvrmie_interface
        saftvrmie_eos, svrm_opt
   use thermopack_constants, only: kB_const
   use saftvrmie_options
+  use thermopack_var, only: Rgas, kRgas
   implicit none
   private
   save
@@ -37,8 +38,9 @@ contains
   !!
   !! \author Morten Hammer, February 2018
   subroutine init_saftvrmie(nc,comp,eos,ref,mixing)
-    use thermopack_var, only: gendata_pointer, base_eos_param
-    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use thermopack_var, only: gendata_pointer, base_eos_param, &
+         get_active_thermo_model, thermo_model
+    use thermopack_constants, only: N_Avogadro, kB_const
     use AssocSchemeUtils, only: no_assoc
     use saftvrmie_association, only: calc_aij
     integer, intent(in)           :: nc          !< Number of components.
@@ -48,6 +50,9 @@ contains
     integer, intent(in), optional :: mixing      !< Binary combination rule id
     ! Locals
     integer :: i,j
+    type(thermo_model), pointer :: p_thermo
+    !cbeos%name = "SAFT-VR-MIE"
+
     select type(p_eos => eos)
     type is (saftvrmie_eos)
       call init_saftvrmie_containers(nc,comp,p_eos,ref,mixing)
@@ -76,8 +81,9 @@ contains
     end select
 
     ! Set consistent Rgas
-    Rgas = N_Avogadro*kB_const
-    kRgas=1000.0*Rgas !< J/kmol/K
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = N_Avogadro*kB_const
+    p_thermo%kRgas=1000.0*Rgas !< J/kmol/K
   end subroutine init_saftvrmie
 
   !> Update hard-sphere diameter
@@ -4613,7 +4619,6 @@ subroutine print_saftvrmie_model(Ti,Vi,ni,doInit)
   use saftvrmie_hardsphere
   use saftvrmie_interface
   use saftvrmie_options
-  !use thermopack_constants, only: Rgas
   implicit none
   real, optional, intent(in) :: Ti,Vi,ni(nc)
   logical, optional, intent(in) :: doInit

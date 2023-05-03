@@ -7,10 +7,12 @@
 !!
 !-------------------------------------------------------------------------
 module critical
-  use thermopack_constants, only: verbose, VAPPH, LIQPH, Rgas
-  use thermopack_var, only: nc, thermo_model, get_active_thermo_model
+  use thermopack_constants, only: verbose, VAPPH, LIQPH
+  use thermopack_var, only: nc, thermo_model, get_active_thermo_model, Rgas, &
+       tpPmin, tpPmax, tpTmin, tpTmax
   use eos, only : thermo, pseudo_safe
   use eosTV, only : thermo_tv, pressure
+  use cubic_eos, only: get_b_linear_mix
   implicit none
   private
   save
@@ -31,7 +33,6 @@ contains
   !> \author MH, 2014-11
   !-------------------------------------------------------------------------
   subroutine calcCritical(t,p,Z,phase,ierr,tol)
-    use thermopack_constants, only: tpPmin, tpPmax, get_templimits
     use nonlinear_solvers
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
@@ -79,7 +80,8 @@ contains
       solver%abs_tol = tol
     endif
     solver%rel_tol = 1.0e-20
-    call get_templimits(xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     xmin(2) = tpPmin*1.0e-5
     xmax(2) = tpPmax*1.0e-5
     call nonlinear_solve(solver,critFun,critJac,critJac,limit_dx,&
@@ -614,11 +616,10 @@ contains
   !! \author MH, 2016-01
   !-------------------------------------------------------------------------
   subroutine calcCriticalTV(t,v,Z,ierr,tol,p)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
-    use thermo_utils, only: isSingleComp, get_b_linear_mix
+    use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
     implicit none
     real, dimension(nc), intent(in) :: Z !< Trial composition (Overall compozition)
@@ -683,7 +684,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(1), xmax(1))
+    xmin(1) = tpTmin
+    xmax(1) = tpTmax
     xmin(2) = b + Small ! m3/mol
     xmax(2) = 100.0
     solver%ls_max_it = 3
@@ -872,12 +874,10 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalZ(t,v,P,Z,s,ierr,tol,free_comp,iter)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Z !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -964,7 +964,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(2), xmax(2))
+    xmin(2) = tpTmin
+    xmax(2) = tpTmax
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
@@ -1211,12 +1212,10 @@ contains
   !! \author MH, 2019-04
   !-------------------------------------------------------------------------
   subroutine calcCriticalEndPoint(t,vc,Zc,y,vy,ierr,tol,free_comp)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers
     use eosdata, only: eosCPA
     use numconstants, only: Small
     use utilities, only: isXwithinBounds
-    use thermo_utils, only: get_b_linear_mix
     implicit none
     real, dimension(nc), intent(inout) :: Zc !< Trial composition (Overall compozition)
     real, intent(inout) :: t !< Temperature [K]
@@ -1292,7 +1291,8 @@ contains
     endif
     solver%rel_tol = 1.0e-20
     solver%max_it = 200
-    call get_templimits(xmin(2), xmax(2))
+    xmin(2) = tpTmin
+    xmax(2) = tpTmax
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then

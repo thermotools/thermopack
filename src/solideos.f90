@@ -3,9 +3,9 @@
 !!
 !! \author MH, 2013-03-05.
 module solideos
-  use thermopack_constants, only: Rgas, LIQPH, verbose, VAPPH, SINGLEPH
+  use thermopack_constants, only: LIQPH, verbose, VAPPH, SINGLEPH
   use thermopack_var, only: nc, nph, thermo_model, &
-       get_active_thermo_model, complist
+       get_active_thermo_model, complist, Rgas, tptmin, tppmin, tppmax, tptmax
   use co2_gibbs
   use h2o_gibbs
   !
@@ -371,7 +371,6 @@ contains
   subroutine calc_single_comp_triple_point(j,ttr,ptr)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, tpTmin, tpTmax
     implicit none
     integer, intent(in) :: j !< Solid component index
     real, intent(inout) :: ttr !< Triple point temperature (K)

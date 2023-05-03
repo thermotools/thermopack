@@ -1,0 +1,189 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\usepackage[utf8]{inputenc}
+
+\title{Hyperdual numbers}
+\author{Morten Hammer}
+
+\usepackage[normalem]{ulem}
+
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\usepackage{color}
+
+\definecolor{midnightblue}{RGB}{35,35,132}
+\definecolor{urlblue}{RGB}{70,130,180}
+
+\definecolor{shadecolor}{gray}{0.9}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=midnightblue,
+    urlcolor=urlblue,
+    citecolor=midnightblue,
+    linktoc=page
+}
+
+\usepackage{amsmath}
+\usepackage{framed}
+\usepackage{siunitx,mhchem,todonotes}
+\presetkeys%
+    {todonotes}%
+    {inline,backgroundcolor=orange}{}
+\usepackage{xspace}
+%\usepackage[arrowdel]{physics}
+\usepackage{physics}
+
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand{\eos}{\ensuremath{\text{eos}}\xspace}
+\newcommand*{\lb}{\ensuremath{\left(}}
+\newcommand*{\rb}{\ensuremath{\right)}}
+\newcommand*{\lbf}{\ensuremath{\left[}}
+\newcommand*{\rbf}{\ensuremath{\right]}}
+\newcommand*{\vc}[1]{\vec{\mathbf{#1}}}%
+\newcommand{\kB}{\ensuremath{\text{k}_{\text{B}}}\xspace}
+\newcommand{\NA}{\ensuremath{N_{\text{A}}}\xspace}
+\newcommand{\disp}{\ensuremath{\text{disp}}\xspace}
+\newcommand{\residual}{\ensuremath{\text{res}}\xspace}
+\newcommand{\ideal}{\ensuremath{\text{ig}}\xspace}
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+\DeclareMathOperator*{\argmin}{arg\,min }
+
+
+
+\usepackage[activate={true,nocompatibility},final,kerning=true,tracking=true,spacing=true,stretch=10,shrink=10]{microtype}
+\microtypecontext{spacing=nonfrench}
+\SetExtraKerning[unit=space]
+    {encoding={*}, family={bch}, series={*}, size={footnotesize,small,normalsize}}
+    {\textendash={400,400}, % en-dash, add more space around it
+     "28={ ,150}, % left bracket, add space from right
+     "29={150, }, % right bracket, add space from left
+     \textquotedblleft={ ,150}, % left quotation mark, space from right
+     \textquotedblright={150, }} % right quotation mark, space from left
+\SetTracking{encoding={*}, shape=sc}{0}
+
+\begin{document}
+\frontmatter
+
+\section{Hyperdual numbers}
+This memo briefly describes the implementation of hyperdual numbers
+for the purpose of differentiation. The concept of hyperdual numbers
+is described by \citet{Rehner2021} and \citet{Fike2011}.
+
+Third order hyperdual number,
+\begin{equation}
+  x = x_0 + x_1 \epsilon_1 + x_2 \epsilon_2 + x_3 \epsilon_3 + x_{12} \epsilon_{12} + x_{13} \epsilon_{13} + x_{23} \epsilon_{23} + x_{123} \epsilon_{123}
+\end{equation}
+
+The exact Taylor expansion of $f(x,y,z)$ using hyperdual numbers,
+\begin{align}
+  f \lb x + \epsilon_1, y + \epsilon_2, z + \epsilon_3  \rb &= f^0 + f_x^0 \epsilon_1 + f_y^0 \epsilon_2 + f_z^0 \epsilon_3 \nonumber \\&
+  + f_{xy}^0 \epsilon_1 \epsilon_2 + f_{xz}^0 \epsilon_1 \epsilon_3 + f_{yz}^0 \epsilon_2 \epsilon_3 \nonumber \\&
+  + f_{xyz}^0 \epsilon_1 \epsilon_2 \epsilon_3
+\end{align}
+
+Taylor expansion of function $f(x)$ yields
+\begin{align}
+  f(x) &=  f(x_0) + f^\prime (x_0) x_1 \epsilon_1 + f^\prime (x_0)x_2 \epsilon_2 + f^\prime (x_0)x_3 \epsilon_3 \nonumber \\
+       &+ f^\prime (x_0) x_{12} \epsilon_{12} + f^\prime (x_0) x_{13} \epsilon_{13} + f^\prime (x_0) x_{23} \epsilon_{23} \nonumber \\
+       & + f^\prime (x_0)x_{123} \epsilon_{123} \nonumber \\
+       & + f^{\prime\prime} (x_0) x_1 x_2 \epsilon_1 \epsilon_2 + f^{\prime\prime} (x_0)x_1 x_3 \epsilon_1 \epsilon_3 + f^{\prime\prime} (x_0)x_2x_3 \epsilon_2  \epsilon_3 \nonumber \\
+       & + f^{\prime\prime} (x_0) x_1 x_{23} \epsilon_1 \epsilon_{23} + f^{\prime\prime} (x_0)x_{12} x_3 \epsilon_{12} \epsilon_3 + f^{\prime\prime} (x_0)x_2x_{13} \epsilon_2  \epsilon_{13} \nonumber \\
+       & + f^{\prime\prime\prime} (x_0) x_1 x_2 x_3 \epsilon_1 \epsilon_2 \epsilon_3 .
+\end{align}
+
+Note that the prefactors $1/2$ and $1/3$ cancels. Gathering terms,
+\begin{align}
+  f(x) &=  f(x_0) + f^\prime (x_0) x_1 \epsilon_1 + f^\prime (x_0)x_2 \epsilon_2 + f^\prime (x_0)x_3 \epsilon_3 \nonumber \\
+       &+ \biggl(f^\prime (x_0) x_{12} + f^{\prime\prime} (x_0) x_1 x_2 \biggr) \epsilon_{1}\epsilon_{2} \nonumber \\
+       & + \biggl(f^\prime (x_0) x_{13} + f^{\prime\prime} (x_0)x_1 x_3 \biggr)\epsilon_{1}\epsilon_{3} \nonumber \\
+       & + \biggl(f^\prime (x_0) x_{23} + f^{\prime\prime} (x_0)x_2x_3  \biggr)\epsilon_{2} \epsilon_{3} \nonumber \\
+       & + \biggl(f^\prime (x_0)x_{123}  +  f^{\prime\prime} (x_0) \biggl(x_1 x_{23} + x_{12} x_3 + x_2x_{13}\biggr) + f^{\prime\prime\prime} (x_0) x_1 x_2 x_3 \biggr) \epsilon_{1}\epsilon_{2}\epsilon_{3} .
+\end{align}
+
+Multiplication of two numbers,
+\begin{align}
+  xy &=  x_0y_0 + \lb x_0 y_1 + x_1 y_0 \rb \epsilon_1 + \lb x_0 y_2 + x_2 y_0 \rb \epsilon_2 + \lb x_0 y_3 + x_3 y_0 \rb \epsilon_3 \nonumber \\
+     & + \lb x_{0} y_{12} + x_{12} y_{0} + x_{1} y_{2} + x_{2} y_{1} \rb \epsilon_1 \epsilon_2  \nonumber \\
+     & + \lb x_{0} y_{13} + x_{13} y_{0} + x_{1} y_{3} + x_{3} y_{1} \rb \epsilon_1 \epsilon_3  \nonumber \\
+     & + \lb x_{0} y_{23} + x_{23} y_{0} + x_{3} y_{2} + x_{2} y_{3} \rb \epsilon_2 \epsilon_3  \nonumber \\
+     & + \lb x_{0} y_{123} + x_{123} y_{0} + x_{12} y_{3} + x_{3} y_{12} + x_{13} y_{2} + x_{2} y_{13} + x_{23} y_{1} + x_{23} y_{1} \rb \epsilon_1 \epsilon_2 \epsilon_3 .
+\end{align}
+
+\subsection{Needed differenitials}
+Differentials to third order is required for the most common functions.
+
+\subsubsection{Exponential function ($\exp(x)$)}
+\begin{equation}
+  f(x) = \exp(x) = f^\prime(x) = f^{\prime\prime}(x) = f^{\prime\prime\prime}(x)
+\end{equation}
+\subsubsection{Sine function ($\sin(x)$)}
+\begin{align}
+  f(x) &= \sin(x) \\
+  f^\prime(x) &= \cos(x) \\
+  f^{\prime\prime}(x) &= -\sin(x) \\
+  f^{\prime\prime\prime}(x) &= -\cos(x)
+\end{align}
+\subsubsection{Cosine function ($\cos(x)$)}
+\begin{align}
+  f(x) &= \cos(x) \\
+  f^\prime(x) &= -\sin(x) \\
+  f^{\prime\prime}(x) &= -\cos(x) \\
+  f^{\prime\prime\prime}(x) &= \sin(x)
+\end{align}
+\subsubsection{Tangent function ($\tan(x)$)}
+\begin{align}
+  f(x) &= \tan(x) \\
+  f^\prime(x) &= \sec^2 (x) = \tan^2(x) + 1 \\
+  f^{\prime\prime}(x) &= 2 \tan(x) \sec^2(x)  \\
+  f^{\prime\prime\prime}(x) &= 2 \sec^2(x) (\sec^2(x) + 2 \tan^2(x))
+\end{align}
+\subsubsection{Natural logarithm ($\log(x)$)}
+\begin{align}
+  f(x) &= \log(x) \\
+  f^\prime(x) &= \frac{1}{x} \\
+  f^{\prime\prime}(x) &= -\frac{1}{x^2}\\
+  f^{\prime\prime\prime}(x) &= \frac{2}{x^3}
+\end{align}
+\subsubsection{Inverse cosine function ($\acos(x)$)}
+\begin{align}
+  f(x) &= \acos(x) \\
+  f^\prime(x) &= -\frac{1}{\sqrt{1 + x^2}} \\
+  f^{\prime\prime}(x) &= -\frac{x}{(1 - x^2)^{3/2}}\\
+  f^{\prime\prime\prime}(x) &= \frac{-2 x^2 - 1}{(1 - x^2)^{5/2}}
+\end{align}
+\subsubsection{Inverse sine function ($\asin(x)$)}
+\begin{align}
+  f(x) &= \asin(x) \\
+  f^\prime(x) &= \frac{1}{\sqrt{1 + x^2}} \\
+  f^{\prime\prime}(x) &= \frac{x}{(1 - x^2)^{3/2}}\\
+  f^{\prime\prime\prime}(x) &= \frac{2 x^2 + 1}{(1 - x^2)^{5/2}}
+\end{align}
+\subsubsection{Inverse tangent function ($\atan(x)$)}
+\begin{align}
+  f(x) &= \atan(x) \\
+  f^\prime(x) &= \frac{1}{1 + x^2} \\
+  f^{\prime\prime}(x) &= \frac{-2 x}{(x^2 + 1)^2}\\
+  f^{\prime\prime\prime}(x) &= \frac{6 x^2 - 2}{(x^2 + 1)^3}
+\end{align}
+\subsubsection{Power function ($x^a$)}
+\begin{align}
+  f(x) &= x^a \\
+  f^\prime(x) &= a x^{a-1} \\
+  f^{\prime\prime}(x) &= a (a-1)  x^{a-2} \\
+  f^{\prime\prime\prime}(x) &= a (a-1) (a-2)  x^{a-3}
+\end{align}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{../thermopack}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

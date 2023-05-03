@@ -8,7 +8,7 @@ module mut_solver
   !
   use numconstants, only: machine_prec, small
   use thermopack_constants
-  use thermopack_var, only: nce
+  use thermopack_var, only: nce, Rgas
   use eosTV, only: thermo_tv, chemical_potential_tv
   implicit none
   private

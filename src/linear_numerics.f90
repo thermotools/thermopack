@@ -359,10 +359,7 @@ contains
         do j=ii,i-1
           summ = summ - a(i,j)*b(j)
         enddo
-      else if(summ%f0 /= 0.0_dp .or. &
-           summ%f1 /= 0.0_dp .or. &
-           summ%f2 /= 0.0_dp .or. &
-           summ%f12 /= 0.0_dp) then ! Make sure differentials are propagated correctly
+      else if(.not. hd_all_members_zero(summ)) then ! Make sure differentials are propagated correctly
         ii = i
       end if
       b(i) = summ

@@ -101,6 +101,9 @@ module multiparameter_para_h2
 
      procedure, private :: alphaResPrefactors => alphaResPrefactors_PARA_H2
 
+     procedure, public :: alpha0_hd_taudelta => alpha0_hd_PARA_H2
+     procedure, public :: alphaRes_hd_taudelta => alphaRes_hd_PARA_H2
+
      ! Assignment operator
      procedure, pass(This), public :: assign_meos => assign_meos_para_h2
 
@@ -109,9 +112,11 @@ module multiparameter_para_h2
 contains
 
   subroutine init_PARA_H2 (this, use_Rgas_fit)
+    use thermopack_var, only: get_active_thermo_model, thermo_model
     class(meos_para_h2) :: this
     logical, optional, intent(in) :: use_Rgas_fit
-
+    ! Locals
+    type(thermo_model), pointer :: p_thermo
     this%tau_cache = 0.0
 
     this%compName = "para_H2"
@@ -133,11 +138,15 @@ contains
     this%rhoVap_triple = 0.12555/this%molarMass  !< (mol/m^3)
 
     if (present(use_Rgas_fit)) then
-       if (use_Rgas_fit) then
-          this%Rgas_meos = this%Rgas_fit
-       end if
+      if (use_Rgas_fit) then
+        this%Rgas_meos = this%Rgas_fit
+      end if
     end if
 
+    ! Set consistent Rgas
+    p_thermo => get_active_thermo_model()
+    p_thermo%Rgas = this%Rgas_meos
+    p_thermo%kRgas = 1000.0*this%Rgas_meos !< J/kmol/K
   end subroutine init_PARA_H2
 
   ! The functional form of the ideal gas function varies among multiparameter EoS,
@@ -160,6 +169,21 @@ contains
 
   end subroutine alpha0Derivs_PARA_H2
 
+  ! The functional form of the ideal gas function varies among multiparameter EoS,
+  ! which explains why this routine may seem a bit hard-coded.
+  function alpha0_hd_PARA_H2(this, delta, tau) result(alp0)
+    use hyperdual_mod
+    class(meos_para_h2) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alp0 !< alp0
+    ! Internals
+    integer :: i
+    alp0 = log(delta) + 1.5*log(tau) + a(1) + a(2)*tau
+    do i=3,9
+      alp0 = alp0 + v(i)*log(1.0_dp-exp(b(i)*tau))
+    enddo
+  end function alpha0_hd_PARA_H2
+
   ! Supplies all prefactors that do not depend on delta. Prefactors are cached.
   subroutine alphaResPrefactors_PARA_H2 (this, tau, prefactors_pol, prefactors_exp, prefactors_expexp)
     class(meos_para_h2) :: this
@@ -180,7 +204,6 @@ contains
     prefactors_expexp = this%prefactors_expexp_cache
 
   end subroutine alphaResPrefactors_PARA_H2
-
 
   subroutine alphaResDerivs_PARA_H2 (this, delta, tau, alpr)
     class(meos_para_h2) :: this
@@ -231,6 +254,31 @@ contains
          (d_expexp - 2*eta_expexp*delta*(delta-eps_expexp))*(t_expexp - 2*beta_expexp*tau*(tau-gam_expexp)))
 
   end subroutine alphaResDerivs_PARA_H2
+
+  function alphaRes_hd_PARA_H2 (this, delta, tau) result(alpr)
+    use hyperdual_mod
+    class(meos_para_h2) :: this
+    type(hyperdual), intent(in) :: delta, tau
+    type(hyperdual) :: alpr !< alpr
+    ! Internal
+    integer :: i
+
+    alpr = 0.0_dp
+    do i=1,upPol
+      alpr = alpr + N_pol(i) * tau**t_pol(i)*delta**d_pol(i)
+    enddo
+
+    do i=upPol+1,upExp
+      alpr = alpr + N_exp(i) * tau**t_exp(i) * delta**d_exp(i) * exp(-delta**l_exp(i))
+    enddo
+
+    do i=upExp+1,upExpExp
+      alpr = alpr + N_expexp(i) * tau**t_expexp(i) * delta**d_expexp(i) &
+           * exp(-eta_expexp(i)*(delta-eps_expexp(i))**2 - &
+           beta_expexp(i)*(tau-gam_expexp(i))**2)
+    enddo
+
+  end function alphaRes_hd_PARA_H2
 
   function satDeltaEstimate_PARA_H2 (this,tau,phase) result(deltaSat)
     use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH

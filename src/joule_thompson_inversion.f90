@@ -1,7 +1,7 @@
 module joule_thompson_inversion
   use eos, only: specificvolume, getCriticalParam, thermo
   use thermopack_constants, only: LIQPH, VAPPH, verbose
-  use thermopack_var, only: nc
+  use thermopack_var, only: nc, tpTmin, tpTmax
   use eosTV, only: virial_coefficients, pressure
   use numconstants, only: machine_prec
   use nonlinear_solvers
@@ -253,7 +253,6 @@ contains
   !> \author MH, 2021-04
   !-----------------------------------------------------------------------------
   subroutine jt_inv_solve(Z,T,v,ierr)
-    use thermopack_constants, only: get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(inout) :: T !< Temperature
@@ -269,7 +268,8 @@ contains
     param(nc+1) = v
     P = pressure(T, v, z, dpdt=dpdt)
     param(nc+2) = max(abs(T*dpdt),1.0)
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     xmax(1) = log(Tmax + 10.0)
     xmin(1) = log(max(Tmin - 10.0, 2.0))
     x(1) = log(T)

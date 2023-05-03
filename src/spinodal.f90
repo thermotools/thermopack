@@ -3,9 +3,10 @@
 !!
 !-------------------------------------------------------------------------
 module spinodal
-  use thermopack_constants, only: verbose, VAPPH, LIQPH, SINGLEPH, Rgas
+  use thermopack_constants, only: verbose, VAPPH, LIQPH, SINGLEPH
   use numconstants, only: machine_prec
-  use thermopack_var, only: nc, thermo_model, get_active_thermo_model
+  use thermopack_var, only: nc, thermo_model, get_active_thermo_model, Rgas, &
+       tpTmin, tpTmax
   use eos, only : thermo, entropy, specificVolume
   use eosTV, only : thermo_tv, pressure
   use critical, only: stabFun, stabFunTV, stabJacTV, calcBmatrixTV
@@ -86,7 +87,6 @@ contains
   !> \author MH, 2015-11
   !--------------------------------------------------------------------------
   subroutine solveStabLimitTV(T,v,z,ierr)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     implicit none
@@ -95,17 +95,16 @@ contains
     real, intent(in) :: v !< Specific volume [m3/mol]
     integer, intent(out) :: ierr !< Error flag
     ! Local
-    real :: Tmin, Tmax, param(nc+1)
+    real :: Tmin, param(nc+1)
     type(nonlinear_solver) :: solver
     real, dimension(1) :: x,xmin,xmax
-    call get_templimits(Tmin,Tmax)
     solver%abs_tol = 1.0e-8
     param(1:nc) = z
     param(nc+1) = v
-    Tmin = min(20.0, Tmin)
-    x = min(max(T,Tmin),Tmax)
+    Tmin = min(20.0, tpTmin)
+    x = min(max(T,Tmin),tpTmax)
     xmin = Tmin
-    xmax = Tmax
+    xmax = tpTmax
     call nonlinear_solve(solver,stabfunTV,stabjacTV,stabjacTV,&
          limit_dx,premReturn,setXv,x,xmin,xmax,param)
     ierr = solver%exitflag
@@ -118,7 +117,6 @@ contains
   !> \author MH, 2023-04
   !--------------------------------------------------------------------------
   subroutine solveStabLimitT(T,v,z,ierr)
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     implicit none
@@ -682,7 +680,6 @@ contains
   subroutine map_stability_limit(P0,z,Tmin,Tl,Pl,vl,nl,ierr,dlnv_override,Tliq_start)
     use eos, only: specificVolume
     use eosTV, only: pressure
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use thermo_utils, only: isSingleComp
@@ -950,7 +947,6 @@ contains
   !--------------------------------------------------------------------------
   subroutine stablimitPointSingleComp(T,z,v,ierr)
     use eos, only: specificVolume
-    use thermopack_constants, only: get_templimits
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use eosTV, only: pressure
@@ -1064,9 +1060,8 @@ contains
   !>
   !> \author Ailo 2016-01
   !-------------------------------------------------------------------------
-  function rhomax_PR (x)
-    use thermopack_var, only: nce
-    use thermopack_constants, only: Rgas
+  function rhomax_PR(x)
+    use thermopack_var, only: nce, Rgas
     use eos, only: getCriticalParam
     ! Input:
     real :: x(nce)      !< Composition (needn't be normalized)
