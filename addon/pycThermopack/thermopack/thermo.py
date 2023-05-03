@@ -203,6 +203,10 @@ class thermo(object):
             self.tp, self.get_export_name("binaryplot", "get_bp_term"))
         self.s_solid_envelope_plot = getattr(
             self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
+        self.s_melting_pressure_correlation = getattr(
+            self.tp, self.get_export_name("solid_saturation", "melting_pressure_correlation"))
+        self.s_sublimation_pressure_correlation = getattr(
+            self.tp, self.get_export_name("solid_saturation", "sublimation_pressure_correlation"))
         self.s_isotherm = getattr(
             self.tp, self.get_export_name("isolines", "isotherm"))
         self.s_isobar = getattr(
@@ -211,6 +215,7 @@ class thermo(object):
             self.tp, self.get_export_name("isolines", "isenthalp"))
         self.s_isentrope = getattr(
             self.tp, self.get_export_name("isolines", "isentrope"))
+
         # Stability
         self.s_crit_tv = getattr(
             self.tp, self.get_export_name("critical", "calccriticaltv"))
@@ -2580,7 +2585,7 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None,
-                              calc_v=False):
+                              calc_v=False, initial_temperature=None):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2591,6 +2596,8 @@ class thermo(object):
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
             step_size (float , optional): Tune step size of envelope trace. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
+                                                  Overrides initial pressure. Defaults to None (K).
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
@@ -2599,9 +2606,9 @@ class thermo(object):
         self.activate()
         nmax = 1000
         z_c = (c_double * len(z))(*z)
-        temp_c = c_double(0.0)
+        temp_c = c_double(initial_temperature if initial_temperature is not None else 0.0)
         press_c = c_double(initial_pressure)
-        spec_c = c_int(1)
+        spec_c = c_int(2 if initial_temperature is not None else 1)
         beta_in_c = c_double(1.0)
         max_press_c = c_double(maximum_pressure)
         nmax_c = c_int(nmax)
@@ -3086,6 +3093,100 @@ class thermo(object):
 
         # Load file with filename and read into lists....
         return plotutils.get_solid_envelope_data(filename)
+
+    def melting_pressure_correlation(self,i,maximum_temperature=None,nmax=100,scale_to_eos=True):
+        """Saturation interface
+        Calculate melting line form correlation
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+            maximum_temperature (float, optional): Get values up to maximum_temperature. Defaults to correlation limit.
+            nmax (int): Number of points in equidistant grid. Defaults to 100.
+            scale_to_eos (bool, optional): Scale pressures to match triple point pressure? Defaults to True
+
+        Returns:
+            T_melt (ndarray): Melting temperature (K)
+            p_melt (ndarray): Melting pressure (Pa)
+        """
+        self.activate()
+        temp_melt_c = (c_double * nmax)(0.0)
+        press_melt_c = (c_double * nmax)(0.0)
+        temp_max_c = c_double(1.0e10 if maximum_temperature is None else maximum_temperature)
+        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        i_comp_c = c_int(i)
+        nmax_c = c_int(nmax)
+        ierr_c = c_int(0)
+
+        self.s_melting_pressure_correlation.argtypes = [POINTER( c_double ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_double ),
+                                                        POINTER( c_double ),
+                                                        POINTER( c_int )]
+
+        self.s_melting_pressure_correlation.restype = None
+
+        self.s_melting_pressure_correlation(byref(temp_max_c),
+                                            byref(i_comp_c),
+                                            byref(scale_to_eos_c),
+                                            byref(nmax_c),
+                                            temp_melt_c,
+                                            press_melt_c,
+                                            byref(ierr_c))
+
+
+        if ierr_c.value != 0:
+            raise Exception("Melting line calculation failed")
+
+        return np.array(temp_melt_c), np.array(press_melt_c)
+
+    def sublimation_pressure_correlation(self,i,minimum_temperature=None,nmax=100,scale_to_eos=True):
+        """Saturation interface
+        Calculate melting line form correlation
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+            minimum_temperature (float, optional): Get values from minimum_temperature. Defaults to correlation limit.
+            nmax (int): Number of points in equidistant grid. Defaults to 100.
+            scale_to_eos (bool, optional): Scale pressures to match triple point pressure? Defaults to True
+
+        Returns:
+            T_subl (ndarray): Sublimation temperature (K)
+            p_subl (ndarray): Sublimation pressure (Pa)
+        """
+        self.activate()
+        temp_subl_c = (c_double * nmax)(0.0)
+        press_subl_c = (c_double * nmax)(0.0)
+        temp_min_c = c_double(0.0 if minimum_temperature is None else minimum_temperature)
+        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        i_comp_c = c_int(i)
+        nmax_c = c_int(nmax)
+        ierr_c = c_int(0)
+
+        self.s_sublimation_pressure_correlation.argtypes = [POINTER( c_double ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_double ),
+                                                            POINTER( c_double ),
+                                                            POINTER( c_int )]
+
+        self.s_sublimation_pressure_correlation.restype = None
+
+        self.s_sublimation_pressure_correlation(byref(temp_min_c),
+                                                byref(i_comp_c),
+                                                byref(scale_to_eos_c),
+                                                byref(nmax_c),
+                                                temp_subl_c,
+                                                press_subl_c,
+                                                byref(ierr_c))
+
+
+        if ierr_c.value != 0:
+            raise Exception("Sublimation line calculation failed")
+
+        return np.array(temp_subl_c), np.array(press_subl_c)
 
     def get_isotherm(self,
                      temp,

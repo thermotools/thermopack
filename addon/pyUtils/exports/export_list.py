@@ -244,6 +244,8 @@ append_export("envelopeplot", "saturation_curve")
 append_export("solid_init", "solideos")
 
 append_export("solidenvelopeplot", "solid_saturation")
+append_export("melting_pressure_correlation", "solid_saturation")
+append_export("sublimation_pressure_correlation", "solid_saturation")
 
 append_export("sound_velocity_2ph", "speed_of_sound")
 
