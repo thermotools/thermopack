@@ -203,8 +203,6 @@ append_export("ljs_wca_get_pure_params", "lj_splined")
 
 append_export("solve_mu_t", "mut_solver")
 append_export("solve_lnf_t", "mut_solver")
-append_export("extrapolate_mu_in_inverse_radius", "mut_solver")
-append_export("solve_laplace", "mut_solver")
 append_export("map_meta_isotherm", "mut_solver")
 
 append_export("fres_multipol", "multipol")
