@@ -891,5 +891,26 @@ contains
          (((zeta2**3)/(zeta3**2)) - zeta0) * ln_term)
   end subroutine calc_ares_hardsphere_bmcsl
 
+
+  function cavity_correlation_desousa_amotz(r, rho, dhs) result(y)
+    !> Analytic approximation of hard sphere cavity correlation
+    !> function y at position r, valid for pure hard-spheres. The
+    !> approximation is due to de Souza and Ben-Amotz
+    !> (10.1080/00268979300100131)
+    type(hyperdual), intent(in)  :: r   !< position (m)
+    type(hyperdual), intent(in)  :: rho !< number density (1/m^3)
+    type(hyperdual), intent(in)  :: dhs !< hard-sphere diameter (m)
+    type(hyperdual)              :: y   !< cavity correlation function (-)
+    ! Locals
+    type(hyperdual) :: A, B, C, eta, denom
+
+    eta = PI/6 * rho * dhs**3
+    denom = (1.0-eta)**3
+    A = (3.0-eta)/denom - 3.0
+    B = -3*eta*(2.0-eta)/denom
+    C = log((2.0-eta)*(2*denom)) - eta*(2.0-6*eta + 3*eta**2)/denom
+    y = exp(A + B*(r/dhs) + C*(r/dhs)**3)
+  end function cavity_correlation_desousa_amotz
+
   
 end module hardsphere_bmcsl
