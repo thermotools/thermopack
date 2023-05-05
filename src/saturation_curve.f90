@@ -303,7 +303,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
        Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
-       exitOnTriplePoint,Tme)
+       exitOnTriplePoint,Tme,step_size_factor)
     use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
@@ -329,6 +329,7 @@ contains
     real, optional, intent(in)  :: dS_override ! Override step length
     logical, optional, intent(in) :: exitOnTriplePoint ! Exit if passing triple point
     real, optional, intent(in)  :: Tme ! Exit on temperature
+    real, optional, intent(in)  :: step_size_factor ! Scale the default step size
     ! Internal:
     real  :: T,p
     real, dimension(nc) :: K, lnfugG, lnfugL
@@ -389,7 +390,11 @@ contains
 
     zmax = maxloc(Z,dim=1)
     if (isSingleComp(Z)) then
-      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n)
+      dS_max = 0.2e5
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
+      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
       Ki = 1.0
       betai = 0.0
       return
@@ -401,6 +406,9 @@ contains
     else
       dS_max = 0.25
       dS_min = 0.05
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
     endif
     dS = dS_min
     tuning = 1.2

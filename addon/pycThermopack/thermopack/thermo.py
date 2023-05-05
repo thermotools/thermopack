@@ -2598,8 +2598,8 @@ class thermo(object):
         return press, x
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
-                              minimum_temperature=None, step_size=None,
-                              calc_v=False, initial_temperature=None):
+                              minimum_temperature=None, step_size_factor=1.0,
+                              step_size=None, calc_v=False, initial_temperature=None):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2608,7 +2608,8 @@ class thermo(object):
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
-            step_size (float , optional): Tune step size of envelope trace. Defaults to None.
+            step_size_factor (float , optional): Tune default step size for envelope trace. Defaults to 1.0.
+            step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
             initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
                                                   Overrides initial pressure. Defaults to None (K).
@@ -2634,15 +2635,10 @@ class thermo(object):
         null_pointer = POINTER(c_double)()
         criconden_c = null_pointer
         crit_c = null_pointer
-        if step_size is None:
-            ds_c = null_pointer
-        else:
-            ds_c = POINTER(c_double)(c_double(step_size))
+        ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
+        step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
         exitOnTriplePoint_c = POINTER(c_int)()
-        if minimum_temperature is None:
-            tme_c = null_pointer
-        else:
-            tme_c = POINTER(c_double)(c_double(minimum_temperature))
+        tme_c = null_pointer if minimum_temperature is None else POINTER(c_double)(c_double(minimum_temperature))
 
         self.s_envelope_plot.argtypes = [POINTER(c_double),
                                          POINTER(c_double),
@@ -2660,6 +2656,7 @@ class thermo(object):
                                          POINTER(c_double),
                                          POINTER(c_double),
                                          POINTER(c_int),
+                                         POINTER(c_double),
                                          POINTER(c_double)]
 
         self.s_envelope_plot.restype = None
@@ -2680,7 +2677,8 @@ class thermo(object):
                              crit_c,
                              ds_c,
                              exitOnTriplePoint_c,
-                             tme_c)
+                             tme_c,
+                             step_size_factor_c)
 
         t_vals = np.array(Ta_c[0:n_c.value])
         p_vals = np.array(Pa_c[0:n_c.value])
