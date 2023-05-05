@@ -357,9 +357,10 @@ contains
     end do
   end subroutine set_sutsum_parameters_from_mie
 
+
   subroutine set_sutsum_parameters_from_Qmie(eos,nc, FHorder)
-    use saftvrmie_containers, only: saftvrmie_param
     use thermopack_constants, only: h_const, kB_const, N_Avogadro
+    use thermopack_var, only: thermo_model, get_active_thermo_model
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state, with initialized Mie parameters
     integer, intent(in)         :: nc          !< Number of components
     integer, intent(in)         :: FHorder     !< Feynmann Hibbs order
@@ -368,17 +369,21 @@ contains
     type(Sutherlandsum) :: sutsum
     integer :: i, j
     type(hyperdual), dimension(6) :: C, lam
-    
-    !convering to the reduced plancks constant
+    type(thermo_model), pointer :: act_mod_ptr
+
+    ! Convering to the reduced plancks constant
     h_const_reduced_squared = (h_const/(2*PI))**2.0
 
+    act_mod_ptr => get_active_thermo_model()
     do i=1,nc
+      mi_inv = (act_mod_ptr%comps(i)%p_comp%mw*1e-3/N_Avogadro)**(-1.0)
       do j=1,nc
-        mi_inv = (saftvrmie_param%comp(i)%mass/N_Avogadro)**(-1.0)
-        mj_inv = (saftvrmie_param%comp(j)%mass/N_Avogadro)**(-1.0)
-        D =  h_const_reduced_squared*(mi_inv+mj_inv)/(24.0)
+   
+        mj_inv = (act_mod_ptr%comps(j)%p_comp%mw*1e-3/N_Avogadro)**(-1.0)
+        D =  h_const_reduced_squared*(mi_inv+mj_inv)/(24.0*kB_const)
         denum1 = eos%mie(i,j)%sigma**2
-        !Lambda and C = Cmie*Wijk values based on table I in Aasen https://doi.org/10.1063/1.5136079
+
+        ! Lambda and C = Cmie*Wijk values based on table I in Aasen https://doi.org/10.1063/1.5136079
         lam(1) = eos%mie(i,j)%lamr
         lam(2) = eos%mie(i,j)%lama
         lam(3) = lam(1) + 2.0
@@ -388,18 +393,18 @@ contains
         C(2) = -C(1)
         C(3) = C(1)*D*lam(1)*(lam(1)-1.0)/denum1
         C(4) = -C(1)*D*lam(2)*(lam(2)-1.0)/denum1
-        !Given FH to the second order
-        if (FHorder == 2) then
+
+        if (FHorder == 1) then
+          call sutsum%init(nt=4, C=C(1:4), lam=lam(1:4), &
+          sigma=eos%mie(i,j)%sigma, epsdivk=eos%mie(i,j)%epsdivk, beta_expo=(/0,0,1,1/))
+        else if (FHorder == 2) then
           denum2 = eos%mie(i,j)%sigma**4
           lam(5) = lam(1) + 4.0
           lam(6) = lam(2) + 4.0
-          C(5) = C(1)*D*0.5*(lam(1)+2.0)*(lam(1)+1.0)*lam(1)*(lam(1)-1.0)/denum2
-          C(6) = -C(1)*D*0.5*(lam(2)+2.0)*(lam(2)+1.0)*lam(2)*(lam(2)-1.0)/denum2
+          C(5) = C(1)*D**2 * 0.5*(lam(1)+2.0)*(lam(1)+1.0)*lam(1)*(lam(1)-1.0)/denum2
+          C(6) =-C(1)*D**2 * 0.5*(lam(2)+2.0)*(lam(2)+1.0)*lam(2)*(lam(2)-1.0)/denum2
           call sutsum%init(nt=6, C=C, lam=lam, &
-          sigma=eos%mie(i,j)%sigma, epsdivk=eos%mie(i,j)%epsdivk)
-        else
-          call sutsum%init(nt=4, C=C(1:4), lam=lam(1:4), &
-          sigma=eos%mie(i,j)%sigma, epsdivk=eos%mie(i,j)%epsdivk)
+          sigma=eos%mie(i,j)%sigma, epsdivk=eos%mie(i,j)%epsdivk, beta_expo=(/0,0,1,1,2,2/))
         end if
         eos%sutsum(i,j) = sutsum
         eos%sutsum(j,i) = sutsum
