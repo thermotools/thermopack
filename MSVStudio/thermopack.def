@@ -40,6 +40,11 @@ EXPORTS
 	thermopack_setwsparam_
 	thermopack_get_volume_shift_parameters_
 	thermopack_set_volume_shift_parameters_
+	thermopack_setclassicfitparam_
+	thermopack_settwuparam_
+	thermopack_gettwuparam_
+	thermopack_set_alpha_corr_
+	thermopack_set_beta_corr_
 	binaryplot_mp_get_bp_term_
 	binaryplot_mp_vllebinaryxy_
 	binaryplot_mp_global_binary_plot_

@@ -46,7 +46,7 @@ module compdata
     real :: coeff(3)
   end type alphadatadb
 
-  integer, parameter :: VS_CONSTANT = 1, VS_LINEAR = 2, VS_QUADRATIC = 3
+  integer, parameter :: VS_CONSTANT = 1, VS_LINEAR = 2, VS_QUADRATIC = 3, VS_QUINTIC = 6
   !> Volume shift parameters
   type :: cidatadb
     character (len=uid_len) :: cid !< The component ID
@@ -57,6 +57,9 @@ module compdata
     real :: ciA = 0 !< Volume shift (m3/mol)
     real :: ciB = 0 !< Volume shift (m3/mol/K)
     real :: ciC = 0 !< Volume shift (m3/mol/K/K)
+    real :: ciDD = 0 !< Volume shift (m3/mol/K/K/K)
+    real :: ciE = 0 !< Volume shift (m3/mol/K/K/K/K)
+    real :: ciF = 0 !< Volume shift (m3/mol/K/K/K/K/K)
   contains
     procedure, public :: get_vol_trs_c => cidatadb_get_vol_trs_c
     procedure, public :: set_zero_vol_trs => cidatadb_set_zero_vol_trs
@@ -462,6 +465,11 @@ contains
       cit = cid%ciB + 2*cid%ciC*T
       citt = 2*cid%ciC
       ci_temp_dep = .true.
+    case(VS_QUINTIC)
+      ci = cid%ciA + cid%ciB*T + cid%ciC*T**2 + cid%ciDD*T**3 + cid%ciE*T**4 + cid%ciF*T**5
+      cit = cid%ciB + 2*cid%ciC*T + 3*cid%ciDD*T**2 + 4*cid%ciE*T**3 + 5*cid%ciF*T**4
+      citt = 2*cid%ciC + 6*cid%ciDD*T + 12*cid%ciE*T**2 + 20*cid%ciF*T**3
+      ci_temp_dep = .true.
     case default
       ci = 0
       cit = 0
@@ -476,6 +484,9 @@ contains
     cid%ciA = 0
     cid%ciB = 0
     cid%ciC = 0
+    cid%ciDD = 0
+    cid%ciE = 0
+    cid%ciF = 0
     cid%c_type = VS_CONSTANT
   end subroutine cidatadb_set_zero_vol_trs
 

@@ -275,6 +275,29 @@ subroutine thermopack_set_alpha_corr(numparam, i, corrname, c)
 end subroutine thermopack_set_alpha_corr
 
 
+subroutine thermopack_set_beta_corr(numparam, i, corrname, c)
+  use cubic_eos, only: cb_eos
+  use cbBeta, only: setSingleBetaCorr
+  use thermopack_var
+  use cubic_eos, only: cb_eos
+  implicit none
+  integer, intent(in)           :: numparam
+  integer, intent(in)           :: i
+  character(len=*), intent(in)  :: corrname
+  real, intent(in)              :: c(numparam)
+  ! Locals
+  class(base_eos_param), pointer :: act_eos_ptr
+  !
+  act_eos_ptr => get_active_eos()
+  select type(p_eos => act_eos_ptr)
+  class is (cb_eos)
+    call setSingleBetaCorr(i, p_eos, corrname=corrname, betaParams=c)
+  class default
+    print *,"thermopack_set_beta_corr: Only for cubic eos"
+  end select
+end subroutine thermopack_set_beta_corr
+
+
 !> Tuning of vdW kij interaction parameters
 subroutine thermopack_getkij(i,j,kij)
   use thermopack_var
@@ -399,11 +422,11 @@ subroutine thermopack_setlijandji(i,j,lij)
 end subroutine thermopack_setlijandji
 
 !> Get volume translation parameters
-subroutine thermopack_get_volume_shift_parameters(i,ciA,ciB,ciC,ci_type)
+subroutine thermopack_get_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_type)
   use thermopack_var
   implicit none
   integer, intent(in) :: i
-  real, intent(out) :: ciA,ciB,ciC
+  real, intent(out) :: ciA,ciB,ciC, ciD,ciE,ciF
   integer, intent(out) :: ci_type
   ! Locals
   type(thermo_model), pointer :: act_mod_ptr
@@ -412,15 +435,18 @@ subroutine thermopack_get_volume_shift_parameters(i,ciA,ciB,ciC,ci_type)
   ciA = act_mod_ptr%comps(i)%p_comp%cid%ciA
   ciB = act_mod_ptr%comps(i)%p_comp%cid%ciB
   ciC = act_mod_ptr%comps(i)%p_comp%cid%ciC
+  ciD = act_mod_ptr%comps(i)%p_comp%cid%ciDD
+  ciE = act_mod_ptr%comps(i)%p_comp%cid%ciE
+  ciF = act_mod_ptr%comps(i)%p_comp%cid%ciF
   ci_type = act_mod_ptr%comps(i)%p_comp%cid%c_type
 end subroutine thermopack_get_volume_shift_parameters
 
 !> Tuning of volume translation parameters
-subroutine thermopack_set_volume_shift_parameters(i,ciA,ciB,ciC,ci_type)
+subroutine thermopack_set_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_type)
   use thermopack_var
   implicit none
   integer, intent(in) :: i
-  real, intent(in) :: ciA,ciB,ciC
+  real, intent(in) :: ciA,ciB,ciC, ciD,ciE,ciF
   integer, intent(in) :: ci_type
   ! Locals
   type(thermo_model), pointer :: act_mod_ptr
@@ -429,5 +455,8 @@ subroutine thermopack_set_volume_shift_parameters(i,ciA,ciB,ciC,ci_type)
   act_mod_ptr%comps(i)%p_comp%cid%ciA = ciA
   act_mod_ptr%comps(i)%p_comp%cid%ciB = ciB
   act_mod_ptr%comps(i)%p_comp%cid%ciC = ciC
+  act_mod_ptr%comps(i)%p_comp%cid%ciDD = ciD
+  act_mod_ptr%comps(i)%p_comp%cid%ciE = ciE
+  act_mod_ptr%comps(i)%p_comp%cid%ciF = ciF
   act_mod_ptr%comps(i)%p_comp%cid%c_type = ci_type
 end subroutine thermopack_set_volume_shift_parameters
