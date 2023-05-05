@@ -3074,7 +3074,8 @@ class thermo(object):
                                      temp,
                                      maximum_pressure=1.5e7,
                                      minimum_pressure=1.0e4):
-        """Calculate triple point for binary mixture at specified temperature
+        """Saturation interface
+        Calculate triple point for binary mixture at specified temperature
 
         Args:
             temp (float): Temperature (K)
@@ -3813,7 +3814,8 @@ class thermo(object):
                  initial_liquid_temperature=None,
                  dlnv=None,
                  min_temperature_vapor=None):
-        """Trace spinodal curve
+        """Stability interface
+        Trace spinodal curve
 
         Args:
             z (array_like): Composition (-)
@@ -3896,7 +3898,8 @@ class thermo(object):
                  z,
                  pressure,
                  temperature=None):
-        """Solve for spinodal curve point. Not able to solve for points cloes to critical point.
+        """Stability interface
+        Solve for spinodal curve point. Not able to solve for points cloes to critical point.
         Solve for temperature if given, otherwise solve for pressure.
 
         Args:
@@ -3954,7 +3957,8 @@ class thermo(object):
                            entropy,
                            minimum_pressure,
                            n_max=50):
-        """Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
+        """Stability interface
+        Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
 
         Args:
             z (array_like): Composition (-)
@@ -4010,7 +4014,8 @@ class thermo(object):
         return np.array(temp_c), np.array(vol_c), np.array(press_c)
 
     def solve_mu_t(self, temp, mu, rho_initial=None, phase=None):
-        """Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+        """Stability interface
+        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 
         Args:
             temp (float): Temperature (K)
@@ -4047,7 +4052,8 @@ class thermo(object):
         return np.array(rho_c)
 
     def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):
-        """Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+        """Stability interface
+        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
 
         Args:
             temp (float): Temperature (K)
@@ -4085,7 +4091,8 @@ class thermo(object):
                           z,
                           phase,
                           n=50):
-        """Trace isotherm from saturation line to spinodal. Solve for equilibrium phase.
+        """Stability interface
+        Trace isotherm from saturation line to spinodal. Solve for equilibrium phase.
 
         Args:
             temperature (float): Temperature (K)
