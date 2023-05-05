@@ -20,11 +20,13 @@ module uv_theory
   save
 
   ! Combining rules
-  integer, parameter :: LORENTZ_BERTHELOT_IDX = 1
-  integer, parameter :: SAFTVRMIE_IDX = 2
-  
-  logical :: LAFITTE = .False.
-  !logical :: LAFITTE = .True.
+  integer, parameter :: LORENTZ_BERTHELOT_COMBRULE = 1
+  integer, parameter :: SAFTVRMIE_COMBRULE = 2
+
+  ! Model option
+  integer, parameter :: UVTHEORY_MIE_VANWESTEN = 1
+  integer, parameter :: SAFTVR_SS = 2 ! Extension of SAFT-VR Mie to Sutherland sums
+  integer :: ACTIVE_MODEL = UVTHEORY_MIE_VANWESTEN
 
   ! Coefficient vectors for u fraction correlation (Table I in [1])
   real, parameter :: C_PHI_WCA_LJ(2) = (/ 1.5661, 2.5422 /)
@@ -35,7 +37,7 @@ module uv_theory
   real, parameter :: C2_PHI_BH_MIE(4) = (/ 0.0, 2.4676, 14.9735, 2.4017 /)
   real, parameter :: A_PHI_BH_MIE = 1.2187
   real, parameter :: B_PHI_BH_MIE = 4.2773
-
+  
   ! Coefficient vectors for hard sphere diameter d (Table S23 in [1])
   real, parameter :: C_DHS_WCA_MIE(9) = (/ &
     1.92840364363978E+00, 4.43165896265079E-01, 5.20120816141761E-01 , &
@@ -100,11 +102,11 @@ module uv_theory
 
   type, extends(base_eos_param) :: uv_theory_eos
     ! Mie potential parameters
-    type(mie_potential_hd), allocatable :: mie(:,:)
-    type(hyperdual), allocatable :: dhs(:,:)
-    type(hyperdual), allocatable :: qhs(:,:)
-    type(sutherlandsum), allocatable :: sutsum(:,:)
-    !class(pair_potential), allocatable :: pot(:,:)
+    type(mie_potential_hd), allocatable :: mie(:,:) ! Mie potentials
+    type(hyperdual), allocatable :: dhs(:,:)        ! Hard sphere diameters
+    type(sutherlandsum), allocatable :: sutsum(:,:) ! Sutherland sum potentials
+    type(hyperdual), allocatable :: epsdivkeff(:,:) ! Effective potential well-depth
+    type(hyperdual), allocatable :: sigmaeff(:,:) ! Effective diameter
     type(hyperdual) :: epsdivk_x, sigma_x, sigma3_single, sigma3_double, dhs_x, dhs_x_adim
 
     ! Model control
@@ -118,7 +120,6 @@ module uv_theory
   public :: uv_theory_eos
   public :: calcFres_uv
   public :: set_mie_parameters
-  public :: calc_uv_mie_eta
 
 contains
 
@@ -135,10 +136,9 @@ contains
   end subroutine assign_uv_eos
 
   subroutine uv_dealloc(eos)
-    ! integer, intent(in) :: nc
     class(uv_theory_eos), intent(inout) :: eos
     ! Locals
-    integer :: stat!, i, j
+    integer :: stat
     call base_eos_dealloc(eos)
 
     select type (p_eos => eos)
@@ -159,9 +159,14 @@ contains
         if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate dhs")
       end if
 
-      if (allocated(eos%qhs)) then
-        deallocate(eos%qhs,stat=stat)
-        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate qhs")
+      if (allocated(eos%sigmaeff)) then
+        deallocate(eos%sigmaeff,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate sigmaeff")
+      end if
+
+      if (allocated(eos%epsdivkeff)) then
+        deallocate(eos%epsdivkeff,stat=stat)
+        if (stat /= 0) call stoperror("uv_dealloc: Not able to deallocate epsdivkeff")
       end if
 
     end select
@@ -175,7 +180,8 @@ contains
     allocate(eos%mie(nc,nc))
     allocate(eos%sutsum(nc,nc))
     allocate(eos%dhs(nc,nc))
-    allocate(eos%qhs(nc,nc))
+    allocate(eos%sigmaeff(nc,nc))
+    allocate(eos%epsdivkeff(nc,nc))
   end subroutine uv_allocate_and_init
 
   !> Allocate memory for uv-theory eos
@@ -201,30 +207,10 @@ contains
     character(len=*), intent(in) :: ref        !< Parameter sets to use for components
     ! Locals
     type(hyperdual) :: lamr_vec(nc), sigma_vec(nc), epsdivk_vec(nc)
-    type(hyperdual) :: lam_mat(nc,2), C_mat(nc,2)
     integer :: i, idx, combrule
 
     ! Deallocate old memory and init new memory
     call eos%allocate_and_init(nc, eos_label="UV-MIE")
-
-    if (str_eq(ref,"SUTHERLAND")) then
-      LAFITTE = .true.
-
-      ! ! Set pure component data from database
-      ! do i=1,nc
-      !    ! Assign pure SutherlandSum potential
-      !    idx = getSutdataIdx(eos%subeosidx,trim(comp(i)%p_comp%ident),ref)
-      !    b(i) = MieArray(idx)%lamr
-      !    sigma_vec(i) = MieArray(idx)%sigma
-      !    epsdivk_vec(i) = MieArray(idx)%eps_divk
-      ! end do
-    else if (str_eq(ref,"SVRMIE")) then
-      combrule = SAFTVRMIE_IDX
-    else
-      LAFITTE = .false.
-      combrule = LORENTZ_BERTHELOT_IDX
-    end if
-
 
     ! Set pure component data from database
     do i=1,nc
@@ -243,19 +229,11 @@ contains
     ! Ensure consistent gas constants
     Rgas = N_Avogadro*kB_const
     kRgas = Rgas*1.0e3
-
+    
     ! Set Mie potentials, including cross potential parameters
+    combrule = LORENTZ_BERTHELOT_COMBRULE
+    if (ACTIVE_MODEL == SAFTVR_SS) combrule = SAFTVRMIE_COMBRULE
     call set_mie_parameters(eos,nc,lamr_vec,sigma_vec,epsdivk_vec,combrule)
-
-    ! Set SutherlandSum potentials, including cross potential parameters
-    do i=1,nc
-      C_mat(i,1) = eos%mie(i,i)%Cmie
-      C_mat(i,2) = -C_mat(i,1)
-      lam_mat(i,1) = lamr_vec(i)
-      lam_mat(i,2) = 6.0
-    end do
-    ! call set_sutsum_parameters(eos,nc,nt=2,C_mat=C_mat,lam_mat=lam_mat, &
-    !   sigma_vec=sigma_vec,epsdivk_vec=epsdivk_vec)
     call set_sutsum_parameters_from_mie(eos,nc)
   end subroutine init_uv_theory
 
@@ -271,31 +249,30 @@ contains
     type(hyperdual) :: lam_mat(nc,2), C_mat(nc,2)
     integer :: i, j, combrule_loc
 
-    combrule_loc = LORENTZ_BERTHELOT_IDX ! Used in Ref [1]
+    combrule_loc = LORENTZ_BERTHELOT_COMBRULE ! Used in Ref [1]
     if (present(combrule)) combrule_loc = combrule
-    
+
     ! Set pure component potentials
     lama = 6.0
     do i=1,nc
       ! Assign pure Mie potential
       lamr = lamr_vec(i)
-      !print *, lamr_vec%f0, sigma_vec%f0, epsdivk_vec%f0
       call mie%init(lama=lama, lamr=lamr, sigma=sigma_vec(i), epsdivk=epsdivk_vec(i))
       eos%mie(i,i) = mie
 
       ! Set cross potentials using standard, Lorentz-Berthelot combining rules
       do j = i+1,nc
         sigma = (sigma_vec(i) + sigma_vec(j))/2.0
-        if (combrule_loc == LORENTZ_BERTHELOT_IDX) then
+        if (combrule_loc == LORENTZ_BERTHELOT_COMBRULE) then
           epsdivk = sqrt(epsdivk_vec(i) * epsdivk_vec(j))
           lamr = lamr_vec(i) ! only one repulsive exponent allowed in uv-theory [1]
-        else
+        else if (combrule_loc == SAFTVRMIE_COMBRULE) then
           epsdivk = sqrt(sigma_vec(i)**3*sigma_vec(j)**3 * epsdivk_vec(i)*epsdivk_vec(j))/sigma**3
           lamr = 3.0 + sqrt((lamr_vec(i)-3.0)*(lamr_vec(j)-3.0))
         end if
-          call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
-          eos%mie(i,j) = mie
-          eos%mie(j,i) = mie
+        call mie%init(lama=lama, lamr=lamr, sigma=sigma, epsdivk=epsdivk)
+        eos%mie(i,j) = mie
+        eos%mie(j,i) = mie
       end do
     end do
 
@@ -388,7 +365,6 @@ contains
     end do
   end subroutine set_sutsum_parameters_from_Qmie
 
-  
   subroutine set_sutsum_parameters(eos,nc,nt,C_mat,lam_mat,sigma_vec,epsdivk_vec,beta_expo)
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state
     integer, intent(in)         :: nc, nt      !< Number of components, number of Sutherland terms
@@ -522,29 +498,32 @@ contains
     type(hyperdual) :: sigma3_single   !< Cubed one-fluid diameter
     type(hyperdual) :: sigma3_double   !< Cubed one-fluid diameter
     type(hyperdual) :: epsdivk_x       !< One-fluid energy scale
+    type(hyperdual) :: rmin            !< One-fluid energy scale
     integer :: i,j
-
+    
     ! Precalculate diameters for the additive hard-sphere reference
     ! system
     do i=1,nc
       if (eos%subeosidx == eosMie_UV_WCA) then
-        LAFITTE = .FALSE.
         call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
       else if (eos%subeosidx == eosMie_UV_BH) then
-        if (LAFITTE) then
+        if (ACTIVE_MODEL == SAFTVR_SS) then
+          call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
           call eos%sutsum(i,i)%update_T(T=T)
           call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
-          call eos%mie(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
-        else
+      else
           call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), eos%dhs(i,i))
-          !call eos%sutsum(i,i)%calc_bh_diameter(beta=1.0/T, dhs=eos%dhs(i,i))
         end if
       end if
     end do
 
+    ! Calculate (additive!) hard-sphere diameters, effective epsilon and sigma
     do i=1,nc
       do j=1,nc
         eos%dhs(i,j) = (eos%dhs(i,i) + eos%dhs(j,j))/2.0
+        eos%sigmaeff(i,j) = calc_sigmaeff(eos%sutsum(i,j))
+        call calc_rmin_and_epseff(eos%sutsum(i,j), rmin, eos%epsdivkeff(i,j))
+        if (eos%epsdivkeff(i,j)%f0<0) eos%epsdivkeff(i,j) = -eos%epsdivkeff(i,j)
       end do
     end do
 
@@ -579,7 +558,7 @@ contains
     type(hyperdual), intent(out) :: a_res         !< a=Ares/NRT (-)
     ! Locals
     type(hyperdual) :: z(nc), rho, rho_r, T_x
-    type(hyperdual) :: a0_res, a_hs_res, delta_a0, Delta_a1u
+    type(hyperdual) :: a0_res, a_hs_res, delta_a0, Delta_a1u, a1, a2, a3
     type(hyperdual) :: phi, Delta_B2, Delta_B2u
     type(hyperdual) :: lama, lamr, dhs_i(nc)
     type(hyperdual) :: alpha
@@ -588,19 +567,30 @@ contains
     ! Precalculations
     rho = sum(rhovec)
     z = rhovec/rho
-
     call preCalcUVTheory(eos,nc,T,z)
-    lamr = eos%mie(1,1)%lamr
-    lama = eos%mie(1,1)%lama
+
+    ! Hard sphere term
     do i = 1,nc
       dhs_i(i) = eos%dhs(i,i)
-      if (eos%mie(i,i)%lamr /= lamr .or. eos%mie(i,i)%lama /= lama) then
-        stop "Invalid Mie exponents in uv-theory"
-      end if
     end do
+    call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
 
-    ! TODO: fix this for SutherlandSum
+    ! Special calculation path for SAFT-VR sutherland sum
+    if (ACTIVE_MODEL == SAFTVR_SS) then
+      delta_a0 = 0.0
+      call delta_a1u_b2u_sutsum(eos, nc, T, rho, z, a1, Delta_B2u)
+      call delta_a2u_sutsum(eos, nc, T, rho, z, a2)
+      call delta_a3u_sutsum(eos, nc, T, rho, z, a3)
+      a_res = a_hs_res + a1 + a2 + a3
+      return
+    end if
+
+    ! Calculate perturbation part of reference system
+    call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
+
     ! Calculate the u-fraction phi
+    lamr = eos%mie(1,1)%lamr
+    lama = eos%mie(1,1)%lama
     T_x = T/eos%epsdivk_x
     rho_r = rho*eos%sigma3_single
     if (eos%subeosidx == eosMie_UV_WCA) then
@@ -615,31 +605,14 @@ contains
       end if
     end if
 
-    call calc_ares_hardsphere_bmcsl(nc, rhovec, dhs_i, a_hs_res)
-
-    ! Calculate perturbation part of reference system
-    if (LAFITTE) then
-      delta_a0 = 0.0
-    else
-      call Delta_a0_Mie(eos, nc, T, rho, z, delta_a0)
-    end if
-
     ! Calculate contribution from reference system
     a0_res = a_hs_res + delta_a0
 
     ! Calculate Delta a1u and Delta B2u
-    if (LAFITTE) then
-      call delta_a1u_b2u_sutsum(eos, nc, T, rho, z, delta_a1u, delta_b2u)
-    else
-      call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
-    end if
-
+    call delta_a1u_b2u_Mie(eos, nc, T, rho, z, delta_a1u, delta_b2u)
+    
     ! Calculate Delta B2
-    if (LAFITTE) then
-      call DeltaB2_quadrature(eos,nc,T,z, Delta_B2)
-    else
-      call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
-    end if
+    call DeltaB2_Mie(eos,nc,T,z, Delta_B2)
 
     ! Calculate total helmholtz energy
     a_res = a0_res + Delta_a1u + (1.0-phi)*(Delta_B2 - Delta_B2u)*rho
@@ -656,26 +629,15 @@ contains
     type(hyperdual), intent(out) :: delta_a1u ! a1 (-)
     type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
     ! Locals
-    type(hyperdual) :: lamij, epsij, zetax, prefac, x0ij
+    type(hyperdual) :: lamij, epsij, zetax, prefac, x0ij, x0effij
     type(hyperdual) :: a1til, a1til0, a1ij, a1ij0
-    type(hyperdual) :: dhs_bh(nc,nc)
     integer :: i, j, k
 
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
-    do i=1,nc
-      call calc_bh_diameter(eos%sutsum(i,i),beta=1.0/T,dhs=dhs_bh(i,i))
-    end do
-    do i=1,nc
-      do j=i+1,nc
-        dhs_bh(i,j) = 0.5*(dhs_bh(i,i) + dhs_bh(j,j))
-        dhs_bh(j,i) = dhs_bh(i,j)
-      end do
-    end do
-
     zetax = 0.0
     do i=1,nc
       do j=1,nc
-        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
+        zetax = zetax + z(i)*z(j)*eos%dhs(i,j)**3
       end do
     end do
     zetax = (PI/6) * rho * zetax
@@ -685,16 +647,17 @@ contains
     delta_b2u = 0.0
     do i=1,nc
       do j=1,nc
-        x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+        x0ij = eos%sutsum(i,j)%sigma / eos%dhs(i,j)
+        x0effij = eos%sigmaeff(i,j) / eos%dhs(i,j)
         epsij = eos%sutsum(i,j)%epsdivk
         a1ij0 = 0.0
         a1ij = 0.0
-        prefac = - (PI/6) * dhs_bh(i,j)**3
+        prefac = - (PI/6) * eos%dhs(i,j)**3
         do k=1, eos%sutsum(i,j)%nt
           lamij = eos%sutsum(i,j)%lam(k)
-          call calc_a1tilde_sutherland(x0ij,zetax,lamij,epsij, a1til,a1til0)
+          call calc_a1tilde_sutherland(x0effij,zetax,lamij,epsij, a1til,a1til0)
           a1ij0 = a1ij0 + eos%sutsum(i,j)%C(k)* prefac      * a1til0
-          a1ij = a1ij  + eos%sutsum(i,j)%C(k) *(prefac*rho) * a1til
+          a1ij = a1ij  + (x0ij/x0effij)**lamij * eos%sutsum(i,j)%C(k) *(prefac*rho) * a1til
         end do
         delta_a1u = delta_a1u + z(i)*z(j)*a1ij
         delta_b2u = delta_b2u + z(i)*z(j)*a1ij0
@@ -716,29 +679,18 @@ contains
     type(hyperdual), intent(in) :: z(nc)    ! mole fractions
     type(hyperdual), intent(out) :: delta_a2u ! a1 (-)
     ! Locals
-    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, lamk, laml
+    type(hyperdual) :: lamij, epsij, zetax,zetax_av, prefac, x0ij, x0effij, lamk, laml
     type(hyperdual) :: a2til, a2ij
-    type(hyperdual) :: dhs_bh(nc,nc)
-    type(hyperdual) :: alphaij, Ck, Cl, K_hs, chi
+    type(hyperdual) :: alphaij, Ck, Cl, K_hs, chi, x
     integer :: i, j, k,l
 
     ! Calculate zetax and eta0 using Barker-Henderson HS diameters
-    do i=1,nc
-      call calc_bh_diameter(eos%sutsum(i,i),beta=1.0/T,dhs=dhs_bh(i,i))
-    end do
-    do i=1,nc
-      do j=i+1,nc
-        dhs_bh(i,j) = 0.5*(dhs_bh(i,i) + dhs_bh(j,j))
-        dhs_bh(j,i) = dhs_bh(i,j)
-      end do
-    end do
-    
     zetax = 0.0
     zetax_av = 0.0
     do i=1,nc
       do j=1,nc
-        zetax = zetax + z(i)*z(j)*dhs_bh(i,j)**3
-        zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+        zetax = zetax + z(i)*z(j)*eos%dhs(i,j)**3
+        zetax_av = zetax_av + z(i)*z(j)*eos%sigmaeff(i,j)**3
       end do
     end do
     zetax = (PI/6) * rho * zetax
@@ -746,16 +698,20 @@ contains
 
     ! Calculate isothermal compressibility
     call calc_isoCompress(eta=zetax,K_hs=K_hs)
-    
+
     ! Calculate double-sum of a2 contributions
     delta_a2u = 0.0
     do i=1,nc
       do j=1,nc
         a2ij = 0.0
-        x0ij = eos%sutsum(i,j)%sigma / dhs_bh(i,j)
+        x0ij = eos%sutsum(i,j)%sigma / eos%dhs(i,j)
+        x0effij = eos%sigmaeff(i,j) / eos%dhs(i,j)
         epsij = eos%sutsum(i,j)%epsdivk
-        prefac = (PI/6) * dhs_bh(i,j)**3
-        alphaij = eos%sutsum(i,j)%alpha_x()
+        prefac = (PI/6) * eos%dhs(i,j)**3
+        x = eos%sigmaeff(i,j)/eos%sutsum(i,j)%sigma
+        alphaij = eos%sutsum(i,j)%alpha_x(x=x)
+        alphaij = alphaij*eos%sutsum(i,j)%epsdivk%f0 / eos%epsdivkeff(i,j)%f0 / x**3
+        
         call calc_chi(eta_av=zetax_av,alpha=alphaij,chi=chi)
         do k=1, eos%sutsum(i,j)%nt
           Ck = eos%sutsum(i,j)%C(k)
@@ -764,8 +720,8 @@ contains
             Cl =  eos%sutsum(i,j)%C(l)
             laml = eos%sutsum(i,j)%lam(l)
             lamij = laml+lamk
-            call calc_a1tilde_sutherland(x0ij,zetax,lamij,epsij, a2til)
-            a2ij = a2ij  + 0.5 * K_hs * (1.0+chi) * epsij * (prefac*rho) * a2til *Ck*Cl
+            call calc_a1tilde_sutherland(x0effij,zetax,lamij,epsij, a2til)
+            a2ij = a2ij  + 0.5 * K_hs * (1.0+chi) * epsij * (prefac*rho) * (x0ij/x0effij)**lamij *a2til *Ck*Cl
           end do
         end do
         delta_a2u = delta_a2u + z(i)*z(j)*a2ij
@@ -789,17 +745,15 @@ contains
     type(hyperdual), intent(out) :: delta_a3u ! a1 (-)
     !type(hyperdual), intent(out) :: delta_b2u ! B2 contribution from a1 (m^3)
     ! Locals
-    type(hyperdual) :: epsij, prefac, zetax_av
+    type(hyperdual) :: epsij, prefac, zetax_av, x
     type(hyperdual) :: a3til
-    type(hyperdual) :: dhs_bh(nc,nc)
     type(hyperdual) :: alphaij
     integer :: i, j
 
     zetax_av = 0.0
     do i=1,nc
       do j=1,nc
-        call calc_bh_diameter(eos%sutsum(i,j),beta=1.0/T,dhs=dhs_bh(i,j))
-        zetax_av = zetax_av + z(i)*z(j)*eos%sutsum(i,j)%sigma**3
+        zetax_av = zetax_av + z(i)*z(j)*eos%sigmaeff(i,j)**3
       end do
     end do
     zetax_av = (PI/6) * rho * zetax_av
@@ -807,10 +761,13 @@ contains
     delta_a3u = 0.0
     do i=1,nc
       do j=1,nc
-        epsij = eos%sutsum(i,j)%epsdivk
-        prefac = - (PI/6) * dhs_bh(i,j)**3
-        alphaij = eos%sutsum(i,j)%alpha_x()
-        call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til) 
+        epsij = eos%epsdivkeff(i,j)
+        prefac = - (PI/6) * eos%dhs(i,j)**3
+        !alphaij = eos%sutsum(i,j)%alpha_x()
+        x = eos%sigmaeff(i,j)/eos%sutsum(i,j)%sigma
+        alphaij = eos%sutsum(i,j)%alpha_x(x=x)
+        alphaij = alphaij*eos%sutsum(i,j)%epsdivk%f0 / eos%epsdivkeff(i,j)%f0 / x**3
+        call calc_a3tilde_sutherland(zetax_av,epsij,alphaij, a3til)
         delta_a3u = delta_a3u + z(i)*z(j)*a3til
       end do
     end do
@@ -1041,16 +998,10 @@ contains
     type(hyperdual), intent(in) :: T, rho, z(nc)
     type(hyperdual), intent(out) :: eta ! packing fraction (-)
     ! Locals
-    type(hyperdual) :: dhs
     integer :: i
     eta = 0.0
     do i=1,nc
-      if (eos%subeosidx==eosMie_UV_BH) then
-        call dhs_BH_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
-      else
-        call dhs_WCA_Mie(T/eos%mie(i,i)%epsdivk, eos%mie(i,i), dhs)
-      end if
-      eta = eta + z(i)*dhs**3
+      eta = eta + z(i)*eos%dhs(i,i)**3
     end do
     eta = pi/6*rho*eta
   end subroutine calc_eta_dhs

@@ -141,7 +141,7 @@ module pair_potentials
        ref="DEFAULT/AASEN2019") &
        /)
 
-  integer, parameter :: nMie = 10
+  integer, parameter :: nMie = 12
   type(mie_data), dimension(nMie), parameter :: MieArray = (/ &
        mie_data(eosidx = eosMie_UV_WCA, &
        compName="AR", &
@@ -211,7 +211,21 @@ module pair_potentials
        lamr=12.65, &
        sigma=3.7412E-10, &
        eps_divk=153.36, &
-       ref="SVRMIE")/)
+       ref="SVRMIE/DEFAULT"), &
+       !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="H2", &
+       lamr=9, &
+       sigma=3.0243e-10, &
+       eps_divk=26.706, &
+       ref="SVRQMIE/AASEN2019-FH1/DEFAULT"), &
+       !
+       mie_data(eosidx = eosMie_UV_BH, &
+       compName="H2", &
+       lamr=20, &
+       sigma=2.9195e-10, &
+       eps_divk=55.729, &
+       ref="AASEN2019-FH2")  /)
 
 contains
 
@@ -243,7 +257,7 @@ contains
     idx_default = -1
     do while (idx <= nSut)
        if ((eosidx == Sutarray(idx)%eosidx) .and. &
-            str_eq(compName, Sutarray(idx)%compName)) then
+         str_eq(compName, Sutarray(idx)%compName)) then
           if (string_match(ref,Sutarray(idx)%ref)) then
              found = .true.
              exit
@@ -310,7 +324,6 @@ contains
     this%epsdivk = epsdivk
 
     this%CMie = lamr/(lamr-lama) * (lamr/lama)**(lama/(lamr-lama))
-    !print *, lamr%f0, this%CMie%f0
     this%rmin_adim = (lamr/lama)**(1.0/(lamr-lama))
     this%rmin = sigma*this%rmin_adim
     this%alpha = this%CMie*(1.0/(lama - 3.0) - 1.0/(lamr - 3.0))
@@ -500,7 +513,7 @@ contains
   end subroutine sutherlandsum_calc_r_derivs
 
   subroutine sutherlandsum_update_T(this, T)
-    !> Update Sutherland coefficients with coefficients possibly depending on temperature
+    !> Update Sutherland coefficients with coefficients depending on temperature
     class(sutherlandsum), intent(inout) :: this !< This potential
     type(hyperdual), intent(in)         :: T    !< (K)
     ! Locals
@@ -509,16 +522,16 @@ contains
 
     if (.not. this%beta_dependence) return
 
-    beta = this%epsdivk/T
+    beta = 1.0/T
     do i=1,this%nt
-       this%C(i) = this%Cconst(i) * beta**(this%bexp(i))
+      this%C(i) = this%Cconst(i) * beta**(this%bexp(i))
     end do
   end subroutine sutherlandsum_update_T
 
   type(hyperdual) function sutherlandsum_calc_alpha_x(this, x, adim) result(alpha_x)
     !> alpha_x = -\int_x^\infty pot(x)*x^2 dx (everything adimensional)
     class(sutherlandsum), intent(in) :: this !< This potential
-    type(hyperdual), optional, intent(in) :: x         !< lower integration limit (-)
+    type(hyperdual), optional, intent(in) :: x !< lower integration limit (-)
     logical, intent(in), optional :: adim    !< adimensional value for alpha, or in (K*m^3)?
     ! Locals
     integer :: k
@@ -662,6 +675,7 @@ contains
 
   end subroutine calc_bh_diameter
 
+  
   subroutine calc_BFC_diameter(pot,beta,dhs)
     !> Hard-sphere diameter using the Boltzmann-factor criterion
     !> proposed by Ben-Amotz and Stell (10.1021/jp037810s)
@@ -697,7 +711,7 @@ contains
     dhs%f0 = 0.0
     dhs%f0 = r_scaled*param(1)
 
-    ! Calculate the remaining hyperdual components, obtained by
+    ! Calculate the remaining hyperdual components manually
     T = 1.0/beta
     call pot%calc_r_derivs(dhs, pot0, dpot0, d2pot0)
     dhs%f1 = (T%f1 - pot0%f1 - epsdivkeff%f1)/dpot0%f0
