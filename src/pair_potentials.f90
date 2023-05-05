@@ -312,7 +312,7 @@ contains
        print *, "ERROR FOR COMPONENT ", compname
        call stoperror("The Mie parameters don't exist.")
     end if
-  end function getMiedataIdx 
+  end function getMiedataIdx
 
   subroutine mie_potential_hd_init(this, lama, lamr, sigma, epsdivk)
     class(mie_potential_hd), intent(inout) :: this
@@ -675,7 +675,7 @@ contains
 
   end subroutine calc_bh_diameter
 
-  
+
   subroutine calc_BFC_diameter(pot,beta,dhs)
     !> Hard-sphere diameter using the Boltzmann-factor criterion
     !> proposed by Ben-Amotz and Stell (10.1021/jp037810s)
@@ -691,7 +691,7 @@ contains
     ! Calculate effective sigma and epsdivk
     sigmaeff = calc_sigmaeff(pot)
     call calc_rmin_and_epseff(pot, rmin, epsdivkeff)
-    
+
     ! Set the limits and the initial condition
     param(1) = pot%sigma%f0
     xinit = sigmaeff%f0/param(1)
@@ -737,7 +737,7 @@ contains
 
   end subroutine calc_BFC_diameter
 
-  
+
 
   function calc_sigmaeff(pot) result(sigmaeff)
     !> Calculate effective sigma, defined as the position where the
