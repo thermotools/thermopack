@@ -3738,7 +3738,7 @@ class thermo(object):
         return pci.value
 
     def critical_volume(self, i):
-        '''
+        '''Stability interface
         Get specific critical volume of component i
         Args:
             i (int) component FORTRAN index
@@ -3769,6 +3769,43 @@ class thermo(object):
                                     byref(tnbi))
 
         return vci.value
+
+    def get_critical_parameters(self, i):
+        '''Stability interface
+        Get critical temperature, volume and pressure of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical temperature (K)
+            float: critical volume (m3/mol)
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value, vci.value, pci.value
 
     def spinodal(self,
                  z,
