@@ -1511,13 +1511,13 @@ contains
       T = safe_bubT(P,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnp = (log(pci)-log(P))/n
+        dlnp = (log(pci)-log(P))/(n-1)
         do iter=1,n
           pa(iter) = exp(log(p0) + dlnp*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dP = (pci-P)/n
+        dP = (pci-P)/(n-1)
         do iter=1,n
           pa(iter) = p0 + dP*(iter-1)
         enddo
@@ -1529,13 +1529,13 @@ contains
       P = safe_bubP(T,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnT = (log(tci)-log(T))/n
+        dlnT = (log(tci)-log(T))/(n-1)
         do iter=1,n
           ta(iter) = exp(log(T0) + dlnT*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dT = (tci-T)/n
+        dT = (tci-T)/(n-1)
         do iter=1,n
           ta(iter) = T0 + dT*(iter-1)
         enddo
