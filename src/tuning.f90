@@ -426,7 +426,8 @@ subroutine thermopack_get_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_t
   use thermopack_var
   implicit none
   integer, intent(in) :: i
-  real, intent(out) :: ciA,ciB,ciC, ciD,ciE,ciF
+  real, intent(out) :: ciA,ciB,ciC
+  real, intent(out), optional :: ciD,ciE,ciF
   integer, intent(out) :: ci_type
   ! Locals
   type(thermo_model), pointer :: act_mod_ptr
@@ -435,9 +436,9 @@ subroutine thermopack_get_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_t
   ciA = act_mod_ptr%comps(i)%p_comp%cid%ciA
   ciB = act_mod_ptr%comps(i)%p_comp%cid%ciB
   ciC = act_mod_ptr%comps(i)%p_comp%cid%ciC
-  ciD = act_mod_ptr%comps(i)%p_comp%cid%ciDD
-  ciE = act_mod_ptr%comps(i)%p_comp%cid%ciE
-  ciF = act_mod_ptr%comps(i)%p_comp%cid%ciF
+  if (present(ciD)) ciD = act_mod_ptr%comps(i)%p_comp%cid%ciDD
+  if (present(ciE)) ciE = act_mod_ptr%comps(i)%p_comp%cid%ciE
+  if (present(ciF)) ciF = act_mod_ptr%comps(i)%p_comp%cid%ciF
   ci_type = act_mod_ptr%comps(i)%p_comp%cid%c_type
 end subroutine thermopack_get_volume_shift_parameters
 
@@ -446,7 +447,8 @@ subroutine thermopack_set_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_t
   use thermopack_var
   implicit none
   integer, intent(in) :: i
-  real, intent(in) :: ciA,ciB,ciC, ciD,ciE,ciF
+  real, intent(in) :: ciA,ciB,ciC
+  real, intent(in), optional :: ciD,ciE,ciF
   integer, intent(in) :: ci_type
   ! Locals
   type(thermo_model), pointer :: act_mod_ptr
@@ -455,8 +457,8 @@ subroutine thermopack_set_volume_shift_parameters(i,ciA,ciB,ciC,ciD,ciE,ciF,ci_t
   act_mod_ptr%comps(i)%p_comp%cid%ciA = ciA
   act_mod_ptr%comps(i)%p_comp%cid%ciB = ciB
   act_mod_ptr%comps(i)%p_comp%cid%ciC = ciC
-  act_mod_ptr%comps(i)%p_comp%cid%ciDD = ciD
-  act_mod_ptr%comps(i)%p_comp%cid%ciE = ciE
-  act_mod_ptr%comps(i)%p_comp%cid%ciF = ciF
+  if (present(ciD)) act_mod_ptr%comps(i)%p_comp%cid%ciDD = ciD
+  if (present(ciE)) act_mod_ptr%comps(i)%p_comp%cid%ciE = ciE
+  if (present(ciF)) act_mod_ptr%comps(i)%p_comp%cid%ciF = ciF
   act_mod_ptr%comps(i)%p_comp%cid%c_type = ci_type
 end subroutine thermopack_set_volume_shift_parameters
