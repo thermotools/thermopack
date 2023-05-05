@@ -190,30 +190,6 @@ contains
     call uv%allocate_and_init(nc,eos_label)
   end function uv_eos_constructor
 
-  function calc_uv_Mie_eta(eos,nc,T,V,n) result(eta)
-    ! Input
-    type(uv_theory_eos), intent(in) :: eos
-    integer, intent(in) :: nc !< Number of components
-    real, intent(in) :: T !< Temperature [K]
-    real, intent(in) :: V !< Volume [m3]
-    real, intent(in) :: n(nc) !< Mol numbers [mol]
-    ! Output
-    real :: eta !< Packing fraction [-]
-    ! Locals
-    real :: sumn
-    type(hyperdual) :: eta_hd, rhonum_hd, T_hd, z_hd(nc)
-
-    z_hd = 0.0
-    T_hd = 0.0
-    rhonum_hd = 0.0
-    sumn = sum(n)
-    z_hd%f0 = n/sumn
-    T_hd%f0 = T
-    rhonum_hd%f0 = sumn*N_AVOGADRO/V
-    call calc_eta_dhs(eos, nc, T=T_hd, rho=rhonum_hd, z=z_hd, eta=eta_hd)
-    eta = eta_hd%f0
-  end function calc_uv_Mie_eta
-
 
   subroutine init_uv_theory(nc,comp,eos,ref)
     use stringmod, only: str_eq
