@@ -121,6 +121,7 @@ append_export("thermopack_setclassicfitparam")
 append_export("thermopack_settwuparam")
 append_export("thermopack_gettwuparam")
 append_export("thermopack_set_alpha_corr")
+append_export("thermopack_set_beta_corr")
 
 
 

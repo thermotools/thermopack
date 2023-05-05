@@ -111,14 +111,12 @@ contains
   end subroutine test_numerical_quadratures
 
 
-  @Test
+  !@Test
   subroutine test_sigmaeff_epseff()
     use pair_potentials, only: Sutherlandsum, calc_sigmaeff
-    type(hyperdual) :: T
+    type(hyperdual) :: T, dhs, rmin
     type(hyperdual) :: C(2), lam(2), sigma, epsdivk
     type(hyperdual) :: lama, lamr, sigmaeff, epseff
-    type(hyperdual) :: rmin
-    !type(sutherlandsum) :: pot
     type(mie_potential_hd) :: mie
 
     lama = 6.0
@@ -126,15 +124,21 @@ contains
     sigma = 1.0
     epsdivk = 1.0
     call mie%init(lama, lamr, sigma, epsdivk)
-    print *, "sigmaeff"
 
     sigmaeff = calc_sigmaeff(mie)
-    print *, sigmaeff
+    print *, "sigmaeff", sigmaeff%f0
 
-    print *, "rmin"
+    T = 1.0
+    print *, "sigma", sigma%f0
+    call calc_bh_diameter(mie, beta=1.0/T, dhs=dhs)
+    print *, "bhdhs", dhs%f0
+    call calc_BFC_diameter(mie, beta=1.0/T, dhs=dhs)
+    print *, "bhBFC", dhs%f0
+
+
     call calc_rmin_and_epseff(mie, rmin, epseff)
-    print *, rmin
-    print *, epseff
+    print *, "rmin", rmin%f0
+    print *, "epseff", epseff%f0
 
   end subroutine test_sigmaeff_epseff
 

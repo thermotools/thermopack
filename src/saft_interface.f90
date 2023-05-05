@@ -1086,7 +1086,7 @@ contains
     use saftvrmie_containers, only: saftvrmie_eos
     use lj_splined, only: ljs_bh_eos, calc_ljs_bh_zeta, &
       ljs_wca_eos, calc_ljx_wca_zeta
-    use uv_theory, only: uv_theory_eos, calc_uv_Mie_eta
+    use uv_theory, only: uv_theory_eos
     ! Input.
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
@@ -1110,8 +1110,7 @@ contains
     class is(ljs_wca_eos)
       conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
     class is(uv_theory_eos)
-      conv_num = calc_uv_mie_eta(p_eos, nc, T, V=1.0, n=n)
-      !conv_num = calc_ljx_wca_zeta(p_eos,nc,T,1.0,n)
+      conv_num = N_AVOGADRO*(PI/6.0)*p_eos%dhs_x%f0**3
     class is(saftvrmie_eos)
       conv_num = calc_saftvrmie_zeta(p_eos,nc,T,1.0,n)
     class is ( PETS_eos )

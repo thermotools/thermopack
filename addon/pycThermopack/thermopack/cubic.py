@@ -60,6 +60,7 @@ class cubic(thermo.thermo):
         self.s_get_energy_constants = getattr(self.tp, self.get_export_name("cubic_eos", "get_energy_constants"))
 
         self.s_set_alpha_corr = getattr(self.tp, self.get_export_name("", "thermopack_set_alpha_corr"))
+        self.s_set_beta_corr = getattr(self.tp, self.get_export_name("", "thermopack_set_beta_corr"))
 
         if None not in (comps, eos):
             self.init(comps, eos, mixing, alpha, parameter_reference, volume_shift)
@@ -433,8 +434,14 @@ class cubic(thermo.thermo):
         ciA_c = c_double(0.0)
         ciB_c = c_double(0.0)
         ciC_c = c_double(0.0)
+        ciD_c = c_double(0.0)
+        ciE_c = c_double(0.0)
+        ciF_c = c_double(0.0)
         ci_type_c = c_int(0)
         self.s_get_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
                                   POINTER(c_double),
                                   POINTER(c_double),
                                   POINTER(c_double),
@@ -446,11 +453,14 @@ class cubic(thermo.thermo):
                       byref(ciA_c),
                       byref(ciB_c),
                       byref(ciC_c),
+                      byref(ciD_c),
+                      byref(ciE_c),
+                      byref(ciF_c),
                       byref(ci_type_c))
 
-        return ciA_c.value, ciB_c.value, ciC_c.value, ci_type_c.value
+        return ciA_c.value, ciB_c.value, ciC_c.value, ciD_c.value, ciE_c.value, ciF_c.value, ci_type_c.value
 
-    def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ci_type=1):
+    def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
         """Set volume correction parametrs
 
         Args:
@@ -458,14 +468,20 @@ class cubic(thermo.thermo):
             ciA (float): Volume shift param of component cidx (m3/mol)
             ciB (float): Volume shift param of component cidx (m3/mol/K)
             ciC (float): Volume shift param of component cidx (m3/mol/K^2)
-            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
+            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3, QUINTIC=6)
         """
         cidx_c = c_int(cidx)
         ciA_c = c_double(ciA)
         ciB_c = c_double(ciB)
         ciC_c = c_double(ciC)
+        ciD_c = c_double(ciD)
+        ciE_c = c_double(ciE)
+        ciF_c = c_double(ciF)
         ci_type_c = c_int(ci_type)
         self.s_set_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
                                   POINTER(c_double),
                                   POINTER(c_double),
                                   POINTER(c_double),
@@ -477,8 +493,12 @@ class cubic(thermo.thermo):
                       byref(ciA_c),
                       byref(ciB_c),
                       byref(ciC_c),
+                      byref(ciD_c),
+                      byref(ciE_c),
+                      byref(ciF_c),
                       byref(ci_type_c))
 
+        
     def get_covolumes(self):
         """Get component covolumes (L/mol)
 
@@ -533,3 +553,34 @@ class cubic(thermo.thermo):
                               corrname_string_c,
                               coeffs_c,
                               corrname_string_len_c)
+
+
+    def set_beta_corr(self, ic, corrname, coeffs):
+        """Set beta correlation
+
+        Args:
+            ic (in): Component number
+            corrname (string): Name of correlation
+            coeffs (ndarray): Coefficients in correlation
+        """
+
+        numparam_c = c_int(len(coeffs))
+        ic_c = c_int(ic)
+        corrname_string_c = c_char_p(corrname.strip().encode('ascii'))
+        corrname_string_len_c = c_len_type(len(corrname))
+        coeffs_c = (c_double * len(coeffs)) (*coeffs)
+        self.s_set_beta_corr.argtypes = [POINTER(c_int),
+                                          POINTER(c_int),
+                                          c_char_p,
+                                          POINTER(c_double),
+                                          c_len_type]
+
+
+        
+        self.s_set_beta_corr.restype = None
+
+        self.s_set_beta_corr(numparam_c,
+                             ic_c,
+                             corrname_string_c,
+                             coeffs_c,
+                             corrname_string_len_c)

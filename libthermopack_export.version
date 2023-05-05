@@ -42,6 +42,7 @@ libthermopack {
 	thermopack_settwuparam_;
 	thermopack_gettwuparam_;
 	thermopack_set_alpha_corr_;
+	thermopack_set_beta_corr_;
 	*get_bp_term*;
 	*vllebinaryxy*;
 	*global_binary_plot*;

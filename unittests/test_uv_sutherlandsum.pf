@@ -2,7 +2,7 @@ module test_uv_sutherlandsum
   use hyperdual_mod
   use single_phase
   use uv_theory
-  use eoslibinit, only: init_thermo, init_saftvrmie, init_uv, init_ljs
+  use eoslibinit, only: init_thermo, init_saftvrmie, init_quantum_saftvrmie, init_uv, init_ljs
   use thermopack_constants
   use hardsphere_bmcsl, only: calc_ares_hardsphere_bmcsl
   use saft_interface, only: calcSaftFder_res_nonassoc
@@ -25,26 +25,23 @@ contains
   subroutine test_a1a2a3_mix_mie()
     type(uv_theory_eos) :: eos
     real :: F
-    integer :: i,j,knc = 2
+    integer :: i,j
     real :: P, T, V, rho, z(2)
     real :: dhs, a0, a1, a2, a3
     type(hyperdual) :: T_r, rho_r
-    type(hyperdual) :: lamr(2), lama(2), sigma(2), epsdivk(2)
-    type(hyperdual) :: a_res, delta_a0, delta_a1u, delta_a2u, delta_a3u, delta_b2, delta_b2u, phi, a_attr, a_hs_res, a_ufrac
-    type(mie_potential_hd) :: mie
+    !type(hyperdual) :: lamr(2), lama(2), sigma(2), epsdivk(2)
+    type(hyperdual) :: a_res, delta_a0, delta_a1u, delta_a2u, delta_a3u, delta_b2, delta_b2u, a_hs_res, a_ufrac
+    !type(mie_potential_hd) :: mie
     class(base_eos_param), pointer :: act_eos_ptr
     type(hyperdual) :: T_hd, rho_hd, z_hd(2), dhs_hd
 
     ! Thermodynamic state
     T = 100.0
     V = 1.0e-3
-    !T = 1.5*epsdivk(1)
     z(1) = 0.45
     z(2) = 1.0-z(1)
     rho = N_AVOGADRO/V
 
-
-    print *, "SVRMIE"
     call init_saftvrmie("AR,C1","DEFAULT")
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
@@ -54,71 +51,32 @@ contains
       call calcA1(nc,T,V,z, saftvrmie_vc=p_eos%saftvrmie_var,a1=a1)
       call calcA2(nc,T,V,z, saftvrmie_vc=p_eos%saftvrmie_var,a2=a2)
       call calcA3(nc,T,V,z, s_vc=p_eos%saftvrmie_var,a3=a3)
-      dhs = p_eos%saftvrmie_var%dhs%d(1,1)
-      ! sigma = p_eos%saftvrmie_param%sigma_ij(1,1)
-      ! epsdivk = p_eos%saftvrmie_param%eps_divk_ij(1,1)
-      ! lamr = p_eos%saftvrmie_param%lambda_r_ij(1,1)
-      ! print *, p_eos%saftvrmie_param%sigma_ij
-      ! print *, p_eos%saftvrmie_param%eps_divk_ij
-      ! print *, p_eos%saftvrmie_param%lambda_r_ij
-      ! print *, p_eos%saftvrmie_var%dhs%d
     end select
 
-    print *, "dhs      ", dhs
-    print *, "a0       ", a0
-    print *, "a1       ", a1
-    print *, "a2       ", a2
-    print *, "a3       ", a3
-    print *, ""
-
-    print *, "UV-THEORY"
+    ACTIVE_MODEL = SAFTVR_SS
     call init_uv(comps="AR,C1", model="uv-mie-bh",parameter_reference="SVRMIE")
-
-    ! sigma = 3.41e-10
-    ! !sigma(2) = 2.0
-    ! epsdivk = 118.7
-    ! !epsdivk(2) = 0.5
-    ! lamr = 12.26 ! Avoid activating the LJ-specific parameters
-    ! lama = 6.0
-    
     T_hd = T
     z_hd = z
     rho_hd = rho
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
     type is (uv_theory_eos)
-      !call set_mie_parameters(p_eos,nc,lamr,sigma,epsdivk)
       call preCalcUVTheory(p_eos,nc,T_hd,z_hd)
-      print *, " "
       call calc_ares_hardsphere_bmcsl(nc, rho_hd*z_hd, (/p_eos%dhs(1,1), p_eos%dhs(2,2)/), a_hs_res)
-      print *, "ahs      ", a_hs_res%f0
-
       call delta_a1u_b2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a1u, Delta_B2u)
-      print *, "a0       ", delta_a0%f0 + a_hs_res%f0
-      print *, "a1       ", Delta_a1u%f0*T_hd%f0
-
       call delta_a2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a2u)
-      print *, "a2       ", Delta_a2u%f0*T_hd%f0**2
-
       call delta_a3u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a3u)
-      print *, "a3       ", Delta_a3u%f0*T_hd%f0**3
-      print *, ""
-
-      ! print *, p_eos%sutsum%sigma%f0
-      ! print *, p_eos%sutsum%epsdivk%f0
-      ! print *, p_eos%sutsum(1,1)%lam%f0
-      ! print *, p_eos%sutsum(1,2)%lam%f0
-      ! print *, p_eos%sutsum(2,1)%lam%f0
-      ! print *, p_eos%sutsum(2,2)%lam%f0
-
-      
     end select
 
+    @assertEqual(a0, a_hs_res%f0, 1e-10*abs(a0))
+    @assertEqual(a1, Delta_a1u%f0*T, 1e-10*abs(a1))
+    @assertEqual(a2, Delta_a2u%f0*T**2, 1e-10*abs(a2))
+    @assertEqual(a3, Delta_a3u%f0*T**3, 1e-10*abs(a3))
 
   end subroutine test_a1a2a3_mix_mie
 
-  
-  !@Test
+
+  @Test
   subroutine test_a1a2a3_pure_mie()
     real :: P, T, V, z(1)
     real :: F, y
@@ -134,8 +92,7 @@ contains
     V = 1.0e-3
     z = 1.0
 
-    print *, "SVRMIE"
-    call init_saftvrmie("C1","DEFAULT")
+    call init_saftvrmie("AR","DEFAULT")
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
     type is (saftvrmie_eos)
@@ -148,18 +105,9 @@ contains
       sigma = p_eos%saftvrmie_param%sigma_ij(1,1)
       epsdivk = p_eos%saftvrmie_param%eps_divk_ij(1,1)
       lamr = p_eos%saftvrmie_param%lambda_r_ij(1,1)
-      print *, epsdivk, sigma, lamr
     end select
 
-    print *, "dhs      ", dhs
-    print *, "a0       ", a0
-    print *, "a1       ", a1
-    print *, "a2       ", a2
-    print *, "a3       ", a3
-    print *, ""
-
-    print *, "UV-THEORY"
-    call init_uv(comps="C1",model="uv-mie-bh",parameter_reference="SVRMIE")
+    call init_uv(comps="AR",model="uv-mie-bh",parameter_reference="SVRMIE")
     act_eos_ptr => get_active_eos()
     select type(p_eos => act_eos_ptr)
     type is (uv_theory_eos)
@@ -169,26 +117,107 @@ contains
       T_hd = T
       z_hd = z
       rho_hd = z_hd(1)/V*N_AVOGADRO
-      LAFITTE = .true.
-      print *, epsdivk, sigma, lamr
-      print *, "LAFITTE"
+      ACTIVE_MODEL = SAFTVR_SS
       call preCalcUVTheory(p_eos, nc, T_hd, z_hd)
-
       call calc_ares_hardsphere_bmcsl(nc, rho_hd*z_hd, p_eos%dhs(1,1), a_hs_res)
-      print *, "ahs      ", a_hs_res%f0
-
       call delta_a1u_b2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a1u, Delta_B2u)
-      print *, "a1       ", Delta_a1u%f0*T
-
       call delta_a2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a2u)
-      print *, "a2       ", Delta_a2u%f0*T**2
-
       call delta_a3u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a3u)
-      print *, "a3       ", Delta_a3u%f0*T**3
-
-      print *, ""
     end select
+
+    @assertEqual(a0, a_hs_res%f0, 1e-10*abs(a0))
+    @assertEqual(a1, Delta_a1u%f0*T, 1e-10*abs(a1))
+    @assertEqual(a2, Delta_a2u%f0*T**2, 1e-10*abs(a2))
+    @assertEqual(a3, Delta_a3u%f0*T**3, 1e-10*abs(a3))
+
   end subroutine test_a1a2a3_pure_mie
 
+  !@Test
+  subroutine test_a1a2a3_pure_qmie()
+    real :: P, T, V, z(1)
+    real :: F, y
+    real :: a0, a1, a2, a3
+    real :: epsdivk, sigma, lamr, dhs
+    type(hyperdual) :: T_hd, rho_hd, z_hd(1), dhs_hd, delta_b2u, Delta_B2, delta_a0, a_hs_res
+    type(hyperdual) :: delta_a1u, delta_a2u, delta_a3u
+    class(base_eos_param), pointer :: act_eos_ptr
+    type(thermo_model), pointer :: act_mod_ptr
+    integer :: fh
+    character(30) :: ref
+
+    ! Thermodynamic state
+    T = 30
+    V = 1.0e-3
+    z = 1.0
+
+    !VERBOSE = .TRUE.
+    do fh=1,2
+      if (fh==1) ref = "AASEN2019-FH1"
+      if (fh==2) ref = "AASEN2019-FH2"
+      call init_quantum_saftvrmie("H2",feynman_hibbs_order=fh,parameter_reference=ref)
+      act_eos_ptr => get_active_eos()
+      select type(p_eos => act_eos_ptr)
+      type is (saftvrmie_eos)
+        call preCalcSAFTVRMie(nc,T,V,z,3,p_eos%saftvrmie_var)
+        call calc_hardsphere_helmholtzenergy(nc,T,V,z,s_vc=p_eos%saftvrmie_var,a=a0)
+        call calcA1(nc,T,V,z, saftvrmie_vc=p_eos%saftvrmie_var,a1=a1)
+        call calcA2(nc,T,V,z, saftvrmie_vc=p_eos%saftvrmie_var,a2=a2)
+        call calcA3(nc,T,V,z, s_vc=p_eos%saftvrmie_var,a3=a3)
+        dhs = p_eos%saftvrmie_var%dhs%d(1,1)
+        sigma = p_eos%saftvrmie_param%sigma_ij(1,1)
+        epsdivk = p_eos%saftvrmie_param%eps_divk_ij(1,1)
+        lamr = p_eos%saftvrmie_param%lambda_r_ij(1,1)
+      end select
+
+      call init_uv(comps="H2",model="uv-mie-bh",parameter_reference=ref)
+      act_eos_ptr => get_active_eos()
+      select type(p_eos => act_eos_ptr)
+      type is (uv_theory_eos)
+        ACTIVE_MODEL = SAFTVR_SS
+        call set_sutsum_parameters_from_Qmie(p_eos, nc, FHorder=fh)
+        epsdivk = p_eos%sutsum(1,1)%epsdivk%f0
+        sigma = p_eos%sutsum(1,1)%sigma%f0
+        lamr = p_eos%sutsum(1,1)%lam(1)%f0
+        T_hd = T
+        z_hd = z
+        rho_hd = z_hd(1)/V*N_AVOGADRO
+        call preCalcUVTheory(p_eos, nc, T_hd, z_hd)
+
+        call calc_ares_hardsphere_bmcsl(nc, rho_hd*z_hd, p_eos%dhs(1,1), a_hs_res)
+        call delta_a1u_b2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a1u, Delta_B2u)
+        call delta_a2u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a2u)
+        call delta_a3u_sutsum(p_eos, nc, T_hd, rho_hd, z_hd, Delta_a3u)
+        if (VERBOSE) then
+          print *, "dhs      "
+          print *, dhs
+          print *, p_eos%dhs%f0
+
+          print *, "ahs      "
+          print *, a0
+          print *,a_hs_res%f0
+
+
+          print *, "a1       "
+          print *, a1
+          print *, Delta_a1u%f0*T
+
+          print *, "a2       "
+          print *, a2
+          print *, Delta_a2u%f0*T**2
+
+          print *, "a3       "
+          print *, a3
+          print *, Delta_a3u%f0*T**3
+        end if
+
+        @assertEqual(dhs, p_eos%dhs%f0, 1e-4*abs(dhs))
+        @assertEqual(a0, a_hs_res%f0, 1e-4*abs(a0))
+        @assertEqual(a1, Delta_a1u%f0*T, 1e-4*abs(a1))
+        @assertEqual(a2, Delta_a2u%f0*T**2, 1e-4*abs(a2))
+        @assertEqual(a3, Delta_a3u%f0*T**3, 1e-4*abs(a3))
+
+      end select
+    end do
+  end subroutine test_a1a2a3_pure_qmie
 
 end module test_uv_sutherlandsum
