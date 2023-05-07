@@ -207,7 +207,7 @@ module cubic_eos
   integer, parameter :: cbMixHVCPA2 = 26 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixWongSandler = 3 !< Wong Sandler mixing rule
   integer, parameter :: cbMixWSCPA = 31 !< Wong-Sandler mixing rule for CPA
-  integer, parameter :: cbMixHVWS = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
+  integer, parameter :: cbMixHVWongSandler = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
 
   type mix_label_mapping
     integer :: mix_idx_group
@@ -253,7 +253,7 @@ module cubic_eos
        mix_idx=cbMixWSCPA, short_label="WongSandler", label="WSCPA",&
        alias = ""), &
        mix_label_mapping(mix_idx_group=cbMixWongSandler,&
-       mix_idx=cbMixHVWS, short_label="HVWS", label="HVWS",&
+       mix_idx=cbMixHVWongSandler, short_label="HVWongSandler", label="HVWongSandler",&
        alias = "") &
        /)
 
@@ -264,7 +264,7 @@ module cubic_eos
        cbMixHuronVidal2,&
        cbMixHVCPA,&
        cbMixHVCPA2,&
-       cbMixHVWS/)
+       cbMixHVWongSandler/)
 
   integer, parameter :: nGECorrs = 7
   integer, parameter, dimension(nGECorrs) :: GECorrIndices = (/&
