@@ -162,7 +162,7 @@ contains
   !! \author Geir S
   !! \author Morten Hammer
   subroutine SelectMixingRules(nc, comp, cbeos, mrulestr, param_reference, b_exponent)
-    use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixWSCPA, cbMixHVWS,cbMixNRTL, isHVmixModel
+    use cubic_eos, only: cb_eos, cbMixUNIFAC, cbMixWongSandler, cbMixWSCPA, cbMixHVWongSandler,cbMixNRTL, isHVmixModel
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
     use cbmix, only: cbCalcLowcasebij
@@ -186,9 +186,9 @@ contains
       call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
     end if
 
-    if (cbeos%mruleidx == cbMixWongSandler .or. cbeos%mruleidx == cbMixWSCPA .or. cbeos%mruleidx == cbMixHVWS) then
-      !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
-      call cbeos%mixWS%WS_allocate_and_init(nc)
+    if (cbeos%mruleidx == cbMixWongSandler .or. cbeos%mruleidx == cbMixWSCPA .or. cbeos%mruleidx == cbMixHVWongSandler) then
+       !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
+       call cbeos%mixWS%WS_allocate_and_init(nc)
     endif
 
     if (cbeos%mruleidx == cbMixUNIFAC) then

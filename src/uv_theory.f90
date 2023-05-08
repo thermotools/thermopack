@@ -200,7 +200,8 @@ contains
   subroutine init_uv_theory(nc,comp,eos,ref)
     use stringmod, only: str_eq
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas, kRgas, N_Avogadro, kB_const
+    use thermopack_constants, only:  N_Avogadro, kB_const
+    use thermopack_var, only: Rgas, kRgas
     integer, intent(in) :: nc                           !< Number of components
     type(gendata_pointer), intent(inout) :: comp(nc)    !< Component vector
     class(uv_theory_eos), intent(inout) :: eos !< Equation of state

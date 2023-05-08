@@ -16,6 +16,7 @@ module utilities
   public :: normalize, boolean, isXwithinBounds
   public :: allocate_nc, allocate_nc_x_nc, deallocate_real, deallocate_real_2
   public :: get_thread_index, test_tvn_method
+  public :: fallback_density
 
   !-----------------------------------------------------------------------------
   !> Exponential function which will return "huge" instead of overflowing.
@@ -351,5 +352,44 @@ contains
       print *,"a_nn",a_nn(:,i), (a2_n - a1_n)/(2*dn)
     enddo
   end subroutine test_tvn_method
+
+  !> In case the EOS have no stable roots a fake root can be generated from the extremas.
+  !! Using fake roots the tangent plane and the flash calculations will produce correct results.
+  !! The phase of the fallback root should be set to FAKEPH.
+  !! \author Eskil Aursand and Magnus A. Gjennestad, 2013-08
+  !! \author Morten Hammer, 2023-04
+  function fallback_density(P,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq) result(rho)
+    use numconstants, only: pi
+    implicit none
+    ! Input:
+    real, intent(in)          :: P                  !< Pressure [Pa]
+    real, intent(in)          :: rho_extr_liq       !< Density of P_EoS for liquid extremum [mol/m3]
+    real, intent(in)          :: rho_extr_vap       !< Density of P_EoS for vapour extremum [mol/m3]
+    real, intent(in)          :: d2P_drho2_extr_liq !< Second derivative of pressure [Pa m6/mol]
+    real, intent(in)          :: P_extr_liq         !< Pressure at rho_extr_liq [Pa]
+    ! Output:
+    real                      :: rho                !< Density (fallback) [mol/m3]
+    ! Internal:
+    real                      :: A,B,C,D
+    real, parameter           :: s = 1.0 ! -1.0 for vapour
+    real, parameter           :: alpha = -10.0
+    real                      :: rho_curv, rho_div
+
+    ! Density of wanted divergence point [mol/m3]
+    rho_div = 0.75*rho_extr_liq + 0.25*rho_extr_vap
+
+    rho_curv = 0.5*(rho_extr_liq+rho_div)
+
+    ! Calculate coefficients
+    B = 0.5*s*pi/(rho_extr_liq-rho_div)
+    C = B*rho_extr_liq + 0.5*s*pi
+    A = ((alpha*d2P_drho2_extr_liq*sin(B*rho_curv-C)) / &
+       (B**2*(1.0/(tan(B*rho_curv-C))**2 + 1.0/(sin(B*rho_curv-C))**2) ))
+    D = P_extr_liq + s*A
+
+    ! Calculate fallback density
+    rho = (-asin(min(1.0,max(-1.0,A/(P-D)))) -s*pi + C )/B
+
+  end function fallback_density
 
 end module utilities

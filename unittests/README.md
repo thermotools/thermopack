@@ -19,6 +19,8 @@ $ ./run_unittests
 ### Known possible issues
 If your `PYTHONPATH` is not set up the way `pFUnit` expects, you may need to make the changes to `pFUnitParser.py` referenced in [PR#34](https://github.com/thermotools/thermopack/pull/34).
 
+When setting the PFUNIT_DIR, <some_path> should be an absolute path. On Ubuntu, you cannot use the '~' alias for your home directory.
+
 ## Writing tests
 
 ## Adding or disabling tests

@@ -78,17 +78,25 @@ class thermo(object):
         # Init methods
         self.eoslibinit_init_thermo = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_thermo"))
-        self.Rgas = c_double.in_dll(self.tp, self.get_export_name(
-            "thermopack_constants", "rgas")).value
+        self.s_get_rgas = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_rgas"))
         self.nc = None
-        self.minimum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmin"))
-        self.maximum_temperature_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tptmax"))
-        self.minimum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmin"))
-        self.maximum_pressure_c = c_double.in_dll(
-            self.tp, self.get_export_name("thermopack_constants", "tppmax"))
+        self.s_get_tmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_tmin"))
+        self.s_set_tmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_tmin"))
+        self.s_get_tmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_tmax"))
+        self.s_set_tmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_tmax"))
+        self.s_get_pmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_pmin"))
+        self.s_set_pmin = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_pmin"))
+        self.s_get_pmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_pmax"))
+        self.s_set_pmax = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_pmax"))
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.eoslibinit_init_volume_translation = getattr(
@@ -195,6 +203,10 @@ class thermo(object):
             self.tp, self.get_export_name("binaryplot", "get_bp_term"))
         self.s_solid_envelope_plot = getattr(
             self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
+        self.s_melting_pressure_correlation = getattr(
+            self.tp, self.get_export_name("solid_saturation", "melting_pressure_correlation"))
+        self.s_sublimation_pressure_correlation = getattr(
+            self.tp, self.get_export_name("solid_saturation", "sublimation_pressure_correlation"))
         self.s_isotherm = getattr(
             self.tp, self.get_export_name("isolines", "isotherm"))
         self.s_isobar = getattr(
@@ -203,6 +215,7 @@ class thermo(object):
             self.tp, self.get_export_name("isolines", "isenthalp"))
         self.s_isentrope = getattr(
             self.tp, self.get_export_name("isolines", "isentrope"))
+
         # Stability
         self.s_crit_tv = getattr(
             self.tp, self.get_export_name("critical", "calccriticaltv"))
@@ -651,6 +664,14 @@ class thermo(object):
                              "MINIMUM_GIBBS", "SINGLE", "SOLID", "FAKE"]
         return phase_string_list[i_phase]
 
+    @property
+    def Rgas(self):
+        self.activate()
+        self.s_get_rgas.argtypes = []
+        self.s_get_rgas.restype = c_double
+        rgas = self.s_get_rgas()
+        return rgas
+
     def set_tmin(self, temp):
         """Utility
         Set minimum temperature in Thermopack. Used to limit search
@@ -660,7 +681,11 @@ class thermo(object):
             temp (float): Temperature (K)
         """
         if temp is not None:
-            self.minimum_temperature_c.value = temp
+            self.activate()
+            temp_c = c_double(temp)
+            self.s_set_tmin.argtypes = [POINTER(c_double)]
+            self.s_set_tmin.restype = None
+            self.s_set_tmin(byref(temp_c))
 
     def get_tmin(self):
         """Utility
@@ -670,8 +695,11 @@ class thermo(object):
         Returns:
             float: Temperature (K)
         """
-        temp = self.minimum_temperature_c.value
-        return temp
+        self.activate()
+        self.s_get_tmin.argtypes = []
+        self.s_get_tmin.restype = c_double
+        tmin = self.s_get_tmin()
+        return tmin
 
     def set_tmax(self, temp):
         """Utility
@@ -682,7 +710,11 @@ class thermo(object):
             temp (float): Temperature (K)
         """
         if temp is not None:
-            self.maximum_temperature_c.value = temp
+            self.activate()
+            temp_c = c_double(temp)
+            self.s_set_tmax.argtypes = [POINTER(c_double)]
+            self.s_set_tmax.restype = None
+            self.s_set_tmax(byref(temp_c))
 
     def get_tmax(self):
         """Utility
@@ -692,8 +724,11 @@ class thermo(object):
         Returns:
             float: Temperature (K)
         """
-        temp = self.maximum_temperature_c.value
-        return temp
+        self.activate()
+        self.s_get_tmax.argtypes = []
+        self.s_get_tmax.restype = c_double
+        tmax = self.s_get_tmax()
+        return tmax
 
     def set_pmin(self, press):
         """Utility
@@ -703,7 +738,12 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        self.minimum_pressure_c.value = press
+        if press is not None:
+            self.activate()
+            press_c = c_double(press)
+            self.s_set_pmin.argtypes = [POINTER(c_double)]
+            self.s_set_pmin.restype = None
+            self.s_set_pmin(byref(press_c))
 
     def get_pmin(self):
         """Utility
@@ -713,8 +753,11 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        press = self.minimum_pressure_c.value
-        return press
+        self.activate()
+        self.s_get_pmin.argtypes = []
+        self.s_get_pmin.restype = c_double
+        pmin = self.s_get_pmin()
+        return pmin
 
     def set_pmax(self, press):
         """Utility
@@ -724,7 +767,12 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        self.maximum_pressure_c.value = press
+        if press is not None:
+            self.activate()
+            press_c = c_double(press)
+            self.s_set_pmax.argtypes = [POINTER(c_double)]
+            self.s_set_pmax.restype = None
+            self.s_set_pmax(byref(press_c))
 
     def get_pmax(self):
         """Utility
@@ -734,8 +782,11 @@ class thermo(object):
         Args:
             press (float): Pressure (Pa)
         """
-        press = self.maximum_pressure_c.value
-        return press
+        self.activate()
+        self.s_get_pmax.argtypes = []
+        self.s_get_pmax.restype = c_double
+        pmax = self.s_get_pmax()
+        return pmax
 
     #################################
     # Phase properties
@@ -1710,7 +1761,6 @@ class thermo(object):
         else:
             dpdn_c = (c_double * len(n))(0.0)
 
-        recalculate_c = POINTER(c_int)(c_int(1))
         contribution_c = utils.get_contribution_flag(property_flag)
 
         self.s_pressure_tv.argtypes = [POINTER(c_double),
@@ -1731,7 +1781,6 @@ class thermo(object):
                                dpdt_c,
                                d2pdv2_c,
                                dpdn_c,
-                               recalculate_c,
                                contribution_c)
 
         return_tuple = (P, )
@@ -2536,7 +2585,7 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None,
-                              calc_v=False):
+                              calc_v=False, initial_temperature=None):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2547,6 +2596,8 @@ class thermo(object):
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
             step_size (float , optional): Tune step size of envelope trace. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
+                                                  Overrides initial pressure. Defaults to None (K).
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
@@ -2555,9 +2606,9 @@ class thermo(object):
         self.activate()
         nmax = 1000
         z_c = (c_double * len(z))(*z)
-        temp_c = c_double(0.0)
+        temp_c = c_double(initial_temperature if initial_temperature is not None else 0.0)
         press_c = c_double(initial_pressure)
-        spec_c = c_int(1)
+        spec_c = c_int(2 if initial_temperature is not None else 1)
         beta_in_c = c_double(1.0)
         max_press_c = c_double(maximum_pressure)
         nmax_c = c_int(nmax)
@@ -3043,6 +3094,100 @@ class thermo(object):
         # Load file with filename and read into lists....
         return plotutils.get_solid_envelope_data(filename)
 
+    def melting_pressure_correlation(self,i,maximum_temperature=None,nmax=100,scale_to_eos=True):
+        """Saturation interface
+        Calculate melting line form correlation
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+            maximum_temperature (float, optional): Get values up to maximum_temperature. Defaults to correlation limit.
+            nmax (int): Number of points in equidistant grid. Defaults to 100.
+            scale_to_eos (bool, optional): Scale pressures to match triple point pressure? Defaults to True
+
+        Returns:
+            T_melt (ndarray): Melting temperature (K)
+            p_melt (ndarray): Melting pressure (Pa)
+        """
+        self.activate()
+        temp_melt_c = (c_double * nmax)(0.0)
+        press_melt_c = (c_double * nmax)(0.0)
+        temp_max_c = c_double(1.0e10 if maximum_temperature is None else maximum_temperature)
+        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        i_comp_c = c_int(i)
+        nmax_c = c_int(nmax)
+        ierr_c = c_int(0)
+
+        self.s_melting_pressure_correlation.argtypes = [POINTER( c_double ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_int ),
+                                                        POINTER( c_double ),
+                                                        POINTER( c_double ),
+                                                        POINTER( c_int )]
+
+        self.s_melting_pressure_correlation.restype = None
+
+        self.s_melting_pressure_correlation(byref(temp_max_c),
+                                            byref(i_comp_c),
+                                            byref(scale_to_eos_c),
+                                            byref(nmax_c),
+                                            temp_melt_c,
+                                            press_melt_c,
+                                            byref(ierr_c))
+
+
+        if ierr_c.value != 0:
+            raise Exception("Melting line calculation failed")
+
+        return np.array(temp_melt_c), np.array(press_melt_c)
+
+    def sublimation_pressure_correlation(self,i,minimum_temperature=None,nmax=100,scale_to_eos=True):
+        """Saturation interface
+        Calculate melting line form correlation
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+            minimum_temperature (float, optional): Get values from minimum_temperature. Defaults to correlation limit.
+            nmax (int): Number of points in equidistant grid. Defaults to 100.
+            scale_to_eos (bool, optional): Scale pressures to match triple point pressure? Defaults to True
+
+        Returns:
+            T_subl (ndarray): Sublimation temperature (K)
+            p_subl (ndarray): Sublimation pressure (Pa)
+        """
+        self.activate()
+        temp_subl_c = (c_double * nmax)(0.0)
+        press_subl_c = (c_double * nmax)(0.0)
+        temp_min_c = c_double(0.0 if minimum_temperature is None else minimum_temperature)
+        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        i_comp_c = c_int(i)
+        nmax_c = c_int(nmax)
+        ierr_c = c_int(0)
+
+        self.s_sublimation_pressure_correlation.argtypes = [POINTER( c_double ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_int ),
+                                                            POINTER( c_double ),
+                                                            POINTER( c_double ),
+                                                            POINTER( c_int )]
+
+        self.s_sublimation_pressure_correlation.restype = None
+
+        self.s_sublimation_pressure_correlation(byref(temp_min_c),
+                                                byref(i_comp_c),
+                                                byref(scale_to_eos_c),
+                                                byref(nmax_c),
+                                                temp_subl_c,
+                                                press_subl_c,
+                                                byref(ierr_c))
+
+
+        if ierr_c.value != 0:
+            raise Exception("Sublimation line calculation failed")
+
+        return np.array(temp_subl_c), np.array(press_subl_c)
+
     def get_isotherm(self,
                      temp,
                      z,
@@ -3335,7 +3480,7 @@ class thermo(object):
             tol (float, optional): Error tolerance (-). Defaults to 1.0e-8.
 
         Raises:
-            Exception: Failure to solve for critcal point
+            Exception: Failure to solve for critical point
 
         Returns:
             float: Temperature (K)
@@ -3369,6 +3514,7 @@ class thermo(object):
             raise Exception("critical calclualtion failed")
 
         return temp_c.value, v_c.value, P_c.value
+
     def critical_temperature(self, i):
         '''Stability interface
         Get critical temperature of component i
@@ -3438,6 +3584,39 @@ class thermo(object):
                                     byref(tnbi))
 
         return pci.value
+
+    def critical_volume(self, i):
+        '''
+        Get specific critical volume of component i
+        Args:
+            i (int) component FORTRAN index
+        returns:
+            float: specific critical volume
+        '''
+        self.activate()
+        comp_c = c_int(i)
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return vci.value
 
     #################################
     # Virial interfaces

@@ -31,6 +31,7 @@ module eosdata
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
   integer, parameter :: meosLJ = 63        !< Multiparameter EoS
   integer, parameter :: meosLJTS = 64      !< Multiparameter EoS
+  integer, parameter :: meosGERG = 65      !< Multiparameter EoS
   integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
   integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
@@ -43,6 +44,8 @@ module eosdata
   !integer, parameter :: eosMie_UV_LAFITTE = 743  !< Mie equation of state using uv perturbation theory, with Lafitte implementation of a1
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
+  integer, parameter :: meosGERG_mix = 10   !< Multicomponent GERG
+  integer, parameter :: meos_helm_mix = 11  !< Multicomponent multiparameter EoS with Helmholtz mixing
 
   type eos_label_mapping
     integer :: eos_idx
@@ -52,240 +55,263 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 29
+  integer, parameter :: max_n_eos = 32
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
-    eos_label_mapping(&
-    eos_idx = eosCubic, &
-    eos_subidx = cbSRK, &
-    short_label = "SRK", &
-    label = "Soave Redlich Kwong", &
-    need_alternative_eos = .false. &
-    ), &
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCubic, &
-    eos_subidx = cbPR, &
-    short_label = "PR", &
-    label = "Peng-Robinson", &
-    need_alternative_eos = .false. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCubic, &
-    eos_subidx = cbVdW, &
-    short_label = "VDW", &
-    label = "van der Waals", &
-    need_alternative_eos = .false. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCubic, &
-    eos_subidx = cbSW, &
-    short_label = "SW", &
-    label = "Schmidt-Wensel", &
-    need_alternative_eos = .false. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCubic, &
-    eos_subidx = cbPT, &
-    short_label = "PT", &
-    label = "Patel-Teja", &
-    need_alternative_eos = .false. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosLK, &
-    eos_subidx = eosLK, &
-    short_label = "LK", &
-    label = "Lee-Kesler", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCSP, &
-    eos_subidx = cspSRK, &
-    short_label = "CSP-SRK", &
-    label = "Corrensponding state priciple with SRK scaling", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCSP, &
-    eos_subidx = cspPR, &
-    short_label = "CSP-PR", &
-    label = "Corrensponding state priciple with PR scaling", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCPA, &
-    eos_subidx = cpaSRK, &
-    short_label = "CPA-SRK", &
-    label = "Cubic Pluss Association Soave Redlich Kwong", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosCPA, &
-    eos_subidx = cpaPR, &
-    short_label = "CPA-PR", &
-    label = "Cubic Pluss Association Peng Robinson", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPC_SAFT, &
-    eos_subidx = eosSPC_SAFT, &
-    short_label = "sPC-SAFT", &
-    label = "Simplified Perturbed Chain SAFT", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPC_SAFT, &
-    eos_subidx = eosOPC_SAFT, &
-    short_label = "PC-SAFT", &
-    label = "Perturbed Chain SAFT", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPC_SAFT, &
-    eos_subidx = eosSPCP_SAFT, &
-    short_label = "sPCP-SAFT", &
-    label = "Simplified Perturbed Chain Polar SAFT", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPC_SAFT, &
-    eos_subidx = eosPCP_SAFT, &
-    short_label = "PCP-SAFT", &
-    label = "Perturbed Chain Polar SAFT", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eos_single, &
-    eos_subidx = meosMbwr19, &
-    short_label = "MBWR19", &
-    label = "Modified Benedict-Webb-Rubin. Bender 1970.", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eos_single, &
-    eos_subidx = meosMbwr32, &
-    short_label = "MBWR32", &
-    label = "Modified Benedict-Webb-Rubin. Younglove and Ely 1987", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eos_single, &
-    eos_subidx = meosNist, &
-    short_label = "NIST_MEOS", &
-    label = "Multiparameter EoS on NIST-like form", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eos_single, &
-    eos_subidx = meosLJ, &
-    short_label = "LJ_MEOS", &
-    label = "Multiparameter EoS for LJ", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eos_single, &
-    eos_subidx = meosLJTS, &
-    short_label = "LJTS_MEOS", &
-    label = "Multiparameter EoS for LJTS", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosSAFT_VR_MIE, &
-    short_label = "SAFT-VR-MIE", &
-    label = "SAFT for variable range Mie potentials", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosLJS_BH, &
-    short_label = "LJS-BH", &
-    label = "LJs equation of state using BH perturbation theory", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosLJS_WCA, &
-    short_label = "LJS-WCA", &
-    label = "LJs equation of state using WCA perturbation theory", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosLJS_UV, &
-    short_label = "LJS-UV", &
-    label = "LJs equation of state using UV perturbation theory", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosLJS_UF, &
-    short_label = "LJS-UF", &
-    label = "LJs equation of state using UF perturbation theory", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosLJ_UF, &
-    short_label = "LJ-UF", &
-    label = "LJ equation of state using UF perturbation theory", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosMie_UV_WCA, &
-    short_label = "uv-mie-wca", &
-    label = "uv-theory using WCA for Mie potentials", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPT, &
-    eos_subidx = eosMie_UV_BH, &
-    short_label = "uv-mie-bh", &
-    label = "uv-theory using BH for Mie potentials", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = eosPeTS, &
-    eos_subidx = eosPeTS, &
-    short_label = "PETS", &
-    label = "PeTS equation of state for LJTS at 2.5*sigma", &
-    need_alternative_eos = .true. &
-    ),&
-                                !
-    eos_label_mapping(&
-    eos_idx = meosNist_mix, &
-    eos_subidx = meosNist_mix, &
-    short_label = "NIST_MEOS_MIX", &
-    label = "Ideal mixture of NIST multiparameter EOS", &
-    need_alternative_eos = .true. &
-    ) &
-    /)
+       eos_label_mapping(&
+       eos_idx = eosCubic, &
+       eos_subidx = cbSRK, &
+       short_label = "SRK", &
+       label = "Soave Redlich Kwong", &
+       need_alternative_eos = .false. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = eosCubic, &
+       eos_subidx = cbPR, &
+       short_label = "PR", &
+       label = "Peng-Robinson", &
+       need_alternative_eos = .false. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCubic, &
+       eos_subidx = cbVdW, &
+       short_label = "VDW", &
+       label = "van der Waals", &
+       need_alternative_eos = .false. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCubic, &
+       eos_subidx = cbSW, &
+       short_label = "SW", &
+       label = "Schmidt-Wensel", &
+       need_alternative_eos = .false. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCubic, &
+       eos_subidx = cbPT, &
+       short_label = "PT", &
+       label = "Patel-Teja", &
+       need_alternative_eos = .false. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosLK, &
+       eos_subidx = eosLK, &
+       short_label = "LK", &
+       label = "Lee-Kesler", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCSP, &
+       eos_subidx = cspSRK, &
+       short_label = "CSP-SRK", &
+       label = "Corrensponding state priciple with SRK scaling", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCSP, &
+       eos_subidx = cspPR, &
+       short_label = "CSP-PR", &
+       label = "Corrensponding state priciple with PR scaling", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCPA, &
+       eos_subidx = cpaSRK, &
+       short_label = "CPA-SRK", &
+       label = "Cubic Pluss Association Soave Redlich Kwong", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosCPA, &
+       eos_subidx = cpaPR, &
+       short_label = "CPA-PR", &
+       label = "Cubic Pluss Association Peng Robinson", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosSPC_SAFT, &
+       short_label = "sPC-SAFT", &
+       label = "Simplified Perturbed Chain SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosOPC_SAFT, &
+       short_label = "PC-SAFT", &
+       label = "Perturbed Chain SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosSPCP_SAFT, &
+       short_label = "sPCP-SAFT", &
+       label = "Simplified Perturbed Chain Polar SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosPCP_SAFT, &
+       short_label = "PCP-SAFT", &
+       label = "Perturbed Chain Polar SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosMbwr19, &
+       short_label = "MBWR19", &
+       label = "Modified Benedict-Webb-Rubin. Bender 1970.", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosMbwr32, &
+       short_label = "MBWR32", &
+       label = "Modified Benedict-Webb-Rubin. Younglove and Ely 1987", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosNist, &
+       short_label = "NIST_MEOS", &
+       label = "Multiparameter EoS on NIST-like form", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosLJ, &
+       short_label = "LJ_MEOS", &
+       label = "Multiparameter EoS for LJ", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosLJTS, &
+       short_label = "LJTS_MEOS", &
+       label = "Multiparameter EoS for LJTS", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosGERG, &
+       short_label = "GERG2008", &
+       label = "GERG EoS", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosSAFT_VR_MIE, &
+       short_label = "SAFT-VR-MIE", &
+       label = "SAFT for variable range Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_BH, &
+       short_label = "LJS-BH", &
+       label = "LJs equation of state using BH perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_WCA, &
+       short_label = "LJS-WCA", &
+       label = "LJs equation of state using WCA perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_UV, &
+       short_label = "LJS-UV", &
+       label = "LJs equation of state using UV perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJS_UF, &
+       short_label = "LJS-UF", &
+       label = "LJs equation of state using UF perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosLJ_UF, &
+       short_label = "LJ-UF", &
+       label = "LJ equation of state using UF perturbation theory", &
+       need_alternative_eos = .true. &
+       ),&
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_WCA, &
+       short_label = "uv-mie-wca", &
+       label = "uv-theory using WCA for Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPT, &
+       eos_subidx = eosMie_UV_BH, &
+       short_label = "uv-mie-bh", &
+       label = "uv-theory using BH for Mie potentials", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPeTS, &
+       eos_subidx = eosPeTS, &
+       short_label = "PETS", &
+       label = "PeTS equation of state for LJTS at 2.5*sigma", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = meosNist_mix, &
+       eos_subidx = meosNist_mix, &
+       short_label = "NIST_MEOS_MIX", &
+       label = "Ideal mixture of NIST multiparameter EOS", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meosGERG_mix, &
+       eos_subidx = meosGERG_mix, &
+       short_label = "GERG2008_MIX", &
+       label = "GERG2008 mixture model", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meos_helm_mix, &
+       eos_subidx = meos_helm_mix, &
+       short_label = "MEOS", &
+       label = "MEOS mixture model", &
+       need_alternative_eos = .true. &
+       ) &
+       /)
 
   integer, parameter :: nSRK = 3
   integer, parameter, dimension(nSRK) :: SRKindices = (/&
