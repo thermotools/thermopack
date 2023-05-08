@@ -256,16 +256,22 @@ append_export("envelopeplot", "saturation_curve")
 append_export("solid_init", "solideos")
 
 append_export("solidenvelopeplot", "solid_saturation")
+append_export("melting_pressure_correlation", "solid_saturation")
+append_export("sublimation_pressure_correlation", "solid_saturation")
 
 append_export("sound_velocity_2ph", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 
-append_export("rgas", "thermopack_constants")
-append_export("tptmin", "thermopack_constants")
-append_export("tppmin", "thermopack_constants")
-append_export("tppmax", "thermopack_constants")
-
+append_export("get_rgas", "thermopack_var")
+append_export("set_tmin", "thermopack_var")
+append_export("get_tmin", "thermopack_var")
+append_export("set_pmin", "thermopack_var")
+append_export("get_pmin", "thermopack_var")
+append_export("set_pmax", "thermopack_var")
+append_export("get_pmax", "thermopack_var")
+append_export("set_pmin", "thermopack_var")
+append_export("get_pmin", "thermopack_var")
 append_export("add_eos", "thermopack_var")
 append_export("delete_eos", "thermopack_var")
 append_export("activate_model", "thermopack_var")

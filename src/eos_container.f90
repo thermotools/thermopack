@@ -11,6 +11,8 @@ module eos_container
   use uv_theory, only: uv_allocate_and_init, uv_eos_constructor
   use pc_saft_nonassoc, only: PCSAFT_eos, sPCSAFT_eos
   use extcsp, only: extcsp_eos
+  use gergmix, only: constructor_GERGMIX
+  use meosmix, only: constructor_meos
 
 contains
 
@@ -58,7 +60,6 @@ contains
       deallocate(p_active_model%cubic_eos_alternative, stat=istat)
       if (istat /= 0) call stoperror("Not able to deallocate p_active_model%cubic_eos_alternative")
     endif
-
     ! Set container data
     p_active_model%need_alternative_eos = eos_label_db(idx_db)%need_alternative_eos
     p_active_model%label = eos_label_db(idx_db)%label
@@ -147,7 +148,13 @@ contains
            source=pets_eos_constructor(nc, eosstr), stat=istat)
     case(meosNist_mix)
       allocate(p_eos, &
-           source=meos_mix_constructor(nc, eosstr), stat=istat)
+           source=meos_idealmix_constructor(nc, eosstr), stat=istat)
+    case(meosGERG_mix)
+      allocate(p_eos, &
+           source=constructor_GERGMIX(nc), stat=istat)
+    case(meos_helm_mix)
+      allocate(p_eos, &
+           source=constructor_meos(nc), stat=istat)
     case default
       istat = 1
     end select
@@ -164,6 +171,13 @@ contains
     eos_c1%nc = eos_c2%nc
     eos_c1%EoSlib = eos_c2%EoSlib
     eos_c1%label = eos_c2%label
+
+    eos_c1%Rgas = eos_c2%Rgas
+    eos_c1%kRgas = eos_c2%kRgas
+    eos_c1%tpPmin = eos_c2%tpPmin
+    eos_c1%tpPmax = eos_c2%tpPmax
+    eos_c1%tpTmin = eos_c2%tpTmin
+    eos_c1%tpTmax = eos_c2%tpTmax
 
     eos_c1%eosidx = eos_c2%eosidx
     !eos_c1%subeosidx = eos_c2%subeosidx
@@ -223,7 +237,7 @@ end module eos_container
 subroutine update_global_variables_form_active_thermo_model()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
        ncsym, numAssocSites, get_active_thermo_model, &
-       thermo_model
+       thermo_model, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, svrm_opt
   use lj_splined, only: ljs_wca_eos
   implicit none
@@ -233,6 +247,12 @@ subroutine update_global_variables_form_active_thermo_model()
   nph = act_mod_ptr%nph
   complist => act_mod_ptr%complist
   apparent => act_mod_ptr%apparent
+  Rgas = act_mod_ptr%Rgas
+  kRgas = act_mod_ptr%kRgas
+  tpTmax = act_mod_ptr%tpTmax
+  tpTmin = act_mod_ptr%tpTmin
+  tpPmax = act_mod_ptr%tpPmax
+  tpPmin = act_mod_ptr%tpPmin
   if (associated(apparent)) then
     nce = apparent%nce
     ncsym = apparent%ncsym
@@ -259,7 +279,7 @@ end subroutine update_global_variables_form_active_thermo_model
 
 subroutine print_globals()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
-       ncsym, numAssocSites
+       ncsym, numAssocSites, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin
   implicit none
   integer :: i
   print *,"nph",nph
@@ -272,4 +292,10 @@ subroutine print_globals()
     print *," ",trim(complist(i))
   enddo
   print *,"associated(apparent)",associated(apparent)
+  print *,"Rgas", Rgas
+  print *,"kRgas", kRgas
+  print *,"tpTmax", tpTmax
+  print *,"tpTmin", tpTmin
+  print *,"tpPmax", tpPmax
+  print *,"tpPmin", tpPmin
 end subroutine print_globals

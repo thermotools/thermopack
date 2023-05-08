@@ -82,6 +82,64 @@
     "Q": 0.0,
     "bib_reference": ""
   },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1016/0031-8914(62)90096-4",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 161.405,
+    "maximum_temperature": 1300.0,
+    "reducing_pressure": 1.013250E+05,
+    "reducing_temperature": 1.0,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -2575.0728,
+      0.7983277028,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.589165,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (2003)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 161.405,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 8.175000E+04,
+    "reducing_temperature": 161.405,
+    "n_coeff": 2,
+    "n_coeff_1": 0,
+    "n_coeff_2": 2,
+    "n_coeff_3": 0,
+    "coeff": [
+      -13.9,
+      14.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.06,
+      3.1,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {},
   "PR": {},
   "SAFTVRMIE-1": {

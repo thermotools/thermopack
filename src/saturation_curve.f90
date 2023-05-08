@@ -2,7 +2,7 @@ module saturation_curve
   use eos, only: thermo, entropy, specificvolume
   use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param
+       get_active_eos, base_eos_param, tpTmax, tpTmin
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
   use saturation
@@ -303,7 +303,6 @@ contains
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
        Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
        exitOnTriplePoint,Tme)
-    use thermopack_constants, only: get_templimits
     use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
@@ -407,7 +406,8 @@ contains
     sgn = 1.0
 
     ! Temperature limits
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (present(Tme)) Tmin = Tme
 
     ! Generate initial K values
