@@ -207,7 +207,7 @@ class State(object):
     def enthalpy_density(self):
         return self.specific_enthalpy()/self.v
 
-    def specific_excess_enthalpy(self):
+    def specific_residual_enthalpy(self):
         if self.hE is not None:
             hE = self.hE
         elif self.v is not None:
@@ -216,11 +216,11 @@ class State(object):
             self.hE = hE
         return hE
 
-    def excess_enthalpy_density(self):
-        return self.specific_excess_enthalpy()/self.v
+    def residual_enthalpy_density(self):
+        return self.specific_residual_enthalpy()/self.v
 
-    def excess_enthalpy(self):
-        _ = self.specific_excess_enthalpy()
+    def residual_enthalpy(self):
+        _ = self.specific_residual_enthalpy()
         return self.hE*np.sum(self.n)
 
     def specific_entropy(self):
@@ -239,7 +239,7 @@ class State(object):
     def entropy_density(self):
         return self.specific_entropy()/self.v
 
-    def specific_excess_entropy(self):
+    def specific_residual_entropy(self):
         if self.sE is not None:
             sE = self.sE
         elif self.v is not None:
@@ -248,7 +248,7 @@ class State(object):
             self.sE = sE
         return sE
 
-    def excess_entropy_density(self):
+    def residual_entropy_density(self):
         if self.sE is not None:
             sE = self.sE
         elif self.v is not None:
@@ -257,11 +257,11 @@ class State(object):
             self.sE = sE
         return sE/self.v
 
-    def excess_entropy(self):
-        _ = self.specific_excess_entropy()
+    def residual_entropy(self):
+        _ = self.specific_residual_entropy()
         return self.sE*np.sum(self.n)
 
-    def specific_free_energy(self):
+    def specific_helmholtz_energy(self):
         if self.a is not None:
             a = self.a
         elif self.v is not None:
@@ -270,14 +270,14 @@ class State(object):
             self.a = a
         return a
 
-    def free_energy(self):
-        _ = self.specific_free_energy()
+    def helmholtz_energy(self):
+        _ = self.specific_helmholtz_energy()
         return self.a*np.sum(self.n)
 
-    def free_energy_density(self):
-        return self.specific_free_energy()/self.v
+    def helmholtz_energy_density(self):
+        return self.specific_helmholtz_energy()/self.v
 
-    def specific_excess_free_energy(self):
+    def specific_residual_helmholtz_energy(self):
         if self.aE is not None:
             aE = self.aE
         elif self.v is not None:
@@ -286,11 +286,11 @@ class State(object):
             self.aE = aE
         return aE
 
-    def excess_free_energy_density(self):
-        return self.specific_excess_free_energy()/self.v
+    def residual_helmholtz_energy_density(self):
+        return self.specific_residual_helmholtz_energy()/self.v
 
-    def excess_free_energy(self):
-        _ = self.specific_excess_free_energy()
+    def residual_helmholtz_energy(self):
+        _ = self.specific_residual_helmholtz_energy()
         return self.aE*np.sum(self.n)
 
     def specific_energy(self):
@@ -309,7 +309,7 @@ class State(object):
     def energy_density(self):
         return self.specific_energy()/self.v
 
-    def specific_excess_energy(self):
+    def specific_residual_energy(self):
         if self.uE is not None:
             uE = self.uE
         elif self.v is not None:
@@ -318,12 +318,12 @@ class State(object):
             self.uE = uE
         return uE
 
-    def excess_energy(self):
-        _ = self.specific_excess_energy()
+    def residual_energy(self):
+        _ = self.specific_residual_energy()
         return self.uE*np.sum(self.n)
 
-    def excess_energy_density(self):
-        return self.specific_excess_energy()/self.v
+    def residual_energy_density(self):
+        return self.specific_residual_energy()/self.v
 
     def chemical_potential(self):
         if self.mu is not None:
@@ -334,7 +334,7 @@ class State(object):
             self.mu = mu
         return mu
 
-    def excess_chemical_potential(self):
+    def residual_chemical_potential(self):
         if self.muE is not None:
             muE = self.muE
         elif self.v is not None:
@@ -348,16 +348,16 @@ class Equilibrium(object):
     VLLSE phase equilibrium
     """
 
-    def __init__(self, vapor, liquid, liquid2=None, solid=None):
+    def __init__(self, vapour, liquid, liquid2=None, solid=None):
         """
         Create VLLE state
         """
-        self.vapor = vapor
+        self.vapour = vapour
         self.liquid = liquid
         self.liquid1 = self.liquid
         self.liquid2 = liquid2
         self.solid = solid
-        self.present_phase_list = [ {"state": vapor, "phase": "V"}, {"state": liquid, "phase": "L"}]
+        self.present_phase_list = [ {"state": vapour, "phase": "V"}, {"state": liquid, "phase": "L"}]
         if liquid2 is not None:
             self.present_phase_list.append({"state": liquid2, "phase": "L"})
         if solid is not None:
@@ -399,7 +399,7 @@ class Equilibrium(object):
             if phase in [eos.VAPPH, eos.TWOPH] else (None,)
         vl, = eos.specific_volume(T, p, x, eos.LIQPH) \
             if phase in [eos.LIQPH, eos.TWOPH] else (None,)
-        vapor = State(eos=eos, T=T, v=vg, n=y, p=p,
+        vapour = State(eos=eos, T=T, v=vg, n=y, p=p,
                       ph=eos.VAPPH, n_tot=betaV,
                       init_specific=True) \
             if phase in [eos.VAPPH, eos.TWOPH] else None
@@ -407,7 +407,7 @@ class Equilibrium(object):
                        ph=eos.LIQPH, n_tot=betaL,
                        init_specific=True) \
             if phase in [eos.LIQPH, eos.TWOPH] else None
-        return Equilibrium(vapor, liquid)
+        return Equilibrium(vapour, liquid)
 
     @staticmethod
     def bubble_pressure(eos, T, z):
@@ -424,11 +424,11 @@ class Equilibrium(object):
         p, y = eos.bubble_pressure(temp=T, z=z)
         vg, = eos.specific_volume(T, p, y, eos.VAPPH)
         vl, = eos.specific_volume(T, p, z, eos.LIQPH)
-        vapor = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
+        vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
                        init_specific=True)
-        return Equilibrium(vapor, liquid)
+        return Equilibrium(vapour, liquid)
 
     @staticmethod
     def bubble_temperature(eos, p, z):
@@ -445,23 +445,23 @@ class Equilibrium(object):
         T, y = eos.bubble_temperature(press=p, z=z)
         vg, = eos.specific_volume(T, p, y, eos.VAPPH)
         vl, = eos.specific_volume(T, p, z, eos.LIQPH)
-        vapor = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
+        vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
                        init_specific=True)
-        return Equilibrium(vapor, liquid)
+        return Equilibrium(vapour, liquid)
 
     @property
     def temperature(self):
-        return self.vapor.T if self.vapor else self.liquid.T
+        return self.vapour.T if self.vapour else self.liquid.T
 
     @property
     def pressure(self):
-        return self.vapor.pressure if self.vapor else self.liquid.pressure
+        return self.vapour.pressure if self.vapour else self.liquid.pressure
 
     @property
     def eos(self):
-        return self.vapor.eos if self.vapor else self.liquid.eos
+        return self.vapour.eos if self.vapour else self.liquid.eos
 
 class phase_state_list(object):
     """
@@ -525,11 +525,11 @@ class PhaseDiagram(object):
                                                                                log_linear_grid=False)
         vle_states = []
         for i in range(len(t_vals)):
-            vapor = State(eos=eos, T=t_vals[i], V=vg_vals[i], n=z, p=p_vals[i], n_tot=1.0,
+            vapour = State(eos=eos, T=t_vals[i], V=vg_vals[i], n=z, p=p_vals[i], n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=t_vals[i], V=vl_vals[i], n=z, p=p_vals[i], n_tot=1.0,
                            init_specific=True)
-            vle_states.append(Equilibrium(vapor, liquid))
+            vle_states.append(Equilibrium(vapour, liquid))
         return PhaseDiagram(vle_states)
 
     @staticmethod
@@ -556,11 +556,41 @@ class PhaseDiagram(object):
             vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
             xx = np.array([x[i], 1-x[i]])
             vl, = eos.specific_volume(T, p[i], xx, eos.LIQPH)
-            vapor = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
+            vapour = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
                            init_specific=True)
-            vle_states.append(Equilibrium(vapor, liquid))
+            vle_states.append(Equilibrium(vapour, liquid))
+        return PhaseDiagram(vle_states)
+
+    @staticmethod
+    def binary_isobar_vle(eos, pressure, minimum_temperature=0.0):
+        """Construct PhaseDiagram from binary vle isobar
+
+        Args:
+            eos (thermo.thermo): Equation of state object
+            Pressure (float): Pressure (Pa)
+            minimum_temperaturte (float, optional): Temperature (K). Defaults to 0.0.
+
+        Returns:
+            PhaseDiagram: Phase diagram
+        """
+        _, L1VE, _ = eos.get_binary_txy(pressure=pressure,
+                                        minimum_temperaturte=minimum_temperaturte,
+                                        maximum_dz=0.003,
+                                        maximum_dlns=0.01)
+        vle_states = []
+        x, y, p = L1VE
+        for i in range(len(x)):
+            yy = np.array([y[i], 1-y[i]])
+            vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
+            xx = np.array([x[i], 1-x[i]])
+            vl, = eos.specific_volume(T, p[i], xx, eos.LIQPH)
+            vapour = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
+                          init_specific=True)
+            liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
+                           init_specific=True)
+            vle_states.append(Equilibrium(vapour, liquid))
         return PhaseDiagram(vle_states)
 
     @property
@@ -569,15 +599,19 @@ class PhaseDiagram(object):
 
     @property
     def vapour(self):
-        return phase_state_list([vle.vapor for vle in self.vle_states])
+        return phase_state_list([vle.vapour for vle in self.vle_states])
 
     @property
     def temperatures(self):
-        return phase_state_list([vle.vapor for vle in self.vle_states]).temperatures
+        return phase_state_list([vle.vapour for vle in self.vle_states]).temperatures
 
     @property
     def pressures(self):
-        return phase_state_list([vle.vapor for vle in self.vle_states]).pressures
+        return phase_state_list([vle.vapour for vle in self.vle_states]).pressures
+
+    @property
+    def specific_volumes(self):
+        return phase_state_list([vle.vapour for vle in self.vle_states]).specific_volumes
 
 class MetaCurve(object):
     """
@@ -619,11 +653,11 @@ class MetaCurve(object):
                 vl = 1.0/np.sum(rho[i,:])
                 y = z
                 x = rho[i,:]*vl
-            vapor = State(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
+            vapour = State(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T, V=vl, n=x, n_tot=1.0,
                            init_specific=True)
-            meta_states.append(Equilibrium(vapor, liquid))
+            meta_states.append(Equilibrium(vapour, liquid))
         return MetaCurve(meta_states)
 
     @property
@@ -632,12 +666,16 @@ class MetaCurve(object):
 
     @property
     def vapour(self):
-        return phase_state_list([meta.vapor for meta in self.meta_states])
+        return phase_state_list([meta.vapour for meta in self.meta_states])
 
     @property
     def temperatures(self):
-        return phase_state_list([meta.vapor for meta in self.meta_states]).temperatures
+        return phase_state_list([meta.vapour for meta in self.meta_states]).temperatures
 
     @property
     def pressures(self):
-        return phase_state_list([meta.vapor for meta in self.meta_states]).pressures
+        return phase_state_list([meta.vapour for meta in self.meta_states]).pressures
+
+    @property
+    def specific_volumes(self):
+        return phase_state_list([meta.vapour for meta in self.meta_states]).specific_volumes
