@@ -4016,7 +4016,7 @@ class thermo(object):
 
         return np.array(temp_c), np.array(vol_c), np.array(press_c)
 
-    def solve_mu_t(self, temp, mu, rho_initial):
+    def density_mu_t(self, temp, mu, rho_initial):
         """Stability interface
         Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 
@@ -4050,7 +4050,7 @@ class thermo(object):
 
         return np.array(rho_c)
 
-    def solve_lnf_t(self, temp, lnf, rho_initial):
+    def density_lnf_t(self, temp, lnf, rho_initial):
         """Stability interface
         Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
 
