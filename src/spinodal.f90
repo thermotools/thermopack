@@ -167,7 +167,7 @@ contains
   end subroutine stabFunT
 
   !--------------------------------------------------------------------------
-  !> Differentials of b wrpt. v
+  !> Differentials of minimum eigenvalue (b) wrpt. v
   !>
   !> \author MH, 2023-04
   !--------------------------------------------------------------------------
@@ -265,13 +265,7 @@ contains
     else
       T = TsatPure + 0.1
     endif
-    call nestedLoopVT(P,z,T,v,phase,ierr)
-    if (ierr /= 0 .and. phase == LIQPH) then
-      Pcpy = P
-      call PureSat(TsatPure,Pcpy,Z,.true.)
-      T = TsatPure + 0.1
-      call liquidNestedLoopVT(P,z,T,v,ierr,Tmin)
-    end if
+    call nestedLoopVT(P,z,T,v,phase,ierr,Tmin)
   end subroutine initialStablimitPointMC
 
   !--------------------------------------------------------------------------
@@ -279,7 +273,7 @@ contains
   !>
   !> \author MH, 2016-02
   !--------------------------------------------------------------------------
-  subroutine liquidNestedLoopVT(p0,z,T,v,ierr,Tmin)
+  subroutine nestedLoopVT(p0,z,T,v,phase,ierr,Tmin)
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver, &
          NS_PEGASUS
     implicit none
@@ -287,6 +281,7 @@ contains
     real, intent(in) :: p0 !< Pressure [Pa]
     real, intent(inout) :: T !< Temperature
     real, intent(inout) :: v !< Specific volume [m3/mol]
+    integer, intent(in) :: phase !< Phase flag
     integer, intent(out) :: ierr !< Error message
     real, optional, intent(in) :: Tmin
     !
@@ -298,7 +293,7 @@ contains
     integer, parameter :: nIterMax = 1000
     ierr = 0
     ! Start by findign dpdv = 0
-    call initialStablimitPointSingleComp(p0,T,z,v,LIQPH,ierr)
+    call initialStablimitPointSingleComp(p0,T,z,v,phase,ierr)
     if (ierr /= 0) then
       ierr = 20
       return
@@ -347,6 +342,7 @@ contains
       else
         sgn = -1.0 ! Decrease pressure
       endif
+
       i = 1
       do while ((pn-p0)*(p-p0) > 0.0)
         deltav = exp(log(v) + sgn*dlnv) - v
@@ -360,6 +356,9 @@ contains
           ! Try reducing dlnv
           dlnv = max(0.5*dlnv,1.0e-4)
           deltav = exp(log(vn) + sgn*dlnv) - vn
+          T = Tn
+          v = vn
+          call extrapolateStablimit(v,deltav,Z,T,deltaT)
           v = vn + deltav
           T = Tn + deltaT
           call solveStabLimitTV(T,v,Z,ierr)
@@ -396,99 +395,6 @@ contains
         ierr = 21
         return
       endif
-    endif
-  end subroutine liquidNestedLoopVT
-
-  !--------------------------------------------------------------------------
-  !> Solve for single point (pressure) on stability limit
-  !>
-  !> \author MH, 2016-02
-  !--------------------------------------------------------------------------
-  subroutine nestedLoopVT(p0,z,T,v,phase,ierr)
-    use nonlinear_solvers, only: nonlinear_solver, bracketing_solver, &
-         NS_PEGASUS
-    implicit none
-    real, dimension(nc), intent(in) :: z !< Overall compozition
-    real, intent(in) :: p0 !< Pressure [Pa]
-    real, intent(inout) :: T !< Temperature
-    real, intent(inout) :: v !< Specific volume [m3/mol]
-    integer, intent(in) :: phase !< Phase flag
-    integer, intent(out) :: ierr !< Error message
-    !
-    ! Local
-    type(nonlinear_solver) :: solver
-    real :: param(nc+4) !< Paramaters to be passed to stabFunT
-    real :: deltav, deltaT, sgn, pn, p, vn, Tn, vm
-    integer :: i
-    integer, parameter :: nIterMax = 1000
-    ierr = 0
-    ! Start by findign dpdv = 0
-    call initialStablimitPointSingleComp(p0,T,z,v,phase,ierr)
-    if (ierr /= 0) then
-      ierr = 20
-      return
-    endif
-    ! Refine temperature to find stability limit
-    call solveStabLimitTV(T,v,Z,ierr)
-    if (ierr /= 0) then
-      ierr = 21
-      return
-    endif
-    pn = pressure(T,v,z)
-    p = pn
-    if (p < p0) then
-      sgn = 1.0 ! Increase pressure
-    else
-      sgn = -1.0 ! Decrease pressure
-    endif
-
-    i = 1
-    do while ((pn-p0)*(p-p0) > 0.0)
-      deltav = 1e-4
-      call extrapolateStablimit(v,deltav,Z,T,deltaT)
-      Tn = T
-      vn = v
-      v = vn + deltav
-      T = Tn + deltaT
-      call solveStabLimitTV(T,v,Z,ierr)
-      if (ierr /= 0) then
-        ! Try reducing deltav
-        deltav = 0.5*deltav
-        v = vn + deltav
-        T = Tn + deltaT
-        call solveStabLimitTV(T,v,Z,ierr)
-        if (ierr /= 0) then
-          ierr = 21
-          return
-        endif
-      endif
-      pn = p
-      p = pressure(t,v,Z)
-      if (i > nIterMax) then ! Infinite loop protection
-        ierr = 23
-        return
-      endif
-    end do
-    param(1:nc) = z
-    param(nc+1) = Tn
-    param(nc+2) = vn
-    param(nc+3) = deltaT/deltav ! Extrapolation
-    param(nc+4) = p0
-    solver%abs_tol = 1.0e-7
-    solver%isolver = NS_PEGASUS
-    vm = v
-    call bracketing_solver(vn,vm,stabfunV,v,solver,param)
-    ierr = solver%exitflag
-    if (ierr /= 0) then
-      ierr = 22
-      return
-    endif
-    ! Calculate temperature:
-    T = Tn + param(nc+3)*(v-vn)
-    call solveStabLimitTV(T,v,Z,ierr)
-    if (ierr /= 0) then
-      ierr = 21
-      return
     endif
   end subroutine nestedLoopVT
 
@@ -613,7 +519,7 @@ contains
   end function stabfunV
 
   !--------------------------------------------------------------------------
-  !> Pressure error function in variables v, T(v)
+  !> Pressure error function in variables v, T(v). Pure fluid case.
   !> \author MH, 2016-01
   !--------------------------------------------------------------------------
   function stabfunVsingle(T,param) result(f)
