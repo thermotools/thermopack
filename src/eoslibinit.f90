@@ -73,7 +73,7 @@ contains
   subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
        liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
        saft_ref,b_exponent,cptype,silent)
-    use thermopack_constants, only: clen, THERMOPACK
+    use thermopack_constants, only: clen
     use cbselect,   only: SelectCubicEOS
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
@@ -94,7 +94,6 @@ contains
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
     integer :: ncomp !< Number of components
-    character(len=clen) :: message
     integer             :: i, ierr, index
     type(thermo_model), pointer :: act_mod_ptr
     if (present(silent)) then
@@ -147,19 +146,12 @@ contains
       enddo
     endif
 
-    ! Initialize the selected EoS-library
-    select case (act_mod_ptr%eosLib)
-    case (THERMOPACK)
-      ! Initialize Thermopack
-      call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
-           trim(uppercase(alpha)), &
-           nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
-           kij_ref,Alpha_ref,saft_ref,&
-           b_exponent)
-    case default
-      write(message,*) 'Wrong EoS library'
-      call stoperror(trim(message))
-    end select
+    ! Initialize Thermopack
+    call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
+         trim(uppercase(alpha)), &
+         nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
+         kij_ref,Alpha_ref,saft_ref,&
+         b_exponent)
 
     call init_fallback_and_redefine_criticals(silent_init)
   end subroutine init_thermo
@@ -168,7 +160,6 @@ contains
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
   subroutine init_fallback_and_redefine_criticals(silent)
-    use thermopack_constants, only: THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
@@ -178,7 +169,7 @@ contains
     logical, intent(in) :: silent !< Option to disable init messages.
     ! Locals
     integer             :: i
-    real                :: Tci, Pci, oi, rhocrit
+    real                :: Tci, Pci, rhocrit
     logical             :: redefine_critical
     type(thermo_model), pointer :: act_mod_ptr
     !
@@ -220,7 +211,7 @@ contains
            act_mod_ptr%cubic_eos_alternative(1)%p_eos
     enddo
 
-    if (act_mod_ptr%EoSLib == THERMOPACK .and. redefine_critical) then
+    if (redefine_critical) then
       call redefine_critical_parameters(silent)
     endif
   end subroutine init_fallback_and_redefine_criticals
@@ -232,7 +223,6 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK
     use eos_container, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
@@ -276,9 +266,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifier
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variables inputs that are optional
     mixing_loc = "vdW"
@@ -378,7 +365,7 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use eos_container, only: allocate_eos
     use extcsp, only: extcsp_eos, csp_init
@@ -425,9 +412,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_ref)) then
@@ -564,7 +548,7 @@ contains
        b_exponent)
     use eosdata, only: isSAFTEOS
     use stringmod, only: str_eq
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use thermopack_var, only: nce, nc, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
     use extcsp, only: csp_init, extcsp_eos
@@ -694,7 +678,7 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nce, complist
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -726,8 +710,6 @@ contains
     act_mod_ptr%nc = ncomp
     nce = ncomp
     complist => act_mod_ptr%complist
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
@@ -811,7 +793,7 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -863,9 +845,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -900,7 +879,6 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: eos    !< Equation of state
@@ -942,9 +920,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -980,7 +955,7 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -1016,9 +991,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -1048,7 +1020,6 @@ contains
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
     use eos_parameters, only: single_eos, get_single_eos_pointer
     use multiparameter_base, only: REF_NO_SOLVE, REF_EVALUATE_ID, &
@@ -1100,9 +1071,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
     call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
@@ -1163,7 +1131,7 @@ contains
     use compdata, only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -1201,9 +1169,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
@@ -1265,7 +1230,7 @@ contains
   subroutine init_lj_ljs(potential,model,parameter_reference)
     use compdata, only: SelectComp, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -1313,9 +1278,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then

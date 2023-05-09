@@ -1028,7 +1028,6 @@ contains
   !----------------------------------------------------------------------
   subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1045,15 +1044,8 @@ contains
     s = 0.0
     h = 0.0
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      h = Hideal_apparent(act_mod_ptr%comps,j,T)
-      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
-    case default
-      write(*,*) 'EosLib error in ideal::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    h = Hideal_apparent(act_mod_ptr%comps,j,T)
+    call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
     g = h - T*s
     if (present(dgdt)) then
       dgdt = -s
@@ -1071,7 +1063,6 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nc
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1089,14 +1080,7 @@ contains
     z(j) = 1.0
     s = 0.0
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
-    case default
-      write(*,*) 'EoSlib error in ideal::idealEntropySingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
     if (present(dsdp)) then
       dsdp=-Rgas/P
     end if
@@ -1110,7 +1094,6 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEnthalpySingle(t,j,h,dhdt)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1122,17 +1105,10 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      ! Thermopack
-      h = Hideal_apparent(act_mod_ptr%comps,j,T)
-      if (present(dhdt)) then
-        dhdt = CPideal_apparent(act_mod_ptr%comps, j, T)
-      endif
-    case default
-      write(*,*) 'EoSlib error in ideal::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    h = Hideal_apparent(act_mod_ptr%comps,j,T)
+    if (present(dhdt)) then
+      dhdt = CPideal_apparent(act_mod_ptr%comps, j, T)
+    endif
   end subroutine idealEnthalpySingle
 
   !----------------------------------------------------------------------
@@ -1143,7 +1119,6 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropy_ne(t,p,n,s,dsdt,dsdp,dsdn)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nce
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     real, intent(in) :: t                    !< K - Temperature
@@ -1158,14 +1133,8 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
-           dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
-    case default
-      write(*,*) 'EoSlib error in ideal::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
+         dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
   end subroutine idealEntropy_ne
 
   !----------------------------------------------------------------------
@@ -1176,7 +1145,6 @@ contains
   !----------------------------------------------------------------------
   subroutine set_entropy_reference_value(i,s0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1186,13 +1154,7 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      act_mod_ptr%comps(i)%p_comp%sref = s0
-    case default
-      write(*,*) 'EoSlib error in ideal::set_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    act_mod_ptr%comps(i)%p_comp%sref = s0
   end subroutine set_entropy_reference_value
 
   !----------------------------------------------------------------------
@@ -1203,7 +1165,6 @@ contains
   !----------------------------------------------------------------------
   subroutine get_entropy_reference_value(i,s0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1213,13 +1174,7 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      s0 = act_mod_ptr%comps(i)%p_comp%sref
-    case default
-      write(*,*) 'EoSlib error in ideal::get_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    s0 = act_mod_ptr%comps(i)%p_comp%sref
   end subroutine get_entropy_reference_value
 
   !----------------------------------------------------------------------
@@ -1230,7 +1185,6 @@ contains
   !----------------------------------------------------------------------
   subroutine set_enthalpy_reference_value(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1240,13 +1194,7 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      act_mod_ptr%comps(i)%p_comp%href = h0
-    case default
-      write(*,*) 'EoSlib error in ideal::set_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    act_mod_ptr%comps(i)%p_comp%href = h0
   end subroutine set_enthalpy_reference_value
 
   !----------------------------------------------------------------------
@@ -1257,7 +1205,6 @@ contains
   !----------------------------------------------------------------------
   subroutine get_enthalpy_reference_value(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1267,13 +1214,7 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      h0 = act_mod_ptr%comps(i)%p_comp%href
-    case default
-      write(*,*) 'EoSlib error in ideal::get_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    h0 = act_mod_ptr%comps(i)%p_comp%href
   end subroutine get_enthalpy_reference_value
 
   !---------------------------------------------------------------------- >

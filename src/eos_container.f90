@@ -165,7 +165,6 @@ contains
     ! Locals
     eos_c1%nph = eos_c2%nph
     eos_c1%nc = eos_c2%nc
-    eos_c1%EoSlib = eos_c2%EoSlib
     eos_c1%label = eos_c2%label
 
     eos_c1%Rgas = eos_c2%Rgas

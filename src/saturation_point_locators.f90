@@ -840,11 +840,7 @@ contains
     ! Output
     real, intent(out) :: t_c,v_c,p_c,s_c,h_c,lnv_c,crit_prop
     ! Locals
-    integer :: nenv, ierr
-    integer, parameter :: n_max = 500
-    real :: Ta(n_max), pa(n_max), Ki(n_max,nc)
-    real :: betai(n_max)
-    real :: crit(2)
+    integer :: ierr
     type(thermo_model), pointer :: act_mod_ptr
 
     act_mod_ptr => get_active_thermo_model()

@@ -1358,7 +1358,7 @@ contains
     ! Locals
     real, dimension(nc) :: x, w, y, tci, pci, oi, Tbub, Pbub
     real, dimension(nc, nc) :: z
-    real :: Pmax, Tmin, Tmax, P1, P2
+    real :: Tmin, Tmax, P1, P2
     real, parameter :: safetyDt = 1.0e-4
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat
