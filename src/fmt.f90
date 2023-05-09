@@ -6,8 +6,7 @@ module fundamental_measure_theory
   integer, parameter :: FMT_ROSENFELD=1, FMT_WB=2, FMT_WBII=3
 
   public :: fmt_energy_density
-  ! Testing only:
-  public :: test_fmt
+  public :: FMT_ROSENFELD, FMT_WB, FMT_WBII
 
 contains
 
@@ -147,35 +146,5 @@ contains
          (1.0D0 + phi2_div3) / n3neg + (nw(2)**3 - 3*nw(2) * nw(5)**2) * &
          (1.0D0 - phi3_div3) / (24*pi*n3neg**2)
   end function wbII_fmt
-
-  subroutine test_fmt(fmt_model)
-    !
-    integer, intent(in) :: fmt_model
-    ! Locals
-    integer, parameter :: n_grid=1, nv=6
-    real :: nw(n_grid, nv), nw0(n_grid, nv)
-    real :: phi(n_grid), phi_pm(n_grid), phi_pp(n_grid)
-    real :: phi_n(n_grid,nv), phi_n_pm(n_grid,nv), phi_n_pp(n_grid,nv)
-    real :: phi_nn(n_grid,nv,nv)
-    real :: eps = 1.0e-5, dn
-    real, parameter :: phi_ref(3) = (/0.02120926003404677, 0.021037042277793582, 0.021048705586168167/)
-    integer :: i
-    nw0(1,:) = (/ 0.013023390121386327, 0.0222485871456107, 0.4776290003040184, &
-         0.2797390690655379, 0.0035959306386384605, 0.07719684602239196 /) ! Dummy weighted densities
-    nw = nw0
-    call fmt_energy_density(fmt_model,n_grid,nv,nw,phi,phi_n,phi_nn)
-    print *,"phi",phi,phi_ref(fmt_model)
-    do i=1,nv
-      nw = nw0
-      dn = eps*nw(1,i)
-      nw(1,i) = nw(1,i) - dn
-      call fmt_energy_density(fmt_model,n_grid,nv,nw,phi_pm,phi_n_pm)
-      nw(1,i) = nw0(1,i) + dn
-      call fmt_energy_density(fmt_model,n_grid,nv,nw,phi_pp,phi_n_pp)
-      print *,"phi_n",phi_n(:,i), (phi_pp - phi_pm)/(2*dn)
-      print *,"phi_nn",phi_nn(:,i,:)
-      print *,"phi_nn",(phi_n_pp(:,:) - phi_n_pm(:,:))/(2*dn)
-    enddo
-  end subroutine test_fmt
 
 end module fundamental_measure_theory
