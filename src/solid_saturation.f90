@@ -3,11 +3,9 @@ module solid_saturation
   use saturation_curve
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, SOLIDPH, verbose
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpTmin, tpTmax, tpPmin, tpPmax
   use nonlinear_solvers
-  !use nonlinear_solvers
-  !use numconstants, only: machine_prec
-  !use puresaturation, only: puresat
   implicit none
   private
   save
@@ -28,6 +26,8 @@ module solid_saturation
   public :: newton_extrapolate_solid, tripleAreaEdge
   public :: newton_extrapolate_threePh
   public :: solidEnvelopePlotSingle
+  public :: sublimation_pressure_correlation
+  public :: melting_pressure_correlation
 
 contains
 
@@ -98,7 +98,6 @@ contains
   !> \author MH, 2016-02
   !-----------------------------------------------------------------------------
   subroutine sat_fun_newton_threePh(G,Xvar,param)
-    use thermopack_constants, only: tpPmax,tpPmin
     use solideos, only: solid_thermo
     implicit none
     real, dimension(nc+3), intent(out) :: G !< Function values
@@ -327,7 +326,6 @@ contains
        mode,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, dimension(nc), intent(inout) :: K !< Equilibrium constants
@@ -379,7 +377,8 @@ contains
     Xvar(1:nc) = log(K)
     Xvar(nc+1) = log(t)
     Xvar(nc+2) = log(p)
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1:nc) = -1.0e100
     Xmax(1:nc) = 1.0e100
     Xmin(nc+1) = log(Tmin) !Tmin
@@ -687,7 +686,6 @@ contains
        ln_spec,ierr) result (iter)
     use nonlinear_solvers, only: nonlinear_solver,limit_dx,premReturn,setXv, &
          nonlinear_solve
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z !< Overall composition
     real, intent(inout) :: t !< Temperature
@@ -720,7 +718,8 @@ contains
     param(nc+4) = real(is)
     param(nc+5) = real(fluidPhase)
 
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     Xmin(1) = log(Tmin) !Tmin
     Xmax(1) = log(Tmax) !Tmax
     Xmin(2) = log(tpPmin) !Pmin
@@ -1540,7 +1539,6 @@ contains
   !> \author MH, 2016-03
   !-----------------------------------------------------------------------------
   subroutine solidFluidEqSingleComp(Z,Y,X,t,p,specification,phase,ierr,dTdP)
-    use thermopack_constants, only: tpTmin, tpTmax, tpPmin, tpPmax
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
     real, dimension(nc), intent(in) :: Z     ! Total composition
@@ -2237,6 +2235,239 @@ contains
       call solidFluidEqSingleComp(Z,Y,X,TaFus(i),PaFus(i),specP,LIQPH,ierr=ierr,dTdP=dTdP)
     enddo
   end subroutine solidEnvelopePlotSingle
+
+  !-----------------------------------------------------------------------------
+  !> Use correlations to calculate sublipation pressure
+  !>
+  !> \author Morten Hammer, 2023-04
+  !-----------------------------------------------------------------------------
+  subroutine sublimation_pressure_correlation(T_min,icomp,scale_to_eos,nmax,T_sub,p_sub,ierr)
+    use thermopack_var, only: nce, complist
+    use solid_correlation_datadb, only: n_sublimation_curves, sublimation_corr_array
+    use stringmod, only: str_eq
+    implicit none
+    ! Input:
+    real,              intent(in)  :: T_min        ! Minimun temperatures (K)
+    integer,           intent(in)  :: icomp        ! Component index
+    integer,           intent(in)  :: nmax         ! Number of entries
+    logical,           intent(in)  :: scale_to_eos ! Scale triple pressure to match current eos?
+    real,              intent(out) :: T_sub(nmax)  ! Sublimation temperatures (K)
+    real,              intent(out) :: p_sub(nmax)  ! Sublimation pressures (Pa)
+    integer,           intent(out) :: ierr         ! Error flag
+    ! Internal:
+    integer :: i, i_comp, n_coeff
+    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr
+    real :: T_min_local, reducing_temperature, reducing_pressure
+    T_sub = 0
+    p_sub = 0
+    ierr = 0
+    i_comp = -1
+    do i=1,n_sublimation_curves
+      if (str_eq(complist(icomp), sublimation_corr_array(i)%compName)) then
+        i_comp = i
+        exit
+      endif
+    enddo
+    if (i_comp < 0) return
+    !
+    T_triple = sublimation_corr_array(i_comp)%triple_temperature
+    n_coeff = sublimation_corr_array(i_comp)%n_coeff
+    reducing_pressure = sublimation_corr_array(i_comp)%reducing_pressure
+    reducing_temperature = sublimation_corr_array(i_comp)%reducing_temperature
+    T_min_local = max(min(T_min,0.9*T_triple), sublimation_corr_array(i_comp)%minimum_temperature)
+
+    if (scale_to_eos) then
+      z = 0
+      z(icomp) = 1
+      p_triple = safe_bubP(T_triple, z, y, ierr)
+      if (ierr /= 0) return
+      call sublimation_pressure(T_triple,p_triple_corr)
+      reducing_pressure = reducing_pressure*p_triple/p_triple_corr
+    endif
+
+    do i=1,nmax
+      T_sub(i) = T_min_local + (T_triple-T_min_local)*real(i-1)/real(nmax-1)
+      call sublimation_pressure(T_sub(i),p_sub(i))
+    enddo
+
+  contains
+    subroutine sublimation_pressure(Ts,ps)
+      ! Input:
+      real,              intent(in)  :: Ts  ! Sublimation temperatures (K)
+      real,              intent(out) :: ps  ! Sublimation pressures (Pa)
+      ! Internal:
+      integer :: j, k
+      real :: t_red, sum
+
+      t_red = Ts/reducing_temperature
+      sum = 0
+      j = 0
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_1
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             t_red**sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_2
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             (1-t_red)**sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff_3
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*log(t_red)**&
+             sublimation_corr_array(i_comp)%exponents(j)
+      enddo
+
+      do k=1,sublimation_corr_array(i_comp)%n_coeff&
+           - sublimation_corr_array(i_comp)%n_coeff_1&
+           - sublimation_corr_array(i_comp)%n_coeff_2&
+           - sublimation_corr_array(i_comp)%n_coeff_3
+        j = j + 1
+        sum = sum + sublimation_corr_array(i_comp)%coeff(j)*&
+             (t_red**sublimation_corr_array(i_comp)%exponents(j)-1)
+      enddo
+
+      select case(sublimation_corr_array(i_comp)%correlation(4:4))
+      case("1")
+        ! sum
+      case("2")
+        sum = exp(sum)
+      case("3")
+        sum = exp(sum/t_red)
+      case default
+        call stoperror("sublimation_pressure_correlation: Wrong correlation")
+      end select
+      ps = reducing_pressure*sum
+
+    end subroutine sublimation_pressure
+  end subroutine sublimation_pressure_correlation
+
+  !-----------------------------------------------------------------------------
+  !> Use correlations to calculate melting pressure
+  !>
+  !> \author Morten Hammer, 2023-04
+  !-----------------------------------------------------------------------------
+  subroutine melting_pressure_correlation(T_max,icomp,scale_to_eos,nmax,T_melt,p_melt,ierr)
+    use thermopack_var, only: nce, complist
+    use solid_correlation_datadb, only: n_melting_curves, melting_corr_array
+    use stringmod, only: str_eq
+    implicit none
+    ! Input:
+    real,              intent(in)  :: T_max        ! Maximum temperatures (K)
+    integer,           intent(in)  :: icomp        ! Component index
+    integer,           intent(in)  :: nmax         ! Number of entries
+    logical,           intent(in)  :: scale_to_eos ! Scale triple pressure to match current eos?
+    real,              intent(out) :: T_melt(nmax) ! Melting temperatures (K)
+    real,              intent(out) :: p_melt(nmax) ! Melting pressure (Pa)
+    integer,           intent(out) :: ierr         ! Error flag
+    ! Internal:
+    integer :: i, i_comp, n_coeff
+    real :: t_triple, p_triple, z(nce), y(nce), p_triple_corr
+    real :: T_max_local, reducing_temperature, reducing_pressure
+    T_melt = 0
+    p_melt = 0
+    ierr = 0
+    i_comp = -1
+    do i=1,n_melting_curves
+      if (str_eq(complist(icomp), melting_corr_array(i)%compName)) then
+        i_comp = i
+        exit
+      endif
+    enddo
+    if (i_comp < 0) return
+    !
+    T_triple = melting_corr_array(i_comp)%triple_temperature
+    n_coeff = melting_corr_array(i_comp)%n_coeff
+    reducing_pressure = melting_corr_array(i_comp)%reducing_pressure
+    p_triple = reducing_pressure
+    reducing_temperature = melting_corr_array(i_comp)%reducing_temperature
+    T_max_local = min(max(T_max,1.1*T_triple), melting_corr_array(i_comp)%maximum_temperature)
+    if (scale_to_eos) then
+      z = 0
+      z(icomp) = 1
+      p_triple = safe_bubP(t_triple, z, y, ierr)
+      if (ierr /= 0) return
+      call melting_pressure(t_triple,p_triple_corr)
+      reducing_pressure = reducing_pressure*p_triple/p_triple_corr
+    endif
+
+    do i=1,nmax
+      T_melt(i) = T_triple + (T_max_local - T_triple)*real(i-1)/real(nmax-1)
+      call melting_pressure(T_melt(i),p_melt(i))
+    enddo
+  contains
+    subroutine melting_pressure(Tm,pm)
+      ! Input:
+      real,              intent(in)  :: Tm  ! Melting temperatures (K)
+      real,              intent(out) :: pm  ! Melting pressures (Pa)
+      ! Internal:
+      integer :: j, k
+      real :: t_red, sum
+
+      t_red = Tm/reducing_temperature
+      select case(melting_corr_array(i_comp)%correlation(1:2))
+      case("ML")
+        sum = 0
+        j = 0
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_1
+         j = j + 1
+         sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+              t_red**melting_corr_array(i_comp)%exponents(j)
+        enddo
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_2
+          j = j + 1
+          sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+               (t_red-1)**melting_corr_array(i_comp)%exponents(j)
+        enddo
+
+        do k=1,melting_corr_array(i_comp)%n_coeff_3
+          j = j + 1
+          sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+               log(t_red)**melting_corr_array(i_comp)%exponents(j)
+        enddo
+
+        do k=1,melting_corr_array(i_comp)%n_coeff &
+             - melting_corr_array(i_comp)%n_coeff_1 &
+             - melting_corr_array(i_comp)%n_coeff_2 &
+             - melting_corr_array(i_comp)%n_coeff_3
+          j = j + 1
+          sum = sum + melting_corr_array(i_comp)%coeff(j)*&
+               (t_red**melting_corr_array(i_comp)%exponents(j)-1)
+        enddo
+
+      case("MP")
+        ! Split at 22K - high temp first
+        if (Tm > 22.0) then
+          sum = melting_corr_array(i_comp)%coeff(1) + &
+               melting_corr_array(i_comp)%coeff(2)*Tm**melting_corr_array(i_comp)%exponents(2)
+        else
+          sum = melting_corr_array(i_comp)%coeff(3) + &
+               melting_corr_array(i_comp)%coeff(4)*Tm**melting_corr_array(i_comp)%exponents(4)
+        endif
+      case default
+        call stoperror("melting_pressure_correlation: Wrong correlation")
+      end select
+
+      select case(melting_corr_array(i_comp)%correlation(4:4))
+      case("1")
+        ! sum
+      case("2")
+        sum = exp(sum)
+      case("3")
+        sum = exp(sum/t_red)
+      case default
+        call stoperror("melting_pressure_correlation: Wrong correlation")
+      end select
+      pm = reducing_pressure*sum
+
+    end subroutine melting_pressure
+
+  end subroutine melting_pressure_correlation
 
 
 end module solid_saturation

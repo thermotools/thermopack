@@ -10,6 +10,7 @@
 
 module cubic
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH
+  use thermopack_var, only: kRgas
   implicit none
   save
 
@@ -25,7 +26,6 @@ module cubic
 contains
 
   subroutine cbCalcDerivatives(nc,cbeos,T,p,Zfac)
-    use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
     implicit none
     integer, intent(in) :: nc
@@ -39,7 +39,6 @@ contains
 
   ! Calculate derivatives given temperature [K] and specific volume [L/mol].
   subroutine cbCalcDerivatives_svol(nc,cbeos,T,v)
-    use thermopack_constants, only: kRgas
     use eosdata
     use cubic_eos, only: cb_eos
     implicit none
@@ -742,7 +741,6 @@ contains
   !! if argum <= 0; The cubic equation will only have one root.
   !!
   subroutine cbCalcZfac(nc,cbeos,T,p,z,iphase,zfac,gflag_opt,dZdt,dZdp,dZdz,minGphase)
-    use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
     use cbmix, only: cbCalcMixtureParams
     implicit none
@@ -909,7 +907,6 @@ contains
   !!
   !!
   subroutine cbCalcZfacDiff(nc,cbeos,T,p,zfac,dZdt,dZdp,dZdz)
-    use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
     use cbHelm, only: cbPi,cbPrst
     implicit none
@@ -957,7 +954,6 @@ contains
   !! \param dgrdp - The residual Gibbs free energy pressure differential
   !!
   subroutine cbGres(cbeos, T, p, zfac, gr, dgrdt, dgrdp)
-    use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
     use cbHelm, only: cbFt
     implicit none
@@ -1031,7 +1027,6 @@ contains
   !! \author Oivind Wilhelmsen
   !! \date 2012-06-14
   subroutine cbCalcPseudo(nc,cbeos,Z,Tpc,Ppc,Zpc,Vpc)
-    use thermopack_constants, only: kRgas
     use eosdata
     use cubic_eos, only: cb_eos
     use cbmix, only: cbCalcMixtureParams
@@ -1143,7 +1138,6 @@ contains
 !! ":"-delimited text-output with all data from the current EOS
 !!
   subroutine cbDumpEosData(nc,cbeos,T, P, zfac)
-    use thermopack_constants, only: kRgas
     use cubic_eos, only: cb_eos
     use cbHelm, only: cbFi, cbFit
     implicit none

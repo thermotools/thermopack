@@ -18,7 +18,7 @@ module extcsp
   use multiparameter_c3, only: meos_C3
   use stringmod, only: str_eq
   use multiparameter_base, only: meos
-  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc
+  use thermopack_var, only: base_eos_param, get_active_eos, base_eos_dealloc, kRgas, Rgas
   implicit none
   private
   save
@@ -94,7 +94,6 @@ contains
   subroutine csp_init(eos,nce,comps,refcomp_str,shEos,shMixRule,shAlpha,&
     refEos,refAlpha,parameter_ref) ! The input consists entirely of strings.
     use cbselect, only: SelectCubicEOS, SelectMixingRules
-    use thermopack_constants, only: kRgas
     use mbwr, only: initializeMBWRmodel
     use eosdata
     use compdata, only: SelectComp
@@ -660,7 +659,6 @@ contains
   !-----------------------------------------------------------------------------
   subroutine csp_Zfac(eos,T,P,n,phase,zFac,dZdt,dZdp,dZdz)
     use thermopack_var, only: nce
-    use thermopack_constants, only: Rgas, kRgas
     implicit none
     class(extcsp_eos), intent(inout) :: eos !< CSP eos
     real, intent(in) :: P !< Volume shape factor [mol]
@@ -715,7 +713,6 @@ contains
   !-----------------------------------------------------------------------------
   subroutine calcRefEqDiff(eos,T0,v0,sdiff)
     use cubic, only: cbCalcDerivatives_svol
-    use thermopack_constants, only: Rgas
     use mbwr_additional, only: alphar_derivatives
     use cbHelm
     implicit none
@@ -791,7 +788,6 @@ contains
   function solveRefEqZfac(eos,T0,P0,phase) result(zFac)
     use cubic
     use mbwr_additional, only: mbwr_volume
-    use thermopack_constants, only: Rgas
     implicit none
     !input
     class(extcsp_eos), intent(inout) :: eos !< CSP eos
@@ -880,7 +876,6 @@ contains
     interface
       subroutine StateFunction(eos,T,P,n,phase,G,dGdt,dGdp,dGdn)
         use thermopack_var, only: nce
-        use thermopack_constants, only: Rgas
         import extcsp_eos
         implicit none
         class(extcsp_eos), intent(inout) :: eos !< CSP eos
@@ -950,7 +945,6 @@ contains
   !> \author MH, 2013-12-01
   !-----------------------------------------------------------------------------
   subroutine calcCombinedDiff(T0,v0,n,sdiff)
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce
     implicit none
     real, intent(in) :: v0 !< Reference fluid specific volume [l/mol]
@@ -1047,7 +1041,6 @@ contains
   !> \author Ailo A, 2014-12-04
   !-----------------------------------------------------------------------------
   subroutine test_shape_factors(nce,T,P,n,phase)
-    use thermopack_constants, only: Rgas, kRgas
     use cubic, only: cbCalcPressure
     use thermopack_var, only: get_active_eos, base_eos_param
     implicit none

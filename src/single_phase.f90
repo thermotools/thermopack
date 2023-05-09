@@ -1,4 +1,5 @@
 module single_phase
+  use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL, PROP_OVERALL
   implicit none
   save
 
@@ -8,9 +9,10 @@ module single_phase
   real, parameter :: delta_Ni = 1.0D-6
 
   public :: TP_CalcMw, TP_CalcZfac, TP_CalcEnthalpy, TP_CalcEntropy
-  public :: TP_CalcFugacity, TV_CalcInnerEnergy, TP_CalcGibbs, TV_CalcPressure
-  public :: TP_CalcPseudo, TV_CalcFreeEnergy, TV_CalcFres, TV_CalcFid
-  public :: TV_CalcFugacity, TV_CalcEntropy
+  public :: TP_CalcFugacity, TP_CalcGibbs
+  public :: TP_CalcPseudo, TV_CalcFres, TV_CalcFid
+  public :: TV_CalcFugacity
+
 contains
   !---------------------------------------------------------------------- >
   !> The function returns the moleweight of a mixture
@@ -60,7 +62,7 @@ contains
   !! \retval Zfac The Z-factor [-]
   !!
   !! \author Oivind W
-  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz) result (Zfac)
+  function TP_CalcZfac(nc,comp,cbeos,T,P,Z,phase,gflag_opt,dZdt,dZdp,dZdz,phase_found) result (Zfac)
     use compdata, only: gendata_pointer
     use thermopack_var, only: base_eos_param
     implicit none
@@ -73,10 +75,11 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: dZdt, dZdp
     real, optional, dimension(nc), intent(out) :: dZdz
+    integer, optional, intent(out) :: phase_found !< Phase flag
     real :: Zfac
 
     Zfac = fork_Zfac_calculation(nc,comp,cbeos,T,P,Z/sum(Z),phase,gflag_opt,&
-         dZdt,dZdp,dZdz)
+         dZdt,dZdp,dZdz,phase_found)
 
   end function TP_CalcZfac
 
@@ -111,8 +114,9 @@ contains
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_enthalpy
     use single_component, only: enthalpy_single
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix, single_eos
+    use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
+    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -126,7 +130,9 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real :: enthalpy
     ! Locals
-    real :: h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix
+    integer :: prop
+    logical :: add_ideal
+    real :: h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, Zfac, v
     real, dimension(nce) :: dhdz_ideal_mix, ne
     !
     call apparent_to_real_mole_numbers(n,ne)
@@ -134,13 +140,12 @@ contains
       call stoperror("TP_CalcEnthalpy: dhdn not yet implemented for apparent mode")
     endif
 
+    add_ideal = .not. (residual .or.  &
+         eos_single == cbeos%eosidx .or. &
+         meosGERG_mix == cbeos%eosidx .or. &
+         meos_helm_mix == cbeos%eosidx)
     ! Ideal gas enthalpy
-    if (residual .or. eos_single == cbeos%eosidx) then
-      H_ideal_mix = 0.0
-      dhdt_ideal_mix=0.0
-      dhdp_ideal_mix=0.0
-      dhdz_ideal_mix=0.0
-    else
+    if (add_ideal) then
       call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, dhdz_ideal_mix)
     endif
 
@@ -151,16 +156,26 @@ contains
       call enthalpy_single(nce,comp,p_eos,T,P,ne,phase,residual,&
            enthalpy,dhdt,dhdp,dhdz)
       return ! Already includes ideal contibution
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_enthalpy(nc, p_eos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
+    class is ( meos_gergmix )
+      if (residual) then
+        prop = PROP_RESIDUAL
+      else
+        prop = PROP_OVERALL
+      endif
+      call p_eos%Zfac(T,p,ne,phase,Zfac)
+      v = Zfac*sum(ne)*Rgas*T/P
+      call calc_enthalpy_from_f(cbeos, T, v, ne, &
+           enthalpy, dhdt, dhdp, dhdz, contribution=prop)
     class default
       call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
            dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
     end select
 
     ! Add ideal gas contributions
-    if (.not. residual) then
+    if (add_ideal) then
       enthalpy=enthalpy+H_ideal_mix
       if(present(dhdt)) then ! Temperature derivative
         dhdt=dhdt+dhdt_ideal_mix
@@ -206,8 +221,9 @@ contains
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_entropy
     use single_component, only: entropy_single
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix, single_eos
+    use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
+    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -221,22 +237,23 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real :: entropy
     ! Locals
-    real :: S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix
+    integer :: prop
+    real :: S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix, Zfac, v
     real, dimension(nce) :: dsdz_ideal_mix, ne
+    logical :: add_ideal
 
     call apparent_to_real_mole_numbers(n,ne)
     if (nc /= nce .and. present(dsdz)) then
       call stoperror("TP_CalcEntropy: dsdn not yet implemented for apparent mode")
     endif
 
+    add_ideal = .not. (residual .or.  &
+         eos_single == cbeos%eosidx .or. &
+         meosGERG_mix == cbeos%eosidx .or. &
+         meos_helm_mix == cbeos%eosidx)
     ! Ideal gas entropy
-    if (residual .or. eos_single == cbeos%eosidx) then
-      S_ideal_mix = 0.0
-      dsdt_ideal_mix=0.0
-      dsdp_ideal_mix=0.0
-      dsdz_ideal_mix=0.0
-    else
-       call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix, dsdz_ideal_mix)
+    if (add_ideal) then
+      call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix, dsdz_ideal_mix)
     endif
 
     select type ( p_eos => cbeos )
@@ -245,14 +262,24 @@ contains
     type is ( single_eos )
       call entropy_single(nce,comp,p_eos,T,P,ne,phase,residual,&
            entropy,dsdt,dsdp,dsdz)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_entropy(nc, p_eos, T, p, ne, phase, &
            entropy, dsdt, dsdp, dsdz)
+    class is ( meos_gergmix )
+      if (residual) then
+        prop = PROP_RESIDUAL
+      else
+        prop = PROP_OVERALL
+      endif
+      call p_eos%Zfac(T,p,ne,phase,Zfac)
+      v = Zfac*sum(ne)*Rgas*T/P
+      call calc_entropy_from_f(cbeos, T, v, ne, &
+           entropy, dsdt, dsdp, dsdz, contribution=prop)
     class default
       call TP_ResidEntropy(nce,comp,cbeos,phase,T,P,ne,entropy,dSdt,dSdp,dSdz,gflag_opt)
     end select
 
-    if (.not. residual) then
+    if (add_ideal) then
       ! Add ideal gas contributions
       entropy=entropy+S_ideal_mix
       if(present(dsdt)) then ! Temperature derivative
@@ -267,82 +294,6 @@ contains
     endif
 
   end function TP_CalcEntropy
-
-  !---------------------------------------------------------------------- >
-  !> This function calculates the internal energy and its derivatives.
-  !!
-  !! \param T The temperature [K]
-  !! \param v The specific volume [m3/mol]
-  !! \param Z The mole fraction [-]
-  !! \param dudt Temperature derivative [J/molK]
-  !! \param dudv Pressure derivative [J/m3]
-  !!
-  !! \retval energy The internal energy with derivatives [-]
-  !!
-  !! \author Morten Hammer
-  function TV_CalcInnerEnergy(nc,comp,cbeos,T,v,n,dudt,dudv,dudn,&
-       recalculate, contribution) result (u)
-    use thermopack_constants, only: Rgas
-    use ideal
-    use eosdata
-    use compdata, only: gendata_pointer
-    use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
-    implicit none
-    integer, intent(in) :: nc
-    type (gendata_pointer), intent(in), dimension(:) :: comp
-    class(base_eos_param), intent(inout) :: cbeos
-    real, dimension(nc), intent(in) :: n
-    real, intent(in) :: T, v
-    real, optional, intent(out) :: dudt, dudv, dudn(nc)
-    logical, optional, intent(in) :: recalculate
-    integer, optional, intent(in) :: contribution
-    real :: u
-    !
-    real :: F_T, u_id, F_Tn(nc)
-    real, pointer :: F_TT_p, F_TV_p!, F_Tn_p(:)
-    real, target :: F_TT_l, F_TV_l, F_Tn_l(nce)
-    real, dimension(nce) :: ne
-    call apparent_to_real_mole_numbers(n,ne)
-
-    if (present(dudt)) then
-      F_TT_p => F_TT_l
-    else
-      F_TT_p => NULL()
-    endif
-    if (present(dudv)) then
-      F_TV_p => F_TV_l
-    else
-      F_TV_p => NULL()
-    endif
-    !if (present(dudn)) then
-    !  F_Tn_p => F_Tn_l
-    !else
-    !  F_Tn_p => NULL()
-    !endif
-
-    call TV_CalcFres(nce,comp,cbeos,T,V,ne,F_T=F_T,F_TT=F_TT_p,&
-         F_TV=F_TV_p,F_Tn=F_Tn_l,recalculate=recalculate)
-
-    u = (-Rgas)*T**2*F_T
-    if (present(dudv)) dudv = (-Rgas)*T**2*F_TV_l
-    if (present(dudt)) dudt = (-Rgas)*T*(T*F_TT_l+2.0*F_T)
-    if (present(dudn)) then
-      call real_to_apparent_diff(F_Tn_l,F_Tn)
-      dudn = (-Rgas)*T**2*F_Tn
-    endif
-    ! Add ideal gas contributions
-    call TV_CalcFid(nce,comp,cbeos,T,V,ne,F_T=F_T,F_TT=F_TT_p,&
-         F_TV=F_TV_p,F_Tn=F_Tn_l)
-    u_id = (-Rgas)*T**2*F_T
-    u = u + u_id
-    if (present(dudv)) dudv = dudv + (-Rgas)*T**2*F_TV_l
-    if (present(dudt)) dudt = dudt + (-Rgas)*T*(T*F_TT_l+2.0*F_T)
-    if (present(dudn)) then
-      call real_to_apparent_diff(F_Tn_l,F_Tn)
-      dudn = dudn + (-Rgas)*T**2*F_Tn
-    endif
-  end function TV_CalcInnerEnergy
 
   !---------------------------------------------------------------------- >
   !> This function calculates the Helmholtz free energy
@@ -367,9 +318,8 @@ contains
     use extcsp, only: csp_calcFres
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -442,14 +392,14 @@ contains
   !!
   !! \author Oivind W
   subroutine TP_CalcFugacity(nc,comp,cbeos,T,P,Z,phase,lnfug,&
-       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v)
+       dlnfugdt,dlnfugdp,dlnfugdn,gflag_opt,v,phase_found)
     use cubic
     use LeeKesler, only: lkCalcFug
     use eosdata
     use compdata, only: gendata_pointer
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_fugacity
     use thermopack_var, only: base_eos_param
-    use eos_parameters, only: meos_mix
+    use eos_parameters, only: meos_idealmix
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -463,16 +413,19 @@ contains
     real, optional, dimension(nc), intent(out) :: dlnfugdt, dlnfugdp
     real, optional, dimension(nc,nc), intent(out) :: dlnfugdn
     real, optional, intent(out) :: v !< Specific volume [mol/m3]
+    integer, optional, intent(out) :: phase_found !< Phase flag
+
+    if (present(phase_found)) phase_found = phase
 
     select type ( p_eos => cbeos )
     type is ( lk_eos ) ! Lee-Kesler equations of state
       call lkCalcFug(nc,comp,p_eos,T,p,z,phase,lnfug,dlnfugdt,dlnfugdp,dlnfugdn,v)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_fugacity(nc, p_eos, T, p, Z, phase, &
            lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
     class default
       call TP_lnfug(nc,comp,cbeos,phase,T,P,z,lnfug,&
-           dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v)
+           dlnfugdT,dlnfugdP,dlnfugdn,gflag_opt,v_out=v,phase_found=phase_found)
     end select
   end subroutine TP_CalcFugacity
 
@@ -499,11 +452,10 @@ contains
     use LeeKesler, only: lkCalcGdep
     use eosdata
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
+         real_to_apparent_diff, base_eos_param, Rgas
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_Gres
-    use eos_parameters, only: meos_mix
+    use eos_parameters, only: meos_idealmix
     use cubic_eos, only: lk_eos
     implicit none
     integer, intent(in) :: nc
@@ -543,7 +495,7 @@ contains
       if (present(dGdn)) then
         call stoperror("TP_CalcGibbs: Mole number differentials not available")
       endif
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_Gres(nc, p_eos, T, p, n, phase, &
            g,dgdt,dgdp)
       if (present(dGdn)) then
@@ -599,83 +551,6 @@ contains
 
   end subroutine TP_CalcGibbs
 
-  !> Calculate pressure given composition, temperature and density
-  !!
-  !! \param T - Temprature [K]
-  !! \param v - Specific volume [m3/mol]
-  !!
-  subroutine TV_CalcPressure(nc,comp,cbeos,T,v,n,p,&
-       dpdv,dpdt,d2pdv2,dpdn,recalculate,contribution)
-    use cubic
-    use eosdata
-    use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
-    use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
-    implicit none
-    integer, intent(in) :: nc
-    type (gendata_pointer), intent(in), dimension(:) :: comp
-    class(base_eos_param), intent(inout) :: cbeos
-    real, intent(in) :: t, v, n(nc)
-    real, intent(inout) :: p
-    real, optional, intent(inout) :: dpdv, dpdt, d2pdv2
-    real, dimension(nc), optional, intent(out) :: dpdn
-    logical, optional, intent(in) :: recalculate
-    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
-    ! Locals
-    real :: sumne
-    real :: F_V
-    logical :: res, ideal
-    real, dimension(nce) :: ne
-    real, pointer :: F_Vne_p(:)
-    real, target :: F_Vne(nce)
-    if (present(dpdn)) then
-      F_Vne_p => F_Vne
-    else
-      F_Vne_p => NULL()
-    endif
-    call apparent_to_real_mole_numbers(n,ne)
-    sumne = sum(ne)
-
-    res = .true.
-    ideal = .true.
-    if (present(contribution)) then
-      if (contribution == PROP_RESIDUAL) then
-        ideal = .false.
-      else if (contribution == PROP_IDEAL) then
-        res = .false.
-      endif
-    endif
-
-    if (res) then
-      call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_TV=dpdt,&
-           F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2,recalculate=recalculate)
-      P = -Rgas*T*F_V
-      if (present(dPdV)) dPdV = -Rgas*T*dPdV
-      if (present(dPdT)) dPdT = -Rgas*T*dPdT
-      if (present(dPdn)) F_Vne = -Rgas*T*F_Vne
-      if (present(d2PdV2)) d2PdV2 = -Rgas*T*d2PdV2
-    else
-      P = 0
-      if (present(dPdV)) dPdV = 0
-      if (present(dPdT)) dPdT = 0
-      if (present(dPdn)) F_Vne = 0
-      if (present(d2PdV2)) d2PdV2 = 0
-    endif
-    if (ideal) then
-      P = P + sumne*Rgas*T/V
-      if (present(dPdV)) dPdV = dPdV - sumne*Rgas*T/V**2
-      if (present(dPdT)) dPdT = dPdT + P/T
-      if (present(dPdn)) F_Vne = F_Vne + Rgas*T/V
-      if (present(d2PdV2)) d2PdV2 = d2PdV2 + 2.0*sumne*Rgas*T/V**3
-    endif
-
-    if (present(dPdn)) then
-      call real_to_apparent_diff(F_Vne,dPdn)
-    endif
-
-  end subroutine TV_CalcPressure
-
   !> Calculate pseudo critical properties.
   subroutine TP_CalcPseudo(nc,comp,cbeos,n,tpc,ppc,zpc,vpc)
     use cubic, only: cbCalcPseudo
@@ -704,9 +579,8 @@ contains
     use eosdata
     use compdata, only: gendata_pointer
     use ideal, only: Sideal_Vn
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_differentials, base_eos_param
+         real_to_apparent_differentials, base_eos_param, Rgas
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -716,7 +590,7 @@ contains
     real, optional, intent(out) :: lnphiT(nc) , lnphiV(nc), lnphin(nc,nc)
     logical, optional, intent(in) :: recalculate
     ! Locals
-    real :: Sid, Fid_n(nce), Fid_Vn, Fid_Tn, Fid_nn(nce), F_n(nce)
+    real :: Sid, Fid_n(nce), Fid_Vn, Fid_Tn, Fid_nn(nce), F_n(nce), F_V
     real, target :: F_Tn(nce),F_Vn(nce),F_nn(nce,nce)
     real, pointer :: F_Tn_p(:), F_Vn_p(:), F_nn_p(:,:)
     integer :: i
@@ -739,7 +613,7 @@ contains
     else
       F_nn_p => NULL()
     endif
-    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_n=F_n,F_Tn=F_Tn_p,&
+    call TV_CalcFres(nce,comp,cbeos,T,v,ne,F_V=F_V,F_n=F_n,F_Tn=F_Tn_p,&
          F_Vn=F_Vn_p,F_nn=F_nn_p,recalculate=recalculate)
     ! Ideal contribution
     call Sideal_Vn(nce, ne, T, v, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
@@ -779,12 +653,18 @@ contains
     use extcsp, only: csp_calcFres, extcsp_eos
     use saft_interface, only: calcSaftFder_res
     use compdata, only: gendata_pointer
-    use volume_shift, only: NOSHIFT, vshift_F_terms, eosVolumeFromShiftedVolume
+    use volume_shift, only: NOSHIFT, vshift_F_terms, &
+         eosVolumeFromShiftedVolume, &
+         vshift_F_differential_dependencies
     use single_component, only: Fres_single
     use thermopack_var, only: base_eos_param
     !use pets, only: PETS_eos
-    use eos_parameters, only: single_eos, meos_mix
+    use eos_parameters, only: single_eos, meos_idealmix
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use hyperdual_utility, only: hyperdual_fres_wrapper
+    use gergmix, only: meos_gergmix, hd_fres_GERGMIX
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -795,42 +675,42 @@ contains
     real, optional, intent(out) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
     logical, optional, intent(in) :: recalculate
     ! Locals
-    real :: eF,eF_T,eF_V,eF_n(nc), eF_VVV
-    real :: eF_TT,eF_TV,eF_Tn(nc),eF_VV,eF_Vn(nc),eF_nn(nc,nc)
-    logical :: isCubic, do_all_derivs
+    real :: eF
+    real, target :: F_V_l,F_TV_l,F_VV_l,F_Vn_l(nc)
+    real, pointer :: F_V_p, F_TV_p, F_VV_p, F_Vn_p(:)
+    logical :: isCubic, include_F_V, include_F_TV, include_F_VV, include_F_Vn
     real :: v_eos
     isCubic = .false.
 
     ! Calculate EoS volume to evaluate F from individual models
     v_eos = eosVolumeFromShiftedVolume(nc,comp,cbeos%volumeShiftId,t,v,n)
+    ! Do we need additional differeintials for the volume translation?
+    call vshift_F_differential_dependencies(nc,cbeos%volumeShiftId,&
+       include_F_V,include_F_TV,include_F_VV,include_F_Vn,&
+       F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
 
-    isCubic = .false.
+    F_V_p => NULL()
+    F_TV_p => NULL()
+    F_VV_p => NULL()
+    F_Vn_p => NULL()
+    if (present(F_V) .or. include_F_V) F_V_p => F_V_l
+    if (present(F_TV) .or. include_F_TV) F_TV_p => F_TV_l
+    if (present(F_VV) .or. include_F_VV) F_VV_p => F_VV_l
+    if (present(F_Vn) .or. include_F_Vn) F_Vn_p => F_Vn_l
 
-    do_all_derivs = present(F_TT) .or. present(F_TV) .or. present(F_Tn) .or. &
-         present(F_VV) .or. present(F_Vn) .or. present(F_nn) .or. present(F_VVV)
+    call get_eos_F(v_eos,eF,F_T,F_V_p,F_n,F_TT,F_TV_p,F_VV_p,F_Tn,F_Vn_p,F_nn,F_VVV)
 
-    if (do_all_derivs) then
-      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
-    else
-      call get_eos_F(v_eos,eF,eF_T,eF_V,eF_n)
-    end if
     ! Correct the F from the individual models according to the volume shift
     if (cbeos%volumeShiftId /= NOSHIFT) then
-      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,eF_T,eF_V,eF_n,eF_TT,&
-           eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
+      call vshift_F_terms(nc,comp,cbeos%volumeShiftId,T,V,n,eF,F_T,F_V_p,F_n,F_TT,&
+           F_TV_p,F_VV_p,F_Tn,F_Vn_p,F_nn,F_VVV)
     end if
 
     if (present(F)) F = eF
-    if (present(F_T)) F_T = eF_T
-    if (present(F_V)) F_V = eF_V
-    if (present(F_n)) F_n = eF_n
-    if (present(F_TT)) F_TT = eF_TT
-    if (present(F_TV)) F_TV = eF_TV
-    if (present(F_Tn)) F_Tn = eF_Tn
-    if (present(F_Vn)) F_Vn = eF_Vn
-    if (present(F_VV)) F_VV = eF_VV
-    if (present(F_VVV)) F_VVV = eF_VVV
-    if (present(F_nn)) F_nn = eF_nn
+    if (present(F_V)) F_V = F_V_l
+    if (present(F_TV)) F_TV = F_TV_l
+    if (present(F_VV)) F_VV = F_VV_l
+    if (present(F_Vn)) F_Vn = F_Vn_l
 
   contains
     subroutine get_eos_F(veos,eF,eF_T,eF_V,eF_n,eF_TT,eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn,eF_VVV)
@@ -850,11 +730,14 @@ contains
         type is ( single_eos )
           call Fres_single(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-        type is ( meos_mix )
+        type is ( meos_idealmix )
           call stoperror('Not possible to call Fres as a T-V function for meosNist_mix')
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        class is ( meos_gergmix ) ! GERG2008/MEOSMIX
+          call hyperdual_fres_wrapper(hd_fres_GERGMIX,p_eos,nc,T,V_eos,n,eF,ef_T,ef_V,ef_n,&
+               ef_TT,ef_VV,ef_TV,ef_Tn,ef_Vn,ef_nn)
         class default ! Saft eos
           call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
@@ -875,11 +758,10 @@ contains
   !! \author Morten Hammer, 2017-02
   !-----------------------------------------------------------------------------
   subroutine TP_lnfug(nc,comp,cbeos,phase,T,P,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn,&
-       gflag_opt,v_out)
+       gflag_opt,v_out,phase_found)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         TP_lnfug_apparent, base_eos_param
+         TP_lnfug_apparent, base_eos_param, Rgas
     ! Input.
     integer, intent(in) :: nc
     type(gendata_pointer), dimension(:), intent(in) :: comp
@@ -890,6 +772,7 @@ contains
     real, intent(in) :: n(nc)                           !< Mole numbers [mols]
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: v_out !< Specific volume [mol/m3]
+    integer, optional, intent(out) :: phase_found !< Phase flag
     ! Output
     real, intent(out) :: lnfug(nc)
     real, optional, intent(out) :: dlnfugdt(nc), dlnfugdp(nc), dlnfugdn(nc,nc)
@@ -897,7 +780,7 @@ contains
     real :: V     !< Volume [m^3].
     real :: sumne  !< Total mole number in mixture [mol]
     real :: zFac
-    real :: F_n(nce),F_Tn(nce),F_TV,F_VV,F_Vn(nce),F_nn(nce,nce)
+    real :: F_n(nce),F_Tn(nce),F_TV,F_VV,F_Vn(nce),F_nn(nce,nce),F_V
     real :: dPdV, dPdT, dPdn(nce)
     real :: dVdn(nce)
     real :: ne(nce), lnfug_real(nce), ze(nce)
@@ -907,20 +790,20 @@ contains
     call apparent_to_real_mole_numbers(n,ne)
     sumne = sum(ne)
     ze = ne/sumne
-    zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ze,phase,gflag_opt)
+    zFac = TP_CalcZfac(nce,comp,cbeos,T,P,ze,phase,gflag_opt,phase_found=phase_found)
     V = zFac*sumne*Rgas*T/P
     if (present(v_out)) then
       v_out = v
     endif
 
     if (present(dlnfugdt) .or. present(dlnfugdp) .or. present(dlnfugdn)) then
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_n=F_n,&
+      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_V=F_V,F_n=F_n,&
            F_VV=F_VV,F_Vn=F_Vn,F_TV=F_TV,F_Tn=F_Tn,F_nn=F_nn)
       dPdV = -Rgas*T*(F_VV + sumne/V**2)
       dPdn = Rgas*T*(-F_Vn + 1/V)
       dVdn = -dPdn/dPdV
     else
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_n=F_n)
+      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_V=F_V,F_n=F_n)
     end if
 
     lnfug_real = F_n - log(zFac)
@@ -955,8 +838,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine TP_ResidEntropy(nc,comp,cbeos,phase,T,P,n,S,dSdt,dSdp,dSdn,gflag_opt)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
-    use thermopack_var, only: base_eos_param
+    use thermopack_var, only: base_eos_param, Rgas
     integer, intent(in) :: nc !< Number of components in mixture.
     type(gendata_pointer), intent(in) :: comp(nc) !< Component vector.
     class(base_eos_param), intent(inout) :: cbeos !< Cubic eos for
@@ -1014,8 +896,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine TP_ResidEnthalpy(nc,comp,cbeos,phase,T,P,n,H,dHdT,dHdP,dHdn,gflag_opt)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
-    use thermopack_var, only: base_eos_param
+    use thermopack_var, only: base_eos_param, Rgas
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
     class(base_eos_param), intent(inout) :: cbeos !< Cubic eos
@@ -1086,7 +967,7 @@ contains
   !! \author Oivind W
   !! \author Morten Hammer
   function fork_Zfac_calculation(nc,comp,cbeos,T,P,n,phase,gflag_opt,&
-       dZdt,dZdp,dZdz) result (Zfac)
+       dZdt,dZdp,dZdz,phase_found) result (Zfac)
     use cubic, only: cbCalcZfac
     use LeeKesler, only: lkCalcZfac
     use extcsp, only: csp_zfac, extcsp_eos
@@ -1097,9 +978,12 @@ contains
     use single_component, only: Zfac_single
     use multiparameter_idealmix, only: calc_multiparameter_idealmix_zfac
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, base_eos_param
-    use eos_parameters, only: single_eos, meos_mix
+    use eos_parameters, only: single_eos, meos_idealmix
     !use pets, only: PETS_eos
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
+    use saftvrmie_containers, only: saftvrmie_eos
+    use pc_saft_nonassoc, only: PCSAFT_eos
+    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -1110,6 +994,7 @@ contains
     integer, optional, intent(in) :: gflag_opt
     real, optional, intent(out) :: dZdt, dZdp
     real, optional, dimension(nc), intent(out) :: dZdz
+    integer, optional, intent(out) :: phase_found !< Phase flag
     real :: Zfac
     ! Locals
     integer :: gflag_opt_local
@@ -1121,7 +1006,7 @@ contains
     if (present(gflag_opt)) then
       gflag_opt_local = gflag_opt
     end if
-
+    if (present(phase_found)) phase_found = phase
     call apparent_to_real_mole_numbers(n,ne)
     is_apparent_mode = (nc /= nce)
     if (is_apparent_mode) then
@@ -1136,11 +1021,14 @@ contains
       call cbCalcZfac(nce,p_eos,T,p,ne,phase,Zfac,gflag_opt_local,dZdt,dZdp,dZdz)
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
+    class is ( meos_gergmix )
+      call p_eos%Zfac(T,p,ne,phase,Zfac,phase_found)
+      call calc_Zfac_differentials()
     type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
       call lkCalcZfac(nce,comp,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
-    type is ( meos_mix )
+    type is ( meos_idealmix )
       call calc_multiparameter_idealmix_zfac(nc, p_eos, T, p, ne, phase, &
            Zfac, dZdt, dZdp, dZdz)
     class default ! Saft eos
@@ -1163,92 +1051,35 @@ contains
       call volumeShiftZfac(nc,comp,cbeos%volumeShiftId,T,P,n,phase,Zfac,dZdt,dZdp,dZdz)
     endif
 
-  end function fork_Zfac_Calculation
+  contains
 
-  !---------------------------------------------------------------------- >
-  !> This function calculates the Entropy and the derivatives.
-  !!
-  !! \param T The temperature [K]
-  !! \param V The pressure [m3/mol]
-  !! \param Z The overall mole numbers [-]
-  !! \param residual Return only the residual part if .true.
-  !! \param dsdt Temperature derivative [J/mol/K]
-  !! \param dsdv Volume derivative [J/mol/m3]
-  !! \param dsdz Composition derivative [J/mol^2]
-  !!
-  !! \retval entropy The entropy [J/mol K]
-  !!
-  !! \author M. Hammer
-  function TV_CalcEntropy(nc,comp,cbeos,T,V,n,residual,&
-       dsdt,dsdv,dsdn) result (s)
-    use cubic
-    use ideal
-    use stringmod, only: str_eq
-    use LeeKesler, only: lkCalcEntropy
-    use eosdata
-    use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
-    use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
-         real_to_apparent_diff, base_eos_param
-    implicit none
-    integer, intent(in) :: nc
-    type (gendata_pointer), intent(in), dimension(:) :: comp
-    class(base_eos_param), intent(inout) :: cbeos
-    real, dimension(nc), intent(in) :: n
-    real, intent(in) :: T, V
-    logical, intent(in) :: residual
-    real, optional, intent(out) :: dsdt, dsdv
-    real, optional, dimension(nc), intent(out) :: dsdn
-    real :: s
-    ! Locals
-    real :: S_ideal_mix, dsdt_ideal_mix, dsdv_ideal_mix
-    real :: F, F_n(nc), F_T, F_TV, F_TT, F_Tn(nc), F_V
-    real, dimension(nc) :: dsdn_ideal_mix
-    real, dimension(nce) :: ne, dsdne, F_ne(nce), F_Tne(nce)
-
-    call apparent_to_real_mole_numbers(n,ne)
-
-    ! Ideal gas entropy
-    if (residual) then
-      S_ideal_mix = 0.0
-      dsdt_ideal_mix=0.0
-      dsdv_ideal_mix=0.0
-      dsdn_ideal_mix=0.0
-    else
-      call TV_Sideal_mix(nce, comp, T, v, ne, s_ideal_mix, &
-           dsdt_ideal_mix=dsdt_ideal_mix, dsdv_ideal_mix=dsdv_ideal_mix, &
-           dsdz_ideal_mix=dsdne)
-      if(present(dsdn)) then ! Composition derivative,
-        call real_to_apparent_diff(dsdne,dsdn)
-        dsdn_ideal_mix=dsdn
+    subroutine calc_Zfac_differentials()
+      use thermopack_var, only: Rgas
+      real :: sumn, V
+      real :: dpdv, dpdn(nce), dVdn(nce), dpdt, dvdt
+      real :: F_VV, F_TV, F_Vn(nce)
+      if (present(dZdT) .or. present(dZdP) .or. present(dZdz)) then
+        sumn = sum(ne)
+        V = sumn*Rgas*T/P
+        call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_TV=F_TV,F_VV=F_VV,F_Vn=F_Vn)
+        dPdV = -Rgas*T*(F_VV + sumn/V**2)
       end if
-    endif
+      if (present(dZdT)) then
+        dPdT = P/T - Rgas*T*F_TV
+        dVdT = -dPdT/dPdV
+        dZdT = -Zfac*(1.0/T - dVdT/V)
+      end if
+      if (present(dZdP)) then
+        dZdP = Zfac*(1.0/P + 1.0/(dPdV*V))
+      end if
+      if (present(dZdz)) then
+        dPdn = Rgas*T*(-F_Vn + 1/V)
+        dVdn = -dPdn/dPdV
+        dZdz = -Zfac*(1.0/sumn - dVdn/V)
+      end if
+    end subroutine calc_Zfac_differentials
 
-    if (present(dSdt) .or. present(dSdv) .or. present(dSdn)) then
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F=F,F_n=F_ne,&
-           F_T=F_T,F_V=F_V,F_TV=F_TV,F_TT=F_TT,F_Tn=F_Tne)
-    else
-      call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F=F,F_T=F_T)
-    end if
-    s = -Rgas*(F + T*F_T)
-
-    ! Add ideal gas contributions
-    s = s + s_ideal_mix
-    if(present(dsdt)) then ! Temperature derivative
-      dsdt = -Rgas*(2.0*F_T + T*F_TT)
-      dsdt = dsdt + dsdt_ideal_mix
-    end if
-    if(present(dsdv)) then ! Volume derivative
-      dsdv = -Rgas*(F_V + T*F_TV)
-      dsdv = dsdv + dsdv_ideal_mix
-    end if
-    if(present(dsdn)) then ! Composition derivative,
-      call real_to_apparent_diff(F_ne,F_n)
-      call real_to_apparent_diff(F_Tne,F_Tn)
-      dsdn = -Rgas*(F_n + T*F_Tn)
-      dsdn = dsdn + dsdn_ideal_mix
-    end if
-  end function TV_CalcEntropy
+  end function fork_Zfac_Calculation
 
   !> Calculate resudial reduced Helmholtz and differentials
   !!
@@ -1263,6 +1094,8 @@ contains
     use ideal, only: Fideal_mix_SI
     use thermopack_var, only: base_eos_param
     use eos_parameters, only: single_eos
+    use hyperdual_utility, only: hyperdual_fres_wrapper
+    use gergmix, only: meos_gergmix, hd_fid_GERGMIX
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -1278,11 +1111,235 @@ contains
     type is ( single_eos )
       call Fid_single(nc,comp,p_seos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
+    class is ( meos_gergmix ) ! GERG2008
+      call hyperdual_fres_wrapper(hd_fid_GERGMIX,p_seos,nc,T,V,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
     class default
       call Fideal_mix_SI(nc, comp, T, v, n, Fid=F, Fid_T=F_T, Fid_v=F_V, &
            Fid_n=F_n, Fid_TT=F_TT, Fid_vv=F_vv, Fid_nn=F_nn, Fid_Tv=F_TV,&
            Fid_vn=F_Vn,Fid_Tn=F_Tn)
     end select
   end subroutine TV_CalcFid
+
+  !----------------------------------------------------------------------
+  !> Calculate enthalpy given composition, temperature and volume.
+  !! Differentials at constant pressure.
+  !! \author Morten Hammer, 2023-03
+  !----------------------------------------------------------------------
+  subroutine calc_enthalpy_from_f(eos,t,v,n,h,dhdt,dhdp,dhdn,contribution)
+    use thermopack_var, only: nce, base_eos_param, get_active_comps, gendata_pointer, Rgas
+    implicit none
+    ! Transferred variables
+    class(base_eos_param), intent(inout) :: eos
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: v !< m3 - Volume
+    real, dimension(1:nce), intent(in) :: n !< Mol numbers
+    real, intent(out) :: h !< J - Enthalpy
+    real, optional, intent(out) :: dhdt !< J/K - Enthalpy differential wrpt. temperature  (const pressure)
+    real, optional, intent(out) :: dhdp !< J/Pa - Enthalpy differential wrpt. pressure
+    real, optional, intent(out) :: dhdn(nce) !< J/m3 - Enthalpy differential wrpt. mol numbers
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
+    ! Locals
+    type(gendata_pointer), pointer :: comp(:)
+    real :: F, F_T, F_V
+    real :: sumn, P, dPdV, dPdT, dVdT, dPdn(nce), dVdn(nce)
+    logical :: res, ideal_gas, differentials
+    real, pointer :: F_TT_p, F_TV_p, F_VV_p
+    real, target :: F_TT, F_TV, F_VV
+    real, pointer :: F_Tn_p(:), F_Vn_p(:), F_n_p(:)
+    real, target :: F_Tn(nce), F_Vn(nce), F_n(nce)
+    !--------------------------------------------------------------------
+    res = .true.
+    ideal_gas = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal_gas = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
+    endif
+    comp => get_active_comps()
+
+    F_TV_p => NULL()
+    F_VV_p => NULL()
+    F_TT_p => NULL()
+    F_n_p => NULL()
+    F_Tn_p => NULL()
+    F_Vn_p => NULL()
+    differentials = .false.
+    h = 0
+    if (present(dhdT) .or. present(dhdp) .or. present(dhdn)) then
+      differentials = .true.
+      F_TV_p => F_TV
+      F_VV_p => F_VV
+      if (present(dhdT)) then
+        F_TT_p => F_TT
+        dHdt = 0
+      endif
+      if (present(dhdP)) then
+        dHdp = 0
+      endif
+      if (present(dhdn)) then
+        F_n_p => F_n
+        F_Tn_p => F_Tn
+        F_Vn_p => F_Vn
+        dHdn = 0
+      endif
+    endif
+
+    sumn = sum(n)
+    if (res) then
+      ! Residual contribution
+      call TV_CalcFres(nce,comp,eos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_TT=F_TT_p,&
+           F_TV=F_TV_p,F_VV=F_VV_p,F_Tn=F_Tn_p,F_Vn=F_Vn_p)
+      h = -Rgas*T*(T*F_T + v*F_V)
+      if (differentials) then
+        P = -Rgas*T*F_V + sumn*Rgas*T/V
+        dPdV = -Rgas*T*(F_VV + sumn/V**2)
+        dPdT = P/T-Rgas*T*F_TV
+        dVdT = -dPdT/dPdV
+        if (present(dHdt)) then
+          dHdt = T*(dVdT*dPdT - Rgas*(2*F_T + T*F_TT + sumn/T))
+        endif
+        if (present(dHdp)) then
+          dHdp = V-T*dVdt
+        endif
+        if (present(dHdn)) then
+          dPdn = Rgas*T*(-F_Vn + 1/V)
+          dVdn = -dPdn/dPdV
+          dHdn = T*(dVdn*dPdt - Rgas*(F_Tn*T + 1))
+        endif
+      endif
+    endif
+
+    if (ideal_gas) then
+      ! Ideal contribution
+      call TV_CalcFid(nce,comp,eos,T,V,n,F=F,F_T=F_T,F_TT=F_TT_p,F_Tn=F_Tn_p)
+      h = h + Rgas*T*(-T*F_T + sumn)
+      if (present(dHdt)) then
+        dHdt = dHdt - Rgas*T*(2*F_T + T*F_TT) + Rgas*sumn
+      endif
+      if (present(dHdn)) then
+        dHdn = dhdn - Rgas*T**2*F_Tn + Rgas*T
+      endif
+    endif
+
+  end subroutine calc_enthalpy_from_f
+
+  !----------------------------------------------------------------------
+  !> Calculate entropy given composition, temperature and volume.
+  !! Differentials at constant pressure.
+  !! \author Morten Hammer, 2023-03
+  !----------------------------------------------------------------------
+  subroutine calc_entropy_from_f(eos,t,v,n,s,dsdt,dsdp,dsdn,contribution)
+    use thermopack_var, only: nce, base_eos_param, get_active_comps, gendata_pointer, Rgas
+    implicit none
+    ! Transferred variables
+    class(base_eos_param), intent(inout) :: eos
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: v !< m3 - Volume
+    real, dimension(1:nce), intent(in) :: n !< Mol numbers
+    real, intent(out) :: s !< J/K - Entropy
+    real, optional, intent(out) :: dsdt !< J/K2 - Entropy differential wrpt. temperature (const pressure)
+    real, optional, intent(out) :: dsdp !< J/K/Pa - Entropy differential wrpt. specific pressure
+    real, optional, intent(out) :: dsdn(nce) !< J/K/mol - Entropy differential wrpt. mol numbers
+    integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
+    ! Locals
+    type(gendata_pointer), pointer :: comp(:)
+    real :: F, F_T, F_V
+    real :: sumn, P, dPdV, dPdT, dVdT, zFac, dPdn(nce), dVdn(nce)
+    logical :: res, ideal_gas, differentials
+    real, pointer :: F_TT_p, F_TV_p, F_VV_p
+    real, target :: F_TT, F_TV, F_VV
+    real, pointer :: F_Tn_p(:), F_n_p(:), F_Vn_p(:)
+    real, target :: F_Tn(nce), F_n(nce), F_Vn(nce)
+    !--------------------------------------------------------------------
+    res = .true.
+    ideal_gas = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal_gas = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
+    endif
+    comp => get_active_comps()
+
+    F_TV_p => NULL()
+    F_VV_p => NULL()
+    F_TT_p => NULL()
+    F_n_p => NULL()
+    F_Tn_p => NULL()
+    F_Vn_p => NULL()
+    differentials = .false.
+    s = 0
+    if (present(dsdT) .or. present(dsdp) .or. present(dsdn)) then
+      differentials = .true.
+      F_TV_p => F_TV
+      F_VV_p => F_VV
+      if (present(dsdT)) then
+        F_TT_p => F_TT
+        dsdT = 0
+      endif
+      if (present(dsdP)) then
+        dsdP = 0
+      endif
+      if (present(dsdn)) then
+        F_n_p => F_n
+        F_Tn_p => F_Tn
+        F_Vn_p => F_Vn
+        dsdn = 0
+      endif
+    endif
+
+    sumn = sum(n)
+    if (res) then
+      ! Residual contribution
+      call TV_CalcFres(nce,comp,eos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n_p,F_VV=F_VV_p,&
+           F_TT=F_TT_p,F_TV=F_TV_p,F_Tn=F_Tn_p,F_Vn=F_Vn_p)
+
+      P = -Rgas*T*F_V + sumn*Rgas*T/V
+      zFac = V*P/(sumn*Rgas*T)
+      s = Rgas*(-F - T*F_T  + sumn*log(zFac))
+      if (differentials) then
+        dPdV = -Rgas*T*(F_VV + sumn/V**2)
+        dPdT = P/T-Rgas*T*F_TV
+        dVdT = -dPdT/dPdV
+        if (present(dSdt)) then
+          dSdt = dVdt*dPdt - Rgas*(2*F_T + T*F_TT + sumn/T)
+        endif
+        if (present(dSdp)) then
+          dSdp = sumn*Rgas/P - dVdT
+        end if
+        if (present(dSdn)) then
+          dPdn = Rgas*T*(-F_Vn + 1/V)
+          dVdn = -dPdn/dPdV
+          dSdn = dVdn*dPdt - Rgas*(F_n + T*F_Tn + 1 - log(zFac))
+        endif
+      endif
+    endif
+
+    if (ideal_gas) then
+      if (.not. res) then
+        call TV_CalcFres(nce,comp,eos,T,V,n,F_V=F_V)
+        P = -Rgas*T*F_V + sumn*Rgas*T/V
+        zFac = V*P/(sumn*Rgas*T)
+      endif
+      ! Ideal contribution
+      call TV_CalcFid(nce,comp,eos,T,V,n,F=F,F_T=F_T,F_n=F_n_p,F_TT=F_TT_p,F_Tn=F_Tn_p)
+
+      s = s - Rgas*(F + T*F_T + sumn*log(zFac))
+      if (present(dSdt)) then
+        dsdt = dsdt - Rgas*(2*F_T + T*F_TT) + Rgas*sumn/T
+      endif
+      if (present(dSdp)) then
+        dsdp = dsdp - Rgas*sumn/P
+      endif
+      if (present(dsdn)) then
+        dsdn = dsdn - Rgas*(F_n + T*F_Tn - 1 + log(zFac))
+      endif
+    endif
+
+  end subroutine calc_entropy_from_f
 
 end module single_phase

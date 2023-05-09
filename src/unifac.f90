@@ -324,8 +324,7 @@ contains
   !> Calculate UNIFAC Ge (Ae)
   !! \author MH, 2015
   subroutine GeUNIFAC(n,T,UFdb,Ge,dGedT,d2GedT2,dGedn,d2GedndT,d2Gedn2)
-    use thermopack_var, only: nc
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: nc, kRgas
     !
     real, dimension(nc), intent(in) :: n
     real, intent(in) :: T
@@ -515,8 +514,7 @@ contains
   !! Flory-Huggins
   !! \author MH, 2015
   subroutine Ge_UNIFAC_GH_SG(n,T,UFdb,Ge,dGedT,d2GedT2,dGedn,d2GedndT,d2Gedn2)
-    use thermopack_var, only: nc
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: nc, kRgas
     !
     real, dimension(nc), intent(in) :: n
     real, intent(in) :: T

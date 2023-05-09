@@ -4,7 +4,7 @@
 module eos
   use thermopack_constants
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, get_active_alt_eos, base_eos_param
+       get_active_eos, get_active_alt_eos, base_eos_param, Rgas
   !
   implicit none
   save
@@ -76,7 +76,8 @@ contains
              t,p,x,ph,tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
       else if (ph == MINGIBBSPH) then
         call TP_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,&
-             t,p,x,LIQPH,g_tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v)
+             t,p,x,LIQPH,g_tp_fug,lnfugt,lnfugp,lnfugx,gflag_opt,v=v,phase_found=ophase)
+        if (ophase == FAKEPH) return
         if (present(lnfugt)) then
           lnfugt2 = lnfugt
         endif
@@ -573,7 +574,6 @@ contains
   !! \author MH, 2013-03-06
   !----------------------------------------------------------------------
   subroutine getCriticalParam(i,tci,pci,oi,vci,tnbi)
-    use thermopack_constants, only: Rgas
     use eosdata
     implicit none
     integer, intent(in) :: i !< Component index

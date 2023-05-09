@@ -5,7 +5,7 @@
 module eosTV
   use thermopack_var, only: nc, nce, get_active_eos, base_eos_param, &
        thermo_model, get_active_thermo_model, apparent_to_real_mole_numbers, &
-       real_to_apparent_diff
+       real_to_apparent_diff, Rgas
   use thermopack_constants
   !
   implicit none
@@ -26,10 +26,7 @@ contains
   !>
   !> \author MH, 2012-03-14
   !----------------------------------------------------------------------
-  function pressure(t,v,n,dpdv,dpdt,d2pdv2,dpdn,&
-       recalculate,contribution) result(p)
-    use single_phase, only: TV_CalcPressure
-    use cbHelm, only: cbPvv, cbPi
+  function pressure(t,v,n,dpdv,dpdt,d2pdv2,dpdn,contribution) result(p)
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -39,33 +36,59 @@ contains
     real, optional, intent(out) :: dpdv !< Pa/m3 - Pressure differential wrpt. specific volume
     real, optional, intent(out) :: d2pdv2 !< Pa/m6 - Second pressure differential wrpt. specific volume
     real, optional, dimension(nc), intent(out) :: dpdn !< Pa/mol - Second pressure differential wrpt. specific mole numbers
-    logical, optional, intent(in) :: recalculate !< flag for Thermopack: if true, recalculate cbeos-structure
     integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     real :: p !< Pa - Pressure
     ! Locals
-    real :: d2Pdrho2, rho, dPdrho
-    !integer :: VSHIFTID
-    logical :: recalculate_loc
-    class(base_eos_param), pointer :: act_eos_ptr
-    type(thermo_model), pointer :: act_mod_ptr
+    real :: sumne
+    real :: F_V
+    logical :: res, ideal
+    real, dimension(nce) :: ne
+    real, pointer :: F_Vne_p(:)
+    real, target :: F_Vne(nce)
     !--------------------------------------------------------------------
-    if (present(recalculate)) then
-      recalculate_loc = recalculate
+    if (present(dpdn)) then
+      F_Vne_p => F_Vne
     else
-      recalculate_loc = .true.
-    end if
-    act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      call TV_CalcPressure(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,p,&
-           dpdv, dpdt, d2pdv2, dpdn, recalculate=recalculate_loc,&
-           contribution=contribution)
-    case default
-      write(*,*) 'EoSlib error in eos::pressure: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
+      F_Vne_p => NULL()
+    endif
+    call apparent_to_real_mole_numbers(n,ne)
+    sumne = sum(ne)
+
+    res = .true.
+    ideal = .true.
+    if (present(contribution)) then
+      if (contribution == PROP_RESIDUAL) then
+        ideal = .false.
+      else if (contribution == PROP_IDEAL) then
+        res = .false.
+      endif
+    endif
+
+    if (res) then
+      call Fres_ne(T,V,ne,F_V=F_V,F_TV=dpdt,F_VV=dpdv,F_Vn=F_Vne_p,F_VVV=d2pdv2)
+      P = -Rgas*T*F_V
+      if (present(dPdV)) dPdV = -Rgas*T*dPdV
+      if (present(dPdT)) dPdT = -Rgas*T*dPdT
+      if (present(dPdn)) F_Vne = -Rgas*T*F_Vne
+      if (present(d2PdV2)) d2PdV2 = -Rgas*T*d2PdV2
+    else
+      P = 0
+      if (present(dPdV)) dPdV = 0
+      if (present(dPdT)) dPdT = 0
+      if (present(dPdn)) F_Vne = 0
+      if (present(d2PdV2)) d2PdV2 = 0
+    endif
+    if (ideal) then
+      P = P + sumne*Rgas*T/V
+      if (present(dPdV)) dPdV = dPdV - sumne*Rgas*T/V**2
+      if (present(dPdT)) dPdT = dPdT + P/T
+      if (present(dPdn)) F_Vne = F_Vne + Rgas*T/V
+      if (present(d2PdV2)) d2PdV2 = d2PdV2 + 2.0*sumne*Rgas*T/V**3
+    endif
+
+    if (present(dPdn)) then
+      call real_to_apparent_diff(F_Vne,dPdn)
+    endif
   end function pressure
 
   !----------------------------------------------------------------------
@@ -157,7 +180,7 @@ contains
   !> \author GL, 2015-01-23
   !----------------------------------------------------------------------
   subroutine free_energy_tv(t,v,n,y,dydt,dydv,dydn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -236,7 +259,7 @@ contains
   !> \author MH, 2015-02
   !----------------------------------------------------------------------
   subroutine entropy_tv(t,v,n,s,dsdt,dsdv,dsdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -336,7 +359,6 @@ contains
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpy_tv(t,v,n,h,dhdt,dhdv,dhdn,contribution)
-    use thermopack_constants, only: Rgas
     implicit none
     ! Transferred variables
     real, intent(in) :: t !< K - Temperature
@@ -769,7 +791,6 @@ contains
   !> \author MAG, 2018-10-31
   !----------------------------------------------------------------------
   subroutine chemical_potential_tv(t, v, n, mu, dmudt, dmudv, dmudn, contribution)
-    use thermopack_constants, only: rgas
     use thermopack_var, only: real_to_apparent_differentials
     implicit none
     real,                             intent(in)  :: t !< K - Temperature
@@ -866,7 +887,6 @@ contains
   !! \author Morten Hammer, 2022-02
   !-----------------------------------------------------------------------------
   subroutine thermo_tvp(T,v,n,lnfug,dlnfugdT,dlnfugdP,dlnfugdn)
-    use thermopack_constants, only: Rgas
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          TP_lnfug_apparent, base_eos_param
     ! Input.
@@ -947,12 +967,11 @@ contains
 
   !----------------------------------------------------------------------
   !> Calculate enthalpy given composition, temperature and density.
-  !> Differentials at constanr pressure
+  !> Differentials at constant pressure
   !> \author MH, 2019-06
   !----------------------------------------------------------------------
   subroutine enthalpy_tvp(t,v,n,h,dhdt,dhdp,dhdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
-    use ideal, only: idealEnthalpySingle
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff
     implicit none
@@ -966,14 +985,13 @@ contains
     real, optional, intent(out) :: dhdn(nc) !< J/m3 - Enthalpy differential wrpt. mol numbers
     integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    real :: h_id, dhdt_id, F, F_T, F_V, h_T, dhdn_id(nc)
+    real :: F, F_T, F_V, h_T
     real :: sumne, ne(nce), P, dPdV, dPdT, dVdT, dPdn(nce), dVdn(nce), dhdne(nce)
-    integer :: j
     logical :: res, ideal_gas, differentials
     real, pointer :: F_TT_p, F_TV_p, F_VV_p
     real, target :: F_TT, F_TV, F_VV
-    real, pointer :: F_Tn_p(:), F_Vn_p(:), F_n_p(:)
-    real, target :: F_Tn(nce), F_Vn(nce), F_n(nce)
+    real, pointer :: F_Tn_p(:), F_Vn_p(:)
+    real, target :: F_Tn(nce), F_Vn(nce)
     !--------------------------------------------------------------------
     res = .true.
     ideal_gas = .true.
@@ -988,7 +1006,6 @@ contains
     F_TV_p => NULL()
     F_VV_p => NULL()
     F_TT_p => NULL()
-    F_n_p => NULL()
     F_Tn_p => NULL()
     F_Vn_p => NULL()
     differentials = .false.
@@ -1005,10 +1022,9 @@ contains
         dHdp = 0
       endif
       if (present(dhdn)) then
-        F_n_p => F_n
         F_Tn_p => F_Tn
         F_Vn_p => F_Vn
-        dHdn = 0
+        dHdne = 0
       endif
     endif
 
@@ -1037,32 +1053,25 @@ contains
           dPdn = Rgas*T*(-F_Vn + 1/V)
           dVdn = -dPdn/dPdV
           dHdne = T*(dVdn*dPdt - Rgas*(F_Tn*T + 1))
-          call real_to_apparent_diff(dhdne,dhdn)
         endif
       endif
     endif
 
     if (ideal_gas) then
-      dhdt_id = 0
-      do j=1,nc
-        call idealEnthalpySingle(t,j,h_id,F_TT_p)
-        h = h + n(j)*h_id
-        if (present(dhdt)) then
-          dhdt_id = dhdt_id + n(j)*F_TT
-        endif
-        ! No contribution to dhdp
-        if (present(dhdn)) then
-          dhdn_id(j) = h_id
-        endif
-      enddo
-      if (present(dhdt)) then
-        dhdt = dhdt + dhdt_id
+      ! Ideal contribution
+      call Fideal_ne(T,V,ne,F=F,F_T=F_T,F_TT=F_TT_p,F_Tn=F_Tn_p)
+      h = h + Rgas*T*(-T*F_T + sumne)
+      if (present(dHdt)) then
+        dHdt = dHdt - Rgas*T*(2*F_T + T*F_TT) + Rgas*sumne
       endif
-      if (present(dhdn)) then
-        dhdn = dhdn + dhdn_id
+      if (present(dHdn)) then
+        dHdne = dhdne - Rgas*T**2*F_Tn + Rgas*T
       endif
     endif
 
+    if (present(dHdn)) then
+      call real_to_apparent_diff(dhdne,dhdn)
+    endif
   end subroutine enthalpy_tvp
 
   !----------------------------------------------------------------------
@@ -1071,8 +1080,7 @@ contains
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
   subroutine entropy_tvp(t,v,n,s,dsdt,dsdp,dsdn,contribution)
-    use thermopack_constants, only: Rgas, PROP_RESIDUAL, PROP_IDEAL
-    use ideal, only: idealEntropy_ne
+    use thermopack_constants, only: PROP_RESIDUAL, PROP_IDEAL
     use thermopack_var, only: nce, apparent_to_real_mole_numbers, &
          real_to_apparent_diff
     implicit none
@@ -1086,15 +1094,13 @@ contains
     real, optional, intent(out) :: dsdn(nc) !< J/K/mol - Entropy differential wrpt. mol numbers
     integer, optional, intent(in) :: contribution !< Contribution from ideal (PROP_IDEAL), residual (PROP_RESIDUAL) or both (PROP_OVERALL)
     ! Locals
-    real :: s_id, F, F_T, F_V, dsdne(nce), ne(nce)
+    real :: F, F_T, F_V, dsdne(nce), ne(nce)
     real :: sumne, P, dPdV, dPdT, dVdT, zFac, dPdn(nce), dVdn(nce)
     logical :: res, ideal_gas, differentials
     real, pointer :: F_TT_p, F_TV_p, F_VV_p
     real, target :: F_TT, F_TV, F_VV
     real, pointer :: F_Tn_p(:), F_n_p(:), F_Vn_p(:)
     real, target :: F_Tn(nce), F_n(nce), F_Vn(nce)
-    real, pointer :: dsdP_id_p, dsdT_id_p, dsdne_id_p(:)
-    real, target :: dsdP_id, dsdT_id, dsdne_id(nce)
     !--------------------------------------------------------------------
     res = .true.
     ideal_gas = .true.
@@ -1112,9 +1118,6 @@ contains
     F_n_p => NULL()
     F_Tn_p => NULL()
     F_Vn_p => NULL()
-    dsdP_id_p => NULL()
-    dsdT_id_p => NULL()
-    dsdne_id_p => NULL()
     differentials = .false.
     s = 0
     if (present(dsdT) .or. present(dsdp) .or. present(dsdn)) then
@@ -1124,17 +1127,14 @@ contains
       if (present(dsdT)) then
         F_TT_p => F_TT
         dsdT = 0
-        dsdT_id_p => dsdT_id
       endif
       if (present(dsdP)) then
-        dsdP_id_p => dsdP_id
         dsdP = 0
       endif
       if (present(dsdn)) then
         F_n_p => F_n
         F_Tn_p => F_Tn
         F_Vn_p => F_Vn
-        dsdne_id_p => dsdne_id
         dsdne = 0
       endif
     endif
@@ -1172,21 +1172,23 @@ contains
     endif
 
     if (ideal_gas) then
-      dsdt_id = 0
-      dsdp_id = 0
       if (.not. res) then
-        P = pressure(T,v,n)
+        call Fres_ne(T,V,ne,F_V=F_V)
+        P = -Rgas*T*F_V + sumne*Rgas*T/V
+        zFac = V*P/(sumne*Rgas*T)
       endif
-      call idealEntropy_ne(T, P, ne, s_id, dsdT_id_p, dsdP_id_p, dsdne_id_p)
-      s = s + s_id
-      if (present(dsdt)) then
-        dsdt = dsdt + dsdt_id
+      ! Ideal contribution
+      call Fideal_ne(T,V,ne,F=F,F_T=F_T,F_n=F_n_p,F_TT=F_TT_p,F_Tn=F_Tn_p)
+
+      s = s - Rgas*(F + T*F_T + sumne*log(zFac))
+      if (present(dSdt)) then
+        dsdt = dsdt - Rgas*(2*F_T + T*F_TT) + Rgas*sumne/T
       endif
-      if (present(dsdp)) then
-        dsdp = dsdp + dsdp_id
+      if (present(dSdp)) then
+        dsdp = dsdp - Rgas*sumne/P
       endif
       if (present(dsdn)) then
-        dsdne = dsdne + dsdne_id
+        dsdne = dsdne - Rgas*(F_n + T*F_Tn - 1 + log(zFac))
       endif
     endif
 

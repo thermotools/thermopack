@@ -8,8 +8,9 @@ module ps_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
-  use thermopack_constants, only: get_templimits, LIQPH, VAPPH, continueOnError, &
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpTmin, tpTmax
+  use thermopack_constants, only: LIQPH, VAPPH, continueOnError, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use tp_solver, only: twoPhaseTPflash
   use state_functions
@@ -174,7 +175,8 @@ contains
     real, dimension(nc+5) :: param
 
     ierr = 0
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -294,7 +296,8 @@ contains
     real, dimension(n), intent(inout) :: dTv !< Calculated change in temperature [K]
     !
     real :: tMax, tMin
-    call get_templimits(tMin,tMax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     tMin = max(tMin,param(nc+3))
     tMax = min(tMax,param(nc+4))
     if (Tv(1) + dTv(1) < tMin) then
@@ -319,7 +322,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.
@@ -367,7 +371,8 @@ contains
     type(thermo_model), pointer :: act_mod_ptr
 
     act_mod_ptr => get_active_thermo_model()
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -564,7 +569,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.

@@ -4,18 +4,10 @@ module thermopack_constants
   save
   public
 
-  real, parameter :: Tmax=2000.0 !< K
-  real, parameter :: Tmin=50.0 !< K
   real, parameter :: kB_const=1.380649e-23 !< J/K (Boltzmanns const)
   real, parameter :: h_const=6.626069311e-34  !< Js (Plancks constant)
   real, parameter :: N_Avogadro = 6.02214076e23
   real, parameter :: Rgas_default = N_Avogadro*kB_const
-  real :: Rgas=Rgas_default !< J/mol/K
-  real :: kRgas=1000.0*Rgas_default !< J/kmol/K
-  real :: tpTmax=999.0 !< K
-  real :: tpTmin=80.0 !< K
-  real :: tpPmax=1.0e8 !< Pa
-  real :: tpPmin=1.0e1 !< Pa
   !> Apply special treatement to phases with low consentrations of electrolytes
   real, parameter :: elEps = 1.0e-25
   !> Trace components, and zero components
@@ -59,38 +51,6 @@ module thermopack_constants
   integer, parameter :: label_len = 100
 
 contains
-
-  subroutine set_Rgas(RgasIn)
-    implicit none
-    real, intent(in) :: RgasIn
-    Rgas = RgasIn
-    kRgas = 1000.0*Rgas
-  end subroutine set_Rgas
-
-  !----------------------------------------------------------------------
-  subroutine get_templimits(Tmin, Tmax)
-    !> Get EoSlib-specific max/min supported temperature
-    !>
-    !> \author EA, 2014-05
-    implicit none
-    ! Output:
-    real,     intent(out) :: Tmin !< Minimum supported temperature (K)
-    real,     intent(out) :: Tmax !< Maximum supported temperature (K)
-
-    Tmin = tpTmin
-    Tmax = tpTmax
-  end subroutine get_templimits
-
-  subroutine get_presslimits(Pmin, Pmax)
-    !> Get EoSlib-specific max/min supported pressure
-    implicit none
-    ! Output:
-    real,     intent(out) :: Pmin !< Minimum supported temperature (Pa)
-    real,     intent(out) :: Pmax !< Maximum supported temperature (Pa)
-
-    Pmin = tpPmin
-    Pmax = tpPmax
-  end subroutine get_presslimits
 
   !----------------------------------------------------------------------
   subroutine phaseIntToName(phase,phaseName)
