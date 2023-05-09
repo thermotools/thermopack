@@ -195,7 +195,7 @@ contains
     !! J. Chem. Phys., Vol. 116, No. 16 (2002).  All derivatives checked numerically.
     !! doi: 10.1063/1.1463435
     !----------------------------------------------------------------------------
-    real, intent(in) :: n_alpha(0:5)  !< temperature [K], n_alpha
+    real, intent(in) :: n_alpha(0:5)  !< Weighted densities
     !type(hs_diameter), intent(in) :: dhs !< Hard-sphere diameter and differentials
     real, intent(in) :: mu_ij, mu_ij_T !< mu=(d(i)*d(j))/(d(i)+d(j)) and temperature differential
     real, intent(out) :: g         !< reduced helmholtz energy [-]
