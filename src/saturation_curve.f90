@@ -329,7 +329,7 @@ contains
     real, optional, intent(in)  :: dS_override ! Override step length
     logical, optional, intent(in) :: exitOnTriplePoint ! Exit if passing triple point
     real, optional, intent(in)  :: Tme ! Exit on temperature
-    real, optional, intent(in)  :: step_size_factor ! Scale the default step size
+    real, optional, intent(in)  :: step_size_factor ! Scale the default step size limits, and in effect the step size
     ! Internal:
     real  :: T,p
     real, dimension(nc) :: K, lnfugG, lnfugL
@@ -402,14 +402,13 @@ contains
 
     if (present(dS_override)) then
       dS_max = dS_override
-      dS_min = min(0.25*dS_override, 0.05)
     else
       dS_max = 0.25
-      dS_min = 0.05
       if (present(step_size_factor)) then
         dS_max = dS_max*step_size_factor
       endif
     endif
+    dS_min = min(0.25*dS_max, 0.05)
     dS = dS_min
     tuning = 1.2
     sgn = 1.0

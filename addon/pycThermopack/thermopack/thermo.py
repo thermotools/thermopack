@@ -2608,7 +2608,7 @@ class thermo(object):
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
-            step_size_factor (float , optional): Tune default step size for envelope trace. Defaults to 1.0.
+            step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
             initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
@@ -2715,21 +2715,25 @@ class thermo(object):
         return return_tuple
 
     def get_pure_fluid_saturation_curve(self,
-                                        initial_pressure=None,
+                                        initial_pressure,
                                         initial_temperature=None,
-                                        z=None,
+                                        i=None,
                                         max_delta_press=0.2e5,
                                         nmax=100,
                                         log_linear_grid=False):
-        """Get the pure fluid saturation line
+        """Saturation interface
+        Get the pure fluid saturation line
+
+        To start mapping from and initial temperature, use:
+        get_pure_fluid_saturation_curve(None, initial_temperature=<my_temp>)
 
         Args:
-            initial_pressure (float, optional): Start mapping form dew point at initial pressure (Pa). Default None.
+            initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
             initial_temperature (float, optional): Start mapping form dew point at initial temperature (K). Default None.
-            z (array_like, optional): Composition (-). Default None. Must be given if self.nc > 1.
+            i (int, optional): FORTRAN component index. Default None. Must be given if self.nc > 1.
             max_delta_press (float , optional): Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
-            nmax (int , optional): Maximum number of points on envelope. Defaults to 100.
-            log_linear_grid (logical , optional): Use log-linear grid?. Defaults to False.
+            nmax (int, optional): Maximum number of points on envelope. Defaults to 100.
+            log_linear_grid (logical, optional): Use log-linear grid?. Defaults to False.
 
         Returns:
             ndarray: Temperature values (K)
@@ -2741,9 +2745,12 @@ class thermo(object):
         if (initial_pressure is None and initial_temperature is None) or \
            (initial_pressure is not None and initial_temperature is not None):
             raise Exception("One of initial_pressure and initial_temperature must be given")
-        if z is None:
+        if i is None:
             assert self.nc == 1
             z = np.ones(1)
+        else:
+            z = np.zeros(self.nc)
+            z[i-1] = 1.0
         z_c = (c_double * len(z))(*z)
         t_or_p_c = c_double(initial_temperature if initial_pressure is None
                             else initial_pressure)
@@ -2918,7 +2925,7 @@ class thermo(object):
 
     def get_binary_txy(self,
                        pressure,
-                       minimum_temperaturte=0.0,
+                       minimum_temperature=0.0,
                        maximum_dz=0.003,
                        maximum_dlns=0.005):
         """Saturation interface
@@ -2954,7 +2961,7 @@ class thermo(object):
         #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
 
         temp_c = c_double(0.0)
-        min_temp_c = c_double(minimum_temperaturte)
+        min_temp_c = c_double(minimum_temperature)
         ispec_c = c_int(2)
         press_c = c_double(pressure)
         max_press_c = c_double(0.0)
@@ -3126,10 +3133,8 @@ class thermo(object):
                                 byref(max_press_c),
                                 byref(min_press_c))
 
-        has_triple_point = (has_triple_point_c.value != 0)
-
-        return has_triple_point, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value
-
+        result = utils.BinaryTriplePoint(has_triple_point_c.value != 0, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value, temp)
+        return result
 
     def global_binary_plot(self,
                            maximum_pressure=1.5e7,
@@ -3893,9 +3898,9 @@ class thermo(object):
         return T,v,P
 
     def spinodal_point(self,
-                 z,
-                 pressure,
-                 temperature=None):
+                       z,
+                       pressure,
+                       temperature=None):
         """Stability interface
         Solve for spinodal curve point. Not able to solve for points cloes to critical point.
         Solve for temperature if given, otherwise solve for pressure.
@@ -4011,15 +4016,14 @@ class thermo(object):
 
         return np.array(temp_c), np.array(vol_c), np.array(press_c)
 
-    def solve_mu_t(self, temp, mu, rho_initial=None, phase=None):
+    def solve_mu_t(self, temp, mu, rho_initial):
         """Stability interface
         Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 
         Args:
             temp (float): Temperature (K)
-            mu (array_like): Flag to activate calculation. Defaults to None.
-            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
-            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+            mu (array_like): Flag to activate calculation.
+            rho_initial (array_like): Mol per volume (mol/m3).
 
         Returns:
             rho (array_like): Mol per volume (mol/m3).
@@ -4027,13 +4031,11 @@ class thermo(object):
         self.activate()
         temp_c = c_double(temp)
         mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial if rho_initial is not None else [0.0]*len(mu))
-        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
+        rho_c = (c_double * len(mu))(*rho_initial)
         ierr_c = c_int(0)
         self.s_solve_mu_t.argtypes = [POINTER(c_double),
                                       POINTER(c_double),
                                       POINTER(c_double),
-                                      POINTER(c_int),
                                       POINTER(c_int)]
 
         self.s_solve_mu_t.restype = None
@@ -4041,23 +4043,21 @@ class thermo(object):
         self.s_solve_mu_t(mu_c,
                           byref(temp_c),
                           rho_c,
-                          byref(ierr_c),
-                          phase_c)
+                          byref(ierr_c))
 
         if ierr_c.value != 0:
             raise Exception("mu-T solver failed")
 
         return np.array(rho_c)
 
-    def solve_lnf_t(self, temp, lnf, rho_initial=None, phase=None):
+    def solve_lnf_t(self, temp, lnf, rho_initial):
         """Stability interface
         Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
 
         Args:
             temp (float): Temperature (K)
-            lnf (array_like): Logaritm of fugacity coefficients. Defaults to None.
-            rho_initial (array_like, optional): Mol per volume (mol/m3). Defaults to None.
-            phase (int, optional): Phase indicator used when rho is unknown. Defaults to None.
+            lnf (array_like): Logaritm of fugacity coefficients.
+            rho_initial (array_like): Mol per volume (mol/m3).
 
         Returns:
             rho (array_like): Mol per volume (mol/m3).
@@ -4065,13 +4065,11 @@ class thermo(object):
         self.activate()
         temp_c = c_double(temp)
         lnf_c = (c_double * len(lnf))(*lnf)
-        rho_c = (c_double * len(lnf))(*rho_initial if rho_initial is not None else [0.0]*len(lnf))
-        phase_c = POINTER(c_int)(c_int(phase)) if phase else POINTER(c_int)()
+        rho_c = (c_double * len(lnf))(*rho_initial)
         ierr_c = c_int(0)
         self.s_solve_lnf_t.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
                                        POINTER(c_double),
-                                       POINTER(c_int),
                                        POINTER(c_int)]
 
         self.s_solve_lnf_t.restype = None
@@ -4079,8 +4077,7 @@ class thermo(object):
         self.s_solve_lnf_t(lnf_c,
                            byref(temp_c),
                            rho_c,
-                           byref(ierr_c),
-                           phase_c)
+                           byref(ierr_c))
 
         return np.array(rho_c)
 
@@ -4090,12 +4087,13 @@ class thermo(object):
                           phase,
                           n=50):
         """Stability interface
-        Trace isotherm from saturation line to spinodal. Solve for equilibrium phase.
+        Trace isotherm from saturation line to spinodal. Solve for phase in
+        chemical and thermal equilibrium with a phase defined by z anf phase flag..
 
         Args:
             temperature (float): Temperature (K)
             z (array_like): Composition (-)
-            phase (float): Phase (LIQPH or VAPPH)
+            phase (float): Phase with composition z (LIQPH or VAPPH)
             n (int): Number of points on curve. Default 50.
 
         Raises:
@@ -4103,7 +4101,7 @@ class thermo(object):
 
         Returns:
             np.ndarray: Volume of meta-stable phase (m3/mol)
-            np.ndarray: Density of equilibrium (mol/m3)
+            np.ndarray: Density (mol/m3) of equilibrium phase in each point, dimension (n,nc).
         """
         self.activate()
         temperature_c = c_double(temperature)

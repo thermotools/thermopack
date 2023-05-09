@@ -27,14 +27,13 @@ contains
   !>
   !> \author MH, July 2022
   !-----------------------------------------------------------------------------
-  subroutine solve_mu_t(mu,T,rho,ierr,phase)
+  subroutine solve_mu_t(mu,T,rho,ierr)
     use nonlinear_solvers
     implicit none
     real, dimension(nce),         intent(in)    :: mu !< Chemical potential
     real,                         intent(in)    :: T !< K - Temperature
     real, dimension(nce),         intent(inout) :: rho !< mol/m3 - Specific mole numbers
     integer,                      intent(out)   :: ierr !< Error flag
-    integer, optional,            intent(in)    :: phase !< Generate initial guess if rho is unavailable
     ! Locals
     real :: lnf(nce), muc(nce), lnfc(nce), V
     !
@@ -42,7 +41,7 @@ contains
     call thermo_tv(T,V,rho,lnfc)
     call chemical_potential_tv(t, v, rho, muc)
     lnf = (mu - muc)/(Rgas*T) + lnfc
-    call solve_lnf_t(lnf,T,rho,ierr,phase)
+    call solve_lnf_t(lnf,T,rho,ierr)
     ! print *,ierr
     ! call chemical_potential_tv(t, v, rho, muc)
     ! print *,"mu-muc",mu-muc
@@ -53,14 +52,13 @@ contains
   !>
   !> \author MH, July 2022
   !-----------------------------------------------------------------------------
-  subroutine solve_lnf_t(lnf,T,rho,ierr,phase)
+  subroutine solve_lnf_t(lnf,T,rho,ierr)
     use nonlinear_solvers
     implicit none
     real, dimension(nce),         intent(in)    :: lnf !< Fugacity coefficient
     real,                         intent(in)    :: T !< K - Temperature
     real, dimension(nce),         intent(inout) :: rho !< mol/m3 - Specific mole numbers
     integer,                      intent(out)   :: ierr !< Error flag
-    integer, optional,            intent(in)    :: phase !< Generate initial guess if rho is unavailable
     ! Locals
     real :: rhomax(nce), rhomin(nce)
     real, dimension(nce+1) :: param
@@ -164,7 +162,7 @@ contains
     integer, intent(in) :: phase !< Phase identifer
     integer, intent(out) :: ierr !< Error flag
     real, intent(out) :: v(n) !< Specific volume (m3/mol)
-    real, intent(out) :: rho_other(n,nce) !< Specific volume of liquid phase (-)
+    real, intent(out) :: rho_other(n,nce) !< Specific volume of other phase (-)
     ! Locals
     real :: vz, vo, p_sat, mu(nce), dmu(nce)
     real :: T_spin, vz_spin, P0
