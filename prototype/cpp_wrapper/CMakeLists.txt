@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.4)
+set(PYBIND11_PYTHON_VERSION "3.10")
+set(CMAKE_CXX_COMPILER /usr/bin/g++)
+set(CMAKE_C_COMPILER /usr/bin/gcc)
+
+set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "The OSX architecture")
+set(CMAKE_CXX_FLAGS "-std=c++17")
+add_subdirectory(/Users/vegardjervell/KineticGas/cpp/pybind11 build/pybind11_bin)
+set(SOURCES pybind11_bindings.cpp BaseEoS.cpp VariantEoS.cpp NotIdGas.cpp Variant1.cpp Variant2.cpp)
+
+project(demoproject)
+add_library(libgfortran SHARED IMPORTED GLOBAL)
+set_target_properties(libgfortran PROPERTIES IMPORTED_LOCATION /opt/homebrew/lib/gcc/12/libgfortran.dylib)
+pybind11_add_module(libdemo ${SOURCES})
+target_link_libraries(libdemo PUBLIC ${CMAKE_SOURCE_DIR}/libdemo_fortran.a libgfortran)
