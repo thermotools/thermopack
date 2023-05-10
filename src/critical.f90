@@ -1642,9 +1642,8 @@ contains
   !!
   !! \author MH, 2016-01
   !-------------------------------------------------------------------------
-  subroutine calcCriticalTV(t,v,Z,ierr,tol,p)
+  subroutine calcCriticalTV(t,v,Z,ierr,tol,v_min,p)
     use nonlinear_solvers
-    use eosdata, only: eosCPA
     use numconstants, only: Small
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
@@ -1654,6 +1653,7 @@ contains
     real, intent(inout) :: v !< Pressure [m3/mol]
     integer, intent(out) :: ierr !< Error flag
     real, optional, intent(in) :: tol !< Toleranse
+    real, optional, intent(in) :: v_min !< Override lower volume limit (m3/mol)
     real, optional, intent(out) :: p !< Pressure (Pa)
     ! Locals
     real :: t0, v0
@@ -1713,7 +1713,11 @@ contains
     solver%max_it = 200
     xmin(1) = tpTmin
     xmax(1) = tpTmax
-    xmin(2) = b + Small ! m3/mol
+    if (present(v_min)) then
+      xmin(2) = v_min
+    else
+      xmin(2) = b + Small ! m3/mol
+    endif
     xmax(2) = 100.0
     solver%ls_max_it = 3
     call nonlinear_solve(solver,critFunTV,critJacTV,critJacTV,limit_dx,&

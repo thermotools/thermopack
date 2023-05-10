@@ -613,7 +613,7 @@ module saftvrmie_datadb
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "LJF", &
       m = 1., &
-      sigma = 3.e-10, &
+      sigma = 3.0e-10, &
       eps_depth_divk = 30., &
       lambda_a = 6., &
       lambda_r = 12., &
