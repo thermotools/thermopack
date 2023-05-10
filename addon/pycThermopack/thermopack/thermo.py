@@ -4023,10 +4023,10 @@ class thermo(object):
         Args:
             temp (float): Temperature (K)
             mu (array_like): Flag to activate calculation.
-            rho_initial (array_like): Mol per volume (mol/m3).
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
 
         Returns:
-            rho (array_like): Mol per volume (mol/m3).
+            rho (array_like): Array of component densities (mol/m3).
         """
         self.activate()
         temp_c = c_double(temp)
@@ -4057,10 +4057,10 @@ class thermo(object):
         Args:
             temp (float): Temperature (K)
             lnf (array_like): Logaritm of fugacity coefficients.
-            rho_initial (array_like): Mol per volume (mol/m3).
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
 
         Returns:
-            rho (array_like): Mol per volume (mol/m3).
+            rho (array_like): Array of component densities (mol/m3).
         """
         self.activate()
         temp_c = c_double(temp)
