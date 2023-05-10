@@ -42,45 +42,47 @@ class State(object):
             init_specific (bool, optional): Treat inpus as specific variables. Defaults to False.
         """
         self.eos = eos
-        self.T = T
+        self._T = T
         if init_specific:  # Treat V, n and h as specific properties
             assert n_tot is not None
-            self.v = V
-            self.x = n
-            self.V = V*n_tot if V is not None else None
-            self.n = n*n_tot
+            self._v = V
+            self._x = n
+            self._V = V*n_tot if V is not None else None
+            self._n = n*n_tot
+            self._n_tot = n_tot
         else:
-            self.V = V
-            self.n = n
-            self.v = V/np.sum(n) if V is not None else None
-            self.x = n/np.sum(n)
-        if self.v is not None:
-            self.rho = np.zeros_like(self.n)
-            self.rho[:] = self.x[:] / self.v
+            self._V = V
+            self._n = n
+            self._n_tot = np.sum(n)
+            self._v = V/self._n_tot if V is not None else None
+            self._x = n/self._n_tot
+        if self._v is not None:
+            self._rho = np.zeros_like(self._n)
+            self._rho[:] = self._x[:] / self._v
         else:
-            self.rho = None
-        self.p = p
-        self.h = h
-        self.hE = None
-        self.s = None
-        self.sE = None
-        self.a = None
-        self.aE = None
-        self.u = None
-        self.uE = None
-        self.mu = None
-        self.muE = None
-        self.ph = ph
+            self._rho = None
+        self._p = p
+        self._h = h
+        self._h_res = None
+        self._s = None
+        self._s_res = None
+        self._a = None
+        self._a_res = None
+        self._u = None
+        self._u_res = None
+        self._mu = None
+        self._mu_res = None
+        self._ph = ph
 
     def __repr__(self):
         return "temperature 	density 	molefracs\n" + \
             "------------------------------------------\n" + \
-            f"{self.T:.5f} K   {np.sum(self.rho)*1e-3:.5f} kmol/m3    {self.x}"
+            f"{self._T:.5f} K   {np.sum(self._rho)*1e-3:.5f} kmol/m3    {self._x}"
 
     def __str__(self):
         return "temperature 	density 	molefracs\n" + \
             "------------------------------------------\n" + \
-            f"{self.T:.5f} K   {np.sum(self.rho)*1e-3:.5f} kmol/m3    {self.x}"
+            f"{self._T:.5f} K   {np.sum(self._rho)*1e-3:.5f} kmol/m3    {self._x}"
 
     @staticmethod
     def new_nvt(eos, T, V, n):
@@ -140,7 +142,7 @@ class State(object):
         Returns:
             State: State constructed form mu-T
         """
-        rho = eos.solve_mu_t(T, mu, rho_initial=rho0)
+        rho = eos.density_mu_t(T, mu, rho_initial=rho0)
         v = 1.0/np.sum(rho)
         x = rho*v
         return State(eos=eos, T=T, V=v, n=x, p=None, h=None, n_tot=1.0, init_specific=True)
@@ -159,190 +161,416 @@ class State(object):
         T, v, p = eos.critical(n=x)
         return State(eos=eos, T=T, V=v, n=x, p=p, n_tot=1.0, init_specific=True)
 
+    @property
+    def temperature(self):
+        """ Temperature (K)
+        """
+        return self._T
+
+    @property
+    def T(self):
+        """ Temperature (K)
+        """
+        return self._T
+
+    @property
+    def molefrac(self):
+        """ Mole fraction (mol/mol)
+        """
+        return self._x
+
+    @property
     def pressure(self):
-        if self.p is not None:
-            p = self.p
-        elif self.T is not None and \
-                self.v is not None and self.x is not None:
-            p, = self.eos.pressure_tv(self.T, self.v, self.x)
-            self.p = p
-        return p
+        """ Pressure (Pa)
+        """
+        if self._p is None and (self._T is not None and \
+                self._v is not None and self._x is not None):
+            self._p, = self.eos.pressure_tv(self._T, self._v, self._x)
+        return self._p
 
+    @property
+    def p(self):
+        """ Pressure (Pa)
+        """
+        return self.pressure
+
+    @property
     def specific_volume(self):
-        if self.v is not None:
-            v = self.v
-        elif self.T is not None and \
-                self.P is not None and \
-                self.x is not None and \
-                self.ph is not None:
-            v, = self.eos.specific_volume(self.T, self.p, self.x, self.ph)
-            self.v = v
-            self.V = v*np.sum(self.n)
-        return v
+        """ Specific volume (m3/mol)
+        """
+        if self._v is None and (self._T is not None and \
+                self._p is not None and \
+                self._x is not None and \
+                self._ph is not None):
+            self._v, = self.eos.specific_volume(self._T, self._p, self._x, self._ph)
+        return self._v
 
+    @property
+    def v(self):
+        """ Specific volume (m3/mol)
+        """
+        return self.specific_volume
+
+    @property
     def volume(self):
-        _ = self.specific_volume()
-        return self.V
+        """ Volume (m3)
+        """
+        if self._V is None:
+            self._V = self.specific_volume*self._n_tot
+        return self._V
 
+    @property
+    def V(self):
+        """ Volume (m3)
+        """
+        return self.volume
+
+    @property
     def partial_density(self):
-        rho = np.zeros_like(self.n)
-        if self.rho is None:
-            self.rho = np.zeros_like(self.n)
-            self.rho[:] = self.x[:]/self.specific_volume()
-        rho[:] = self.rho[:]
-        return self.rho
+        """ Partial densities (mol/m3)
+        """
+        if self._rho is None:
+            self._rho = np.zeros_like(self._n)
+            self._rho[:] = self._x[:]/self.specific_volume
+        return self._rho
 
+    @property
+    def rho(self):
+        """ Partial densities (mol/m3)
+        """
+        return self.partial_density
+
+    @property
     def specific_enthalpy(self):
-        if self.h is not None:
-            h = self.h
-        elif self.v is not None:
-            _ = self.volume()
-            h, = self.eos.enthalpy_tv(self.T, self.v, self.x)
-            self.h = h
-        return h
+        """ Specific entalpy (J/mol)
+        """
+        if self._h is None:
+            self._h, = self.eos.enthalpy_tv(self._T, self.specifc_volume, self._x)
+        return self._h
 
+    @property
+    def h(self):
+        """ Specific entalpy (J/mol)
+        """
+        return self.specific_enthalpy
+
+    @property
     def enthalpy(self):
-        _ = self.specific_enthalpy()
-        return self.h*np.sum(self.n)
+        """ Entalpy (J)
+        """
+        return self.specific_enthalpy*self._n_tot
 
+    @property
+    def H(self):
+        """ Entalpy (J)
+        """
+        return self.enthalpy
+
+    @property
     def enthalpy_density(self):
-        return self.specific_enthalpy()/self.v
+        """ Entalpy density (J/m3)
+        """
+        return self.specific_enthalpy/self._v
 
+    @property
+    def h_dens(self):
+        """ Entalpy density (J/m3)
+        """
+        return self.enthalpy_density
+
+    @property
     def specific_residual_enthalpy(self):
-        if self.hE is not None:
-            hE = self.hE
-        elif self.v is not None:
-            _ = self.volume()
-            hE, = self.eos.enthalpy_tv(self.T, self.v, self.x, property_flag="R")
-            self.hE = hE
-        return hE
+        """ Specific residual entalpy (J/mol)
+        """
+        if self._h_res is None:
+            self._h_res, = self.eos.enthalpy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+        return self._h_res
 
+    @property
+    def h_res(self):
+        """ Specific residual entalpy (J/mol)
+        """
+        return self.specific_residual_enthalpy
+
+    @property
     def residual_enthalpy_density(self):
-        return self.specific_residual_enthalpy()/self.v
+        """ Residual entalpy (J/m3)
+        """
+        return self.specific_residual_enthalpy/self._v
 
+    @property
+    def h_res_dens(self):
+        """ Residual entalpy (J/m3)
+        """
+        return self.residual_enthalpy_density
+
+    @property
     def residual_enthalpy(self):
-        _ = self.specific_residual_enthalpy()
-        return self.hE*np.sum(self.n)
+        """ Residual entalpy (J)
+        """
+        return self.specific_residual_enthalpy*self._n_tot
 
+    @property
+    def H_res(self):
+        """ Residual entalpy (J)
+        """
+        return self.residual_enthalpy
+
+    @property
     def specific_entropy(self):
-        if self.s is not None:
-            s = self.s
-        elif self.v is not None:
-            _ = self.volume()
-            s, = self.eos.entropy_tv(self.T, self.v, self.x)
-            self.s = s
-        return s
+        """ Specific entropy (J/mol/K)
+        """
+        if self._s is None:
+            self._s, = self.eos.entropy_tv(self._T, self.specifc_volume, self._x)
+        return self._s
 
+    @property
+    def s(self):
+        """ Specific entropy (J/mol/K)
+        """
+        return self.specific_entropy
+
+    @property
     def entropy(self):
-        _ = self.specific_entropy()
-        return self.s*np.sum(self.n)
+        """ Entropy (J/K)
+        """
+        return self.specific_entropy*self._n_tot
 
+    @property
+    def S(self):
+        """ Entropy (J/K)
+        """
+        return self.entropy
+
+    @property
     def entropy_density(self):
-        return self.specific_entropy()/self.v
+        """ Entropy density (J/K/m3)
+        """
+        return self.specific_entropy/self._v
 
+    @property
+    def s_dens(self):
+        """ Entropy density (J/K/m3)
+        """
+        return self.entropy_density
+
+    @property
     def specific_residual_entropy(self):
-        if self.sE is not None:
-            sE = self.sE
-        elif self.v is not None:
-            _ = self.volume()
-            sE, = self.eos.entropy_tv(self.T, self.v, self.x, property_flag="R")
-            self.sE = sE
-        return sE
+        """ Specific residual entropy (J/mol/K)
+        """
+        if self._s_res is None:
+            self._s_res, = self.eos.entropy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+        return self._s_res
 
+    @property
+    def s_res(self):
+        """ Specific residual entropy (J/mol/K)
+        """
+        return self.specific_residual_entropy
+
+    @property
     def residual_entropy_density(self):
-        if self.sE is not None:
-            sE = self.sE
-        elif self.v is not None:
-            _ = self.volume()
-            sE, = self.eos.entropy_tv(self.T, self.v, self.x, property_flag="R")
-            self.sE = sE
-        return sE/self.v
+        """ Residual entropy density (J/K/m3)
+        """
+        return self.specific_residual_entropy/self._v
 
+    @property
+    def s_res_dens(self):
+        """ Residual entropy density (J/K/m3)
+        """
+        return self.residual_entropy_density
+
+    @property
     def residual_entropy(self):
-        _ = self.specific_residual_entropy()
-        return self.sE*np.sum(self.n)
+        """ Residual entropy (J/K)
+        """
+        return self.specific_residual_entropy*self._n_tot
 
+    @property
+    def S_res(self):
+        """ Residual entropy (J/K)
+        """
+        return self.residual_entropy
+
+    @property
     def specific_helmholtz_energy(self):
-        if self.a is not None:
-            a = self.a
-        elif self.v is not None:
-            _ = self.volume()
-            a, = self.eos.helmholtz_tv(self.T, self.v, self.x)
-            self.a = a
-        return a
+        """ Specific Helmholtz energy (J/mol)
+        """
+        if self._a is None:
+            self._a, = self.eos.helmholtz_tv(self._T, self.specifc_volume, self._x)
+        return self._a
 
+    @property
+    def a(self):
+        """ Specific Helmholtz energy (J/mol)
+        """
+        return self.specific_helmholtz_energy
+
+    @property
     def helmholtz_energy(self):
-        _ = self.specific_helmholtz_energy()
-        return self.a*np.sum(self.n)
+        """ Helmholtz energy (J)
+        """
+        return self.specific_helmholtz_energy*self._n_tot
 
+    @property
+    def A(self):
+        """ Helmholtz energy (J)
+        """
+        return self.helmholtz_energy
+
+    @property
     def helmholtz_energy_density(self):
-        return self.specific_helmholtz_energy()/self.v
+        """ Helmholtz energy densty (J/m3)
+        """
+        return self.specific_helmholtz_energy/self._v
 
+    @property
+    def a_dens(self):
+        """ Helmholtz energy densty (J/m3)
+        """
+        return self.helmholtz_energy_density
+
+    @property
     def specific_residual_helmholtz_energy(self):
-        if self.aE is not None:
-            aE = self.aE
-        elif self.v is not None:
-            _ = self.volume()
-            aE, = self.eos.helmholtz_tv(self.T, self.v, self.x, property_flag="R")
-            self.aE = aE
-        return aE
+        """ Specific residual Helmholtz energy (J/mol)
+        """
+        if self._a_res is None:
+            self._a_res, = self.eos.helmholtz_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+        return self._a_res
 
+    @property
+    def a_res(self):
+        """ Specific residual Helmholtz energy (J/mol)
+        """
+        return self.specific_residual_helmholtz_energy
+
+    @property
     def residual_helmholtz_energy_density(self):
-        return self.specific_residual_helmholtz_energy()/self.v
+        """ Residual Helmholtz energy density (J/m3)
+        """
+        return self.specific_residual_helmholtz_energy/self._v
 
+    @property
+    def a_res_dens(self):
+        """ Residual Helmholtz energy density (J/m3)
+        """
+        return self.residual_helmholtz_energy_density
+
+    @property
     def residual_helmholtz_energy(self):
-        _ = self.specific_residual_helmholtz_energy()
-        return self.aE*np.sum(self.n)
+        """ Residual Helmholtz energy (J/mol)
+        """
+        return self.specific_residual_helmholtz_energy*self._n_tot
 
+    @property
+    def A_res(self):
+        """ Residual Helmholtz energy (J/mol)
+        """
+        return self.residual_helmholtz_energy
+
+    @property
     def specific_energy(self):
-        if self.u is not None:
-            u = self.u
-        elif self.v is not None:
-            _ = self.volume()
-            u, = self.eos.internal_energy_tv(self.T, self.v, self.x)
-            self.u = u
-        return u
+        """ Specific energy (J/mol)
+        """
+        if self._u is None:
+            self._u, = self.eos.internal_energy_tv(self._T, self.specifc_volume, self._x)
+        return self._u
 
+    @property
+    def u(self):
+        """ Specific energy (J/mol)
+        """
+        return self.specific_energy
+
+    @property
     def energy(self):
-        _ = self.specific_energy()
-        return self.u*np.sum(self.n)
+        """ Energy (J)
+        """
+        return self.specific_energy*self._n_tot
 
+    @property
+    def U(self):
+        """ Energy (J)
+        """
+        return self.energy
+
+    @property
     def energy_density(self):
-        return self.specific_energy()/self.v
+        """ Energy density (J/m3)
+        """
+        return self.specific_energy/self._v
 
+    @property
+    def u_dens(self):
+        """ Energy density (J/m3)
+        """
+        return self.energy_density
+
+    @property
     def specific_residual_energy(self):
-        if self.uE is not None:
-            uE = self.uE
-        elif self.v is not None:
-            _ = self.volume()
-            uE, = self.eos.internal_energy_tv(self.T, self.v, self.x, property_flag="R")
-            self.uE = uE
-        return uE
+        """ Specific residual energy (J/mol)
+        """
+        if self.u_res is None:
+            self.u_res, = self.eos.internal_energy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+        return self.u_res
 
+    @property
+    def u_res(self):
+        """ Specific residual energy (J/mol)
+        """
+        return self.specific_residual_energy
+
+    @property
     def residual_energy(self):
-        _ = self.specific_residual_energy()
-        return self.uE*np.sum(self.n)
+        """ Residual energy (J)
+        """
+        return self.specific_residual_energy*self._n_tot
 
+    @property
+    def U_res(self):
+        """ Residual energy (J)
+        """
+        return self.residual_energy
+
+    @property
     def residual_energy_density(self):
-        return self.specific_residual_energy()/self.v
+        """ Residual energy density (J/m3)
+        """
+        return self.specific_residual_energy/self._v
 
+    @property
+    def u_res_dens(self):
+        """ Residual energy density (J/m3)
+        """
+        return self.residual_energy_density
+
+    @property
     def chemical_potential(self):
-        if self.mu is not None:
-            mu = self.mu
-        elif self.v is not None:
-            _ = self.volume()
-            mu, = self.eos.chemical_potential_tv(self.T, self.v, self.x)
-            self.mu = mu
-        return mu
+        """ Chemical potential (J/mol)
+        """
+        if self._mu is None:
+            self._mu, = self.eos.chemical_potential_tv(self._T, self.specifc_volume, self._x)
+        return self._mu
 
+    @property
+    def mu(self):
+        """ Chemical potential (J/mol)
+        """
+        return self.chemical_potential
+
+    @property
     def residual_chemical_potential(self):
-        if self.muE is not None:
-            muE = self.muE
-        elif self.v is not None:
-            _ = self.volume()
-            muE, = self.eos.chemical_potential_tv(self.T, self.v, self.x, property_flag="R")
-            self.muE = muE
-        return muE
+        """ Residual chemical potential (J/mol)
+        """
+        if self._mu_res is None:
+            self._mu_res, = self.eos.chemical_potential_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+        return self._mu_res
+
+    @property
+    def mu_res(self):
+        """ Residual chemical potential (J/mol)
+        """
+        return self.residual_chemical_potential
 
 class Equilibrium(object):
     """
@@ -454,7 +682,7 @@ class Equilibrium(object):
 
     @property
     def temperature(self):
-        return self.vapour.T if self.vapour else self.liquid.T
+        return self.vapour.temperature if self.vapour else self.liquid.temperature
 
     @property
     def pressure(self):
@@ -537,19 +765,20 @@ class phase_state_list(State, list):
         return phase_state_list([State.new_mut(eos, mui, Ti, rho0i) for mui, Ti, rho0i in zip(mu, T, rho0)])
     @property
     def temperatures(self):
-        return np.array([state.T for state in self])
+        return np.array([state.temperature for state in self])
 
     @property
     def pressures(self):
-        return np.array([state.p for state in self])
+        return np.array([state.pressure for state in self])
 
     @property
     def molefracs(self):
-        return np.array([state.x for state in self])
+        return np.array([state.molefrac for state in self])
 
     @property
     def specific_volumes(self):
-        return np.array([state.specific_volume() for state in self])
+        return np.array([state.specific_volume for state in self])
+
 
 class PhaseDiagram(object):
     """
@@ -638,7 +867,7 @@ class PhaseDiagram(object):
                                         maximum_dz=0.003,
                                         maximum_dlns=0.01)
         vle_states = []
-        x, y, p = L1VE
+        x, y, T = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
             vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
