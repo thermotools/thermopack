@@ -86,6 +86,7 @@ OBJE = \
        $(ODIR)/nonlinear_solvers.o \
        $(ODIR)/utilities.o \
        $(ODIR)/apparent_composition.o \
+       $(ODIR)/solid_correlation_datadb.o \
        $(ODIR)/compdata.o \
        $(ODIR)/association_var.o \
        $(ODIR)/multipol_var.o \

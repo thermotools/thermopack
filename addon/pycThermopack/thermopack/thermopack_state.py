@@ -23,24 +23,6 @@ class State(object):
             n_tot (float, optional): Overall mol numbers. Defaults to None.
             init_specific (bool, optional): Treat inpus as specific variables. Defaults to False.
         """
-        self.reset(eos=eos, T=T, V=V, n=n, p=p, h=h, ph=ph,
-                   n_tot=n_tot, init_specific=init_specific)
-
-    def reset(self, eos, T, V, n, p=None, h=None, ph=None, n_tot=None, init_specific=False):
-        """
-        Reset state for new calculation
-
-        Args:
-            eos (thermo.thermo): Equation of state object
-            T (float): Temperature (K)
-            V (float): Volume (m^3 or m^3/mol)
-            n (np.ndarray): Mol numbers (mol or mol/mol)
-            p (float, optional): Pressure (Pa). Defaults to None.
-            h (float, optional): Enthalpy (J/mol). Defaults to None.
-            ph (int, optional): Phase identifyer (eos.LIQPH or eos.VAPPH). Defaults to None.
-            n_tot (float, optional): Overall mol numbers. Defaults to None.
-            init_specific (bool, optional): Treat inpus as specific variables. Defaults to False.
-        """
         self.eos = eos
         self._T = T
         if init_specific:  # Treat V, n and h as specific properties
@@ -73,6 +55,25 @@ class State(object):
         self._mu = None
         self._mu_res = None
         self._ph = ph
+
+    def reset(self, eos, T, V, n, p=None, h=None, ph=None, n_tot=None, init_specific=False):
+        """
+        Reset state for new calculation
+
+        Args:
+            eos (thermo.thermo): Equation of state object
+            T (float): Temperature (K)
+            V (float): Volume (m^3 or m^3/mol)
+            n (np.ndarray): Mol numbers (mol or mol/mol)
+            p (float, optional): Pressure (Pa). Defaults to None.
+            h (float, optional): Enthalpy (J/mol). Defaults to None.
+            ph (int, optional): Phase identifyer (eos.LIQPH or eos.VAPPH). Defaults to None.
+            n_tot (float, optional): Overall mol numbers. Defaults to None.
+            init_specific (bool, optional): Treat inpus as specific variables. Defaults to False.
+        """
+        self.__init__(eos=eos, T=T, V=V, n=n, p=p, h=h, ph=ph,
+                        n_tot=n_tot, init_specific=init_specific)
+
 
     def __repr__(self):
         return "temperature 	density 	molefracs\n" + \
@@ -183,7 +184,7 @@ class State(object):
     def pressure(self):
         """ Pressure (Pa)
         """
-        if self._p is None and (self._T is not None and \
+        if self._p is None and (self._T is not None and
                 self._v is not None and self._x is not None):
             self._p, = self.eos.pressure_tv(self._T, self._v, self._x)
         return self._p
@@ -198,9 +199,9 @@ class State(object):
     def specific_volume(self):
         """ Specific volume (m3/mol)
         """
-        if self._v is None and (self._T is not None and \
-                self._p is not None and \
-                self._x is not None and \
+        if self._v is None and (self._T is not None and
+                self._p is not None and
+                self._x is not None and
                 self._ph is not None):
             self._v, = self.eos.specific_volume(self._T, self._p, self._x, self._ph)
         return self._v
@@ -216,7 +217,7 @@ class State(object):
         """ Volume (m3)
         """
         if self._V is None:
-            self._V = self.specific_volume*self._n_tot
+            self._V = self.specific_volume * self._n_tot
         return self._V
 
     @property
@@ -245,7 +246,7 @@ class State(object):
         """ Specific entalpy (J/mol)
         """
         if self._h is None:
-            self._h, = self.eos.enthalpy_tv(self._T, self.specifc_volume, self._x)
+            self._h, = self.eos.enthalpy_tv(self._T, self.specific_volume, self._x)
         return self._h
 
     @property
@@ -283,7 +284,7 @@ class State(object):
         """ Specific residual entalpy (J/mol)
         """
         if self._h_res is None:
-            self._h_res, = self.eos.enthalpy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+            self._h_res, = self.eos.enthalpy_tv(self._T, self.specific_volume, self._x, property_flag="R")
         return self._h_res
 
     @property
@@ -321,7 +322,7 @@ class State(object):
         """ Specific entropy (J/mol/K)
         """
         if self._s is None:
-            self._s, = self.eos.entropy_tv(self._T, self.specifc_volume, self._x)
+            self._s, = self.eos.entropy_tv(self._T, self.specific_volume, self._x)
         return self._s
 
     @property
@@ -359,7 +360,7 @@ class State(object):
         """ Specific residual entropy (J/mol/K)
         """
         if self._s_res is None:
-            self._s_res, = self.eos.entropy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+            self._s_res, = self.eos.entropy_tv(self._T, self.specific_volume, self._x, property_flag="R")
         return self._s_res
 
     @property
@@ -397,7 +398,7 @@ class State(object):
         """ Specific Helmholtz energy (J/mol)
         """
         if self._a is None:
-            self._a, = self.eos.helmholtz_tv(self._T, self.specifc_volume, self._x)
+            self._a, = self.eos.helmholtz_tv(self._T, self.specific_volume, self._x)
         return self._a
 
     @property
@@ -435,7 +436,7 @@ class State(object):
         """ Specific residual Helmholtz energy (J/mol)
         """
         if self._a_res is None:
-            self._a_res, = self.eos.helmholtz_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+            self._a_res, = self.eos.helmholtz_tv(self._T, self.specific_volume, self._x, property_flag="R")
         return self._a_res
 
     @property
@@ -473,7 +474,7 @@ class State(object):
         """ Specific energy (J/mol)
         """
         if self._u is None:
-            self._u, = self.eos.internal_energy_tv(self._T, self.specifc_volume, self._x)
+            self._u, = self.eos.internal_energy_tv(self._T, self.specific_volume, self._x)
         return self._u
 
     @property
@@ -510,9 +511,9 @@ class State(object):
     def specific_residual_energy(self):
         """ Specific residual energy (J/mol)
         """
-        if self.u_res is None:
-            self.u_res, = self.eos.internal_energy_tv(self._T, self.specifc_volume, self._x, property_flag="R")
-        return self.u_res
+        if self._u_res is None:
+            self._u_res, = self.eos.internal_energy_tv(self._T, self.specific_volume, self._x, property_flag="R")
+        return self._u_res
 
     @property
     def u_res(self):
@@ -549,7 +550,7 @@ class State(object):
         """ Chemical potential (J/mol)
         """
         if self._mu is None:
-            self._mu, = self.eos.chemical_potential_tv(self._T, self.specifc_volume, self._x)
+            self._mu, = self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x)
         return self._mu
 
     @property
@@ -563,7 +564,7 @@ class State(object):
         """ Residual chemical potential (J/mol)
         """
         if self._mu_res is None:
-            self._mu_res, = self.eos.chemical_potential_tv(self._T, self.specifc_volume, self._x, property_flag="R")
+            self._mu_res, = self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x, property_flag="R")
         return self._mu_res
 
     @property
@@ -748,6 +749,11 @@ class phase_state_list(State, list):
     def no_inherit_static(self, *args, **kwargs):
         raise AttributeError('phase_state_list does not inherit static methods from State.')
 
+    def __repr__(self):
+        return [str(state) for state in self]
+    def __str__(self):
+        return '\n'.join(self.__repr__())
+
     @staticmethod
     def new_nvt(eos, T, V, n):
         return phase_state_list([State.new_nvt(eos, Ti, Vi, ni) for Ti, Vi, ni in zip(T, V, n)])
@@ -806,7 +812,7 @@ class PhaseDiagram(object):
         z = np.ones(1)
         t_vals, p_vals, vl_vals, vg_vals = eos.get_pure_fluid_saturation_curve(initial_pressure=None,
                                                                                initial_temperature=T,
-                                                                               z=None,
+                                                                               i=None,
                                                                                max_delta_press=0.2e5,
                                                                                nmax=n,
                                                                                log_linear_grid=False)
