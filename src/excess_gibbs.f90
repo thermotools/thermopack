@@ -87,10 +87,9 @@ contains
 
   !< Set up tau, C and alpha paramater for Huron-Vidal or NRTL.
   subroutine getHvNRTLParam(cbeos,t,tau,dtaudT,d2taudT2,Cij,alpha)
-    use thermopack_var, only: nce
+    use thermopack_var, only: nce, kRgas
     use eosdata
     use cubic_eos, only: cb_eos, cbMixHuronVidal, cbMixNRTL
-    use thermopack_constants, only: kRgas
     implicit none
     class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
@@ -248,7 +247,6 @@ contains
     use thermopack_var, only: nce
     use eosdata
     use cubic_eos, only: cb_eos
-    !use thermopack_constants, only: kRgas
     implicit none
     class(cb_eos), intent(in) :: cbeos
     real, intent(in) :: t !> Temperature
@@ -309,7 +307,6 @@ contains
     use cubic_eos, only: cb_eos, cbMixUNIFAC
     use thermopack_var, only: nce
     use unifac, only: Ge_UNIFAC_GH_SG, unifdb
-    !use thermopack_constants, only: kRgas
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, n(nce)
@@ -369,8 +366,7 @@ contains
        dGExInfdNi,d2GexInfdNidT,d2GExInfdNidNj)
     use eosdata
     use cubic_eos, only: cb_eos, isHVmixModel
-    use thermopack_constants, only: kRgas
-    use thermopack_var, only: nce
+    use thermopack_var, only: nce, kRgas
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     real, intent(in) :: t, zcomp(nce)

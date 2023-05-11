@@ -1,6 +1,6 @@
 !> MBWR module
 module mbwr
-  use thermopack_constants, only: kRgas ! [KRGAS] has units Pa*L/(mol*K) = 1e-3 J/(mol*K) = J/(mol*K)
+  use thermopack_var, only: kRgas ! [KRGAS] has units Pa*L/(mol*K) = 1e-3 J/(mol*K) = J/(mol*K)
   use thermopack_constants, only: VAPPH, LIQPH
   implicit none
   save

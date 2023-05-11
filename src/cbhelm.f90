@@ -70,7 +70,7 @@ contains
   !> \author MH, 2015-10
   !-----------------------------------------------------------------------------
   function cbFvvv(cubiceos,T,V) result(Fvvv)
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: kRgas
     implicit none
     class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V
@@ -240,7 +240,7 @@ contains
   !> \author MH, 2014-04
   !-----------------------------------------------------------------------------
   function cbPress(cubiceos,T,V) result(p)
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: kRgas
     implicit none
     class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V
@@ -270,7 +270,7 @@ contains
   !> \author MH, 2015-02
   !-----------------------------------------------------------------------------
   function cbPvv(cubiceos,T,V) result(pvv)
-    use thermopack_constants, only: kRgas
+    use thermopack_var, only: kRgas
     implicit none
     class(cb_eos), intent(in) :: cubiceos
     real, intent(in) :: T,V

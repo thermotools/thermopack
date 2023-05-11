@@ -23,13 +23,12 @@ contains
   !> Calculate WCA hard-sphere diameter
   !!
   !! \author Morten Hammer, 2020-11
-  subroutine calc_dhs_WCA(nc,sigma,eps_divk,T,n,dhs)
+  subroutine calc_dhs_WCA(nc,sigma,eps_divk,T,dhs)
     use saftvrmie_containers, only: saftvrmie_dhs
     ! Input
     integer, intent(in) :: nc !< Number of components
     real, intent(in) :: sigma, eps_divk
     real, intent(in) :: T !< Temperature (K)
-    real, intent(in) :: n(nc) !< Mol number (mol)
     ! Output
     type(saftvrmie_dhs), intent(inout) :: dhs !< The hard-sphere diameter
     ! Locals
@@ -54,7 +53,7 @@ contains
   !!
   !! \author Morten Hammer, Noember 2020
   subroutine calc_cavity_integral_LJ_Fres(nc,sigma,eps_divk,dhs,eta_hs,T,V,n,F,&
-       F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn)
+       F_T,F_V,F_n,F_TT,F_VV,F_TV,F_Tn,F_Vn,F_nn,disable_n_multiplication)
     use quadratures
     use saftvrmie_containers, only: saftvrmie_dhs, saftvrmie_zeta
     use saftvrmie_utils, only: convert_zeta_x_to_TVn
@@ -66,6 +65,7 @@ contains
     real, intent(in) :: sigma, eps_divk
     type(saftvrmie_dhs), intent(in) :: dhs !< The hard-sphere diameter
     type(saftvrmie_zeta), intent(in) :: eta_hs !< Hard sphere diameter packing fraction
+    logical, optional :: disable_n_multiplication
     ! Output
     real, intent(out) :: F
     real, optional, intent(out) :: F_T,F_V,F_TT,F_VV,F_TV
@@ -87,6 +87,7 @@ contains
     real :: y_hs, y_hs_e, y_hs_ee, y_hs_T, y_hs_TT, y_hs_eT
     real :: Fn_e,Fn_ee,Fn_eT,Fn_xT,Fn_xTT
     real :: Fn,Fn_T,Fn_V,Fn_n(nc),Fn_TT,Fn_VV,Fn_TV,Fn_Tn(nc),Fn_Vn(nc),Fn_nn(nc,nc)
+    logical :: disable_n_mult
     ! Get quadrature points
     call get_quadrature_positions(cavity_quadrature,x_vec,n_quad)
     call get_quadrature_weights(cavity_quadrature,w_vec,n_quad)
@@ -240,18 +241,29 @@ contains
          Fn,Fn_e,Fn_xT,Fn_ee,Fn_xTT,Fn_eT,0.0,0.0,0.0,&
          Fn_T,Fn_V,Fn_n,Fn_TT,Fn_VV,Fn_TV,Fn_Tn,Fn_Vn,Fn_nn,&
          difflevel=2)
-    ! Get Fn*n
-    Fn_nn(1,1) = n(1)*Fn_nn(1,1) + 2*Fn_n(1)
-    Fn_n = n(1)*Fn_n + Fn
-    Fn_Tn = n(1)*Fn_Tn + Fn_T
-    Fn_T = n(1)*Fn_T
-    Fn_TT = n(1)*Fn_TT
-    Fn_Vn = n(1)*Fn_Vn + Fn_V
-    Fn_V = n(1)*Fn_V
-    Fn_VV = n(1)*Fn_VV
-    Fn_TV = n(1)*Fn_TV
 
-    F = n(1)*Fn
+    if (present(disable_n_multiplication)) then
+      disable_n_mult = disable_n_multiplication
+    else
+      disable_n_mult = .false.
+    endif
+
+    if (disable_n_mult) then
+      F = Fn
+    else
+      ! Get Fn*n
+      Fn_nn(1,1) = n(1)*Fn_nn(1,1) + 2*Fn_n(1)
+      Fn_n = n(1)*Fn_n + Fn
+      Fn_Tn = n(1)*Fn_Tn + Fn_T
+      Fn_T = n(1)*Fn_T
+      Fn_TT = n(1)*Fn_TT
+      Fn_Vn = n(1)*Fn_Vn + Fn_V
+      Fn_V = n(1)*Fn_V
+      Fn_VV = n(1)*Fn_VV
+      Fn_TV = n(1)*Fn_TV
+      F = n(1)*Fn
+    endif
+    !
     if (present(F_T)) then
       F_T = Fn_T
     endif
@@ -324,7 +336,7 @@ contains
     call allocate_saftvrmie_dhs(nc,dhs)
     call allocate_saftvrmie_zeta(nc,eta_hs)
     ! The hard-sphere diameter
-    call calc_dhs_WCA(nc,sigma,eps_divk,T,n,dhs)
+    call calc_dhs_WCA(nc,sigma,eps_divk,T,dhs)
     ! Packing fraction
     !call calcZetaX_vdW_no_segments(nc,T,V,n,dhs,eta_hs)
     eta_hs%zx = eta
@@ -360,7 +372,7 @@ contains
     call allocate_saftvrmie_dhs(nc,dhs)
     call allocate_saftvrmie_zeta(nc,eta_hs)
     ! The hard-sphere diameter
-    call calc_dhs_WCA(nc,sigma,eps_divk,T,n,dhs)
+    call calc_dhs_WCA(nc,sigma,eps_divk,T,dhs)
     ! Packing fraction
     call calcZetaX_vdW_no_segments(nc,T,V,n,dhs,eta_hs)
 
@@ -613,23 +625,23 @@ subroutine testing_WCA_lj()
   call allocate_saftvrmie_dhs(1,dhs1)
   call allocate_saftvrmie_dhs(1,dhs2)
   T = 45.0
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   eps = T*d
-  call calc_dhs_WCA(1,sigma,eps_divk,T-eps,n,dhs1)
-  call calc_dhs_WCA(1,sigma,eps_divk,T+eps,n,dhs2)
+  call calc_dhs_WCA(1,sigma,eps_divk,T-eps,dhs1)
+  call calc_dhs_WCA(1,sigma,eps_divk,T+eps,dhs2)
   print *,"d",dhs%d
   print *,"d_T",dhs%d_T,(dhs2%d-dhs1%d)/(2*eps)
   print *,"d_TT",dhs%d_TT,(dhs2%d_T-dhs1%d_T)/(2*eps)
 
   call allocate_saftvrmie_zeta(1,zeta)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   call calcZetaX_vdW_no_segments(1,T,V,n,dhs,zeta)
   call allocate_saftvrmie_zeta(1,zeta1)
   call allocate_saftvrmie_zeta(1,zeta2)
   !
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs1)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs1)
   call calcZetaX_vdW_no_segments(1,T,V-V*eps,n,dhs1,zeta1)
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs2)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs2)
   call calcZetaX_vdW_no_segments(1,T,V+V*eps,n,dhs2,zeta2)
   print *,"Testing hypotetical pure fluid packing fraction"
   print *,"Volume"
@@ -646,10 +658,10 @@ subroutine testing_WCA_lj()
   print *,zeta%zx_Vnn(1,:),(zeta2%zx_nn(1,:) - zeta1%zx_nn(1,:))/(2*V*eps)
 
   n(1) = n0(1) - eps
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs1)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs1)
   call calcZetaX_vdW_no_segments(1,T,V,n,dhs1,zeta1)
   n(1) = n0(1) + eps
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs2)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs2)
   call calcZetaX_vdW_no_segments(1,T,V,n,dhs2,zeta2)
   print *,"n(1)"
   print *,zeta%zx_n(1),(zeta2%zx - zeta1%zx)/(2*eps)
@@ -662,9 +674,9 @@ subroutine testing_WCA_lj()
 
   n = n0
   eps = T*1.0e-5
-  call calc_dhs_WCA(1,sigma,eps_divk,T-eps,n,dhs1)
+  call calc_dhs_WCA(1,sigma,eps_divk,T-eps,dhs1)
   call calcZetaX_vdW_no_segments(1,T-eps,V,n,dhs1,zeta1)
-  call calc_dhs_WCA(1,sigma,eps_divk,T+eps,n,dhs2)
+  call calc_dhs_WCA(1,sigma,eps_divk,T+eps,dhs2)
   call calcZetaX_vdW_no_segments(1,T+eps,V,n,dhs2,zeta2)
   print *,"Temperature"
   print *,zeta%zx_T,(zeta2%zx - zeta1%zx)/(2*eps)
@@ -680,7 +692,7 @@ subroutine testing_WCA_lj()
   eta = 0.53
   T = eps_divk*1.5
   T0 = T
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   d_star = dhs%d(1,1)/sigma
   d_star_t = dhs%d_T(1,1)/sigma
   d_star_tt = dhs%d_TT(1,1)/sigma
@@ -705,7 +717,7 @@ subroutine testing_WCA_lj()
 
   eps = d*T
   T = T0 - eps
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   d_star = dhs%d(1,1)/sigma
   d_star_t = dhs%d_T(1,1)/sigma
   d_star_tt = dhs%d_TT(1,1)/sigma
@@ -719,7 +731,7 @@ subroutine testing_WCA_lj()
   call cavity_distribution_function(eta, r_hs, r_hs_T, r_hs_TT, y_hs1, &
        y_hs_e1, y_hs_ee1, y_hs_T1, y_hs_TT1, y_hs_eT1)
   T = T0 + eps
-  call calc_dhs_WCA(1,sigma,eps_divk,T,n,dhs)
+  call calc_dhs_WCA(1,sigma,eps_divk,T,dhs)
   d_star = dhs%d(1,1)/sigma
   d_star_t = dhs%d_T(1,1)/sigma
   d_star_tt = dhs%d_TT(1,1)/sigma

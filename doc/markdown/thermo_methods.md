@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-09T11:30:12.942288
+Generated at: 2023-04-11T13:44:24.532600
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -44,6 +44,7 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperaturte00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_sizeNone-calc_vFalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
@@ -984,29 +985,11 @@ Do isenthalpic-isobaric (HP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1035,29 +1018,11 @@ Do isentropic-isobaric (SP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1082,25 +1047,9 @@ Do isothermal-isobaric (TP) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (phase fractions, phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1137,33 +1086,11 @@ Do isoenergetic-isochoric (UV) flash
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct holding the result of the flash (Temperature, pressure, phase fractions,
 
-&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
-
-&nbsp;&nbsp;&nbsp;&nbsp; **x (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **y (ndarray):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Gas molar composition
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaV (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar gas phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **betaL (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar liquid phase fraction
-
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase identifier (iTWOPH/iLIQPH/iVAPPH)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; phase compositions and phase identifier)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1178,6 +1105,7 @@ Bubble- and dew point calculations and phase envelopes.
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperaturte00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_sizeNone-calc_vFalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
@@ -1351,11 +1279,78 @@ Calculate binary three phase envelope
 
 &nbsp;&nbsp;&nbsp;&nbsp; **maximum_dz (float, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  [description]. Defaults to 0.003.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum composition step. Defaults to 0.003.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **maximum_dlns (float, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  [description]. Defaults to 0.01.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **tuple of arrays:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  LLE, L1VE, L2VE
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **LLE :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Liquid 2 Equilibrium
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[0] -> Liquid 1 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[1] -> Liquid 2 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[2] -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **L1VE :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Vapour Equilibrium
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[0] -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[1] -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[2] -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **L2VE :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 2 - Vapour Equilibrium
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[0] -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[1] -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[2] -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_binary_txy(self, pressure, minimum_temperaturte=0.0, maximum_dz=0.003, maximum_dlns=0.005)`
+Calculate binary isobaric three phase envelope
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **pressure (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **minimum_temperature (float, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum temperature (K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **maximum_dz (float, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum composition step. Defaults to 0.003.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **maximum_dlns (float, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

@@ -8,8 +8,8 @@ module test_saftvrmie
   use saftvrmie_chain
   use saftvrmie_hardsphere
   use saftvrmie_options
-  use thermopack_var, only: nce, get_active_thermo_model, thermo_model
-  use thermopack_constants, only: LIQPH, VAPPH, Rgas
+  use thermopack_var, only: nce, get_active_thermo_model, thermo_model, Rgas
+  use thermopack_constants, only: LIQPH, VAPPH
   use critical, only: calcCritical, calcCriticalTV
   use eostv, only: pressure, secondvirialcoeffmatrix
   use quadratures, only: GAUSS_10

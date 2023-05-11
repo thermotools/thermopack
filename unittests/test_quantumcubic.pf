@@ -4,7 +4,7 @@ module test_quantumcubic
   use volume_shift, only: initVolumeShift, vshift_F_terms, PENELOUX
   use eoslibinit
   use critical, only: calcCritical, calcCriticalTV
-  use thermopack_constants, only: RGAS, VAPPH, LIQPH
+  use thermopack_constants, only: VAPPH, LIQPH
   use eos, only: specificVolume
   use eosTV, only: pressure
   use cbAlpha, only: setSingleAlphaCorr

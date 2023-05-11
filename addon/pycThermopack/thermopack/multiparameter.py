@@ -9,15 +9,14 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import thermo, c_len_type
 
-c_len_type = thermo.c_len_type
 
-class multiparam(thermo.thermo):
+class multiparam(thermo):
     """
     Interface to multiparameter EOS
     """
-    def __init__(self, comps=None, eos=None):
+    def __init__(self, comps=None, eos=None, reference_state="DEFAULT"):
         """Initialize multiparameter EOS
 
         Unless both parameters are specified, model must be initialized for specific components later by direct call
@@ -26,6 +25,7 @@ class multiparam(thermo.thermo):
         Args:
             comps (str, optional): Comma separated list of component names
             eos (str, optional): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
+            reference_state (str): Reference state. ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
         """
         # Load dll/so
         super(multiparam, self).__init__()
@@ -34,27 +34,31 @@ class multiparam(thermo.thermo):
         self.eoslibinit_init_multiparameter = getattr(self.tp, self.get_export_name("eoslibinit", "init_multiparameter"))
 
         if None not in (comps, eos):
-            self.init(comps, eos)
+            self.init(comps, eos, reference_state)
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, eos):
+    def init(self, comps, eos, reference_state="DEFAULT"):
         """Initialize multiparameter EOS
 
         Args:
             comps (str): Comma separated list of component names
-            eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
+            eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19, MEOS, GERG2008)
+            reference_state (str): Reference state. ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
         """
         self.activate()
         eos_c = c_char_p(eos.encode('ascii'))
         eos_len = c_len_type(len(eos))
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
-
+        ref_state_c = c_char_p(reference_state.encode('ascii'))
+        ref_state_len = c_len_type(len(reference_state))
         self.eoslibinit_init_multiparameter.argtypes = [c_char_p,
                                                         c_char_p,
+                                                        c_char_p,
+                                                        c_len_type,
                                                         c_len_type,
                                                         c_len_type]
 
@@ -62,7 +66,9 @@ class multiparam(thermo.thermo):
 
         self.eoslibinit_init_multiparameter(comp_string_c,
                                             eos_c,
+                                            ref_state_c,
                                             comp_string_len,
-                                            eos_len)
+                                            eos_len,
+                                            ref_state_len)
 
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))

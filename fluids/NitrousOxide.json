@@ -83,6 +83,35 @@
     "Q": 0.0,
     "bib_reference": ""
   },
+  "sublimation_curve": {
+    "bib_reference": "Bell, I.H. (2018)",
+    "ref": "DEFAULT",
+    "correlation": "SL-2",
+    "triple_temperature": 182.33,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 1.0,
+    "n_coeff": 4,
+    "n_coeff_1": 4,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.37978754e1,
+      -3.18120979e3,
+      6.34515147e4,
+      -4.18996537e6,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

@@ -67,6 +67,7 @@ contains
   !> If no kij is stored in the database PCkijdb, it returns 0.0.
   function getPCkij(eosidx,uid1,uid2,param_ref) result(kijvalue)
     use stringmod, only: str_eq, string_match
+    use eosdata, only: eosPC_SAFT, eosSPC_SAFT, eosOPC_SAFT
     integer, intent(in) :: eosidx
     character(len=*), intent(in) :: uid1, uid2, param_ref
     real :: kijvalue
