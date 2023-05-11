@@ -29,9 +29,6 @@ must conform to the following style guide for docstrings:
                     (float) : The colon here is also necessary.
                 '''
 """
-# Support for python2
-from __future__ import print_function
-
 import sys
 from ctypes import *
 from os import path
@@ -68,6 +65,7 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "add_eos"))
         self.s_delete_eos = getattr(
             self.tp, self.get_export_name("thermopack_var", "delete_eos"))
+        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_activate_model = getattr(
             self.tp, self.get_export_name("thermopack_var", "activate_model"))
 
@@ -195,12 +193,17 @@ class thermo(object):
             self.tp, self.get_export_name("saturation", "safe_dewp"))
         self.s_envelope_plot = getattr(
             self.tp, self.get_export_name("saturation_curve", "envelopeplot"))
+        self.s_pure_fluid_saturation_wrapper = getattr(
+            self.tp, self.get_export_name("saturation_curve",
+                                          "pure_fluid_saturation_wrapper"))
         self.s_binary_plot = getattr(
             self.tp, self.get_export_name("binaryplot", "vllebinaryxy"))
         self.s_global_binary_plot = getattr(
             self.tp, self.get_export_name("binaryplot", "global_binary_plot"))
         self.s_get_bp_term = getattr(
             self.tp, self.get_export_name("binaryplot", "get_bp_term"))
+        self.s_three_phase_line = getattr(
+            self.tp, self.get_export_name("binaryplot", "threephaseline"))
         self.s_solid_envelope_plot = getattr(
             self.tp, self.get_export_name("solid_saturation", "solidenvelopeplot"))
         self.s_melting_pressure_correlation = getattr(
@@ -219,6 +222,18 @@ class thermo(object):
         # Stability
         self.s_crit_tv = getattr(
             self.tp, self.get_export_name("critical", "calccriticaltv"))
+        self.s_map_stability_limit = getattr(
+            self.tp, self.get_export_name("spinodal", "map_stability_limit"))
+        self.s_initial_stab_limit_point = getattr(
+            self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
+        self.s_map_meta_isentrope = getattr(
+            self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_mu_t"))
+        self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
+            "mut_solver", "solve_lnf_t"))
+        self.s_map_meta_isotherm = getattr(self.tp, self.get_export_name(
+            "mut_solver", "map_meta_isotherm"))
 
         # Virials
         self.s_virial_coeffcients = getattr(
@@ -260,10 +275,9 @@ class thermo(object):
         """Internal
         de-allocate FORTRAN memory for this class instance
         """
-        self.s_delete_eos.argtypes = [POINTER(c_int)]
         self.s_delete_eos.restype = None
         self.s_delete_eos(self.model_index_c)
-        self.model_index_c = c_int(0)
+        self.model_index_c = None
 
     def get_model_id(self):
         """Internal
@@ -1543,7 +1557,7 @@ class thermo(object):
                                 byref(phase_c),
                                 byref(ierr_c))
 
-        if ierr_c.value != 0:
+        if ierr_c.value > 0 or ierr_c.value < -1:
             raise Exception("PS flash calclualtion failed")
 
         x = np.array(x_c)
@@ -2584,8 +2598,8 @@ class thermo(object):
         return press, x
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
-                              minimum_temperature=None, step_size=None,
-                              calc_v=False, initial_temperature=None):
+                              minimum_temperature=None, step_size_factor=1.0,
+                              step_size=None, calc_v=False, initial_temperature=None):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2594,7 +2608,8 @@ class thermo(object):
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
-            step_size (float , optional): Tune step size of envelope trace. Defaults to None.
+            step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
+            step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
             initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
                                                   Overrides initial pressure. Defaults to None (K).
@@ -2620,15 +2635,10 @@ class thermo(object):
         null_pointer = POINTER(c_double)()
         criconden_c = null_pointer
         crit_c = null_pointer
-        if step_size is None:
-            ds_c = null_pointer
-        else:
-            ds_c = POINTER(c_double)(c_double(step_size))
+        ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
+        step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
         exitOnTriplePoint_c = POINTER(c_int)()
-        if minimum_temperature is None:
-            tme_c = null_pointer
-        else:
-            tme_c = POINTER(c_double)(c_double(minimum_temperature))
+        tme_c = null_pointer if minimum_temperature is None else POINTER(c_double)(c_double(minimum_temperature))
 
         self.s_envelope_plot.argtypes = [POINTER(c_double),
                                          POINTER(c_double),
@@ -2646,6 +2656,7 @@ class thermo(object):
                                          POINTER(c_double),
                                          POINTER(c_double),
                                          POINTER(c_int),
+                                         POINTER(c_double),
                                          POINTER(c_double)]
 
         self.s_envelope_plot.restype = None
@@ -2666,7 +2677,8 @@ class thermo(object):
                              crit_c,
                              ds_c,
                              exitOnTriplePoint_c,
-                             tme_c)
+                             tme_c,
+                             step_size_factor_c)
 
         t_vals = np.array(Ta_c[0:n_c.value])
         p_vals = np.array(Pa_c[0:n_c.value])
@@ -2701,6 +2713,89 @@ class thermo(object):
                 return_tuple += (v_vals, )
 
         return return_tuple
+
+    def get_pure_fluid_saturation_curve(self,
+                                        initial_pressure,
+                                        initial_temperature=None,
+                                        i=None,
+                                        max_delta_press=0.2e5,
+                                        nmax=100,
+                                        log_linear_grid=False):
+        """Saturation interface
+        Get the pure fluid saturation line
+
+        To start mapping from and initial temperature, use:
+        get_pure_fluid_saturation_curve(None, initial_temperature=<my_temp>)
+
+        Args:
+            initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature (K). Default None.
+            i (int, optional): FORTRAN component index. Default None. Must be given if self.nc > 1.
+            max_delta_press (float , optional): Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+            nmax (int, optional): Maximum number of points on envelope. Defaults to 100.
+            log_linear_grid (logical, optional): Use log-linear grid?. Defaults to False.
+
+        Returns:
+            ndarray: Temperature values (K)
+            ndarray: Pressure values (Pa)
+            ndarray: Specific liquid volume (m3/mol)
+            ndarray: Specific gas volume (m3/mol)
+        """
+        self.activate()
+        if (initial_pressure is None and initial_temperature is None) or \
+           (initial_pressure is not None and initial_temperature is not None):
+            raise Exception("One of initial_pressure and initial_temperature must be given")
+        if i is None:
+            assert self.nc == 1
+            z = np.ones(1)
+        else:
+            z = np.zeros(self.nc)
+            z[i-1] = 1.0
+        z_c = (c_double * len(z))(*z)
+        t_or_p_c = c_double(initial_temperature if initial_pressure is None
+                            else initial_pressure)
+        start_from_temp_c = c_int(initial_pressure is None)
+        nmax_c = c_int(nmax)
+        max_delta_press_c = c_double(max_delta_press)
+        log_linear_grid_c = c_int(log_linear_grid)
+        Ta_c = (c_double * nmax)(0.0)
+        Pa_c = (c_double * nmax)(0.0)
+        vla_c = (c_double * nmax)(0.0)
+        vga_c = (c_double * nmax)(0.0)
+        n_c = c_int(0)
+
+        self.s_pure_fluid_saturation_wrapper.argtypes = [POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_double),
+                                                         POINTER(c_int),
+                                                         POINTER(c_int)]
+
+        self.s_pure_fluid_saturation_wrapper.restype = None
+
+        self.s_pure_fluid_saturation_wrapper(z_c,
+                                             byref(t_or_p_c),
+                                             byref(start_from_temp_c),
+                                             byref(max_delta_press_c),
+                                             byref(log_linear_grid_c),
+                                             Ta_c,
+                                             Pa_c,
+                                             vla_c,
+                                             vga_c,
+                                             byref(nmax_c),
+                                             byref(n_c))
+
+        t_vals = np.array(Ta_c[0:n_c.value])
+        p_vals = np.array(Pa_c[0:n_c.value])
+        vl_vals = np.array(vla_c[0:n_c.value])
+        vg_vals = np.array(vga_c[0:n_c.value])
+
+        return t_vals, p_vals, vl_vals, vg_vals
 
     def get_binary_pxy(self,
                        temp,
@@ -2830,7 +2925,7 @@ class thermo(object):
 
     def get_binary_txy(self,
                        pressure,
-                       minimum_temperaturte=0.0,
+                       minimum_temperature=0.0,
                        maximum_dz=0.003,
                        maximum_dlns=0.005):
         """Saturation interface
@@ -2848,15 +2943,15 @@ class thermo(object):
             LLE : Liquid 1 - Liquid 2 Equilibrium
                 LLE[0] -> Liquid 1 composition (mole fraction of component 1)
                 LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Pressure [Pa]
+                LLE[2] -> Temperature [K]
             L1VE : Liquid 1 - Vapour Equilibrium
                 L1VE[0] -> Bubble line composition (mole fraction of component 1)
                 L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Pressure [Pa]
+                L1VE[2] -> Temperature [K]
             L2VE : Liquid 2 - Vapour Equilibrium
                 L2VE[0] -> Bubble line composition (mole fraction of component 1)
                 L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Pressure [Pa]
+                L2VE[2] -> Temperature [K]
 
             If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
@@ -2866,7 +2961,7 @@ class thermo(object):
         #c_int.in_dll(self.tp, self.get_export_name("binaryplot", "maxpoints")).value
 
         temp_c = c_double(0.0)
-        min_temp_c = c_double(minimum_temperaturte)
+        min_temp_c = c_double(minimum_temperature)
         ispec_c = c_int(2)
         press_c = c_double(pressure)
         max_press_c = c_double(0.0)
@@ -2917,36 +3012,36 @@ class thermo(object):
         if nLLE > 0:
             xLLE = np.zeros(nLLE)
             wLLE = np.zeros(nLLE)
-            pLLE = np.zeros(nLLE)
+            TLLE = np.zeros(nLLE)
             for i in range(nLLE):
                 xLLE[i] = res_c[i*9]
                 wLLE[i] = res_c[i*9+1]
-                pLLE[i] = res_c[i*9+2]
-            LLE = (xLLE, wLLE, pLLE)
+                TLLE[i] = res_c[i*9+2]
+            LLE = (xLLE, wLLE, TLLE)
         else:
             LLE = (None, None, None)
 
         if nL1VE > 0:
             xL1VE = np.zeros(nL1VE)
             wL1VE = np.zeros(nL1VE)
-            pL1VE = np.zeros(nL1VE)
+            TL1VE = np.zeros(nL1VE)
             for i in range(nL1VE):
                 xL1VE[i] = res_c[i*9+3]
                 wL1VE[i] = res_c[i*9+4]
-                pL1VE[i] = res_c[i*9+5]
-            L1VE = (xL1VE, wL1VE, pL1VE)
+                TL1VE[i] = res_c[i*9+5]
+            L1VE = (xL1VE, wL1VE, TL1VE)
         else:
             L1VE = (None, None, None)
 
         if nL2VE > 0:
             xL2VE = np.zeros(nL2VE)
             wL2VE = np.zeros(nL2VE)
-            pL2VE = np.zeros(nL2VE)
+            TL2VE = np.zeros(nL2VE)
             for i in range(nL2VE):
                 xL2VE[i] = res_c[i*9+6]
                 wL2VE[i] = res_c[i*9+7]
-                pL2VE[i] = res_c[i*9+8]
-            L2VE = (xL2VE, wL2VE, pL2VE)
+                TL2VE[i] = res_c[i*9+8]
+            L2VE = (xL2VE, wL2VE, TL2VE)
         else:
             L2VE = (None, None, None)
 
@@ -2979,6 +3074,67 @@ class thermo(object):
                            message_len)
         message = message_c.value.decode('ascii')
         return message
+
+    def binary_triple_point_pressure(self,
+                                     temp,
+                                     maximum_pressure=1.5e7,
+                                     minimum_pressure=1.0e4):
+        """Saturation interface
+        Calculate triple point for binary mixture at specified temperature
+
+        Args:
+            temp (float): Temperature (K)
+            maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e4.
+
+        Returns:
+            has_triple_point (boolean): Does the mixture have a triple point?
+            x (np.ndarray): Liquid 1 composition
+            y (np.ndarray): Gas composition
+            w (np.ndarray): Liquid 2 composition
+            P (float): Pressure (Pa)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        min_temp_c = c_double(0.0)
+        ispec_c = c_int(1) # Specify temperature
+        has_triple_point_c = c_int(0)
+        hasLLE_c = c_int(0)
+        press_c = c_double(0.0)
+        max_press_c = c_double(maximum_pressure)
+        min_press_c = c_double(minimum_pressure)
+        x_c = (c_double * self.nc)(0.0)
+        y_c = (c_double * self.nc)(0.0)
+        w_c = (c_double * self.nc)(0.0)
+
+        self.s_three_phase_line.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_int),
+                                            POINTER(c_int),
+                                            POINTER(c_int),
+                                            POINTER(c_double),
+                                            POINTER(c_double),
+                                            POINTER(c_double)]
+
+        self.s_three_phase_line.restype = None
+
+        self.s_three_phase_line(byref(temp_c),
+                                byref(press_c),
+                                x_c,
+                                y_c,
+                                w_c,
+                                byref(has_triple_point_c),
+                                byref(hasLLE_c),
+                                byref(ispec_c),
+                                byref(min_temp_c),
+                                byref(max_press_c),
+                                byref(min_press_c))
+
+        result = utils.BinaryTriplePoint(has_triple_point_c.value != 0, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value, temp)
+        return result
 
     def global_binary_plot(self,
                            maximum_pressure=1.5e7,
@@ -3586,7 +3742,7 @@ class thermo(object):
         return pci.value
 
     def critical_volume(self, i):
-        '''
+        '''Stability interface
         Get specific critical volume of component i
         Args:
             i (int) component FORTRAN index
@@ -3617,6 +3773,372 @@ class thermo(object):
                                     byref(tnbi))
 
         return vci.value
+
+    def get_critical_parameters(self, i):
+        '''Stability interface
+        Get critical temperature, volume and pressure of component i
+
+        Args:
+            i (int): component FORTRAN index (first index is 1)
+        returns:
+            float: critical temperature (K)
+            float: critical volume (m3/mol)
+            float: critical pressure (Pa)
+        '''
+        self.activate()
+        comp_c = c_int(i)
+
+        w = c_double(0.0)
+        tci = c_double(0.0)
+        pci = c_double(0.0)
+        vci = c_double(0.0)
+        tnbi = c_double(0.0)
+
+        self.s_eos_getCriticalParam.argtypes = [POINTER(c_int),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+        self.s_eos_getCriticalParam.restype = None
+
+        self.s_eos_getCriticalParam(byref(comp_c),
+                                    byref(tci),
+                                    byref(pci),
+                                    byref(w),
+                                    byref(vci),
+                                    byref(tnbi))
+
+        return tci.value, vci.value, pci.value
+
+    def spinodal(self,
+                 z,
+                 initial_pressure=1.0e5,
+                 initial_liquid_temperature=None,
+                 dlnv=None,
+                 min_temperature_vapor=None):
+        """Stability interface
+        Trace spinodal curve
+
+        Args:
+            z (array_like): Composition (-)
+            initial_pressure (float): Initial pressure (Pa). Defaults to 1.0e5.
+            initial_liquid_temperature (float, optional): Initial temperature on liquid spinodal (K).
+            dlnv (float, optional): Override step size (-).
+            min_vapor_temperature (float, optional): Minimum temperature on vapor spinodal (K).
+
+        Raises:
+            Exception: Failure to trace spinodal
+
+        Returns:
+            np.ndarray: Temperature (K)
+            np.ndarray: Volume (m3/mol)
+            np.ndarray: Pressure (Pa)
+        """
+        self.activate()
+        n_max = 1000
+        p0_c = c_double(initial_pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(0)
+        vol_c = (c_double * n_max)(0.0)
+        press_c = (c_double * n_max)(0.0)
+        temp_c = (c_double * n_max)(0.0)
+
+        if min_temperature_vapor is not None:
+            t_min = min_temperature_vapor
+        else:
+            t_min = 0.0
+            for i in range(self.nc):
+                t_min += z[i]*self.critical_temperature(i+1)
+            t_min *= 0.6
+        t_min_c = c_double(t_min)
+
+        if dlnv is None:
+            dlnv_c = POINTER(c_double)()
+        else:
+            dlnv_c = POINTER(c_double)(c_double(dlnv))
+
+        if initial_liquid_temperature is None:
+            t_liq_start_c = POINTER(c_double)()
+        else:
+            t_liq_start_c = POINTER(c_double)(c_double(initial_liquid_temperature))
+
+        self.s_map_stability_limit.argtypes = [POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double ),
+                                               POINTER( c_int ),
+                                               POINTER( c_int ),
+                                               POINTER( c_double ),
+                                               POINTER( c_double )]
+
+        self.s_map_stability_limit.restype = None
+
+        self.s_map_stability_limit(byref(p0_c),
+                                   z_c,
+                                   byref(t_min_c),
+                                   temp_c,
+                                   press_c,
+                                   vol_c,
+                                   byref(n_c),
+                                   byref(ierr_c),
+                                   dlnv_c,
+                                   t_liq_start_c)
+
+        if ierr_c.value != 0:
+            raise Exception("Spinodial calclualtion failed")
+
+        T = np.array(temp_c[0:n_c.value])
+        v = np.array(vol_c[0:n_c.value])
+        P = np.array(press_c[0:n_c.value])
+
+        return T,v,P
+
+    def spinodal_point(self,
+                       z,
+                       pressure,
+                       temperature=None):
+        """Stability interface
+        Solve for spinodal curve point. Not able to solve for points cloes to critical point.
+        Solve for temperature if given, otherwise solve for pressure.
+
+        Args:
+            z (array_like): Composition (-)
+            pressure (float): Pressure (Pa).
+            temperature (float, optional): Temperature (K). Solve for temperature if given.
+
+        Raises:
+            Exception: Failure to solve for spinodal curve point
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3/mol)
+        """
+        self.activate()
+        n_max = 1000
+        p0_c = c_double(pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(0)
+        vol_c = c_double(0.0)
+        temp_c = c_double(0.0)
+
+        if temperature is None:
+            t_min_c = POINTER(c_double)()
+        else:
+            t_min_c = POINTER(c_double)(c_double(temperature))
+
+        self.s_initial_stab_limit_point.argtypes = [POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_double ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_int ),
+                                                    POINTER( c_double )]
+
+        self.s_initial_stab_limit_point.restype = None
+
+        self.s_initial_stab_limit_point(byref(p0_c),
+                                        z_c,
+                                        byref(vol_c),
+                                        byref(temp_c),
+                                        byref(phase_c),
+                                        byref(ierr_c),
+                                        t_min_c)
+
+        if ierr_c.value != 0:
+            raise Exception("Spinodial point calclualtion failed")
+
+        return temp_c.value,vol_c.value
+
+    def map_meta_isentrope(self,
+                           z,
+                           initial_pressure,
+                           entropy,
+                           minimum_pressure,
+                           n_max=50):
+        """Stability interface
+        Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
+
+        Args:
+            z (array_like): Composition (-)
+            initial_pressure (float): Initial pressure (Pa)
+            entropy (float): Entropy (J/mol/K).
+            minimum_pressure (float): Minimum pressure (Pa).
+            n_max (int): Number of points on curve. Default 50.
+
+        Raises:
+            Exception: Failure to map isentrope
+
+        Returns:
+            np.ndarray: Temperature (K)
+            np.ndarray: Volume (m3/mol)
+            np.ndarray: Pressure (Pa)
+        """
+        self.activate()
+        initial_pressure_c = c_double(pressure)
+        entropy_c = c_double(entropy)
+        minimum_pressure_c = c_double(minimum_pressure)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(n_max)
+        vol_c = (c_double * n_max)(0.0)
+        press_c = (c_double * n_max)(0.0)
+        temp_c = (c_double * n_max)(0.0)
+
+        self.s_map_meta_isentrope.argtypes = [POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_double ),
+                                              POINTER( c_int )]
+
+        self.s_map_meta_isentrope.restype = None
+
+        self.s_map_meta_isentrope(byref(initial_pressure_c),
+                                  byref(entropy_c),
+                                  z_c,
+                                  byref(minimum_pressure_c),
+                                  byref(n_c),
+                                  temp_c,
+                                  vol_c,
+                                  press_c,
+                                  byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Isentrope mapping into the meta-stable region failed")
+
+        return np.array(temp_c), np.array(vol_c), np.array(press_c)
+
+    def density_mu_t(self, temp, mu, rho_initial):
+        """Stability interface
+        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+
+        Args:
+            temp (float): Temperature (K)
+            mu (array_like): Flag to activate calculation.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_mu_t.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_solve_mu_t.restype = None
+
+        self.s_solve_mu_t(mu_c,
+                          byref(temp_c),
+                          rho_c,
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("mu-T solver failed")
+
+        return np.array(rho_c)
+
+    def density_lnf_t(self, temp, lnf, rho_initial):
+        """Stability interface
+        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+            lnf (array_like): Logaritm of fugacity coefficients.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        lnf_c = (c_double * len(lnf))(*lnf)
+        rho_c = (c_double * len(lnf))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
+
+        self.s_solve_lnf_t.restype = None
+
+        self.s_solve_lnf_t(lnf_c,
+                           byref(temp_c),
+                           rho_c,
+                           byref(ierr_c))
+
+        return np.array(rho_c)
+
+    def map_meta_isotherm(self,
+                          temperature,
+                          z,
+                          phase,
+                          n=50):
+        """Stability interface
+        Trace isotherm from saturation line to spinodal. Solve for phase in
+        chemical and thermal equilibrium with a phase defined by z anf phase flag..
+
+        Args:
+            temperature (float): Temperature (K)
+            z (array_like): Composition (-)
+            phase (float): Phase with composition z (LIQPH or VAPPH)
+            n (int): Number of points on curve. Default 50.
+
+        Raises:
+            Exception: Failure to map isotherm
+
+        Returns:
+            np.ndarray: Volume of meta-stable phase (m3/mol)
+            np.ndarray: Density (mol/m3) of equilibrium phase in each point, dimension (n,nc).
+        """
+        self.activate()
+        temperature_c = c_double(temperature)
+        z_c = (c_double * len(z))(*z)
+        ierr_c = c_int(0)
+        n_c = c_int(n)
+        phase_c = c_int(phase)
+        vol_c = (c_double * n)(0.0)
+        rho_c = (c_double * (n*self.nc))(0.0)
+
+        self.s_map_meta_isotherm.argtypes = [POINTER( c_double ),
+                                             POINTER( c_double ),
+                                             POINTER( c_int ),
+                                             POINTER( c_int ),
+                                             POINTER( c_double ),
+                                             POINTER( c_double ),
+                                             POINTER( c_int )]
+
+        self.s_map_meta_isotherm.restype = None
+
+        self.s_map_meta_isotherm(byref(temperature_c),
+                                 z_c,
+                                 byref(n_c),
+                                 byref(phase_c),
+                                 vol_c,
+                                 rho_c,
+                                 byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Isotherm mapping into the meta-stable region failed")
+
+        rho = np.zeros((n, self.nc))
+        for i in range(n):
+            for j in range(self.nc):
+                rho[i][j] = rho_c[i+j*n]
+
+        return np.array(vol_c), rho
 
     #################################
     # Virial interfaces

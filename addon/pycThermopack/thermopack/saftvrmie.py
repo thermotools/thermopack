@@ -7,12 +7,11 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo, saft
+from .thermo import c_len_type
+from .saft import saft
 
-c_len_type = thermo.c_len_type
 
-
-class saftvrmie(saft.saft):
+class saftvrmie(saft):
     """
     Interface to SAFT-VR Mie
     """
@@ -28,7 +27,7 @@ class saftvrmie(saft.saft):
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
-        super(saftvrmie, self).__init__()
+        saft.__init__(self)
 
         # Options methods
         self.s_enable_hs = getattr(self.tp, self.get_export_name(
@@ -43,6 +42,8 @@ class saftvrmie(saft.saft):
             "saftvrmie_interface", "model_control_chain"))  # Option to enable/disable A1 contribution
         self.s_hs_reference = getattr(self.tp, self.get_export_name(
             "saftvrmie_interface", "hard_sphere_reference"))  # Option to set HS model
+        self.s_set_temperature_cache_flag = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "set_temperature_cache_flag"))  # Set flag controlling temperature cache
 
         # Init methods
         self.s_eoslibinit_init_saftvrmie = getattr(
@@ -206,6 +207,18 @@ class saftvrmie(saft.saft):
         self.s_enable_chain.argtypes = [POINTER(c_int)]
         self.s_enable_chain.restype = None
         self.s_enable_chain(byref(active_c))
+
+    def enable_temperature_cache(self, enable=True):
+        """Model performance. Enable/disable temperature cache.
+
+        Args:
+            enable (bool): Enable/disable temperature cache
+        """
+        self.activate()
+        enable_c = c_int(1 if enable else 0)
+        self.s_set_temperature_cache_flag.argtypes = [POINTER(c_int)]
+        self.s_set_temperature_cache_flag.restype = None
+        self.s_set_temperature_cache_flag(byref(enable_c))
 
     def get_eps_kij(self, c1, c2):
         """Get binary well depth interaction parameter
@@ -418,3 +431,20 @@ class saftvrmie(saft.saft):
                                               byref(eps_c),
                                               byref(lambda_a_c),
                                               byref(lambda_r_c))
+
+        self.m[ic-1] = m
+        self.sigma[ic-1] = sigma
+        self.eps_div_kb[ic-1] = eps_div_kb
+        self.lambda_a[ic-1] = lambda_a
+        self.lambda_r[ic-1] = lambda_r
+
+    def print_saft_parameters(self, c):
+        """Print saft parameters for component c
+
+        Args:
+            c (int): Component index (FORTRAN)
+
+        """
+        saft.print_saft_parameters(self, c)
+        print(f"lambda_a: {self.lambda_a[c-1]}")
+        print(f"lambda_r: {self.lambda_r[c-1]}")

@@ -84,7 +84,7 @@ subroutine thermopack_setWSparam(i,j, alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_j
   integer, intent(in) :: i,j
   real, intent(in) :: alpha_ij,alpha_ji, k_ij,k_ji, tau_ij,tau_ji
   !
-  type(fraction):: frac, fracji
+  type(fraction):: frac
   class(base_eos_param), pointer :: act_eos_ptr
   act_eos_ptr => get_active_eos()
   !

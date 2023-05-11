@@ -2388,7 +2388,7 @@ module compdatadb
   type (gendatadb), parameter :: cx33 = &
       gendatadb(ident = "H2O2", &
       formula = "H2O2", &
-      name = "HYDROGENPEROXIDE", &
+      name = "HYDROGEN PEROXIDE", &
       mw = 34.0147, &
       Tc = 730.1500, &
       Pc = 21700000.00, &
@@ -2795,8 +2795,8 @@ module compdatadb
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
       mw = 1.0000, &
-      Tc = 1.3200, &
-      Pc = 0.13, &
+      Tc = 39.366451, &
+      Pc = 2002758.38, &
       Zc = 0.310000, &
       acf = 0.317700, &
       Tb = 0.8000, &

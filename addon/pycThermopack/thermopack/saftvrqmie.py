@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -11,16 +9,18 @@ from os import path
 # Import thermo
 from . import thermo
 # Import saftvrmie
-from . import saftvrmie
+from .saftvrmie import saftvrmie
 
 c_len_type = thermo.c_len_type
 
 
-class saftvrqmie(saftvrmie.saftvrmie):
+class saftvrqmie(saftvrmie):
     """
     Interface to SAFT-VRQ Mie
     """
-    def __init__(self, comps=None, feynman_hibbs_order=1, parameter_reference="Default", minimum_temperature=None):
+
+    def __init__(self, comps=None, feynman_hibbs_order=1, additive_hard_sphere_reference=False,
+                 parameter_reference="Default", minimum_temperature=None):
         """Initialize SAFT-VRQ Mie model in thermopack
 
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
@@ -34,30 +34,39 @@ class saftvrqmie(saftvrmie.saftvrmie):
         Args:
             comps (str, optional): Comma separated list of component names
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
+            additive_hard_sphere_reference (boolean): Use additive hard-sphere reference? Defaults to false.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             minimum_temperature (float, optional) : Is passed directly to thermopack::set_tmin()
         """
         # Load dll/so
-        super(saftvrqmie, self).__init__()
+        saftvrmie.__init__(self)
 
         # Init methods
-        self.s_eoslibinit_init_quantum_saftvrmie = getattr(self.tp, self.get_export_name("eoslibinit",
-                                                                                         "init_quantum_saftvrmie"))
+        self.s_eoslibinit_init_quantum_saftvrmie = getattr(
+            self.tp, self.get_export_name("eoslibinit",
+                                          "init_quantum_saftvrmie"))
+
         # Quantum methods
         self.s_get_feynman_hibbs_order = getattr(
             self.tp, self.get_export_name("saftvrmie_containers",
                                           "get_feynman_hibbs_order"))
-        self.lambda_a = np.zeros(self.nc)
-        self.lambda_r = np.zeros(self.nc)
+
+        self.lambda_a = None
+        self.lambda_r = None
+
         if comps is not None:
-            self.init(comps, feynman_hibbs_order=feynman_hibbs_order, parameter_reference=parameter_reference,
+            self.init(comps,
+                      feynman_hibbs_order=feynman_hibbs_order,
+                      additive_hard_sphere_reference=additive_hard_sphere_reference,
+                      parameter_reference=parameter_reference,
                       minimum_temperature=minimum_temperature)
 
     #################################
     # Init
     #################################
 
-    def init(self, comps, feynman_hibbs_order=1, parameter_reference="Default", minimum_temperature=None):
+    def init(self, comps, feynman_hibbs_order=1, additive_hard_sphere_reference=False,
+             parameter_reference="Default", minimum_temperature=None):
         """Initialize SAFT-VRQ Mie model in thermopack
 
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
@@ -68,6 +77,7 @@ class saftvrqmie(saftvrmie.saftvrmie):
         Args:
             comps (str): Comma separated list of component names
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
+            additive_hard_sphere_reference (boolean): Use additive hard-sphere reference? Defaults to false.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
             minimum_temperature (float, optional) : Is passed directly to thermopack::set_tmin()
         """
@@ -75,10 +85,12 @@ class saftvrqmie(saftvrmie.saftvrmie):
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         fh_c = c_int(feynman_hibbs_order)
+        additive_hs_ref_c = c_int(1 if additive_hard_sphere_reference else 0)
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
         self.s_eoslibinit_init_quantum_saftvrmie.argtypes = [c_char_p,
+                                                             POINTER(c_int),
                                                              POINTER(c_int),
                                                              c_char_p,
                                                              c_len_type,
@@ -88,11 +100,11 @@ class saftvrqmie(saftvrmie.saftvrmie):
 
         self.s_eoslibinit_init_quantum_saftvrmie(comp_string_c,
                                                  byref(fh_c),
+                                                 byref(additive_hs_ref_c),
                                                  ref_string_c,
                                                  comp_string_len,
                                                  ref_string_len)
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
-        self.set_tmin(minimum_temperature)
 
         # Map pure fluid parameters
         self.m = np.zeros(self.nc)
@@ -103,6 +115,8 @@ class saftvrqmie(saftvrmie.saftvrmie):
         for i in range(self.nc):
             self.m[i], self.sigma[i], self.eps_div_kb[i], self.lambda_a[i], self.lambda_r[i] = \
                 self.get_pure_fluid_param(i+1)
+
+        self.set_tmin(minimum_temperature)
 
     def get_feynman_hibbs_order(self, c):
         """Get Feynman-Hibbs order

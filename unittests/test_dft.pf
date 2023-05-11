@@ -1,0 +1,108 @@
+module test_dft
+  !> \author Morten Hammer 2023
+  use funit
+  use thermopack_var
+  use thermopack_constants
+  use saft_interface
+  use saft_association
+  use eoslibinit
+  use numconstants
+  implicit none
+  public
+  real, parameter :: tol = 1.0e5*machine_prec
+
+contains
+
+  !-----------------------------------------------------------------------------
+  !> Test that DFT association code is in sync with regular association code
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  @Test
+  subroutine test_dft_association()
+    implicit none
+    integer, parameter :: ncomp = 1
+    real :: n(ncomp)
+    real :: T, V
+    real :: F
+    real :: phi
+    real :: n_fmt(ncomp,0:5)
+    real, allocatable :: Xk(:)
+    class(base_eos_param), pointer :: eos
+    !
+    call init_pcsaft("H2O")
+    eos => get_active_eos()
+    T = 280.0
+    V = 1.0e-4
+    n = 1
+
+    call eos%assoc%state%init(ncomp,T,V,n)
+    allocate(Xk(numAssocSites))
+    Xk = 0.2 ! Initial guess.
+    call solve_for_X_k(eos,nce,Xk,tol=tol)
+    call calcFder_assoc(eos,nc=ncomp,X_k=Xk,F=F)
+    deallocate(Xk)
+
+    call set_fmt_densities(T, V, n, n_fmt)
+    call calc_assoc_phi(n_fmt=n_fmt,T=T,F=phi)
+    @assertTrue(abs((phi*V - F)/F) < tol)
+
+  end subroutine test_dft_association
+
+  !-----------------------------------------------------------------------------
+  !> Test FMT code
+  !!
+  !! \author MH, 2022
+  !-----------------------------------------------------------------------------
+  subroutine test_fmt(fmt_model)
+    use fundamental_measure_theory, only: fmt_energy_density
+    !
+    integer, intent(in) :: fmt_model
+    ! Locals
+    integer, parameter :: n_grid=1, nv=6
+    real :: nw(n_grid, nv), nw0(n_grid, nv)
+    real :: phi(n_grid), phi_pm(n_grid), phi_pp(n_grid)
+    real :: phi_n(n_grid,nv), phi_n_pm(n_grid,nv), phi_n_pp(n_grid,nv)
+    real :: phi_nn(n_grid,nv,nv)
+    real :: eps = 1.0e-5, dn
+    real, parameter :: phi_ref(3) = (/0.02120926003404677, 0.021037042277793582, 0.021048705586168167/)
+    integer :: i,j
+    nw0(1,:) = (/ 0.013023390121386327, 0.0222485871456107, 0.4776290003040184, &
+         0.2797390690655379, 0.0035959306386384605, 0.07719684602239196 /) ! Dummy weighted densities
+    nw = nw0
+    call fmt_energy_density(fmt_model,n_grid,nv,nw,phi,phi_n,phi_nn)
+    @assertTrue(abs((phi - phi_ref(fmt_model))/phi_ref(fmt_model)) < 10*tol)
+
+    do i=1,nv
+      nw = nw0
+      dn = eps*nw(1,i)
+      nw(1,i) = nw(1,i) - dn
+      call fmt_energy_density(fmt_model,n_grid,nv,nw,phi_pm,phi_n_pm)
+      nw(1,i) = nw0(1,i) + dn
+      call fmt_energy_density(fmt_model,n_grid,nv,nw,phi_pp,phi_n_pp)
+      @assertTrue(abs((phi_n(1,i) - (phi_pp(1) - phi_pm(1))/(2*dn))) < 10*tol)
+      do j=1,nv
+        @assertTrue(abs((phi_nn(1,i,j) - (phi_n_pp(:,j) - phi_n_pm(:,j))/(2*dn))) < 10*tol)
+      enddo
+    enddo
+  end subroutine test_fmt
+
+  @Test
+  subroutine test_rosenfeld()
+    use fundamental_measure_theory, only: FMT_ROSENFELD
+    call test_fmt(fmt_model=FMT_ROSENFELD)
+  end subroutine test_rosenfeld
+
+  @Test
+  subroutine test_wb()
+    use fundamental_measure_theory, only: FMT_WB
+    call test_fmt(fmt_model=FMT_WB)
+  end subroutine test_wb
+
+  @Test
+  subroutine test_wbII()
+    use fundamental_measure_theory, only: FMT_WBII
+    call test_fmt(fmt_model=FMT_WBII)
+  end subroutine test_wbII
+
+end module test_dft
