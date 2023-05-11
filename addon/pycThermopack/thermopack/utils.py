@@ -86,8 +86,8 @@ def fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arra
             continue
         if np.product(shape) > 0:
             # Need to transpose because fortran is column-major
-            # Note : Reshape and transpose will do nothing if optional_pointers[i] is 1D
-            return_array = np.array(optional_ptrs[i]).reshape(shape).transpose()
+            # Note : Reshape will do nothing if optional_pointers[i] is 1D
+            return_array = np.array(optional_ptrs[i]).reshape(shape, order='F')
             return_tuple += (copy.deepcopy(return_array), )
         else:
             return_tuple += (optional_ptrs[i].value, )

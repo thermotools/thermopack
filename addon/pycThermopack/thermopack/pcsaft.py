@@ -278,7 +278,7 @@ class pcsaft(saft):
         return return_tuple
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
-                                   phi_tt=None, phi_TT=None, phi_tn=None, phi_nn=None):
+                                   phi_tt=None, phi_tn=None, phi_nn=None):
         """Utility
         Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
@@ -298,16 +298,12 @@ class pcsaft(saft):
         self.activate()
         temp_c = c_double(temp)
         dim = self.nc*6
-        assert np.shape(n_alpha) == [self.nc, 6]
+        assert np.shape(n_alpha) == (self.nc, 6,)
         n_alpha_c = (c_double * dim)(*n_alpha.flatten('F'))
-
-        null_pointer = POINTER(c_double)()
-        phi_c = null_pointer if phi is None else c_double(0.0)
-        phi_t_c = null_pointer if phi_t is None else c_double(0.0)
-        phi_n_c = null_pointer if phi_n is None else (c_double * dim)(0.0)
-        phi_tt_c = null_pointer if phi_tt is None else c_double(0.0)
-        phi_tn_c = null_pointer if phi_tn is None else (c_double * dim)(0.0)
-        phi_nn_c = null_pointer if phi_nn is None else (c_double * dim**2)(0.0)
+        optional_flags = [phi, phi_t, phi_n, phi_tt, phi_tn, phi_nn]
+        optional_arrayshapes = [(0,), (0,), (self.nc, 6,), (0,), (self.nc, 6,), (self.nc, self.nc, 6, 6,)]
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
+        phi_c, phi_t_c, phi_n_c, phi_tt_c, phi_tn_c, phi_nn_c = optional_ptrs
 
         self.s_calc_assoc_phi.argtypes = [POINTER(c_double),
                                           POINTER(c_double),
@@ -329,9 +325,8 @@ class pcsaft(saft):
                               phi_tn_c,
                               phi_nn_c)
 
-        optional_ptrs = [lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c]
+        return_tuple = ()
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-
         return return_tuple
 
 class PCP_SAFT(pcsaft):
