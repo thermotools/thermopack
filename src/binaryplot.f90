@@ -74,6 +74,7 @@ module binaryPlot
   public :: global_binary_plot, BP_TERM_ERR
   public :: LLVE_TV_sensitivity, LLVEpointTV, binary_is_stable
   public :: getPropFromX_LLVE, setX_LLVE, get_BP_TERM
+  public :: threePhaseLine
   !
 contains
 

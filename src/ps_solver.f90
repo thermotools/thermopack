@@ -196,7 +196,7 @@ contains
     ierr = solver%exitflag
     if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
       solver%exitflag = 0
-      if (abs(param(nc+4)-Tmin) > 0.01 .or. abs(param(nc+3)-Tmax) > 0.01) then
+      if (abs(param(nc+4)-Tmin) < 0.01 .or. abs(param(nc+3)-Tmax) < 0.01) then
         ! Out of temperature range
         ierr = -2
       else

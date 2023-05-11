@@ -320,5 +320,19 @@
     "fh_order": 2,
     "bib_reference": "HYVA parameters with non-integer repulsive exponent",
     "ref": "HYVA-FH2"
+  },
+  "SAFTVRMIE-10": {
+    "m": 1.000,
+    "sigma": 2.78670E-10,
+    "eps_depth_divk": 41.6523,
+    "lambda_a": 6.0000,
+    "lambda_r": 16.0000,
+    "mass": 3.3509177E-26,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 1,
+    "bib_reference": "Hammer 2022 not published",
+    "ref": "HAMMER-2022-NP"
   }
 }

@@ -1,9 +1,14 @@
 module test_hyperdual
+  !> \author Morten Hammer 2023
   use funit
+  !use thermopack_var
+  !use thermopack_constants
   use hyperdual_mod
-  use hyperdual_utility
+  use linear_numerics
+  !use eoslibinit
   implicit none
   public
+  real, parameter :: tol = 1.0e-12
 
   abstract interface
     function hyperdual_fun(x) result(f)
@@ -14,6 +19,191 @@ module test_hyperdual
   end interface
 
 contains
+
+  !-----------------------------------------------------------------------------
+  !> Test solving a x = b
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  @Test
+  subroutine test_solve_lu_hd()
+    implicit none
+    integer, parameter :: n = 3
+    type(hyperdual) :: a(n,n)
+    type(hyperdual) :: b(n)
+    integer :: ierr
+    a(1,1) = 1.0_dp
+    a(1,2) = 2.0_dp
+    a(1,3) = 3.0_dp
+    a(2,1) = 4.0_dp
+    a(2,2) = 5.0_dp
+    a(2,3) = 6.0_dp
+    a(3,1) = 7.0_dp
+    a(3,2) = 8.0_dp
+    a(3,3) = 9._dp
+    b(1) = 1.0_dp
+    b(2) = 2.0_dp
+    b(3) = 3.0_dp
+    call solve_lu_hd(a, n, b, ierr)
+    @assertTrue(abs(b(1)%f0 + 0.33333333333333333) < 1.0e-14)
+    @assertTrue(abs(b(2)%f0 - 0.66666666666666666) < 1.0e-14)
+    @assertTrue(abs(b(3)%f0) < 1.0e-14)
+  end subroutine test_solve_lu_hd
+
+  !-----------------------------------------------------------------------------
+  !> Test function f(x(t),t) = 0
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  @Test
+  subroutine test_test_function()
+    implicit none
+    integer, parameter :: n = 2
+    type(hyperdual) :: a(n,n)
+    type(hyperdual) :: x(n)
+    type(hyperdual) :: t
+    type(hyperdual) :: f(n)
+    x = 0.8_dp
+    t = 0.9_dp
+
+    a = jac_hd(x,t)
+    x(1)%f1 = 1.0_dp
+    f = fun_hd(x,t)
+    x(1)%f1 = 0.0_dp
+    @assertTrue(abs((f(1)%f1-a(1,1)%f0)/a(1,1)%f0) < tol)
+    @assertTrue(abs((f(2)%f1-a(2,1)%f0)/a(2,1)%f0) < tol)
+    !
+    x(2)%f1 = 1.0_dp
+    f = fun_hd(x,t)
+    x(2)%f1 = 0.0_dp
+    @assertTrue(abs((f(1)%f1-a(1,2)%f0)/a(1,2)%f0) < tol)
+    @assertTrue(abs((f(2)%f1-a(2,2)%f0)/a(2,2)%f0) < tol)
+  end subroutine test_test_function
+
+  !-----------------------------------------------------------------------------
+  !> Test solving f(x(t),t) = 0, and the propagation of differentials
+  !!
+  !! \author MH, January 2023
+  !-----------------------------------------------------------------------------
+  @Test
+  subroutine test_propagation_of_differentials()
+    implicit none
+    integer, parameter :: n = 2
+    type(hyperdual) :: a(n,n)
+    type(hyperdual) :: x(n), dx(n), x1(n), x2(n), x3(n), x4(n), b1(n)
+    type(hyperdual) :: t
+    real :: dt, t0, dxdt(n), d2xdt2(n), d3xdt3(n)
+    integer :: ierr, i
+    x = 0.8_dp
+    t0 = 0.9_dp
+    t = t0
+
+    call solve_fx_hd(x,t)
+
+    t%f1 = 1.0_dp
+    t%f2 = 1.0_dp
+    t%f3 = 1.0_dp
+    t%order = 3
+    do i=1,t%order ! Propagate to second order
+      a = jac_hd(x,t)
+      if (.false.) then
+        b1 = -fun_hd(x,t)
+        call solve_2x2_hd(a,dx,b1)
+      else
+        dx = -fun_hd(x,t)
+        call solve_lu_hd(a, n, dx, ierr)
+      endif
+      x = x + dx
+    enddo
+    t%f1 = 0.0_dp
+    t%f2 = 0.0_dp
+    t%f3 = 0.0_dp
+    t%order = 0
+    ! Finite difference
+    dt = 1.0e-4
+    t = t0 - dt
+    x1%f0 = x%f0
+    call solve_fx_hd(x1,t)
+    t = t0 + dt
+    x2%f0 = x%f0
+    call solve_fx_hd(x2,t)
+    t = t0 - 2*dt
+    x3%f0 = x%f0
+    call solve_fx_hd(x3,t)
+    t = t0 + 2*dt
+    x4%f0 = x%f0
+    call solve_fx_hd(x4,t)
+    dxdt = (x2%f0-x1%f0)/(2*dt)
+    d2xdt2 = (x2%f0-2*x%f0+x1%f0)/dt**2
+    d3xdt3 = (x4%f0-x3%f0+2*x1%f0-2*x2%f0)/(2*dt**3)
+
+    @assertTrue(abs((x(1)%f1-dxdt(1))/dxdt(1)) < 5.0e-7)
+    @assertTrue(abs((x(2)%f1-dxdt(2))/dxdt(2)) < 5.0e-7)
+    @assertTrue(abs((x(1)%f12-d2xdt2(1))/d2xdt2(1)) < 1.0e-6)
+    @assertTrue(abs((x(2)%f12-d2xdt2(2))/d2xdt2(2)) < 1.0e-6)
+    @assertTrue(abs((x(1)%f13-d2xdt2(1))/d2xdt2(1)) < 1.0e-6)
+    @assertTrue(abs((x(2)%f13-d2xdt2(2))/d2xdt2(2)) < 1.0e-6)
+    @assertTrue(abs((x(1)%f23-d2xdt2(1))/d2xdt2(1)) < 1.0e-6)
+    @assertTrue(abs((x(2)%f23-d2xdt2(2))/d2xdt2(2)) < 1.0e-6)
+    @assertTrue(abs((x(1)%f123-d3xdt3(1))/d3xdt3(1)) < 1.0e-5)
+    @assertTrue(abs((x(2)%f123-d3xdt3(2))/d3xdt3(2)) < 1.0e-5)
+  end subroutine test_propagation_of_differentials
+
+  function fun_hd(x,t) result(f)
+    use hyperdual_mod
+    implicit none
+    type(hyperdual) :: f(2)
+    type(hyperdual) :: x(2), t
+    f(1) = ((1.0_dp - x(1))**2 + x(2) - t)
+    f(2) = ((1.0_dp - x(2))**2 + x(1) - 0.9_dp*t)
+  end function fun_hd
+
+  function jac_hd(x,t) result(a)
+    use hyperdual_mod
+    implicit none
+    type(hyperdual) :: a(2,2)
+    type(hyperdual) :: x(2), t
+    a(1,1) = -2.0_dp * (1.0_dp - x(1))
+    a(1,2) = 1.0_dp
+    a(2,2) = -2.0_dp * (1.0_dp - x(2))
+    a(2,1) = 1.0_dp
+  end function jac_hd
+
+  subroutine solve_fx_hd(x,t)
+    use hyperdual_mod
+    implicit none
+    type(hyperdual) :: a(2,2), x(2), t
+    integer :: ierr, i
+    type(hyperdual) :: dx(2), b(2)
+    !f1 = (1.0_dp - x(1))**2 + x(2) - t
+    !f2 = (1.0_dp - x(2))**2 + x(1) - 0.9t
+    do i=1,60
+      a = jac_hd(x,t)
+      if (.false.) then
+        b = -fun_hd(x,t)
+        call solve_2x2_hd(a,dx,b)
+      else
+        dx = -fun_hd(x,t)
+        call solve_lu_hd(a, 2, dx, ierr)
+      endif
+      x = x + dx
+      !print *,x%f0, sum(dx%f0)
+    enddo
+  end subroutine solve_fx_hd
+
+  subroutine solve_2x2_hd(a,x,b)
+    use hyperdual_mod
+    type(hyperdual), intent(in) :: a(2,2), b(2)
+    type(hyperdual), intent(out) :: x(2)
+    type(hyperdual) :: a_inv(2,2), inv_det
+    inv_det = 1.0_dp/(a(1,1)*a(2,2)-a(1,2)*a(2,1))
+    a_inv(1,1) = a(2,2)*inv_det
+    a_inv(2,2) = a(1,1)*inv_det
+    a_inv(1,2) = -a(1,2)*inv_det
+    a_inv(2,1) = -a(2,1)*inv_det
+    x(1) = sum(a_inv(1,:)*b)
+    x(2) = sum(a_inv(2,:)*b)
+  end subroutine solve_2x2_hd
 
   subroutine test_function(func, x0)
     procedure(hyperdual_fun) :: func

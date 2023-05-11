@@ -47,6 +47,7 @@ module saftvrmie_hardsphere
   public :: calc_hardsphere_extra_helmholtzenergy, calc_gij_boublik
   public :: calc_d_pure
   public :: calc_hardsphere_diameter_reduced_units
+  public :: mie_potential_quantumcorrected_wrapper
   ! Exported for testing
   public :: calc_mie_potential_quantumcorrected, epseff_Ux, epseff_Uxx
   public :: calc_hardsphere_virial_Bijk, calc_Santos_eta
@@ -1309,6 +1310,35 @@ Contains
        U_divk_TTr=U_divk_TTr*Mie_pref
     endif
   end subroutine calc_mie_potential_quantumcorrected
+
+  function mie_potential_quantumcorrected_wrapper(i, j, s_vc, n, r) result(U_divk)
+    !--------------------------------------------------------------------
+    !  2022 - Morten Hammer
+    !
+    !  This subroutine calulates the magntiude of the quantum corrected
+    !  Mie poential at positions given by the array r [m]
+    !---------------------------------------------------------------------
+    integer, intent(in) :: i, j                       !< Component indices
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    integer, intent(in) :: n                          !< size of r
+    real, intent(in) :: r(n)                          !< particle distances [m]
+    real :: U_divk(n)                                 !< value of interaction div. by kB
+    ! Loals
+    integer :: ir
+    do ir=1,n
+      call calc_mie_potential_quantumcorrected(i,j,s_vc,&
+           saftvrmie_param%sigma_ij(i,j),&
+           saftvrmie_param%eps_divk_ij(i,j),&
+           saftvrmie_param%lambda_a_ij(i,j),&
+           saftvrmie_param%lambda_r_ij(i,j),&
+           saftvrmie_param%Cij(i,j),&
+           saftvrmie_param%Quantum_const_1a_ij(i,j),&
+           saftvrmie_param%Quantum_const_1r_ij(i,j),&
+           saftvrmie_param%Quantum_const_2a_ij(i,j),&
+           saftvrmie_param%Quantum_const_2r_ij(i,j),&
+           r(ir),U_divk(ir))
+    enddo
+  end function mie_potential_quantumcorrected_wrapper
 
   subroutine calc_hardsphere_zeta_and_derivatives(nc,T,V,n,&
        d_mat,d_T_mat,d_TT_mat,zeta,zeta_V,&

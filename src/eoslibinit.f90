@@ -498,7 +498,7 @@ contains
       if (ierr /= 0 .and. isSAFT) then
         ! Maybe sigma and eps are redefined and the initial guess is bad?
         call estimate_critical_parameters(i, Tc, vc)
-        call calcCriticalTV(Tc,Vc,Z,ierr,p=Pc)
+        call calcCriticalTV(Tc,Vc,Z,ierr,v_min=vc*0.25,p=Pc)
       endif
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
@@ -750,16 +750,17 @@ contains
   !> Initialize SAFT-VR-MIE with quantum corrections EoS.
   !! Use: call init_quantum_saftvrmie('He,Ne',feynman_hibbs_order=1)
   !----------------------------------------------------------------------------
-  subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
-    use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
+  subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,additive_hs_ref,parameter_reference)
+    use saftvrmie_options, only: NON_ADD_HS_REF, ADDITIVE_EXACT_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
     use saftvrmie_containers, only: svrm_opt
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
+    logical, optional, intent(in) :: additive_hs_ref
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
     character(len=clen) :: param_ref !< Data set reference
-    integer :: FH, FH_model
+    integer :: FH, FH_model, hs_ref
     if (present(feynman_hibbs_order)) then
       FH = max(min(feynman_hibbs_order, 2),0)
     else
@@ -783,7 +784,11 @@ contains
       end select
     endif
     call init_saftvrmie(comps,param_ref)
-    call svrm_opt%saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
+    hs_ref = NON_ADD_HS_REF
+    if (present(additive_hs_ref)) then
+      if (additive_hs_ref) hs_ref = ADDITIVE_EXACT_HS_REF
+    endif
+    call svrm_opt%saftvrmieaij_model_options(FH_model, hs_ref)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------
