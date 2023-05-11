@@ -14,6 +14,7 @@ from . import plotutils
 from . import utils
 from . import multiparameter
 from . import pets
+from . import thermopack_state
 from . import lee_kesler
 from . import ljs_bh
 from . import ljs_wca
@@ -34,5 +35,6 @@ __all__ = ["platform_specifics",
            "multiparameter"
            "pets",
            "lee_kesler",
+           "thermopack_state",
            "ljs_bh",
            "ljs_wca"]

@@ -208,7 +208,7 @@ contains
 
   subroutine getSaftVrMieAssocParams_singleComp(compName,eosidx,ref,found,&
        eps,beta,scheme)
-    use thermopack_constants, only: Rgas
+    use thermopack_var, only: Rgas
     ! Input
     character(len=*), intent(in) :: compName, ref
     integer, intent(in) :: eosidx

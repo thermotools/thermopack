@@ -93,3 +93,76 @@ def fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arra
             return_tuple += (optional_ptrs[i].value, )
 
     return return_tuple
+
+class FlashResult:
+    """
+    Holder struct for the result of a flash calculation. Implements __iter__ and __getitem__ for
+    backward compatibility.
+    """
+    def __init__(self, z, T, p, x, y, betaV, betaL, phase, flash_type):
+        self.z = [_ for _ in z]
+        self.T, self.p, self.x, self.y, self.betaV, self.betaL, \
+        self.phase, self.flash_type = T, p, x, y, betaV, betaL, phase, flash_type
+
+        self.iterable = [T, p, x, y, betaV, betaL, phase]
+        self.contents = ['T', 'p', 'x', 'y', 'betaV', 'betaL', 'phase']
+        self.descriptions = {'T' : 'Temperature [K]', 'p' : 'pressure [Pa]',  'x' : 'Liquid phase composition',
+                             'y' : 'Vapour phase composition', 'betaV' : 'Vapour fraction',
+                             'betaL' : 'Liquid fraction', 'phase' : 'Phase indentifier index',
+                             'z' : 'Total composition', 'flash_type' : 'Flash type'}
+
+    def __iter__(self):
+        if self.flash_type == 'Tp':
+            return (_ for _ in self.iterable[2:]) # Exclude T and p
+        elif self.flash_type in ('pH', 'pS'):
+            return (_ for _ in self.iterable[0:1] + self.iterable[2:]) # Exclude p
+        else:
+            return (_ for _ in self.iterable)
+
+    def __getitem__(self, item):
+        return tuple(self.__iter__())[item]
+
+    def __repr__(self):
+        reprstr = 'FlashResult object for ' + self.flash_type + '-flash\n'
+        reprstr += 'Containing the attributes (description, name, value):\n'
+        for name, val in zip(['flash_type', 'z'], [self.flash_type, self.z]):
+            reprstr += f'\t{self.descriptions[name] : <30} {name : <5} : {val}  \n'
+        for name, val in zip(self.contents, self.iterable):
+            reprstr += f'\t{self.descriptions[name] : <30} {name : <5} : {val}  \n'
+
+        return reprstr
+
+    def __str__(self):
+        return self.__repr__()
+
+class BinaryTriplePoint:
+    """
+    Holder struct for the result of a three phase state. Implements __iter__ and __getitem__.
+    """
+    def __init__(self, exists, x1, y, x2, p ,T):
+        self.exists, self.T, self.p, self.x1, self.y, self.x2 = exists, T, p, x1, y, x2
+        self.iterable = [exists, x1, y, x2, p , T]
+        self.contents = ['exists', 'x1', 'y', 'x2', 'p', 'T']
+        self.descriptions = {'exists': 'Binary triple point excists',
+                             'x1' : 'Liquid 1 phase composition',
+                             'y' : 'Vapour phase composition',
+                             'x2' : 'Liquid 2 phase composition',
+                             'p' : 'pressure [Pa]',
+                             'T' : 'Temperature [K]'}
+
+    def __iter__(self):
+        return (_ for _ in self.iterable)
+
+    def __getitem__(self, item):
+        return tuple(self.__iter__())[item]
+
+    def __repr__(self):
+        reprstr = 'BinaryTriplePoint object \n'
+        reprstr += 'Containing the attributes (description, name, value):\n'
+        for name, val in zip(self.contents, self.iterable):
+            reprstr += f'\t{self.descriptions[name] : <30} {name : <5} : {val}  \n'
+
+        return reprstr
+
+    def __str__(self):
+        return self.__repr__()

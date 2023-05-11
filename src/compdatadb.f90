@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-02-27T15:11:39.380259
+!! Time stamp: 2023-05-10T13:56:59.688774
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -642,9 +642,9 @@ module compdatadb
       )
 
   type (gendatadb), parameter :: cx9 = &
-      gendatadb(ident = "ACETYLEN", &
+      gendatadb(ident = "ACETYLENE", &
       formula = "C2H2", &
-      name = "ACETYLEN", &
+      name = "ACETYLENE", &
       mw = 26.0380, &
       Tc = 308.3000, &
       Pc = 6140000.00, &
@@ -667,7 +667,7 @@ module compdatadb
       )
 
   type (cpdata), parameter :: cp9 = &
-      cpdata(cid = "ACETYLEN", &
+      cpdata(cid = "ACETYLENE", &
       ref = "Default", &
       bib_ref = "", &
       cptype = 4, &
@@ -2388,7 +2388,7 @@ module compdatadb
   type (gendatadb), parameter :: cx33 = &
       gendatadb(ident = "H2O2", &
       formula = "H2O2", &
-      name = "HYDROGENPEROXIDE", &
+      name = "HYDROGEN PEROXIDE", &
       mw = 34.0147, &
       Tc = 730.1500, &
       Pc = 21700000.00, &
@@ -2795,8 +2795,8 @@ module compdatadb
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
       mw = 1.0000, &
-      Tc = 1.3200, &
-      Pc = 0.13, &
+      Tc = 132.0000, &
+      Pc = 6650000.00, &
       Zc = 0.310000, &
       acf = 0.317700, &
       Tb = 0.8000, &

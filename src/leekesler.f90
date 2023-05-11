@@ -13,7 +13,7 @@
 
 
 module LeeKesler
-  use thermopack_constants, only: Rgas
+  use thermopack_var, only: Rgas
   implicit none
 
   real, parameter :: eta = 0.25

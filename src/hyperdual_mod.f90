@@ -4,29 +4,37 @@
 !! Institute of Thermodynamics and Thermal Process Engineering (ITT),
 !! University of Stuttgart, Stuttgart, Germany
 !!
+!! Extended to third order differentials April 2023, Morten Hammer, NTNU.
+!!
 !!  #### Hypderdual numbers
 !!
 !!  Hypderdual numbers extend the idea of additional, non-real
-!!  components from one non-real component (complex numbers) to four
-!!  non-real components: \f$\varepsilon_1\f$, \f$\varepsilon_2\f$ and
-!!  \f$\varepsilon_1 \varepsilon_2\f$.
+!!  components from one non-real component (complex numbers) to seven
+!!  non-real components: \f$\varepsilon_1\f$, \f$\varepsilon_2\f$,
+!!  \f$\varepsilon_3\f$, \f$\varepsilon_1 \varepsilon_2\f$,
+!!  \f$\varepsilon_1 \varepsilon_3\f$, \f$\varepsilon_2 \varepsilon_3\f$
+!!  and \f$\varepsilon_1 \varepsilon_2 \varepsilon_3\f$
 !!  Hyperdual numbers require: \f$(\varepsilon_1)^2 = 0\f$,
-!!  \f$(\varepsilon_2)^2 = 0\f$ and
-!!  \f$(\varepsilon_1\varepsilon_2)^2 = 0\f$
+!!  \f$(\varepsilon_2)^2 = 0\f$ and \f$(\varepsilon_3)^2 = 0\f$.
 !!  This leads to the fact, that the Taylor series of a function with
-!!  hyperdual arguments can be truncated _exactly_ after the second
+!!  hyperdual arguments can be truncated _exactly_ after the third
 !!  derivative term:
 !!  \f[
 !!     f(\mathbf{x} + h_1 \varepsilon_1 + h_2 \varepsilon_2
 !!       + h_1 h_2 \varepsilon_1 \varepsilon_2)
 !!     = f(\mathbf{x}) + h_1 f'(\mathbf{x}) \varepsilon_1
 !!       + h_2 f'(\mathbf{x}) \varepsilon_2
+!!       + h_3 f'(\mathbf{x}) \varepsilon_3
 !!       + h_1 h_2 f''(\mathbf{x}) \varepsilon_1 \varepsilon_2
+!!       + h_1 h_3 f''(\mathbf{x}) \varepsilon_1 \varepsilon_3
+!!       + h_2 h_3 f''(\mathbf{x}) \varepsilon_2 \varepsilon_3
+!!       + h_1 h_2 h_3 f''(\mathbf{x}) \varepsilon_1 \varepsilon_2 \varepsilon_3
 !!  \f]
-!!  Because there is _no truncation error_, all first and second order
+!!  Because there is _no truncation error_, all first, second and third  order
 !!  derivatives can be obtained _exactly_, regardless of the step size ''
-!!  \f$h_1\f$ and \f$h_2\f$.
-!!  The derivatives can be obtained for a function \f$ f(\mathbf{x}) \f$
+!!  \f$h_1\f$, and \f$h_2\f$ and \f$h_3\f$.
+!!  The derivatives (exemplified by a second order case) can be
+!!  obtained for a function \f$ f(\mathbf{x}) \f$
 !!  with multiple variables \f$ \mathbf{x} \in \mathbb{R}^n \f$ via
 !!  \f{eqnarray*}{
 !!    \frac{\partial f(\mathbf{x})}{\partial x_i} &=& \frac{
@@ -52,16 +60,21 @@
 !!  #### Computation principles for hypderdual numbers
 !!
 !!  Hyperdual numbers \f$\mathbf{x} \in \mathbb{HD}\f$ can be expressed
-!!  as tuples: \f$\mathbf{x} = [x_0, x_1, x_2, x_{12}] = x_0
-!!  + x_1 \varepsilon_1 + x_2 \varepsilon_2
-!!  + x_{12} \varepsilon_1\varepsilon_2\f$.
+!!  as tuples: \f$\mathbf{x} = [x_0, x_1, x_2, x_3, x_{12}, x_{13}, x_{23}, x_{123}] = x_0
+!!  + x_1 \varepsilon_1 + x_2 \varepsilon_2 + x_3 \varepsilon_3
+!!  + x_{12} \varepsilon_1\varepsilon_2 + x_{13} \varepsilon_1\varepsilon_3
+!!  + x_{23} \varepsilon_2\varepsilon_3 + x_{123} \varepsilon_1\varepsilon_2\varepsilon_3\f$.
 !!  By using the Taylor expansion of the function \f$f(\mathbf{x})\f$
 !!  one gets computation priniple for functions with hyperdual
 !!  arguments from
 !!  \f[
 !!     f(\mathbf{x}) = f(x_0) + x_1 f'(x_0) \varepsilon_1
-!!     + x_2 f'(x_0) \varepsilon_2 + \big( x_{12} f'(x_0)
-!!     + x_1 x_2 f''(x_0) \big) \varepsilon_1 \varepsilon_2
+!!     + x_2 f'(x_0) \varepsilon_2 + x_3 f'(x_0) \varepsilon_3
+!!     + \big( x_{12} f'(x_0) + x_1 x_2 f''(x_0) \big) \varepsilon_1 \varepsilon_2
+!!     + \big( x_{13} f'(x_0) + x_1 x_3 f''(x_0) \big) \varepsilon_1 \varepsilon_3
+!!     + \big( x_{23} f'(x_0) + x_2 x_3 f''(x_0) \big) \varepsilon_2 \varepsilon_3
+!!     + \big( x_{123} f'(x_0) + x_1 x_2 x_3 f'''(x_0)
+!!     + \big\[ x_{12}x_3 + x_{13}x_2 + x_{23}x_1 \big\] f''(x_0) \big) \varepsilon_1 \varepsilon_2 \varepsilon_3
 !!  \f]
 !!
 !!  A hyperdual number derived type is provided by: \ref hyperdual.
@@ -86,15 +99,22 @@ module hyperdual_mod
   !> Derived type for hyperdual numbers
   !!
   !!  Hyperdual numbers are represented by the tuple \f$\mathbf{f} =
-  !!  [f_0, f_1, f_2, f_{12}] = f_0 + f_1 \varepsilon_1
-  !!  + f_2 \varepsilon_2 + f_{12} \varepsilon_1 \varepsilon_2 \f$.
+  !!  [f_0, f_1, f_2, f_3, f_{12}, f_{13}, f_{23}, f_{123}] = f_0 + f_1 \varepsilon_1
+  !!  + f_2 \varepsilon_2 + f_3 \varepsilon_3 + f_{12} \varepsilon_1 \varepsilon_2
+  !!  + f_{13} \varepsilon_1 \varepsilon_3 + f_{23} \varepsilon_2 \varepsilon_3
+  !!  + f_{123} \varepsilon_1 \varepsilon_2 \varepsilon_3 \f$.
   !!  Calculations specificaions are defined in module hyperdual_mod.
   type hyperdual
     sequence
-    real(dp) :: f0 = 0  !< real part of the hyperdual number
-    real(dp) :: f1 = 0  !< \f$\varepsilon_1\f$-part of  the hyperdual number
-    real(dp) :: f2 = 0  !< \f$\varepsilon_2\f$-part of  the hyperdual number
-    real(dp) :: f12 = 0 !< \f$\varepsilon_1\varepsilon_2\f$-part of the
+    real(dp) :: f0 = 0    !< real part of the hyperdual number
+    real(dp) :: f1 = 0    !< \f$\varepsilon_1\f$-part of  the hyperdual number
+    real(dp) :: f2 = 0    !< \f$\varepsilon_2\f$-part of  the hyperdual number
+    real(dp) :: f3 = 0    !< \f$\varepsilon_3\f$-part of  the hyperdual number
+    real(dp) :: f12 = 0   !< \f$\varepsilon_1\varepsilon_2\f$-part of the
+    real(dp) :: f13 = 0   !< \f$\varepsilon_1\varepsilon_3\f$-part of the
+    real(dp) :: f23 = 0   !< \f$\varepsilon_2\varepsilon_3\f$-part of the
+    real(dp) :: f123 = 0  !< \f$\varepsilon_1\varepsilon_2\varepsilon_3\f$-part of the
+    integer  :: order = 2 !< Overall order of differential. Defaults to 2. Order 3 must be activated.
   end type hyperdual
 
 
@@ -362,10 +382,21 @@ module hyperdual_mod
       type (hyperdual), intent(out) :: res
       type (hyperdual), intent(in)  :: inp
 
-      res%f0  = inp%f0
-      res%f1  = inp%f1
-      res%f2  = inp%f2
-      res%f12 = inp%f12
+      res%f0     = inp%f0
+      res%order  = inp%order
+      if (res%order > 0) then
+        res%f1   = inp%f1
+      endif
+      if (res%order > 1) then
+        res%f2   = inp%f2
+        res%f12  = inp%f12
+      endif
+      if (res%order == 3) then
+        res%f3   = inp%f3
+        res%f13  = inp%f13
+        res%f23  = inp%f23
+        res%f123 = inp%f123
+      endif
     end subroutine EqualHyperDualHyperDual
 
     elemental subroutine EqualHyperDualReal(res, inp)
@@ -373,10 +404,15 @@ module hyperdual_mod
       type (hyperdual), intent(out) :: res
       real(dp),         intent(in)  :: inp
 
-      res%f0  = inp
-      res%f1  = 0.0_dp
-      res%f2  = 0.0_dp
-      res%f12 = 0.0_dp
+      res%f0    = inp
+      res%f1    = 0.0_dp
+      res%f2    = 0.0_dp
+      res%f3    = 0.0_dp
+      res%f12   = 0.0_dp
+      res%f13   = 0.0_dp
+      res%f23   = 0.0_dp
+      res%f123  = 0.0_dp
+      res%order = 2
     end subroutine EqualHyperDualReal
 
 
@@ -389,10 +425,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
 
-      v2%f0  = v1%f0
-      v2%f1  = v1%f1
-      v2%f2  = v1%f2
-      v2%f12 = v1%f12
+      v2%f0     = v1%f0
+      v2%order  = v1%order
+      if (v2%order > 0) then
+        v2%f1   = v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2   = v1%f2
+        v2%f12  = v1%f12
+      endif
+      if (v2%order == 3) then
+        v2%f3   = v1%f3
+        v2%f13  = v1%f13
+        v2%f23  = v1%f23
+        v2%f123 = v1%f123
+      endif
     end function PlusHyperDualHyperDual
 
 
@@ -405,10 +452,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1, v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0  + v2%f0
-      v3%f1  = v1%f1  + v2%f1
-      v3%f2  = v1%f2  + v2%f2
-      v3%f12 = v1%f12 + v2%f12
+      v3%f0     = v1%f0   + v2%f0
+      v3%order  = max(v1%order, v2%order)
+      if (v3%order > 0) then
+        v3%f1   = v1%f1   + v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2   + v2%f2
+        v3%f12  = v1%f12  + v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3   + v2%f3
+        v3%f13  = v1%f13  + v2%f13
+        v3%f23  = v1%f23  + v2%f23
+        v3%f123 = v1%f123 + v2%f123
+      endif
     end function AddHyperDualHyperDual
 
     elemental function AddHyperDualReal(v1,v2) result (v3)
@@ -416,10 +474,21 @@ module hyperdual_mod
       real(dp),         intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0 + v2
-      v3%f1  = v1%f1
-      v3%f2  = v1%f2
-      v3%f12 = v1%f12
+      v3%f0     = v1%f0 + v2
+      v3%order  = v1%order
+      if (v3%order > 0) then
+        v3%f1   = v1%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2
+        v3%f12  = v1%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3
+        v3%f13  = v1%f13
+        v3%f23  = v1%f23
+        v3%f123 = v1%f123
+      endif
     end function AddHyperDualReal
 
     elemental function AddRealHyperDual(v1,v2) result (v3)
@@ -427,10 +496,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1 + v2%f0
-      v3%f1  =      v2%f1
-      v3%f2  =      v2%f2
-      v3%f12 =      v2%f12
+      v3%f0     = v1 + v2%f0
+      v3%order  = v2%order
+      if (v3%order > 0) then
+        v3%f1   =      v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   =      v2%f2
+        v3%f12  =      v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   =      v2%f3
+        v3%f13  =      v2%f13
+        v3%f23  =      v2%f23
+        v3%f123 =     v2%f123
+      endif
     end function AddRealHyperDual
 
 
@@ -443,10 +523,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
 
-      v2%f0  = -v1%f0
-      v2%f1  = -v1%f1
-      v2%f2  = -v1%f2
-      v2%f12 = -v1%f12
+      v2%f0     = -v1%f0
+      v2%order  = v1%order
+      if (v2%order > 0) then
+        v2%f1   = -v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2   = -v1%f2
+        v2%f12  = -v1%f12
+      endif
+      if (v2%order == 3) then
+        v2%f3   = -v1%f3
+        v2%f13  = -v1%f13
+        v2%f23  = -v1%f23
+        v2%f123 = -v1%f123
+      endif
     end function MinusHyperDualHyperDual
 
 
@@ -459,10 +550,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1, v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0  - v2%f0
-      v3%f1  = v1%f1  - v2%f1
-      v3%f2  = v1%f2  - v2%f2
-      v3%f12 = v1%f12 - v2%f12
+      v3%f0     = v1%f0  - v2%f0
+      v3%order  = max(v1%order, v2%order)
+      if (v3%order > 0) then
+        v3%f1   = v1%f1  - v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2  - v2%f2
+        v3%f12  = v1%f12 - v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3  - v2%f3
+        v3%f13  = v1%f13 - v2%f13
+        v3%f23  = v1%f23 - v2%f23
+        v3%f123 = v1%f123 - v2%f123
+      endif
     end function SubtractHyperDualHyperDual
 
     elemental function SubtractHyperDualReal(v1,v2) result (v3)
@@ -470,10 +572,21 @@ module hyperdual_mod
       real(dp),         intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0 - v2
-      v3%f1  = v1%f1
-      v3%f2  = v1%f2
-      v3%f12 = v1%f12
+      v3%f0     = v1%f0 - v2
+      v3%order  = v1%order
+      if (v3%order > 0) then
+        v3%f1   = v1%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2
+        v3%f12  = v1%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3
+        v3%f13  = v1%f13
+        v3%f23  = v1%f23
+        v3%f123 = v1%f123
+      endif
     end function SubtractHyperDualReal
 
     elemental function SubtractRealHyperDual(v1,v2) result (v3)
@@ -481,10 +594,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1 - v2%f0
-      v3%f1  =    - v2%f1
-      v3%f2  =    - v2%f2
-      v3%f12 =    - v2%f12
+      v3%f0     = v1 - v2%f0
+      v3%order  = v2%order
+      if (v3%order > 0) then
+        v3%f1   =    - v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   =    - v2%f2
+        v3%f12  =    - v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   =    - v2%f3
+        v3%f13  =    - v2%f13
+        v3%f23  =    - v2%f23
+        v3%f123 =    - v2%f123
+      endif
     end function SubtractRealHyperDual
 
 
@@ -497,10 +621,22 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1, v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0 * v2%f0
-      v3%f1  = v1%f0 * v2%f1 + v1%f1 * v2%f0
-      v3%f2  = v1%f0 * v2%f2 + v1%f2 * v2%f0
-      v3%f12 = v1%f0*v2%f12 + v1%f1*v2%f2 + v1%f2*v2%f1 + v1%f12*v2%f0
+      v3%f0     = v1%f0 * v2%f0
+      v3%order  = max(v1%order, v2%order)
+      if (v3%order > 0) then
+        v3%f1   = v1%f0 * v2%f1 + v1%f1 * v2%f0
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f0 * v2%f2 + v1%f2 * v2%f0
+        v3%f12  = v1%f0*v2%f12 + v1%f1*v2%f2 + v1%f2*v2%f1 + v1%f12*v2%f0
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f0 * v2%f3 + v1%f3 * v2%f0
+        v3%f13  = v1%f0*v2%f13 + v1%f1*v2%f3 + v1%f3*v2%f1 + v1%f13*v2%f0
+        v3%f23  = v1%f0*v2%f23 + v1%f2*v2%f3 + v1%f3*v2%f2 + v1%f23*v2%f0
+        v3%f123 = v1%f0*v2%f123 + v1%f12*v2%f3 + v1%f3*v2%f12 + v1%f123*v2%f0 + &
+             v1%f23*v2%f1 + v1%f1*v2%f23 + v1%f13*v2%f2 + v1%f2*v2%f13
+      endif
     end function MultiplyHyperDualHyperDual
 
     elemental function MultiplyHyperDualReal(v1,v2) result (v3)
@@ -508,10 +644,21 @@ module hyperdual_mod
       real(dp),         intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0  * v2
-      v3%f1  = v1%f1  * v2
-      v3%f2  = v1%f2  * v2
-      v3%f12 = v1%f12 * v2
+      v3%f0     = v1%f0  * v2
+      v3%order  = v1%order
+      if (v3%order > 0) then
+        v3%f1   = v1%f1  * v2
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2  * v2
+        v3%f12  = v1%f12 * v2
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3  * v2
+        v3%f13  = v1%f13 * v2
+        v3%f23  = v1%f23 * v2
+        v3%f123 = v1%f123 * v2
+      endif
     end function MultiplyHyperDualReal
 
     elemental function MultiplyRealHyperDual(v1,v2) result (v3)
@@ -519,10 +666,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1 * v2%f0
-      v3%f1  = v1 * v2%f1
-      v3%f2  = v1 * v2%f2
-      v3%f12 = v1 * v2%f12
+      v3%f0     = v1 * v2%f0
+      v3%order  = v2%order
+      if (v3%order > 0) then
+        v3%f1   = v1 * v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1 * v2%f2
+        v3%f12  = v1 * v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1 * v2%f3
+        v3%f13  = v1 * v2%f13
+        v3%f23  = v1 * v2%f23
+        v3%f123 = v1 * v2%f123
+      endif
     end function MultiplyRealHyperDual
 
     elemental function MultiplyHyperDualInt(v1,v2) result (v3)
@@ -530,10 +688,21 @@ module hyperdual_mod
       integer,          intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1%f0  * v2
-      v3%f1  = v1%f1  * v2
-      v3%f2  = v1%f2  * v2
-      v3%f12 = v1%f12 * v2
+      v3%f0     = v1%f0  * v2
+      v3%order  = v1%order
+      if (v3%order > 0) then
+        v3%f1   = v1%f1  * v2
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1%f2  * v2
+        v3%f12  = v1%f12 * v2
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1%f3  * v2
+        v3%f13  = v1%f13 * v2
+        v3%f23  = v1%f23 * v2
+        v3%f123 = v1%f123 * v2
+      endif
     end function MultiplyHyperDualInt
 
     elemental function MultiplyIntHyperDual(v1,v2) result (v3)
@@ -541,10 +710,21 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v2
       type (hyperdual)             :: v3
 
-      v3%f0  = v1 * v2%f0
-      v3%f1  = v1 * v2%f1
-      v3%f2  = v1 * v2%f2
-      v3%f12 = v1 * v2%f12
+      v3%f0     = v1 * v2%f0
+      v3%order  = v2%order
+      if (v3%order > 0) then
+        v3%f1   = v1 * v2%f1
+      endif
+      if (v3%order > 1) then
+        v3%f2   = v1 * v2%f2
+        v3%f12  = v1 * v2%f12
+      endif
+      if (v3%order == 3) then
+        v3%f3   = v1 * v2%f3
+        v3%f13  = v1 * v2%f13
+        v3%f23  = v1 * v2%f23
+        v3%f123 = v1 * v2%f123
+      endif
     end function MultiplyIntHyperDual
 
 
@@ -614,7 +794,7 @@ module hyperdual_mod
       type (hyperdual)                  :: v3
 
       real(dp), parameter               :: tol = 1.0e-15_dp
-      real(dp)                          :: xval, deriv
+      real(dp)                          :: xval, deriv, deriv2
 
       xval = v1%f0
       if(abs(xval) < tol) then
@@ -625,12 +805,25 @@ module hyperdual_mod
         endif
       endif
 
-      deriv  = v2*(xval**(v2-1.0_dp))
-      v3%f0  = (v1%f0)**v2
-      v3%f1  =  v1%f1 * deriv
-      v3%f2  =  v1%f2 * deriv
-      v3%f12 = v1%f12 * deriv &
-               & + v2*(v2 - 1.0_dp)*v1%f1*v1%f2*xval**(v2-2.0_dp)
+      v3%f0    = (v1%f0)**v2
+      v3%order = v1%order
+      if (v3%order > 0) then
+        deriv  = v2*(xval**(v2-1.0_dp))
+        v3%f1  =  v1%f1 * deriv
+      endif
+      if (v3%order > 1) then
+        deriv2 = v2*(v2 - 1.0_dp)*xval**(v2-2.0_dp)
+        v3%f2  =  v1%f2 * deriv
+        v3%f12 = v1%f12 * deriv + v1%f1*v1%f2*deriv2
+      endif
+      if (v3%order == 3) then
+        v3%f3  =  v1%f3 * deriv
+        v3%f13 = v1%f13 * deriv + v1%f1*v1%f3*deriv2
+        v3%f23 = v1%f23 * deriv + v1%f2*v1%f3*deriv2
+        v3%f123 = v1%f123 * deriv &
+             + deriv2*(v1%f12*v1%f3 + v1%f13*v1%f2 + v1%f23*v1%f1) &
+             + v2*(v2 - 1.0_dp)*(v2 - 2.0_dp)*xval**(v2-3.0_dp)*v1%f1*v1%f2*v1%f3
+      endif
     end function PowerHyperDualReal
 
 
@@ -643,7 +836,7 @@ module hyperdual_mod
       logical, intent(in), optional :: mask(:)
       integer :: i
 
-      SumHyperDual = hyperdual(0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp)
+      SumHyperDual = hyperdual(0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0)
       if (present(mask)) then
         do i = 1, size(v1)
           if(mask(i)) SumHyperDual = SumHyperDual + v1(i)
@@ -663,7 +856,7 @@ module hyperdual_mod
 
       allocate(SumHyperDual2(size(v1)/size(v1,dim)))
 
-      SumHyperDual2 = hyperdual(0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp)
+      SumHyperDual2 = hyperdual(0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0)
       do i = 1, size(v1,dim)
           if (dim == 1) then
             SumHyperDual2 = SumHyperDual2 + v1(i,:)
@@ -924,16 +1117,37 @@ module hyperdual_mod
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
 
+      v2%order  = v1%order
       if(v1%f0 >= 0.0) then
-        v2%f0  = v1%f0
-        v2%f1  = v1%f1
-        v2%f2  = v1%f2
-        v2%f12 = v1%f12
+        v2%f0   = v1%f0
+        if (v2%order > 0) then
+          v2%f1   = v1%f1
+        endif
+        if (v2%order > 1) then
+          v2%f2   = v1%f2
+          v2%f12  = v1%f12
+        endif
+        if (v2%order == 3) then
+          v2%f3   = v1%f3
+          v2%f13  = v1%f13
+          v2%f23  = v1%f23
+          v2%f123 = v1%f123
+        endif
       else
-        v2%f0  = -v1%f0
-        v2%f1  = -v1%f1
-        v2%f2  = -v1%f2
-        v2%f12 = -v1%f12
+        v2%f0   = -v1%f0
+        if (v2%order > 0) then
+          v2%f1   = -v1%f1
+        endif
+        if (v2%order > 1) then
+          v2%f2   = -v1%f2
+          v2%f12  = -v1%f12
+        endif
+        if (v2%order == 3) then
+          v2%f3   = -v1%f3
+          v2%f13  = -v1%f13
+          v2%f23  = -v1%f23
+          v2%f123 = -v1%f123
+        endif
       endif
     end function absHyperDual
 
@@ -1010,11 +1224,22 @@ module hyperdual_mod
       real(dp)                     :: f, dx
 
       f = sin(v1%f0)
-      dx = cos(v1%f0)
       v2%f0  = f
-      v2%f1  = dx * v1%f1
-      v2%f2  = dx * v1%f2
-      v2%f12 = dx * v1%f12 - f * v1%f1 * v1%f2
+      v2%order = v1%order
+      if (v2%order > 0) then
+        dx = cos(v1%f0)
+        v2%f1  = dx * v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2  = dx * v1%f2
+        v2%f12 = dx * v1%f12 - f * v1%f1 * v1%f2
+      endif
+      if (v2%order == 3) then
+        v2%f3  = dx * v1%f3
+        v2%f13 = dx * v1%f13 - f * v1%f1 * v1%f3
+        v2%f23 = dx * v1%f23 - f * v1%f2 * v1%f3
+        v2%f123 = dx * (v1%f123 - v1%f1 * v1%f2 * v1%f3) - f * (v1%f12 * v1%f3 - v1%f13 * v1%f2 - v1%f23 * v1%f1)
+      endif
     end function sinHyperDual
 
     ! Cosine function.
@@ -1024,11 +1249,22 @@ module hyperdual_mod
       real(dp)                     :: f, dx
 
       f = cos(v1%f0)
-      dx = -sin(v1%f0)
       v2%f0  = f
-      v2%f1  = dx * v1%f1
-      v2%f2  = dx * v1%f2
-      v2%f12 = dx * v1%f12 - f * v1%f1 * v1%f2
+      v2%order = v1%order
+      if (v2%order > 0) then
+        dx = -sin(v1%f0)
+        v2%f1  = dx * v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2  = dx * v1%f2
+        v2%f12 = dx * v1%f12 - f * v1%f1 * v1%f2
+      endif
+      if (v2%order == 3) then
+        v2%f3  = dx * v1%f3
+        v2%f13 = dx * v1%f13 - f * v1%f1 * v1%f3
+        v2%f23 = dx * v1%f23 - f * v1%f2 * v1%f3
+        v2%f123 = dx * (v1%f123 - v1%f1 * v1%f2 * v1%f3) - f * (v1%f12 * v1%f3 + v1%f13 * v1%f2 + v1%f23 * v1%f1)
+      endif
     end function cosHyperDual
 
     ! Tangent function.
@@ -1038,11 +1274,24 @@ module hyperdual_mod
       real(dp)                     :: f, dx
 
       f = tan(v1%f0)
-      dx = f * f + 1.0_dp
       v2%f0  = f
-      v2%f1  = dx * v1%f1
-      v2%f2  = dx * v1%f2
-      v2%f12 = dx * v1%f12 + v1%f1 * v1%f2 * 2.0_dp * f * dx
+      v2%order = v1%order
+      if (v2%order > 0) then
+        dx = f * f + 1.0_dp
+        v2%f1  = dx * v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2  = dx * v1%f2
+        v2%f12 = dx * v1%f12 + v1%f1 * v1%f2 * 2.0_dp * f * dx
+      endif
+      if (v2%order == 3) then
+        v2%f3  = dx * v1%f3
+        v2%f13 = dx * v1%f13 + v1%f1 * v1%f3 * 2.0_dp * f * dx
+        v2%f23 = dx * v1%f23 + v1%f2 * v1%f3 * 2.0_dp * f * dx
+        v2%f123 = dx * v1%f123 &
+             + (v1%f12 * v1%f3 + v1%f13 * v1%f2 + v1%f23 * v1%f1) * 2.0_dp * f * dx &
+             + 2.0_dp * dx * (3 * dx - 2.0_dp) * v1%f1 * v1%f2 * v1%f3
+      endif
     end function tanHyperDual
 
     ! Sqrt function
@@ -1057,14 +1306,30 @@ module hyperdual_mod
     elemental function logHyperDual(v1) result (v2)
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
-      real(dp)                     :: dx1, dx2
+      real(dp)                     :: inv_f0, dx1, dx2, dx3, dx12, dx13, dx23
 
-      dx1 = v1%f1 / v1%f0
-      dx2 = v1%f2 / v1%f0
       v2%f0  = log(v1%f0)
-      v2%f1  = dx1
-      v2%f2  = dx2
-      v2%f12 = v1%f12 / v1%f0 - (dx1 * dx2)
+      v2%order = v1%order
+      if (v2%order > 0) then
+        inv_f0 = 1.0_dp / v1%f0
+        dx1 = v1%f1 * inv_f0
+        v2%f1  = dx1
+      endif
+      if (v2%order > 1) then
+        dx2 = v1%f2 * inv_f0
+        dx12 = v1%f12 * inv_f0
+        v2%f2  = dx2
+        v2%f12 = dx12 - (dx1 * dx2)
+      endif
+      if (v2%order == 3) then
+        dx3 = v1%f3 * inv_f0
+        dx13 = v1%f13 * inv_f0
+        dx23 = v1%f23 * inv_f0
+        v2%f3  = dx3
+        v2%f13 = dx13 - (dx1 * dx3)
+        v2%f23 = dx23 - (dx2 * dx3)
+        v2%f123 = v1%f123 * inv_f0 - (dx12 * dx3) - (dx13 * dx2) - (dx23 * dx1) + 2.0_dp*(dx1 * dx2 * dx3)
+      endif
     end function logHyperDual
 
     ! Log10 function
@@ -1082,10 +1347,21 @@ module hyperdual_mod
       real(dp)                     :: dx
 
       dx = exp(v1%f0)
-      v2%f0  = dx
-      v2%f1  = dx * v1%f1
-      v2%f2  = dx * v1%f2
-      v2%f12 = dx * (v1%f12 + v1%f1 * v1%f2)
+      v2%f0   = dx
+      v2%order = v1%order
+      if (v2%order > 0) then
+        v2%f1   = dx * v1%f1
+      endif
+      if (v2%order > 1) then
+        v2%f2   = dx * v1%f2
+        v2%f12  = dx * (v1%f12 + v1%f1 * v1%f2)
+      endif
+      if (v2%order == 3) then
+        v2%f3   = dx * v1%f3
+        v2%f13  = dx * (v1%f13 + v1%f1 * v1%f3)
+        v2%f23  = dx * (v1%f23 + v1%f2 * v1%f3)
+        v2%f123 = dx * (v1%f123 + v1%f12*v1%f3 + v1%f13*v1%f2 + v1%f23*v1%f1 + v1%f1 * v1%f2 * v1%f3)
+      endif
     end function expHyperDual
 
     ! Sinh function
@@ -1122,45 +1398,83 @@ module hyperdual_mod
     elemental function acosHyperDual(v1) result (v2)
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
-      real(dp)                     :: deriv, deriv1
+      real(dp)                     :: deriv, invarg, deriv2
 
-      deriv1 = 1.0_dp - v1%f0*v1%f0
-      deriv  = -1.0_dp / sqrt(deriv1)
       v2%f0  = acos(v1%f0)
-      v2%f1  = deriv*v1%f1
-      v2%f2  = deriv*v1%f2
-      v2%f12 = deriv*v1%f12 &
-             & + v1%f1 * v1%f2 * (-v1%f0 * deriv1**(-1.5_dp))
+      v2%order = v1%order
+      if (v2%order > 0) then
+        invarg = 1.0_dp / (1.0_dp - v1%f0*v1%f0)
+        deriv  = -sqrt(invarg)
+        v2%f1  = deriv*v1%f1
+      endif
+      if (v2%order > 1) then
+        deriv2 = v1%f0*invarg*deriv
+        v2%f2  = deriv*v1%f2
+        v2%f12 = deriv*v1%f12 + deriv2 * v1%f1 * v1%f2
+      endif
+      if (v2%order == 3) then
+        v2%f3  = deriv*v1%f3
+        v2%f13 = deriv*v1%f13 + deriv2 * v1%f1 * v1%f3
+        v2%f23 = deriv*v1%f23 + deriv2 * v1%f2 * v1%f3
+        v2%f123 = deriv*v1%f123 &
+             + deriv2 * (v1%f12 * v1%f3 + v1%f13 * v1%f2 + v1%f23 * v1%f1) &
+             + (2.0_dp * v1%f0*v1%f0 + 1.0_dp)*invarg*invarg*deriv*v1%f1*v1%f2*v1%f3
+      endif
     end function acosHyperDual
 
     ! Asin function
     elemental function asinHyperDual(v1) result (v2)
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
-      real(dp)                     :: deriv, deriv1
+      real(dp)                     :: deriv, invarg, deriv2
 
-      deriv1 = 1.0_dp - v1%f0*v1%f0
-      deriv  = 1.0_dp / sqrt(deriv1)
       v2%f0  = asin(v1%f0)
-      v2%f1  = deriv*v1%f1
-      v2%f2  = deriv*v1%f2
-      v2%f12 = deriv*v1%f12 &
-             & + v1%f1 * v1%f2 * (v1%f0 * deriv1**(-1.5_dp))
+      v2%order = v1%order
+      if (v2%order > 0) then
+        invarg = 1.0_dp / (1.0_dp - v1%f0*v1%f0)
+        deriv  = sqrt(invarg)
+        v2%f1  = deriv*v1%f1
+      endif
+      if (v2%order > 1) then
+        deriv2 = v1%f0*invarg*deriv
+        v2%f2  = deriv*v1%f2
+        v2%f12 = deriv*v1%f12 + deriv2 * v1%f1 * v1%f2
+      endif
+      if (v2%order == 3) then
+        v2%f3  = deriv*v1%f3
+        v2%f13 = deriv*v1%f13 + deriv2 * v1%f1 * v1%f3
+        v2%f23 = deriv*v1%f23 + deriv2 * v1%f2 * v1%f3
+        v2%f123 = deriv*v1%f123 &
+             + deriv2 * (v1%f12 * v1%f3 + v1%f13 * v1%f2 + v1%f23 * v1%f1) &
+             + (2.0_dp * v1%f0*v1%f0 + 1.0_dp)*invarg*invarg*deriv*v1%f1*v1%f2*v1%f3
+      endif
     end function asinHyperDual
 
     ! Atan function
     elemental function atanHyperDual(v1) result (v2)
       type (hyperdual), intent(in) :: v1
       type (hyperdual)             :: v2
-      real(dp)                     :: deriv, deriv1
+      real(dp)                     :: deriv, deriv2
 
-      deriv1 = 1.0_dp + v1%f0*v1%f0
-      deriv  = 1.0_dp / deriv1
       v2%f0  = atan(v1%f0)
-      v2%f1  = deriv*v1%f1
-      v2%f2  = deriv*v1%f2
-      v2%f12 = deriv*v1%f12 &
-             & + v1%f1 * v1%f2 * (-2.0_dp * v1%f0 / (deriv1 * deriv1))
+      v2%order = v1%order
+      if (v2%order > 0) then
+        deriv = 1.0_dp/(1.0_dp + v1%f0*v1%f0)
+        v2%f1  = deriv*v1%f1
+      endif
+      if (v2%order > 1) then
+        deriv2  = - 2.0_dp * v1%f0 * deriv * deriv
+        v2%f2  = deriv*v1%f2
+        v2%f12 = deriv*v1%f12 + deriv2* v1%f1 * v1%f2
+      endif
+      if (v2%order == 3) then
+        v2%f3  = deriv*v1%f3
+        v2%f13 = deriv*v1%f13 + deriv2 * v1%f1 * v1%f3
+        v2%f23 = deriv*v1%f23 + deriv2 * v1%f2 * v1%f3
+        v2%f123 = deriv*v1%f123 &
+             + deriv2 * (v1%f12 * v1%f3 + v1%f13 * v1%f2 + v1%f23 * v1%f1) &
+             + (6.0_dp*v1%f0*v1%f0 - 2.0_dp)*deriv**3**v1%f1*v1%f2*v1%f3
+      endif
     end function atanHyperDual
 
     ! Atan2 function
@@ -1260,5 +1574,37 @@ module hyperdual_mod
         v3 = v2
       endif
     end function min_rd
+
+
+    !-------------------------------------------------------------------
+    !--- Utility functions. --------------------------------------------
+    !-------------------------------------------------------------------
+
+    elemental function hd_all_members_zero(v1) result(all_members_zero)
+      implicit none
+      type (hyperdual), intent(in)  :: v1
+      logical :: all_members_zero
+
+      if (v1%order == 0) then
+        all_members_zero = (v1%f0 == 0.0_dp)
+      else if (v1%order == 1) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp)
+      else if (v1%order == 2) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp) .and. &
+             (v1%f2 == 0.0_dp) .and. &
+             (v1%f12 == 0.0_dp)
+      else if (v1%order == 3) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp) .and. &
+             (v1%f2 == 0.0_dp) .and. &
+             (v1%f3 == 0.0_dp) .and. &
+             (v1%f12 == 0.0_dp) .and. &
+             (v1%f13 == 0.0_dp) .and. &
+             (v1%f23 == 0.0_dp) .and. &
+             (v1%f123 == 0.0_dp)
+      endif
+    end function hd_all_members_zero
 
 end module hyperdual_mod

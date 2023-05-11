@@ -9,12 +9,11 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
-from . import cubic
+from .thermo import c_len_type
+from .cubic import cubic
 
-c_len_type = thermo.c_len_type
 
-class cpa(cubic.cubic):
+class cpa(cubic):
     """
     Interface to cubic plus association model
     """
