@@ -857,31 +857,31 @@ class PhaseDiagram(object):
         return PhaseDiagram(vle_states)
 
     @staticmethod
-    def binary_isobar_vle(eos, pressure, minimum_temperature=0.0):
+    def binary_isobar_vle(eos, p, minimum_temperature=0.0):
         """Construct PhaseDiagram from binary vle isobar
 
         Args:
             eos (thermo.thermo): Equation of state object
-            Pressure (float): Pressure (Pa)
+            p (float): Pressure (Pa)
             minimum_temperaturte (float, optional): Temperature (K). Defaults to 0.0.
 
         Returns:
             PhaseDiagram: Phase diagram
         """
-        _, L1VE, _ = eos.get_binary_txy(pressure=pressure,
-                                        minimum_temperaturte=minimum_temperature,
+        _, L1VE, _ = eos.get_binary_txy(pressure=p,
+                                        minimum_temperature=minimum_temperature,
                                         maximum_dz=0.003,
                                         maximum_dlns=0.01)
         vle_states = []
         x, y, T = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
-            vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
+            vg, = eos.specific_volume(T[i], p, yy, eos.VAPPH)
             xx = np.array([x[i], 1-x[i]])
-            vl, = eos.specific_volume(T, p[i], xx, eos.LIQPH)
-            vapour = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
+            vl, = eos.specific_volume(T[i], p, xx, eos.LIQPH)
+            vapour = State(eos=eos, T=T[i], V=vg, n=yy, p=p, n_tot=1.0,
                           init_specific=True)
-            liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
+            liquid = State(eos=eos, T=T[i], V=vl, n=xx, p=p, n_tot=1.0,
                            init_specific=True)
             vle_states.append(Equilibrium(vapour, liquid))
         return PhaseDiagram(vle_states)
@@ -901,10 +901,6 @@ class PhaseDiagram(object):
     @property
     def pressures(self):
         return phase_state_list([vle.vapour for vle in self.vle_states]).pressures
-
-    @property
-    def specific_volumes(self):
-        return phase_state_list([vle.vapour for vle in self.vle_states]).specific_volumes
 
 class MetaCurve(object):
     """
@@ -968,7 +964,3 @@ class MetaCurve(object):
     @property
     def pressures(self):
         return phase_state_list([meta.vapour for meta in self.meta_states]).pressures
-
-    @property
-    def specific_volumes(self):
-        return phase_state_list([meta.vapour for meta in self.meta_states]).specific_volumes
