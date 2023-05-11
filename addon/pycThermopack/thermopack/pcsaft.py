@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -9,12 +7,12 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo, saft
+from .thermo import c_len_type
+from .saft import saft
 from . import utils
 
-c_len_type = thermo.c_len_type
 
-class pcsaft(saft.saft):
+class pcsaft(saft):
     """
     Interface to PC-SAFT model
     """
@@ -31,7 +29,7 @@ class pcsaft(saft.saft):
             polar (bool): Use dipole and quadrupole contributions PCP-SAFT (10.1002/aic.10502, 10.1002/aic.10683 and 10.1021/jp072619u) (Default False)
         """
         # Load dll/so
-        saft.saft.__init__(self)
+        saft.__init__(self)
 
         # Init methods
         self.eoslibinit_init_pcsaft = getattr(
@@ -45,6 +43,8 @@ class pcsaft(saft.saft):
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
         self.s_lng_ii_pc_saft_tvn = getattr(self.tp, self.get_export_name("pc_saft_nonassoc", "lng_ii_pc_saft_tvn"))
+        # DFT interface
+        self.s_calc_assoc_phi = getattr(self.tp, self.get_export_name("saft_interface", "calc_assoc_phi"))
 
         # Define parameters to be set by init
         self.nc = None
@@ -274,6 +274,60 @@ class pcsaft(saft.saft):
                                   lng_nn_c)
 
         return_tuple = (lng_c.value, )
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        return return_tuple
+
+    def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
+                                   phi_tt=None, phi_TT=None, phi_tn=None, phi_nn=None):
+        """Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
+
+        Args:
+            temp (float): Temperature (K)
+            n_alpha (np.ndarray): Weighted densities
+            phi (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_T (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_n (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_TT (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_Tn (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_nn (No type, optional): Flag to activate calculation. Defaults to None.
+
+        Returns:
+            Optionally energy density and differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        dim = self.nc*6
+        assert np.shape(n_alpha) == [self.nc, 6]
+        n_alpha_c = (c_double * dim)(*n_alpha.flatten('F'))
+
+        null_pointer = POINTER(c_double)()
+        phi_c = null_pointer if phi is None else c_double(0.0)
+        phi_t_c = null_pointer if phi_t is None else c_double(0.0)
+        phi_n_c = null_pointer if phi_n is None else (c_double * dim)(0.0)
+        phi_tt_c = null_pointer if phi_tt is None else c_double(0.0)
+        phi_tn_c = null_pointer if phi_tn is None else (c_double * dim)(0.0)
+        phi_nn_c = null_pointer if phi_nn is None else (c_double * dim**2)(0.0)
+
+        self.s_calc_assoc_phi.argtypes = [POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double),
+                                          POINTER(c_double)]
+
+        self.s_calc_assoc_phi.restype = None
+
+        self.s_calc_assoc_phi(byref(temp_c),
+                              n_alpha_c,
+                              phi_c,
+                              phi_t_c,
+                              phi_n_c,
+                              phi_tt_c,
+                              phi_tn_c,
+                              phi_nn_c)
+
         optional_ptrs = [lng_t_c, lng_v_c, lng_n_c, lng_tt_c, lng_vv_c, lng_tv_c, lng_tn_c, lng_vn_c, lng_nn_c]
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
 

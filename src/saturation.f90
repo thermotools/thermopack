@@ -1,7 +1,8 @@
 module saturation
   use eos, only: thermo
   use thermopack_constants, only: clen, LIQPH, VAPPH, verbose
-  use thermopack_var, only: nc, thermo_model, get_active_eos
+  use thermopack_var, only: nc, thermo_model, get_active_eos, &
+       Rgas, tptmin, tppmin, tppmax, tpTmax
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
@@ -253,7 +254,6 @@ contains
   !> \author MH, 2012, EA, 2014
   !-----------------------------------------------------------------------------
   subroutine sat(Z,Y,X,t,p,specification,doBubIn,ierr_out)
-    use thermopack_constants, only: get_templimits, tpPmin
     use eos, only: getCriticalParam, specificVolume
     implicit none
     integer, intent(in) :: specification     ! Indicates whether T or P is fixed
@@ -297,7 +297,8 @@ contains
         T0 = T
         XX(1) = log(min(t,tci))
         xmax = log(tci)
-        call get_templimits(Tmin,Tmax)
+        Tmin = tpTmin
+        Tmax = tpTmax
         xmin = log(Tmin)
       else
         if (t > tci) then
@@ -635,8 +636,6 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   function sat_newton(Z,K,t,p,beta,s,ln_s,ierr) result(iter)
-    use thermopack_constants, only: tpPmax, tpPmin
-    use thermopack_constants, only: get_templimits
     use numconstants, only: expMax, expMin
     implicit none
     real, dimension(nc), intent(in) :: Z    ! total composition
@@ -652,7 +651,6 @@ contains
     type(nonlinear_solver) :: solver
     real, dimension(nc+3) :: param
     real, dimension(nc+2) :: xmax, xmin, X
-    real :: Tmin, Tmax
     X(1:nc) = log(K)
     X(nc+1) = log(t)
     X(nc+2) = log(p)
@@ -670,9 +668,8 @@ contains
 
     Xmin = expMin
     Xmax = expMax
-    call get_templimits(Tmin,Tmax)
-    Xmin(nc+1) = log(Tmin) !Tmin
-    Xmax(nc+1) = log(Tmax) !Tmax
+    Xmin(nc+1) = log(tpTmin) !Tmin
+    Xmax(nc+1) = log(tpTmax) !Tmax
     Xmin(nc+2) = log(tpPmin) !Pmin
     Xmax(nc+2) = log(tpPmax) !Pmax
 
@@ -771,7 +768,6 @@ contains
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
   function sat_var_at_limit(Xvar,eps) result(atLimit)
-    use thermopack_constants, only: tpPmax,tpPmin,get_templimits
     use numconstants, only: expMax, expMin
     implicit none
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
@@ -779,14 +775,13 @@ contains
     logical :: atLimit
     ! Locals
     integer :: i
-    real :: Tmin,Tmax,eps_local
+    real :: eps_local
     real :: lnMin(nc+2), lnMax(nc+2)
-    call get_templimits(Tmin,Tmax)
     atLimit = .false.
     lnMin(1:nc) = expMin
     lnMax(1:nc) = expMax
-    lnMin(nc+1) = log(Tmin)
-    lnMax(nc+1) = log(Tmax)
+    lnMin(nc+1) = log(tpTmin)
+    lnMax(nc+1) = log(tpTmax)
     lnMin(nc+2) = log(tpPmin)
     lnMax(nc+2) = log(tpPmax)
 
@@ -906,7 +901,6 @@ contains
   !! \author MH
   !-----------------------------------------------------------------------------
   subroutine sat_successive(Z,K,t,p,specification,doBub,return_iter,ierr)
-    use thermopack_constants, only: tpPmax, tpPmin, get_templimits
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, dimension(nc), intent(inout) :: K
@@ -933,7 +927,8 @@ contains
     endif
 
     if (specification == specP) then
-      call get_templimits(Tmin, Tmax)
+      Tmin = tpTmin
+      Tmax = tpTmax
     endif
 
     f = 1.0

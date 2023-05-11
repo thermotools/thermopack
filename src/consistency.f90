@@ -1,8 +1,7 @@
 !> Test model consistency
 subroutine consistency(t,p,n,phase,gi,phiP,phiT,gd,phi,phisym,phinumP,phinumT,phinumX)
   use eos, only: thermo, residualGibbs, enthalpy, zfac
-  use thermopack_constants, only: Rgas
-  use thermopack_var, only: nc
+  use thermopack_var, only: nc, Rgas
   implicit none
   real, intent(in) :: t,p
   integer, intent(in) :: phase
@@ -131,8 +130,7 @@ end subroutine consistency
 !< Test differentials
 subroutine testCubicModel(t,p,n,phase)
   use eos, only: zfac
-  use thermopack_var, only: nc, get_active_eos, base_eos_param
-  use thermopack_constants, only: kRgas
+  use thermopack_var, only: nc, get_active_eos, base_eos_param, kRgas
   use cubic_eos
   use cubic
   use cbmix

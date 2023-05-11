@@ -3,8 +3,14 @@ import numpy as np
 I = "  "
 N_TAGS_PER_LINE = 5
 
-sci_print_float = lambda x, p=None : np.format_float_scientific(x, precision=p, trim=".")
-print_float = lambda x, p=None : np.format_float_positional(x, precision=p, trim=".")
+
+def sci_print_float(x, p=None): return np.format_float_scientific(
+    x, precision=p, trim=".")
+
+
+def print_float(x, p=None): return np.format_float_positional(
+    x, precision=p, trim=".")
+
 
 def saft_eos_to_idx(eos):
     mod_eos = eos.replace(" ", "").replace("-", "").replace("_", "").upper()
@@ -17,6 +23,7 @@ def saft_eos_to_idx(eos):
     else:
         eosidx = "eosUNKNOWN"
     return eosidx
+
 
 def get_assoc_scheme_parameter(assoc_scheme):
     """

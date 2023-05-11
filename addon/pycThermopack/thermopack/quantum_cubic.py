@@ -9,13 +9,12 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import c_len_type
 # Import thermo
-from . import cubic
+from .cubic import cubic
 
-c_len_type = thermo.c_len_type
 
-class qcubic(cubic.cubic):
+class qcubic(cubic):
     """
     Interface to cubic
     """

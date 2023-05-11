@@ -71,9 +71,8 @@ contains
 
   !-------------------------------------------
   subroutine WongSandlerMix(cbeos, T, zcomp)
-    use thermopack_var, only : nc
+    use thermopack_var, only : nc, kRgas
     use cubic_eos, only : cb_eos, isHVmixModel
-    use thermopack_constants, only: kRgas
     use excess_gibbs, only: gEinf, getInfinitLimitC, GetFraction
     use hyperdual_mod
     implicit none
@@ -133,74 +132,74 @@ contains
     Thd = 0.0
     nhd = 0.0
     if (isHVmixModel(cbeos%mruleidx)) then ! use HV formulation of NRTL
-       ! Q, QT, QTT, Qn, QTn, Qnn
-       Thd%f0 = T
-       nhd(:)%f0 = zcomp
+      ! Q, QT, QTT, Qn, QTn, Qnn
+      Thd%f0 = T
+      nhd(:)%f0 = zcomp
 
-       ! T, n, and Tn derivatives
-       Thd%f1 = 1
-       do i=1,nc
-          nhd(i)%f2 = 1
+      ! T, n, and Tn derivatives
+      Thd%f1 = 1
+      do i=1,nc
+        nhd(i)%f2 = 1
+        call calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
+        QT = Qhd%f1
+        Qi(i) = Qhd%f2
+        QiT(i) = Qhd%f12
+        nhd(i)%f2 = 0
+      end do
+      Thd%f1 = 0
+
+      ! TT derivative
+      Thd%f1 = 1
+      Thd%f2 = 1
+      call calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
+      Qtt = Qhd%f12
+      Thd%f1 = 0
+      Thd%f2 = 0
+
+      Qij = 0.0
+      ! nn derivative
+      do i=1,nc
+        nhd(i)%f1 = 1
+        do j=i,nc
+          nhd(j)%f2 = 1
           call calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
-          QT = Qhd%f1
-          Qi(i) = Qhd%f2
-          QiT(i) = Qhd%f12
-          nhd(i)%f2 = 0
-       end do
-       Thd%f1 = 0
-
-       ! TT derivative
-       Thd%f1 = 1
-       Thd%f2 = 1
-       call calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
-       Qtt = Qhd%f12
-       Thd%f1 = 0
-       Thd%f2 = 0
-
-       Qij = 0.0
-       ! nn derivative
-       do i=1,nc
-          nhd(i)%f1 = 1
-          do j=i,nc
-             nhd(j)%f2 = 1
-             call calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
-             Qij(i,j) = Qhd%f12
-             Qij(j,i) = Qij(i,j)
-             nhd(j)%f2 = 0
-          end do
-          nhd(i)%f1 = 0
-       end do
-       Q = Qhd%f0
+          Qij(i,j) = Qhd%f12
+          Qij(j,i) = Qij(i,j)
+          nhd(j)%f2 = 0
+        end do
+        nhd(i)%f1 = 0
+      end do
+      Q = Qhd%f0
     else
-       ! Read kij data
-       do i=1,nc
-          do j=1,nc
-             call GetFraction(cbeos%mixWS%f_kij(i,j), T, kWS(i,j), kWSt(i,j), kWStt(i,j))
-             !        kWS(i,j)  = cbeos%mixWS%kij(i,j)
-             !        kWSt(i,j) = 0.0 !At moment constant, later get temperature depend
-             !        kWStt(i,j) = 0.0 !At moment constant, later get temperature depend
-          enddo
-       enddo
+      ! Read kij data
+      do i=1,nc
+        do j=1,nc
+          call GetFraction(cbeos%mixWS%f_kij(i,j), T, kWS(i,j), kWSt(i,j), kWStt(i,j))
+          !        kWS(i,j)  = cbeos%mixWS%kij(i,j)
+          !        kWSt(i,j) = 0.0 !At moment constant, later get temperature depend
+          !        kWStt(i,j) = 0.0 !At moment constant, later get temperature depend
+        enddo
+      enddo
 
-       do i=1,nc
-          do j=1,nc
-             rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
-             rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
-             rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
-                  - (rrt(i)+rrt(j))*kWSt(i,j) &
-                  - 0.5*(rr(i)+rr(j))*kWStt(i,j)
-             Q = Q + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
-             Qt = Qt + zcomp(i)*zcomp(j)*rrijt
-             Qtt = Qtt + zcomp(i)*zcomp(j)*rrijtt
-             QiT(i) = QiT(i) + 2.0*rrijt*zcomp(j)
-          enddo
-       enddo
-       do k = 1,nc
-          do i=1,nc
-             Qi(k) = Qi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
-             Qij(i,k) = rrij(i,k)+rrij(k,i)
-          enddo
-       enddo
+      do i=1,nc
+        do j=1,nc
+          rrij(i,j)=0.5*(rr(i)+rr(j))*(1-kWS(i,j))
+          rrijt=0.5*(rrt(i)+rrt(j))*(1-kWS(i,j)) - 0.5*(rr(i)+rr(j))*kWSt(i,j)
+          rrijtt=0.5*(rrtt(i)+rrtt(j))*(1-kWS(i,j)) &
+               - (rrt(i)+rrt(j))*kWSt(i,j) &
+               - 0.5*(rr(i)+rr(j))*kWStt(i,j)
+          Q = Q + zcomp(i)*zcomp(j)*rrij(i,j) !Eq( A8)
+          Qt = Qt + zcomp(i)*zcomp(j)*rrijt
+          Qtt = Qtt + zcomp(i)*zcomp(j)*rrijtt
+          QiT(i) = QiT(i) + 2.0*rrijt*zcomp(j)
+        enddo
+      enddo
+      do k = 1,nc
+        do i=1,nc
+          Qi(k) = Qi(k) + zcomp(i)*(rrij(i,k)+rrij(k,i))
+          Qij(i,k) = rrij(i,k)+rrij(k,i)
+        enddo
+      enddo
     end if
 
     !-----D--- Eq(A9)--------------
@@ -264,9 +263,8 @@ contains
 
 
   subroutine calc_Q_HVNRTL(cbeos, Thd, nhd, Qhd)
-    use thermopack_var, only : nc
+    use thermopack_var, only : nc, kRgas
     use cubic_eos, only : cb_eos
-    use thermopack_constants, only: kRgas
     use hyperdual_mod
     class(cb_eos), intent(inout) :: cbeos
     type(hyperdual), intent(in) :: Thd, nhd(nc)
@@ -278,26 +276,26 @@ contains
 
     aahd = 0.0
     do i=1,nc
-       r1 = cbeos%single(i)%a !< constant ai in cubic eos
-       a = cbeos%single(i)%alpha*r1
-       a_T = cbeos%single(i)%dalphadt*r1
-       a_TT = cbeos%single(i)%d2alphadt2*r1
-       aahd(i)%f0 = a
-       aahd(i)%f1 = Thd%f1 * a_T
-       aahd(i)%f2 = Thd%f2 * a_T
-       aahd(i)%f12 = (Thd%f1*Thd%f2*a_TT + Thd%f12*a_T)
+      r1 = cbeos%single(i)%a !< constant ai in cubic eos
+      a = cbeos%single(i)%alpha*r1
+      a_T = cbeos%single(i)%dalphadt*r1
+      a_TT = cbeos%single(i)%d2alphadt2*r1
+      aahd(i)%f0 = a
+      aahd(i)%f1 = Thd%f1 * a_T
+      aahd(i)%f2 = Thd%f2 * a_T
+      aahd(i)%f12 = (Thd%f1*Thd%f2*a_TT + Thd%f12*a_T)
     enddo
 
     ! Assemble hyperdual Qhd
     Qhd = 0.0
     do i=1,nc
-       do j=1,nc
-          aij = sqrt(aahd(i)*aahd(j)) * (1-cbeos%kij(i,j))
-          bij = 0.5*(cbeos%single(i)%b+cbeos%single(j)%b)*(1-cbeos%lij(i,j))
-          virbin(i,j) = bij - aij/(kRGas*Thd)
-          ! The following yields the original original WS formulation: virbin(i,j) = 0.5*(bij/0.5 - (aahd(i)+aahd(j))/(kRGas*Thd)) * (1-kij(i,j))
-          Qhd = Qhd + nhd(i)*nhd(j)*virbin(i,j)
-       end do
+      do j=1,nc
+        aij = sqrt(aahd(i)*aahd(j)) * (1-cbeos%kij(i,j))
+        bij = 0.5*(cbeos%single(i)%b+cbeos%single(j)%b)*(1-cbeos%lij(i,j))
+        virbin(i,j) = bij - aij/(kRGas*Thd)
+        ! The following yields the original original WS formulation: virbin(i,j) = 0.5*(bij/0.5 - (aahd(i)+aahd(j))/(kRGas*Thd)) * (1-kij(i,j))
+        Qhd = Qhd + nhd(i)*nhd(j)*virbin(i,j)
+      end do
     end do
 
   end subroutine calc_Q_HVNRTL
