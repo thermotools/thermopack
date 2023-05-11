@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-03-13T11:59:48.180103
+!! Time stamp: 2023-05-10T13:56:59.688774
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -2795,8 +2795,8 @@ module compdatadb
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
       mw = 1.0000, &
-      Tc = 39.366451, &
-      Pc = 2002758.38, &
+      Tc = 132.0000, &
+      Pc = 6650000.00, &
       Zc = 0.310000, &
       acf = 0.317700, &
       Tb = 0.8000, &

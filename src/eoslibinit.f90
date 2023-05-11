@@ -545,7 +545,7 @@ contains
       if (ierr /= 0 .and. isSAFT) then
         ! Maybe sigma and eps are redefined and the initial guess is bad?
         call estimate_critical_parameters(i, Tc, vc)
-        call calcCriticalTV(Tc,Vc,Z,ierr,p=Pc)
+        call calcCriticalTV(Tc,Vc,Z,ierr,v_min=vc*0.25,p=Pc)
       endif
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &

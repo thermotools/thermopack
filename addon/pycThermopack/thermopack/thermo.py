@@ -3625,22 +3625,23 @@ class thermo(object):
     # Stability interfaces
     #################################
 
-    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-7):
+    def critical(self, n, temp=0.0, v=0.0, tol=1.0e-7, v_min=None):
         """Stability interface
         Calculate critical point in variables T and V
 
         Args:
             n (array_like): Mol numbers (mol)
             temp (float, optional): Initial guess for temperature (K). Defaults to 0.0.
-            v (float, optional): Initial guess for volume (m3). Defaults to 0.0.
+            v (float, optional): Initial guess for volume (m3/mol). Defaults to 0.0.
             tol (float, optional): Error tolerance (-). Defaults to 1.0e-8.
+            v_min (float, optional): Minimum volume for search (m3/mol). Defaults to None.
 
         Raises:
             Exception: Failure to solve for critical point
 
         Returns:
             float: Temperature (K)
-            float: Volume (m3)
+            float: Volume (m3/mol)
             float: Pressure (Pa)
         """
         self.activate()
@@ -3650,10 +3651,12 @@ class thermo(object):
         ierr_c = c_int(0)
         P_c = c_double(0.0)
         tol_c = c_double(tol)
+        v_min_c = POINTER(c_double)() if v_min is None else POINTER(c_double)(c_double(v_min))
         self.s_crit_tv.argtypes = [POINTER( c_double ),
                                    POINTER( c_double ),
                                    POINTER( c_double ),
                                    POINTER( c_int ),
+                                   POINTER( c_double ),
                                    POINTER( c_double ),
                                    POINTER( c_double )]
 
@@ -3664,6 +3667,7 @@ class thermo(object):
                        n_c,
                        byref(ierr_c),
                        byref(tol_c),
+                       v_min_c,
                        byref(P_c))
 
         if ierr_c.value != 0:
