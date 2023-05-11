@@ -2943,15 +2943,15 @@ class thermo(object):
             LLE : Liquid 1 - Liquid 2 Equilibrium
                 LLE[0] -> Liquid 1 composition (mole fraction of component 1)
                 LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Pressure [Pa]
+                LLE[2] -> Temperature [K]
             L1VE : Liquid 1 - Vapour Equilibrium
                 L1VE[0] -> Bubble line composition (mole fraction of component 1)
                 L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Pressure [Pa]
+                L1VE[2] -> Temperature [K]
             L2VE : Liquid 2 - Vapour Equilibrium
                 L2VE[0] -> Bubble line composition (mole fraction of component 1)
                 L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Pressure [Pa]
+                L2VE[2] -> Temperature [K]
 
             If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
         """
@@ -3012,36 +3012,36 @@ class thermo(object):
         if nLLE > 0:
             xLLE = np.zeros(nLLE)
             wLLE = np.zeros(nLLE)
-            pLLE = np.zeros(nLLE)
+            TLLE = np.zeros(nLLE)
             for i in range(nLLE):
                 xLLE[i] = res_c[i*9]
                 wLLE[i] = res_c[i*9+1]
-                pLLE[i] = res_c[i*9+2]
-            LLE = (xLLE, wLLE, pLLE)
+                TLLE[i] = res_c[i*9+2]
+            LLE = (xLLE, wLLE, TLLE)
         else:
             LLE = (None, None, None)
 
         if nL1VE > 0:
             xL1VE = np.zeros(nL1VE)
             wL1VE = np.zeros(nL1VE)
-            pL1VE = np.zeros(nL1VE)
+            TL1VE = np.zeros(nL1VE)
             for i in range(nL1VE):
                 xL1VE[i] = res_c[i*9+3]
                 wL1VE[i] = res_c[i*9+4]
-                pL1VE[i] = res_c[i*9+5]
-            L1VE = (xL1VE, wL1VE, pL1VE)
+                TL1VE[i] = res_c[i*9+5]
+            L1VE = (xL1VE, wL1VE, TL1VE)
         else:
             L1VE = (None, None, None)
 
         if nL2VE > 0:
             xL2VE = np.zeros(nL2VE)
             wL2VE = np.zeros(nL2VE)
-            pL2VE = np.zeros(nL2VE)
+            TL2VE = np.zeros(nL2VE)
             for i in range(nL2VE):
                 xL2VE[i] = res_c[i*9+6]
                 wL2VE[i] = res_c[i*9+7]
-                pL2VE[i] = res_c[i*9+8]
-            L2VE = (xL2VE, wL2VE, pL2VE)
+                TL2VE[i] = res_c[i*9+8]
+            L2VE = (xL2VE, wL2VE, TL2VE)
         else:
             L2VE = (None, None, None)
 
