@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-28T18:31:24.714134
+Generated at: 2023-05-11T11:19:47.845385
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrqmie class. For instructions on how to use the parser routines, see the
@@ -16,8 +16,8 @@ This class implements utility methods specific to the SAFT-VRQ Mie EoS.
 
 ## Table of contents
   * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-parameter_referenceDefault-minimum_temperatureNone)
-    * [init](#initself-comps-feynman_hibbs_order1-parameter_referenceDefault-minimum_temperatureNone)
+    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
+    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
   * [Utility methods](#Utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
@@ -28,11 +28,11 @@ Methods to initialise SAFT-VRQ Mie model.
 
 ### Table of contents
   * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-parameter_referenceDefault-minimum_temperatureNone)
-    * [init](#initself-comps-feynman_hibbs_order1-parameter_referenceDefault-minimum_temperatureNone)
+    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
+    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
 
 
-### `__init__(self, comps=None, feynman_hibbs_order=1, parameter_reference='Default', minimum_temperature=None)`
+### `__init__(self, comps=None, feynman_hibbs_order=1, additive_hard_sphere_reference=False, parameter_reference='Default', minimum_temperature=None)`
 Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium (doi.org/10.1063/1.5111364 Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium (doi.org/10.1063/1.5136079) If no components are specified, model must be initialized for specific components later by direct call to 'init' Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
 #### Args:
@@ -45,6 +45,10 @@ Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields f
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
 
+&nbsp;&nbsp;&nbsp;&nbsp; **additive_hard_sphere_reference (boolean):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Use additive hard-sphere reference? Defaults to false.
+
 &nbsp;&nbsp;&nbsp;&nbsp; **parameter_reference (str, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Which parameters to use?. Defaults to "Default".
@@ -55,7 +59,7 @@ Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields f
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `init(self, comps, feynman_hibbs_order=1, parameter_reference='Default', minimum_temperature=None)`
+### `init(self, comps, feynman_hibbs_order=1, additive_hard_sphere_reference=False, parameter_reference='Default', minimum_temperature=None)`
 Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium (doi.org/10.1063/1.5111364 Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium (doi.org/10.1063/1.5136079)
 
 #### Args:
@@ -67,6 +71,10 @@ Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields f
 &nbsp;&nbsp;&nbsp;&nbsp; **feynman_hibbs_order (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **additive_hard_sphere_reference (boolean):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Use additive hard-sphere reference? Defaults to false.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameter_reference (str, optional):** 
 

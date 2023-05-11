@@ -53,7 +53,7 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
 
     9 : Concatenate the strings you have generated and write to file.
 '''
-
+import copy
 import inspect
 from warnings import warn
 from datetime import datetime
@@ -107,7 +107,7 @@ def to_markdown(methods):
         pad = '&nbsp;' * 4 + ' '
         endl = '\n\n'
         for line in content_lines:
-            if ('args:' in line.lower()) or ('returns:' in line.lower()):
+            if ('args:' in line.lower()) or ('returns:' in line.lower()) or ('raises:' in line.lower()):
                 md_text += '#### ' + line + endl
 
             elif ':' in line:
@@ -134,27 +134,32 @@ def split_methods_by_section(sections, methods):
     """
     method_dict = {}
     for name, meth in methods:
+        method_sections = [m.strip() for m in meth.__doc__.split('\n')[0].lower().split('&')]
+        # A method can be added to several sections, by giving it the header
+        # def myfunc():
+        #   """Section1 & Section2 & Section5 ... """
+        method_has_section = False
         for sec in sections:
-            if sec.lower() in meth.__doc__.split('\n')[0].lower():
+            if sec.lower() in method_sections:
+                method_has_section = True
                 if sec in method_dict.keys():
                     method_dict[sec].append((name, meth))
-                    break
                 else:
                     method_dict[sec] = [(name, meth)]
-                    break
-        else:
+        if method_has_section is False: # Generate a section called "Other" and add the method to that section. Warn that this is done.
             warn('Method : ' + name + " did not contain a section on the first line of its docstring! Adding to 'Other'",
-                 SyntaxWarning)
-            warn('Section name in docstring is : '+ meth.__doc__.split('\n')[0].lower(), SyntaxWarning)
+                 SyntaxWarning, stacklevel=3)
+            warn('Section name in docstring is : '+ meth.__doc__.split('\n')[0].lower(), SyntaxWarning, stacklevel=3)
 
             if 'Other' in method_dict.keys():
                 method_dict['Other'].append((name, meth))
             else:
                 method_dict['Other'] = [(name, meth)]
 
+        # print('other is : ', method_dict['Other'] if 'Other' in method_dict.keys() else None)
     return method_dict
 
-def get_toc(sections, section_headers, method_dict):
+def get_toc(sections, section_headers, method_dict, include_other=True):
     """
     Generate a table of contents with links to the sections, using the names in section_headers.
     Note: Uses the function tools.remove_illegal_link_chars() to sanitize raw strings, such that they can be used
@@ -165,9 +170,19 @@ def get_toc(sections, section_headers, method_dict):
         section_headers (dict<str, str>) : Dict mapping the section names to the section headers in the markdown file
         method_dict (dict<str, list<tuple<str, function>>>) : Mapping the section names to the list of (method name,
                                                                 function) tuples that are in the section.
+        include_other (bool, optional) : Whether to include the automatically generated 'Other' section in the toc.
+                                        Should be set to True when generating the toc for the whole file, and set to
+                                        False when generating toc for subsections.
     Returns:
         str : The string representation of the table of contents to be written to the markdown file.
     """
+    # Make sure to not modify input
+    sections = copy.deepcopy(sections)
+    section_headers = copy.deepcopy(section_headers)
+    if include_other:
+        sections.append('Other')
+        section_headers['Other'] = 'Other methods'
+
     toc_text = '## Table of contents\n'
     for sec in sections:
         if sec not in method_dict.keys():
@@ -205,12 +220,14 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
-        md_text +=  '#' + get_toc([sec], section_headers, method_dict) + '\n'
+        md_text +=  '#' + get_toc([sec], section_headers, method_dict, include_other=False) + '\n'
         md_text += to_markdown(method_dict[sec])
 
     if 'Other' in method_dict.keys():
-        md_text += section_headers['Other'] + '\n\n'
-        md_text += section_intro['Other'] + '\n\n'
+        print('Writing other section : ', method_dict['Other'])
+        md_text += '## Other\n\n'
+        md_text += 'Methods that do not have a section identifier in their docstring.\n\n'
+        md_text += '#' + get_toc([], {}, method_dict, include_other=True) + '\n'
         md_text += to_markdown(method_dict['Other'])
 
     return md_text
@@ -223,6 +240,7 @@ def thermo_to_markdown():
     sections = ['TV-property',
                 'Tp-property',
                 'TVp-property',
+                'Other property',
                 'Flash interface',
                 'Saturation interface',
                 'Isoline',
@@ -237,13 +255,13 @@ def thermo_to_markdown():
                        'TV-property' : 'TV-property interfaces',
                        'Tp-property' : 'Tp-property interfaces',
                        'TVp-property' : 'TVp-property interfaces',
+                       'Other property' : 'Other property interfaces',
                        'Flash interface' : 'Flash interfaces',
                        'Saturation interface' : 'Saturation interfaces',
                        'Isoline' : 'Isolines',
                        'Stability interface' : 'Stability interfaces',
                        'Virial interface' : 'Virial interfaces',
-                       'Joule-Thompson interface' : 'Joule-Thompson interface',
-                       'Other' : 'Other methods'}
+                       'Joule-Thompson interface' : 'Joule-Thompson interface'}
 
     section_intro = {'Internal': 'Methods for handling communication with the Fortran library.',
                        'Utility': 'Methods for setting ... and getting ...',
@@ -254,13 +272,13 @@ def thermo_to_markdown():
                        'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
                                         ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
                                         ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
+                       'Other property' : 'Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
                        'Isoline': 'Computing isolines.',
                        'Stability interface': 'Critical point solver.',
                        'Virial interface': 'Retrieve various virial coefficients.',
-                       'Joule-Thompson interface': 'Joule-Thompson inversion curves.',
-                       'Other': 'Methods that do not have a section identifier in their docstring.'}
+                       'Joule-Thompson interface': 'Joule-Thompson inversion curves.'}
 
     thermo_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
     method_dict = split_methods_by_section(sections, thermo_methods)
@@ -315,16 +333,19 @@ def saftvrmie_to_markdown():
 
     sections = ['Constructor',
                 'Utility',
-                'Model control']
+                'Model control',
+                'Model performance']
 
     section_headers = {'Constructor': 'Constructor',
                        'Utility': 'Utility methods',
-                       'Model control': 'Model control'}
+                       'Model control': 'Model control',
+                       'Model performance' : 'Model performance'}
 
     section_intro= {'Constructor' : 'Methods to initialise SAFT-VR Mie model.',
-                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.',
-                        'Model control' : 'Control which contributions to the residual Helmholtz energy are included,\n'
-                                          'and the hard-sphere reference term.'}
+                    'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.',
+                    'Model control' : 'Control which contributions to the residual Helmholtz energy are included,\n'
+                                      'and the hard-sphere reference term.',
+                    'Model performance' : 'Methods to tune computation efficiency etc.'}
 
     saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
     saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)

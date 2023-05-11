@@ -279,7 +279,8 @@ class pcsaft(saft):
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
                                    phi_tt=None, phi_TT=None, phi_tn=None, phi_nn=None):
-        """Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
+        """Utility
+        Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
         Args:
             temp (float): Temperature (K)

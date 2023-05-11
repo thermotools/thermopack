@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-28T18:09:29.946183
+Generated at: 2023-05-11T11:19:47.842206
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrmie class. For instructions on how to use the parser routines, see the
@@ -21,6 +21,7 @@ are included in the model.
     * [get_lr_gammaij](#get_lr_gammaijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-ic)
     * [get_sigma_lij](#get_sigma_lijself-c1-c2)
+    * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_eps_kij](#set_eps_kijself-c1-c2-kij)
     * [set_lr_gammaij](#set_lr_gammaijself-c1-c2-gammaij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-ic-m-sigma-eps_div_kb-lambda_a-lambda_r)
@@ -32,6 +33,8 @@ are included in the model.
     * [model_control_chain](#model_control_chainself-active)
     * [model_control_hard_sphere](#model_control_hard_sphereself-active)
     * [set_hard_sphere_reference](#set_hard_sphere_referenceself-reference-exact_binary_dhsNone-enable_hs_extraNone)
+  * [Model performance](#Model-performance)
+    * [enable_temperature_cache](#enable_temperature_cacheself-enableTrue)
 
 ## Constructor
 
@@ -83,6 +86,7 @@ Set- and get methods for interaction parameters and pure fluid parameters.
     * [get_lr_gammaij](#get_lr_gammaijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-ic)
     * [get_sigma_lij](#get_sigma_lijself-c1-c2)
+    * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_eps_kij](#set_eps_kijself-c1-c2-kij)
     * [set_lr_gammaij](#set_lr_gammaijself-c1-c2-gammaij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-ic-m-sigma-eps_div_kb-lambda_a-lambda_r)
@@ -188,6 +192,19 @@ Get the interaction parameter lij for the sigma combining rule (controlling non-
 &nbsp;&nbsp;&nbsp;&nbsp; **lij (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Sigma interaction parameter
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `print_saft_parameters(self, c)`
+Print saft parameters for component c
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **c (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -367,6 +384,26 @@ Set hard-sphere reference.
 &nbsp;&nbsp;&nbsp;&nbsp; **enable_hs_extra (bool):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Correction of A_HS due to non-additive d_ij
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## Model performance
+
+Methods to tune computation efficiency etc.
+
+### Table of contents
+  * [Model performance](#Model-performance)
+    * [enable_temperature_cache](#enable_temperature_cacheself-enableTrue)
+
+
+### `enable_temperature_cache(self, enable=True)`
+Enable/disable temperature cache.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **enable (bool):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Enable/disable temperature cache
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

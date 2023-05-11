@@ -216,7 +216,8 @@ class saftvrmie(saft):
         self.s_enable_chain(byref(active_c))
 
     def enable_temperature_cache(self, enable=True):
-        """Model performance. Enable/disable temperature cache.
+        """Model performance
+        Enable/disable temperature cache.
 
         Args:
             enable (bool): Enable/disable temperature cache
@@ -454,7 +455,8 @@ class saftvrmie(saft):
         self.lambda_r[ic-1] = lambda_r
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)

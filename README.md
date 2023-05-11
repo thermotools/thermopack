@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-04-25T20:49:49.213861
+Generated at: 2023-05-11T11:27:44.545450
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -10,7 +10,10 @@ The file is created by joining the contents of the files
         source_build.md
         getting_started.md
         more_advanced.md
+        new_fluids.md
+        Component-name-mapping.md
 --->
+
 # Thermopack
 
 Thermopack is a thermodynamics library for multi-component and
@@ -37,6 +40,7 @@ building block for the Thermopack graphical user interface, where it
 is possible to plot thermodynamic phase diagrams with the most
 frequently used equations of state. The graphical user interface is
 currently running on the Windows and Linux operating systems.
+
 # Table of contents
   * [Please cite](#please-cite)
   * [Authors and contact persons](#authors-and-contact-persons)
@@ -53,6 +57,8 @@ currently running on the Windows and Linux operating systems.
     * [Critical point](#critical-point)
   * [Advanced usage - Python](#More-advanced-usage---Python)
     * [Interaction parameters](#Interaction-parameters) 
+    * [Adding new fluids](#Adding-new-fluids)
+  * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
 ## Please cite
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
@@ -660,3 +666,210 @@ H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
 ```
 
 Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
+# Adding new fluids
+
+The fluid database consists of a set of
+`.json`-files in the
+`fluids` directory. These files are
+are used to auto-generate the FORTRAN-files
+`compdatadb.f90` and
+`saftvrmie_datadb.f90` by running
+the respective python scripts
+`compdata.py` and
+`saftvrmie.py` found in the
+directory `addon/pyUtils/datadb/`.
+The files are generated in the current working directory and must be
+copied to the `src`-directory
+before recompiling ThermoPack to make the fluids available.
+
+A `<fluid\>.json` file must
+contain a minimal set of data to be valid. This includes the critical
+point, accentric factor, mole weight and ideal gas heat capacity.
+
+## Ideal gas heat capacity
+
+Several different correlations for the heat capacity are available,
+selected by the "correlation"-key in the "ideal-heat-capacity-1" field
+of the fluid files. These are summarized in the table below.
+
+
+```
+Ideal gas heat capacity correlations, and the corresponding keys used in the fluid-database.
+```
+| Key | Correlation | Equation |  | Unit |
+|------|--------------|-----------|--|------|
+| 1 | Sherwood, Reid & Prausnitz(a) | A+BT+CT^2 +DT^3 | | cal g−^1 mol−^1 K−^1 |
+| 2 | API-Project | 44 | | - |
+| 3 | Hypothetic components | - | | - |
+| 4 | Sherwood, Reid & Prausniz(b) | A+BT+CT^2 +DT^3 | | J mol−^1 K−^1|
+| 5 | Ici (Krister Strøm) | A+BT+CT^2 +DT^3 +ET−^2 | | J g−^1 K−^1 |
+| 6 | Chen, Bender (Petter Nekså) | A+BT+CT^2 +DT^3 +ET^4 | | J g−^1 K−^1
+| 7 | Aiche, Daubert & Danner(c) | A+B [ (C / T) sinh(C/T) ]^2 + D[ (E / T) cosh(E / T) ]^2 | | J kmol−^1 K−^1 |
+| 8 | Poling, Prausnitz & O’Connel(d)     | R ( A+BT+CT^2 +DT^3 +ET^4 ) | | J mol−^1 K−^1 |
+| 9 | Linear function and fraction | A+BT+TC+D | | J mol−^1 K−^1 |
+| 10 | Leachman & Valenta for H2 | - | | - |
+| 11 | Use TREND model | - | | - |
+| 12 | Shomate equation∗ | A+BTs+CTs^2 +DTs^3 +ETs−^2 | | J mol−^1 K−^1 |
+
+(a)3rd ed.(c)DIPPR-database
+
+(b)4th ed.(d)5th ed.
+
+∗Note:Ts= 10− (^3) T
+
+
+## Melting and sublimation curve correlations
+
+$T_{\rm{reducing}} (K), p_{\rm{reducing}} (Pa), \mathbf{a}, \mathbf{c}, n, n_1, n_2$ and $n_3$ are read from the `<fluid\>.json` file, while $n_4 = n-n_1- n_2-n_3$. Currently  a maximum of 6 paramaters can be given, $n \leq 6$. The correlation type is defined by a four character string with the format **XX-X**, where **ML-X** and **SL-X** are the default melting curve ($\sigma_{\rm{melt}}$) and sublimation curve ($\sigma_{\rm{sub}}$) correlations, respectively. See the `Methane.json` file for an working example of both the *melting_curve* and *sublimation_curve* parameters.
+
+The reduced temperature used in the correlations is  defined as
+
+$$ \tau = \frac{T}{T_{\rm{reducing}}}. $$
+
+The last character in the correlation string defines how the reducing pressure combines with $\sigma$ to give the melting/sublimation pressure,
+
+$$ p(\sigma) = p_{\rm{reducing}} \times
+\begin{cases} 
+\sigma & \text{correlation is XX-1} \\\\
+\exp(\sigma)  & \text{correlation is XX-2}\\\\
+\exp(\frac{\sigma}{\tau})  & \text{correlation is XX-3}
+\end{cases}$$
+
+For the melting curve calculation $\sigma$ is calculated from
+
+$$ \sigma_{\rm{melt}} = \sum_{i=1}^{n_1} a_i \tau^{c_i}  + \sum_{j=1}^{n_2} a_j (\tau-1)^{c_j} + \sum_{k=1}^{n_3} a_k (\ln \tau)^{c_k} + \sum_{l=1}^{n_4} a_l (\tau^{c_l} - 1)  $$
+
+For the sublimation curve calculation $\sigma$ is calculated from
+
+$$ \sigma_{\rm{sub}} = \sum_{i=1}^{n_1} a_i \tau^{c_i}  + \sum_{j=1}^{n_2} a_j (1-\tau)^{c_j} + \sum_{k=1}^{n_3} a_k (\ln \tau)^{c_k} + \sum_{l=1}^{n_4} a_l (\tau^{c_l} - 1)  $$
+
+The melting/sublimation curves can be scaled to match the saturation pressure at the triple temperature, $p_{\rm{sat}}(T_{\rm{triple}})$. The scaled pressure, $\tilde{p}(\sigma)$, is then calculated as
+
+$$ \tilde{p}(\sigma) = \frac{p_{\rm{sat}}(T_{\rm{triple}}) }{p(\sigma(T_{\rm{triple}}))} p(\sigma)$$
+
+<!---
+This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
+Generated at : 2023-03-13T14:41:54.109210
+This is the same module that is used to generate the Fortran
+component database files.
+--->
+
+
+# Fluid name to fluid identifyer mapping
+&nbsp;
+
+In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.
+
+&nbsp;
+
+| Fluid name | Fluid identifyer | SAFT-VR | PC-SAFT | CPA |
+| ------------------------ | ----------- | ---- | ---- | ---- |
+| 1,1,1,2-Tetrafluoroethane | R134a |   |   |   |
+| 1,1,1-Trifluoroethane | R143a |   |   |   |
+| 1,1-Difluoroethane | R152a |   |   |   |
+| 1,1-Difluoroethylene | R1132a |   |   |   |
+| 1,2-Dichlorotetrafluoroethane | R114 |   |   |   |
+| 1,3-Butadiene | 13BD |   |   |   |
+| 1-Butanol | BUT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Chloro-1,1,2,2-tetrafluoroethane | R124a |   |   |   |
+| 1-Chloro-1,1-difluoroethane | R142b |   |   |   |
+| 1-Hexanol | HEX1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Pentanol | PENT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Propanol | PROP1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 2,3,3,3-Tetrafluoropropene | R1234yf |   |   |   |
+| 2-Chloro-1,1,1,2-tetrafluoroethane | R124 |   |   |   |
+| 2-Methylhexane | 2MHX |   |   |   |
+| 3-Methylpentane | 3MP |   |   |   |
+| Acetone | ACETONE |   | :heavy_check_mark: |   |
+| Acetylen | ACETYLEN |   | :heavy_check_mark: |   |
+| Ammonia | NH3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Argon | AR | :heavy_check_mark: | :heavy_check_mark: |   |
+| Benzene | BENZENE |   | :heavy_check_mark: |   |
+| Butanal | BUTANAL |   | :heavy_check_mark: |   |
+| Carbon dioxide | CO2 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Carbon monoxide | CO |   |   |   |
+| Carbon tetrafluoride | R14 |   |   |   |
+| Chlorine | CL2 |   | :heavy_check_mark: |   |
+| Chlorodifluoromethane | R22 |   |   |   |
+| Chloropentafluoroethane | R115 |   |   |   |
+| Chlorotrifluoromethane | R13 |   |   |   |
+| Chlorotrifluorosilane | ClF3Si |   |   |   |
+| Cyclohexane | CYCLOHEX |   | :heavy_check_mark: |   |
+| Cyclopropane | C3_1 |   |   |   |
+| Deuterium | D2 | :heavy_check_mark: |   |   |
+| Di-methyl ether | DME |   | :heavy_check_mark: |   |
+| Di-n-hexyl ether | S434 |   |   |   |
+| Dichlorodifluoromethane | R12 |   |   |   |
+| Dichlorofluoromethane | R21 |   |   |   |
+| Difluoromethane | R32 |   |   |   |
+| Dinitrogen tetroxide | N2O4 |   |   |   |
+| Equilibrium-hydrogen | E-H2 |   |   |   |
+| Ethane | C2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Ethanol | ETOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Ethylbenzene | EBZN |   |   |   |
+| Ethylene glycol | MEG |   |   |   |
+| Ethylene | C2_1 |   | :heavy_check_mark: |   |
+| Helium-4 | HE | :heavy_check_mark: |   |   |
+| Hexafluoroethane | R116 |   |   |   |
+| Hydrazine | N2H4 | :heavy_check_mark: |   |   |
+| Hydrogen peroxide | H2O2 |   |   |   |
+| Hydrogen sulfide | H2S | :heavy_check_mark: | :heavy_check_mark: |   |
+| Hydrogen | H2 | :heavy_check_mark: |   |   |
+| Isobutane | IC4 |   | :heavy_check_mark: |   |
+| Isopentane | IC5 |   | :heavy_check_mark: |   |
+| Krypton | KR | :heavy_check_mark: |   |   |
+| Lennard-jones_fluid | LJF | :heavy_check_mark: |   |   |
+| Methane | C1 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Methanol | MEOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Methyl fluoride | R41 |   |   |   |
+| Methylcyclopentane | MTC5 |   |   |   |
+| Neon | NE | :heavy_check_mark: |   |   |
+| Nitric oxide | NO |   |   |   |
+| Nitrogen | N2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Nitrous oxide | N2O |   |   |   |
+| Octafluoropropane | R218 |   |   |   |
+| Ortho-hydrogen | O-H2 | :heavy_check_mark: |   |   |
+| Oxygen | O2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Para-hydrogen | P-H2 | :heavy_check_mark: |   |   |
+| Pentafluoroethane | R125 |   |   |   |
+| Propadiene | ALLENE |   |   |   |
+| Propane | C3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Propylene | PRLN |   |   |   |
+| Sulfur dioxide | SO2 |   |   |   |
+| Sulfur hexafluoride | F6S |   |   |   |
+| Tetrafluoroethylene | R1114 |   |   |   |
+| Tetrafluorohydrazine | F4N2 |   |   |   |
+| Toluene | TOLU |   | :heavy_check_mark: |   |
+| Trans-1,3,3,3-tetrafluoropropene | R1234ze |   |   |   |
+| Trichlorofluoromethane | R11 |   |   |   |
+| Trifluoroamineoxide | F3NO |   |   |   |
+| Trifluoromethane | R23 |   |   |   |
+| Water | H2O | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Xenon | XE | :heavy_check_mark: |   |   |
+| m-Xylene | MXYL |   |   |   |
+| n-Butane | NC4 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Decane | NC10 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Docosane | NC22 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Dodecane | NC12 |   | :heavy_check_mark: |   |
+| n-Eicosane | NC20 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Heneicosane | NC21 |   | :heavy_check_mark: |   |
+| n-Heptadecane | NC17 |   | :heavy_check_mark: |   |
+| n-Heptane | NC7 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Hexadecane | NC16 |   | :heavy_check_mark: |   |
+| n-Hexane | NC6 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Hydrogen | N-H2 |   |   |   |
+| n-Nonadecane | NC19 |   | :heavy_check_mark: |   |
+| n-Nonane | NC9 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Octadecane | NC18 |   | :heavy_check_mark: |   |
+| n-Octane | NC8 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Pentacosane | NC25 |   | :heavy_check_mark: |   |
+| n-Pentadecane | NC15 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Pentan | NC5 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Tetracosane | NC24 |   | :heavy_check_mark: |   |
+| n-Tetradecane | NC14 |   | :heavy_check_mark: |   |
+| n-Tricosane | NC23 |   | :heavy_check_mark: |   |
+| n-Tridecane | NC13 |   | :heavy_check_mark: |   |
+| n-Undecane | NC11 |   | :heavy_check_mark: |   |
+| o-Xylene | OXYL |   |   |   |
+| p-Xylene | PXYL |   |   |   |
+

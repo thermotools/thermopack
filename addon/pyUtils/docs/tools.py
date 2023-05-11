@@ -12,7 +12,7 @@ def remove_illegal_link_chars(link_str):
 
 def check_is_changed(old_file, new_file_str):
     """
-    Check if the contents of old_file is equal to new_file_str, sans the timestamp
+    Check if the contents of old_file is equal to new_file_str, excluding the timestamp
 
     Args:
         old_file: (str) Path to the file to be written
