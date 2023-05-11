@@ -3904,6 +3904,7 @@ class thermo(object):
     def spinodal_point(self,
                        z,
                        pressure,
+                       phase,
                        temperature=None):
         """Stability interface
         Solve for spinodal curve point. Not able to solve for points cloes to critical point.
@@ -3911,7 +3912,8 @@ class thermo(object):
 
         Args:
             z (array_like): Composition (-)
-            pressure (float): Pressure (Pa).
+            pressure (float): Pressure (Pa)
+            phase (int): Phase flag (VAPPH/LIQPH)
             temperature (float, optional): Temperature (K). Solve for temperature if given.
 
         Raises:
@@ -3929,6 +3931,7 @@ class thermo(object):
         n_c = c_int(0)
         vol_c = c_double(0.0)
         temp_c = c_double(0.0)
+        phase_c = c_int(phase)
 
         if temperature is None:
             t_min_c = POINTER(c_double)()
