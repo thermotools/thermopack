@@ -1,0 +1,482 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\pdfminorversion=4
+\usepackage[utf8]{inputenc}
+
+%\usepackage{amsmath}
+%\input{mathdef}
+\usepackage[per-mode=symbol]{siunitx}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{mathtools}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+
+\usepackage{booktabs}
+\usepackage{a4wide}
+\usepackage{xspace}
+\usepackage{mhchem}
+\usepackage{siunitx}
+\DeclareSIUnit{\atmosphere}{atm}
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline}{}
+\usepackage{subcaption,caption}
+%\pdfminorversion=4
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}% for å slippe å taste inn disse $
+\newcolumntype{L}{>{$}l<{$}}% for å slippe å taste inn disse $
+%
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdc}[3]{\frac{\partial^{2}#1}{\partial{#2}\partial{#3}}}% partial derivative
+\newcommand*{\pdcc}[3]{\frac{\partial^{3}#1}{\partial{#2}^{2}\partial{#3}}}% partial derivative
+\newcommand*{\pdth}[4]{\frac{\partial^{3}#1}{\partial{#2}\partial{#3}\partial{#4}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+% høy tekst-indeks/superscript/apex
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\lb}{\left(}
+\newcommand*{\rb}{\right)}
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+%\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{g}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\mie}{\text{Mie}\xspace}
+\newcommand{\mca}{\text{MCA}\xspace}
+\newcommand{\hs}{\text{HS}\xspace}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\id}{\ensuremath{\text{id}}\xspace}
+\newcommand{\mono}{\ensuremath{\text{mono}}\xspace}
+\newcommand{\ms}{\ensuremath{\text{m}}\xspace}
+\newcommand{\chain}{\ensuremath{\text{chain}}\xspace}
+\newcommand{\assoc}{\ensuremath{\text{assoc}}\xspace}
+\newcommand{\seg}{\ensuremath{\text{s}}\xspace}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to~}}
+\newcommand{\tpd}{\ensuremath{\text{tpd}}\xspace}
+\newcommand{\TPD}{\ensuremath{\text{TPD}}\xspace}
+\newcommand{\minimum}{\ensuremath{\text{min}}\xspace}
+\newcommand{\eq}{\ensuremath{\text{eq}}\xspace}
+\newcommand{\lp}{\left(}
+\newcommand{\rp}{\right)}
+\newcommand{\Lagr}{\ensuremath{\mathcal{L}}\xspace}
+\newcommand{\mbn}{\ensuremath{\mathbf{n}}\xspace}
+\newcommand{\mbA}{\ensuremath{\mathbf{A}}\xspace}
+\newcommand{\mbb}{\ensuremath{\mathbf{b}}\xspace}
+\newcommand{\mbB}{\ensuremath{\mathbf{B}}\xspace}
+\newcommand{\mbM}{\ensuremath{\mathbf{M}}\xspace}
+\newcommand{\mbg}{\ensuremath{\mathbf{g}}\xspace}
+\newcommand{\mbd}{\ensuremath{\mathbf{d}}\xspace}
+\newcommand{\mbe}{\ensuremath{\mathbf{e}}\xspace}
+\newcommand{\one}{\ensuremath{\mathbf{1}}\xspace}
+\newcommand{\zero}{\ensuremath{\mathbf{0}}\xspace}
+\newcommand{\mbl}{\ensuremath{\boldsymbol{\lambda}}\xspace}
+\newcommand{\mbs}{\ensuremath{\mathbf{s}}\xspace}
+\newcommand{\mbF}{\ensuremath{\mathbf{F}}\xspace}
+\newcommand{\mbX}{\ensuremath{\mathbf{X}}\xspace}
+\newcommand{\mbmu}{\ensuremath{\boldsymbol{\mu}}\xspace}
+\newcommand{\mbmub}{\ensuremath{\mathbf{\bar{\boldsymbol{\mu}}}}\xspace}
+\newcommand\inv[1]{#1\raisebox{0.7ex}{$\scriptscriptstyle-\!1$}}
+\newcommand*{\plimsoll}{{\ensuremath{-\kern-4pt{\ominus}\kern-4pt-}}\xspace}
+\newcommand{\formation}[1]{\ensuremath{\Delta_{\text{f}} #1^\plimsoll}\xspace}
+\newcommand{\pure}{\ensuremath{\text{pure}}\xspace}
+\newcommand{\lama}{\ensuremath{{\lambda_{\text{a}}}}\xspace}
+\newcommand{\lamr}{\ensuremath{{\lambda_{\text{r}}}}\xspace}
+\newcommand{\kB}{\ensuremath{k_{\text{B}}}\xspace}
+\newcommand{\gdhs}{\ensuremath{g_{\text{d}}^\hs}\xspace}
+\newcommand{\aS}{\ensuremath{a_{1}^{\text{S}}}\xspace}
+\newcommand{\aSt}{\ensuremath{\tilde{a}_{1}^{\text{S}}}\xspace}
+\newcommand{\Bt}{\ensuremath{\tilde{B}}\xspace}
+\newcommand{\Dt}{\ensuremath{\tilde{D}}\xspace}
+\newcommand{\Qt}{\ensuremath{\tilde{Q}}\xspace}
+\newcommand{\at}{\ensuremath{\tilde{a}}\xspace}
+\newcommand{\ab}{\ensuremath{\bar{a}}\xspace}
+\newcommand{\aSij}{\ensuremath{a_{1,ij}^{\text{S}}}\xspace}
+\newcommand{\aStij}{\ensuremath{\tilde{a}_{1,ij}^{\text{S}}}\xspace}
+\newcommand*{\aSl}[1]{\ensuremath{a_{1{#1}}^{\text{S}}}\xspace}
+\newcommand*{\aSlt}[1]{\ensuremath{\tilde{a}_{1{#1}}^{\text{S}}}\xspace}
+\newcommand{\eff}{\ensuremath{\text{eff}}\xspace}
+\newcommand{\gamc}{\ensuremath{\gamma_{\text{C}}}\xspace}
+\newcommand{\z}{\zeta}
+\newcommand{\zb}{\bar{\zeta}}
+\newcommand{\nc}{\ensuremath{\text{N}}\xspace}
+\newcommand{\NA}{\ensuremath{\text{N}_{\text{A}}}\xspace}
+\newcommand{\KB}{\ensuremath{\text{k}_{\text{B}}}\xspace}
+\newcommand{\att}{\ensuremath{\text{a}}\xspace}
+\newcommand{\rep}{\ensuremath{\text{r}}\xspace}
+\newcommand{\cut}{\ensuremath{\text{c}}\xspace}
+\newcommand{\cs}{\ensuremath{\text{cs}}\xspace}
+\newcommand{\shift}{\ensuremath{\text{s}}\xspace}
+\newcommand{\reduced}{\ensuremath{\text{Red}}\xspace}
+\newcommand{\Qone}{\ensuremath{\text{Q}_1}\xspace}
+\newcommand{\Qtwo}{\ensuremath{\text{Q}_2}\xspace}
+\newcommand{\Q}{\ensuremath{\text{Q}}\xspace}
+\newcommand{\kF}{\ensuremath{\text{k}_\text{c}}\xspace}
+\newcommand{\kC}{\ensuremath{\text{k}_\text{cs}}\xspace}
+
+\title{Truncation corrections for equations of state}
+\author{Morten Hammer}
+
+\graphicspath{{gfx/}}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction}
+
+\citet[Eq. 17]{Johnson1993} derive an equation describing the
+approximate contribution form the truncated part of the interaction
+potential, in their case the Lennard-Jones fluid was considered. The
+derivation express the change in the Helmholtz free energy due to a
+change in potential as a functional differential,
+
+\begin{equation}
+  \label{eq:dadphi}
+  \frac{\delta A}{\delta \phi} = \rho^2 g \lb \vektor{r}_1,\vektor{r}_2 \rb,
+\end{equation}
+where $A$ is the Helmholtz free energy, $\phi$ is the potential acting
+between particles, $g \lb \vektor{r}_1,\vektor{r}_2 \rb$ is the pair
+correlation function, and $\vektor{r}_i$ is the position vector of a
+molecule.
+
+\citet[Eq. 17]{Johnson1993} defines the following reduced properties,
+
+\begin{align}
+  \label{eq:reduced}
+  T^* &= \frac{\KB T}{\epsilon},\\
+  \rho^* &= \frac{N \sigma^3}{V},\\
+  A^* &= \frac{A}{N \epsilon},
+\end{align}
+and they will also be used in this memo.
+
+In the following we will derive the same properties for the quantum corrected Mie potential.
+
+\section{The potential}
+The Mie potential is expressed as follows,
+\begin{equation}
+  \label{eq:Mie}
+  \phi^\mie\lb r\rb = \mathcal{C}\epsilon \lb \lb\frac{\sigma}{r} \rb^\lamr - \lb\frac{\sigma}{r} \rb^\lama \rb,
+\end{equation}
+where,
+\begin{equation}
+  \label{eq:C}
+  \mathcal{C} = \frac{\lamr}{\lamr - \lama}\lb\frac{\lamr}{\lama} \rb^{\frac{\lama}{\lamr - \lama}},
+\end{equation}
+
+The quantum correction of the Mie potential to first order, using the
+Feynman Hibbs approach, take the following form,
+\begin{align}
+  \label{eq:Mie_Q1}
+  \phi^{\Qone,\mie}\lb r, T\rb =& \mathcal{C}\epsilon D \frac{1}{r^2} \lb Q_{1}\lb \lamr \rb\lb\frac{\sigma}{r}\rb^\lamr - Q_{1}\lb \lama \rb\lb\frac{\sigma}{r}\rb^\lama\rb.
+\end{align}
+The second order correction becomes,
+\begin{align}
+  \label{eq:Mie_Q2}
+  \phi^{\Qtwo,\mie}\lb r, T\rb =& \mathcal{C}\epsilon \frac{D^2}{2} \frac{1}{r^4} \lb Q_{2}\lb \lamr \rb\lb\frac{\sigma}{r}\rb^\lamr - Q_{2}\lb \lama \rb\lb\frac{\sigma}{r}\rb^\lama  \rb.
+\end{align}
+Here we have used the following definitions,
+\begin{align}
+  \label{eq:Mie_Quantum_var}
+  D =& \frac{\beta \hbar^2 }{24 \mu},\\
+  \beta &= \frac{1}{\KB T},\\
+  h &= 2\pi \hbar,\\
+  Q_{1}\lb \lambda \rb =& \lambda\lb \lambda - 1 \rb, \\
+  Q_{2}\lb \lambda \rb =& \lb \lambda + 2 \rb\lb \lambda + 1\rb\lambda\lb \lambda - 1 \rb.
+\end{align}
+$\mu$ is molecular mass.
+
+The overall quantum corrected Mie potential then take the following form,
+\begin{align}
+  \label{eq:Mie_Quantum}
+  \phi\lb r, T\rb =& \phi^\mie\lb r\rb + \phi^{\Qone,\mie}\lb r, T\rb + \phi^{\Qtwo,\mie}\lb r, T\rb.
+\end{align}
+
+In the following, for simplicity, we drop writing out the temperature
+dependence of the potential explicitly.
+
+For the change in going from a cut potential, truncated at $r_\cut$, to
+a full quantum corrected potential, we get,
+\begin{align}
+  \label{eq:dphi}
+  \delta \phi_\cut\lb r\rb =& \phi\lb r\rb - \phi_\cut\lb r\rb =
+  \begin{cases}
+    0 & \text{if } r \leq r_\cut\\
+    \phi\lb r\rb & \text{if } r > r_\cut\\
+  \end{cases}.
+\end{align}
+Here $\phi_\cut$ is the potential cut at $r_\cut$.
+
+For the change in going from a cut and shifted potential, truncated at $r_\cut$, to
+a full quantum corrected potential, we get,
+\begin{align}
+  \label{eq:dphi_shift}
+  \delta \phi_\cs\lb r\rb =& \phi\lb r\rb - \phi_\cs\lb r\rb =
+  \begin{cases}
+    \phi\lb r_\cut\rb & \text{if } r \leq r_\cut\\
+    \phi\lb r\rb & \text{if } r > r_\cut\\
+  \end{cases}.
+\end{align}
+
+For the change in going from a cut to a cut and shifted potential, we
+get by combining equations \ref{eq:dphi} and \ref{eq:dphi_shift},
+\begin{align}
+  \label{eq:dphi_shift_only}
+  \delta \phi_{\cut-\cs}\lb r\rb =& \phi_\cut\lb r\rb - \phi_\cs\lb r\rb =
+  \begin{cases}
+    \phi\lb r_\cut\rb & \text{if } r \leq r_\cut\\
+    0 & \text{if } r > r_\cut\\
+  \end{cases}.
+\end{align}
+\section{The Helmholtz free energy truncation correction}
+
+Using equations \ref{eq:dadphi} and \ref{eq:dphi}, the change in
+Helmholtz free energy due to truncation is,
+\begin{align}
+  \label{eq:dA}
+  \Delta A_\cut = A - A_\cut &= 2 \pi N \rho \int_0^\infty g\lb r \rb \delta \phi_\cut\lb r\rb r^2 dr \\
+  &= 2 \pi N \rho \int_{r_\cut}^\infty g\lb r \rb \phi\lb r\rb r^2 dr
+\end{align}
+Assuming, as \citeauthor{Johnson1993}, that $g\lb r \rb = 1$ for $r >
+r_\cut$, the integration becomes simple. The Mie integral becomes,
+\begin{align}
+  \label{eq:i_mie}
+  \int_{r_\cut}^\infty \phi^\mie\lb r\rb r^2 dr &= \mathcal{C}\epsilon \sigma^3
+  \lb \frac{1}{\lamr - 3}\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr-3\rb} - \frac{1}{\lama - 3}\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama - 3\rb} \rb\\
+  &= \mathcal{C}\epsilon \sigma^3 \Lambda
+\end{align}
+
+The integral for the first order quantum correction to the Mie potential becomes,
+\begin{align}
+  \label{eq:i_mie_q1}
+  \int_{r_\cut}^\infty \phi^{\Qone,\mie}\lb r\rb r^2 dr &= \mathcal{C}\epsilon \sigma D
+                                                          \lb \frac{Q_1\lb\lamr\rb}{\lamr - 1}\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr-1\rb} - \frac{Q_1\lb\lama\rb}{\lama - 1}\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama - 1\rb} \rb\\
+  &= \mathcal{C}\epsilon \sigma D
+  \lb \lamr\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr-1\rb} - \lama\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama - 1\rb} \rb\\
+  &= \mathcal{C}\epsilon \sigma D \Lambda^{\Qone}
+\end{align}
+
+The integral for the second order quantum correction to the Mie potential becomes,
+\begin{align}
+  \label{eq:i_mie_q2}
+  \int_{r_\cut}^\infty \phi^{\Qtwo,\mie}\lb r\rb r^2 dr &= \mathcal{C}\epsilon \frac{1}{\sigma} \frac{D^2}{2}
+  \lb \frac{Q_2\lb\lamr\rb}{\lamr+1}\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr+1\rb} - \frac{Q_2\lb\lama\rb}{\lama+1}\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama + 1\rb} \rb\\
+  &= \mathcal{C}\epsilon \frac{1}{\sigma} \frac{D^2}{2} \Lambda^{\Qtwo}
+\end{align}
+The reduced Helmholtz free energy change then becomes,
+\begin{align}
+  \label{eq:dAred}
+  A^* - A_\cut^* &= 2 \pi \rho^* \mathcal{C} \left[ \Lambda + D \frac{\Lambda^{\Qone}}{\sigma^2}
+    + \frac{D^2}{2} \frac{\Lambda^{\Qtwo}}{\sigma^4} \right]
+\end{align}
+\subsection{The Helmholtz free energy truncation correction for Thermopack}
+\begin{align}
+  \label{eq:dA_RT}
+  F^\cut = \frac{\Delta A_\cut}{R T} = \frac{A - A_\cut}{R T} &= 2 \pi \NA \sigma^3 \mathcal{C} \left[\frac{\epsilon}{\KB}\right] \frac{n^2}{V} \frac{1}{T} \left[ \Lambda + D \frac{\Lambda^{\Qone}}{\sigma^2}
+    + \frac{D^2}{2} \frac{\Lambda^{\Qtwo}}{\sigma^4} \right]
+\end{align}
+Introducing $\kF = 2 \pi \NA \sigma^3 \mathcal{C}
+\left[\frac{\epsilon}{\KB}\right]$, the differentials of $F^\cut$ becomes,
+\begin{align}
+  \label{eq:dF}
+  F^\cut_n =& 2 \frac{F^\cut}{n}, \\
+  F^\cut_{nn} =& 2 \frac{F^\cut}{n^2}, \\
+  F^\cut_{V} =& - \frac{F^\cut}{V}, \\
+  F^\cut_{VV} =& 2 \frac{F^\cut}{V^2}, \\
+  F^\cut_{Vn} =&  -2 \frac{F^\cut}{V n}, \\
+  F^\cut_{T} =& - \frac{F^\cut}{T} + \kF \frac{n^2}{V} \frac{1}{T} \left[ D_{T} \frac{\Lambda^{\Qone}}{\sigma^2}
+    + D D_{T} \frac{\Lambda^{\Qtwo}}{\sigma^4} \right], \\
+  F^\cut_{Tn} =&  2 \frac{F^\cut_T}{n}, \\
+  F^\cut_{TV} =&  - \frac{F^\cut_T}{V}, \\
+  F^\cut_{TT} =& - 2 \frac{F^\cut}{T^2} -  2 \kF \frac{n^2}{V} \frac{1}{T^2} \left[ D_{T} \frac{\Lambda^{\Qone}}{\sigma^2}
+    + D D_{T} \frac{\Lambda^{\Qtwo}}{\sigma^4} \right]  \nonumber \\ & + \kF \frac{n^2}{V} \frac{1}{T} \left[ D_{TT} \frac{\Lambda^{\Qone}}{\sigma^2} +
+    \lb D_{T}^2 + D D_{TT} \rb \frac{\Lambda^{\Qtwo}}{\sigma^4} \right].
+\end{align}
+
+\section{The Helmholtz free energy shift correction}
+
+Using equations \ref{eq:dadphi}, \ref{eq:dphi} \ref{eq:dphi_shift}, the change in
+Helmholtz free energy due to truncation is,
+
+\begin{align}
+  \label{eq:dAcs}
+  \Delta A_\cs &= A - A_\cut - A_\shift = \Delta A_\cut + \Delta A_{\cut-\cs}
+\end{align}
+
+\begin{align}
+  \label{eq:dAscs}
+  \Delta A_{\cut-\cs}  &= 2 \pi N \rho \int_0^{r_\cut} g\lb r \rb \delta \phi_\cs\lb r\rb r^2 dr \\
+  &= 2 \pi N \rho \phi\lb r_\cut\rb \int_0^{r_\cut} g\lb r \rb r^2 dr
+\end{align}
+\citeauthor{Johnson1993} used that
+$2 \pi \rho \int_0^{r_\cut} g\lb r \rb r^2 dr$ is just the number of pairs of
+atoms within the cutoff of a central atom. This can be approximate by the
+average number of pairs of atoms in the volume of a sphere of radius $r_\cut$.
+
+The integration then becomes simple. And the quantum corrected Mie integral becomes,
+\begin{align}
+  \label{eq:i_mie_shift}
+  \Delta A_{\cut-\cs}  &= \frac{2}{3} \pi N \rho \phi\lb r_\cut\rb r_\cut^3\\
+                       &= \frac{2}{3} \pi N \rho \mathcal{C}\epsilon \sigma^3 \left[\Lambda_\shift
+                         + D \frac{\Lambda_\shift^{\Qone}}{\sigma^2}
+                         + \frac{D^2}{2} \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4}\right]
+\end{align}
+
+\begin{align}
+  \label{eq:lambda_shift}
+  \Lambda_\shift  &= \lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr-3\rb} - \lb\frac{\sigma}{r_\cut} \rb^{\lb \lama - 3\rb} \\
+  \Lambda_\shift^{\Qone} &= Q_1\lb\lamr\rb\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr-1\rb} - Q_1\lb\lama\rb\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama - 1\rb}\\
+  \Lambda_\shift^{\Qtwo} &= Q_2\lb\lamr\rb\lb\frac{\sigma}{r_\cut} \rb^{\lb\lamr+1\rb} - Q_2\lb\lama\rb\lb\frac{\sigma}{r_\cut} \rb^{\lb \lama + 1\rb}
+\end{align}
+
+In reduced variables this becomes,
+\begin{align}
+  \label{eq:i_mie_shift_star}
+  \Delta A_{\cut-\cs}^*  &= \frac{2}{3} \pi \rho^* \mathcal{C} \left[\Lambda_\shift
+                         + D \frac{\Lambda_\shift^{\Qone}}{\sigma^2}
+                         + \frac{D^2}{2} \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4}\right].
+\end{align}
+
+\subsection{The Helmholtz free energy potential shift correction for Thermopack}
+\begin{align}
+  \label{eq:dAcs_RT}
+  F^\cs = \frac{\Delta A_{\cut-\cs}}{R T} = \frac{A_\cut - A_\cs}{R T} &= \frac{2}{3} \pi \NA \sigma^3 \mathcal{C} \left[\frac{\epsilon}{\KB}\right] \frac{n^2}{V} \frac{1}{T} \left[ \Lambda_\shift + D \frac{\Lambda_\shift^{\Qone}}{\sigma^2}
+    + \frac{D^2}{2} \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4} \right]
+\end{align}
+Introducing $\kC = 2 \pi \NA \sigma^3 \mathcal{C}/3 = \kF/3
+\left[\frac{\epsilon}{\KB}\right]$, the differentials of $F^\cs$ becomes,
+\begin{align}
+  \label{eq:dFcs}
+  F^\cs_n =& 2 \frac{F^\cs}{n}, \\
+  F^\cs_{nn} =& 2 \frac{F^\cs}{n^2}, \\
+  F^\cs_{V} =& - \frac{F^\cs}{V}, \\
+  F^\cs_{VV} =& 2 \frac{F^\cs}{V^2}, \\
+  F^\cs_{Vn} =&  -2 \frac{F^\cs}{V n}, \\
+  F^\cs_{T} =& - \frac{F^\cs}{T} + \kC \frac{n^2}{V} \frac{1}{T} \left[ D_{T} \frac{\Lambda_\shift^{\Qone}}{\sigma^2}
+    + D D_{T} \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4} \right], \\
+  F^\cs_{Tn} =&  2 \frac{F^\cs_T}{n}, \\
+  F^\cs_{TV} =&  - \frac{F^\cs_T}{V}, \\
+  F^\cs_{TT} =& - 2 \frac{F^\cs}{T^2} -  2 \kC \frac{n^2}{V} \frac{1}{T^2} \left[ D_{T} \frac{\Lambda_\shift^{\Qone}}{\sigma^2}
+    + D D_{T} \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4} \right]  \nonumber \\ & + \kC \frac{n^2}{V} \frac{1}{T} \left[ D_{TT} \frac{\Lambda_\shift^{\Qone}}{\sigma^2} +
+    \lb D_{T}^2 + D D_{TT} \rb \frac{\Lambda_\shift^{\Qtwo}}{\sigma^4} \right].
+\end{align}
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{../thermopack}
+
+\end{document}

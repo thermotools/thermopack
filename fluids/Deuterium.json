@@ -207,5 +207,19 @@
     "fh_order": 1,
     "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
     "ref": "AASEN2019-FH1-LJ"
+  },
+  "SAFTVRMIE-6": {
+    "m": 1.000,
+    "sigma": 3.009E-10,
+    "eps_depth_divk": 39.239,
+    "lambda_a": 7.0000,
+    "lambda_r": 11.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 1,
+    "bib_reference": "Hammer 2022, doi: xxxx",
+    "ref": "HAMMER2022-FH1"
   }
 }

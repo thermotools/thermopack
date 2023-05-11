@@ -412,7 +412,7 @@ module hyperdual_mod
       res%f13   = 0.0_dp
       res%f23   = 0.0_dp
       res%f123  = 0.0_dp
-      res%order = 0
+      res%order = 2
     end subroutine EqualHyperDualReal
 
 
@@ -1574,5 +1574,37 @@ module hyperdual_mod
         v3 = v2
       endif
     end function min_rd
+
+
+    !-------------------------------------------------------------------
+    !--- Utility functions. --------------------------------------------
+    !-------------------------------------------------------------------
+
+    elemental function hd_all_members_zero(v1) result(all_members_zero)
+      implicit none
+      type (hyperdual), intent(in)  :: v1
+      logical :: all_members_zero
+
+      if (v1%order == 0) then
+        all_members_zero = (v1%f0 == 0.0_dp)
+      else if (v1%order == 1) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp)
+      else if (v1%order == 2) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp) .and. &
+             (v1%f2 == 0.0_dp) .and. &
+             (v1%f12 == 0.0_dp)
+      else if (v1%order == 3) then
+        all_members_zero = (v1%f0 == 0.0_dp) .and. &
+             (v1%f1 == 0.0_dp) .and. &
+             (v1%f2 == 0.0_dp) .and. &
+             (v1%f3 == 0.0_dp) .and. &
+             (v1%f12 == 0.0_dp) .and. &
+             (v1%f13 == 0.0_dp) .and. &
+             (v1%f23 == 0.0_dp) .and. &
+             (v1%f123 == 0.0_dp)
+      endif
+    end function hd_all_members_zero
 
 end module hyperdual_mod

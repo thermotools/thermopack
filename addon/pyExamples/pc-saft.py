@@ -16,6 +16,7 @@ pcs = pcsaft("C1,CO2")
 pcps = pcsaft("C1,CO2", parameter_reference="Gross2005/Gross2006", polar=True)
 pcps.set_kij(1,2,-0.12) # No rigorous tuning
 
+plt.figure()
 models = [pcs, pcps]
 for im, m in enumerate(models):
     LLE, L1VE, L2VE = m.get_binary_pxy(223.71)
@@ -46,7 +47,6 @@ for im, m in enumerate(models):
     plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="k",
              ls= "-" if im == 0 else "--")
 
-
 # Data: doi: 10.1021/ie50531a036
 P = np.array([2.392480783,3.102640785,4.074801564,4.702224479,5.26069982,6.267334386,6.839599242,7.570443515,7.901391866])
 x = np.array([0.0413,0.086,0.137,0.166,0.191,0.286,0.322,0.426,0.501])
@@ -60,7 +60,6 @@ x = np.array([0.0,0.017,0.02,0.026,0.039,0.06,0.063,0.071,0.076,0.079,0.097,0.11
 y = np.array([0.0,0.04,0.048,0.068,0.086,0.094,0.116,0.122,0.126,0.128,0.136,0.136,0.132])
 plt.plot(x, P, color="k", marker="o", ls="None", label="Xu 1992 (293.4 K)")
 plt.plot(y, P, color="k", marker="o", ls="None")
-
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$x/y$")
 plt.title("PC-SAFT (-) and PCP-SAFT (--) binary Pxy phase diagram for CO2 and CH4")

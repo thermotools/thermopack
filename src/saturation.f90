@@ -651,7 +651,6 @@ contains
     type(nonlinear_solver) :: solver
     real, dimension(nc+3) :: param
     real, dimension(nc+2) :: xmax, xmin, X
-    real :: Tmin, Tmax
     X(1:nc) = log(K)
     X(nc+1) = log(t)
     X(nc+2) = log(p)
@@ -669,10 +668,8 @@ contains
 
     Xmin = expMin
     Xmax = expMax
-    Tmin = tpTmin
-    Tmax = tpTmax
-    Xmin(nc+1) = log(Tmin) !Tmin
-    Xmax(nc+1) = log(Tmax) !Tmax
+    Xmin(nc+1) = log(tpTmin) !Tmin
+    Xmax(nc+1) = log(tpTmax) !Tmax
     Xmin(nc+2) = log(tpPmin) !Pmin
     Xmax(nc+2) = log(tpPmax) !Pmax
 
@@ -778,15 +775,13 @@ contains
     logical :: atLimit
     ! Locals
     integer :: i
-    real :: Tmin,Tmax,eps_local
+    real :: eps_local
     real :: lnMin(nc+2), lnMax(nc+2)
-    Tmin = tpTmin
-    Tmax = tpTmax
     atLimit = .false.
     lnMin(1:nc) = expMin
     lnMax(1:nc) = expMax
-    lnMin(nc+1) = log(Tmin)
-    lnMax(nc+1) = log(Tmax)
+    lnMin(nc+1) = log(tpTmin)
+    lnMax(nc+1) = log(tpTmax)
     lnMin(nc+2) = log(tpPmin)
     lnMax(nc+2) = log(tpPmax)
 

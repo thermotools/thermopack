@@ -16,8 +16,6 @@ module hyperdual_utility
     end function hyperdual_fres
   end interface
 
-  class(base_eos_param), pointer :: p_eos_dummy => NULL()
-
   public :: hyperdual_fres
   public :: hyperdual_fres_wrapper, hyperdual_fres_wrapper_third_order
   ! Testing only:
@@ -836,7 +834,6 @@ contains
     real, intent(in) :: T_r, V_r, n_r(nc)
     class(base_eos_param), intent(inout) :: p_eos
     !
-    type(hyperdual) :: T, V, n(nc), ff
     real :: f_r, n1_r(nc)
     real :: f_T,f_V,f_TT,f_VV,f_TV
     real :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
@@ -895,7 +892,6 @@ contains
     real, intent(in) :: T_r, V_r, n_r(nc)
     class(base_eos_param), intent(inout) :: p_eos
     !
-    type(hyperdual) :: T, V, n(nc), ff
     real :: f_r, n1_r(nc)
     real :: f_T,f_V,f_TT,f_VV,f_TV,f_TTT,f_TTV,f_TVV,F_VVV
     real :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)

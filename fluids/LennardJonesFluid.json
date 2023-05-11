@@ -46,9 +46,9 @@
   "ideal_heat_capacity-1": {
     "ref": "Default",
     "bib_reference": "",
-    "correlation": 7,
+    "correlation": 8,
     "cp": [
-      0.0,
+      2.5,
       0.0,
       0.0,
       0.0,
@@ -59,7 +59,7 @@
       0.0,
       0.0
     ],
-    "Tmin": 300.0,
+    "Tmin": 0.0,
     "Tmax": 1500.0
   },
   "reference_state": {

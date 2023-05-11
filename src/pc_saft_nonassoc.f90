@@ -608,6 +608,42 @@ contains
 
   end subroutine alpha_spc_saft_hc
 
+  !> alpha^{hs} TVn
+  !! alpha = A/(nRT)
+  subroutine alpha_hs_sPC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_TV,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class(sPCSAFT_eos), intent(in) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
+    real, intent(out), optional :: alp !< [-]
+    real, intent(out), optional :: alp_V, alp_T, alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_TV, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals.
+    real :: alp_rho, alp_rhorho, alp_rhoT, alp_rhon(nce)
+    real :: rho, sumn
+    integer :: i, j
+
+    sumn = sum(n)
+    rho = sumn/V
+
+    call alpha_spc_saft_hs(eos,rho,T,n,alp,alp_rho,alp_T,alp_n,&
+         alp_rhorho,alp_rhoT,alp_rhon,alp_TT,alp_Tn,alp_nn)
+
+    if (present(alp_V)) alp_V = -(sumn/V**2)*alp_rho
+    if (present(alp_n)) alp_n = alp_rho/V + alp_n
+    if (present(alp_TV)) alp_TV = -(sumn/V**2)*alp_rhoT
+    if (present(alp_Tn)) alp_Tn = alp_rhoT/V + alp_Tn
+    if (present(alp_VV)) alp_VV = 2*sumn/V**3*alp_rho + sumn**2/V**4*alp_rhorho
+    if (present(alp_Vn)) alp_Vn = -alp_rho/V**2-sumn*alp_rhorho/V**3-sumn*alp_rhon/V**2
+    if (present(alp_nn)) then
+      do i=1,nce
+        do j=1,nce
+          alp_nn(i,j) = alp_nn(i,j) + (alp_rhon(j)+alp_rhon(i))/V + alp_rhorho/V**2
+        end do
+      end do
+    end if
+
+  end subroutine alpha_hs_sPC_TVn
 
   ! Reduced molar Helmholtz free energy contribution from a hard-sphere fluid.
   ! Should be pretty fast.
@@ -1588,6 +1624,19 @@ contains
 
   end subroutine calc_d
 
+  ! The segment diameter d_i
+  subroutine calc_d_hd(eos,T,d)
+    use hyperdual_mod
+    class(sPCSAFT_eos), intent(in) :: eos
+    type(hyperdual), intent(in) :: T            !< [mol/m^3], [K], [mol]
+    type(hyperdual), intent(out) :: d(nce)      !< [m]
+    ! Locals.
+    integer :: i
+    do i=1,nce
+      d(i) = eos%sigma(i,i)*(1.0_dp - 0.12*exp(-3*eos%eps_depth_divk(i,i)/T))
+    end do
+  end subroutine calc_d_hd
+
   ! The segment diameter d_i and its derivatives.
   ! These diameters are often needed, but since they require computing an
   ! exponential, calc_d should not be called unecessary.
@@ -1851,6 +1900,43 @@ contains
     if (present(F_nn)) F_nn = F_nn + F_HS_nn
 
   end subroutine F_HC_PC_SAFT_TVn
+
+  !> alpha^{hs} TVn
+  !! alpha = A/(nRT)
+  subroutine alpha_hs_PC_TVn(eos,T,V,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_TV,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class(PCSAFT_eos), intent(inout) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [m^3], [K], [mol]
+    real, intent(out), optional :: alp !< [-]
+    real, intent(out), optional :: alp_V, alp_T, alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_TV, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals.
+    real :: sumn
+    integer :: i, j
+
+    sumn = sum(n)
+    call F_HC_PC_SAFT_TVn(eos,T,V,n,F=alp,F_T=alp_T,F_V=alp_V,F_n=alp_n,&
+         F_TT=alp_TT,F_TV=alp_TV,F_Tn=alp_Tn,F_VV=alp_VV,F_Vn=alp_Vn,F_nn=alp_nn)
+
+    if (present(alp_nn)) then
+      do i=1,nce
+        do j=1,nce
+          alp_nn(i,j) = alp_nn(i,j)/sumn - (alp_n(i) + alp_n(j))/sumn**2 + 2*alp/sumn**3
+        end do
+      end do
+    end if
+    if (present(alp_n)) alp_n = alp_n/sumn - alp/sumn**2
+    if (present(alp_Tn)) alp_Tn = alp_Tn/sumn - alp_T/sumn**2
+    if (present(alp_Vn)) alp_Vn = alp_Vn/sumn - alp_V/sumn**2
+    if (present(alp)) alp = alp/sumn
+    if (present(alp_T)) alp_T = alp_T/sumn
+    if (present(alp_TT)) alp_TT = alp_TT/sumn
+    if (present(alp_V)) alp_V = alp_V/sumn
+    if (present(alp_VV)) alp_VV = alp_VV/sumn
+    if (present(alp_TV)) alp_TV = alp_TV/sumn
+
+  end subroutine alpha_hs_PC_TVn
 
   !> Gives the contribution to the reduced, residual Helmholtz function F [mol]
   !> coming from PC-SAFT's hard-chain and dispersion contributions. All
