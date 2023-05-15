@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-11T11:27:44.545450
+Generated at: 2023-05-15T15:34:26.312974
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -41,6 +41,7 @@ is possible to plot thermodynamic phase diagrams with the most
 frequently used equations of state. The graphical user interface is
 currently running on the Windows and Linux operating systems.
 
+
 # Table of contents
   * [Please cite](#please-cite)
   * [Authors and contact persons](#authors-and-contact-persons)
@@ -59,6 +60,7 @@ currently running on the Windows and Linux operating systems.
     * [Interaction parameters](#Interaction-parameters) 
     * [Adding new fluids](#Adding-new-fluids)
   * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
+
 ## Please cite
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
@@ -94,9 +96,10 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## Authors and contact persons
-Morten Hammer (morten.hammer@sintef.no)<br>
+Morten Hammer (morten.hammer@sintef.no, morten.hammer@ntnu.no)<br>
 Ailo Aasen (ailo.aasen@sintef.no)<br>
-Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
+Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)<br>
+Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
 
 ## License
 Thermopack is distributed under the [MIT
@@ -107,6 +110,7 @@ and [Apache
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
 development of thermopack. We gratefully acknowledge their contributions.
+
 # Program structure
 
 Each EoS in thermopack is a class, which inherits from the `thermopack` class found in `thermo.py`. The primary documentation
@@ -141,6 +145,7 @@ Brief description of file structure:
 - `thermopack/addon/pycThermopack/`: Python interface
 - `thermopack/addon/pyUtils/`: Python utilities for generating fortran code and makefile input.
 - `thermopack/addon/trend_interface/`: Interface for working with the TREND/EOSCG library developed by Roland Span and Ruhr-Universität Bochum
+
 
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
@@ -283,6 +288,7 @@ available Dockerfiles to run Thermopack with docker.
 
 ### CMake setup
 See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
+
 # Getting started - Python
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
 
@@ -596,6 +602,7 @@ vc = Vc / sum(n) # Critical specific volume computed from critical volume and mo
 The solver accepts initial guesses for the critical values through the `kwargs` `temp`, and `v`. The error tolerance can be set via the `tol` `kwarg` (default is `tol=1e-7`).
 
 
+
 # More advanced usage - Python
 
 ## Interaction parameters
@@ -666,6 +673,7 @@ H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
 ```
 
 Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
+
 # Adding new fluids
 
 The fluid database consists of a set of
@@ -746,6 +754,7 @@ $$ \sigma_{\rm{sub}} = \sum_{i=1}^{n_1} a_i \tau^{c_i}  + \sum_{j=1}^{n_2} a_j (
 The melting/sublimation curves can be scaled to match the saturation pressure at the triple temperature, $p_{\rm{sat}}(T_{\rm{triple}})$. The scaled pressure, $\tilde{p}(\sigma)$, is then calculated as
 
 $$ \tilde{p}(\sigma) = \frac{p_{\rm{sat}}(T_{\rm{triple}}) }{p(\sigma(T_{\rm{triple}}))} p(\sigma)$$
+
 
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
@@ -872,4 +881,5 @@ In order to specify fluids in Thermopack you need to use fluid identifiers as sh
 | n-Undecane | NC11 |   | :heavy_check_mark: |   |
 | o-Xylene | OXYL |   |   |   |
 | p-Xylene | PXYL |   |   |   |
+
 

@@ -29,7 +29,7 @@ def gen_file_str(files):
         file_path = MARKDOWN_DIR + file + '.md'
 
         with open(file_path, 'r') as in_file:
-            out_file_str += in_file.read() + '\n'
+            out_file_str += in_file.read() + '\n\n'
 
     return out_file_str
 
