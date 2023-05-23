@@ -1,10 +1,10 @@
 ! Module demonstrating chained inheritance
 ! The class VariantEoS is a dummy for e.g. ''cubic'', 'saft' etc.
 !   It contains:
-!   Two Parameters (p1, p2) not contained in BaseEoS, that each inherriting EoS must set.
-!   One procedure that is common to all inherriting classes (implemented)
+!   Two Parameters (p1, p2) not contained in BaseEoS, that each inheriting EoS must set.
+!   One procedure that is common to all inheriting classes (implemented)
 !       returns: The average of the two parameters (p1 + p2) / 2.0
-!   Procedure internal_comp (deffered)
+!   Procedure internal_comp (deferred)
 
 ! Variant1 
 !   Implements internalcomp
