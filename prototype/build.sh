@@ -5,7 +5,7 @@ set -e
 # Compiling fortran source, building archive, and moving mod files to cpp_wrapper directory
 cd src || exit 1
 gfortran -c constants.f90 base_eos.f90 notidgas.f90 variants.f90
-ar -r libdemo_fortran.a *.o
+ar -r libdemo_fortran.a ./*.o
 mv libdemo_fortran.a ../cpp_wrapper/libdemo_fortran.a
 cp constants.mod ../cpp_wrapper/constants.mod
 cp base_eos.mod ../cpp_wrapper/base_eos.mod
@@ -26,9 +26,9 @@ cmake .. && make
 cp libdemo.cpython-39-darwin.so ../../py_wrapper/libdemo.so
 
 # Compile and link C++ main program
-cd ../..
+cd ../../cpp_test
 g++-12 -c main.cpp
-g++-12 -o cpp_main main.o cpp_wrapper/*.o src/*.o /opt/homebrew/lib/gcc/12/libgfortran.dylib
+g++-12 -o cpp_main main.o ../cpp_wrapper/*.o ../src/*.o /opt/homebrew/lib/gcc/12/libgfortran.dylib
 
 echo "Finished building and wrapping."
 echo "Executable is at : ./cpp_main"

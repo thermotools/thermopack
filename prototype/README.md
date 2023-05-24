@@ -30,6 +30,10 @@ The test case is currently:
    * `Variant2` : Concrete class inheriting from `VariantEoS`
      * Implements `internal_comp`, but differently than `Variant1`
      * Implements `Fres`, which calls `internal_comp` and `variant_common_comp`
+* A (very simple/minimal) compdatadb, with utils, such that EoS objects can be initialized from identifier strings
+  * A python script in `fluids` is used to manipulate the database, but currently does not generate the fortran-side database
+  * `Variant1` and `Variant2` have been tested to initialize correctly for different species and parameter references
+  * Wrapping of these constructors has not been attempted yet.
 
 The wrapping procedure (e.g. running `build.sh`)
  * Generates `ISO_C_BINDINGS` wrappers for the fortran methods
@@ -41,16 +45,23 @@ The wrapping procedure (e.g. running `build.sh`)
 
 Current status:
  * Pybind11 bindings must use `std::vector<T>` for list input from python, while the C++ wrapper uses arrays for input variables. Therefore, the lambdas must pass `var.data()` to the internal C++ method. This has been tested manually, but not automated yet. 
+ * See above for status on the `compdatadb` and initializing from identifier strings
 
-Moving forward: 
+Moving forward:
+
+ * TODO: Make (pun intended) an actual build system... these bash scripts are getting out of hand.
  * Implement Fortran-side initialisation from a struct that holds parameters.
+   * Partially complete - 
+     * Wrapping of these constructors has not been tested.
+     * Having several constructors (C++ side polymorphic constructors) has not been attempted yet.
  * Implement internal computations that are not wrapped, to ensure that it is possible to make a minimal wrapper.
  * Implement an external generic method (e.g. numerical solver) that accepts a function pointer of some sort, that can be used on a type bound procedure.
    * For example: A method that takes `eos.pressure` as input, and solves `p(T, V, n) = p0` for e.g. `T`.
    * This method does not need to be wrapped.
 
 To play around:
- * `main.cpp`, `main.f90`, and `pytest.py` contain working examples of initialising various models and running dummy-computations in each layer.
+ * `cpp_test/main.cpp`, `fortran_test/main.f90`, and `pytest.py` contain working examples of initialising various models and running dummy-computations in each layer.
+   * Note: The build system for `cpp_test/main.cpp` (which has been part of) `build.sh` is likely currently broken. 
 
 # Interfacing
 
