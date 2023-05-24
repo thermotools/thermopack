@@ -5,6 +5,7 @@ implicit none
 ! Struct to hold the data all fluids require
 type BaseData
     real :: Tc
+    real :: Vc
     real :: Tt
     real :: pt
     real :: dipole
@@ -23,8 +24,8 @@ end type VariantData
 type CompData
     character(len=10) :: ident
 
-    class(BaseData), allocatable :: base
-    class(VariantData), allocatable, dimension(:) :: VariantDatadb
+    type(BaseData) :: base
+    type(VariantData), allocatable, dimension(:) :: VariantDatadb
 end type CompData
 
 end module compdata_mod

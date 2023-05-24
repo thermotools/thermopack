@@ -4,10 +4,11 @@
 module compdatautils
 
 use compdata_mod, only : CompData, VariantData, BaseData
-use compdatadb, only : get_datadb, datadb_len
+use compdatadb, only : get_compdata, datadb_len, str_eq
 implicit none
 
 private
+public :: get_base_data, get_variant_compdata
 
 contains
 
@@ -31,12 +32,18 @@ function get_variant_compdata(ident, ref) result(data)
     integer :: i
 
     call get_compdata(ident, cdata)
+
+    print*, "Searching for ref : ", ref
     do i = 1, size(cdata%VariantDataDb)
-        if (ref == cdata%VariantDataDb(i)%ref) then
+        print*, "Checking : ", cdata%VariantDataDb(i)%ref
+        if (str_eq(ref, cdata%VariantDataDb(i)%ref)) then
             data = cdata%VariantDataDb(i)
             return
         endif
     enddo
+
+    print*, "No data found for ", ident, ", ref : ", ref
+    error stop
 end function get_variant_compdata
 
 end module compdatautils

@@ -24,61 +24,67 @@
 !       Ft = Fn = 0.0
 
 module variants
-  use base_eos, only: BaseEos
+  use base_eos, only: BaseEos, BaseEos_init
   use constants, only: Rgas
+  use compdata_mod, only: VariantData
+  use compdatautils, only: get_variant_compdata
 
-  IMPLICIT NONE
-  PRIVATE
-  public :: VariantEoS, Variant1, Variant2, Variant1_ctor_sub, Variant2_ctor_sub
+  implicit none
+  private
+  public :: VariantEoS, Variant1, Variant2, &
+            Variant1_ctor_sub, Variant1_db_ctor_sub, Variant1_db_ctor, &
+            Variant2_ctor_sub, Variant2_db_ctor_sub, Variant2_db_ctor
 
   ! Intermediate class for many EoS's that are similar,
   ! e.g. cubics, saft-type, etc.
-  TYPE, ABSTRACT, EXTENDS(BaseEos) :: VariantEoS
-    ! Contains some parammeters that are common to e.g. all cubics
-    INTEGER :: param1
+  type, abstract, extends(BaseEos) :: VariantEoS
+    ! Contains some parameters that are common to e.g. all cubics
+    integer :: param1
     real :: param2 
-  CONTAINS
+  contains
     ! Some internal computation that is common to e.g. all cubics
     ! For example mixing rules.
-    PROCEDURE :: variant_common_comp
+    procedure :: variant_common_comp
 
     ! Some method that all inherriting classes must implement
-    PROCEDURE (internal_comp_template), DEFERRED :: internal_comp
-  END TYPE VariantEoS
+    procedure (internal_comp_template), deferred :: internal_comp
+  end type VariantEoS
 
-  ABSTRACT INTERFACE
-    SUBROUTINE internal_comp_template(this, T, V, n, computed)
-      IMPORT VariantEoS
-      CLASS (VariantEoS), INTENT(in) :: this
+  abstract interface
+    subroutine internal_comp_template(this, T, V, n, computed)
+      import VariantEoS
+      class(VariantEoS), intent(in) :: this
       real, intent(in) :: T, V
       real, dimension(this%ncomps), intent(in) :: n
       real, intent(out) :: computed
-    END SUBROUTINE internal_comp_template
-  END INTERFACE
+    end subroutine internal_comp_template
+  end interface
 
-  TYPE, EXTENDS(VariantEoS) :: Variant1
-    INTEGER :: variant1_specific_param
-  CONTAINS
-    PROCEDURE :: internal_comp => variant1_internal_comp
-    PROCEDURE :: Fres => variant1_Fres
-  END TYPE Variant1
+  type, extends(VariantEoS) :: Variant1
+    integer :: variant1_specific_param
+  contains
+    procedure :: internal_comp => variant1_internal_comp
+    procedure :: Fres => variant1_Fres
+  end type Variant1
 
-  INTERFACE Variant1
-    PROCEDURE Variant1_ctor
-  END INTERFACE Variant1
+  interface Variant1
+    procedure Variant1_ctor
+    procedure Variant1_db_ctor
+  end interface Variant1
 
-  TYPE, EXTENDS(VariantEoS) :: Variant2
-    INTEGER :: variant2_specific_param
-  CONTAINS
-    PROCEDURE :: internal_comp => variant2_internal_comp
-    PROCEDURE :: Fres => variant2_Fres
-  END TYPE Variant2
+  type, extends(VariantEoS) :: Variant2
+    integer :: variant2_specific_param
+  contains
+    procedure :: internal_comp => variant2_internal_comp
+    procedure :: Fres => variant2_Fres
+  end type Variant2
 
-  INTERFACE Variant2
-    PROCEDURE Variant2_ctor
-  END INTERFACE Variant2
+  interface Variant2
+    procedure Variant2_ctor
+    procedure Variant2_db_ctor
+  end interface Variant2
 
-Contains
+contains
 
 subroutine variant_common_comp(this, mixed_common)
     class(VariantEoS), intent(in) :: this
@@ -103,7 +109,7 @@ function Variant1_ctor(ident, nc, Tc, Vc, var1, var2) result(instance)
   instance%param2 = var2
 end function Variant1_ctor
 
-SUBROUTINE Variant1_ctor_sub(this, ident, nc, Tc, Vc, var1, var2)
+subroutine Variant1_ctor_sub(this, ident, nc, Tc, Vc, var1, var2)
     TYPE (Variant1) :: this
     INTEGER, INTENT(in) :: ident
     integer, intent(in) :: nc
@@ -111,7 +117,39 @@ SUBROUTINE Variant1_ctor_sub(this, ident, nc, Tc, Vc, var1, var2)
     integer, intent(in) :: var1
     real, intent(in) :: var2
     this = Variant1(ident, nc, Tc, Vc, var1, var2)
-END SUBROUTINE Variant1_ctor_sub
+end subroutine Variant1_ctor_sub
+
+function Variant1_db_ctor(ident, ref) result(instance)
+    character(len=10), intent(in) :: ident
+    character(len=10), optional, intent(in) :: ref
+    character(len=10) :: ref_ = "default" // char(0)
+    type(Variant1) :: instance
+    type(VariantData) :: data
+
+    if (present(ref)) then
+        ref_ = ref
+    end if
+
+    print*, "Getting VariantData for : ", ident, ", ", ref_
+
+    data = get_variant_compdata(ident, ref_)
+
+    print*, "Got VariantData for : ", ident, ", ", ref_
+
+    call BaseEos_init(instance, ident)
+
+    instance%param1 = data%p1
+    instance%param2 = data%p2
+
+end function Variant1_db_ctor
+
+subroutine Variant1_db_ctor_sub(this, ident, ref)
+    type(Variant1) :: this
+    character(len=10), intent(in) :: ident
+    character(len=10), optional, intent(inout) :: ref
+
+    this = Variant1_db_ctor(ident, ref)
+end subroutine Variant1_db_ctor_sub
 
 subroutine variant1_internal_comp(this, T, V, n, computed)
     class(Variant1), intent(in) :: this
@@ -123,7 +161,7 @@ subroutine variant1_internal_comp(this, T, V, n, computed)
 end subroutine variant1_internal_comp
 
 subroutine variant1_Fres(this, T, V, n, Fres, Ft, Fv, Fn)
-    CLASS(Variant1), INTENT(in) :: this
+    class(Variant1), intent(in) :: this
     real, intent(in) :: T, V
     real, dimension(this%ncomps), intent(in) :: n
     real, intent(out) :: Fres
@@ -157,7 +195,7 @@ function Variant2_ctor(ident, nc, Tc, Vc, var1, var2) result(instance)
   instance%param2 = var2
 end function Variant2_ctor
 
-SUBROUTINE Variant2_ctor_sub(instance, ident, nc, Tc, Vc, var1, var2)
+subroutine Variant2_ctor_sub(instance, ident, nc, Tc, Vc, var1, var2)
     TYPE (Variant2) :: instance
     INTEGER, INTENT(in) :: ident
     integer, intent(in) :: nc
@@ -165,7 +203,34 @@ SUBROUTINE Variant2_ctor_sub(instance, ident, nc, Tc, Vc, var1, var2)
     integer, intent(in) :: var1
     real, intent(in) :: var2
     instance = Variant2(ident, nc, Tc, Vc, var1, var2)
-END SUBROUTINE Variant2_ctor_sub
+end subroutine Variant2_ctor_sub
+
+function Variant2_db_ctor(ident, ref) result(instance)
+    character(len=10), intent(in) :: ident
+    character(len=10), optional, intent(in) :: ref
+    character(len=10) :: ref_ = "default" // char(0)
+    type(Variant2) :: instance
+    type(VariantData) :: data
+
+    if (present(ref)) then
+        ref_ = ref
+    end if
+
+    data = get_variant_compdata(ident, ref_)
+    call BaseEos_init(instance, ident)
+
+    instance%param1 = data%p1
+    instance%param2 = data%p2
+
+end function Variant2_db_ctor
+
+subroutine Variant2_db_ctor_sub(this, ident, ref)
+    type(Variant2) :: this
+    character(len=10), intent(in) :: ident
+    character(len=10), optional, intent(inout) :: ref
+
+    this = Variant2_db_ctor(ident, ref)
+end subroutine Variant2_db_ctor_sub
 
 subroutine variant2_internal_comp(this, T, V, n, computed)
     class(Variant2), intent(in) :: this

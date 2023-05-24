@@ -1,16 +1,18 @@
 MODULE base_eos
   use constants, only: Rgas
+  use compdata_mod, only: BaseData
+  use compdatautils, only: get_base_data
 
   IMPLICIT NONE
   
   PRIVATE
-  PUBLIC :: BaseEos
+  PUBLIC :: BaseEos, BaseEoS_init
 
  !> Base EoS class
   TYPE, ABSTRACT :: BaseEos
     INTEGER :: ident
     integer :: ncomps 
-    real :: Tc, Vc
+    real :: Tc, Vc, Tt, pt, dipole
   CONTAINS
     ! All inherriting classes must implement this
     PROCEDURE (Fres_template), DEFERRED :: Fres
@@ -34,6 +36,19 @@ MODULE base_eos
   END INTERFACE
 
 CONTAINS
+
+subroutine BaseEos_init(this, ident)
+    class(BaseEoS), intent(inout) :: this
+    character(len=10), intent(in) :: ident
+    type(BaseData) :: bdata
+    bdata = get_base_data(ident)
+
+    this%Tc = bdata%Tc
+    this%Vc = bdata%Vc
+    this%Tt = bdata%Tt
+    this%pt = bdata%pt
+    this%dipole = bdata%dipole
+end subroutine BaseEos_init
 
 subroutine Fideal(this, T, V, n, Fid, Ft, Fv, Fn)
     CLASS(BaseEos), INTENT(in) :: this
