@@ -176,6 +176,11 @@ append_export("fmt_energy_density", "fundamental_measure_theory")
 
 append_export("calc_bmcsl_gij_fmt", "hardsphere_bmcsl")
 
+append_export("hydrate", "init_hydrate_model")
+append_export("hydrate", "fugacity_water_in_hydrate_tpx")
+append_export("hydrate", "fugacity_water_in_hydrate_tvn")
+append_export("hydrate_curves", "map_hydrate_appearance_curve")
+
 append_export("idealenthalpysingle", "ideal")
 append_export("idealentropysingle", "ideal")
 append_export("set_entropy_reference_value", "ideal")

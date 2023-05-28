@@ -194,6 +194,8 @@ OBJE = \
        $(ODIR)/binaryplot.o \
        $(ODIR)/speed_of_sound.o \
        $(ODIR)/saftvrmie_testing.o \
+       $(ODIR)/hydrate.o \
+       $(ODIR)/hydrate_curves.o \
        $(ODIR)/consistency.o \
        $(ODIR)/eoslibinit.o \
        $(ODIR)/complexmodelinit.o \
@@ -531,6 +533,23 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hydrate.o: $(SRC)/hydrate.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/eostv.f90 $(SRC)/saturation.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/solideos.f90 \
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/quadratures.f90 $(SRC)/eos.f90
+	@$(call make_object, $(SRC)/hydrate.f90)
+$(ODIR)/hydrate_curves.o: $(SRC)/hydrate_curves.f90 \
+	$(SRC)/hydrate.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eostv.f90 \
+	$(SRC)/saturation.f90 $(SRC)/multi_phase_envelope_tv.f90 \
+	$(SRC)/saturation_tv.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/stability.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/cubic_eos.f90 \
+	$(SRC)/utilities.f90 $(SRC)/eos.f90 \
+	$(SRC)/thermo_utils.f90
+	@$(call make_object, $(SRC)/hydrate_curves.f90)
 $(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hyperdual_mod.f90)
 $(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \

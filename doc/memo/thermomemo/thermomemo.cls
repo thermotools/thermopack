@@ -65,11 +65,16 @@
 \pagestyle{fancy}
 \newpagestyle{firstpage}[fancy]{%
   \fancyhead[l]{\includegraphics[width=0.25\textwidth]{\MainLogo}}
+  \fancyfoot[c]{\sffamily\thepage}
 }
 
 % Header
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[l]{\includegraphics[width=0.25\textwidth]{\MainLogo}}
+
+% Footer
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[c]{\sffamily\thepage}
 
 % This separating line is used across several documents,
 % for example in footers.

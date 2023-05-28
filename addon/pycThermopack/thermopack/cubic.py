@@ -8,10 +8,11 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from .thermo import thermo, c_len_type
+from .thermo import c_len_type
+from .hydrate import hydrate
 
 
-class cubic(thermo):
+class cubic(hydrate):
     """
     Interface to cubic
     """
