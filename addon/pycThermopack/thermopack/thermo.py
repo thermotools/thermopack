@@ -218,6 +218,10 @@ class thermo(object):
             self.tp, self.get_export_name("isolines", "isenthalp"))
         self.s_isentrope = getattr(
             self.tp, self.get_export_name("isolines", "isentrope"))
+        self.s_envelope_plot_tv = getattr(
+            self.tp, self.get_export_name("saturation_tv", "envelope_plot_tv"))
+        self.s_multi_phase_envelope_tv = getattr(
+            self.tp, self.get_export_name("multi_phase_envelope_tv", "multi_phase_envelope_plot_tv"))
 
         # Stability
         self.s_crit_tv = getattr(
@@ -3343,6 +3347,181 @@ class thermo(object):
             raise Exception("Sublimation line calculation failed")
 
         return np.array(temp_subl_c), np.array(press_subl_c)
+
+    def get_envelope_twophase_tv(self, initial_pressure, z, maximum_pressure=1.5e7,
+                                 minimum_temperature=None, step_size=None):
+        """Saturation interface
+        Get the phase-envelope using tv-formulation. Should give same result as
+           get_envelope_twophase
+
+        Args:
+            initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
+            step_size (float , optional): Tune step size of envelope trace. Defaults to None.
+        Returns:
+            ndarray: Temperature values (K)
+            ndarray: Pressure values (Pa)
+            ndarray: Specific volume phase with z composition (m3/mol)
+        """
+        self.activate()
+        nmax = 1000
+        z_c = (c_double * len(z))(*z)
+        temp_c = c_double(0.0)
+        press_c = c_double(initial_pressure)
+        spec_c = c_int(1)
+        beta_in_c = c_double(1.0)
+        max_press_c = c_double(maximum_pressure)
+        nmax_c = c_int(nmax)
+        Ta_c = (c_double * nmax)(0.0)
+        Pa_c = (c_double * nmax)(0.0)
+        v1a_c = (c_double * nmax)(0.0)
+        v2a_c = (c_double * nmax)(0.0)
+        Ki_c = (c_double * (nmax*len(z)))(0.0)
+        beta_c = (c_double * nmax)(0.0)
+        n_c = c_int(0)
+        null_pointer = POINTER(c_double)()
+        if step_size is None:
+            ds_c = null_pointer
+        else:
+            ds_c = POINTER(c_double)(c_double(step_size))
+        if minimum_temperature is None:
+            tme_c = null_pointer
+        else:
+            tme_c = POINTER(c_double)(c_double(minimum_temperature))
+
+        self.s_envelope_plot_tv.argtypes = [POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_int ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_int ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double ),
+                                            POINTER( c_int ),
+                                            POINTER( c_double ),
+                                            POINTER( c_double )]
+
+        self.s_envelope_plot_tv.restype = None
+
+        self.s_envelope_plot_tv(z_c,
+                                byref(temp_c),
+                                byref(press_c),
+                                byref(spec_c),
+                                byref(beta_in_c),
+                                byref(max_press_c),
+                                byref(nmax_c),
+                                Ta_c,
+                                Pa_c,
+                                v1a_c,
+                                v2a_c,
+                                Ki_c,
+                                beta_c,
+                                byref(n_c),
+                                ds_c,
+                                tme_c)
+
+        t_vals = np.array(Ta_c[0:n_c.value])
+        p_vals = np.array(Pa_c[0:n_c.value])
+        v_vals = np.array(v1a_c[0:n_c.value])
+
+        return_tuple = (t_vals, p_vals, v_vals)
+
+        return return_tuple
+
+    def get_multi_phase_envelope_tv(self, initial_pressure, z, minimum_temperature,
+                                    maximum_pressure, print_to_file=False):
+        """Saturation interface
+        Get the multi-phase saturation curves
+
+        Args:
+            initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            minimum_temperature (float): Exit on minimum pressure (K).
+            maximum_pressure (float): Exit on maximum pressure (Pa).
+            print_to_file (boolean, optional): Save results to file multi.dat ?.
+        Returns:
+            ndarray: Temperature values (K)
+            ndarray: Pressure values (Pa)
+            ndarray: Temperature values with water incipient phase (K)
+            ndarray: Pressure values with water incipient phase (Pa)
+        """
+        self.activate()
+        nmax = 50000
+        z_c = (c_double * len(z))(*z)
+        min_temp_c = c_double(minimum_temperature)
+        init_press_c = c_double(initial_pressure)
+        max_press_c = c_double(maximum_pressure)
+        nmax_c = c_int(nmax)
+        Ta_c = (c_double * nmax)(0.0)
+        Pa_c = (c_double * nmax)(0.0)
+        X_c = (c_double * (nmax*len(z)))(0.0)
+        Y_c = (c_double * (nmax*len(z)))(0.0)
+        W_c = (c_double * (nmax*len(z)))(0.0)
+        beta_YXW_c = (c_double * (3*nmax))(0.0)
+        v_YXW_c = (c_double * (3*nmax))(0)
+        n_c = c_int(0)
+        nw_c = c_int(0)
+        print_to_file_c = c_int(int(print_to_file == 'true'))
+
+        self.s_multi_phase_envelope_tv.argtypes = [POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_int ),
+                                                   POINTER( c_int ),
+                                                   POINTER( c_int ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_double ),
+                                                   POINTER( c_int )]
+
+        self.s_multi_phase_envelope_tv.restype = None
+
+        self.s_multi_phase_envelope_tv(z_c,
+                                       byref(init_press_c),
+                                       byref(max_press_c),
+                                       byref(min_temp_c),
+                                       byref(nmax_c),
+                                       byref(n_c),
+                                       byref(nw_c),
+                                       Ta_c,
+                                       Pa_c,
+                                       beta_YXW_c,
+                                       Y_c,
+                                       X_c,
+                                       W_c,
+                                       v_YXW_c,
+                                       byref(print_to_file_c))
+
+        n = n_c.value
+        nw = nw_c.value
+
+        if nw > 0:
+            tw_vals = np.array(Ta_c[0:nw])
+            pw_vals = np.array(Pa_c[0:nw])
+        else:
+            tw_vals = None
+            pw_vals = None
+
+        if n-nw > 0:
+            t_vals = np.array(Ta_c[nw:n])
+            p_vals = np.array(Pa_c[nw:n])
+        else:
+            t_vals = None
+            p_vals = None
+
+        return t_vals, p_vals, tw_vals, pw_vals
 
     def get_isotherm(self,
                      temp,

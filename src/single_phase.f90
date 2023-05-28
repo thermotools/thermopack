@@ -623,7 +623,7 @@ contains
     ! Ideal contribution
     call Sideal_Vn(nce, ne, T, v, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
          d2sdndV=Fid_Vn, d2sdn2=Fid_nn)
-    Fid_n = -Fid_n/Rgas
+    Fid_n = -Fid_n/Rgas - 1.0
     Fid_Tn = -Fid_Tn/Rgas
     Fid_Vn = -Fid_Vn/Rgas
     Fid_nn = -Fid_nn/Rgas

@@ -201,6 +201,8 @@ append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
 
+append_export("multi_phase_envelope_plot_tv", "multi_phase_envelope_tv")
+
 append_export("solve_mu_t", "mut_solver")
 append_export("solve_lnf_t", "mut_solver")
 append_export("map_meta_isotherm", "mut_solver")
@@ -271,6 +273,8 @@ append_export("safe_dewp", "saturation")
 
 append_export("envelopeplot", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
+
+append_export("envelope_plot_tv", "saturation_tv")
 
 append_export("solid_init", "solideos")
 
