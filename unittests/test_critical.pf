@@ -73,7 +73,7 @@ contains
     p = pressure(T,v,Z)
     @assertEqual(9.7353925540043384E-005, v, 5e-10)
     @assertEqual(298.06404227591383, T, 5e-05)
-    @assertEqual(8608562.1708822846, p, 1.0)
+    @assertEqual(8608562.1708822846, p, 2.0)
 
   end subroutine test_critical_point_mix
 

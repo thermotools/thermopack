@@ -667,7 +667,7 @@ contains
   @Test
   subroutine test_tv_fugacity()
     use eos, only: specificvolume, thermo
-    use eostv, only: thermotv
+    use eostv, only: thermo_tv
     use thermopack_constants, only: LIQPH
     ! Test TV routines
     !
@@ -694,7 +694,7 @@ contains
         P = Pmin+j*(Pmax-Pmin)/n  ! Pa
 
         call specificvolume(t, P, x, LIQPH, v)
-        call thermotv(t, v, x, lnf)
+        call thermo_tv(t, v, x, lnf)
         call thermo(t, P, x, LIQPH, lnphi)
 
         do k=1,2

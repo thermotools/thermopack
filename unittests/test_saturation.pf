@@ -90,8 +90,8 @@ contains
     use saturation, only: specP
     !
     integer, parameter :: nmax = 1000
-    real, dimension(nmax) :: Ta,Pa,betai
-    real :: Ki(nmax,3)
+    real, dimension(nmax) :: Ta,Pa,betaa
+    real :: Ka(nmax,3)
     character(len=*), parameter :: filename = 'envelope.dat'
     integer :: n, i
     real, dimension(3) :: z = (/0.96,0.01,0.03/)
@@ -102,17 +102,17 @@ contains
 
     call envelopePlot(Z=z,T_init=-1.0,p_init=1.0e5,&
          spec=specP,beta_in=1.0,Pmax=1.2e7,nmax=nmax,&
-         Ta=Ta,Pa=Pa,Ki=Ki,betai=betai,n=n)
+         Ta=Ta,Pa=Pa,Ka=Ka,betaa=betaa,n=n)
 
     @assertEqual(Ta(1), 184.03687384190874, 1e-6)
     @assertEqual(Ta(n), 82.053031610297836, 1e-6)
     K = (/0.96019023955499416, 534.51893992689304, 167.20680960839289/)
     do i=1,3
-      @assertEqual(Ki(1,i), K(i), 1e-8*K(i))
+      @assertEqual(Ka(1,i), K(i), 1e-8*K(i))
     enddo
     K = (/1.3786921514152098E-007, 77.253992206185089, 7.5819981861693826/)
     do i=1,3
-      @assertEqual(Ki(n,i), K(i), 1e-8*K(i))
+      @assertEqual(Ka(n,i), K(i), 1e-8*K(i))
     enddo
   end subroutine test_envelope_plot
 
