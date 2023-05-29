@@ -1,15 +1,14 @@
 #!/usr/bin/python
 #Modify system path
 import sys
-sys.path.append('../pycThermopack/')
-from pyctp import cubic
+sys.path.insert(0,'../pycThermopack/')
+from thermopack.cubic import cubic
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools as it
 import csv
 
-cb = cubic.cubic()
-cb.init("CO2,H2O","SRK","Classic","Classic")
+cb = cubic("CO2,H2O","SRK")
 cb.init_hydrate()
 
 Z_H2O = np.array([30.0, 100.0, 200.0, 400.0])*1e-6
@@ -42,10 +41,8 @@ leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
-plt.savefig("co2_h2o.pdf")
-plt.show()
-plt.clf()
 
+plt.figure()
 cb.init("CO2,N2,H2O","SRK","Classic","Classic")
 cb.init_hydrate()
 Z_CO2 = np.array([0.85,0.15])

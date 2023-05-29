@@ -1196,7 +1196,6 @@ contains
     real :: T,betaW,X_HC(nc),X_WATER(nc),Y_HC(nc)
     type(nonlinear_solver) :: solver
     real, dimension(2) :: XX, XXmax, XXmin
-    real :: Tmin,Tmax
     real :: betaY, vW, vY, vX
     real :: error_on_exit
     !real :: Jac(2,2), G(2), G1(2)
@@ -1241,9 +1240,8 @@ contains
     solver%max_it = 300
     solver%ls_max_it = 3
 
-    call get_templimits(Tmin,Tmax)
-    XXmin(1) = Tmin
-    XXmax(1) = Tmax
+    XXmin(1) = tpTmin
+    XXmax(1) = tpTmax
     XXmin(2) = 0.0 !beta min
     XXmax(2) = 1.0 !beta max
     call nonlinear_solve(solver,isolated_three_ph_fun_newton,&

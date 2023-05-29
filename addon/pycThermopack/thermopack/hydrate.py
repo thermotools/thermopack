@@ -1,14 +1,7 @@
-# Support for python2
-from __future__ import print_function
-# Import ctypes
 from ctypes import *
-# Importing Numpy (math, arrays, etc...)
 import numpy as np
-# Import platform to detect OS
 from sys import platform, exit
-# Import os utils
 from os import path
-# Import thermo
 from .thermo import thermo, c_len_type
 
 
