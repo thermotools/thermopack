@@ -1,9 +1,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#include <optional>
 #include "Variant2.h"
 #include "NotIdGas.h"
 #include "Variant1.h"
+
 namespace py = pybind11;
 using array_f = pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast>;
 using p_array_f = std::optional<pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast>>;

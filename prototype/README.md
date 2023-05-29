@@ -49,7 +49,6 @@ Current status:
 
 Moving forward:
 
- * TODO: Make (pun intended) an actual build system... these bash scripts are getting out of hand.
  * Implement Fortran-side initialisation from a struct that holds parameters.
    * Partially complete - 
      * Wrapping of these constructors has not been tested.
@@ -61,7 +60,24 @@ Moving forward:
 
 To play around:
  * `cpp_test/main.cpp`, `fortran_test/main.f90`, and `pytest.py` contain working examples of initialising various models and running dummy-computations in each layer.
-   * Note: The build system for `cpp_test/main.cpp` (which has been part of) `build.sh` is likely currently broken. 
+ * To build the project, navigate to the `prototype` directory (this directory), and
+
+```
+mkdir build
+cmake .. && make
+```
+
+  * This will build the files
+    * `build/fortran_lib/libdemopack.a` - The Fortran library
+    * `build/cpp_wrapper/libdemopack_cpp.a` - The C++ library (without python bindings)
+    * `build/cpp_wrapper/libdemo-cpython-<python_version>-<system>.so`
+  * The build system makes some assumptions regarding where to find `pybind11` (set in `PYBIND11_ROOT_DIR` of `prototype/CMakeLists.txt`) as well as the C++ compiler (also set in `prototype/CMakeLists.txt`). 
+    * It should not be necessary to modify the `CMakeLists.txt` files in the `prototype/src` or `prototype/cpp_wrapper` directories.
+  * To `import` the library to python, the import path must point to the `libdemo-cpython-<python_version>-<system>.so` file, and the imported module is called `libdemo`, such as
+
+```
+from build.cpp_wrapper import libdemo #Importing from the `prototype` directory
+```
 
 # Interfacing
 
