@@ -3,7 +3,7 @@
 *.o
 *.a
 *.so
-cpp_wrapper/build/
+build/
 
 # Ignore executables
 cpp_main
