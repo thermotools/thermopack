@@ -7,9 +7,56 @@ from thermopack.saftvrmie import saftvrmie
 from thermopack.pcsaft import pcsaft
 from thermopack.saftvrqmie import saftvrqmie
 from thermopack.quantum_cubic import qcubic
-from matplotlib.cm import get_cmap
-from plottools.cyclers import NormedCmap, MarkerCycler
+from matplotlib.cm import get_cmap, ScalarMappable
+from matplotlib.colors import Normalize, LogNorm, SymLogNorm
 import os
+
+class NormedCmap:
+    """
+    Convenience class that holds both a normalizer, and a colormap, such that you don't have to call
+
+    cmap = get_cmap('<name>')
+    norm = Normalize(min(<my_list>), max(<my_list>))
+    color = cmap(norm(<value>))
+
+    but rather can use
+
+    cmap = NormedCmap('<name>', <my_list>)
+    color=cmap(value)
+
+    for the same result.
+    """
+    def __init__(self, name, lst, norm=Normalize):
+        """
+        Args:
+            name (str) : A matplotlib colormap name
+            lst (iterable) : The Normalizer will take min and max values from this iterable
+            norm (Normalizer, optional) : A callable class that behaves like a matplotlib Normalize class
+                 (str) : 'log' => use matplotlib.colors.LogNorm, 'symlog' => use matplotlib.colors.SymLogNorm
+        """
+        if norm == 'log':
+            norm = LogNorm
+        elif norm == 'symlog':
+            norm = SymLogNorm
+        self.norm = norm(min(lst), max(lst))
+        self.cmap = get_cmap(name)
+
+    def get_ScalarMappable(self):
+        return ScalarMappable(norm=self.norm, cmap=self.cmap)
+
+    def colorbar(self, ax=None, cax=None, **kwargs):
+        """
+        Plot a colorbar using this instances colormap and normalizer. Pass kwargs to plt.colorbar.
+        """
+        plt.colorbar(self.get_ScalarMappable(), ax=ax, cax=cax, **kwargs)
+
+    def __call__(self, val):
+        """
+        Get the color corresponding to the (non-normalized) value 'val'. 'val' will be normalized assuming it is from the
+        list used to initialize this instance.
+        """
+        return self.cmap(self.norm(val))
+
 
 eos = cubic('C1,NC6,CO2', 'PR')
 
@@ -359,5 +406,5 @@ nframes = nEoS
 # plt.show()
 # exit(0)
 ani = FuncAnimation(fig, generate_fig, frames=[i for i in range(nframes)], blit=False, interval=750)
-ani.save(os.path.dirname(__file__) + '/../markdown/figures/readme_intro.gif', writer='imagemagick')
+# ani.save(os.path.dirname(__file__) + '/../markdown/figures/readme_intro.gif', writer='imagemagick')
 plt.show()
