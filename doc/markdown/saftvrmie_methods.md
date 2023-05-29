@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-11T11:19:47.842206
+Generated at: 2023-05-29T18:38:09.628880
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrmie class. For instructions on how to use the parser routines, see the
@@ -7,7 +7,7 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
 # Methods in the saftvrmie class (`saftvrmie.py`)
 
-The `saftvrmie` class, found in `addon/pycThermopack/saftvrmie.py`, is the interface to the 
+The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrmie.py`, is the interface to the 
 SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in turn inherits the
 `thermo` class. This class implements methods for modifying fluid parameters and which terms
 are included in the model.

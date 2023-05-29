@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-11T11:22:33.447558
+Generated at: 2023-05-29T18:38:09.622756
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -7,7 +7,7 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
 # Methods in the thermo class (`thermo.py`)
 
-The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the ThermoPack Python interface. All equation of state classes inherit from `thermo`. This is the class that contains the interface to all practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement specific functions for parameter handling etc.
+The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the core of the ThermoPack Python interface. All equation of state classes inherit from `thermo`. This is the class that contains the interface to all practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement specific functions for parameter handling etc.
 
 ## Table of contents
   * [TV-property interfaces](#TV-property-interfaces)
@@ -74,7 +74,7 @@ The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the
     * [map_meta_isentrope](#map_meta_isentropeself-z-initial_pressure-entropy-minimum_pressure-n_max50)
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
     * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperatureNone-dlnvNone-min_temperature_vaporNone)
-    * [spinodal_point](#spinodal_pointself-z-pressure-temperatureNone)
+    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperatureNone)
   * [Virial interfaces](#Virial-interfaces)
     * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
     * [second_virial_matrix](#second_virial_matrixself-temp)
@@ -2067,7 +2067,7 @@ Critical point solver.
     * [map_meta_isentrope](#map_meta_isentropeself-z-initial_pressure-entropy-minimum_pressure-n_max50)
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
     * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperatureNone-dlnvNone-min_temperature_vaporNone)
-    * [spinodal_point](#spinodal_pointself-z-pressure-temperatureNone)
+    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperatureNone)
 
 
 ### `critical(self, n, temp=0.0, v=0.0, tol=1e-07, v_min=None)`
@@ -2384,7 +2384,7 @@ Trace spinodal curve
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `spinodal_point(self, z, pressure, temperature=None)`
+### `spinodal_point(self, z, pressure, phase, temperature=None)`
 Solve for spinodal curve point. Not able to solve for points close to critical point. Solve for temperature if given, otherwise solve for pressure.
 
 #### Args:
@@ -2395,7 +2395,11 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 
 &nbsp;&nbsp;&nbsp;&nbsp; **pressure (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa).
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase flag (VAPPH/LIQPH)
 
 &nbsp;&nbsp;&nbsp;&nbsp; **temperature (float, optional):** 
 

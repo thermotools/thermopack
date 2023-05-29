@@ -285,7 +285,7 @@ def thermo_to_markdown():
 
     ofile_text = get_autogen_header('thermo')
     ofile_text += '# Methods in the thermo class (`thermo.py`)\n\n'
-    ofile_text += 'The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the ThermoPack Python interface. ' \
+    ofile_text += 'The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the core of the ThermoPack Python interface. ' \
                   'All equation of state classes inherit from `thermo`. This is the class that contains the interface to all ' \
                   'practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement ' \
                   'specific functions for parameter handling etc.\n\n'
@@ -317,7 +317,7 @@ def saft_to_markdown():
 
     ofile_text = get_autogen_header('saft')
     ofile_text += '# Methods in the saft class (`saft.py`)\n\n'
-    ofile_text += 'The `saft` class, found in `addon/pycThermopack/saft.py`, is an "abstract" class, that is inherited\n' \
+    ofile_text += 'The `saft` class, found in `addon/pycThermopack/thermopack/saft.py`, is an "abstract" class, that is inherited\n' \
                   'by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic utility methods to\n' \
                   'compute quantities of interest when investigating SAFT-type equations of state.\n\n'
     ofile_text += get_toc(sections, section_headers, method_dict)
@@ -354,7 +354,7 @@ def saftvrmie_to_markdown():
 
     ofile_text = get_autogen_header('saftvrmie')
     ofile_text += '# Methods in the saftvrmie class (`saftvrmie.py`)\n\n'
-    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/saftvrmie.py`, is the interface to the \n' \
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrmie.py`, is the interface to the \n' \
                   'SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
                   '`thermo` class. This class implements methods for modifying fluid parameters and which terms\n' \
                   'are included in the model.\n\n'
@@ -385,7 +385,7 @@ def saftvrqmie_to_markdown():
 
     ofile_text = get_autogen_header('saftvrqmie')
     ofile_text += '# Methods in the saftvrqmie class (`saftvrqmie.py`)\n\n'
-    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/saftvrqmie.py`, is the interface to the \n' \
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrqmie.py`, is the interface to the \n' \
                   'SAFT-VRQ Mie Equation of State.\n*NOTE*: This class inherits the `saftvrmie` class, and thereby has\n' \
                   'access to the `model control` and `utility` methods found there. The `saftvrmie` class inherits\n' \
                   'the `saft` class, which in turn inherits the `thermo` class.\n' \
@@ -418,7 +418,7 @@ def pcsaft_to_markdown():
 
     ofile_text = get_autogen_header('pcsaft')
     ofile_text += '# Methods in the pcsaft class (`pcsaft.py`)\n\n'
-    ofile_text += 'The `pcsaft` class, found in `addon/pycThermopack/pcsaft.py`, is the interface to the \n' \
+    ofile_text += 'The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, is the interface to the \n' \
                   'PC-SAFT Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
                   '`thermo` class. This class implements utility methods to access mixing parameters etc.\n\n'
     ofile_text += get_toc(sections, section_headers, method_dict)

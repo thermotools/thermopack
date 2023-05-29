@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-11T11:19:47.846050
+Generated at: 2023-05-29T18:38:09.630633
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 pcsaft class. For instructions on how to use the parser routines, see the
@@ -7,7 +7,7 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
 # Methods in the pcsaft class (`pcsaft.py`)
 
-The `pcsaft` class, found in `addon/pycThermopack/pcsaft.py`, is the interface to the 
+The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, is the interface to the 
 PC-SAFT Equation of State. This class inherits the `saft` class, which in turn inherits the
 `thermo` class. This class implements utility methods to access mixing parameters etc.
 
@@ -16,7 +16,7 @@ PC-SAFT Equation of State. This class inherits the `saft` class, which in turn i
     * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault-simplifiedFalse-polarFalse)
     * [init](#initself-comps-parameter_referenceDefault-simplifiedFalse-polarFalse)
   * [Utility methods](#Utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_TTNone-phi_tnNone-phi_nnNone)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
@@ -85,7 +85,7 @@ Set- and get methods for interaction parameters and pure fluid parameters.
 
 ### Table of contents
   * [Utility methods](#Utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_TTNone-phi_tnNone-phi_nnNone)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
@@ -93,7 +93,7 @@ Set- and get methods for interaction parameters and pure fluid parameters.
     * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
 
 
-### `association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None, phi_tt=None, phi_TT=None, phi_tn=None, phi_nn=None)`
+### `association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None, phi_tt=None, phi_tn=None, phi_nn=None)`
 Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
 #### Args:

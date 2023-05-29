@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-11T11:19:47.834876
+Generated at: 2023-05-29T18:38:09.627629
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saft class. For instructions on how to use the parser routines, see the
@@ -7,7 +7,7 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
 # Methods in the saft class (`saft.py`)
 
-The `saft` class, found in `addon/pycThermopack/saft.py`, is an "abstract" class, that is inherited
+The `saft` class, found in `addon/pycThermopack/thermopack/saft.py`, is an "abstract" class, that is inherited
 by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic utility methods to
 compute quantities of interest when investigating SAFT-type equations of state.
 
