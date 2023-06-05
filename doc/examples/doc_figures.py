@@ -132,7 +132,7 @@ Txy_pres = np.linspace(1, 4, 10) * 1e5
 LLE_T, L1VE_T, L2VE_T = {}, {}, {}
 
 for p in Txy_pres:
-    lle, l1ve, l2ve = eos3.get_binary_txy(p, minimum_temperaturte=200)
+    lle, l1ve, l2ve = eos3.get_binary_txy(p, minimum_temperature=200)
     LLE_T[p] = lle
     L1VE_T[p] = l1ve
     L2VE_T[p] = l2ve
@@ -146,7 +146,7 @@ def init(proj='Trho'):
     global fig, ax
     if proj == 'Trho':
         ax.set_ylabel(r'$T$ [K]')
-        ax.set_xlabel(r'$\rho$ [kg mol$^{-1}$]')
+        ax.set_xlabel(r'$\rho$ [kg m$^{-3}$]')
         ax.set_xlim(1, 1.25 * max(to_kg(veq)))
         ax.set_ylim(300, 1.5 * max(Teq))
         plt.xscale('log')
@@ -193,7 +193,6 @@ def draw_isobars(idx, alpha, legend=False):
     if idx=='all':
         for i in range(len(isobars)):
             draw_isobars(i, alpha, legend)
-
     elif idx == 0 and legend is True:
         plt.plot(isobar_rho_vap[idx], isobar_T[idx], color='b', label='Isobar', alpha=alpha)
         plt.plot(isobar_rho_liq[idx], isobar_T[idx], color='b', alpha=alpha)
@@ -254,40 +253,17 @@ def generate_isolines(frame):
         fig.suptitle(rf'Isenthalpes : $h = {isenthalpes[isenthalp_idx]:.2f}$ J / mol')
 
 def flashes(frame):
-    if frame < 13:
-
-        init('Tp')
-        x_co2_list = [0.05, 0.05, 0.05, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
-        x_co2 = x_co2_list[frame]
-        z = [0.3 * (1 - x_co2), 0.7 * (1 - x_co2), x_co2]
-        Teq, peq = eos.get_envelope_twophase(5.5e3, z, maximum_pressure=1.25e7)
-        Tc, _, pc = eos.critical(z)
-        Tlist = [260, 300, 350]
-        plist = [2e5, 10e5, 30e5]
-        for T, p in zip(Tlist[:min(frame, 3)], plist[:min(frame, 3)]):
-            x, y, bv, bl, _ = eos.two_phase_tpflash(T, p, z)
-            pb, _ = eos.bubble_pressure(T, z)
-            pd, _ = eos.dew_pressure(T, z)
-            plt.plot([pb / 1e5, p / 1e5, pd / 1e5], [T, T, T], linestyle='--', marker='o')
-            plt.text(np.sqrt(p * pb) / 1.5e5, T - 10, r'$\beta_{v}$ = ' + str(round(bv, 2)))
-            plt.text(np.sqrt(p * pd) / 1.5e5, T - 10, r'$\beta_{l}$ = ' + str(round(bl, 2)))
-        plt.plot(pc / 1e5, Tc, color='r', marker='*', label='Critical Point', linestyle='', markersize=10)
-        plt.plot(peq / 1e5, Teq, color='black', label=r'$x_{CO_2}$ = ' + str(x_co2))
-        plt.suptitle('Tp-Flash calculations')
-
-        plt.legend(loc='upper left')
-
-    elif frame < 13 + len(pxy_temps):
+    if frame < len(pxy_temps):
         init('pxy')
         cmap = NormedCmap('cool', pxy_temps)
-        for i in range(frame - 13):
+        for i in range(frame):
             T = pxy_temps[i]
             plt.plot(L1VE_p[T][0], L1VE_p[T][2] / 1e5, label=T, color=cmap(T))
             plt.plot(L1VE_p[T][1], L1VE_p[T][2] / 1e5, color=cmap(T))
         plt.legend(title=r'$T$ [K]', loc='upper left')
         plt.suptitle('pxy-diagrams')
 
-    elif frame < 13 + len(pxy_temps) + 20:
+    elif frame < len(pxy_temps) + 20:
         init('pxy_flash')
         cmap = NormedCmap('cool', pxy_temps)
         T = pxy_temps[2]
@@ -295,7 +271,7 @@ def flashes(frame):
         plt.plot(L1VE_p[T][1], L1VE_p[T][2] / 1e5, color=cmap(T))
         pxy_flash_p = np.linspace(1.3, 2.1, 20) * 1e5
         pxy_flash_z = np.ones(20) * 0.4
-        flash_idx = frame - (13 + len(pxy_temps))
+        flash_idx = frame - (len(pxy_temps))
 
         p, z = pxy_flash_p[flash_idx], pxy_flash_z[flash_idx]
         flsh = eos2.two_phase_tpflash(T, p, [z, 1 - z])
@@ -315,10 +291,10 @@ def flashes(frame):
 
         plt.suptitle('Flash calculations\n' + r'$T$ = ' + str(round(T, 2)) + ' K')
 
-    elif frame < 13 + len(pxy_temps) + 20 + len(Txy_pres) + 1:
+    elif frame < len(pxy_temps) + 20 + len(Txy_pres) + 1:
         init('Txy')
         cmap = NormedCmap('cividis', Txy_pres)
-        for i in range(frame - (13 + len(pxy_temps) + 21)):
+        for i in range(frame - (len(pxy_temps) + 21)):
             p = Txy_pres[i]
             plt.plot(L1VE_T[p][0], L1VE_T[p][2], label=round(p / 1e5, 2), color=cmap(p))
             plt.plot(L1VE_T[p][1], L1VE_T[p][2], color=cmap(p))
@@ -395,7 +371,7 @@ def generate_fig(frame):
 
 init()
 nisolines = 3 + len(isenthalpes) + len(isentropes) + len(isobars)
-nflashes = nisolines + 13
+nflashes = nisolines
 npxy = nflashes + len(pxy_temps)
 npxy_flash = npxy + 20
 nTxy = npxy_flash + len(Txy_pres) + 1
@@ -406,5 +382,5 @@ nframes = nEoS
 # plt.show()
 # exit(0)
 ani = FuncAnimation(fig, generate_fig, frames=[i for i in range(nframes)], blit=False, interval=750)
-# ani.save(os.path.dirname(__file__) + '/../markdown/figures/readme_intro.gif', writer='imagemagick')
+ani.save(os.path.dirname(__file__) + '/../markdown/figures/readme_intro.gif', writer='imagemagick')
 plt.show()
