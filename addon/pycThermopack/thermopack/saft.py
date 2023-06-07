@@ -17,7 +17,7 @@ class saft(thermo):
     """
 
     def __init__(self):
-        """
+        """Internal
         Initialize SAFT specific function pointers
         """
         # Load dll/so
@@ -65,7 +65,8 @@ class saft(thermo):
         self.eps_div_kb = None
 
     def hard_sphere_diameters(self, temp):
-        """Calculate hard-sphere diameters given temperature, volume and mol numbers.
+        """Utility
+        Calculate hard-sphere diameters given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -92,7 +93,8 @@ class saft(thermo):
         return  np.array(d_c), np.array(dT_c)
 
     def hard_sphere_diameter_ij(self, i, j, temp):
-        """Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
+        """Utility
+        Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
 
         Args:
             i (int): Component index (FORTRAN)
@@ -128,8 +130,9 @@ class saft(thermo):
 
     def a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate dispersion contribution given temperature, volume and mol numbers.
-           a = A_disp/(nRT)
+        """Utility
+        Calculate dispersion contribution given temperature, volume and mol numbers. $a = A_{disp}/(nRT)$
+
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -199,8 +202,10 @@ class saft(thermo):
 
     def a_soft_repulsion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                          a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate soft repuslion contribution given temperature, volume and mol numbers.
-           a = A_soft_rep/(nRT)
+        """Utility
+        Calculate soft repuslion contribution given temperature, volume and mol numbers.
+        a = A_soft_rep/(nRT)
+
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -270,8 +275,9 @@ class saft(thermo):
 
     def a_hard_sphere(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                       a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate hard-sphere contribution given temperature, volume and mol numbers.
-           a = A_hs/(nRT)
+        """Utility
+        Calculate hard-sphere contribution given temperature, volume and mol numbers.
+        a = A_hs/(nRT)
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -340,7 +346,8 @@ class saft(thermo):
         return return_tuple
 
     def de_broglie_wavelength(self, c, temp):
-        """Calculate de Broglie wavelength
+        """Utility
+        Calculate de Broglie wavelength
 
         Args:
             c (int): Component index (FORTRAN)
@@ -367,7 +374,8 @@ class saft(thermo):
         return lambda_c.value
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)
@@ -380,8 +388,8 @@ class saft(thermo):
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
 
     def potential(self, ic, jc, r, temp):
-        """Get potential energy divided by Boltzmann constant
-        as a function of r
+        """Utility
+        Get potential energy divided by Boltzmann constant as a function of r
 
         Args:
             ic, jc (int): Component indices (FORTRAN)
@@ -417,7 +425,8 @@ class saft(thermo):
         return np.array(pot_c)
 
     def adjust_mass_to_de_boer_parameter(self, c, de_boer):
-        """Adjust mass in order to get specified de Boer parameter
+        """Utility
+        Adjust mass in order to get specified de Boer parameter
 
         Args:
             c (int): Component index (FORTRAN)
@@ -437,7 +446,8 @@ class saft(thermo):
                                                 byref(de_boer_c))
 
     def de_boer_parameter(self, c):
-        """Get de Boer parameter
+        """Utility
+        Get de Boer parameter
 
         Args:
             c (int): Component index (FORTRAN)
@@ -459,7 +469,8 @@ class saft(thermo):
         return de_boer_c.value
 
     def truncation_correction(self, enable_truncation_correction, enable_shift_correction, reduced_radius_cut=3.5):
-        """Enable/disable truncation corrections
+        """Utility
+        Enable/disable truncation corrections
 
         Args:
             enable_truncation_correction (bool): Enable long range truncation correction
@@ -482,8 +493,8 @@ class saft(thermo):
                                       byref(rr_c))
 
     def test_fmt_compatibility(self):
-        """Test if model setup is comaptible with the Fundamental
-        Measure Theory (FMT)
+        """Utility
+        Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
 
         Returns:
             bool: Is model FMT consistent?
@@ -504,7 +515,8 @@ class saft(thermo):
         return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1
 
     def calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None):
-        """Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
+        """Utility
+        Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
 
         Args:
             n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2)
@@ -549,7 +561,8 @@ class saft(thermo):
         return  return_tuple
 
     def fmt_energy_density(self, n_alpha, phi_n=False, phi_nn=False, fmt_model="WB"):
-        """Calculate FMT reduced energy density
+        """Utility
+        Calculate FMT reduced energy density
 
         Args:
             n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2) for the entire grid
@@ -606,7 +619,8 @@ class saft(thermo):
         return  return_tuple
 
     def fres_polar(self, temp, volume, n, qq=True, dd=True, dq=True):
-        """Calculate reduced Helmholtz energy contribution from polar model
+        """Utility
+        Calculate reduced Helmholtz energy contribution from polar model
 
         Args:
             temp (float): Temperature (K)
@@ -649,7 +663,8 @@ class saft(thermo):
         return f_c.value
 
     def polar_model_control(self, qq, dd, dq):
-        """Dictate what terms are included with for polar model
+        """Utility
+        Dictate what terms are included with for polar model
 
         Args:
             qq (bool): Include quadrupole-quadrupole contribution?

@@ -21,13 +21,12 @@ class saftvrqmie(saftvrmie):
 
     def __init__(self, comps=None, feynman_hibbs_order=1, additive_hard_sphere_reference=False,
                  parameter_reference="Default", minimum_temperature=None):
-        """Initialize SAFT-VRQ Mie model in thermopack
-
+        """Constructor
+        Initialize SAFT-VRQ Mie model in thermopack
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
         (doi.org/10.1063/1.5111364
         Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium
         (doi.org/10.1063/1.5136079)
-
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
@@ -67,8 +66,8 @@ class saftvrqmie(saftvrmie):
 
     def init(self, comps, feynman_hibbs_order=1, additive_hard_sphere_reference=False,
              parameter_reference="Default", minimum_temperature=None):
-        """Initialize SAFT-VRQ Mie model in thermopack
-
+        """Constructor
+        Initialize SAFT-VRQ Mie model in thermopack
         Equation of state and force fields for Feynman--Hibbs-corrected Mie fluids. I. Application to pure helium, neon, hydrogen, and deuterium
         (doi.org/10.1063/1.5111364
         Equation of state and force fields for Feynman–Hibbs-corrected Mie fluids. II. Application to mixtures of helium, neon, hydrogen, and deuterium
@@ -79,7 +78,7 @@ class saftvrqmie(saftvrmie):
             feynman_hibbs_order (int): Order of Feynman-Hibbs quantum corrections (1 or 2 supported). Defaults to 1.
             additive_hard_sphere_reference (boolean): Use additive hard-sphere reference? Defaults to false.
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
-            minimum_temperature (float, optional) : Is passed directly to thermopack::set_tmin()
+            minimum_temperature (float, optional) : Is passed directly to `thermo.set_tmin()`
         """
         self.activate()
         comp_string_c = c_char_p(comps.encode('ascii'))
@@ -119,7 +118,8 @@ class saftvrqmie(saftvrmie):
         self.set_tmin(minimum_temperature)
 
     def get_feynman_hibbs_order(self, c):
-        """Get Feynman-Hibbs order
+        """Utility
+        Get Feynman-Hibbs order
 
         Args:
             c (int): Component index (FORTRAN)
@@ -143,7 +143,8 @@ class saftvrqmie(saftvrmie):
         return fh_c.value
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)
