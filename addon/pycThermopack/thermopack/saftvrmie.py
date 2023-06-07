@@ -17,8 +17,8 @@ class saftvrmie(saft):
     """
 
     def __init__(self, comps=None, parameter_reference="Default"):
-        """Initialize SAFT-VR Mie model in thermopack
-
+        """Constructor
+        Initialize SAFT-VR Mie model in thermopack.
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
@@ -80,7 +80,8 @@ class saftvrmie(saft):
     #################################
 
     def init(self, comps, parameter_reference="Default"):
-        """Initialize SAFT-VR Mie model in thermopack
+        """Constructor
+        Initialize SAFT-VR Mie model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -116,7 +117,8 @@ class saftvrmie(saft):
                 self.get_pure_fluid_param(i+1)
 
     def model_control_hard_sphere(self, active):
-        """Model control. Enable/disable hard-sphere term.
+        """Model control
+        Enable/disable hard-sphere term.
 
         Args:
             active (bool): Enable/disable hard-sphere dispersion term
@@ -131,7 +133,8 @@ class saftvrmie(saft):
                                   reference,
                                   exact_binary_dhs=None,
                                   enable_hs_extra=None):
-        """Set hard-sphere reference.
+        """Model control
+        Set hard-sphere reference.
 
         Args:
             reference (str): "LAFITTE", "ADDITIVE", "NON-ADDITIVE"
@@ -161,7 +164,8 @@ class saftvrmie(saft):
                             enable_hs_extra_c)
 
     def model_control_a1(self, active):
-        """Model control. Enable/disable first dispersion term.
+        """Model control
+        Enable/disable first dispersion term.
 
         Args:
             active (bool): Enable/disable first dispersion term
@@ -173,7 +177,8 @@ class saftvrmie(saft):
         self.s_enable_a1(byref(active_c))
 
     def model_control_a2(self, active):
-        """Model control. Enable/disable second dispersion term.
+        """Model control
+        Enable/disable second dispersion term.
 
         Args:
             active (bool): Enable/disable second dispersion term
@@ -185,7 +190,8 @@ class saftvrmie(saft):
         self.s_enable_a2(byref(active_c))
 
     def model_control_a3(self, active):
-        """Model control. Enable/disable third dispersion term.
+        """Model control
+        Enable/disable third dispersion term.
 
         Args:
             active (bool): Enable/disable third dispersion term
@@ -197,7 +203,8 @@ class saftvrmie(saft):
         self.s_enable_a3(byref(active_c))
 
     def model_control_chain(self, active):
-        """Model control. Enable/disable chain term.
+        """Model control
+        Enable/disable chain term.
 
         Args:
             active (bool): Enable/disable chain term
@@ -209,7 +216,8 @@ class saftvrmie(saft):
         self.s_enable_chain(byref(active_c))
 
     def enable_temperature_cache(self, enable=True):
-        """Model performance. Enable/disable temperature cache.
+        """Model performance
+        Enable/disable temperature cache.
 
         Args:
             enable (bool): Enable/disable temperature cache
@@ -221,7 +229,8 @@ class saftvrmie(saft):
         self.s_set_temperature_cache_flag(byref(enable_c))
 
     def get_eps_kij(self, c1, c2):
-        """Get binary well depth interaction parameter
+        """Utility
+        Get binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -246,7 +255,8 @@ class saftvrmie(saft):
         return kij_c.value
 
     def set_eps_kij(self, c1, c2, kij):
-        """Set binary well depth interaction parameter
+        """Utility
+        Set binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -268,7 +278,8 @@ class saftvrmie(saft):
                            byref(kij_c))
 
     def get_sigma_lij(self, c1, c2):
-        """Get the interaction parameter lij for the sigma combining rule (controlling non-additivity)
+        """Utility
+        Get the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
             c1 (int): Component one
@@ -293,7 +304,8 @@ class saftvrmie(saft):
         return lij_c.value
 
     def set_sigma_lij(self, c1, c2, lij):
-        """Set the interaction parameter lij for the sigma combining rule (controlling non-additivity)
+        """Utility
+        Set the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
             c1 (int): Component one
@@ -315,7 +327,8 @@ class saftvrmie(saft):
                              byref(lij_c))
 
     def get_lr_gammaij(self, c1, c2):
-        """Get the interaction parameter gammaij for the lambda_r combining rule
+        """Utility
+        Get the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
             c1 (int): Component one
@@ -340,7 +353,8 @@ class saftvrmie(saft):
         return gammaij_c.value
 
     def set_lr_gammaij(self, c1, c2, gammaij):
-        """Set the interaction parameter gammaij for the lambda_r combining rule
+        """Utility
+        Set the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
             c1 (int): Component one
@@ -362,7 +376,8 @@ class saftvrmie(saft):
                               byref(gammaij_c))
 
     def get_pure_fluid_param(self, ic):
-        """Set pure fluid parameters
+        """Utility
+        Set pure fluid parameters
 
         Args:
             ic (int): Component index
@@ -399,7 +414,8 @@ class saftvrmie(saft):
         return m_c.value, sigma_c.value, eps_c.value, lambda_a_c.value, lambda_r_c.value
 
     def set_pure_fluid_param(self, ic, m, sigma, eps_div_kb, lambda_a, lambda_r):
-        """Set pure fluid parameters
+        """Utility
+        Set pure fluid parameters
 
         Args:
             ic (int): Component index
@@ -439,7 +455,8 @@ class saftvrmie(saft):
         self.lambda_r[ic-1] = lambda_r
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)

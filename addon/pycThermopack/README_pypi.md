@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-03-30T18:56:32.135692
+Generated at: 2023-05-15T15:34:26.312011
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     thermopack/doc/markdown/
@@ -9,7 +9,9 @@ The file is created by joining the contents of the files
         pypi_structure.md
         getting_started.md
         more_advanced.md
+        Component-name-mapping.md
 --->
+
 # Thermopack
 
 Thermopack is a thermodynamics library for multi-component and
@@ -24,6 +26,8 @@ state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
 
+![](https://github.com/thermotools/thermopack/blob/wiki/doc/markdown/figures/readme_intro.gif?raw=true)
+
 Thermopack is available for everybody, free of charge under the
 MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
 to handle heavy numerical computations associated with process and
@@ -34,6 +38,8 @@ building block for the Thermopack graphical user interface, where it
 is possible to plot thermodynamic phase diagrams with the most
 frequently used equations of state. The graphical user interface is
 currently running on the Windows and Linux operating systems.
+
+
 # Table of contents
   * [Program structure](#program-structure)
   * [Please cite](#please-cite)
@@ -49,6 +55,8 @@ currently running on the Windows and Linux operating systems.
     * [Critical point](#critical-point)
   * [Advanced usage](#More-advanced-usage---Python)
     * [Interaction parameters](#Interaction-parameters) 
+  * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
+
 ## Please cite
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
@@ -84,9 +92,10 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## Authors and contact persons
-Morten Hammer (morten.hammer@sintef.no)<br>
+Morten Hammer (morten.hammer@sintef.no, morten.hammer@ntnu.no)<br>
 Ailo Aasen (ailo.aasen@sintef.no)<br>
-Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)
+Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)<br>
+Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
 
 ## License
 Thermopack is distributed under the [MIT
@@ -97,6 +106,7 @@ and [Apache
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
 development of thermopack. We gratefully acknowledge their contributions.
+
 # Program structure
 The core of ThermoPack is the Fortran module. For more information on that, see the [GitHub page](https://github.com/thermotools/thermopack).
 This page contains an introduction to the ThermoPack python-wrapper, which is an object-oriented implementation of a variety of equations of state (EoS), 
@@ -116,6 +126,7 @@ must be compiled from source with the new parameters. See the [wiki](https://git
 for information on how to add new fluids, and the [GitHub README](https://github.com/thermotools/thermopack) for a guide 
 on how to compile from source. Please feel free to leave a PR for new parameter sets such that these can be included in 
 future releases of thermopack.
+
 # Getting started - Python
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
 
@@ -429,6 +440,7 @@ vc = Vc / sum(n) # Critical specific volume computed from critical volume and mo
 The solver accepts initial guesses for the critical values through the `kwargs` `temp`, and `v`. The error tolerance can be set via the `tol` `kwarg` (default is `tol=1e-7`).
 
 
+
 # More advanced usage - Python
 
 ## Interaction parameters
@@ -499,3 +511,131 @@ H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
 ```
 
 Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
+
+<!---
+This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
+Generated at : 2023-03-13T14:41:54.109210
+This is the same module that is used to generate the Fortran
+component database files.
+--->
+
+
+# Fluid name to fluid identifyer mapping
+&nbsp;
+
+In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.
+
+&nbsp;
+
+| Fluid name | Fluid identifyer | SAFT-VR | PC-SAFT | CPA |
+| ------------------------ | ----------- | ---- | ---- | ---- |
+| 1,1,1,2-Tetrafluoroethane | R134a |   |   |   |
+| 1,1,1-Trifluoroethane | R143a |   |   |   |
+| 1,1-Difluoroethane | R152a |   |   |   |
+| 1,1-Difluoroethylene | R1132a |   |   |   |
+| 1,2-Dichlorotetrafluoroethane | R114 |   |   |   |
+| 1,3-Butadiene | 13BD |   |   |   |
+| 1-Butanol | BUT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Chloro-1,1,2,2-tetrafluoroethane | R124a |   |   |   |
+| 1-Chloro-1,1-difluoroethane | R142b |   |   |   |
+| 1-Hexanol | HEX1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Pentanol | PENT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Propanol | PROP1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 2,3,3,3-Tetrafluoropropene | R1234yf |   |   |   |
+| 2-Chloro-1,1,1,2-tetrafluoroethane | R124 |   |   |   |
+| 2-Methylhexane | 2MHX |   |   |   |
+| 3-Methylpentane | 3MP |   |   |   |
+| Acetone | ACETONE |   | :heavy_check_mark: |   |
+| Acetylen | ACETYLEN |   | :heavy_check_mark: |   |
+| Ammonia | NH3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Argon | AR | :heavy_check_mark: | :heavy_check_mark: |   |
+| Benzene | BENZENE |   | :heavy_check_mark: |   |
+| Butanal | BUTANAL |   | :heavy_check_mark: |   |
+| Carbon dioxide | CO2 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Carbon monoxide | CO |   |   |   |
+| Carbon tetrafluoride | R14 |   |   |   |
+| Chlorine | CL2 |   | :heavy_check_mark: |   |
+| Chlorodifluoromethane | R22 |   |   |   |
+| Chloropentafluoroethane | R115 |   |   |   |
+| Chlorotrifluoromethane | R13 |   |   |   |
+| Chlorotrifluorosilane | ClF3Si |   |   |   |
+| Cyclohexane | CYCLOHEX |   | :heavy_check_mark: |   |
+| Cyclopropane | C3_1 |   |   |   |
+| Deuterium | D2 | :heavy_check_mark: |   |   |
+| Di-methyl ether | DME |   | :heavy_check_mark: |   |
+| Di-n-hexyl ether | S434 |   |   |   |
+| Dichlorodifluoromethane | R12 |   |   |   |
+| Dichlorofluoromethane | R21 |   |   |   |
+| Difluoromethane | R32 |   |   |   |
+| Dinitrogen tetroxide | N2O4 |   |   |   |
+| Equilibrium-hydrogen | E-H2 |   |   |   |
+| Ethane | C2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Ethanol | ETOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Ethylbenzene | EBZN |   |   |   |
+| Ethylene glycol | MEG |   |   |   |
+| Ethylene | C2_1 |   | :heavy_check_mark: |   |
+| Helium-4 | HE | :heavy_check_mark: |   |   |
+| Hexafluoroethane | R116 |   |   |   |
+| Hydrazine | N2H4 | :heavy_check_mark: |   |   |
+| Hydrogen peroxide | H2O2 |   |   |   |
+| Hydrogen sulfide | H2S | :heavy_check_mark: | :heavy_check_mark: |   |
+| Hydrogen | H2 | :heavy_check_mark: |   |   |
+| Isobutane | IC4 |   | :heavy_check_mark: |   |
+| Isopentane | IC5 |   | :heavy_check_mark: |   |
+| Krypton | KR | :heavy_check_mark: |   |   |
+| Lennard-jones_fluid | LJF | :heavy_check_mark: |   |   |
+| Methane | C1 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Methanol | MEOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Methyl fluoride | R41 |   |   |   |
+| Methylcyclopentane | MTC5 |   |   |   |
+| Neon | NE | :heavy_check_mark: |   |   |
+| Nitric oxide | NO |   |   |   |
+| Nitrogen | N2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Nitrous oxide | N2O |   |   |   |
+| Octafluoropropane | R218 |   |   |   |
+| Ortho-hydrogen | O-H2 | :heavy_check_mark: |   |   |
+| Oxygen | O2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Para-hydrogen | P-H2 | :heavy_check_mark: |   |   |
+| Pentafluoroethane | R125 |   |   |   |
+| Propadiene | ALLENE |   |   |   |
+| Propane | C3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Propylene | PRLN |   |   |   |
+| Sulfur dioxide | SO2 |   |   |   |
+| Sulfur hexafluoride | F6S |   |   |   |
+| Tetrafluoroethylene | R1114 |   |   |   |
+| Tetrafluorohydrazine | F4N2 |   |   |   |
+| Toluene | TOLU |   | :heavy_check_mark: |   |
+| Trans-1,3,3,3-tetrafluoropropene | R1234ze |   |   |   |
+| Trichlorofluoromethane | R11 |   |   |   |
+| Trifluoroamineoxide | F3NO |   |   |   |
+| Trifluoromethane | R23 |   |   |   |
+| Water | H2O | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Xenon | XE | :heavy_check_mark: |   |   |
+| m-Xylene | MXYL |   |   |   |
+| n-Butane | NC4 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Decane | NC10 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Docosane | NC22 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Dodecane | NC12 |   | :heavy_check_mark: |   |
+| n-Eicosane | NC20 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Heneicosane | NC21 |   | :heavy_check_mark: |   |
+| n-Heptadecane | NC17 |   | :heavy_check_mark: |   |
+| n-Heptane | NC7 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Hexadecane | NC16 |   | :heavy_check_mark: |   |
+| n-Hexane | NC6 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Hydrogen | N-H2 |   |   |   |
+| n-Nonadecane | NC19 |   | :heavy_check_mark: |   |
+| n-Nonane | NC9 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Octadecane | NC18 |   | :heavy_check_mark: |   |
+| n-Octane | NC8 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Pentacosane | NC25 |   | :heavy_check_mark: |   |
+| n-Pentadecane | NC15 | :heavy_check_mark: | :heavy_check_mark: |   |
+| n-Pentan | NC5 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Tetracosane | NC24 |   | :heavy_check_mark: |   |
+| n-Tetradecane | NC14 |   | :heavy_check_mark: |   |
+| n-Tricosane | NC23 |   | :heavy_check_mark: |   |
+| n-Tridecane | NC13 |   | :heavy_check_mark: |   |
+| n-Undecane | NC11 |   | :heavy_check_mark: |   |
+| o-Xylene | OXYL |   |   |   |
+| p-Xylene | PXYL |   |   |   |
+
+
