@@ -158,7 +158,8 @@ class saftvrqmie(saftvrmie):
         print(f"FH order: {fh}")
 
     def set_mass(self, ic, mass):
-        """Set mass
+        """Utility
+        Set mass
 
         Args:
             ic (int): Component index

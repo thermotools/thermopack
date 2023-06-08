@@ -478,7 +478,8 @@ class saftvrmie(saft):
         print(f"lambda_r: {self.lambda_r[c-1]}")
 
     def a1(self, temp, volume, n):
-        """Get a1 term
+        """Utility
+        Get a1 term
 
         Args:
             temp (float): Temperature (K)
@@ -501,7 +502,8 @@ class saftvrmie(saft):
         return a
 
     def a2(self, temp, volume, n):
-        """Get a2 term
+        """Utility
+        Get a2 term
 
         Args:
             temp (float): Temperature (K)
@@ -524,7 +526,8 @@ class saftvrmie(saft):
         return a
 
     def a3(self, temp, volume, n):
-        """Get a3 term
+        """Utility
+        Get a3 term
 
         Args:
             temp (float): Temperature (K)
@@ -547,7 +550,8 @@ class saftvrmie(saft):
         return a
 
     def a_hs(self, temp, volume, n):
-        """Get hardsphere term
+        """Utility
+        Get hardsphere term
 
         Args:
             temp (float): Temperature (K)

@@ -475,7 +475,8 @@ class saft(thermo):
         return de_boer_c.value
 
     def sigma_ij(self, i, j):
-        """Get size parameter for i-j interaction
+        """Utility
+        Get size parameter for i-j interaction
 
         Args:
             i (int): Component index (FORTRAN)
@@ -501,7 +502,8 @@ class saft(thermo):
         return sigma_ij_c.value
 
     def epsilon_ij(self, i, j):
-        """Get size parameter for i-j interaction
+        """Utility
+        Get size parameter for i-j interaction
 
         Args:
             i (int): Component index (FORTRAN)
@@ -527,7 +529,8 @@ class saft(thermo):
         return epsilon_ij_c.value
 
     def alpha(self, temperature):
-        """Get dimensionless van der Waals energy
+        """Utility
+        Get dimensionless van der Waals energy
 
         Args:
             temperature (float): Temperature (K)
