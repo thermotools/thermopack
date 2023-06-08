@@ -55,6 +55,12 @@ class saft(thermo):
             self.tp, self.get_export_name("fundamental_measure_theory", "fmt_energy_density"))
         self.s_de_broglie_wavelength = getattr(
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
+        self.s_sigma_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "sigma_ij"))
+        self.s_epsilon_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "epsilon_ij"))
+        self.s_alpha = getattr(
+            self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
             self.tp, self.get_export_name("multipol", "fres_multipol"))
         self.s_multipol_model_control = getattr(
@@ -457,6 +463,83 @@ class saft(thermo):
         self.s_de_boer_parameter(byref(c_c),
                                  byref(de_boer_c))
         return de_boer_c.value
+
+    def sigma_ij(self, i, j):
+        """Get size parameter for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+        Results:
+            sigma_ij (float): Size paramater (m)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        sigma_ij_c = c_double(0.0)
+
+        self.s_sigma_ij.argtypes = [POINTER(c_int),
+                                    POINTER(c_int),
+                                    POINTER(c_double)]
+
+        self.s_sigma_ij.restype = None
+
+        self.s_sigma_ij(byref(i_c),
+                        byref(j_c),
+                        byref(sigma_ij_c))
+        return sigma_ij_c.value
+
+    def epsilon_ij(self, i, j):
+        """Get size parameter for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+        Results:
+            epsilon_ij (float): Size paramater (m)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        epsilon_ij_c = c_double(0.0)
+
+        self.s_epsilon_ij.argtypes = [POINTER(c_int),
+                                      POINTER(c_int),
+                                      POINTER(c_double)]
+
+        self.s_epsilon_ij.restype = None
+
+        self.s_epsilon_ij(byref(i_c),
+                          byref(j_c),
+                          byref(epsilon_ij_c))
+        return epsilon_ij_c.value
+
+    def alpha(self, temperature):
+        """Get dimensionless van der Waals energy
+
+        Args:
+            temperature (float): Temperature (K)
+
+        Results:
+            alpha (ndarray): Dimensionless van der Waals energy (-)
+
+        """
+        self.activate()
+        alpha_c = (c_double * (self.nc**2))(0.0)
+        temperature_c = c_double(temperature)
+
+        self.s_alpha.argtypes = [POINTER(c_double),
+                                 POINTER(c_double)]
+
+        self.s_alpha.restype = None
+
+        self.s_alpha(byref(temperature_c),
+                     alpha_c)
+
+        return np.array(alpha_c).reshape((self.nc, self.nc), order='F').\
+            ravel(order="C").reshape((self.nc,self.nc))
 
     def truncation_correction(self, enable_truncation_correction, enable_shift_correction, reduced_radius_cut=3.5):
         """Enable/disable truncation corrections

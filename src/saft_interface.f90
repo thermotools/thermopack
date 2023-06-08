@@ -922,6 +922,103 @@ contains
 
   end subroutine potential
 
+  !> Calculate dimensionless van der Waals energy for interaction potentials
+  !!
+  !! \author Morten Hammer, June 2023
+  subroutine alpha(T, a_ij)
+    use saftvrmie_containers, only: saftvrmie_eos
+    use saftvrmie_interface, only: calc_alpha_saftvrmie
+    use thermopack_var, only: base_eos_param, nce
+    !use pc_saft_nonassoc, only: sPCSAFT_eos
+    !use pets, only: PETS_eos
+    !use lj_splined, only: ljs_bh_eos, ljs_wca_eos
+    ! Input
+    real, intent(in) :: T !< Temperature
+    real, intent(out) :: a_ij(nce,nce) !< Dimensionless van der Waals energy
+    !
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      a_ij = calc_alpha_saftvrmie(T)
+    class default
+      print *,"Need to implement potential function for specified model"
+      stop
+      a_ij = 0
+    end select
+
+  end subroutine alpha
+
+  !> Get well depth divided by kB for interaction i and j
+  !!
+  !! \author Morten Hammer, June 2023
+  subroutine epsilon_ij(i, j, eps_div_kb_ij)
+    use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param
+    use thermopack_var, only: base_eos_param
+    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pets, only: PETS_eos
+    use lj_splined, only: ljs_bh_eos, ljs_wca_eos
+    ! Input
+    integer, intent(in) :: i, j !< Component number
+    real, intent(out) :: eps_div_kb_ij !< Well depth divided by Boltzmann constant
+    !
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (ljs_bh_eos)
+      eps_div_kb_ij = p_eos%saftvrmie_param%eps_divk_ij(1,1)
+    class is (ljs_wca_eos)
+      eps_div_kb_ij = p_eos%eps_divk
+    class is (saftvrmie_eos)
+      eps_div_kb_ij = saftvrmie_param%eps_divk_ij(i,j)
+    class is (sPCSAFT_eos)
+      eps_div_kb_ij = p_eos%eps_depth_divk(i,j)
+    class is (PETS_eos)
+      eps_div_kb_ij = p_eos%epsdivk_pets
+    class default
+      print *,"Need to implement epsilon_ij function for specified model"
+      stop
+      eps_div_kb_ij = 1
+    end select
+
+  end subroutine epsilon_ij
+
+  !> Size parameter for interaction i and j
+  !!
+  !! \author Morten Hammer, June 2023
+  subroutine sigma_ij(i, j, s_ij)
+    use saftvrmie_containers, only: saftvrmie_eos
+    use thermopack_var, only: base_eos_param
+    use pc_saft_nonassoc, only: sPCSAFT_eos
+    use pets, only: PETS_eos
+    use lj_splined, only: ljs_bh_eos, ljs_wca_eos
+    ! Input
+    integer, intent(in) :: i, j !< Component number
+    real, intent(out) :: s_ij !< Size paramater (m)
+    !
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (ljs_bh_eos)
+      s_ij = p_eos%saftvrmie_param%sigma_ij(1,1)
+    class is (ljs_wca_eos)
+      s_ij = p_eos%sigma
+    class is (saftvrmie_eos)
+      s_ij = p_eos%saftvrmie_param%sigma_ij(i,j)
+    class is (sPCSAFT_eos)
+      s_ij = p_eos%sigma(i,j)
+    class is (PETS_eos)
+      s_ij = p_eos%sigma_pets
+    class default
+      print *,"Need to implement sigma_ij function for specified model"
+      stop
+      s_ij = 0
+    end select
+  end subroutine sigma_ij
+
   !> Test if model setup is comaptible with the Fundamental
   !! Measure Theory (FMT)
   !!

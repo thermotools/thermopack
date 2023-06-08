@@ -50,6 +50,9 @@ class saftvrqmie(saftvrmie):
         self.s_get_feynman_hibbs_order = getattr(
             self.tp, self.get_export_name("saftvrmie_containers",
                                           "get_feynman_hibbs_order"))
+        self.s_set_saftvrmie_mass = getattr(
+            self.tp, self.get_export_name("saftvrmie_containers",
+                                          "set_saftvrmie_mass"))
 
         self.lambda_a = None
         self.lambda_r = None
@@ -152,3 +155,21 @@ class saftvrqmie(saftvrmie):
         saftvrmie.saftvrmie.print_saft_parameters(self, c)
         fh = self.get_feynman_hibbs_order(c)
         print(f"FH order: {fh}")
+
+    def set_mass(self, ic, mass):
+        """Set mass
+
+        Args:
+            ic (int): Component index
+            m (float): Mass of component ic [kg]
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        mass_c = c_double(mass)
+        self.s_set_saftvrmie_mass.argtypes = [POINTER(c_int),
+                                              POINTER(c_double)]
+
+        self.s_set_saftvrmie_mass.restype = None
+
+        self.s_set_saftvrmie_mass(byref(ic_c),
+                                  byref(mass_c))
