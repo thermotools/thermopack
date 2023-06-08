@@ -17,8 +17,8 @@ class pcsaft(saft):
     Interface to PC-SAFT model
     """
     def __init__(self, comps=None, parameter_reference="Default", simplified=False, polar=False):
-        """Initialize PC-SAFT model in thermopack
-
+        """Constructor
+        Initialize PC-SAFT model in thermopack
         If no components are specified, model must be initialized for specific components later by direct call to 'init'.
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
@@ -57,7 +57,8 @@ class pcsaft(saft):
     #################################
 
     def init(self, comps, parameter_reference="Default", simplified=False, polar=False):
-        """Initialize PC-SAFT model in thermopack
+        """Constructor
+        Initialize PC-SAFT model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -100,7 +101,8 @@ class pcsaft(saft):
 
 
     def get_kij(self, c1, c2):
-        """Get binary well depth interaction parameter
+        """Utility
+        Get binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -125,7 +127,8 @@ class pcsaft(saft):
         return kij_c.value
 
     def set_kij(self, c1, c2, kij):
-        """Set binary well depth interaction parameter
+        """Utility
+        Set binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -148,7 +151,8 @@ class pcsaft(saft):
 
 
     def set_pure_params(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0):
-        """Set pure fluid PC-SAFT parameters
+        """Utility
+        Set pure fluid PC-SAFT parameters
 
         Args:
             c (int): Component index (FORTRAN)
@@ -174,7 +178,8 @@ class pcsaft(saft):
                                param_c)
 
     def get_pure_params(self, c):
-        """Get pure fluid PC-SAFT parameters
+        """Utility
+        Get pure fluid PC-SAFT parameters
 
         Args:
             c (int): Component index (FORTRAN)
@@ -201,7 +206,8 @@ class pcsaft(saft):
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
-        """Calculate logarithm of the radial distribution function at contact given temperature, volume and mol numbers.
+        """Utility
+        Calculate logarithm of the radial distribution function at contact given temperature, volume and mol numbers.
         Differentials are computed as functions of (T, V, n).
 
         Args:
@@ -273,7 +279,8 @@ class pcsaft(saft):
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
                                    phi_tt=None, phi_tn=None, phi_nn=None):
-        """Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
+        """Utility
+        Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
         Args:
             temp (float): Temperature (K)

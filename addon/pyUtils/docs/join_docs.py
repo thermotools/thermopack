@@ -29,7 +29,7 @@ def gen_file_str(files):
         file_path = MARKDOWN_DIR + file + '.md'
 
         with open(file_path, 'r') as in_file:
-            out_file_str += in_file.read() + '\n'
+            out_file_str += in_file.read() + '\n\n'
 
     return out_file_str
 
@@ -41,11 +41,11 @@ def get_header(files):
     header += '    thermopack/doc/markdown/\n'
     for fname in files:
         header += '    ' * 2 + fname + '.md\n'
-    header += '--->\n'
+    header += '--->\n\n'
     return header
 
 def write_pypi_readme():
-    files = ['header', 'pypi_toc', 'cite_acknowl_licence', 'pypi_structure', 'getting_started', 'more_advanced']
+    files = ['header', 'pypi_toc', 'cite_acknowl_licence', 'pypi_structure', 'getting_started', 'more_advanced', 'Component-name-mapping']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
@@ -57,7 +57,7 @@ def write_pypi_readme():
     print_finished_report(header, out_file_path)
 def write_github_readme():
     files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started',
-             'more_advanced']
+             'more_advanced', 'new_fluids', 'Component-name-mapping']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
