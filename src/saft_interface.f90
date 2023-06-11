@@ -907,9 +907,9 @@ contains
             exit
           endif
         enddo
-        pot(i_cut:n) = 0
+        if (i_cut < n) pot(i_cut:n) = 0
         if (p_eos%svrm_opt%enable_shift_correction) then
-          pot(1:i_cut-1) = pot(1:i_cut-1) - u_cut(1)
+          if (i_cut > 1) pot(1:i_cut-1) = pot(1:i_cut-1) - u_cut(1)
         endif
       endif
     class is (sPCSAFT_eos)
