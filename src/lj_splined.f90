@@ -130,6 +130,7 @@ module lj_splined
   public :: calc_ljs_dispersion, calc_wca_soft_repulsion
   public :: calc_ljs_hard_sphere
   public :: ljs_potential_reduced
+  public :: alpha_ljs
 
   ! Testing
   public :: calc_uf_wca, calc_uf_wca_tvn, ljx_ux_eos

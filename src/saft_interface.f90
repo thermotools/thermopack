@@ -871,9 +871,9 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     class(base_eos_param), pointer :: eos
-    integer :: ir
+    integer :: ir, i_cut
     real, parameter :: max_pot_val = 500.0
-    real :: eps_divk, sigma, r_div_sigma(n)
+    real :: eps_divk, sigma, r_div_sigma(n), r_cut(1), u_cut(1)
     p_thermo => get_active_thermo_model()
     eos => get_active_eos()
     select type ( p_eos => eos )
@@ -896,6 +896,22 @@ contains
            p_eos%saftvrmie_var%DFeynHibbsij, p_eos%saftvrmie_var%D2FeynHibbsij)
       pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r)
       eps_divk = saftvrmie_param%eps_divk_ij(i,j)
+      if (p_eos%svrm_opt%enable_truncation_correction) then
+        ! Correct potential for truncation correction
+        r_cut = p_eos%svrm_opt%r_cut*p_eos%saftvrmie_param%sigma_ij(i,j)
+        u_cut = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, 1, r_cut)
+        i_cut = n
+        do ir=1,n
+          if (r(ir) > r_cut(1)) then
+            i_cut = ir
+            exit
+          endif
+        enddo
+        pot(i_cut:n) = 0
+        if (p_eos%svrm_opt%enable_shift_correction) then
+          pot(1:i_cut-1) = pot(1:i_cut-1) - u_cut(1)
+        endif
+      endif
     class is (sPCSAFT_eos)
       pot = 4.0 * p_eos%eps_depth_divk(i,j) &
            * ((p_eos%sigma(i,j) / r)**12 - (p_eos%sigma(i,j) / r)**6)
@@ -928,20 +944,38 @@ contains
   subroutine alpha(T, a_ij)
     use saftvrmie_containers, only: saftvrmie_eos
     use saftvrmie_interface, only: calc_alpha_saftvrmie
+    use saftvrmie_dispersion, only: calc_alpha_ts
     use thermopack_var, only: base_eos_param, nce
     !use pc_saft_nonassoc, only: sPCSAFT_eos
-    !use pets, only: PETS_eos
-    !use lj_splined, only: ljs_bh_eos, ljs_wca_eos
+    use pets, only: PETS_eos
+    use lj_splined, only: ljs_bh_eos, ljs_wca_eos, alpha_ljs
     ! Input
     real, intent(in) :: T !< Temperature
     real, intent(out) :: a_ij(nce,nce) !< Dimensionless van der Waals energy
     !
     ! Locals
+    integer :: i, j
     class(base_eos_param), pointer :: eos
     eos => get_active_eos()
     select type ( p_eos => eos )
+    class is (ljs_bh_eos)
+      a_ij = alpha_ljs
+    class is (ljs_wca_eos)
+      a_ij = alpha_ljs
     class is (saftvrmie_eos)
-      a_ij = calc_alpha_saftvrmie(T)
+      if (p_eos%svrm_opt%enable_truncation_correction) then
+        ! Correct alpha for truncation and shifted (?) potential
+        do i=1,nce
+          do j=i,nce
+            call calc_alpha_ts(i, j, p_eos%saftvrmie_var, a_ij(i,j))
+            if (i /= j) a_ij(j,i) = a_ij(i,j)
+          enddo
+        enddo
+      else
+        a_ij = calc_alpha_saftvrmie(T)
+      endif
+    class is (PETS_eos)
+      a_ij = 0.73463521003968
     class default
       print *,"Need to implement potential function for specified model"
       stop
