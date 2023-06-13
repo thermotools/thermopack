@@ -599,7 +599,7 @@ class Equilibrium(object):
             output += "\n"
             state = p["state"]
             phase = p["phase"]
-            output += f"{phase}: {state._T:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state._x}"
+            output += f"{phase}: {state.temperature:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state.molefrac}"
         return output
 
     def __str__(self):
@@ -608,7 +608,7 @@ class Equilibrium(object):
             output += "\n"
             state = p["state"]
             phase = p["phase"]
-            output += f"{phase}: {state._T:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state._x}"
+            output += f"{phase}: {state.temperature:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state.molefrac}"
         return output
 
     @staticmethod
