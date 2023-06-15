@@ -67,6 +67,17 @@ class saftvrmie(saft):
         self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
             "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
 
+        # Model results
+        self.s_calc_saftvrmie_term = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "calc_saftvrmie_term"))
+        self.s_calc_saftvrmie_term.argtypes = [POINTER(c_int),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_int)]
+        self.s_calc_saftvrmie_term.restype = c_double
+
+
         # Define parameters to be set by init
         self.nc = None
         self.lambda_a = None
@@ -465,3 +476,99 @@ class saftvrmie(saft):
         saft.print_saft_parameters(self, c)
         print(f"lambda_a: {self.lambda_a[c-1]}")
         print(f"lambda_r: {self.lambda_r[c-1]}")
+
+    def a1(self, temp, volume, n):
+        """Utility
+        Get a1 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a1 (float): First order perturbation (K/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(1)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a2(self, temp, volume, n):
+        """Utility
+        Get a2 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a2 (float): Second order perturbation (K^2/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(2)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a3(self, temp, volume, n):
+        """Utility
+        Get a3 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a3 (float): Second order perturbation (K^3/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(3)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a_hs(self, temp, volume, n):
+        """Utility
+        Get hardsphere term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a_hs (float): Second order perturbation (1/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(0)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a

@@ -257,6 +257,7 @@ module saftvrmie_containers
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
   public :: svrm_opt, get_feynman_hibbs_order
+  public :: set_saftvrmie_mass
 
 Contains
 
@@ -336,7 +337,7 @@ Contains
          eos%saftvrmie_param%comp,fh_orders=fh_orders)
     ! Set the correct Feynman--Hibbs order for the quantum corrections
     do i = 1, nc-1
-      if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
+      if (.not. fh_orders(i)==fh_orders(i+1)) print *,"init_saftvrmie_containers::fh_order not equal for components"
     end do
     svrm_opt%quantum_correction = fh_orders(1)
     svrm_opt%quantum_correction_hs = fh_orders(1)
@@ -421,6 +422,16 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
     Lambda = h_const/(sigma*sqrt(mass*eps))
   end subroutine get_saftvrmie_pure_fluid_deBoer
+
+  !> Set the mass used for quantum corrections
+  !> \author Morten Hammer, May 2023
+  subroutine set_saftvrmie_mass(ic,mass)
+    integer, intent(in) :: ic          !< Component index
+    real, intent(in)    :: mass        !< Mass [kg]
+    ! Locals
+    saftvrmie_param%comp(ic)%mass = mass
+    call calcBinaryMieParmeters(saftvrmie_param,1)
+  end subroutine set_saftvrmie_mass
 
   !> Set the interaction parameter kij for the dispersive combining rule
   !> \author Ailo Aasen, October 2018
