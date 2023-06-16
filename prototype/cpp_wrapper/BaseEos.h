@@ -1,4 +1,4 @@
-/* This source file automatically generated on 2023-05-10 using 
+/* This source file automatically generated on 2023-06-07 using 
    FortWrap wrapper generator version 2.2.2 */
 
 #ifndef BASEEOS_H_
@@ -16,6 +16,7 @@
 #include "InterfaceDefs.h"
 
 extern "C" {
+  void base_eos__baseeos_init_wrap(ADDRESS c_this, const char* ident);
   void base_eos__fideal_wrap(ADDRESS c_this, float* T, float* V, const float n[], float* Fid, float** Ft, float** Fv, float* Fn[]);
   void base_eos__pressure_wrap(ADDRESS c_this, float* T, float* V, const float n[], float* p);
   void base_eos__set_tc_wrap(ADDRESS c_this, float* Tc);
@@ -33,6 +34,8 @@ protected:
 
 public:
   virtual ~BaseEos() {}
+
+  void BaseEos_init(const char* ident);
 
   void Fideal(float T, float V, const float n[], float* Fid, float** Ft=nullptr, float** Fv=nullptr, float* Fn[]=nullptr);
 

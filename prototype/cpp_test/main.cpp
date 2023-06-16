@@ -1,6 +1,6 @@
-#include "cpp_wrapper/NotIdGas.h"
-#include "cpp_wrapper/Variant1.h"
-#include "cpp_wrapper/Variant2.h"
+#include "../cpp_wrapper/NotIdGas.h"
+#include "../cpp_wrapper/Variant1.h"
+#include "../cpp_wrapper/Variant2.h"
 #include <iostream>
 #include <vector>
 

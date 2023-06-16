@@ -24,6 +24,16 @@ CONTAINS
 
   ! C binding wrappers:
 
+  SUBROUTINE base_eos__baseeos_init_wrap(c_this, ident) BIND(C)
+    TYPE(C_PTR), VALUE :: c_this
+    TYPE(C_PTR), VALUE :: ident
+    TYPE(BaseEos_container_), POINTER :: c_this__p
+    CHARACTER(10), POINTER :: ident__p
+    CALL C_F_POINTER(c_this, c_this__p)
+    CALL C_F_POINTER(ident, ident__p)
+    CALL BaseEos_init(c_this__p%c, ident__p)
+  END SUBROUTINE base_eos__baseeos_init_wrap
+
   SUBROUTINE base_eos__fideal_wrap(c_this, T, V, n, Fid, Ft, Fv, Fn) BIND(C)
     TYPE(C_PTR), VALUE :: c_this
     REAL(C_FLOAT) :: T
@@ -63,9 +73,9 @@ END MODULE base_eos_wrap_
 MODULE notidgas_mod_wrap_
 
   USE ISO_C_BINDING
+  USE notidgas_mod
   USE base_eos_wrap_
   USE base_eos
-  USE notidgas_mod
   IMPLICIT NONE
 
 CONTAINS
@@ -212,6 +222,19 @@ CONTAINS
     END SELECT
   END SUBROUTINE variants__variant1_ctor_sub_wrap
 
+  SUBROUTINE variants__variant1_db_ctor_sub_wrap(c_this, ident) BIND(C)
+    TYPE(C_PTR), VALUE :: c_this
+    TYPE(C_PTR), VALUE :: ident
+    TYPE(BaseEos_container_), POINTER :: c_this__p
+    CHARACTER(10), POINTER :: ident__p
+    CALL C_F_POINTER(c_this, c_this__p)
+    CALL C_F_POINTER(ident, ident__p)
+    SELECT TYPE (c_this__pp => c_this__p%c)
+    CLASS IS (Variant1)
+      CALL Variant1_db_ctor_sub(c_this__pp, ident=ident__p)
+    END SELECT
+  END SUBROUTINE variants__variant1_db_ctor_sub_wrap
+
   SUBROUTINE variants__variant1_internal_comp_wrap(c_this, T, V, n, computed&
     &) BIND(C)
     TYPE(C_PTR), VALUE :: c_this
@@ -261,6 +284,19 @@ CONTAINS
       CALL Variant2_ctor_sub(instance__pp, ident, nc, Tc, Vc, var1, var2)
     END SELECT
   END SUBROUTINE variants__variant2_ctor_sub_wrap
+
+  SUBROUTINE variants__variant2_db_ctor_sub_wrap(c_this, ident) BIND(C)
+    TYPE(C_PTR), VALUE :: c_this
+    TYPE(C_PTR), VALUE :: ident
+    TYPE(BaseEos_container_), POINTER :: c_this__p
+    CHARACTER(10), POINTER :: ident__p
+    CALL C_F_POINTER(c_this, c_this__p)
+    CALL C_F_POINTER(ident, ident__p)
+    SELECT TYPE (c_this__pp => c_this__p%c)
+    CLASS IS (Variant2)
+      CALL Variant2_db_ctor_sub(c_this__pp, ident=ident__p)
+    END SELECT
+  END SUBROUTINE variants__variant2_db_ctor_sub_wrap
 
   SUBROUTINE variants__variant2_internal_comp_wrap(c_this, T, V, n, computed&
     &) BIND(C)

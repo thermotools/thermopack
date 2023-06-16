@@ -5,13 +5,14 @@
 #include "Variant2.h"
 #include "NotIdGas.h"
 #include "Variant1.h"
-
 namespace py = pybind11;
 using array_f = pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast>;
 using p_array_f = std::optional<pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast>>;
 
+
 #define BaseEos_bindings(Model) \
-    .def("Fideal", [](Model& self, float T, float V, std::vector<float> n, array_f Fid, p_array_f Ft, p_array_f Fv, p_array_f Fn){ \
+    .def("BaseEos_init", &Model::BaseEos_init) \
+    .def("Fideal", [](Model& self, float T, float V, const std::vector<float>& n, array_f Fid, p_array_f Ft, p_array_f Fv, p_array_f Fn){ \
             auto Fid_bind = Fid.mutable_unchecked().mutable_data(0); \
             auto Ft_bind = (Ft.has_value()) ? Ft.value().mutable_unchecked().mutable_data(0) : nullptr; \
             auto Fv_bind = (Fv.has_value()) ? Fv.value().mutable_unchecked().mutable_data(0) : nullptr; \
@@ -26,7 +27,7 @@ using p_array_f = std::optional<pybind11::array_t<float, pybind11::array::c_styl
             , py::arg("Fn").noconvert() = py::none()\
              \
         ) \
-    .def("pressure", [](Model& self, float T, float V, std::vector<float> n, array_f p){ \
+    .def("pressure", [](Model& self, float T, float V, const std::vector<float>& n, array_f p){ \
             auto p_bind = p.mutable_unchecked().mutable_data(0); \
             self.pressure(T, V, n.data(), p_bind); \
             }, py::arg("T")\
@@ -36,7 +37,7 @@ using p_array_f = std::optional<pybind11::array_t<float, pybind11::array::c_styl
              \
         ) \
     .def("set_Tc", &Model::set_Tc) \
-    .def("Fres", [](Model& self, float T, float V, std::vector<float> n, array_f Fres, p_array_f Ft, p_array_f Fv, p_array_f Fn){ \
+    .def("Fres", [](Model& self, float T, float V, const std::vector<float>& n, array_f Fres, p_array_f Ft, p_array_f Fv, p_array_f Fn){ \
             auto Fres_bind = Fres.mutable_unchecked().mutable_data(0); \
             auto Ft_bind = (Ft.has_value()) ? Ft.value().mutable_unchecked().mutable_data(0) : nullptr; \
             auto Fv_bind = (Fv.has_value()) ? Fv.value().mutable_unchecked().mutable_data(0) : nullptr; \
@@ -59,9 +60,9 @@ using p_array_f = std::optional<pybind11::array_t<float, pybind11::array::c_styl
             }, py::arg("mixed_common").noconvert()\
              \
         ) \
-    .def("internal_comp", [](Model& self, float T, float V, const float n[], array_f computed){ \
+    .def("internal_comp", [](Model& self, float T, float V, const std::vector<float>& n, array_f computed){ \
             auto computed_bind = computed.mutable_unchecked().mutable_data(0); \
-            self.internal_comp(T, V, n, computed_bind); \
+            self.internal_comp(T, V, n.data(), computed_bind); \
             }, py::arg("T")\
             , py::arg("V")\
             , py::arg("n")\
@@ -75,6 +76,7 @@ PYBIND11_MODULE(libdemo, handle){
 
     py::class_<Variant2>(handle, "Variant2") 
         .def(py::init<int, int, float, float, int, float>(), py::arg("ident"), py::arg("nc"), py::arg("Tc"), py::arg("Vc"), py::arg("var1"), py::arg("var2")) 
+        .def(py::init<const char*>(), py::arg("ident")) 
         VariantEoS_bindings(Variant2) 
         BaseEos_bindings(Variant2); 
 
@@ -84,6 +86,7 @@ PYBIND11_MODULE(libdemo, handle){
 
     py::class_<Variant1>(handle, "Variant1") 
         .def(py::init<int, int, float, float, int, float>(), py::arg("ident"), py::arg("nc"), py::arg("Tc"), py::arg("Vc"), py::arg("var1"), py::arg("var2")) 
+        .def(py::init<const char*>(), py::arg("ident")) 
         VariantEoS_bindings(Variant1) 
         BaseEos_bindings(Variant1); 
 

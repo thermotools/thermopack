@@ -46,6 +46,10 @@ The wrapping procedure (e.g. running `build.sh`)
 Current status:
  * Pybind11 bindings must use `std::vector<T>` for list input from python, while the C++ wrapper uses arrays for input variables. Therefore, the lambdas must pass `var.data()` to the internal C++ method. This has been tested manually, but not automated yet. 
  * See above for status on the `compdatadb` and initializing from identifier strings
+ * Something weird is going on with the top-level `CMakeLists.txt`, which causes it to constantly think it has changed the `CMAKE_CXX_COMPILER` and rerun indefinitely.
+   * To remedy, run `cmake .. -D CMAKE_CXX_COMPILER=/opt/homebrew/bin/g++-13`
+ * Also, extra compiler flags are being added somewhere, causing the compiler to use `-std=c++11`, not `-std=c++17`, and attempt to compile for `x86` instead of `arm64`.
+   * This is also fixed by explicitly specifying the compiler when calling `cmake` (the above fix).
 
 Moving forward:
 
@@ -55,7 +59,7 @@ Moving forward:
      * Having several constructors (C++ side polymorphic constructors) has not been attempted yet.
  * Implement internal computations that are not wrapped, to ensure that it is possible to make a minimal wrapper.
  * Implement an external generic method (e.g. numerical solver) that accepts a function pointer of some sort, that can be used on a type bound procedure.
-   * For example: A method that takes `eos.pressure` as input, and solves `p(T, V, n) = p0` for e.g. `T`.
+   * For example: A method that takes `eos.pressure` as input, and solves `p(T, V, n) = p0` for e.g. `V`.
    * This method does not need to be wrapped.
 
 To play around:
