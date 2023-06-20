@@ -371,7 +371,7 @@ class saft(thermo):
         c_c = c_int(c)
         lambda_c = c_double(0.0)
 
-        self.s_de_broglie_wavelength.argtypes = [POINTER(c_double),
+        self.s_de_broglie_wavelength.argtypes = [POINTER(c_int),
                                                  POINTER(c_double),
                                                  POINTER(c_double)]
 
