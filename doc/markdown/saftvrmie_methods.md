@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-29T18:38:09.628880
+Generated at: 2023-06-20T14:53:27.926369
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrmie class. For instructions on how to use the parser routines, see the
@@ -17,6 +17,10 @@ are included in the model.
     * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault)
     * [init](#initself-comps-parameter_referenceDefault)
   * [Utility methods](#Utility-methods)
+    * [a1](#a1self-temp-volume-n)
+    * [a2](#a2self-temp-volume-n)
+    * [a3](#a3self-temp-volume-n)
+    * [a_hs](#a_hsself-temp-volume-n)
     * [get_eps_kij](#get_eps_kijself-c1-c2)
     * [get_lr_gammaij](#get_lr_gammaijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-ic)
@@ -82,6 +86,10 @@ Set- and get methods for interaction parameters and pure fluid parameters.
 
 ### Table of contents
   * [Utility methods](#Utility-methods)
+    * [a1](#a1self-temp-volume-n)
+    * [a2](#a2self-temp-volume-n)
+    * [a3](#a3self-temp-volume-n)
+    * [a_hs](#a_hsself-temp-volume-n)
     * [get_eps_kij](#get_eps_kijself-c1-c2)
     * [get_lr_gammaij](#get_lr_gammaijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-ic)
@@ -92,6 +100,106 @@ Set- and get methods for interaction parameters and pure fluid parameters.
     * [set_pure_fluid_param](#set_pure_fluid_paramself-ic-m-sigma-eps_div_kb-lambda_a-lambda_r)
     * [set_sigma_lij](#set_sigma_lijself-c1-c2-lij)
 
+
+### `a1(self, temp, volume, n)`
+Get a1 term
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a1 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  First order perturbation (K/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `a2(self, temp, volume, n)`
+Get a2 term
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a2 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Second order perturbation (K^2/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `a3(self, temp, volume, n)`
+Get a3 term
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a3 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Second order perturbation (K^3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `a_hs(self, temp, volume, n)`
+Get hardsphere term
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_hs (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Second order perturbation (1/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `get_eps_kij(self, c1, c2)`
 Get binary well depth interaction parameter

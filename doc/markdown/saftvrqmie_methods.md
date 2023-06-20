@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-29T18:38:09.629999
+Generated at: 2023-06-20T14:53:27.927576
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrqmie class. For instructions on how to use the parser routines, see the
@@ -21,6 +21,7 @@ This class implements utility methods specific to the SAFT-VRQ Mie EoS.
   * [Utility methods](#Utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_mass](#set_massself-ic-mass)
 
 ## Constructor
 
@@ -94,6 +95,7 @@ Set- and get methods for interaction parameters and pure fluid parameters.
   * [Utility methods](#Utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_mass](#set_massself-ic-mass)
 
 
 ### `get_feynman_hibbs_order(self, c)`
@@ -123,6 +125,21 @@ Print saft parameters for component c
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_mass(self, ic, mass)`
+Set mass
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **m (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mass of component ic [kg]
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
