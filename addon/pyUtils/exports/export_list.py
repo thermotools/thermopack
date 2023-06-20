@@ -263,6 +263,8 @@ append_export("pc_saft_set_pure_params", "saft_interface")
 append_export("de_broglie_wavelength", "saft_interface")
 append_export("sigma_ij", "saft_interface")
 append_export("epsilon_ij", "saft_interface")
+append_export("sigma_eff_ij", "saft_interface")
+append_export("epsilon_eff_ij", "saft_interface")
 append_export("alpha", "saft_interface")
 
 append_export("map_stability_limit", "spinodal")
@@ -284,6 +286,7 @@ append_export("melting_pressure_correlation", "solid_saturation")
 append_export("sublimation_pressure_correlation", "solid_saturation")
 
 append_export("sound_velocity_2ph", "speed_of_sound")
+append_export("speed_of_sound_tv", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 

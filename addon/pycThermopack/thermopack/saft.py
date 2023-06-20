@@ -59,6 +59,10 @@ class saft(thermo):
             self.tp, self.get_export_name("saft_interface", "sigma_ij"))
         self.s_epsilon_ij = getattr(
             self.tp, self.get_export_name("saft_interface", "epsilon_ij"))
+        self.s_sigma_eff_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "sigma_eff_ij"))
+        self.s_epsilon_eff_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "epsilon_eff_ij"))
         self.s_alpha = getattr(
             self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
@@ -503,13 +507,13 @@ class saft(thermo):
 
     def epsilon_ij(self, i, j):
         """Utility
-        Get size parameter for i-j interaction
+        Well depth divided by Boltzmann constant for i-j interaction
 
         Args:
             i (int): Component index (FORTRAN)
             j (int): Component index (FORTRAN)
         Results:
-            epsilon_ij (float): Size paramater (m)
+            epsilon_ij (float): Well depth divided by Boltzmann constant (K)
 
         """
         self.activate()
@@ -526,6 +530,68 @@ class saft(thermo):
         self.s_epsilon_ij(byref(i_c),
                           byref(j_c),
                           byref(epsilon_ij_c))
+        return epsilon_ij_c.value
+
+    def sigma_eff_ij(self, i, j, temperature):
+        """Utility
+        Get effective size parameter for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+            temperature (float): Temperature (K)
+        Results:
+            sigma_ij (float): Size paramater (m)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        temperature_c = c_double(temperature)
+        sigma_ij_c = c_double(0.0)
+
+        self.s_sigma_eff_ij.argtypes = [POINTER(c_int),
+                                        POINTER(c_int),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.s_sigma_eff_ij.restype = None
+
+        self.s_sigma_eff_ij(byref(i_c),
+                            byref(j_c),
+                            byref(temperature_c),
+                            byref(sigma_ij_c))
+        return sigma_eff_ij_c.value
+
+    def epsilon_eff_ij(self, i, j, temperature):
+        """Utility
+        Effective well depth divided by Boltzmann constant for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+            temperature (float): Temperature (K)
+        Results:
+            epsilon_ij (float): Effective well depth divided by Boltzmann constant (K)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        temperature_c = c_double(temperature)
+        epsilon_ij_c = c_double(0.0)
+
+        self.s_epsilon_eff_ij.argtypes = [POINTER(c_int),
+                                          POINTER(c_int),
+                                          POINTER(c_double),
+                                          POINTER(c_double)]
+
+        self.s_epsilon_eff_ij.restype = None
+
+        self.s_epsilon_eff_ij(byref(i_c),
+                              byref(j_c),
+                              byref(temperature_c),
+                              byref(epsilon_ij_c))
         return epsilon_ij_c.value
 
     def alpha(self, temperature):
