@@ -534,7 +534,8 @@ class saft(thermo):
 
     def sigma_eff_ij(self, i, j, temperature):
         """Utility
-        Get effective size parameter for i-j interaction
+        Get effective size parameter for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical
+        (not quantum-corrected models), returns the sigma parameter.
 
         Args:
             i (int): Component index (FORTRAN)
@@ -561,11 +562,12 @@ class saft(thermo):
                             byref(j_c),
                             byref(temperature_c),
                             byref(sigma_ij_c))
-        return sigma_eff_ij_c.value
+        return sigma_ij_c.value
 
     def epsilon_eff_ij(self, i, j, temperature):
         """Utility
-        Effective well depth divided by Boltzmann constant for i-j interaction
+        Effective well depth divided by Boltzmann constant for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical
+        (not quantum-corrected models), returns the sigma parameter.
 
         Args:
             i (int): Component index (FORTRAN)
@@ -601,7 +603,7 @@ class saft(thermo):
         Args:
             temperature (float): Temperature (K)
 
-        Results:
+        Returns:
             alpha (ndarray): Dimensionless van der Waals energy (-)
 
         """
