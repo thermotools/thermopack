@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-29T18:38:09.627629
+Generated at: 2023-06-20T14:55:37.268013
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saft class. For instructions on how to use the parser routines, see the
@@ -17,9 +17,12 @@ compute quantities of interest when investigating SAFT-type equations of state.
     * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
     * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
     * [adjust_mass_to_de_boer_parameter](#adjust_mass_to_de_boer_parameterself-c-de_boer)
+    * [alpha](#alphaself-temperature)
     * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nFalse-mu_ij_TNone)
     * [de_boer_parameter](#de_boer_parameterself-c)
     * [de_broglie_wavelength](#de_broglie_wavelengthself-c-temp)
+    * [epsilon_eff_ij](#epsilon_eff_ijself-i-j-temperature)
+    * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nFalse-phi_nnFalse-fmt_modelWB)
     * [fres_polar](#fres_polarself-temp-volume-n-qqTrue-ddTrue-dqTrue)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
@@ -27,6 +30,8 @@ compute quantities of interest when investigating SAFT-type equations of state.
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
+    * [sigma_ij](#sigma_ijself-i-j)
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
     * [truncation_correction](#truncation_correctionself-enable_truncation_correction-enable_shift_correction-reduced_radius_cut35)
   * [Internal methods](#Internal-methods)
@@ -43,9 +48,12 @@ Helmholtz energy for SAFT-type equations of state
     * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
     * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
     * [adjust_mass_to_de_boer_parameter](#adjust_mass_to_de_boer_parameterself-c-de_boer)
+    * [alpha](#alphaself-temperature)
     * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nFalse-mu_ij_TNone)
     * [de_boer_parameter](#de_boer_parameterself-c)
     * [de_broglie_wavelength](#de_broglie_wavelengthself-c-temp)
+    * [epsilon_eff_ij](#epsilon_eff_ijself-i-j-temperature)
+    * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nFalse-phi_nnFalse-fmt_modelWB)
     * [fres_polar](#fres_polarself-temp-volume-n-qqTrue-ddTrue-dqTrue)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
@@ -53,6 +61,8 @@ Helmholtz energy for SAFT-type equations of state
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
+    * [sigma_ij](#sigma_ijself-i-j)
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
     * [truncation_correction](#truncation_correctionself-enable_truncation_correction-enable_shift_correction-reduced_radius_cut35)
 
@@ -217,6 +227,27 @@ Adjust mass in order to get specified de Boer parameter
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `alpha(self, temperature)`
+Get dimensionless van der Waals energy
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temperature (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **alpha (ndarray):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Dimensionless van der Waals energy (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None)`
 Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
 
@@ -293,6 +324,60 @@ Calculate de Broglie wavelength
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  de Broglie wavelength (m)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `epsilon_eff_ij(self, i, j, temperature)`
+Effective well depth divided by Boltzmann constant for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical (not quantum-corrected models), returns the sigma parameter.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temperature (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **epsilon_ij (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Effective well depth divided by Boltzmann constant (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `epsilon_ij(self, i, j)`
+Well depth divided by Boltzmann constant for i-j interaction
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **epsilon_ij (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Well depth divided by Boltzmann constant (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -480,6 +565,60 @@ Print saft parameters for component c
 &nbsp;&nbsp;&nbsp;&nbsp; **c (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `sigma_eff_ij(self, i, j, temperature)`
+Get effective size parameter for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical (not quantum-corrected models), returns the sigma parameter.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temperature (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `sigma_ij(self, i, j)`
+Get size parameter for i-j interaction
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **i (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

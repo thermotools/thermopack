@@ -132,9 +132,10 @@ class thermo(object):
             "ideal", "set_enthalpy_reference_value"))
 
         # Speed of sound
-        #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
         self.s_sos_sound_velocity_2ph = getattr(
             self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
+        self.s_speed_of_sound_tv = getattr(
+            self.tp, self.get_export_name("speed_of_sound", "speed_of_sound_tv"))
 
         # Component info
         self.s_compdata_compindex = getattr(
@@ -1435,6 +1436,35 @@ class thermo(object):
                                             byref(betaL_c),
                                             byref(phase_c),
                                             ph_c)
+
+        return sos
+
+    def speed_of_sound_tv(self, temp, volume, n):
+        """Tv-property
+        Calculate speed of sound for single phase fluid
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+
+        Returns:
+            float: Speed of sound (m/s)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        volume_c = c_double(volume)
+        n_c = (c_double * len(n))(*n)
+
+        self.s_speed_of_sound_tv.argtypes = [POINTER(c_double),
+                                             POINTER(c_double),
+                                             POINTER(c_double)]
+
+        self.s_speed_of_sound_tv.restype = c_double
+
+        sos = self.s_speed_of_sound_tv(byref(temp_c),
+                                       byref(volume_c),
+                                       n_c)
 
         return sos
 

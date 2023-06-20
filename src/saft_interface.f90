@@ -1019,6 +1019,47 @@ contains
 
   end subroutine epsilon_ij
 
+  !> Get effective well depth divided by kB for interaction i and j
+  !!
+  !! \author Morten Hammer, June 2023
+  subroutine epsilon_eff_ij(i, j, T, eps_div_kb_ij)
+    use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, &
+         saftvrmie_var_container, svrm_opt, get_saftvrmie_var, &
+         calc_DFeynHibbsij
+    use saftvrmie_hardsphere, only: calc_hardsphere_diameter, &
+         calc_binary_effective_sigma, calc_binary_effective_eps_divk
+    use thermopack_var, only: base_eos_param, nce
+    ! Input
+    integer, intent(in) :: i, j !< Component number
+    real, intent(in) :: T !< Temperature (K)
+    real, intent(out) :: eps_div_kb_ij !< Effective well depth divided by Boltzmann constant
+    !
+    ! Locals
+    type(saftvrmie_var_container), pointer :: svrm_var
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      if (svrm_opt%quantum_correction_hs > 0) then
+        svrm_var => get_saftvrmie_var()
+        ! Calculate Feynman--Hibbs D parameter
+        call calc_DFeynHibbsij(nce, T, saftvrmie_param%DFeynHibbsParam_ij, &
+             svrm_var%DFeynHibbsij, svrm_var%D2FeynHibbsij)
+        ! Calculate effective sigma
+        call calc_binary_effective_sigma(nce,T,svrm_var,svrm_var%sigma_eff%d,&
+             svrm_var%sigma_eff%d_T,svrm_var%sigma_eff%d_TT)
+        ! Calculate effective epsilon divided by k
+        call calc_binary_effective_eps_divk(nce,T,svrm_var,svrm_var%eps_divk_eff%d,&
+             svrm_var%eps_divk_eff%d_T,svrm_var%eps_divk_eff%d_TT)
+        eps_div_kb_ij = svrm_var%eps_divk_eff%d(i,j)
+      else
+        eps_div_kb_ij = saftvrmie_param%eps_divk_ij(i,j)
+      endif
+    class default
+      call epsilon_ij(i, j, eps_div_kb_ij)
+    end select
+  end subroutine epsilon_eff_ij
+
   !> Size parameter for interaction i and j
   !!
   !! \author Morten Hammer, June 2023
@@ -1052,6 +1093,44 @@ contains
       s_ij = 0
     end select
   end subroutine sigma_ij
+
+  !> Effective size parameter for interaction i and j
+  !!
+  !! \author Morten Hammer, June 2023
+  subroutine sigma_eff_ij(i, j, T, s_ij)
+    use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, &
+         saftvrmie_var_container, svrm_opt, get_saftvrmie_var, &
+         calc_DFeynHibbsij
+    use saftvrmie_hardsphere, only: calc_hardsphere_diameter, &
+         calc_binary_effective_sigma
+    use thermopack_var, only: base_eos_param, nce
+    ! Input
+    integer, intent(in) :: i, j !< Component number
+    real, intent(in) :: T !< Temperature (K)
+    real, intent(out) :: s_ij !< Effective size paramater (m)
+    !
+    ! Locals
+    type(saftvrmie_var_container), pointer :: svrm_var
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    select type ( p_eos => eos )
+    class is (saftvrmie_eos)
+      if (svrm_opt%quantum_correction_hs > 0) then
+        svrm_var => get_saftvrmie_var()
+        ! Calculate Feynman--Hibbs D parameter
+        call calc_DFeynHibbsij(nce, T, saftvrmie_param%DFeynHibbsParam_ij, &
+             svrm_var%DFeynHibbsij, svrm_var%D2FeynHibbsij)
+        ! Calculate effective sigma
+        call calc_binary_effective_sigma(nce,T,svrm_var,svrm_var%sigma_eff%d,&
+             svrm_var%sigma_eff%d_T,svrm_var%sigma_eff%d_TT)
+        s_ij = svrm_var%sigma_eff%d(i,j)
+      else
+        s_ij = p_eos%saftvrmie_param%sigma_ij(i,j)
+      endif
+    class default
+      call sigma_ij(i, j, s_ij)
+    end select
+  end subroutine sigma_eff_ij
 
   !> Test if model setup is comaptible with the Fundamental
   !! Measure Theory (FMT)

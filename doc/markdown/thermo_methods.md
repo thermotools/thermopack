@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-29T18:38:09.622756
+Generated at: 2023-06-20T14:53:27.920130
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -18,6 +18,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
     * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
     * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
+    * [speed_of_sound_tv](#speed_of_sound_tvself-temp-volume-n)
   * [Tp-property interfaces](#Tp-property-interfaces)
     * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
     * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
@@ -126,6 +127,7 @@ Computing properties as a function of temperature and volume. Derivatives return
     * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
     * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
     * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
+    * [speed_of_sound_tv](#speed_of_sound_tvself-temp-volume-n)
 
 
 ### `chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None, dmudn=None, property_flag='IR')`
@@ -434,6 +436,33 @@ Calculate pressure given temperature, volume and mol numbers.
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally pressure differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `speed_of_sound_tv(self, temp, volume, n)`
+Calculate speed of sound for single phase fluid
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Speed of sound (m/s)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
