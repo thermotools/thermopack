@@ -148,7 +148,7 @@
     "eps_depth_divk": 166.6600,
     "lambda_a": 6.0000,
     "lambda_r": 12.0000,
-    "mass": 1.3915E-22,
+    "mass": 1.3914985275103401e-25,
     "eps": 0.0000,
     "beta": 0.0000,
     "assoc_scheme": "None",
