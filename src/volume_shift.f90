@@ -18,7 +18,8 @@ module volume_shift
        NOSHIFT, PENELOUX, &
        redefine_volume_shift, &
        vshift_F_terms, &
-       vshift_F_differential_dependencies
+       vshift_F_differential_dependencies, &
+       get_c_mix
 
 contains
 
@@ -310,5 +311,32 @@ contains
     if (.not. present(F_Vn)) include_F_Vn = present(F_Tn) .or. &
          present(F_nn)
   end subroutine vshift_F_differential_dependencies
+
+  !-----------------------------------------------------------------------------
+  !> Get volume-shift for given composition and temperature
+  !>
+  !> \author MH, 2023-06
+  !-----------------------------------------------------------------------------
+  function get_c_mix(T, Z) result(c_mix)
+    use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
+         get_active_thermo_model
+    implicit none
+    ! Input:
+    real, intent(in)                :: T              !< Temperature [K]
+    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
+    ! Output:
+    real                            :: c_mix          !< m3/mol
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
+    real :: v
+    act_mod_ptr => get_active_thermo_model()
+    act_eos_ptr => get_active_eos()
+
+    v = 0.0
+    c_mix = -eosVolumeFromShiftedVolume(nc,act_mod_ptr%comps,&
+         act_eos_ptr%volumeShiftId,T,v,Z)
+
+  end function get_c_mix
 
 end module volume_shift

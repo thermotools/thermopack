@@ -591,6 +591,7 @@ contains
   subroutine sat_var_tv_limits(param,X,Xmin,Xmax)
     use numconstants, only: expMax, expMin
     use eosdata, only: eosCPA
+    use volume_shift, only: get_c_mix
     implicit none
     real, dimension(nc+3), intent(in) :: X
     real, dimension(nc+3), intent(in) :: param
@@ -613,8 +614,8 @@ contains
       b1 = 1.0e-7
       b2 = 1.0e-7
     else
-      b1 = get_b_linear_mix(X1) + Small ! m3/mol
-      b2 = get_b_linear_mix(X2) + Small ! m3/mol
+      b1 = get_b_linear_mix(X1) + get_c_mix(T,X1) + Small ! m3/mol
+      b2 = get_b_linear_mix(X2) + get_c_mix(T,X2) + Small ! m3/mol
     endif
     Xmin(nc+2) = log(b1) !v min
     Xmin(nc+3) = log(b2) !v min

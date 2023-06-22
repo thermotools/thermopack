@@ -240,7 +240,7 @@ contains
     solver%max_it = niter
     solver%ls_max_it = 3
 
-    call sat_var_tv_limits(Z,X,W,Ymin,Ymax,include_beta=.false.)
+    call sat_var_tv_limits(T,Z,X,W,Ymin,Ymax,include_beta=.false.)
     call isXwithinBounds(2*nc+4,Y,Ymin,Ymax,"",&
          "three_ph_newton_tv: Initial values not within bounds!!")
     call nonlinear_solve(solver,three_ph_fun_newton,three_ph_diff_newton,&
@@ -260,10 +260,12 @@ contains
   !>
   !> \author MH, 2021-11
   !-----------------------------------------------------------------------------
-  subroutine sat_var_tv_limits(Z1,Z2,Z3,Xmin,Xmax,include_beta)
+  subroutine sat_var_tv_limits(T,Z1,Z2,Z3,Xmin,Xmax,include_beta)
     use numconstants, only: expMax, expMin
     use eosdata, only: eosCPA
+    use volume_shift, only: get_c_mix
     implicit none
+    real, intent(in) :: T !< Temperature (K)
     real, dimension(nc), intent(in) :: Z1, Z2, Z3 !< Composition
     logical, intent(in) :: include_beta
     real, dimension(:), intent(out) :: Xmin, Xmax !< Variable vector
@@ -288,9 +290,9 @@ contains
     if (needalt .and. .not. isCPA) then
       b = 1.0e-7
     else
-      b(1) = get_b_linear_mix(z1) + Small ! m3/mol
-      b(2) = get_b_linear_mix(z2) + Small ! m3/mol
-      b(3) = get_b_linear_mix(z3) + Small ! m3/mol
+      b(1) = get_b_linear_mix(z1) + get_c_mix(T,z1) + Small ! m3/mol
+      b(2) = get_b_linear_mix(z2) + get_c_mix(T,z2) + Small ! m3/mol
+      b(3) = get_b_linear_mix(z3) + get_c_mix(T,z3) + Small ! m3/mol
     endif
     if (include_beta) then
       Xmin(2*nc+2) =  0 !beta min
@@ -1672,7 +1674,7 @@ contains
     solver%ls_max_it = nlines
 
     call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
-    call sat_var_tv_limits(Y,X,W,XXmin,XXmax,include_beta=.true.)
+    call sat_var_tv_limits(T,Y,X,W,XXmin,XXmax,include_beta=.true.)
     call isXwithinBounds(2*nc+5,XX,XXmin,XXmax,"",&
          "three_ph_line_newton: Initial values not within bounds!!")
     call nonlinear_solve(solver,three_ph_line_fun_newton,&
