@@ -29,6 +29,18 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
         an example. The sections should equate to the 'Section Name' in the above formatting example. The sections in
         the markdown file will be ordered according to the order of this list.
 
+        NOTE: The sections "Other" and "Deprecated" are automatically generated.
+            If the section name in a methods docstring does not match any of the supplied sections, it is added to the
+            "Other" section, and a warning is issued
+            If a method has the Section Name "Deprecated" it is added to the automatically generated "Deprecated" section.
+            To add other automatically generated sections, add them in the function `get_automatic_sections`
+
+        NOTE: A method can be added to several sections, by separating the "Section Name"'s with an ampersand as
+            def my_func(self):
+                """Section 1 & Section 5 & Section 6 & ...
+                This is documentation for a method that belongs to many sections
+                """
+
     3 : Define a dict of section name => section header mappings. This maps the section names in the docstrings to
         the section headers in the markdown file.
 
@@ -123,6 +135,8 @@ def split_methods_by_section(sections, methods):
     """
     Organise the various methods of a class into sections, determined by the id 'Section Name' as in the example at
     the top of this file. Warns if there are methods for which no matching section was found.
+    The section 'Other' is automatically generated if there are methods with an identifier not matching any of the
+    identifiers in 'sections'. The section 'Deprecated' is automatically included in the 'sections' list.
 
     Args:
         sections (list<str>) : The name of each section, corresponding to the first line in each docstring.
@@ -132,12 +146,16 @@ def split_methods_by_section(sections, methods):
         dict : With keys corresponding to the sections, and value being a list of the (name, method) tuples with
                 the first line of the docstring matching the section (key).
     """
+
+    if 'deprecated' not in [s.lower() for s in sections]:
+        sections.append('Deprecated')
+
     method_dict = {}
     for name, meth in methods:
-        method_sections = [m.strip() for m in meth.__doc__.split('\n')[0].lower().split('&')]
         # A method can be added to several sections, by giving it the header
         # def myfunc():
         #   """Section1 & Section2 & Section5 ... """
+        method_sections = [m.strip() for m in meth.__doc__.split('\n')[0].lower().split('&')] # extracting the section names as described above
         method_has_section = False
         for sec in sections:
             if sec.lower() in method_sections:
@@ -159,7 +177,30 @@ def split_methods_by_section(sections, methods):
         # print('other is : ', method_dict['Other'] if 'Other' in method_dict.keys() else None)
     return method_dict
 
-def get_toc(sections, section_headers, method_dict, include_other=True):
+def get_automatic_sections(sections, section_headers, section_intro, method_dict):
+    sections = copy.deepcopy(sections)
+    section_headers = copy.deepcopy(section_headers)
+    section_intro = copy.deepcopy(section_intro)
+
+    if 'Other' in method_dict.keys():
+        if 'Other' not in sections:
+            sections.append('Other')
+        if 'Other' not in section_headers.keys():
+            section_headers['Other'] = 'Other'
+        if 'Other' not in section_intro.keys():
+            section_intro['Other'] = 'Methods that do not have a section identifier in their docstring.'
+
+    if 'Deprecated' in method_dict.keys():
+        if 'Deprecated' not in sections:
+            sections.append('Deprecated')
+        if 'Deprecated' not in section_headers.keys():
+            section_headers['Deprecated'] = 'Deprecated methods'
+        if 'Deprecated' not in section_intro.keys():
+            section_intro['Deprecated'] = 'Deprecated methods are not maintained, and may be removed in the future.'
+
+    return sections, section_headers, section_intro
+
+def get_toc(sections, section_headers, method_dict, is_subsection=False):
     """
     Generate a table of contents with links to the sections, using the names in section_headers.
     Note: Uses the function tools.remove_illegal_link_chars() to sanitize raw strings, such that they can be used
@@ -170,18 +211,15 @@ def get_toc(sections, section_headers, method_dict, include_other=True):
         section_headers (dict<str, str>) : Dict mapping the section names to the section headers in the markdown file
         method_dict (dict<str, list<tuple<str, function>>>) : Mapping the section names to the list of (method name,
                                                                 function) tuples that are in the section.
-        include_other (bool, optional) : Whether to include the automatically generated 'Other' section in the toc.
-                                        Should be set to True when generating the toc for the whole file, and set to
-                                        False when generating toc for subsections.
+        is_subsection (bool, optional) : Whether to include the automatically generated sections in the toc.
+                                        Should be set to False when generating the toc for the whole file, and set to
+                                        True when generating toc for subsections.
     Returns:
         str : The string representation of the table of contents to be written to the markdown file.
     """
-    # Make sure to not modify input
-    sections = copy.deepcopy(sections)
-    section_headers = copy.deepcopy(section_headers)
-    if include_other:
-        sections.append('Other')
-        section_headers['Other'] = 'Other methods'
+
+    if is_subsection is False:
+        sections, section_headers, _ = get_automatic_sections(sections, section_headers, {}, method_dict)
 
     toc_text = '## Table of contents\n'
     for sec in sections:
@@ -214,21 +252,17 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
     Returns:
         str : The markdown text corresponding to the main contents of the file.
     """
+
+    sections, section_headers, section_intro = get_automatic_sections(sections, section_headers, section_intro, method_dict)
+
     md_text = ''
     for sec in sections:
         if sec not in method_dict.keys():
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
-        md_text +=  '#' + get_toc([sec], section_headers, method_dict, include_other=False) + '\n'
+        md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
         md_text += to_markdown(method_dict[sec])
-
-    if 'Other' in method_dict.keys():
-        print('Writing other section : ', method_dict['Other'])
-        md_text += '## Other\n\n'
-        md_text += 'Methods that do not have a section identifier in their docstring.\n\n'
-        md_text += '#' + get_toc([], {}, method_dict, include_other=True) + '\n'
-        md_text += to_markdown(method_dict['Other'])
 
     return md_text
 
