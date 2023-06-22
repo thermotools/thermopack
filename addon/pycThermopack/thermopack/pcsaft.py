@@ -10,6 +10,7 @@ from os import path
 from .thermo import c_len_type
 from .saft import saft
 from . import utils
+import warnings
 
 
 class pcsaft(saft):
@@ -48,6 +49,9 @@ class pcsaft(saft):
 
         # Define parameters to be set by init
         self.nc = None
+        self.m = None
+        self.sigma = None
+        self.eps_div_kb = None
 
         if comps is not None:
             self.init(comps, parameter_reference=parameter_reference, simplified=simplified, polar=polar)
@@ -96,8 +100,7 @@ class pcsaft(saft):
         self.sigma = np.zeros(self.nc)
         self.eps_div_kb = np.zeros(self.nc)
         for i in range(self.nc):
-            self.m[i], self.sigma[i], self.eps_div_kb[i], eps, beta = \
-                self.get_pure_params(i+1)
+            self.m[i], self.sigma[i], self.eps_div_kb[i], eps, beta = self.get_pure_fluid_param(i+1)
 
 
     def get_kij(self, c1, c2):
@@ -150,7 +153,7 @@ class pcsaft(saft):
                        byref(kij_c))
 
 
-    def set_pure_params(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0):
+    def set_pure_fluid_param(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0):
         """Utility
         Set pure fluid PC-SAFT parameters
 
@@ -177,7 +180,23 @@ class pcsaft(saft):
         self.s_set_pure_params(byref(c_c),
                                param_c)
 
-    def get_pure_params(self, c):
+    def set_pure_params(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0):
+        """Deprecated
+        Set pure fluid PC-SAFT parameters
+
+        Args:
+            c (int): Component index (FORTRAN)
+            m (float): Mean number of segments
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+            eps (float): Association energy (J/mol)
+            beta (float): Association volume (-)
+        """
+        warnings.warn("The method 'set_pure_params' has been repaced by 'set_pure_fluid_param', and may be removed in"
+                      "the future.", DeprecationWarning, stacklevel=2)
+        self.set_pure_fluid_param(c, m, sigma, eps_div_kb, eps=eps, beta=beta)
+
+    def get_pure_fluid_param(self, c):
         """Utility
         Get pure fluid PC-SAFT parameters
 
@@ -203,6 +222,22 @@ class pcsaft(saft):
         m, sigma, eps_div_kb, eps, beta = param_c
         return m, sigma, eps_div_kb, eps, beta
 
+    def get_pure_params(self, c):
+        """Deprecated
+        Get pure fluid PC-SAFT parameters
+
+        Args:
+            c (int): Component index (FORTRAN)
+        Returns:
+            m (float): Mean number of segments
+            sigma (float): Segment diameter (m)
+            eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
+            eps (float): Association energy (J/mol)
+            beta (float): Association volume (-)
+        """
+        warnings.warn("The method 'get_pure_params' has been repaced by 'get_pure_fluid_param', and may be removed in"
+                      "the future.", DeprecationWarning, stacklevel=2)
+        self.get_pure_fluid_param(c)
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
