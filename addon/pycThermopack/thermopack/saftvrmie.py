@@ -82,6 +82,12 @@ class saftvrmie(saft):
         self.nc = None
         self.lambda_a = None
         self.lambda_r = None
+        self.nc = None
+        self.m = None
+        self.sigma = None
+        self.eps_div_kb = None
+        self.lambda_a = None
+        self.lambda_r = None
 
         if comps is not None:
             self.init(comps, parameter_reference=parameter_reference)

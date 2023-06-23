@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-05-29T18:38:09.630633
+Generated at: 2023-06-22T15:42:48.988149
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 pcsaft class. For instructions on how to use the parser routines, see the
@@ -18,9 +18,12 @@ PC-SAFT Equation of State. This class inherits the `saft` class, which in turn i
   * [Utility methods](#Utility-methods)
     * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
     * [get_kij](#get_kijself-c1-c2)
-    * [get_pure_params](#get_pure_paramsself-c)
+    * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
     * [set_kij](#set_kijself-c1-c2-kij)
+    * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
+  * [Deprecated methods](#Deprecated-methods)
+    * [get_pure_params](#get_pure_paramsself-c)
     * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
 
 ## Constructor
@@ -87,10 +90,10 @@ Set- and get methods for interaction parameters and pure fluid parameters.
   * [Utility methods](#Utility-methods)
     * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
     * [get_kij](#get_kijself-c1-c2)
-    * [get_pure_params](#get_pure_paramsself-c)
+    * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
     * [set_kij](#set_kijself-c1-c2-kij)
-    * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
+    * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
 
 
 ### `association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None, phi_tt=None, phi_tn=None, phi_nn=None)`
@@ -161,7 +164,7 @@ Get binary well depth interaction parameter
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_pure_params(self, c)`
+### `get_pure_fluid_param(self, c)`
 Get pure fluid PC-SAFT parameters
 
 #### Args:
@@ -279,6 +282,80 @@ Set binary well depth interaction parameter
 &nbsp;&nbsp;&nbsp;&nbsp; **kij (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Well depth interaction parameter
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_pure_fluid_param(self, c, m, sigma, eps_div_kb, eps=0.0, beta=0.0)`
+Set pure fluid PC-SAFT parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **c (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **m (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mean number of segments
+
+&nbsp;&nbsp;&nbsp;&nbsp; **sigma (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Segment diameter (m)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps_div_kb (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Well depth divided by Boltzmann's constant (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association energy (J/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **beta (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association volume (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## Deprecated methods
+
+Deprecated methods are not maintained, and may be removed in the future.
+
+### Table of contents
+  * [Deprecated methods](#Deprecated-methods)
+    * [get_pure_params](#get_pure_paramsself-c)
+    * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
+
+
+### `get_pure_params(self, c)`
+Get pure fluid PC-SAFT parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **c (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **m (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mean number of segments
+
+&nbsp;&nbsp;&nbsp;&nbsp; **sigma (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Segment diameter (m)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps_div_kb (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Well depth divided by Boltzmann's constant (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association energy (J/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **beta (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association volume (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
