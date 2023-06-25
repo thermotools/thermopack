@@ -1674,6 +1674,7 @@ contains
     solver%ls_max_it = nlines
 
     call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    XX(2*nc+2) = min(max(XX(2*nc+2), 0.0), 1.0)
     call sat_var_tv_limits(T,Y,X,W,XXmin,XXmax,include_beta=.true.)
     call isXwithinBounds(2*nc+5,XX,XXmin,XXmax,"",&
          "three_ph_line_newton: Initial values not within bounds!!")
