@@ -268,6 +268,13 @@ contains
       fug_n(i,:) = fug(i)*fug_n(i,:)
     enddo
     P = pressure(T,V,n_fluid,dpdv=P_v,dpdt=P_T,dpdn=P_n)
+    if (P < 0.0) then
+      fug_wh = 1000.0 ! Force solver to reduce step
+      if (present(fug_wh_T)) fug_wh_T = 0
+      if (present(fug_wh_v)) fug_wh_v = 0
+      if (present(fug_wh_n)) fug_wh_n = 0
+      return
+    endif
     !
     ! Get pure water (liquid/solid) fugacity
     call fug_pure_water(T,P,phase_w,fug_w,fug_w_T,fug_w_P)
