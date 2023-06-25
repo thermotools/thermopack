@@ -64,7 +64,7 @@ contains
     real, intent(out) :: T_hyd(n_max_hyd), P_hyd(n_max_hyd)
     logical, optional, intent(in) :: print_to_file
     ! Internal
-    integer, parameter :: nmx = 2000, nmxs = 1000
+    integer, parameter :: nmx = 50000, nmxs = 1000
     integer        :: nwm               ! Number of output points for water appearance curve
     real           :: Tam(nmx)          ! Temperature (K)
     real           :: Pam(nmx)          ! Pressure (Pa)
@@ -103,7 +103,7 @@ contains
     do i=nwm+1,n_sat-1
       if ((fug_h_a(i)-fug_w_a(i))*(fug_h_a(i+1)-fug_w_a(i+1)) .LE. 0.0) then
         n_cross = n_cross + 1
-        !print *,"Crossing",Tam(i), pressure(Tam(i),v_YXW(1,i),Ym(:,i))
+        ! print *,"Crossing",Tam(i), pressure(Tam(i),v_YXW(1,i),Ym(:,i))
         ! print *,""
         ! print *,"i"
         ! print *,"T,P",Tam(i),Pam(i)
@@ -252,9 +252,11 @@ contains
 
     call get_variables_tv(Xsol,param_tv,T,P,v1,v2,X1,X2,K)
     call thermo_tv(T,v1,X1,fug)
-    fug_w = exp(fug(water_idx))
+    fug_w = fug(water_idx)
     call fugacity_water_in_hydrate_TVn(T,v1,X1,fug_wh)
-    fun = (fug_w - fug_wh)/max(abs(fug_w),1.0)
+    fun = (fug_w - log(fug_wh))/max(abs(fug_w),1.0)
+    !print *,"T,v1,X1",T,pressure(T,v1,X1),v1,X1
+    !print *,"fun cross fug",fun, fug_w,log(fug_wh)
   end function fun_hydrate_envelope_crossing
 
   !-----------------------------------------------------------------!
