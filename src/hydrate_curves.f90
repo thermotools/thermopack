@@ -73,7 +73,7 @@ contains
     real           :: Ym(nc,nmx)        ! Phase Y composition (-)
     real           :: Xm(nc,nmx)        ! Phase X composition (-)
     real           :: Wm(nc,nmx)        ! Phase W composition (-)
-    integer :: n_sat, i, ns, n_cross
+    integer :: n_sat, i, ns, n_cross, j
     real :: fug_h_a(nmx), fug_w_a(nmx)
     real :: fug(nc)
     real :: X1(nc+3), X2(nc+3), param(nc+3), Xsol(nc+3)
@@ -348,6 +348,7 @@ contains
   subroutine map_hydrate_curve_single_phase_fluid(Xsol_tv_sat,param_tv,p_min,p_max,T_min,nmx,Ta,va,n)
   !-----------------------------------------------------------------!
     use saturation_tv, only: get_variables_tv
+    use eostv, only: pressure
     implicit none
     real, intent(in) :: Xsol_tv_sat(nc+3)
     real, intent(in) :: param_tv(nc+3)
@@ -357,7 +358,7 @@ contains
     integer, intent(out) :: n
     ! Internal
     integer :: s,ierr,iter
-    real :: T,P,v,v2,X1(nc),X2(nc),K(nc),Pold
+    real :: T,P,v,v2,X1(nc),X2(nc),K(nc),Pold,dpdv
     real :: X(2), Xold(2), dXds(2), dXdsOld(2)
     real :: Z(nc), param(nc+2), sgn, Told
     real :: dS, tuning, dP, dPds, dS_max, dS_min, ln_spec
@@ -388,8 +389,11 @@ contains
     call set_hydrate_solution_single(X,Z,nmx,Ta,va,n,p)
     dXdS = 0
     !
+    ! Adapt initial step to pressure sensitivity
+    p=pressure(Ta(1),va(1),z,dpdv=dpdv)
+    !
     dS_max = 0.25
-    dS_min = 0.01
+    dS_min = 0.01/min(max(abs(dpdv*1e-9), 1.0), 1e5)
     dS = dS_min
     tuning = 1.2
     do while (n < nmx)
@@ -541,20 +545,29 @@ contains
     T = exp(Xl(1))
     v = exp(Xl(2))
     Z = param(1:nc)
+
+    ! Make sure we increase when already at low pressure
+    p=pressure(T,v,z)
+    if (p < 2.0e5) then
+      sgn = -1 ! Increase pressure
+    else
+      sgn = 1
+    endif
+
     ! Perturbation in volume
     s = 2
     param(nc+1) = real(s)
-    param(nc+2) = log(v*(1.0+1.0e-4))
+    param(nc+2) = log(v*(1.0+sgn*1.0e-4))
     iter = newton_single_phase_fluid_hydrate_curve(Xl,param,ierr)
+    if (ierr /= 0) call stoperror("Hydrate curve: Not able to determine initial step direction")
+
     ! Test stabillity
     T = exp(Xl(1))
     v = exp(Xl(2))
     P = pressure(T,v,Z)
     call checkVLEstability(t,p,Z,isStable,Wsol,new_phase)
-    if (isStable) then
-      sgn = 1
-    else
-      sgn = -1
+    if (.not. isStable) then
+      sgn = -sgn
     endif
   end subroutine hydrate_single_initial_step
 

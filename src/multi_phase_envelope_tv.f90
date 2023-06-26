@@ -1668,7 +1668,7 @@ contains
     ! stop
 
     solver%rel_tol = 1.0e-20
-    solver%abs_tol = 2.0e-9
+    solver%abs_tol = 2.0e-11
     solver%limit_x_values = .true.
     solver%max_it = niter
     solver%ls_max_it = nlines
