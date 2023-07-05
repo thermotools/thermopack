@@ -879,8 +879,8 @@ contains
   !! \author MH, 2015-05
   !-------------------------------------------------------------------
   subroutine VLLEBinaryXY(T,P,ispec,Tmin,Pmax,dzmax,filename,dlns_max,&
-       res,nRes,writeSingleFile,Pmin)
-    use thermopack_constants, only: LIQPH, clen, VAPPH
+       res,nRes,writeSingleFile,Pmin, ierr_out)
+    use thermopack_constants, only: LIQPH, clen, VAPPH, continueOnError
     use thermopack_var, only: nc
     implicit none
     integer, intent(in) :: ispec
@@ -892,6 +892,7 @@ contains
     integer, optional, intent(out) :: nRes(3)
     logical, optional, intent(in) :: writeSingleFile
     real, optional, intent(in) :: Pmin
+    integer, optional, intent(out) :: ierr_out
     ! Internal variables
     logical :: hasThreePhaseLine, hasLLE
     logical :: isSuperCritical, isStable, isTrivial, isSolved
@@ -909,6 +910,11 @@ contains
     ! Written for nc == 2
     if (.not. nc == 2) then
       call stoperror('threePhaseBinaryXY written for 2 components')
+    endif
+
+    ! Initialize error flag
+    if (present(ierr_out)) then
+      ierr_out = 0
     endif
 
     if (present(Pmin)) then
@@ -983,7 +989,9 @@ contains
         w_tpl = xx_tpl(2,:)
         y_tpl = xx_tpl(3,:)
         call LLVEline(T,P,x_tpl,w_tpl,y_tpl,ispec,ierr)
-        if (ierr /= 0) then
+        if (present(ierr_out)) then
+          ierr_out = ierr
+        else if (ierr /= 0 .and. .not. continueOnError) then
           print *,"LLVE detected, failed to solve for LLVE line"
           print *,"ierr",ierr
           print *,"y",y_tpl
