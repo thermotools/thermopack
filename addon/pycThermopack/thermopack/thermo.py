@@ -132,9 +132,10 @@ class thermo(object):
             "ideal", "set_enthalpy_reference_value"))
 
         # Speed of sound
-        #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
         self.s_sos_sound_velocity_2ph = getattr(
             self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
+        self.s_speed_of_sound_tv = getattr(
+            self.tp, self.get_export_name("speed_of_sound", "speed_of_sound_tv"))
 
         # Component info
         self.s_compdata_compindex = getattr(
@@ -1435,6 +1436,35 @@ class thermo(object):
                                             byref(betaL_c),
                                             byref(phase_c),
                                             ph_c)
+
+        return sos
+
+    def speed_of_sound_tv(self, temp, volume, n):
+        """Tv-property
+        Calculate speed of sound for single phase fluid
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+
+        Returns:
+            float: Speed of sound (m/s)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        volume_c = c_double(volume)
+        n_c = (c_double * len(n))(*n)
+
+        self.s_speed_of_sound_tv.argtypes = [POINTER(c_double),
+                                             POINTER(c_double),
+                                             POINTER(c_double)]
+
+        self.s_speed_of_sound_tv.restype = c_double
+
+        sos = self.s_speed_of_sound_tv(byref(temp_c),
+                                       byref(volume_c),
+                                       n_c)
 
         return sos
 
@@ -2850,6 +2880,7 @@ class thermo(object):
         res_c = (c_double * (nmax*9))(0.0)
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
+        ierr_c = c_int(0)
 
         self.s_binary_plot.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -2863,6 +2894,7 @@ class thermo(object):
                                        POINTER(c_int),
                                        POINTER(c_int),
                                        POINTER(c_double),
+                                       POINTER(c_int),
                                        c_len_type]
 
         self.s_binary_plot.restype = None
@@ -2879,7 +2911,11 @@ class thermo(object):
                            nres_c,
                            byref(wsf_c),
                            byref(min_press_c),
+                           byref(ierr_c),
                            filename_len)
+        
+        if ierr_c.value > 0 or ierr_c.value < -1:
+            raise Exception("binary_plot failed")
 
         nLLE = nres_c[0]
         nL1VE = nres_c[1]
@@ -3904,14 +3940,16 @@ class thermo(object):
     def spinodal_point(self,
                        z,
                        pressure,
+                       phase,
                        temperature=None):
         """Stability interface
-        Solve for spinodal curve point. Not able to solve for points cloes to critical point.
+        Solve for spinodal curve point. Not able to solve for points close to critical point.
         Solve for temperature if given, otherwise solve for pressure.
 
         Args:
             z (array_like): Composition (-)
-            pressure (float): Pressure (Pa).
+            pressure (float): Pressure (Pa)
+            phase (int): Phase flag (VAPPH/LIQPH)
             temperature (float, optional): Temperature (K). Solve for temperature if given.
 
         Raises:
@@ -3929,6 +3967,7 @@ class thermo(object):
         n_c = c_int(0)
         vol_c = c_double(0.0)
         temp_c = c_double(0.0)
+        phase_c = c_int(phase)
 
         if temperature is None:
             t_min_c = POINTER(c_double)()
@@ -3964,7 +4003,7 @@ class thermo(object):
                            entropy,
                            minimum_pressure,
                            n_max=50):
-        """Stability interface
+        """Stability interface & Isoline
         Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
 
         Args:
@@ -3983,7 +4022,7 @@ class thermo(object):
             np.ndarray: Pressure (Pa)
         """
         self.activate()
-        initial_pressure_c = c_double(pressure)
+        initial_pressure_c = c_double(initial_pressure)
         entropy_c = c_double(entropy)
         minimum_pressure_c = c_double(minimum_pressure)
         z_c = (c_double * len(z))(*z)
@@ -4020,77 +4059,12 @@ class thermo(object):
 
         return np.array(temp_c), np.array(vol_c), np.array(press_c)
 
-    def density_mu_t(self, temp, mu, rho_initial):
-        """Stability interface
-        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
-
-        Args:
-            temp (float): Temperature (K)
-            mu (array_like): Flag to activate calculation.
-            rho_initial (array_like): Initial guess for component densities (mol/m3).
-
-        Returns:
-            rho (array_like): Array of component densities (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial)
-        ierr_c = c_int(0)
-        self.s_solve_mu_t.argtypes = [POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_int)]
-
-        self.s_solve_mu_t.restype = None
-
-        self.s_solve_mu_t(mu_c,
-                          byref(temp_c),
-                          rho_c,
-                          byref(ierr_c))
-
-        if ierr_c.value != 0:
-            raise Exception("mu-T solver failed")
-
-        return np.array(rho_c)
-
-    def density_lnf_t(self, temp, lnf, rho_initial):
-        """Stability interface
-        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
-
-        Args:
-            temp (float): Temperature (K)
-            lnf (array_like): Logaritm of fugacity coefficients.
-            rho_initial (array_like): Initial guess for component densities (mol/m3).
-
-        Returns:
-            rho (array_like): Array of component densities (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        lnf_c = (c_double * len(lnf))(*lnf)
-        rho_c = (c_double * len(lnf))(*rho_initial)
-        ierr_c = c_int(0)
-        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_int)]
-
-        self.s_solve_lnf_t.restype = None
-
-        self.s_solve_lnf_t(lnf_c,
-                           byref(temp_c),
-                           rho_c,
-                           byref(ierr_c))
-
-        return np.array(rho_c)
-
     def map_meta_isotherm(self,
                           temperature,
                           z,
                           phase,
                           n=50):
-        """Stability interface
+        """Stability interface & Isoline
         Trace isotherm from saturation line to spinodal. Solve for phase in
         chemical and thermal equilibrium with a phase defined by z anf phase flag..
 
@@ -4143,6 +4117,71 @@ class thermo(object):
                 rho[i][j] = rho_c[i+j*n]
 
         return np.array(vol_c), rho
+
+    def density_mu_t(self, temp, mu, rho_initial):
+        """Stability interface & Other property
+        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+
+        Args:
+            temp (float): Temperature (K)
+            mu (array_like): Flag to activate calculation.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_mu_t.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_solve_mu_t.restype = None
+
+        self.s_solve_mu_t(mu_c,
+                          byref(temp_c),
+                          rho_c,
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("mu-T solver failed")
+
+        return np.array(rho_c)
+
+    def density_lnf_t(self, temp, lnf, rho_initial):
+        """Stability interface & Other property
+        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+            lnf (array_like): Logaritm of fugacity coefficients.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        lnf_c = (c_double * len(lnf))(*lnf)
+        rho_c = (c_double * len(lnf))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
+
+        self.s_solve_lnf_t.restype = None
+
+        self.s_solve_lnf_t(lnf_c,
+                           byref(temp_c),
+                           rho_c,
+                           byref(ierr_c))
+
+        return np.array(rho_c)
 
     #################################
     # Virial interfaces

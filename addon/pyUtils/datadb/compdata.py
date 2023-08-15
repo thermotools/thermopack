@@ -1,7 +1,7 @@
 """Module for automatic generation of FORTRAN code of component data."""
 from __future__ import print_function
 import numpy as np
-from sys import exit
+import sys
 import os
 import math
 import json
@@ -11,6 +11,8 @@ from data_utils import I, N_TAGS_PER_LINE, \
     get_assoc_scheme_parameter, \
     get_alpha_index_parameter
 from shutil import copy
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
+import tools
 
 def get_keys_from_base_name(d,name):
     key_list = []
@@ -530,12 +532,18 @@ class comp_list(object):
         filename - path to file
         """
         wiki_header_lines = []
+        wiki_header_lines.append('<!---\nThis is an auto-generated file, written by the module at '
+                                 'addon/pyUtils/compdatadb.py\n'
+                                 'Generated at : ' + datetime.today().isoformat() + '\n'
+                                 'This is the same module that is used to generate the Fortran\n'
+                                 'component database files.\n'
+                                 '--->\n\n')
         wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
         wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT' column indicates which fluids SAFT-EoS parameters are available for.\n")
+        wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.\n")
         wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT |")
-        wiki_header_lines.append("| ------------------------ | ----------- | ---- |")
+        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT-VR | PC-SAFT | CPA |")
+        wiki_header_lines.append("| ------------------------ | ----------- | ---- | ---- | ---- |")
 
         wiki_lines = []
         for comp in self.comp_list:
@@ -550,18 +558,32 @@ class comp_list(object):
             else:
                 name = name.capitalize()
 
-            has_saft_params = False
+            has_svrm_params = False
+            has_pcsaft_params = False
+            has_cpa_params = False
             for k in comp.comp.keys():
-                if 'SAFTVRMIE' in k:
-                    has_saft_params = True
+                if 'saftvrmie' in k.lower():
+                    has_svrm_params = True
+                elif 'pc-saft' in k.lower():
+                    has_pcsaft_params = True
+                elif ('srk' in k.lower()) or ('pr' in k.lower()):
+                    for sub_k in comp.comp[k].keys():
+                        if 'cpa' in sub_k.lower():
+                            has_cpa_params = True
+                if has_svrm_params and has_cpa_params and has_pcsaft_params:
                     break
 
-            if has_saft_params is True:
-                has_saft_params = ':heavy_check_mark:'
-            else:
-                has_saft_params = ' '
+            def has_param_txt(has_param):
+                if has_param is True:
+                    return ':heavy_check_mark:'
+                return ' '
 
-            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_saft_params + " |"
+            has_svrm_params = has_param_txt(has_svrm_params)
+            has_pcsaft_params = has_param_txt(has_pcsaft_params)
+            has_cpa_params = has_param_txt(has_cpa_params)
+
+            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_svrm_params + " | " + has_pcsaft_params \
+                   + " | " + has_cpa_params + " |"
             wiki_lines.append(line)
         wiki_lines.sort()
         wiki_lines = wiki_header_lines + wiki_lines
@@ -594,5 +616,5 @@ class comp_list(object):
 if __name__ == "__main__":
     compl = comp_list()
     compl.save_fortran_file("compdatadb.f90")
-    compl.save_wiki_name_mapping("Component-name-mapping.md")
+    compl.save_wiki_name_mapping(tools.MARKDOWN_DIR + "Component-name-mapping.md")
     copy('compdatadb.f90', '../../../src/compdatadb.f90')

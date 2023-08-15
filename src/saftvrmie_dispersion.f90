@@ -20,7 +20,7 @@ module saftvrmie_dispersion
   save
 
   public :: calcA1, calcA2, calcA3
-  public :: calc_delta_Ac
+  public :: calc_delta_Ac, calc_alpha_ts
 
 contains
 
@@ -3812,5 +3812,46 @@ contains
       endif
     end subroutine calc_a_correction_div_n
   end subroutine calc_delta_Ac
+
+  !> Calculate truncation (and shifted) alpha
+  !! \author Morten Hammer, June 2023
+  subroutine calc_alpha_ts(i, j, s_vc, alpha_ij)
+    use saftvrmie_hardsphere, only: calc_zero_for_shifted_potential
+    ! Input
+    integer, intent(in) :: i, j !< Interaction pair
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    ! Output
+    real, intent(out) :: alpha_ij  !< Truncated and shifted alpha
+    ! Locals
+    real :: lamr, lama, C
+    real :: r_cut, u_cut, u_shift_divk
+    real :: eps_eff, sigma_eff
+
+    if (svrm_opt%quantum_correction > 0) &
+         call stoperror("Alpha correction not yet implemented for quantum potentials")
+
+    lamr = saftvrmie_param%lambda_r_ij(i,j)
+    lama = saftvrmie_param%lambda_a_ij(i,j)
+    C = saftvrmie_param%Cij(i,j)
+    r_cut = svrm_opt%r_cut
+
+    ! Get integration limits
+    if (svrm_opt%enable_shift_correction) then
+      u_cut = C*(1/r_cut**lama - 1/r_cut**lamr) ! Absolute value of u
+      eps_eff = 1 - u_cut
+      u_shift_divk = -u_cut*saftvrmie_param%eps_divk_ij(i,j)
+      call calc_zero_for_shifted_potential(i,j,s_vc,saftvrmie_param%sigma_ij(i,j),u_shift_divk,sigma_eff)
+      sigma_eff = sigma_eff/saftvrmie_param%sigma_ij(i,j)
+    else
+      sigma_eff = 1.0
+      eps_eff = 1.0
+    endif
+    alpha_ij = C/sigma_eff**(lama-3)/(lama-3) - C/sigma_eff**(lamr-3)/(lamr-3) &
+         + C/r_cut**(lamr-3)/(lamr-3) - C/r_cut**(lama-3)/(lama-3)
+    if (svrm_opt%enable_shift_correction) then
+      alpha_ij = alpha_ij - u_cut/3.0*(r_cut**3-sigma_eff**3)
+    endif
+    alpha_ij = alpha_ij/eps_eff/sigma_eff**3
+  end subroutine calc_alpha_ts
 
 end module saftvrmie_dispersion
