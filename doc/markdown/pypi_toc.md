@@ -13,3 +13,4 @@
     * [Critical point](#critical-point)
   * [Advanced usage](#More-advanced-usage---Python)
     * [Interaction parameters](#Interaction-parameters) 
+  * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
