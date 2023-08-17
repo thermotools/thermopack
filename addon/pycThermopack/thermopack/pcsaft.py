@@ -237,7 +237,7 @@ class pcsaft(saft):
         """
         warnings.warn("The method 'get_pure_params' has been repaced by 'get_pure_fluid_param', and may be removed in"
                       "the future.", DeprecationWarning, stacklevel=2)
-        self.get_pure_fluid_param(c)
+        return self.get_pure_fluid_param(c)
 
     def lng_ii(self, temp, volume, n, i, lng_t=None, lng_v=None, lng_n=None, lng_tt=None, lng_vv=None,
                lng_tv=None, lng_tn=None, lng_vn=None, lng_nn=None):
