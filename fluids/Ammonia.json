@@ -218,6 +218,16 @@
     "bib_reference": "SINTEF Energy Research",
     "ref": "Default/InHouse"
   },
+  "PC-SAFT-2": {
+    "m": 1.4302,
+    "sigma": 2.7927E-10,
+    "eps_depth_divk": 145.0059,
+    "eps": 13303.140189,
+    "beta": 0.221193,
+    "assoc_scheme": "2B",
+    "bib_reference": "10.1016/j.fluid.2020.112689",
+    "ref": "NguyenHuynh2020"
+  },
   "SAFTVRMIE-1": {
     "m": 1.0,
     "sigma": 3.3309E-10,
