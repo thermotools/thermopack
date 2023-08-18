@@ -1,6 +1,6 @@
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-03-13T14:41:54.109210
+Generated at : 2023-08-17T16:32:08.374065
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -32,7 +32,7 @@ In order to specify fluids in Thermopack you need to use fluid identifiers as sh
 | 2-Methylhexane | 2MHX |   |   |   |
 | 3-Methylpentane | 3MP |   |   |   |
 | Acetone | ACETONE |   | :heavy_check_mark: |   |
-| Acetylen | ACETYLEN |   | :heavy_check_mark: |   |
+| Acetylene | ACETYLENE |   | :heavy_check_mark: |   |
 | Ammonia | NH3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Argon | AR | :heavy_check_mark: | :heavy_check_mark: |   |
 | Benzene | BENZENE |   | :heavy_check_mark: |   |
