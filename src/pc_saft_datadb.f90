@@ -1,6 +1,6 @@
 !> Automatically generated to file pc_saft_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-08-17T16:34:47.659827
+!! Time stamp: 2023-08-18T11:18:19.140638
 
 module pc_saft_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -735,6 +735,21 @@ module pc_saft_datadb
 
   type(pc_saft_data), parameter :: PCcx47 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.18381, &
+      sigma = 2.87756e-10, &
+      eps_depth_divk = 201.82186, &
+      eps = 15074.120726711822, &
+      beta = 0.07002, &
+      assoc_scheme = assoc_scheme_4C, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "10.1016/j.fluid.2018.06.019", &
+      ref = "NguyenHuynh2020" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx48 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC4", &
       m = 2.3316, &
       sigma = 3.7086e-10, &
@@ -748,7 +763,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx48 = &
+  type(pc_saft_data), parameter :: PCcx49 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC10", &
       m = 4.6627, &
@@ -763,7 +778,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx49 = &
+  type(pc_saft_data), parameter :: PCcx50 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC22", &
       m = 8.7068, &
@@ -778,7 +793,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx50 = &
+  type(pc_saft_data), parameter :: PCcx51 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC12", &
       m = 5.2133, &
@@ -793,7 +808,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx51 = &
+  type(pc_saft_data), parameter :: PCcx52 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC20", &
       m = 8.0081, &
@@ -808,7 +823,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx52 = &
+  type(pc_saft_data), parameter :: PCcx53 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC21", &
       m = 8.3574, &
@@ -823,7 +838,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx53 = &
+  type(pc_saft_data), parameter :: PCcx54 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC17", &
       m = 6.96, &
@@ -838,7 +853,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx54 = &
+  type(pc_saft_data), parameter :: PCcx55 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC7", &
       m = 3.4831, &
@@ -853,7 +868,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx55 = &
+  type(pc_saft_data), parameter :: PCcx56 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC16", &
       m = 6.6107, &
@@ -868,7 +883,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx56 = &
+  type(pc_saft_data), parameter :: PCcx57 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC6", &
       m = 3.0576, &
@@ -883,7 +898,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx57 = &
+  type(pc_saft_data), parameter :: PCcx58 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC19", &
       m = 7.6587, &
@@ -898,7 +913,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx58 = &
+  type(pc_saft_data), parameter :: PCcx59 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC9", &
       m = 4.2079, &
@@ -913,7 +928,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx59 = &
+  type(pc_saft_data), parameter :: PCcx60 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC18", &
       m = 7.3094, &
@@ -928,7 +943,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx60 = &
+  type(pc_saft_data), parameter :: PCcx61 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC8", &
       m = 3.8176, &
@@ -943,7 +958,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx61 = &
+  type(pc_saft_data), parameter :: PCcx62 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC25", &
       m = 9.7548, &
@@ -958,7 +973,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx62 = &
+  type(pc_saft_data), parameter :: PCcx63 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC15", &
       m = 6.2614, &
@@ -973,7 +988,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx63 = &
+  type(pc_saft_data), parameter :: PCcx64 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC5", &
       m = 2.6896, &
@@ -988,7 +1003,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx64 = &
+  type(pc_saft_data), parameter :: PCcx65 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC14", &
       m = 5.912, &
@@ -1003,7 +1018,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx65 = &
+  type(pc_saft_data), parameter :: PCcx66 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC24", &
       m = 9.4055, &
@@ -1018,7 +1033,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx66 = &
+  type(pc_saft_data), parameter :: PCcx67 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC23", &
       m = 9.0561, &
@@ -1033,7 +1048,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx67 = &
+  type(pc_saft_data), parameter :: PCcx68 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC13", &
       m = 5.5627, &
@@ -1048,7 +1063,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  type(pc_saft_data), parameter :: PCcx68 = &
+  type(pc_saft_data), parameter :: PCcx69 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC11", &
       m = 4.864, &
@@ -1063,7 +1078,7 @@ module pc_saft_datadb
       ref = "Default/Kontogeorgis_Folas2001" &
       )
 
-  integer, parameter :: nPCmodels = 68
+  integer, parameter :: nPCmodels = 69
   type(pc_saft_data), dimension(nPCmodels), parameter :: PCarray = (/&
       PCcx1,PCcx2,PCcx3,PCcx4,PCcx5, &
       PCcx6,PCcx7,PCcx8,PCcx9,PCcx10, &
@@ -1078,7 +1093,7 @@ module pc_saft_datadb
       PCcx51,PCcx52,PCcx53,PCcx54,PCcx55, &
       PCcx56,PCcx57,PCcx58,PCcx59,PCcx60, &
       PCcx61,PCcx62,PCcx63,PCcx64,PCcx65, &
-      PCcx66,PCcx67,PCcx68 &
+      PCcx66,PCcx67,PCcx68,PCcx69 &
   /)
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_1 = &
