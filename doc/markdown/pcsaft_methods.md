@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-06-22T15:42:48.988149
+Generated at: 2023-08-21T15:37:49.033853
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 pcsaft class. For instructions on how to use the parser routines, see the
@@ -12,17 +12,17 @@ PC-SAFT Equation of State. This class inherits the `saft` class, which in turn i
 `thermo` class. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault-simplifiedFalse-polarFalse)
-    * [init](#initself-comps-parameter_referenceDefault-simplifiedFalse-polarFalse)
-  * [Utility methods](#Utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-parameter_referencedefault-simplifiedfalse-polarfalse)
+    * [init](#initself-comps-parameter_referencedefault-simplifiedfalse-polarfalse)
+  * [Utility methods](#utility-methods)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
-    * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
+    * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tnone-lng_vnone-lng_nnone-lng_ttnone-lng_vvnone-lng_tvnone-lng_tnnone-lng_vnnone-lng_nnnone)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
-  * [Deprecated methods](#Deprecated-methods)
+  * [Deprecated methods](#deprecated-methods)
     * [get_pure_params](#get_pure_paramsself-c)
     * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
 
@@ -31,9 +31,9 @@ PC-SAFT Equation of State. This class inherits the `saft` class, which in turn i
 Methods to initialise PC-SAFT model.
 
 ### Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault-simplifiedFalse-polarFalse)
-    * [init](#initself-comps-parameter_referenceDefault-simplifiedFalse-polarFalse)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-parameter_referencedefault-simplifiedfalse-polarfalse)
+    * [init](#initself-comps-parameter_referencedefault-simplifiedfalse-polarfalse)
 
 
 ### `__init__(self, comps=None, parameter_reference='Default', simplified=False, polar=False)`
@@ -87,11 +87,11 @@ Initialize PC-SAFT model in thermopack
 Set- and get methods for interaction parameters and pure fluid parameters.
 
 ### Table of contents
-  * [Utility methods](#Utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phiNone-phi_tNone-phi_nNone-phi_ttNone-phi_tnNone-phi_nnNone)
+  * [Utility methods](#utility-methods)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
-    * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tNone-lng_vNone-lng_nNone-lng_ttNone-lng_vvNone-lng_tvNone-lng_tnNone-lng_vnNone-lng_nnNone)
+    * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tnone-lng_vnone-lng_nnone-lng_ttnone-lng_vvnone-lng_tvnone-lng_tnnone-lng_vnnone-lng_nnnone)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
 
@@ -321,7 +321,7 @@ Set pure fluid PC-SAFT parameters
 Deprecated methods are not maintained, and may be removed in the future.
 
 ### Table of contents
-  * [Deprecated methods](#Deprecated-methods)
+  * [Deprecated methods](#deprecated-methods)
     * [get_pure_params](#get_pure_paramsself-c)
     * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
 

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-06-20T14:55:37.268013
+Generated at: 2023-08-21T15:37:49.030392
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saft class. For instructions on how to use the parser routines, see the
@@ -12,19 +12,19 @@ by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic 
 compute quantities of interest when investigating SAFT-type equations of state.
 
 ## Table of contents
-  * [Utility methods](#Utility-methods)
-    * [a_dispersion](#a_dispersionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
-    * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
-    * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
+  * [Utility methods](#utility-methods)
+    * [a_dispersion](#a_dispersionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
+    * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
+    * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [adjust_mass_to_de_boer_parameter](#adjust_mass_to_de_boer_parameterself-c-de_boer)
     * [alpha](#alphaself-temperature)
-    * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nFalse-mu_ij_TNone)
+    * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nfalse-mu_ij_tnone)
     * [de_boer_parameter](#de_boer_parameterself-c)
     * [de_broglie_wavelength](#de_broglie_wavelengthself-c-temp)
     * [epsilon_eff_ij](#epsilon_eff_ijself-i-j-temperature)
     * [epsilon_ij](#epsilon_ijself-i-j)
-    * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nFalse-phi_nnFalse-fmt_modelWB)
-    * [fres_polar](#fres_polarself-temp-volume-n-qqTrue-ddTrue-dqTrue)
+    * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
+    * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
@@ -34,7 +34,7 @@ compute quantities of interest when investigating SAFT-type equations of state.
     * [sigma_ij](#sigma_ijself-i-j)
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
     * [truncation_correction](#truncation_correctionself-enable_truncation_correction-enable_shift_correction-reduced_radius_cut35)
-  * [Internal methods](#Internal-methods)
+  * [Internal methods](#internal-methods)
     * [\_\_init\_\_](#__init__self)
 
 ## Utility methods
@@ -43,19 +43,19 @@ Methods for computing specific parameters and contributions to the residual
 Helmholtz energy for SAFT-type equations of state
 
 ### Table of contents
-  * [Utility methods](#Utility-methods)
-    * [a_dispersion](#a_dispersionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
-    * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
-    * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tNone-a_vNone-a_nNone-a_ttNone-a_vvNone-a_tvNone-a_tnNone-a_vnNone-a_nnNone)
+  * [Utility methods](#utility-methods)
+    * [a_dispersion](#a_dispersionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
+    * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
+    * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [adjust_mass_to_de_boer_parameter](#adjust_mass_to_de_boer_parameterself-c-de_boer)
     * [alpha](#alphaself-temperature)
-    * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nFalse-mu_ij_TNone)
+    * [calc_bmcsl_gij_fmt](#calc_bmcsl_gij_fmtself-n_alpha-mu_ij-calc_g_ij_nfalse-mu_ij_tnone)
     * [de_boer_parameter](#de_boer_parameterself-c)
     * [de_broglie_wavelength](#de_broglie_wavelengthself-c-temp)
     * [epsilon_eff_ij](#epsilon_eff_ijself-i-j-temperature)
     * [epsilon_ij](#epsilon_ijself-i-j)
-    * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nFalse-phi_nnFalse-fmt_modelWB)
-    * [fres_polar](#fres_polarself-temp-volume-n-qqTrue-ddTrue-dqTrue)
+    * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
+    * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
@@ -663,7 +663,7 @@ Enable/disable truncation corrections
 Methods for handling communication with the Fortran library.
 
 ### Table of contents
-  * [Internal methods](#Internal-methods)
+  * [Internal methods](#internal-methods)
     * [\_\_init\_\_](#__init__self)
 
 

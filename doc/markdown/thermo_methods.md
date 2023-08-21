@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-06-20T14:53:27.920130
+Generated at: 2023-08-21T15:37:49.025989
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -10,39 +10,39 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the core of the ThermoPack Python interface. All equation of state classes inherit from `thermo`. This is the class that contains the interface to all practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement specific functions for parameter handling etc.
 
 ## Table of contents
-  * [TV-property interfaces](#TV-property-interfaces)
-    * [chemical_potential_tv](#chemical_potential_tvself-temp-volume-n-dmudtNone-dmudvNone-dmudnNone-property_flagIR)
-    * [enthalpy_tv](#enthalpy_tvself-temp-volume-n-dhdtNone-dhdvNone-dhdnNone-property_flagIR)
-    * [entropy_tv](#entropy_tvself-temp-volume-n-dsdtNone-dsdvNone-dsdnNone-property_flagIR)
-    * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtNone-dlnphidvNone-dlnphidnNone)
-    * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
-    * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
-    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
+  * [TV-property interfaces](#tv-property-interfaces)
+    * [chemical_potential_tv](#chemical_potential_tvself-temp-volume-n-dmudtnone-dmudvnone-dmudnnone-property_flagir)
+    * [enthalpy_tv](#enthalpy_tvself-temp-volume-n-dhdtnone-dhdvnone-dhdnnone-property_flagir)
+    * [entropy_tv](#entropy_tvself-temp-volume-n-dsdtnone-dsdvnone-dsdnnone-property_flagir)
+    * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtnone-dlnphidvnone-dlnphidnnone)
+    * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtnone-dadvnone-dadnnone-property_flagir)
+    * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtnone-dedvnone-dednnone-property_flagir)
+    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtnone-dpdvnone-dpdnnone-property_flagir)
     * [speed_of_sound_tv](#speed_of_sound_tvself-temp-volume-n)
-  * [Tp-property interfaces](#Tp-property-interfaces)
-    * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
-    * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
-    * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtNone)
-    * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtNone-dsdpNone)
-    * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtNone-dvdpNone-dvdnNone)
-    * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betaV-betaL-phase)
-    * [thermo](#thermoself-temp-press-x-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone-ophaseNone-vNone)
-    * [zfac](#zfacself-temp-press-x-phase-dzdtNone-dzdpNone-dzdnNone)
-  * [TVp-property interfaces](#TVp-property-interfaces)
-    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
-    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
-  * [Other property interfaces](#Other-property-interfaces)
+  * [Tp-property interfaces](#tp-property-interfaces)
+    * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtnone-dhdpnone-dhdnnone-residualfalse)
+    * [entropy](#entropyself-temp-press-x-phase-dsdtnone-dsdpnone-dsdnnone-residualfalse)
+    * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
+    * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
+    * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
+    * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
+    * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
+    * [zfac](#zfacself-temp-press-x-phase-dzdtnone-dzdpnone-dzdnnone)
+  * [TVp-property interfaces](#tvp-property-interfaces)
+    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
+    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
+  * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
-  * [Flash interfaces](#Flash-interfaces)
+  * [Flash interfaces](#flash-interfaces)
     * [guess_phase](#guess_phaseself-temp-press-z)
     * [set_ph_tolerance](#set_ph_toleranceself-tol)
-    * [two_phase_phflash](#two_phase_phflashself-press-z-enthalpy-tempNone)
-    * [two_phase_psflash](#two_phase_psflashself-press-z-entropy-tempNone)
+    * [two_phase_phflash](#two_phase_phflashself-press-z-enthalpy-tempnone)
+    * [two_phase_psflash](#two_phase_psflashself-press-z-entropy-tempnone)
     * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
-    * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempNone-pressNone)
-  * [Saturation interfaces](#Saturation-interfaces)
+    * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempnone-pressnone)
+  * [Saturation interfaces](#saturation-interfaces)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
@@ -51,21 +51,21 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
-    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_size_factor10-step_sizeNone-calc_vFalse-initial_temperatureNone)
-    * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperatureNone-iNone-max_delta_press200000-nmax100-log_linear_gridFalse)
-    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
-    * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperatureNone-nmax100-scale_to_eosTrue)
-    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvFalse)
-    * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperatureNone-nmax100-scale_to_eosTrue)
-  * [Isolines](#Isolines)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone)
+    * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
+    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
+    * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
+    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvfalse)
+    * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperaturenone-nmax100-scale_to_eostrue)
+  * [Isolines](#isolines)
     * [get_isenthalp](#get_isenthalpself-enthalpy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
     * [get_isentrope](#get_isentropeself-entropy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
     * [get_isobar](#get_isobarself-press-z-minimum_temperature2000-maximum_temperature5000-nmax100)
     * [get_isotherm](#get_isothermself-temp-z-minimum_pressure1000000-maximum_pressure150000000-nmax100)
     * [map_meta_isentrope](#map_meta_isentropeself-z-initial_pressure-entropy-minimum_pressure-n_max50)
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
-  * [Stability interfaces](#Stability-interfaces)
-    * [critical](#criticalself-n-temp00-v00-tol1e-07-v_minNone)
+  * [Stability interfaces](#stability-interfaces)
+    * [critical](#criticalself-n-temp00-v00-tol1e-07-v_minnone)
     * [critical_pressure](#critical_pressureself-i)
     * [critical_temperature](#critical_temperatureself-i)
     * [critical_volume](#critical_volumeself-i)
@@ -74,15 +74,15 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_critical_parameters](#get_critical_parametersself-i)
     * [map_meta_isentrope](#map_meta_isentropeself-z-initial_pressure-entropy-minimum_pressure-n_max50)
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
-    * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperatureNone-dlnvNone-min_temperature_vaporNone)
-    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperatureNone)
-  * [Virial interfaces](#Virial-interfaces)
+    * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperaturenone-dlnvnone-min_temperature_vapornone)
+    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperaturenone)
+  * [Virial interfaces](#virial-interfaces)
     * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
     * [second_virial_matrix](#second_virial_matrixself-temp)
     * [virial_coeffcients](#virial_coeffcientsself-temp-n)
-  * [Joule-Thompson interface](#Joule-Thompson-interface)
+  * [Joule-Thompson interface](#joule-thompson-interface)
     * [joule_thompson_inversion](#joule_thompson_inversionself-z-nmax1000)
-  * [Utility methods](#Utility-methods)
+  * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
     * [get_comp_name](#get_comp_nameself-index)
@@ -95,14 +95,14 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
-    * [redefine_critical_parameters](#redefine_critical_parametersself-silentTrue-Tc_initialsNone-vc_initialsNone)
+    * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
     * [set_tmax](#set_tmaxself-temp)
     * [set_tmin](#set_tminself-temp)
-  * [Internal methods](#Internal-methods)
+  * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
     * [activate](#activateself)
@@ -110,23 +110,23 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [delete_eos](#delete_eosself)
     * [get_export_name](#get_export_nameself-module-method)
     * [get_model_id](#get_model_idself)
-    * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referenceDefault)
+    * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referencedefault)
     * [init_solid](#init_solidself-scomp)
-    * [init_thermo](#init_thermoself-eos-mixing-alpha-comps-nphases-liq_vap_discr_methodNone-csp_eosNone-csp_ref_compNone-kij_refDefault-alpha_refDefault-saft_refDefault-b_exponentNone-TrendEosForCpNone-cptypeNone-silentNone)
+    * [init_thermo](#init_thermoself-eos-mixing-alpha-comps-nphases-liq_vap_discr_methodnone-csp_eosnone-csp_ref_compnone-kij_refdefault-alpha_refdefault-saft_refdefault-b_exponentnone-trendeosforcpnone-cptypenone-silentnone)
 
 ## TV-property interfaces
 
 Computing properties as a function of temperature and volume. Derivatives returned by methods in this section are computed as functions of (T, V, n).
 
 ### Table of contents
-  * [TV-property interfaces](#TV-property-interfaces)
-    * [chemical_potential_tv](#chemical_potential_tvself-temp-volume-n-dmudtNone-dmudvNone-dmudnNone-property_flagIR)
-    * [enthalpy_tv](#enthalpy_tvself-temp-volume-n-dhdtNone-dhdvNone-dhdnNone-property_flagIR)
-    * [entropy_tv](#entropy_tvself-temp-volume-n-dsdtNone-dsdvNone-dsdnNone-property_flagIR)
-    * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtNone-dlnphidvNone-dlnphidnNone)
-    * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtNone-dadvNone-dadnNone-property_flagIR)
-    * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtNone-dedvNone-dednNone-property_flagIR)
-    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtNone-dpdvNone-dpdnNone-property_flagIR)
+  * [TV-property interfaces](#tv-property-interfaces)
+    * [chemical_potential_tv](#chemical_potential_tvself-temp-volume-n-dmudtnone-dmudvnone-dmudnnone-property_flagir)
+    * [enthalpy_tv](#enthalpy_tvself-temp-volume-n-dhdtnone-dhdvnone-dhdnnone-property_flagir)
+    * [entropy_tv](#entropy_tvself-temp-volume-n-dsdtnone-dsdvnone-dsdnnone-property_flagir)
+    * [fugacity_tv](#fugacity_tvself-temp-volume-n-dlnphidtnone-dlnphidvnone-dlnphidnnone)
+    * [helmholtz_tv](#helmholtz_tvself-temp-volume-n-dadtnone-dadvnone-dadnnone-property_flagir)
+    * [internal_energy_tv](#internal_energy_tvself-temp-volume-n-dedtnone-dedvnone-dednnone-property_flagir)
+    * [pressure_tv](#pressure_tvself-temp-volume-n-dpdtnone-dpdvnone-dpdnnone-property_flagir)
     * [speed_of_sound_tv](#speed_of_sound_tvself-temp-volume-n)
 
 
@@ -471,15 +471,15 @@ Calculate speed of sound for single phase fluid
 Computing properties as a function of temperature and pressure. Derivatives returned by methods in this section are computed as functions of (T, p, n).
 
 ### Table of contents
-  * [Tp-property interfaces](#Tp-property-interfaces)
-    * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtNone-dhdpNone-dhdnNone-residualFalse)
-    * [entropy](#entropyself-temp-press-x-phase-dsdtNone-dsdpNone-dsdnNone-residualFalse)
-    * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtNone)
-    * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtNone-dsdpNone)
-    * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtNone-dvdpNone-dvdnNone)
-    * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betaV-betaL-phase)
-    * [thermo](#thermoself-temp-press-x-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone-ophaseNone-vNone)
-    * [zfac](#zfacself-temp-press-x-phase-dzdtNone-dzdpNone-dzdnNone)
+  * [Tp-property interfaces](#tp-property-interfaces)
+    * [enthalpy](#enthalpyself-temp-press-x-phase-dhdtnone-dhdpnone-dhdnnone-residualfalse)
+    * [entropy](#entropyself-temp-press-x-phase-dsdtnone-dsdpnone-dsdnnone-residualfalse)
+    * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
+    * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
+    * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
+    * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
+    * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
+    * [zfac](#zfacself-temp-press-x-phase-dzdtnone-dzdpnone-dzdnnone)
 
 
 ### `enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False)`
@@ -825,10 +825,10 @@ Calculate single-phase compressibility Note that the order of the output match t
 Computing properties given Temperature, volume and mole numbers, but evaluate derivatives as functions of (T, p, n). See [Advanced Usage => The different property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.
 
 ### Table of contents
-  * [TVp-property interfaces](#TVp-property-interfaces)
-    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtNone-dhdpNone-dhdnNone-property_flagIR)
-    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtNone-dsdpNone-dsdnNone-property_flagIR)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtNone-dlnfugdpNone-dlnfugdnNone)
+  * [TVp-property interfaces](#tvp-property-interfaces)
+    * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
+    * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
 
 
 ### `enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag='IR')`
@@ -963,7 +963,7 @@ Calculate logarithm of fugacity coefficient given molar numbers, temperature and
 Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.
 
 ### Table of contents
-  * [Other property interfaces](#Other-property-interfaces)
+  * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
 
@@ -1027,13 +1027,13 @@ Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 Methods for flash calculations.
 
 ### Table of contents
-  * [Flash interfaces](#Flash-interfaces)
+  * [Flash interfaces](#flash-interfaces)
     * [guess_phase](#guess_phaseself-temp-press-z)
     * [set_ph_tolerance](#set_ph_toleranceself-tol)
-    * [two_phase_phflash](#two_phase_phflashself-press-z-enthalpy-tempNone)
-    * [two_phase_psflash](#two_phase_psflashself-press-z-entropy-tempNone)
+    * [two_phase_phflash](#two_phase_phflashself-press-z-enthalpy-tempnone)
+    * [two_phase_psflash](#two_phase_psflashself-press-z-entropy-tempnone)
     * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
-    * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempNone-pressNone)
+    * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempnone-pressnone)
 
 
 ### `guess_phase(self, temp, press, z)`
@@ -1209,7 +1209,7 @@ Do isoenergetic-isochoric (UV) flash
 Bubble- and dew point calculations and phase envelopes.
 
 ### Table of contents
-  * [Saturation interfaces](#Saturation-interfaces)
+  * [Saturation interfaces](#saturation-interfaces)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
@@ -1218,12 +1218,12 @@ Bubble- and dew point calculations and phase envelopes.
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
-    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperatureNone-step_size_factor10-step_sizeNone-calc_vFalse-initial_temperatureNone)
-    * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperatureNone-iNone-max_delta_press200000-nmax100-log_linear_gridFalse)
-    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesFalse)
-    * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperatureNone-nmax100-scale_to_eosTrue)
-    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvFalse)
-    * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperatureNone-nmax100-scale_to_eosTrue)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone)
+    * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
+    * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
+    * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
+    * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvfalse)
+    * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperaturenone-nmax100-scale_to_eostrue)
 
 
 ### `binary_triple_point_pressure(self, temp, maximum_pressure=15000000.0, minimum_pressure=10000.0)`
@@ -1817,7 +1817,7 @@ Calculate melting line form correlation
 Computing isolines.
 
 ### Table of contents
-  * [Isolines](#Isolines)
+  * [Isolines](#isolines)
     * [get_isenthalp](#get_isenthalpself-enthalpy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
     * [get_isentrope](#get_isentropeself-entropy-z-minimum_pressure1000000-maximum_pressure150000000-minimum_temperature2000-maximum_temperature5000-nmax100)
     * [get_isobar](#get_isobarself-press-z-minimum_temperature2000-maximum_temperature5000-nmax100)
@@ -2085,8 +2085,8 @@ Trace isotherm from saturation line to spinodal. Solve for phase in chemical and
 Critical point solver.
 
 ### Table of contents
-  * [Stability interfaces](#Stability-interfaces)
-    * [critical](#criticalself-n-temp00-v00-tol1e-07-v_minNone)
+  * [Stability interfaces](#stability-interfaces)
+    * [critical](#criticalself-n-temp00-v00-tol1e-07-v_minnone)
     * [critical_pressure](#critical_pressureself-i)
     * [critical_temperature](#critical_temperatureself-i)
     * [critical_volume](#critical_volumeself-i)
@@ -2095,8 +2095,8 @@ Critical point solver.
     * [get_critical_parameters](#get_critical_parametersself-i)
     * [map_meta_isentrope](#map_meta_isentropeself-z-initial_pressure-entropy-minimum_pressure-n_max50)
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
-    * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperatureNone-dlnvNone-min_temperature_vaporNone)
-    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperatureNone)
+    * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperaturenone-dlnvnone-min_temperature_vapornone)
+    * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperaturenone)
 
 
 ### `critical(self, n, temp=0.0, v=0.0, tol=1e-07, v_min=None)`
@@ -2461,7 +2461,7 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 Retrieve various virial coefficients.
 
 ### Table of contents
-  * [Virial interfaces](#Virial-interfaces)
+  * [Virial interfaces](#virial-interfaces)
     * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
     * [second_virial_matrix](#second_virial_matrixself-temp)
     * [virial_coeffcients](#virial_coeffcientsself-temp-n)
@@ -2537,7 +2537,7 @@ Calculate (composition-dependent) virial coefficients B and C, defined as P/RT =
 Joule-Thompson inversion curves.
 
 ### Table of contents
-  * [Joule-Thompson interface](#Joule-Thompson-interface)
+  * [Joule-Thompson interface](#joule-thompson-interface)
     * [joule_thompson_inversion](#joule_thompson_inversionself-z-nmax1000)
 
 
@@ -2577,7 +2577,7 @@ Calculate Joule-Thompson inversion curve
 Methods for setting ... and getting ...
 
 ### Table of contents
-  * [Utility methods](#Utility-methods)
+  * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
     * [get_comp_name](#get_comp_nameself-index)
@@ -2590,7 +2590,7 @@ Methods for setting ... and getting ...
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
-    * [redefine_critical_parameters](#redefine_critical_parametersself-silentTrue-Tc_initialsNone-vc_initialsNone)
+    * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_pmax](#set_pmaxself-press)
@@ -2871,7 +2871,7 @@ Set minimum temperature in Thermopack. Used to limit search domain for numerical
 Methods for handling communication with the Fortran library.
 
 ### Table of contents
-  * [Internal methods](#Internal-methods)
+  * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
     * [activate](#activateself)
@@ -2879,9 +2879,9 @@ Methods for handling communication with the Fortran library.
     * [delete_eos](#delete_eosself)
     * [get_export_name](#get_export_nameself-module-method)
     * [get_model_id](#get_model_idself)
-    * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referenceDefault)
+    * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referencedefault)
     * [init_solid](#init_solidself-scomp)
-    * [init_thermo](#init_thermoself-eos-mixing-alpha-comps-nphases-liq_vap_discr_methodNone-csp_eosNone-csp_ref_compNone-kij_refDefault-alpha_refDefault-saft_refDefault-b_exponentNone-TrendEosForCpNone-cptypeNone-silentNone)
+    * [init_thermo](#init_thermoself-eos-mixing-alpha-comps-nphases-liq_vap_discr_methodnone-csp_eosnone-csp_ref_compnone-kij_refdefault-alpha_refdefault-saft_refdefault-b_exponentnone-trendeosforcpnone-cptypenone-silentnone)
 
 
 ### `__del__(self)`

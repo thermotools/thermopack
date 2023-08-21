@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-06-20T14:53:27.927576
+Generated at: 2023-08-21T15:37:49.033146
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrqmie class. For instructions on how to use the parser routines, see the
@@ -15,10 +15,10 @@ the `saft` class, which in turn inherits the `thermo` class.
 This class implements utility methods specific to the SAFT-VRQ Mie EoS.
 
 ## Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
-    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
-  * [Utility methods](#Utility-methods)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-feynman_hibbs_order1-additive_hard_sphere_referencefalse-parameter_referencedefault-minimum_temperaturenone)
+    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referencefalse-parameter_referencedefault-minimum_temperaturenone)
+  * [Utility methods](#utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_mass](#set_massself-ic-mass)
@@ -28,9 +28,9 @@ This class implements utility methods specific to the SAFT-VRQ Mie EoS.
 Methods to initialise SAFT-VRQ Mie model.
 
 ### Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
-    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referenceFalse-parameter_referenceDefault-minimum_temperatureNone)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-feynman_hibbs_order1-additive_hard_sphere_referencefalse-parameter_referencedefault-minimum_temperaturenone)
+    * [init](#initself-comps-feynman_hibbs_order1-additive_hard_sphere_referencefalse-parameter_referencedefault-minimum_temperaturenone)
 
 
 ### `__init__(self, comps=None, feynman_hibbs_order=1, additive_hard_sphere_reference=False, parameter_reference='Default', minimum_temperature=None)`
@@ -92,7 +92,7 @@ Initialize SAFT-VRQ Mie model in thermopack Equation of state and force fields f
 Set- and get methods for interaction parameters and pure fluid parameters.
 
 ### Table of contents
-  * [Utility methods](#Utility-methods)
+  * [Utility methods](#utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_mass](#set_massself-ic-mass)

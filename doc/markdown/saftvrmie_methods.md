@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2023-06-20T14:53:27.926369
+Generated at: 2023-08-21T15:37:49.031862
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrmie class. For instructions on how to use the parser routines, see the
@@ -13,10 +13,10 @@ SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in tu
 are included in the model.
 
 ## Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault)
-    * [init](#initself-comps-parameter_referenceDefault)
-  * [Utility methods](#Utility-methods)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-parameter_referencedefault)
+    * [init](#initself-comps-parameter_referencedefault)
+  * [Utility methods](#utility-methods)
     * [a1](#a1self-temp-volume-n)
     * [a2](#a2self-temp-volume-n)
     * [a3](#a3self-temp-volume-n)
@@ -30,24 +30,24 @@ are included in the model.
     * [set_lr_gammaij](#set_lr_gammaijself-c1-c2-gammaij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-ic-m-sigma-eps_div_kb-lambda_a-lambda_r)
     * [set_sigma_lij](#set_sigma_lijself-c1-c2-lij)
-  * [Model control](#Model-control)
+  * [Model control](#model-control)
     * [model_control_a1](#model_control_a1self-active)
     * [model_control_a2](#model_control_a2self-active)
     * [model_control_a3](#model_control_a3self-active)
     * [model_control_chain](#model_control_chainself-active)
     * [model_control_hard_sphere](#model_control_hard_sphereself-active)
-    * [set_hard_sphere_reference](#set_hard_sphere_referenceself-reference-exact_binary_dhsNone-enable_hs_extraNone)
-  * [Model performance](#Model-performance)
-    * [enable_temperature_cache](#enable_temperature_cacheself-enableTrue)
+    * [set_hard_sphere_reference](#set_hard_sphere_referenceself-reference-exact_binary_dhsnone-enable_hs_extranone)
+  * [Model performance](#model-performance)
+    * [enable_temperature_cache](#enable_temperature_cacheself-enabletrue)
 
 ## Constructor
 
 Methods to initialise SAFT-VR Mie model.
 
 ### Table of contents
-  * [Constructor](#Constructor)
-    * [\_\_init\_\_](#__init__self-compsNone-parameter_referenceDefault)
-    * [init](#initself-comps-parameter_referenceDefault)
+  * [Constructor](#constructor)
+    * [\_\_init\_\_](#__init__self-compsnone-parameter_referencedefault)
+    * [init](#initself-comps-parameter_referencedefault)
 
 
 ### `__init__(self, comps=None, parameter_reference='Default')`
@@ -85,7 +85,7 @@ Initialize SAFT-VR Mie model in thermopack
 Set- and get methods for interaction parameters and pure fluid parameters.
 
 ### Table of contents
-  * [Utility methods](#Utility-methods)
+  * [Utility methods](#utility-methods)
     * [a1](#a1self-temp-volume-n)
     * [a2](#a2self-temp-volume-n)
     * [a3](#a3self-temp-volume-n)
@@ -410,13 +410,13 @@ Control which contributions to the residual Helmholtz energy are included,
 and the hard-sphere reference term.
 
 ### Table of contents
-  * [Model control](#Model-control)
+  * [Model control](#model-control)
     * [model_control_a1](#model_control_a1self-active)
     * [model_control_a2](#model_control_a2self-active)
     * [model_control_a3](#model_control_a3self-active)
     * [model_control_chain](#model_control_chainself-active)
     * [model_control_hard_sphere](#model_control_hard_sphereself-active)
-    * [set_hard_sphere_reference](#set_hard_sphere_referenceself-reference-exact_binary_dhsNone-enable_hs_extraNone)
+    * [set_hard_sphere_reference](#set_hard_sphere_referenceself-reference-exact_binary_dhsnone-enable_hs_extranone)
 
 
 ### `model_control_a1(self, active)`
@@ -500,8 +500,8 @@ Set hard-sphere reference.
 Methods to tune computation efficiency etc.
 
 ### Table of contents
-  * [Model performance](#Model-performance)
-    * [enable_temperature_cache](#enable_temperature_cacheself-enableTrue)
+  * [Model performance](#model-performance)
+    * [enable_temperature_cache](#enable_temperature_cacheself-enabletrue)
 
 
 ### `enable_temperature_cache(self, enable=True)`
