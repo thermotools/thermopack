@@ -7,6 +7,7 @@ def remove_illegal_link_chars(link_str):
     """
     Remove characters that are illegal in url-links from the string 'link_str'
     """
+    link_str = link_str.lower()
     return link_str.replace(' ', '-').replace('(', '').replace(')', '').replace('=', '').replace(',', '').replace(
              "'", '').replace('.','')
 
