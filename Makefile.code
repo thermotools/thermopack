@@ -27,19 +27,16 @@ ifdef PFUNIT_DIR
   GFTL = $(PFUNIT_DIR)/$(shell basename $(shell ls -d $(PFUNIT_DIR)/GFTL-*/))
 endif
 ifeq ($(UNAME),Darwin)
-  LD = clang
-  AR := /usr/bin/ar -r -c
-  RANLIB := /usr/bin/ranlib
-  export LIBRARY_PATH = \
-    $(shell gfortran -print-search-dirs | sed -ne 's/libraries: =\(.*\)/\1/p')
+  LD = clang -Wno-unused-command-line-argument -Wl,-no_compact_unwind
+  AR := ar -r -c
 else
   LD = $(FC)
   AR := ar -rc -o
-  RANLIB := ranlib
 endif
+RANLIB := ranlib
 
 MOD = -module $(ODIR)
-ifeq ($(FC),gfortran)
+ifeq ($(findstring gfortran, $(FC)), gfortran)
   MOD = -J $(ODIR) -I $(ODIR)
 else ifeq ($(FC),sunf90)
   MOD = -moddir=$(ODIR)
@@ -228,9 +225,10 @@ libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
 	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dynlib $(OBJE) \
 	$(OBJIF) $(LIBS) -exported_symbols_list libthermopack_export.symbols
 
+thermopack_$(TARGET):: LDFLAGS = $(subst -fdefault-double-8,,$(subst -fdefault-real-8,,$(subst -cpp,,$(FFLAGS))))
 thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
   Makefile Makefile.code
-	$(LD) $(FFLAGS) -o$(BDIR)/run_$(TARGET) \
+	$(LD) $(LDFLAGS) -o$(BDIR)/run_$(TARGET) \
 	$(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 
 thermopack:
@@ -244,8 +242,9 @@ thermopack:
 	fi
 	$(MAKE) -f Makefile.code -e run
 
+run: LDFLAGS = $(subst -fdefault-double-8,,$(subst -fdefault-real-8,,$(subst -cpp,,$(FFLAGS))))
 run: $(ODIR)/thermopack.o
-	$(LD) $(FFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
+	$(LD) $(LDFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
 	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 	@rm -f run_thermopack run_thermopack.exe
 	@if [ $(UNAME) = Windows ]; then \
@@ -272,10 +271,9 @@ run_unittests:
 	fi
 
 unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
-	$(LD) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
+	$(FC) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
 	-I$(GFTL)/include/v1 -I$(GFTL_SHARED)/include/v1 -I$(FARGPARSE)/include \
 	-L$(FARGPARSE)/lib -lfargparse -L$(GFTL_SHARED)/lib -lgftl-shared-v2 -lgomp -lpthread $(LIBS) -Iunittests -DBUILD_ROBUST
-
 
 trend_$(TARGET):
 ifdef $(THERMOPACK_WITH_TREND)
