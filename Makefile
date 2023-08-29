@@ -87,7 +87,7 @@ ifeq ($(OSTYPE),Unix)
   compilers += gfortran
 
   # Define gfortran flags
-  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8 -fmax-stack-var-size=100000
+  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive
   ifeq ($(PROC),arm64)
     gf_proc = -arch arm64
     gf_march = -arch arm64
