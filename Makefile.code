@@ -244,7 +244,7 @@ thermopack:
 
 run: LDFLAGS = $(subst -fdefault-double-8,,$(subst -fdefault-real-8,,$(subst -cpp,,$(FFLAGS))))
 run: $(ODIR)/thermopack.o
-	$(LD) $(LDFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
+	$(FC) $(LDFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
 	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
 	@rm -f run_thermopack run_thermopack.exe
 	@if [ $(UNAME) = Windows ]; then \
