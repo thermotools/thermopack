@@ -23,6 +23,9 @@ if __name__ == "__main__":
         print(f'{libthermo}does not exist. Have you compiled thermopack?')
         sys.exit(1)
 
+    if os.path.exists("./thermopack/libthermopack"+libthermo.suffix):
+        os.remove("./thermopack/libthermopack"+libthermo.suffix)
+
     shutil.copy2(libthermo, "./thermopack/libthermopack"+libthermo.suffix)
 
     pf_specifics_path = os.path.join(os.path.dirname(

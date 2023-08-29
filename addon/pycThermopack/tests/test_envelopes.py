@@ -1,14 +1,14 @@
 """Simple set of (unit)tests for thermopack."""
 
 import numpy as np
-from thermopack.thermo import thermopack
+from thermopack.thermo import thermo
 
 
 def test_get_envelope_twophase():
     """Test thermo.get_envelope_twophase"""
 
     # Instanciate thermopack object
-    tp = thermopack()
+    tp = thermo()
     # Initialize using Peng-Robinson
     tp.init_thermo("PR", "Classic", "Classic", "CO2,C1", 2)
     # Set a compositon

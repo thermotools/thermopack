@@ -1160,7 +1160,7 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize multiparamaters eos
   !----------------------------------------------------------------------------
-  subroutine init_multiparameter(comps, eos, ref_state)
+  subroutine init_multiparameter(comps, meos, ref_state)
     use compdata,   only: SelectComp, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
@@ -1174,13 +1174,13 @@ contains
     use eos, only: specificvolume
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
-    character(len=*), intent(in) :: eos !< Equation of state
+    character(len=*), intent(in) :: meos !< Equation of state
     character(len=*), intent(in) :: ref_state !< Reference state ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
     ! Locals
     integer                          :: ncomp, index, ierr, ncbeos, i
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
-    character(len=len_trim(eos)+4)   :: eos_local !< Equation of state
+    character(len=len_trim(meos)+4)  :: eos_local !< Equation of state
     real :: T_ref, P_ref, v_ref, s_ref, h_ref, tmin, FI, FI_T
     real, allocatable :: x_ref(:), y_ref(:)
     integer :: phase_ref, solve_ref
@@ -1196,9 +1196,9 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
-    eos_local = trim(eos)
-    if (ncomp > 1 .and. str_eq(eos,"GERG2008")) then
-      eos_local = trim(eos)//"_MIX"
+    eos_local = trim(meos)
+    if (ncomp > 1 .and. str_eq(meos,"GERG2008")) then
+      eos_local = trim(meos)//"_MIX"
     endif
     !
     complist => act_mod_ptr%complist
@@ -1231,7 +1231,7 @@ contains
     call init_fallback_and_redefine_criticals(silent=.true.)
 
     ! Calculate reference states
-    if (str_eq(eos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then
+    if (str_eq(meos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then
       ! Set reference entalpies and entropies
       ! call set_reference_energies(act_mod_ptr%comps)
       allocate(x_ref(nce),y_ref(nce))

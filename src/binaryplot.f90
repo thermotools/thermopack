@@ -879,7 +879,7 @@ contains
   !! \author MH, 2015-05
   !-------------------------------------------------------------------
   subroutine VLLEBinaryXY(T,P,ispec,Tmin,Pmax,dzmax,filename,dlns_max,&
-       res,nRes,writeSingleFile,Pmin, ierr_out)
+       res,nRes,writeSingleFile,Pmin,ierr_out)
     use thermopack_constants, only: LIQPH, clen, VAPPH, continueOnError
     use thermopack_var, only: nc
     implicit none
