@@ -3391,9 +3391,8 @@ class thermo(object):
     def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None, initial_temperature=None):
         """Saturation interface
-        Get location where isentrope intersects with phase envelope. Trace envelope from
-        initial_pressure and look for envelope crossing.
-
+        Get saturated phase having given entropy. Searches the binodal by 
+        tracing it upwards in pressure from the dew point at initial_pressure.
         Args:
             entropy (float): Entropy (J/mol/K).
             initial_pressure (float): Start search from dew point at initial pressure (Pa).
