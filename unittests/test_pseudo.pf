@@ -1,0 +1,82 @@
+module test_pseudo
+  use eoslibinit, only: init_cubic, init_cubic_pseudo
+  use eos, only: getCriticalParam
+  use eostv, only: pressure
+  use funit
+  implicit none
+  public
+
+contains
+
+  @Test
+  subroutine test_init_duplicates()
+    !> Test whether it works to initialize duplicate components
+    real :: Tc, Pc, acf
+    real, dimension(3) :: Tclist, Pclist, acflist
+    real :: T, v, p_pure, p_mix
+
+    ! Calculate the pressure of pure CO2
+    call init_cubic("CO2", eos="PR")
+    T = 300
+    v = 1e-4
+    p_pure = pressure(t,v,n=(/0.9/))
+
+    ! Fetch the critical properties of pure CO2
+    call getCriticalParam(1,Tc,Pc,acf)
+
+    ! Initialize eos for pseudocomponent "mixture"
+    Tclist = (/0.0, Tc, Tc/)
+    Pclist = (/0.0, Pc, Pc/)
+    acflist = (/0.0, acf, acf/)
+    call init_cubic("CO2,PSEUDO,PSEUDO", eos="PR")
+    call init_cubic_pseudo("CO2,C20,C25", Tclist, Pclist, acflist)
+
+    p_mix = pressure(t,v,n=(/0.2,0.3,0.4/))
+    @assertEqual(p_pure, p_mix, 1e-15*abs(p_pure))
+
+  end subroutine test_init_duplicates
+
+
+  @Test
+  subroutine test_mix()
+    !> Test whether pseudocomponent functionality reproduces the
+    !> thermodynamic property calculations of real mixtures, when
+    !> setting the pseudocomponent parameters equal to those of the
+    !> real components.
+    real, dimension(3) :: Tclist, Pclist, acflist, n
+    real :: T, v, p_pure, p_mix, kij(3,3)
+    integer :: i, j
+
+    ! Initialize a mixture
+    call init_cubic("CO2,C1,N2", eos="PR")
+
+    ! Extract critical point, acentric factor, and kij values
+    do i=1,3
+      call getCriticalParam(i,Tclist(i),Pclist(i),acflist(i))
+      do j=1,3
+        call thermopack_getkij(i,j,kij(i,j))
+      end do
+    end do
+
+    ! Calculate pressure at some state point
+    T = 300
+    v = 1e-4
+    n = (/0.5,0.3,0.2/)
+    p_pure = pressure(t,v,n)
+
+    ! Now check whether we obtain the same pressure by initializing
+    ! with pseudocomponents
+    call init_cubic("CO2,PSEUDO,PSEUDO", eos="PR")
+    call init_cubic_pseudo("CO2,C20,C25", Tclist, Pclist, acflist)
+    do i=1,3
+      do j=1,3
+        call thermopack_setkij(i,j,kij(i,j))
+      end do
+    end do
+
+    p_mix = pressure(t,v,n)
+    @assertEqual(p_pure, p_mix, 1e-15*abs(p_pure))
+  end subroutine test_mix
+
+
+end module test_pseudo

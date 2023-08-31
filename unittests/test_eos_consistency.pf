@@ -406,12 +406,17 @@ contains
   @Test
   subroutine dummy_quadratic_vol_shift()
     real :: ciA, ciB, ciC
+    real :: ciD, ciE, ciF
     integer :: ci_type
     ciA=2.0e-7
     ciB=3.0e-8
     ciC=7.0e-11
+    ciD=0.0
+    ciE=0.0
+    ciF=0.0
+
     ci_type=3
-    call thermopack_set_volume_shift_parameters(1,ciA,ciB,ciC,ci_type)
+    call thermopack_set_volume_shift_parameters(1,ciA,ciB,ciC,ciD,ciE,ciF,ci_type)
   end subroutine dummy_quadratic_vol_shift
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

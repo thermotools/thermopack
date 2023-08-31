@@ -118,6 +118,9 @@ append_export("thermopack_setwsparam")
 append_export("thermopack_get_volume_shift_parameters")
 append_export("thermopack_set_volume_shift_parameters")
 
+append_export("thermopack_set_alpha_corr")
+append_export("thermopack_set_beta_corr")
+
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")
 append_export("global_binary_plot", "binaryplot")
@@ -143,6 +146,7 @@ append_export("idealentropysingle", "eos")
 
 append_export("init_thermo", "eoslibinit")
 append_export("init_cubic", "eoslibinit")
+append_export("init_cubic_pseudo", "eoslibinit")
 append_export("init_cpa", "eoslibinit")
 append_export("init_pcsaft", "eoslibinit")
 append_export("init_saftvrmie", "eoslibinit")

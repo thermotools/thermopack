@@ -35,6 +35,7 @@ from os import path
 import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
+import warnings
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
@@ -1651,7 +1652,10 @@ class thermo(object):
                                 byref(phase_c),
                                 byref(ierr_c))
 
-        if ierr_c.value != 0:
+
+        if ierr_c.value < 0:
+            warnings.warn("PH solver not fully converged")
+        elif ierr_c.value > 0:
             raise Exception("PH flash calclualtion failed")
 
         x = np.array(x_c)
