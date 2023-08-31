@@ -3391,18 +3391,18 @@ class thermo(object):
     def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None, initial_temperature=None):
         """Saturation interface
-        Get location where isentrope intercext with isopleth. Trace envelope from
-        initial_pressure and look for crossing.
+        Get location where isentrope intersects with phase envelope. Trace envelope from
+        initial_pressure and look for envelope crossing.
 
         Args:
             entropy (float): Entropy (J/mol/K).
-            initial_pressure (float): Start mapping isopleth form dew point at initial pressure (Pa).
+            initial_pressure (float): Start search from dew point at initial pressure (Pa).
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
             step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
-            calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
+            calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start search from dew point at initial temperature.
                                                   Overrides initial pressure. Defaults to None (K).
         Returns:
             float: Temperature values (K)
