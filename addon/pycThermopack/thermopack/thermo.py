@@ -219,6 +219,8 @@ class thermo(object):
             self.tp, self.get_export_name("isolines", "isenthalp"))
         self.s_isentrope = getattr(
             self.tp, self.get_export_name("isolines", "isentrope"))
+        self.s_envelope_isentrope_cross = getattr(
+            self.tp, self.get_export_name("saturation_curve", "envelope_isentrope_cross"))
 
         # Stability
         self.s_crit_tv = getattr(
@@ -2637,7 +2639,7 @@ class thermo(object):
             initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
-            minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
+            minimum_temperature (float , optional): Exit on minimum temperature (K). Defaults to None.
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
@@ -2913,7 +2915,7 @@ class thermo(object):
                            byref(min_press_c),
                            byref(ierr_c),
                            filename_len)
-        
+
         if ierr_c.value > 0 or ierr_c.value < -1:
             raise Exception("binary_plot failed")
 
@@ -3011,7 +3013,7 @@ class thermo(object):
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
         ierr_c = c_int(0)
-        
+
         self.s_binary_plot.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
                                        POINTER(c_int),
@@ -3385,6 +3387,96 @@ class thermo(object):
             raise Exception("Sublimation line calculation failed")
 
         return np.array(temp_subl_c), np.array(press_subl_c)
+
+    def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
+                              minimum_temperature=None, step_size=None, initial_temperature=None):
+        """Saturation interface
+        Get location where isentrope intercext with isopleth. Trace envelope from
+        initial_pressure and look for crossing.
+
+        Args:
+            entropy (float): Entropy (J/mol/K).
+            initial_pressure (float): Start mapping isopleth form dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
+            step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
+            calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
+                                                  Overrides initial pressure. Defaults to None (K).
+        Returns:
+            float: Temperature values (K)
+            foat: Pressure values (Pa)
+            float: Specific volume (m3/mol)
+            int: Phase flag for main phase
+            ndarray: Incipient composition (mol/mol)
+        """
+        self.activate()
+
+
+        if initial_temperature is not None:
+            initial_pressure, x = self.dew_pressure(initial_temperature, z)
+        else:
+            initial_temperature, x = self.dew_temperature(initial_pressure, z)
+        z_c = (c_double * len(z))(*z)
+        entropy_c = c_double(entropy)
+        temp_c = c_double(initial_temperature)
+        press_c = c_double(initial_pressure)
+        x_c = (c_double * len(x))(*x)
+        y_c = (c_double * len(z))(*z)
+        max_press_c = c_double(maximum_pressure)
+        Ti_c = c_double(0.0)
+        Pi_c = c_double(0.0)
+        wi_c = (c_double * len(z))(0.0)
+        phase_c = c_int(0)
+        ierr_c = c_int(0)
+        ds_c = POINTER(c_double)() if step_size is None else POINTER(c_double)(c_double(step_size))
+
+        self.s_envelope_isentrope_cross.argtypes = [POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int)]
+
+        self.s_envelope_isentrope_cross.restype = c_int
+
+        has_crossing_int = self.s_envelope_isentrope_cross(z_c,
+                                                           byref(temp_c),
+                                                           byref(press_c),
+                                                           x_c,
+                                                           y_c,
+                                                           byref(max_press_c),
+                                                           byref(entropy_c),
+                                                           byref(Ti_c),
+                                                           byref(Pi_c),
+                                                           byref(phase_c),
+                                                           wi_c,
+                                                           ds_c,
+                                                           byref(ierr_c))
+
+        has_crossing = (has_crossing_int == 1 and ierr_c.value == 0)
+        if has_crossing:
+            Ti = Ti_c.value
+            Pi = Pi_c.value
+            wi = np.array(wi_c)
+            phase = phase_c.value
+            vi, = self.specific_volume(Ti, Pi, z, phase)
+        else:
+            Ti = None
+            Pi = None
+            wi = None
+            phase = None
+            vi = None
+
+        return has_crossing, Ti, Pi, vi, wi, phase
 
     def get_isotherm(self,
                      temp,

@@ -33,7 +33,7 @@ module saturation_curve
 
   public :: aep,AZ_NONE,AZ_PAEP,AZ_CAEP,AZ_HAEP
   public :: envelopePlot,singleCompSaturation
-  public :: envelopeIsentropeCross, envelopeIsentropeCross_single
+  public :: envelope_isentrope_cross, envelope_isentrope_cross_single
   public :: newton_extrapolate, changeformulation
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
@@ -1752,7 +1752,7 @@ contains
   !>
   !> \author MH, 2014-03
   !-----------------------------------------------------------------------------
-  function envelopeIsentropeCross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
+  function envelope_isentrope_cross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
        dS_override, ierr_out) result(hasCrossing)
     use thermo_utils, only: isSingleComp
     implicit none
@@ -1782,7 +1782,7 @@ contains
     ! Special routine for pure fluids
     zmax = maxloc(Z)
     if (isSingleComp(Z)) then
-      call envelopeIsentropeCross_single(p0,sspec,z,p0,hasCrossing,&
+      call envelope_isentrope_cross_single(p0,sspec,z,p0,hasCrossing,&
            p,T,phase,ierr)
       w = z
       if (present(ierr_out)) then
@@ -1814,7 +1814,7 @@ contains
         ierr_out = ierr
         return
       else
-        call stoperror('envelopeIsentropeCross: Initial point not found.')
+        call stoperror('envelope_isentrope_cross: Initial point not found.')
       endif
     endif
 
@@ -1895,7 +1895,7 @@ contains
               ierr_out = ierr
               return
             else
-              call stoperror("envelopeIsentropeCross: Neither decreasing nor &
+              call stoperror("envelope_isentrope_cross: Neither decreasing nor &
                    &increasing the step helped")
             endif
           endif
@@ -1994,10 +1994,10 @@ contains
       endif
     enddo
 
-  end function envelopeIsentropeCross
+  end function envelope_isentrope_cross
 
 
-  subroutine envelopeIsentropeCross_single(p0,s_spec,z,p_low,has_crossing,&
+  subroutine envelope_isentrope_cross_single(p0,s_spec,z,p_low,has_crossing,&
        p_crossing,T_crossing,phase_crossing, ierr)
     !> Find if, and if so where, the isentrope from a point p0,s_spec
     !> meets the saturation line before reaching pressure p_low.
@@ -2199,7 +2199,7 @@ contains
 
     endif
 
-  end subroutine envelopeIsentropeCross_single
+  end subroutine envelope_isentrope_cross_single
 
   function fun_ssat_single(p,param) result(f)
     ! Objective function for s_sat(phase) = s_spec

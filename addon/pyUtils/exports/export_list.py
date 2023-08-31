@@ -277,6 +277,7 @@ append_export("safe_dewt", "saturation")
 append_export("safe_dewp", "saturation")
 
 append_export("envelopeplot", "saturation_curve")
+append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
 
 append_export("solid_init", "solideos")
