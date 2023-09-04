@@ -31,7 +31,7 @@ contains
     class(base_eos_param), intent(inout) :: p_eos
     integer, intent(in) :: nc
     real, intent(in) :: T, V, n(nc)
-    real, intent(out) :: f
+    real, optional, intent(out) :: f
     real, optional, intent(inout) :: f_T,f_V,f_TT,f_VV,f_TV
     real, optional, intent(inout) :: f_n(nc),f_Tn(nc),f_Vn(nc),f_nn(nc,nc)
     ! Locals
@@ -252,7 +252,7 @@ contains
          present(f_n))) then
       f_hd = fun(p_eos,nc,T_hd,V_hd,n_hd)
     endif
-    f = f_hd%f0
+    if (present(f)) f = f_hd%f0
 
   end subroutine hyperdual_fres_wrapper
 
