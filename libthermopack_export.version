@@ -38,6 +38,8 @@ libthermopack {
 	thermopack_setwsparam_;
 	thermopack_get_volume_shift_parameters_;
 	thermopack_set_volume_shift_parameters_;
+	thermopack_set_alpha_corr_;
+	thermopack_set_beta_corr_;
 	*get_bp_term*;
 	*vllebinaryxy*;
 	*global_binary_plot*;
@@ -58,6 +60,7 @@ libthermopack {
 	*idealentropysingle*;
 	*init_thermo*;
 	*init_cubic*;
+	*init_cubic_pseudo*;
 	*init_cpa*;
 	*init_pcsaft*;
 	*init_saftvrmie*;
