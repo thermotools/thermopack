@@ -61,6 +61,9 @@ else ifeq ($(UNAME),MSYS)
   LIBS += -lopenblas
 else ifeq ($(UNAME),Darwin)
   LIBS += -llapack -lblas -lgfortran -lm
+  ifeq ($(findstring openmp, $(MODE)), openmp)
+    LIBS += -lomp
+  endif
 else
   LIBS += -llapack -lblas
 endif
@@ -242,7 +245,6 @@ thermopack:
 	fi
 	$(MAKE) -f Makefile.code -e run
 
-run: LDFLAGS = $(subst -fdefault-double-8,,$(subst -fdefault-real-8,,$(subst -cpp,,$(FFLAGS))))
 run: $(ODIR)/thermopack.o
 	$(FC) $(LDFLAGS) -o$(BDIR)/thermopack_$(TARGET) \
 	$(ODIR)/thermopack.o $(BDIR)/libthermopack_$(TARGET).a $(LIBS)
