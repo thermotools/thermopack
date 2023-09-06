@@ -1,6 +1,6 @@
 !> Automatically generated to file pc_saft_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-08-18T11:18:19.140638
+!! Time stamp: 2023-09-06T11:23:40.391634
 
 module pc_saft_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -41,6 +41,8 @@ module pc_saft_datadb
     character(len=ref_len) :: ref ! Parameter set
     character(len=bibref_len) :: bib_ref ! Bibliographic reference
     real :: kijvalue
+    integer :: eps_comb_rule
+    integer :: beta_comb_rule
   end type PCkijdata
 
   type(pc_saft_data), parameter :: PCcx1 = &
@@ -1102,7 +1104,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C1", &
-      kijvalue = 0.0425  &
+      kijvalue = 0.0425, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_2 = &
@@ -1111,7 +1115,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C2", &
-      kijvalue = 0.072  &
+      kijvalue = 0.072, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_3 = &
@@ -1120,7 +1126,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C3", &
-      kijvalue = 0.069  &
+      kijvalue = 0.069, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_4 = &
@@ -1129,7 +1137,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC4", &
-      kijvalue = 0.067  &
+      kijvalue = 0.067, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_5 = &
@@ -1138,7 +1148,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC5", &
-      kijvalue = 0.073  &
+      kijvalue = 0.073, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_6 = &
@@ -1147,7 +1159,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC6", &
-      kijvalue = 0.073  &
+      kijvalue = 0.073, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_7 = &
@@ -1156,7 +1170,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC7", &
-      kijvalue = 0.078  &
+      kijvalue = 0.078, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_8 = &
@@ -1165,7 +1181,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC9", &
-      kijvalue = 0.086  &
+      kijvalue = 0.086, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_9 = &
@@ -1174,7 +1192,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC10", &
-      kijvalue = 0.077  &
+      kijvalue = 0.077, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_10 = &
@@ -1183,7 +1203,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "IC4", &
-      kijvalue = 0.06  &
+      kijvalue = 0.06, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_11 = &
@@ -1192,7 +1214,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "IC5", &
-      kijvalue = 0.076  &
+      kijvalue = 0.076, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_12 = &
@@ -1201,7 +1225,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "CYCLOHEX", &
-      kijvalue = 0.082  &
+      kijvalue = 0.082, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_13 = &
@@ -1210,7 +1236,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC8", &
-      kijvalue = 0.  &
+      kijvalue = 0., &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_14 = &
@@ -1219,7 +1247,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "H2S", &
-      kijvalue = 0.0223  &
+      kijvalue = 0.0223, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_15 = &
@@ -1228,7 +1258,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "BENZENE", &
-      kijvalue = 0.025  &
+      kijvalue = 0.025, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_16 = &
@@ -1237,7 +1269,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "TOLU", &
-      kijvalue = 0.026  &
+      kijvalue = 0.026, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_17 = &
@@ -1246,7 +1280,9 @@ module pc_saft_datadb
       bib_ref = "Gross & Sadowski (2001). Doi: 10.1021/ie0003887", &
       uid1 = "CO2", &
       uid2 = "C1", &
-      kijvalue = 0.065  &
+      kijvalue = 0.065, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_18 = &
@@ -1255,7 +1291,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "C2", &
-      kijvalue = 0.102  &
+      kijvalue = 0.102, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_19 = &
@@ -1264,7 +1302,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "C3", &
-      kijvalue = 0.0107  &
+      kijvalue = 0.0107, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_20 = &
@@ -1273,7 +1313,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC4", &
-      kijvalue = 0.109  &
+      kijvalue = 0.109, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_21 = &
@@ -1282,7 +1324,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC5", &
-      kijvalue = 0.12  &
+      kijvalue = 0.12, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_22 = &
@@ -1291,7 +1335,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC6", &
-      kijvalue = 0.123  &
+      kijvalue = 0.123, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_23 = &
@@ -1300,7 +1346,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC7", &
-      kijvalue = 0.115  &
+      kijvalue = 0.115, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_24 = &
@@ -1309,7 +1357,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC8", &
-      kijvalue = 0.132  &
+      kijvalue = 0.132, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_25 = &
@@ -1318,7 +1368,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC9", &
-      kijvalue = 0.122  &
+      kijvalue = 0.122, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_26 = &
@@ -1327,7 +1379,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC10", &
-      kijvalue = 0.133  &
+      kijvalue = 0.133, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_27 = &
@@ -1336,7 +1390,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "IC4", &
-      kijvalue = 0.112  &
+      kijvalue = 0.112, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_28 = &
@@ -1345,7 +1401,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "IC5", &
-      kijvalue = 0.116  &
+      kijvalue = 0.116, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_29 = &
@@ -1354,7 +1412,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "CYCLOHEX", &
-      kijvalue = 0.125  &
+      kijvalue = 0.125, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_30 = &
@@ -1363,7 +1423,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "BENZENE", &
-      kijvalue = 0.087  &
+      kijvalue = 0.087, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_31 = &
@@ -1372,10 +1434,23 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "TOLU", &
-      kijvalue = 0.108  &
+      kijvalue = 0.108, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
-  integer, parameter :: PCmaxkij = 31
+  type (PCkijdata), parameter :: PCSAFT_KIJ_32 = &
+      PCkijdata(eosidx = eosPC_SAFT, &
+      ref = "Default/NguyenHuynh2020", &
+      bib_ref = "Doi: 10.1016/j.fluid.2020.112689", &
+      uid1 = "NH3", &
+      uid2 = "H2O", &
+      kijvalue = -0.32, &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  integer, parameter :: PCmaxkij = 32
   type (PCkijdata), dimension(PCmaxkij), parameter :: PCkijdb = (/&
       PCSAFT_KIJ_1,PCSAFT_KIJ_2,PCSAFT_KIJ_3,PCSAFT_KIJ_4,PCSAFT_KIJ_5, &
       PCSAFT_KIJ_6,PCSAFT_KIJ_7,PCSAFT_KIJ_8,PCSAFT_KIJ_9,PCSAFT_KIJ_10, &
@@ -1383,7 +1458,7 @@ module pc_saft_datadb
       PCSAFT_KIJ_16,PCSAFT_KIJ_17,PCSAFT_KIJ_18,PCSAFT_KIJ_19,PCSAFT_KIJ_20, &
       PCSAFT_KIJ_21,PCSAFT_KIJ_22,PCSAFT_KIJ_23,PCSAFT_KIJ_24,PCSAFT_KIJ_25, &
       PCSAFT_KIJ_26,PCSAFT_KIJ_27,PCSAFT_KIJ_28,PCSAFT_KIJ_29,PCSAFT_KIJ_30, &
-      PCSAFT_KIJ_31 &
+      PCSAFT_KIJ_31,PCSAFT_KIJ_32 &
   /)
 
 end module pc_saft_datadb

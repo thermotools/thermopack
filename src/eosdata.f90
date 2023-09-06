@@ -404,4 +404,23 @@ contains
     endif
   end function get_eos_short_label_from_subidx
 
+  function get_eos_idx_from_subidx(subidx) result(eos_idx)
+    integer :: eos_idx
+    integer :: subidx
+    ! Locals
+    integer :: i, idx
+    idx = -1
+    do i=1,max_n_eos
+      if (subidx == eos_label_db(i)%eos_subidx) then
+        idx = i
+        exit
+      endif
+    enddo
+    if (idx > 0) then
+      eos_idx = eos_label_db(idx)%eos_idx
+    else
+      call StopError("Could not find eos_idx from eos_subidx.")
+    endif
+  end function get_eos_idx_from_subidx
+
 end module eosdata
