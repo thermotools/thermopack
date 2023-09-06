@@ -1,6 +1,6 @@
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-08-17T16:32:08.374065
+Generated at : 2023-09-04T12:16:57.143846
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -68,7 +68,7 @@ In order to specify fluids in Thermopack you need to use fluid identifiers as sh
 | Hydrogen | H2 | :heavy_check_mark: |   |   |
 | Isobutane | IC4 |   | :heavy_check_mark: |   |
 | Isopentane | IC5 |   | :heavy_check_mark: |   |
-| Krypton | KR | :heavy_check_mark: |   |   |
+| Krypton | KR | :heavy_check_mark: | :heavy_check_mark: |   |
 | Lennard-jones_fluid | LJF | :heavy_check_mark: |   |   |
 | Methane | C1 | :heavy_check_mark: | :heavy_check_mark: |   |
 | Methanol | MEOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
