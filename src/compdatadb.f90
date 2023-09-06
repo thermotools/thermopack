@@ -8074,8 +8074,44 @@ module compdatadb
       c_type=1 &
       )
 
+  type (gendatadb), parameter :: cx109 = &
+      gendatadb(ident = "PSEUDO", &
+      formula = "PSEUDO", &
+      name = "PSEUDO", &
+      mw = 100.0000, &
+      Tc = 100.0000, &
+      Pc = 10000000.00, &
+      Zc = 0.300000, &
+      acf = 0.000000, &
+      Tb = 0.0000, &
+      Ttr = 0.0000, &
+      Ptr = 0.0000, &
+      sref = 0.0000, &
+      href = 0.0000, &
+      DfH = 0.0000, &
+      DfG = 0.0000, &
+      psatcode = 1, &
+      ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
+      Tantmin = 0.0000, &
+      Tantmax = 0.0000, &
+      Zra = 0.254400, &
+      mu_dipole = 0.000000, &
+      q_quadrupole = 0.000000 &
+      )
 
-  integer, parameter :: maxncdb =108
+  type (cpdata), parameter :: cp111 = &
+      cpdata(cid = "PSEUDO", &
+      ref = "Default", &
+      bib_ref = "", &
+      cptype = 2, &
+      cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      Tcpmin = -175.0000, &
+      Tcpmax = 1200.0000  &
+      )
+
+
+  integer, parameter :: maxncdb =109
   type (gendatadb), dimension(maxncdb), parameter :: compdb = (/&
       cx1,cx2,cx3,cx4,cx5, &
       cx6,cx7,cx8,cx9,cx10, &
@@ -8098,10 +8134,10 @@ module compdatadb
       cx91,cx92,cx93,cx94,cx95, &
       cx96,cx97,cx98,cx99,cx100, &
       cx101,cx102,cx103,cx104,cx105, &
-      cx106,cx107,cx108 &
+      cx106,cx107,cx108,cx109 &
   /)
 
-  integer, parameter :: maxcpdb =110
+  integer, parameter :: maxcpdb =111
   type (cpdata), dimension(maxcpdb), parameter :: cpdb = (/&
       cp1,cp2,cp3,cp4,cp5, &
       cp6,cp7,cp8,cp9,cp10, &
@@ -8124,7 +8160,8 @@ module compdatadb
       cp91,cp92,cp93,cp94,cp95, &
       cp96,cp97,cp98,cp99,cp100, &
       cp101,cp102,cp103,cp104,cp105, &
-      cp106,cp107,cp108,cp109,cp110 &
+      cp106,cp107,cp108,cp109,cp110, &
+      cp111 &
   /)
 
   integer, parameter :: maxTWUdb =188
