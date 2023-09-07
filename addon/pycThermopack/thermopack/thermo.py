@@ -96,8 +96,16 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "get_pmax"))
         self.s_set_pmax = getattr(
             self.tp, self.get_export_name("thermopack_var", "set_pmax"))
+        
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
+        self.solideos_solid_volume = getattr(
+            self.tp, self.get_export_name("solideos", "solid_specificvolume"))
+        self.solideos_solid_enthalpy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_enthalpy"))
+        self.solideos_solid_entropy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_entropy"))
+        
         self.eoslibinit_init_volume_translation = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
@@ -534,6 +542,181 @@ class thermo(object):
         self.solideos_solid_init.argtypes = [c_char_p, c_len_type]
         self.solideos_solid_init.restype = None
         self.solideos_solid_init(scomp_c, scomp_len)
+
+    def solid_enthalpy(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase enthalpy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific enthalpy (J/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_enthalpy.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_enthalpy.restype = None
+
+        self.solideos_solid_enthalpy(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
+    def solid_entropy(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase entropy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific entropy (J/mol.K), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_entropy.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_entropy.restype = None
+
+        self.solideos_solid_entropy(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
+    def solid_volume(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase volume
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific volume (m3/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_volume.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_volume.restype = None
+
+        self.solideos_solid_volume(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
 
     #################################
     # Utility
