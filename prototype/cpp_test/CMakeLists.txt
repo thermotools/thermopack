@@ -3,4 +3,4 @@
 
 add_executable(cpp_main main.cpp)
 target_include_directories(cpp_main PUBLIC ../build/fortran_lib ../cpp_wrapper)
-target_link_libraries(cpp_main PUBLIC demopack demopack_cpp libgfortran)
+target_link_libraries(cpp_main PUBLIC demopack demopack_cpp)

@@ -1,4 +1,4 @@
-from prototype.py_wrapper.BaseEoS import NotIdGas
+from py_wrapper.BaseEoS import NotIdGas
 
 nid = NotIdGas(0, 2, 100, 100)
 
