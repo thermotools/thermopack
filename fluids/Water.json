@@ -188,6 +188,16 @@
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
     "ref": "Kontogeorgis_Folas2001"
   },
+  "PC-SAFT-3": {
+    "m": 1.18381,
+    "sigma": 2.87756E-10,
+    "eps_depth_divk": 201.82186,
+    "eps": 15074.120726711822,
+    "beta": 0.07002,
+    "assoc_scheme": "4C",
+    "bib_reference": "10.1016/j.fluid.2018.06.019",
+    "ref": "NguyenHuynh2020"
+  },
   "SAFTVRMIE-1": {
     "m": 1.0,
     "sigma": 3.0555E-10,
