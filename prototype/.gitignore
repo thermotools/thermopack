@@ -1,0 +1,10 @@
+# Ignore binaries, mod files and cmake/make output
+*.mod
+*.o
+*.a
+*.so
+build/
+
+# Ignore executables
+cpp_main
+fortran_main

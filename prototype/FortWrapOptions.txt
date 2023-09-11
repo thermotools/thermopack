@@ -1,0 +1,6 @@
+--no-vector
+-g
+-d ../cpp_wrapper
+-pybind11 libdemo
+
+%exclude_files CompData
