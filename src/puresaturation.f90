@@ -1,7 +1,7 @@
 module puresaturation
   use nonlinear_solvers
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       base_eos_param, get_active_alt_eos, tpTmin
+       base_eos_param, get_active_alt_eos, tpTmin, tpPmin
 !  use utilities, only: get_thread_index
   implicit none
   private
@@ -88,7 +88,7 @@ contains
     else
       param(nc+2) = 0.0
       param(nc+1) = T
-      Xmin = 1.0
+      Xmin = tppmin
       X(1) = max(0.1*Ppc*T/Tpc,Xmin(1))
       call PureSatDiff(dFdX,X,param)
       if (abs(dFdX(1)) < Small) then ! Same root for both phases

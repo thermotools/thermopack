@@ -1455,11 +1455,12 @@ contains
     real                  :: f
     ! Internal:
     real                  :: x(nc),w(nc),y(nc),P
+    integer               :: ierr_bub_x, ierr_bub_w
     ! Read from param
     P = param(1)
     x = (/1.0,0.0/)
     w = (/0.0,1.0/)
-    f = (P - safe_bubP(T,x,y) - safe_bubP(T,w,y))/P
+    f = (P - safe_bubP(T,x,y,ierr_bub_x) - safe_bubP(T,w,y,ierr_bub_w))/P
   end function fun_psat
 
   !-------------------------------------------------------------------

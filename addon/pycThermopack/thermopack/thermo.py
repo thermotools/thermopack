@@ -3218,6 +3218,8 @@ class thermo(object):
 
         self.s_binary_plot.restype = None
 
+        pmin = self.get_pmin()
+        self.set_pmin(1.0e-20)
         self.s_binary_plot(byref(temp_c),
                            byref(press_c),
                            byref(ispec_c),
@@ -3233,6 +3235,7 @@ class thermo(object):
                            byref(ierr_c),
                            filename_len)
 
+        self.set_pmin(pmin)
         if ierr_c.value > 0 or ierr_c.value < -1:
             raise Exception("binary_plot failed")
 
