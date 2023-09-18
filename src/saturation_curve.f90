@@ -397,6 +397,16 @@ contains
       call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
       Ki = 1.0
       betai = 0.0
+      if (cricon) then
+        criconden(1) = Ta(n)
+        criconden(2) = Pa(n)
+        criconden(3) = Ta(n)
+        criconden(4) = Pa(n)
+      endif
+      if (calcCrit) then
+        crit(1) = Ta(n)
+        crit(2) = Pa(n)
+      endif
       return
     endif
 
