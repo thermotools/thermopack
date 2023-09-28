@@ -9,6 +9,7 @@ Intent: Several "submodules" of documentation are used both in the wiki, the mai
 Usage: To add new documentation, create a new markdown file in thermopoack/doc/markdown, and add the filename
         (sans the file ending) to the appropriate `files` lists in the functions in this file.
 """
+import warnings
 from datetime import datetime
 from tools import THERMOPACK_ROOT, MARKDOWN_DIR
 
@@ -23,13 +24,55 @@ def print_finished_report(header, out_file_path):
     print('To:', out_file_path)
     print('-' * printcolwidth)
     print()
+
+def format_no_html(file):
+    """
+    Markdown files that are intended to be compiled to html may contain some syntax that is unfriendly to e.g.
+    pages intended to render GitHub flavoured markdown. Specifially, the title is in the page metadata, not as a
+    header. This function reads the file, and returns a string formatted to be friendly for "pure" markdown pages
+    without html-templates.
+
+    Args:
+        file (file handle) : The file to read
+    Returns
+        str : The contents of the file, formatted to be nice.
+    """
+    line = file.readline()
+    if '---' in line:
+        return line + file.read()
+    metadata = line + '\n'
+    line = file.readline()
+    title = ''
+    description = ''
+
+    while '---' not in line:
+        if 'title' in line:
+            title = line.split(':')[-1].strip()
+        elif 'description' in line:
+            description = line.split(':')[-1].strip()
+
+        metadata += line
+        line = file.readline()
+
+    if title:
+        main_header = title
+    elif description:
+        main_header = description
+    else:
+        main_header = ''
+        warnings.warn(f'File with metadata : {metadata} \nDid not contain a title or description.', SyntaxWarning, stacklevel=2)
+
+    outstr = f'# {main_header}\n'
+    return outstr + line + file.read()
+
+
 def gen_file_str(files):
     out_file_str = ''
     for file in files:
         file_path = MARKDOWN_DIR + file + '.md'
 
         with open(file_path, 'r') as in_file:
-            out_file_str += in_file.read() + '\n\n'
+            out_file_str += format_no_html(in_file) + '\n\n'
 
     return out_file_str
 
@@ -38,7 +81,7 @@ def get_header(files):
     header += 'Generated at: ' + datetime.today().isoformat() + '\n'
     header += 'This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py\n'
     header += 'The file is created by joining the contents of the files\n'
-    header += '    thermopack/doc/markdown/\n'
+    header += f'    {MARKDOWN_DIR}\n'
     for fname in files:
         header += '    ' * 2 + fname + '.md\n'
     header += '--->\n\n'
@@ -55,6 +98,7 @@ def write_pypi_readme():
         out_file.write(out_file_str)
 
     print_finished_report(header, out_file_path)
+
 def write_github_readme():
     files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started',
              'more_advanced', 'new_fluids', 'Component-name-mapping']
