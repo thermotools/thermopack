@@ -1,0 +1,51 @@
+title: ThermoPack
+description: A ThermoTools Project
+show_downloads: true
+theme: jekyll-theme-cayman
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+- jekyll-feed
+- jekyll-remote-theme # add this line to the plugins list if you already have one
+- jekyll-include-cache
+
+url: 'https://vegardjervell.github.io'
+baseurl: '/thermopack'
+
+data_sources:
+  sidebar: "sidebar.md"
+
+includes_dir: _includes
+
+pypi_url: 'https://pypi.org/project/thermopack/'
+
+vcurrent:
+  version: 'Latest version (beta)'
+
+  github:
+    repository_name: 'ThermoPack'
+    owner_name: 'ThermoTools'
+    repository_url: 'https://github.com/vegardjervell/thermopack'
+    zip_url: 'https://github.com/vegardjervell/thermopack/archive/main.zip'
+
+  pypi:
+    url: 'https://pypi.org/project/thermopack/'
+
+v210:
+  version: '2.1.0'
+
+  github:
+    repository_name: 'ThermoPack v2.1.0'
+    owner_name: 'ThermoTools'
+    repository_url: 'https://github.com/thermotools/thermopack/releases/tag/v2.1.0'
+    zip_url: 'https://github.com/thermotools/thermopack/archive/refs/tags/v2.1.0.zip'
+
+  pypi:
+    url: 'https://pypi.org/project/thermopack/2.1.0/'
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: "documentation"
+    values:
+      layout: "default"

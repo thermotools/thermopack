@@ -1,0 +1,431 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+\usepackage{booktabs}
+\usepackage{todonotes}
+\usepackage{subcaption,caption}
+\usepackage{xspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}
+\newcolumntype{L}{>{$}l<{$}}
+%
+\newcommand*{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand*{\uunit}[1]{\ensuremath{\mathrm{#1}}}
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdc}[3]{\frac{\partial^{2}#1}{\partial{#2}\partial{#3}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+\newcommand*{\ousum}[2]{\overset{#1}{\underset{#2}{\sum}}}
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{vap}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to}\xspace}
+\newcommand{\excess}{\text{E}\xspace}
+\newcommand{\comb}{\text{comb}\xspace}
+\newcommand{\FH}{\text{FH}\xspace}
+\newcommand{\SG}{\text{SG}\xspace}
+\newcommand{\NC}{\text{NC}\xspace}
+\newcommand{\NGr}{\text{NG}\xspace}
+\newcommand{\res}{\text{R}\xspace}
+
+\title{UNIFAC excess gibbs mixing rules}
+\author{Morten Hammer}
+
+\graphicspath{{gfx/}}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction}
+The UNIFAC (\textit{UNI}QUAC \textit{F}unctional-group \textit{A}ctivity
+\textit{C}oefficients) model \cite{Fredenslund1975}, is a group
+contribution model, and a further development of the UNIQUAC model
+\cite{Abrams1975}. Being a group contribution model, it accounts for
+molecular groups like $\text{C-H}_2$ and $\text{C-H}_3$,
+that can be thought upon as monomers in a polymer.
+
+The UNIFAC excess Gibbs mixing rule have found application in the
+predictive SRK, PSRK \cite{Holderbaum1991}, model, and VTPR
+\cite{Collinet2006}. It is also used as the universal mixing rule
+(UMR) \cite{Voutsas2004} togther with t-mPR
+\cite{Magoulas1990,Avlonitis1994}. The combined model is denoted
+UMR-PR.
+
+\section{UNIFAC model}
+The UNIFAC model \cite{Fredenslund1975} is given as follows,
+\begin{equation}
+  \frac{A^\res}{RT} = \frac{A^\excess}{RT} - \frac{A^\excess}{RT_0} = - \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k(\Lambda_k - \Lambda_k^i).
+  \label{eq:Ae}
+\end{equation}
+The symbols and formalism of Michelsen \cite{Michelsen2007} is
+used. $A^\excess/(RT_0)$ is the combinatorial term and is described in
+a later sub section. It is assumed that $A^\excess = G^\excess$.
+
+The different symbols are defined as follows,
+\begin{align}
+  \Lambda_k &= \ln \ousum{\NGr}{j}  \Theta_j \tilde{E}_{jk},\label{eq:Lambda_k}\\
+  \Lambda_k^i &= \ln \ousum{\NGr}{j}  \Theta_j^i \tilde{E}_{jk}, \label{eq:Lambda_ki}\\
+  \tilde{E}_{jk} &= \exp \left(-\frac{\tilde{U}_{jk}}{RT}\right), \label{eq:E_jk}\\
+  \Theta_j &= \frac{Q_j \ousum{\NC}{l}n_lv_j^l}{\ousum{\NC}{l}n_l\ousum{\NGr}{m}v_m^lQ_m}, \label{eq:Theta_j}\\
+  \Theta_j^i &= \frac{Q_j v_j^i}{\ousum{\NGr}{k}v_k^iQ_k}. \label{eq:Theta_ji}
+\end{align}
+Here $Q_k$ is the group surface area of group $k$, and $v_k^i$ is the
+number of groups $k$ in molecule $i$. Both $Q_k$ and $v_k^i$ are
+constants. $\tilde{U}_{jk}$ is the interaction energy per unit surface
+area of the $j-k$ group interaction. $\tilde{U}_{jk}$ can be a
+constant, or a temperature function.
+
+\subsection{Differentials}
+Differentiating \ref{eq:Ae} \wrpt $n_\alpha$ we get,
+\begin{equation}
+  \frac{1}{RT}\pd{A^\res}{n_\alpha} = \frac{A^\res_\alpha}{RT} = - \ousum{\NGr}{k}  v_k^\alpha Q_k(\Lambda_k - \Lambda_k^\alpha) - \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k \pd{\Lambda_k}{n_\alpha}.
+  \label{eq:dAedna}
+\end{equation}
+Michelsen \cite[Chap.~5,Eq.~56]{Michelsen2007} show that
+\begin{equation}
+  \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k \pd{\Lambda_k}{n_\alpha} = \ousum{\NGr}{j}v_j^\alpha Q_j\left(\ousum{\NGr}{k}\frac{\Theta_j \tilde{E}_{jk}}{\ousum{\NGr}{l}\Theta_l \tilde{E}_{lk}} -1\right).
+  \label{eq:sumdLambdadna}
+\end{equation}
+But since second differentials are required, it do not help much for
+the compositional differentials. Using
+\begin{equation}
+  \Lambda_k = \ln \ousum{\NGr}{j}  \Theta_j \tilde{E}_{jk} = \ln \ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk} -\ln \ousum{\NC}{l}n_l\ousum{\NGr}{m}v_m^lQ_m,
+\end{equation}
+we get
+\begin{equation}
+  \pd{\Lambda_k}{n_\alpha} = \frac{\ousum{\NGr}{j} v_j^\alpha Q_j \tilde{E}_{jk}}{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}} - \frac{\ousum{\NGr}{m}v_m^\alpha Q_m}{\ousum{\NC}{l}n_l\ousum{\NGr}{m}v_m^lQ_m}.
+  \label{eq:dLambdadna}
+\end{equation}
+Differentiating \ref{eq:dAedna} further \wrpt $n_\beta$ we get,
+\begin{align}
+  \frac{A^\res_{\alpha\beta}}{RT} &= - \ousum{\NGr}{k}  Q_k \left(v_k^\alpha  \pd{\Lambda_k}{n_\beta} + v_k^\beta \pd{\Lambda_k}{n_\alpha}\right) - \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k \ptwo{\Lambda_k}{n_\alpha}{n_\beta}, \label{eq:d2Aedna2}\\
+&= - \ousum{\NGr}{k}  Q_k \left(v_k^\alpha  \pd{\Lambda_k}{n_\beta} + v_k^\beta \pd{\Lambda_k}{n_\alpha}\right) - \ousum{\NGr}{k}  \left(\ousum{\NC}{i} n_i v_k^i\right) Q_k \ptwo{\Lambda_k}{n_\alpha}{n_\beta}.
+\end{align}
+Differentiating Equation \ref{eq:dLambdadna} we get the second differential of $\Lambda_k$,
+\begin{equation}
+  \ptwo{\Lambda_k}{n_\alpha}{n_\beta} = -\frac{\left(\ousum{\NGr}{j} v_j^\alpha Q_j \tilde{E}_{jk}\right) \left(\ousum{\NGr}{j} v_j^\beta Q_j \tilde{E}_{jk}\right)}{\left(\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}\right)^2} + \frac{\left(\ousum{\NGr}{m}v_m^\alpha Q_m\right) \left(\ousum{\NGr}{m}v_m^\beta Q_m\right)}{\left(\ousum{\NC}{l}n_l\ousum{\NGr}{m}v_m^lQ_m\right)^2}.
+  \label{eq:ddLambdadnadnb}
+\end{equation}
+We immediately see that \ref{eq:ddLambdadnadnb} give a symmetric matrix of the second differentials.
+
+Differentiating \ref{eq:Ae} \wrpt $T$ we get,
+\begin{align}
+  \pd{\left(\frac{A^\res}{RT}\right)}{T} &= - \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k\left(\pd{\Lambda_k}{T} - \pd{\Lambda_k^i}{T}\right), \label{eq:dAedT} \\
+  \pdn{2}{\left(\frac{A^\res}{RT}\right)}{T} &= - \ousum{\NC}{i} n_i \ousum{\NGr}{k}  v_k^i Q_k\left(\pdn{2}{\Lambda_k}{T} - \pdn{2}{\Lambda_k^i}{T}\right). \label{eq:d2AedT2}
+\end{align}
+Here,
+\begin{align}
+  \pd{\Lambda_k}{T} &= \frac{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \pd{\tilde{E}_{jk}}{T}}{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}},\label{eq:dLkdT} \\
+  \pd{\Lambda_k^i}{T} &= \frac{\ousum{\NGr}{j} Q_j v_j^i \pd{\tilde{E}_{jk}}{T}}{\ousum{\NGr}{j} Q_j v_j^i \tilde{E}_{jk}},\label{eq:dLikdT} \\
+  \pdn{2}{\Lambda_k}{T} &= \frac{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \pdn{2}{\tilde{E}_{jk}}{T}}{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}} - \left(\pd{\Lambda_k}{T}\right)^2,\label{eq:d2LkdT2} \\
+  \pdn{2}{\Lambda_k^i}{T} &= \frac{\ousum{\NGr}{j} Q_j v_j^i \pdn{2}{\tilde{E}_{jk}}{T}}{\ousum{\NGr}{j} Q_j v_j^i \tilde{E}_{jk}} - \left(\pd{\Lambda_k^i}{T}\right)^2.\label{eq:d2LikdT2} \\
+\end{align}
+
+Differentiating Equation \ref{eq:dAedna} we get
+\begin{equation}
+  \pd{\left(\frac{A^\res_\alpha}{RT}\right)}{T} = - \ousum{\NGr}{k}  v_k^\alpha Q_k\left(\pd{\Lambda_k}{T} - \pd{\Lambda_k^\alpha}{T}\right) -  \ousum{\NGr}{k} \left(\ousum{\NC}{i} n_i v_k^i\right) Q_k \ptwo{\Lambda_k}{n_\alpha}{T}. \label{eq:d2AednadT}
+\end{equation}
+The cross differential of $\Lambda_k$ is found by differentiating Equation \ref{eq:dLambdadna} \wrpt $T$,
+\begin{equation}
+  \ptwo{\Lambda_k}{n_\alpha}{T} = \frac{\ousum{\NGr}{j} v_j^\alpha Q_j \pd{\tilde{E}_{jk}}{T}}{\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}} - \frac{\left(\ousum{\NGr}{j} v_j^\alpha Q_j \tilde{E}_{jk}\right) \left(\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \pd{\tilde{E}_{jk}}{T}\right)}{\left(\ousum{\NC}{l}n_l \ousum{\NGr}{j} v_j^l Q_j \tilde{E}_{jk}\right)^2} .
+  \label{eq:d2LambdadnadT}
+\end{equation}
+\subsection{The combinatorial term}
+The combinatorial term is comprised of a Flory-Huggins (\FH) and a
+Staverman-Guggenheim (\SG) contribution,
+
+\begin{align}
+  G^{\excess,\comb} &= G^{\excess,\FH} + G^{\excess,\SG},\label{eq:comb}\\
+  G^{\excess,\FH} &= \underset{i}{\sum} x_i \ln \frac{\phi_i}{x_i}, \label{eq:fh}\\
+  G^{\excess,\SG} &= \frac{z}{2} \underset{i}{\sum} x_i q_i \ln \frac{\theta_i}{\phi_i}\label{eq:sg}.
+\end{align}
+Where $z=10$,
+\begin{align}
+  \phi_i &= \frac{x_i r_i}{\underset{j}{\sum} x_j r_j},\label{eq:phii}\\
+  \theta_i &= \frac{x_i q_i}{\underset{j}{\sum} x_j q_j}.\label{eq:thetai}\\
+\end{align}
+$r_i$ and $q_i$ are molecule paramaters and non of the parameters are temperature dependent. $r_i$ is the molecular van der Waals volume and $q_i$ is the molecular van der Waals surface area. They are calculated from the group paramaters as follows,
+\begin{align}
+  r_i &= \ousum{\NGr}{k}v_k^i R_k,\label{eq:ri}\\
+  q_i &= \ousum{\NGr}{k}v_k^i Q_k.\label{eq:qi}\\
+\end{align}
+
+\subsubsection{Differentials of the Flory-Huggins combinatorial term}
+Writing Equation \ref{eq:fh} as a function of mole numbers, we get,
+\begin{align}
+  G^{\excess,\FH} &= \ousum{\NC}{i} n_i \left(\ln \phi_i - \ln n_i + \ln \ousum{\NC}{j}n_j\right), \\
+  &= \ousum{\NC}{i} n_i \left(\ln n_i r_i - \ln \ousum{\NC}{j} n_j r_j - \ln n_i + \ln \ousum{\NC}{j}n_j\right) = \ousum{\NC}{i} n_i \ln r_i -n\ln \ousum{\NC}{j}n_jr_j  + n\ln n. \label{eq:fhn}
+\end{align}
+Differentiating $G^{\excess,\FH}$ \wrpt $n_\alpha$ we get,
+\begin{align}
+  G^{\excess,\FH}_\alpha &= \ln r_\alpha -\ln \ousum{\NC}{j}n_jr_j  + \ln \ousum{\NC}{j}n_j + 1-\frac{r_\alpha\ousum{\NC}{i} n_i}{\ousum{\NC}{j}n_jr_j},\\
+  &= \ln r_\alpha -\ln \ousum{\NC}{j}n_jr_j  + \ln n + 1-\frac{n r_\alpha}{\ousum{\NC}{j}n_jr_j}, \label{eq:dfhndna}\\
+  &= \ln \left(\frac{n r_\alpha}{\ousum{\NC}{j}n_jr_j}\right) + 1-\frac{n r_\alpha}{\ousum{\NC}{j}n_jr_j}\\
+  &= \ln \left(\frac{\phi_\alpha}{x_\alpha}\right) + 1-\frac{\phi_\alpha}{x_\alpha}
+\end{align}
+Differentiating \ref{eq:dfhndna} \wrpt $n_\beta$ we get,
+\begin{align}
+  G^{\excess,\FH}_{\alpha\beta} &= -\frac{r_\alpha + r_\beta}{\ousum{\NC}{j}n_jr_j}  + \frac{1}{n} + \frac{n r_\alpha r_\beta}{\left(\ousum{\NC}{j}n_jr_j\right)^2}. \label{eq:d2fhndnadnb}
+\end{align}
+\subsubsection{Differentials of the Staverman-Guggenheim combinatorial term}
+Writing Equation \ref{eq:sg} as a function of mole numbers, we get,
+\begin{align}
+  G^{\excess,\SG} &= \frac{z}{2} \ousum{\NC}{i} n_i q_i \left(\ln \theta_i - \ln \phi_i\right),\\
+  &= \frac{z}{2} \ousum{\NC}{i} n_i q_i \left(\ln \frac{q_i}{r_i} - \ln \ousum{\NC}{j} n_j q_j + \ln \ousum{\NC}{j} n_j r_j \right)\label{eq:sgn}.
+\end{align}
+Differentiating $G^{\excess,\SG}$ \wrpt $n_\alpha$ we get,
+\begin{align}
+  G^{\excess,\SG}_\alpha &= \frac{z}{2} q_\alpha \left( \ln \frac{q_\alpha}{r_\alpha} - \ln \ousum{\NC}{j} n_j q_j + \ln \ousum{\NC}{j} n_j r_j - 1 + \frac{r_\alpha \ousum{\NC}{i} n_i q_i}{q_\alpha\ousum{\NC}{j} n_j r_j}\right), \label{eq:dsgnda}\\
+  &= \frac{z}{2} q_\alpha \left( - \ln \left(\frac{r_\alpha \ousum{\NC}{j} n_j q_j}{q_\alpha \ousum{\NC}{j} n_j r_j}\right) - 1 + \frac{r_\alpha \ousum{\NC}{i} n_i q_i}{q_\alpha\ousum{\NC}{j} n_j r_j}\right),\\
+  &= \frac{z}{2} q_\alpha \left( \ln \left(\frac{\theta_\alpha}{\phi_\alpha}\right) - 1 + \frac{\phi_\alpha}{\theta_\alpha}\right).
+\end{align}
+Differentiating \ref{eq:dsgnda} \wrpt $n_\beta$ we get,
+\begin{align}
+  G^{\excess,\SG}_{\alpha\beta} &= \frac{z}{2} \left( - \frac{q_\alpha q_\beta}{\ousum{\NC}{j} n_j q_j} + \frac{q_\alpha r_\beta + q_\beta r_\alpha}{\ousum{\NC}{j} n_j r_j} - \frac{r_\alpha r_\beta \ousum{\NC}{i} n_i q_i}{\left(\ousum{\NC}{j} n_j r_j\right)^2}\right). \label{eq:dssgndadb}
+\end{align}
+\subsubsection{Comparing to combinatorial activity coefficient of Fredenslund et al.}
+Fredenslund et al. \cite{Fredenslund1975} uses the following expression for the activity combinatorial coefficient,
+\begin{align}
+  \ln \gamma_{\text{c}} &= \ln \frac{\phi_i}{x_i} + \frac{z}{2} q_i \ln \frac{\theta_i}{\phi_i} + l_i - \frac{\phi_i}{x_i}\ousum{\NC}{j} x_j l_j , \label{eq:gamma_c} \\
+  l_i &= \frac{z}{2} \left(r_i - q_i\right) - \left(r_i - 1\right) . \label{eq:li}
+\end{align}
+Inserting for $l_i$ in the last term of Equation \ref{eq:gamma_c}, we get,
+\begin{align}
+  \frac{\phi_i}{x_i}\ousum{\NC}{j} x_j l_j &= \frac{z\phi_i}{2x_i}\left(\ousum{\NC}{j} x_j r_j - \ousum{\NC}{j}x_jq_j\right) - \frac{\phi_i}{x_i}\left(\ousum{\NC}{j} x_j r_j - 1\right), \\
+  &= \frac{z}{2}\left(r_i - \frac{q_i\phi_i}{\theta_i}\right) - r_i + \frac{\phi_i}{x_i}. \label{eq:second_term}
+\end{align}
+Inserting Equation \ref{eq:second_term} and Equation \ref{eq:li} into Equation \ref{eq:gamma_c} we get,
+\begin{align}
+  \ln \gamma_{\text{c}} &= \ln \frac{\phi_i}{x_i} + 1 - \frac{\phi_i}{x_i} + \frac{z}{2} q_i \left(\ln \frac{\theta_i}{\phi_i} -1 + \frac{\phi_i}{\theta_i}\right).
+\end{align}
+We see that
+\begin{equation}
+  \ln \gamma_{\text{c}} = G^{\excess,\FH}_\alpha + G^{\excess,\SG}_\alpha.
+\end{equation}
+\section{UMR-PR model}
+The UMR-PR model is developed by Voutsas et al \cite{Voutsas2004}, and
+uses the UNIFAC mixing rules together with a volume translated
+Peng-Robinson EOS, t-mPR \cite{Avlonitis1994}.
+
+UMR-PR applies the following covolume mixing rule,
+\begin{align}
+  b &= \underset{i}{\sum} \underset{j}{\sum} x_i x_j b_{ij},\\
+  b_{ij} &= \left[\frac{b_i^{\frac{1}{s}} + b_j^{\frac{1}{s}}}{2}\right]^s,
+  \label{eq:bij}
+\end{align}
+with $s=2$.
+
+UMR-PR ignores the Flory-Huggins contribution, Equation \ref{eq:fh},
+of the combinatorial term, Equation \ref{eq:comb}.
+
+UMR-PR uses the original temperature independent UNIFAC parameters published by Hansen et al \cite{Hansen1991} and Dortmund Data Bank, Wittig et al \cite{Wittig2003}.
+
+Data source:
+\url{https://en.wikipedia.org/wiki/UNIFAC}
+
+\url{http://www.ddbst.com/unifacga.html}
+
+\url{http://www.aim.env.uea.ac.uk/aim/info/UNIFACgroups.html}
+
+The volume correction temperature differentials used in UMR is not
+continous. This might be a good reason not to use the model.
+
+
+\subsection{t-mPR model}
+t-mPR \cite{Avlonitis1994} is an extension of the t-PR
+\cite{Magoulas1990} to mixtures.
+
+The t-mPR model take the following form,
+\begin{equation}
+  \label{eq:t-mPR}
+  P = \frac{RT}{V+t-b} - \frac{a}{(V+t)(V+t+b) + b(V+t-b)},
+\end{equation}
+where,
+\begin{equation}
+  \label{eq:tmix}
+  t = t(\vektor{x},T) = \underset{i}{\sum} x_i t_i(T).
+\end{equation}
+We see that by introducing $\tilde{V} = V + t$, the relations for this
+equation of state can be related to the standard Peng-Robinson
+equation of state. The translation is slightly more complicated than
+the P{\'e}neloux \cite{Peneloux1982} volume shift, due to the
+temperature dependency, and the lack of correction to the covolume.
+
+\section{PSRK model}
+PSRK \cite{Holderbaum1991} uses SRK with Mathias-Copeman
+$\alpha$-correlation \cite{Mathias1983}, and a UNIFAC excess Gibbs
+energy model. 
+
+The zero pressure limit, Equation \ref{eq:zero_limit},
+is used when including the mixing rules into the SRK EOS.
+$h_{\text{PSRK}}(\beta_0) = 0.64663$ is used.
+
+The zero pressure limit is used when including the excess Gibbs energy into the equation of state,
+\begin{equation}
+  \label{eq:zero_limit}
+  \frac{a}{RTb} = \underset{i}{\sum} x_i \frac{a_i}{RTb_i} - \frac{1}{h(\beta_0)}\left(\underset{i}{\sum} x_i \ln \frac{b}{b_i} + \frac{G^\excess}{RT} \right),
+\end{equation}
+where $h(\beta_0)$ is a constant that depend on the EOS. We have $h_{\text{PR}}(\beta_0) = 0.53$.
+
+The linear mixing of the covolume is used in PSRK,
+\begin{equation}
+  \label{eq:linbmix}
+  b  = \underset{i}{\sum} x_i b_i.
+\end{equation}
+
+\textcolor{red}{Parameters: \cite{Horstmann2005,Holderbaum1991,Horstmann2000,Fischer1996,Gmehling1997}}
+
+\section{VTPR model}
+The Volume-Translated-Peng-Robinson (VTPR) EOS \cite{Collinet2006}, uses a constant volume correction for each component. The correction in volume therefore don't depend on temperature. The Twu, Bluck, Cunningham and Coon $\alpha$-correlation \cite{Twu1991} is used.
+
+For the excess Gibbs energy, the UNIFAC model is used without the combinatorial term, Equation \ref{eq:comb}. The infinite pressure limit is used when including the activity coefficient model into the EOS.
+
+Covolume mixing uses Equation \ref{eq:bij} with $s=4/3$.
+
+\textcolor{red}{Parameters: \cite{Schmid2014}}
+
+\section{The general mixing rule for the covolume}
+The general mixing rules for the covolume take the following form,
+\begin{align}
+  nB = n^2 b &= \underset{i}{\sum} \underset{j}{\sum} n_i n_j b_{ij}, \label{eq:B}\\
+  b_{ij}^{\frac{1}{s}} &= (1 - l_{ij}) \frac{b_i^{\frac{1}{s}} + b_j^{\frac{1}{s}}}{2}.
+  \label{eq:bij_mod}
+\end{align}
+Where $l_{ij}$ is assumed constant, symmetric, and have a default value of zero.
+
+Differentiating and manipulating Equation \ref{eq:B}, $B_{i}$ and
+$B_{ij}$ become,
+\begin{align}
+  n B_i = &= 2\underset{j}{\sum} n_j b_{ij} -B, \label{eq:Bi}\\
+  n B_{ij} = &= 2b_{ij} - B_i - B_j.
+  \label{eq:Bij}
+\end{align}
+\clearpage
+\bibliographystyle{plain}
+\bibliography{../thermopack}
+
+\end{document}

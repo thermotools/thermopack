@@ -1,0 +1,1020 @@
+\documentclass[english]{../thermomemo/thermomemo}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage[font=small,labelfont=bf]{caption}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+% For appendices
+\usepackage[toc,page]{appendix}
+
+% Macros
+\newcommand{\mbf}[0]{\mathbf}
+\newcommand*{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand*{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand*{\pder}[2]{\left(\frac{\partial #1}{\partial #2}\right)}
+\newcommand*{\pdder}[2]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)}
+\newcommand*{\pdersub}[3]{\left(\frac{\partial #1}{\partial #2}\right)_{#3}}
+\newcommand*{\pddersub}[3]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)_{#3}}
+\newcommand*{\pdcross}[3]{\left(\frac{\partial^2 #1}{\partial #2 \partial #3}\right)}
+\newcommand*{\pdcrosssub}[4]{\left(\frac{\partial^2 #1}{\partial #2 \partial #3}\right)_{#4}}
+\newcommand*{\hF}[0]{\hat F}
+\newcommand*{\hH}[0]{\hat H}
+\newcommand{\z}{\zeta}
+\newcommand{\lp}{\left(}
+\newcommand{\rp}{\right)}
+
+\title{PC-SAFT and derivatives up to second order}
+\author{Ailo Aasen}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+
+\section{Introduction to PC-SAFT}
+PC-SAFT was introduced by Gross and Sadowski 2001 \cite{Gross01,Gross02}, and is given by adding up various contributions to the Helmholtz energy
+\begin{equation}
+  \label{eq:PC-SAFT}
+  A^{\text{PC-SAFT}} = A^{\text{ideal}} + A^{\text{hard-chain}} + A^{\text{disp}} + A^{\text{assoc}}
+\end{equation}
+Since the initial papers of Gross and Sadowski, there have been numerous
+versions of PC-SAFT published in the literature. We have chosen to implement
+sPC-SAFT, which stands for ``simplified PC-SAFT''. The sPC-SAFT model is
+described in \cite{Kontogeorgis10} has the same pure-component parameters as the
+original PC-SAFT, has no appreciable loss of accuracy compared to the full
+PC-SAFT, but employs simplified mixing rules. The simplified mxing rules
+translates to faster and simpler code, especially when one wants to implement
+second order derivatives as we do. It is in our experience also more numerically
+robust. The three quantities that differ between sPC-SAFT and the original
+PC-SAFT are $\Delta^{A_i B_j}$. $\alpha^{hs}$ and $g_{ij}$; the functional forms
+for these quantities will be stated for both of the equations.
+
+\subsection{The term $A^{\text{assoc}}$}
+The standard association expression common to all SAFT variant is used for
+$A^{\text{assoc}}$, namely
+\begin{equation}
+  \frac{A^{\rm assoc}}{RT} = \sum_{i} n_i \sum_{A_i} \lp \ln X_{A_i} - \frac{X_{A_i}}{2} + \frac{1}{2} \rp
+\end{equation}
+where $X_{A_i}$ is the fraction of molecules \textit{not} bonded at site $A_i$,
+and is given by the nonlinear equation
+\begin{equation}
+  X_{A_i} = \frac{1}{1+(1/V) \sum_j n_j \sum_{B_j} X_{B_j} \Delta^{A_i B_j}}.
+\end{equation}
+Here $\Delta^{A_i B_j}$ is called the bond association strength, and is given by
+\begin{align}
+    \Delta^{A_i B_j} =& N_{\rm avo} g_{ij} d_{ij}^3 \kappa^{A_i B_j} [\exp(\epsilon^{A_i B_j}/kT) - 1] &&\text{(PC-SAFT)}\\ \label{ascStrength}
+    \Delta^{A_i B_j} =& N_{\rm avo} g \sigma_{ij}^3 \kappa^{A_i B_j} [\exp(\epsilon^{A_i B_j}/kT) - 1] &&\text{(sPC-SAFT)}
+\end{align}
+The quantities $\sigma_{ij}$, $\kappa^{A_i B_j}$ and $\epsilon^{A_i B_j}$ in
+\eqref{ascStrength} are binary parameters obtained by using mixing rules on
+corresponding pure-component parameters $\sigma_{i}$, $\kappa^{A_i B_i}$ and
+$\epsilon^{A_i B_i}$. The radial distribution function $g_{ij}$ is usually more
+complicated for PC-SAFT variants than for CPA. It is given by
+\begin{align}
+  g_{ij} &= \frac{1}{1-\z_3} + \lp \frac{d_id_j}{d_i+d_j} \rp \frac{3\z_2}{(1-\z_3)^2} + \lp \frac{d_i d_j}{d_i+d_j} \rp^2 \frac{2\z_2^2}{(1-\z_3)^2} && \text{(PC-SAFT)} \\ \label{gij}
+  g_{ij} &= \frac{1-\eta/2}{(1-\eta)^3} && \text{(sPC-SAFT)}
+\end{align}
+where
+\begin{equation}
+  \label{eq:z_n}
+  \z_n = \frac{\pi}{6} \rho \sum_i x_i m_i d_i^n, \qquad n = 0,1,2,3, \qquad \eta = \zeta_3
+\end{equation}
+and
+\begin{equation}
+  \label{eq:di}
+  d_i = \sigma_i \left[1 - 0.12\exp \lp -3\frac{\varepsilon_i}{kT} \rp \right].
+\end{equation}
+Unlike CPA, the radial distribution function in PC-SAFT and sPC-SAFT is
+temperature dependent, and thus has the potential of capturing more of the
+temperature dependence of the underlying physics.
+
+\subsection{The term $A^{\text{hard-chain}}$}
+The hard-chain part $A^{\text{hard-chain}}$ is given by
+\begin{equation}
+  \frac{A^{\text{hard-chain}}}{nRT} = \bar m \alpha^{hs} - \sum_i x_i(m_i-1)\ln g_{ii}^{hs},
+\end{equation}
+where the radial distribution function is given by \cref{gij,eq:di}, and $\bar m$ is the mean segment number in the mixture
+\begin{equation}
+  \bar m = \sum_i x_i m_i,
+\end{equation}
+and $\alpha^{hs} = \frac{A^{hs}}{N_s k T}$ is given by
+\begin{align}
+  \alpha^{hs} &= \frac{1}{\z_0} \left[ \frac{3\z_1\z_2}{1-\z_3} + \frac{\z_2^3}{\z_3(1-\z_3)^2} + \lp \frac{\z_2^3}{\z_2^2} - \z_0 \rp \ln(1-\z_3) \right]  && \text{(PC-SAFT)} \\
+  \alpha^{hs} &= \frac{4\eta-3\eta^2}{(1-\eta)^2} && \text{(sPC-SAFT)} 
+\end{align}
+
+\subsection{The term $A^{\text{disp}}$}
+For the dispersion part $A^{\text{disp}}$ of the Helmholtz energy, we have
+\begin{equation}
+  \frac{A^{\text{disp}}}{nRT} = -2 \pi \rho I_1(\eta,\bar m) \overline{m^2 \epsilon \sigma^3} - \pi \rho \bar m C_1 I_2(\eta,\bar m) \overline{m^2 \epsilon^2 \sigma^3},
+\end{equation}
+where $\eta = \zeta_3$ (see equation \eqref{eq:z_n}) and $C_1$ is the so-called
+compressibility expression, defined as
+\begin{equation}
+  C_1 = \lp 1+Z^{\text{hard-chain}} + \rho \pder{Z^{\text{hard-chain}}}{\rho} \rp^{-1}.
+\end{equation}
+We have furthermore used the abbreviations
+\begin{align}
+  \overline{m^2\epsilon \sigma^3} &:= \sum_{ij} x_i x_j m_i m_j \frac{\epsilon_{ij}}{kT} \sigma_{ij}^3 \\
+  \overline{m^2\epsilon^2\sigma^3} &:= \sum_{ij} x_i x_j m_i m_j \lp \frac{\epsilon_{ij}}{kT} \rp^2 \sigma_{ij}^3.
+\end{align}
+The parameters for a pair of unlike segments are determined by conventional
+one-fluid mixing rules:
+\begin{equation}
+  \sigma_{ij} = \frac{1}{2}(\sigma_i + \sigma_j), \qquad  \epsilon_{ij} = \sqrt{\epsilon_i \epsilon_j} (1-k_{ij}),
+\end{equation}
+where the binary interaction parameters are regressed against experimental
+data. We note in passing that tue to the functional form of PC-SAFT, one can
+implement asymmetric interaction parameters. The quantities $I_1$ and $I_2$ are
+integrals approximated by truncated power series in reduced density $\eta$:
+\begin{equation}
+  I_1(\eta,\bar m) = \sum_{i=0}^6 a_i(\bar m) \eta^i, \qquad  I_2(\eta,\bar m) = \sum_{i=0}^6 b_i(\bar m) \eta^i
+\end{equation}
+where the coefficients $a_i$ and $b_i$ are universal model constants given by
+\begin{align}
+  a_i(\bar m) &= a_{0i} + \frac{\bar m -1}{\bar m}a_{1i} + \frac{\bar m -1}{\bar m} \frac{\bar m -2}{\bar m}a_{2i} \\
+  b_i(\bar m) &= b_{0i} + \frac{\bar m -1}{\bar m}b_{1i} + \frac{\bar m -1}{\bar m} \frac{\bar m -2}{\bar m}b_{2i}
+\end{align}
+Finally, we mention that while the association contribution is essentially the
+same as in CPA, the dispersion contribution $A^{\text{disp}}$ and the hard-chain
+contribution $A^{\text{hard-chain}}$ are nothing like the semi-empirical
+$A^{\text{cb}}$ term in CPA. They are theoretically founded contributions to the
+Helmholtz energy, modeling a molecule $i$ as a chain composed of $m_i$ identical
+segments.
+
+\section{Derivatives of $\alpha^{\text{hard-chain}} (\rho,T,\mbf n)$ and $\alpha^{\text{disp}} (\rho,T,\mbf n)$}
+This section documents the derivatives of the Helmholtz contribution coming from
+$A^{\text{hard-chain}}$ and $A^{\text{dispersion}}$. Take note of the variable
+set we are using for $\alpha$, namely $(\rho,T,\mbf n)$, where $\mbf n$ are mole
+numbers, not mole fractions. Having established that these are the variables
+used, we drop subscripts on the
+derivatives. % Transformation back to the canonical variables $(T,V,\mbf n)$ for the Helmholtz energy is straightforward.
+
+We will present the derivatives in a modular, top-down approach. Any quantity is
+differentiated in terms of the derivatives of the functions which make up the
+expression, without performing the derivatives on these helper-functions. The
+formulas for the derivatives are complex, but the coded derivatives have been
+tested validated through numerical differentiation. (But even if the coded
+derivatives are correct, there may still be errors in the expression of this
+document.)
+\subsection{Derivatives of $\alpha^{disp}$}
+\begin{equation}
+  \alpha^{disp} = -2 \pi \rho I_1(\eta,\bar m) \overline{m^2 \epsilon \sigma^3} - \pi \rho \bar m C_1 I_2(\eta,\bar m) \overline{m^2 \epsilon^2 \sigma^3}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pder{\alpha^{disp}}{\rho} =& -2 \pi \lp I_1 + \rho \pder{I_1}{\rho} \rp \overline{m^2 \epsilon \sigma^3} - \\
+    & \pi \bar m \lp C_1 I_2 + \rho \pder{C_1}{\rho} I_2 + \rho C_1 \pder{I_2}{\rho} \rp \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned} % The terms divided by T are due to the derivatives of m2e1s3 and m2e2s3.
+    \pder{\alpha^{disp}}{T} = -2 \pi \rho \left[ \pder{I_1}{T} - \frac{I_1}{T} \right] \overline{m^2 \epsilon \sigma^3} - 
+    \pi \rho \bar m \left[ \pder{C_1}{T} I_2 + C_1 \pder{I_2}{T} - 2 C_1 \frac{I_2}{T}\right] \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pder{\alpha^{disp}}{n_k} =& -2 \pi \rho \left[ I_{1,n_k} \overline{m^2 \epsilon \sigma^3} + I_1 (\overline{m^2 \epsilon \sigma^3})_{n_k} \right] \\
+    &- \pi \rho \left[ \pder{\bar m}{n_k} C_1 I_2 + \bar m C_{1,n_k} I_2 + \bar m C_1 I_{2,n_k} \right] \overline{m^2 \epsilon^2 \sigma^3} - \pi \rho \bar m C_1 I_2 (\overline{m^2 \epsilon^2 \sigma^3})_{n_k}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdder{\alpha^{disp}}{\rho} =& -2 \pi \lp 2 \pder{I_1}{\rho} + \rho \pdder{I_1}{\rho} \rp \overline{m^2 \epsilon \sigma^3} - \\
+    & \left[ 2 \pder{C_1}{\rho} I_2 + 2 C_1 \pder{I_2}{\rho} + 2 \rho \pder{C_1}{\rho} \pder{I_2}{\rho} + \rho \pdder{C_1}{\rho} I_2 + \rho C_1 \pdder{I_2}{\rho} \right]  \\
+    &\cdot \pi \bar m \cdot \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{disp}}{T}{\rho} =& -2 \pi \left[ \frac{1}{T}\lp I_1 + \rho \pder{I_1}{\rho} \rp + \pder{I_1}{T} + \rho \pdcross{I_1}{T}{\rho} \right] \overline{m^2 \epsilon \sigma^3} + \\
+    & 2 \pi \bar m \lp C_1 I_2 + \rho \pder{C_1}{\rho} I_2 + \rho C_1 \pder{I_2}{\rho} \rp \frac{\overline{m^2 \epsilon^2 \sigma^3}}{T} - \\
+    &  \pi \bar m \left[ \pder{C_1}{T} I_2 + C_1 \pder{I_2}{T} + \rho \pdcross{C_1}{T}{\rho} I_2 + \right. \\
+    & \qquad \left. \rho \pder{C_1}{\rho} \pder{I_2}{T} + \rho \pder{C_1}{T} \pder{I_2}{\rho} + \rho C_1 \pdcross{I_2}{T}{\rho} \right] \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}  
+\end{equation}
+
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{disp}}{\rho}{n_k} =& -2 \pi \left[ I_{1,n_k} \overline{m^2 \epsilon \sigma^3} + I_1 (\overline{m^2 \epsilon \sigma^3})_{n_k} \right] -2 \pi \rho \left[ I_{1,n_k \rho} \overline{m^2 \epsilon \sigma^3} + I_{1,\rho} (\overline{m^2 \epsilon \sigma^3})_{n_k} \right] \\
+    &- \pi \left[ \pder{\bar m}{n_k} C_1 I_2 + \bar m C_{1,n_k} I_2 + \bar m C_1 I_{2,n_k} \right] \overline{m^2 \epsilon^2 \sigma^3} - \pi \bar m C_1 I_2 (\overline{m^2 \epsilon^2 \sigma^3})_{n_k} \\
+    &- \pi \rho \left[ \pder{\bar m}{n_k} C_{1,\rho} I_2 + \bar m C_{1,n_k \rho} I_2 + \bar m C_{1,\rho} I_{2,n_k} + \right. \\
+    & \qquad \quad  \left. \pder{\bar m}{n_k} C_1 I_{2,\rho} + \bar m C_{1,n_k} I_{2,\rho} + \bar m C_1 I_{2,n_k \rho} \right] \overline{m^2 \epsilon^2 \sigma^3} - \\
+    & \pi \rho \bar m \lp \pder{C_1}{\rho} I_2 + C_1 \pder{I_2}{\rho} \rp (\overline{m^2 \epsilon^2 \sigma^3})_{n_k}
+  \end{aligned}
+\end{equation}
+
+
+\begin{equation}
+  \begin{aligned}
+    \pdder{\alpha^{disp}}{T} =& -2 \pi \rho \left[ \pdder{I_1}{T} + 2 \frac{I_1}{T^2} - 2 \frac{1}{T} \pder{I_1}{T} \right] \overline{m^2 \epsilon \sigma^3} -  \\
+    & \pi \rho \bar m \left[ -\frac{4}{T} \lp \pder{C_1}{T} I_2 + C_1 \pder{I_2}{T} \rp + \frac{8 C_1 I_2}{T^2} +\right. \\
+    & \qquad \left. \pder{C_1}{T} I_2 + 2 \pder{C_1}{T} \pder{I_2}{T} + C_1 \pdder{I_2}{T} \right] \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{disp}}{n_k}{T} =& -2 \pi \rho \left[ \pdcross{I_1}{n_k}{T} - \frac{1}{T} \pder{I_1}{n_k} \right] \overline{m^2 \epsilon \sigma^3} -2 \pi \rho \left[ \pder{I_1}{T} - \frac{I_1}{T} \right] (\overline{m^2 \epsilon \sigma^3})_{n_k} - \\
+    & \pi \rho \lp \pder{\bar m}{n_k} \cdot \overline{m^2 \epsilon^2 \sigma^3} + \bar m (\overline{m^2 \epsilon^2 \sigma^3})_{n_k} \rp \left[ \pder{C_1}{T} I_2 + C_1 \pder{I_2}{T} - 2 C_1 \frac{I_2}{T}\right] -\\
+    & \pi \rho \bar m \left[ \pdcross{C_1}{n_k}{T} I_2 + \pder{C_1}{n_k} \pder{I_2}{T} - 2 \pder{C_1}{n_k} \frac{I_2}{T} + \right. \\
+    & \left. \pder{C_1}{T} \pder{I_2}{n_k} + C_1 \pdcross{I_2}{n_k}{T} - \frac{2}{T} C_1 \pder{I_2}{n_k} \right] \overline{m^2 \epsilon^2 \sigma^3}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned} % At least I got a symmetric expression, which is a good sign :)
+    \pdcross{\alpha^{disp}}{n_l}{n_k} =& -2 \pi \rho \left[ I_{1,n_k n_l} \overline{m^2 \epsilon \sigma^3} + I_{1,n_l} (\overline{m^2 \epsilon \sigma^3})_{n_k} + I_{1,n_k} (\overline{m^2 \epsilon \sigma^3})_{n_l} + I_1 (\overline{m^2 \epsilon \sigma^3})_{n_k n_l} \right] -\\
+    & \pi \rho \left[ \pder{\bar m}{n_k} C_1 I_2 + \bar m C_{1,n_k} I_2 + \bar m C_1 I_{2,n_k} \right] (\overline{m^2 \epsilon^2 \sigma^3})_{n_l} -\\
+    & \pi \rho \left[ \pder{\bar m}{n_k} (C_{1,n_l} I_2 + C_1 I_{2,n_l}) + (\pder{\bar m}{n_l} C_{1,n_k} I_2 + \bar m C_{1,n_k n_l} I_2 + \bar m C_{1,n_k} I_{2,n_l}) + \right. \\
+    & \qquad \left. (\pder{\bar m}{n_l} C_1 I_{2,n_k} + \bar m C_{1,n_l} I_{2,n_k} + \bar m C_1 I_{2,n_k n_l}) \right] \overline{m^2 \epsilon^2 \sigma^3} -\\
+    & \pi \rho \bar m C_1 I_2 (\overline{m^2 \epsilon^2 \sigma^3})_{n_k n_l} - \\
+    & \pi \rho (\pder{\bar m}{n_l} C_1 I_2 + \bar m C_{1,n_l} I_2 + \bar m C_1 I_{2,n_l}) (\overline{m^2 \epsilon^2 \sigma^3})_{n_k}
+  \end{aligned}
+\end{equation}
+
+\subsection{Derivatives of $\alpha^{hc}$}
+\begin{equation}
+  \alpha^{hc} = \bar m \alpha^{hs} - \sum_i x_i(m_i-1)\ln g_{ii}^{hs} = \bar m \alpha^{hs} - G,
+\end{equation}
+where we have defined the helper function $G$.
+
+\begin{equation}
+  \pder{\alpha^{hc}}{\rho} = \bar m \pder{\alpha^{hs}}{\rho} - \pder{G}{\rho}
+\end{equation}
+
+\begin{equation}
+  \pder{\alpha^{hc}}{T} = \bar m \pder{\alpha^{hs}}{T} - \pder{G}{T}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+      \pder{\alpha^{hc}}{n_k} &= \pder{\bar m}{n_k} \alpha^{hs} - \pder{G}{n_k}
+    \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \pdder{\alpha^{hc}}{\rho} = \bar m \pdder{\alpha^{hs}}{\rho} - \pdder{G}{\rho}
+\end{equation}
+
+\begin{equation}
+  \pdcross{\alpha^{hc}}{\rho}{T} = \bar m \pdcross{\alpha^{hs}}{\rho}{T} - \pdcross{G}{\rho}{T}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{hc}}{\rho}{n_k} =& \pder{\bar m}{n_k} \pder{\alpha^{hs}}{\rho} + \bar m \pdcross{\alpha^{hs}}{\rho}{n_k} - \pdcross{G}{\rho}{n_k}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \pdder{\alpha^{hc}}{T} = \bar m \pdder{\alpha^{hs}}{T} - \pdder{G}{T}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{hc}}{T}{n_k} =& \pder{\bar m}{n_k} \pder{\alpha^{hs}}{T} + \bar m \pdcross{\alpha^{hs}}{T}{n_k} - \pdcross{G}{T}{n_k}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{\alpha^{hc}}{n_l}{n_k} =& \pder{\bar m}{n_k} \pder{\alpha^{hs}}{n_l} + \pder{\bar m}{n_l} \pder{\alpha^{hs}}{n_k} + \bar m \pdcross{\alpha^{hs}}{n_l}{n_k} - \pdcross{G}{n_l}{n_k}
+  \end{aligned}
+\end{equation}
+
+\subsection*{Derivatives of the helper function $G$}
+\begin{equation}
+ G = \sum_i x_i(m_i-1)\ln g_{ii}^{hs}
+\end{equation}
+
+\begin{equation}
+  \pder{G}{\rho} = \sum_i x_i(m_i-1) \frac{1}{g_{ii}^{hs}} \pder{g_{ii}^{hs}}{\rho}
+\end{equation}
+
+\begin{equation}
+  \pder{G}{T} = \sum_i x_i(m_i-1) \frac{1}{g_{ii}^{hs}} \pder{g_{ii}^{hs}}{T}
+\end{equation}
+
+\begin{equation}
+  \pder{G}{n_k} = \frac{m_k-1}{n}\ln g_{kk}^{hs} + \sum_i x_i (m_i-1) \frac{1}{g_{ii}^{hs}} \pder{g_{ii}}{n_k} -\frac{G}{n}
+\end{equation}
+
+\begin{equation}
+  \pdder{G}{\rho} = \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{\rho}^2 + \frac{1}{g_{ii}^{hs}} \pdder{g_{ii}^{hs}}{\rho} \right]
+\end{equation}
+
+\begin{equation}
+  \pdder{G}{T} = \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{T}^2 + \frac{1}{g_{ii}^{hs}} \pdder{g_{ii}^{hs}}{T} \right]
+\end{equation}
+
+\begin{equation}
+  \pdcross{G}{\rho}{T} = \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{\rho} \pder{g_{ii}^{hs}}{T} + \frac{1}{g_{ii}^{hs}} \pdcross{g_{ii}^{hs}}{\rho}{T} \right]
+\end{equation}
+
+\begin{align}
+      \pdcross{G}{\rho}{n_k} =&  \frac{m_k-1}{n g_{kk}^{hs}} \pder{g_{kk}^{hs}}{\rho} + \\
+    & \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{\rho} \pder{g_{ii}^{hs}}{n_k} + \frac{1}{g_{ii}^{hs}} \pdcross{g_{ii}^{hs}}{\rho}{n_k} \right] -\frac{1}{n} \pder{G}{\rho}
+\end{align}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{G}{T}{n_k} =& \frac{m_k-1}{n g_{kk}^{hs}} \pder{g_{kk}^{hs}}{T} + \\
+    & \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{T} \pder{g_{ii}^{hs}}{n_k} + \frac{1}{g_{ii}^{hs}} \pdcross{g_{ii}^{hs}}{T}{n_k} \right] -\frac{1}{n} \pder{G}{T}
+  \end{aligned}
+\end{equation}
+
+\begin{equation}
+  \begin{aligned}
+    \pdcross{G}{n_l}{n_k} =& \frac{m_k-1}{n g_{kk}^{hs}} \pder{g_{kk}^{hs}}{n_l} + \frac{m_l-1}{n g_{ll}^{hs}} \pder{g_{ll}}{n_k} \\
+    +& \sum_i x_i(m_i-1) \left[ -\frac{1}{\lp g_{ii}^{hs} \rp^2} \pder{g_{ii}^{hs}}{n_l} \pder{g_{ii}^{hs}}{n_k} + \frac{1}{g_{ii}^{hs}} \pdcross{g_{ii}^{hs}}{n_l}{n_k} \right] \\
+    -& \frac{1}{n} \pder{G}{n_k} - \frac{1}{n} \pder{G}{n_l}
+  \end{aligned}
+\end{equation}
+
+\subsection{Derivatives of $\alpha^{hs}$}
+\begin{align}
+  \alpha^{hs} = \frac{4\eta-3\eta^2}{(1-\eta)^2}
+\end{align}
+
+\begin{align}
+  \pder{\alpha^{hs}}{\eta} = \frac{2(\eta-2)}{(1-\eta)^2}
+\end{align}
+
+\begin{align}
+  \pdder{\alpha^{hs}}{\eta} = \frac{2(5-2\eta)}{(1-\eta)^4}
+\end{align}
+
+
+% \begin{align*}
+%   \alpha^{hs} &= \frac{1}{\z_0} \left[ \frac{3\z_1\z_2}{1-\z_3} + \frac{\z_2^3}{\z_3(1-\z_3)^2} + \lp \frac{\z_2^3}{\z_3^2} - \z_0 \rp \ln(1-\z_3) \right] \\
+%   &= \frac{1}{\z_0} [f+g+h]
+% \end{align*}
+% Given $\lambda \in \{\rho,T,x_k\}$, we have that
+% \begin{equation}
+%   \begin{aligned}
+%     \pder{\alpha^{hs}}{\lambda} = - \frac{\z_{0\lambda}}{\z_0} \alpha^{hs} + \frac{1}{\z_0} & \left[  f_\lambda + g_\lambda + h_\lambda \right]
+%   \end{aligned}
+% \end{equation}
+% Given $\lambda,\gamma \in \{\rho,T,x_k\}$, we have that
+% \begin{equation}
+%   \begin{aligned}
+%     \pdcross{\alpha^{hs}}{\gamma}{\lambda} =& -\frac{\z_{0\gamma}}{\z_0} \pder{\alpha^{hs}}{\lambda} - \frac{\z_{0\lambda\gamma}}{\z_0} \alpha^{hs} - \frac{\z_{0\lambda}}{\z_0} \pder{\alpha^{hs}}{\gamma} + \frac{1}{\z_0}  \left[ f_{\lambda\gamma} + h_{\lambda\gamma} + g_{\lambda\gamma} \right]
+%   \end{aligned}
+% \end{equation}
+
+% \subsubsection*{Auxiliary derivatives}
+% \begin{align*}
+%   f =& \frac{3\z_1\z_2}{1-\z_3} \\
+%   f_\lambda =& \frac{3\z_2}{1-\z_3} \z_{1\lambda} +\frac{3\z_1}{1-\z_3} \z_{2\lambda} + \frac{3 \z_1 \z_2}{(1-\z_3)^2} \z_{3\lambda} \\
+%   f_{\gamma\lambda} =& \frac{3 \z_2}{1-\z_3} \z_{1\lambda\gamma} + \frac{3}{1-\z_3} \z_{2\lambda} \z_{1\gamma} + \frac{3}{1-\z_3} \z_{1\lambda} \z_{2\gamma} + 3 \frac{\z_1}{1-\z_3} \z_{2\lambda\gamma} \\
+%   +&\frac{3 \z_2}{(1-\z_3)^2} \z_{3\lambda} \z_{1\gamma} + \frac{3 \z_1}{(1-\z_3)^2} \z_{3\lambda} \z_{2\gamma} + \frac{3 \z_1 \z_2}{(1-\z_3)^2} \z_{3\lambda\gamma} \\
+%   +& \frac{3\z_2}{(1-\z_3)^2} \z_{1\lambda} \z_{3\gamma} + \frac{3\z_1}{(1-\z_3)^2} \z_{2\lambda} \z_{3\gamma} + \frac{6 \z_1 \z_2}{(1-\z_3)^3} \z_{3\lambda} \z_{3\gamma}
+% \end{align*}
+
+% \begin{align*}
+%   g &= \frac{\z_2^3}{\z_3(1-\z_3)^2} \\
+%   g_\lambda &=  \frac{3 \z_2^2}{\z_3 (1-\z_3)^2} \z_{2\lambda} + \frac{\z_2^3 (3\z_3-1)}{\z_3^2 (1-\z_3)^3} \z_{3\lambda}\\
+%   g_{\gamma\lambda} &= \frac{6 \z_2}{\z_3 (1-\z_3)^2} \z_{2\lambda} \z_{2\gamma} + \frac{3 \z_2^2}{\z_3 (1-\z_3)^2} \z_{2\lambda\gamma} \\
+%   &- \frac{3 \z_2^2}{\z_3^2 (1-\z_3)^2} \z_{2\lambda} \z_{3\gamma} + \frac{6 \z_2^2}{\z_3 (1-\z_3)^3} \z_{2\lambda} \z_{3\gamma} \\
+%   &+ \frac{3 \z_2^2 (3\z_3-1)}{\z_3^2 (1-\z_3)^3} \z_{3\lambda} \z_{2\gamma} + \frac{3 \z_2^3}{\z_3^2 (1-\z_3)^3} \z_{3\lambda} \z_{3\gamma} + \frac{\z_2^3 (3\z_3-1)}{\z_3^2 (1-\z_3)^3} \z_{3\lambda\gamma}  \\
+%   &- \frac{2 \z_2^3 (3\z_3-1)}{\z_3^3 (1-\z_3)^3} \z_{3\lambda} \z_{3\gamma} + \frac{3\z_2^3 (3\z_3-1)}{\z_3^2 (1-\z_3)^4} \z_{3\lambda} \z_{3\gamma}
+% \end{align*}
+
+% \begin{align*}
+%   h &= \lp \frac{\z_2^3}{\z_3^2} - \z_0 \rp \ln(1-\z_3) \\
+%   h_\lambda &= \lp \frac{3 \z_2^2}{\z_3^2} \z_{2\lambda} - \frac{2 \z_2^3}{\z_3^3} \z_{3\lambda} - \z_{0\lambda} \rp \ln(1-\z_3) + \lp \z_0- \frac{\z_2^3}{\z_3^2}\rp \frac{1}{1-\z_3} \z_{3\lambda} \\
+%   h_{\gamma\lambda} &= \lp \frac{6 \z_2}{\z_3^2} \z_{2\lambda} \z_{2\gamma} +\frac{3 \z_2^2}{\z_3^2} \z_{2\lambda\gamma} - \frac{6 \z_2^2}{\z_3^3} \z_{2\lambda} \z_{3\gamma} \rp \ln(1-\z_3) \\
+%   &+ \lp - \frac{6 \z_2^2}{\z_3^3} \z_{3\lambda} \z_{2\gamma}  - \frac{2 \z_2^3}{\z_3^3} \z_{3\lambda\gamma} + \frac{6 \z_2^3}{\z_3^4} \z_{3\lambda} \z_{3\gamma} \rp \ln (1-\z_3) \\
+%   &+ \lp  - \z_{0\lambda\gamma} \rp \ln(1-\z_3)  \\
+%   &+ \frac{\z_{3\lambda} \z_{0\gamma}}{1-\z_3} - \frac{3\z_2^2}{\z_3^2} \frac{\z_{3\lambda} \z_{2\gamma}}{1-\z_3} + \lp \z_0 - \frac{\z_2^3}{\z_3^2}\rp \frac{\z_{3\lambda\gamma}}{(1-\z_3)} + \frac{ 2 \z_{2}^3}{\z_3^3} \frac{\z_{3\lambda} \z_{3\gamma}}{1-\z_3} + \lp \z_0 - \frac{\z_2^3}{\z_3^2}\rp \frac{\z_{3\lambda} \z_{3\gamma}}{(1-\z_3)^2} \\
+%   & -\frac{3 \z_2^2}{\z_3^2(1-\z_3)} \z_{2\lambda} \z_{3\gamma} + \frac{2 \z_2^3}{\z_3^3(1-\z_3)} \z_{3\lambda}\z_{3\gamma} +  \frac{1}{1-\z_3} \z_{0\lambda} \z_{3\gamma}
+% \end{align*}
+
+\subsection{Derivatives of $g_{ij}$}
+\begin{equation}
+  g_{ij} = \frac{1-\eta/2}{(1-\eta)^3}
+\end{equation}
+
+\begin{equation}
+  \pder{g_{ij}}{\eta} = \frac{5-2\eta}{(2(1-\eta))^4}
+\end{equation}
+
+\begin{equation}
+  \pdder{g_{ij}}{\eta} = \frac{3(\eta-3)}{(\eta-1)^5}
+\end{equation}
+
+% THE FOLLOWING COMMENTS ARE REMNANTS OF WHEN I WAS DIFFERENTIATING THE FULL
+% PC-SAFT.. PROBABLY A LOT OF ERRORS HERE
+
+% Define
+% $$
+% D = \frac{d_i d_j}{d_i + d_j}.
+% $$
+
+% \begin{equation}
+%   g_{ij} = \frac{1}{1-\z_3} + D \frac{3\z_2}{(1-\z_3)^2} + D^2 \frac{2\z_2^2}{(1-\z_3)^3}
+% \end{equation}
+
+% For $\lambda \in \{\rho,x_k\}$, we have
+% \begin{equation}
+%   \begin{aligned}
+%     \pder{g_{ij}}{\lambda} =& \frac{\z_{3,\lambda}}{(1-\z_3)^2} + D \lp \frac{3\z_{2,\lambda}}{(1-\z_3)^2} + \frac{6 \z_2 \z_{3,\lambda}}{(1-\z_3)^3} \rp + \\
+%     & D^2 \lp \frac{4 \z_2 \z_{2,\lambda}}{(1-\z_3)^3} + \frac{6 \z_2^2 \z_{3,\lambda}}{(1-\z_3)^4}\rp
+%   \end{aligned}
+% \end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     \pder{g_{ij}}{T} =& \frac{\z_{3,T}}{(1-\z_3)^2} +D \lp \frac{3\z_{2,T}}{(1-\z_3)^2} + \frac{6 \z_2 \z_{3,T}}{(1-\z_3)^3} \rp + D^2 \lp \frac{4 \z_2 \z_{2,T}}{(1-\z_3)^3} + \frac{6 \z_2^2 \z_{3,T}}{(1-\z_3)^4}\rp +\\
+%     &D_T \frac{3\z_2}{(1-\z_3)^2} + 2 D D_T \frac{2\z_2^2}{(1-\z_3)^3} 
+%   \end{aligned}
+% \end{equation}
+
+% For $\lambda,\gamma \in \{\rho,x_k\}$, we have
+% \begin{equation}
+%   \begin{aligned} % COMPUTED WITH WOLFRAM|ALPHA
+%     &\pdder{g_{ij}}{\lambda} = \frac{1}{(1-\zeta_3)^5} [(\z_{3}-1) \{\z_{3\lambda\lambda} (6 D^2 \z_2^2-6 D \z_2 (\z_{3}-1)+(\z_{3}-1)^2) - \\
+%     &D (\z_{3}-1) \z_{2,\lambda\lambda} (4 D \z_2-3 \z_{3}+3)\}-4 D^2 (\z_{3}-1)^2 \z_{2,\lambda}^2+12 D \cdot \\
+%     &(\z_{3}-1) \z_{2,\lambda} \z_{3\lambda} (2 D \z_2-\z_{3}+1) - 2 \z_{3\lambda}^2 \{12 D^2 \z_2^2-9 D \z_2 (\z_{3}-1)+(\z_{3}-1)^2\})]
+%   \end{aligned}
+% \end{equation}
+
+% For $\lambda,\gamma \in \{\rho,x_k\}$, we have
+% \begin{equation}
+%   \begin{aligned} % COMPUTED WITH WOLFRAM|ALPHA
+%     \pdcross{g_{ij}}{\gamma}{\lambda} = &\frac{12 D^2 \z_2 \z_{2\gamma} \z_{3\lambda}}{(1-\z_3)^4} + \frac{12 D^2 \z_2 \z_{2,\lambda} \z_{3,\gamma}}{(1-\z_3)^4}+\frac{4 D^2 \z_{2,\lambda} \z_{2\gamma}}{(1-\z_3)^3}+\frac{4 D^2 \z_2 \z_{2\gamma\lambda}}{(1-\z_3)^3} + \\
+%     & \frac{6 D \z_{2\gamma} \z_{3\lambda}}{(1-\z_3)^3} + \frac{6 D \z_{2,\lambda} \z_{3,\gamma}}{(1-\z_3)^3}+\frac{3 D \z_{2\gamma\lambda}}{(1-\z_3)^2}+\frac{24 D^2 \z_2^2 \z_{3\lambda} \z_{3,\gamma}}{(1-\z_3)^5} + \\
+%     & \frac{6 D^2 \z_2^2 \z_{3\gamma\lambda}}{(1-\z_3)^4}+\frac{18 D \z_2 \z_{3\lambda} \z_{3,\gamma}}{(1-\z_3)^4} + \frac{6 D \z_2 \z_{3\gamma\lambda}}{(1-\z_3)^3}+\frac{2 \z_{3\lambda} \z_{3,\gamma}}{(1-\z_3)^3}+\frac{\z_{3\gamma\lambda}}{(1-\z_3)^2}
+%   \end{aligned}
+% \end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     \pdcross{g_{ij}}{\lambda}{T} =& \pdcross{g_{ij}}{\gamma}{\lambda}_{\gamma = T} + D_T \lp \frac{3\z_{2,\lambda}}{(1-\z_3)^2} + \frac{6 \z_2 \z_{3,\lambda}}{(1-\z_3)^3} \rp + \\
+%     & 2 D D_T  \lp \frac{4 \z_2 \z_{2,\lambda}}{(1-\z_3)^3} + \frac{6 \z_2^2 \z_{3,\lambda}}{(1-\z_3)^4}\rp
+%   \end{aligned}
+% \end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     \pdder{g_{ij}}{T} =& \pdcross{g_{ij}}{\gamma}{\lambda}_{\gamma = T,\lambda = T} + \\
+%     & 2 D_T \lp \frac{3\z_{2,T}}{(1-\z_3)^2} + \frac{6 \z_2 \z_{3,T}}{(1-\z_3)^3} \rp + 4D D_T \lp \frac{4 \z_2 \z_{2,T}}{(1-\z_3)^3} + \frac{6 \z_2^2 \z_{3,T}}{(1-\z_3)^4}\rp +\\
+%     &D_{TT} \frac{3\z_2}{(1-\z_3)^2} + 2 (D D_{TT} + D_T^2) \frac{2\z_2^2}{(1-\z_3)^3} 
+%   \end{aligned}
+% \end{equation}
+
+
+% \subsubsection*{Auxiliary quantities}
+% $$
+% D_T = \lp \frac{d_id_j}{d_i+d_j} \rp_T = \frac{d_i^2 d_{j,T} + d_j^2 d_{i,T}}{(d_i+d_j)^2}
+% $$
+
+% $$
+% D_{TT} = \frac{d_j^2 (d_i+d_j) d_{i,TT} + d_i^2 (d_i+d_j) d_{j,TT} + 4 d_i d_j d_{i,T} d_{j,T}-2 d_j^2 d_{i,T}^2 -2 d_i^2 d_{j,T}^2}{(d_i+d_j)^3}
+% $$
+
+% \begin{align*}
+%   f =& \frac{1}{1-\z_3} \\
+%   f_\lambda =& \z_{3\lambda}/(1-\z_3)^2 \\
+%   f_{\gamma\lambda} =& \z_{3\lambda\gamma}/(1-\z_3)^2 + 2 \z_{3\lambda} \z_{3\gamma}/(1-\z_3)^3 \\
+% \end{align*}
+
+% \begin{align*}
+%   g &= \frac{3\z_2}{(1-\z_3)^2}\\
+%   g_\lambda &= 3\z_{2\lambda}/(1-\z_3)^2 + 6\z_2 \z_{3\lambda}/(1-\z_3)^3\\
+%   g_{\gamma\lambda} &= 3\z_{2\lambda\gamma}/(1-\z_3)^2 + 6\z_{2\lambda} \z_{3\gamma}/(1-\z_3)^3 \\
+%   &+ 6 \z_{3\lambda} \z_{2\gamma}/(1-\z_3)^3 + 6\z_2 \z_{3\lambda\gamma}/(1-\z_3)^3 + 18\z_2 \z_{3\lambda} \z_{3\gamma}/(1-\z_3)^4
+% \end{align*}
+
+% \begin{align*}
+%   h &= \frac{2\z_2^2}{(1-\z_3)^3}\\
+%   h_\lambda &= 4 \z_2 \z_{2\lambda}/(1-\z_3)^3 + 6\z_2^2 \z_{3\lambda}/(1-\z_3)^4\\
+%   h_{\gamma\lambda} &= 4 \z_{2\lambda} \z_{2\gamma}/(1-\z_3)^3 + 4 \z_2 \z_{2\lambda\gamma}/(1-\z_3)^3 \\
+%   &+12 \z_2 \z_{2\lambda} \z_{3\gamma}/(1-\z_3)^4 \\
+%   &+ 12 \z_2 \z_{3\lambda} \z_{2\gamma}/(1-\z_3)^4 + 6\z_2^2 \z_{3\lambda\gamma}/(1-\z_3)^4 + 24 \z_2^2 \z_{3\lambda} \z_{3\gamma}/(1-\z_3)^5
+% \end{align*}
+
+
+\subsection{Derivatives of $\overline{m^2\epsilon \sigma^3}$}
+Define the constant $D_{ij} = m_i m_j \frac{\epsilon_{ij}}{k} \sigma_{ij}^3$. Note that
+$D_{ij} \neq D_{ji}$ if $k_{ij} \neq k_{ji}$.
+\begin{align}
+  \overline{m^2\epsilon \sigma^3} &= \sum_{i,j} x_i x_j D_{ij}/T
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon \sigma^3})_T &=  -\frac{\overline{m^2\epsilon \sigma^3}}{T}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{n_k} &= \frac{-2(\overline{m^2\epsilon\sigma^3})}{n} + \sum_i \frac{n_i}{n^2} \frac{D_{ik} + D_{ki}}{T}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon \sigma^3})_{TT} & = 2\frac{\overline{m^2\epsilon \sigma^3}}{T^2}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{T,n_k} &= (\overline{m^2\epsilon\sigma^3})_{n_k}/T
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{n_k,n_l} &= \frac{2(\overline{m^2\epsilon\sigma^3})}{n^2} - \frac{2(\overline{m^2\epsilon\sigma^3})_{n_l}}{n} - \sum_i \frac{2n_i}{n^3} \frac{D_{ik} + D_{ki}}{T} + \frac{1}{n^2} \frac{D_{lk} + D_{kl}}{T}
+\end{align}
+
+\subsection{Derivatives of $\overline{m^2\epsilon^2 \sigma^3}$}
+Define the constant $E_{ij} = m_i m_j \lp \frac{\epsilon_{ij}}{k} \rp^2 \sigma_{ij}^3$. Note that
+$E_{ij} \neq E_{ji}$ if $k_{ij} \neq k_{ji}$.
+\begin{align}
+  \overline{m^2\epsilon^2 \sigma^3} &= \sum_{i,j} x_i x_j E_{ij}/T^2
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon^2 \sigma^3})_T &=  -2 \frac{\overline{m^2\epsilon^2 \sigma^3}}{T}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{n_k} &= \frac{-2(\overline{m^2\epsilon^2 \sigma^3})}{n} + \sum_i \frac{n_i}{n^2} \frac{E_{ik} + E_{ki}}{T^2}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon \sigma^3})_{TT} & = 6\frac{\overline{m^2\epsilon \sigma^3}}{T^3}
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{T,n_k} &= (\overline{m^2\epsilon\sigma^3})_{n_k}/T
+\end{align}
+
+\begin{align}
+  (\overline{m^2\epsilon\sigma^3})_{n_k,n_l} &= \frac{2(\overline{m^2\epsilon\sigma^3})}{n^2} - \frac{2(\overline{m^2\epsilon\sigma^3})_{n_l}}{n} - \sum_i \frac{2n_i}{n^3} \frac{D_{ik} + D_{ki}}{T^2} + \frac{1}{n^2} \frac{D_{lk} + D_{kl}}{T^2}
+\end{align}
+
+\subsection{Derivatives of $I_1$ and $I_2$}
+\begin{equation}
+  I_1(\eta,\bar m) = \sum_{i=0}^6 a_i(\bar m) \eta^i, \qquad  I_2(\eta,\bar m) = \sum_{i=0}^6 b_i(\bar m) \eta^i
+\end{equation}
+
+\begin{align}
+  I_{1,\rho} &= I_{1,\rho} \eta_{\rho} \\
+  I_{2,\rho} &= I_{2,\rho} \eta_{\rho}
+\end{align}
+
+\begin{align}
+  I_{1,T} &= I_{1,\eta} \eta_{T} \\
+  I_{2,T} &= I_{2,\eta} \eta_{T}
+\end{align}
+
+\begin{align}
+  I_{1,n_k} &= \sum_{i=0}^6 a_{i,n_k} \eta^i + I_{1,\eta} \eta_{n_k} \\
+  I_{2,n_k} &= \sum_{i=0}^6 b_{i,n_k} \eta^i + I_{2,\eta} \eta_{n_k}
+\end{align}
+
+\begin{align}
+  I_{1,\rho\rho} &= I_{1,\rho \rho} \eta_{\rho}^2 + I_{1,\rho} \eta_{\rho\rho} \\
+  I_{2,\rho\rho} &= I_{2,\rho \rho} \eta_{\rho}^2 + I_{2,\rho} \eta_{\rho\rho}
+\end{align}
+
+\begin{align}
+  I_{1,\rho T} &= I_{1,\rho \eta} \eta_\rho \eta_T + I_{1,\eta} \eta_{\rho T} \\
+  I_{2,\rho T} &= I_{2,\rho \eta} \eta_\rho \eta_T + I_{2,\eta} \eta_{\rho T}
+\end{align}
+
+\begin{align}
+  I_{1,\rho n_k} &= \sum_{i=0}^6 a_{i,n_k} i \eta^{i-1} \eta_\rho + I_{1,\eta\eta} \eta_{n_k} \eta_\rho + I_{1,\eta} \eta_{\rho n_k} \\
+  I_{2,\rho n_k} &= \sum_{i=0}^6 b_{i,n_k} i \eta^{i-1} \eta_\rho + I_{2,\eta\eta} \eta_{n_k} \eta_\rho + I_{2,\eta} \eta_{\rho n_k}
+\end{align}
+
+\begin{align}
+  I_{1,TT} &= I_{1,T T} \eta_{T}^2 + I_{1,T} \eta_{TT} \\
+  I_{2,TT} &= I_{2,T T} \eta_{T}^2 + I_{2,T} \eta_{TT}
+\end{align}
+
+\begin{align}
+  I_{1,T n_k} &= \sum_{i=0}^6 a_{i,n_k} i \eta^{i-1} \eta_T + I_{1,\eta\eta} \eta_{n_k} \eta_T + I_{1,\eta} \eta_{T n_k} \\
+  I_{2,T n_k} &= \sum_{i=0}^6 b_{i,n_k} i \eta^{i-1} \eta_T + I_{2,\eta\eta} \eta_{n_k} \eta_T + I_{2,\eta} \eta_{T n_k}
+\end{align}
+
+\begin{align}
+  I_{1,n_l n_k} &= \sum_{i=0}^6 (a_{i,n_l n_k} \eta^i + i \eta^{i-1} [a_{i,n_k} \eta_{n_l} + a_{i,n_l} \eta_{n_k}]) + I_{1,\eta\eta} \eta_{n_k} \eta_{n_l} \\
+  I_{2,n_l n_k} &= \sum_{i=0}^6 (b_{i,n_l n_k} \eta^i + i \eta^{i-1} [b_{i,n_k} \eta_{n_l} + b_{i,n_l} \eta_{n_k}]) + I_{2,\eta\eta} \eta_{n_k} \eta_{n_l}
+\end{align}
+
+\subsubsection*{Auxiliary derivatives}
+\begin{align}
+  I_{1,\eta} = \sum_{i=1}^6 i a_{i} \eta^{i-1}, \qquad I_{2,\eta} = \sum_{i=1}^6 i b_{i} \eta^{i-1}
+\end{align}
+
+\begin{align}
+  I_{1,\eta\eta} = \sum_{i=2}^6 i (i-1) a_{i} \eta^{i-2}, \qquad I_{2,\eta\eta} = \sum_{i=2}^6 i (i-1) b_{i} \eta^{i-2}
+\end{align}
+
+
+\subsection{Derivatives of $a_i$ and $b_i$}
+\begin{align}
+  a_i(\bar m) &= a_{0i} + \frac{\bar m -1}{\bar m}a_{1i} + \frac{\bar m -1}{\bar m} \frac{\bar m -2}{\bar m}a_{2i} \\
+  b_i(\bar m) &= b_{0i} + \frac{\bar m -1}{\bar m}b_{1i} + \frac{\bar m -1}{\bar m} \frac{\bar m -2}{\bar m}b_{2i}
+\end{align}
+
+\begin{align}
+  a_{i,n_k} &= \frac{\bar m_{n_k}}{\bar m^2} a_{1i} + \frac{\bar m_{n_k}}{\bar m^2} \lp 3- \frac{4}{\bar m}\rp a_{2i} \\
+  b_{i,n_k} &= \frac{\bar m_{n_k}}{\bar m^2} b_{1i} + \frac{\bar m_{n_k}}{\bar m^2} \lp 3- \frac{4}{\bar m}\rp b_{2i}
+\end{align}
+
+\begin{align}
+  a_{i,n_k n_l} &= \frac{\bar m_{n_k} \bar m_{n_l}}{\bar m^3} \lp -2 a_{1i} - 6 a_{2i} + \frac{12}{\bar m} a_{2i} \rp \\
+  b_{i,n_k n_l} &= \frac{\bar m_{n_k} \bar m_{n_l}}{\bar m^3} \lp -2 b_{1i} - 6 b_{2i} + \frac{12}{\bar m} b_{2i} \rp
+\end{align}
+
+All other derivatives are zero.
+
+\subsection{Derivatives of $C_1$}
+\begin{align}
+  C_1 = \lp 1 + \bar m \frac{8\eta-2\eta^2}{(1-\eta)^4} + (1-\bar m) \frac{20\eta-27\eta^2+12\eta^3-2\eta^4}{(1-\eta)^2(2-\eta)^2} \rp^{-1}
+\end{align}
+
+\begin{equation}
+  \pder{C_1}{\rho} = \pder{C_1}{\eta} \eta_{\rho}
+\end{equation}
+
+\begin{equation}
+  \pder{C_1}{T} = \pder{C_1}{\eta}\eta_{T}
+\end{equation}
+
+% \begin{equation}
+%   \pder{C_1}{n_k} = %\pder{C_1}{\eta} \eta_{x_k} +m_k \frac{8 \eta - 2 \eta^2}{(1-\eta)^4} - m_k \frac{20 \eta - 27 \eta^2 + 12 \eta^3 - 2 \eta^4}{[(1-\eta)(2-\eta)]^2}
+% \end{equation}
+
+\begin{equation}
+  \pdder{C_1}{\rho} = \pdder{C_1}{\eta}\eta_{\rho}^2 + \pder{C_1}{\eta}\eta_{\rho\rho}
+\end{equation}
+
+\begin{equation}
+  \pdcross{C_1}{\rho}{T} = \pdder{C_1}{\eta} \eta_{\rho} \eta_{T} + \pder{C_1}{\eta}\eta_{\rho T}
+\end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     \pdcross{C_1}{\rho}{n_k} =& 
+%   \end{aligned}
+% \end{equation}
+
+\begin{equation}
+  \pdder{C_1}{T} = \pdder{C_1}{\eta}\eta_{T}^2 + \pder{C_1}{\eta}\eta_{TT}
+\end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     \pdcross{C_1}{T}{n_k} =& 
+%   \end{aligned}
+% \end{equation}
+
+% \begin{equation}
+%   \begin{aligned}
+%     &\pdcross{C_1}{n_l}{n_k} =  
+%   \end{aligned}
+% \end{equation}
+
+%------------------------------------------------------------------------------
+% O1 = (8*e-2*e2)/(1-e)**4
+% O2 = (20*e-27*e2+12*e3-2*e4)/((1-e)*(2-e))**2
+
+% if (fir_der_present .or. sec_der_present) then
+% O1_eta = (-4*e2+20*e+8)/(1-e)**5
+% O2_eta = (2*e3+12*e2-48*e+40)/((1-e)*(2-e))**3
+% c1_eta = -(mbar*O1_eta + (1-mbar)*O2_eta)*c1**2
+% if (sec_der_present) then
+% O1_etaeta = ((-8*e+20)*(1-e) + (-4*e2+20*e+8)*5)/(1-e)**6
+% O2_etaeta = ((6*e2+24*e-48)*(1-e)*(2-e) + &
+% (2*e3+12*e2-48*e+40)*(2-e + 1-e)*3)/((1-e)*(2-e))**4
+% c1_etaeta = mbar*O1_etaeta + (1-mbar)*O2_etaeta
+% c1_etaeta = 2*c1_eta**2/c1 - c1_etaeta*c1**2
+% end if
+% end if
+
+% c1_rhon = c1_etaeta*e_rho*e_n + c1_eta*e_rhon &
+% - 2*c1*c1_rho*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_rho
+
+% c1_Tn = c1_etaeta*e_T*e_n + c1_eta*e_Tn &
+% - 2*c1*c1_T*mbar_n*(O1-O2) - c1**2*mbar_n*(O1_eta - O2_eta)*e_T
+
+% c1_nn(i,j) = c1_etaeta*e_n(i)*e_n(j) + c1_eta*e_nn(i,j)&
+% - 2*c1*c1_eta*(O1-O2)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
+% - c1**2*(O1_eta-O2_eta)*(mbar_n(i)*e_n(j) + mbar_n(j)*e_n(i)) &
+% + 2*c1**3*(O1-O2)**2*mbar_n(i)*mbar_n(j) - c1**2*mbar_nn(i,j)*(O1-O2)
+%------------------------------------------------------------------------------
+
+\subsubsection*{Auxiliary derivatives}
+\begin{align}
+  \pder{C_1}{\eta} = & -C_1^2 \lp \bar m \frac{-4 \eta^2 + 20 \eta + 8}{(1 - \eta)^5} +  (1-\bar m) \frac{2 \eta^3+12 \eta^2-48 \eta+40}{(1-\eta)^3 (2-\eta)^3} \rp
+\end{align}
+
+\begin{equation}
+  \begin{aligned}
+    &\pdder{C_1}{\eta} = \frac{2}{C_1} \pder{C_1}{\eta}^2 \\
+    &- C_1^2 \bar m \frac{(-8 \eta + 20)(1-\eta) + (-4 \eta^2 + 20 \eta + 8) 5 }{(1 - \eta)^6} \\
+    &- C_1^2 (1-\bar m) \frac{(6 \eta^2+24 \eta - 48)(1-\eta) (2-\eta) + (2 \eta^3+12 \eta^2-48 \eta+40)[3(2-\eta) + 3(1-\eta)] }{(1-\eta)^4 (2-\eta)^4}
+  \end{aligned}
+\end{equation}
+
+% \begin{align}
+%   \pdder{C_1}{\eta} = -\frac{6 (f(x) (f(x) (f(x) (f(x) (f(x) ((M+1) f(x)-34 M+6)+197 M-63)-456 M+184)+428 M-252)-40 M+168)-4 (29 M+11)) f'(x)}{(f(x)-2)^4 (f(x)-1)^6}
+% \end{align}
+
+\subsection{Derivatives of $\z_n$}
+\begin{equation}
+  \z_{n} = \frac{\pi}{6} \rho \sum_i x_i m_i d_i^n
+\end{equation}
+
+\begin{equation}
+  \z_{n,\rho} = \frac{\pi}{6} \sum_i x_i m_i d_i^n
+\end{equation}
+
+\begin{equation}
+  \z_{n,T} = \begin{cases}
+    0 & n = 0 \\ 
+    \frac{\pi}{6} \rho n \sum_i x_i m_i d_i^{n-1} d_{i,T} & n = 1,2,3 \\
+  \end{cases}
+\end{equation}
+
+\begin{equation}
+  \z_{n,n_k} = \frac{1}{n} \frac{\pi}{6} \rho m_k d_k^n - \frac{\z_n}{n}
+\end{equation}
+
+\begin{equation}
+  \z_{n,\rho\rho} = 0
+\end{equation}
+
+\begin{equation}
+  \z_{n,\rho T} = \z_{n,T}/\rho
+\end{equation}
+
+\begin{equation}
+  \z_{n,\rho n_k} = \z_{n,n_k}/\rho
+\end{equation}
+
+\begin{equation}
+  \z_{n,TT} = \begin{cases}
+    0 & n = 0 \\
+    \frac{\pi}{6} \rho n \sum_i x_i m_i d_{i,TT} & n = 1 \\
+    \frac{\pi}{6} \rho n \sum_i x_i m_i \left[ (n-1) d_i^{n-2} d_{i,T}^2 + d_i^{n-1} d_{i,TT} \right] & n = 2,3 \\
+  \end{cases}
+\end{equation}
+
+\begin{equation}
+  \z_{n,T n_k} = \begin{cases}
+    0 & n = 0 \\ 
+    \frac{\pi}{6} \rho n \lp \frac{1}{n} - \frac{x_k}{n} \rp m_k d_k^{n-1} d_{k,T} & n = 1,2,3 \\
+  \end{cases}
+\end{equation}
+
+\begin{equation}
+  \z_{n, n_k n_l} = - \frac{\z_{n,n_k}+\z_{n,n_l}}{n} + \frac{\z_n}{n^2}
+\end{equation}
+
+\subsection{Derivatives of $d_i$}
+\begin{equation}
+  d_i = \sigma_i \left[1 - 0.12\exp \lp -3\frac{\varepsilon_i}{kT} \rp \right].
+\end{equation}
+
+\begin{equation}
+  \pder{d_i}{T} = -\frac{0.36\varepsilon_i}{kT^2} \sigma_i \exp \lp -3\frac{\varepsilon_i}{kT} \rp
+\end{equation}
+
+\begin{equation}
+  \pdder{d_i}{T} = \sigma_i \exp \lp -3\frac{\varepsilon_i}{kT} \rp \lp \frac{0.72 \varepsilon_i}{kT^3} - \frac{1.08 \varepsilon_i^2}{k^2T^4}\rp
+\end{equation}
+The other derivatives of $d_i$ are zero.
+
+\section{Derivatives of $A^{\textrm{assoc}}$}
+In the following we will document the derivatives of $F^{\text{assoc}}(T,V,\mbf n)=A^{\textrm{assoc}}(T,V,\mbf n)/RT$ up to second order.
+\subsection{The $Q$ function and its relation to $F^{\text{assoc}}$}
+Define the function
+\begin{equation}
+  Q(\mbf n,T,V,\mathbf{X}) = \sum_i \sum_{A_i} n_i \lp \ln X_{A_i} - X_{A_i} + 1\rp - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j}.
+\end{equation}
+Here $\Delta^{A_i B_j} = \Delta^{A_i B_j}(T,V,\mbf n)$ is the bond association
+strength. If $\mbf X$ solves the equations
+\begin{equation}
+  \pder{Q}{\mbf X}(T,V,\mbf n,X) = \mbf 0, \quad \text{i.e.} \quad   \frac{1}{X_{A_i}} - 1 - \frac{1}{V} \sum_j \sum_{B_j} n_j X_{B_j} \Delta^{A_i B_j} = 0 \quad \forall \ X_{A_i}.
+\end{equation}
+then the resulting solution $\mbf X = \mbf X(T,V,\mbf n)$ is such
+that\footnote{Where $F^{\text{assoc}}(T,V,\mbf n) = A^{R}(T,V,\mbf n)/RT$ and
+  $A^R$ is the association contribution to the residual Helmholtz energy.}
+\begin{equation}
+  \label{FQrelationship}
+  F^{\text{assoc}}(T,V,\mbf n) = Q(T,V,\mbf n, \mbf X(T,V,\mbf n)).
+\end{equation}
+We now clarify the notation used below in the expressions for the
+derivatives. Given a differential operator $\partial$, we will in the following
+use $\partial Q_{sp}$ to mean $(\partial Q)(T,V,\mbf n,\mbf X(T,V,\mbf n))$. For
+example, $\pder{Q_{sp}}{V} = \pder{Q}{V}(T,V,\mbf n,\mbf X(T,V,\mbf
+n))$. Moreover, to avoid subscripting every partial derivative to show which
+variables are fixed, we agree once and for all that $F^{\text{assoc}}$ has
+$(T,V,\mbf n)$ as independent variables, while $Q$ has $(T,V,\mbf n,\mbf X)$ as
+independent variables. The equality \eqref{FQrelationship} can also be stated as
+$F^{\text{assoc}} = Q|_{\mbf X = \mbf X(T,V,\mbf n)}$.
+
+\subsection{First-order derivatives of $F^{\text{assoc}}$} \label{first-order derivatives}
+We find that
+\begin{align*}
+\pder{F^{\text{assoc}}}{V} &= \pder{Q_{sp}}{V}  + \sum_i \sum_{A_i} \pder{Q_{sp}}{X_{A_i}} \pder{X_{A_i}}{V} \\
+& = \pder{Q_{sp}}{V},
+\end{align*}
+since $\pder{Q_{sp}}{X_{A_i}} = 0$. Similarly, we have
+$$
+\pder{F^{\text{assoc}}}{T} = \pder{Q_{sp}}{T} \quad \text{and} \quad \pder{F^{\text{assoc}}}{n_k} = \pder{Q_{sp}}{n_k}.
+$$
+\subsubsection{Volume derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{V} &= \pder{Q_{sp}}{V} \\ \nonumber
+  &= \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{\Delta^{A_i B_j}}{V} - \pder{\Delta^{A_i B_j}}{V} \right].
+\end{align}
+
+\subsubsection{Temperature derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{T} &= \pder{Q_{sp}}{T} \\ \nonumber
+  &= -\frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{T}.
+\end{align}
+
+\subsubsection{Composition derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{n_k} =& \pder{Q_{sp}}{n_k} \nonumber \\ 
+  =& \sum_{A_k} \lp \ln X_{A_k} - X_{A_k} + 1\rp - \frac{1}{V} \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \Delta^{A_k B_j} \label{l1}\\
+  &- \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{n_k} \label{l2}\\
+  =& \sum_{A_k} \ln X_{A_k} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{n_k}. \label{nono}
+\end{align}
+
+\subsection{Second-order derivatives of $F^{\text{assoc}}$}
+Let the variables $\z_1,\z_2$ each equal one of the scalar variables in $(T,V,\mbf n)$. Recalling that 
+$$
+\pder{F^{assoc}}{\z_1}(T,V,\mbf n) = \pder{Q}{\z_1}(T,V,\mbf n,\mbf X(T,V,\mbf n)),
+$$
+we get
+\begin{align}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} =& \frac{\partial}{\partial \z_2} \pder{F^{\text{assoc}}}{\z_1} \\
+  =& \pdcross{Q_{sp}}{\z_2}{\z_1} + \pdcross{Q_{sp}}{\z_1}{\mbf X} \pder{\mbf X}{\z_2}. \label{stress}
+\end{align}
+We once again stress the meaning of our notation: in the first term of
+\eqref{stress}, $\mbf X$ is to be treated as a constant when the
+cross-derivative is taken. Now, the expression \eqref{stress} involves the
+derivative $\partial \mbf X/\partial \z_2$. To find this derivative, we
+differentiate the defining relation for $X(T,V,\mbf n)$, namely
+$\pder{Q}{\mbf X} = \mbf 0$. Doing this (and taking care to transpose vectors
+correctly), we get
+\begin{align}
+ \mbf 0 = \frac{\partial}{\partial \z_2} \pder{Q_{sp}}{\mbf X} = \pdcross{Q_{sp}}{\mbf X}{\z_2} + \pder{\mbf X}{\z_2}^t \pdder{Q_{sp}}{\mbf X},
+\end{align}
+yielding
+\begin{equation}
+  \label{Xz2}
+  \pder{\mbf X}{\z_2} = - \pdder{Q_{sp}}{\mbf X}^{-1} \pdcross{Q_{sp}}{\mbf X}{\z_2}^t.
+\end{equation}
+In conclusion, the formula for the second derivative is obtained by combining
+\eqref{stress} and \eqref{Xz2}:
+\begin{equation}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} = \pdcross{Q_{sp}}{\z_2}{\z_1} -  \pdcross{Q_{sp}}{\z_1}{\mbf X} \pdder{Q_{sp}}{\mbf X}^{-1} \pdcross{Q_{sp}}{\mbf X}{\z_2}^t.
+\end{equation}
+Or, if one prefers summation notation:
+\begin{equation}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} = \pdcross{Q_{sp}}{\z_2}{\z_1} -  \sum_{i,j} \sum_{A_i,B_j} \pdcross{Q_{sp}}{\z_1}{X_{A_i}} \lp \pdder{Q_{sp}}{\mbf X}^{-1} \rp_{ij} \pdcross{Q_{sp}}{X_{B_j}}{\z_2}.
+\end{equation}
+
+\subsubsection{Formulas for $\pdcross{Q_{sp}}{\z_2}{\z_1}$}
+
+\begin{align*}
+  \pdder{Q_{sp}}{T} =  - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdder{\Delta^{A_i B_j}}{T}.
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{V} = \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V} \pder{\Delta^{A_i B_j}}{T} - \pdcross{\Delta^{A_i B_j}}{T}{V} \right]
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{n_k} =& -\frac{1}{V} \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{T}\\
+  &- \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{T}{n_k}
+\end{align*}
+
+\begin{align*}
+  \pdder{Q_{sp}}{V} = \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ -\frac{2\Delta^{A_i B_j}}{V^2} + \frac{2}{V}  \pder{\Delta^{A_i B_j}}{V}  - \pdder{\Delta^{A_i B_j}}{V} \right]
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{n_k} =& \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \left[ \frac{\Delta^{A_k B_j}}{V^2} - \frac{1}{V} \pder{\Delta^{A_k B_j}}{V}\right] \\
+  &+ \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V} \pder{\Delta^{A_i B_j}}{n_k} - \pdcross{\Delta^{A_i B_j}}{V}{n_k} \right].
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{n_l}{n_k} =& - \frac{1}{V} \sum_{A_k, B_l} X_{A_k} X_{B_l} \Delta^{A_k B_l} - \frac{1}{V} \sum_{j} \sum_{A_l, B_j} n_j X_{A_l} X_{B_j} \pder{\Delta^{A_l B_j}}{n_k} \\
+  &- \frac{1}{V} \sum_{j} \sum_{A_k, B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{n_l} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{n_l}{n_k}
+\end{align*}
+These derivatives are all found by performing one more differentiation on the
+first-order derivatives we found in section \ref{first-order
+  derivatives}. However, when taking an additional derivative of
+$\pder{Q_{sp}}{n_k}$, we have to take care to differentiate the expressions on
+\eqref{l1} and \eqref{l2}, and not the simplified expression \eqref{nono}. This
+is because the supscript \textrm{sp} means that $X(T,V,\mbf n)$ should be
+substituted in \textit{after} all the derivatives have been performed.
+
+\subsubsection{Formulas for $\pdcross{Q_{sp}}{X_{A_i}}{\z_1}$}
+We have
+\begin{equation}
+  \pder{Q}{X_{A_i}} = \frac{n_i}{X_{A_i}} - n_i  - \frac{n_i}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \Delta^{A_i B_j},
+\end{equation}
+and thus
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{X_{A_i}} = -\frac{n_i}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \pder{\Delta^{A_i B_j}}{T}
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{X_{A_i}} = n_i \sum_{j} \sum_{B_j} n_j X_{B_j} \left[ \frac{1}{V^2} \Delta^{A_i B_j} - \frac{1}{V} \pder{\Delta^{A_i B_j}}{V} \right]
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{n_l}{X_{A_i}} = - \frac{n_i}{V} \sum_{B_l} X_{B_l} \Delta^{A_i B_l} - \frac{1}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} n_i \pder{\Delta^{A_i B_j}}{n_l}.
+\end{align*}
+
+\subsubsection{Solving for $\pder{\mbf X}{V}$ and $\pdder{Q_{sp}}{V}$ simultaneously}
+The derivatives $\pder{\mbf X}{V}$ and $\pdder{Q_{sp}}{V}$ are needed in the
+Newton iteration when solving for volume given pressure, temperature and
+composition. When both of these are needed, one wants to first solve for
+$\pder{\mbf X}{V}$ from \eqref{Xz2}, and then use \eqref{stress} to find
+$\pdder{Q_{sp}}{V}$, and therefore a dedicated routine for this has been
+implemented. To obtain $\pder{\mbf X}{V}$, we solve the linear system
+\begin{equation}
+  \pdder{Q_{sp}}{\mbf X} \pder{\mbf X}{V} = -\pdcross{Q_{sp}}{V}{\mbf X}^t.
+\end{equation}
+where\footnote{Note that only the diagonal of $\pdcross{Q}{X_{A_i}}{X_{B_j}}$ is dependent on $\mbf X$.}
+\begin{equation}
+  \pdcross{Q}{X_{A_i}}{X_{B_j}} = -\frac{n_i}{X_{A_i}^2} \delta_{A_i B_j} - \frac{n_i n_j}{V} \Delta^{A_i B_j}.
+\end{equation}
+Having found this derivative, we find $\pder{P}{V}$ from \eqref{stress}:
+\begin{equation}
+    \pdder{F^{\text{assoc}}}{V} = \pdder{Q_{sp}}{V} + \pdcross{Q_{sp}}{\mbf X}{V} \pder{\mbf X}{V}.
+\end{equation}
+
+\subsection{Derivatives for $\Delta^{A_i B_j}(T,V,\mbf n)$}
+We now address the association part of PC-SAFT. In this section, we will use the
+notation $\beta^{A_i B_j}$ instead of $\kappa^{A_i B_j}$.
+\begin{align}
+  \Delta^{A_i B_j}(T,V,\mbf n) &= g(T,V,\mbf n) \cdot [\exp(\epsilon^{A_i B_j}/RT) - 1] (\sigma_{ij})^3 \beta^{A_i B_j} \\ 
+  &=g(T,V,\mbf n) h(T)
+\end{align}
+where $\epsilon^{A_i B_j}$, $\sigma_{ij}$ and $\beta^{A_i B_j}$ are
+constants. The first derivatives are thus given by
+\begin{align}
+  \pder{\Delta^{A_i B_j}}{T}   &= g(T,V,\mbf n) h'(T) + \pder{\ln g(T,V,\mbf n)}{T} \Delta^{A_i B_j}\\
+  \pder{\Delta^{A_i B_j}}{V}   &= \pder{\ln g(V,\mbf n)}{V} \Delta^{A_i B_j} \\
+  \pder{\Delta^{A_i B_j}}{n_k} &= \pder{\ln g(V,\mbf n)}{n_k} \Delta^{A_i B_j}
+\end{align}
+while the second derivatives are given by
+\begin{align}
+  \pdder{\Delta^{A_i B_j}}{T}   &=  g(T,V,\mbf n) h''(T) + 2 \pder{g(T,V,\mbf n)}{T} h'(T) + \pdder{g(T,V,\mbf n)}{T} h(T) \\
+  \pdcross{\Delta^{A_i B_j}}{V}{T}  &= \pder{g(T,V,\mbf n)}{V} h'(T) + \pdcross{g(T,V,\mbf n)}{T}{V} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{T}  &= \pder{g(T,V,\mbf n)}{n_l} h'(T) + \pdcross{g(T,V,\mbf n)}{T}{n_l} \\
+  \pdder{\Delta^{A_i B_j}}{V}   &= \pdder{g(V,\mbf n)}{V}  \frac{\Delta^{A_i B_j}}{g(T,V,\mbf n)} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{V}  &= \pdcross{g(V,\mbf n)}{n_l}{V} \frac{\Delta^{A_i B_j}}{g(T,V,\mbf n)} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{n_k}  &= \pdcross{g(V,\mbf n)}{n_l}{n_k} \frac{\Delta^{A_i B_j}}{g(T,V,\mbf n)} 
+\end{align}
+Moreover,
+\begin{align}
+  h(T) &= [\exp(\epsilon^{A_i B_j}/RT) - 1] (\sigma_{ij})^3 \beta^{A_i B_j} \\
+  h'(T) &= -\frac{\epsilon^{A_i B_j}}{RT^2} \exp(\epsilon^{A_i B_j}/RT) (\sigma_{ij})^3 \beta^{A_i B_j} \\
+  h''(T) &= \lp 2 + \frac{\epsilon^{A_i B_j}}{RT} \rp \frac{\epsilon^{A_i B_j}}{RT^3} \exp(\epsilon^{A_i B_j}/RT) (\sigma_{ij})^3 \beta^{A_i B_j} 
+\end{align}
+
+
+\begin{thebibliography}{11}
+\bibitem{Gross01} Gross J., Sadowski G. Perturbed-Chain SAFT: An Equation of State Based on a Perturbation Theory for Chain Molecules. \textit{Industrial and Engineering Chemistry Research} \textbf{2001}, 40, 1244--1260.
+\bibitem{Gross02} Gross J., Sadowski G. Application of the Pertubed-Chain SAFT Equation of State to Associating Systems \textit{Industrial and Engineering Chemistry Research} \textbf{2001}, 41, 5510--5515.
+\bibitem{Kontogeorgis10} Kontogeorgis, G.M., Folas, G.K. \textit{Thermodynamic Models for Industrial Applications}. Wiley 2010.
+\end{thebibliography}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

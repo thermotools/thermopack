@@ -1,0 +1,1996 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\usepackage[utf8]{inputenc}
+%\usepackage{amsmath}
+%\input{mathdef}
+\usepackage[per-mode=symbol]{siunitx}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{mathtools}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+
+\usepackage{booktabs}
+\usepackage{a4wide}
+\usepackage{xspace}
+\usepackage{mhchem}
+\usepackage{siunitx}
+\DeclareSIUnit{\atmosphere}{atm}
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline}{}
+\usepackage{subcaption,caption}
+%\pdfminorversion=4
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}% for å slippe å taste inn disse $
+\newcolumntype{L}{>{$}l<{$}}% for å slippe å taste inn disse $
+%
+\newcommand*{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand*{\uunit}[1]{\ensuremath{\mathrm{#1}}}
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdc}[3]{\frac{\partial^{2}#1}{\partial{#2}\partial{#3}}}% partial derivative
+\newcommand*{\pdcc}[3]{\frac{\partial^{3}#1}{\partial{#2}^{2}\partial{#3}}}% partial derivative
+\newcommand*{\pdth}[4]{\frac{\partial^{3}#1}{\partial{#2}\partial{#3}\partial{#4}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+% høy tekst-indeks/superscript/apex
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\lb}{\left(}
+\newcommand*{\rb}{\right)}
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+%\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{g}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\mie}{\text{Mie}\xspace}
+\newcommand{\mca}{\text{MCA}\xspace}
+\newcommand{\hs}{\text{HS}\xspace}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\id}{\ensuremath{\text{id}}\xspace}
+\newcommand{\mono}{\ensuremath{\text{mono}}\xspace}
+\newcommand{\ms}{\ensuremath{\text{m}}\xspace}
+\newcommand{\chain}{\ensuremath{\text{chain}}\xspace}
+\newcommand{\assoc}{\ensuremath{\text{assoc}}\xspace}
+\newcommand{\seg}{\ensuremath{\text{s}}\xspace}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to~}}
+\newcommand{\tpd}{\ensuremath{\text{tpd}}\xspace}
+\newcommand{\TPD}{\ensuremath{\text{TPD}}\xspace}
+\newcommand{\minimum}{\ensuremath{\text{min}}\xspace}
+\newcommand{\eq}{\ensuremath{\text{eq}}\xspace}
+\newcommand{\lp}{\left(}
+\newcommand{\rp}{\right)}
+\newcommand{\Lagr}{\ensuremath{\mathcal{L}}\xspace}
+\newcommand{\mbn}{\ensuremath{\mathbf{n}}\xspace}
+\newcommand{\mbA}{\ensuremath{\mathbf{A}}\xspace}
+\newcommand{\mbb}{\ensuremath{\mathbf{b}}\xspace}
+\newcommand{\mbB}{\ensuremath{\mathbf{B}}\xspace}
+\newcommand{\mbM}{\ensuremath{\mathbf{M}}\xspace}
+\newcommand{\mbg}{\ensuremath{\mathbf{g}}\xspace}
+\newcommand{\mbd}{\ensuremath{\mathbf{d}}\xspace}
+\newcommand{\mbe}{\ensuremath{\mathbf{e}}\xspace}
+\newcommand{\one}{\ensuremath{\mathbf{1}}\xspace}
+\newcommand{\zero}{\ensuremath{\mathbf{0}}\xspace}
+\newcommand{\mbl}{\ensuremath{\boldsymbol{\lambda}}\xspace}
+\newcommand{\mbs}{\ensuremath{\mathbf{s}}\xspace}
+\newcommand{\mbF}{\ensuremath{\mathbf{F}}\xspace}
+\newcommand{\mbX}{\ensuremath{\mathbf{X}}\xspace}
+\newcommand{\mbmu}{\ensuremath{\boldsymbol{\mu}}\xspace}
+\newcommand{\mbmub}{\ensuremath{\mathbf{\bar{\boldsymbol{\mu}}}}\xspace}
+\newcommand\inv[1]{#1\raisebox{0.7ex}{$\scriptscriptstyle-\!1$}}
+\newcommand*{\plimsoll}{{\ensuremath{-\kern-4pt{\ominus}\kern-4pt-}}\xspace}
+\newcommand{\formation}[1]{\ensuremath{\Delta_{\text{f}} #1^\plimsoll}\xspace}
+\newcommand{\pure}{\ensuremath{\text{pure}}\xspace}
+\newcommand{\lama}{\ensuremath{{\lambda_{\text{a}}}}\xspace}
+\newcommand{\lamr}{\ensuremath{{\lambda_{\text{r}}}}\xspace}
+\newcommand{\kB}{\ensuremath{k_{\text{B}}}\xspace}
+\newcommand{\gdhs}{\ensuremath{g_{\text{d}}^\hs}\xspace}
+\newcommand{\aS}{\ensuremath{a_{1}^{\text{S}}}\xspace}
+\newcommand{\aSt}{\ensuremath{\tilde{a}_{1}^{\text{S}}}\xspace}
+\newcommand{\Bt}{\ensuremath{\tilde{B}}\xspace}
+\newcommand{\Dt}{\ensuremath{\tilde{D}}\xspace}
+\newcommand{\Qt}{\ensuremath{\tilde{Q}}\xspace}
+\newcommand{\at}{\ensuremath{\tilde{a}}\xspace}
+\newcommand{\ab}{\ensuremath{\bar{a}}\xspace}
+\newcommand{\aSij}{\ensuremath{a_{1,ij}^{\text{S}}}\xspace}
+\newcommand{\aStij}{\ensuremath{\tilde{a}_{1,ij}^{\text{S}}}\xspace}
+\newcommand*{\aSl}[1]{\ensuremath{a_{1{#1}}^{\text{S}}}\xspace}
+\newcommand*{\aSlt}[1]{\ensuremath{\tilde{a}_{1{#1}}^{\text{S}}}\xspace}
+\newcommand{\eff}{\ensuremath{\text{eff}}\xspace}
+\newcommand{\gamc}{\ensuremath{\gamma_{\text{C}}}\xspace}
+\newcommand{\z}{\zeta}
+\newcommand{\zb}{\bar{\zeta}}
+\newcommand{\nc}{\ensuremath{\text{N}}\xspace}
+\newcommand{\NA}{\ensuremath{\text{N}_{\text{A}}}\xspace}
+\newcommand{\att}{\ensuremath{\text{a}}\xspace}
+\newcommand{\rep}{\ensuremath{\text{r}}\xspace}
+\newcommand{\res}{\ensuremath{\text{R}}\xspace}
+\newcommand{\SYH}{\ensuremath{\text{SYH}}\xspace}
+\newcommand{\CSK}{\ensuremath{\text{CSK}}\xspace}
+\newcommand{\CS}{\ensuremath{\text{CS}}\xspace}
+\newcommand{\excess}{\ensuremath{\text{ex}}\xspace}
+\newcommand{\mix}{\ensuremath{\text{mix}}\xspace}
+
+\title{The SAFT-VR Mie equation of state}
+\author{Morten Hammer, {\O}ivind Wilhemsen and Ailo Aase}
+
+\graphicspath{{gfx/}}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction}
+This memo was written when implementing the SAFT-VR Mie equation of
+state \cite{Lafitte2013}, and contains SAFT-VR Mie equations and
+differentials. The equations used for the extension of SAFT-VR Mie to
+support Feynman-Hibbs quantum corrected poteitials
+\cite{Aasen2019,Aasen2020a} as well as some equations used in the work
+of \citet{Hammer2020} are included.
+
+SAFT-VR Mie is a thermodynamic perturbtion theory in the
+Baker-Henderson \cite{Barker1967,Barker1976} framework.
+
+
+\section{Model}
+
+The Mie potential,
+\begin{equation}
+  \label{eq:Mie}
+  u^\mie\lb r\rb = \mathcal{C}\epsilon \lb \lb\frac{\sigma}{r} \rb^\lamr - \lb\frac{\sigma}{r} \rb^\lama \rb,
+\end{equation}
+where,
+\begin{equation}
+  \label{eq:C}
+  \mathcal{C} = \frac{\lamr}{\lamr - \lama}\lb\frac{\lamr}{\lama} \rb^{\frac{\lama}{\lamr - \lama}},
+\end{equation}
+
+The resulting Helmholtz free energy function is comprised of the four main parts,
+\begin{equation}
+  \label{eq:helm}
+  A = A^\id + A^\mono + A^\chain + A^\assoc,
+\end{equation}
+where the ideal and association part is similar to what we have been
+using. In the following it is used lower caps letter for the reduced
+Helmholtz energy.
+
+\subsection{Differentials}
+As we will see, the various expressions for $a$, are described as
+functions of the packing fraction, $\eta$, and the reduced
+centre-centre distance for two hard spheres, $x_0$. There are also
+direct dependence to $T$. The differentials will be calculated based
+on $\eta$ and $x_0$, and the use of the chain rule to get
+differentials in $V$ etc. We use the following dependencies,
+\begin{align}
+  \label{eq:diff_var}
+  a =& a \lb \eta, x_0 \rb \\
+  \eta =& \eta \lb V, T, \vektor{n} \rb \\
+  x_0 =& x_0 \lb T \rb
+\end{align}
+giving,
+\begin{equation}
+  \label{eq:a_ms_diff}
+  a = a \lb \eta \lb V, T, \vektor{n} \rb, x_0 \lb T \rb, T \rb.
+\end{equation}
+Looking ahead to Equation \ref{eq:g_2_mca} and \ref{eq:g_1}, it is
+seen that some third order differentials is needed as well for $a_1$
+and $a_2$.
+
+% Differentials to third order would therefore be,
+% \begin{align}
+%   \label{eq:at_diff}
+%   \pd{\at}{V} =& \pd{\at}{\eta} \pd{\eta}{V},\\
+%   \pd[2]{\at}{V} =& \pd[2]{\at}{\eta} \lb \pd{\eta}{V}\rb^2 + \pd{\at}{\eta}  \pd[2]{\eta}{V},\\
+%   \pd[3]{\at}{V} =& \pd[3]{\at}{\eta} \lb \pd{\eta}{V}\rb^3 + 3 \pd[2]{\at}{\eta} \pd[2]{\eta}{V}  \pd{\eta}{V}+ \pd{\at}{\eta}  \pd[3]{\eta}{V},\\
+%   \pd{\at}{T} =& \lb \pd{\at}{\eta} \pd{\eta}{d} + \pd{\at}{x_0} \pd{x_0}{d} + \pd{\at}{d}\rb \pd{d}{T}, \\
+%   \pd[2]{\at}{T} =& \frac{\lb\pd{\at}{T}\rb}{\lb\pd{d}{T}\rb}\pd[2]{d}{T} + \left[ \pd[2]{\at}{\eta} \lb\pd{\eta}{d}\rb^2 + \pd[2]{\at}{x_0} \lb \pd{x_0}{d}\rb^2 + \pd[2]{\at}{d} \right.
+%                       \nonumber \\
+%                         & \left. + \pd{\at}{\eta} \pd[2]{\eta}{d} +\pd{\at}{x_0} \pd[2]{x_0}{d} \right] \lb \pd{d}{T} \rb^2,  \\
+%   \pdc{\at}{V}{T} =&  \lb\pd{\at}{\eta} \pdc{\eta}{V}{d} + \pd[2]{\at}{\eta} \pd{\eta}{V} \pd{\eta}{d} + \pdc{\at}{\eta}{x_0} \pd{x_0}{d}\pd{\eta}{V} + \pdc{\at}{\eta}{d} \pd{\eta}{V} \rb\pd{d}{T},\\
+%   \pdcc{\at}{V}{T} =&  \left[ \lb \pd[3]{\at}{\eta} \pd{\eta}{d} + \pdcc{\at}{\eta}{x_0} \pd{x_0}{d} + \pdcc{\at}{\eta}{d}\rb \lb \pd{\eta}{V}\rb^2 \right. \nonumber \\ & + 2\pd[2]{\at}{\eta} \pd{\eta}{V} \pdc{\eta}{V}{d}  +  \lb \pd[2]{\at}{\eta} \pd{\eta}{d} + \pdc{\at}{\eta}{x_0} \pd{x_0}{d} + \pdc{\at}{\eta}{d}\rb \pd[2]{\eta}{V} \nonumber \\ & \left.+ \pd{\at}{\eta}  \pdcc{\eta}{V}{d} \right] \pd{d}{T}.
+% \end{align}
+% For readability, $d$ is used instead of $d^\hs$.
+
+\section{Monomer contribution to the Mie fluid}
+The reduced monomer Helmholtz energy consists of a series expansion to
+third order in $\beta = 1/(\kB T)$. The monomer contribution is a
+function of monomer number density. The monomer segment number
+$m_\seg$, is the number of segments per molecule. We therefore have
+$N_\seg = m_\seg N$, where $N$ is the number of molecules. We use,
+\begin{equation}
+  \label{eq:helm_mono}
+  a^\mono = m_\seg a^\ms = m_\seg \frac{A^\ms}{N_\seg \kB T}.
+\end{equation}
+
+The monomer expansion becomes,
+\begin{equation}
+  \label{eq:a_m}
+  a^\ms = a^\hs + \beta a_1 + \beta^2 a_2 + \beta^3 a_3 .
+\end{equation}
+
+\subsection{Hard-sphere diameter}
+The hard-sphere reduced Helmholtz free energy is given by the Carnahan and Starling EOS,
+\begin{equation}
+  \label{eq:a_hs}
+  a^\hs = \frac{4 \eta - 3 \eta^2}{\lb 1-\eta\rb^2}.
+\end{equation}
+Where,
+\begin{equation}
+  \label{eq:eta}
+  \eta = \frac{\rho_\seg \pi \lb d^\hs \rb^3}{6} = \frac{ \pi \NA m_\seg n \lb d^\hs \rb^3}{6 V},
+\end{equation}
+and $d^\hs$ is the hard-sphere diameter. The hard-sphere diameter used
+by \cite{Lafitte2013}, is given as
+\begin{equation}
+  \label{eq:d_hs}
+  d^\hs = \int_0^\sigma \left[ 1-\exp\lb-\beta u^\mie\lb r\rb \rb \right] dr.
+\end{equation}
+Here $\beta=1/\lb kT \rb$. This function is impossible to integrate
+analytically, and must be approximated in order to have an explicit
+formulation. According to \citet{Papaioannou2014} a 5 point
+Gauss-Legendre quadrature is applied for the SAFT-VR Mie EOS, as shown
+by \citet{Paricaud2006}. There is a slight mismatch between the
+papers, \citet{Paricaud2006} evaluates 10 points, and refers to the
+method as ten-point, while \citet{Papaioannou2014} refers to this as a
+5 point quadrature. It is believed to be a 10 point quadrature.
+
+The Gauss-Legendre quadrature is for integration in the interval
+[-1,1]. To fit with our problem, the quadrature would take the
+following form, using $x = r/\sigma$,
+\begin{align}
+  \label{eq:d_approx}
+  d^\hs &= \frac{\sigma}{2}\int_{-1}^1 \left[ 1 -\exp\lb-\beta u^\mie\lb \frac{\sigma}{2}x + \frac{\sigma}{2}\rb \rb \right] dx\\
+  &\approx  \frac{\sigma}{2} \sum_{i=1}^n w_i \left[ 1 -\exp\lb-\beta u^\mie\lb \frac{\sigma}{2}x_i + \frac{\sigma}{2}\rb \rb \right]
+\end{align}
+
+\begin{table}[htb]
+  \center
+  \begin{tabular}{lcc}
+    \hline
+    Index & $ x_i$ & $w_i$  \\
+    \hline
+    1 &	-0.973906528517171720078 &	0.0666713443086881375936 \\
+    2 &	-0.8650633666889845107321 &	0.149451349150580593146 \\
+    3 &	-0.6794095682990244062343 &	0.219086362515982043996 \\
+    4 &	-0.4333953941292471907993 &	0.2692667193099963550912 \\
+    5 &	-0.1488743389816312108848 &	0.2955242247147528701739 \\
+    6 &	0.1488743389816312108848 &	0.295524224714752870174 \\
+    7 &	0.4333953941292471907993 &	0.269266719309996355091 \\
+    8 &	0.6794095682990244062343 &	0.2190863625159820439955 \\
+    9 &	0.8650633666889845107321 &	0.1494513491505805931458 \\
+    10 & 0.973906528517171720078 &	0.0666713443086881375936 \\
+    \hline
+  \end{tabular}
+  \caption{Gauss-Legendre quadrature points}
+\end{table}
+
+The quadrature approach was tested using methane parameters
+($\lamr = 12.650$, $\lama = 6.0$, $\epsilon/\kB = 153.36$ (K),
+$\sigma = 3.7412$ (\AA)) at $T=300.0$ (K), revealed an error in the
+order $10^{-5}$, using 10 point Gauss Legendre quadrature.
+
+It is noted that the first 5 nodes all evaluate to unity, and the
+contribution from the exponential term is lost in numerical
+truncation.
+
+\subsubsection{Differential terms}
+Differentials of $\eta$:
+\begin{align}
+  \label{eq:eta_diff}
+  \pd{\eta}{V} =& -\frac{\eta}{V},\\
+  \pd[2]{\eta}{V} =& \frac{2\eta}{V^2},\\
+  \pd[3]{\eta}{V} =& -\frac{6\eta}{V^3},\\
+  \pd{\eta}{T} =& \frac{3\eta}{d}\pd{d}{T},\\
+  \pd[2]{\eta}{T} =& \frac{6\eta}{d^2}\lb\pd{d}{T}\rb^2 + \frac{3\eta}{d}\pd[2]{d}{T},\\
+  \pdc{\eta}{V}{T} =& -\frac{1}{V}\pd{\eta}{T}, \\
+  \pdcc{\eta}{V}{T} =& \frac{2}{V^2}\pd{\eta}{T}, \\
+  \pdcc{\eta}{T}{V} =& -\frac{1}{V}\pd[2]{\eta}{T}. \\
+\end{align}
+Differentials for $a = \eta \at$ simply become,
+\begin{align}
+  a_{X_i} =& \eta_{X_i} \at + \eta \at_{X_i},\\
+  a_{X_i X_j} =& \eta_{X_i X_j} \at + \eta_{X_i} \at_{X_j} + \eta_{X_j} \at_{X_i} + \eta \at_{X_i X_j},\\
+  a_{X_i X_j X_k} =& \eta_{X_i X_j X_k} \at + \eta_{X_i X_j} \at_{X_k} + \eta_{X_i X_k} \at_{X_j} + \eta_{X_i} \at_{X_j X_k} \nonumber \\ & + \eta_{X_j X_k} \at_{X_i} + \eta_{X_j} \at_{X_i X_k} + \eta_{X_k} \at_{X_i X_j} + \eta \at_{X_i X_j X_k}.
+\end{align}
+% Differentials of $a$ then becomes:
+% \begin{align}
+%   \label{eq:a_diff}
+%   \pd{a}{V} =& \pd{\at}{V} \eta + \at \pd{\eta}{V},\\
+%   \pd[2]{a}{V} =& \pd[2]{\at}{V} \eta + 2\pd{\at}{V} \pd{\eta}{V} + \at \pd[2]{\eta}{V},\\
+%   \pd{a}{T} =& \pd{\at}{T} \eta + \at \pd{\eta}{d}\pd{d}{T},\\
+%   \pd[2]{a}{T} =& \pd[T]{\at}{T} \eta + 2 \pd{\at}{T}\pd{\eta}{d}\pd{d}{T} + \at \pd[2]{\eta}{d}\lb\pd{d}{T}\rb^2 + + \at \pd{\eta}{d}\pd[2]{d}{T},\\
+%   \pdc{a}{V}{T} =& \pdc{\at}{V}{T} \eta + \pd{\at}{V} \pd{\eta}{d}\pd{d}{T} + \pd{\at}{T} \pd{\eta}{V} + \at \pdc{\eta}{V}{d}\pd{d}{T}
+% \end{align}
+
+Differentials of $d$, allowing for a temperature dependent $u^\mie$:
+\begin{align}
+  \label{eq:d_diff}
+  \pd{d}{T} =& \frac{\beta\sigma}{2} \sum_{i=1}^n w_i  \lb \pd{u^\mie_i}{T} - \frac{u^\mie_i}{T}\rb \exp\lb-\beta u^\mie_i \rb,\\
+  \pd[2]{d}{T} =& \frac{\beta\sigma}{2} \sum_{i=1}^n w_i \left[ -\beta\lb \pd{u^\mie_i}{T} - \frac{u^\mie_i}{T}\rb^2 +  \lb \pd[2]{u^\mie_i}{T} - \frac{2u^\mie_i}{T^2}- \frac{2}{T} \pd{u^\mie_i}{T}\rb \right]\exp\lb-\beta u^\mie_i \rb
+\end{align}
+Differentials of the hard-sphere term:
+\begin{align}
+  \label{eq:a_hs_diff}
+  \pd{a^\hs}{\eta} =& -\frac{2 \lb( \eta - 2\rb}{\lb 1-\eta\rb^3},\\
+  \pd[2]{a^\hs}{\eta} =& \frac{10 - 4 \eta}{\lb 1-\eta\rb^4}.
+\end{align}
+
+\subsection{First order monomer perturbation}
+The first-order perturbation term is calculated from,
+\begin{equation}
+  \label{eq:a_1}
+  a_1 = 2 \pi \rho_\seg \int_\sigma^\infty \gdhs \lb r \rb u^\mie\lb r\rb  r^2 dr.
+\end{equation}
+Here $\gdhs$ is the reference hard-sphere radial-distribution-function
+(RDF), approximated as
+\begin{equation}
+  \label{eq:gdhs}
+  \gdhs \lb d \rb = \frac{1 - \eta/2}{\lb 1 - \eta \rb^3}.
+\end{equation}
+
+\citet{Lafitte2013} developed an algebraic approximation to $a_1$,
+\begin{equation}
+  \label{eq:a_1_approx}
+  a_1 = \mathcal{C} \left[ x_0^\lama \lb \aS \lb \eta; \lama \rb + B \lb \eta; \lama \rb  \rb - x_0^\lamr \lb \aS \lb \eta; \lamr \rb + B \lb \eta; \lamr \rb  \rb\right].
+\end{equation}
+Here $x_0 = \sigma/d$, and $\aS$ is the Helmholtz free energy of the
+hard-core Sutherland particle,
+\begin{equation}
+  \label{eq:a_1_S}
+  \aS\lb \eta; \lambda \rb = -12 \epsilon \eta \lb \frac{1}{\lambda - 3} \rb \frac{1 - \eta_\eff\lb \eta; \lambda \rb / 2}{\lb 1 - \eta_\eff\lb \eta; \lambda \rb \rb^3},
+\end{equation}
+where,
+\begin{equation}
+  \label{eq:eta_eff}
+  \eta_\eff\lb \eta; \lambda \rb = c_1 \lb \lambda \rb \eta + c_2 \lb \lambda \rb \eta^2 + c_3 \lb \lambda \rb \eta^3 + c_4 \lb \lambda \rb \eta^4,
+\end{equation}
+is a correlation valid for $ 5 < \lambda \leq 100$. The coefficients are given from,
+
+\begin{equation}
+  \label{eq:c_param}
+  \begin{pmatrix}
+    c_1 \\
+    c_2 \\
+    c_3 \\
+    c_4
+  \end{pmatrix} = \begin{pmatrix}
+    0.81096 & 1.7888 & -37.578  & 92.284 \\
+    1.0205 & -19.341 & 151.26 & -463.50 \\
+    -1.9057 & 22.845 & -228.14 & 973.92 \\
+    1.0885 & -6.1962 & 106.98 & -677.64
+  \end{pmatrix}
+    \begin{pmatrix}
+    1 \\
+    1/\lambda \\
+    1/\lambda^2 \\
+    1/\lambda^3
+  \end{pmatrix}.
+\end{equation}
+
+$B$ is calculated as follows,
+\begin{align}
+  \label{eq:c_B}
+  B \lb \eta; \lambda \rb &= 12 \eta \epsilon \lb \frac{1 - \eta/2}{\lb 1 - \eta\rb^3} I_\lambda \lb \lambda \rb - \frac{9\eta\lb 1+ \eta\rb}{2 \lb 1- \eta\rb^3} J_\lambda \lb \lambda \rb \rb,\\
+                          &= 6 \eta \epsilon \lb k_I \lb \eta \rb I_\lambda \lb \lambda \rb + k_J \lb \eta \rb J_\lambda \lb \lambda \rb \rb.
+\end{align}
+
+Here,
+\begin{align}
+  \label{eq:I_lambda}
+  I_\lambda \lb \lambda \rb &= -\frac{x_0^{\lb 3-\lambda\rb} - 1}{\lambda - 3},\\
+  \label{eq:J_lambda}
+  J_\lambda \lb \lambda \rb &= -\frac{x_0^{\lb 4-\lambda\rb}\lb \lambda - 3\rb -x_0^{\lb 3-\lambda\rb}\lb \lambda - 4\rb - 1}{\lb \lambda - 3\rb \lb \lambda - 4\rb},
+\end{align}
+and,
+\begin{align}
+  \label{eq:kI}
+  k_I \lb \eta \rb &= \frac{2-\eta}{\lb 1 - \eta\rb^3},\\
+  \label{eq:kJ}
+  k_J \lb \eta \rb &= -\frac{9\eta\lb 1+ \eta\rb}{\lb 1 - \eta\rb^3}.
+\end{align}
+Looking ahead to the mixture formulation, a reduced property is defined,
+\begin{equation}
+  \label{eq:eta_red}
+  \tilde{a} = \frac{a}{\eta}.
+\end{equation}
+This gives,
+\begin{equation}
+  \label{eq:a_1_approx_red}
+  \tilde{a}_1 = \mathcal{C} \left[ x_0^\lama \lb \aSt \lb \eta; \lama \rb + \Bt \lb \eta; \lama \rb  \rb - x_0^\lamr \lb \aSt \lb \eta; \lamr \rb + \Bt \lb \eta; \lamr \rb  \rb\right].
+\end{equation}
+\subsubsection{Differential terms}
+Differentials of $\eta_\eff$:
+\begin{align}
+  \label{eq:eta_eff_diff}
+  \pd{\eta_\eff}{\eta} =& c_{1,\lambda} + 2 c_{2,\lambda} \eta + 3 c_{3,\lambda} \eta^2 + 4 c_{4,\lambda} \eta^3,\\
+  \pd[2]{\eta_\eff}{\eta} =& 2 c_{2,\lambda} + 6 c_{3,\lambda} \eta + 12 c_{4,\lambda} \eta^2,\\
+  \pd[3]{\eta_\eff}{\eta} =& 6 c_{3,\lambda} + 24 c_{4,\lambda} \eta.
+\end{align}
+Differentials of $\aSt$:
+\begin{align}
+  \label{eq:a1St_diff}
+  \pd{\aSt}{\eta} =& \lb \frac{6 \epsilon}{\lambda - 3} \rb \frac{\lb 2\eta_\eff-5\rb}{\lb 1 - \eta_\eff \rb^4}\pd{\eta_\eff}{\eta},\\
+  \pd[2]{\aSt}{\eta} =& \lb \frac{6\epsilon}{\lambda - 3} \rb \left[ \frac{2\eta_\eff - 5}{\lb 1 - \eta_\eff \rb^4}\pd[2]{\eta_\eff}{\eta} + \frac{6\lb\eta_\eff - 3\rb}{\lb 1 - \eta_\eff \rb^5} \lb \pd{\eta_\eff}{\eta} \rb^2 \right],\\
+    \pd[3]{\aSt}{\eta} =& \lb \frac{6 \epsilon}{\lambda - 3} \rb \left[\frac{\lb 2\eta_\eff - 5 \rb}{\lb 1 - \eta_\eff \rb^4}\pd[3]{\eta_\eff}{\eta} + \frac{12\lb 7 - 2\eta_\eff\rb}{\lb 1 - \eta_\eff \rb^6} \lb \pd{\eta_\eff}{\eta} \rb^3 + \frac{18\lb \eta_\eff - 3 \rb}{\lb 1 - \eta_\eff \rb^5} \pd{\eta_\eff}{\eta} \pd[2]{\eta_\eff}{\eta}\right].
+\end{align}
+Differentials of $\Bt$:
+\begin{align}
+  \label{eq:B_diff}
+  \frac{\partial^{i+j}\Bt}{\partial \eta^i \partial x_0^j} =& 6 \epsilon \lb \pd[i]{k_I}{\eta}\pd[j]{I_\lambda}{x_0} + \pd[i]{k_J}{\eta}\pd[j]{J_\lambda}{x_0} \rb.
+\end{align}
+% \begin{align}
+%   \label{eq:B_diff}
+%   \pd{\Bt}{\eta} =& 6 \epsilon \lb \frac{5 - 2\eta}{\lb 1 - \eta\rb^4} I_\lambda - \frac{9 \lb \eta^2 + 4\eta + 1\rb}{ \lb 1- \eta\rb^4} J_\lambda \rb,\\
+%   \pd[2]{\Bt}{\eta} =&  -36 \epsilon \lb \frac{\eta-3}{\lb 1 - \eta\rb^5} I_\lambda + \frac{3 \lb \eta^2 + 7\eta + 4\rb}{ \lb 1- \eta\rb^5} J_\lambda \rb,\\
+%   \pd[3]{\Bt}{\eta} =&  - 36 \epsilon \lb \frac{2 \lb 2\eta - 7\rb}{\lb 1 - \eta\rb^6} I_\lambda + \frac{9 \lb \eta^2 + 10\eta + 9\rb}{ \lb 1- \eta\rb^6} J_\lambda \rb,\\
+%   \pd{\Bt}{x_0} =& 12 \epsilon \lb \frac{1 - \eta/2}{\lb 1 - \eta\rb^3} \pd{I_\lambda}{x_0} - \frac{9\eta\lb 1+ \eta\rb}{2 \lb 1- \eta\rb^3} \pd{J_\lambda}{x_0} \rb, \\
+%   \pd[2]{\Bt}{x_0} =& 12 \epsilon \lb \frac{1 - \eta/2}{\lb 1 - \eta\rb^3} \pd[2]{I_\lambda}{x_0} - \frac{9\eta\lb 1+ \eta\rb}{2 \lb 1- \eta\rb^3} \pd[2]{J_\lambda}{x_0} \rb,\\
+%   \pdc{\Bt}{\eta}{x_0} =& 6 \epsilon \lb \frac{5 - 2\eta}{\lb 1 - \eta\rb^4} \pd{I_\lambda}{x_0} - \frac{9 \lb \eta^2 + 4\eta + 1\rb}{ \lb 1- \eta\rb^4} \pd{J_\lambda}{x_0} \rb,\\
+%   \pdcc{\Bt}{\eta}{x_0} =&  -36 \epsilon \lb \frac{\eta-3}{\lb 1 - \eta\rb^5} \pd{I_\lambda}{x_0} + \frac{3 \lb \eta^2 + 7\eta + 4\rb}{ \lb 1- \eta\rb^5} \pd{J_\lambda}{x_0} \rb
+% \end{align}
+Differentials of $k_I$ and $k_J$:
+\begin{align}
+  \pd{k_I}{\eta} &= \frac{5-2\eta}{\lb 1 - \eta\rb^4},\\
+  \pd[2]{k_I}{\eta} &= \frac{6\lb 3-\eta \rb}{\lb 1 - \eta\rb^5},\\
+  \pd[3]{k_I}{\eta} &= \frac{12\lb 7 - 2\eta\rb}{\lb 1 - \eta\rb^6},\\
+  \pd{k_J}{\eta} &= -\frac{9\lb \eta^2 + 4 \eta + 1 \rb}{\lb 1 - \eta\rb^4},\\
+  \pd[2]{k_J}{\eta} &= -\frac{18\lb \eta^2 + 7 \eta + 4 \rb}{\lb 1 - \eta\rb^5},\\
+  \pd[3]{k_J}{\eta} &= -\frac{54\lb \eta^2 + 10 \eta + 9 \rb}{\lb 1 - \eta\rb^6}.
+\end{align}
+
+Differentials of $I_\lambda$:
+\begin{align}
+  \label{eq:I_lam_diff}
+  \pd{I_\lambda}{x_0} =& x_0^{\lb 2-\lambda\rb},\\
+  \pd[2]{I_\lambda}{x_0} =& \lb 2-\lambda\rb x_0^{\lb 1-\lambda\rb}.
+\end{align}
+Differentials of $J_\lambda$:
+\begin{align}
+  \label{eq:J_lam_diff}
+  \pd{J_\lambda}{x_0} =& x_0^{\lb 3-\lambda\rb} - x_0^{\lb 2-\lambda\rb},\\
+  \pd[2]{J_\lambda}{x_0} =& \lb 3-\lambda\rb x_0^{\lb 2-\lambda\rb} - \lb 2-\lambda\rb x_0^{\lb 1-\lambda\rb}.
+\end{align}
+Differentials of $\at_1$ then becomes:
+\begin{align}
+  \label{eq:at_1_diff}
+  \pd{\at_1}{x_0} =& \mathcal{C} \left[ \lama x_0^{\lb\lama -1 \rb} \lb \aSlt{\lama} + \Bt_\lama  \rb - \lamr x_0^{\lb\lamr -1 \rb} \lb \aSlt{\lamr} + \Bt_\lamr  \rb \right. \nonumber \\
+  & \left. + x_0^{\lama} \pd{\Bt_\lama}{x_0}  - x_0^{\lamr} \pd{\Bt_\lamr}{x_0} \right],\\
+  \pd[2]{\at_1}{x_0} =& \mathcal{C} \left[ \lama \lb\lama -1 \rb x_0^{\lb\lama -2 \rb} \lb \aSlt{\lama} + \Bt_\lama  \rb - \lamr \lb\lamr -1 \rb x_0^{\lb\lamr -2 \rb} \lb \aSlt{\lamr} + \Bt_\lamr  \rb \right. \nonumber\\
+  & \left. + 2\lama x_0^{\lb\lama -1 \rb} \pd{\Bt_\lama}{x_0} - 2\lamr x_0^{\lb\lamr -1 \rb} \pd{\Bt_\lamr}{x_0} + x_0^{\lama} \pd[2]{\Bt_\lama}{x_0}  - x_0^{\lamr} \pd[2]{\Bt_\lamr}{x_0} \right],\\
+  \pd{\at_1}{\eta} =& \mathcal{C} \left[ x_0^{\lama} \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_\lama}{\eta}  \rb - x_0^{\lamr} \lb \pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_\lamr}{\eta}  \rb\right],\\
+  \pd[2]{\at_1}{\eta} =& \mathcal{C} \left[ x_0^{\lama} \lb \pd[2]{\aSlt{\lama}}{\eta} + \pd[2]{\Bt_\lama}{\eta}  \rb - x_0^{\lamr} \lb \pd[2]{\aSlt{\lamr}}{\eta} + \pd[2]{\Bt_\lamr}{\eta}  \rb\right],\\
+  \pd[3]{\at_1}{\eta} =& \mathcal{C} \left[ x_0^{\lama} \lb \pd[3]{\aSlt{\lama}}{\eta} + \pd[3]{\Bt_\lama}{\eta}  \rb - x_0^{\lamr} \lb \pd[3]{\aSlt{\lamr}}{\eta} + \pd[3]{\Bt_\lamr}{\eta}  \rb\right],\\
+  \pdc{\at_1}{\eta}{x_0} =& \mathcal{C} \left[ \lama x_0^{\lb\lama -1 \rb} \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_\lama}{\eta}  \rb - \lamr x_0^{\lb\lamr -1 \rb} \lb \pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_\lamr}{\eta}  \rb \right. \nonumber \\
+                   & \left. + x_0^{\lama} \pdc{\Bt_\lama}{x_0}{\eta}  - x_0^{\lamr} \pdc{\Bt_\lamr}{x_0}{\eta} \right],\\
+  \pdcc{\at_1}{\eta}{x_0} =& \mathcal{C} \left[ \lama x_0^{\lb\lama -1 \rb} \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_\lama}{\eta}  \rb - \lamr x_0^{\lb\lamr -1 \rb} \lb \pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_\lamr}{\eta}  \rb \right. \nonumber \\
+                   & \left. + x_0^{\lama} \pdc{\Bt_\lama}{x_0}{\eta}  - x_0^{\lamr} \pdc{\Bt_\lamr}{x_0}{\eta} \right], \\
+  \pdcc{\at_1}{x_0}{\eta} =& \mathcal{C} \left[ \lama \lb\lama -1 \rb x_0^{\lb\lama -2 \rb} \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_\lama}{\eta}  \rb - \lamr \lb\lamr -1 \rb x_0^{\lb\lamr -2 \rb} \lb \pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_\lamr}{\eta}  \rb \right. \nonumber\\
+  & \left. + 2\lama x_0^{\lb\lama -1 \rb} \pdc{\Bt_\lama}{x_0}{\eta} - 2\lamr x_0^{\lb\lamr -1 \rb} \pdc{\Bt_\lamr}{x_0}{\eta} + x_0^{\lama} \pdcc{\Bt_\lama}{x_0}{\eta}  - x_0^{\lamr} \pdcc{\Bt_\lamr}{x_0}{\eta} \right].
+\end{align}
+
+Differentials of $x_0$,
+\begin{align}
+  \label{eq:x0_diff}
+  \pd{x_0}{T} &= -\frac{x_0}{d}\pd{d}{T},\\
+  \pd[2]{x_0}{T} &= -\frac{2}{d}\pd{x_0}{T}\pd{d}{T} -\frac{x_0}{d}\pd[2]{d}{T}.
+\end{align}
+Using $e$ for $\eta$, and $x$ for $x_0$, and simplifying the
+differential notation ($a_T = \partial a/\partial T$), the $\eta$ and
+$x_0$ differential can be converted to $TV$ differentials. If we have
+$a(e(T,V),x(T))$, the differentials become,
+\begin{align}
+  a_{T} =& a_{e} e_{T} + a_{x} x_{T},\\
+  a_{TT} =& a_{ee} e_{T}^2 + 2 a_{ex} e_{T} x_{T} + a_{e} e_{TT} + a_{xx} x_{T}^2 + a_{x} x_{TT},\\
+  a_{V} =& a_{e} e_{V},\\
+  a_{VV} =& a_{ee} e_{V}^2 + a_{e} e_{VV},\\
+  a_{VVV} =& a_{eee} e_{V}^3 + 3 a_{ee} e_{V} e_{VV} + a_{e} e_{VVV},\\
+  a_{VT} =& a_{ee} e_{V}e_{T} + a_{e} e_{VT} + a_{ex} e_{V}x_{T},\\
+  a_{VVT} =& a_{eee} e_{V}^2e_{T} + a_{ee} e_{VV} e_{T} + 2 a_{ee} e_{V} e_{VT} + a_{e} e_{VVT}  + a_{eex} e_{V}^2x_{T} + a_{ex} e_{VV}x_{T},\\
+  a_{VTT} =& a_{eee} e_{V}e_{T}^2 + 2 a_{ee} e_{T}e_{VT} + 2 a_{eex} e_{V} e_{T} x_{T} + 2 a_{ex} e_{VT} x_{T} \nonumber \\ & + a_{ee} e_{TT} + a_{e} e_{VTT} + a_{exx} e_{V}x_{T}^2 + a_{ex} e_{V} x_{TT}.
+\end{align}
+\subsection{Second order monomer perturbation}
+The second order monomer perturbation is given as,
+\begin{align}
+  \label{eq:a_2}
+  a_2 =& \frac{1}{2} K^\hs \lb 1 + \chi \rb \epsilon \mathcal{C}^2 \left[
+         x_0^{2\lama}\lb \aS \lb \eta; 2\lama \rb + B \lb \eta; 2\lama \rb \rb \right.\\
+       &-2x_0^{\lama + \lamr}\lb \aS \lb \eta; \lama + \lamr \rb + B \lb \eta; \lama + \lamr \rb\rb \\
+  & \left. + x_0^{2\lamr}\lb \aS \lb \eta; 2\lamr \rb + B \lb \eta; 2\lamr \rb\rb
+  \right].
+\end{align}
+Here,
+\begin{equation}
+  \label{eq:K_HS}
+  K^\hs = \frac{\lb 1-\eta \rb^4}{1 + 4 \eta + 4 \eta^2 - 4 \eta^3 +  \eta^4},
+\end{equation}
+and,
+\begin{equation}
+  \label{eq:chi}
+  \chi = f_1\lb \alpha \rb \zb_x + f_2\lb \alpha \rb \lb \zb_x\rb^5 + f_3 \lb \alpha \rb\lb \zb_x\rb^8.
+\end{equation}
+Here $\zb_x$ is temperature independent and defined as,
+\begin{equation}
+  \label{eq:zxb}
+  \zb_x =  \eta x_0^3 = \frac{\pi\NA m_\seg \sigma^3}{ 6 V}.
+\end{equation}
+$\alpha$ is given as,
+\begin{equation}
+  \label{eq:alpha}
+  \alpha = \mathcal{C} \lb \frac{1}{\lama - 3} - \frac{1}{\lamr - 3} \rb,
+\end{equation}
+and $f_i\lb \alpha \rb$ is given from,
+\begin{equation}
+  \label{eq:f_alpha}
+  f_i\lb \alpha \rb = \frac{\sum_{n=0}^{n=3} \phi_{i,n} \alpha^n}{1 + \sum_{n=4}^{n=6} \phi_{i,n} \alpha^{n-3}}  \quad i \in 1,\dots,6.
+\end{equation}
+
+\begin{table}[htb]
+  \center
+  \begin{tabular}{lrrrrrrr}
+    \hline
+    $n$ & $\phi_{1,n}$ & $\phi_{2,n}$ & $\phi_{3,n}$ & $\phi_{4,n}$ & $\phi_{5,n}$ & $\phi_{6,n}$ & $\phi_{7,n}$  \\
+    \hline
+    0 & 7.5365557 & -359.44 & 1550.9 & -1.19932 & -1911.28 & 9236.9 & 10\\
+    1 & -37.60463 & 1825.6 & -5070.1 & 9.063632 & 21390.175 & -129430 & 10\\
+    2 & 71.745953 & -3168.0 & 6534.6 & -17.9482 & -51320.7 & 357230 & 0.57 \\
+    3 & -46.83552 & 1884.2 & -3288.7 & 11.34027 & 37064.54 & -315530 & -6.7 \\
+    4 & -2.467982 & -0.82376 & -2.7171 & 20.52142 & 1103.742 & 1390.2 & -8 \\
+    5 & -0.50272 & -3.1935 & 2.0883 & -56.6377 & -3264.61 & -4518.2 & \dots \\
+    6 & 8.0956883 & 3.7090 & 0 & 40.53683 & 2556.181 & 4241.6 & \dots \\
+    \hline
+  \end{tabular}
+  \caption{$\phi_{i,n}$ coefficients}
+\end{table}
+
+\subsubsection{Differential terms}
+Differentials of $K^\hs$:
+\begin{align}
+  \label{eq:K_hs_diff}
+  \pd{K^\hs}{\eta} =& \frac{4 \lb \eta^2 - 5 \eta - 2 \rb \lb 1 - \eta \rb^3}{\lb 1 + 4 \eta + 4 \eta^2 - 4 \eta^3 +  \eta^4\rb^2},\\
+  \pd[2]{K^\hs}{\eta} =& \frac{4 \lb 3 \eta^6 - 30 \eta^5 + 77 \eta^4 - 80 \eta^3 + 39 \eta^2 + 82 \eta + 17 \rb \lb 1 - \eta \rb^2}{\lb 1 + 4 \eta + 4 \eta^2 - 4 \eta^3 +  \eta^4\rb^3},\\
+  \pd[3]{K^\hs}{\eta} =& \frac{48 \lb \eta^{10} - 15 \eta^9 + 77 \eta^8 - 210 \eta^7 + 372 \eta^6 - 352 \eta^5 + 238 \eta^3 - 109 \eta^2 - 97 \eta - 13  \rb \lb 1 - \eta \rb}{\lb 1 + 4 \eta + 4 \eta^2 - 4 \eta^3 +  \eta^4\rb^4}.
+\end{align}
+Differentials of $\chi$:
+\begin{align}
+  \label{eq:chi_diff}
+  \pd{\chi}{\zb_x} =& f_1\lb \alpha \rb + 5 f_2\lb \alpha \rb \zb_x^4 + 8 f_3 \lb \alpha \rb \zb_x^7,\\
+  \pd[2]{\chi}{\zb_x} =& 20 f_2\lb \alpha \rb \zb_x^3 + 56 f_3 \lb \alpha \rb \zb_x^6, \\
+  \pd[3]{\chi}{\zb_x} =& 60 f_2\lb \alpha \rb \zb_x^2 + 336 f_3 \lb \alpha \rb \zb_x^5.
+\end{align}
+The $\zb_x$ differentials become,
+\begin{align}
+  \label{eq:zxb_diff}
+  \pd{\zb_x}{V} =& -\frac{\zb_x}{V}, \\
+  \pd[2]{\zb_x}{V} =& \frac{2\zb_x}{V^2}, \\
+  \pd[3]{\zb_x}{V}  =& -\frac{6\zb_x}{V^3}.
+\end{align}
+$a_2$ is split before differentiating, as the second and third order
+differentials will become ugly. Since $\chi$ is a function of $\zb_x$,
+and not $\eta$ and $x_0$, it will is best to separate the
+differentials from $\chi$ and the rest of the terms.
+\begin{align}
+  \label{eq:a_2_split}
+  a_2 =& a_{2,1}a_{2,2},\\
+  a_{2,1} =& \frac{1}{2} K^\hs \lb 1 + \chi \rb \epsilon \mathcal{C}^2 ,\\
+  a_{2,2} =& x_0^{2\lama}\lb \aSl{\lb 2\lama\rb} + B_{\lb 2\lama\rb}\rb
+       -2x_0^{\lama + \lamr}\lb \aSl{\lb\lama + \lamr\rb}  + B_{\lb\lama + \lamr\rb}\rb
+             + x_0^{2\lamr}\lb \aSl{\lb 2\lamr\rb} + B_{\lb 2\lamr\rb}\rb,\\
+  \ab_{2,1} =& \frac{a_{2,1}}{1 + \chi},\\
+  a_{2,\chi} =& \ab_{2,1}a_{2,2}.\\
+\end{align}
+
+The differentials of $\ab_{2,1} $ simply becomes:
+\begin{align}
+  \label{eq:ab_21_diff}
+  \pd{\ab_{2,1}}{\eta} =& \frac{\epsilon \mathcal{C}^2}{2} \pd{K^\hs}{\eta},\\
+  \pd[2]{\ab_{2,1}}{\eta} =& \frac{\epsilon \mathcal{C}^2}{2} \pd[2]{K^\hs}{\eta},\\
+  \pd[3]{\ab_{2,1}}{\eta} =& \frac{\epsilon \mathcal{C}^2}{2} \pd[3]{K^\hs}{\eta}.
+\end{align}
+Differentials of $a_{2,2}$ then becomes:
+\begin{align}
+  \label{eq:a_22_diff}
+  \pd{a_{2,2}}{x_0} =& 2\lama x_0^{\lb 2\lama - 1\rb}\lb \aSl{\lb 2\lama\rb} + B_{\lb 2\lama\rb}\rb
+       -2\lb\lama + \lamr\rb x_0^{\lb\lama + \lamr - 1\rb}\lb \aSl{\lb\lama + \lamr\rb}  + B_{\lb\lama + \lamr\rb}\rb \nonumber \\&
+   + 2\lamr  x_0^{\lb 2\lamr -1 \rb}\lb \aSl{\lb 2\lamr\rb} + B_{\lb 2\lamr\rb}\rb
+  \nonumber \\ & +
+         x_0^{2\lama} \pd{B_{\lb 2\lama\rb}}{x_0}  -2x_0^{\lama + \lamr}\pd{B_{\lb\lama + \lamr\rb}}{x_0}
+   + x_0^{2\lamr}\pd{B_{\lb 2\lamr\rb}}{x_0},\\
+  \pd[2]{a_{2,2}}{x_0} =& 2\lama \lb 2\lama - 1\rb x_0^{\lb 2\lama - 2\rb}\lb \aSl{\lb 2\lama\rb} + B_{\lb 2\lama\rb}\rb \nonumber \\
+       &-2\lb\lama + \lamr\rb \lb\lama + \lamr - 1\rb x_0^{\lb\lama + \lamr - 2\rb}\lb \aSl{\lb\lama + \lamr\rb}  + B_{\lb\lama + \lamr\rb}\rb \nonumber \\&
+   + 2\lamr \lb 2\lamr -1 \rb x_0^{\lb 2\lamr -2 \rb}\lb \aSl{\lb 2\lamr\rb} + B_{\lb 2\lamr\rb}\rb
+  \nonumber \\ & +
+         x_0^{2\lama} \pd[2]{B_{\lb 2\lama\rb}}{x_0}  -2x_0^{\lama + \lamr}\pd[2]{B_{\lb\lama + \lamr\rb}}{x_0}
+                 + x_0^{2\lamr}\pd[2]{B_{\lb 2\lamr\rb}}{x_0} \nonumber \\
+  &+ 4\lama x_0^{\lb 2\lama - 1\rb} \pd{B_{\lb 2\lama\rb}}{x_0}
+       -4\lb\lama + \lamr\rb x_0^{\lb\lama + \lamr - 1\rb} \pd{B_{\lb\lama + \lamr\rb}}{x_0} + 4\lamr  x_0^{\lb 2\lamr -1 \rb}\pd{B_{\lb 2\lamr\rb}}{x_0} \\
+  \pd{a_{2,2}}{\eta} =& x_0^{2\lama}\lb \pd{\aSl{\lb 2\lama\rb}}{\eta} + \pd{B_{\lb 2\lama\rb}}{\eta}\rb
+       -2x_0^{\lama + \lamr}\lb \pd{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\
+  & + x_0^{2\lamr}\lb \pd{\aSl{\lb 2\lamr\rb}}{\eta} + \pd{B_{\lb 2\lamr\rb}}{\eta}\rb,\\
+  \pd[2]{a_{2,2}}{\eta} =& x_0^{2\lama}\lb \pd[2]{\aSl{\lb 2\lama\rb}}{\eta} + \pd[2]{B_{\lb 2\lama\rb}}{\eta}\rb
+       -2x_0^{\lama + \lamr}\lb \pd[2]{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd[2]{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\
+                     & + x_0^{2\lamr}\lb \pd[2]{\aSl{\lb 2\lamr\rb}}{\eta} + \pd[2]{B_{\lb 2\lamr\rb}}{\eta}\rb,\\
+    \pd[3]{a_{2,2}}{\eta} =& x_0^{2\lama}\lb \pd[3]{\aSl{\lb 2\lama\rb}}{\eta} + \pd[3]{B_{\lb 2\lama\rb}}{\eta}\rb
+       -2x_0^{\lama + \lamr}\lb \pd[3]{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd[3]{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\
+  & + x_0^{2\lamr}\lb \pd[3]{\aSl{\lb 2\lamr\rb}}{\eta} + \pd[3]{B_{\lb 2\lamr\rb}}{\eta}\rb,\\
+  \pdc{a_{2,2}}{\eta}{x_0} =& 2\lama x_0^{\lb 2\lama - 1\rb}\lb \pd{\aSl{\lb 2\lama\rb}}{\eta} + \pd{B_{\lb 2\lama\rb}}{\eta}\rb
+       -2\lb\lama + \lamr\rb x_0^{\lb\lama + \lamr - 1\rb}\lb \pd{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\&
+   + 2\lamr  x_0^{\lb 2\lamr -1 \rb}\lb \pd{\aSl{\lb 2\lamr\rb}}{\eta} + \pd{B_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ &+ x_0^{2\lama} \pdc{B_{\lb 2\lama\rb}}{x_0}{\eta}  -2x_0^{\lama + \lamr}\pdc{B_{\lb\lama + \lamr\rb}}{x_0}{\eta}
+   + x_0^{2\lamr}\pdc{B_{\lb 2\lamr\rb}}{x_0}{\eta},
+\end{align}
+
+\begin{align}
+  \label{eq:a_22_diff_2}
+    \pdcc{a_{2,2}}{\eta}{x_0} =& 2\lama x_0^{\lb 2\lama - 1\rb}\lb \pd[2]{\aSl{\lb 2\lama\rb}}{\eta} + \pd[2]{B_{\lb 2\lama\rb}}{\eta}\rb
+       -2\lb\lama + \lamr\rb x_0^{\lb\lama + \lamr - 1\rb}\lb \pd[2]{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd[2]{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\&
+   + 2\lamr  x_0^{\lb 2\lamr -1 \rb}\lb \pd[2]{\aSl{\lb 2\lamr\rb}}{\eta} + \pd[2]{B_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ &+ x_0^{2\lama} \pdcc{B_{\lb 2\lama\rb}}{\eta}{x_0}  -2x_0^{\lama + \lamr}\pdcc{B_{\lb\lama + \lamr\rb}}{\eta}{x_0}
+                                                                                                                              + x_0^{2\lamr}\pdcc{B_{\lb 2\lamr\rb}}{\eta}{x_0},\\
+  \pdcc{a_{2,2}}{x_0}{\eta} =& 2\lama \lb 2\lama - 1\rb x_0^{\lb 2\lama - 2\rb}\lb \pd{\aSl{\lb 2\lama\rb}}{\eta} + \pd{B_{\lb 2\lama\rb}}{\eta}\rb
+       \nonumber \\& -2\lb\lama + \lamr\rb \lb\lama + \lamr - 1\rb x_0^{\lb\lama + \lamr - 2\rb}\lb \pd{\aSl{\lb\lama + \lamr\rb}}{\eta}  + \pd{B_{\lb\lama + \lamr\rb}}{\eta}\rb \nonumber \\&
+   + 2\lamr \lb 2\lamr -1 \rb  x_0^{\lb 2\lamr -2 \rb}\lb \pd{\aSl{\lb 2\lamr\rb}}{\eta} + \pd{B_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ &+ 4\lama x_0^{\lb 2\lama-1\rb} \pdc{B_{\lb 2\lama\rb}}{x_0}{\eta}  -4\lb \lama + \lamr \rb x_0^{\lb \lama + \lamr -1 \rb}\pdc{B_{\lb\lama + \lamr\rb}}{x_0}{\eta}
+   + 4\lamr x_0^{\lb 2\lamr -1 \rb}\pdc{B_{\lb 2\lamr\rb}}{x_0}{\eta} \nonumber \\ &+ x_0^{2\lama} \pdcc{B_{\lb 2\lama\rb}}{x_0}{\eta}  -2x_0^{\lama + \lamr}\pdcc{B_{\lb\lama + \lamr\rb}}{x_0}{\eta}
+   + x_0^{2\lamr}\pdcc{B_{\lb 2\lamr\rb}}{x_0}{\eta}.
+\end{align}
+
+
+Combining $\ab_{2,1}$ and $a_{2,2}$, using $a_{2,\chi} = \ab_{2,1}a_{2,2}$,
+\begin{align}
+  \label{eq:ab_21_a_22_diff}
+  \pd{a_{2,\chi}}{x_0} =& \ab_{2,1}\pd{a_{2,2}}{x_0}, \\
+  \pd[2]{a_{2,\chi}}{x_0} =& \ab_{2,1}\pd[2]{a_{2,2}}{x_0}, \\
+  \pd{a_{2,\chi}}{\eta} =& \ab_{2,1}\pd{a_{2,2}}{\eta} + a_{2,2}\pd{\ab_{2,1}}{\eta}, \\
+  \pd[2]{a_{2,\chi}}{\eta} =& \ab_{2,1}\pd[2]{a_{2,2}}{\eta} + 2\pd{\ab_{2,1}}{\eta}\pd{a_{2,2}}{\eta} + a_{2,2}\pd[2]{\ab_{2,1}}{\eta}, \\
+  \pd[3]{a_{2,\chi}}{\eta} =& \ab_{2,1}\pd[3]{a_{2,2}}{\eta} + 3\pd[2]{\ab_{2,1}}{\eta}\pd{a_{2,2}}{\eta} + 3\pd{\ab_{2,1}}{\eta}\pd[2]{a_{2,2}}{\eta} + a_{2,2}\pd[3]{\ab_{2,1}}{\eta}, \\
+  \pdc{a_{2,\chi}}{\eta}{x_0} =& \pd{\ab_{2,1}}{\eta}\pd{a_{2,2}}{x_0} + \ab_{2,1}\pdc{a_{2,2}}{x_0}{\eta}, \\
+  \pdcc{a_{2,\chi}}{\eta}{x_0} =& \ab_{2,1}\pdcc{a_{2,2}}{\eta}{x_0} + 2\pd{\ab_{2,1}}{\eta}\pdc{a_{2,2}}{\eta}{x_0} + a_{2,2}\pdcc{\ab_{2,1}}{\eta}{x_0}. \\
+\end{align}
+
+The $a_2$ differentials become,
+\begin{align}
+  \label{eq:a_2_split_diff}
+  \pd{a_2}{T} =& \lb 1 + \chi \rb \pd{a_{2,\chi}}{T}, \\
+  \pd[2]{a_2}{T} =& \lb 1 + \chi \rb \pd[2]{a_{2,\chi}}{T}, \\
+  \pd{a_2}{V} =& \lb 1 + \chi \rb \pd{a_{2,\chi}}{V} + a_{2,\chi} \pd{\chi}{V}, \\
+  \pd[2]{a_2}{V} =& \lb 1 + \chi \rb \pd[2]{a_{2,\chi}}{V} + 2\pd{a_{2,\chi}}{V} \pd{\chi}{V} + a_{2,\chi} \pd[2]{\chi}{V}, \\
+  \pd[3]{a_2}{V} =& \lb 1 + \chi \rb \pd[3]{a_{2,\chi}}{V} + 3\pd[2]{a_{2,\chi}}{V} \pd{\chi}{V} + 3\pd{a_{2,\chi}}{V} \pd[2]{\chi}{V} + a_{2,\chi} \pd[3]{\chi}{V}, \\
+  \pdc{a_2}{T}{V} =& \lb 1 + \chi \rb \pdc{a_{2,\chi}}{T}{V} + \pd{\chi}{V} \pd{a_{2,\chi}}{T}, \\
+  \pdcc{a_2}{V}{T} =& \lb 1 + \chi \rb \pdcc{a_{2,\chi}}{V}{T} + 2\pdc{a_{2,\chi}}{V}{T} \pd{\chi}{V} + \pd{a_{2,\chi}}{T} \pd[2]{\chi}{V}.
+\end{align}
+
+\subsection{Third order monomer perturbation}
+The second order monomer perturbation is given as,
+\begin{equation}
+  \label{eq:a_3}
+  a_3 = -\epsilon^3 f_4 \lb \alpha \rb \zb_x \exp \lb f_5 \lb \alpha \rb \zb_x + f_6 \lb \alpha \rb \zb_x^2\rb.
+\end{equation}
+
+
+\subsubsection{Differential terms}
+
+Differentials of $a_3$ then becomes:
+\begin{align}
+  \label{eq:a_3_diff}
+  \pd{a_3}{\zb_x} =& a_3\left[\frac{1}{\zb_x} + f_5  + 2 f_6 \zb_x \right], \\
+  \pd[2]{a_3}{\zb_x} =& a_3\left[\frac{2f_5}{\zb_x}  + 6f_6 + \lb f_5  + 2 f_6 \zb_x \rb^2 \right].
+\end{align}
+
+% \begin{align}
+%   \label{eq:a_3_diff}
+%   \pd{a_3}{x_0} =& \frac{3 a_3}{x_0} + a_3 \lb 3 f_5 \lb \alpha \rb \eta x_0^2 + 6 f_6 \lb \alpha \rb \eta^2 x_0^5\rb,\\
+%   \pd[2]{a_3}{x_0} =& \frac{6 a_3}{x_0^2} + \frac{6 a_3}{x_0} \lb 3 f_5 \lb \alpha \rb \eta x_0^2 + 6 f_6 \lb \alpha \rb \eta^2 x_0^5\rb + a_3 6 \lb f_5 \lb \alpha \rb \eta x_0 + 30 f_6 \lb \alpha \rb \eta^2 x_0^4\rb,\\
+%   \pd{a_3}{\eta} =& \frac{a_3}{\eta} + a_3 \lb f_5 \lb \alpha \rb x_0^3 + 2 f_6 \lb \alpha \rb \eta x_0^6\rb,\\
+%   \pd[2]{a_3}{\eta} =&  \frac{2a_3}{\eta} \lb f_5 \lb \alpha \rb x_0^3 + 2 f_6 \lb \alpha \rb \eta x_0^6\rb + 2 a_3 f_6 \lb \alpha \rb x_0^6,\\
+%   \pdc{a_3}{\eta}{x_0} =& \frac{3 a_3}{\eta x_0} + \frac{a_3}{\eta}\lb 3 f_5 \lb \alpha \rb \eta x_0^2 + 6 f_6 \lb \alpha \rb \eta^2 x_0^5\rb +
+%                         \frac{3a_3}{x_0}\lb f_5 \lb \alpha \rb x_0^3 + 2 f_6 \lb \alpha \rb \eta x_0^6\rb  \nonumber \\
+%                  &  + a_3 \lb f_5 \lb \alpha \rb x_0^3 + 2 f_6 \lb \alpha \rb \eta x_0^6\rb \lb 3 f_5 \lb \alpha \rb \eta x_0^2 + 6 f_6 \lb \alpha \rb \eta^2 x_0^5\rb \nonumber \\
+%   & + a_3 \lb  3 f_5 \lb \alpha \rb x_0^2 + 12 f_6 \lb \alpha \rb \eta x_0^5\rb.
+% \end{align}
+
+\subsection{Chains of monomer Mie segments}
+The Mie segments are assumed to be tangentially bounded at $r=\sigma$ from $m_\seg$ segments. The reduced Helmholtz contribution for the chain formation is given by the Wertheim TPT1 from,
+\begin{equation}
+  \label{eq:a_chain}
+  a^\chain = -\lb m_\seg -1\rb \ln \lb g^\mie \lb \sigma \rb \rb,
+\end{equation}
+where $g^\mie$ is the RDF at contact,
+\begin{equation}
+  \label{eq:g_mie}
+  g^\mie \lb \sigma \rb = g^\hs_d \lb \sigma \rb \exp \left[ \frac{\beta \epsilon g_1 \lb \sigma \rb + \lb \beta \epsilon \rb^2 g_2 \lb \sigma \rb}{g^\hs_d \lb \sigma \rb} \right].
+\end{equation}
+Here,
+\begin{equation}
+  \label{eq:g_hs}
+  g^\hs_d \lb \sigma \rb = \exp \lb k_0 + k_1 x_0 + k_2 x_0^2 + k_3 x_0^3\rb,
+\end{equation}
+with
+\begin{align}
+  \label{eq:k_0}
+  k_0 &= - \ln \lb 1- \eta\rb + \frac{42\eta - 39\eta^2 + 9 \eta^3 - 2 \eta^4}{6 \lb 1- \eta\rb^3},\\
+  \label{eq:k_1}
+  k_1 &= \frac{ \eta^4 + 6 \eta^2 -12 \eta}{2 \lb 1- \eta\rb^3},\\
+  \label{eq:k_2}
+  k_2 &= \frac{-3 \eta^2}{8 \lb 1- \eta\rb^2},\\
+  \label{eq:k_3}
+  k_3 &= \frac{-\eta^4 + 3 \eta^2 + \ 3 \eta}{6 \lb 1- \eta\rb^3}.
+\end{align}
+For $g_1$ we have,
+\begin{align}
+  \label{eq:g_1}
+  g_1 \lb \sigma \rb =& \frac{1}{2 \pi \epsilon d^3} \left[3 \pd{a_1}{\rho_\seg}
+    - \mathcal{C} \lama x_0^\lama \frac{\aS\lb \eta; \lama\rb + B\lb\eta;\lama \rb}{\rho_\seg}
+                        + \mathcal{C} \lamr x_0^\lamr \frac{\aS\lb \eta; \lamr\rb + B\lb\eta;\lamr \rb}{\rho_\seg}\right],\nonumber \\
+  =& \frac{1}{12 \epsilon} \left[3 \pd{a_1}{\rho_\seg}\frac{\rho_\seg}{\eta}
+    - \mathcal{C} \lama x_0^\lama \frac{\aS\lb \eta; \lama\rb + B\lb\eta;\lama \rb}{\eta}
+     + \mathcal{C} \lamr x_0^\lamr \frac{\aS\lb \eta; \lamr\rb + B\lb\eta;\lamr \rb}{\eta}\right],\nonumber\\
+    =& \frac{1}{12 \epsilon} \left[-3 \pd{a_1}{V}\frac{V}{\eta}
+    - \mathcal{C} \lama x_0^\lama \lb\aSt\lb \eta; \lama\rb + \Bt\lb\eta;\lama \rb \rb
+  + \mathcal{C} \lamr x_0^\lamr \lb \aSt\lb \eta; \lamr\rb + \Bt\lb\eta;\lamr \rb\rb\right].
+\end{align}
+For $g_2$ we have,
+\begin{equation}
+  \label{eq:g_2}
+  g_2 \lb \sigma \rb = \lb 1 + \gamc \rb g_2^\mca \lb \sigma \rb,
+\end{equation}
+were
+\begin{align}
+  \label{eq:g_2_mca}
+  g_2^\mca \lb \sigma \rb =& \frac{1}{2 \pi \epsilon^2 d^3} \left[ 3 \pd{\lb\frac{a_2}{1+\chi}\rb}{\rho_\seg} + \epsilon K^\hs \mathcal{C}^2 \lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \frac{\aS\lb \eta; \lamr + \lama\rb + B\lb\eta;\lamr + \lama \rb}{\rho_\seg} \right. \nonumber \\
+                           & - \epsilon K^\hs \mathcal{C}^2 \lama x_0^{2\lama} \frac{\aS\lb \eta; 2\lama\rb + B\lb\eta;2\lama \rb}{\rho_\seg}  \nonumber \\
+                           & \left. - \epsilon K^\hs \mathcal{C}^2 \lamr x_0^{2\lamr} \frac{\aS\lb \eta; 2\lamr\rb + B\lb\eta;2\lamr \rb}{\rho_\seg} \vphantom{\pd{\lb\frac{a_2}{1+\chi}\rb}{\rho_\seg}} \right],\\
+  =& \frac{1}{12 \epsilon^2} \left[ -3 \pd{a_{2,\chi}}{V}\frac{V}{\eta} + \epsilon K^\hs \mathcal{C}^2 \lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \lb\aSt\lb \eta; \lamr + \lama\rb + \Bt\lb\eta;\lamr + \lama \rb\rb \right. \nonumber \\
+    &  - \epsilon K^\hs \mathcal{C}^2 \lama x_0^{2\lama} \lb\aSt\lb \eta; 2\lama\rb + \Bt\lb\eta;2\lama \rb\rb \nonumber \\
+    &\left. - \epsilon K^\hs \mathcal{C}^2 \lamr x_0^{2\lamr} \lb\aSt\lb \eta; 2\lamr\rb + \Bt\lb\eta;2\lamr \rb\rb \vphantom{\pd{a_{2,\chi}}{V}\frac{V}{\eta}} \right]
+\end{align}
+and,
+\begin{equation}
+  \label{eq:gamma_C}
+  \gamc = \phi_{7,0} \lb 1 - \tanh \lb \phi_{7,1} \lb \phi_{7,2} - \alpha\rb \rb\rb \zb_x \theta \exp \lb \phi_{7,3}\zb_x + \phi_{7,4} \zb_x^2 \rb.
+\end{equation}
+$\theta$ is given as
+\begin{equation}
+  \label{eq:theta}
+  \theta = \exp \lb \beta \epsilon \rb - 1.
+\end{equation}
+\subsubsection{Differentials}
+Before differentiating $g_1$ and $g_2^\mca$ is split as follows,
+\begin{align}
+  \label{eq:g_1_split}
+  g_1 =& g_{1,1} + g_{1,2},\\
+  g_{1,1} =& -\frac{V}{4 \epsilon \eta}\pd{a_1}{V},\\
+  g_{1,2} =& \frac{\mathcal{C}}{12 \epsilon} \left[
+    -  \lama x_0^\lama \lb\aSt\lb \eta; \lama\rb + \Bt\lb\eta;\lama \rb \rb
+  + \lamr x_0^\lamr \lb \aSt\lb \eta; \lamr\rb + \Bt\lb\eta;\lamr \rb\rb\right].
+\end{align}
+\begin{align}
+  \label{eq:g_2_split}
+  g_2^\mca =& g_{2,1}^\mca + K^\hs g_{2,2}^\mca,\\
+  g_{2,1}^\mca =& -\frac{V}{4 \epsilon^2 \eta}\pd{a_{2,\chi}}{V},\\
+  g_{2,2}^\mca =& \frac{\mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\frac{\mathcal{C}^2 }{12 \epsilon}}  \right. - \lamr x_0^{2\lamr} \lb\aSt\lb \eta; 2\lamr\rb + \Bt\lb\eta;2\lamr \rb\rb \vphantom{\frac{\mathcal{C}^2 }{12 \epsilon}} \nonumber \\ & + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \lb\aSt\lb \eta; \lamr + \lama\rb + \Bt\lb\eta;\lamr + \lama \rb\rb} \nonumber \\
+ &\left. - \lama x_0^{2\lama} \lb\aSt\lb \eta; 2\lama\rb + \Bt\lb\eta;2\lama \rb\rb \vphantom{\frac{ \mathcal{C}^2 }{12 \epsilon}} \right].
+\end{align}
+Differentials for $k_i$,
+\begin{align}
+  \label{eq:k_0_diff}
+  \pd{k_0}{\eta} &=  \frac{\eta^4 - 7 \eta^3 + 3 \eta^2 -6\eta + 24}{3 \lb 1- \eta\rb^4},\\
+  \pd[2]{k_0}{\eta} &= - \frac{\eta^3 + 5 \eta^2 + 4\eta - 30}{\lb 1- \eta\rb^5},\\
+  \label{eq:k_1_diff}
+  \pd{k_1}{\eta} &= \frac{ -12 - 12 \eta + 6 \eta^2 + 4 \eta^3 - \eta^4}{2 \lb 1- \eta\rb^4},\\
+  \pd[2]{k_1}{\eta} &= \frac{ (-6 \lb 5 + 2 \eta - 2 \eta^2\rb}{\lb 1- \eta\rb^5},\\
+  \label{eq:k_2_diff}
+  \pd{k_2}{\eta} &= \frac{-3 \eta}{4 \lb 1- \eta\rb^3},\\
+  \pd[2]{k_2}{\eta} &= -\frac{3\lb 2\eta + 1 \rb}{4 \lb 1- \eta\rb^4},\\
+  \label{eq:k_3_diff}
+  \pd{k_3}{\eta} &= \frac{3 + 12 \eta + 3 \eta^2 - 4 \eta^3 + \eta^4}{6 \lb 1- \eta\rb^4},\\
+  \pd[2]{k_3}{\eta} &= -\frac{-4 - 7\eta + \eta^2}{\lb 1- \eta\rb^5}.
+\end{align}
+The differentials for $g^\hs_d $ becomes,
+\begin{align}
+  \label{eq:g_hs_diff}
+  \pd{g^\hs_d}{\eta} =& g^\hs_d \lb \pd{k_0}{\eta} + \pd{k_1}{\eta} x_0 + \pd{k_2}{\eta} x_0^2 + \pd{k_3}{\eta} x_0^3\rb,\\
+  \pd[2]{g^\hs_d}{\eta} =& g^\hs_d \left[\lb \pd{k_0}{\eta} + \pd{k_1}{\eta} x_0 + \pd{k_2}{\eta} x_0^2 + \pd{k_3}{\eta} x_0^3\rb^2 \right. \nonumber \\ &\left. + \lb \pd[2]{k_0}{\eta} + \pd[2]{k_1}{\eta} x_0 + \pd[2]{k_2}{\eta} x_0^2 + \pd[2]{k_3}{\eta} x_0^3\rb \right],\\
+  \pd{g^\hs_d}{x_0} =& g^\hs_d \lb k_1 + 2 k_2 x_0 + 3k_3 x_0^2\rb,\\
+  \pd{g^\hs_d}{x_0} =& g^\hs_d \left[ \lb k_1 + 2 k_2 x_0 + 3k_3 x_0^2\rb^2 + \lb 2 k_2 + 6k_3 x_0\rb \right],\\
+  \pdc{g^\hs_d}{x_0}{\eta} =& g^\hs_d \left[ \lb \pd{k_0}{\eta} + \pd{k_1}{\eta} x_0 + \pd{k_2}{\eta} x_0^2 + \pd{k_3}{\eta} x_0^3\rb\lb k_1 + 2 k_2 x_0 + 3k_3 x_0^2\rb \right. \nonumber \\ & \left. + \lb \pd{k_1}{\eta} + 2 \pd{k_2}{\eta} x_0 + 3\pd{k_3}{\eta} x_0^2\rb \right].
+\end{align}
+Differentiating $g_{1,1}$,
+\begin{align}
+  \label{eq:g_1_1_diff_V}
+  % \frac{V}{4 \epsilon \eta}\pd{a_1}{V}
+  %\frac{3 V^2}{2 \epsilon \pi N_\seg d^3}\pd{a_1}{V}
+  \pd{g_{1,1}}{V}  =& -\frac{3 V^2}{2 \epsilon \pi N_\seg d^3} \lb \frac{2}{V} \pd{a_1}{V} +  \pd[2]{a_1}{V}\rb,\\
+  \pd[2]{g_{1,1}}{V}  =& -\frac{3 V^2}{2 \epsilon \pi N_\seg d^3} \lb \frac{2}{V^2} \pd{a_1}{V} +  \frac{4}{V} \pd[2]{a_1}{V} +  \pd[3]{a_1}{V}\rb,\\
+  \pd{g_{1,1}}{T}  =& -\frac{3 V^2}{2 \epsilon \pi N_\seg d^3} \pdc{a_1}{V}{T} - \frac{3 g_{1,1}}{d}\pd{d}{T},\\
+  \pd[2]{g_{1,1}}{T}  =& -\frac{3 V^2}{2 \epsilon \pi N_\seg d^3} \pdcc{a_1}{T}{V} - \frac{6 g_{1,1}}{d^2}\lb \pd{d}{T} \rb^2 - \frac{3 g_{1,1}}{d} \pd[2]{d}{T} - \frac{6}{d} \pd{d}{T}\pd{g_{1,1}}{T} ,\\
+  \pdc{g_{1,1}}{T}{V}  =& -\frac{3 V^2}{2 \epsilon \pi N_\seg d^3} \lb \frac{2}{V}\pdc{a_1}{V}{T} + \pdcc{a_1}{V}{T}\rb + \frac{3}{d}\pd{d}{T}\pd{g_{1,1}}{V}. \label{eq:g_1_1_diff_VT}
+\end{align}
+Differentiating $g_{1,2}$,
+\begin{align}
+  \label{eq:g_1_2_diff}
+  \pd{g_{1,2}}{\eta}  =& \frac{\mathcal{C}}{12 \epsilon} \left[
+    - \lama x_0^\lama \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_{\lama}}{\eta}\rb
+  + \lamr x_0^\lamr \lb\pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_{\lamr}}{\eta}\rb\right],\\
+    \pd[2]{g_{1,2}}{\eta}  =& \frac{\mathcal{C}}{12 \epsilon} \left[
+    - \lama x_0^\lama \lb \pd[2]{\aSlt{\lama}}{\eta} + \pd[2]{\Bt_{\lama}}{\eta}\rb
+  + \lamr x_0^\lamr \lb\pd[2]{\aSlt{\lamr}}{\eta} + \pd[2]{\Bt_{\lamr}}{\eta}\rb\right],\\
+  \pd{g_{1,2}}{x_0}  =& \frac{\mathcal{C}}{12\epsilon} \left[
+    - \lama x_0^\lama \lb \pd{\aSlt{\lama}}{x_0} + \pd{\Bt_{\lama}}{x_0}\rb
+                                     + \lamr x_0^\lamr \lb\pd{\aSlt{\lamr}}{x_0} + \pd{\Bt_{\lamr}}{x_0}\rb \right.\nonumber \\
+  & \left. - \lama^2 x_0^{\lb\lama-1\rb} \lb\aSlt{\lama} + \Bt_{\lama}\rb
+    + \lamr^2 x_0^{\lb \lamr-1 \rb} \lb\aSlt{\lamr} + \Bt_{\lamr}\rb \vphantom{\pd{\aSlt{\lama}}{x_0}}\right],\\
+  \pd[2]{g_{1,2}}{x_0}  =& \frac{\mathcal{C}}{12 \epsilon} \left[
+    - \lama x_0^\lama \lb \pd[2]{\aSlt{\lama}}{x_0} + \pd[2]{\Bt_{\lama}}{x_0}\rb
+                                     + \lamr x_0^\lamr \lb\pd[2]{\aSlt{\lamr}}{x_0} + \pd[2]{\Bt_{\lamr}}{x_0}\rb \right.\nonumber \\
+  &  - \lama^2\lb\lama-1\rb x_0^{\lb\lama-2\rb} \lb\aSlt{\lama} + \Bt_{\lama}\rb
+    + \lamr^2 \lb \lamr-1 \rb x_0^{\lb \lamr-2 \rb} \lb\aSlt{\lamr} + \Bt_{\lamr}\rb \vphantom{\pd{\aSlt{\lama}}{x_0}} \nonumber\\
+  &\left. - 2\lama^2 x_0^{\lb \lama -1 \rb} \lb \pd{\aSlt{\lama}}{x_0} + \pd{\Bt_{\lama}}{x_0}\rb
+    + 2\lamr^2 x_0^{\lb \lamr - 1 \rb} \lb\pd{\aSlt{\lamr}}{x_0} + \pd{\Bt_{\lamr}}{x_0}\rb \right],\\
+  \pdc{g_{1,2}}{\eta}{x_0}  =& \frac{\mathcal{C}}{12 \epsilon} \left[
+    - \lama^2 x_0^{\lb \lama -1 \rb} \lb \pd{\aSlt{\lama}}{\eta} + \pd{\Bt_{\lama}}{\eta}\rb
++ \lamr^2 x_0^{\lb\lamr-1\rb} \lb\pd{\aSlt{\lamr}}{\eta} + \pd{\Bt_{\lamr}}{\eta}\rb \right. \nonumber \\ & \left. - \lama x_0^\lama \lb \pdc{\aSlt{\lama}}{\eta}{x_0} + \pdc{\Bt_{\lama}}{\eta}{x_0}\rb
+  + \lamr x_0^\lamr \lb\pdc{\aSlt{\lamr}}{\eta}{x_0} + \pdc{\Bt_{\lamr}}{\eta}{x_0}\rb
+                                            \right].
+                                     %+ \frac{x_0^3}{2 \pi \epsilon \sigma^3} \left[3 \rho_\seg \pd{a_1}{\rho_\seg}
+%    - \mathcal{C} \lama x_0^\lama \lb\aSlt{\lama} + \Bt_{\lama}\rb
+%  + \mathcal{C} \lamr x_0^\lamr \lb\aSlt{\lamr} + \Bt_{\lamr}\rb\right].
+\end{align}
+
+The differentials for $g_{2,1}^\mca$ is given from equations
+\ref{eq:g_1_1_diff_V} to \ref{eq:g_1_1_diff_VT}, simply by replacing
+$a_1$ with $a_{2,\chi}$, and dividing with $\epsilon$.
+
+Differentiating $g_{2,2}^\mca$,
+\begin{align}
+  \label{eq:g_2_2_diff}
+  \pd{g_{2,2}^\mca}{\eta}  =&  \frac{\mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\frac{K^\hs \mathcal{C}^2 }{12 \epsilon}}  \right. - \lamr x_0^{2\lamr} \lb\pd{\aSlt{\lb 2\lamr\rb}}{\eta} + \pd{\Bt_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ & + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \lb\pd{\aSlt{\lb\lamr + \lama\rb}}{\eta} + \pd{\Bt_{\lb\lamr + \lama \rb}}{\eta}\rb} \nonumber \\
+                            & - \lama x_0^{2\lama} \lb\pd{\aSlt{\lb 2\lama\rb}}{\eta} + \pd{\Bt_{\lb2\lama \rb}}{\eta}\rb \left. \vphantom{\frac{K^\hs \mathcal{C}^2 }{12 \epsilon}} \right], \\
+    \pd[2]{g_{2,2}^\mca}{\eta}  =& \frac{ \mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\frac{K^\hs \mathcal{C}^2 }{12 \epsilon}}  \right. - \lamr x_0^{2\lamr} \lb\pd[2]{\aSlt{\lb 2\lamr\rb}}{\eta} + \pd[2]{\Bt_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ & + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \lb\pd[2]{\aSlt{\lb\lamr + \lama\rb}}{\eta} + \pd[2]{\Bt_{\lb\lamr + \lama \rb}}{\eta}\rb} \nonumber \\
+                            & - \lama x_0^{2\lama} \lb\pd[2]{\aSlt{\lb 2\lama\rb}}{\eta} + \pd[2]{\Bt_{\lb2\lama \rb}}{\eta}\rb \left. \vphantom{\frac{K^\hs \mathcal{C}^2 }{12 \epsilon}} \right],
+\end{align}
+\begin{align}
+  \pd{g_{2,2}^\mca}{x_0}  =& \frac{\mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb}  \right. - 2\lamr^2 x_0^{2\lamr-1} \lb\aSlt{\lb 2\lamr\rb} + \Bt_{\lb 2\lamr\rb}\rb \nonumber \\ & + {\lb\lamr + \lama\rb^2 x_0^{\lb\lamr + \lama-1\rb} \lb\aSlt{\lb\lamr + \lama\rb} + \Bt_{\lb\lamr + \lama \rb}\rb}
+\nonumber \\
+ & - 2\lama^2 x_0^{2\lama-1} \lb\aSlt{\lb 2\lama\rb} + \Bt_{\lb2\lama \rb}\rb - \lamr x_0^{2\lamr} \pd{\Bt_{\lb 2\lamr\rb}}{x_0} \nonumber \\ & + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \pd{\Bt_{\lb\lamr + \lama \rb}}{x_0}}  - \lama x_0^{2\lama} \pd{\Bt_{\lb2\lama \rb}}{x_0}   \left. \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb} \right], \\
+  \pd[2]{g_{2,2}^\mca}{x_0}  =& \frac{\mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb}  \right. - 2\lamr^2\lb2\lamr-1\rb x_0^{2\lamr-2} \lb\aSlt{\lb 2\lamr\rb} + \Bt_{\lb 2\lamr\rb}\rb \nonumber \\ & + {\lb\lamr + \lama\rb^2\lb\lamr + \lama-1\rb x_0^{\lb\lamr + \lama-2\rb} \lb\aSlt{\lb\lamr + \lama\rb} + \Bt_{\lb\lamr + \lama \rb}\rb}
+\nonumber \\
+                           & - 2\lama^2\lb 2\lama -1\rb x_0^{2\lama-2} \lb\aSlt{\lb 2\lama\rb} + \Bt_{\lb2\lama \rb}\rb
+- 2\lamr^2 x_0^{2\lamr-1} \pd{\Bt_{\lb 2\lamr\rb}}{x_0} \nonumber \\ & + {\lb\lamr + \lama\rb^2 x_0^{\lb\lamr + \lama-1\rb} \pd{\Bt_{\lb\lamr + \lama \rb}}{x_0}}
+ - 2\lama^2 x_0^{2\lama-1} \pd{\Bt_{\lb 2\lama \rb}}{x_0} \nonumber \\ &
+                             - \lamr x_0^{2\lamr} \pd[2]{\Bt_{\lb 2\lamr\rb}}{x_0}  + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \pd[2]{\Bt_{\lb\lamr + \lama \rb}}{x_0}}  - \lama x_0^{2\lama} \pd[2]{\Bt_{\lb2\lama \rb}}{x_0}   \left. \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb} \right],
+\end{align}
+\begin{align}
+  \pdc{g_{2,2}^\mca}{x_0}{\eta}  =& \frac{\mathcal{C}^2 }{12 \epsilon} \left[ \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb}  \right. - 2\lamr^2 x_0^{2\lamr-1} \lb\pd{\aSlt{\lb 2\lamr\rb}}{\eta} + \pd{\Bt_{\lb 2\lamr\rb}}{\eta}\rb \nonumber \\ & + {\lb\lamr + \lama\rb^2 x_0^{\lb\lamr + \lama-1\rb} \lb\pd{\aSlt{\lb\lamr + \lama\rb}}{\eta} + \pd{\Bt_{\lb\lamr + \lama \rb}}{\eta}\rb}
+\nonumber \\
+ & - 2\lama^2 x_0^{2\lama-1} \lb\pd{\aSlt{\lb 2\lama\rb}}{\eta} + \pd{\Bt_{\lb2\lama \rb}}{\eta}\rb - \lamr x_0^{2\lamr} \pdc{\Bt_{\lb 2\lamr\rb}}{x_0}{\eta} \nonumber \\ & + {\lb\lamr + \lama\rb x_0^{\lb\lamr + \lama\rb} \pdc{\Bt_{\lb\lamr + \lama \rb}}{x_0}{\eta}}  - \lama x_0^{2\lama} \pdc{\Bt_{\lb2\lama \rb}}{x_0}{\eta}   \left. \vphantom{\lb\pd{\aSlt{\lb 2\lama\rb}}{x_0}\rb} \right].
+\end{align}
+
+The differentials of $g_{2,1}$ differe structure only in the
+pre-factor from the $g_{1,1}$ differentials in Equation
+\ref{eq:g_1_1_diff_V}-\ref{eq:g_1_1_diff_VT}.
+
+Introducing an auxiliary function for $\gamc$,
+$f\lb\zb_x \rb = \phi_{7,3}\zb_x + \phi_{7,4} \zb_x^2$, and differentiating $\gamc^\theta = \gamc/\theta$
+we get,
+\begin{align}
+  \label{eq:gamma_theta_C_diff}
+  \pd{\gamc^\theta}{\zb_x} =& \gamc^\theta \left[\frac{1}{\zb_x} + \pd{f}{\zb_x} \right], \\
+  \pd[2]{\gamc^\theta}{\zb_x} =& \gamc^\theta \left[\frac{2}{\zb_x}\pd{f}{\zb_x} + \lb\pd{f}{\zb_x} \rb^2 + \pd[2]{f}{\zb_x}\right],\\
+    \pd{f}{\zb_x} =& \phi_{7,3} + 2\phi_{7,4} \zb_x, \\
+  \pd[2]{f}{\zb_x} =& 2\phi_{7,4}.
+\end{align}
+Differentiating $\theta$,
+\begin{align}
+  \label{eq:theta_diff}
+  \pd{\theta}{T} =& - \exp\lb \frac{ \epsilon}{\kB T} \rb \frac{\epsilon}{\kB T^2}, \\
+  \pd[2]{\theta}{T} =& \exp\lb \frac{ \epsilon}{\kB T} \rb \left[\lb\frac{\epsilon}{\kB T^2}\rb^2 + \frac{2\epsilon}{\kB T^3} \right].
+\end{align}
+Differentiating $\gamc^\theta \theta$,
+\begin{align}
+  \label{eq:gamma_C_diff_T}
+  \pd{\gamc}{T} =& \gamc^\theta \pd{\theta}{T} + \theta\pd{\gamc^\theta }{T} , \\
+  \pd[2]{\gamc}{T} =& \gamc^\theta \pd[2]{\theta}{T} + 2\pd{\gamc^\theta }{T}\pd{\theta}{T} + \theta \pd[2]{\gamc^\theta }{T},\\
+  \pd{\gamc}{V} =& \theta \pd{\gamc^\theta}{V}, \\
+  \pd[2]{\gamc}{V} =& \theta \pd[2]{\gamc^\theta}{V}, \\
+  \pdc{\gamc}{T}{V} =& \pd{\gamc^\theta}{V}\pd{\theta}{T} + \theta\pdc{\gamc^\theta }{T}{V}.
+\end{align}
+
+For $X \in \{T, V \}$ we have,
+\begin{align}
+  \label{eq:a_chain_diff}
+  \pd{a^\chain}{X_i} &= -\lb m_\seg -1\rb \frac{1}{g^\mie}\pd{g^\mie}{X_i},\\
+  \pdc{a^\chain}{X_i}{X_j} &= -\lb m_\seg -1\rb \frac{1}{g^\mie} \lb -\frac{1}{g^\mie}\pd{g^\mie}{X_i}\pd{g^\mie}{X_j} + \pdc{g^\mie}{X_i}{X_j} \rb.\\
+\end{align}
+
+Introduce auxiliary function, $w$,
+\begin{align}
+  \label{eq:w_diff}
+  w =& \frac{1}{g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb g_1 + \lb \frac{\epsilon}{\kB T} \rb^2 g_2\right],\\
+  \pd{w}{T} =& \frac{1}{g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb \lb -\frac{g_1}{T} +  \pd{g_1}{T} \rb + \lb \frac{\epsilon}{\kB T} \rb^2\lb-\frac{2g_2}{T}  + \pd{g_2}{T}\rb  -w \pd{g^\hs_d}{T} \right],\\
+  \pd[2]{w}{T} =& \frac{1}{ g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb \lb \frac{2g_1}{T^2} -\frac{2}{T}\pd{g_1}{T} +  \pd[2]{g_1}{T} \rb + \lb \frac{\epsilon}{\kB T} \rb^2 \lb \frac{6g_2}{T^2}  - \frac{4}{T}\pd{g_2}{T} + \pd[2]{g_2}{T}\rb \right.\nonumber \\ &- 2\pd{g^\hs_d}{T}\pd{w}{T} - w\pd[2]{g^\hs_d}{T}  \left. \vphantom{\lb \pd{g^\hs_d}{T} \rb^2}\right],\\
+  \pd{w}{V} =& \frac{1}{g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb \pd{g_1}{V} + \lb \frac{\epsilon}{\kB T} \rb^2\pd{g_2}{V} -w\pd{g^\hs_d}{V} \right],\\
+  \pd[2]{w}{V} =& \frac{1}{g^\hs_d}\left[ \lb \frac{\epsilon}{\kB T} \rb \pd[2]{g_1}{V} + \lb \frac{\epsilon}{\kB T} \rb^2\pd[2]{g_2}{V} - 2\pd{w}{V}\pd{g^\hs_d}{V} - w\pd[2]{g^\hs_d}{V}\right],\\
+  \pdc{w}{T}{V} =& \frac{1}{ g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb \lb -\frac{1}{T}\pd{g_1}{V} +  \pdc{g_1}{T}{V} \rb + \lb \frac{\epsilon}{\kB T} \rb^2\lb-\frac{2}{T}\pd{g_2}{V}  + \pdc{g_2}{T}{V}\rb \right. \nonumber \\&  - \pd{w}{T}\pd{g^\hs_d}{V} - \pd{w}{V}\pd{g^\hs_d}{T} - w\pdc{g^\hs_d}{V}{T} \left. \vphantom{\lb \pd{g^\hs_d}{T} \rb^2}\right].
+\end{align}
+
+The $g^\mie$ differentials, for $X \in \{T, V \}$, then become as
+follows,
+\begin{align}
+  \label{eq:g_mie_diff}
+  \pd{g^\mie}{X_i} &= g^\mie \left[\frac{1}{g^\hs_d}\pd{g^\hs_d}{X_i} + \pd{w}{X_i} \right],\\
+  \pdc{g^\mie}{X_i}{X_j} &= g^\mie \left[\frac{1}{g^\hs_d}\lb \pdc{g^\hs_d}{X_i}{X_j} + \pd{g^\hs_d}{X_i}\pd{w}{X_j} + \pd{g^\hs_d}{X_j}\pd{w}{X_i} \rb + \pd{w}{X_i}\pd{w}{X_j} + \pdc{w}{X_i}{X_j} \right].
+\end{align}
+
+\section{Mixtures}
+
+When describing mixing in the SAFT-VR-Mie framework, the following mixing rules are applied for the parameters,
+\begin{align}
+  \sigma_{ij} &= \frac{\sigma_{ii} + \sigma_{jj}}{2},\\
+  d_{ij} &= \frac{d_{ii} + d_{jj}}{2},\\
+  \epsilon_{ij} &= \lb 1-k_{ij}\rb\frac{\sqrt{\sigma_{ii}^3\sigma_{jj}^3}}{\sigma_{ij}^3} \sqrt{\epsilon_{ii}\epsilon_{jj}},\\
+  \lambda_{r,ij} - 3 &= \lb 1-\gamma_{ij}\rb \sqrt{\lb \lambda_{r,ii} - 3\rb \lb \lambda_{r,jj} - 3\rb},\\
+  \alpha_{ij} &=  \alpha\lb\lama_{ij},\lamr_{ij}\rb
+\end{align}
+Here $k_{ij}$ and $\gamma_{ij}$ are tunable interaction parameters.
+
+\subsection{Mixture hard-sphere term}
+For mixtures, the term
+\begin{align}
+  \alpha^{hs} &= \frac{1}{\z_0} \left[ \frac{3\z_1\z_2}{1-\z_3} + \frac{\z_2^3}{\z_3(1-\z_3)^2} + \lp \frac{\z_2^3}{\z_3^2} - \z_0 \rp \ln(1-\z_3) \right],
+\end{align}
+is used for the hard spheres. Here,
+\begin{equation}
+  \label{eq:z_l}
+  \z_l = \frac{\pi}{6} \rho_\seg \sum_i x_{\seg,i} d_{ii}^l, \qquad l = 0,1,2,3.
+\end{equation}
+The mole fraction of segments of component $i$, $x_{\seg,i}$, is given as,
+\begin{equation}
+  \label{eq:x_s_i}
+  x_{\seg,i} = \frac{m_{\seg,i} x_i}{\sum_{k=1}^\nc m_{\seg,k} x_k}.
+\end{equation}
+The overall density is related to the segment density by $\rho_\seg = \rho \sum_{k=1}^\nc m_{\seg,k} x_k$. Using this, and $\rho V = \NA n$, we get,
+\begin{equation}
+  \label{eq:z_l_n}
+  \z_l = \frac{\pi \NA}{6 V} \sum_i m_{\seg,i} n_i d_{ii}^l, \qquad l = 0,1,2,3,
+\end{equation}
+That can be differentiated directly in $n_i, V$ and $T$.
+
+\subsubsection{Differentials}
+The $\z_l$ differentials applies for $l = 0,1,2,3$ if nothing else is specified,
+\begin{align}
+  \label{eq:z_l_n_diff}
+  \pd{\z_l}{V} =& -\frac{\z_l}{V},\\
+  \pd[2]{\z_l}{V} =& \frac{2\z_l}{V^2},\\
+  \pd{\z_l}{n_i} =& \frac{\pi \NA m_{\seg,i} d_{ii}^l}{6 V} ,\\
+  \pdc{\z_l}{n_i}{n_j} =& 0,\\
+  \pd{\z_l}{T} =& \begin{cases}
+    0, & l = 0\\
+    \frac{l \pi \NA}{6 V} \sum_i m_{\seg,i} n_i d_{ii}^{l-1} \pd{d_{ii}}{T}, & l = 1,2,3
+  \end{cases}\\
+  \pd[2]{\z_l}{T} =& \begin{cases}
+    0, & l = 0\\
+    \frac{l \pi \NA}{6 V} \sum_i m_{\seg,i} n_i d_{ii}^{l-1} \pd[2]{d_{ii}}{T}, & l = 1\\
+    \frac{l \pi \NA}{6 V} \sum_i m_{\seg,i} n_i d_{ii}^{l-1} \pd[2]{d_{ii}}{T} + \frac{l\lb l-1\rb \pi \NA}{6 V} \sum_i m_{\seg,i} n_i d_{ii}^{l-2}\lb\pd{d_{ii}}{T}\rb^2, & l = 2,3
+  \end{cases}\\
+  \pdc{\z_l}{V}{n_i} =& - \frac{\pi \NA m_{\seg,i} d_{ii}^l}{6 V^2},\\
+  \pdc{\z_l}{V}{T} =& \begin{cases}
+    0, & l = 0\\
+    -\frac{l \pi \NA}{6 V^2} \sum_i m_{\seg,i} n_i d_{ii}^{l-1}\pd{d_{ii}}{T}, & l = 1,2,3\\
+  \end{cases}\\
+  \pdc{\z_l}{n_k}{T} =& \begin{cases}
+    0, & l = 0\\
+    \frac{l \pi \NA m_{\seg,k} d_{kk}^{l-1}}{6 V}\pd{d_{kk}}{T} , & l = 1,2,3\\
+  \end{cases}\\
+\end{align}
+The differentials for the mixture hard-sphere term with respect to $\z_l$ becomes
+\begin{align}
+  \pd{\alpha^{hs}}{\z_0} =&  -\frac{\alpha^{hs} + \ln(1-\z_3)}{\z_0},\\
+  \pd[2]{\alpha^{hs}}{\z_0} =&  \frac{2\alpha^{hs} + 2\ln(1-\z_3)}{\z_0^2},\\
+  \pd{\alpha^{hs}}{\z_1} =&  \frac{3\z_2}{\lb 1-\z_3 \rb \z_0},\\
+  \pd[2]{\alpha^{hs}}{\z_1} =&  0,\\
+  \pd{\alpha^{hs}}{\z_2} =& \frac{1}{\z_0} \left[ \frac{3\z_1}{1-\z_3} + \frac{3\z_2^2}{\z_3(1-\z_3)^2} + \frac{3\z_2^2}{\z_3^2} \ln(1-\z_3)\right],\\
+  \pd[2]{\alpha^{hs}}{\z_2} =&  \frac{6\z_2}{\z_0\z_3} \left[ \frac{1}{(1-\z_3)^2} + \frac{1}{\z_3} \ln(1-\z_3)\right],\\
+  \pd{\alpha^{hs}}{\z_3} =&  \frac{1}{\z_0} \left[ \frac{3\z_1\z_2}{\lb 1-\z_3 \rb^2} +  \frac{\z_2^3 \lb 3 \z_3 - 1 \rb}{\z_3^2(1-\z_3)^3} - \frac{2\z_2^3}{\z_3^3}\ln(1-\z_3) - \frac{\z_2^3 - \z_0}{\z_3^2\lb 1-\z_3 \rb} \right],\\
+  \pd[2]{\alpha^{hs}}{\z_3} =&  \frac{1}{\z_0} \left[ \frac{6\z_1\z_2}{\lb 1-\z_3 \rb^3} +  \frac{2 \z_2^3 \lb 1 - 4 \z_3 + 6 \z_3^2 \rb}{\z_3^3(1-\z_3)^4} + \frac{6\z_2^3}{\z_3^4}\ln(1-\z_3) + \frac{4\z_2^3}{\z_3^3 \lb 1-\z_3 \rb} \right. \nonumber \\ & \left.  + \frac{\z_2^3 - \z_0\z_3^2}{\z_3^2\lb 1-\z_3 \rb^2} \right],\\
+  \pdc{\alpha^{hs}}{\z_0}{\z_1} =&  -\frac{1}{\z_0}\pd{\alpha^{hs}}{\z_1},\\
+  \pdc{\alpha^{hs}}{\z_0}{\z_2} =&  -\frac{1}{\z_0}\pd{\alpha^{hs}}{\z_2} ,\\
+  \pdc{\alpha^{hs}}{\z_0}{\z_3} =&  -\frac{1}{\z_0}\pd{\alpha^{hs}}{\z_3} + \frac{1}{\z_0\lb 1-\z_3 \rb} ,\\
+  \pdc{\alpha^{hs}}{\z_1}{\z_2} =&  \frac{3}{\z_0\lb 1-\z_3\rb} ,\\
+  \pdc{\alpha^{hs}}{\z_2}{\z_3} =&  \frac{1}{\z_0} \left[ \frac{3\z_1}{\lb 1-\z_3 \rb^2} +  \frac{3\z_2^2 \lb 3 \z_3 - 1 \rb}{\z_3^2(1-\z_3)^3} - \frac{6\z_2^2}{\z_3^3}\ln(1-\z_3) - \frac{3\z_2^2}{\z_3^2\lb 1-\z_3 \rb} \right].
+\end{align}
+
+The differentials of the hard-sphere term with respect to $X \in \{T, V, n_1 \dots, n_\nc \}$ take the form,
+\begin{align}
+  \pd{\alpha^{hs}}{X_i} =&  \sum_{l=0}^3\pd{\alpha^{hs}}{\z_l}\pd{\z_l}{X_i},\\
+  \pdc{\alpha^{hs}}{X_i}{X_j} =&  \sum_{l=0}^3\sum_{k=0}^3\pdc{\alpha^{hs}}{\z_l}{\z_k}\pd{\z_l}{X_i}\pd{\z_k}{X_j} + \sum_{l=0}^3\pd{\alpha^{hs}}{\z_l}\pdc{\z_l}{X_i}{X_j} .
+\end{align}
+
+\subsection{First order term}
+The first order term is described as,
+\begin{align}
+  \label{eq:a_1_mix}
+  a_1 &=  \sum_{i=1}^\nc\sum_{j=1}^\nc x_{\seg,i}x_{\seg,j} a_{1,ij}
+\end{align}
+
+For mixtures, a mixture property is used instead of is used instead of $\eta$,
+\begin{align}
+  \label{eq:z_x}
+  \z_{x} &= \frac{\pi \rho_\seg}{6} \sum_{i=1}^\nc\sum_{j=1}^\nc x_{\seg,i}x_{\seg,j} d_{ij}^3,\\
+         &= \frac{\pi \NA}{6 V n_{\seg}} \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_im_{\seg,j}n_j d_{ij}^3,
+\end{align}
+where $n_\seg = \sum_{i=1}^\nc m_{\seg,i} n_i$.
+
+The $a_{1,ij}$ is given as for pure fluids, Equation
+\ref{eq:a_1_approx}, evaluated using mixture parameters. The only
+difference is in the treatment of $\aS$ and $B$, where the integrals
+are evaluated as both a function of $\eta$ and $\z_x$. Dividing
+through with $\eta$ give functions of $\z_x$ only. For mixtures,
+$\aStij$, take the form,
+\begin{equation}
+  \label{eq:a_1_S_mix}
+  \aStij = \frac{\aSij\lb \eta_{ij}, \z_x; \lambda_{ij} \rb}{\eta_{ij}} = -12 \epsilon_{ij} \lb \frac{1}{\lambda_{ij} - 3} \rb \frac{1 - \eta_\eff\lb \z_x; \lambda_{ij} \rb / 2}{\lb 1 - \eta_\eff\lb \z_x; \lambda_{ij} \rb \rb^3},
+\end{equation}
+and $\Bt_{ij}$ take the following form,
+\begin{equation}
+  \label{eq:c_B_mix}
+  \Bt_{ij} =  \frac{B_{ij} \lb \eta_{ij}, \z_{x}; {\lambda_{ij}}\rb}{\eta_{ij}}  = 12  \epsilon_{ij} \lb \frac{1 - \z_x/2}{\lb 1 - \z_x\rb^3} I_{\lambda_{ij}}  - \frac{9\z_x\lb 1+ \z_x\rb}{2 \lb 1- \z_x\rb^3} J_{\lambda_{ij}} \rb.
+\end{equation}
+
+\subsubsection{Differentials}
+The volume and temperature differentials of Equation
+\ref{eq:a_1_mix_diff} is straight forward. The mol number
+differentials become, after multiplying twice with $n_\seg$,
+\begin{gather}
+  \label{eq:a_1_mix_diff}
+  n_\seg^2 a_1 =  \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j a_{1,ij}\\
+  2 m_{\seg,k} n_\seg a_1 + n_\seg^2 \pd{a_1}{n_k} =  m_{\seg,k}\sum_{j=1}^\nc  m_{\seg,j} n_j a_{1,kj} + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i} n_i a_{1,ik}  + \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j \pd{a_{1,ij}}{n_k}\\
+    2 m_{\seg,k}m_{\seg,l}  a_1 + 2 m_{\seg,k} n_\seg \pd{a_1}{n_l} + 2 m_{\seg,l} n_\seg \pd{a_1}{n_k} + n_\seg^2 \pdc{a_1}{n_k}{n_l} = \nonumber \\ m_{\seg,k}m_{\seg,l} a_{1,kl} + m_{\seg,k}m_{\seg,l}  a_{1,lk} + m_{\seg,k}\sum_{j=1}^\nc  m_{\seg,j} n_j \pd{a_{1,kj}}{n_l} + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i} n_i \pd{a_{1,ik}}{n_l}   + \nonumber \\m_{\seg,l}\sum_{j=1}^\nc m_{\seg,j} n_j \pd{a_{1,lj}}{n_k} + m_{\seg,l}\sum_{i=1}^\nc m_{\seg,i} n_i \pd{a_{1,il}}{n_k}  + \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j \pdc{a_{1,ij}}{n_k}{n_l}
+  \end{gather}
+
+  \begin{align}
+  \label{eq:a_1_mix_diff_2}
+  \pd{a_1}{n_k} =&  \frac{1}{n_\seg^2} \left[ m_{\seg,k}\sum_{j=1}^\nc  m_{\seg,j} n_j a_{1,kj} + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i} n_i a_{1,ik}   \right. \nonumber \\ & \left.  + \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j \pd{a_{1,ij}}{n_k}- 2 m_{\seg,k} n_\seg a_1 \right]\\
+    \pdc{a_1}{n_k}{n_l} =&  \frac{1}{n_\seg^2} \left[  m_{\seg,k}m_{\seg,l} a_{1,kl} + m_{\seg,k}m_{\seg,l}  a_{1,lk} + m_{\seg,k}\sum_{j=1}^\nc  m_{\seg,j} n_j \pd{a_{1,kj}}{n_l} + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i} n_i \pd{a_{1,ik}}{n_l}  \right. \nonumber \\ &  + m_{\seg,l}\sum_{j=1}^\nc m_{\seg,j} n_j \pd{a_{1,lj}}{n_k} + m_{\seg,l}\sum_{i=1}^\nc m_{\seg,i} n_i \pd{a_{1,il}}{n_k}  + \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j \pdc{a_{1,ij}}{n_k}{n_l} \nonumber \\ & \left. -
+    2 m_{\seg,k}m_{\seg,l}  a_1 - 2 m_{\seg,k} n_\seg \pd{a_1}{n_l} - 2 m_{\seg,l} n_\seg \pd{a_1}{n_k} \vphantom{\sum_{j=1}^\nc} \right]
+\end{align}
+
+Differentiating Equation \ref{eq:z_x},
+\begin{align}
+  \label{eq:z_x_diff}
+  \pd{\z_{x}}{V} =& -\frac{\z_{x}}{V} \\
+  \pd[2]{\z_{x}}{V} =& \frac{2\z_{x}}{V^2}\\
+  \pd[3]{\z_{x}}{V} =& -\frac{6\z_{x}}{V^2}\\
+  \pd{\z_{x}}{T} =& \frac{\pi \NA}{2 V n_{\seg}} \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_im_{\seg,j}n_j d_{ij}^2 \pd{d_{ij}}{T}\\
+  \pd[2]{\z_{x}}{T} =& \frac{\pi \NA}{V n_{\seg}} \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_im_{\seg,j}n_j d_{ij} \lb\pd{d_{ij}}{T}\rb^2 + \frac{\pi \NA}{2 V n_{\seg}} \sum_{i=1}^\nc\sum_{j=1}^\nc m_{\seg,i} n_im_{\seg,j}n_j d_{ij}^2 \pd[2]{d_{ij}}{T}\\
+  \pd{\z_{x}}{n_k} =& \frac{\pi \NA}{6 V n_\seg} \lb m_{\seg,k} \sum_{j=1}^\nc m_{\seg,j}n_j d_{kj}^3  + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i}n_i d_{ik}^3\rb - \frac{m_{\seg,k}}{n_\seg} \z_{x},\\
+  \pdc{\z_{x}}{n_k}{n_l} =& \frac{\pi \NA}{6 V n_\seg} \lb m_{\seg,k} m_{\seg,l} d_{lj}^3  + m_{\seg,k}m_{\seg,l} d_{lk}^3\rb - \frac{m_{\seg,k}}{n_\seg} \pd{\z_{x}}{n_l} - \frac{m_{\seg,l}}{n_\seg} \pd{\z_{x}}{n_k}, \\
+  \pdc{\z_{x}}{n_k}{V} =& -\frac{1}{V} \pd{\z_{x}}{n_k},\\
+  \pdc{\z_{x}}{n_k}{T} =& \frac{\pi \NA}{2 V n_\seg} \lb m_{\seg,k} \sum_{j=1}^\nc m_{\seg,j}n_j d_{kj}^2 \pd{d_{kj}}{T}  + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i}n_i d_{ik}^2\pd{d_{ik}}{T}\rb - \frac{m_{\seg,k}}{n_\seg} \pd{\z_{x}}{T},\\
+  \pdcc{\z_{x}}{V}{n_k} =& \frac{2}{V^2} \pd{\z_{x}}{n_k},\\
+  \pdc{\z_{x}}{V}{T} =& -\frac{1}{V} \pd{\z_{x}}{T},\\
+  \pdth{\z_{x}}{V}{T}{n_k} =& -\frac{1}{V} \pdc{\z_{x}}{T}{n_k},\\
+  \pdth{\z_{x}}{V}{n_k}{n_l} =& -\frac{1}{V} \pdc{\z_{x}}{n_k}{n_l},\\
+  \pdcc{\z_{x}}{V}{T} =& \frac{2}{V^2} \pd{\z_{x}}{T},\\
+  \pdcc{\z_{x}}{T}{V} =& -\frac{1}{V} \pd[2]{\z_{x}}{T}
+\end{align}
+
+The missing mol number differentials needed to convert from $\eta$ and
+$x_0$ differentials to $TVn$ differentials,
+\begin{align}
+  a_{n_k} =& a_{e} e_{n_k},\\
+  a_{n_k n_l} =& a_{ee} e_{n_k}e_{n_l} + a_{e} e_{n_k n_l},\\
+  a_{V n_k n_l} =& a_{eee} e_{V}e_{n_k}e_{n_l} + a_{ee} e_{V n_k}e_{n_l} + a_{ee} e_{n_k}e_{V n_l} + a_{ee} e_{V} e_{n_k n_l} + a_{e} e_{V n_k n_l},\\
+  a_{T n_k} =& a_{ee} e_{T}e_{n_k} + a_{e} e_{T n_k} + a_{ex} x_T e_{n_k},\\
+  a_{V n_k} =& a_{ee} e_{V}e_{n_k} + a_{e} e_{V n_k},\\
+  a_{V V n_k} =& a_{eee} e_{V}^2 e_{n_k} + a_{ee} e_{VV} e_{n_k} + 2 a_{ee} e_{V} e_{V n_k} + a_{e} e_{V V n_k},\\
+  a_{V T n_k} =& a_{eee} e_{V}e_{T}e_{n_k} + a_{ee} e_{VT}e_{n_k} + a_{ee} e_{T}e_{Vn_k} + a_{ee} e_{V}e_{T n_k} \nonumber \\ &+ a_{e} e_{V T n_k} + a_{eex} e_{V} x_T e_{n_k} + a_{ex} x_T e_{V n_k} .
+\end{align}
+The missing mol number $\eta$ differentials,
+\begin{align}
+  \pd{\eta}{n_k} =& \eta \frac{m_{\seg,k}}{n_\seg},\\
+  \pdc{\eta}{n_k}{n_l} =& 0,\\
+  \pdc{\eta}{T}{n_k} =& \frac{m_{\seg,k}}{n_\seg}\pd{\eta}{T},\\
+  \pdc{\eta}{V}{n_k} =& -\frac{1}{V} \pd{\eta}{n_k}, \\
+  \pdcc{\eta}{V}{n_k} =& -\frac{2}{V} \pdc{\eta}{V}{n_k}, \\
+  \pdth{\eta}{V}{n_k}{n_l} =& 0, \\
+  \pdth{\eta}{V}{T}{n_k} =& -\frac{1}{V} \pdc{\eta}{T}{n_k}.
+\end{align}
+\subsection{Second order term}
+The second order term is for mixtures described as,
+\begin{align}
+  \label{eq:a_2_mix}
+  a_2 &=  \sum_{i=1}^\nc\sum_{j=1}^\nc x_{\seg,i}x_{\seg,j} a_{2,ij}.
+\end{align}
+
+For mixtures $\zb_x$ take the following form,
+\begin{equation}
+  \label{eq:zxb_mix}
+  \zb_x = \frac{\pi\rho_\seg}{6} \sum_{i=1}^\nc \sum_{j=1}^\nc x_{\seg,i}x_{\seg,j} \sigma_{ij}^3 = \frac{\pi\NA}{6 V n_\seg} \sum_{i=1}^\nc \sum_{j=1}^\nc m_{\seg,i} n_i m_{\seg,j} n_j \sigma_{ij}^3.
+\end{equation}
+\subsubsection{Differentials}
+Differentials for $\zb_x$,
+\begin{align}
+  \label{eq:zb_x_diff}
+  \pd{\zb_{x}}{V} =& -\frac{\zb_{x}}{V} \\
+  \pd[2]{\zb_{x}}{V} =& \frac{2\zb_{x}}{V^2}\\
+  \pd[3]{\zb_x}{V} =& -\frac{6\zb_x}{V^3},\\
+  \pd{\zb_{x}}{n_k} =& \frac{\pi \NA}{6 V n_\seg} \lb m_{\seg,k} \sum_{j=1}^\nc m_{\seg,j}n_j \sigma_{kj}^3  + m_{\seg,k} \sum_{i=1}^\nc m_{\seg,i}n_i \sigma_{ik}^3\rb - \frac{m_{\seg,k}}{n_\seg} \zb_{x},\\
+  \pdc{\zb_{x}}{n_k}{n_l} =& \frac{\pi \NA}{6 V n_\seg} \lb m_{\seg,k} m_{\seg,l} \sigma_{lj}^3  + m_{\seg,k}m_{\seg,l} \sigma_{lk}^3\rb - \frac{m_{\seg,k}}{n_\seg} \pd{\zb_{x}}{n_l} - \frac{m_{\seg,l}}{n_\seg} \pd{\zb_{x}}{n_k}, \\
+  \pdc{\zb_{x}}{n_k}{V} =& -\frac{1}{V} \pd{\zb_{x}}{n_k},\\
+  \pdcc{\zb_{x}}{V}{n_k} =& \frac{2}{V^2}\pd{\zb_{x}}{n_k},\\
+  \pdth{\zb_{x}}{V}{n_k}{n_l} =& -\frac{1}{V}\pdc{\zb_{x}}{n_k}{n_l}.
+\end{align}
+The differentials for $a_2$ can be calculated from Equation
+\ref{eq:a_1_mix_diff}, by substituting $a_{1,ij}$ with $a_{2,ij}$.
+\subsection{Third order term}
+For mixtures the third order term take the same form as for pure
+fluids, with $\zb_x$ instead of $\eta$.
+
+\subsection{Chain contribution}
+The chain contribution is slightly different, as it is only a single sum,
+\begin{equation}
+  \label{eq:a_chain_mixtures}
+  a^\chain = -\frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \ln \lb g_{ii}^\mie \lb \sigma_{ii} \rb \rb.
+\end{equation}
+$g_{ii}^\mie$ is evaluated as Equation \ref{eq:g_mie}, using (average) molecular properties,
+\begin{align}
+  \label{eq:a_chain_mixtures_param}
+  \sigma_{ii} =& \sigma_i,\\
+  \epsilon_{ii} =& \epsilon_i,\\
+  d_{ii} =& d_i,\\
+  \lambda_{ii} =& \lambda_i.
+\end{align}
+\subsubsection{Differentials}
+\begin{align}
+  \label{eq:a_chain_mixtures_diff}
+  \pd{a^\chain}{n_k} =& -\frac{1}{n} \left[\lb m_{\seg,k} -1\rb \ln \lb g_{kk}^\mie \rb +\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{g_{ii}^\mie} \pd{g_{ii}^\mie}{n_k} + a^\chain\right],\\
+  \pdc{a^\chain}{n_k}{n_l} =& \frac{1}{n} \left[-\lb m_{\seg,k} -1\rb \frac{1}{g_{kk}^\mie} \pd{g_{kk}^\mie}{n_l} -\lb m_{\seg,l} -1\rb \frac{1}{g_{ll}^\mie} \pd{g_{ll}^\mie}{n_k} \right. \nonumber\\ &  +\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{\lb g_{ii}^\mie \rb^2} \lb\pd{g_{ii}^\mie}{n_k}\pd{g_{ii}^\mie}{n_l}-g_{ii}^\mie \pdc{g_{ii}^\mie}{n_k}{n_l}\rb \nonumber \\ & \left. - \pd{a^\chain}{n_l} - \pd{a^\chain}{n_k} \vphantom{\sum_{i=1}^\nc\frac{1}{g_{ii}^\mie} \pdc{g_{ii}^\mie}{n_k}{n_l}}\right],\\
+  \pd{a^\chain}{T} =& -\frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{g_{ii}^\mie}\pd{g_{ii}^\mie}{T},\\
+  \pd[2]{a^\chain}{T} =& \frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{\lb g_{ii}^\mie \rb^2}\left[\lb \pd{g_{ii}^\mie}{T} \rb^2 - g_{ii}^\mie\pd[2]{g_{ii}^\mie}{T}\right],\\
+    \pd{a^\chain}{V} =& -\frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{g_{ii}^\mie}\pd{g_{ii}^\mie}{V},\\
+  \pd[2]{a^\chain}{V} =& \frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{\lb g_{ii}^\mie \rb^2}\left[\lb \pd{g_{ii}^\mie}{V} \rb^2 - g_{ii}^\mie\pd[2]{g_{ii}^\mie}{V}\right],\\
+  \pdc{a^\chain}{V}{T} =& \frac{1}{n}\sum_{i=1}^\nc n_i\lb m_{\seg,i} -1\rb \frac{1}{\lb g_{ii}^\mie \rb^2}\left[\pd{g_{ii}^\mie}{V}\pd{g_{ii}^\mie}{T} - g_{ii}^\mie\pdc{g_{ii}^\mie}{V}{T}\right],\\
+  \pdc{a^\chain}{n_k}{T} =& \frac{1}{n} \left[-\lb m_{\seg,k} -1\rb \frac{1}{g_{kk}^\mie}\pd{g_{kk}^\mie}{T} \right. \nonumber \\& \left. +\sum_{i=1}^\nc n_i\lb m_{\seg,i} - 1\rb \frac{1}{\lb g_{ii}^\mie\rb^2}\lb \pd{g_{ii}^\mie}{n_k}\pd{g_{ii}^\mie}{T}  - g_{ii}^\mie \pdc{g_{ii}^\mie}{n_k}{T}\rb - \pd{a^\chain}{T}\right],\\
+  \pdc{a^\chain}{n_k}{V} =& \frac{1}{n} \left[-\lb m_{\seg,k} -1\rb \frac{1}{g_{kk}^\mie}\pd{g_{kk}^\mie}{V} \right. \nonumber \\& \left. +\sum_{i=1}^\nc n_i\lb m_{\seg,i} - 1\rb \frac{1}{\lb g_{ii}^\mie\rb^2}\lb \pd{g_{ii}^\mie}{n_k}\pd{g_{ii}^\mie}{V}  - g_{ii}^\mie \pdc{g_{ii}^\mie}{n_k}{V}\rb - \pd{a^\chain}{V}\right].
+\end{align}
+
+% \begin{alignat}{2}
+%   \pdc{a^\chain}{n_k}{V} = & \frac{1}{n_\seg} \left[ \vphantom{\pd{g_{ii}^\mie}{n_k}\pd{g_{ii}^\mie}{V}} \right.&& -\lb m_{\seg,k} -1\rb \frac{1}{g_{kk}^\mie}\pd{g_{kk}^\mie}{V}  \nonumber \\ & && \left. +\sum_{i=1}^\nc n_i\lb m_{\seg,i} - 1\rb \frac{1}{\lb g_{ii}^\mie\rb^2}\lb \pd{g_{ii}^\mie}{n_k}\pd{g_{ii}^\mie}{V}  - g_{ii}^\mie \pdc{g_{ii}^\mie}{n_k}{V}\rb - m_{\seg,k} \pd{a^\chain}{V}\right].
+% \end{alignat}
+To get the $g_{ii}^\mie$ mol number differentials, the mole number
+differentials of Equation \ref{eq:w_diff} is required,
+\begin{align}
+  \label{eq:g_n_diff}
+  \pd{w}{n_k} =& \frac{1}{g^\hs_d}\left[\lb \frac{\epsilon}{\kB T} \rb \pd{g_1}{n_k} + \lb \frac{\epsilon}{\kB T} \rb^2 \pd{g_2}{n_k} -w\pd{g^\hs_d}{n_k}\right],\\
+  \pdc{w}{n_k}{n_l} =& \frac{1}{g^\hs_d} \left[\lb \frac{\epsilon}{\kB T} \rb \pdc{g_1}{n_k}{n_l} + \lb \frac{\epsilon}{\kB T} \rb^2 \pdc{g_2}{n_k}{n_l} - \pd{w}{n_k}\pd{g^\hs_d}{n_l}  - \pd{w}{n_l}\pd{g^\hs_d}{n_k}  - w\pdc{g^\hs_d}{n_k}{n_l} \right] ,\\
+  \pdc{w}{T}{n_k} =& \frac{1}{g^\hs_d}\left[ \lb \frac{\epsilon}{\kB T} \rb \lb -\frac{1}{T}\pd{g_1}{n_k} +  \pdc{g_1}{T}{n_k} \rb + \lb \frac{\epsilon}{\kB T} \rb^2\lb-\frac{2}{T}\pd{g_2}{n_k}  + \pdc{g_2}{T}{n_k}\rb \right. \nonumber \\ &\left. - \pd{w}{T}\pd{g^\hs_d}{n_k} - \pd{w}{n_k}\pd{g^\hs_d}{T} - w\pdc{g^\hs_d}{T}{n_k} \right],\\
+  \pdc{w}{V}{n_k} =& \frac{1}{g^\hs_d} \left[\lb \frac{\epsilon}{\kB T} \rb \pdc{g_1}{V}{n_k} + \lb \frac{\epsilon}{\kB T} \rb^2\pdc{g_2}{V}{n_k} - \pd{w}{V}\pd{g^\hs_d}{n_k} - \pd{w}{n_k}\pd{g^\hs_d}{V} - w\pdc{g^\hs_d}{V}{n_k}  \right] .
+\end{align}
+
+Differentiating $g_{1,1}$ with respect to mol numbers,
+\begin{align}
+  \label{eq:g_1_1_diff_n}
+  \pd{g_{1,1}}{n_k}  =&  \frac{3 V^2}{2 \epsilon \pi \NA n_\seg  d^3} \pdc{a_1}{V}{n_k} -  g_{1,1} \frac{m_{\seg,k}}{n_\seg},\\
+  \pdc{g_{1,1}}{V}{n_k}  =& \frac{3 V^2}{2 \epsilon \pi \NA n_\seg d^3} \lb \frac{2}{V} \pdc{a_1}{V}{n_k} +  \pdcc{a_1}{V}{n_k}\rb  - \frac{m_{\seg,k}}{n_\seg}\pd{g_{1,1}}{V},\\
+  \pdc{g_{1,1}}{T}{n_k}  =& \frac{3 V^2}{2 \epsilon \pi \NA n_\seg d^3} \pdth{a_1}{V}{T}{n_k} - \frac{3}{d}\pd{g_{1,1}}{n_k}\pd{d}{T}  - \frac{m_{\seg,k}}{n_\seg}\pd{g_{1,1}}{T} - g_{1,1}\frac{3 }{d}\frac{m_{\seg,k}}{n_\seg}\pd{d}{T},\\
+  \pdc{g_{1,1}}{n_k}{n_l}  =& \frac{3 V^2}{2 \epsilon \pi \NA n_\seg d^3} \pdth{a_1}{V}{n_k}{n_l} - \frac{m_{\seg,l}}{n_\seg}\pd{g_{1,1}}{n_l} - \frac{m_{\seg,l}}{n_\seg}\pd{g_{1,1}}{n_k}.
+\end{align}
+\section{Temperature dependency in $\sigma$}
+If a temperature dependent $\sigma$ is introduced in the SAFT-VR Mie framework, basically three parts of the model changes. The temperature dependency of $x_0$ changes, and, $\alpha$ and $\zb_x$ becomes temperature dependent.
+\subsection{Differentiasl with temperature dependency in $\sigma$}
+The new differentials for $x_0$ becomes,
+\begin{align}
+  \label{eq:x0_diff_sigma_T}
+  \pd{x_0}{T} &= \frac{1}{d}\pd{\sigma}{T} - \frac{x_0}{d}\pd{d}{T},\\
+  \pd[2]{x_0}{T} &= \frac{1}{d}\pd[2]{\sigma}{T} -\frac{2}{d}\pd{x_0}{T}\pd{d}{T} -\frac{x_0}{d}\pd[2]{d}{T}.
+\end{align}
+When the dimesionless van der Waals energy, $\alpha$, become
+temperature dependent, the function $f\lb\alpha\rb$ must be
+differentiated. Using $f=m/p$, we get,
+\begin{align}
+  \label{eq:f_diff_alpha}
+  m &= \sum_{n=0}^{n=3} \phi_{i,n} \alpha^n,\\
+  m_{\alpha} &= \sum_{n=1}^{n=3} n \phi_{i,n} \alpha^{n-1},\\
+  m_{\alpha\alpha} &= \sum_{n=2}^{n=3} n \lb n-1 \rb \phi_{i,n} \alpha^{n-2},\\
+  p &= 1 + \sum_{n=4}^{n=6} \phi_{i,n} \alpha^{n-3},\\
+  p_{\alpha} &= \sum_{n=4}^{n=6} \lb n-3 \rb \phi_{i,n} \alpha^{n-4},\\
+  p_{\alpha\alpha} &= \sum_{n=5}^{n=6} \lb n-3 \rb \lb n-4 \rb \phi_{i,n} \alpha^{n-5},\\
+  f_{\alpha} &= \frac{1}{p} \left[ m_{\alpha} - f p_{\alpha} \right],\\
+  f_{\alpha\alpha} &= \frac{1}{p} \left[ m_{\alpha\alpha} - 2 f_{\alpha} p_{\alpha} - f p_{\alpha\alpha} \right].
+\end{align}
+
+The quantum corrected Mie potential take the following form, if corrected to second order,
+\begin{align}
+  \label{eq:Mie_Quantum}
+  u^{Q,\mie}\lb r, T\rb =& \mathcal{C}\epsilon \lb \left[\frac{\sigma}{r} \rb^\lamr - \lb\frac{\sigma}{r} \rb^\lama  \right. \nonumber \\  & + \frac{D}{r^2} \lb Q_{1,r}\lb\frac{\sigma}{r}\rb^\lamr - Q_{1,a}\lb\frac{\sigma}{r}\rb^\lama\rb \nonumber \\  &\left. + \frac{D^2}{r^4} \lb Q_{2,r}\lb\frac{\sigma}{r}\rb^\lamr - Q_{2,a}\lb\frac{\sigma}{r}\rb^\lama  \rb \right].
+\end{align}
+The dimensionelss van der Waals energy is given as,
+\begin{align}
+  \label{eq:van_der_Walls_energy}
+  \alpha =& -\frac{1}{\epsilon \sigma_{Q}^3} \int_{\sigma_{Q}}^{\infty} u^{Q,\mie} r^2  dr \\
+   =& \mathcal{C} \left[ \lb\frac{\sigma}{\sigma_{Q}}\rb^\lama \frac{1}{\lama - 3} - \lb\frac{\sigma}{\sigma_{Q}}\rb^\lamr\frac{1}{\lamr - 3}  \right. \nonumber \\& + \frac{D}{\sigma^2} \lb \lb\frac{\sigma}{\sigma_{Q}}\rb^{2+\lama}\frac{Q_{1,\att}}{\lama - 1} - \lb\frac{\sigma}{\sigma_{Q}}\rb^{2+\lamr}\frac{Q_{1,\rep}}{\lamr - 1}\rb \nonumber \\ &\left. + \lb\frac{D}{\sigma^2}\rb^2 \lb \lb\frac{\sigma}{\sigma_{Q}}\rb^{4+\lama}\frac{Q_{2,\att}}{\lama + 1} - \lb\frac{\sigma}{\sigma_{Q}}\rb^{4+\lamr}\frac{Q_{2,\rep}}{\lamr + 1}\rb\right].
+\end{align}
+
+Introdusing new variables and a constant  $\Dt$,
+\begin{align}
+  \label{eq:Mie_Quantum_2}
+  \Dt =& \frac{D T}{\sigma^2},\\
+  \Qt_{1,\att} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{2+\lama}\frac{Q_{1,a}}{\lama - 1}, \\
+  \Qt_{1,\rep} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{2+\lamr}\frac{Q_{1,r}}{\lamr - 1}, \\
+  \Qt_{2,\att} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{4+\lama}\frac{Q_{2,a}}{\lama + 1}, \\
+  \Qt_{2,\rep} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{4+\lamr}\frac{Q_{2,r}}{\lamr + 1}, \\
+  M_{\att} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{\lama}\frac{1}{\lama - 3}, \\
+  M_{\rep} =& \lb\frac{\sigma}{\sigma_{Q}}\rb^{\lamr}\frac{1}{\lamr - 3},
+\end{align}
+$\alpha$ becomes,
+\begin{align}
+  \label{eq:van_der_Walls_energy_2}
+  \alpha =& \mathcal{C} \left[ M_{\att} - M_{\rep} + \frac{\Dt}{T} \lb \Qt_{1,\att} - \Qt_{1,\rep}\rb  + \lb\frac{\Dt}{T}\rb^2 \lb \Qt_{2,\att} - \Qt_{2,\rep}\rb\right].
+\end{align}
+
+
+Differentiating $\alpha$, using the above,
+\begin{align}
+  \label{eq:alpha_diff_T}
+  \alpha_{T} =& -\frac{\mathcal{C}}{\sigma_{Q}} \left[ M_{\att} \lama - M_{\rep}\lamr  + \frac{D}{T} \lb \lb 2+\lama\rb\Qt_{1,\att} - \lb 2+\lamr\rb\Qt_{1,\rep}\rb \right. \nonumber \\ & \left. + \lb\frac{D}{T}\rb^2 \lb \lb 4+\lama\rb\Qt_{2,\att} - \lb 4+\lamr\rb\Qt_{2,\rep} \rb\right]\pd{\sigma_{Q}}{T}  \nonumber \\ &  - \mathcal{C}\left[ \frac{\Dt}{T^2} \lb \Qt_{1,\att} - \Qt_{1,\rep}\rb + \frac{2 \Dt^2}{T^3} \lb \Qt_{2,\att} - \Qt_{2,\rep}\rb\right] ,\\
+  \alpha_{TT} =& \frac{\mathcal{C}}{\sigma_{Q}^2} \left[M_{\att} \lama\lb \lama + 1\rb - M_{\rep}\lamr\lb \lamr + 1\rb \right.  \nonumber \\ &+ \frac{D}{T} \lb \lb 2+\lama\rb\lb 3+\lama\rb\Qt_{1,\att} - \lb 2+\lamr\rb \lb 3+ \lamr\rb \Qt_{1,\rep}\rb \nonumber \\ & \left. + \lb\frac{D}{T}\rb^2 \lb \lb 4+\lama\rb\lb 5+\lama\rb\Qt_{2,\att} - \lb 4+\lamr\rb\lb 5+\lama\rb\Qt_{2,\rep} \rb\right] \lb \pd{\sigma_{Q}}{T} \rb^2  \nonumber \\ & -\frac{\mathcal{C}}{\sigma_{Q}} \left[ M_{\att} \lama - M_{\rep}\lamr  + \frac{D}{T} \lb \lb 2+\lama\rb\Qt_{1,\att} - \lb 2+\lamr\rb\Qt_{1,\rep}\rb \right. \nonumber \\ & \left. + \lb\frac{D}{T}\rb^2 \lb \lb 4+\lama\rb\Qt_{2,\att} - \lb 4+\lamr\rb\Qt_{2,\rep} \rb\right]\pd[2]{\sigma_{Q}}{T} \nonumber \\ &  + \frac{2\mathcal{C}}{\sigma_{Q}}\left[ \frac{\Dt}{T^2} \lb \lb 2+\lama\rb\Qt_{1,\att} - \lb 2+\lamr\rb\Qt_{1,\rep}\rb \right. \nonumber \\ & \left.+ \frac{2 \Dt^2}{T^3} \lb \lb 4+\lama\rb\Qt_{2,\att} - \lb 4+\lama\rb\Qt_{2,\rep}\rb\right]\pd{\sigma_{Q}}{T} \nonumber \\ &  + \mathcal{C}\left[ \frac{2 \Dt}{T^3} \lb \Qt_{1,\att} - \Qt_{1,\rep}\rb + \frac{6 \Dt^2}{T^4} \lb \Qt_{2,\att} - \Qt_{2,\rep}\rb\right].
+\end{align}
+
+The differentials of $\zb_x$ with respect to temperature will take the
+same form as the $\z_x$ differentials.
+
+\section{The non-additive hard sphere model}
+The model by \citet{Santos2005} is derived for an arbitarry dimension,
+$d$, in the following we will only consider $d=3$. The model is also
+extended to account for the monomer segments of each molecule. This
+gives tha same packing fraction as used by \cite{Lafitte2013} in the
+original SAFT-VR Mie modell.
+
+The prefactor, $v_{\text{d}}$, becomes for 3 dimensions,
+\begin{equation}
+  \label{eq:v_d}
+  v_{\text{d}=3} = \lb \frac{\pi}{4} \rb^{\lb\frac{3}{2}\rb}\frac{1}{\Gamma\lb 1
+    + \frac{3}{2} \rb} = \frac{ \pi }{6 }.
+\end{equation}
+
+\begin{equation}
+  \label{eq:d_bracket}
+  \langle d_\hs^3 \rangle  =  \sum m_{\seg,i} x_i \lb d_i^\hs \rb^3 = \frac{\sum m_{\seg,i} n_i \lb d_i^\hs \rb^3}{\sum  n_i}.
+\end{equation}
+
+The packing fraction, becomes,
+\begin{equation}
+  \label{eq:eta_2}
+  \eta = v_{\text{d}=3} \rho_\seg \langle d_\hs^3 \rangle =  \frac{\rho_\seg \pi \sum m_{\seg,i} x_i \lb d_i^\hs \rb^3}{6} = \frac{ \pi \NA \sum m_{\seg,i} n_i \lb d_i^\hs \rb^3}{6 V}.
+\end{equation}
+
+The resudial compressibillity factor is defined as,
+\begin{align}
+  \label{eq:Z_syh}
+  Z_\SYH^\res &= \frac{\eta}{1-\eta} \frac{b_3 \langle d_\hs^3 \rangle \overline{B_2} - b_2 \overline{B_3}}{\lb b_3-b_2\rb\langle d_\hs^3 \rangle^2} +  Z^\res_\pure\lb\eta\rb \frac{\overline{B_3} - \langle d_\hs^3 \rangle \overline{B_2}}{\lb b_3-b_2\rb\langle d_\hs^3 \rangle^2},\\
+  &= \frac{\eta}{1-\eta} A_1\lb T, \mbn  \rb +  Z^\res_\pure A_2\lb T,\mbn \rb.
+\end{align}
+Here,
+\begin{align}
+  \label{eq:syh_B}
+  \overline{B_2} &= \frac{4}{v_3}\sum_i \sum_j x_{\seg,i} x_{\seg,j} d_{i,j}^3 = \frac{24 }{\pi}\frac{\sum_i \sum_j m_{\seg,i} n_{i} m_{\seg,j} n_{j} d_{i,j}^3}{\lb \sum_i m_{\seg,i} n_{i} \rb^2} =  \frac{\overline{B_2}^*}{\lb \sum_i m_{\seg,i} n_{i} \rb^2},\\
+  \overline{B_3} &= \frac{1}{v_3^2}\sum_k \sum_i \sum_j x_{\seg,k} x_{\seg,i} x_{\seg,j} \overline{B}_{i,j,k}^3 = \frac{36}{\pi^2}\frac{\sum_i \sum_j \sum_k m_{\seg,i} n_{i} m_{\seg,j} n_{j} m_{\seg,k} n_{k} \overline{B}_{i,j,k}^3}{\lb \sum_i m_{\seg,i} n_{i} \rb^3} \nonumber \\&= \frac{\overline{B_3}^*}{\lb \sum_i m_{\seg,i} n_{i} \rb^3}.
+\end{align}
+For $\overline{B}_{i,j,k}$ we have,
+\begin{align}
+  \label{eq:syh_B_ijk}
+  \overline{B}_{i,j,k} &= \frac{4}{3} \lb c_{k;ij} d_{ij}^3 + c_{j;ik} d_{ik}^3 + c_{i;jk} d_{jk}^3\rb,\\
+  c_{k;ij} &= d_{k;ij}^3 + \frac{3}{2}\frac{d_{k;ij}^2}{d_{ij}}d_{i;jk}d_{j;ik}, \\
+  d_{k;ij} &= \max \lb d_{ik} + d_{jk} - d_{ij}, 0 \rb.
+\end{align}
+The residual reduced Helmholtz energy per segment, then becomes,
+\begin{align}
+  \label{eq:a_syh}
+  F_\SYH = \frac{a_\SYH^\res}{ \NA \kB T}  &= \lb \sum_i m_{\seg,i} n_{i} \rb \int_V^\infty \frac{Z_\SYH^\res}{V} dV \nonumber \\&=  n_\seg \lb -\ln\lb 1-\eta\rb A_1\lb T, \mbn \rb +  \frac{F_\pure}{n} A_2\lb T, \mbn \rb \rb.
+\end{align}
+
+\subsection{Pure fluid hard-spere model}
+The pure fluid hard-sphere compressibillity is given by the Carnahan-Starling-Kolafa \cite{Kolafa1986} EOS,
+\begin{equation}
+  \label{eq:z_hs_csk}
+  Z_\pure^\CSK \lb \eta \rb = \frac{ 1 + \eta + \eta^2 - 2\eta^3\lb 1 + \eta\rb/3}{\lb 1-\eta\rb^3}.
+\end{equation}
+
+
+The residual reduced Helmholtz energy per segment, then becomes,
+\begin{align}
+  \label{eq:a_csk}
+  F_{\CSK,\pure} &= \frac{a_{\CSK,\pure}^\res}{\NA \kB T}  = n_\seg \int_V^\infty \frac{Z_\CSK - 1}{V} dV = n_\seg \int_0^\eta \frac{Z_\CSK - 1}{\eta} d \eta  \nonumber \\&=  \frac{n_\seg}{3}\lb \frac{5}{2 (1 - \eta)^2} + \frac{10}{1 - \eta} + 2 \eta  + 5 \ln\lb 1 - \eta\rb\rb.
+\end{align}
+
+\begin{align}
+  \label{eq:a_hs_diff_csk}
+  \pd{\lb\frac{F_{\CSK,\pure}}{n_\seg}\rb}{\eta} =& \frac{12 - 6 \eta + \eta^2 - 2 \eta^3}{3\lb 1-\eta\rb^3},\\
+  \pd[2]{\lb\frac{F_{\CSK,\pure}}{n_\seg}\rb}{\eta} =& \frac{-5 \lb-6 + 2 \eta + \eta^2\rb}{3 \lb 1-\eta\rb^4}.
+\end{align}
+
+Alternatively the simpler Carnahan-Starling \cite{Carnahan1969} EOS can be used.
+\begin{equation}
+  \label{eq:z_hs_cs}
+  Z_\pure^\CS \lb \eta \rb = \frac{ 1 + \eta + \eta^2 - \eta^3}{\lb 1-\eta\rb^3}.
+\end{equation}
+
+\begin{align}
+  \label{eq:a_cs}
+  \frac{a_{\CS,\pure}^\res}{\NA \kB T}  &= n_\seg \int_V^\infty \frac{Z_\CS - 1}{V} dV = n_\seg \int_0^\eta \frac{Z_\CS - 1}{\eta} d \eta =  n_\seg \frac{3-2\eta}{\lb 1- \eta \rb^2}.
+\end{align}
+
+The excess configurational energy is given from,
+\begin{equation}
+  \label{eq:a_hs_2}
+  a_{\CS,\pure}^\excess = \frac{4 \eta - 3 \eta^2}{\lb 1-\eta\rb^2} = a_{\CS,\pure}^\res - 3.
+\end{equation}
+Differentials of the hard-sphere term:
+\begin{align}
+  \label{eq:a_hs_diff_2}
+  \pd{a_{\CS,\pure}^\res}{\eta} =& -\frac{2 \lb( \eta - 2\rb}{\lb 1-\eta\rb^3},\\
+  \pd[2]{a_{\CS,\pure}^\res}{\eta} =& \frac{10 - 4 \eta}{\lb 1-\eta\rb^4}.
+\end{align}
+
+\subsection{Model differentials}
+Before differentiating, it will help to split the expressions in sub
+contributions tho the Helmholtz energy. In the follwing, segments will
+be ignored, impying $m_\seg = 1$. The $\hs$ superscript on the hard
+sphere diameter will also be dropped.
+
+Grouping of termes,
+\begin{align}
+  \label{eq:F_syh}
+  F_\SYH &=  \left[-\ln\lb 1-\eta\rb \right] \left[n A_1\right] +  \left[\frac{F_\pure}{n} \right] \left[n A_2 \right], \nonumber \\
+  &= F_{11}F_{12} + F_{21}F_{22}.
+\end{align}
+
+\begin{align}
+  \label{eq:F12}
+  F_{12} = n A_1\lb T, \mbn \rb  &=  n \frac{b_3 \lb \frac{\sum n_i d_i^3}{n} \rb  \frac{\overline{B_2}^*}{n^2} - b_2 \frac{\overline{B_3}^*}{n^3}}{\lb b_3-b_2\rb \lb \frac{\sum n_i d_i^3}{n} \rb^2} \nonumber\\
+  &=  \frac{b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^* - b_2 \overline{B_3}^*}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}
+\end{align}
+
+\begin{align}
+  \label{eq:a2_n}
+  F_{22} = n A_2\lb T, \mbn \rb  &=  n \frac{ \frac{\overline{B_3}^*}{n^3} -  \lb \frac{\sum n_i d_i^3}{n} \rb  \frac{\overline{B_2}^*}{n^2}}{\lb b_3-b_2\rb \lb \frac{\sum n_i d_i^3}{n} \rb^2} \nonumber\\
+  &=  \frac{\overline{B_3}^* -  \lb \sum n_i d_i^3 \rb  \overline{B_2}^*}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}
+\end{align}
+
+Differentials for $F_{12}$:
+\begin{align}
+  \label{eq:F12_diff}
+    F_{12,i}  &=  \frac{b_3  d_i^3  \overline{B_2}^* + b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_i - b_2 \overline{B_3}^*_i - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{12}}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}, \\
+    F_{12,ij}  &=  \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}
+    \left[ b_3  d_i^3  \overline{B_2}^*_j + b_3 d_j^3  \overline{B_2}^*_i + b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{ij} - b_2 \overline{B_3}^*_{ij} \right. \nonumber \\ &- 2\lb b_3-b_2\rb d_j^3 d_i^3 F_{12} - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{12,j} \nonumber \\ & \left.- 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_j^3 F_{12,i} \right],\\
+    F_{12,T} &=  \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[ b_3 \lb \sum n_i d_i^3 \rb_T  \overline{B_2}^* + b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_T - b_2 \overline{B_3}^*_T \right. \nonumber \\ & \left. - 2\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_T F_{12} \right] , \\
+    F_{12,TT} &= \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[ b_3 \lb \sum n_i d_i^3 \rb_{TT}  \overline{B_2}^* + 2 b_3 \lb \sum n_i d_i^3 \rb_T  \overline{B_2}^*_T \right. \nonumber \\
+      & + b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{TT} - b_2 \overline{B_3}^*_{TT} - 2\lb b_3-b_2\rb \lb \lb \sum n_i d_{i}^3 \rb_T \rb^2 F_{12} \nonumber \\ & \left. - 2\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_{TT} F_{12} - 4\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_T F_{12,T} \right], \\
+  F_{12,iT}  &= \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[ 3 b_3  d_i^2 d_{iT}  \overline{B_2}^* + b_3  d_i^3  \overline{B_2}^*_T + b_3 \lb \sum n_i d_i^3 \rb_T  \overline{B_2}^*_i \right. \nonumber \\ & + b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{iT} - b_2 \overline{B_3}^*_{iT} - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb_T d_i^3 F_{12} \nonumber \\ &- 6\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^2 d_{iT} F_{12} \nonumber \\ & \left.- 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{12,T} - 2 \lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb \lb \sum n_i d_i^3 \rb_T F_{12,i} \right]
+  %% \lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2 F_{12} &=  b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^* - b_2 \overline{B_3}^*, \\
+\end{align}
+
+Here we have used,
+\begin{align}
+  \label{eq:diff_help}
+    \lb \sum n_i d_i^3 \rb_T  &= 3 \sum n_i d_i^2 d_{iT}, \\
+    \lb \sum n_i d_i^3 \rb_{TT}  &= 6 \sum n_i d_i d_{iT}^2 + 3 \sum n_i d_i^2 d_{iTT}.
+\end{align}
+
+Differentials for $F_{12}$:
+\begin{align}
+  \label{eq:F22_diff}
+    F_{22,i}  &=  \frac{\overline{B_3}^*_i - d_i^3  \overline{B_2}^* - \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_i - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{22}}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}, \\
+    F_{22,ij}  &=  \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2}
+    \left[\overline{B_3}^*_{ij}  -  d_i^3  \overline{B_2}^*_j - d_j^3  \overline{B_2}^*_i - \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{ij} \right. \nonumber \\ &- 2\lb b_3-b_2\rb d_j^3 d_i^3 F_{22} - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{22,j} \nonumber \\ & \left.- 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_j^3 F_{22,i} \right],\\
+    F_{22,T} &=  \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[\overline{B_3}^*_T - \lb \sum n_i d_i^3 \rb_T  \overline{B_2}^* - \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_T  \right. \nonumber \\ & \left. - 2\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_T F_{22} \right] , \\
+    F_{22,TT} &= - \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[\overline{B_3}^*_{TT} - \lb \sum n_i d_i^3 \rb_{TT}  \overline{B_2}^* - 2\lb \sum n_i d_i^3 \rb_T  \overline{B_2}^*_T \right. \nonumber \\
+      & - \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{TT} - 2\lb b_3-b_2\rb \lb \lb \sum n_i d_{i}^3 \rb_T \rb^2 F_{22} \nonumber \\ & \left. - 2\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_{TT} F_{22} - 4\lb b_3-b_2\rb \lb \sum n_i d_{i}^3 \rb \lb \sum n_i d_{i}^3 \rb_T F_{22,T} \right], \\
+  F_{22,iT}  &= \frac{1}{\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2} \left[\overline{B_3}^*_{iT} -3d_i^2 d_{iT}  \overline{B_2}^* -  d_i^3  \overline{B_2}^*_T - \lb \sum n_i d_i^3 \rb_T  \overline{B_2}^*_i \right. \nonumber \\ & - \lb \sum n_i d_i^3 \rb  \overline{B_2}^*_{iT} - 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb_T d_i^3 F_{22} \nonumber \\ &- 6\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^2 d_{iT} F_{22} \nonumber \\ & \left.- 2\lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb d_i^3 F_{22,T} - 2 \lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb \lb \sum n_i d_i^3 \rb_T F_{22,i} \right]
+  %% \lb b_3-b_2\rb \lb \sum n_i d_i^3 \rb^2 F_{22} &=  b_3 \lb \sum n_i d_i^3 \rb  \overline{B_2}^* - b_2 \overline{B_3}^*, \\
+\end{align}
+
+The packing fraction differentials, becomes,
+\begin{align}
+  \label{eq:eta_diff_2}
+  %\eta &= \frac{ \pi \NA \sum n_i \lb d_i^\hs \rb^3}{6 V},\\
+  \eta_V &= -\frac{\eta}{V} \\
+  \eta_{VV} &= 2\frac{\eta}{V^2} \\
+  \eta_i &= \frac{ \pi \NA d_i^3}{6 V},\\
+  \eta_{ij} &= 0,\\
+  \eta_{iT} &= \frac{ \pi \NA d_i^2 d_{iT}}{2 V},\\
+  \eta_{iV} &= -\frac{\eta_i}{V},\\
+  \eta_T &= \frac{ \pi \NA \sum n_i d_i^2 d_{iT}}{2 V}, \\
+  \eta_{TV} &= -\frac{\eta_T}{V}, \\
+  \eta_{TT} &= \frac{ \pi \NA \lb 2 \sum n_i d_i d_{iT}^2 + \sum n_i d_i^2 d_{iTT} \rb}{2 V}, \\
+\end{align}
+
+Differentials for $F_{11}$:
+\begin{align}
+  \label{eq:F11_diff}
+    F_{11,\eta}  &= \frac{1}{1-\eta}\\
+    F_{11,\eta\eta}  &= \frac{1}{\lb 1-\eta \rb^2}\\
+\end{align}
+
+The differentials of $F_{21}$ is given in Equation \ref{eq:a_hs_diff_csk}.
+
+The differentials of $\overline{B_2}^*$ becomes,
+\begin{align}
+  \label{eq:B2_diff}
+  \overline{B_2}^* &= 4\sum_i \sum_j n_{i}n_{j} d_{i,j}^3\\
+  \overline{B_2}^*_T &= 12\sum_i \sum_j n_{i}n_{j} d_{i,j}^2d_{i,j,T}\\
+  \overline{B_2}^*_{TT} &= 12\sum_i \sum_j n_{i}n_{j} \lb 2d_{i,j}d_{i,j,T}^2 + d_{i,j}^2d_{i,j,TT} \rb\\
+  \overline{B_2}^*_{Tk} &= 24\sum_j n_{j} d_{k,j}^2d_{k,j,T}\\
+  \overline{B_2}^*_k &= 8 \sum_j n_{j} d_{k,j}^3\\
+  \overline{B_2}^*_{kl} &= 8 d_{k,l}^3
+\end{align}
+
+The differentials of $\overline{B_3}^*$ becomes,
+\begin{align}
+  \label{eq:B3_diff}
+  \overline{B_3}^* &= \sum_i \sum_j \sum_k n_{i} n_{j} n_{k} \overline{B}_{i,j,k}\\
+  \overline{B_3}^*_T &= \sum_i \sum_j \sum_k n_{i} n_{j} n_{k} \overline{B}_{i,j,k,T}\\
+  \overline{B_3}^*_{TT} &= \sum_i \sum_j \sum_k n_{i} n_{j} n_{k} \overline{B}_{i,j,k,TT}\\
+  \overline{B_3}^*_{Tl} &= \sum_j \sum_k n_{j} n_{k} \overline{B}_{l,j,k,T} + \sum_i \sum_k n_{i} n_{k} \overline{B}_{i,l,k,T} + \sum_i \sum_j n_{i} n_{j} \overline{B}_{i,j,l,T}\\
+  \overline{B_3}^*_{l} &= \sum_j \sum_k n_{j} n_{k} \overline{B}_{l,j,k}^3 + \sum_i \sum_k n_{i} n_{k} \overline{B}_{i,l,k}^3 + \sum_i \sum_j n_{i} n_{j} \overline{B}_{i,j,l}^3\\
+  \overline{B_3}^*_{lm} &= \sum_k n_{k} \overline{B}_{l,m,k}^3 + \sum_k n_{k} \overline{B}_{m,l,k}^3 + \sum_j n_{j} \overline{B}_{m,j,l}^3 + \sum_j n_{j} \overline{B}_{l,j,m}^3 + \sum_i n_{i} \overline{B}_{i,l,m}^3 + \sum_i n_{i} \overline{B}_{i,m,l}^3\\
+\end{align}
+
+\section{Pure fluid hard-spere reference}
+According to \citet{Leonard1970}, using a pure fluid reference, the Barker-Henderson diameter is described as,
+\begin{align}
+  \label{eq:d_BH_pure}
+  d_{\pure} &= \sum_j \sum_i x_i x_j d_{ij}.
+\end{align}
+The packing fraction used with the pure fluid hard-sphere EOS then becomes,
+\begin{align}
+  \label{eq:eta_BH_pure}
+  \eta^{\pure} &= \frac{ \pi \NA n d_{\pure}^3}{6 V} = \frac{ \pi \NA \lb \sum_j \sum_i n_i n_j d_{ij} \rb^3}{6 V n^5}.
+\end{align}
+
+Before differentiating, we introduce,
+\begin{align}
+  \label{eq:d_BH_hat}
+  \hat{d} &=  \sum_j \sum_i n_i n_j d_{ij}.
+\end{align}
+
+The packing fraction differentials, becomes,
+\begin{align}
+  \label{eq:eta_BH_pure_diff}
+  %\eta^{\pure} &= \frac{ \pi \NA \sum n_i \lb d_i^\hs \rb^3}{6 V},\\
+  \eta^{\pure}_V &= -\frac{\eta^{\pure}}{V} \\
+  \eta^{\pure}_{VV} &= 2\frac{\eta^{\pure}}{V^2} \\
+  \eta^{\pure}_k &= \frac{ 1}{n^5}\lb \frac{ \pi \NA \hat{d}^2 \hat{d}_k }{2 V} - 5 n^4 \eta^{\pure} \rb,\\
+  \eta^{\pure}_{kl} &= \frac{ 1}{n^5}\lb \frac{ \pi \NA \hat{d} \lb 2\hat{d}_l\hat{d}_k + \hat{d}\hat{d}_{kl}\rb}{2 V} - 5 n^4 \eta^{\pure}_k - 5 n^4 \eta^{\pure}_l - 20 n^3 \eta^{\pure} \rb,\\
+  \eta^{\pure}_{kT} &= \frac{ 1}{n^5}\lb \frac{ \pi \NA \hat{d}\lb 2 \hat{d}_T \hat{d}_k + \hat{d}\hat{d}_{kT} \rb}{2 V} - 5 n^4 \eta^{\pure}_T \rb,\\
+  \eta^{\pure}_{kV} &= -\frac{\eta^{\pure}_k}{V},\\
+  \eta^{\pure}_T &= \frac{ \pi \NA \hat{d}^2 \hat{d}_{T} }{2 V n^5}, \\
+  \eta^{\pure}_{TV} &= -\frac{\eta^{\pure}_T}{V}, \\
+  \eta^{\pure}_{TT} &= \frac{ \pi \NA \hat{d} \lb 2  \hat{d}_{T}^2 + \hat{d}\hat{d}_{TT}\rb}{2 V n^5}.
+\end{align}
+
+\subsection{Segments for the pure fluid hard-spere reference}
+In order to account for segments, the $x_{\seg,i}$ is interchanged
+with $x_{i}$ etc.
+\begin{align}
+  \label{eq:d_BH_pure_ms}
+  d_{\pure} &= \sum_j \sum_i x_{\seg,i} x_{\seg,i} d_{ij}.
+\end{align}
+
+The packing fraction used with the pure fluid hard-sphere EOS including segments then becomes,
+\begin{align}
+  \label{eq:eta_BH_pure_ms}
+  \eta^{\pure} &= \frac{ \pi \NA n_\seg d_{\pure}^3}{6 V} = \frac{ \pi \NA \lb \sum_j \sum_i n_{\seg,i} n_{\seg,i} d_{ij} \rb^3}{6 V n_\seg^5}.
+\end{align}
+
+Before differentiating, we again introduce,
+\begin{align}
+  \label{eq:d_BH_hat_ms}
+  \hat{d} &=  \sum_j \sum_i n_{\seg,i} n_{\seg,j} d_{ij}.
+\end{align}
+
+The packing fraction differentials, becomes,
+\begin{align}
+  \label{eq:eta_BH_pure_ms_diff}
+  %\eta^{\pure} &= \frac{ \pi \NA \sum n_i \lb d_i^\hs \rb^3}{6 V},\\
+  \eta^{\pure}_V =& -\frac{\eta^{\pure}}{V} \\
+  \eta^{\pure}_{VV} =& 2\frac{\eta^{\pure}}{V^2} \\
+  \eta^{\pure}_k =& \frac{ 1}{n_\seg^5}\lb \frac{ \pi \NA \hat{d}^2 \hat{d}_k }{2 V} - 5 m_{\seg,k} n_\seg^4 \eta^{\pure} \rb,\\
+  \eta^{\pure}_{kl} =& \frac{ 1}{n_\seg^5}\lb \frac{ \pi \NA \hat{d} \lb 2\hat{d}_l\hat{d}_k + \hat{d}\hat{d}_{kl}\rb}{2 V} - 5 m_{\seg,l} n_\seg^4 \eta^{\pure}_k \right. \nonumber \\ &\left. \vphantom{\frac{ \pi \NA \hat{d} \lb 2\hat{d}_l\hat{d}_k + \hat{d}\hat{d}_{kl}\rb}{2 V}} - 5 m_{\seg,k} n_\seg^4 \eta^{\pure}_l - 20 m_{\seg,k} m_{\seg,l}n_\seg^3 \eta^{\pure} \rb,\\
+  \eta^{\pure}_{kT} =& \frac{ 1}{n_\seg^5}\lb \frac{ \pi \NA \hat{d}\lb 2 \hat{d}_T \hat{d}_k + \hat{d}\hat{d}_{kT} \rb}{2 V} - 5 m_{\seg,k} n_\seg^4 \eta^{\pure}_T \rb,\\
+  \eta^{\pure}_{kV} =& -\frac{\eta^{\pure}_k}{V},\\
+  \eta^{\pure}_T =& \frac{ \pi \NA \hat{d}^2 \hat{d}_{T} }{2 V n_\seg^5}, \\
+  \eta^{\pure}_{TV} =& -\frac{\eta^{\pure}_T}{V}, \\
+  \eta^{\pure}_{TT} =& \frac{ \pi \NA \hat{d} \lb 2  \hat{d}_{T}^2 + \hat{d}\hat{d}_{TT}\rb}{2 V n_\seg^5}.
+\end{align}
+
+\subsection{Compositional dependence in hard-sphere diameter $d$}
+
+Need to handle situation where $d > \sigma$. Since $g=0$ for $r < d$,
+the integral for $\sigma \rightarrow \infty$ simplifies to an integral
+from $d \rightarrow \infty$.
+
+\begin{align}
+  \label{eq:d_pure_ms}
+  d^{\pure} \lb \mbn, T\rb &=  \frac{1}{n_\seg^2}\sum_j \sum_i n_{\seg,i} n_{\seg,j} d_{ij} \lb T \rb.
+\end{align}
+
+The differentials then become, when assuming $d_{ij} = d_{ji}$,
+
+\begin{align}
+  \label{eq:d_pure_ms_diff}
+  d^{\pure}_T &=  \frac{1}{n_\seg^2} \sum_j \sum_i n_{\seg,i} n_{\seg,j} d_{ij,T}\\
+  d^{\pure}_{TT} &=  \frac{1}{n_\seg^2} \sum_j \sum_i n_{\seg,i} n_{\seg,j} d_{ij,TT}\\
+  d^{\pure}_{k} &=  \frac{2 m_{\seg,k}}{n_\seg^2} \lb \sum_i  n_{\seg,j} d_{ik} - n_\seg d^{\pure}  \rb\\
+  d^{\pure}_{kl} &=  \frac{2}{n_\seg^2} \lb  m_{\seg,k}m_{\seg,l} d_{lk} - m_{\seg,k}m_{\seg,l} d^{\pure} - m_{\seg,k} n_\seg d^{\pure}_l - m_{\seg,l} n_\seg d^{\pure}_k \rb \\
+  d^{\pure}_{Tk} &=  \frac{2 m_{\seg,k}}{n_\seg^2} \lb \sum_i  n_{\seg,j} d_{ik,T} - n_\seg d^{\pure}_T  \rb
+\end{align}
+
+\section{New term in the perturbation of mixtures}
+\section{New term}
+In the excellent paper entitled ``Perturbation theory and Liquid Mixtures'', Leonard et al. (a student of Barker and Henderson) derives a perturbation theory for mixtures. Three references are considered:
+\begin{itemize}
+\item Single-component hard-sphere reference fluid
+\item Additive mixture of hard-spheres as reference
+\item Non-additive mixture of hard-spheres as reference
+\end{itemize}
+In the current treatment of SAFT-VR-Mie, the pair-correlation of the single-component hard-sphere fluid is used, hence, in a consistent treatment, the Carnahan-Starling EoS for a single-component fluid of diameter:
+\begin{equation}
+d=\sum_{i,j}x_ix_j\delta_{ij},
+\end{equation}
+should be used, where:
+\begin{equation}
+\delta_{ij}=\int_0^{\sigma_{ij}}\left[1-\exp{(-\beta u_{ij}(z))}\right]dz.
+\end{equation}
+The best mixture to use as a reference, which is closest to the fluid mixture to be described is a non-additive mixture where ($d_{ij}\neq 0.5(d_{ii}+d_{jj}$). However, this also implies that the pair-correlation function for a non-additive mixture should be used when computing $a_1$, $a_2$, etc, and this pair-correlation function is in general unknown. The pair-correlation of an additive mixture of hard-spheres is more well understood even tough exact models for this fluid is also not known. If the additive mixture of hard-spheres is used as a reference, there is a missing terms (superscript M) that should be added to the perturbation expansion:
+\begin{equation}
+A^{\text{M}}\beta=\alpha^\text{M}=-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]
+\end{equation}
+we keep in mind that $\delta_{ij}=d_{ij}$. The first order derivatives are:
+\begin{equation}
+\frac{\partial \alpha^{\text{M}}}{\partial T}=-\frac{2\pi}{V}\sum_{ij}n_in_j\left(2d_{ij}\frac{\partial d_{ij}}{\partial T}g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]+d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial T}\left[d_{ij}-\delta_{ij}\right]+d_{ij}^2g_{0,c}^{ij}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]\right)
+\end{equation}
+\begin{equation}
+\frac{\partial \alpha^{\text{M}}}{\partial V}=\frac{-\alpha^{\text{M}}}{V}-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial V}\left[d_{ij}-\delta_{ij}\right]
+\end{equation}
+\begin{equation}
+\frac{\partial \alpha^{\text{M}}}{\partial n_k}=-\frac{4\pi}{V}\sum_{i}n_id_{ik}^2\left[d_{ik}-\delta_{ik}\right]g_{0,c}^{ik}-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial n_k}\left[d_{ij}-\delta_{ij}\right]
+\end{equation}
+where we have used that $a_{ij}=a_{ji}$ for all variables. We proceed to the second order derivatives:
+\begin{equation}
+\begin{split}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial T^2}=&-\frac{2\pi}{V}\sum_{ij}n_in_j\left(2\left(\frac{\partial d_{ij}}{\partial T}\right)^2g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]\right.+
+2d_{ij}\frac{\partial^2 d_{ij}}{\partial T^2}g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]+\\
+&2d_{ij}\frac{\partial d_{ij}}{\partial T}\frac{\partial g_{0,c}^{ij}}{\partial T}\left[d_{ij}-\delta_{ij}\right]+
+2d_{ij}\frac{\partial d_{ij}}{\partial T}g_{0,c}^{ij}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+ \\
+&2d_{ij}\frac{\partial d_{ij}}{\partial T}\frac{\partial g_{0,c}^{ij}}{\partial T}\left[d_{ij}-\delta_{ij}\right]+ d_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial T^2}\left[d_{ij}-\delta_{ij}\right]+ d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial T}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+ \\
+&\left. 2d_{ij}\frac{\partial d_{ij}}{\partial T}g_{0,c}^{ij}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+
+d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial T}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+
+d_{ij}^2g_{0,c}^{ij}\left[\frac{\partial^2 d_{ij}}{\partial T^2}-\frac{\partial^2 \delta_{ij}}{\partial T^2}\right]\right)
+\end{split}
+\end{equation}
+Which can be simplified to:
+\begin{equation}
+\begin{split}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial T^2}=&-\frac{2\pi}{V}\sum_{ij}n_in_j\left(2\left(\frac{\partial d_{ij}}{\partial T}\right)^2g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]\right.+2d_{ij}\frac{\partial^2 d_{ij}}{\partial T^2}g_{0,c}^{ij}\left[d_{ij}-\delta_{ij}\right]+\\
+&4d_{ij}\frac{\partial d_{ij}}{\partial T}\frac{\partial g_{0,c}^{ij}}{\partial T}\left[d_{ij}-\delta_{ij}\right]+ d_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial T^2}\left[d_{ij}-\delta_{ij}\right]+ \\
+&\left. 4d_{ij}\frac{\partial d_{ij}}{\partial T}g_{0,c}^{ij}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+2d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial T}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]+d_{ij}^2g_{0,c}^{ij}\left[\frac{\partial^2 d_{ij}}{\partial T^2}-\frac{\partial^2 \delta_{ij}}{\partial T^2}\right]\right)
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial V\partial T}=&\frac{-1}{V}\frac{\partial \alpha^{\text{M}}}{\partial T}-\frac{2\pi}{V}\sum_{ij}n_in_j\left(2d_{ij}\frac{\partial d_{ij}}{\partial T}\frac{\partial g_{0,c}^{ij}}{\partial V}\left[d_{ij}-\delta_{ij}\right]\right. \\
+&\left.d_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial V\partial T}\left[d_{ij}-\delta_{ij}\right]+d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial V}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial\delta_{ij}}{\partial T}\right]\right)
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+&\frac{\partial^2 \alpha^{\text{M}}}{\partial n_k\partial T}=-\frac{4\pi}{V}\sum_{i}n_i\left(2d_{ik}\frac{\partial d_{ik}}{\partial T}\left[d_{ik}-\delta_{ik}\right]g_{0,c}^{ik}+\right. \\
+&\left.d_{ik}^2\left[\frac{\partial d_{ik}}{\partial T}-\frac{\partial \delta_{ik}}{\partial T}\right]g_{0,c}^{ik}+d_{ik}^2\left[d_{ik}-\delta_{ik}\right]\left(\frac{\partial g_{0,c}^{ik}}{\partial T}\right)\right)+ \\
+&-\frac{2\pi}{V}\sum_{ij}n_in_j\left(2d_{ij}\frac{\partial d_{ij}}{\partial T}\frac{\partial g_{0,c}^{ij}}{\partial n_k}\left[d_{ij}-\delta_{ij}\right]+d_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial T \partial n_k}\left[d_{ij}-\delta_{ij}\right]+d_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial n_k}\left[\frac{\partial d_{ij}}{\partial T}-\frac{\partial \delta_{ij}}{\partial T}\right]\right)
+\end{split}
+\end{equation}
+\begin{equation}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial V^2}=\frac{\alpha^{\text{M}}}{V^2}-\frac{1}{V}\frac{\partial \alpha^\text{M}}{\partial V}+\frac{2\pi}{V^2}\sum_{ij}n_in_jd_{ij}^2\frac{\partial g_{0,c}^{ij}}{\partial V}\left[d_{ij}-\delta_{ij}\right]-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial V^2}\left[d_{ij}-\delta_{ij}\right]
+\end{equation}
+\begin{equation}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial n_k\partial V}=-\frac{1}{V}\frac{\partial \alpha^\text{M}}{\partial n_k}-\frac{4\pi}{V}\sum_{i}n_id_{ik}^2\left[d_{ik}-\delta_{ik}\right]\frac{\partial g_{0,c}^{ik}}{\partial V}-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial n_k\partial V}\left[d_{ij}-\delta_{ij}\right]
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 \alpha^{\text{M}}}{\partial n_k\partial n_l}=&-\frac{4\pi}{V}\left(d_{lk}^2\left[d_{lk}-\delta_{lk}\right]g_{0,c}^{lk}+\sum_{i}n_id_{ik}^2\left[d_{ik}-\delta_{ik}\right]\frac{\partial g_{0,c}^{ik}}{\partial n_l}\right) \\
+&-\frac{4\pi}{V}\sum_{i}n_id_{il}^2\frac{\partial g_{0,c}^{il}}{\partial n_k}\left[d_{il}-\delta_{il}\right]-\frac{2\pi}{V}\sum_{ij}n_in_jd_{ij}^2\frac{\partial^2 g_{0,c}^{ij}}{\partial n_k\partial n_l}\left[d_{ij}-\delta_{ij}\right]
+\end{split}
+\end{equation}
+
+\subsection{The pair correlation function at contact}
+We shall use the Boublik expression for the radial distribution function (at contact), which includes an additional term in comparison to the paper by Leonard et al.:
+\begin{equation}
+g_{0,c}(d_{ij})=\frac{1}{1-\z_3}+\frac{3\z_2}{(1-\z_3)^2}\mu_{ij}+\frac{2\z_2^2}{(1-\z_3)^3}\mu_{ij}^2
+\end{equation}
+where:
+\begin{equation}
+\mu_{ij}=\frac{d_{ii}d_{jj}}{d_{ii}+d_{jj}}
+\end{equation}
+which depends only on the temperature, with the following derivatives:
+\begin{equation}
+\frac{\partial \mu_{ij}}{\partial T}=\frac{d_{ii}^2 d_{jj,T}+d_{jj}^2d_{ii,T}}{\left(d_{ii}+d_{jj}\right)^2}
+\end{equation}
+\begin{equation}
+\frac{\partial^2 \mu_{ij}}{\partial T^2}=\frac{2(d_{ii}+d_{jj})d_{ii,T}d_{jj,T}+d_{jj}^2d_{ii,TT}+d_{ii}^2d_{jj,TT}}{\left(d_{ii}+d_{jj}\right)^2}-2\frac{\left(d_{ii}^2 d_{jj,T}+d_{jj}^2d_{ii,T}\right)(d_{ii,T}+d_{jj,T})}{\left(d_{ii}+d_{jj}\right)^3}
+\end{equation}
+The first order derivatives of the pair-correlation function at contact are:
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial \mu_{ij}}=\frac{3\z_2}{(1-\z_3)^2}+\frac{4\z_2^2}{(1-\z_3)^3}\mu_{ij}
+\end{equation}
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial \z_2}=\frac{3}{(1-\z_3)^2}\mu_{ij}+\frac{4\z_2}{(1-\z_3)^3}\mu_{ij}^2
+\end{equation}
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial \z_3}=\frac{1}{(1-\z_3)^2}+\frac{6\z_2}{(1-\z_3)^3}\mu_{ij}+\frac{6\z_2^2}{(1-\z_3)^4}\mu_{ij}^2
+\end{equation}
+and the second order derivatives:
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}^2}=\frac{4\z_2^2}{(1-\z_3)^3}
+\end{equation}
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}\partial \z_2}=\frac{3}{(1-\z_3)^2}+\frac{8\z_2}{(1-\z_3)^3}\mu_{ij}
+\end{equation}
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}\partial \z_3}=\frac{6\z_2}{(1-\z_3)^3}+\frac{12\z_2^2}{(1-\z_3)^4}\mu_{ij}
+\end{equation}
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_2^2}=\frac{4}{(1-\z_3)^3}\mu_{ij}^2
+\end{equation}
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_3^2}=\frac{2}{(1-\z_3)^3}+\frac{18\z_2}{(1-\z_3)^4}\mu_{ij}+\frac{24\z_2^2}{(1-\z_3)^5}\mu_{ij}^2
+\end{equation}
+\begin{equation}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_2\partial \z_3}=\frac{6}{(1-\z_3)^3}\mu_{ij}+\frac{12\z_2}{(1-\z_3)^4}\mu_{ij}^2
+\end{equation}
+and the following derivatives of the pair-correlation function:
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial T}=\frac{\partial g_{0,c}^{ij}}{\partial \mu_{ij}}\frac{\partial \mu_{ij}}{\partial T}+\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial \z_{2}}{\partial T}+\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial \z_{3}}{\partial T} 
+\end{equation}
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial V}=\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial \z_{2}}{\partial V}+\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial \z_{3}}{\partial V} 
+\end{equation}
+\begin{equation}
+\frac{\partial g_{0,c}^{ij}}{\partial n_i}=\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial \z_{2}}{\partial n_i}+\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial \z_{3}}{\partial n_i} 
+\end{equation}
+and then the second order derivatives:
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial T^2}=&\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}}\frac{\partial^2 \mu_{ij}}{\partial T^2}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}^2}\left(\frac{\partial \mu_{ij}}{\partial T}\right)^2+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}\partial \z_2}\frac{\partial \mu_{ij}}{\partial T}\frac{\partial \z_{2}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \mu_{ij}\partial \z_3}\frac{\partial \mu_{ij}}{\partial T}\frac{\partial \mu_{ij}}{\partial \z_3}\\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial T^2}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \mu_{ij}}\frac{\partial \z_{2}}{\partial T}\frac{\partial \mu_{ij}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\left(\frac{\partial \z_{2}}{\partial T}\right)^2+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial T}\frac{\partial \z_{3}}{\partial T}\\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial T^2}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial\mu_{ij}}\frac{\partial \z_{3}}{\partial T}\frac{\partial \mu_{ij}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_{2}}\frac{\partial \z_{3}}{\partial T}\frac{\partial \z_{2}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\left(\frac{\partial \z_{3}}{\partial T}\right)^2
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial V\partial T}=&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial V\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \mu_{ij}}\frac{\partial \z_{2}}{\partial V}\frac{\partial \mu_{ij}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\frac{\partial \z_{2}}{\partial V}\frac{\partial \z_{2}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial V}\frac{\partial \z_{3}}{\partial T} \\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial V\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial\mu_{ij}}\frac{\partial \z_{3}}{\partial V}\frac{\partial \mu_{ij}}{\partial T} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_2}\frac{\partial \z_{3}}{\partial V}\frac{\partial \z_{2}}{\partial T} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\frac{\partial \z_{3}}{\partial V}\frac{\partial \z_{3}}{\partial T}  
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial n_i\partial T}=&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial n_i\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \mu_{ij}}\frac{\partial \z_{2}}{\partial n_i}\frac{\partial \mu_{ij}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\frac{\partial \z_{2}}{\partial n_i}\frac{\partial \z_{2}}{\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial n_i}\frac{\partial \z_{3}}{\partial T} \\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial n_i\partial T}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial\mu_{ij}}\frac{\partial \z_{3}}{\partial n_i}\frac{\partial \mu_{ij}}{\partial T} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_2}\frac{\partial \z_{3}}{\partial n_i}\frac{\partial \z_{2}}{\partial T} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\frac{\partial \z_{3}}{\partial n_i}\frac{\partial \z_{3}}{\partial T}  
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial V^2}=&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial V^2}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\left(\frac{\partial \z_{2}}{\partial V}\right)^2+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial V}\frac{\partial \z_{3}}{\partial V}\\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial V^2} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_{2}}\frac{\partial \z_{3}}{\partial V}\frac{\partial \z_{2}}{\partial V}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\left(\frac{\partial \z_{3}}{\partial V}\right)^2
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial V\partial n_i}=&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial V\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\frac{\partial \z_{2}}{\partial V}\frac{\partial \z_{2}}{\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial V}\frac{\partial \z_{3}}{\partial n_i} \\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial V\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_2}\frac{\partial \z_{3}}{\partial V}\frac{\partial \z_{2}}{\partial n_i} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\frac{\partial \z_{3}}{\partial V}\frac{\partial \z_{3}}{\partial n_i}  
+\end{split}
+\end{equation}
+
+\begin{equation}
+\begin{split}
+\frac{\partial^2 g_{0,c}^{ij}}{\partial n_j\partial n_i}=&\frac{\partial g_{0,c}^{ij}}{\partial \z_{2}}\frac{\partial^2 \z_{2}}{\partial n_j\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}^2}\frac{\partial \z_{2}}{\partial n_j}\frac{\partial \z_{2}}{\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{2}\partial \z_3}\frac{\partial \z_{2}}{\partial n_j}\frac{\partial \z_{3}}{\partial n_i} \\
+&\frac{\partial g_{0,c}^{ij}}{\partial \z_{3}}\frac{\partial^2 \z_{3}}{\partial n_j\partial n_i}+\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}\partial \z_2}\frac{\partial \z_{3}}{\partial n_j}\frac{\partial \z_{2}}{\partial n_i} +\frac{\partial^2 g_{0,c}^{ij}}{\partial \z_{3}^2}\frac{\partial \z_{3}}{\partial n_j}\frac{\partial \z_{3}}{\partial n_i}  
+\end{split}
+\end{equation}
+
+\subsection{The reduced isothermal compressibillity of the mixture hard-sphere model}
+
+For the Boublik and Mansoori et al. hard-spere mixture model we have,
+\begin{equation}
+  \label{eq:Z_HS_mix}
+  Z_\mix^\hs = \frac{P^\hs}{\kB T \rho_\seg} = \frac{1}{\z_0} \left[ \frac{\z_0}{\lb 1-\z_3 \rb} + \frac{3\z_1\z_2}{(1-\z_3)^2} + \frac{\lb 3 - \z_3 \rb\z_2^3}{\lb 1 - \z_3\rb^3}  \right].
+\end{equation}
+Here,
+\begin{equation}
+  \label{eq:z_l_redef}
+  \z_l = \frac{\pi}{6} \rho_\seg \sum_i x_{\seg,i} d_{ii}^l, \qquad l = 0,1,2,3.
+\end{equation}
+To simplify we introduce, $M_l$,
+\begin{equation}
+  \label{eq:M_l}
+  M_l =  \sum_i x_{\seg,i} d_{ii}^l, \qquad l = 1,2,3.
+\end{equation}
+If we also use that $\eta = \z_3$, we get,
+\begin{equation}
+  \label{eq:Z_HS_mix_eta}
+  Z_\mix^\hs = \frac{1}{\lb 1-\eta \rb} + \frac{M_1M_2}{M_3}\frac{3\eta}{(1-\eta)^2} + \frac{M_2^3}{M_3^2}\frac{\lb 3 - \eta \rb\eta^3}{\lb 1 - \eta\rb^3}.
+\end{equation}
+\begin{equation}
+  \label{eq:K_HS_mix_def}
+  K_\mix^\hs = \frac{\beta_T}{\beta_T^\id} = \frac{\frac{1}{\rho_\seg} \ponel{\rho_\seg}{P^\hs}{T}}{\frac{1}{\kB T \rho_\seg}} = \kB T \ponel{\rho_\seg}{P^\hs}{T} = \ponel{\rho_\seg}{\lb \rho_\seg Z^\hs \rb}{T}
+\end{equation}
+
+Differentiating $\rho_\seg Z^\hs$, at constant temperature and setting $K=M_1M_2/M_3$ and $L=M_2^3/M_3^2$, we get,
+\begin{align}
+  \label{eq:d_rZ_HS_mix}
+  \pone{\lb \rho_\seg Z^\hs \rb}{\rho_\seg}{} &= Z^\hs + \eta \pone{\lb Z^\hs \rb}{\eta}{} \nonumber \\
+  &= \frac{L \eta^4 - 4 L \eta^3 + \lb 9 L - 6 K + 1 \rb \eta^2 + \lb 6 K - 2 \rb \eta + 1}{\lb 1 - \eta \rb^4}
+\end{align}
+We have used,
+\begin{equation}
+  \label{eq:d_Z_HS_mix}
+ \pone{\lb Z^\hs \rb}{\eta}{} = \frac{-3 K (\eta^2 - 1) + \eta \lb 6 L + \eta - 2\rb + 1}{\lb 1 - \eta\rb^4}.
+\end{equation}
+This gives the reduced isothermal compressibillity for additive hard-sphere mixtures,
+\begin{equation}
+  \label{eq:K_HS_mix}
+  K_\mix^\hs = \frac{\lb 1 - \eta \rb^4}{ L \eta^4 - 4 L \eta^3 + \lb 9 L - 6 K + 1 \rb \eta^2 + \lb 6 K - 2 \rb \eta + 1}.
+%    -3 \eta K\lb\eta^2 - 1\rb + \eta \lb 3 K \lb\eta - 1\rb^2 + L \eta \lb\lb\eta - 4\rb \eta + 9\rb + \eta - 2\rb + 1
+\end{equation}
+Setting $L=K=1$, we see that $K_\mix^\hs$ reduces to $K^\hs$.
+\subsubsection{Analytical differentials}
+Differentials are needed down to second order in temperature, mol
+numbers and volume, additional differentials are required for the
+chain model.
+%
+A new symbol, $D$, is introduced for the denominator, and $N$ is
+introduced by the nominator,
+\begin{align}
+  \label{eq:D_HS_mix}
+  D &= L \eta^4 - 4 L \eta^3 + \lb 9 L - 6 K + 1 \rb \eta^2 + \lb 6 K - 2 \rb \eta + 1, \\
+  N &= \lb 1 - \eta \rb^4. \label{eq:N_HS_mix}
+\end{align}
+\begin{align}
+  \label{eq:dDdK_HS_mix}
+  D_K &= -6 \eta^2 + 6 \eta,\\
+  \label{eq:d2DdKdeta_HS_mix}
+  D_{K\eta} &= -12 \eta + 6.
+\end{align}
+\begin{align}
+  \label{eq:dDdL_HS_mix}
+  D_L &= \eta^4 - 4\eta^3 + 9\eta^2,\\
+  \label{eq:d2DdLdeta_HS_mix}
+  D_{L\eta} &=  4 \eta^3 - 12\eta^2 + 18\eta,
+\end{align}
+Using $\bar{\beta} = K_\mix^\hs$,
+\begin{align}
+  \label{eq:dKhsdK_HS_mix}
+  \bar{\beta}_K &= -\frac{N D_K}{D^2}, \\
+  \label{eq:dKhs2dK2_HS_mix}
+  \bar{\beta}_{KK} &= \frac{2 N D_K^2}{D^3}, \\
+  \label{eq:dKhs2dKdL_HS_mix}
+  \bar{\beta}_{KL} &= \frac{2 N D_K D_L}{D^3}, \\
+  \label{eq:dKhs2dKdeta_HS_mix}
+  \bar{\beta}_{K\eta} &= \frac{ - N_\eta D D_K - N D D_{K\eta} + 2 N D_K D_\eta }{D^3}.
+\end{align}
+The $\bar{\beta}_{L}$ follow the same pattern.
+\begin{align}
+  \label{eq:dDdeta_HS_mix}
+  D_{\eta} &= 4 L \eta^3 - 12 L \eta^2 + 2 \lb 9 L - 6 K + 1 \rb \eta + 6 K - 2,\\
+  \label{eq:d2Ddeta2_HS_mix}
+  D_{\eta\eta} &= 12 L \eta^2 - 24 L \eta + 18 L - 12 K + 2, \\
+  \label{eq:dNdeta_HS_mix}
+  N_{\eta} &=  -4 \lb 1 - \eta \rb^3,\\
+  \label{eq:d2Ndeta2_HS_mix}
+  N_{\eta\eta} &= 12 \lb 1 - \eta \rb^2 .
+\end{align}
+\begin{align}
+  \label{eq:dKhsdeta_HS_mix}
+  \bar{\beta}_{\eta} &= \frac{D N_\eta - N D_\eta}{D^2}, \\
+  \label{eq:dKhs2deta2_HS_mix}
+  \bar{\beta}_{\eta\eta} &= \frac{D^2 N_{\eta\eta} - N D D_{\eta\eta} - 2 D N_\eta D_\eta + 2 N D_\eta^2}{D^3}.
+\end{align}
+
+\begin{align}
+  \label{eq:B_T}
+  \bar{\beta}_{T} =& \bar{\beta}_K K_T + \bar{\beta}_L L_T + \bar{\beta}_\eta \eta_T, \\
+  \label{eq:B_TT}
+  \bar{\beta}_{TT} =& \bar{\beta}_{KK} K_T^2 + \bar{\beta}_{LL} L_T^2
+                      + \bar{\beta}_{\eta\eta} \eta_T^2 + 2 \bar{\beta}_{KL} L_TK_T +
+                     2\bar{\beta}_{K\eta} K_T\eta_T + 2 \bar{\beta}_{L\eta} L_T \eta_T +
+                      \nonumber \\
+                     & + \bar{\beta}_K K_{TT} + \bar{\beta}_L L_{TT} + \bar{\beta}_\eta \eta_{TT}, \\
+  \label{eq:B_TV}
+  \bar{\beta}_{TV} =& \lb \bar{\beta}_{K\eta} K_T + \bar{\beta}_{L\eta} L_T + \bar{\beta}_{\eta\eta} \eta_{T}\rb\eta_{V} + \bar{\beta}_{\eta} \eta_{TV}, \\
+  \label{eq:B_V}
+  \bar{\beta}_{V} =& \bar{\beta}_\eta \eta_V, \\
+  \label{eq:B_VV}
+  \bar{\beta}_{VV} =& \bar{\beta}_{\eta\eta} \eta_V^2 + \bar{\beta}_\eta \eta_{VV}, \\
+  \label{eq:B_n}
+  \bar{\beta}_{i} =& \bar{\beta}_K K_i + \bar{\beta}_L L_i + \bar{\beta}_\eta \eta_i, \\
+  \label{eq:B_nn}
+  \bar{\beta}_{ij} =& \lb \bar{\beta}_{KK} K_j + \bar{\beta}_{KL} L_j + \bar{\beta}_{K\eta}\eta_j  \rb K_i \nonumber \\& + \lb \bar{\beta}_{KL} K_j + \bar{\beta}_{LL} L_j + \bar{\beta}_{L\eta}\eta_j \rb L_i \nonumber \\& + \lb \bar{\beta}_{K\eta}K_j + \bar{\beta}_{L\eta}L_j + \bar{\beta}_{\eta\eta} \eta_j \rb\eta_i \nonumber \\ &+ \bar{\beta}_K K_{ij} + \bar{\beta}_L L_{ij} + \bar{\beta}_\eta \eta_{ij}, \\
+  \label{eq:B_Tn}
+  \bar{\beta}_{Ti} =& \lb \bar{\beta}_{KK} K_i + \bar{\beta}_{KL} L_i + \bar{\beta}_{K\eta}\eta_i  \rb K_T \nonumber \\& + \lb \bar{\beta}_{KL} K_i + \bar{\beta}_{LL} L_i + \bar{\beta}_{L\eta}\eta_i \rb L_T \nonumber \\& + \lb \bar{\beta}_{K\eta}K_i + \bar{\beta}_{L\eta}L_i + \bar{\beta}_{\eta\eta} \eta_i \rb\eta_T \nonumber \\ &+ \bar{\beta}_K K_{Ti} + \bar{\beta}_L L_{Ti} + \bar{\beta}_\eta \eta_{Ti} \\
+  \label{eq:B_Vn}
+  \bar{\beta}_{Vi} =& \lb \bar{\beta}_{K\eta}K_i + \bar{\beta}_{L\eta}L_i + \bar{\beta}_{\eta\eta}\eta_i \rb \eta_V + \bar{\beta}_\eta \eta_{Vi}.
+\end{align}
+
+We introduce $\bar{M}_{l} = M_{l}\sum_i m_{\seg,i} n_{i}$ and differentiate,
+\begin{align}
+  \label{eq:M_l_diff}
+  \bar{M}_{l,T} =&  \sum_i m_{\seg,i} n_{i} l d_{ii}^{l-1}d_{ii,T} \qquad l \in { 1,2,3 }, \\
+  \bar{M}_{l,TT} =&  \begin{cases}
+    \sum_i m_{\seg,i} n_{i} d_{ii,TT} & l \in { 1}, \\
+    \sum_i m_{\seg,i} n_{i} l d_{ii}^{l-2} \lb \lb l-1\rb d_{ii,T}^2 + d_{ii}d_{ii,TT}\rb & l \in { 2,3 },
+  \end{cases}\\
+  \bar{M}_{l,n_i} =&  m_{\seg,i} d_{ii}^l \qquad l \in { 1,2,3 }, \\
+  \bar{M}_{l,nn} =&  0 \qquad l \in { 1,2,3 }, \\
+  \bar{M}_{l,Tn_i} =& m_{\seg,i} l d_{ii}^{l-1}d_{ii,T} \qquad l \in { 1,2,3 }.
+\end{align}
+Using $\bar{M}_{l}$ and $n_{\seg} = \sum_i m_{\seg,i} n_{i}$, we get
+$K=\bar{M}_1\bar{M}_2/\lb n_\seg \bar{M}_3\rb$ and
+$L=\bar{M}_2^3/\lb n_\seg \bar{M}_3^2\rb$.
+\begin{gather}
+  \label{eq:K_diff}
+  n_\seg \bar{M}_{3} K = \bar{M}_{1}\bar{M}_{2} ,\\
+  n_\seg \bar{M}_{3,T} K + n_\seg \bar{M}_{3} K_T = \bar{M}_{1,T}\bar{M}_{2} + \bar{M}_{1}\bar{M}_{2,T},\\
+  n_\seg \bar{M}_{3,TT} K + 2 n_\seg \bar{M}_{3,T} K_T + n_\seg \bar{M}_{3} K_{TT} = \bar{M}_{1,TT}\bar{M}_{2} + 2 \bar{M}_{1,T}\bar{M}_{2,T} + \bar{M}_{1}\bar{M}_{2,TT},\\
+  m_{\seg,i} \bar{M}_{3} K + n_\seg \bar{M}_{3,i} K + n_\seg \bar{M}_{3} K_{i} = \bar{M}_{1,i}\bar{M}_{2} + \bar{M}_{1}\bar{M}_{2,i} ,\\
+  m_{\seg,i} \bar{M}_{3,j} K + m_{\seg,i} \bar{M}_{3} K_{j} + m_{\seg,j} \bar{M}_{3,i} K + n_\seg \bar{M}_{3,i} K_{j} + m_{\seg,j} \bar{M}_{3} K_{i} + n_\seg \bar{M}_{3,j} K_{i} \nonumber \\ + n_\seg \bar{M}_{3} K_{ij} =  \bar{M}_{1,i}\bar{M}_{2,j} + \bar{M}_{1,j}\bar{M}_{2,i} ,\\
+  m_{\seg.i} \bar{M}_{3,T} K + n_{\seg} \bar{M}_{3,Ti} K + n_{\seg} \bar{M}_{3,T} K_i + m_{\seg,i} \bar{M}_{3} K_{T} + n_{\seg} \bar{M}_{3,i} K_{T} + n_{\seg} \bar{M}_{3} K_{Ti} = \nonumber \\ \bar{M}_{1,Ti}\bar{M}_{2} + \bar{M}_{1,T}\bar{M}_{2,i} + \bar{M}_{1,i}\bar{M}_{2,T} + \bar{M}_{1}\bar{M}_{2,Ti}.
+\end{gather}
+
+
+\begin{align}
+  \label{eq:K_diff_ordered}
+  K_T =& \frac{\bar{M}_{1,T}\bar{M}_{2} + \bar{M}_{1}\bar{M}_{2,T} - n_\seg \bar{M}_{3,T} K}{n_\seg \bar{M}_{3}},\\
+  K_{TT} =& \frac{\bar{M}_{1,TT}\bar{M}_{2} + 2 \bar{M}_{1,T}\bar{M}_{2,T} + \bar{M}_{1}\bar{M}_{2,TT} - n_\seg \bar{M}_{3,TT} K - 2 n_\seg \bar{M}_{3,T} K_T}{n_\seg \bar{M}_{3}},\\
+  K_{i} =& \frac{\bar{M}_{1,i}\bar{M}_{2} + \bar{M}_{1}\bar{M}_{2,i} - m_{\seg,i} \bar{M}_{3} K - n_\seg \bar{M}_{3,i} K }{n_\seg \bar{M}_{3}} ,\\
+  K_{ij} =& \frac{\bar{M}_{1,i}\bar{M}_{2,j} + \bar{M}_{1,j}\bar{M}_{2,i}  - m_{\seg,i} \bar{M}_{3,j} K - m_{\seg,i} \bar{M}_{3} K_{j} - m_{\seg,j} \bar{M}_{3,i} K }{n_\seg \bar{M}_{3}} \nonumber \\
+  &+ \frac{ - n_\seg \bar{M}_{3,i} K_{j} - m_{\seg,j} \bar{M}_{3} K_{i} - n_\seg \bar{M}_{3,j} K_{i}}{n_\seg \bar{M}_{3}},\\
+  K_{Ti} =& \frac{\bar{M}_{1,Ti}\bar{M}_{2} + \bar{M}_{1,T}\bar{M}_{2,i} + \bar{M}_{1,i}\bar{M}_{2,T} + \bar{M}_{1}\bar{M}_{2,Ti} - m_{\seg.i} \bar{M}_{3,T} K - n_{\seg} \bar{M}_{3,Ti} K}{n_{\seg} \bar{M}_{3}} \nonumber \\
+  & + \frac{ - n_{\seg} \bar{M}_{3,T} K_i - m_{\seg,i} \bar{M}_{3} K_{T} - n_{\seg} \bar{M}_{3,i} K_{T}}{n_{\seg} \bar{M}_{3}}
+\end{align}
+
+\begin{gather}
+  \label{eq:L_diff}
+  n_{\seg} \bar{M}_{3}^2 L_{} = \bar{M}_{2}^3 \\
+  2 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{} + n_{\seg} \bar{M}_{3}^2 L_{T} = 3 \bar{M}_{2}^2 \bar{M}_{2,T} \\
+  2 n_{\seg} \bar{M}_{3,T}^2 L_{} + 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,TT} L_{} + 4 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{T} + n_{\seg} \bar{M}_{3}^2 L_{TT} = 6 \bar{M}_{2} \bar{M}_{2,T}^2 + 3 \bar{M}_{2}^2 \bar{M}_{2,TT} \\
+  2 m_{\seg,i} \bar{M}_{3}\bar{M}_{3,T} L_{}  + 2 n_{\seg} \bar{M}_{3,i}\bar{M}_{3,T} L_{} + 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,Ti} L_{} + + 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{i} +  m_{\seg,i} \bar{M}_{3}^2 L_{T} \nonumber \\
+  +  2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{T} +  n_{\seg} \bar{M}_{3}^2 L_{Ti} = 6 \bar{M}_{2} \bar{M}_{2,i} \bar{M}_{2,T} + 3 \bar{M}_{2}^2 \bar{M}_{2,Ti} \\
+  m_{\seg,i} \bar{M}_{3}^2 L_{} + 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{} + n_{\seg} \bar{M}_{3}^2 L_{i} = 3 \bar{M}_{2}^2 \bar{M}_{2,i} \\
+  2 m_{\seg,i} \bar{M}_{3} \bar{M}_{3,j} L_{} + m_{\seg,i} \bar{M}_{3}^2 L_{j} + 2 m_{\seg,j} \bar{M}_{3} \bar{M}_{3,i} L_{} + 2 n_{\seg} \bar{M}_{3,j} \bar{M}_{3,i} L_{} + 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{j} \nonumber \\
+  + m_{\seg,j} \bar{M}_{3}^2 L_{i} + 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,j} L_{i} + n_{\seg} \bar{M}_{3}^2 L_{ij} = 6 \bar{M}_{2} \bar{M}_{2,j} \bar{M}_{2,i} + 3 \bar{M}_{2}^2 \bar{M}_{2,ij}.
+\end{gather}
+\begin{align}
+  \label{eq:L_diff2}
+  L_{T} =& \frac{3 \bar{M}_{2}^2 \bar{M}_{2,T} - 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{} }{n_{\seg} \bar{M}_{3}^2} \\
+  L_{TT} =& \frac{6 \bar{M}_{2} \bar{M}_{2,T}^2 + 3 \bar{M}_{2}^2 \bar{M}_{2,TT} -  2 n_{\seg} \bar{M}_{3,T}^2 L_{} - 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,TT} L_{} - 4 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{T}}{n_{\seg} \bar{M}_{3}^2} \\
+L_{Ti} =& \frac{ 6 \bar{M}_{2} \bar{M}_{2,i} \bar{M}_{2,T} + 3 \bar{M}_{2}^2 \bar{M}_{2,Ti} -   2 m_{\seg,i} \bar{M}_{3}\bar{M}_{3,T} L_{}  - 2 n_{\seg} \bar{M}_{3,i}\bar{M}_{3,T} L_{} }{n_{\seg} \bar{M}_{3}^2} \nonumber\\ &+\frac{- 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,Ti} L_{} - 2 n_{\seg} \bar{M}_{3}\bar{M}_{3,T} L_{i} -  m_{\seg,i} \bar{M}_{3}^2 L_{T}  -  2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{T}}{n_{\seg} \bar{M}_{3}^2} \\
+   L_{i} =& \frac{ 3 \bar{M}_{2}^2 \bar{M}_{2,i} - m_{\seg,i} \bar{M}_{3}^2 L_{} - 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{}}{n_{\seg} \bar{M}_{3}^2} \\
+ L_{ij} =& \frac{ 6 \bar{M}_{2} \bar{M}_{2,j} \bar{M}_{2,i} + 3 \bar{M}_{2}^2 \bar{M}_{2,ij} -  2 m_{\seg,i} \bar{M}_{3} \bar{M}_{3,j} L_{} - m_{\seg,i} \bar{M}_{3}^2 L_{j}  - 2 m_{\seg,j} \bar{M}_{3} \bar{M}_{3,i} L_{}}{n_{\seg} \bar{M}_{3}^2} \nonumber \\ &+  \frac{ - 2 n_{\seg} \bar{M}_{3,j} \bar{M}_{3,i} L_{} - 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,i} L_{j}
+  - m_{\seg,j} \bar{M}_{3}^2 L_{i} - 2 n_{\seg} \bar{M}_{3} \bar{M}_{3,j} L_{i}}{n_{\seg} \bar{M}_{3}^2}.
+\end{align}
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{../thermopack.bib}
+
+\end{document}

@@ -1,0 +1,452 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+\usepackage{booktabs}
+\usepackage{todonotes}
+\usepackage{subcaption,caption}
+\usepackage{xspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
+
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}% for å slippe å taste inn disse $
+\newcolumntype{L}{>{$}l<{$}}% for å slippe å taste inn disse $
+%
+\newcommand*{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand*{\uunit}[1]{\ensuremath{\mathrm{#1}}}
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdc}[3]{\frac{\partial^{2}#1}{\partial{#2}\partial{#3}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+% høy tekst-indeks/superscript/apex
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{vap}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to}\xspace}
+\newcommand{\excess}{\text{E}}
+
+\title{Wong-Sandler equation of state}
+\author{Morten Hammer}
+
+\graphicspath{{gfx/}}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction}
+Derivation of the Wong-Sandler first and second differentials needed
+for thermopack implementation\cite{Wong1992}. The appendix of the
+Wong-Sandler paper contain parameter definitions and first order
+differentials \wrpt mole numbers for the Peng-Robinson equation of state. 
+\section{Infinite pressure limit of the equations of state}
+To determine the $C$ parameter of equation A3 and A4, the pressure
+limit of the equation of state must be found.
+
+\begin{table}[htb]
+\begin{minipage}[l]{0.58\linewidth}
+\caption{Different equations of state}
+\vspace{-3mm}
+\include{tab_eos}
+\label{tab:eos}
+\end{minipage}
+\end{table}
+
+\begin{equation}
+P=\frac{nRT}{V-B}-\frac{A}{\left(V-B(T)m_1\right)\left(V-B(T)m_2\right)}
+\label{eq:eosg}
+\end{equation}
+
+\begin{table}[htb]
+\begin{minipage}[l]{0.58\linewidth}
+\caption{Equation of state parameters}
+\vspace{-3mm}
+\include{tab_eos2}
+\label{tab:eos2}
+\end{minipage}
+\end{table}
+
+The residual Helmholtz function, $F$, becomes
+\begin{equation}
+  F(T,V,\vektor{n})=
+  n\left[\ln\left(\frac{V}{V-B}\right)-\frac{A}{\left(m_1-m_2\right)BRT}\ln\left(\frac{V-m_2B}{V-m_1B}\right) \right].
+\end{equation}
+
+In order to find the pressure limit, we use that,
+\begin{equation}
+  F(T,P,\vektor{n}) = F(T,V,\vektor{n}) - \ln(Z),
+\end{equation}
+where $Z=PV/(nRT)$. We then get,
+\begin{equation}
+  F(T,P,\vektor{n})=
+  n\left[-\ln\left(\frac{P\left(V-B\right)}{nRT}\right)-\frac{A}{\left(m_1-m_2\right)BRT}\ln\left(\frac{V-m_2B}{V-m_1B}\right)
+  \right].
+\end{equation} 
+From \ref{eq:eosg} we see
+\begin{equation}
+\lim_{P\to\infty} \frac{P\left(V-B\right)}{nRT} = 1
+\label{eq:plim}
+\end{equation}
+We therefore get
+\begin{equation}
+  \lim_{P\to\infty} F(T,P,\vektor{n})=
+  \frac{nA}{BRT}
+  \frac{1}{\left(m_1-m_2\right)}\ln\left(\frac{B-m_1B}{B-m_2B}\right)
+  = \frac{nAC}{BRT},
+  \label{eq:plimF}
+\end{equation}
+where $C$ is given as follows,
+\begin{equation}
+  C=
+  \frac{1}{\left(m_1-m_2\right)}\ln\left(\frac{1-m_1}{1-m_2}\right).
+  \label{eq:C}
+\end{equation}
+ 
+\begin{table}[htb]
+\caption{Equation of state $C$-parameter}
+\center
+\begin{tabular}{ll}
+  \hline
+  EOS &         $C$   \\
+  \hline
+  Van der Waals		& -1 \\
+  Redlich Kwong	 	& -$\ln{2}$ \\
+  Soave Redlich Kwong	& -$\ln{2}$ \\
+  Peng Robinson	        &
+  $\frac{1}{\sqrt{2}}\ln{\left(\sqrt{2}-1\right)}$ \\
+  Otherwise             & Use Eq. \ref{eq:C} \\
+  \hline
+\end{tabular}
+\label{tab:C}
+\end{table}
+%\todo[inline]{Calculate $C$ for the three parameter equations of state}
+
+\section{The Wong-Sandler mixing rule}
+The Wong-Sandler mixing rule give a relation between the $B$ and $A$
+parameter of the equation of state. In effect the $B$ parameter become
+temperature dependent.
+
+\begin{align}
+  B &= \frac{Q}{n-D}   \label{eq:bm}\\
+  &\Updownarrow \nonumber\\
+  B(n-D) &= Q\label{eq:bm_diff}
+\end{align}
+
+\begin{align}
+  \frac{A}{RT} &= BD
+  \label{eq:am}\\
+  &\Updownarrow \nonumber\\
+  A &= BDRT
+  \label{eq:am_diff}
+\end{align}
+$Q$ is defined as follows,
+\begin{equation}
+  Q = \underset{i}{\sum}\underset{j}{\sum}n_in_j\left(b-\frac{a}{RT}\right)_{ij},   \label{eq:Q}
+\end{equation}
+where
+\begin{equation}
+\left(b-\frac{a}{RT}\right)_{ij} =\frac{\left(b_i-\frac{a_i(T)}{RT}\right) + \left(b_j-\frac{a_j(T)}{RT}\right)}{2}\left(1-k_{ij}\left(T\right)\right),
+\end{equation}
+and
+\begin{align}
+%   b_{ij} &= \frac{b_i+b_j}{2},   \label{eq:bij}\\
+%   a_{ij} &= \sqrt{a_ia_j}\left(1-k_{ij}\right),   \label{eq:aij}
+   a_{i}(T) &= \tilde{a}_i \alpha(T),   \label{eq:aai}
+\end{align}
+To simplify the differentials, we introduce $r_i$,
+\begin{align}
+  r_i&=\left(b_i-\frac{a_i(T)}{RT}\right),\\
+  r_{i,T}&=-\frac{a_{i,T}}{RT} + \frac{a_i}{RT^2},\\
+  r_{i,TT}&=-\frac{a_{i,TT}}{RT} + \frac{2a_{i,T}}{RT^2} - \frac{2a_{i}}{RT^3}.\\
+\end{align}
+$D$ is defined as,
+\begin{equation}
+  D = \underset{i}{\sum}n_i\frac{a_i}{b_iRT} + \frac{A_\infty^\excess}{CRT} \label{eq:D}
+\end{equation}
+\section{Partial differentials}
+\subsection{Temperature differentials}
+Differentiating \ref{eq:bm_diff} \wrpt $T$ gives:
+\begin{align}
+  B_T(n-D)-BD_T &= Q_T   \label{eq:bmT_diff}\\
+  &\Updownarrow \nonumber\\
+  B_T &=\frac{Q_T+BD_T}{n-D} \label{eq:bmT}
+\end{align}
+Further differentiating \ref{eq:bmT_diff} \wrpt $T$ gives:
+\begin{align}
+  B_{TT}(n-D)-2B_TD_T-BD_{TT} &= Q_{TT}   \label{eq:bmTT_diff}\\
+  &\Updownarrow \nonumber\\
+  B_{TT} &=\frac{Q_{TT}+2B_TD_T+BD_{TT}}{n-D} \label{eq:bmTT}
+\end{align}
+Differentiating \ref{eq:am_diff} \wrpt $T$ gives:
+\begin{align}
+  A_T &= B_TDRT + BD_TRT + BDR   \label{eq:amT_diff}\\
+\end{align}
+Further differentiating \ref{eq:amT_diff} \wrpt $T$ gives:
+\begin{align}
+  A_{TT} &= B_{TT}DRT + 2B_{T}D_TRT + 2B_{T}DR + 2BD_TR + BD_{TT}RT
+  \label{eq:amTT_diff}
+\end{align}
+Differentiating \ref{eq:Q}, gives,
+\begin{eqnarray}
+  Q_T =&\underset{i}{\sum}\underset{j}{\sum}n_in_j&\left(\frac{\left(r_{i,T}+r_{j,T}\right)\left(1-k_{ij}\right)}{2}-\frac{r_i+r_j}{2}k_{ij,T} \right), \label{eq:QT}\\
+  Q_{TT} =&\underset{i}{\sum}\underset{j}{\sum}n_in_j&\bigg(\frac{\left(r_{i,TT}+r_{j,TT}\right)\left(1-k_{ij}\right)}{2}-\left(r_{i,T}+r_{j,T}\right)k_{ij,T} \\
+& & -\frac{r_i+r_j}{2}k_{ij,TT} \bigg),  \label{eq:QTT}
+\end{eqnarray}
+Differentiating \ref{eq:D}, gives,
+\begin{align}
+  D_TRT + DR &= \underset{i}{\sum}n_i\frac{a_{i,T}}{b_i} + \frac{A_{\infty,T}^\excess}{C},   \label{eq:DT_diff}\\
+  &\Updownarrow \nonumber\\
+  D_T &= \frac{\underset{i}{\sum}n_i\frac{a_{i,T}}{b_i} + \frac{A_{\infty,T}^\excess}{C} - DR}{RT}.   \label{eq:DT}
+\end{align}
+Differentiating \ref{eq:DT_diff} further gives,
+\begin{align}
+  D_{TT}RT + 2D_TR &= \underset{i}{\sum}n_i\frac{a_{i,TT}}{b_i} + \frac{A_{\infty,TT}^\excess}{C},   \label{eq:DTT_diff}\\
+  &\Updownarrow \nonumber\\
+  D_{TT} &= \frac{\underset{i}{\sum}n_i\frac{a_{i,TT}}{b_i} + \frac{A_{\infty,TT}^\excess}{C} - 2D_TR}{RT}.   \label{eq:DTT}
+\end{align}
+\subsection{Mole number differentials}
+Differentiating \ref{eq:bm_diff} \wrpt $n_i$ gives:
+\begin{align}
+  B_i(n-D)+B(1-D_i) &= Q_i   \label{eq:bmi_diff}\\
+  &\Updownarrow \nonumber\\
+  B_i &=\frac{Q_i+B(D_i-1)}{n-D} \label{eq:bmi}
+\end{align}
+Further differentiating \ref{eq:bmi_diff} \wrpt $n_j$ gives:
+\begin{align}
+  B_{ij}(n-D)+B_i(1-D_j)+B_j(1-D_i)-BD_{ij} &= Q_{ij}   \label{eq:bmij_diff}\\
+  &\Updownarrow \nonumber\\
+  \frac{Q_{ij}+B_i(D_j-1)+B_j(D_i-1)+BD_{ij}}{n-D} &= B_{ij} \label{eq:bmij}
+\end{align}
+Differentiating \ref{eq:am_diff} \wrpt $n_i$ gives:
+\begin{align}
+  A_i &= RT\left(B_iD + BD_i\right)    \label{eq:ami_diff}\\
+\end{align}
+Further differentiating \ref{eq:ami_diff} \wrpt $n_j$ gives:
+\begin{align}
+  A_{ij} &= RT\left(B_{ij}D + B_{i}D_j + B_{j}D_i + BD_{ij}\right)
+  \label{eq:amij_diff}
+\end{align}
+Differentiating \ref{eq:Q}, \wrpt $n_i$ and thereafter $n_j$ gives,
+\begin{align}
+  Q_i &=2\underset{j}{\sum}n_j\left(b-\frac{a}{RT}\right)_{ij}, \label{eq:Qi}\\
+  Q_{ij} &= 2\left(b-\frac{a}{RT}\right)_{ij}.   \label{eq:Qij}
+\end{align}
+
+Differentiating Equation \ref{eq:D} \wrpt $n_i$ gives,
+\begin{align}
+  D_iRT &= \frac{a_{i}}{b_i} + \frac{A_{\infty,i}^\excess}{C}.   \label{eq:Di_diff}
+\end{align}
+Differentiating \ref{eq:Di_diff} further \wrpt $n_j$ gives,
+\begin{align}
+  D_{ij}RT &=  \frac{A_{\infty,ij}^\excess}{C}.   \label{eq:Dij_diff}
+\end{align}
+\subsection{Cross differentials}
+Differentiating \ref{eq:bmi_diff} \wrpt $T$ gives:
+\begin{align}
+  B_{iT}(n-D)-B_iD_T+B_T(1-D_i)-BD_{iT} &= Q_{iT}   \label{eq:bmit_diff}\\
+  &\Updownarrow \nonumber\\
+  \frac{Q_{iT}+B_iD_T+B_T(D_i-1)+BD_{iT}}{n-D} &= B_{iT} \label{eq:bmit}
+\end{align}
+Differentiating \ref{eq:ami_diff} \wrpt $T$ gives:
+\begin{align}
+  A_{iT} &= R\left(B_{iT}DT + B_{i}D_TT + B_{i}D + B_TD_iT + BD_{iT}T + BD_i\right)   \label{eq:amit_diff}\\
+\end{align}
+Differentiating \ref{eq:Qi}, \wrpt $T$ gives,
+\begin{align}
+  %Q_{iT} &=2\underset{i}{\sum}n_i\left(b-\frac{a}{RT}\right)_{ij}, \label{eq:Qit}
+  Q_{iT} =&2\underset{j}{\sum}n_j\left(\frac{\left(r_{i,T}+r_{j,T}\right)\left(1-k_{ij}\right)}{2}-\frac{r_i+r_j}{2}k_{ij,T} \right). \label{eq:QiT}\\
+\end{align}
+
+Differentiating Equation \ref{eq:Di_diff} \wrpt $T$ gives,
+\begin{align}
+  D_{iT}RT + D_iR &= \frac{a_{i,T}}{b_i} + \frac{A_{\infty,iT}^\excess}{C}.   \label{eq:Dit_diff}\\
+  &\Updownarrow \nonumber\\
+  D_{iT} &= \frac{\frac{a_{i,T}}{b_i} + \frac{A_{\infty,iT}^\excess}{C} - D_iR}{RT}.   \label{eq:Dit}
+\end{align}
+
+\section{The NRTL infinite free energy model}
+The NRTL model \cite{Renon1968}:
+
+\begin{equation}
+  \frac{A_\infty^\excess}{RT} =
+  \underset{i}{\sum}n_i\left(\frac{\underset{j}{\sum}n_j\tau_{ji}g_{ji}}{\underset{k}{\sum}n_k
+      g_{ki}}\right),
+  \label{eq:nrtl}
+\end{equation}
+where
+\begin{equation}
+  g_{ij}\left(T\right) =\exp{\left(-\alpha_{ij}\tau_{ij}\left(T\right)\right)}.
+  \label{eq:gij}
+\end{equation}
+Looking at the NRTL model it is very similar to the Huron-Vidal model
+(HV) \cite{Huron1979},
+\begin{equation}
+  \frac{G_\infty^\excess}{RT} =
+  \underset{i}{\sum}n_i\left(\frac{\underset{j}{\sum}n_jb_{j}\tau_{ji}g_{ji}}{\underset{k}{\sum}n_kb_{k}
+      g_{ki}}\right).
+  \label{eq:HV}
+\end{equation}
+Comparing equation \ref{eq:HV} and equation \ref{eq:nrtl}, the
+substitution $b_{j}g_{ji}^{\text{HV}} = g_{ji}^{\text{NRTL}}$ can be
+made, that lets us reuse the existing HV implementation. For the
+combination of NRTL for some binaries and simple van der Waals mixing
+for other binaries, the following can be done,
+\begin{eqnarray}
+g_{ji} & = & b_{j},\\
+\beta_{ii} & = & \frac{a_{i}}{b_{i}}C,\\
+\beta_{ji} & = & -\frac{\sqrt{b_i b_j}}{b_{ij}}\sqrt{\beta_{ii}\beta_{jj}}\left(1-k_{ij}\right),\\
+\tau_{ji} &=& \frac{\beta_{ji}-\beta_{ii}}{RT}.
+\end{eqnarray}
+This follows from the relations for HV described in
+\cite{Wilhelmsen2013}.
+
+Alternatively the relations developed by \cite{Twu2001}, can be used.
+\subsection{Differentials}
+Follows the approach above, the differentials are already available
+from \cite{Wilhelmsen2013}.
+% Differentating \ref{eq:nrtl}
+% \begin{align}
+%   A_{\infty,T}^\excess =& RA_{\infty}^\excess + 
+%   RT\underset{i}{\sum}n_i\left(\frac{\underset{j}{\sum}n_j\tau_{ji,T}g_{ji}\left(1-\alpha_{ij}\tau_{ij}\right)}{\underset{k}{\sum}n_k
+%       g_{ki}}\right) \\
+%   &+
+% RT\underset{i}{\sum}n_i\left(\frac{\underset{j}{\sum}n_j\tau_{ji}g_{ji}}{\left(\underset{k}{\sum}n_k
+%       g_{ki}\right)^2}\underset{k}{\sum}-n_k
+%       g_{ki}\alpha_{ki}\tau_{ij,T}\right).
+%   \label{eq:nrtl_T}
+% \end{align}
+% Further differentating \ref{eq:nrtl_T},
+% \begin{equation}
+%   A_{\infty,TT}^\excess = RA_{\infty,T}^\excess + 
+%   RT\underset{i}{\sum}n_i\left(\frac{\underset{j}{\sum}n_j\tau_{ji}g_{ji}}{\underset{k}{\sum}n_k
+%       g_{ki}}\right),
+%   \label{eq:nrtl_TT}
+% \end{equation}
+%\section{The UNIFAC model}
+%The Wong-Sandler can be used with the UNIFAC model of \cite{}.
+% Need expression for the residual excess gibbs energy
+\clearpage
+\bibliographystyle{plain}
+\bibliography{../thermopack}
+
+\end{document}

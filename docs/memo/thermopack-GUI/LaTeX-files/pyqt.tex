@@ -1,0 +1,36 @@
+\section{PyQt5}
+
+This project has used the Python bundle for the latest Qt version, PyQt5. The whole PyQt5 application is built of many individual widgets. These widgets can contain other widgets, and they can send signals to each other to pass data or handle user actions. The Qt Designer tool is a convenient way of creating a layout, where you can see what you make without having to create the layout code, which saves a lot of time and energy. The different widgets can be styled and customized if desired with a stylesheet.
+
+\subsection{Widgets}
+
+All parts of the GUI are called \textit{Widgets}. These can contain information, take inputs from the user, or contain a set of other widgets. The main widget containing the others is called the \textit{Window}. Some examples of simple widgets are the \textit{QPushButton} which is a pushable button, or the \textit{QLineEdit} which can take in user input from the keyboard. Other built-in widgets are the \textit{QTabWidget} which can hold other widgets in different tabs, or the \textit{QStackedWidget} which contains a stack of multiple widgets, and only displays one widget at the time. A complete list of available widgets is found in the Qt documentation \url{https://doc.qt.io/archives/qt-5.11/widget-classes.html}. This documentation is for C++, but most of the functionality can easily be used in the same fashion in PyQt.
+
+\subsection{Signals and Slots}
+
+For widgets to communicate with each other, or to handle user interaction or input, they use \textit{signals} and \textit{slots}. Different widgets have different built-in signals, but it is also possible to create your own. A slot is a function which is called if a signal is emitted and connected to it. As an example, a QPushButton for closing a window emits a signal \textit{clicked}, and can be connected to a slot in the following way: \begin{verbatim}
+self.close_button.clicked.connect(self.close)
+\end{verbatim}
+More on signals and slots can be found in the Qt documentation \url{https://doc.qt.io/qt-5/signalsandslots.html}.
+
+\subsection{Qt Designer}
+
+The Qt Designer is a handy GUI builder tool. Here, you are shown a list of different widgets which you can drag-and-drop into a preview of the application window. You can set different layouts of your widgets (horizontal layout, vertical layout, grid layout, form layout) saving a lot of time and many lines of code. You can also set basic properties of your widgets including its object name to be referenced in further code. To install the Qt Designer for PyQt5, it is necessary to install the Python plugin \textit{pyqt5-tools}:
+\begin{verbatim}
+    pip install pyqt5-tools
+\end{verbatim}
+When this is done, the application is found in the /Lib/site-packages/pyqt5\_tools/\\Qt/bin folder where you have installed your Python environment on your system. With the Qt Designer, you can save your layouts as .ui files. To set the layout for a widget, one can do as follows:
+\begin{verbatim}
+    from PyQt5.QtWidgets import QWidget
+    from PyQt5.uic import LoadU
+    
+    class MyWidget(QWidget):
+        def __init__(self):
+            super().__init__()
+            loadUi("path/to/layout.ui", self)
+\end{verbatim}
+
+
+\subsection{Stylesheet}
+
+To make the widgets somewhat more intersting and less geeneric, it is possible to style them by setting their styleSheet. This can be done in several ways, either in the code by calling a widgets setStyleSheet() method, in the Qt Designer or by having a stylesheet.qss file and load this for the whole application. Different widgets have different parts that can be styled, and an overview of this is found in the documentation \url{https://doc.qt.io/qt-5/stylesheet-reference.html}. The styling syntax is very similar to CSS, but not all properties found in CSS is availbale for all widgets. 

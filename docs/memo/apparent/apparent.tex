@@ -1,0 +1,361 @@
+\documentclass[english]{../thermomemo/thermomemo}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath}
+%\input{mathdef}
+\usepackage[per-mode=symbol]{siunitx}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}% improves tabular environment.
+\usepackage{dcolumn}% also improves tabular environment, with decimal centring.
+\usepackage{chemformula}     % For easy typing of chemical formulae
+\usepackage{booktabs}
+\usepackage{a4wide}
+\usepackage{xspace}
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline}{}
+\usepackage{subcaption,caption}
+%\pdfminorversion=4
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+\usepackage{blkarray, bigstrut}
+
+%
+% Egendefinerte
+%
+% Kolonnetyper for array.sty:
+\newcolumntype{C}{>{$}c<{$}}% for å slippe å taste inn disse $
+\newcolumntype{L}{>{$}l<{$}}% for å slippe å taste inn disse $
+%
+\newcommand*{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand*{\uunit}[1]{\ensuremath{\mathrm{#1}}}
+%\newcommand*{\od}[3][]{\frac{\mathrm{d}^{#1}#2}{\mathrm{d}{#3}^{#1}}}% ordinary derivative
+\newcommand*{\od}[3][]{\frac{\dif^{#1}#2}{\dif{#3}^{#1}}}% ordinary derivative
+\newcommand*{\pd}[3][]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pdc}[3]{\frac{\partial^{2}#1}{\partial{#2}\partial{#3}}}% partial derivative
+\newcommand*{\pdt}[3][]{{\partial^{#1}#2}/{\partial{#3}^{#1}}}% partial
+                                % derivative for inline use.
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand{\ponel}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}} % partial derivative with informatio of constant variable. A line is added.
+\newcommand{\ptwo}[3]{\frac{\partial^{2} #1}{\partial #2 \partial
+    #3}} % partial differential in two different variables
+\newcommand{\pdn}[3]{\frac{\partial^{#1}#2}{\partial{#3}^{#1}}}% partial derivative
+\newcommand*{\pder}[2]{\left(\frac{\partial #1}{\partial #2}\right)}
+\newcommand*{\pdder}[2]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)}
+\newcommand*{\pdersub}[3]{\left(\frac{\partial #1}{\partial #2}\right)_{#3}}
+
+% Total derivative:
+\newcommand*{\ttd}[2]{\frac{\mathrm{D} #1}{\mathrm{D} #2}}
+\newcommand*{\td}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand*{\ddt}{\frac{\partial}{\partial t}}
+\newcommand*{\ddx}{\frac{\partial}{\partial x}}
+% Vectors etc:
+% For Computer Modern:
+
+\DeclareMathAlphabet{\mathsfsl}{OT1}{cmss}{m}{sl}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}%
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand*{\tensor}[1]{\mathsfsl{#1}}% 2. order tensor
+\newcommand*{\matr}[1]{\tensor{#1}}% matrix
+\renewcommand*{\div}{\boldsymbol{\nabla\cdot}}% divergence
+\newcommand*{\grad}{\boldsymbol{\nabla}}% gradient
+% fancy differential from Claudio Beccari, TUGboat:
+% adjusts spacing automatically
+\makeatletter
+\newcommand*{\dif}{\@ifnextchar^{\DIfF}{\DIfF^{}}}
+\def\DIfF^#1{\mathop{\mathrm{\mathstrut d}}\nolimits^{#1}\gobblesp@ce}
+\def\gobblesp@ce{\futurelet\diffarg\opsp@ce}
+\def\opsp@ce{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi\fi\fi\DiffSpace}
+\makeatother
+%
+\newcommand*{\me}{\mathrm{e}}% e is not a variable (2.718281828...)
+%\newcommand*{\mi}{\mathrm{i}}%  nor i (\sqrt{-1})
+\newcommand*{\mpi}{\uppi}% nor pi (3.141592...) (works for for Lucida)
+%
+% lav tekst-indeks/subscript/pedex
+\newcommand*{\ped}[1]{\ensuremath{_{\text{#1}}}}
+% høy tekst-indeks/superscript/apex
+\newcommand*{\ap}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand*{\apr}[1]{\ensuremath{^{\mathrm{#1}}}}
+\newcommand*{\pedr}[1]{\ensuremath{_{\mathrm{#1}}}}
+%
+\newcommand*{\volfrac}{\alpha}% volume fraction
+\newcommand*{\surften}{\sigma}% coeff. of surface tension
+\newcommand*{\curv}{\kappa}% curvature
+\newcommand*{\ls}{\phi}% level-set function
+\newcommand*{\ep}{\Phi}% electric potential
+\newcommand*{\perm}{\varepsilon}% electric permittivity
+\newcommand*{\visc}{\mu}% molecular (dymamic) viscosity
+\newcommand*{\kvisc}{\nu}% kinematic viscosity
+\newcommand*{\cfl}{C}% CFL number
+
+\newcommand*{\cons}{\vec U}
+\newcommand*{\flux}{\vec F}
+\newcommand*{\dens}{\rho}
+\newcommand*{\svol}{\ensuremath v}
+\newcommand*{\temp}{\ensuremath T}
+\newcommand*{\vel}{\ensuremath u}
+\newcommand*{\mom}{\dens\vel}
+\newcommand*{\toten}{\ensuremath E}
+\newcommand*{\inten}{\ensuremath e}
+\newcommand*{\press}{\ensuremath p}
+\renewcommand*{\ss}{\ensuremath a}
+\newcommand*{\jac}{\matr A}
+%
+\newcommand*{\abs}[1]{\lvert#1\rvert}
+\newcommand*{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand*{\biggabs}[1]{\biggl\lvert#1\biggr\rvert}
+\newcommand*{\norm}[1]{\lVert#1\rVert}
+%
+\newcommand*{\e}[1]{\times 10^{#1}}
+\newcommand*{\ex}[1]{\times 10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\exi}[1]{10^{#1}}%shorthand -- for use e.g. in tables
+\newcommand*{\nondim}[1]{\ensuremath{\mathit{#1}}}% italic iflg. ISO. (???)
+\newcommand*{\rey}{\nondim{Re}}
+\newcommand*{\acro}[1]{\textsc{\MakeLowercase{#1}}}%acronyms etc.
+
+\newcommand{\nto}{\ensuremath{\mbox{N}_{\mbox{\scriptsize 2}}}}
+\newcommand{\chfire}{\ensuremath{\mbox{CH}_{\mbox{\scriptsize 4}}}}
+%\newcommand*{\checked}{\ding{51}}
+\newcommand{\coto}{\ensuremath{\text{CO}_{\text{\scriptsize 2}}}}
+\newcommand{\celsius}{\ensuremath{^\circ\text{C}}}
+\newcommand{\clap}{Clapeyron~}
+\newcommand{\subl}{\ensuremath{\text{sub}}}
+\newcommand{\spec}{\text{spec}}
+\newcommand{\sat}{\text{sat}}
+\newcommand{\sol}{\text{sol}}
+\newcommand{\liq}{\text{liq}}
+\newcommand{\vap}{\text{vap}}
+\newcommand{\amb}{\text{amb}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\crit}{\text{crit}}
+\newcommand{\entr}{\ensuremath{\text{s}}}
+\newcommand{\fus}{\text{fus}}
+\newcommand{\flash}[1]{\ensuremath{#1\text{-flash}}}
+\newcommand{\spce}[2]{\ensuremath{#1\, #2\text{ space}}}
+\newcommand{\spanwagner}{\text{Span--Wagner}}
+\newcommand{\triplepoint}{\text{TP triple point}}
+\newcommand{\wrpt}{\text{with respect to~}}
+\newcommand{\tpd}{\ensuremath{\text{tpd}}\xspace}
+\newcommand{\TPD}{\ensuremath{\text{TPD}}\xspace}
+\newcommand{\lp}{\ensuremath{\left(}\xspace}
+\newcommand{\rp}{\ensuremath{\right)}\xspace}
+\newcommand{\mbn}[0]{\mathbf n}
+\newcommand{\mbe}[0]{\mathbf e}
+\newcommand{\mbx}[0]{\mathbf x}
+\newcommand{\app}{\ensuremath{\text{App}}\xspace}
+\newcommand{\nacl}{\ensuremath{\text{\ch{NaCl}}}\xspace}
+\newcommand{\na}{\ensuremath{\text{\ch{Na+}}}\xspace}
+\newcommand{\cl}{\ensuremath{\text{\ch{Cl-}}}\xspace}
+\newcommand{\ideal}{\ensuremath{\text{Id}}\xspace}
+
+\title{Apparent composition approach}
+\author{Morten Hammer}
+
+\graphicspath{{gfx/}}
+
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction}
+\citet[Chap. 13, Sec. 7]{Michelsen2007} describe the apparent
+composition approach in the context of chemical
+reactions. \citet[App. C.3]{Mogensen2014} uses this approach when
+modelling phase equilibrium for electrolyte system, using the salts as
+apparent composition.
+
+The idea is to use a model with all species ($\vektor{n}$) to model
+other species, the apparent species ($\vektor{e}$). The relation
+between the apparent and real species are derived from the following,
+\begin{equation}
+  A\lp T, V, \mbe \rp = A\lp T, V, \mbn \rp,
+\label{eq:helmholtz}
+\end{equation}
+and its differentials. We immediately see that the volume and
+temperature differentials are unaffected by the mole number
+representation.
+
+Using salt (\ch{NaCl}) to represent ions (\ch{Na+},\ch{Cl-}) as an
+example, some additional differentials are required. The apparent mole
+vector will then be $\mbe$ (salts) while the actual mole vector will
+be $\mbn$ (ions). We then have,
+
+\begin{align}
+  F\lp T, V, \mbn \rp &= F\lp T, V, \mbe \rp,\\
+  F_i^\app = \pdersub{F}{e_i}{T,V} &=
+  \sum_k\pdersub{F}{n_k}{T,V}\pder{n_k}{e_i}
+  = \sum_k v_{ik} \pdersub{F}{n_k}{T,V},\\
+  F_{ij}^\app &
+  = \sum_k v_{ik} \sum_m v_{jm} F_{ij}.
+\end{align}
+Here $v_{ik}$ is the stoichiometric composition of ion $j$ in salt
+$i$. For a system of \ch{NaCl}, \ch{H2O} and \ch{CO2}, $\mathbf{v}$
+will look as follows,
+\begin{equation}
+  \begin{blockarray}{*{4}{c} l}
+    \begin{block}{*{4}{>{$\footnotesize}c<{$}} l}
+      \ch{H2O} & \ch{CO2} & \ch{Na+} & \ch{Cl-} & \\
+    \end{block}
+    \begin{block}{[*{4}{c}]>{$\footnotesize}l<{$}}
+      1 & 0 & 0 & 0  \bigstrut[t] & \ch{H2O} \\
+      0 & 1 & 0 & 0 & \ch{CO2} \\
+      0 & 0 & 1 & 1 & \ch{NaCl} \\
+    \end{block}
+  \end{blockarray}
+\end{equation}
+
+With this approach, no special handling of the charge balance in the
+phases are required when calculating phase equilibrium. Another
+advantage is equilibrium calculation of solid \ch{NaCl}, as the
+solid fugacity only need to equate the fugacity of the fictitious
+dissolved salt component.
+
+\section{Thermodynamic differentials}
+
+If we consider the chemical potentials (enthalpy, entropy, Gibbs free
+energy, Helmholtz free energy or internal energy) as a function of the
+real or apparent composition, the value remains the same. IE. it is
+only the compositional differentials of the potentials that differ
+when introducing the apparent composition.
+
+We therefore need to map only the fugacities, compressibillity factor
+and their differentials.
+
+\subsection{Compressibillity factor}
+For the compressibillity factor, the following applies,
+\begin{equation}
+  \frac{PV}{RT} = \sum_j e_j Z^\app = \sum_i n_i Z.
+  \label{eq:compressibillity_factor_relation}
+\end{equation}
+We therefore have
+\begin{equation}
+  Z^\app = Z \frac{\sum_i n_i}{\sum_j e_j }.
+  \label{eq:compressibillity_factor}
+\end{equation}
+The pressure and temperature differential must be scaled in the same
+manner for the apparent mode, while the compositional differentials
+are slightly more complicated.
+
+\subsection{Fugacity coefficients}
+\begin{equation}
+  \ln \lp x_\nacl^\app \varphi_\nacl^\app \rp  = v_\na \ln \lp x_\na \varphi_\na \rp + v_\cl \ln \lp x_\cl \varphi_\cl \rp
+\label{eq:fugacity_coeff}
+\end{equation}
+
+Assuming we have one mole of water, and want to look at the infinite
+dilution value of $\ln \varphi_\nacl^\app$. The mole number relation between \nacl and the ions \na and \cl are one-to-one, giving,
+\begin{gather}
+  \ln n_\nacl + \ln \varphi_\nacl^\app - \ln \lp 1 + n_\nacl \rp  = 2 \ln n_\nacl + \ln \lp\varphi_\na\varphi_\cl\rp - 2\ln \lp 1 + 2 n_\nacl \rp \nonumber \\
+  \ln \varphi_\nacl^\app = \ln n_\nacl + \ln \lp\varphi_\na\varphi_\cl\rp - 2\ln \lp 1 + 2 n_\nacl \rp + \ln \lp 1 + n_\nacl \rp \nonumber \\
+  \lim_{n_\nacl \rightarrow 0}\ln \varphi_\nacl^\app = \lim_{n_\nacl \rightarrow 0} \ln \lp n_\nacl \varphi_\na\varphi_\cl\rp \rightarrow - \infty
+\label{eq:fugacity_coeff_inf}
+\end{gather}
+
+Since the fugacity depend on the composition, and the infinite
+dilution fugacity approaches an infinity value, this approach can be
+challenging to handle numerically.
+
+\subsubsection{Differentials}
+Additionally there is an effect of the difference in overall mole
+numbers, as $\sum_i n_i \neq \sum_i e_i$. See Maribo--Mogensen
+\cite[App. C.3]{Mogensen2014}.
+
+The equilibrium condition becomes,
+\begin{equation}
+  \ln \lp \frac{x^\app \varphi^\app P}{P^0} \rp  = \sum_j v_{ij} \ln \lp \frac{x_j \varphi_j P}{P^0} \rp
+\label{eq:fugacity}
+\end{equation}
+
+To describe the apparent fugacity coefficient, the relation become,
+\begin{equation}
+  \ln \varphi^\app_i  = \sum_j v_{ij} \ln x_j \varphi_j - \ln x_i^\app - \lp 1 - \sum_j v_{ij} \rp \ln \frac{P}{P^0}
+\label{eq:fugacity_coeff_app}
+\end{equation}
+Differentiating with respect to temperature,
+\begin{equation}
+  \pd{\ln \varphi^\app_i}{T}  = \sum_j v_{ij} \ln \pd{\varphi_j}{T}.
+\label{eq:fugacity_coeff_app_T}
+\end{equation}
+Differentiating with respect to pressure,
+\begin{equation}
+  \pd{\ln \varphi^\app_i}{P}  = \sum_j v_{ij} \ln \pd{\varphi_j}{P} - \frac{1}{P} + \frac{\sum_j v_{ij}}{P}.
+\label{eq:fugacity_coeff_app_P}
+\end{equation}
+
+Differentiating with respect to mole numbers, using $\sum_i e_i = e_T$,
+$n_T = \sum_j \sum_i v_{ij} e_i = n_T$, and
+
+\begin{align}
+  x_j  &= \frac{\sum_l v_{jl} e_l}{n_T}\\
+  \pd{\ln x_j}{e_k} &= \sum_l \lp\pd{n_l}{e_k}\rp \lp \pd{\ln x_i}{n_l} \rp = \sum_l v_{kl} \lp \pd{\ln n_j}{n_l} -\pd{\ln n_T}{n_l} \rp \nonumber \\
+  &= \sum_l v_{kl} \lp \frac{\delta_{jl}}{n_l} - \frac{1}{n_T} \rp = \frac{v_{kj}}{n_j} - \frac{\sum_l v_{kl}}{n_T},
+\label{eq:x_ion}
+\end{align}
+
+\begin{align}
+  \pd{\ln \varphi^\app_i}{e_k}  &= - \frac{\delta_{ik}}{e_k} + \frac{1}{e_T} + \sum_j v_{ij} \pd{\ln \varphi_j}{e_k} + \sum_j v_{ij} \pd{\ln x_j}{e_k} \nonumber \\
+  &= - \frac{\delta_{ik}}{e_k} + \frac{1}{e_T} + \sum_j v_{ij} \sum_l v_{kl} \pd{\ln \varphi_j}{n_l} + \sum_j v_{ij} \lp \frac{v_{kj}}{n_j} - \frac{\sum_l v_{kl}}{n_T} \rp
+\label{eq:fugacity_coeff_app_n}
+\end{align}
+
+\subsection{Ideal properties}
+In order to calculate equilibrium between a salt (solid), and the
+apparent composition in the fluid phases, the ideal Gibbs free energy
+is required.
+
+For the enthalpy we have,
+\begin{equation}
+  h^\ideal \lp \vektor{e},  T \rp = \sum_j e_j h_j^\ideal \lp T \rp,
+\label{eq:id_enthalpy}
+\end{equation}
+and for the entropy,
+\begin{equation}
+  s^\ideal \lp \vektor{e},  T, P \rp = \sum_j e_j \lp s_j^{\ideal,*} \lp T \rp  - R \ln \frac{e_j}{e_T} - R \ln P \rp.
+\label{eq:id_entropy}
+\end{equation}
+Here $s_j^{\ideal,*} \lp T \rp$ simply is the temperature integral of $Cp(T)/T$.
+
+The ideal Gibbs free energy is,
+\begin{equation}
+  g^\ideal \lp \vektor{e},  T, P \rp = h^\ideal \lp \vektor{e},  T \rp - T s^\ideal \lp \vektor{e},  T, P \rp.
+\label{eq:id_gibbs}
+\end{equation}
+
+The ideal chemical potential therefore becomes,
+\begin{align}
+  \mu_i &= \pd{g^\ideal}{e_i} = h^\ideal_i - T \lp s_i^{\ideal,*}  - R \ln \frac{e_i}{e_T} - R \ln P \rp, \\
+  &= h^\ideal_i - T s_i^{\ideal,*}  + RT \ln \lp x_i P \rp.
+\label{eq:id_chempot}
+\end{align}
+
+Since the $\ln \lp x_i P \rp$ is accounted for in the fugacity
+coefficient, we only need to account for $h^\ideal_i - T
+s_i^{\ideal,*}$.
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{../thermopack}
+
+\end{document}

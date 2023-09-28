@@ -1,0 +1,1132 @@
+\documentclass[english]{../thermomemo/thermomemo}
+% NOTE: You must pass either norsk or english as an option!
+\usepackage[utf8]{inputenc}
+
+\title{Introduction to thermodynamics}
+\author{Morten Hammer, Geir Skaugen and Eskil Aursand}
+
+\usepackage[normalem]{ulem}
+
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{amsfonts}
+
+\definecolor{midnightblue}{RGB}{35,35,132}
+\definecolor{urlblue}{RGB}{70,130,180}
+
+\definecolor{shadecolor}{gray}{0.9}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=midnightblue,
+    urlcolor=urlblue,
+    citecolor=midnightblue,
+    linktoc=page
+}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{framed}
+\usepackage{siunitx,mhchem,todonotes}
+\newcommand{\pone}[3]{\frac{\partial #1}{\partial #2}\bigg|_{#3}}% partial
+                                % derivative with information of
+                                % constant variables
+\newcommand*{\vektor}[1]{\boldsymbol{#1}}%
+\newcommand{\dd}[1]{\mathrm{d}{#1}}
+
+\DeclareMathOperator*{\argmin}{arg\,min }
+
+
+
+\usepackage[activate={true,nocompatibility},final,kerning=true,tracking=true,spacing=true,stretch=10,shrink=10]{microtype}
+\microtypecontext{spacing=nonfrench}
+\SetExtraKerning[unit=space]
+    {encoding={*}, family={bch}, series={*}, size={footnotesize,small,normalsize}}
+    {\textendash={400,400}, % en-dash, add more space around it
+     "28={ ,150}, % left bracket, add space from right
+     "29={150, }, % right bracket, add space from left
+     \textquotedblleft={ ,150}, % left quotation mark, space from right
+     \textquotedblright={150, }} % right quotation mark, space from left
+\SetTracking{encoding={*}, shape=sc}{0}
+
+\begin{document}
+\frontmatter
+
+\tableofcontents
+
+\section{Introduction}
+This document is ment as an introduction to thermodynamics for users
+and programmers in thermopack.
+
+In addition to this memo, there exsist two memos written to document
+thermopack. These can be generated running pdflatex in the thermopack
+documentation folder ./doc/memo/.
+
+Otherwise the thermodynamics book by Callen \cite{callen85} and by
+Michelsen \cite{michelsen07} is recommended. Much of the work done on
+flash algorithms are based on the work by Michelsen
+\cite{michelsen82a,michelsen82b,michelsen99}.
+
+\section{Thermodynamic potentials}
+\subsection{Internal energy}
+As a starting point, one assumes a fundamental equation for the internal energy ($U$), with the extensive variables entropy ($S$), volume ($V$) 
+and molar numbers ($\vektor{n})$ as independent variables:
+\begin{equation}
+  U = U(S,V,\vektor{n})
+  \label{}
+\end{equation}
+Under the assumption that $U$ is a \textit{first order homogeneous function} of the extensive variables, one may use 
+\textit{Euler's theroem of homogeneous functions} to show that:
+\begin{align}
+  U(S,V,\vektor{n}) &= S \pone{U}{S}{V,\vektor{n}}
+  +V \pone{U}{V}{S,\vektor{n}}
+  +\sum_i n_i \pone{U}{n_i}{S,V,n_j} \nonumber \\
+  &= ST - VP + \sum_i n_i \mu_i
+  \label{eq:U_euler}
+\end{align}
+using the definitions 
+\begin{equation}
+  T \equiv \pone{U}{S}{V,\vektor{n}}, \quad P \equiv \pone{U}{V}{S,\vektor{n}}, \quad \mu_i \equiv \pone{U}{n_i}{S,V,n_j}.
+  \label{}
+\end{equation}
+The differential of $U$ given its homogeneous property \eqref{eq:U_euler} is 
+\begin{equation}
+  \dd{U} = S\dd{T} + T\dd{S} - V\dd{P} - P\dd{V} + \sum_i n_i \dd{\mu_i} + \sum_i \mu_i \dd{n_i},
+  \label{}
+\end{equation}
+while generally the total (exact) differential of \eqref{eq:U_euler}, given its independent variables, is
+\begin{equation}
+  \dd{U} = T\dd{S} - P\dd{V} + \sum_i \mu_i \dd{n_i},
+  \label{eq:U_totaldiff}
+\end{equation}
+which combine into the \textit{Gibbs-Duhem} relation for the intensive properties:
+\begin{equation}
+  S\dd{T} - V\dd{P} + \sum_i n_i \dd{\mu_i} = 0.
+  \label{eq:gibbsduhem}
+\end{equation}
+
+\subsection{Helmholtz energy}
+The Helmholtz energy is defined as
+\begin{equation}
+  A(T,V,\vektor{n}) \equiv U - TS,
+  \label{eq:helmholtz_def}
+\end{equation}
+and by using \eqref{eq:U_totaldiff}, one may show that
+\begin{align}
+  \dd{A} = -S\dd{T} - P\dd{V} + \sum_i \mu_i \dd{n_i},
+  \label{}
+\end{align}
+and one may then see that
+\begin{equation}
+  S = -\pone{A}{T}{V,\vektor{n}}, \quad P = -\pone{A}{V}{T,\vektor{n}}, \quad \mu_i = \pone{A}{n_i}{T,V,n_j}.
+  \label{eq:A_differentials}
+\end{equation}
+
+
+\subsection{Gibbs energy}
+The Gibbs energy is defined as 
+\begin{equation}
+  G(T,P,\vektor{n}) \equiv U + PV - TS,
+  \label{eq:gibbs_def}
+\end{equation}
+and by using \eqref{eq:U_totaldiff}, one may show that
+\begin{align}
+  \dd{G} = -S\dd{T} + V\dd{P} + \sum_i \mu_i \dd{n_i}.
+  \label{eq:dG}
+\end{align}
+and one may then see that
+\begin{equation}
+  S = -\pone{G}{T}{P,\vektor{n}}, \quad V = \pone{G}{P}{T,\vektor{n}}, \quad \mu_i = \pone{G}{n_i}{T,P,n_j}.
+  \label{}
+\end{equation}
+
+Combining \eqref{eq:gibbsduhem} with \eqref{eq:dG} leads to  
+\begin{align}
+  \dd{G} = \sum_i \mu_i \dd{n_i} + \sum_i n_i \dd{\mu_i},
+  \label{}
+\end{align}
+which can be recognized as a total differential for the alternative expression for G:
+\begin{equation}
+  G = \sum_i \mu_i n_i.
+  \label{eq:G_alt}
+\end{equation}
+
+
+\subsection{Enthalpy}
+The Enthalpy is defined as 
+\begin{equation}
+  H(S,P,\vektor{n}) \equiv U + PV,
+  \label{}
+\end{equation}
+and by using \eqref{eq:U_totaldiff}, one may show that
+\begin{align}
+  \dd{H} = T\dd{S} + V\dd{P} + \sum_i \mu_i \dd{n_i}.
+  \label{eq:dH}
+\end{align}
+and one may then see that
+\begin{equation}
+  T = \pone{H}{S}{P,\vektor{n}}, \quad V = \pone{H}{P}{S,\vektor{n}}, \quad \mu_i = \pone{H}{n_i}{S,P,n_j}.
+  \label{}
+\end{equation}
+
+\section{Equilibrium in multi-phase systems with given (T,P)}
+\subsection{Systems with given (T,P)}
+\label{sec:eq_givenTP}
+To characterize the equilibrium state, let us image that a small perturbation from equilibrium happens, and then focus on 
+the spontaneous process ($\delta$) leading back to the equilibrium state. 
+For an isolated system, the second law of thermodynamics states that all spontaneous changes towards the equilibrium 
+state involve an increase in entropy:
+\begin{equation}
+  \delta S_\text{tot} \geq 0
+  \label{eq:secondlaw}
+\end{equation}
+where $\delta$ indicates that it is not a change between different equilibrium states, as $\mathrm{d}$ is used to indicate. 
+We are however not interested in an isolated system, but rather a system with given temperature and pressure. This may be though of as a sub-system of a total 
+system, the latter satisfying \eqref{eq:secondlaw}. The other part of the total system is the \textit{reservoir}, which holds the given temperature and 
+pressure, and is large enough to force our system to keep the same values. Energy and volume (but not particles) 
+may be freely exchanged between the system (no subscript) and 
+the reservour (subscript r), in order to find the equilibrium of the total system. As entropy is an extensive quantity, the total entropy (which must increase) is 
+a sum of the entropy of the system and en entropy of the reservoir:
+\begin{align}
+  \delta S  + \delta S_\text{r} = \delta S_\text{tot} \geq 0.
+  \label{eq:secondlaw_composite}
+\end{align}
+Defining $\delta Q$ as the heat transferred into the system, the change of entropy in the reservoir is given by
+\begin{align}
+  \delta S_\text{r} = - \frac{\delta Q}{T} = - \left( \frac{1}{T}\delta U + \frac{P}{T} \delta V \right),
+  \label{}
+\end{align}
+by using the first and second laws of thermodynamics. The implication of \eqref{eq:secondlaw_composite} is then that
+\begin{align}
+  T \delta S \geq \delta U +  P \delta V.
+  \label{eq:TdS}
+\end{align}
+The change in Gibbs energy at constant temperature and pressure is 
+\begin{align}
+  \delta G &= \delta \left( U + PV - TS \right) \nonumber\\ 
+  &= \delta U + P \delta V + V \delta P - T \delta S - S \delta T \nonumber\\
+  &= \delta U + P \delta V - T \delta S,
+  \label{}
+\end{align}
+which combined with \eqref{eq:TdS} shows that
+\begin{equation}
+  \delta G \leq 0.
+  \label{}
+\end{equation}
+In words, this shows that a process which increases the entropy of the total system must decrease the Gibbs energy of a sub-system, given that the rest of the 
+total system behaves like a $T,P$ reservoir. Given that this process characterizes returns from perturbations around the equilibrium state, the 
+conclusion must be:
+\begin{framed}
+  \noindent
+  For a closed system of given temperature and pressure, the equilibrium condition is that its Gibbs energy ($G$) is at a minimum. 
+\end{framed}
+
+\subsection{Multi-phase systems}
+\label{sec:eq_multiphase}
+So far the internal workings of the system have been ignored. Now we want to take into account that the system may consist of multiple phases, 
+which essentially are sub-systems which are free to exchange energy, volume and particles.
+As shown in Sec.~\ref{sec:eq_givenTP}, the condition for equilibrium is that the Gibbs energy for the entire system is at an extremum with respect to perturbation. 
+Let us assume that the perturbation is sufficiently small that the chemical potentials to not change, \textit{i.e.} $\delta \mu_i \approx 0$. This may also be seen as 
+assuming that the perturbation is so small that $\delta G \approx \dd{G}$, where the latter is given by \eqref{eq:dG}.
+For constant $T$ and $P$ this means that 
+\begin{align}
+  \delta G = \sum_j \delta G_j = \sum_j \sum_i \mu_i^{(j)} \delta n_i^{(j)} = 0,
+  \label{eq:dG_multiphase}
+\end{align}
+where $j$ indicates the phase, and $i$ indicates the component. The conservation of matter, given no chemical reactions, 
+gives that any change in the mole number of a component in an arbitrary phase $\alpha$, must come from a net opposite change in the same 
+component in the other phases:
+\begin{equation}
+  \delta n_i^{(\alpha)}  = - \sum_{j\neq \alpha} \delta n_i^{(j)}.
+  \label{eq:matter_cons}
+\end{equation}
+Combining \eqref{eq:dG_multiphase} and \eqref{eq:matter_cons} leads to 
+\begin{equation}
+  \sum_{j\neq \alpha} \sum_i \left( \mu_i^{(j)} - \mu_i^{(\alpha)} \right) \delta n_i^{(j)} = 0.
+  \label{}
+\end{equation}
+Given that the above must be true for any variation of the independent mole numbers, this means that 
+\begin{equation}
+  \mu_i^{(\alpha)} = \mu_i^{(j)} \quad \forall \quad  i,j
+  \label{}
+\end{equation}
+which in words is stated as:
+\begin{framed}
+  \noindent
+  For a multi-phase system of given temperature and pressure, the equilibrium condition is that for each component, the chemical potential 
+  is equal in all phases.
+\end{framed}
+
+Additionally, there is a stability criterion for each phase, stated as:
+\begin{framed}
+  \noindent
+  For a multi-phase system of given temperature and pressure, the condition for phase stability is that the change in total Gibbs energy associated with 
+  the formation of a new infinitesimal phase within an existing phase is non-negative, for \textit{any} composition of the new phase. 
+  This is called the \textit{tangent plane condition}.
+\end{framed}
+The change in Gibbs energy with the formation of a new phase of $\delta n$ moles and composition $w_i$, from an existing phase of composition $z_i$, is
+\begin{align}
+  \delta G 
+  &= \sum_i \mu_i(\vektor{z})\left( - w_i \delta n \right) + \sum_i \mu_i(\vektor{w})\left( + w_i \delta n \right) \nonumber\\
+  &= \delta n \sum_i w_i \left( \mu_i(\vektor{w}) - \mu_i(\vektor{z}) \right), 
+  \label{}
+\end{align}
+which must be non-negative for any composition $\vektor{w}$, for the existing phase composition $\vektor{z}$:
+\begin{align}
+  \sum_i w_i \left( \mu_i(\vektor{w}) - \mu_i(\vektor{z}) \right) \geq 0.
+  \label{eq:tangentplane}
+\end{align}
+When checking the stability of equilibrium phases, the chemical potential of each component is equal between the phases, and thus the left hand side of 
+\eqref{eq:tangentplane} is identical for each phase.
+
+
+
+\section{Equilibrium in terms of an equation of state}
+\subsection{The equation of state}
+An \textit{equation of state} is often given as an explicit pressure equation, such as 
+\begin{equation}
+  P = P (T,V,\vektor{n}).
+  \label{}
+\end{equation}
+However, many equations of state is expressed as a Helmholtz energy
+function, 
+\begin{equation}
+  A = A(T,V,\vektor{n}).
+  \label{}
+\end{equation}
+which is useful because all thermodynamical properties
+may be derived by differentiating it.
+
+The Helmholtz function of new multi--parameter GERG equations of state
+\cite{kunz07,span96} and the older cubic equations of state is represented as a sum of 
+an ideal contribution, and a departure (residual) contribution:
+\begin{equation}
+\label{eq:helmholtz}
+A(T,V,\vektor{n}) = A^{\text{ig}}(T,V,\vektor{n}) + A^{\text{r}}(T,V,\vektor{n})
+\end{equation}
+
+Often a reduced (dimensionless) form of the residual Helmholtz energy is used,
+\begin{equation}
+\label{eq:reduced_helmholtz}
+F(T,V,\vektor{n}) = a \equiv  \frac{A^\text{r}(T,V,\vektor{n})}{nRT}
+\end{equation}
+
+\subsection{The residual Helmholtz energy}
+
+The relationship between pressure and the Helmholtz energy two forms is:
+\begin{equation}
+  P(T,V,\vektor{n}) = -\pone{A}{V}{T,\vektor{n}} 
+  = \frac{nRT}{V} - \pone{A^{\text{r}}(T,V,\vektor{n})}{V}{T,\vektor{n}}.
+  \label{}
+\end{equation}
+An expression for $A^\text{r}$ may be found by integrating to the limit of infinite volume at constant temperature and mole numbers:
+\begin{equation}
+  A^\text{r}(T,V,\vektor{n}) 
+  = A^\text{r}(T,\infty,\vektor{n}) + \int_\infty^V \left[ P^\text{ig}(T,V^\prime,\vektor{n}) - P(T,V^\prime,\vektor{n}) \right]\dd{V^\prime},
+  \label{}
+\end{equation}
+which when using that real fluids behave as an ideal gas in the limit of zero pressure ($V \to \infty$) leads to the expression:
+\begin{framed}
+\begin{align}
+  A^\text{r}(T,V,\vektor{n}) 
+  = \int^\infty_V \left[ P(T,V^\prime,\vektor{n}) - \frac{nRT}{V^\prime} \right]\dd{V^\prime}
+  \label{eq:helmholtz_int}
+\end{align}
+\end{framed}
+
+Be aware that residual quantities will depend on which set of variables they are represented with. As an example, let's show 
+how this works out for the residual Helmholtz energy:
+From the state $(T,V,P,\vektor{n})$ by definition being a real state, we know that 
+\begin{equation}
+  A(T,V,\vektor{n}) = A(T,P,\vektor{n}).
+  \label{eq:Aequal}
+\end{equation}
+While the value of $A$ is independent of representation, the distribution of it between the ideal 
+contribution and the residual is not. This is so because  
+the state $(T,V,P,\vektor{n})$ is not in 
+general a valid state of an ideal gas, so 
+generally we have that
+\begin{equation}
+  A^\text{ig}(T,V,\vektor{n}) \neq A^\text{ig}(T,P,\vektor{n}).
+  \label{}
+\end{equation}
+
+Using an arbitrary valid ideal gas state at temperature $T$, $(T,V_0,P_0,\vektor{n})$, we 
+have by definition of this state that 
+\begin{equation}
+  A^\text{ig}(T,P_0,\vektor{n}) = A^\text{ig}(T,V_0,\vektor{n})
+  \label{eq:Aequal_ideal}
+\end{equation}
+
+Combining \eqref{eq:helmholtz}, \eqref{eq:Aequal}, \eqref{eq:Aequal_ideal} and the ideal gas law  
+leads to the following calculation 
+for the difference in residuals between variable representations:
+\begin{align}
+  A^\text{r}(T,V,\vektor{n}) - A^\text{r}(T,P,\vektor{n}) 
+  &= A^\text{ig}(T,P,\vektor{n}) - A^\text{ig}(T,V,\vektor{n})
+  \nonumber \\
+  &=\left[A^\text{ig}(T,P,\vektor{n}) - A^\text{ig}(T,P_0,\vektor{n})\right]
+  -
+  \left[A^\text{ig}(T,V,\vektor{n}) - A^\text{ig}(T,V_0,\vektor{n})\right]
+  \nonumber\\
+  &=\int_{P_0}^P 
+  \pone{A^\text{ig}}{P}{T,\vektor{n}}
+  \dd{P}
+  -
+  \int_{V_0}^V 
+  \pone{A^\text{ig}}{V}{T,\vektor{n}}
+  \dd{V}
+  \nonumber\\
+  &= nRT \ln\left( \frac{PV}{P_0 V_0} \right) 
+  = nRT \ln\left( \frac{PV}{nRT} \right) 
+  = nRT \ln\left( Z \right),
+  \label{}
+\end{align}
+where $Z$ is the compressibility factor, defined by
+\begin{equation}
+  Z \equiv \frac{PV}{nRT} = 1 - \frac{V}{nRT} \pone{A^\text{r}(T,V,\vektor{n})}{V}{T,\vektor{n}} .
+  \label{eq:Z_def}
+\end{equation}
+
+Thus we have the following expression for the residual Helmholtz free energy expressed through the 
+variables $(T,P,\vektor{n})$:
+\begin{equation}
+\label{eq:helmholtz_int_TPN}
+A^{\text{r}}(T,P,\vektor{n})  = \int_V^\infty \left(P(T,V^\prime,\vektor{n}) - \frac{nRT}{V^\prime}\right) \dd{V^\prime} 
+-nRT \ln\left( Z \right)
+\end{equation}
+
+
+
+
+\subsection{Fugacity}
+For a pure ideal gas, the change in chemical potential corresponding to a change in pressure, at constant temperature, is give by 
+\begin{equation}
+  \frac{P}{P_0} = \exp\left( \frac{\mu^\text{ig}(T,P) - \mu^\text{ig}(T,P_0) }{RT} \right).
+  \label{}
+\end{equation}
+Real fluids do not obey this relation, but one may define an ``effective pressure'' called 
+\textit{fugacity} ($f$) such that the following relation holds:
+\begin{equation}
+  \frac{f(T,P)}{P_0} = \exp\left( \frac{\mu(T,P) - \mu^\text{ig}(T,P_0) }{RT} \right).
+  \label{}
+\end{equation}
+The reference pressure is arbitrary, so one may set $P_0=P$ to make an expression only in terms of the deviation from ideal gas:
+\begin{equation}
+  \frac{f(T,P)}{P} = \exp\left( \frac{\mu(T,P) - \mu^\text{ig}(T,P) }{RT} \right),
+  \label{}
+\end{equation}
+which shows that for ideal gases, $f(T,P)=P$.
+
+
+
+\subsubsection{Ideal gas mixtures}
+An ideal gas mixture is defined as a mixture which has the following expression for the Helmholtz free energy:
+\begin{equation}
+  A^\text{ig}(T,V,\vektor{n}) \equiv \sum_i n_i \left( 
+  \mu_i^\text{ig}(T,P_0) + RT\ln \frac{n_i RT}{P_0 V} - RT
+  \right)
+  \label{eq:def_idealmix}
+\end{equation}
+where $n_i$ is the mole number of component $i$, and
+$\mu^\text{ig}_i(T,P)$ is the chemical potential of component $i$ in its pure form 
+at the given temperature and pressure. This definition is consistent with the ideal gas law for the mixture as a whole, 
+$PV=nRT$, where $n=\sum n_i$.
+From \eqref{eq:def_idealmix} one may find the Gibbs free energy of the 
+ideal gas mixture as
+\begin{align}
+  G^\text{ig}(T,P,\vektor{n}) 
+  &= A^\text{ig}(T,V,\vektor{n}) + \left( PV \right)^\text{ig} = A^\text{ig}(T,V,\vektor{n}) + nRT \nonumber\\
+  &= \sum_i n_i \left( 
+  \mu_i^\text{ig}(T,P_0) + RT\ln \frac{x_i P}{P_0}
+  \right)
+  \label{eq:G_idealmix}
+\end{align}
+where $x_i \equiv n_i/n$ is the \textit{mole fraction} of component $i$.
+
+From \eqref{eq:def_idealmix} and \eqref{eq:G_idealmix} 
+one may find the chemical potential, in terms of $V$ or $P$, of component $i$ in the ideal mixture as
+\begin{align}
+  \mu_i^\text{ig}(T,V,\vektor{n}) &\equiv \pone{A^\text{ig}}{n_i}{T,V} = \mu_i^\text{ig}(T,P_0) + RT\ln \frac{n_i RT}{P_0 V} \nonumber \\
+  \mu_i^\text{ig}(T,P,\vektor{n}) &\equiv \pone{G^\text{ig}}{n_i}{T,P} = \mu_i^\text{ig}(T,P_0) + RT\ln \frac{x_i P}{P_0},
+  \label{eq:mu_ig}
+\end{align}
+which are equal if the state $(T,V,P,\vektor{n})$ is a valid ideal gas state ($PV=nRT$), as expected. Combining the two 
+equations in \eqref{eq:mu_ig}, while setting $P_0=P$, leads the the following useful expression:
+\begin{equation}
+  \mu_i^\text{ig}(T,V,\vektor{n}) - \mu_i^\text{ig}(T,P,\vektor{n})
+  =-RT\ln \left( Z \right)
+  \label{eq:mu_ig_PVdiff}
+\end{equation}
+where if $(T,V,P,\vektor{n})$ is a valid state for an ideal gas, 
+$Z=1$, and the right hand side reduces to zero as expected.
+
+The last equation in \eqref{eq:mu_ig} may be rearranged to form the inspiration for the definition of 
+real mixture fugacity in the next section:
+\begin{equation}
+  \frac{P_i}{P_0} = \exp\left( \frac{\mu^\text{ig}_i(T,P,\vektor{n}) - \mu^\text{ig}_i(T,P_0)}{RT} \right)
+  \label{eq:p_mu_ideal}
+\end{equation}
+where $P_i=x_iP$ is the \textit{partial pressure} of component $i$. For $P_0 = P$ this reduces to 
+\begin{equation}
+  \mu^\text{ig}_i(T,P,\vektor{n}) - \mu^\text{ig}_i(T,P) = RT\ln x_i
+  \label{eq:mu_and_xi_idealmix}
+\end{equation}
+
+\subsubsection{Real mixtures}
+\label{sec:realmixtures}
+Similar to the case of pure components, one may define an ``effective partial pressure'' of a component in a mixture, the 
+component fugacity ($f_i$), such that the following relation similar to \eqref{eq:p_mu_ideal} holds:
+\begin{equation}
+  \frac{f_i(T,P,\vektor{n})}{P_0} \equiv \exp\left( \frac{\mu_i(T,P,\vektor{n}) - \mu_i^\text{ig}(T,P_0)}{RT} \right),
+  \label{eq:fug_def_mix}
+\end{equation}
+where one may again set $P_0=P$ to state it in terms of deviations from a pure ideal gas:
+\begin{equation}
+  \frac{f_i(T,P,\vektor{n})}{P} \equiv \exp\left( \frac{\mu_i(T,P,\vektor{n}) - \mu_i^\text{ig}(T,P)}{RT} \right),
+  \label{eq:fug_def_mix_P0eqP}
+\end{equation}
+
+The chemical potential of a component in a real mixture may be decomposed into an ideal gas part and a residual part:
+\begin{align}
+  \mu_i(T,V,\vektor{n}) &= \mu_i^\text{ig}(T,V,\vektor{n}) + \mu_i^\text{r}(T,V,\vektor{n}) \nonumber\\
+  \mu_i(T,P,\vektor{n}) &= \mu_i^\text{ig}(T,P,\vektor{n}) + \mu_i^\text{r}(T,P,\vektor{n})
+  \label{}
+\end{align}
+which may be combined with \eqref{eq:mu_ig_PVdiff} to show that 
+\begin{equation}
+  \mu_i^\text{r}(T,V,\vektor{n}) - \mu_i^\text{r}(T,P,\vektor{n})
+  =RT\ln \left( Z \right)
+  \label{eq:mu_r_PVdiff}
+\end{equation}
+
+Combining \eqref{eq:fug_def_mix_P0eqP} and \eqref{eq:mu_and_xi_idealmix}, one finds that
+\begin{equation}
+  \frac{f_i(T,P,\vektor{n})}{x_i P} \equiv
+  \exp\left( \frac{\mu_i(T,P,\vektor{n}) - \mu_i^\text{ig}(T,P,\vektor{n})}{RT} 
+  \right)
+  \label{eq:fugcoeff_vs_mu}
+\end{equation}
+
+The \textit{fugacity coefficient} may now be defined, calculated using \eqref{eq:fugcoeff_vs_mu} 
+and \eqref{eq:mu_r_PVdiff} as follows:
+\begin{align}
+  \phi_i(T,P,\vektor{n}) \equiv \frac{f_i(T,P,\vektor{n})}{x_i P} &= 
+  \exp\left( \frac{\mu_i(T,P,\vektor{n}) - \mu_i^\text{ig}(T,P,\vektor{n})}{RT}\right)
+  \nonumber\\
+  &= \exp\left( \frac{\mu_i^\text{r}(T,P,\vektor{n})}{RT} \right)
+  \nonumber\\
+  &= \exp\left( \frac{\mu_i^\text{r}(T,V,\vektor{n})}{RT} - \ln\left( Z \right) \right)
+  \nonumber\\
+  &= \exp\left( \frac{1}{RT}\pone{A^\text{r}(T,V,\vektor{n})}{n_i}{T,V,n_j} - \ln\left( Z \right) \right)
+  \label{eq:fugcoeff}
+\end{align}
+where $A^\text{r}(T,V,\vektor{n})$ may be found from \eqref{eq:helmholtz_int}.
+
+As shown in Sec.~\ref{sec:eq_multiphase}, the condition of phase equilibrium is that for each component, 
+the chemical potential must be equal in all phases. Using \eqref{eq:fug_def_mix_P0eqP}, and the fact that 
+$\mu_i^\text{ig}(T,P)$ is independent of phase, the condition may be restated in the more useful form:
+\begin{framed}
+  \noindent
+  For a multi-phase system of given temperature and pressure, the equilibrium condition is that for each component $i$, the quantity 
+  $x_i \phi_i$ is equal in all phases. The fugacity coefficient may be calculated from the equation of state through 
+  \eqref{eq:fugcoeff} and \eqref{eq:Z_def}.
+\end{framed}
+
+\section{TP Flash}
+
+\subsection{General equations of phase equilibrium and stability}
+As shown in Sec.~\ref{sec:eq_multiphase} and~\ref{sec:realmixtures}, the criterion for equilibrium in a multi-phase system at given temperature 
+and pressure is that for each component, the fugacity is equal in all phases.
+\begin{equation}
+  f_i^{(\alpha)} = f_i^{(j)} \quad \forall \quad i,j,\alpha
+  \label{}
+\end{equation}
+
+Additionally, there is a phase stability criterion, stated as the \textit{tangent plane condition} in Sec.~\ref{sec:eq_multiphase}.
+Let us define a \textit{tangent plane distance function} for the composition $\vektor{z}$, a function of a trial composition $\vektor{w}$:
+\begin{equation}
+  \mathit{TPD}_z(\vektor{w}) \equiv \sum_{i} w_i \left( \mu_i(\vektor{w}) - \mu_i(\vektor{z}) \right).
+  \label{}
+\end{equation}
+It is often conventient to use a 
+\textit{reduced tangent plane distance function}
+\begin{align}
+  \mathit{tpd}_z(\vektor{w}) &\equiv \frac{\mathit{TPD}(\vektor{w})}{RT} 
+  \nonumber\\
+  &= \sum_{i} w_i \left[ \ln w_i + \ln \phi_i(\vektor{w}) - \ln z_i - \ln \phi_i(\vektor{z}) \right]
+  \nonumber\\
+  &= \sum_{i} w_i \left[ \ln w_i + \ln \phi_i(\vektor{w}) - d_i(\vektor{z}) \right],
+  \label{}
+\end{align}
+where $d_i \equiv \ln z_i + \ln \phi_i(\vektor{z}) $
+
+The phase stability criterion is then
+\begin{equation}
+  \mathit{tpd}_z(\vektor{w}) \geq 0 \quad \text{for any valid composition $\vektor{w}$}
+  \label{}
+\end{equation}
+and this may be shown to be both a necessary and sufficient condition for phase stability \cite{michelsen07}. 
+In practice, ensuring that $\mathit{tpd}_z(\vektor{w})$ is non-negative everywhere in compositional space is done by finding its 
+minima, and then checking if it is negative at these locations. Finding the minima of $\mathit{tpd}_z(\vektor{w})$, subject to the constraint of 
+$\sum w_i = 1$, may be solved using the \textit{method of Lagrange multipliers}.
+
+Modified (unconstrained) formulation:
+\begin{align}
+  \mathit{tm}_z(\vektor{W}) &= 1 + \sum_{i} W_i \left[ \ln W_i + \ln \phi_i(\vektor{W}) - d_i(\vektor{z}) -1\right]
+  \nonumber\\
+  &= \left( 1 - W_T + W_T \ln W_T \right) + W_T \mathit{tpd}_z(\vektor{w})
+  \label{eq:tm}
+\end{align}
+where $W_i = w_i W_T$ ($W_T \equiv \sum W_i $) are mole numbers, not composition, and are thus not constrained to sum to one.
+At stationary points of $\mathit{tm}_z(\vektor{W})$ with respect to $W_i$:
+\begin{equation}
+  \ln W_i^\text{SP} + \ln \phi_i(\vektor{W}^\text{SP}) - d_i(\vektor{z}) = 0 \quad \forall \quad i
+  \label{eq:tm_stationary}
+\end{equation}
+\begin{equation}
+  \mathit{tm}_z(\vektor{W}^\text{SP}) = 1 - W_T^\text{SP} 
+  \label{}
+\end{equation}
+
+It may be shown~\cite[Ch.~9]{michelsen07} that the stationary points of
+$\mathit{tm}_z(\vektor{W})$ are also valid stationary points for the
+constrained function $\mathit{tpd}_z(\vektor{w})$, and
+$\mathit{tpd}_z(\vektor{w}^\text{SP})$ is positive at these minima if and only
+if $W_T^\text{SP} \leq 1$, \textit{i.e.} if
+$\mathit{tm}_z(\vektor{W}^\text{SP}) \geq 0$. The procedure to check stability
+can then be formulated as:
+\begin{framed}
+\begin{enumerate}
+  \item Find the stationary points of $\mathit{tm}_z(\vektor{W})$ with respect to $\vektor{W}$, \textit{i.e} solutions of \eqref{eq:tm_stationary}.
+  \item Check if $W_T^\text{SP} \leq 1$ at all the stationary points found. If not, the mixture $\vektor{z}$ is unstable.
+\end{enumerate}
+\end{framed}
+Eq.~\eqref{eq:tm_stationary} may be solved by \textit{successive substitution}
+or \textit{Newton's method}. As discussed by Michelsen \cite{michelsen07},
+successive substitution will converge in most case but may suffer from a low
+rate of convergence, giving merit to the use of Newton's method. 
+
+A composition $\vektor{z}$ is metastable as long as the Hessian matrix 
+$H(\vektor{z})$ 
+of $\mathit{tm}_z(\vektor{W})$ is positive definite. 
+If not, the state is \textit{intrinsically unstable}. 
+The limit between the two cases is the 
+\textit{stability limit / spinodal line}.
+
+How to uncover all negative minima of $\mathit{tm}_z(\vektor{W})$ (if any)?
+This cannot be done with total certainty, but one may use some clever initial
+estimates to perform a finite set of searches which are likely to uncover
+them. 
+
+\subsection{Tangent plane stability analysis}
+
+Tangent plane stability analysis serves two purposes:
+\begin{itemize}
+  \item Verifies that a single phase state is stable.
+  \item If the single phase state is not stable, gives an improved K-factor guess.
+\end{itemize}
+As shown, a phase of composition $\vektor{z}$ is stable at the specified temperature and pressure \textit{if and only if}
+$tpd_z(\vektor{w}) \geq 0$ for any trial phase composition $\vektor{w}$. This could checked by inspecting the minima of 
+$\mathit{tm}_z(\vektor{W})$ \eqref{eq:tm} and checking the criterion
+$W_T^\text{SP} \leq 1$. 
+
+The original composition is \textit{intrinsically unstable} if the Hessian 
+\begin{equation}
+  H_{ij} \equiv \frac{\partial^2 \mathit{tm}_z}{\partial W_i \partial W_j} 
+  = \frac{\delta_{ij}}{W_i} + \frac{\partial \ln \phi_i}{\partial W_j}
+  \label{}
+\end{equation}
+has any negative eigenvalues at the trivial stationary point at $\vektor{W}=\vektor{z}$. If it has no negative eigenvalues at 
+this point, the mixture is either stable ($\mathit{tm}_z(\vektor{W}) > 0$ at all its minima) or 
+\textit{metastable} ($\mathit{tm}_z(\vektor{W}) < 0$ at some minimum where $\vektor{W}\neq \vektor{z}$).
+
+By using \eqref{eq:tm_stationary}, minima of $\mathit{tm}_z(\vektor{W})$ may be found by successive substitution:
+\begin{equation}
+  \ln W_i^{k+1} = d_i(\vektor{z}) - \ln \phi_i \left( \vektor{W}^k \right),
+  \label{}
+\end{equation}
+which may be shown to only converge to minima, not other stationary points. Slow convergence may be remedied by higher order 
+methods.
+Outcomes of stability analysis:
+\begin{itemize}
+  \item A composition $\vektor{W}$ where $\mathit{tm}_z(\vektor{W}) < 0$ is found. Continue the flash calculation with $\vektor{w}$ 
+    as a new phase.
+  \item All attempts converge to either the trivial solution of a positive minimum. The composition $\vektor{z}$ is thus stable.
+\end{itemize}
+
+\subsection{Mixture reduced molar Gibbs energy}
+By combining \eqref{eq:G_alt}, \eqref{eq:fugcoeff_vs_mu} and \eqref{eq:mu_and_xi_idealmix}, one may show that 
+the Gibbs energy of a multi-phase mixture is given by 
+\begin{align}
+  G &= \sum_j \sum_i n_i^{(j)} \mu_i^{(j)} \nonumber\\
+  &= \sum_j\sum_i n_i^{(j)} \left[ \mu_i^\text{ig}(T,P,\vektor{n}) + RT\ln \phi_i^{(j)}(T,P,\vektor{n})\right] \nonumber\\
+  &= \sum_j\sum_i n_i^{(j)} \left[ \mu_i^\text{ig}(T,P) + RT\ln x_i^{(j)} + RT\ln \phi_i^{(j)}(T,P,\vektor{n})\right] \nonumber\\
+  &= \sum_j\sum_i n_i^{(j)} \mu_i^\text{ig}(T,P) +  \sum_j \sum_i n_i^{(j)} \left[ RT\ln x_i^{(j)} + RT\ln \phi_i^{(j)}(T,P,\vektor{n})\right] \nonumber\\
+  &= \sum_i \left( \sum_j n_i^{(j)} \right) \mu_i^\text{ig}(T,P) +  
+      \sum_j \sum_i n_i^{(j)} \left[ RT\ln x_i^{(j)} + RT\ln \phi_i^{(j)}(T,P,\vektor{n})\right] \nonumber\\
+  &= \sum_i  n_i^{(\text{tot})}  \mu_i^\text{ig}(T,P) +  
+      \sum_j \sum_i n_i^{(j)} \left[ RT\ln x_i^{(j)} + RT\ln \phi_i^{(j)}(T,P,\vektor{n})\right] 
+  \label{eq:G_mix}
+\end{align}
+
+When wanting to compare the total Gibbs energy of different phase configurations possible from the same overall composition, 
+the first term in \eqref{eq:G_mix} will cancel due to being identical in all configurations. It is thus not necessary to consider 
+it further for these purposes. Denoting this term by $G_0 \equiv \sum_i  n_i^{(\text{tot})}  \mu_i^\text{ig}(T,P)$, one may 
+define a reduced molar Gibbs energy useful for comparing different phase configurations from the same feed by 
+\begin{align}
+  g &\equiv \frac{G - G_0 }{nRT} \nonumber\\
+    &= \sum_i \sum_j \beta_j  x_i^{(j)} \left[ \ln x_i^{(j)} + \ln \phi_i^{(j)}(T,P,\vektor{n})\right],
+  \label{eq:g_func}
+\end{align}
+where $\beta_j$ is the fraction of moles in phase $j$.
+
+
+\subsection{Two-phase flash}
+Consider a mixture of $C$ components, of overall composition $\vektor{z}$, and define the liquid and vapor compositions as 
+$\vektor{x}$ and $\vektor{y}$, respectively. When indices are used instead of vectors, the index $i$ indicates the component.
+It is assumed that we have a thermodynamic model for the mixture, capable of calculating the fugacity of any component, given a set of   
+temperature, pressure and composition.
+
+The equilibrium condition is 
+\begin{equation}
+  f_i^l = f_i^v \quad \forall \quad i
+  \label{eq:eq_twophase}
+\end{equation}
+
+Define $\beta$ as the overall mole fraction of the vapor phase, giving the material balance:
+\begin{equation}
+  \beta y_i + (1-\beta)x_i = z_i \quad \forall \quad i
+  \label{eq:materialbalance}
+\end{equation}
+
+The mole fractions must sum to unity, a condition which may be transformed to the convenient form:
+\begin{equation}
+  \sum_{i=1}^C \left( x_i - y_i \right) = 0.
+  \label{eq:mole_frac_sum}
+\end{equation}
+The above equations yield $2C + 1$ relations, while the number of variables ($\vektor{x}$, $\vektor{y}$, $T$, $P$, $\beta$) are $2C + 3$. 
+This shows that two additional pieces of information are needed, such as specifying $(T,P)$.
+
+
+\textit{Equilibrium factors}:
+\begin{equation}
+  K_i \equiv \frac{y_i}{x_i}
+  \label{eq:K_factors}
+\end{equation}
+
+
+Combining \eqref{eq:K_factors} and \eqref{eq:materialbalance}
+\begin{equation}
+  x_i = \frac{z_i}{1 - \beta + \beta K_i}, \quad\quad y_i = K_i x_i = \frac{K_i z_i}{1 - \beta + \beta K_i} 
+  \label{eq:xy_and_Kbeta}
+\end{equation}
+
+At equilibrium, where \eqref{eq:eq_twophase} is satisfied, we have that 
+\begin{equation}
+  K_i \equiv \frac{y_i}{x_i} = \frac{\phi_i^l}{\phi_i^v}
+  \label{eq:K_eq}
+\end{equation}
+
+Combining \eqref{eq:mole_frac_sum} with \eqref{eq:xy_and_Kbeta} leads to the \textit{Rachford-Rice} equation:
+\begin{equation}
+  g(\beta) \equiv \sum_{i=1}^C \left( x_i - y_i \right) = \sum_{i=1}^C \frac{z_i \left( K_i -1 \right)}{1 -\beta + \beta K_i} = 0
+  \label{eq:rachford_rice}
+\end{equation}
+\begin{framed}
+Two-phase TP flash by successive substitution:  
+\begin{enumerate}
+  \item Use current (or initial) $\vektor{K}$ in the Rachford-Rice equation \eqref{eq:rachford_rice}.
+  \item Solve the Rachford-Rice equation for a value of $\beta$ \textit{e.g.} by Newton's method.
+  \item Find compositions $x_i$ and $y_i$ corresponding to the above values of $K_i$ and $\beta$, through \eqref{eq:xy_and_Kbeta}.
+  \item Find fugacity coefficients from the equation of state given the above compositions, using \textit{e.g.} \eqref{eq:fugcoeff}.
+  \item Find a new equilibrium factor $\vektor{K}$ using the above fugacity coefficients and the equilibrium assunption \eqref{eq:K_eq}.
+  \item Go to 1 if $\vektor{K}$ has not converged yet.
+\end{enumerate}
+\end{framed}
+Equal fugacities may also be satisfied at ``false solutions'', which are critical points of the Gibbs energy, but not minima.
+Fortunately, it may be shown that successive substitution can only converge to minima of the Gibbs energy~\cite{michelsen07}.
+Convergence will be slow at high pressures or close to the mixture critical point.
+
+Initial values for $\vektor{K}$:
+Wilson's approximation:
+\begin{equation}
+  \ln K_i = \ln \left( \frac{P_{c_i}}{P} \right) + 5.373(1+\gamma_i) \left( 1-\frac{T_{c_i}}{T} \right),
+  \label{eq:wilson_K}
+\end{equation}
+where $P_{c_i}$, $T_{c_i}$ and $\gamma_{i}$ is the critical temperature, critical pressure and acentric factor, respectively, 
+of component $i$.
+
+Single phase solution?\\
+Convergence at $\beta <0$ or $\beta>0$, or convergence to the trivial solution $\vektor{x} = \vektor{y}$.\\
+
+Flash strategy:
+\begin{enumerate}
+  \item Find Wilson K-factors \eqref{eq:wilson_K} to use as initial estimates.
+  \item Do three steps of successive substitution. Check for conditions:
+    \begin{itemize}
+      \item Total Gibbs energy of the resulting liquid-vapor system is lower than in the feed (assuming single phase). This verifies the presence of 
+              multiple phases. Continue iteration, perhaps with higher order methods.
+      \item If not the above, check  if $\mathit{tpd}_z(\vektor{x})$ or $\mathit{tpd}_z(\vektor{y})$ is negative. If the former, set 
+        $K_i = \phi_i^x / \phi_i^z$. If the latter, set $K_i = \phi_i^z / \phi_i^y$. Continue iteration.
+    \end{itemize}
+  \item If neither of the above conditions were met after three iterations, do tangent plane stability analysis.
+\end{enumerate}
+If at any time $\beta$ exceeds its bounds, it is very likely that the specification corresponds to a single phase state. 
+To be certain, perform tangent plane stability analysis.
+
+
+Initializing $\vektor{W}$ for tangent plane analysis: 
+Investigate both ``liquid-like'' and ``vapor-like'' trial compositions, through 
+Wilson K-factors \eqref{eq:wilson_K}. If the feed itself may with confidence be said to be ``liquid-like'' or ``vapor-like'', 
+one may to save time only investigate the trial composition of the opposite kind.
+
+
+
+\subsubsection{Solution by minimization}
+When formulating an equilibrium calculation as a minimization problem, it 
+may be useful to use \textit{molar amounts} as the independent variables, 
+defined by 
+\begin{align}
+  v_i &\equiv \beta y_i\nonumber\\
+  l_i &\equiv (1-\beta) x_i,
+  \label{}
+\end{align}
+such that
+\begin{equation}
+  v_i + l_i = z_i,
+  \label{}
+\end{equation}
+where $\vektor{z}$ is now molar amounts, but numerically identical to the feed composition.
+
+\begin{equation}
+  y_i = \frac{v_i}{\sum v_i}, \quad x_i = \frac{l_i}{\sum l_i}
+  \label{}
+\end{equation}
+
+\begin{equation}
+  \beta_L \equiv 1-\beta
+  \label{}
+\end{equation}
+
+\begin{equation}
+  \beta = \sum v_i
+  \label{}
+\end{equation}
+
+\begin{equation}
+  \beta_L = \sum l_i
+  \label{}
+\end{equation}
+
+The minimization problem to be solved is then 
+\begin{equation}
+  \vektor{v} = \underset{\vektor{v} \in \mathbb{R}^C}{\argmin}\left\{g(\vektor{v},\vektor{l}(\vektor{v}))\right\}, \quad\text{with } 
+  \vektor{l} = \vektor{z}-\vektor{v}
+  \label{}
+\end{equation}
+\textit{e.g.}\ by Newton's method of optimization (ref appendix).
+
+
+By using \eqref{eq:g_func} for the case of two-phase systems:
+\begin{equation}
+  g = \sum_i \left( v_i \left[ \ln y_i + \ln \phi_i^v \right] + l_i \left[ \ln x_i + \ln \phi_i^l \right] \right)
+  \label{eq:g_twophase}
+\end{equation}
+
+\begin{align}
+  \frac{\partial g}{\partial v_j}
+  =& \ln y_j - \ln x_j + \ln \phi_j^v - \ln \phi_j^l \nonumber\\
+  &+ 1 - \underbrace{\sum_i y_i}_{=1} + \underbrace{\sum_i v_i \frac{\partial \ln \phi_i^v}{\partial v_j}}_{=0}\nonumber\\
+  &- 1 + \underbrace{\sum_i x_i}_{=1} - \underbrace{\sum_i l_i \frac{\partial \ln \phi_i^l}{\partial l_j}}_{=0} \nonumber\\
+  =& \ln y_j - \ln x_j + \underbrace{\ln \phi_j^v - \ln \phi_j^l}_{\text{From EoS}},
+  \label{}
+\end{align}
+where the sums involving derivatives are zero due to \textit{Euler's theroem} for homogeneous functions, as explained in
+1.8 of~\cite{michelsen07}.
+
+\begin{align}
+  \frac{\partial^2 g}{\partial v_i \partial v_j} 
+  &= \frac{\partial \ln \phi_j^v}{\partial v_i} - \frac{\partial \ln \phi_j^l}{\partial v_i}  
+  - \left( \frac{\beta + \beta_L}{\beta \beta_L} \right)
+  + \delta_{i,j} \left( \frac{z_i}{x_i y_i \beta \beta_L} \right) \nonumber\\
+  &= 
+  \frac{1}{\beta \beta_L} \left[
+  \beta_L \underbrace{\left( \sum_i v_i\right)  \frac{\partial \ln \phi_j^v}{\partial v_i} }_\text{From EoS}
+  +  \beta \underbrace{\left( \sum_i l_i\right)  \frac{\partial \ln \phi_j^l}{\partial l_i}}_\text{From EoS}
+  - 1
+  + \delta_{i,j} \left( \frac{z_i}{x_i y_i} \right) 
+  \right]\nonumber\\
+  \label{}
+\end{align}
+
+The function $g$ in \eqref{eq:g_twophase} should at the located minimum be smaller than the smallest possible value 
+for the a single phase of feed composition:
+\begin{equation}
+  g_\text{feed} = \min\left\{ \sum_i  z_i \left[ \ln z_i + \ln \phi_i(\vektor{z}) \right]   \right\},
+  \label{}
+\end{equation}
+which is either a liquid or a vapor state, depending on which has the lowest Gibbs energy.
+
+
+\section{Cubic equations of state}
+The general cubic equation of state has the form
+\begin{equation}
+P = \frac{RT}{v -b}- \frac{\alpha a}{(v-m_1 b)(v-m_2 b)},
+\label{eq:gencubic}
+\end{equation}
+where $m_1$ and $m_2$ are dimensionless constants defining the SRK, PR and Van der
+Waals equation of state, $v=V/n~(\SI{}{\meter^3\per\mol})$ is the specific volume. The
+parameters $a~(\SI{}{\meter^3\joule\per \mol^2})$ and $b~(\SI{}{\meter^3\per\mol})$ typically 
+depend on the composition and the dimensionless quantity 
+$\alpha$ is a function of temperature. 
+
+
+
+\begin{shaded}
+  \noindent
+\textit{Exercise: Find the reduced residual Helmholtz energy function for a general
+cubic equation of state \eqref{eq:gencubic}.}
+
+\noindent
+\textit{Solution}:
+\begin{equation}
+  A^\text{r}(T,V,N) = n \left[ RT\ln \left( \frac{v}{v-b} \right) + 
+  \frac{\alpha a}{\left( m_1-m_2 \right)b} \ln\left( \frac{v-m_1 b}{v-m_2 b} \right) \right]
+  \label{}
+\end{equation}
+
+\end{shaded}
+
+\subsection{Mixing rules}
+Mixing rules are various ways of letting $a$ and $b$ in \eqref{eq:gencubic} 
+depend on composition. 
+
+\subsubsection{Classic mixing rule}
+Parameters: $a_{ii}$, $k_{ij}$ and $b_i$.
+\begin{equation}
+  a = \sum_i x_i \sum_j x_j a_{ij}
+  \label{}
+\end{equation}
+
+\begin{equation}
+  a_{ij} = a_{ji} = \sqrt{a_{ii} a_{jj}} \left( 1-k_{ij} \right)
+  \label{}
+\end{equation}
+
+\begin{equation}
+  b = \sum_i x_i b_i
+  \label{}
+\end{equation}
+
+
+\subsubsection{Huron-Vidal mixing rule}
+
+
+
+\section{Explicit Helmholtz equations of state}
+Based on an explicit expression for the reduced dimensionless Helmholtz energy \eqref{eq:reduced_helmholtz}. This includes 
+equations such as GERG2004/2008 and the Span-Wagner equation of state for \ce{CO2}.
+
+\begin{equation}
+  a(\delta,\tau,\vektor{x}) = a^\text{ig}(\rho,T,\vektor{x}) + a^\text{r}(\delta,\tau,\vektor{x}),
+  \label{}
+\end{equation}
+where $\delta$ is the \textit{reduced mixture density} and $\tau$ is the \textit{reduced mixture temperature}, which are both generally 
+dependent on the composition:
+\begin{equation}
+  \delta = \frac{\rho}{\rho_r(\vektor{x})}, \quad \quad \tau = \frac{T}{T_r(\vektor{x})}.
+  \label{}
+\end{equation}
+
+
+\section{Ideal gas Helmholtz energy}
+The equation of state does not provide the energies.
+In order to find the total Helmholtz energy, and not just the residual, 
+the ideal gas contribution $A^\text{ig}$ must be found.
+
+An ideal gas is defined by two equations. One the equation of state
+\begin{equation}
+  P^\text{ig} = \frac{nRT}{V}
+  \label{eq:idealgaslaw}
+\end{equation}
+and the second is the equation for the internal energy
+\begin{equation}
+  U^\text{ig}(T,n) = n c_v(T) T
+  \label{eq:U_ideal}
+\end{equation}
+which simply states that the internal energy depends on the temperature and the number of particles only. The function $c_v$
+is the \textit{heat capacity at constant volume}: 
+\begin{equation}
+  C_v = n c_v \equiv \pone{Q}{T}{V} = \pone{U}{T}{V}.
+  \label{}
+\end{equation}
+Additionally there is the \textit{heat capacity at constant pressure}:
+\begin{equation}
+  C_p = n c_p \equiv \pone{Q}{T}{P} = \pone{H}{T}{P},
+  \label{}
+\end{equation}
+where it was used that $\dd{H} = \delta Q + V\dd{P}$.
+For an ideal gas, the enthalpy is 
+\begin{align}
+  H^\text{ig}(T,n) &\equiv U^\text{ig} + p^\text{ig}V 
+  \nonumber\\
+  &= U^\text{ig}(T,n) + nRT
+  \nonumber\\
+  &= n\left( c_v + R \right)T
+  \label{}
+\end{align}
+which shows that for an ideal gas
+\begin{equation}
+  c_p = c_v + R.
+  \label{}
+\end{equation}
+
+Change in ideal gas enthalpy at a constant number of particles:
+\begin{align}
+  H^\text{ig}(T,n) - H^\text{ig}_0 &= \int_{T_0}^T \pone{H}{T}{P} \dd{T}
+  \nonumber\\
+   &= n \int_{T_0}^T c_p \dd{T}
+  \label{}
+\end{align}
+
+Change in ideal gas entropy at a constant number of particles:
+\begin{align}
+  S^\text{ig}(T,V,n) - S^\text{ig}_0 
+  &= \int_{T_0}^T \pone{S}{T}{V} \dd{T} + \int_{V_0}^V \pone{S}{V}{T} \dd{V}
+    \nonumber\\
+    &=\int_{T_0}^T \frac{n c_v(T)}{T} \dd{T}
+    + \int_{V_0}^V \pone{P}{T}{V} \dd{V}
+    \nonumber\\
+    &=n\int_{T_0}^T \frac{c_p(T) - R}{T} \dd{T}
+    + nR\int_{V_0}^V \frac{1}{V} \dd{V}
+    \nonumber\\
+    &=n\int_{T_0}^T \frac{c_p(T) - R}{T} \dd{T}
+    + nR\ln \left( \frac{V}{V_0} \right),
+  \label{}
+\end{align}
+using 
+\begin{equation}
+  \pone{S}{T}{V} = \pone{S}{U}{V} \pone{U}{T}{V} = \frac{1}{T} \pone{U}{T}{V} = \frac{n c_v}{T} 
+  \label{}
+\end{equation}
+and the \textit{Maxwell relation}
+\begin{equation}
+\label{eq:dsrel}
+\pone{S}{V}{T,\vektor{n}} = \pone{P}{T}{V,\vektor{n}}.
+\end{equation}
+
+The total Helmholtz energy is not provided through the cubic equation of state, only the residual part.
+The ideal gas part is usually specified as 
+algebraic temperature functions for the heat capacity at constant pressure, $c_p(T)$, provided
+for each component in the mixture. The total Helmholtz energy may be written as 
+\begin{align}
+  A &\equiv U - TS \nonumber\\
+  &=U-TS+PV-PV \nonumber\\
+  &= H - TS - PV,
+  \label{}
+\end{align}
+which means that the Helmholtz energy of a pure ideal gas may be expressed as:
+\begin{align}
+  A^\text{ig}_i(T,V,n_i) &= H^\text{ig} - TS^\text{ig} - nRT
+  \nonumber\\
+  &= \Delta H_i^\text{ig} + H_{0,i}^\text{ig} 
+  - T\left(  \Delta S_i^\text{ig} + S_{0,i}^\text{ig}  \right)  - n_i RT
+  \nonumber\\
+  &=  n_i \int_{T_0}^T c_{p,i}^\text{ig}(T) \dd{T} + H_{0,i}^\text{ig}
+  -  n_i T \left[ \int_{T_0}^T \frac{c_{p,i}^\text{ig}(T) - R}{T} \dd{T} 
+    + R \ln \left( \frac{V}{V_0} \right) \right]
+     - T S_{0,i}^\text{ig} - nRT.
+  \label{}
+\end{align}
+
+Mixing carries with it another entropy contribution, even in the case of ideal mixtures, \textit{i.e.} with no interactions. The entropy change 
+from ideal mixing at constant pressure and temperature is:
+\begin{align}
+  \Delta S^\text{ig}_\text{mix} &= -nR \sum_i x_i \ln x_i 
+  \nonumber\\
+  &= -R \sum_i n_i \ln \left( \frac{n_i}{n} \right),
+  \label{}
+\end{align}
+which means that the total Helmholtz energy of an ideal mixture is given by:
+\begin{align}
+  A^\text{ig}(T,V,\vektor{n}) &=  \sum_i A_i^\text{ig}(T,V,n_i) - T \Delta S^\text{ig}_\text{mix}
+  \label{}
+\end{align}
+In terms of the reduced Helmholtz energy, this becomes:
+\begin{align}
+  a^\text{ig}(T,V,\vektor{x}) &=  \sum_i x_i a_i^\text{ig}(T,V) + \sum_i x_i \ln x_i, 
+  \label{}
+\end{align}
+where 
+\begin{equation}
+  a_i^\text{ig}(T,V) \equiv \frac{A^\text{ig}_i(T,V,n_i)}{n_i RT}.
+  \label{}
+\end{equation}
+
+
+\appendix
+
+\section{Newton's method for root finding}
+\section{Newton's method for optimization (Modified Newton)}
+\section{Accelerated direct substitution (Dominant Eigenvalue Method)}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{callen85}
+  Herbert B. Callen,
+  \emph{Thermodynamics and an Introduction to Thermostatistics}.
+  second edition,
+  John Wiley \& Sons Inc,
+  1985.
+
+\bibitem{kunz07}
+  O. Kunz, R. Klimeck, W. Wagner, M. Jaeschke,
+  \emph{The GERG-2004: Wide-Range Equation of State for Natural Gases and Other Mixtures}.
+  GERG TM15 Report (http://www.gerg.eu/publications/tm.htm),
+  2007.
+
+\bibitem{michelsen82a}
+  Michael L. Michelsen,
+  \emph{The isothermal flash problem. Part I. stability}.
+  Fluid Phase Equilibria,
+  9(1)
+  pp. 1-19,
+  1982.
+
+\bibitem{michelsen82b}
+  Michael L. Michelsen,
+  \emph{The isothermal flash problem. Part II. phase-split calculation}.
+  Fluid Phase Equilibria,
+  9(1)
+  pp. 21-40,
+  1982.
+
+\bibitem{michelsen99}
+  Michael L. Michelsen and J{\o}rgen M. Mollerup,
+  \emph{State function based flash specifications}.
+  Fluid Phase Equilibria,
+  158-160
+  pp. 617-626,
+  1999.
+
+\bibitem{michelsen07}
+  Michael L. Michelsen and J{\o}rgen M. Mollerup,
+  \emph{Thermodynamic models: Fundamentals \& computational aspects}.
+  second edition
+  Tie-Line Publication,
+  2007.
+
+\bibitem{span96}
+  Roland Span and Wolfgang Wagner,
+  \emph{A New Equation of State for Carbon Dioxide Covering the Fluid Region
+  from the Triple-Point Temperature to 1100 {K} at Pressures up to 800 {MPa}}.
+  J. Phys. Chem. Ref. Data,
+  25(6)
+  pp. 1509-1596
+  1996.
+
+\end{thebibliography}
+
+\end{document}

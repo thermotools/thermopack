@@ -1,0 +1,717 @@
+\documentclass[english]{../thermomemo/thermomemo}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[utf8]{inputenc}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage[font=small,labelfont=bf]{caption}
+
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
+
+% For appendices
+\usepackage[toc,page]{appendix}
+
+% Package options
+\usetikzlibrary{arrows,automata,decorations.markings,positioning}
+
+% Other options
+\setcounter{MaxMatrixCols}{100}
+
+% Macros
+\newcommand{\mbf}[0]{\mathbf}
+\newcommand*{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand*{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand*{\pder}[2]{\left(\frac{\partial #1}{\partial #2}\right)}
+\newcommand*{\pdder}[2]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)}
+\newcommand*{\pdersub}[3]{\left(\frac{\partial #1}{\partial #2}\right)_{#3}}
+\newcommand*{\pddersub}[3]{\left(\frac{\partial^2 #1}{\partial #2^2}\right)_{#3}}
+\newcommand*{\pdcross}[3]{\left(\frac{\partial^2 #1}{\partial #2 \partial #3}\right)}
+\newcommand*{\pdcrosssub}[4]{\left(\frac{\partial^2 #1}{\partial #2 \partial #3}\right)_{#4}}
+\newcommand*{\hF}[0]{\hat F}
+\newcommand*{\hH}[0]{\hat H}
+\newcommand{\z}{\zeta}
+\newcommand{\lp}{\left(}
+\newcommand{\rp}{\right)}
+
+\title{Cubic Plus Association}
+\author{Ailo Aasen}
+\date{\today}
+\begin{document}
+\frontmatter
+\tableofcontents
+\section{Introduction to CPA}
+CPA is an equation of state which is suitable for modeling associating mixtures, i.e. where hydrogen bonds occur. CPA stands for Cubic Plus Association, which refers to the fact that association is modeled as an additive contribution to the Helmholtz energy of a cubic equation of state. If one uses SRK as the underlying cubic equation of state -- which is the most common choice -- then one in other words has
+\begin{equation}
+  A^{CPA} = A^{ideal} + A^{SRK} + A^{assoc}.
+\end{equation}
+
+\subsection{The association contribution to Helmholtz energy}
+Each associating molecule $i$ is assigned association sites $A_i$, $B_i$, $\ldots$ For example, water is usually modeled as having four associating sites: each hydrogen atom and each 'free' electron valence pair in oxygen is a site. A site is called bonded if it is involved in a hydrogen bond. The association contribution for a mixture is modeled by
+\begin{equation}
+  \frac{A^{assoc}}{RT} = \sum_{i} n_i \sum_{A_i} \lp \ln X_{A_i} - \frac{X_{A_i}}{2} + \frac{1}{2} \rp
+\end{equation}
+where $X_{A_i}$ is the fraction of molecules \textit{not} bonded at site $A_i$, and is given by the nonlinear equation
+\begin{equation}
+  X_{A_i} = \frac{1}{1+(1/V) \sum_j n_j \sum_{B_j} X_{B_j} \Delta^{A_i B_j}}.
+\end{equation}
+Here $\Delta^{A_i B_j}$ is called the bond association strength, and is in CPA given by
+\begin{equation}
+  \Delta^{A_i B_j}(T,V,\mbf n) = g(V,\mbf n) \cdot [\exp(\epsilon^{A_i B_j}/RT) - 1] b_{ij} \beta^{A_i B_j},
+\end{equation}
+where the radial distribution function $g$ is given by\footnote{There are several variants of $g$; this one from simplified CPA (sCPA).}
+\begin{equation}
+  g(V,\mbf n) = \frac{1}{1 - 0.475 B(\mbf n)/V},
+\end{equation}
+and $B(\mbf n) = \sum_i n_i b_i$. The quantities $b_i$ are the familiar co-volume parameters of the cubic EoS. The strength of the association is modeled using a square-well potential, and the quantities $\epsilon^{A_i B_j}$ and $\beta^{A_i B_j}$ represent the well depth and width, respectively.
+
+\subsection{Mixing rules}
+When the CPA EoS is used for mixtures, the conventional mixing rules are applied for cubic part of the equation, namely
+\begin{align}
+  a &= \sum_i \sum_j x_i x_j a_{ij}, \qquad a_{ij} = \sqrt{a_i a_j} (1-k_{ij}), \\
+  b &= \sum_i x_i b_i,
+\end{align}
+where $x_i = n_i/n$ is the molfraction of component $i$ in the mixture. Note that even for mixtures containing associating components, the interaction parameters $k_{ij}$ given here are the only adjustable parameters. Several alpha-formulation have been used, although the classic formulation is the most common choice. See also Section \ref{subsec:fitted parameters}.
+
+There are two recognized sets of mixing rules for the association parameters: % Only two? Check the papers Voutsas sent you.
+
+\textbf{CR-1 mixing rules for association parameters}
+\begin{equation}
+  \epsilon^{A_i B_j} = \frac{\epsilon^{A_i B_i} + \epsilon^{A_j B_j}}{2}, \qquad \beta^{A_i B_j} = \sqrt{\beta^{A_i B_i} \beta^{A_j B_j}}.
+\end{equation}
+
+\textbf{Elliot's combining rule for association parameters}
+
+This combining rule gives directly an expression for $\Delta^{A_i B_j}$:
+\begin{equation}
+  \Delta^{A_i B_j} = \sqrt{\Delta^{A_i B_i} \Delta^{A_j B_j}}.
+\end{equation}
+
+\textbf{Mixtures with solvation}
+CPA can be applied to mixtures with one self-associating component and one non-self-asssociating compound, but where there is cross-association -- solvation -- between the two compounds. Examples are the acid-gas mixtures H2O--CO2 and H2O--H2S. Since CO2--H2O is an especially important binary for CCS applications, modeling solvation will be an important task for ThermoPack.
+
+One approach to modeling cross-interaction between a self-associating component $i$ and a non self-associating component $j$ is to set $\Delta^{A_i B_j} = s_{ij} \Delta^{A_i}$, where $s_{ij}$ is a constant determined by fitting the model to experimental data. In general, $s_{ij}$ is temperature-dependent. With this method, no self-association is modeled for the non-self-associating component, thus preserving this qualitative physical aspect. % Reference Austegård, and also Voutsas.
+
+Another method is discussed by Kontogeorgis \cite{Kontogeorgis10}, who suggests the so-called modified CR-1 combining rule. The procedure is to use the same expression for $\Delta^{A_i B_j}$, but with
+\begin{equation}
+  \epsilon^{A_i B_j} = \frac{\epsilon_{assoc}}{2}, \qquad \beta^{A_i B_j} \ \text{ (fitted)}.
+\end{equation}
+Also for this method, a non-self-associating component has no self-association.
+
+The third approach is to simply model the solvating component as an associating molecule. This approach sort of disregards the underlying physics, but has been found to give good results. Some experimentation may be needed to figure out the appropriate association scheme. % Reference Voutsas.
+
+
+\subsection{CPA compared to other SAFT equations}
+Although it's not necessary for the remainder, we briefly mention general SAFT equations. CPA is just one in a host of equations of state which model associating components, and that are classified as SAFT equations. SAFT stands for Statistical Associating Fluid Theory, and is -- unlike multiparameter equations of state -- a physically based framework for modeling associating mixtures. Although developed in the late 1980s and early 1990s, there is still much work being published on SAFT.
+
+Fortunately, all of the SAFT variants use essentially the same expression for $A^{assoc}$, the difference lying in the bond associating strength $\Delta^{A_i B_j}$. As an example, we will give the $\Delta^{A_i B_j}$ as it appears in the model PC-SAFT, namely
+\begin{equation}
+  \label{ascStrength}
+  \Delta^{A_i B_j} = g_{ij} \cdot [\exp(\epsilon^{A_i B_j}/kT) - 1](\sigma_{ij}^3 \kappa^{A_i B_j}).
+\end{equation}
+The radial distribution function of the hard-sphere fluid is
+\begin{equation}
+  \label{gij}
+  g_{ij} = \frac{1}{1-\z_3} + \lp \frac{d_id_j}{d_i+d_j} \rp \frac{3\z_2}{(1-\z_3)^2} + \lp \frac{d_i d_j}{d_i+d_j} \rp^2 \frac{2\z_2^2}{(1-\z_3)^2}.
+\end{equation}
+where
+\begin{equation}
+  \z_n = \frac{\pi}{6} \rho \sum_i x_i m_i d_i^n, \qquad n = 0,1,2,3,
+\end{equation}
+and
+\begin{equation}
+  d_i = \sigma_i \left[1 - 0.12\exp \lp -3\frac{\epsilon_i}{kT} \rp \right].
+\end{equation}
+Note, in particular, the in PC-SAFT, the radial distribution function is temperature dependent. Mixing rules for the PC-SAFT parameters:
+\begin{align}
+  \sigma_{ij} &= \frac{1}{2}(\sigma_i + \sigma_j) \\
+  \epsilon_{ij} &= \sqrt{\epsilon_i \epsilon_j}(1-k_{ij}).
+\end{align}
+(Note that $\epsilon^{A_i B_j}$ and $\epsilon_{ij}$ are completely different parameters.)
+
+The biggest strength of PC-SAFT compared to CPA, is that the non-association part is theoretically justified. This advantage becomes especially clear when modeling polymers, which PC-SAFT is tailored to be able to handle. For molecules having a chain-like structure, PC-SAFT indeed outperforms CPA. On the other hand, PC-SAFT has a more complicated non-association part, making it harder to implement (especially in ThermoPack, for which everything is built around cubic equations of state), and also more demanding in terms of computation time. Although only CPA will be implemented at this point, significant portions of the code can be recycled if one at one point in the future decides to implement other SAFT variants.
+% Would be nice with a reference stating that PC-SAFT outperfoms CPA when modeling polymers.
+
+\subsection{The one-strength association schemes}
+Huang and Radosz (1990) were the first to publish a SAFT variant with extensive parameter lists. They also classified association schemes, which has become the standard for later work on SAFT. Ideally, one should have detailed, independent data from spectroscopy for the associating strength for each site-site interaction. The scheme of Huang and Radosz reduces the number of parameters to be fitted for each interaction $A_i B_i$ to just one. To illustrate this one-strength association scheme, let us consider the water molecule, with two positively polarized hydrogen atoms (sites $A$ and $B$), and two free electron pairs (sites $C$ and $D$). Huang and Radosz classifies water according to the so-called 4C scheme:
+\begin{align*}
+&\Delta^{AA} = \Delta^{AB} = \Delta^{BB} = \Delta^{CC} = \Delta^{CD} = \Delta^{DD} = 0 \\
+&\Delta^{AC} = \Delta^{AD} = \Delta^{BC} = \Delta^{BD} \neq 0.
+\end{align*}
+Although this is the most physically appropriate one-strength association scheme for water, various reasons (e.g. limited experimental data, or a desire for reduced complextiy), it is often modeled according to the 3B scheme:
+\begin{align*}
+&\Delta^{AA} = \Delta^{AB} = \Delta^{BB} = \Delta^{CC} = 0 \\
+&\Delta^{AC} = \Delta^{BC} \neq 0.
+\end{align*}
+Of course, in the 3B scheme the physical interpretation of the association sites is not so clear, but in the end they are just fitted parameters.
+
+In the end, the big advantage with the one-strength associating scheme, is that one just have to give the two numbers $\beta^{A B}$ and $\epsilon^{A B}$, in addition to the particular one-strength association scheme, to fully describe the association of an associating component. (Of course, the three SRK parameters come in addition to this.)
+
+When modeling cross-association, there is only a contribution between the sites having the opposite polarity.
+
+\section{The $Q$ function and its relation to $F^{\text{assoc}}$}
+Define the function
+\begin{equation}
+  Q(\mbf n,T,V,\mathbf{X}) = \sum_i \sum_{A_i} n_i \lp \ln X_{A_i} - X_{A_i} + 1\rp - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j}.
+\end{equation}
+Here $\Delta^{A_i B_j} = \Delta^{A_i B_j}(T,V,\mbf n)$ is the bond association strength. If $\mbf X$ solves the equations
+\begin{equation}
+  \pder{Q}{\mbf X}(T,V,\mbf n,X) = \mbf 0, \quad \text{i.e.} \quad   \frac{1}{X_{A_i}} - 1 - \frac{1}{V} \sum_j \sum_{B_j} n_j X_{B_j} \Delta^{A_i B_j} = 0 \quad \forall \ X_{A_i}.
+\end{equation}
+then the resulting solution $\mbf X = \mbf X(T,V,\mbf n)$ is such that\footnote{Where $F^{\text{assoc}}(T,V,\mbf n) = A^{R}(T,V,\mbf n)/RT$ and $A^R$ is the association contribution to the residual Helmholtz energy.}
+\begin{equation}
+  \label{FQrelationship}
+  F^{\text{assoc}}(T,V,\mbf n) = Q(T,V,\mbf n, \mbf X(T,V,\mbf n)).
+\end{equation}
+We now clarify the notation used below in the expressions for the derivatives. Given a differential operator $\partial$, we will in the following use $\partial Q_{sp}$ to mean $(\partial Q)(T,V,\mbf n,\mbf X(T,V,\mbf n))$. For example, $\pder{Q_{sp}}{V} = \pder{Q}{V}(T,V,\mbf n,\mbf X(T,V,\mbf n))$. Moreover, to avoid subscripting every partial derivative to show which variables are fixed, we agree once and for all that $F^{\text{assoc}}$ has $(T,V,\mbf n)$ as independent variables, while $Q$ has $(T,V,\mbf n,\mbf X)$ as independent variables. The equality \eqref{FQrelationship} can also be stated as $F^{\text{assoc}} = Q|_{\mbf X = \mbf X(T,V,\mbf n)}$.
+
+\section{First-order derivatives of $F^{\text{assoc}}$} \label{first-order derivatives}
+We find that
+\begin{align*}
+\pder{F^{\text{assoc}}}{V} &= \pder{Q_{sp}}{V}  + \sum_i \sum_{A_i} \pder{Q_{sp}}{X_{A_i}} \pder{X_{A_i}}{V} \\
+& = \pder{Q_{sp}}{V},
+\end{align*}
+since $\pder{Q_{sp}}{X_{A_i}} = 0$. Similarly, we have
+$$
+\pder{F^{\text{assoc}}}{T} = \pder{Q_{sp}}{T} \quad \text{and} \quad \pder{F^{\text{assoc}}}{n_k} = \pder{Q_{sp}}{n_k}.
+$$
+\subsection{Volume derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{V} &= \pder{Q_{sp}}{V} \\ \nonumber
+  &= \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{\Delta^{A_i B_j}}{V} - \pder{\Delta^{A_i B_j}}{V} \right].
+\end{align}
+
+\subsection{Temperature derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{T} &= \pder{Q_{sp}}{T} \\ \nonumber
+  &= -\frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{T}.
+\end{align}
+
+\subsection{Composition derivative}
+\begin{align}
+  \pder{F^{\text{assoc}}}{n_k} =& \pder{Q_{sp}}{n_k} \nonumber \\ 
+  =& \sum_{A_k} \lp \ln X_{A_k} - X_{A_k} + 1\rp - \frac{1}{V} \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \Delta^{A_k B_j} \label{l1}\\
+  &- \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{n_k} \label{l2}\\
+  =& \sum_{A_k} \ln X_{A_k} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{n_k}. \label{nono}
+\end{align}
+
+\section{Second-order derivatives of $F^{\text{assoc}}$}
+Let the variables $\z_1,\z_2$ each equal one of the scalar variables in $(T,V,\mbf n)$. Recalling that 
+$$
+\pder{F^{assoc}}{\z_1}(T,V,\mbf n) = \pder{Q}{\z_1}(T,V,\mbf n,\mbf X(T,V,\mbf n)),
+$$
+we get
+\begin{align}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} =& \frac{\partial}{\partial \z_2} \pder{F^{\text{assoc}}}{\z_1} \\
+  =& \pdcross{Q_{sp}}{\z_2}{\z_1} + \pdcross{Q_{sp}}{\z_1}{\mbf X} \pder{\mbf X}{\z_2}. \label{stress}
+\end{align}
+We once again stress the meaning of our notation: in the first term of \eqref{stress}, $\mbf X$ is to be treated as a constant when the cross-derivative is taken. Now, the expression \eqref{stress} involves the derivative $\partial \mbf X/\partial \z_2$. To find this derivative, we differentiate the defining relation for $X(T,V,\mbf n)$, namely $\pder{Q}{\mbf X} = \mbf 0$. Doing this (and taking care to transpose vectors correctly), we get
+\begin{align}
+ \mbf 0 = \frac{\partial}{\partial \z_2} \pder{Q_{sp}}{\mbf X} = \pdcross{Q_{sp}}{\mbf X}{\z_2} + \pder{\mbf X}{\z_2}^t \pdder{Q_{sp}}{\mbf X},
+\end{align}
+yielding
+\begin{equation}
+  \label{Xz2}
+  \pder{\mbf X}{\z_2} = - \pdder{Q_{sp}}{\mbf X}^{-1} \pdcross{Q_{sp}}{\mbf X}{\z_2}^t.
+\end{equation}
+In conclusion, the formula for the second derivative is obtained by combining \eqref{stress} and \eqref{Xz2}:
+\begin{equation}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} = \pdcross{Q_{sp}}{\z_2}{\z_1} -  \pdcross{Q_{sp}}{\z_1}{\mbf X} \pdder{Q_{sp}}{\mbf X}^{-1} \pdcross{Q_{sp}}{\mbf X}{\z_2}^t.
+\end{equation}
+Or, if one prefers summation notation:
+\begin{equation}
+  \pdcross{F^{\text{assoc}}}{\z_2}{\z_1} = \pdcross{Q_{sp}}{\z_2}{\z_1} -  \sum_{i,j} \sum_{A_i,B_j} \pdcross{Q_{sp}}{\z_1}{X_{A_i}} \lp \pdder{Q_{sp}}{\mbf X}^{-1} \rp_{ij} \pdcross{Q_{sp}}{X_{B_j}}{\z_2}.
+\end{equation}
+
+\subsection{Formulas for $\pdcross{Q_{sp}}{\z_2}{\z_1}$}
+
+\begin{align*}
+  \pdder{Q_{sp}}{T} =  - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdder{\Delta^{A_i B_j}}{T}.
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{V} = \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V} \pder{\Delta^{A_i B_j}}{T} - \pdcross{\Delta^{A_i B_j}}{T}{V} \right]
+\end{align*}
+
+\begin{align*} % DOUBLE-CHECKED
+  \pdcross{Q_{sp}}{T}{n_k} =& -\frac{1}{V} \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{T}\\
+  &- \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{T}{n_k}
+\end{align*}
+
+\begin{align*}
+  \pdder{Q_{sp}}{V} = \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ -\frac{2\Delta^{A_i B_j}}{V^2} + \frac{2}{V}  \pder{\Delta^{A_i B_j}}{V}  - \pdder{\Delta^{A_i B_j}}{V} \right]
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{n_k} =& \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \left[ \frac{\Delta^{A_k B_j}}{V^2} - \frac{1}{V} \pder{\Delta^{A_k B_j}}{V}\right] \\
+  &+ \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V} \pder{\Delta^{A_i B_j}}{n_k} - \pdcross{\Delta^{A_i B_j}}{V}{n_k} \right].
+\end{align*}
+
+\begin{align*} % DOUBLE-CHECKED
+  \pdcross{Q_{sp}}{n_l}{n_k} =& - \frac{1}{V} \sum_{A_k, B_l} X_{A_k} X_{B_l} \Delta^{A_k B_l} - \frac{1}{V} \sum_{j} \sum_{A_l, B_j} n_j X_{A_l} X_{B_j} \pder{\Delta^{A_l B_j}}{n_k} \\
+  &- \frac{1}{V} \sum_{j} \sum_{A_k, B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{n_l} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{n_l}{n_k}
+\end{align*}
+These derivatives are all found by performing one more differentiation on the first-order derivatives we found in section \ref{first-order derivatives}. However, when taking an additional derivative of $\pder{Q_{sp}}{n_k}$, we have to take care to differentiate the expressions on \eqref{l1} and \eqref{l2}, and not the simplified expression \eqref{nono}. This is because the supscript \textrm{sp} means that $X(T,V,\mbf n)$ should be substituted in \textit{after} all the derivatives have been performed.
+
+\subsection{Formulas for $\pdcross{Q_{sp}}{X_{A_i}}{\z_1}$}
+We have
+\begin{equation}
+  \pder{Q}{X_{A_i}} = \frac{n_i}{X_{A_i}} - n_i  - \frac{n_i}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \Delta^{A_i B_j},
+\end{equation}
+and thus
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{X_{A_i}} = -\frac{n_i}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \pder{\Delta^{A_i B_j}}{T}
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{X_{A_i}} = n_i \sum_{j} \sum_{B_j} n_j X_{B_j} \left[ \frac{1}{V^2} \Delta^{A_i B_j} - \frac{1}{V} \pder{\Delta^{A_i B_j}}{V} \right]
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{n_l}{X_{A_i}} = - \frac{n_i}{V} \sum_{B_l} X_{B_l} \Delta^{A_i B_l} - \frac{1}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} n_i \pder{\Delta^{A_i B_j}}{n_l}.
+\end{align*}
+
+\subsection{Solving for $\pder{\mbf X}{V}$ and $\pdder{Q_{sp}}{V}$ simultaneously}
+The derivatives $\pder{\mbf X}{V}$ and $\pdder{Q_{sp}}{V}$ are needed in the Newton iteration when solving for volume given pressure, temperature and composition. When both of these are needed, one wants to first solve for $\pder{\mbf X}{V}$ from \eqref{Xz2}, and then use \eqref{stress} to find $\pdder{Q_{sp}}{V}$, and therefore a dedicated routine for this has been implemented. To obtain $\pder{\mbf X}{V}$, we solve the linear system
+\begin{equation}
+  \pdder{Q_{sp}}{\mbf X} \pder{\mbf X}{V} = -\pdcross{Q_{sp}}{V}{\mbf X}^t.
+\end{equation}
+where\footnote{Note that only the diagonal of $\pdcross{Q}{X_{A_i}}{X_{B_j}}$ is dependent on $\mbf X$.}
+\begin{equation}
+  \pdcross{Q}{X_{A_i}}{X_{B_j}} = -\frac{n_i}{X_{A_i}^2} \delta_{A_i B_j} - \frac{n_i n_j}{V} \Delta^{A_i B_j}.
+\end{equation}
+Having found this derivative, we find $\pder{P}{V}$ from \eqref{stress}:
+\begin{equation}
+    \pdder{F^{\text{assoc}}}{V} = \pdder{Q_{sp}}{V} + \pdcross{Q_{sp}}{\mbf X}{V} \pder{\mbf X}{V}.
+\end{equation}
+
+\section{Derivatives when using the CPA-form of $\Delta^{A_i B_j}(T,V,\mbf n)$}
+We now specialize to a specific functional form of $\Delta^{A_i B_j}(T,V,\mbf n)$, namely that used in the CPA-model. It is given by
+\begin{equation}
+  \Delta^{A_i B_j}(T,V,\mbf n) = g(V,\mbf n) \cdot [\exp(\epsilon^{A_i B_j}/RT) - 1] b_{ij} \beta^{A_i B_j},
+\end{equation}
+where $\epsilon^{A_i B_j}$, $b_{ij}$ and $\beta^{A_i B_j}$ are constants. The first derivatives are thus given by
+\begin{align}
+  \pder{\Delta^{A_i B_j}}{T}   &= -\frac{\epsilon^{A_i B_j}}{RT^2} g(V,\mbf n) \exp(\epsilon^{A_i B_j}/RT) b_{ij} \beta^{A_i B_j} \\
+  \pder{\Delta^{A_i B_j}}{V}   &= \pder{g(V,\mbf n)}{V} \cdot [\exp(\epsilon^{A_i B_j}/RT) - 1] b_{ij} \beta^{A_i B_j}  = \pder{\ln g(V,\mbf n)}{V} \Delta^{A_i B_j} \\
+  \pder{\Delta^{A_i B_j}}{n_k} &= \pder{g(V,\mbf n)}{n_k} \cdot [\exp(\epsilon^{A_i B_j}/RT) - 1] b_{ij} \beta^{A_i B_j} =  \pder{\ln g(V,\mbf n)}{n_k} \Delta^{A_i B_j}
+\end{align}
+while the second derivatives are given by
+\begin{align}
+  \pdder{\Delta^{A_i B_j}}{T}   &=  g(V,\mbf n) \lp 2 + \frac{\epsilon^{A_i B_j}}{RT} \rp b_{ij} \beta^{A_i B_j} \frac{\epsilon^{A_i B_j}}{RT^3} \exp(\epsilon^{A_i B_j}/RT) \\
+  \pdcross{\Delta^{A_i B_j}}{V}{T}   &= -\frac{\epsilon^{A_i B_j}}{RT^2} g(V,\mbf n) \exp(\epsilon^{A_i B_j}/RT) b_{ij} \beta^{A_i B_j} \pder{g(V,\mbf n)}{V} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{T}   &= -\frac{\epsilon^{A_i B_j}}{RT^2} g(V,\mbf n) \exp(\epsilon^{A_i B_j}/RT) b_{ij} \beta^{A_i B_j} \pder{g(V,\mbf n)}{n_l} \\
+  \pdder{\Delta^{A_i B_j}}{V}   &= \pdder{g(V,\mbf n)}{V}  \frac{\Delta^{A_i B_j}}{g(V,\mbf n)} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{V}  &= \pdcross{g(V,\mbf n)}{n_l}{V} \frac{\Delta^{A_i B_j}}{g(V,\mbf n)} \\
+  \pdcross{\Delta^{A_i B_j}}{n_l}{n_k}  &= \pdcross{g(V,\mbf n)}{n_l}{n_k} \frac{\Delta^{A_i B_j}}{g(V,\mbf n)} 
+\end{align}
+
+\textbf{Derivatives of $g(V,\mbf n)$}
+
+In all common variants of CPA, the radial distribution function takes the special functional form $g(V,\mbf n) = g(\eta)$, where $\eta$ is the adimensional number
+$$
+\eta = B(\mbf n)/4V = b\rho/4, \quad \text{where} \quad B(\mbf n) = nb = \sum_i n_i b_i.
+$$
+Note that $\mbf n$ here includes all components, also the non-associating ones. Two common variants for $g(\eta)$, along with their first and second derivatives, are given by
+\begin{align*}
+  g(\eta) = \frac{1}{1-1.9 \eta}, \qquad g'(\eta) = \frac{1.9}{(1-1.9\eta)^2}, \qquad g''(\eta) = \frac{2 \cdot 1.9^2}{(1-1.9\eta)^3} \qquad \mathbf{(sCPA)} \\
+  g(\eta) = \frac{1-\eta/2}{(1- \eta)^3}, \qquad g'(\eta) = \frac{2.5-\eta}{(1-\eta)^4}, \qquad g''(\eta) = \frac{3\eta-9}{(1-\eta)^5} \qquad \mathbf{(original)}
+\end{align*}
+Its derivatives with respect to variables $\zeta_1,\zeta_2$, each being a member of $(T,\mbf n)$, are given by
+\begin{equation}
+  \pder{g}{\zeta_1} = g'(\eta) \pder{\eta}{\zeta_1}, \qquad \pdcross{g}{\zeta_1}{\zeta_2} = g''(\eta) \pder{\eta}{\zeta_1} \pder{\eta}{\zeta_2} + g'(\eta) \pdcross{\eta}{\zeta_1}{\zeta_2},
+\end{equation}
+and
+% \begin{align} % These are correct.
+%   \pder{g}{V}          =& -\frac{1}{\lp 1 - 0.475 B(\mbf n)/V \rp^2} \cdot \frac{0.475 B(\mbf n) }{V^2} \\
+%   \pder{g}{n_k}        =& \frac{1}{\lp 1 - 0.475 B(\mbf n)/V \rp^2} \cdot \frac{0.475}{V} b_k \\
+%   \pdder{g}{V}         =& \frac{2}{\lp 1 - 0.475 B(\mbf n)/V \rp^3} \cdot \lp \frac{0.475 B(\mbf n) }{V^2} \rp^2 + \frac{1}{\lp 1 - 0.475 B(\mbf n)/V \rp^2} \cdot \frac{2 \cdot 0.475 B(\mbf n) }{V^3} \\
+%   \pdcross{g}{n_l}{V}  =& -\frac{2}{\lp 1 - 0.475 B(\mbf n)/V \rp^3} \cdot \frac{0.475^2 B(\mbf n) }{V^3} b_l -\frac{1}{\lp 1 - 0.475 B(\mbf n)/V \rp^2} \cdot \frac{0.475}{V^2} b_l \\
+%   \pdcross{g}{n_l}{n_k}=& \frac{2}{\lp 1 - 0.475 B(\mbf n)/V \rp^3} \cdot \lp \frac{0.475}{V} \rp^2 b_l b_k,
+% \end{align}
+%where we used the fact that, $\pder{B}{n_k} = b_k$, while $\pdcross{B}{n_l}{n_k} = 0$.
+\begin{align}
+ \pder{\eta}{V} = -\frac{B(\mbf n)}{4V^2} \qquad  \pder{\eta}{n_k} = \frac{b_k}{4V},
+\end{align}
+\begin{align}
+  \pdder{\eta}{V} = \frac{B(\mbf n)}{2V^3} \qquad \pdcross{\eta}{n_l}{V}  = -\frac{b_k}{4V^2} \qquad  \pdcross{\eta}{n_k}{n_l} = 0.
+\end{align}
+
+\subsection{Simplified CPA Derivatives}
+
+\textbf{Simplified first derivatives}
+
+\begin{align}
+  \pder{F^{\text{assoc}}}{V} =& \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{\Delta^{A_i B_j}}{V} - \pder{\Delta^{A_i B_j}}{V} \right] \\
+  =& \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j} \left[ \frac{1}{V} - \pder{\ln g}{V} \right] \\
+  =& \frac{1}{2} \left[ \frac{1}{V} - \pder{\ln g}{V} \right] \sum_i \sum_{A_i} n_i (1- X_{A_i})
+\end{align}
+
+\begin{align}
+  \pder{F^{\text{assoc}}}{T}  &= -\frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{T}.
+\end{align}
+
+\begin{align}
+  \pder{F^{\text{assoc}}}{n_k} =& \sum_{A_k} \ln X_{A_k} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pder{\Delta^{A_i B_j}}{n_k} \\
+  =& \sum_{A_k} \ln X_{A_k} - \pder{\ln g}{n_k} \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j} \\
+  =& \sum_{A_k} \ln X_{A_k} - \frac{1}{2} \pder{\ln g}{n_k} \sum_{i} \sum_{A_i} n_i (1-X_{A_i}).
+\end{align}
+
+
+\textbf{Simplified formulas for $\pdcross{Q_{sp}}{X_{A_i}}{\z_2}$}
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{X_{A_i}} =& -\frac{1}{V} \sum_{j} \sum_{B_j} n_i n_j X_{B_j} \pder{\Delta^{A_i B_j}}{T} \\
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{X_{A_i}} =& \sum_{j} \sum_{B_j} n_i n_j X_{B_j} \left[ \frac{1}{V^2} \Delta^{A_i B_j} - \frac{1}{V} \pder{\Delta^{A_i B_j}}{V} \right] \\
+  =& \left[ \frac{1}{V}  - \pder{\ln g}{V} \right] \frac{1}{V} \sum_{j} \sum_{B_j} n_i n_j X_{B_j} \Delta^{A_i B_j} \\
+  =& \left[ \frac{1}{V}  - \pder{\ln g}{V} \right] \lp \frac{1}{X_{A_i}} - 1 \rp
+\end{align*}
+
+\begin{align*}
+  \pdcross{Q_{sp}}{n_l}{X_{A_i}} =& - \frac{1}{V} \sum_{B_l} n_i X_{B_l} \Delta^{A_i B_l} - \frac{1}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \left[\delta_{il} \Delta^{A_i B_j} + n_i \pder{\Delta^{A_i B_j}}{n_l} \right] \\
+  =& - \frac{1}{V} \sum_{B_l} n_i X_{B_l} \Delta^{A_i B_l} - \left[\delta_{il} + n_i \pder{g}{n_l} \right] \frac{1}{V} \sum_{j} \sum_{B_j} n_j X_{B_j} \Delta^{A_i B_j} \\
+  =& - \frac{1}{V} \sum_{B_l} n_i X_{B_l} \Delta^{A_i B_l} - \left[\delta_{il} + n_i \pder{g}{n_l} \right] \lp \frac{1}{X_{A_i}} - 1 \rp
+\end{align*}
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+\textbf{Simplified formulas for $\pdcross{Q_{sp}}{\z_1}{\z_2}$}
+
+\begin{align*}
+  \pdder{Q_{sp}}{T} =  - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdder{\Delta^{A_i B_j}}{T}.
+\end{align*}
+
+
+\begin{align*} % THIS IS THE ONLY ONE WHICH HAS BEEN SIMPLIFIED.
+  \pdder{Q_{sp}}{V} &= \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ -\frac{2\Delta^{A_i B_j}}{V^2} + \frac{2}{V}  \pder{\Delta^{A_i B_j}}{V}  - \pdder{\Delta^{A_i B_j}}{V} \right] \\
+  &= \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j} \left[ -\frac{2}{V^2} + \frac{2}{V} \pder{\ln g(V,\mbf n)}{V} - \pdder{g(V,\mbf n)}{V}  \frac{1}{g(V,\mbf n)} \right] \\
+  &= \frac{1}{2} \sum_{i} \sum_{A_i} n_i \lp \frac{1}{X_{A_i}}-1 \rp \left[ -\frac{2}{V^2} + \frac{2}{V} \pder{\ln g(V,\mbf n)}{V} -  \pdder{g(V,\mbf n)}{V}  \frac{1}{g(V,\mbf n)} \right]
+\end{align*}
+
+
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{V} = \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V} \pder{\Delta^{A_i B_j}}{T} - \pdcross{\Delta^{A_i B_j}}{T}{V} \right]
+\end{align*}
+
+
+\begin{align*}
+  \pdcross{Q_{sp}}{T}{n_k} =& \frac{1}{V} \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{T}\\
+  &- \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{T}{n_k}
+\end{align*}
+
+
+
+\begin{align*}
+  \pdcross{Q_{sp}}{V}{n_k} =& \sum_{j} \sum_{A_k,B_j} n_j X_{A_k} X_{B_j} \left[ \frac{\Delta^{A_k B_j}}{V^2} - \frac{1}{V} \pder{\Delta^{A_k B_j}}{V}\right] \\
+  &+ \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \left[ \frac{1}{V^2} \pder{\Delta^{A_i B_j}}{n_k} - \frac{1}{2V} \pdcross{\Delta^{A_i B_j}}{V}{n_k} \right].
+\end{align*}
+
+
+\begin{align*}
+  \pdcross{Q_{sp}}{n_l}{n_k} =& - \frac{1}{V} \sum_{A_k, B_l} X_{A_k} X_{B_l} \Delta^{A_k B_l} - \frac{1}{V} \sum_{j} \sum_{A_i, B_j} n_j X_{A_l} X_{B_j} \pder{\Delta^{A_l B_j}}{n_k} \\
+  &- \frac{1}{V} \sum_{j} \sum_{A_i, B_j} n_j X_{A_k} X_{B_j} \pder{\Delta^{A_k B_j}}{n_l} - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \pdcross{\Delta^{A_i B_j}}{n_l}{n_k}
+\end{align*}
+
+
+\section{Efficient implementation of the association contribution} \label{effImp}
+We now describe an efficient implementation of the association contribution, which is outlined in the papers by Michelsen \cite{Michelsen01} and \cite{Michelsen06}.
+
+Equation of state models with an association contribution are computationally expensive as they have to solve an internal chemical equilibrium problem. However, using that the association contribution to the Helmholtz energy can be found from a certain minimization procedure, will be used to simplify the calculation of properties like pressure and chemical potentials, together with their derivatives with respect to temperature, volume and composition.
+
+\subsection{Base equations}
+In the SAFT and CPA models, the association contribution to the mixture Helmholtz energy is found from
+\begin{equation}
+  \label{aAssoc}
+  \frac{A^{\text{assoc}}}{RT} = \sum_i n_i \sum_{A_i} \lp \ln X_{A_i} - \frac12 X_{A_i} + \frac12 \rp.
+\end{equation}
+Here, $A$ and $B$ index bonding sites on a given molecule, and $X_{A_i}$ denotes the fraction of $A$-sites on molecule $i$ that do NOT form bonds with other active sites. These site fractions are given implicitly by the nonlinear equations
+\begin{equation}
+  X_{A_i} = \frac{1}{1 + \sum_j \sum_{B_j} x_j X_{B_j} \Delta^{A_i B_j}},
+\end{equation}
+where $\Delta^{A_i B_j}$ is the association strength between site $A$ on molecule $i$ and site $B$ on molecule $j$, and depends on $T$, $V$ and $\mbf n$, but NOT on the fraction of sites that form bonds. Differentiation of \eqref{aAssoc} yields derived properties (i.e. the contribution from the association term to the derived properties), e.g.
+\begin{equation}
+  \frac{P^{\text{assoc}}}{RT} = -\frac{\partial}{\partial V} \lp \frac{A^{\text{assoc}}}{RT} \rp = \sum_i n_i \sum_{A_i} \lp \frac{1}{X_{A_i}}-\frac{1}{2} \rp \frac{\partial X_{A_i}}{\partial V}.
+\end{equation}
+We will now see, however, that by taking advantage of a certain minimization problem, there is a computationally cheaper expression for the association pressure.
+
+Now, define $Q$ by 
+\begin{equation}
+  Q(\mbf n,T,V,\mathbf{X}(\mbf n, T, V)) = \sum_i \sum_{A_i} n_i \lp \ln X_{A_i} - X_{A_i} + 1\rp - \frac{1}{2V} \sum_{i,j} \sum_{A_i, B_j} n_i n_j X_{A_i} X_{B_j} \Delta^{A_i B_j}.
+\end{equation}
+The reason for introducing the $Q$ function, is that the association contribution of SAFT and CPA to the reduced, residual Helmholtz energy, equals the value of $Q$ at a stationary point with respect to the site fractions $\mbf X$; i.e. at a point where the gradient of $Q$ with respect to the $\mbf X$-coordinates vanishes. This is shown in Michelsen \cite{Michelsen01}, in addition to where $Q$ comes from in the first place. The association contribution to pressure is thus found from
+$$
+\frac{P^{\text{assoc}}}{RT} = - \frac{\partial Q_{sp}}{\partial V},
+$$
+where $Q_{sp}$ is a stationary point with respect to the $\mbf X$-variables. To find the derivative on the right hand side, we use the chain rule:
+\begin{align*}
+  \frac{\partial Q_{sp}}{\partial V} = \pder{Q}{V}_{\mbf X} + \sum_i \sum_{A_i} \pder{Q}{X_{A_i}}_V \frac{\partial X_{A_i}}{\partial V}
+\end{align*}
+but since the derivatives with respect to $X_{A_i}$ are $0$ at the stationary point, we get $P^{\text{assoc}} = -RT \pder{Q}{V}_{\mbf X}$. When this is differentiated out, we get
+\begin{equation}
+  P^{assoc} = -\frac{RT}{2V} \lp 1 - V \pder{\ln g}{V} \rp \sum_i \sum_{A_i} n_i (1-X_{A_i}).
+\end{equation}
+
+Although the notation we have used up to now is the traditional one, it is unwieldy to use in what follows. We therefore follow Michelsen \cite{Michelsen06} and use the following notation
+\begin{itemize}
+\item $S$ is the total number of different sites for all molecules
+\item The totality of association sites on all molecules are indexed sequentially, $k=1,2,\ldots,S$
+\item $m_k$ is the total number of moles of molecules that host a given site $k$
+\item $K_{kl} = K_{lk} = m_l m_k \Delta^{lk}/V$
+\end{itemize}
+Using this notation, we can write
+\begin{equation}
+  Q(\mbf X, \mbf m) = \sum_{k=1}^S m_k(\ln X_k - X_k + 1) - \frac{1}{2} \sum_{k=1}^S \sum_{l=1}^S K_{kl} X_k X_l.
+\end{equation}
+When $Q = Q(\mbf X,\mbf m)$ is written in this form, its $\mbf X$-derivatives are given by
+\begin{equation}
+  \label{gDef}
+  g_k := \pder{Q}{X_k} = m_k\lp \frac{1}{X_k} - 1 \rp - \sum_{l=1}^S K_{kl} X_l,
+\end{equation}
+while its Hessian matrix with respect to $\mbf X$ is
+\begin{equation}
+  \label{hDef}
+  H_{kl} := \pdcross{Q}{X_k}{X_l} = - \frac{m_k}{X_k^2} \delta_{kl} - K_{kl}.
+\end{equation}
+Observe that, apart from the diagonal, the Hessian matrix is independent of $\mbf X$. The first step in determining $\mbf X$ is to compute $\mbf K$ from the component parameters and the $\Delta$-function.
+
+\subsection{Solution procedure for $\mbf X$}
+An attractive way to solve for $\mbf X$ is formulating it as a maximation procedure. More precisely, one utilizes the fact that for a given $T$, $V$ and $\mbf n$, the correct value of $\mbf X$ is the value for which $Q$ is maximized. The maximization is unconstrained, the maximum unique, and global convergence can be assured. Michelsen \cite{Michelsen06} suggests the following quasi-Newton iteration scheme:
+\begin{equation}
+  \label{quasiNewtonIteration}
+  \mbf{\hat H \Delta X} + \mbf g = 0,
+\end{equation}
+where $\mbf{\hat H}$ is a modified Hessian matrix with the following properties
+
+\begin{enumerate}[(i)]
+\item It is negative definite for all $\mbf X$
+\item $\mbf{\hat H} \to \mbf H$ as $\mbf X$ approaches the solution
+\end{enumerate}
+Property (i) ensures that $\Delta \mbf X$ is an ascent \textit{direction}, because it has a positive projection along the gradient: $\mbf g^T (-\mbf{\hat H}^{-1} \mbf g) > 0$. However, overstepping is still a possibility, and in that case one can use a linesearch method, or, as we will do, simply bisect the step until an increase in $Q$ is obtained. Property (ii) ensures quadratic convergence.
+
+The modification is performed as follows: From equations \eqref{gDef} and \eqref{hDef}, we see that the diagonal contribution of the hessian can be written as
+$$
+\frac{m_k}{X_k^2} = \frac{1}{X_k} \frac{m_k}{X_k} = \frac{1}{X_k} \lp m_k + \sum_{l=1}^S K_{kl} X_l + g_k \rp.
+$$
+To get the modified hessian $\mbf H$ we simply drop the gradient contribution, giving
+\begin{equation}
+  \hat H_{kl} := \pdcross{Q}{X_k}{X_l} = -\frac{1}{X_k} \lp m_k + \sum_{l=1}^S K_{kl} X_l \rp \delta_{kl} - K_{kl}.
+\end{equation}
+That $\hat H$ fulfills property (i) is shown in Michelsen \cite{Michelsen06}, while property (ii) is obvious since $\mbf g=0$ at the solution.
+% To show that $\hat H$ is negative definite one uses the Gershgorin circle theorem, which states that given any eigenvalue $\lambda \in \C$ of an $n \times n$-matrix $(a_{ij})$, there must exist a $k \in \{1,\ldots,n\}$ such that $\lambda$ is contained in the closed disk having center $a_{ii}$ and radius $\sum_{j \neq i} |a_{ij}|$.
+In conclusion, Michelsen \cite{Michelsen06} suggests the following approach for solving for $\mbf X$:
+\begin{enumerate}[(1)]
+\item Choose an initial estimate of $\mbf X$.
+\item Calculate $\Delta \mbf X$ from equation \eqref{quasiNewtonIteration}.
+\item Set $\mbf X^{new} = \max(\mbf X^{old} + \Delta \mbf X, 0.2 \mbf X^{old})$, denying more than $80 \%$ reduction in any component.
+\item Test that $\mbf X^{new} > 0$, and that the objective function is increased: $Q(\mbf X^{new}) > Q(\mbf X^{old})$.
+\item If (4) is violated, set $\Delta \mbf X = \tfrac{1}{2} \Delta \mbf X$ and repeat from step (3).
+\item Check for convergence. If not converged, set $\mbf X^{old} = \mbf X^{new}$ and repeat from step (2).
+\end{enumerate}
+
+We have also implemented a back-up procedure if the maximization approach (1)-(6) should fail to converge in a few iterations. The back-up is the method of \textbf{damped successive substitutions}. This iteration scheme is defined as follows:
+\begin{equation}
+  \label{successiveSubs}
+  \mbf X^{(n+1)} = (1-\omega) \mbf f (\mbf X^{(n)}) + \omega \mbf X^{(n)}, \quad \text{where} \quad f_k(\mbf X^{(n)}) := \frac{m_k}{m_k + \sum_{l=1}^S K_{kl} X_l^{(n)}}.
+\end{equation}
+Although the damping parameter $\omega$ in principle can be tailored to the specific $\mbf f$, we will follow Michelsen \cite{Michelsen06} and set $\omega = 0.2$. With this terminology, the back-up procedure can be described as follows
+\begin{enumerate}[(1')]
+\item Set all elements $X_k = 0.2$ as the initial estimate.
+\item Perform five iterations of successive substitutions with damping factor $\omega = 0.2$.
+\item Use the second-order approach above to converge the equations to desired accuracy.
+\end{enumerate}
+
+\subsection{Solution procedure for molar volume $v$}
+When solving for volume, a twofold nested calculation loop is required. The molar volume $v$ is adjusted in the outer loop, while the association equations must be solved for the matrix $X$ corresponding to the assumed volume in the inner loop. Having found $X$ in the inner loop, we will calculate not only the pressure contribution from the association term $P^{asc} = -RT \pder{Q}{V}$, but also the two derivatives
+\begin{equation}
+  \label{advDeriv}
+  \pder{\mbf X}{V} \quad \text{and} \quad \pder{P^{asc}}{V}.
+\end{equation}
+The derivative $\pder{\mbf X}{V}$ is found from differentiating $\mbf g(\mbf X(V),V) = 0$, which by the chain rule yields
+\begin{equation}
+  \mbf H \pder{\mbf X}{V} + \pder{\mbf g}{V} = 0.
+\end{equation}
+Here $\mbf H$ is already found when solving for $\mbf X$, seeing as $\bf H = \bf{\hat H} - \mathrm{diag}(\bf g_k/\bf X_k)_{k=1}^n$. The derivative $\pder{P^{asc}}{V}$ is then found from
+\begin{equation}
+  -\frac{1}{RT} \pder{P^{asc}}{V} = \pdder{Q}{V}_{\mbf X} + \pder{\bf g}{V}^T \pder{\bf X}{V}.
+\end{equation}
+The derivative of the association pressure is used in the outer loop to solve for volume using a Newton-based method, and the volume derivative of $\mbf X$, which is obtained as a byproduced in the calculation of $\pder{P^{asc}}{V}$, is used to create initial estimates (step (1) above) for the inner solution loop for $\mbf X$. When a correction $\Delta V$ has been determined from the Newton iteration in the outer loop, we use, as an initial estimate for the inner loop,
+\begin{equation}
+  \mbf X^{(n+1)} = \mbf X^{(n)} + \Delta V \pder{\mbf X}{V}.
+\end{equation}
+The tolerance for accepting an inner loop solution in the volume iteration is set fairly loose, and consequently only a single inner-loop iteration is necessary in most cases.
+
+\textbf{Iterating on the reduced density $\z$}
+
+Michelsen also offers the following suggestions for a CPA volume solver. First, a robust volume iteration should use the reduced density $\zeta = b/v$ as the independent variable. Choose, as the equation to be solved to $0$, not $\zeta \mapsto P(\zeta) - P^{spec}$, but as $F(\z) = (1-\z)(P(\zeta) - P^{spec})$. 
+\begin{enumerate}
+\item Initialization. For the liquid phase, $\zeta = 0.99$ is to be used as initial estimate. For the vapor phase, use $\zeta = b/(b+(RT/P))$. The initial limits should be set to $\z_{min} = 0$, $\z_{max} = 1$.
+\item At step $k$, calculate a new value according to Newton's method:
+  \begin{equation}
+    \z_{new} = \z_k - \frac{(1-\z_k)(P(\z_k) - P^{spec})}{P^{spec} - P + (1-\z_k)\pder{P}{V}_{T,\mbf n}V_k/\zeta_k}.
+  \end{equation}
+\item If $\z_{min} < \z_{new} < \z_{max}$, take $\z_{k+1} = \z_{new}$. Otherwise, take $\z_{k+1} = (\z_{min} + \z_{new})/2$.
+\item If $F(\z_{k+1}) > 0$, set $\z_{max} = \z_{new}$; otherwise, set $\z_{min} = \z_{new}$.
+\item Continue until convergence.
+\end{enumerate}
+
+\section{Testing the CPA code}
+\subsection{Mathematical consistency}
+We have implemented unittests for all the derivatives of all the functions occuring in the CPA implementation. Specifically, we have tested the following analytical derivatives against their numerical counterpart using finite differences:
+\begin{itemize}
+  \item \(g(V,\mbf n)\), first and second derivatives;
+  \item \(Q(T,V,\mbf n, \mbf X)\), first and second derivatives;
+  \item \(\Delta^{A_i B_j}(T,V,\mbf n)\), first and second derivatives;
+  \item \(\mbf X(T,V,\mbf n)\), first derivatives;
+  \item \(F(T,V,\mbf n)\), first and second derivatives;
+  \item \(P(T,V,\mbf n)\), first and second derivatives;
+  \item \(Z(T,V,\mbf n)\), first derivatives;
+  \item \(S^R(T,P,n)\), first derivatives;
+  \item \(G^R(T,P,n)\), first derivatives;
+  \item \(H^R(T,P,n)\), first derivatives;
+  \item \(\ln(\phi)(T,P,n)\), first derivatives.
+\end{itemize}
+
+\subsection{Thermodynamic consistency}
+We have set up the supertest cpa\_consistency, which is passed with reasonable tolerances. Thus, all of ThermoPack's implemented thermodynamic identities are fulfilled to a satisfactory accuracy.
+
+\subsection{Testing physical predictions}
+We tested what SRK-CPA gave as the liquid density of water at $277$ K, and compared it with SRK and PR.
+\begin{itemize}
+\item SRK-CPA: $1019$ $\mathrm{kg}/\mathrm{m}^3$.
+\item SRK: $766$ $\mathrm{kg}/\mathrm{m}^3$.
+\item PR: $859$ $\mathrm{kg}/\mathrm{m}^3$.
+\end{itemize}
+We thus see that the error of SRK-CPA ($1.9$ \%) is about one order of magnitude smaller than that of SRK ($23.4$ \%) and PR ($14.1$ \%).
+
+\subsection{Reduction to cubic equation}
+Although the CPA code does not handle pure components without association, we can trick the code to do so by assigning it an arbitrary association scheme, but with association parameters $\epsilon = \beta = 0$. By assigning $a_0$, $b$ and $c_1$ to be what they are in the SRK equation, SRK-CPA and SRK should be equivalent. We have verified that the two EoS indeed seem to give the same results, by computing the pressure at given $(T,V)$, and solving for the volume at given $(T,P)$.
+
+\section{Overview of the CPA code}
+\subsection{Cubic equations of state with fitted parameters} \label{subsec:fitted parameters}
+The usual formulation of PR and SRK for pure components is given by
+$$
+P = \frac{RT}{v-b}-\frac{a_0 \alpha(T)}{(v+\delta_1 b)(v+\delta_2 b)},
+$$
+with
+\begin{equation}
+\label{eq:a0}
+  a_0 = \Omega_a \frac{(RT_c)^2}{P_c}, \quad b = \Omega_b \frac{RT_c}{P_c}, \quad \alpha(T) = \lp 1+c_1(1-\sqrt{T/T_c}) \rp^2, \quad c_1 = m(\omega).
+\end{equation}
+The constants $\delta_1, \delta_2, \Omega_a, \Omega_b$ and the function $m$ are inherent to the equation of state. The critical temperature $T_c$, critical pressure $P_c$ and acentric factor $\omega$ are properties of the component, and are needed to capture the peculiarities of the component. The specific forms of $a_0$ and $b$ result from demanding that $dP/dV = d^2P/dV^2 = 0$ at $(T,P) = (T_c,P_c)$, while the function $m$ was devised to fit the vapor pressure data of hydrocarbons.
+
+Instead of using the formulas \eqref{eq:a0} to compute $a_0$, $b$ and $c_1$, one can also simply fit them (e.g. using liquid volume and vapor pressure data). This is usually necessary when the cubic term is not the only term in the full equation of state (as in e.g. CPA), simply because the formulas \eqref{eq:a0} were derived under the assumption that the cubic contribution is the \textit{only} contribution to pressure. Another approach is of course to retain the expressions \eqref{eq:a0}, and to fit any parameters in the non-cubic terms accordingly. This latter approach does not seem reasonable, seeing as the first approach will always give a fit which is as least as good as the latter, and because the latter approach \eqref{eq:a0} essentially forces the cubic equation to try to do something it wasn't designed to do (e.g. correlate vapor pressure of self-associating compounds).
+
+Kontogeorgis and Folas \cite{Kontogeorgis10} have compiled fitted parameters for $a_0$, $b$ and $c_1$ for use in the SRK-CPA equation. Their database covers both self-associating and non self-associating components. The parameters for some of the most common components have been recorded in ThermoPack, in the module cpa\_parameters.
+
+It should also be mentioned that although the classic alpha formulation $\alpha(T) = (1+c_1((1-\sqrt{T/T_c}))^2$ is most common, there is nothing in the way for using other alpha formulations, such as e.g. the well-known variants by Twu or Mathias.
+
+\subsection{The Helmholtz energy in ThermoPack}
+One needs to be careful when adding the contributions $F^{cb}$ and $F^{assoc}$ to get the total reduced residual Helmholtz energy $F$. In general we have that the reduced residual Helmholtz energy can be written as $F(T,V,\mbf n) = k \cdot \tilde F(T,1000 V/k,\mbf n/k)$, where $k$ is a constant, which happens to equal $\sum_i n_i$. ThermoPack's cbhelm-module gives the derivatives of $\tilde F$. Thus, to get the cubic contribution $F^{cb}$ to the total reduced residual Helmholtz energy, we need to use the following formulas:
+\begin{align}
+    F^{cb} &=  k\cdot\tilde{F} \\
+    F^{cb}_T &=  k\cdot\tilde{F}_T \\
+    F^{cb}_V &=  1000\cdot\tilde{F}_V \\
+    F^{cb}_n &=  \tilde{F}_n \\
+    F^{cb}_{TT} &= k \cdot \tilde{F}_{TT} \\
+    F^{cb}_{TV} &= 1000\cdot\tilde{F}_{VT} \\
+    F^{cb}_{Tn} &= \tilde{F}_{nT} \\
+    F^{cb}_{VV} &= 1000\cdot1000\cdot\tilde{F}_{VV}/k \\
+    F^{cb}_{Vn} &= 1000\cdot\tilde{F}_{nV}/k \\
+    F^{cb}_{nn}(i,j) &= \tilde{F}_{nn}/k.
+\end{align}
+
+\subsection{New modules, and changes in existing modules}
+Below we list the routines we have modified in order to implement CPA, ordered by module. This may be helpful if one is working in ThermoPack and sees some CPA-related code one doesn't understand.
+
+\subsubsection*{cpa}
+\textit{cpa\_set\_scheme\_and\_fitted\_parameters}: This routine has different behavior depending on whether the mixture solvates or not. If it is not solvating, it does the following:
+
+If the component is not in the CPA database, we use the standard (SRK or PR) values already
+
+ If the component is in the CPA database, the parameters in the database are used
+
+\textit{cpa\_init}: Allocates memory, retrieves the relevant parameters from the module cpa\_parameters, and finally uses the parameters together with the inputted mixing rules to initialize the global variables in the cpa-module. Note that cpa\_init is called after selectEOS in init\_thermoPack.
+
+The routines in this module can be separated into two categories: back-end routines and front-end routines. The back-end routines sometimes assume that other routines have been called prior to calling it, a typical example being a routine that takes in X\_k and (T,V,n), and assumes that \textit{solve\_for\_X\_k} has been called so that the inputted X\_k is consistent with (T,V,n). The dependencies of a back-end routine are given before the code for the routine. The front-end routines have no such dependencies.
+
+\subsubsection*{eoslibinit}
+\textit{init\_thermopack}: The cpa model is used if eosstr(1:3)=''CPA''.\textit{SelectEOS} is called before \textit{cpa\_init}, since the global cbeos instance has to be initialized before \textit{cpa\_init} is called. Moreover, \textit{cpa\_init} is only called for the first component in the cbeos-vector, since we don't want to recalculate the global parameters in cpa.f90 over and over. For the other components, we call \textit{cpa\_set\_scheme\_and\_fitted\_parameters} (which involves some removable overhead since some things are done ncbeos times, but this isn't critical since it is an initialization routine).
+
+\subsubsection*{cpa\_parameters}
+A record of pure-component fitted parameters, as well as binary interaction coefficients. Note that the parameters $a_0$, $b$ and $\omega$ are often replaced by fitted parameters.
+
+As of now, the module cpa\_parameters is in the file cpa\_parameters.f90, but eventually it should probably be moved to tpinputdb.f90, where all other parameters are stored.
+
+We point out that some common associating components (e.g. ethanol) are not stored in the module compdatadb, and therefore ThermoPack can not be initialized with these components.
+
+The $c_1$ parameter is used only when ThermoPack is initialized with the classic alpha formulation. The fitted parameters $a_0$ and $b$, if they exist in the database, are per now always used for CPA. However, if one wants to use the ``standard'' (SRK or PR) values for these parameters in terms of critical properties, then one can simply iterate through the global comp-vector, set $a_0$ and $b$ equal to zero, and call the routine \textit{cbCalcMixtureParams}. Using the fitted parameters if they exist seems like reasonable default behavior.
+
+\subsubsection*{compdata}
+Added the three parameters b\_cpa, a0\_cpa and c1\_cpa in the gendata struct (which is the struct holding component data). These are initially set to zero, and then possibly -- depending on the options the user chooses and whether fitted values exist in the database -- updated to their fitted values in cpa\_parameters.
+
+\subsubsection*{eosdata}
+Added the integer parameters cpaSRK and cpaPR, which will be set to eosidx in the global eoscubic-instance cbeos. Also added the integer parameter cbMixClassicCPA, which will be set to mruleidx in cbeos. The reason we need an own CPA-indicator for the classical (van der Waals) mixing rule, is that we need to retrieve the interaction parameters from the CPA\_parameters database, and not the eosdatadb database where the other interaction parameters are stored.
+
+\subsubsection*{tpselect}
+\textit{selectEOS}: Initialize cbeos\%eosidx to the integer parameter cpaSRK if eosstr='CPA-SRK'. Similarly for CPA-PR. Also cbeos\%mruleidx is set to cbMixClassicCPA.
+
+\textit{tpSelectInteractionParameters}: If cbeos\%mruleidx=cbMixClassicCPA, retrieve interaction parameters from the cpa\_parameters database if they exist. If not, use the interaction parameters from the usual eosdatadb database.
+
+\textit{copyFromDB}: Called from \textit{SelectComp}, this helper function now also sets component\%b\_cpa=0.0, component\%a0\_cpa=0.0 and component\%c1\_cpa=0.0.
+
+\subsubsection*{tpcbmix}
+\textit{cbCalcParameters}: cpaSRK and cpaPR are assigned the same alpha, beta, delta and gamma as cbSRK and cbPR, respectively. However, $(\alpha,\beta,\gamma)$ are only used to compute $m(\omega)=\alpha + \beta \omega - \gamma \omega^2$ if $c_1$ isn't fitted (i.e. if it is set to $0.0$ in the global eoscubic-instance cbeos).
+
+\textit{cbCalcM}: cpaSRK and cpaPR behaves the same way as cbSRK and cbPR, namely that cbeos\%m1 and cbeos\%m2 are calculated. The denominator in the attractive part of the cubic EoS is then m1 times m2.
+
+\textit{cbCalcOmegaZc}: This routine computes many single-component properties, amongst other a0 and b. Therefore we have to stipulate that, in the case of a CPA model, b\_cpa and a0\_cpa should be used.
+
+\textit{cbCalcAmix}: No significant changes; cbMixClassicCPA should behave the same way as cbMixClassic, i.e. call vanderWaalsMix.
+
+\subsubsection*{cbAlpha}
+
+\textit{calcAlpha\_classic\_CPA}: New routine. Does the same as calcAlpha\_classic, except that instead of using $m(\omega)=\alpha + \beta \omega - \gamma \omega^2$, it uses the fitted parameter $c_1$ stored in the global comp-vector.
+
+\textit{cbCalcAlphaTerm}: If cbeos\%eosidx equals cpaSRK or cpaPR, and if one uses the classical alpha correlation, then we should use the fitted parameter if it has been set, and the usual formulation $\alpha$-formulation using $m(\omega)$ if not.
+
+\subsubsection*{tpsingle}
+The only changes made were that the following functions also works with CPA: \textit{TP\_CalcZfac}, \textit{TP\_CalcEnthalpy}, \textit{TP\_CalcEntropy}, \textit{TP\_CalcFugacity}, \textit{TP\_CalcPressure}, \textit{Gres}.
+
+\section{Adapting pure component parameters}
+There does not seem to be any readily available CPA-parameters for $CO_2$ modeled as an associating component. We have therefore fitted the five pure component parameters $a_0,b,c_1,\epsilon,\beta$ to PVT-points on $CO_2$'s boiling point curve, using the association scheme 1 (i.e. modeling $CO_2$ as having one association site). The objective function minimized was
+$$
+O(\Lambda) = \sum_i \left[ \lp \frac{P_{bub}(T_i^{exp};\Lambda)-P^{exp}}{P^{exp}}\rp^2 + \lp \frac{v_{liq}(T_i^{exp},P_i;^{exp}\Lambda)-v_{liq}^{exp}}{v_{liq}^{exp}} \rp^2 \right],
+$$
+where $\Lambda = (a_0,b,c_1,\epsilon,\beta)$ represents the adjustable parameters. According to \cite{Kontogeorgis10} one should use PVT data on the boiling point curve ranging from reduced temperatures 0.5 to 0.95. Extending the reduced temperature to values close to one is of minor importance, since association models overpredict the critical temperature.
+
+Note that we have chosen to minimize the squared deviations -- not the squared \textit{relative} deviations -- since we want to weight more the deviations near the critical point (high pressures).
+
+The resulting parameters have been stored in the parameter database, \textit{cpa\_parameters.f90}.
+
+%\appendix
+%\clearpage
+
+\begin{thebibliography}{11}
+
+\bibitem{Gross01} Gross J., Sadowski G. Perturbed-Chain SAFT: An Equation of State Based on a Perturbation Theory for Chain Molecules. \textit{Industrial and Engineering Chemistry Research} \textbf{2001}, 40, 1244--1260.
+\bibitem{Kontogeorgis10} Kontogeorgis, Georgis M. and Folas, Georgios K., Thermodynamic Models for Industrial Applications, Wiley 2010
+\bibitem{Michelsen01} Michelsen M.L., Hendriks E.M. Physical Properties from Association Models. \textit{Fluid Phase Equilibria} \textbf{2001}, 180, 165--174.
+\bibitem{Michelsen06} Michelsen M.L. Robust and Efficient Solution Procedures for Association Models. \textit{Industrial and Engineering Chemistry Research} \textbf{2006}, 45, 8449--8453.
+\bibitem{Muller01} M{\"u}ller E.A., Gubbins K.E. Molecular-Based Equations of State for Associating Fluids: A Review of SAFT and Related Approaches. \textit{Industrial and Engineering Chemistry Research} \textbf{2001}, 40, 2193--2211.
+\bibitem{Kontogeorgis10} Kontogeorgis, G.M., Folas, G.K. \textit{Thermodynamic Models for Industrial Applications}. Wiley 2010.
+
+\end{thebibliography}
+
+\end{document}

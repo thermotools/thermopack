@@ -1,0 +1,16 @@
+\section{Thermopack GUI}
+
+The application is built up of three main parts. The first window that is opened is where the compositions are chosen, and the model setup is set. When this is done, you can go to Plot Mode or to Calculation Mode. In Plot Mode, it is possible to choose between a set of plots and download the plotted data. In Calculation Mode, a table showing physical data from flash calculations is displayed, which can also be downloaded. It is possible to save your setup as a JSON-file, and later load it.
+
+\subsection{Main Window}
+The main window consists of a menu to the left displaying the currently set compositions and models. From here you can open the ComponentSelectWidget where you can create or edit your compositions, or the ModelSelectWidget for setting your models. Depending on your model setup, you can see and change different parameters. The currently availbale ParameterWidgets are for the Van der Waals, Huron Vidal 1 and 2 mixing rules, and for the CPA, PC-SAFT and SAFT-VR Mie models. When both a composition and a model is set, you may proceed to either Plot Mode or Calculation Mode by pressing the icons in the top toolbar.
+
+\subsection{Plot Mode}
+When entering Plot Mode, one composition and one model setup has to be chosen. Here, you choose a plot type, specify your parameters and plotting preferences, and set molar fractions for the composition. Plots will be shown in a matplotlib sub-window (on the MplCanvas), and the plotted data can be downloaded as a csv file.
+
+\subsection{Calculation Mode}
+As for the Plot Mode, one composition and one model setup must be chosen before entering Calculation Mode. Here, you choose the type of flash calculation, set initial guesses and molar fractions. Calculated values will be shown in a table, which is also available to download to a csv file. 
+
+\subsection{Storing data}
+
+To keep track of data shared between the different widgets and windows, a Python dictionary is used. This is because if one part of the application makes changes to the dictionary, it is automatically changed in other parts of the application. When the user wants to save data, the dictionary is converted to JSON and stored in a json file, done with Python's json module.
