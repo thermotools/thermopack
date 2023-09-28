@@ -15,7 +15,8 @@ class lee_kesler(thermo):
     Interface to Lee-Kesler model
     """
     def __init__(self, comps=None, parameter_reference="Default"):
-        """ Init Lee-Kesler
+        """Constructor
+        Init Lee-Kesler
 
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
@@ -38,7 +39,8 @@ class lee_kesler(thermo):
     #################################
 
     def init(self, comps, parameter_reference="Default"):
-        """ Init Lee-Kesler
+        """Constructor
+        Init Lee-Kesler
 
         Args:
             comps (str): Comma separated list of component names

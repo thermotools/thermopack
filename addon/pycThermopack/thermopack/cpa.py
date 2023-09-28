@@ -19,7 +19,8 @@ class cpa(cubic):
     """
     def __init__(self, comps=None, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
-        """Initialize cubic plus association model in thermopack
+        """Constructor
+        Initialize cubic plus association model in thermopack
 
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
@@ -52,7 +53,8 @@ class cpa(cubic):
 
     def init(self, comps, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
-        """Initialize cubic plus association model in thermopack
+        """Constructor
+        Initialize cubic plus association model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -99,7 +101,8 @@ class cpa(cubic):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def get_kij(self, c1, c2):
-        """Get attractive energy interaction parameter
+        """Utility
+        Get attractive energy interaction parameter
 
         Args:
             c1 (int): Component one
@@ -125,7 +128,8 @@ class cpa(cubic):
         return np.array(kij_c)
 
     def set_kij(self, c1, c2, kij):
-        """Set attractive energy interaction parameter
+        """Utility
+        Set attractive energy interaction parameter
 
         Args:
             c1 (int): Component one
@@ -147,7 +151,9 @@ class cpa(cubic):
                        kij_c)
 
     def use_simplified_cpa(self, simplified):
-        """Use simplified form for rdf in CPA
+        """Utility
+        Use simplified form for rdf in CPA
+
         Args:
             simplified (bool): True if simplified
         """
