@@ -6,7 +6,7 @@ permalink: /vcurrent/pets_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.070933
+Generated at: 2023-09-28T23:11:32.385924
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 pets class. For instructions on how to use the parser routines, see the
@@ -21,7 +21,7 @@ PeTS Equation of State. This class implements utility methods to access mixing p
     * [init](#initself-parameter_referencedefault-minimum_temperature20)
   * [Utility methods](#utility-methods)
     * [get_pure_params](#get_pure_paramsself)
-    * [set_pure_params](#set_pure_paramsself-sigma-eps_div_kb)
+    * [set_pure_params](#set_pure_paramsself-c-sigma-eps_div_kb)
 
 ## Constructor
 
@@ -70,7 +70,7 @@ Set- and get methods for interaction parameters, mixing parameters ...
 ### Table of contents
   * [Utility methods](#utility-methods)
     * [get_pure_params](#get_pure_paramsself)
-    * [set_pure_params](#set_pure_paramsself-sigma-eps_div_kb)
+    * [set_pure_params](#set_pure_paramsself-c-sigma-eps_div_kb)
 
 
 ### `get_pure_params(self)`
@@ -88,10 +88,14 @@ Get pure fluid PeTS parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `set_pure_params(self, sigma, eps_div_kb)`
+### `set_pure_params(self, c, sigma, eps_div_kb)`
 Set pure fluid PeTS parameters
 
 #### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **c (int) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
 
 &nbsp;&nbsp;&nbsp;&nbsp; **sigma (float):** 
 

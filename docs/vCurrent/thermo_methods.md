@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.057733
+Generated at: 2023-09-28T23:11:32.371435
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -29,6 +29,9 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [entropy](#entropyself-temp-press-x-phase-dsdtnone-dsdpnone-dsdnnone-residualfalse)
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
+    * [solid_enthalpy](#solid_enthalpyself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_entropy](#solid_entropyself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_volume](#solid_volumeself-temp-press-x-dhdtnone-dhdpnone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
@@ -53,6 +56,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
+    * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
@@ -481,6 +485,9 @@ Computing properties as a function of temperature and pressure. Derivatives retu
     * [entropy](#entropyself-temp-press-x-phase-dsdtnone-dsdpnone-dsdnnone-residualfalse)
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
+    * [solid_enthalpy](#solid_enthalpyself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_entropy](#solid_entropyself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_volume](#solid_volumeself-temp-press-x-dhdtnone-dhdpnone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
@@ -640,6 +647,123 @@ Calculate specific ideal entropy Note that the order of the output match the def
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific ideal entropy (J/mol/K), and optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `solid_enthalpy(self, temp, press, x, dhdt=None, dhdp=None)`
+Calculate specific solid-phase enthalpy Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp only are flags to enable calculation.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **x (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific enthalpy (J/mol), and optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `solid_entropy(self, temp, press, x, dhdt=None, dhdp=None)`
+Calculate specific solid-phase entropy Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp only are flags to enable calculation.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **x (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific entropy (J/mol.K), and optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `solid_volume(self, temp, press, x, dhdt=None, dhdp=None)`
+Calculate specific solid-phase volume Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp only are flags to enable calculation.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **x (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (logical, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific volume (m3/mol), and optionally differentials
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1220,6 +1344,7 @@ Bubble- and dew point calculations and phase envelopes.
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
+    * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
@@ -1414,6 +1539,11 @@ Calculate dew temperature given pressure and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=15000000.0, minimum_temperature=None, step_size=None, initial_temperature=None)`
+Get saturated phase having given entropy. Searches the binodal by tracing it upwards in pressure from the dew point at initial_pressure. Args: entropy (float): Entropy (J/mol/K). initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None. calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False initial_temperature (bool, optional): Start search from dew point at initial temperature. Overrides initial pressure. Defaults to None (K). Returns: float: Temperature values (K) foat: Pressure values (Pa) float: Specific volume (m3/mol) int: Phase flag for main phase ndarray: Incipient composition (mol/mol) 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `get_binary_pxy(self, temp, maximum_pressure=15000000.0, minimum_pressure=100000.0, maximum_dz=0.003, maximum_dlns=0.01)`
 Calculate binary three phase envelope
 
@@ -1590,7 +1720,7 @@ Get the phase-envelope at a given composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **minimum_temperature (float , optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum pressure (Pa). Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum temperature (K). Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **step_size_factor (float , optional):** 
 

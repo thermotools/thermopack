@@ -6,7 +6,7 @@ permalink: /vcurrent/cubic_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:56:34.121404
+Generated at: 2023-09-28T23:11:32.383980
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cubic class. For instructions on how to use the parser routines, see the
@@ -23,6 +23,7 @@ Documentation for the methods in the cubic class is found in the remaining secti
   * [Constructor](#constructor)
     * [\_\_init\_\_](#__init__self-compsnone-eosnone-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
     * [init](#initself-comps-eos-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+    * [init_pseudo](#init_pseudoself-comps-tclist-pclist-acflist-mwlistnone-mixingvdw-alphaclassic)
   * [Utility methods](#utility-methods)
     * [get_ci](#get_ciself-cidx)
     * [get_covolumes](#get_covolumesself)
@@ -31,7 +32,9 @@ Documentation for the methods in the cubic class is found in the remaining secti
     * [get_kij](#get_kijself-c1-c2)
     * [get_lij](#get_lijself-c1-c2)
     * [get_ws_param](#get_ws_paramself-c1-c2)
-    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-ci_type1)
+    * [set_alpha_corr](#set_alpha_corrself-ic-corrname-coeffs)
+    * [set_beta_corr](#set_beta_corrself-ic-corrname-coeffs)
+    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-cid00-cie00-cif00-ci_type1)
     * [set_hv_param](#set_hv_paramself-c1-c2-alpha_ij-alpha_ji-a_ij-a_ji-b_ij-b_ji-c_ij-c_ji)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_lij](#set_lijself-c1-c2-lij)
@@ -100,10 +103,19 @@ Methods to initialise Cubic model.
   * [Constructor](#constructor)
     * [\_\_init\_\_](#__init__self-compsnone-eosnone-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
     * [init](#initself-comps-eos-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+    * [init_pseudo](#init_pseudoself-comps-tclist-pclist-acflist-mwlistnone-mixingvdw-alphaclassic)
 
 
 ### `__init__(self, comps=None, eos=None, mixing='vdW', alpha='Classic', parameter_reference='Default', volume_shift=False)`
-Initialize cubic model in thermopack Unless both 'comps' and 'eos' parameters are specified, model must be initialized for specific components later by direct call to 'init'. Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+Initialize cubic model in thermopack
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Unless both 'comps' and 'eos' parameters are specified, model must be initialized for specific components
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; later by direct call to 'init'.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 #### Args:
 
@@ -156,6 +168,41 @@ Initialize cubic model in thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `init_pseudo(self, comps, Tclist, Pclist, acflist, Mwlist=None, mixing='vdW', alpha='Classic')`
+Initialize pseudocomponents of cubic model in thermopack. The cubic init routine must have been called first.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **comps (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Comma separated list of names for all components
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Tclist (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Critical temperatures (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Pclist (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Critical pressures (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **acflist (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  acentric factors (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Mwlist (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar masses (kg/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **mixing (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mixing rule
+
+&nbsp;&nbsp;&nbsp;&nbsp; **alpha (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  alpha correlation
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ## Utility methods
 
 Set- and get methods for interaction parameters, mixing parameters ...
@@ -169,7 +216,9 @@ Set- and get methods for interaction parameters, mixing parameters ...
     * [get_kij](#get_kijself-c1-c2)
     * [get_lij](#get_lijself-c1-c2)
     * [get_ws_param](#get_ws_paramself-c1-c2)
-    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-ci_type1)
+    * [set_alpha_corr](#set_alpha_corrself-ic-corrname-coeffs)
+    * [set_beta_corr](#set_beta_corrself-ic-corrname-coeffs)
+    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-cid00-cie00-cif00-ci_type1)
     * [set_hv_param](#set_hv_paramself-c1-c2-alpha_ij-alpha_ji-a_ij-a_ji-b_ij-b_ji-c_ij-c_ji)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_lij](#set_lijself-c1-c2-lij)
@@ -369,7 +418,45 @@ Get Wong-Sandler parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ci_type=1)`
+### `set_alpha_corr(self, ic, corrname, coeffs)`
+Set alpha correlation
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (in):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component number
+
+&nbsp;&nbsp;&nbsp;&nbsp; **corrname (string):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Name of correlation
+
+&nbsp;&nbsp;&nbsp;&nbsp; **coeffs (ndarray):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Coefficients in correlation
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_beta_corr(self, ic, corrname, coeffs)`
+Set beta correlation
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (in):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component number
+
+&nbsp;&nbsp;&nbsp;&nbsp; **corrname (string):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Name of correlation
+
+&nbsp;&nbsp;&nbsp;&nbsp; **coeffs (ndarray):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Coefficients in correlation
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1)`
 Set volume correction parametrs
 
 #### Args:
@@ -392,7 +479,7 @@ Set volume correction parametrs
 
 &nbsp;&nbsp;&nbsp;&nbsp; **ci_type (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3, QUINTIC=6)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
