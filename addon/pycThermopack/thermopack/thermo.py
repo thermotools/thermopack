@@ -240,6 +240,8 @@ class thermo(object):
             self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
         self.s_map_meta_isentrope = getattr(
             self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_ps_meta = getattr(
+            self.tp, self.get_export_name("spinodal", "ps_meta"))
         self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
@@ -4469,6 +4471,52 @@ class thermo(object):
                            byref(ierr_c))
 
         return np.array(rho_c)
+
+    def ps_meta(self, entropy, pressure, n, volume_initial, temp_initial):
+        """Stability interface & Other property
+        Solve for temperature and volume given pressure and entropy.
+        A fair initial guess is required.
+        No phase stabillity is tested, and stable/meta-stable states will be
+        returned depending on input.
+
+        Args:
+            entropy (float): Entropy (J/K).
+            pressure (float): Pressure (Pa).
+            n (array_like): Mol numbers (mol)
+            volume_initial (float): Initial guess for volume (m3).
+            temp_initial (float): Initial guess for temperature (K)
+
+        Returns:
+            float: Volume (m3).
+            float: Temperature (K)
+        """
+        self.activate()
+        p_c = c_double(pressure)
+        s_c = c_double(entropy)
+        n_c = (c_double * len(n))(*n)
+        temp_c = c_double(temp_initial)
+        v_c = c_double(volume_initial)
+        ierr_c = c_int(0)
+        self.s_ps_meta.argtypes = [POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_double),
+                                   POINTER(c_int)]
+
+        self.s_ps_meta.restype = None
+
+        self.s_ps_meta(byref(p_c),
+                       byref(s_c),
+                       n_c,
+                       byref(temp_c),
+                       byref(v_c),
+                       byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Calculating (t,v) state from (p,s) failed")
+
+        return temp_c.value, v_c.value
 
     #################################
     # Virial interfaces

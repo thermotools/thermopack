@@ -274,6 +274,7 @@ append_export("alpha", "saft_interface")
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")
 append_export("map_meta_isentrope", "spinodal")
+append_export("ps_meta", "spinodal")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")

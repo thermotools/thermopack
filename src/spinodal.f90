@@ -40,7 +40,7 @@ module spinodal
   public :: nMax
   public :: rhomax_PR, rho_of_meta_extremum
   public :: locate_spinodal_prop_pure_fluid
-  public :: map_meta_isentrope, ps_flash_meta
+  public :: map_meta_isentrope, ps_meta
   public :: locate_spinodal_prop_min_max_pure_fluid
 
 contains
@@ -1630,7 +1630,7 @@ contains
   !>
   !> \author MH, 2021-02
   !-----------------------------------------------------------------------------
-  subroutine ps_flash_meta(p,s,n,T,v,ierr)
+  subroutine ps_meta(p,s,n,T,v,ierr)
     implicit none
     real, intent(in) :: n(nc)
     real, intent(in) :: P
@@ -1657,7 +1657,7 @@ contains
     ierr = solver%exitflag
     T = exp(x(1))
     v = exp(x(2))
-  end subroutine ps_flash_meta
+  end subroutine ps_meta
 
   !--------------------------------------------------------------------------
   !> Pressure and entropy error function in variables v and T
@@ -1808,7 +1808,7 @@ contains
     do i=2,nmax
       if (i==nmax .and. Ps /= pmin) exit
       call meta_isentrope_extrapolate_pressure(n,T(i-1),v(i-1),p(i-1),dp,T(i),v(i),p(i))
-      call ps_flash_meta(p(i),s,n,T(i),v(i),ierr)
+      call ps_meta(p(i),s,n,T(i),v(i),ierr)
     enddo
   end subroutine map_meta_isentrope
 
@@ -1839,7 +1839,7 @@ contains
     else
       dp = p - p_old
       call meta_isentrope_extrapolate_pressure(z,T_old,v_old,p_old,dp,T,v,p1)
-      call ps_flash_meta(p,s0,z,T,v,ierr)
+      call ps_meta(p,s0,z,T,v,ierr)
     endif
   end subroutine solve_for_spinodal_entropy
 
@@ -1864,7 +1864,7 @@ contains
     s0 = param(nc+4)
     dp = p - p0
     call meta_isentrope_extrapolate_pressure(z,T0,v0,p0,dp,T,v,p1)
-    call ps_flash_meta(p,s0,z,T,v,ierr)
+    call ps_meta(p,s0,z,T,v,ierr)
     f = calcStabMinEigTV(t,v,z)
   end function spinodal_entropy
 
