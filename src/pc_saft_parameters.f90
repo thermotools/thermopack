@@ -113,6 +113,7 @@ contains
       if (.not. found .and. idx_default > 0) then
         found = .true.
         kijvalue = PCkijdb(idx_default)%kijvalue
+        print *, "Using default kij reference for ", trim(uid1), ",", trim(uid2)
       endif
     end subroutine getkij
   end function getPCkij
@@ -195,9 +196,8 @@ contains
          else if (default_ref) then
            idx_default = idx
          endif
-       else
-         idx = idx + 1
-       endif
+        endif
+       idx = idx + 1
      enddo
 
      ! Default values.

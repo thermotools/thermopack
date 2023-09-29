@@ -180,6 +180,9 @@
 	*envelope_isentrope_cross*
 	*pure_fluid_saturation_wrapper*
 	*solid_init*
+	*solid_specificVolume*
+	*solid_enthalpy*
+	*solid_entropy*
 	*solidenvelopeplot*
 	*melting_pressure_correlation*
 	*sublimation_pressure_correlation*
