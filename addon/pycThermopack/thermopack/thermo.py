@@ -96,7 +96,7 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "get_pmax"))
         self.s_set_pmax = getattr(
             self.tp, self.get_export_name("thermopack_var", "set_pmax"))
-        
+
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.solideos_solid_volume = getattr(
@@ -105,7 +105,7 @@ class thermo(object):
             self.tp, self.get_export_name("solideos", "solid_enthalpy"))
         self.solideos_solid_entropy = getattr(
             self.tp, self.get_export_name("solideos", "solid_entropy"))
-        
+
         self.eoslibinit_init_volume_translation = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
@@ -240,8 +240,8 @@ class thermo(object):
             self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
         self.s_map_meta_isentrope = getattr(
             self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
-        self.s_ps_meta = getattr(
-            self.tp, self.get_export_name("spinodal", "ps_meta"))
+        self.s_tv_meta_ps = getattr(
+            self.tp, self.get_export_name("spinodal", "tv_meta_ps"))
         self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
@@ -4472,7 +4472,7 @@ class thermo(object):
 
         return np.array(rho_c)
 
-    def ps_meta(self, entropy, pressure, n, volume_initial, temp_initial):
+    def tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial):
         """Stability interface & Other property
         Solve for temperature and volume given pressure and entropy.
         A fair initial guess is required.
@@ -4480,15 +4480,15 @@ class thermo(object):
         returned depending on input.
 
         Args:
-            entropy (float): Entropy (J/K).
             pressure (float): Pressure (Pa).
+            entropy (float): Entropy (J/K).
             n (array_like): Mol numbers (mol)
             volume_initial (float): Initial guess for volume (m3).
             temp_initial (float): Initial guess for temperature (K)
 
         Returns:
-            float: Volume (m3).
             float: Temperature (K)
+            float: Volume (m3).
         """
         self.activate()
         p_c = c_double(pressure)
@@ -4497,21 +4497,21 @@ class thermo(object):
         temp_c = c_double(temp_initial)
         v_c = c_double(volume_initial)
         ierr_c = c_int(0)
-        self.s_ps_meta.argtypes = [POINTER(c_double),
-                                   POINTER(c_double),
-                                   POINTER(c_double),
-                                   POINTER(c_double),
-                                   POINTER(c_double),
-                                   POINTER(c_int)]
+        self.s_tv_meta_ps.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
 
-        self.s_ps_meta.restype = None
+        self.s_tv_meta_ps.restype = None
 
-        self.s_ps_meta(byref(p_c),
-                       byref(s_c),
-                       n_c,
-                       byref(temp_c),
-                       byref(v_c),
-                       byref(ierr_c))
+        self.s_tv_meta_ps(byref(p_c),
+                          byref(s_c),
+                          n_c,
+                          byref(temp_c),
+                          byref(v_c),
+                          byref(ierr_c))
 
         if ierr_c.value != 0:
             raise Exception("Calculating (t,v) state from (p,s) failed")

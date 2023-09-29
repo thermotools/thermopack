@@ -26,7 +26,7 @@ T_iso, v_iso, P_iso = tc_pr.map_meta_isentrope(z, P0, s0, 6.0e5, n_max=50)
 # Test calculation of point on isentrope
 i = 15
 P_meta = P_iso[-i-1]
-T_meta, v_meta = tc_pr.ps_meta(s0, P_meta, z, v_iso[-i], T_iso[-i])
+T_meta, v_meta = tc_pr.tv_meta_ps(P_meta, s0, z, v_iso[-i], T_iso[-i])
 assert abs(T_meta - T_iso[-i-1])/T_iso[-i-1] < 1.0e-5
 assert abs(v_meta - v_iso[-i-1])/v_iso[-i-1] < 1.0e-5
 
