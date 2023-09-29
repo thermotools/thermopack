@@ -138,6 +138,8 @@
 	*calc_saftvrmie_term*
 	*cpa_get_kij*
 	*cpa_set_kij*
+	*cpa_set_pure_params*
+	*cpa_get_pure_params*
 	*pc_saft_get_kij*
 	*pc_saft_set_kij_asym*
 	*calc_saft_dispersion*

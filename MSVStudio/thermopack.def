@@ -142,6 +142,8 @@ EXPORTS
 	saftvrmie_interface_mp_calc_saftvrmie_term_
 	saft_interface_mp_cpa_get_kij_
 	saft_interface_mp_cpa_set_kij_
+	saft_interface_mp_cpa_set_pure_params_
+	saft_interface_mp_cpa_get_pure_params_
 	saft_interface_mp_pc_saft_get_kij_
 	saft_interface_mp_pc_saft_set_kij_asym_
 	saft_interface_mp_calc_saft_dispersion_

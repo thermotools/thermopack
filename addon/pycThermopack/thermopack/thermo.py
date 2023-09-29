@@ -2820,7 +2820,8 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size_factor=1.0,
-                              step_size=None, calc_v=False, initial_temperature=None):
+                              step_size=None, calc_v=False, initial_temperature=None,
+                              calc_criconden=False):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2832,12 +2833,14 @@ class thermo(object):
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
-                                                  Overrides initial pressure. Defaults to None (K).
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature.
+                                                   Overrides initial pressure. Defaults to None (K).
+            calc_criconden (bool, optional): Calculate cricondenbar and cricondentherm?
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
             ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
+            ndarray (optional, if `calc_criconden=True`): Cricondenbar followed by cricondentherm (T (K), P (Pa), T (K), P (Pa))
         """
         self.activate()
         nmax = 1000
@@ -2854,7 +2857,10 @@ class thermo(object):
         beta_c = (c_double * nmax)(0.0)
         n_c = c_int(0)
         null_pointer = POINTER(c_double)()
-        criconden_c = null_pointer
+        if calc_criconden:
+            criconden_c = (c_double * 4)(*([0.0]*4))
+        else:
+            criconden_c = null_pointer
         crit_c = null_pointer
         ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
         step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
@@ -2932,6 +2938,9 @@ class thermo(object):
                     v_vals[i], = self.specific_volume(
                         t_vals[i], p_vals[i], z, phase)
                 return_tuple += (v_vals, )
+
+        if calc_criconden:
+            return_tuple += (np.array(criconden_c), )
 
         return return_tuple
 

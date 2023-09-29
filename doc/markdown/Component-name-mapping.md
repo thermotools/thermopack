@@ -1,6 +1,6 @@
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-09-04T12:16:57.143846
+Generated at : 2023-09-28T12:56:50.154201
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -86,6 +86,7 @@ In order to specify fluids in Thermopack you need to use fluid identifiers as sh
 | Propadiene | ALLENE |   |   |   |
 | Propane | C3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Propylene | PRLN |   |   |   |
+| Pseudo | PSEUDO |   |   |   |
 | Sulfur dioxide | SO2 |   |   |   |
 | Sulfur hexafluoride | F6S |   |   |   |
 | Tetrafluoroethylene | R1114 |   |   |   |

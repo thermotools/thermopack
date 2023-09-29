@@ -1,6 +1,8 @@
 """Module for defining files defining symbols to export from thermopack"""
 from datetime import datetime
-from shutil import copy
+import sys
+from shutil import move
+from pathlib import Path
 
 
 def get_export_statement(platform, compiler, export_info):
@@ -241,6 +243,8 @@ append_export("calc_saftvrmie_term", "saftvrmie_interface")
 
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
+append_export("cpa_set_pure_params", "saft_interface")
+append_export("cpa_get_pure_params", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
 append_export("calc_saft_dispersion", "saft_interface")
@@ -342,6 +346,7 @@ if __name__ == "__main__":
     write_def_file(GENERIC, LD_GCC, LINUX, "libthermopack_export.version")
     write_def_file(GENERIC, LD_CLANG, MACOS, "libthermopack_export.symbols")
     write_def_file(IFORT, LD_MSVC, WINDOWS, "thermopack.def")
-    copy('libthermopack_export.version', '../../../libthermopack_export.version')
-    copy('libthermopack_export.symbols', '../../../libthermopack_export.symbols')
-    copy('thermopack.def', '../../../MSVStudio/thermopack.def')
+    thermopackroot = Path(__file__).parents[3]
+    move('libthermopack_export.version', thermopackroot/'libthermopack_export.version')
+    move('libthermopack_export.symbols', thermopackroot/'libthermopack_export.symbols')
+    move('thermopack.def', thermopackroot/'MSVStudio/thermopack.def')

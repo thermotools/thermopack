@@ -397,6 +397,16 @@ contains
       call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
       Ki = 1.0
       betai = 0.0
+      if (cricon) then
+        criconden(1) = Ta(n)
+        criconden(2) = Pa(n)
+        criconden(3) = Ta(n)
+        criconden(4) = Pa(n)
+      endif
+      if (calcCrit) then
+        crit(1) = Ta(n)
+        crit(2) = Pa(n)
+      endif
       return
     endif
 
@@ -698,7 +708,7 @@ contains
           dPdTold = dPold/dTold
           if (dPdT*dPdTold < 0.0) then
             XvarCricon = Xvar
-            call criconden_solve(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
+            call criconden_solve_nested_loop(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .false.,ierr)
             if (ierr == 0) then
@@ -721,7 +731,7 @@ contains
           dTdPold = dTold/dPold
           if (dTdP*dTdPold < 0.0) then
             XvarCricon = Xvar
-            call criconden_solve(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
+            call criconden_solve_nested_loop(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .true.,ierr)
             if (ierr == 0) then
@@ -1351,10 +1361,102 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Solve cricondenbar/cricondenterm equations.
+  !>
+  !> \author MH, 2023-09
+  !-----------------------------------------------------------------------------
+  subroutine criconden_solve_nested_loop(Z,Xvar,beta,Pmax,Pmin,Tmax,Tmin,cricondentherm,ierr)
+    use numconstants, only: expMax, expMin
+    use utilities, only: isXwithinBounds
+    use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
+         NS_PEGASUS
+    implicit none
+    logical, intent(in) :: cricondentherm !< True if cricondenterm is to be calculate
+    !< False if cricondenbar is to be calculated
+    real, dimension(nc), intent(in) :: Z !< Overall composition
+    real, intent(in) :: Pmax,Pmin,Tmax,Tmin !< Pressure and temperature limiting solution space
+    real, intent(in) :: beta !< Specified vapour mole fraction
+    real, dimension(nc+2), intent(inout) :: Xvar !< Variables, ln K, ln T, ln P
+    integer, intent(out) :: ierr !< Error indicator
+    ! Locals
+    real :: x
+    real, dimension(nc+2) :: dXds
+    real, dimension(4*nc+8) :: param
+    type(nonlinear_solver) :: solver
+
+    param(1:nc) = z
+    param(nc+1) = beta
+    param(nc+3:2*nc+4) = Xvar
+    param(3*nc+7:4*nc+8) = 0
+    ! Configure solver
+    solver%rel_tol = machine_prec*1e5
+    solver%max_it = 200
+    solver%isolver = NS_PEGASUS
+    ! Find f=0 inside the bracket.
+    if (cricondentherm) then
+      param(nc+2) = 1
+      call newton_extrapolate(Z,Xvar,dXdS,beta,nc+2,0.0)
+      param(2*nc+5:3*nc+6) = dXds
+      call bracketing_solver(Pmin,Pmax,fun_criconden,x,solver,param)
+    else
+      param(nc+2) = 0
+      call newton_extrapolate(Z,Xvar,dXdS,beta,nc+1,0.0)
+      param(2*nc+5:3*nc+6) = dXds
+      call bracketing_solver(Tmin,Tmax,fun_criconden,x,solver,param)
+    endif
+    ierr = solver%exitflag
+    Xvar = param(3*nc+7:4*nc+8)
+    if (solver%exitflag /= 0) then
+      print *,'saturation::criconden_solve_nested_loop: Not able to solve for criconden'
+    endif
+  end subroutine criconden_solve_nested_loop
+
+  function fun_criconden(x,param) result(f)
+    ! Objective function for crocondenbar/cricondentherm
+    !
+    implicit none
+    ! Input:
+    real,     intent(in)    :: x !< Pressure (Pa) or temperature (K)
+    real,     intent(inout) :: param(4*nc+8) !< Parameters
+    ! Output:
+    real                  :: f
+    ! Internal:
+    integer               :: s, iter, ierr
+    real                  :: K(nc), T, P, ds, beta, z(nc)
+    real                  :: Xold(nc+2), Xvar(nc+2), dXds(nc+2), Fvec(nc+2)
+    logical               :: cricondentherm
+
+    z = param(1:nc)
+    beta = param(nc+1)
+    cricondentherm = (nint(param(nc+2)) == 1)
+    Xold = param(nc+3:2*nc+4)
+    dXds = param(2*nc+5:3*nc+6)
+    if (cricondentherm) then
+      s = nc + 2
+    else
+      s = nc + 1
+    endif
+    ds = log(x) - Xold(s)
+    Xvar = Xold + dXds*ds
+    K = exp(Xvar(1:nc))
+    t = exp(Xvar(nc+1))
+    p = exp(Xvar(nc+2))
+    iter = sat_newton(Z,K,t,p,beta,s,log(x),ierr)
+    Xvar(1:nc) = log(K)
+    Xvar(nc+1) = log(t)
+    Xvar(nc+2) = log(p)
+    param(3*nc+7:4*nc+8) = Xvar
+    call criconden_fun_newton(Fvec,Xvar,param)
+    f = Fvec(nc+2)
+  end function fun_criconden
+
+  !-----------------------------------------------------------------------------
+  !> Solve cricondenbar/cricondenterm equations.
   !> Phase enveloe code should provide good initial guess.
   !> \author MH, 2013-10-07
   !-----------------------------------------------------------------------------
   subroutine criconden_solve(Z,Xvar,beta,Pmax,Pmin,Tmax,Tmin,cricondentherm,ierr)
+    use numconstants, only: expMax, expMin
+    use thermopack_var, only: tptmin, tptmax, tppmax, tppmin
     implicit none
     logical, intent(in) :: cricondentherm !< True if cricondenterm is to be calculate
     !< False if cricondenbar is to be calculated
@@ -1366,9 +1468,9 @@ contains
     ! Locals
     real, dimension(nc+2) :: param,xmax,xmin
     type(nonlinear_solver) :: solver
-    !     real, dimension(nc+2) :: XvarPert,F0,F
-    !     real, dimension(nc+2,nc+2) :: Jac,numJac
-    !     integer :: i
+    ! real, dimension(nc+2) :: XvarPert,F0,F
+    ! real, dimension(nc+2,nc+2) :: Jac,numJac
+    ! integer :: i
 
     param(1:nc) = Z
     param(nc+1) = beta
@@ -1378,28 +1480,28 @@ contains
       param(nc+2) = 0.0 ! Logical flag for cricondenbar
     endif
 
-    xmax(nc+1) = log(Tmax + 10.0)
-    xmin(nc+1) = log(Tmin - 10.0)
-    xmax(nc+2) = log(Pmax + 5.0e5)
-    xmin(nc+2) = log(Pmin - 5.0e5)
+    xmax(nc+1) = log(min(tptmax,Tmax + 10.0))
+    xmin(nc+1) = log(max(tptmin,Tmin - 10.0))
+    xmax(nc+2) = log(min(tppmax,Pmax + 5.0e5))
+    xmin(nc+2) = log(max(tppmin,Pmin - 5.0e5))
 
     ! Test Jacobean numerically
-    !     call criconden_fun_newton(F0,Xvar,param)
-    !     call criconden_diff_newton(Jac,Xvar,param)
-    !     do i=1,nc+2
-    !       XvarPert = Xvar
-    !       XvarPert(i) = XvarPert(i)*(1.0-1.0e-5)
-    !       call criconden_fun_newton(F,XvarPert,param)
-    !       numJac(:,i) = (F-F0)/(XvarPert(i)-Xvar(i))
-    !     enddo
-    !     print *,'Jac1',Jac(1,:)
-    !     print *,'numJac1',numJac(1,:)
-    !     print *,'Jac2',Jac(2,:)
-    !     print *,'numJac2',numJac(2,:)
-    !     print *,'Jac3',Jac(3,:)
-    !     print *,'numJac3',numJac(3,:)
-    !     print *,'Jac4',Jac(4,:)
-    !     print *,'numJac4',numJac(4,:)
+    ! call criconden_fun_newton(F0,Xvar,param)
+    ! call criconden_diff_newton(Jac,Xvar,param)
+    ! do i=1,nc+2
+    !   XvarPert = Xvar
+    !   XvarPert(i) = XvarPert(i)*(1.0-1.0e-5)
+    !   call criconden_fun_newton(F,XvarPert,param)
+    !   numJac(:,i) = (F-F0)/(XvarPert(i)-Xvar(i))
+    ! enddo
+    ! print *,'Jac1',Jac(1,:)
+    ! print *,'numJac1',numJac(1,:)
+    ! print *,'Jac2',Jac(2,:)
+    ! print *,'numJac2',numJac(2,:)
+    ! print *,'Jac3',Jac(3,:)
+    ! print *,'numJac3',numJac(3,:)
+    ! print *,'Jac4',Jac(4,:)
+    ! print *,'numJac4',numJac(4,:)
 
     solver%rel_tol = 1e-20
     solver%abs_tol = 1e-10
