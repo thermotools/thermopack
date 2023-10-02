@@ -579,7 +579,7 @@ contains
       Xvar(nc+1) = log(t)
       Xvar(nc+2) = log(p)
 
-      !Exit at thermo limit or defined pressure
+      !Exit at defined pressure
       if (p < Pstart) then
         s = nc+2
         recalculate = .true.
@@ -589,16 +589,8 @@ contains
         recalculate = .true.
         ln_spec = log(Pmax)
       endif
-      !Exit at temperature specified temperature
-      if (present(Tme)) then
-        ! Is temperature decreasing? - And below Tme?
-        if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tme) then
-          s = nc+1
-          ln_spec = log(Tme)
-          recalculate = .true.
-        endif
-      else if (T < Tmin) then
-        ! Exit at thermo temperature limit
+      ! Is temperature decreasing? - And below Tme?
+      if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tmin) then
         s = nc+1
         ln_spec = log(Tmin)
         recalculate = .true.
@@ -635,7 +627,7 @@ contains
         endif
       endif
 
-      !Exit at  defined pressure
+      !Exit at defined pressure
       if (p >= Pmax*(1.0 - machine_prec*100)) then
         ! Attempt to solve for Pmax
         ln_spec = log(Pmax)
@@ -643,33 +635,6 @@ contains
         ! Rescaling the sensitivities
         dXdS = dXdS / dXdS(s)
         Xvar = Xold + dXdS*(ln_spec-Xold(s))
-        K = exp(Xvar(1:nc))
-        t = exp(Xvar(nc+1))
-        p = exp(Xvar(nc+2))
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
-        if (ierr == 0) then
-          ! Replace last point
-          Xvar(1:nc) = log(K)
-          Xvar(nc+1) = log(t)
-          Xvar(nc+2) = log(p)
-          call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ki,betai,nmax)
-        endif
-        exit
-      endif
-
-      !Exit at thermo temperature limit, or defined pressure
-      if (p < Pstart .OR. T < Tmin) then
-        call newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_spec)
-        if (p < Pstart) then
-          s = nc + 2
-          ln_spec = log(Pstart)
-        else if (T < Tmin) then
-          s = nc + 1
-          ln_spec = log(Tmin)
-        endif
-        ! Rescaling the sensitivities
-        dXdS = dXdS / dXdS(s)
-        Xvar = Xvar + dXdS*(ln_spec-Xold(s))
         K = exp(Xvar(1:nc))
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
