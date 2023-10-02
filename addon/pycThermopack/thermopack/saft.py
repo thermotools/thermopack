@@ -17,7 +17,7 @@ class saft(thermo):
     """
 
     def __init__(self):
-        """
+        """Internal
         Initialize SAFT specific function pointers
         """
         # Load dll/so
@@ -55,6 +55,16 @@ class saft(thermo):
             self.tp, self.get_export_name("fundamental_measure_theory", "fmt_energy_density"))
         self.s_de_broglie_wavelength = getattr(
             self.tp, self.get_export_name("saft_interface", "de_broglie_wavelength"))
+        self.s_sigma_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "sigma_ij"))
+        self.s_epsilon_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "epsilon_ij"))
+        self.s_sigma_eff_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "sigma_eff_ij"))
+        self.s_epsilon_eff_ij = getattr(
+            self.tp, self.get_export_name("saft_interface", "epsilon_eff_ij"))
+        self.s_alpha = getattr(
+            self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
             self.tp, self.get_export_name("multipol", "fres_multipol"))
         self.s_multipol_model_control = getattr(
@@ -65,7 +75,8 @@ class saft(thermo):
         self.eps_div_kb = None
 
     def hard_sphere_diameters(self, temp):
-        """Calculate hard-sphere diameters given temperature, volume and mol numbers.
+        """Utility
+        Calculate hard-sphere diameters given temperature, volume and mol numbers.
 
         Args:
             temp (float): Temperature (K)
@@ -92,7 +103,8 @@ class saft(thermo):
         return  np.array(d_c), np.array(dT_c)
 
     def hard_sphere_diameter_ij(self, i, j, temp):
-        """Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
+        """Utility
+        Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
 
         Args:
             i (int): Component index (FORTRAN)
@@ -128,8 +140,9 @@ class saft(thermo):
 
     def a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate dispersion contribution given temperature, volume and mol numbers.
-           a = A_disp/(nRT)
+        """Utility
+        Calculate dispersion contribution given temperature, volume and mol numbers. $a = A_{disp}/(nRT)$
+
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -199,8 +212,10 @@ class saft(thermo):
 
     def a_soft_repulsion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                          a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate soft repuslion contribution given temperature, volume and mol numbers.
-           a = A_soft_rep/(nRT)
+        """Utility
+        Calculate soft repuslion contribution given temperature, volume and mol numbers.
+        a = A_soft_rep/(nRT)
+
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -270,8 +285,9 @@ class saft(thermo):
 
     def a_hard_sphere(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                       a_tv=None, a_tn=None, a_vn=None, a_nn=None):
-        """Calculate hard-sphere contribution given temperature, volume and mol numbers.
-           a = A_hs/(nRT)
+        """Utility
+        Calculate hard-sphere contribution given temperature, volume and mol numbers.
+        a = A_hs/(nRT)
         Args:
             temp (float): Temperature (K)
             volume (float): Volume (m3)
@@ -340,7 +356,8 @@ class saft(thermo):
         return return_tuple
 
     def de_broglie_wavelength(self, c, temp):
-        """Calculate de Broglie wavelength
+        """Utility
+        Calculate de Broglie wavelength
 
         Args:
             c (int): Component index (FORTRAN)
@@ -354,7 +371,7 @@ class saft(thermo):
         c_c = c_int(c)
         lambda_c = c_double(0.0)
 
-        self.s_de_broglie_wavelength.argtypes = [POINTER(c_double),
+        self.s_de_broglie_wavelength.argtypes = [POINTER(c_int),
                                                  POINTER(c_double),
                                                  POINTER(c_double)]
 
@@ -367,7 +384,8 @@ class saft(thermo):
         return lambda_c.value
 
     def print_saft_parameters(self, c):
-        """Print saft parameters for component c
+        """Utility
+        Print saft parameters for component c
 
         Args:
             c (int): Component index (FORTRAN)
@@ -380,8 +398,8 @@ class saft(thermo):
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
 
     def potential(self, ic, jc, r, temp):
-        """Get potential energy divided by Boltzmann constant
-        as a function of r
+        """Utility
+        Get potential energy divided by Boltzmann constant as a function of r
 
         Args:
             ic, jc (int): Component indices (FORTRAN)
@@ -417,7 +435,8 @@ class saft(thermo):
         return np.array(pot_c)
 
     def adjust_mass_to_de_boer_parameter(self, c, de_boer):
-        """Adjust mass in order to get specified de Boer parameter
+        """Utility
+        Adjust mass in order to get specified de Boer parameter
 
         Args:
             c (int): Component index (FORTRAN)
@@ -437,7 +456,8 @@ class saft(thermo):
                                                 byref(de_boer_c))
 
     def de_boer_parameter(self, c):
-        """Get de Boer parameter
+        """Utility
+        Get de Boer parameter
 
         Args:
             c (int): Component index (FORTRAN)
@@ -458,8 +478,153 @@ class saft(thermo):
                                  byref(de_boer_c))
         return de_boer_c.value
 
+    def sigma_ij(self, i, j):
+        """Utility
+        Get size parameter for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+        Results:
+            sigma_ij (float): Size paramater (m)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        sigma_ij_c = c_double(0.0)
+
+        self.s_sigma_ij.argtypes = [POINTER(c_int),
+                                    POINTER(c_int),
+                                    POINTER(c_double)]
+
+        self.s_sigma_ij.restype = None
+
+        self.s_sigma_ij(byref(i_c),
+                        byref(j_c),
+                        byref(sigma_ij_c))
+        return sigma_ij_c.value
+
+    def epsilon_ij(self, i, j):
+        """Utility
+        Well depth divided by Boltzmann constant for i-j interaction
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+        Results:
+            epsilon_ij (float): Well depth divided by Boltzmann constant (K)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        epsilon_ij_c = c_double(0.0)
+
+        self.s_epsilon_ij.argtypes = [POINTER(c_int),
+                                      POINTER(c_int),
+                                      POINTER(c_double)]
+
+        self.s_epsilon_ij.restype = None
+
+        self.s_epsilon_ij(byref(i_c),
+                          byref(j_c),
+                          byref(epsilon_ij_c))
+        return epsilon_ij_c.value
+
+    def sigma_eff_ij(self, i, j, temperature):
+        """Utility
+        Get effective size parameter for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical
+        (not quantum-corrected models), returns the sigma parameter.
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+            temperature (float): Temperature (K)
+        Results:
+            sigma_ij (float): Size paramater (m)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        temperature_c = c_double(temperature)
+        sigma_ij_c = c_double(0.0)
+
+        self.s_sigma_eff_ij.argtypes = [POINTER(c_int),
+                                        POINTER(c_int),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.s_sigma_eff_ij.restype = None
+
+        self.s_sigma_eff_ij(byref(i_c),
+                            byref(j_c),
+                            byref(temperature_c),
+                            byref(sigma_ij_c))
+        return sigma_ij_c.value
+
+    def epsilon_eff_ij(self, i, j, temperature):
+        """Utility
+        Effective well depth divided by Boltzmann constant for i-j interaction for Feynman-Hibbs corrected Mie potentials. For classical
+        (not quantum-corrected models), returns the sigma parameter.
+
+        Args:
+            i (int): Component index (FORTRAN)
+            j (int): Component index (FORTRAN)
+            temperature (float): Temperature (K)
+        Results:
+            epsilon_ij (float): Effective well depth divided by Boltzmann constant (K)
+
+        """
+        self.activate()
+        i_c = c_int(i)
+        j_c = c_int(j)
+        temperature_c = c_double(temperature)
+        epsilon_ij_c = c_double(0.0)
+
+        self.s_epsilon_eff_ij.argtypes = [POINTER(c_int),
+                                          POINTER(c_int),
+                                          POINTER(c_double),
+                                          POINTER(c_double)]
+
+        self.s_epsilon_eff_ij.restype = None
+
+        self.s_epsilon_eff_ij(byref(i_c),
+                              byref(j_c),
+                              byref(temperature_c),
+                              byref(epsilon_ij_c))
+        return epsilon_ij_c.value
+
+    def alpha(self, temperature):
+        """Utility
+        Get dimensionless van der Waals energy
+
+        Args:
+            temperature (float): Temperature (K)
+
+        Returns:
+            alpha (ndarray): Dimensionless van der Waals energy (-)
+
+        """
+        self.activate()
+        alpha_c = (c_double * (self.nc**2))(0.0)
+        temperature_c = c_double(temperature)
+
+        self.s_alpha.argtypes = [POINTER(c_double),
+                                 POINTER(c_double)]
+
+        self.s_alpha.restype = None
+
+        self.s_alpha(byref(temperature_c),
+                     alpha_c)
+
+        return np.array(alpha_c).reshape((self.nc, self.nc), order='F').\
+            ravel(order="C").reshape((self.nc,self.nc))
+
     def truncation_correction(self, enable_truncation_correction, enable_shift_correction, reduced_radius_cut=3.5):
-        """Enable/disable truncation corrections
+        """Utility
+        Enable/disable truncation corrections
 
         Args:
             enable_truncation_correction (bool): Enable long range truncation correction
@@ -482,8 +647,8 @@ class saft(thermo):
                                       byref(rr_c))
 
     def test_fmt_compatibility(self):
-        """Test if model setup is comaptible with the Fundamental
-        Measure Theory (FMT)
+        """Utility
+        Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
 
         Returns:
             bool: Is model FMT consistent?
@@ -504,7 +669,8 @@ class saft(thermo):
         return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1
 
     def calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None):
-        """Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
+        """Utility
+        Calculate g_ij at contact according to Yu and Wu: 10.1063/1.1463435
 
         Args:
             n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2)
@@ -549,7 +715,8 @@ class saft(thermo):
         return  return_tuple
 
     def fmt_energy_density(self, n_alpha, phi_n=False, phi_nn=False, fmt_model="WB"):
-        """Calculate FMT reduced energy density
+        """Utility
+        Calculate FMT reduced energy density
 
         Args:
             n_alpha (np.ndarray): Weighted densities (n0, n1, n2, n3, nV1, nV2) for the entire grid
@@ -606,7 +773,8 @@ class saft(thermo):
         return  return_tuple
 
     def fres_polar(self, temp, volume, n, qq=True, dd=True, dq=True):
-        """Calculate reduced Helmholtz energy contribution from polar model
+        """Utility
+        Calculate reduced Helmholtz energy contribution from polar model
 
         Args:
             temp (float): Temperature (K)
@@ -649,7 +817,8 @@ class saft(thermo):
         return f_c.value
 
     def polar_model_control(self, qq, dd, dq):
-        """Dictate what terms are included with for polar model
+        """Utility
+        Dictate what terms are included with for polar model
 
         Args:
             qq (bool): Include quadrupole-quadrupole contribution?

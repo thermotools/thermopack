@@ -14,3 +14,5 @@
     * [Critical point](#critical-point)
   * [Advanced usage - Python](#More-advanced-usage---Python)
     * [Interaction parameters](#Interaction-parameters) 
+    * [Adding new fluids](#Adding-new-fluids)
+  * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 

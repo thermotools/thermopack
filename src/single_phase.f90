@@ -1060,7 +1060,7 @@ contains
       real :: F_VV, F_TV, F_Vn(nce)
       if (present(dZdT) .or. present(dZdP) .or. present(dZdz)) then
         sumn = sum(ne)
-        V = sumn*Rgas*T/P
+        V = Zfac*sumn*Rgas*T/P
         call TV_CalcFres(nc=nce,comp=comp,cbeos=cbeos,T=T,V=V,n=ne,F_TV=F_TV,F_VV=F_VV,F_Vn=F_Vn)
         dPdV = -Rgas*T*(F_VV + sumn/V**2)
       end if

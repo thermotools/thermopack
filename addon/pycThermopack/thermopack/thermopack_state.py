@@ -599,7 +599,7 @@ class Equilibrium(object):
             output += "\n"
             state = p["state"]
             phase = p["phase"]
-            output += f"{phase}: {state.T:.5f} K   {np.sum(state.partial_density())*1e-3:.5f} kmol/m3    {state.x}"
+            output += f"{phase}: {state.temperature:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state.molefrac}"
         return output
 
     def __str__(self):
@@ -608,7 +608,7 @@ class Equilibrium(object):
             output += "\n"
             state = p["state"]
             phase = p["phase"]
-            output += f"{phase}: {state.T:.5f} K   {np.sum(state.partial_density())*1e-3:.5f} kmol/m3    {state.x}"
+            output += f"{phase}: {state.temperature:.5f} K   {np.sum(state.partial_density)*1e-3:.5f} kmol/m3    {state.molefrac}"
         return output
 
     @staticmethod
@@ -751,6 +751,7 @@ class phase_state_list(State, list):
 
     def __repr__(self):
         return [str(state) for state in self]
+
     def __str__(self):
         return '\n'.join(self.__repr__())
 
@@ -964,3 +965,42 @@ class MetaCurve(object):
     @property
     def pressures(self):
         return phase_state_list([meta.vapour for meta in self.meta_states]).pressures
+
+
+class SpinodalCurve(object):
+    """
+    List of states along spinodal line
+    """
+
+    def __init__(self, eos, z, initial_pressure=1.0e5, initial_liquid_temperature=None):
+        """Map spinodal states
+
+        Args:
+            eos (thermo): Equation of state object
+            z (float): Composition (-)
+            initial_pressure (float): Initial pressure (Pa). Defaults to 1.0e5.
+            initial_liquid_temperature (float, optional): Initial temperature on liquid spinodal (K).
+        """
+        T,v,P = eos.spinodal(z,
+                             initial_pressure=1.0e5,
+                             initial_liquid_temperature=None,
+                             dlnv=None,
+                             min_temperature_vapor=None)
+
+        self.spinodal_states =  []
+        for i in range(len(v)):
+            state = State(eos=eos, T=T[i], V=v[i], n=z, n_tot=1.0,
+                          init_specific=True)
+            self.spinodal_states.append(state)
+
+    @property
+    def specific_volume(self):
+        return phase_state_list([spin for spin in self.spinodal_states]).specific_volume
+
+    @property
+    def temperatures(self):
+        return phase_state_list([spin for spin in self.spinodal_states]).temperatures
+
+    @property
+    def pressures(self):
+        return phase_state_list([spin for spin in self.spinodal_states]).pressures
