@@ -2,15 +2,25 @@
 !> module.
 module thermopack_var
   use thermopack_constants, only: eosid_len, label_len, &
-       PSEUDO_CRIT_MOLAR_VOLUME
+       PSEUDO_CRIT_MOLAR_VOLUME, Rgas_default
   use apparent_compostion, only: apparent_container
   use compdata, only: gendata_pointer
   use utilities, only: get_thread_index
   use association_var, only: association
+  use multipol_var, only: multipol_param
   implicit none
   save
   !
   public
+
+  !< Gas constant usde by current model
+  real :: Rgas = Rgas_default !< J/mol/K
+  real :: kRgas = 1000.0*Rgas_default !< J/kmol/K
+  !< Temperature/pressure min/max values
+  real :: tpTmax = 999.0 !< K
+  real :: tpTmin = 80.0 !< K
+  real :: tpPmax = 1.0e8 !< Pa
+  real :: tpPmin = 1.0e1 !< Pa
 
   !> Number of phases:
   integer :: nph = 0
@@ -38,6 +48,7 @@ module thermopack_var
     logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
     !
     type(association), pointer :: assoc => NULL()
+    type(multipol_param), pointer :: mpol_param => NULL()
 
   contains
     procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
@@ -91,6 +102,15 @@ module thermopack_var
     character(len=label_len) :: label
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
 
+    !< Gas constant usde by current model
+    real :: Rgas = Rgas_default !< J/mol/K
+    real :: kRgas = 1000.0*Rgas_default !< J/kmol/K
+    !< Temperature/pressure min/max values used for solvers
+    real :: tpTmax = 999.0 !< K
+    real :: tpTmin = 80.0 !< K
+    real :: tpPmax = 1.0e8 !< Pa
+    real :: tpPmin = 1.0e1 !< Pa
+
     ! Apparent composition
     type(apparent_container), pointer :: apparent => NULL()
 
@@ -134,6 +154,9 @@ module thermopack_var
        real_to_apparent_differentials, TP_lnfug_apparent
   public :: base_eos_dealloc, delete_all_eos
   public :: add_eos, delete_eos, activate_model, get_eos_identification
+  public :: set_tmin, get_tmin, set_tmax, get_tmax
+  public :: set_pmin, get_pmin, set_pmax, get_pmax
+  public :: get_rgas
 
 contains
 
@@ -289,6 +312,11 @@ contains
       if (istat /= 0) print *,"Error deallocating eos%assoc"
       eos%assoc => NULL()
     endif
+    if (associated(eos%mpol_param)) then
+      deallocate(eos%mpol_param, stat=istat)
+      if (istat /= 0) print *,"Error deallocating eos%mpol_param"
+      eos%mpol_param => NULL()
+    endif
   end subroutine base_eos_dealloc
 
   subroutine assign_base_eos_param(this, other)
@@ -309,6 +337,14 @@ contains
         if (istat /= 0) print *,"Error allocating assoc"
       endif
       this%assoc = other%assoc
+    endif
+
+    if (associated(other%mpol_param)) then
+      if (.not. associated(this%mpol_param)) then
+        allocate(this%mpol_param, stat=istat)
+        if (istat /= 0) print *,"Error allocating mpol_param"
+      endif
+      this%mpol_param = other%mpol_param
     endif
 
   end subroutine assign_base_eos_param
@@ -399,6 +435,78 @@ contains
     endif
   end subroutine get_eos_identification
 
+  subroutine set_tmin(tmin)
+    real, intent(in) :: tmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tptmin = tmin
+  end subroutine set_tmin
+
+  function get_tmin() result(tmin)
+    real :: tmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    tmin = p_model%tptmin
+  end function get_tmin
+
+  subroutine set_tmax(tmax)
+    real, intent(in) :: tmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tptmax = tmax
+  end subroutine set_tmax
+
+  function get_tmax() result(tmax)
+    real :: tmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    tmax = p_model%tptmax
+  end function get_tmax
+
+  subroutine set_pmin(pmin)
+    real, intent(in) :: pmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tppmin = pmin
+  end subroutine set_pmin
+
+  function get_pmin() result(pmin)
+    real :: pmin
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    pmin = p_model%tppmin
+  end function get_pmin
+
+  subroutine set_pmax(pmax)
+    real, intent(in) :: pmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    p_model%tppmax = pmax
+  end subroutine set_pmax
+
+  function get_pmax() result(pmax)
+    real :: pmax
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    pmax = p_model%tppmax
+  end function get_pmax
+
+  function get_rgas() result(Rgas)
+    real :: Rgas
+    ! Locals
+    type(thermo_model), pointer :: p_model
+    p_model => get_active_thermo_model()
+    Rgas = p_model%Rgas
+  end function get_rgas
+
   subroutine apparent_to_real_mole_numbers(n,ne)
     real, intent(in) :: n(nc)
     real, intent(out) :: ne(nce)
@@ -458,4 +566,5 @@ contains
       if (present(dlnfugdn)) dlnfugdn = dlnfugdn_real
     endif
   end subroutine TP_lnfug_apparent
+
 end module thermopack_var

@@ -4,7 +4,7 @@
   "cas_number": "107-21-1",
   "name": "ETHYLENE GLYCOL",
   "aliases": [
-    "MoneEthyleneGlycol",
+    "MonoEthyleneGlycol",
     "EthyleneGlycol",
     "Ethane-1_2-diol"
   ],
@@ -75,6 +75,14 @@
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",
     "Zra": 0.2424
+  },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
   },
   "SRK": {
     "TWU-1": {

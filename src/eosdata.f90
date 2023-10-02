@@ -1,7 +1,7 @@
 !> The module eosdata contains the definitions of the equation of state, mixing
 !> rule and the interaction parameters.
 
-Module eosdata
+module eosdata
   use stringmod, only: string_match, str_eq
   use thermopack_constants, only: short_label_len, label_len
   implicit none
@@ -21,12 +21,17 @@ Module eosdata
   integer, parameter :: cpaSRK = 41    !< SRK Plus Association
   integer, parameter :: cpaPR = 42     !< PR Plus Association
   integer, parameter :: eosPC_SAFT = 5      !< PC-SAFT equation of state
+  integer, parameter :: eosSPC_SAFT = 51    !< Simplefied PC-SAFT equation of state
+  integer, parameter :: eosOPC_SAFT = 52    !< Original PC-SAFT equation of state
+  integer, parameter :: eosPCP_SAFT = 53    !< Original PC-SAFT formulation with polar contributions
+  integer, parameter :: eosSPCP_SAFT = 54   !< Simplefied PC-SAFT equation of state with polar contributions
   integer, parameter :: eos_single = 6      !< Single component multiparamater eos
   integer, parameter :: meosMbwr19 = 611    !< MBWR19 (Bender) multiparameter equation of state
   integer, parameter :: meosMbwr32 = 612    !< MBWR32 multiparameter equation of state
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
   integer, parameter :: meosLJ = 63        !< Multiparameter EoS
   integer, parameter :: meosLJTS = 64      !< Multiparameter EoS
+  integer, parameter :: meosGERG = 65      !< Multiparameter EoS
   integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
   integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
@@ -36,6 +41,8 @@ Module eosdata
   integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
+  integer, parameter :: meosGERG_mix = 10   !< Multicomponent GERG
+  integer, parameter :: meos_helm_mix = 11  !< Multicomponent multiparameter EoS with Helmholtz mixing
 
   type eos_label_mapping
     integer :: eos_idx
@@ -45,7 +52,7 @@ Module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 24
+  integer, parameter :: max_n_eos = 30
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -129,9 +136,33 @@ Module eosdata
        !
        eos_label_mapping(&
        eos_idx = eosPC_SAFT, &
-       eos_subidx = eosPC_SAFT, &
+       eos_subidx = eosSPC_SAFT, &
+       short_label = "sPC-SAFT", &
+       label = "Simplified Perturbed Chain SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosOPC_SAFT, &
        short_label = "PC-SAFT", &
        label = "Perturbed Chain SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosSPCP_SAFT, &
+       short_label = "sPCP-SAFT", &
+       label = "Simplified Perturbed Chain Polar SAFT", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eosPC_SAFT, &
+       eos_subidx = eosPCP_SAFT, &
+       short_label = "PCP-SAFT", &
+       label = "Perturbed Chain Polar SAFT", &
        need_alternative_eos = .true. &
        ),&
        !
@@ -172,6 +203,14 @@ Module eosdata
        eos_subidx = meosLJTS, &
        short_label = "LJTS_MEOS", &
        label = "Multiparameter EoS for LJTS", &
+       need_alternative_eos = .true. &
+       ),&
+       !
+       eos_label_mapping(&
+       eos_idx = eos_single, &
+       eos_subidx = meosGERG, &
+       short_label = "GERG2008", &
+       label = "GERG EoS", &
        need_alternative_eos = .true. &
        ),&
        !
@@ -236,6 +275,22 @@ Module eosdata
        eos_subidx = meosNist_mix, &
        short_label = "NIST_MEOS_MIX", &
        label = "Ideal mixture of NIST multiparameter EOS", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meosGERG_mix, &
+       eos_subidx = meosGERG_mix, &
+       short_label = "GERG2008_MIX", &
+       label = "GERG2008 mixture model", &
+       need_alternative_eos = .true. &
+       ), &
+       !
+       eos_label_mapping(&
+       eos_idx = meos_helm_mix, &
+       eos_subidx = meos_helm_mix, &
+       short_label = "MEOS", &
+       label = "MEOS mixture model", &
        need_alternative_eos = .true. &
        ) &
        /)

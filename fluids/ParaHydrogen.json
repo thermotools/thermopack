@@ -76,6 +76,72 @@
     "bib_reference": "",
     "Zra": 0.306
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "ISBN: 088318415X, https://srd.nist.gov/JPCRD/jpcrdS1Vol11.pdf",
+    "ref": "DEFAULT",
+    "correlation": "MP-1",
+    "triple_temperature": 13.8,
+    "maximum_temperature": 400.0,
+    "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 1.0,
+    "n_coeff": 4,
+    "n_coeff_1": 4,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -26.5289115,
+      0.248578596,
+      -21.2823393,
+      0.125746643,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.764739,
+      0.0,
+      1.955,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "DOI: 10.1007/978-1-4613-9856-1_76",
+    "ref": "DEFAULT",
+    "correlation": "SL-2",
+    "triple_temperature": 13.8,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 1.0,
+    "n_coeff": 6,
+    "n_coeff_1": 6,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      4.78288,
+      -1.485636e2,
+      2.32321e2,
+      -5.60207e2,
+      6.64126e2,
+      -2.8906e2
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      -4.0,
+      -5.0
+    ]
+  },
   "SRK": {},
   "PR": {},
   "SAFTVRMIE-1": {

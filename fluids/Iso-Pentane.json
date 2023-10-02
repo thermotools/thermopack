@@ -76,6 +76,43 @@
     "bib_reference": "",
     "Zra": 0.2717
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.1725068",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 112.65,
+    "maximum_temperature": 2000.0,
+    "reducing_pressure": 8.952000E-05,
+    "reducing_temperature": 112.65,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -7127700000000.0,
+      7127700000001.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.563,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "MC-1": {
       "ref": "Default",
@@ -149,5 +186,15 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.562,
+    "sigma": 3.8296E-10,
+    "eps_depth_divk": 230.750,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
   }
 }

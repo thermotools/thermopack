@@ -1,6 +1,6 @@
 !> Automatically generated to file saftvrmie_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2022-05-15T19:17:32.065393
+!! Time stamp: 2023-06-21T13:07:27.307865
 
 module saftvrmie_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -50,6 +50,23 @@ module saftvrmie_datadb
 
   type(saftvrmie_data), parameter :: Miecx1 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "NH3", &
+      m = 1., &
+      sigma = 3.3309e-10, &
+      eps_depth_divk = 323.7, &
+      lambda_a = 6., &
+      lambda_r = 36.832, &
+      mass = 2.828e-26, &
+      eps = 1105., &
+      beta = 5.6073E-28, &
+      assoc_scheme = assoc_scheme_4B, &
+      fh_order = 0, &
+      bib_ref = "Dufal (2015) - 10.1080/00268976.2015.1029027", &
+      ref = "DEFAULT/Dufal2015" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx2 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "AR", &
       m = 1., &
       sigma = 3.41e-10, &
@@ -58,14 +75,14 @@ module saftvrmie_datadb
       lambda_r = 12.26, &
       mass = 6.6335e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Unpublished (as of 08/2018) parameters from G. Jackon's group", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx2 = &
+  type(saftvrmie_data), parameter :: Miecx3 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "CO2", &
       m = 1.5, &
@@ -75,14 +92,14 @@ module saftvrmie_datadb
       lambda_r = 27.557, &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx3 = &
+  type(saftvrmie_data), parameter :: Miecx4 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "D2", &
       m = 1., &
@@ -92,14 +109,14 @@ module saftvrmie_datadb
       lambda_r = 8., &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx4 = &
+  type(saftvrmie_data), parameter :: Miecx5 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "D2", &
       m = 1., &
@@ -109,14 +126,14 @@ module saftvrmie_datadb
       lambda_r = 10., &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx5 = &
+  type(saftvrmie_data), parameter :: Miecx6 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "D2", &
       m = 1., &
@@ -126,14 +143,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2/AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx6 = &
+  type(saftvrmie_data), parameter :: Miecx7 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "D2", &
       m = 1., &
@@ -143,14 +160,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx7 = &
+  type(saftvrmie_data), parameter :: Miecx8 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "D2", &
       m = 1., &
@@ -160,14 +177,31 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx8 = &
+  type(saftvrmie_data), parameter :: Miecx9 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "D2", &
+      m = 1., &
+      sigma = 3.009e-10, &
+      eps_depth_divk = 39.239, &
+      lambda_a = 7., &
+      lambda_r = 11., &
+      mass = 6.689e-27, &
+      eps = 0., &
+      beta = 0.0000E+00, &
+      assoc_scheme = no_assoc, &
+      fh_order = 1, &
+      bib_ref = "Hammer 2022, doi: xxxx", &
+      ref = "HAMMER2022-FH1" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx10 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "C2", &
       m = 1.4373, &
@@ -177,14 +211,48 @@ module saftvrmie_datadb
       lambda_r = 12.4, &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx9 = &
+  type(saftvrmie_data), parameter :: Miecx11 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "ETOH", &
+      m = 2.25648939, &
+      sigma = 3.2903e-10, &
+      eps_depth_divk = 238.97, &
+      lambda_a = 6., &
+      lambda_r = 12.282, &
+      mass = 0.e+00, &
+      eps = 2247.3, &
+      beta = 4.2794E-29, &
+      assoc_scheme = assoc_scheme_3B, &
+      fh_order = 0, &
+      bib_ref = "Dufal (2015) - 10.1080/00268976.2015.1029027", &
+      ref = "DEFAULT/Dufal2015" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx12 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "ETOH", &
+      m = 1.7639, &
+      sigma = 3.6025e-10, &
+      eps_depth_divk = 307.92, &
+      lambda_a = 6., &
+      lambda_r = 17.968, &
+      mass = 0.e+00, &
+      eps = 2380., &
+      beta = 1.5018E-28, &
+      assoc_scheme = assoc_scheme_3B, &
+      fh_order = 0, &
+      bib_ref = "Polishuk (2018) - 10.1016/j.molliq.2018.05.112", &
+      ref = "Polishuk" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx13 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -194,14 +262,14 @@ module saftvrmie_datadb
       lambda_r = 14.84, &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Herdes 2015, doi: 10.1016/j.fluid.2015.07.014", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx10 = &
+  type(saftvrmie_data), parameter :: Miecx14 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -211,14 +279,14 @@ module saftvrmie_datadb
       lambda_r = 9., &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx11 = &
+  type(saftvrmie_data), parameter :: Miecx15 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -228,14 +296,14 @@ module saftvrmie_datadb
       lambda_r = 13., &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx12 = &
+  type(saftvrmie_data), parameter :: Miecx16 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -245,14 +313,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx13 = &
+  type(saftvrmie_data), parameter :: Miecx17 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -262,14 +330,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx14 = &
+  type(saftvrmie_data), parameter :: Miecx18 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -279,14 +347,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx15 = &
+  type(saftvrmie_data), parameter :: Miecx19 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -296,14 +364,14 @@ module saftvrmie_datadb
       lambda_r = 8.3471, &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx16 = &
+  type(saftvrmie_data), parameter :: Miecx20 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -313,14 +381,14 @@ module saftvrmie_datadb
       lambda_r = 10.455, &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx17 = &
+  type(saftvrmie_data), parameter :: Miecx21 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "HE", &
       m = 1., &
@@ -330,14 +398,31 @@ module saftvrmie_datadb
       lambda_r = 13.239, &
       mass = 6.6464764e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx18 = &
+  type(saftvrmie_data), parameter :: Miecx22 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "N2H4", &
+      m = 1.7839, &
+      sigma = 3.0012e-10, &
+      eps_depth_divk = 373., &
+      lambda_a = 6., &
+      lambda_r = 30.823, &
+      mass = 0.e+00, &
+      eps = 1400., &
+      beta = 9.9666E-28, &
+      assoc_scheme = assoc_scheme_4C, &
+      fh_order = 0, &
+      bib_ref = "Polishuk (2018) - 10.1016/j.molliq.2018.05.112", &
+      ref = "DEFAULT/Polishuk" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx23 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -347,14 +432,14 @@ module saftvrmie_datadb
       lambda_r = 8., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx19 = &
+  type(saftvrmie_data), parameter :: Miecx24 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -364,14 +449,14 @@ module saftvrmie_datadb
       lambda_r = 9., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx20 = &
+  type(saftvrmie_data), parameter :: Miecx25 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -381,14 +466,14 @@ module saftvrmie_datadb
       lambda_r = 20., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx21 = &
+  type(saftvrmie_data), parameter :: Miecx26 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -398,14 +483,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx22 = &
+  type(saftvrmie_data), parameter :: Miecx27 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -415,14 +500,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx23 = &
+  type(saftvrmie_data), parameter :: Miecx28 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -432,14 +517,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx24 = &
+  type(saftvrmie_data), parameter :: Miecx29 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -449,14 +534,14 @@ module saftvrmie_datadb
       lambda_r = 6.4709, &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx25 = &
+  type(saftvrmie_data), parameter :: Miecx30 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -466,14 +551,14 @@ module saftvrmie_datadb
       lambda_r = 9.5413, &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx26 = &
+  type(saftvrmie_data), parameter :: Miecx31 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -483,14 +568,14 @@ module saftvrmie_datadb
       lambda_r = 18.033, &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx27 = &
+  type(saftvrmie_data), parameter :: Miecx32 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "H2", &
       m = 1., &
@@ -500,14 +585,31 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Trejos et al. 2013, doi: 10.1063/1.4829769", &
       ref = "TREJOS2013" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx28 = &
+  type(saftvrmie_data), parameter :: Miecx33 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "H2S", &
+      m = 1., &
+      sigma = 3.782e-10, &
+      eps_depth_divk = 243.28, &
+      lambda_a = 6., &
+      lambda_r = 31.311, &
+      mass = 5.659e-26, &
+      eps = 585.72, &
+      beta = 1.8804E-27, &
+      assoc_scheme = assoc_scheme_4C, &
+      fh_order = 0, &
+      bib_ref = "Dufal (2015) - 10.1080/00268976.2015.1029027", &
+      ref = "DEFAULT/Dufal2015" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx34 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "KR", &
       m = 1., &
@@ -515,33 +617,33 @@ module saftvrmie_datadb
       eps_depth_divk = 166.66, &
       lambda_a = 6., &
       lambda_r = 12., &
-      mass = 1.3915e-22, &
+      mass = 1.3914985275103401e-25, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Irma et. al (1999) ISSN : 1029-0435/0892-7022", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx29 = &
+  type(saftvrmie_data), parameter :: Miecx35 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "LJF", &
       m = 1., &
       sigma = 3.e-10, &
-      eps_depth_divk = 30., &
+      eps_depth_divk = 100., &
       lambda_a = 6., &
       lambda_r = 12., &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx30 = &
+  type(saftvrmie_data), parameter :: Miecx36 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "C1", &
       m = 1., &
@@ -551,14 +653,14 @@ module saftvrmie_datadb
       lambda_r = 12.65, &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx31 = &
+  type(saftvrmie_data), parameter :: Miecx37 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "C1", &
       m = 1., &
@@ -568,14 +670,31 @@ module saftvrmie_datadb
       lambda_r = 16.39, &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
-      bib_ref = "Müller's mystery parameters for methane and decane where SAFT-VR Mie fails", &
+      bib_ref = "MÃ¼ller's mystery parameters for methane and decane where SAFT-VR Mie fails", &
       ref = "Muller" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx32 = &
+  type(saftvrmie_data), parameter :: Miecx38 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "MEOH", &
+      m = 1.7989, &
+      sigma = 3.1425e-10, &
+      eps_depth_divk = 276.92, &
+      lambda_a = 6., &
+      lambda_r = 16.968, &
+      mass = 0.e+00, &
+      eps = 2156., &
+      beta = 2.2218E-28, &
+      assoc_scheme = assoc_scheme_3B, &
+      fh_order = 0, &
+      bib_ref = "Dufal (2015) - 10.1080/00268976.2015.1029027", &
+      ref = "DEFAULT/Dufal2015" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx39 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -585,14 +704,14 @@ module saftvrmie_datadb
       lambda_r = 9.6977, &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx33 = &
+  type(saftvrmie_data), parameter :: Miecx40 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -602,14 +721,14 @@ module saftvrmie_datadb
       lambda_r = 13., &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx34 = &
+  type(saftvrmie_data), parameter :: Miecx41 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -619,14 +738,14 @@ module saftvrmie_datadb
       lambda_r = 13., &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx35 = &
+  type(saftvrmie_data), parameter :: Miecx42 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -636,14 +755,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx36 = &
+  type(saftvrmie_data), parameter :: Miecx43 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -653,14 +772,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx37 = &
+  type(saftvrmie_data), parameter :: Miecx44 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -670,14 +789,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx38 = &
+  type(saftvrmie_data), parameter :: Miecx45 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -687,14 +806,14 @@ module saftvrmie_datadb
       lambda_r = 10.396, &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx39 = &
+  type(saftvrmie_data), parameter :: Miecx46 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -704,14 +823,14 @@ module saftvrmie_datadb
       lambda_r = 12.451, &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx40 = &
+  type(saftvrmie_data), parameter :: Miecx47 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NE", &
       m = 1., &
@@ -721,14 +840,31 @@ module saftvrmie_datadb
       lambda_r = 13.187, &
       mass = 3.3509177e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "HYVA parameters with non-integer repulsive exponent", &
       ref = "HYVA-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx41 = &
+  type(saftvrmie_data), parameter :: Miecx48 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "NE", &
+      m = 1., &
+      sigma = 2.7867e-10, &
+      eps_depth_divk = 41.6523, &
+      lambda_a = 6., &
+      lambda_r = 16., &
+      mass = 3.3509177e-26, &
+      eps = 0., &
+      beta = 0.0000E+00, &
+      assoc_scheme = no_assoc, &
+      fh_order = 1, &
+      bib_ref = "Hammer 2022 not published", &
+      ref = "HAMMER-2022-NP" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx49 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "N2", &
       m = 1., &
@@ -738,14 +874,14 @@ module saftvrmie_datadb
       lambda_r = 12.26, &
       mass = 4.65173451e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Ronald A. Aziz, J. Chem. Phys. 99, 4518 (1993), DOI : https://doi.org/10.1063/1.466051", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx42 = &
+  type(saftvrmie_data), parameter :: Miecx50 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -755,14 +891,14 @@ module saftvrmie_datadb
       lambda_r = 8., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx43 = &
+  type(saftvrmie_data), parameter :: Miecx51 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -772,14 +908,14 @@ module saftvrmie_datadb
       lambda_r = 9., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx44 = &
+  type(saftvrmie_data), parameter :: Miecx52 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -789,14 +925,14 @@ module saftvrmie_datadb
       lambda_r = 20., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx45 = &
+  type(saftvrmie_data), parameter :: Miecx53 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -806,14 +942,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx46 = &
+  type(saftvrmie_data), parameter :: Miecx54 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -823,14 +959,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx47 = &
+  type(saftvrmie_data), parameter :: Miecx55 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O-H2", &
       m = 1., &
@@ -840,14 +976,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx48 = &
+  type(saftvrmie_data), parameter :: Miecx56 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "O2", &
       m = 1., &
@@ -857,14 +993,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 5.31339291e-26, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Chen, Rex and Yuen, W., Oxidation of Metals, 73 (2009), DOI : 10.1007/s11085-009-9180-z", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx49 = &
+  type(saftvrmie_data), parameter :: Miecx57 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -874,14 +1010,14 @@ module saftvrmie_datadb
       lambda_r = 8., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "DEFAULT/AASEN2019-FH0" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx50 = &
+  type(saftvrmie_data), parameter :: Miecx58 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -891,14 +1027,14 @@ module saftvrmie_datadb
       lambda_r = 9., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx51 = &
+  type(saftvrmie_data), parameter :: Miecx59 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -908,14 +1044,14 @@ module saftvrmie_datadb
       lambda_r = 20., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx52 = &
+  type(saftvrmie_data), parameter :: Miecx60 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -925,14 +1061,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH0-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx53 = &
+  type(saftvrmie_data), parameter :: Miecx61 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -942,14 +1078,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 1, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH1-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx54 = &
+  type(saftvrmie_data), parameter :: Miecx62 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "P-H2", &
       m = 1., &
@@ -959,14 +1095,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 3.3472e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 2, &
       bib_ref = "Aasen 2019, doi: 10.1063/1.5111364", &
       ref = "AASEN2019-FH2-LJ" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx55 = &
+  type(saftvrmie_data), parameter :: Miecx63 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "C3", &
       m = 1.6845, &
@@ -976,14 +1112,48 @@ module saftvrmie_datadb
       lambda_r = 13.006, &
       mass = 0.e+00, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx56 = &
+  type(saftvrmie_data), parameter :: Miecx64 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "H2O", &
+      m = 1., &
+      sigma = 3.0555e-10, &
+      eps_depth_divk = 418., &
+      lambda_a = 6., &
+      lambda_r = 35.823, &
+      mass = 2.992e-26, &
+      eps = 1600., &
+      beta = 4.9666E-28, &
+      assoc_scheme = assoc_scheme_4C, &
+      fh_order = 0, &
+      bib_ref = "Dufal (2015) - 10.1080/00268976.2015.1029027", &
+      ref = "DEFAULT/Dufal2015" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx65 = &
+      saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
+      compName = "H2O", &
+      m = 1.25656, &
+      sigma = 2.802422e-10, &
+      eps_depth_divk = 351.2321, &
+      lambda_a = 6., &
+      lambda_r = 25.12615, &
+      mass = 2.992e-26, &
+      eps = 1630.57, &
+      beta = 1.7762E-28, &
+      assoc_scheme = assoc_scheme_4C, &
+      fh_order = 0, &
+      bib_ref = "Unpublished water parameters (courtesy of Edward Graham)", &
+      ref = "Graham" &
+      )
+
+  type(saftvrmie_data), parameter :: Miecx66 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "XE", &
       m = 1., &
@@ -993,14 +1163,14 @@ module saftvrmie_datadb
       lambda_r = 12., &
       mass = 2.1801716e-22, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
-      bib_ref = "Jadran Vrabec, Jurgen Stoll, Hans Hasse, J. Phys. Chem. B 2001, 105, DOI : 10.1021/jp012542o", &
+      bib_ref = "Jadran Vrabec, Jurgen Stoll, Hans Hasse, J. Phys. Chem. B 2001, 105, DOI: 10.1021/jp012542o", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx57 = &
+  type(saftvrmie_data), parameter :: Miecx67 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC4", &
       m = 1.8514, &
@@ -1010,14 +1180,14 @@ module saftvrmie_datadb
       lambda_r = 13.65, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx58 = &
+  type(saftvrmie_data), parameter :: Miecx68 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC10", &
       m = 2.9976, &
@@ -1027,14 +1197,14 @@ module saftvrmie_datadb
       lambda_r = 18.885, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx59 = &
+  type(saftvrmie_data), parameter :: Miecx69 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC10", &
       m = 3., &
@@ -1044,14 +1214,14 @@ module saftvrmie_datadb
       lambda_r = 20.92, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Müller's mystery parameters for methane and decane where SAFT-VR Mie fails", &
       ref = "Muller" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx60 = &
+  type(saftvrmie_data), parameter :: Miecx70 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC22", &
       m = 3.2519, &
@@ -1061,14 +1231,14 @@ module saftvrmie_datadb
       lambda_r = 20.862, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx61 = &
+  type(saftvrmie_data), parameter :: Miecx71 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC20", &
       m = 4.8794, &
@@ -1078,14 +1248,14 @@ module saftvrmie_datadb
       lambda_r = 22.926, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx62 = &
+  type(saftvrmie_data), parameter :: Miecx72 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC7", &
       m = 2.3949, &
@@ -1095,14 +1265,14 @@ module saftvrmie_datadb
       lambda_r = 17.092, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx63 = &
+  type(saftvrmie_data), parameter :: Miecx73 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC6", &
       m = 2.1097, &
@@ -1112,14 +1282,14 @@ module saftvrmie_datadb
       lambda_r = 17.203, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx64 = &
+  type(saftvrmie_data), parameter :: Miecx74 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC9", &
       m = 2.8099, &
@@ -1129,14 +1299,14 @@ module saftvrmie_datadb
       lambda_r = 18.324, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx65 = &
+  type(saftvrmie_data), parameter :: Miecx75 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC8", &
       m = 2.6253, &
@@ -1146,14 +1316,14 @@ module saftvrmie_datadb
       lambda_r = 17.378, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx66 = &
+  type(saftvrmie_data), parameter :: Miecx76 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC15", &
       m = 3.9325, &
@@ -1163,14 +1333,14 @@ module saftvrmie_datadb
       lambda_r = 20.822, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  type(saftvrmie_data), parameter :: Miecx67 = &
+  type(saftvrmie_data), parameter :: Miecx77 = &
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "NC5", &
       m = 1.9606, &
@@ -1180,14 +1350,14 @@ module saftvrmie_datadb
       lambda_r = 15.847, &
       mass = 6.689e-27, &
       eps = 0., &
-      beta = 0., &
+      beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
       bib_ref = "Lafitte et al. 2013, doi: 10.1063/1.4819786", &
       ref = "DEFAULT" &
       )
 
-  integer, parameter :: nMiemodels = 67
+  integer, parameter :: nMiemodels = 77
   type(saftvrmie_data), dimension(nMiemodels), parameter :: Miearray = (/&
       Miecx1,Miecx2,Miecx3,Miecx4,Miecx5, &
       Miecx6,Miecx7,Miecx8,Miecx9,Miecx10, &
@@ -1202,7 +1372,9 @@ module saftvrmie_datadb
       Miecx51,Miecx52,Miecx53,Miecx54,Miecx55, &
       Miecx56,Miecx57,Miecx58,Miecx59,Miecx60, &
       Miecx61,Miecx62,Miecx63,Miecx64,Miecx65, &
-      Miecx66,Miecx67 &
+      Miecx66,Miecx67,Miecx68,Miecx69,Miecx70, &
+      Miecx71,Miecx72,Miecx73,Miecx74,Miecx75, &
+      Miecx76,Miecx77 &
   /)
 
   type (Miekijdata), parameter :: SVRM_KIJ_1 = &
@@ -1340,6 +1512,33 @@ module saftvrmie_datadb
       kijvalue = 0.12  &
       )
 
+  type (Miekijdata), parameter :: SVRM_KIJ_16 = &
+      Miekijdata(eosidx = eosSAFT_VR_MIE, &
+      ref = "HAMMER2022-FH1", &
+      bib_ref = "xxx", &
+      uid1 = "D2", &
+      uid2 = "Ne", &
+      kijvalue = 0.13  &
+      )
+
+  type (Miekijdata), parameter :: SVRM_KIJ_17 = &
+      Miekijdata(eosidx = eosSAFT_VR_MIE, &
+      ref = "HAMMER2022-NP", &
+      bib_ref = "Hammer 2022 not published", &
+      uid1 = "H2", &
+      uid2 = "Ne", &
+      kijvalue = 0.09  &
+      )
+
+  type (Miekijdata), parameter :: SVRM_KIJ_18 = &
+      Miekijdata(eosidx = eosSAFT_VR_MIE, &
+      ref = "Default/Dufal2015", &
+      bib_ref = "10.1080/00268976.2015.1029027", &
+      uid1 = "H2O", &
+      uid2 = "MEOH", &
+      kijvalue = 0.02  &
+      )
+
   type (Miekijdata), parameter :: SVRM_LIJ_1 = &
       Miekijdata(eosidx = eosSAFT_VR_MIE, &
       ref = "AASEN2019-FH1", &
@@ -1448,11 +1647,12 @@ module saftvrmie_datadb
       kijvalue = -0.05  &
       )
 
-  integer, parameter :: Miemaxkij = 15
+  integer, parameter :: Miemaxkij = 18
   type (Miekijdata), dimension(Miemaxkij), parameter :: Miekijdb = (/&
       SVRM_KIJ_1,SVRM_KIJ_2,SVRM_KIJ_3,SVRM_KIJ_4,SVRM_KIJ_5, &
       SVRM_KIJ_6,SVRM_KIJ_7,SVRM_KIJ_8,SVRM_KIJ_9,SVRM_KIJ_10, &
-      SVRM_KIJ_11,SVRM_KIJ_12,SVRM_KIJ_13,SVRM_KIJ_14,SVRM_KIJ_15 &
+      SVRM_KIJ_11,SVRM_KIJ_12,SVRM_KIJ_13,SVRM_KIJ_14,SVRM_KIJ_15, &
+      SVRM_KIJ_16,SVRM_KIJ_17,SVRM_KIJ_18 &
   /)
 
   integer, parameter :: Miemaxlij = 12

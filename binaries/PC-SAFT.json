@@ -1,0 +1,250 @@
+{
+  "KIJ-1": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "C1",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.0425
+  },
+  "KIJ-2": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "C2",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.072
+  },
+  "KIJ-3": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "C3",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.069
+  },
+  "KIJ-4": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC4",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.067
+  },
+  "KIJ-5": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC5",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.073
+  },
+  "KIJ-6": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC6",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.073
+  },
+  "KIJ-7": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC7",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.078
+  },
+  "KIJ-8": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC9",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.086
+  },
+  "KIJ-9": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC10",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.077
+  },
+  "KIJ-10": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "IC4",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.060
+  },
+  "KIJ-11": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "IC5",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.076
+  },
+  "KIJ-12": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "CYCLOHEX",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.082
+  },
+  "KIJ-13": {
+    "eos": "PC-SAFT",
+    "uid1": "H2S",
+    "uid2": "NC8",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.000
+  },
+  "KIJ-14": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "H2S",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.0223
+  },
+  "KIJ-15": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "BENZENE",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.025
+  },
+  "KIJ-16": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "TOLU",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.026
+  },
+  "KIJ-17": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "C1",
+    "ref": "Default/Gross_Sadowski2001",
+    "bib_reference": "Gross & Sadowski (2001). Doi: 10.1021/ie0003887",
+    "kij": 0.065
+  },
+  "KIJ-18": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "C2",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.102
+  },
+  "KIJ-19": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "C3",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.0107
+  },
+  "KIJ-20": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC4",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.109
+  },
+  "KIJ-21": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC5",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.120
+  },
+  "KIJ-22": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC6",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.123
+  },
+  "KIJ-23": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC7",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.115
+  },
+  "KIJ-24": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC8",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.132
+  },
+  "KIJ-25": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC9",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.122
+  },
+  "KIJ-26": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "NC10",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.133
+  },
+  "KIJ-27": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "IC4",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.112
+  },
+  "KIJ-28": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "IC5",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.116
+  },
+  "KIJ-29": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "CYCLOHEX",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.125
+  },
+  "KIJ-30": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "BENZENE",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.087
+  },
+  "KIJ-31": {
+    "eos": "PC-SAFT",
+    "uid1": "CO2",
+    "uid2": "TOLU",
+    "ref": "Default/Tang_Gross2010",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "kij": 0.108
+  }
+}

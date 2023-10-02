@@ -35,6 +35,7 @@ module ideal
   !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
   !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
   !! \endverbatim
+  use thermopack_var, only: Rgas
   implicit none
   save
   ! Include TREND interface
@@ -190,7 +191,7 @@ contains
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
          CP_SHOMATE_SI
-    use thermopack_constants, only: verbose, Rgas
+    use thermopack_constants, only: verbose
     use idealh2, only: cpideal_h2
     implicit none
     type(gendata), intent(in) :: comp
@@ -325,7 +326,7 @@ contains
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
          CP_SHOMATE_SI
-    use thermopack_constants, only: verbose, Rgas
+    use thermopack_constants, only: verbose
     use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
@@ -443,7 +444,7 @@ contains
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
          CP_SHOMATE_SI
-    use thermopack_constants, only: verbose, Rgas
+    use thermopack_constants, only: verbose
     use idealh2, only: sideal_h2
     implicit none
     type(gendata), intent(in) :: comp
@@ -612,7 +613,6 @@ contains
 
   subroutine Sideal_Vn(nc, n, T, V, s, dsdT, dsdV, dsdn, d2sdndT, d2sdndV, &
        d2sdn2, d2sdV2, d2sdT2)
-    use thermopack_constants, only: rgas
     implicit none
     integer, intent(in) :: nc
     real, dimension(nc), intent(in) :: n
@@ -807,7 +807,6 @@ contains
        dsdt_ideal_mix, dsdp_ideal_mix)
     use compdata
     use thermopack_var, only: nce, ncsym, apparent
-    use thermopack_constants, only: rgas
     implicit none
     type(gendata_pointer), dimension(:), intent(in) :: comp
     real, intent(in) :: T
@@ -1043,7 +1042,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    use thermopack_constants, only: THERMOPACK, TREND
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1090,7 +1089,7 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nc
-    use thermopack_constants, only: THERMOPACK, TREND, Rgas
+    use thermopack_constants, only: THERMOPACK, TREND
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
@@ -1335,7 +1334,6 @@ contains
   !! \author Morten Hammer
   subroutine set_reference_energies(comps)
     use compdata, only: gendata_pointer
-    use thermopack_constants, only: Rgas
     implicit none
     type(gendata_pointer), intent(inout) :: comps(:)
     !

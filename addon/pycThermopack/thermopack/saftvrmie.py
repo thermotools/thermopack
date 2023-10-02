@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -9,19 +7,18 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
+from .thermo import c_len_type
+from .saft import saft
 
-c_len_type = thermo.c_len_type
 
-
-class saftvrmie(thermo.thermo):
+class saftvrmie(saft):
     """
     Interface to SAFT-VR Mie
     """
 
     def __init__(self, comps=None, parameter_reference="Default"):
-        """Initialize SAFT-VR Mie model in thermopack
-
+        """Constructor
+        Initialize SAFT-VR Mie model in thermopack.
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
 
@@ -30,7 +27,7 @@ class saftvrmie(thermo.thermo):
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
         """
         # Load dll/so
-        super(saftvrmie, self).__init__()
+        saft.__init__(self)
 
         # Options methods
         self.s_enable_hs = getattr(self.tp, self.get_export_name(
@@ -43,6 +40,10 @@ class saftvrmie(thermo.thermo):
             "saftvrmie_interface", "model_control_a3"))  # Option to enable/disable A1 contribution
         self.s_enable_chain = getattr(self.tp, self.get_export_name(
             "saftvrmie_interface", "model_control_chain"))  # Option to enable/disable A1 contribution
+        self.s_hs_reference = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "hard_sphere_reference"))  # Option to set HS model
+        self.s_set_temperature_cache_flag = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "set_temperature_cache_flag"))  # Set flag controlling temperature cache
 
         # Init methods
         self.s_eoslibinit_init_saftvrmie = getattr(
@@ -66,6 +67,28 @@ class saftvrmie(thermo.thermo):
         self.s_set_lr_gammaij = getattr(self.tp, self.get_export_name(
             "saftvrmie_containers", "set_saftvrmie_lr_gammaij"))
 
+        # Model results
+        self.s_calc_saftvrmie_term = getattr(self.tp, self.get_export_name(
+            "saftvrmie_interface", "calc_saftvrmie_term"))
+        self.s_calc_saftvrmie_term.argtypes = [POINTER(c_int),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_int)]
+        self.s_calc_saftvrmie_term.restype = c_double
+
+
+        # Define parameters to be set by init
+        self.nc = None
+        self.lambda_a = None
+        self.lambda_r = None
+        self.nc = None
+        self.m = None
+        self.sigma = None
+        self.eps_div_kb = None
+        self.lambda_a = None
+        self.lambda_r = None
+
         if comps is not None:
             self.init(comps, parameter_reference=parameter_reference)
 
@@ -74,7 +97,8 @@ class saftvrmie(thermo.thermo):
     #################################
 
     def init(self, comps, parameter_reference="Default"):
-        """Initialize SAFT-VR Mie model in thermopack
+        """Constructor
+        Initialize SAFT-VR Mie model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -99,8 +123,19 @@ class saftvrmie(thermo.thermo):
                                          ref_string_len)
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
 
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.lambda_a = np.zeros(self.nc)
+        self.lambda_r = np.zeros(self.nc)
+        for i in range(self.nc):
+            self.m[i], self.sigma[i], self.eps_div_kb[i], self.lambda_a[i], self.lambda_r[i] = \
+                self.get_pure_fluid_param(i+1)
+
     def model_control_hard_sphere(self, active):
-        """Model control. Enable/disable hard-sphere term.
+        """Model control
+        Enable/disable hard-sphere term.
 
         Args:
             active (bool): Enable/disable hard-sphere dispersion term
@@ -111,8 +146,43 @@ class saftvrmie(thermo.thermo):
         self.s_enable_hs.restype = None
         self.s_enable_hs(byref(active_c))
 
+    def set_hard_sphere_reference(self,
+                                  reference,
+                                  exact_binary_dhs=None,
+                                  enable_hs_extra=None):
+        """Model control
+        Set hard-sphere reference.
+
+        Args:
+            reference (str): "LAFITTE", "ADDITIVE", "NON-ADDITIVE"
+            exact_binary_dhs (bool): Calculate d_ij from sigma_ij and epsilon_ij
+                                     or simply as d_ij = (d_ii + d_jj)/2
+            enable_hs_extra (bool): Correction of A_HS due to non-additive d_ij
+        """
+        self.activate()
+        if reference.upper() == "LAFITTE":
+            hs_ref_c = c_int(1)
+        else:
+            is_non_additive = (reference.upper() == "NON-ADDITIVE" or
+                               reference.upper() == "NONADDITIVE")
+            hs_ref_c = c_int(4 if is_non_additive else 3)
+
+        exact_binary_dhs_c = (POINTER(c_int)() if exact_binary_dhs is None
+                              else POINTER(c_int)(c_int(exact_binary_dhs)))
+        enable_hs_extra_c = (POINTER(c_int)() if enable_hs_extra is None
+                             else POINTER(c_int)(c_int(enable_hs_extra)))
+
+        self.s_hs_reference.argtypes = [POINTER(c_int),
+                                        POINTER(c_int),
+                                        POINTER(c_int)]
+        self.s_hs_reference.restype = None
+        self.s_hs_reference(byref(hs_ref_c),
+                            exact_binary_dhs_c,
+                            enable_hs_extra_c)
+
     def model_control_a1(self, active):
-        """Model control. Enable/disable first dispersion term.
+        """Model control
+        Enable/disable first dispersion term.
 
         Args:
             active (bool): Enable/disable first dispersion term
@@ -124,7 +194,8 @@ class saftvrmie(thermo.thermo):
         self.s_enable_a1(byref(active_c))
 
     def model_control_a2(self, active):
-        """Model control. Enable/disable second dispersion term.
+        """Model control
+        Enable/disable second dispersion term.
 
         Args:
             active (bool): Enable/disable second dispersion term
@@ -136,7 +207,8 @@ class saftvrmie(thermo.thermo):
         self.s_enable_a2(byref(active_c))
 
     def model_control_a3(self, active):
-        """Model control. Enable/disable third dispersion term.
+        """Model control
+        Enable/disable third dispersion term.
 
         Args:
             active (bool): Enable/disable third dispersion term
@@ -148,7 +220,8 @@ class saftvrmie(thermo.thermo):
         self.s_enable_a3(byref(active_c))
 
     def model_control_chain(self, active):
-        """Model control. Enable/disable chain term.
+        """Model control
+        Enable/disable chain term.
 
         Args:
             active (bool): Enable/disable chain term
@@ -159,8 +232,22 @@ class saftvrmie(thermo.thermo):
         self.s_enable_chain.restype = None
         self.s_enable_chain(byref(active_c))
 
+    def enable_temperature_cache(self, enable=True):
+        """Model performance
+        Enable/disable temperature cache.
+
+        Args:
+            enable (bool): Enable/disable temperature cache
+        """
+        self.activate()
+        enable_c = c_int(1 if enable else 0)
+        self.s_set_temperature_cache_flag.argtypes = [POINTER(c_int)]
+        self.s_set_temperature_cache_flag.restype = None
+        self.s_set_temperature_cache_flag(byref(enable_c))
+
     def get_eps_kij(self, c1, c2):
-        """Get binary well depth interaction parameter
+        """Utility
+        Get binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -185,7 +272,8 @@ class saftvrmie(thermo.thermo):
         return kij_c.value
 
     def set_eps_kij(self, c1, c2, kij):
-        """Set binary well depth interaction parameter
+        """Utility
+        Set binary well depth interaction parameter
 
         Args:
             c1 (int): Component one
@@ -207,7 +295,8 @@ class saftvrmie(thermo.thermo):
                            byref(kij_c))
 
     def get_sigma_lij(self, c1, c2):
-        """Get the interaction parameter lij for the sigma combining rule (controlling non-additivity)
+        """Utility
+        Get the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
             c1 (int): Component one
@@ -232,7 +321,8 @@ class saftvrmie(thermo.thermo):
         return lij_c.value
 
     def set_sigma_lij(self, c1, c2, lij):
-        """Set the interaction parameter lij for the sigma combining rule (controlling non-additivity)
+        """Utility
+        Set the interaction parameter lij for the sigma combining rule (controlling non-additivity)
 
         Args:
             c1 (int): Component one
@@ -254,7 +344,8 @@ class saftvrmie(thermo.thermo):
                              byref(lij_c))
 
     def get_lr_gammaij(self, c1, c2):
-        """Get the interaction parameter gammaij for the lambda_r combining rule
+        """Utility
+        Get the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
             c1 (int): Component one
@@ -279,7 +370,8 @@ class saftvrmie(thermo.thermo):
         return gammaij_c.value
 
     def set_lr_gammaij(self, c1, c2, gammaij):
-        """Set the interaction parameter gammaij for the lambda_r combining rule
+        """Utility
+        Set the interaction parameter gammaij for the lambda_r combining rule
 
         Args:
             c1 (int): Component one
@@ -301,7 +393,8 @@ class saftvrmie(thermo.thermo):
                               byref(gammaij_c))
 
     def get_pure_fluid_param(self, ic):
-        """Set pure fluid parameters
+        """Utility
+        Set pure fluid parameters
 
         Args:
             ic (int): Component index
@@ -337,14 +430,15 @@ class saftvrmie(thermo.thermo):
 
         return m_c.value, sigma_c.value, eps_c.value, lambda_a_c.value, lambda_r_c.value
 
-    def set_pure_fluid_param(self, ic, m, sigma, eps_div_k, lambda_a, lambda_r):
-        """Set pure fluid parameters
+    def set_pure_fluid_param(self, ic, m, sigma, eps_div_kb, lambda_a, lambda_r):
+        """Utility
+        Set pure fluid parameters
 
         Args:
             ic (int): Component index
             m (float): Mean number of segments.
             sigma (float): Temperature-independent segment diameter [m].
-            eps_div_k (float): Well depth divided by Boltzmann's const. [K].
+            eps_div_kb (float): Well depth divided by Boltzmann's const. [K].
             lambda_a (float): Attractive exponent of the Mie potential
             lambda_r (float): Repulsive exponent of the Mie potential
         """
@@ -352,7 +446,7 @@ class saftvrmie(thermo.thermo):
         ic_c = c_int(ic)
         m_c = c_double(m)
         sigma_c = c_double(sigma)
-        eps_c = c_double(eps_div_k)
+        eps_c = c_double(eps_div_kb)
         lambda_a_c = c_double(lambda_a)
         lambda_r_c = c_double(lambda_r)
         self.s_set_saftvrmie_pure_fluid_param.argtypes = [POINTER(c_int),
@@ -370,3 +464,117 @@ class saftvrmie(thermo.thermo):
                                               byref(eps_c),
                                               byref(lambda_a_c),
                                               byref(lambda_r_c))
+
+        self.m[ic-1] = m
+        self.sigma[ic-1] = sigma
+        self.eps_div_kb[ic-1] = eps_div_kb
+        self.lambda_a[ic-1] = lambda_a
+        self.lambda_r[ic-1] = lambda_r
+
+    def print_saft_parameters(self, c):
+        """Utility
+        Print saft parameters for component c
+
+        Args:
+            c (int): Component index (FORTRAN)
+
+        """
+        saft.print_saft_parameters(self, c)
+        print(f"lambda_a: {self.lambda_a[c-1]}")
+        print(f"lambda_r: {self.lambda_r[c-1]}")
+
+    def a1(self, temp, volume, n):
+        """Utility
+        Get a1 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a1 (float): First order perturbation (K/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(1)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a2(self, temp, volume, n):
+        """Utility
+        Get a2 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a2 (float): Second order perturbation (K^2/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(2)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a3(self, temp, volume, n):
+        """Utility
+        Get a3 term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a3 (float): Second order perturbation (K^3/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(3)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a
+
+    def a_hs(self, temp, volume, n):
+        """Utility
+        Get hardsphere term
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array like): Mol numbers (mol)
+        Returns:
+            a_hs (float): Second order perturbation (1/mol)
+        """
+        nc_c = c_int(self.nc)
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        term_c = c_int(0)
+        a = self.s_calc_saftvrmie_term(byref(nc_c),
+                                       byref(t_c),
+                                       byref(v_c),
+                                       n_c,
+                                       byref(term_c))
+
+        return a

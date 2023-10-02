@@ -74,6 +74,72 @@
     "bib_reference": "",
     "Zra": 0.3085
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.556037",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 83.8058,
+    "maximum_temperature": 700.0,
+    "reducing_pressure": 6.889100E+04,
+    "reducing_temperature": 83.8058,
+    "n_coeff": 3,
+    "n_coeff_1": 1,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      -7476.26651,
+      9959.06125,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.05,
+      1.275,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (2002)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 83.8058,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 6.889100E+04,
+    "reducing_temperature": 83.8058,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
+    "coeff": [
+      -11.1307,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -120,6 +186,16 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 0.9285,
+    "sigma": 3.4784E-10,
+    "eps_depth_divk": 122.230,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
   },
   "SAFTVRMIE-1": {
     "m": 1.000,

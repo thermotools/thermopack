@@ -34,6 +34,7 @@ module saftvrmie_options
   integer, parameter :: LAFITTE=1, QSAFT_FH1=2, QSAFT_FH2=3
   integer, parameter :: LAFITTE_HS_REF=1, SINGLE_COMP_HS_REF=2
   integer, parameter :: ADDITIVE_HS_REF=3, NON_ADD_HS_REF=4
+  integer, parameter :: ADDITIVE_EXACT_HS_REF=5
 
   type saftvrmie_opt
     ! Quantum correction parameters
@@ -72,12 +73,19 @@ module saftvrmie_options
     logical :: enable_truncation_correction = .false. !> Option to enable/disable truncation correction
     logical :: enable_shift_correction = .false. !> Option to enable/disable shift correction
     real    :: r_cut = 3.5 !> Truncation radius
+
+    !-------------------------------------------------------------------
+    ! Use temperature cache?
+    logical :: use_temp_cache = .false.
+
   contains
     procedure, public :: saftvrmieaij_model_options
     procedure, public :: set_r_cut
     procedure, public :: truncation_correction_model_control
     procedure, public :: check_model_consitency
     procedure, public :: set_Lafitte_option
+    procedure, public :: set_hs_reference
+    procedure, public :: test_fmt_compatibility
     procedure, public :: print
     ! Assignment operator
     procedure, public :: assign_saftvrmie_model_options
@@ -110,26 +118,8 @@ contains
        call stoperror("Unknown model options for SAFT-VR Mie")
     end select
     if (present(hs_reference)) then
-       ! Override HS reference
-       select case(hs_reference)
-       case(LAFITTE_HS_REF)
-          ! As already set
-       case(SINGLE_COMP_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_PURE_DIJ
-          svrm_o%zeta_mixing_rule = ZETA_LEONARD
-          svrm_o%exact_binary_dhs = .true.
-       case(ADDITIVE_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
-          svrm_o%zeta_mixing_rule = ZETA_LAFITTE
-          svrm_o%exact_binary_dhs = .false.
-          svrm_o%enable_hs_extra = .true.
-       case(NON_ADD_HS_REF)
-          svrm_o%hardsphere_EoS = HS_EOS_SANTOS
-          svrm_o%pure_hs_EoS = PURE_HS_CS
-          svrm_o%exact_binary_dhs = .true.
-       case default
-          call stoperror("Unknown HS model options for SAFT-VR Mie")
-       end select
+      ! Override HS reference
+      call svrm_o%set_hs_reference(hs_reference)
     endif
   end subroutine saftvrmieaij_model_options
 
@@ -154,6 +144,41 @@ contains
     svrm_o%quantum_correct_A2 = .true.
     svrm_o%Khs_EoS = KHS_EOS_LAFITTE
   end subroutine set_Lafitte_option
+
+  subroutine set_hs_reference(svrm_o, hs_reference)
+    class(saftvrmie_opt), intent(inout) :: svrm_o
+    integer, intent(in) :: hs_reference
+    ! Override HS reference
+    select case(hs_reference)
+    case(LAFITTE_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .false.
+      svrm_o%enable_hs_extra = .false.
+    case(SINGLE_COMP_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_PURE_DIJ
+      svrm_o%zeta_mixing_rule = ZETA_LEONARD
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .false.
+    case(ADDITIVE_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .false.
+      svrm_o%enable_hs_extra = .true.
+    case(NON_ADD_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_SANTOS
+      svrm_o%pure_hs_EoS = PURE_HS_CS
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .false.
+    case(ADDITIVE_EXACT_HS_REF)
+      svrm_o%hardsphere_EoS = HS_EOS_ORIGINAL
+      svrm_o%zeta_mixing_rule = ZETA_LAFITTE
+      svrm_o%exact_binary_dhs = .true.
+      svrm_o%enable_hs_extra = .true.
+    case default
+      call stoperror("Unknown HS model options for SAFT-VR Mie")
+    end select
+  end subroutine set_hs_reference
 
   !> Set r_cut, and enable truncation correction
   !!
@@ -243,5 +268,24 @@ contains
     print *, "pure_hs_EoS:", this%pure_hs_EoS
 
   end subroutine print
+
+  !> Test if SAFT-VR Mie model setup is comaptible with the Fundamental
+  !! Measure Theory (FMT)
+  subroutine test_fmt_compatibility(this, is_fmt_consistent, na_enabled)
+    class(saftvrmie_opt), intent(in) :: this
+    logical, intent(out) :: is_fmt_consistent, na_enabled
+    ! Locals
+    logical :: has_additive_hs_ref
+    has_additive_hs_ref = (this%hardsphere_EoS == HS_EOS_ORIGINAL .and. &
+         this%zeta_mixing_rule == ZETA_LAFITTE)
+    na_enabled = this%enable_hs_extra
+    if (has_additive_hs_ref) then
+      if (na_enabled) then
+        is_fmt_consistent = this%exact_binary_dhs
+      endif
+    else
+      is_fmt_consistent = .false.
+    endif
+  end subroutine test_fmt_compatibility
 
 end module saftvrmie_options

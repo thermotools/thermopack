@@ -74,13 +74,81 @@
     "bib_reference": "",
     "Zra": 0.3085
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1016/0031-8914(62)90096-4",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 115.775,
+    "maximum_temperature": 800.0,
+    "reducing_pressure": 1.013250E+05,
+    "reducing_temperature": 1.0,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -2345.921,
+      1.080476685,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.6169841,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (2002)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 115.775,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 7.319700E+04,
+    "reducing_temperature": 115.775,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
+    "coeff": [
+      -11.5616,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "SRK": {},
+  "PR": {},
   "SAFTVRMIE-1": {
     "m": 1.000,
     "sigma": 3.6400E-10,
     "eps_depth_divk": 166.6600,
     "lambda_a": 6.0000,
     "lambda_r": 12.0000,
-    "mass": 1.3915E-22,
+    "mass": 1.3914985275103401e-25,
     "eps": 0.0000,
     "beta": 0.0000,
     "assoc_scheme": "None",

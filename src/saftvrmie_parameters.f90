@@ -208,6 +208,7 @@ contains
 
   subroutine getSaftVrMieAssocParams_singleComp(compName,eosidx,ref,found,&
        eps,beta,scheme)
+    use thermopack_var, only: Rgas
     ! Input
     character(len=*), intent(in) :: compName, ref
     integer, intent(in) :: eosidx
@@ -225,7 +226,7 @@ contains
     end if
 
     found = .true.
-    eps = Miearray(idx)%eps
+    eps = Miearray(idx)%eps*Rgas
     beta = Miearray(idx)%beta
     scheme = Miearray(idx)%assoc_scheme
   end subroutine getSaftVrMieAssocParams_singleComp

@@ -9,7 +9,7 @@
 #=============================================================================
 # Set some general variables
 #=============================================================================
-PROC = x86_64
+PROC = $(shell arch)
 
 # Detect OS into UNAME
 UNAME := $(shell uname 2>/dev/null || echo Unknown)
@@ -87,15 +87,22 @@ ifeq ($(OSTYPE),Unix)
   compilers += gfortran
 
   # Define gfortran flags
-  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8
-  debug_gfortran_flags = "$(gf_common) \
+  gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive
+  ifeq ($(PROC),arm64)
+    gf_proc = -arch arm64
+    gf_march = -arch arm64
+  else
+    gf_proc = -mieee-fp
+    gf_march = -march=x86-64 -msse2
+  endif
+  debug_gfortran_flags = "$(gf_proc) $(gf_common) \
                           -g -fbounds-check -fbacktrace \
                           -ffpe-trap=invalid,zero,overflow \
-                          -mieee-fp -Wno-unused-dummy-argument -Wall" \
+                          -Wno-unused-dummy-argument -Wall" \
                          NOWARN_FFLAGS="-Wno-all"
   profile_gfortran_flags = "$(gf_common) -g -pg"
   normal_gfortran_flags  = "$(gf_common)"
-  optim_gfortran_flags   = "$(gf_common) -O3 -march=x86-64 -msse2 -funroll-loops"
+  optim_gfortran_flags   = "$(gf_common) -O3 $(gf_march) -funroll-loops"
   openmp_gfortran_flags  = $(optim_gfortran_flags)" -fopenmp -frecursive"
   openmpprofile_gfortran_flags = "$(gf_common) -fopenmp -frecursive -gomp"
 

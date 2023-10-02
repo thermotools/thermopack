@@ -15,7 +15,8 @@ module utilities
   public :: rand_seed, random, newunit, linspace, is_numerically_equal
   public :: normalize, boolean, isXwithinBounds
   public :: allocate_nc, allocate_nc_x_nc, deallocate_real, deallocate_real_2
-  public :: get_thread_index
+  public :: get_thread_index, test_tvn_method
+  public :: fallback_density
 
   !-----------------------------------------------------------------------------
   !> Exponential function which will return "huge" instead of overflowing.
@@ -292,5 +293,103 @@ contains
     i_thread = 1
     !$ i_thread = 1 + omp_get_thread_num()
   end function get_thread_index
+
+  !> Test differentials by two-sided numerical differentiation. External subroutine
+  !! assumed to take the following input/output:
+  !! fun(real: T, real: V, real: n(:), real: a, real: a_T,
+  !!     real: a_V, real: a_n(:), real: a_TT, real: a_TV, real: a_VV,
+  !!     real: a_Tn(:), real: a_Vn(:), real: a_nn(:,:))
+  !!
+  !! \author Morten Hammer
+  subroutine test_tvn_method(fun,nc,T,V,n)
+    external :: fun
+    integer, intent(in) :: nc
+    real, intent(in) :: T,V,n(nc)
+    ! Locals
+    real, parameter :: rel_eps = 1.0e-5
+    integer :: i
+    real :: a,a_T,a_V,a_TT,a_TV,a_VV
+    real :: a_n(nc),a_Tn(nc),a_Vn(nc),a_nn(nc,nc)
+    real :: a1,a1_T,a1_V,a1_n(nc)
+    real :: a2,a2_T,a2_V,a2_n(nc)
+    real :: dT, dV, dn, n1(nc)
+    real :: d_TT,d_TV,d_VV
+    real :: d_Tn(nc),d_Vn(nc),d_nn(nc,nc)
+
+    call fun(T,V,n,a,a_T,&
+         a_V,a_n,a_TT,a_TV,a_VV,a_Tn,a_Vn,a_nn)
+
+    ! Temperature differentials
+    dT = T*rel_eps
+    call fun(T+dT,V,n,a2,a2_T,a2_V,a2_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+    call fun(T-dT,V,n,a1,a1_T,a1_V,a1_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+    print *,"a_T",a_T, (a2 - a1)/(2*dT)
+    print *,"a_TT",a_TT, (a2_T - a1_T)/(2*dT)
+    print *,"a_TV",a_TV, (a2_V - a1_V)/(2*dT)
+    print *,"a_Tn",a_Tn, (a2_n - a1_n)/(2*dT)
+
+    ! Volume differentials
+    dV = V*rel_eps
+    call fun(T,V+dV,n,a2,a2_T,a2_V,a2_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+    call fun(T,V-dV,n,a1,a1_T,a1_V,a1_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+    print *,"a_V",a_V, (a2 - a1)/(2*dV)
+    print *,"a_VV",a_VV, (a2_V - a1_V)/(2*dV)
+    print *,"a_TV",a_TV, (a2_T - a1_T)/(2*dV)
+    print *,"a_Vn",a_Vn, (a2_n - a1_n)/(2*dV)
+
+    ! Mol number differentials
+    do i=1,nc
+      n1 = n
+      dn = n(i)*rel_eps
+      n1(i) = n(i) + dn
+      call fun(T,V,n1,a2,a2_T,a2_V,a2_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+      n1(i) = n(i) - dn
+      call fun(T,V,n1,a1,a1_T,a1_V,a1_n,d_TT,d_TV,d_VV,d_Tn,d_Vn,d_nn)
+      print *,"i=",i
+      print *,"a_n",a_n(i), (a2 - a1)/(2*dn)
+      print *,"a_Vn",a_Vn(i), (a2_V - a1_V)/(2*dn)
+      print *,"a_Tn",a_Tn(i), (a2_T - a1_T)/(2*dn)
+      print *,"a_nn",a_nn(:,i), (a2_n - a1_n)/(2*dn)
+    enddo
+  end subroutine test_tvn_method
+
+  !> In case the EOS have no stable roots a fake root can be generated from the extremas.
+  !! Using fake roots the tangent plane and the flash calculations will produce correct results.
+  !! The phase of the fallback root should be set to FAKEPH.
+  !! \author Eskil Aursand and Magnus A. Gjennestad, 2013-08
+  !! \author Morten Hammer, 2023-04
+  function fallback_density(P,rho_extr_liq,rho_extr_vap,P_extr_liq,d2P_drho2_extr_liq) result(rho)
+    use numconstants, only: pi
+    implicit none
+    ! Input:
+    real, intent(in)          :: P                  !< Pressure [Pa]
+    real, intent(in)          :: rho_extr_liq       !< Density of P_EoS for liquid extremum [mol/m3]
+    real, intent(in)          :: rho_extr_vap       !< Density of P_EoS for vapour extremum [mol/m3]
+    real, intent(in)          :: d2P_drho2_extr_liq !< Second derivative of pressure [Pa m6/mol]
+    real, intent(in)          :: P_extr_liq         !< Pressure at rho_extr_liq [Pa]
+    ! Output:
+    real                      :: rho                !< Density (fallback) [mol/m3]
+    ! Internal:
+    real                      :: A,B,C,D
+    real, parameter           :: s = 1.0 ! -1.0 for vapour
+    real, parameter           :: alpha = -10.0
+    real                      :: rho_curv, rho_div
+
+    ! Density of wanted divergence point [mol/m3]
+    rho_div = 0.75*rho_extr_liq + 0.25*rho_extr_vap
+
+    rho_curv = 0.5*(rho_extr_liq+rho_div)
+
+    ! Calculate coefficients
+    B = 0.5*s*pi/(rho_extr_liq-rho_div)
+    C = B*rho_extr_liq + 0.5*s*pi
+    A = ((alpha*d2P_drho2_extr_liq*sin(B*rho_curv-C)) / &
+       (B**2*(1.0/(tan(B*rho_curv-C))**2 + 1.0/(sin(B*rho_curv-C))**2) ))
+    D = P_extr_liq + s*A
+
+    ! Calculate fallback density
+    rho = (-asin(min(1.0,max(-1.0,A/(P-D)))) -s*pi + C )/B
+
+  end function fallback_density
 
 end module utilities

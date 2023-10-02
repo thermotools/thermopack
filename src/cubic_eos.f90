@@ -28,6 +28,30 @@ module cubic_eos
     real :: lijvalue
   end type lijdatadb
 
+  !> Temperature-independent interaction parameters for
+  !> * the a parameter in the vdW mixing rules,
+  !> * the eps parameter (can be modeled by arithmetic or geometric mean)
+  !> * the beta parameter (can be modeled by arithmetic or geometric mean)
+  !> Geometric mean is numbered 0, arithmetic mean is numbered 1.
+  !> (It also depends on the scheme used for the two components, but we assume that
+  !> each component only has one scheme stored in the database.)
+  ! ------------------------------------------------------------------------------------------------
+  type :: CPAkijdata
+    character(len=eosid_len) :: eosid
+    character(len=uid_len) :: uid1, uid2 ! Component names
+    character(len=ref_len) :: ref ! Set reference
+    character(len=bibref_len) :: bib_ref ! Set bib-reference
+    real :: kij_a ! Binary interaction parameter for cubic a parameter
+    ! Gives the combination models for eps and beta (in that order). 0 is
+    ! geometric mean, 1 is arithmetic mean. For example, eps_comb_rule=ariComb
+    ! and beta_comb_rule=geoComb mean that
+    ! eps_ij=0.5*(eps_i+eps_j), beta_ij=sqrt(beta_i*beta_j).
+    integer :: eps_comb_rule
+    integer :: beta_comb_rule
+    real :: kij_eps  ! kij for epsilon, e.g. eps_ij = (eps_i+eps_j)*(1-kij_eps)/2
+    real :: kij_beta ! kij for beta, e.g. beta_ij = sqrt(beta_i*beta_j)*(1-kij_beta)
+  end type CPAkijdata
+
   type :: interGEdatadb
     character(len=eosid_len) :: eosid
     character(len=eosid_len) :: mruleid
@@ -183,7 +207,7 @@ module cubic_eos
   integer, parameter :: cbMixHVCPA2 = 26 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixWongSandler = 3 !< Wong Sandler mixing rule
   integer, parameter :: cbMixWSCPA = 31 !< Wong-Sandler mixing rule for CPA
-  integer, parameter :: cbMixHVWS = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
+  integer, parameter :: cbMixHVWongSandler = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
 
   type mix_label_mapping
     integer :: mix_idx_group
@@ -229,7 +253,7 @@ module cubic_eos
        mix_idx=cbMixWSCPA, short_label="WongSandler", label="WSCPA",&
        alias = ""), &
        mix_label_mapping(mix_idx_group=cbMixWongSandler,&
-       mix_idx=cbMixHVWS, short_label="HVWS", label="HVWS",&
+       mix_idx=cbMixHVWongSandler, short_label="HVWongSandler", label="HVWongSandler",&
        alias = "") &
        /)
 
@@ -240,7 +264,7 @@ module cubic_eos
        cbMixHuronVidal2,&
        cbMixHVCPA,&
        cbMixHVCPA2,&
-       cbMixHVWS/)
+       cbMixHVWongSandler/)
 
   integer, parameter :: nGECorrs = 7
   integer, parameter, dimension(nGECorrs) :: GECorrIndices = (/&
@@ -927,5 +951,50 @@ contains
       print *,"get_energy_constants: Wrong model - not cubic"
     end select
   end subroutine get_energy_constants
+
+    !-----------------------------------------------------------------------------
+  !> Get linear combination of b_i
+  !>
+  !> \author MH, 2020-07
+  !-----------------------------------------------------------------------------
+  function get_b_linear_mix(Z) result(b_mix)
+    use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
+         get_active_thermo_model, get_active_alt_eos
+    use eosdata, only: eosCPA
+    implicit none
+    ! Input:
+    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
+    ! Output:
+    real                            :: b_mix          !< m3/mol
+    ! Locals
+    integer :: i
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    act_mod_ptr => get_active_thermo_model()
+    b_mix = 0
+    if (act_mod_ptr%need_alternative_eos .and. act_mod_ptr%eosidx /= eosCPA) then
+      act_eos_ptr => get_active_alt_eos()
+      select type (p_eos => act_eos_ptr)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix (alt): Should not be here")
+      end select
+    else
+      act_eos_ptr => get_active_eos()
+      select type (p_eos => act_eos_ptr)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix: Should not be here")
+      end select
+    endif
+    b_mix = b_mix*1.0e-3 ! L/mol -> m3/mol
+  end function get_b_linear_mix
 
 end module cubic_eos

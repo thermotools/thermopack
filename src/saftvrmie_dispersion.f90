@@ -20,7 +20,7 @@ module saftvrmie_dispersion
   save
 
   public :: calcA1, calcA2, calcA3
-  public :: calc_delta_Ac
+  public :: calc_delta_Ac, calc_alpha_ts
 
 contains
 
@@ -151,7 +151,7 @@ contains
   !! Store results in saftvrmie_var
   !!
   !! \author Morten Hammer, February 2018
-  subroutine calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta)
+  subroutine calcZetaX_vdW(nc,T,V,n,difflevel,dhs,zeta,is_rho)
     ! Input
     integer, intent(in) :: nc !< Number of components
     real, intent(in) :: T !< Temperature [K]
@@ -160,12 +160,16 @@ contains
     integer, intent(in) :: difflevel !< 0-2. Differential order
     type(saftvrmie_dhs), intent(in) :: dhs
     type(saftvrmie_zeta), intent(inout) :: zeta
+    logical, optional, intent(in) :: is_rho
     ! Output
     ! Locals
     integer :: i,k,l
     real :: prefactor, ns
     ns = sum(saftvrmie_param%ms*n)
     prefactor = pi*N_AVOGADRO/(6.0*V*ns)
+    if (present(is_rho)) then
+      if (is_rho) prefactor = N_AVOGADRO/(V*ns)
+    endif
     zeta%zx = 0.0
     do i=1,nc
        zeta%zx = zeta%zx + saftvrmie_param%ms(i)*n(i)*&
@@ -1544,60 +1548,62 @@ contains
     ns = sum(saftvrmie_param%ms*n)
     ns2 = ns**2
     do i=1,nc
-       do j=1,nc
-          if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
-               present(a1_TT) .or. present(a1_VV) .or. present(a1_TV)) then
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
-                  saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
-                  saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
-              end if
-          else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
-                  saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
-                  saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
-             end if
-          else
-             call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
-                  saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
-             if (svrm_opt%quantum_correction>0) then
-                call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
-                     saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
-             end if
-          endif
-       enddo
+      do j=i,nc
+        if (present(a1_nn) .or. present(a1_Tn) .or. present(a1_Vn) .or. &
+             present(a1_TT) .or. present(a1_VV) .or. present(a1_TV)) then
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j),&
+               saftvrmie_vc%a1ij%am_VVV(i,j),saftvrmie_vc%a1ij%am_VVT(i,j),&
+               saftvrmie_vc%a1ij%am_VTT(i,j),saftvrmie_vc%a1ij%am_VVn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vnn(:,:,i,j),saftvrmie_vc%a1ij%am_VTn(:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_VVV(i,j),saftvrmie_vc%a1ijQCorr%am_VVT(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_VTT(i,j),saftvrmie_vc%a1ijQCorr%am_VVn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vnn(:,:,i,j),saftvrmie_vc%a1ijQCorr%am_VTn(:,i,j))
+          end if
+        else if (present(a1_T) .or. present(a1_V) .or. present(a1_n)) then
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j),&
+               saftvrmie_vc%a1ij%am_TT(i,j),saftvrmie_vc%a1ij%am_VV(i,j),&
+               saftvrmie_vc%a1ij%am_TV(i,j),saftvrmie_vc%a1ij%am_Tn(:,i,j),&
+               saftvrmie_vc%a1ij%am_Vn(:,i,j),saftvrmie_vc%a1ij%am_nn(:,:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TT(i,j),saftvrmie_vc%a1ijQCorr%am_VV(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_TV(i,j),saftvrmie_vc%a1ijQCorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_Vn(:,i,j),saftvrmie_vc%a1ijQCorr%am_nn(:,:,i,j))
+          end if
+        else
+          call calcA1ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a1ij%am(i,j),saftvrmie_vc%a1ij%am_T(i,j),&
+               saftvrmie_vc%a1ij%am_V(i,j),saftvrmie_vc%a1ij%am_n(:,i,j))
+          if (svrm_opt%quantum_correction>0) then
+            call calcA1ijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a1ijQCorr%am(i,j),saftvrmie_vc%a1ijQCorr%am_T(i,j),&
+                 saftvrmie_vc%a1ijQCorr%am_V(i,j),saftvrmie_vc%a1ijQCorr%am_n(:,i,j))
+          end if
+        endif
+      enddo
     enddo
+    call saftvrmie_vc%a1ij%mirror()
 
     if (svrm_opt%quantum_correction>0) then
-       ! Add the quantum corrections a1ijQCorr to a1ij
-       call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
+      call saftvrmie_vc%a1ijQCorr%mirror()
+      ! Add the quantum corrections a1ijQCorr to a1ij
+      call add_second_saftvrmieaij_to_first(saftvrmie_vc%a1ij, saftvrmie_vc%a1ijQCorr)
     end if
 
     ! Average over mole fractions
@@ -1840,79 +1846,80 @@ contains
     ! Locals
     integer :: i,j !< Binary of interest
     do i=1,nc
-       do j=1,nc
-          if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
-               present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
-                  saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
-                  saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             end if
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2ij%am(i,j),&
-                  saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
-                  saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
-                  saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
-                  saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
-                  saftvrmie_vc%a2ij%am_nn(:,:,i,j))
-          else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
-                  saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
-                  saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
-                  saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             endif
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
-                  saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
-          else
-             call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
-                  saftvrmie_vc%a2chij%am(i,j),&
-                  saftvrmie_vc%a2chij%am_T(i,j),&
-                  saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
-             if ( svrm_opt%quantum_correction>0 .and. &
-                  svrm_opt%quantum_correct_A2) then
-                call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
-                     saftvrmie_vc%a2chijQcorr%am(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_T(i,j),&
-                     saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
-                call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
-             end if
-             call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
+      do j=i,nc
+        if ( present(a2_nn) .or. present(a2_Tn) .or. present(a2_Vn) .or. &
+             present(a2_TT) .or. present(a2_VV) .or. present(a2_TV)) then
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j),&
+               saftvrmie_vc%a2chij%am_VVV(i,j),saftvrmie_vc%a2chij%am_VVT(i,j),&
+               saftvrmie_vc%a2chij%am_VTT(i,j),saftvrmie_vc%a2chij%am_VVn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vnn(:,:,i,j),saftvrmie_vc%a2chij%am_VTn(:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_VVV(i,j),saftvrmie_vc%a2chijQcorr%am_VVT(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_VTT(i,j),saftvrmie_vc%a2chijQcorr%am_VVn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vnn(:,:,i,j),saftvrmie_vc%a2chijQcorr%am_VTn(:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+          end if
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2ij%am(i,j),&
+               saftvrmie_vc%a2ij%am_T(i,j),saftvrmie_vc%a2ij%am_V(i,j),&
+               saftvrmie_vc%a2ij%am_n(:,i,j),saftvrmie_vc%a2ij%am_TT(i,j),&
+               saftvrmie_vc%a2ij%am_VV(i,j),saftvrmie_vc%a2ij%am_TV(i,j),&
+               saftvrmie_vc%a2ij%am_Tn(:,i,j),saftvrmie_vc%a2ij%am_Vn(:,i,j),&
+               saftvrmie_vc%a2ij%am_nn(:,:,i,j))
+        else if (present(a2_T) .or. present(a2_V) .or. present(a2_n)) then
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j),&
+               saftvrmie_vc%a2chij%am_TT(i,j),saftvrmie_vc%a2chij%am_VV(i,j),&
+               saftvrmie_vc%a2chij%am_TV(i,j),saftvrmie_vc%a2chij%am_Tn(:,i,j),&
+               saftvrmie_vc%a2chij%am_Vn(:,i,j),saftvrmie_vc%a2chij%am_nn(:,:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TT(i,j),saftvrmie_vc%a2chijQcorr%am_VV(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_TV(i,j),saftvrmie_vc%a2chijQcorr%am_Tn(:,i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_Vn(:,i,j),saftvrmie_vc%a2chijQcorr%am_nn(:,:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
           endif
-       enddo
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2ij%am(i,j),saftvrmie_vc%a2ij%am_T(i,j),&
+               saftvrmie_vc%a2ij%am_V(i,j),saftvrmie_vc%a2ij%am_n(:,i,j))
+        else
+          call calcA2chij(nc,T,V,n,i,j,saftvrmie_vc,&
+               saftvrmie_vc%a2chij%am(i,j),&
+               saftvrmie_vc%a2chij%am_T(i,j),&
+               saftvrmie_vc%a2chij%am_V(i,j),saftvrmie_vc%a2chij%am_n(:,i,j))
+          if ( svrm_opt%quantum_correction>0 .and. &
+               svrm_opt%quantum_correct_A2) then
+            call calcA2chijQuantumCorrection(nc,T,V,n,i,j,saftvrmie_vc,&
+                 saftvrmie_vc%a2chijQcorr%am(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_T(i,j),&
+                 saftvrmie_vc%a2chijQcorr%am_V(i,j),saftvrmie_vc%a2chijQcorr%am_n(:,i,j))
+            call add_second_saftvrmieaij_to_first(saftvrmie_vc%a2chij, saftvrmie_vc%a2chijQcorr,i,j)
+          end if
+          call calcA2ij(nc,T,V,n,i,j,saftvrmie_vc,saftvrmie_vc%a2ij%am(i,j))
+        endif
+      enddo
     enddo
+    call saftvrmie_vc%a2ij%mirror()
     call calc_double_sum(nc,n,saftvrmie_vc%a2ij,&
          a2,a2_T,a2_V,a2_n,a2_TT,a2_VV,a2_TV,a2_Tn,a2_Vn,a2_nn)
   end subroutine calcA2
@@ -3310,7 +3317,7 @@ contains
     endif
     z = s_vc%zeta_bar%zx
     do i=1,nc
-       do j=1,nc
+       do j=i,nc
           call calcA3zeta(s_vc%eps_divk_eff%d(i,j),z,s_vc%alpha%d(i,j), &
                saftvrmie_param%f_alpha_ij(:,i,j),s_vc%a3ij%am(i,j),a3_z,a3_zz,&
                a3_a,a3_aa,a3_az)
@@ -3359,7 +3366,7 @@ contains
           endif
        enddo
     enddo
-
+    call s_vc%a3ij%mirror()
     call calc_double_sum(nc,n,s_vc%a3ij,&
          a3,a_T=a3_T,a_V=a3_V,a_n=a3_n,a_TT=a3_TT,a_VV=a3_VV,a_TV=a3_TV,&
          a_Tn=a3_Tn,a_Vn=a3_Vn,a_nn=a3_nn)
@@ -3624,10 +3631,10 @@ contains
     endif
   end subroutine calcAlpha
 
-  !> Calculate truncation correction for quantum-corrected Mie fluid
-  !!
+  !> Calculate truncation (and shifted) correction for quantum-corrected Mie fluid
+  !! dAc = A - Ac
   !! \author Morten Hammer, November 2018
-  subroutine calc_delta_Ac(nc,T,V,n,r_c,saftvrmie_vc,&
+  subroutine calc_delta_Ac(nc,T,V,n,r_c,saftvrmie_vc,divide_by_n,&
        a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn)
     ! Input
     integer, intent(in) :: nc !< Number of components
@@ -3636,6 +3643,7 @@ contains
     real, intent(in) :: n(nc) !< Mol numbers [mol]
     real, intent(in) :: r_c !< Reduced cut off distance (actual cut off: r_c*sigma)  [-]
     type(saftvrmie_var_container), intent(in) :: saftvrmie_vc
+    logical, intent(in) :: divide_by_n
     ! Output
     real, intent(out) :: a
     real, optional, intent(out) ::  a_T,a_V,a_TT,a_VV,a_TV
@@ -3643,7 +3651,7 @@ contains
     real, optional, dimension(nc,nc), intent(out) :: a_nn
     ! Locals
     integer :: i !<
-    real :: kF, L, Lq1, Lq2, inv_rc, inv_sigma, lamr, lama, a_T_l
+    real :: kc, L, Lq1, Lq2, inv_rc, inv_sigma, lamr, lama
     real :: Q1a, Q1r, Q2a, Q2r
     real :: D, D_T, D_TT          !< Quantum par. and derivatives
     real :: D2, D2_T, D2_TT       !< Quantum par. and derivatives
@@ -3653,7 +3661,7 @@ contains
     inv_rc = 1.0/r_c
     i = 1
     inv_sigma = 1.0/saftvrmie_param%sigma_ij(i,i)
-    kF = 2.0*pi*N_AVOGADRO*saftvrmie_param%Cij(i,i)*&
+    kc = 2.0*pi*N_AVOGADRO*saftvrmie_param%Cij(i,i)*&
          saftvrmie_param%sigma_ij_cube(i,i)*saftvrmie_param%eps_divk_ij(i,i)
 
     lamr = saftvrmie_param%lambda_r_ij(i,i)
@@ -3710,9 +3718,13 @@ contains
        a_TT = 0.0
     endif
     ! Calculate correction
-    call calc_a_correction()
+    if (divide_by_n) then
+      call calc_a_correction_div_n()
+    else
+      call calc_a_correction()
+    endif
     if (svrm_opt%enable_shift_correction) then
-       kF = kF/3.0
+       kc = kc/3.0
        L = inv_rc**(lamr-3) - inv_rc**(lama-3)
        if (svrm_opt%quantum_correction > 0) then
           Q1a = saftvrmie_param%Quantum_const_1a_ij(i,i)
@@ -3722,13 +3734,17 @@ contains
        if (svrm_opt%quantum_correction > 1) then
           Lq2 = (Q2r*inv_rc**(lamr+1) &
                - Q2a*inv_rc**(lama+1))*inv_sigma**4
-       endif
-       call calc_a_correction()
+        endif
+        if (divide_by_n) then
+          call calc_a_correction_div_n()
+        else
+          call calc_a_correction()
+        endif
     endif
   contains
     subroutine calc_a_correction()
-      real :: a_local
-      a_local = kF*(n(i)**2/V)*(1/T)*(L+D*Lq1+D2*Lq2)
+      real :: a_local, a_T_l
+      a_local = kc*(n(i)**2/V)*(1/T)*(L+D*Lq1+D2*Lq2)
       a = a + a_local
       if (present(a_n)) then
          a_n = a_n + 2.0*a_local/n(i)
@@ -3746,7 +3762,7 @@ contains
          a_Vn = a_Vn - 2.0*a_local/(V*n(i))
       endif
       if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
-         a_T_l = -a_local/T + kF*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
+         a_T_l = -a_local/T + kc*(n(i)**2/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
          if (present(a_T)) then
             a_T = a_T + a_T_l
          endif
@@ -3758,10 +3774,84 @@ contains
          a_TV = a_TV - a_T_l/V
       endif
       if (present(a_TT)) then
-         a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kF*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
-              + kF*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
+         a_TT = a_TT + 2.0*a_local/T**2 - 2.0*kc*(n(i)**2/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
+              + kc*(n(i)**2/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
       endif
     end subroutine calc_a_correction
+    subroutine calc_a_correction_div_n()
+      real :: a_local, a_T_l
+      a_local = kc*(1/V)*(1/T)*(L+D*Lq1+D2*Lq2)
+      a = a + a_local*n(i)
+      if (present(a_n)) then
+         a_n = a_n + a_local
+      endif
+      if (present(a_V)) then
+         a_V = a_V - a_local*n(i)/V
+      endif
+      if (present(a_VV)) then
+         a_VV = a_VV + 2.0*a_local*n(i)/V**2
+      endif
+      if (present(a_Vn)) then
+         a_Vn = a_Vn - a_local/V
+      endif
+      if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
+         a_T_l = -a_local*n(i)/T + kc*(n(i)/V)*(1/T)*(D_T*Lq1+D2_T*Lq2)
+         if (present(a_T)) then
+            a_T = a_T + a_T_l
+         endif
+      endif
+      if (present(a_Tn)) then
+         a_Tn = a_Tn + a_T_l/n(i)
+      endif
+      if (present(a_TV)) then
+         a_TV = a_TV - a_T_l/V
+      endif
+      if (present(a_TT)) then
+         a_TT = a_TT + 2.0*a_local*n(i)/T**2 - 2.0*kc*(n(i)/V)*(1/T**2)*(D_T*Lq1+D2_T*Lq2)&
+              + kc*(n(i)/V)*(1/T)*(D_TT*Lq1+D2_TT*Lq2)
+      endif
+    end subroutine calc_a_correction_div_n
   end subroutine calc_delta_Ac
+
+  !> Calculate truncation (and shifted) alpha
+  !! \author Morten Hammer, June 2023
+  subroutine calc_alpha_ts(i, j, s_vc, alpha_ij)
+    use saftvrmie_hardsphere, only: calc_zero_for_shifted_potential
+    ! Input
+    integer, intent(in) :: i, j !< Interaction pair
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    ! Output
+    real, intent(out) :: alpha_ij  !< Truncated and shifted alpha
+    ! Locals
+    real :: lamr, lama, C
+    real :: r_cut, u_cut, u_shift_divk
+    real :: eps_eff, sigma_eff
+
+    if (svrm_opt%quantum_correction > 0) &
+         call stoperror("Alpha correction not yet implemented for quantum potentials")
+
+    lamr = saftvrmie_param%lambda_r_ij(i,j)
+    lama = saftvrmie_param%lambda_a_ij(i,j)
+    C = saftvrmie_param%Cij(i,j)
+    r_cut = svrm_opt%r_cut
+
+    ! Get integration limits
+    if (svrm_opt%enable_shift_correction) then
+      u_cut = C*(1/r_cut**lama - 1/r_cut**lamr) ! Absolute value of u
+      eps_eff = 1 - u_cut
+      u_shift_divk = -u_cut*saftvrmie_param%eps_divk_ij(i,j)
+      call calc_zero_for_shifted_potential(i,j,s_vc,saftvrmie_param%sigma_ij(i,j),u_shift_divk,sigma_eff)
+      sigma_eff = sigma_eff/saftvrmie_param%sigma_ij(i,j)
+    else
+      sigma_eff = 1.0
+      eps_eff = 1.0
+    endif
+    alpha_ij = C/sigma_eff**(lama-3)/(lama-3) - C/sigma_eff**(lamr-3)/(lamr-3) &
+         + C/r_cut**(lamr-3)/(lamr-3) - C/r_cut**(lama-3)/(lama-3)
+    if (svrm_opt%enable_shift_correction) then
+      alpha_ij = alpha_ij - u_cut/3.0*(r_cut**3-sigma_eff**3)
+    endif
+    alpha_ij = alpha_ij/eps_eff/sigma_eff**3
+  end subroutine calc_alpha_ts
 
 end module saftvrmie_dispersion

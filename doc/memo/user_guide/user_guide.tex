@@ -1,0 +1,164 @@
+\documentclass[english]{thermomemo}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[utf8]{inputenc}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{enumerate}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!80!black}
+}
+
+\newcommand{\mathsec}[1]{\texorpdfstring{#1}{TEXT}} % Command to put math symbols in section headers. Use like \(...)section{\mathsec{$\<symbol>$}}
+\newcommand{\code}[1]{\colorbox{lightgray}{#1}} % For pretty inline code formatting
+\DeclareSIUnit{\calorie}{cal}
+
+\title{User guide}
+\author{Vegard Gjeldvik Jervell, Morten Hammer}
+\date{\today}
+\begin{document}
+\frontmatter
+\tableofcontents
+
+\section{Introduction}
+This document is intended for generic user documentation. Also see
+\url{https://github.com/SINTEF/thermopack/wiki}.
+
+\section{Phase keys}
+The phase keys are defined in \path{src/thermopack_constants.f90},
+and are shown in Table~\ref{tab:phase_flags_thermopack}.
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l c l}
+    \toprule
+    Phase & Key & Description\\
+    \midrule
+    Two-phase & 0 & Liquid-vapor two-phase mixture (Code: TWOPH)\\
+    Liquid & 1 & Single phase liquid (Code: LIQPH) \\
+    Vapor & 2 & Single phase vapor (Code: VAPPH) \\
+    Minimum Gibbs & 3 & Single phase root with the minimum Gibbs free energy \\ & & (Code: MINGIBBSPH) \\
+    Single & 4 & Single phase not identified as liquid or vapor \\ & & (Code: SINGLEPH) \\
+    Solid & 5 & Single phase solid (Code: SOLIDPH) \\
+    Fake & 6 & In rare cases no physical roots exist, and a fake liquid root is \\ & & returned (Code: FAKEPH) \\
+    \bottomrule
+  \end{tabular}
+  \caption{Phase flags in thermopack.}
+  \label{tab:phase_flags_thermopack}
+\end{table}
+
+\section{Cubic Equations of State}
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l c }
+    \toprule
+    Name & Key \\
+    \midrule
+    Van der Waal & VdW\\
+    Soave Redlich Kwong & SRK\\
+    Peng Robinson & PR\\
+    Schmidt-Wensel & SW\\
+    Patel Teja & PT\\
+    Translated consistent PR & tcPR\\
+    \bottomrule
+  \end{tabular}
+  \caption{Cubic Equations of state implemented in ThermoPack and the corresponding keys used for initialization.}
+  \label{tab:EoS_thermopack}
+\end{table}
+
+\subsection{Pure fluid \mathsec{$\alpha$}}
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l l}
+    \toprule
+    Model & Key \\
+    \midrule
+    Model default$^*$ & Classic\\
+    Twu-Coon-Bluck-Cunninghan & TWU\\
+    Mathias-Copeman & MC\\
+    \href{https://pubs.acs.org/doi/abs/10.1021/i260068a009}{Graboski and Daubert} & GD\\
+    \href{https://doi.org/10.1021/cr60137a013}{Redlich-Kwong} & RK\\
+    Soave & Soave\\
+    \href{https://doi.org/10.1021/i160057a011}{Peng Robinson 76} & PR\\
+    \href{https://doi.org/10.1021/ie049580p}{UMR $\alpha$ formulation} & UMR\\
+    Peng Robinson 78 & PR78\\
+    Van der Waal & VdW\\
+    Schmidt-Wensel & SW\\
+    Patel Teja & PT\\
+    \bottomrule
+    \multicolumn{2}{l}{$^*$Will use original $\alpha$ for specified EOS.}\\
+    \multicolumn{2}{l}{ E.g. SRK will use Soave $\alpha$,}\\
+    \multicolumn{2}{l}{ Peng-Robinson will use PR $\alpha$ etc.}\\
+  \end{tabular}
+\end{table}
+
+\subsection{\mathsec{$\alpha$} mixing Rules}
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{l c}
+    \toprule
+    Name & Key \\
+    \midrule
+    Van der Waals & Classic or vdW\\
+    \href{https://github.com/SINTEF/thermopack/tree/main/doc/memo/WongSandler/wongsandler.pdf}{Wong Sandler} & WS \\
+    Huron Vidal & HV or HV2 \\
+    NRTL & NRTL \\
+    \href{https://github.com/SINTEF/thermopack/tree/main/doc/memo/UNIFAC/unifac.pdf}{UNIFAC} & UNIFAC \\
+    \bottomrule
+  \end{tabular}
+  \caption{Mixing rules and phases availible in thermopack, with the corresponding keys used to identify them.}
+  \label{tab:mixing_rules_thermopack}
+\end{table}
+
+
+\section{Adding new fluids}
+The fluid database consists of a set of \code{.json}-files in the \code{fluids} directory. These files are are used to auto-generate the FORTRAN-files \code{compdatadb.f90} and \code{saftvrmie\_datadb.f90} by running the respective python scripts \code{compdata.py} and \code{saftvrmie.py} found in the directory \code{addon/pyUtils/datadb/}. The files are generated in the current working directory and must be copied to the \code{src}-directory before recompiling ThermoPack to make the fluids available. 
+
+A \code{<fluid>.json} file must contain a minimal set of data to be valid. This includes the critical point, accentric factor, mole weight and ideal gas heat capacity. 
+
+\subsection{Ideal gas heat capacity}
+Several different correlations for the heat capacity are available, selected by the ''correlation''-key in the ''ideal-heat-capacity-1'' field of the fluid files. These are summarized in Table \ref{tab:heat_capacity_correlations}.
+
+\begin{table}[htb]
+    \centering
+    \caption{Ideal gas heat capacity correlations, and the corresponding keys used in the fluid-database.}
+    \begin{tabular}{c l l c}
+    \toprule
+        Key & Correlation & Equation & Unit \\
+    \midrule
+        1 & Sherwood, Reid \& Prausnitz$^{(a)}$ & $A + BT + CT^2 + DT^3$ & \si{\calorie\per\gram\per\mol\per\kelvin}\\
+        2 & API-Project & 44 & -\\
+        3 & Hypothetic components & - & -\\
+        4 & Sherwood, Reid \& Prausniz$^{(b)}$ & $A + BT + CT^2 + DT^3$ & \si{\joule\per\mol\per\kelvin}\\
+        5 & Ici (Krister Strøm) & $A + BT + CT^2 + DT^3 + ET^{-2}$ & \si{\joule\per\gram\per\kelvin}\\
+        6 & Chen, Bender (Petter Nekså) & $A + BT + CT^2 + DT^3 + ET^4$ & \si{\joule\per\gram\per\kelvin}\\
+        7 & Aiche, Daubert \& Danner$^{(c)}$ & $A + B\left[\frac{C}{T} \sinh{\left(\frac{C}{T}\right)}\right]^2 + D\left[\frac{E}{T} \cosh{\left(\frac{E}{T}\right)}\right]^2$ & \si{\joule\per\kilo\mol\per\kelvin}\\
+        8 & Poling, Prausnitz \& O'Connel$^{(d)}$ & R $\left(A + BT + CT^2 + DT^3 + ET^4\right)$ & \si{\joule\per\mol\per\kelvin}\\
+        9 & Linear function and fraction & $A + BT + \frac{C}{T + D}$ & \si{\joule\per\mol\per\kelvin}\\
+        10 & Leachman \& Valenta for \ce{H2} & - & -\\
+        11 & Use TREND model & - & -\\
+        12 & Shomate equation$^*$ & $A + BT_s + CT_s^2 + DT_s^3 + ET_s^{-2}$ & \si{\joule\per\mol\per\kelvin}\\
+    \bottomrule
+    \multicolumn{2}{l}{$^{(a)}$3rd ed. $^{(c)}$DIPPR-database} & \\
+    \multicolumn{2}{l}{$^{(b)}$4th ed. $^{(d)}$5th ed.} & \\
+    \multicolumn{2}{l}{$^*$Note: $T_s = 10^{-3} T$}
+    \end{tabular}
+    \label{tab:heat_capacity_correlations}
+\end{table}
+
+\end{document}

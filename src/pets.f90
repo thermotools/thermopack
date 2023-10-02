@@ -20,6 +20,14 @@ module pets
     real :: SIGMA_PETS    !< [m]
     real :: EPSDIVK_PETS  !< [K]
   contains
+    procedure, public :: F_PETS_TVn
+    procedure, public :: alpha_disp
+    procedure, public :: alpha_disp_TVn
+    procedure, public :: alpha_pets_hs
+    procedure, public :: alpha_hs_TVn
+    procedure, public :: alpha_PETS
+    procedure, public :: calc_d_pets
+    procedure, public :: calc_potential_pets
     procedure, public :: allocate_and_init => pets_allocate_and_init
     ! Assignment operator
     procedure, pass(This), public :: assign_eos => assign_pets
@@ -161,6 +169,59 @@ contains
 
   end subroutine alpha_PETS
 
+  !> The reduced, molar Helmholtz energy contribution from dispersion.
+  subroutine alpha_disp_TVn(eos,V,T,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_VT,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class (PETS_eos), intent(in) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [mol/m^3], [K], [mol]
+
+    real, intent(out), optional :: alp ! [-]
+    real, intent(out), optional :: alp_V,alp_T,alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_VT, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals
+    real :: rho
+    real, pointer :: alp_V_p, alp_VV_p, alp_Vn_p(:)
+    real, target :: alp_V_l, alp_VV_l, alp_Vn_l(nce)
+
+    if ( present(alp_v) .or. &
+         present(alp_vv) .or. &
+         present(alp_n) .or. &
+         present(alp_Vn)) then
+      alp_V_p => alp_V_l
+    else
+      alp_V_p => NULL()
+    endif
+    if ( present(alp_vv) .or. &
+         present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_VV_p => alp_VV_l
+    else
+      alp_VV_p => NULL()
+    endif
+    if ( present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_Vn_p => alp_Vn_l
+    else
+      alp_Vn_p => NULL()
+    endif
+
+    rho = sum(n)/V
+    call eos%alpha_disp(rho,T,n,alp=alp,alp_rho=alp_V_p,alp_T=alp_T,alp_n=alp_n, &
+         alp_rhorho=alp_VV_l,alp_rhoT=alp_VT,alp_rhon=alp_Vn_l,alp_TT=alp_TT,&
+         alp_Tn=alp_Tn,alp_nn=alp_nn)
+
+    if (present(alp_nn)) then
+      alp_nn(1,1) = alp_nn(1,1) + alp_VV_l/V**2 + alp_Vn_l(1)/V
+    end if
+    if (present(alp_Tn)) alp_Tn = alp_VT/V + alp_Tn
+    if (present(alp_VT)) alp_VT = -(rho/V)*alp_VT
+    if (present(alp_Vn)) alp_Vn = -alp_V_l/V**2-rho*alp_Vn_l/V-(rho/V**2)*alp_VV_l
+    if (present(alp_VV)) alp_VV = 2*rho/V**2*alp_V_l + (rho/V)**2*alp_VV_l
+    if (present(alp_n)) alp_n = alp_V_l/V + alp_n
+    if (present(alp_V)) alp_V = -(rho/V)*alp_V_l
+
+  end subroutine alpha_disp_TVn
 
   !> The reduced, molar Helmholtz energy contribution from dispersion.
   subroutine alpha_disp(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
@@ -267,6 +328,60 @@ contains
     end if
 
   end subroutine alpha_disp
+
+  !> The reduced, molar Helmholtz energy contribution from hard-sphere.
+  subroutine alpha_hs_TVn(eos,V,T,n,alp,alp_V,alp_T,alp_n, &
+       alp_VV,alp_VT,alp_Vn,alp_TT,alp_Tn,alp_nn)
+    class (PETS_eos), intent(in) :: eos
+    real, intent(in) :: V, T, n(nce)  !< [mol/m^3], [K], [mol]
+
+    real, intent(out), optional :: alp ! [-]
+    real, intent(out), optional :: alp_V,alp_T,alp_n(nce)
+    real, intent(out), optional :: alp_VV, alp_VT, alp_Vn(nce), alp_TT
+    real, intent(out), optional :: alp_Tn(nce), alp_nn(nce,nce)
+    ! Locals
+    real :: rho
+    real, pointer :: alp_V_p, alp_VV_p, alp_Vn_p(:)
+    real, target :: alp_V_l, alp_VV_l, alp_Vn_l(nce)
+
+    if ( present(alp_v) .or. &
+         present(alp_vv) .or. &
+         present(alp_n) .or. &
+         present(alp_Vn)) then
+      alp_V_p => alp_V_l
+    else
+      alp_V_p => NULL()
+    endif
+    if ( present(alp_vv) .or. &
+         present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_VV_p => alp_VV_l
+    else
+      alp_VV_p => NULL()
+    endif
+    if ( present(alp_nn) .or. &
+         present(alp_Vn)) then
+      alp_Vn_p => alp_Vn_l
+    else
+      alp_Vn_p => NULL()
+    endif
+
+    rho = sum(n)/V
+    call eos%alpha_pets_hs(rho,T,n,alp=alp,alp_rho=alp_V_p,alp_T=alp_T,alp_n=alp_n, &
+         alp_rhorho=alp_VV_l,alp_rhoT=alp_VT,alp_rhon=alp_Vn_l,alp_TT=alp_TT,&
+         alp_Tn=alp_Tn,alp_nn=alp_nn)
+
+    if (present(alp_nn)) then
+      alp_nn(1,1) = alp_nn(1,1) + alp_VV_l/V**2 + alp_Vn_l(1)/V
+    end if
+    if (present(alp_Tn)) alp_Tn = alp_VT/V + alp_Tn
+    if (present(alp_VT)) alp_VT = -(rho/V)*alp_VT
+    if (present(alp_Vn)) alp_Vn = -alp_V_l/V**2-rho*alp_Vn_l/V-(rho/V**2)*alp_VV_l
+    if (present(alp_VV)) alp_VV = 2*rho/V**2*alp_V_l + (rho/V)**2*alp_VV_l
+    if (present(alp_n)) alp_n = alp_V_l/V + alp_n
+    if (present(alp_V)) alp_V = -(rho/V)*alp_V_l
+
+  end subroutine alpha_hs_TVn
 
   ! Reduced molar Helmholtz free energy contribution from a hard-sphere fluid.
   subroutine alpha_pets_hs(eos,rho,T,n,alp,alp_rho,alp_T,alp_n, &
@@ -619,6 +734,27 @@ contains
     end if
   end subroutine calc_d_pets
 
+  ! The interaction potential
+  subroutine calc_potential_pets(eos,n,r,pot)
+    class (PETS_eos), intent(in) :: eos
+    integer, intent(in) :: n
+    real, intent(in) :: r(:)       !< [m]
+    real, intent(out) :: pot(:)       !< [K]
+    ! Locals.
+    integer :: i
+    real, parameter :: r_cut = 2.5
+    real :: pot_cut
+    pot_cut = 4.0 * eos%epsdivk_pets &
+           * ((1.0 / r_cut)**12 - (1.0 / r_cut)**6)
+    pot = 0
+    do i=1,n
+      if (r(i) >= r_cut*eos%sigma_pets) exit
+      pot(i) = 4.0 * eos%epsdivk_pets &
+           * ((eos%sigma_pets / r(i))**12 - (eos%sigma_pets / r(i))**6) &
+           - pot_cut
+    enddo
+  end subroutine calc_potential_pets
+
   subroutine pets_allocate_and_init(eos,nc,eos_label)
     ! Passed object:
     class(pets_eos), intent(inout) :: eos
@@ -653,5 +789,130 @@ contains
       call stoperror("assign_pets: Error....")
     end select
   end subroutine assign_pets
+
+  subroutine getPetsPureParams(nc,comp,eosidx,param_ref,found,m,sigma,eps_depth_divk,eps,beta,scheme)
+    use compdata, only: gendata_pointer
+    use AssocSchemeUtils, only: no_assoc
+    use stringmod, only: str_eq
+    ! Input
+    integer, intent(in) :: nc
+    type(gendata_pointer), intent(in) :: comp(nc)
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: param_ref
+    ! Output
+    logical, intent(out) :: found(nc)
+    real, intent(out) :: m(nc), sigma(nc), eps_depth_divk(nc), eps(nc), beta(nc)
+    integer, intent(out) :: scheme(nc)
+    !
+    if (nc /= 1 .or. .not. str_eq(comp(1)%p_comp%ident, "AR")) &
+         call stoperror("PETS model only for pure Argon")
+    found = .true.
+    m = 1
+    sigma = 3.42E-10
+    eps_depth_divk = 136.0
+    eps = 0
+    beta = 0
+    scheme = no_assoc
+  end subroutine getPetsPureParams
+
+  !> Calculate truncation and shift correction to LJ fluid
+  !! dAc = A - Ac
+  !! \author Morten Hammer, September 2022
+  subroutine calc_delta_Ac_LJ(nc,T,V,n,sigma,eps_div_kb,&
+       a,a_T,a_V,a_n,a_TT,a_VV,a_TV,a_Tn,a_Vn,a_nn)
+    ! Input
+    integer, intent(in) :: nc !< Number of components
+    real, intent(in) :: T !< Temperature [K]
+    real, intent(in) :: V !< Volume [m3]
+    real, intent(in) :: n(nc) !< Mol numbers [mol]
+    real, intent(in) :: sigma,eps_div_kb
+    ! Output
+    real, intent(out) :: a
+    real, optional, intent(out) ::  a_T,a_V,a_TT,a_VV,a_TV
+    real, optional, dimension(nc), intent(out) :: a_n,a_Tn,a_Vn
+    real, optional, dimension(nc,nc), intent(out) :: a_nn
+    ! Locals
+    real, parameter :: r_c = 2.5 !< Reduced cut off distance (actual cut off: r_c*sigma)  [-]
+    integer :: i !<
+    real :: kc, L, inv_rc, inv_sigma
+
+    if (nc /= 1) stop "calc_delta_Ac_LJ: Currently only for pure fluids"
+
+    inv_rc = 1.0/r_c
+    i = 1
+    inv_sigma = 1.0/sigma
+    kc = 2.0*pi*N_AVOGADRO*4.0*sigma**3*eps_div_kb
+    L = inv_rc**9/9 - inv_rc**3/3
+    ! Initialize
+    a = 0.0
+    if (present(a_n)) then
+       a_n = 0.0
+    endif
+    if (present(a_nn)) then
+       a_nn = 0.0
+    endif
+    if (present(a_V)) then
+       a_V = 0.0
+    endif
+    if (present(a_VV)) then
+       a_VV = 0.0
+    endif
+    if (present(a_Vn)) then
+       a_Vn = 0.0
+    endif
+    if (present(a_T)) then
+       a_T = 0.0
+    endif
+    if (present(a_Tn)) then
+       a_Tn = 0.0
+    endif
+    if (present(a_TV)) then
+       a_TV = 0.0
+    endif
+    if (present(a_TT)) then
+       a_TT = 0.0
+    endif
+    ! Calculate correction
+    call calc_a_correction()
+    kc = kc/3.0
+    L = inv_rc**9 - inv_rc**3
+    call calc_a_correction()
+  contains
+    subroutine calc_a_correction()
+      real :: a_local, a_T_l
+      a_local = kc*(n(i)**2/V)*(1/T)*L
+      a = a + a_local
+      if (present(a_n)) then
+         a_n = a_n + 2.0*a_local/n(i)
+      endif
+      if (present(a_nn)) then
+         a_nn = a_nn + 2.0*a_local/n(i)**2
+      endif
+      if (present(a_V)) then
+         a_V = a_V - a_local/V
+      endif
+      if (present(a_VV)) then
+         a_VV = a_VV + 2.0*a_local/V**2
+      endif
+      if (present(a_Vn)) then
+         a_Vn = a_Vn - 2.0*a_local/(V*n(i))
+      endif
+      if (present(a_T) .or. present(a_TV) .or. present(a_Tn) .or. present(a_TT)) then
+         a_T_l = -a_local/T
+         if (present(a_T)) then
+            a_T = a_T + a_T_l
+         endif
+      endif
+      if (present(a_Tn)) then
+         a_Tn = a_Tn + 2.0*a_T_l/n(i)
+      endif
+      if (present(a_TV)) then
+         a_TV = a_TV - a_T_l/V
+      endif
+      if (present(a_TT)) then
+         a_TT = a_TT + 2.0*a_local/T**2
+      endif
+    end subroutine calc_a_correction
+  end subroutine calc_delta_Ac_LJ
 
 end module pets

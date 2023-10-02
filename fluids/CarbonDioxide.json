@@ -94,6 +94,72 @@
     "bib_reference": "",
     "Zra": 0.2722
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 4.4,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.555991",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 216.592,
+    "maximum_temperature": 1100.0,
+    "reducing_pressure": 5.179500E+05,
+    "reducing_temperature": 216.592,
+    "n_coeff": 3,
+    "n_coeff_1": 0,
+    "n_coeff_2": 3,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      1955.539,
+      2055.4593,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.0,
+      2.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "DOI: 10.1063/1.555991",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 216.592,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 5.179500E+05,
+    "reducing_temperature": 216.592,
+    "n_coeff": 3,
+    "n_coeff_1": 0,
+    "n_coeff_2": 3,
+    "n_coeff_3": 0,
+    "coeff": [
+      -14.740846,
+      2.4327015,
+      -5.3061778,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      1.9,
+      2.9,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -120,6 +186,39 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/Kontogeorgis-Folas2010",
+      "bib_reference": "10.1002/9780470747537",
+      "a0": 3.5079E5,
+      "b": 2.72E-02,
+      "alphaParams": [0.7602,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.0,
+      "assoc_scheme": "NONE"
+    },
+    "CPA-2": {
+      "ref": "SINTEF",
+      "bib_reference": "",
+      "a0": 3.5079E5,
+      "b": 2.72E-02,
+      "alphaParams": [0.7602,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 0.0,
+      "beta": 0.05,
+      "assoc_scheme": "1EA"
+    },
+    "CPA-3": {
+      "ref": "SINTEF2",
+      "bib_reference": "",
+      "a0": 2.99377508e+05,
+      "b": 2.68729432e-02,
+      "alphaParams": [4.62138711e-01,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 1.28604049e+04,
+      "beta": 9.08545617e-03,
+      "assoc_scheme": "1"
     }
   },
   "PR": {
@@ -158,6 +257,57 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.0729,
+    "sigma": 2.7852E-10,
+    "eps_depth_divk": 169.210,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
+    "ref": "Default/Kontogeorgis_Folas2001"
+  },
+  "PC-SAFT-2": {
+    "m": 2.58239,
+    "sigma": 2.56106E-10,
+    "eps_depth_divk": 151.691,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
+    "ref": "Tang_Gross2010"
+  },
+  "PC-SAFT-3": {
+    "m": 1.72897,
+    "sigma": 2.76102E-10,
+    "eps_depth_divk": 83.7215,
+    "eps": 9256.5000,
+    "beta": 0.171605,
+    "assoc_scheme": "3B",
+    "bib_reference": "Smith (2017) MSc thesis, Doi: 10019.1/101071",
+    "ref": "Smith2017"
+  },
+  "PC-SAFT-4": {
+    "m": 1.5131,
+    "sigma": 3.1869E-10,
+    "eps_depth_divk": 163.33,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005"
+  },
+  "PC-SAFT-5": {
+    "m": 1.6298,
+    "sigma": 3.0867E-10,
+    "eps_depth_divk": 163.34,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "Q": 3.9546,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005ADJQ"
   },
   "SAFTVRMIE-1": {
     "m": 1.500,

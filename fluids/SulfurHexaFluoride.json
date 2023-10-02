@@ -74,6 +74,72 @@
     "bib_reference": "10.1016/j.fluid.2016.09.003",
     "Zra": 0.2788
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.5005537",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 223.555,
+    "maximum_temperature": 650.0,
+    "reducing_pressure": 2.314290E+05,
+    "reducing_temperature": 223.555,
+    "n_coeff": 2,
+    "n_coeff_1": 1,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      966.603148,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.555,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "DOI: 10.1063/1.3037344",
+    "ref": "DEFAULT",
+    "correlation": "SL-2",
+    "triple_temperature": 223.555,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 2.314290E+05,
+    "reducing_temperature": 223.555,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -11.6942141,
+      11.6942141,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      -1.07,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

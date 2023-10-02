@@ -75,6 +75,72 @@
     "bib_reference": "",
     "Zra": 0.2465
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.555579",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 195.495,
+    "maximum_temperature": 10000.0,
+    "reducing_pressure": 1e6,
+    "reducing_temperature": 195.49453,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 0,
+    "n_coeff_3": 1,
+    "coeff": [
+      0.2533125e4,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "DOI: 10.1063/5.0128269",
+    "ref": "DEFAULT",
+    "correlation": "SL-2",
+    "triple_temperature": 195.49,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 1.0,
+    "n_coeff": 5,
+    "n_coeff_1": 5,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      13.63932,
+      -3.537e3,
+      -3.310e4,
+      1.742e6,
+      -2.995e7,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      -4.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",
@@ -101,6 +167,17 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "CPA-1": {
+      "ref": "Default/SINTEF",
+      "bib_reference": "",
+      "a0": 3.73160e+05,
+      "b": 2.07666e-02,
+      "alphaParams": [7.17324e-1,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 7.60835e+03,
+      "beta": 7.93725e-04,
+      "assoc_scheme": "2B"
     }
   },
   "PR": {
@@ -130,5 +207,39 @@
       "ciC": 0.0,
       "correlation": 1
     }
+  },
+  "PC-SAFT-1": {
+    "m": 2.25807,
+    "sigma": 2.37802E-10,
+    "eps_depth_divk": 126.868,
+    "eps": 11032.6000,
+    "beta": 0.20479,
+    "assoc_scheme": "3B",
+    "bib_reference": "SINTEF Energy Research",
+    "ref": "Default/InHouse"
+  },
+  "PC-SAFT-2": {
+    "m": 1.4302,
+    "sigma": 2.7927E-10,
+    "eps_depth_divk": 145.0059,
+    "eps": 13303.140189,
+    "beta": 0.221193,
+    "assoc_scheme": "2B",
+    "bib_reference": "10.1016/j.fluid.2020.112689",
+    "ref": "NguyenHuynh2020"
+  },
+  "SAFTVRMIE-1": {
+    "m": 1.0,
+    "sigma": 3.3309E-10,
+    "eps_depth_divk": 323.70,
+    "lambda_a": 6.0000,
+    "lambda_r": 36.832,
+    "mass": 2.828E-26,
+    "eps": 1105.0,
+    "beta": 560.73E-30,
+    "assoc_scheme": "4B",
+    "fh_order": 0,
+    "bib_reference": "Dufal (2015) - 10.1080/00268976.2015.1029027",
+    "ref": "DEFAULT/Dufal2015"
   }
 }

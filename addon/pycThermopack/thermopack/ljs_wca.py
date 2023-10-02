@@ -1,5 +1,3 @@
-# Support for python2
-from __future__ import print_function
 # Import ctypes
 from ctypes import *
 # Importing Numpy (math, arrays, etc...)
@@ -9,13 +7,14 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
+from .saft import saft
 from . import thermo
 from abc import abstractmethod
 
 c_len_type = thermo.c_len_type
 
 
-class ljs_wca_base(thermo.thermo):
+class ljs_wca_base(saft):
     """
     Interface to LJS-WCA
     """
@@ -24,7 +23,7 @@ class ljs_wca_base(thermo.thermo):
         Initialize wca specific function pointers
         """
         # Load dll/so
-        super(ljs_wca_base, self).__init__()
+        saft.__init__(self)
 
         # Init methods
         self.s_eoslibinit_init_ljs = getattr(self.tp, self.get_export_name("eoslibinit", "init_ljs"))
@@ -68,6 +67,13 @@ class ljs_wca_base(thermo.thermo):
 
         self.nc = 1
         self.set_tmin(minimum_temperature)
+
+        # Map pure fluid parameters
+        self.m = np.zeros(self.nc)
+        self.sigma = np.zeros(self.nc)
+        self.eps_div_kb = np.zeros(self.nc)
+        self.m[0] = 1.0
+        self.sigma[0], self.eps_div_kb[0] = self.get_sigma_eps()
 
     def get_sigma_eps(self):
         """Get particle size and well depth
@@ -119,7 +125,7 @@ class ljs_wca(ljs_wca_base):
             minimum_temperature (float): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
-        super(ljs_wca, self).__init__()
+        ljs_wca_base.__init__(self)
 
         # Options methods
         self.s_ljs_wca_model_control = getattr(self.tp, self.get_export_name("lj_splined", "ljs_wca_model_control"))
@@ -241,7 +247,7 @@ class ljs_uv(ljs_wca_base):
             minimum_temperature (float, optional): Minimum temperature considered by numerical solvers. Default value 2.0
         """
         # Load dll/so
-        super(ljs_uv, self).__init__()
+        ljs_wca_base.__init__(self)
 
         # Option method
         self.s_ljs_uv_model_control = getattr(self.tp, self.get_export_name("lj_splined",

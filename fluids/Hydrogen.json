@@ -75,6 +75,72 @@
     "bib_reference": "",
     "Zra": 0.306
   },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 13.957,
+    "maximum_temperature": 400.0,
+    "reducing_pressure": 7.357800E+03,
+    "reducing_temperature": 13.957,
+    "n_coeff": 3,
+    "n_coeff_1": 1,
+    "n_coeff_2": 2,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      5626.3,
+      2717.2,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.0,
+      1.83,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (2003)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 13.957,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 7.700000E+03,
+    "reducing_temperature": 13.957,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
+    "coeff": [
+      -8.065,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.93,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
   "SRK": {
     "TWU-1": {
       "ref": "tcRK",

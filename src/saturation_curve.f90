@@ -2,7 +2,7 @@ module saturation_curve
   use eos, only: thermo, entropy, specificvolume
   use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param
+       get_active_eos, base_eos_param, tpTmax, tpTmin
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
   use saturation
@@ -33,11 +33,12 @@ module saturation_curve
 
   public :: aep,AZ_NONE,AZ_PAEP,AZ_CAEP,AZ_HAEP
   public :: envelopePlot,singleCompSaturation
-  public :: envelopeIsentropeCross, envelopeIsentropeCross_single
+  public :: envelope_isentrope_cross, envelope_isentrope_cross_single
   public :: newton_extrapolate, changeformulation
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
   public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
+  public :: pure_fluid_saturation_wrapper
 
 contains
 
@@ -302,8 +303,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
        Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
-       exitOnTriplePoint,Tme)
-    use thermopack_constants, only: get_templimits
+       exitOnTriplePoint,Tme,step_size_factor)
     use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
@@ -329,6 +329,7 @@ contains
     real, optional, intent(in)  :: dS_override ! Override step length
     logical, optional, intent(in) :: exitOnTriplePoint ! Exit if passing triple point
     real, optional, intent(in)  :: Tme ! Exit on temperature
+    real, optional, intent(in)  :: step_size_factor ! Scale the default step size limits, and in effect the step size
     ! Internal:
     real  :: T,p
     real, dimension(nc) :: K, lnfugG, lnfugL
@@ -389,7 +390,11 @@ contains
 
     zmax = maxloc(Z,dim=1)
     if (isSingleComp(Z)) then
-      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n)
+      dS_max = 0.2e5
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
+      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
       Ki = 1.0
       betai = 0.0
       return
@@ -397,17 +402,20 @@ contains
 
     if (present(dS_override)) then
       dS_max = dS_override
-      dS_min = min(0.25*dS_override, 0.05)
     else
       dS_max = 0.25
-      dS_min = 0.05
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
     endif
+    dS_min = min(0.25*dS_max, 0.05)
     dS = dS_min
     tuning = 1.2
     sgn = 1.0
 
     ! Temperature limits
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (present(Tme)) Tmin = Tme
 
     ! Generate initial K values
@@ -1410,6 +1418,43 @@ contains
   end subroutine criconden_solve
 
   !-----------------------------------------------------------------------------
+  !> Plot saturation line for single component (wrapper for external calls)
+  !>
+  !> \author MH, 2022-07-15
+  !-----------------------------------------------------------------------------
+  subroutine pure_fluid_saturation_wrapper(Z,t_or_p,start_from_temp,max_delta_p,&
+       log_linear,Ta,Pa,val,vag,nmax,n)
+    use eos, only: specificvolume
+    implicit none
+    logical, intent(in) :: start_from_temp
+    real, dimension(nc), intent(in) :: Z
+    real, intent(in) :: t_or_p
+    integer, intent(in) :: nmax
+    real, dimension(nmax), intent(out) :: Ta,Pa,val,vag
+    integer, intent(out) :: n
+    real, intent(in) :: max_delta_p !< Maximum Delta P between points
+    logical, intent(in) :: log_linear !< Distribute values lineary based on natural logarithm
+    ! Locals
+    real :: t, p
+    integer :: i, spec
+    if (start_from_temp) then
+      spec = SPECT
+      t = t_or_p
+      p = 0
+    else
+      spec = SPECP
+      p = t_or_p
+      t = 0
+    endif
+    call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,&
+         maxDeltaP=max_delta_p,log_linear=log_linear)
+    do i=1,n
+      call specificvolume(Ta(i), Pa(i), Z, VAPPH, vag(i))
+      call specificvolume(Ta(i), Pa(i), Z, LIQPH, val(i))
+    enddo
+  end subroutine pure_fluid_saturation_wrapper
+
+  !-----------------------------------------------------------------------------
   !> Plot saturation line for single component
   !>
   !> \author MH, 2012-03-05
@@ -1473,13 +1518,13 @@ contains
       T = safe_bubT(P,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnp = (log(pci)-log(P))/n
+        dlnp = (log(pci)-log(P))/(n-1)
         do iter=1,n
           pa(iter) = exp(log(p0) + dlnp*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dP = (pci-P)/n
+        dP = (pci-P)/(n-1)
         do iter=1,n
           pa(iter) = p0 + dP*(iter-1)
         enddo
@@ -1491,13 +1536,13 @@ contains
       P = safe_bubP(T,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnT = (log(tci)-log(T))/n
+        dlnT = (log(tci)-log(T))/(n-1)
         do iter=1,n
           ta(iter) = exp(log(T0) + dlnT*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dT = (tci-T)/n
+        dT = (tci-T)/(n-1)
         do iter=1,n
           ta(iter) = T0 + dT*(iter-1)
         enddo
@@ -1707,7 +1752,7 @@ contains
   !>
   !> \author MH, 2014-03
   !-----------------------------------------------------------------------------
-  function envelopeIsentropeCross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
+  function envelope_isentrope_cross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
        dS_override, ierr_out) result(hasCrossing)
     use thermo_utils, only: isSingleComp
     implicit none
@@ -1737,7 +1782,7 @@ contains
     ! Special routine for pure fluids
     zmax = maxloc(Z)
     if (isSingleComp(Z)) then
-      call envelopeIsentropeCross_single(p0,sspec,z,p0,hasCrossing,&
+      call envelope_isentrope_cross_single(p0,sspec,z,p0,hasCrossing,&
            p,T,phase,ierr)
       w = z
       if (present(ierr_out)) then
@@ -1769,7 +1814,7 @@ contains
         ierr_out = ierr
         return
       else
-        call stoperror('envelopeIsentropeCross: Initial point not found.')
+        call stoperror('envelope_isentrope_cross: Initial point not found.')
       endif
     endif
 
@@ -1850,7 +1895,7 @@ contains
               ierr_out = ierr
               return
             else
-              call stoperror("envelopeIsentropeCross: Neither decreasing nor &
+              call stoperror("envelope_isentrope_cross: Neither decreasing nor &
                    &increasing the step helped")
             endif
           endif
@@ -1949,10 +1994,10 @@ contains
       endif
     enddo
 
-  end function envelopeIsentropeCross
+  end function envelope_isentrope_cross
 
 
-  subroutine envelopeIsentropeCross_single(p0,s_spec,z,p_low,has_crossing,&
+  subroutine envelope_isentrope_cross_single(p0,s_spec,z,p_low,has_crossing,&
        p_crossing,T_crossing,phase_crossing, ierr)
     !> Find if, and if so where, the isentrope from a point p0,s_spec
     !> meets the saturation line before reaching pressure p_low.
@@ -2154,7 +2199,7 @@ contains
 
     endif
 
-  end subroutine envelopeIsentropeCross_single
+  end subroutine envelope_isentrope_cross_single
 
   function fun_ssat_single(p,param) result(f)
     ! Objective function for s_sat(phase) = s_spec

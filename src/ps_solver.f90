@@ -8,8 +8,9 @@ module ps_solver
   !
   !
   use numconstants, only: small, machine_prec
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
-  use thermopack_constants, only: get_templimits, LIQPH, VAPPH, continueOnError, &
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpTmin, tpTmax
+  use thermopack_constants, only: LIQPH, VAPPH, continueOnError, &
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use tp_solver, only: twoPhaseTPflash
   use state_functions
@@ -101,7 +102,7 @@ contains
     real, intent(in) :: sspec !< Specified entropy [J/mol/K]
     integer, intent(inout) :: phase !< Phase identifier
     real, intent(in) :: Tmax, Tmin !< Temperature limits [K]
-    integer, intent(out) :: ierr ! Error message 
+    integer, intent(out) :: ierr ! Error message
     ! Locals
     real, dimension(nc)   :: FUGZ, FUGL, FUGG, K
     real                  :: tpd
@@ -145,7 +146,7 @@ contains
       endif
     endif
     if (ierr /= 0) then
-      call twoPhasePSflashFull(t,p,Z,beta,betaL,X,Y,sspec,phase,Tmax,Tmin,ierr)          
+      call twoPhasePSflashFull(t,p,Z,beta,betaL,X,Y,sspec,phase,Tmax,Tmin,ierr)
     endif
   end subroutine fullMultiCompTwoPhasePSflash
 
@@ -174,7 +175,8 @@ contains
     real, dimension(nc+5) :: param
 
     ierr = 0
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -194,7 +196,7 @@ contains
     ierr = solver%exitflag
     if (solver%exitflag == -1 .and. param(nc+4)-param(nc+3) < param(nc+5)) then
       solver%exitflag = 0
-      if (abs(param(nc+4)-Tmin) > 0.01 .or. abs(param(nc+3)-Tmax) > 0.01) then
+      if (abs(param(nc+4)-Tmin) < 0.01 .or. abs(param(nc+3)-Tmax) < 0.01) then
         ! Out of temperature range
         ierr = -2
       else
@@ -246,7 +248,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Calculate differential for PS system.
-  !> 
+  !>
   !> \author MHA, 2012-01-30
   !-----------------------------------------------------------------------------
   subroutine diff(J,Tv,param)
@@ -267,7 +269,7 @@ contains
     beta = 0.5
 
     call twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
-    
+
     if (phase == TWOPH) then
       dhdt = dhdt_twoPhase(t,p,Z,beta,betaL,X,Y)
     else
@@ -282,7 +284,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Limit change in temperature.
-  !> 
+  !>
   !> \author MHA, 2012-03-20
   !-----------------------------------------------------------------------------
   subroutine limitTv(n,Tv,Tvmin,Tvmax,dTv,np,param)
@@ -294,7 +296,8 @@ contains
     real, dimension(n), intent(inout) :: dTv !< Calculated change in temperature [K]
     !
     real :: tMax, tMin
-    call get_templimits(tMin,tMax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     tMin = max(tMin,param(nc+3))
     tMax = min(tMax,param(nc+4))
     if (Tv(1) + dTv(1) < tMin) then
@@ -319,7 +322,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.
@@ -367,7 +371,8 @@ contains
     type(thermo_model), pointer :: act_mod_ptr
 
     act_mod_ptr => get_active_thermo_model()
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (t > Tmax .OR. t < Tmin .OR. T /= T) then
       t = 0.5*(Tmax+Tmin)
     endif
@@ -502,7 +507,7 @@ contains
     real, dimension(1), intent(out) :: f !< Temperature [K]
     real, dimension(1), intent(in) :: Tv !< Temperature [K]
     real, dimension(nc+6), intent(inout) :: param !< Parameter vector
-    !real :: of !< Objective function value 
+    !real :: of !< Objective function value
     ! Locals
     real:: t, p, s, sspec
     real, dimension(nc) :: Z
@@ -525,7 +530,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Calculate differential for single component PS system.
-  !> 
+  !>
   !> \author MH, 2012-01-30
   !-----------------------------------------------------------------------------
   subroutine sdiff(J,Tv,param)
@@ -551,7 +556,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Premature termination when solution is outside valid temperature region.
-  !> 
+  !>
   !> \author MHA, 2012-03-20
   !-----------------------------------------------------------------------------
   function spremReturn(Tv,dTv,param,n,np) result(doReturn)
@@ -564,7 +569,8 @@ contains
     logical                           :: doReturn !< Terminate minimization?
     ! Locals
     real                              :: Tmin,Tmax
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     doReturn = .false.
     if (Tv(1) < Tmin + small .and. dTv(1) > 0.0) then ! s(Tmin) - sspec > 0
       doReturn = .true.
@@ -596,7 +602,7 @@ contains
     real, intent(in) :: sspec !< Specified entropy [J/mol/K]
     integer, intent(inout) :: phase !< Phase identifier
     real, intent(in) :: Tmax, Tmin !< Temperature limits [K]
-    integer, intent(out) :: ierr ! Error message 
+    integer, intent(out) :: ierr ! Error message
     ! Locals
     type(nonlinear_solver) :: solver
     real :: t0, X0(nc), Y0(nc), beta0, betaL0
@@ -649,10 +655,10 @@ contains
       X = param(nc+4:2*nc+3)/betaL
     endif
   end subroutine twoPhasePSflashFull
-  
+
   !-----------------------------------------------------------------------------
   !> Calculate residual for full PS system
-  !> 
+  !>
   !> \author MH, 2014-10-17
   !-----------------------------------------------------------------------------
   subroutine fullfun(f,Xv,param)
@@ -660,7 +666,7 @@ contains
     implicit none
     real, dimension(1+nc), intent(out) :: f !< Temperature [K]
     real, dimension(1+nc), intent(in) :: Xv !< Temperature [K]
-    real, dimension(2*nc+3), intent(inout) :: param !< Parameter vector 
+    real, dimension(2*nc+3), intent(inout) :: param !< Parameter vector
     ! Locals
     real:: t, p, sspec(2), beta, betaL
     real, dimension(nc) :: X,Y,Z
@@ -680,7 +686,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Calculate differential for full PS system.
-  !> 
+  !>
   !> \author MH, 2014-10-17
   !-----------------------------------------------------------------------------
   subroutine fulldiff(J,Xv,param)
@@ -688,7 +694,7 @@ contains
     implicit none
     real, dimension(1+nc,1+nc), intent(out) :: J !< Jacobean matrix
     real, dimension(1+nc), intent(in) :: Xv !< Temperature [K]
-    real, dimension(2*nc+3), intent(inout) :: param !< Parameter vector 
+    real, dimension(2*nc+3), intent(inout) :: param !< Parameter vector
     ! Locals
     real:: t, p, sspec(2), beta, betaL, f(nc+1)
     real, dimension(nc) :: X,Y,Z
@@ -704,7 +710,7 @@ contains
       simpleMatrix = .true.
     else
       simpleMatrix = .false.
-    endif 
+    endif
     param(nc+3) = real(iter+1)
     beta = sum(Xv(1:nc))
     Y = Xv(1:nc)/beta
@@ -716,7 +722,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Premature termination for full SP solver.
-  !> 
+  !>
   !> \author MH, 2014-10-23
   !-----------------------------------------------------------------------------
   function fullPremReturn(Xv,dXv,param,n,np) result(premature_return)
@@ -762,7 +768,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Limit change in variables
-  !> 
+  !>
   !> \author MH, 2014-10-23
   !-----------------------------------------------------------------------------
   subroutine fullLimitXv(n,var,varmin,varmax,dvar,np,param)
@@ -777,7 +783,7 @@ contains
     integer :: i
     real :: scale
     real, dimension(nc) :: V,L,Z,DV
-    
+
     scale = 1.0
     ! Temperature limit
     if (var(nc+1)+dvar(nc+1) < varmin(nc+1) .AND. abs(dvar(nc+1)) > 1.0e-9) then
@@ -812,7 +818,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Set mole numbers. Try to avoid truncation error.
-  !> 
+  !>
   !> \author MH, 2014-10-23
   !-----------------------------------------------------------------------------
   subroutine fullSetXv(n,nparam,X,dX,varmin,varmax,param,alpha)
@@ -829,7 +835,7 @@ contains
 
     ! Temperature
     X(nc+1) = X(nc+1) + alpha*dX(nc+1)
-    
+
     ! Mole numbers
     Z = param(3:nc+2)
     L = param(nc+4:2*nc+3)
@@ -852,7 +858,7 @@ contains
     ! print *,'V: ',V
     ! print *,'L: ',L
     ! print *,'Z-L-V: ',Z-L-V
-    
+
   end subroutine fullSetXv
 
   !-----------------------------------------------------------------------------

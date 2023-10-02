@@ -2,8 +2,8 @@ module test_trend
   use eoslibinit, only: init_thermo
   use eos, only: residualGibbs, enthalpy, entropy
   use ideal, only: idealGibbsSingle
-  use thermopack_constants, only: Rgas
-  use pfunit_mod
+  use thermopack_var, only: Rgas
+  use funit
   implicit none
   public
 

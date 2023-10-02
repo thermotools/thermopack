@@ -12,6 +12,33 @@ module saftvrmie_containers
   private
   save
 
+  !> Container for hard-sphere diameter and differentials
+  !> Also used for the Feynman--Hibbs D variable
+  type :: saftvrmie_dhs
+    !> Hard sphere diameter
+    real, allocatable, dimension(:,:) :: d
+    !> Temperature differential of hard sphere diameter
+    real, allocatable, dimension(:,:) :: d_T
+    !> Second temperature differential of hard sphere diameter
+    real, allocatable, dimension(:,:) :: d_TT
+  contains
+    procedure, public :: update_symmetric_diameters
+    ! Assignment operator
+    procedure, public :: assign_saftvrmie_dhs
+    generic, public :: assignment(=) => assign_saftvrmie_dhs
+  end type saftvrmie_dhs
+
+  !> Container for SAFT-VR Mie hydrogen bound static parameters
+  type :: saftvrmie_hydrogen_bound_container
+    !> Sigma_ij stored in a saftvrmie_dhs container
+    type(saftvrmie_dhs) :: sigma_ij
+    !> Association kernel parameters
+    real, allocatable, dimension(:,:,:,:) :: aij
+  contains
+    procedure, public :: cleanup => cleanup_saftvrmie_hb
+    procedure, public :: allocate => allocate_saftvrmie_hb
+  end type saftvrmie_hydrogen_bound_container
+
   !> Container for SAFT-VR Mie static parameters
   type :: saftvrmie_param_container
     !> Component parameters
@@ -51,6 +78,9 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:) :: Quantum_const_2a_ij
     !> Parameters in the quantum correction, second order - repulsive
     real, allocatable, dimension(:,:) :: Quantum_const_2r_ij
+    ! Hydrogen bounding parameters
+    logical :: isSelfAssociating = .false.
+    type(saftvrmie_hydrogen_bound_container) :: hbc
   contains
     procedure, public :: print => saftvrmie_param_container_print
     ! Assignment operator
@@ -65,25 +95,11 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
     real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
   contains
+    procedure, public :: mirror => mirror_saftvrmie_aij
     ! Assignment operator
     procedure, public :: assign_saftvrmie_aij
     generic, public :: assignment(=) => assign_saftvrmie_aij
   end type saftvrmie_aij
-
-  !> Container for hard-sphere diameter and differentials
-  !> Also used for the Feynman--Hibbs D variable
-  type :: saftvrmie_dhs
-    !> Hard sphere diameter
-    real, allocatable, dimension(:,:) :: d
-    !> Temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_T
-    !> Second temperature differential of hard sphere diameter
-    real, allocatable, dimension(:,:) :: d_TT
-  contains
-    ! Assignment operator
-    procedure, public :: assign_saftvrmie_dhs
-    generic, public :: assignment(=) => assign_saftvrmie_dhs
-  end type saftvrmie_dhs
 
   !> Container for zeta and differentials (also used for functions of zeta)
   type :: saftvrmie_zeta
@@ -154,6 +170,9 @@ module saftvrmie_containers
   !> Container for SAFT-VR Mie common variables
   !! To be claculated only once per state
   type :: saftvrmie_var_container
+    !> Temperature of last update
+    real :: temperature_dhs = -1.0 ! Unphysical initial value
+    real :: temperature_eps = -1.0 ! Unphysical initial value
     !> Hard sphere diameter
     type(saftvrmie_dhs) :: dhs
     !> Effective sigma for the quantum corrected potential
@@ -237,7 +256,8 @@ module saftvrmie_containers
   public :: cleanup_saftvrmie_param_container
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
-  public :: svrm_opt
+  public :: svrm_opt, get_feynman_hibbs_order
+  public :: set_saftvrmie_mass
 
 Contains
 
@@ -317,7 +337,7 @@ Contains
          eos%saftvrmie_param%comp,fh_orders=fh_orders)
     ! Set the correct Feynman--Hibbs order for the quantum corrections
     do i = 1, nc-1
-      if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
+      if (.not. fh_orders(i)==fh_orders(i+1)) print *,"init_saftvrmie_containers::fh_order not equal for components"
     end do
     svrm_opt%quantum_correction = fh_orders(1)
     svrm_opt%quantum_correction_hs = fh_orders(1)
@@ -360,6 +380,15 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
   end subroutine get_saftvrmie_pure_fluid_param
 
+  !> Get quantum parameters for SAFT-VRQ Mie
+  subroutine get_feynman_hibbs_order(ic,fh,fh_hs)
+    integer, intent(in)  :: ic          !< Component index
+    integer, intent(out)    :: fh       !< Specifies order of quantum corr. included
+    integer, intent(out)    :: fh_hs    !< Specifies the Q-corr of the reference hard-sphere
+    !
+    fh = svrm_opt%quantum_correction
+    fh_hs = svrm_opt%quantum_correction_hs
+  end subroutine get_feynman_hibbs_order
 
   !> Set the de Boer parameter Lambda, by adjusting the mass of the component
   !> \author Ailo Aasen, May 2018
@@ -393,6 +422,16 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
     Lambda = h_const/(sigma*sqrt(mass*eps))
   end subroutine get_saftvrmie_pure_fluid_deBoer
+
+  !> Set the mass used for quantum corrections
+  !> \author Morten Hammer, May 2023
+  subroutine set_saftvrmie_mass(ic,mass)
+    integer, intent(in) :: ic          !< Component index
+    real, intent(in)    :: mass        !< Mass [kg]
+    ! Locals
+    saftvrmie_param%comp(ic)%mass = mass
+    call calcBinaryMieParmeters(saftvrmie_param,1)
+  end subroutine set_saftvrmie_mass
 
   !> Set the interaction parameter kij for the dispersive combining rule
   !> \author Ailo Aasen, October 2018
@@ -789,6 +828,7 @@ Contains
         call stoperror("saftvrmie_interface::cleanup_saftvrmie: Not able to deallocate saftvrmie_pc%ms")
       endif
     endif
+    call saftvrmie_pc%hbc%cleanup()
   end subroutine cleanup_saftvrmie_param_container
 
   !> Free allocated saftvrmie_var_container memory
@@ -1380,6 +1420,24 @@ Contains
 
   end subroutine get_DFeynHibbsPower
 
+  subroutine cleanup_saftvrmie_hb(hbc)
+    class(saftvrmie_hydrogen_bound_container), intent(inout) :: hbc
+    call cleanup_saftvrmie_dhs(hbc%sigma_ij)
+    if (allocated(hbc%aij)) deallocate(hbc%aij)
+  end subroutine cleanup_saftvrmie_hb
+
+  subroutine allocate_saftvrmie_hb(hbc,nc)
+    class(saftvrmie_hydrogen_bound_container), intent(inout) :: hbc
+    integer, intent(in) :: nc
+    call hbc%cleanup()
+    call allocate_saftvrmie_dhs(nc,hbc%sigma_ij)
+    hbc%sigma_ij%d = 0
+    hbc%sigma_ij%d_T = 0
+    hbc%sigma_ij%d_TT = 0
+    allocate(hbc%aij(0:10,0:10,nc,nc))
+    hbc%aij = 0
+  end subroutine allocate_saftvrmie_hb
+
   subroutine saftvrmie_allocate_and_init(eos,nc,eos_label)
     class(saftvrmie_eos), intent(inout) :: eos
     integer, intent(in) :: nc
@@ -1553,6 +1611,38 @@ Contains
     this%a3ij = this%a3ij
   end subroutine assign_saftvrmie_var_container
 
+  subroutine mirror_saftvrmie_aij(this)
+    class(saftvrmie_aij), intent(inout) :: this
+    ! Locals
+    integer :: i,j, nc
+    if (allocated(this%am)) then
+      nc = size(this%am, dim=1)
+    else
+      nc = 0
+    endif
+    ! Mirror upper left triangle over diagonal
+    do i=1,nc
+      do j=i+1,nc
+        this%am(j,i) = this%am(i,j)
+        this%am_T(j,i) = this%am_T(i,j)
+        this%am_V(j,i) = this%am_V(i,j)
+        this%am_TT(j,i) = this%am_TT(i,j)
+        this%am_VV(j,i) = this%am_VV(i,j)
+        this%am_TV(j,i) = this%am_TV(i,j)
+        this%am_VVV(j,i) = this%am_VVV(i,j)
+        this%am_VVT(j,i) = this%am_VVT(i,j)
+        this%am_VTT(j,i) = this%am_VTT(i,j)
+        this%am_n(:,j,i) = this%am_n(:,i,j)
+        this%am_Tn(:,j,i) = this%am_Tn(:,i,j)
+        this%am_Vn(:,j,i) = this%am_Vn(:,i,j)
+        this%am_VVn(:,j,i) = this%am_VVn(:,i,j)
+        this%am_VTn(:,j,i) = this%am_VTn(:,i,j)
+        this%am_nn(:,:,j,i) = this%am_nn(:,:,i,j)
+        this%am_Vnn(:,:,j,i) = this%am_Vnn(:,:,i,j)
+      enddo
+    enddo
+  end subroutine mirror_saftvrmie_aij
+
   subroutine assign_saftvrmie_aij(this,other)
     class(saftvrmie_aij), intent(inout) :: this
     class(saftvrmie_aij), intent(in) :: other
@@ -1583,6 +1673,24 @@ Contains
     this%d_T = other%d_T
     this%d_TT = other%d_TT
   end subroutine assign_saftvrmie_dhs
+
+  subroutine update_symmetric_diameters(this)
+    class(saftvrmie_dhs), intent(inout) :: this
+    !
+    integer :: i, j
+    ! Loop over all components and obtain the mixture values
+    do i=1,size(this%d,dim=1)-1
+      do j=i+1,size(this%d,dim=1)
+        this%d(i,j)=0.5*(this%d(i,i)+this%d(j,j))
+        this%d_T(i,j)=0.5*(this%d_T(i,i)+this%d_T(j,j))
+        this%d_TT(i,j)=0.5*(this%d_TT(i,i)+this%d_TT(j,j))
+        !
+        this%d(j,i)=this%d(i,j)
+        this%d_T(j,i)=this%d_T(i,j)
+        this%d_TT(j,i)=this%d_TT(i,j)
+      end do
+    end do
+  end subroutine update_symmetric_diameters
 
   subroutine assign_saftvrmie_zeta(this,other)
     class(saftvrmie_zeta), intent(inout) :: this
