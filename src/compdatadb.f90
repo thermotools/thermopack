@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-05-10T13:56:59.688774
+!! Time stamp: 2023-09-28T12:56:50.126803
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -2819,10 +2819,10 @@ module compdatadb
       cpdata(cid = "LJF", &
       ref = "Default", &
       bib_ref = "", &
-      cptype = 7, &
-      cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      cptype = 8, &
+      cp = (/2.50000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
       0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = 300.0000, &
+      Tcpmin = 0.0000, &
       Tcpmax = 1500.0000  &
       )
 
@@ -8076,7 +8076,7 @@ module compdatadb
 
   type (gendatadb), parameter :: cx109 = &
       gendatadb(ident = "PSEUDO", &
-      formula = "PSEUDO", &
+      formula = "XXX", &
       name = "PSEUDO", &
       mw = 100.0000, &
       Tc = 100.0000, &

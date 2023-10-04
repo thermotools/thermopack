@@ -40,6 +40,8 @@ class cpa(cubic):
         # Tuning methods
         self.s_get_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_kij"))
+        self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "cpa_get_pure_params"))
+        self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_pure_params"))
         # Options methods
         self.s_use_simplified_cpa = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
 
@@ -126,6 +128,47 @@ class cpa(cubic):
                        kij_c)
 
         return np.array(kij_c)
+
+    def get_pure_params(self, ic):
+        """Get pure parameters
+
+
+        Args:
+            ic (int): Component index
+
+        Returns:
+            params (array_like): a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        params_c = (c_double * 5)(0.0)
+        self.s_get_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_get_pure_params.restype = None
+
+        self.s_get_pure_params(byref(ic_c), params_c)
+
+        return np.array(params_c)
+
+    def set_pure_params(self, ic, params):
+        """Set pure parameters
+
+           Input a0, b in their conventional (non-SI) units,
+           beta and eps in SI units, c1 dimensionless.
+        Args:
+            ic (int): Component index
+            params (array_like): a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        params_c = (c_double * 5)(*params)
+        self.s_set_pure_params.argtypes = [POINTER(c_int),
+                                           POINTER(c_double)]
+
+        self.s_set_pure_params.restype = None
+
+        self.s_set_pure_params(byref(ic_c), params_c)
 
     def set_kij(self, c1, c2, kij):
         """Utility

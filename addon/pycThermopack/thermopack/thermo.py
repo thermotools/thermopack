@@ -96,7 +96,7 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "get_pmax"))
         self.s_set_pmax = getattr(
             self.tp, self.get_export_name("thermopack_var", "set_pmax"))
-        
+
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
         self.solideos_solid_volume = getattr(
@@ -105,7 +105,7 @@ class thermo(object):
             self.tp, self.get_export_name("solideos", "solid_enthalpy"))
         self.solideos_solid_entropy = getattr(
             self.tp, self.get_export_name("solideos", "solid_entropy"))
-        
+
         self.eoslibinit_init_volume_translation = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
@@ -240,6 +240,8 @@ class thermo(object):
             self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
         self.s_map_meta_isentrope = getattr(
             self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_tv_meta_ps = getattr(
+            self.tp, self.get_export_name("spinodal", "tv_meta_ps"))
         self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
@@ -2818,7 +2820,8 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size_factor=1.0,
-                              step_size=None, calc_v=False, initial_temperature=None):
+                              step_size=None, calc_v=False, initial_temperature=None,
+                              calc_criconden=False):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2830,12 +2833,14 @@ class thermo(object):
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
-                                                  Overrides initial pressure. Defaults to None (K).
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature.
+                                                   Overrides initial pressure. Defaults to None (K).
+            calc_criconden (bool, optional): Calculate cricondenbar and cricondentherm?
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
             ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
+            ndarray (optional, if `calc_criconden=True`): Cricondenbar followed by cricondentherm (T (K), P (Pa), T (K), P (Pa))
         """
         self.activate()
         nmax = 1000
@@ -2852,7 +2857,10 @@ class thermo(object):
         beta_c = (c_double * nmax)(0.0)
         n_c = c_int(0)
         null_pointer = POINTER(c_double)()
-        criconden_c = null_pointer
+        if calc_criconden:
+            criconden_c = (c_double * 4)(*([0.0]*4))
+        else:
+            criconden_c = null_pointer
         crit_c = null_pointer
         ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
         step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
@@ -2930,6 +2938,9 @@ class thermo(object):
                     v_vals[i], = self.specific_volume(
                         t_vals[i], p_vals[i], z, phase)
                 return_tuple += (v_vals, )
+
+        if calc_criconden:
+            return_tuple += (np.array(criconden_c), )
 
         return return_tuple
 
@@ -4469,6 +4480,52 @@ class thermo(object):
                            byref(ierr_c))
 
         return np.array(rho_c)
+
+    def tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial):
+        """Stability interface & Other property
+        Solve for temperature and volume given pressure and entropy.
+        A fair initial guess is required.
+        No phase stabillity is tested, and stable/meta-stable states will be
+        returned depending on input.
+
+        Args:
+            pressure (float): Pressure (Pa).
+            entropy (float): Entropy (J/K).
+            n (array_like): Mol numbers (mol)
+            volume_initial (float): Initial guess for volume (m3).
+            temp_initial (float): Initial guess for temperature (K)
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3).
+        """
+        self.activate()
+        p_c = c_double(pressure)
+        s_c = c_double(entropy)
+        n_c = (c_double * len(n))(*n)
+        temp_c = c_double(temp_initial)
+        v_c = c_double(volume_initial)
+        ierr_c = c_int(0)
+        self.s_tv_meta_ps.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_tv_meta_ps.restype = None
+
+        self.s_tv_meta_ps(byref(p_c),
+                          byref(s_c),
+                          n_c,
+                          byref(temp_c),
+                          byref(v_c),
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Calculating (t,v) state from (p,s) failed")
+
+        return temp_c.value, v_c.value
 
     #################################
     # Virial interfaces
