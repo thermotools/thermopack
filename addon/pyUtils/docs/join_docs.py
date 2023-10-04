@@ -38,7 +38,7 @@ def format_no_html(file):
         str : The contents of the file, formatted to be nice.
     """
     line = file.readline()
-    if '---' in line:
+    if '---' not in line:
         return line + file.read()
     metadata = line + '\n'
     line = file.readline()
@@ -53,6 +53,8 @@ def format_no_html(file):
 
         metadata += line
         line = file.readline()
+
+    line = file.readline() # Move past the '---' at the end of the header section.
 
     if title:
         main_header = title
@@ -88,7 +90,8 @@ def get_header(files):
     return header
 
 def write_pypi_readme():
-    files = ['header', 'pypi_toc', 'cite_acknowl_licence', 'pypi_structure', 'getting_started', 'more_advanced', 'Component-name-mapping']
+    files = ['readme_parts/header', 'readme_parts/pypi_toc', 'metapages/please_cite', 'readme_parts/pypi_structure',
+             'v2.1.0/getting_started', 'v2.1.0/more_advanced', 'v2.1.0/Component-name-mapping']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)
@@ -100,8 +103,9 @@ def write_pypi_readme():
     print_finished_report(header, out_file_path)
 
 def write_github_readme():
-    files = ['header', 'github_toc', 'cite_acknowl_licence', 'structure', 'source_build', 'getting_started',
-             'more_advanced', 'new_fluids', 'Component-name-mapping']
+    files = ['readme_parts/header', 'readme_parts/github_toc', 'metapages/please_cite', 'readme_parts/structure',
+             'vCurrent/source_build', 'vCurrent/getting_started', 'vCurrent/more_advanced', 'vCurrent/new_fluids',
+             'vCurrent/Component-name-mapping']
     header = get_header(files)
 
     out_file_str = gen_file_str(files)

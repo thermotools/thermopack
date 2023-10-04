@@ -1,3 +1,10 @@
+---
+version: 2.1.0
+layout: default
+title: Component identifiers
+permalink: /vcurrent/Component-name-mapping.html
+---
+
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
 Generated at : 2023-09-28T21:36:40.794636

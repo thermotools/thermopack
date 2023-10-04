@@ -1,7 +1,7 @@
 import os
 
 THERMOPACK_ROOT = os.path.dirname(__file__) + '/../../..'
-MARKDOWN_DIR = THERMOPACK_ROOT + '/docs/vCurrent/'
+MARKDOWN_DIR = THERMOPACK_ROOT + '/docs/'
 
 def remove_illegal_link_chars(link_str):
     """
