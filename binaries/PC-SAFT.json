@@ -246,5 +246,15 @@
     "ref": "Default/Tang_Gross2010",
     "bib_reference": "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004",
     "kij": 0.108
+  },
+  "KIJ-32": {
+    "eos": "PC-SAFT",
+    "uid1": "NH3",
+    "uid2": "H2O",
+    "ref": "Default/NguyenHuynh2020",
+    "bib_reference": "Doi: 10.1016/j.fluid.2020.112689",
+    "kij": -0.32,
+    "eps_comb_rule": "ARITHMETIC",
+    "beta_comb_rule": "GEOMETRIC"
   }
 }

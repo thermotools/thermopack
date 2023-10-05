@@ -35,6 +35,7 @@ from os import path
 import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
+import warnings
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
@@ -95,8 +96,16 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "get_pmax"))
         self.s_set_pmax = getattr(
             self.tp, self.get_export_name("thermopack_var", "set_pmax"))
+
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
+        self.solideos_solid_volume = getattr(
+            self.tp, self.get_export_name("solideos", "solid_specificvolume"))
+        self.solideos_solid_enthalpy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_enthalpy"))
+        self.solideos_solid_entropy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_entropy"))
+
         self.eoslibinit_init_volume_translation = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
@@ -132,9 +141,10 @@ class thermo(object):
             "ideal", "set_enthalpy_reference_value"))
 
         # Speed of sound
-        #self.sos_singlePhaseSpeedOfSound = getattr(self.tp, '__speed_of_sound_MOD_singlephasespeedofsound')
         self.s_sos_sound_velocity_2ph = getattr(
             self.tp, self.get_export_name("speed_of_sound", "sound_velocity_2ph"))
+        self.s_speed_of_sound_tv = getattr(
+            self.tp, self.get_export_name("speed_of_sound", "speed_of_sound_tv"))
 
         # Component info
         self.s_compdata_compindex = getattr(
@@ -222,6 +232,8 @@ class thermo(object):
             self.tp, self.get_export_name("saturation_tv", "envelope_plot_tv"))
         self.s_multi_phase_envelope_tv = getattr(
             self.tp, self.get_export_name("multi_phase_envelope_tv", "multi_phase_envelope_plot_tv"))
+        self.s_envelope_isentrope_cross = getattr(
+            self.tp, self.get_export_name("saturation_curve", "envelope_isentrope_cross"))
 
         # Stability
         self.s_crit_tv = getattr(
@@ -232,6 +244,8 @@ class thermo(object):
             self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
         self.s_map_meta_isentrope = getattr(
             self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_tv_meta_ps = getattr(
+            self.tp, self.get_export_name("spinodal", "tv_meta_ps"))
         self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
@@ -534,6 +548,181 @@ class thermo(object):
         self.solideos_solid_init.argtypes = [c_char_p, c_len_type]
         self.solideos_solid_init.restype = None
         self.solideos_solid_init(scomp_c, scomp_len)
+
+    def solid_enthalpy(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase enthalpy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific enthalpy (J/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_enthalpy.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_enthalpy.restype = None
+
+        self.solideos_solid_enthalpy(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
+    def solid_entropy(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase entropy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific entropy (J/mol.K), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_entropy.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_entropy.restype = None
+
+        self.solideos_solid_entropy(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
+    def solid_volume(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase volume
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            dhdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific volume (m3/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_volume.argtypes = [POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double),
+                                        POINTER(c_double)]
+
+        self.solideos_solid_volume.restype = None
+
+        self.solideos_solid_volume(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dhdt_c,
+                            dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        return return_tuple
+
 
     #################################
     # Utility
@@ -1442,6 +1631,35 @@ class thermo(object):
 
         return sos
 
+    def speed_of_sound_tv(self, temp, volume, n):
+        """Tv-property
+        Calculate speed of sound for single phase fluid
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+
+        Returns:
+            float: Speed of sound (m/s)
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        volume_c = c_double(volume)
+        n_c = (c_double * len(n))(*n)
+
+        self.s_speed_of_sound_tv.argtypes = [POINTER(c_double),
+                                             POINTER(c_double),
+                                             POINTER(c_double)]
+
+        self.s_speed_of_sound_tv.restype = c_double
+
+        sos = self.s_speed_of_sound_tv(byref(temp_c),
+                                       byref(volume_c),
+                                       n_c)
+
+        return sos
+
     #################################
     # Flash interfaces
     #################################
@@ -1625,7 +1843,10 @@ class thermo(object):
                                 byref(phase_c),
                                 byref(ierr_c))
 
-        if ierr_c.value != 0:
+
+        if ierr_c.value < 0:
+            warnings.warn("PH solver not fully converged")
+        elif ierr_c.value > 0:
             raise Exception("PH flash calclualtion failed")
 
         x = np.array(x_c)
@@ -2603,7 +2824,8 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size_factor=1.0,
-                              step_size=None, calc_v=False, initial_temperature=None):
+                              step_size=None, calc_v=False, initial_temperature=None,
+                              calc_criconden=False):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2611,16 +2833,18 @@ class thermo(object):
             initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
-            minimum_temperature (float , optional): Exit on minimum pressure (Pa). Defaults to None.
+            minimum_temperature (float , optional): Exit on minimum temperature (K). Defaults to None.
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
-                                                  Overrides initial pressure. Defaults to None (K).
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature.
+                                                   Overrides initial pressure. Defaults to None (K).
+            calc_criconden (bool, optional): Calculate cricondenbar and cricondentherm?
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
             ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
+            ndarray (optional, if `calc_criconden=True`): Cricondenbar followed by cricondentherm (T (K), P (Pa), T (K), P (Pa))
         """
         self.activate()
         nmax = 1000
@@ -2637,7 +2861,10 @@ class thermo(object):
         beta_c = (c_double * nmax)(0.0)
         n_c = c_int(0)
         null_pointer = POINTER(c_double)()
-        criconden_c = null_pointer
+        if calc_criconden:
+            criconden_c = (c_double * 4)(*([0.0]*4))
+        else:
+            criconden_c = null_pointer
         crit_c = null_pointer
         ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
         step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
@@ -2715,6 +2942,9 @@ class thermo(object):
                     v_vals[i], = self.specific_volume(
                         t_vals[i], p_vals[i], z, phase)
                 return_tuple += (v_vals, )
+
+        if calc_criconden:
+            return_tuple += (np.array(criconden_c), )
 
         return return_tuple
 
@@ -2854,6 +3084,7 @@ class thermo(object):
         res_c = (c_double * (nmax*9))(0.0)
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
+        ierr_c = c_int(0)
 
         self.s_binary_plot.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -2867,6 +3098,7 @@ class thermo(object):
                                        POINTER(c_int),
                                        POINTER(c_int),
                                        POINTER(c_double),
+                                       POINTER(c_int),
                                        c_len_type]
 
         self.s_binary_plot.restype = None
@@ -2883,7 +3115,11 @@ class thermo(object):
                            nres_c,
                            byref(wsf_c),
                            byref(min_press_c),
+                           byref(ierr_c),
                            filename_len)
+
+        if ierr_c.value > 0 or ierr_c.value < -1:
+            raise Exception("binary_plot failed")
 
         nLLE = nres_c[0]
         nL1VE = nres_c[1]
@@ -2978,6 +3214,7 @@ class thermo(object):
         res_c = (c_double * (nmax*9))(0.0)
         nres_c = (c_int * 3)(0)
         wsf_c = c_int(1)
+        ierr_c = c_int(0)
 
         self.s_binary_plot.argtypes = [POINTER(c_double),
                                        POINTER(c_double),
@@ -2991,10 +3228,13 @@ class thermo(object):
                                        POINTER(c_int),
                                        POINTER(c_int),
                                        POINTER(c_double),
+                                       POINTER(c_int),
                                        c_len_type]
 
         self.s_binary_plot.restype = None
 
+        pmin = self.get_pmin()
+        self.set_pmin(1.0e-20)
         self.s_binary_plot(byref(temp_c),
                            byref(press_c),
                            byref(ispec_c),
@@ -3007,7 +3247,12 @@ class thermo(object):
                            nres_c,
                            byref(wsf_c),
                            byref(min_press_c),
+                           byref(ierr_c),
                            filename_len)
+
+        self.set_pmin(pmin)
+        if ierr_c.value > 0 or ierr_c.value < -1:
+            raise Exception("binary_plot failed")
 
         nLLE = nres_c[0]
         nL1VE = nres_c[1]
@@ -3522,6 +3767,93 @@ class thermo(object):
             p_vals = None
 
         return t_vals, p_vals, tw_vals, pw_vals
+
+    def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
+                              minimum_temperature=None, step_size=None, initial_temperature=None):
+        """Saturation interface
+        Get saturated phase having given entropy. Searches the binodal by 
+        tracing it upwards in pressure from the dew point at initial_pressure.
+        Args:
+            entropy (float): Entropy (J/mol/K).
+            initial_pressure (float): Start search from dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
+            step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
+            calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False
+            initial_temperature (bool, optional): Start search from dew point at initial temperature.
+                                                  Overrides initial pressure. Defaults to None (K).
+        Returns:
+            float: Temperature values (K)
+            foat: Pressure values (Pa)
+            float: Specific volume (m3/mol)
+            int: Phase flag for main phase
+            ndarray: Incipient composition (mol/mol)
+        """
+        self.activate()
+        if initial_temperature is not None:
+            initial_pressure, x = self.dew_pressure(initial_temperature, z)
+        else:
+            initial_temperature, x = self.dew_temperature(initial_pressure, z)
+        z_c = (c_double * len(z))(*z)
+        entropy_c = c_double(entropy)
+        temp_c = c_double(initial_temperature)
+        press_c = c_double(initial_pressure)
+        x_c = (c_double * len(x))(*x)
+        y_c = (c_double * len(z))(*z)
+        max_press_c = c_double(maximum_pressure)
+        Ti_c = c_double(0.0)
+        Pi_c = c_double(0.0)
+        wi_c = (c_double * len(z))(0.0)
+        phase_c = c_int(0)
+        ierr_c = c_int(0)
+        ds_c = POINTER(c_double)() if step_size is None else POINTER(c_double)(c_double(step_size))
+
+        self.s_envelope_isentrope_cross.argtypes = [POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int)]
+
+        self.s_envelope_isentrope_cross.restype = c_int
+
+        has_crossing_int = self.s_envelope_isentrope_cross(z_c,
+                                                           byref(temp_c),
+                                                           byref(press_c),
+                                                           x_c,
+                                                           y_c,
+                                                           byref(max_press_c),
+                                                           byref(entropy_c),
+                                                           byref(Ti_c),
+                                                           byref(Pi_c),
+                                                           byref(phase_c),
+                                                           wi_c,
+                                                           ds_c,
+                                                           byref(ierr_c))
+
+        has_crossing = (has_crossing_int == 1 and ierr_c.value == 0)
+        if has_crossing:
+            Ti = Ti_c.value
+            Pi = Pi_c.value
+            wi = np.array(wi_c)
+            phase = phase_c.value
+            vi, = self.specific_volume(Ti, Pi, z, phase)
+        else:
+            Ti = None
+            Pi = None
+            wi = None
+            phase = None
+            vi = None
+
+        return has_crossing, Ti, Pi, vi, wi, phase
 
     def get_isotherm(self,
                      temp,
@@ -4086,7 +4418,7 @@ class thermo(object):
                        phase,
                        temperature=None):
         """Stability interface
-        Solve for spinodal curve point. Not able to solve for points cloes to critical point.
+        Solve for spinodal curve point. Not able to solve for points close to critical point.
         Solve for temperature if given, otherwise solve for pressure.
 
         Args:
@@ -4146,7 +4478,7 @@ class thermo(object):
                            entropy,
                            minimum_pressure,
                            n_max=50):
-        """Stability interface
+        """Stability interface & Isoline
         Trace isentrope into meta-stable region. Trace from pressure to minimum_pressure
 
         Args:
@@ -4165,7 +4497,7 @@ class thermo(object):
             np.ndarray: Pressure (Pa)
         """
         self.activate()
-        initial_pressure_c = c_double(pressure)
+        initial_pressure_c = c_double(initial_pressure)
         entropy_c = c_double(entropy)
         minimum_pressure_c = c_double(minimum_pressure)
         z_c = (c_double * len(z))(*z)
@@ -4202,77 +4534,12 @@ class thermo(object):
 
         return np.array(temp_c), np.array(vol_c), np.array(press_c)
 
-    def density_mu_t(self, temp, mu, rho_initial):
-        """Stability interface
-        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
-
-        Args:
-            temp (float): Temperature (K)
-            mu (array_like): Flag to activate calculation.
-            rho_initial (array_like): Initial guess for component densities (mol/m3).
-
-        Returns:
-            rho (array_like): Array of component densities (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        mu_c = (c_double * len(mu))(*mu)
-        rho_c = (c_double * len(mu))(*rho_initial)
-        ierr_c = c_int(0)
-        self.s_solve_mu_t.argtypes = [POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_double),
-                                      POINTER(c_int)]
-
-        self.s_solve_mu_t.restype = None
-
-        self.s_solve_mu_t(mu_c,
-                          byref(temp_c),
-                          rho_c,
-                          byref(ierr_c))
-
-        if ierr_c.value != 0:
-            raise Exception("mu-T solver failed")
-
-        return np.array(rho_c)
-
-    def density_lnf_t(self, temp, lnf, rho_initial):
-        """Stability interface
-        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
-
-        Args:
-            temp (float): Temperature (K)
-            lnf (array_like): Logaritm of fugacity coefficients.
-            rho_initial (array_like): Initial guess for component densities (mol/m3).
-
-        Returns:
-            rho (array_like): Array of component densities (mol/m3).
-        """
-        self.activate()
-        temp_c = c_double(temp)
-        lnf_c = (c_double * len(lnf))(*lnf)
-        rho_c = (c_double * len(lnf))(*rho_initial)
-        ierr_c = c_int(0)
-        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_double),
-                                       POINTER(c_int)]
-
-        self.s_solve_lnf_t.restype = None
-
-        self.s_solve_lnf_t(lnf_c,
-                           byref(temp_c),
-                           rho_c,
-                           byref(ierr_c))
-
-        return np.array(rho_c)
-
     def map_meta_isotherm(self,
                           temperature,
                           z,
                           phase,
                           n=50):
-        """Stability interface
+        """Stability interface & Isoline
         Trace isotherm from saturation line to spinodal. Solve for phase in
         chemical and thermal equilibrium with a phase defined by z anf phase flag..
 
@@ -4325,6 +4592,117 @@ class thermo(object):
                 rho[i][j] = rho_c[i+j*n]
 
         return np.array(vol_c), rho
+
+    def density_mu_t(self, temp, mu, rho_initial):
+        """Stability interface & Other property
+        Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
+
+        Args:
+            temp (float): Temperature (K)
+            mu (array_like): Flag to activate calculation.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        mu_c = (c_double * len(mu))(*mu)
+        rho_c = (c_double * len(mu))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_mu_t.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_solve_mu_t.restype = None
+
+        self.s_solve_mu_t(mu_c,
+                          byref(temp_c),
+                          rho_c,
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("mu-T solver failed")
+
+        return np.array(rho_c)
+
+    def density_lnf_t(self, temp, lnf, rho_initial):
+        """Stability interface & Other property
+        Solve densities (lnf=lnf(T,rho)) given temperature and fugcaity coefficients.
+
+        Args:
+            temp (float): Temperature (K)
+            lnf (array_like): Logaritm of fugacity coefficients.
+            rho_initial (array_like): Initial guess for component densities (mol/m3).
+
+        Returns:
+            rho (array_like): Array of component densities (mol/m3).
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        lnf_c = (c_double * len(lnf))(*lnf)
+        rho_c = (c_double * len(lnf))(*rho_initial)
+        ierr_c = c_int(0)
+        self.s_solve_lnf_t.argtypes = [POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_double),
+                                       POINTER(c_int)]
+
+        self.s_solve_lnf_t.restype = None
+
+        self.s_solve_lnf_t(lnf_c,
+                           byref(temp_c),
+                           rho_c,
+                           byref(ierr_c))
+
+        return np.array(rho_c)
+
+    def tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial):
+        """Stability interface & Other property
+        Solve for temperature and volume given pressure and entropy.
+        A fair initial guess is required.
+        No phase stabillity is tested, and stable/meta-stable states will be
+        returned depending on input.
+
+        Args:
+            pressure (float): Pressure (Pa).
+            entropy (float): Entropy (J/K).
+            n (array_like): Mol numbers (mol)
+            volume_initial (float): Initial guess for volume (m3).
+            temp_initial (float): Initial guess for temperature (K)
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3).
+        """
+        self.activate()
+        p_c = c_double(pressure)
+        s_c = c_double(entropy)
+        n_c = (c_double * len(n))(*n)
+        temp_c = c_double(temp_initial)
+        v_c = c_double(volume_initial)
+        ierr_c = c_int(0)
+        self.s_tv_meta_ps.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_tv_meta_ps.restype = None
+
+        self.s_tv_meta_ps(byref(p_c),
+                          byref(s_c),
+                          n_c,
+                          byref(temp_c),
+                          byref(v_c),
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Calculating (t,v) state from (p,s) failed")
+
+        return temp_c.value, v_c.value
 
     #################################
     # Virial interfaces

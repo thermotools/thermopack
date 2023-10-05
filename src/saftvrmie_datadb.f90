@@ -1,6 +1,6 @@
 !> Automatically generated to file saftvrmie_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-04-11T09:40:48.524533
+!! Time stamp: 2023-06-21T13:07:27.307865
 
 module saftvrmie_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -617,7 +617,7 @@ module saftvrmie_datadb
       eps_depth_divk = 166.66, &
       lambda_a = 6., &
       lambda_r = 12., &
-      mass = 1.3915e-22, &
+      mass = 1.3914985275103401e-25, &
       eps = 0., &
       beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
@@ -630,8 +630,8 @@ module saftvrmie_datadb
       saftvrmie_data(eosidx = eosSAFT_VR_MIE, &
       compName = "LJF", &
       m = 1., &
-      sigma = 3.0e-10, &
-      eps_depth_divk = 30., &
+      sigma = 3.e-10, &
+      eps_depth_divk = 100., &
       lambda_a = 6., &
       lambda_r = 12., &
       mass = 0.e+00, &
@@ -673,7 +673,7 @@ module saftvrmie_datadb
       beta = 0.0000E+00, &
       assoc_scheme = no_assoc, &
       fh_order = 0, &
-      bib_ref = "Müller's mystery parameters for methane and decane where SAFT-VR Mie fails", &
+      bib_ref = "MÃ¼ller's mystery parameters for methane and decane where SAFT-VR Mie fails", &
       ref = "Muller" &
       )
 

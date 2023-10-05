@@ -1,6 +1,8 @@
 """Module for defining files defining symbols to export from thermopack"""
 from datetime import datetime
-from shutil import copy
+import sys
+from shutil import move
+from pathlib import Path
 
 
 def get_export_statement(platform, compiler, export_info):
@@ -118,6 +120,9 @@ append_export("thermopack_setwsparam")
 append_export("thermopack_get_volume_shift_parameters")
 append_export("thermopack_set_volume_shift_parameters")
 
+append_export("thermopack_set_alpha_corr")
+append_export("thermopack_set_beta_corr")
+
 append_export("get_bp_term", "binaryplot")
 append_export("vllebinaryxy", "binaryplot")
 append_export("global_binary_plot", "binaryplot")
@@ -143,6 +148,7 @@ append_export("idealentropysingle", "eos")
 
 append_export("init_thermo", "eoslibinit")
 append_export("init_cubic", "eoslibinit")
+append_export("init_cubic_pseudo", "eoslibinit")
 append_export("init_cpa", "eoslibinit")
 append_export("init_pcsaft", "eoslibinit")
 append_export("init_saftvrmie", "eoslibinit")
@@ -231,6 +237,7 @@ append_export("set_saftvrmie_lr_gammaij", "saftvrmie_containers")
 append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("get_feynman_hibbs_order", "saftvrmie_containers")
+append_export("set_saftvrmie_mass", "saftvrmie_containers")
 
 append_export("model_control_hs", "saftvrmie_interface")
 append_export("model_control_a1", "saftvrmie_interface")
@@ -239,9 +246,12 @@ append_export("model_control_a3", "saftvrmie_interface")
 append_export("model_control_chain", "saftvrmie_interface")
 append_export("hard_sphere_reference", "saftvrmie_interface")
 append_export("set_temperature_cache_flag", "saftvrmie_interface")
+append_export("calc_saftvrmie_term", "saftvrmie_interface")
 
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
+append_export("cpa_set_pure_params", "saft_interface")
+append_export("cpa_get_pure_params", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
 append_export("calc_saft_dispersion", "saft_interface")
@@ -266,10 +276,16 @@ append_export("calc_hard_sphere_diameter", "saft_interface")
 append_export("pc_saft_get_pure_params", "saft_interface")
 append_export("pc_saft_set_pure_params", "saft_interface")
 append_export("de_broglie_wavelength", "saft_interface")
+append_export("sigma_ij", "saft_interface")
+append_export("epsilon_ij", "saft_interface")
+append_export("sigma_eff_ij", "saft_interface")
+append_export("epsilon_eff_ij", "saft_interface")
+append_export("alpha", "saft_interface")
 
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")
 append_export("map_meta_isentrope", "spinodal")
+append_export("tv_meta_ps", "spinodal")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
@@ -277,23 +293,30 @@ append_export("safe_dewt", "saturation")
 append_export("safe_dewp", "saturation")
 
 append_export("envelopeplot", "saturation_curve")
+append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
 
 append_export("envelope_plot_tv", "saturation_tv")
 
 append_export("solid_init", "solideos")
+append_export("solid_specificvolume", "solideos")
+append_export("solid_enthalpy", "solideos")
+append_export("solid_entropy", "solideos")
 
 append_export("solidenvelopeplot", "solid_saturation")
 append_export("melting_pressure_correlation", "solid_saturation")
 append_export("sublimation_pressure_correlation", "solid_saturation")
 
 append_export("sound_velocity_2ph", "speed_of_sound")
+append_export("speed_of_sound_tv", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 
 append_export("get_rgas", "thermopack_var")
 append_export("set_tmin", "thermopack_var")
 append_export("get_tmin", "thermopack_var")
+append_export("set_tmax", "thermopack_var")
+append_export("get_tmax", "thermopack_var")
 append_export("set_pmin", "thermopack_var")
 append_export("get_pmin", "thermopack_var")
 append_export("set_pmax", "thermopack_var")
@@ -332,6 +355,7 @@ if __name__ == "__main__":
     write_def_file(GENERIC, LD_GCC, LINUX, "libthermopack_export.version")
     write_def_file(GENERIC, LD_CLANG, MACOS, "libthermopack_export.symbols")
     write_def_file(IFORT, LD_MSVC, WINDOWS, "thermopack.def")
-    copy('libthermopack_export.version', '../../../libthermopack_export.version')
-    copy('libthermopack_export.symbols', '../../../libthermopack_export.symbols')
-    copy('thermopack.def', '../../../MSVStudio/thermopack.def')
+    thermopackroot = Path(__file__).parents[3]
+    move('libthermopack_export.version', thermopackroot/'libthermopack_export.version')
+    move('libthermopack_export.symbols', thermopackroot/'libthermopack_export.symbols')
+    move('thermopack.def', thermopackroot/'MSVStudio/thermopack.def')

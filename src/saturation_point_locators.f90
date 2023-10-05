@@ -17,13 +17,18 @@ module saturation_point_locators ! Give a more descriptive name..
   use puresaturation, only: puresat
   implicit none
   save
+  private
 
-  integer, parameter :: locate_from_entropy = 1
-  integer, parameter :: locate_from_lnvol = 2
-  integer, parameter :: locate_from_enthalpy = 3
-  integer, parameter :: locate_from_temperature = 4
-  integer, parameter :: locate_from_pressure = 5
-  integer, parameter :: locate_from_joule_thompson = 6
+  integer, parameter, public :: locate_from_entropy = 1
+  integer, parameter, public :: locate_from_lnvol = 2
+  integer, parameter, public :: locate_from_enthalpy = 3
+  integer, parameter, public :: locate_from_temperature = 4
+  integer, parameter, public :: locate_from_pressure = 5
+  integer, parameter, public :: locate_from_joule_thompson = 6
+
+  public :: sat_points_based_on_prop
+  public :: bracketSolveForPropertySingle
+  public :: iso_cross_saturation_line
 
 contains
 

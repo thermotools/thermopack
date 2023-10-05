@@ -8,7 +8,7 @@ from datetime import datetime
 from compdata import component, comp_list
 from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, saft_eos_to_idx, \
-    get_assoc_scheme_parameter
+    get_assoc_scheme_parameter, get_mix_model_parameter
 from binarydata import binaries, binary_list
 from shutil import copy
 
@@ -170,7 +170,17 @@ class pcsaft_binaries(binaries):
         code_lines.append(3*I+"bib_ref = \"" + self.bins[tag]["bib_reference"] + "\", &")
         code_lines.append(3*I+"uid1 = \"" + self.bins[tag]["uid1"] + "\", &")
         code_lines.append(3*I+"uid2 = \"" + self.bins[tag]["uid2"] + "\", &")
-        code_lines.append(3*I + 'kijvalue = {}'.format(print_float(self.bins[tag][xij])) + "  &")
+        code_lines.append(3*I + 'kijvalue = {}'.format(print_float(self.bins[tag][xij])) + ", &")
+        if "eps_comb_rule" in self.bins[tag].keys():
+            eps_comb_rule = self.bins[tag]["eps_comb_rule"]
+        else:
+            eps_comb_rule = "DEFAULT"
+        if "beta_comb_rule" in self.bins[tag].keys():
+            beta_comb_rule = self.bins[tag]["beta_comb_rule"]
+        else:
+            beta_comb_rule = "DEFAULT"
+        code_lines.append(3*I + 'eps_comb_rule = {}'.format(get_mix_model_parameter(eps_comb_rule)) + ",  &")
+        code_lines.append(3*I + 'beta_comb_rule = {}'.format(get_mix_model_parameter(beta_comb_rule)) + "  &")        
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -291,6 +301,8 @@ def PCSAFT_class_definition():
     classes.append(2*I+"character(len=ref_len) :: ref ! Parameter set")
     classes.append(2*I+"character(len=bibref_len) :: bib_ref ! Bibliographic reference")
     classes.append(2*I+"real :: kijvalue")
+    classes.append(2*I+"integer :: eps_comb_rule")
+    classes.append(2*I+"integer :: beta_comb_rule")
     classes.append(I+"end type PCkijdata")
     classes.append("")
 

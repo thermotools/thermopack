@@ -29,6 +29,18 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
         an example. The sections should equate to the 'Section Name' in the above formatting example. The sections in
         the markdown file will be ordered according to the order of this list.
 
+        NOTE: The sections "Other" and "Deprecated" are automatically generated.
+            If the section name in a methods docstring does not match any of the supplied sections, it is added to the
+            "Other" section, and a warning is issued
+            If a method has the Section Name "Deprecated" it is added to the automatically generated "Deprecated" section.
+            To add other automatically generated sections, add them in the function `get_automatic_sections`
+
+        NOTE: A method can be added to several sections, by separating the "Section Name"'s with an ampersand as
+            def my_func(self):
+                """Section 1 & Section 5 & Section 6 & ...
+                This is documentation for a method that belongs to many sections
+                """
+
     3 : Define a dict of section name => section header mappings. This maps the section names in the docstrings to
         the section headers in the markdown file.
 
@@ -53,12 +65,16 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
 
     9 : Concatenate the strings you have generated and write to file.
 '''
-
+import copy
 import inspect
 from warnings import warn
 from datetime import datetime
 from thermopack.thermo import thermo
-from tools import remove_illegal_link_chars, THERMOPACK_ROOT, MARKDOWN_DIR
+from thermopack.saft import saft
+from thermopack.saftvrmie import saftvrmie
+from thermopack.pcsaft import pcsaft
+from thermopack.saftvrqmie import saftvrqmie
+from tools import remove_illegal_link_chars, check_is_changed, write_file, THERMOPACK_ROOT, MARKDOWN_DIR
 
 
 def get_autogen_header(classname):
@@ -103,7 +119,7 @@ def to_markdown(methods):
         pad = '&nbsp;' * 4 + ' '
         endl = '\n\n'
         for line in content_lines:
-            if ('args:' in line.lower()) or ('returns:' in line.lower()):
+            if ('args:' in line.lower()) or ('returns:' in line.lower()) or ('raises:' in line.lower()):
                 md_text += '#### ' + line + endl
 
             elif ':' in line:
@@ -119,6 +135,8 @@ def split_methods_by_section(sections, methods):
     """
     Organise the various methods of a class into sections, determined by the id 'Section Name' as in the example at
     the top of this file. Warns if there are methods for which no matching section was found.
+    The section 'Other' is automatically generated if there are methods with an identifier not matching any of the
+    identifiers in 'sections'. The section 'Deprecated' is automatically included in the 'sections' list.
 
     Args:
         sections (list<str>) : The name of each section, corresponding to the first line in each docstring.
@@ -128,29 +146,61 @@ def split_methods_by_section(sections, methods):
         dict : With keys corresponding to the sections, and value being a list of the (name, method) tuples with
                 the first line of the docstring matching the section (key).
     """
+
+    if 'deprecated' not in [s.lower() for s in sections]:
+        sections.append('Deprecated')
+
     method_dict = {}
     for name, meth in methods:
+        # A method can be added to several sections, by giving it the header
+        # def myfunc():
+        #   """Section1 & Section2 & Section5 ... """
+        method_sections = [m.strip() for m in meth.__doc__.split('\n')[0].lower().split('&')] # extracting the section names as described above
+        method_has_section = False
         for sec in sections:
-            if sec.lower() in meth.__doc__.split('\n')[0].lower():
+            if sec.lower() in method_sections:
+                method_has_section = True
                 if sec in method_dict.keys():
                     method_dict[sec].append((name, meth))
-                    break
                 else:
                     method_dict[sec] = [(name, meth)]
-                    break
-        else:
+        if method_has_section is False: # Generate a section called "Other" and add the method to that section. Warn that this is done.
             warn('Method : ' + name + " did not contain a section on the first line of its docstring! Adding to 'Other'",
-                 SyntaxWarning)
-            warn('Section name in docstring is : '+ meth.__doc__.split('\n')[0].lower(), SyntaxWarning)
+                 SyntaxWarning, stacklevel=3)
+            warn('Section name in docstring is : '+ meth.__doc__.split('\n')[0].lower(), SyntaxWarning, stacklevel=3)
 
             if 'Other' in method_dict.keys():
                 method_dict['Other'].append((name, meth))
             else:
                 method_dict['Other'] = [(name, meth)]
 
+        # print('other is : ', method_dict['Other'] if 'Other' in method_dict.keys() else None)
     return method_dict
 
-def get_toc(sections, section_headers, method_dict):
+def get_automatic_sections(sections, section_headers, section_intro, method_dict):
+    sections = copy.deepcopy(sections)
+    section_headers = copy.deepcopy(section_headers)
+    section_intro = copy.deepcopy(section_intro)
+
+    if 'Other' in method_dict.keys():
+        if 'Other' not in sections:
+            sections.append('Other')
+        if 'Other' not in section_headers.keys():
+            section_headers['Other'] = 'Other'
+        if 'Other' not in section_intro.keys():
+            section_intro['Other'] = 'Methods that do not have a section identifier in their docstring.'
+
+    if 'Deprecated' in method_dict.keys():
+        if 'Deprecated' not in sections:
+            sections.append('Deprecated')
+        if 'Deprecated' not in section_headers.keys():
+            section_headers['Deprecated'] = 'Deprecated methods'
+        if 'Deprecated' not in section_intro.keys():
+            section_intro['Deprecated'] = 'Deprecated methods are not maintained, and may be removed in the future.'
+
+    return sections, section_headers, section_intro
+
+def get_toc(sections, section_headers, method_dict, is_subsection=False):
     """
     Generate a table of contents with links to the sections, using the names in section_headers.
     Note: Uses the function tools.remove_illegal_link_chars() to sanitize raw strings, such that they can be used
@@ -161,9 +211,16 @@ def get_toc(sections, section_headers, method_dict):
         section_headers (dict<str, str>) : Dict mapping the section names to the section headers in the markdown file
         method_dict (dict<str, list<tuple<str, function>>>) : Mapping the section names to the list of (method name,
                                                                 function) tuples that are in the section.
+        is_subsection (bool, optional) : Whether to include the automatically generated sections in the toc.
+                                        Should be set to False when generating the toc for the whole file, and set to
+                                        True when generating toc for subsections.
     Returns:
         str : The string representation of the table of contents to be written to the markdown file.
     """
+
+    if is_subsection is False:
+        sections, section_headers, _ = get_automatic_sections(sections, section_headers, {}, method_dict)
+
     toc_text = '## Table of contents\n'
     for sec in sections:
         if sec not in method_dict.keys():
@@ -195,19 +252,17 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
     Returns:
         str : The markdown text corresponding to the main contents of the file.
     """
+
+    sections, section_headers, section_intro = get_automatic_sections(sections, section_headers, section_intro, method_dict)
+
     md_text = ''
     for sec in sections:
         if sec not in method_dict.keys():
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
-        md_text +=  '#' + get_toc([sec], section_headers, method_dict) + '\n'
+        md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
         md_text += to_markdown(method_dict[sec])
-
-    if 'Other' in method_dict.keys():
-        md_text += section_headers['Other'] + '\n\n'
-        md_text += section_intro['Other'] + '\n\n'
-        md_text += to_markdown(method_dict['Other'])
 
     return md_text
 
@@ -219,6 +274,7 @@ def thermo_to_markdown():
     sections = ['TV-property',
                 'Tp-property',
                 'TVp-property',
+                'Other property',
                 'Flash interface',
                 'Saturation interface',
                 'Isoline',
@@ -233,13 +289,13 @@ def thermo_to_markdown():
                        'TV-property' : 'TV-property interfaces',
                        'Tp-property' : 'Tp-property interfaces',
                        'TVp-property' : 'TVp-property interfaces',
+                       'Other property' : 'Other property interfaces',
                        'Flash interface' : 'Flash interfaces',
                        'Saturation interface' : 'Saturation interfaces',
                        'Isoline' : 'Isolines',
                        'Stability interface' : 'Stability interfaces',
                        'Virial interface' : 'Virial interfaces',
-                       'Joule-Thompson interface' : 'Joule-Thompson interface',
-                       'Other' : 'Other methods'}
+                       'Joule-Thompson interface' : 'Joule-Thompson interface'}
 
     section_intro = {'Internal': 'Methods for handling communication with the Fortran library.',
                        'Utility': 'Methods for setting ... and getting ...',
@@ -250,20 +306,20 @@ def thermo_to_markdown():
                        'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
                                         ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
                                         ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
+                       'Other property' : 'Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
                        'Isoline': 'Computing isolines.',
                        'Stability interface': 'Critical point solver.',
                        'Virial interface': 'Retrieve various virial coefficients.',
-                       'Joule-Thompson interface': 'Joule-Thompson inversion curves.',
-                       'Other': 'Methods that do not have a section identifier in their docstring.'}
+                       'Joule-Thompson interface': 'Joule-Thompson inversion curves.'}
 
     thermo_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
     method_dict = split_methods_by_section(sections, thermo_methods)
 
     ofile_text = get_autogen_header('thermo')
     ofile_text += '# Methods in the thermo class (`thermo.py`)\n\n'
-    ofile_text += 'The `thermo` class, found in `addon/pycThermopack/thermo.py`, is the core of the ThermoPack Python interface. ' \
+    ofile_text += 'The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the core of the ThermoPack Python interface. ' \
                   'All equation of state classes inherit from `thermo`. This is the class that contains the interface to all ' \
                   'practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement ' \
                   'specific functions for parameter handling etc.\n\n'
@@ -271,10 +327,143 @@ def thermo_to_markdown():
     ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
 
     filename = 'thermo_methods.md'
-    with open(MARKDOWN_DIR + filename, 'w') as ofile:
-        ofile.write(ofile_text)
+    write_file(MARKDOWN_DIR + filename, ofile_text)
 
-    print('Wrote', filename, 'to', MARKDOWN_DIR + filename)
+def saft_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Utility',
+                'Internal']
+
+    section_headers = {'Internal' : 'Internal methods',
+                       'Utility' : 'Utility methods'}
+
+    section_intro = {'Internal': 'Methods for handling communication with the Fortran library.',
+                       'Utility': 'Methods for computing specific parameters and contributions to the residual\n'
+                                  'Helmholtz energy for SAFT-type equations of state'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    thermo_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    saft_specific_methods = sorted(list(set(saft_methods) - set(thermo_methods)))
+    method_dict = split_methods_by_section(sections, saft_specific_methods)
+
+    ofile_text = get_autogen_header('saft')
+    ofile_text += '# Methods in the saft class (`saft.py`)\n\n'
+    ofile_text += 'The `saft` class, found in `addon/pycThermopack/thermopack/saft.py`, is an "abstract" class, that is inherited\n' \
+                  'by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic utility methods to\n' \
+                  'compute quantities of interest when investigating SAFT-type equations of state.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saft_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def saftvrmie_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Constructor',
+                'Utility',
+                'Model control',
+                'Model performance']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods',
+                       'Model control': 'Model control',
+                       'Model performance' : 'Model performance'}
+
+    section_intro= {'Constructor' : 'Methods to initialise SAFT-VR Mie model.',
+                    'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.',
+                    'Model control' : 'Control which contributions to the residual Helmholtz energy are included,\n'
+                                      'and the hard-sphere reference term.',
+                    'Model performance' : 'Methods to tune computation efficiency etc.'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
+    saftvrmie_specific_methods = sorted(list(set(saftvrmie_methods) - set(saft_methods)))
+    method_dict = split_methods_by_section(sections, saftvrmie_specific_methods)
+
+    ofile_text = get_autogen_header('saftvrmie')
+    ofile_text += '# Methods in the saftvrmie class (`saftvrmie.py`)\n\n'
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrmie.py`, is the interface to the \n' \
+                  'SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
+                  '`thermo` class. This class implements methods for modifying fluid parameters and which terms\n' \
+                  'are included in the model.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saftvrmie_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def saftvrqmie_to_markdown():
+    """
+    Generate markdown documentation file for the saftvrqmie class.
+    """
+
+    sections = ['Constructor',
+                'Utility']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    section_intro= {'Constructor' : 'Methods to initialise SAFT-VRQ Mie model.',
+                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
+
+    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
+    saftvrqmie_methods = inspect.getmembers(saftvrqmie, predicate=inspect.isfunction)
+    saftvrqmie_specific_methods = sorted(list(set(saftvrqmie_methods) - set(saftvrmie_methods)))
+    method_dict = split_methods_by_section(sections, saftvrqmie_specific_methods)
+
+    ofile_text = get_autogen_header('saftvrqmie')
+    ofile_text += '# Methods in the saftvrqmie class (`saftvrqmie.py`)\n\n'
+    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrqmie.py`, is the interface to the \n' \
+                  'SAFT-VRQ Mie Equation of State.\n*NOTE*: This class inherits the `saftvrmie` class, and thereby has\n' \
+                  'access to the `model control` and `utility` methods found there. The `saftvrmie` class inherits\n' \
+                  'the `saft` class, which in turn inherits the `thermo` class.\n' \
+                  'This class implements utility methods specific to the SAFT-VRQ Mie EoS.\n\n'
+
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'saftvrqmie_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def pcsaft_to_markdown():
+    """
+    Generate markdown documentation file for the saft class.
+    """
+
+    sections = ['Constructor',
+                'Utility']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    section_intro= {'Constructor' : 'Methods to initialise PC-SAFT model.',
+                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
+
+    saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    pcsaft_methods = inspect.getmembers(pcsaft, predicate=inspect.isfunction)
+    pcsaft_specific_methods = sorted(list(set(pcsaft_methods) - set(saft_methods)))
+    method_dict = split_methods_by_section(sections, pcsaft_specific_methods)
+
+    ofile_text = get_autogen_header('pcsaft')
+    ofile_text += '# Methods in the pcsaft class (`pcsaft.py`)\n\n'
+    ofile_text += 'The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, is the interface to the \n' \
+                  'PC-SAFT Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
+                  '`thermo` class. This class implements utility methods to access mixing parameters etc.\n\n'
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = 'pcsaft_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
 
 if __name__ == '__main__':
     thermo_to_markdown()
+    saft_to_markdown()
+    saftvrmie_to_markdown()
+    saftvrqmie_to_markdown()
+    pcsaft_to_markdown()

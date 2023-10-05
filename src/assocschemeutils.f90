@@ -26,6 +26,12 @@ module AssocSchemeUtils
   !> Combining rules
   integer, parameter :: ariComb = 1 !< Arithmetic mean combining rule.
   integer, parameter :: geoComb = 0 !< Geometric mean combining rule.
+  !< defaultComb is used to select hard coded combining rule. 
+  !< When adding ability to select combining rule for PC-SAFT,
+  !< defaultComb was added to avoid breaking code that relies on the hard coded combining rules).
+  !< So any entry in PC-SAFT.json that does not specify eps_comb_rule or beta_comb_rule
+  !< will be given defaultComb.
+  integer, parameter :: defaultComb = 2 
 
   integer, parameter :: noSitesFlag = -1
 
@@ -136,6 +142,7 @@ contains
   end subroutine compidx_to_sites
 
   !> Implements the combining rules for eps and beta seen in CPA models.
+  !> This utility is also used for PC-SAFT.
   function applyCombiningRule (ruleIdx,val1,val2)
     real :: applyCombiningRule
     real, intent(in) :: val1, val2
