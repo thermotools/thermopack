@@ -1,5 +1,19 @@
 #!/bin/bash
 doxygen
 cd doxygen/latex
+
+file_path="refman.tex"
+search_text="End of preamble, now comes the document contents"
+
+# Use grep to find the line number of the search text
+line_number=$(grep -n "$search_text" "$file_path" | cut -d ":" -f 1)
+
+# If the search text is found, insert the new text on the line above
+# Assume gnu sed
+if [ -n "$line_number" ]; then
+    sed -i "$((line_number))i\ \\\DeclareUnicodeCharacter{0083}{\\\\\"u}" "$file_path"
+    sed -i "$((line_number))i\ \\\DeclareUnicodeCharacter{0085}{\\\r{a}}" "$file_path"
+fi
+
 make all
 cp refman.pdf ../../Doxymanual.pdf
