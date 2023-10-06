@@ -373,8 +373,10 @@ contains
     do i=1,nce-1
       delta = delta + x(i)*x(i)*this%inv_rho_pow(i,i)/8.0_dp
       do j=i+1,nce
-        delta = delta + 2*x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
-             ((x(i)+x(j))/(this%beta_v(i,j)**2*x(i)+x(j)))*this%inv_rho_pow(i,j)/8.0_dp
+        if (x(i)+x(j) > 0.0) then
+          delta = delta + 2*x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
+               ((x(i)+x(j))/(this%beta_v(i,j)**2*x(i)+x(j)))*this%inv_rho_pow(i,j)/8.0_dp
+        endif
       enddo
     enddo
     delta = delta + x(nce)*x(nce)*this%inv_rho_pow(nce,nce)/8.0_dp
@@ -393,8 +395,10 @@ contains
     do i=1,nce-1
       tau = tau + x(i)*x(i)*this%tc_prod_sqrt(i,i)
       do j=i+1,nce
-        tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
-             ((x(i)+x(j))/(this%beta_T(i,j)**2*x(i)+x(j)))*this%tc_prod_sqrt(i,j)
+        if (x(i)+x(j) > 0.0) then
+          tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
+               ((x(i)+x(j))/(this%beta_T(i,j)**2*x(i)+x(j)))*this%tc_prod_sqrt(i,j)
+        endif
       enddo
     enddo
     tau = tau + x(nce)*x(nce)*this%tc_prod_sqrt(nce,nce)
