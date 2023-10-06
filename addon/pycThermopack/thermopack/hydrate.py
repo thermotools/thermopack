@@ -83,7 +83,7 @@ class hydrate(thermo):
 
         return fug_c.value
 
-    def fugacity_water_in_hydrate(self, T, V, n):
+    def fugacity_water_in_hydrate_tv(self, T, V, n):
         """Get fugacity of water in hydrate
 
         Args:
