@@ -334,6 +334,9 @@ contains
       volshift_loc = .True.
     end if
 
+    ! Initialize components module
+    call init_component_data_from_db(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
+
     ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
     ! et al. (10.1016/j.fluid.2020.112790)
     call string_match_val("QuantumCubic", paramref_loc, found_QuantumCubic, matchval_QuantumCubic)
@@ -341,10 +344,24 @@ contains
       alpha_loc = "TWU"
       volshift_loc = .True.
       beta_loc = "Quantum"
-    end if
+      do i=1,nc
+        ! Set critical parameters according to Aasen et al. (10.1016/j.fluid.2020.112790)
+        if (str_eq(complist(i),"HE")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 5.1953
+          act_mod_ptr%comps(i)%p_comp%pc = 2.276e5
+        else if (str_eq(complist(i),"H2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 33.19
+          act_mod_ptr%comps(i)%p_comp%pc = 12.964e5
+        else if (str_eq(complist(i),"Ne")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 44.492
+          act_mod_ptr%comps(i)%p_comp%pc = 26.79e5
+        else if (str_eq(complist(i),"D2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 38.34
+          act_mod_ptr%comps(i)%p_comp%pc = 16.796e5
+        end if
+      enddo
+    endif
 
-    ! Initialize components module
-    call init_component_data_from_db(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 

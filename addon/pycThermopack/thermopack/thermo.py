@@ -492,6 +492,30 @@ class thermo(object):
                                                 volume_trans_model_len,
                                                 ref_string_len)
 
+    def disable_volume_translation(self):
+        """Internal
+        Disable volume translations
+
+        """
+        self.activate()
+        volume_trans_model = "NOSHIFT"
+        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
+        volume_trans_model_len = c_len_type(len(volume_trans_model))
+        ref_string = "Default"
+        ref_string_c = c_char_p(ref_string.encode('ascii'))
+        ref_string_len = c_len_type(len(ref_string))
+        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
+                                                            c_char_p,
+                                                            c_len_type,
+                                                            c_len_type]
+
+        self.eoslibinit_init_volume_translation.restype = None
+
+        self.eoslibinit_init_volume_translation(volume_trans_model_c,
+                                                ref_string_c,
+                                                volume_trans_model_len,
+                                                ref_string_len)
+
     def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
         """Utility
         Recalculate critical properties of pure fluids
@@ -580,20 +604,20 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_enthalpy.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double)]
 
         self.solideos_solid_enthalpy.restype = None
 
         self.solideos_solid_enthalpy(byref(temp_c),
-                            byref(press_c),
-                            x_c,
-                            byref(h_c),
-                            dhdt_c,
-                            dhdp_c)
+                                     byref(press_c),
+                                     x_c,
+                                     byref(h_c),
+                                     dhdt_c,
+                                     dhdp_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -638,20 +662,20 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_entropy.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
 
         self.solideos_solid_entropy.restype = None
 
         self.solideos_solid_entropy(byref(temp_c),
-                            byref(press_c),
-                            x_c,
-                            byref(h_c),
-                            dhdt_c,
-                            dhdp_c)
+                                    byref(press_c),
+                                    x_c,
+                                    byref(h_c),
+                                    dhdt_c,
+                                    dhdp_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -696,11 +720,11 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_volume.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double)]
 
         self.solideos_solid_volume.restype = None
 
