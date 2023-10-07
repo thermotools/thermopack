@@ -15,7 +15,9 @@ state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
 
-![](/thermopack/docs/assets/graphics/readme_intro.gif?raw=true)
+For the full documentation and user guide to ThermoPack, check out the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+
+![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
 Thermopack is available for everybody, free of charge under the
 MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN

@@ -37,11 +37,7 @@ MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
 to handle heavy numerical computations associated with process and
 computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
-Python wrapper to make scripting easy. The Python interface is also a
-building block for the Thermopack graphical user interface, where it
-is possible to plot thermodynamic phase diagrams with the most
-frequently used equations of state. The graphical user interface is
-currently running on the Windows and Linux operating systems.
+Python wrapper to make scripting easy.
 
 # Table of contents
   * [Please cite](#please-cite)
