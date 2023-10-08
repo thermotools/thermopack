@@ -31,8 +31,8 @@ The (Python-side) inheritance structure for the classes is shown in the list bel
 
 * [thermo](thermo_methods.html)
   * Lee-Kesler 
-  * [Extended Corresponding state]()
-  * [cubic]()
+  * [Extended Corresponding state](ext_csp_methods.html)
+  * [cubic](cubic_methods.html)
     * VdW
     * SRK
     * PR 
@@ -40,16 +40,17 @@ The (Python-side) inheritance structure for the classes is shown in the list bel
     * Schmidt-Wensel 
     * Patel-Teja
     * Quantum cubic
-    * [CPA]()
+    * [CPA](cpa_methods.html)
       * SRK-CPA 
       * PR-CPA
   * [SAFT](saft_methods.html) 
     * [SAFT-VR Mie](saftvrmie_methods.html) 
       * [SAFT-VRQ Mie](saftvrqmie_methods.html)
     * [PC-SAFT](pcsaft_methods.html)
-      * [SPC-SAFT]() 
-      * [PCP-SAFT]() 
-  * [Multiparameter]()
+      * SPC-SAFT 
+      * PCP-SAFT
+    * [PeTS](pets_methods.html)
+  * [Multiparameter](multiparam_methods.html)
     * MEOS 
     * NIST-MEOS
     * MBWR-16 
