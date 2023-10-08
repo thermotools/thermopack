@@ -25,7 +25,8 @@ class ext_csp(thermo):
                  ref_comp=None,
                  ref_alpha="Classic",
                  parameter_reference="Default"):
-        """Initialize extended corredsponding state model model.
+        """Constructor
+        Initialize extended corredsponding state model model.
 
         Unless all of the optional arguments that default to None are specified, model must be initialized
         for specific components later by direct call to 'init'.
@@ -64,7 +65,8 @@ class ext_csp(thermo):
              ref_comp,
              ref_alpha="Classic",
              parameter_reference="Default"):
-        """Initialize extended corredsponding state model model.
+        """Constructor
+        Initialize extended corredsponding state model model.
 
         Args:
             comps (str): Comma separated list of component names
