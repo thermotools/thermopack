@@ -5,12 +5,14 @@ title: Documentation
 permalink: /vcurrent/method_docs.html
 ---
 
-Equations of state in ThermoPack are classes. All classes inherit from the `thermo` class, which holds
+Equations of state in ThermoPack are classes. On the Python-side, all classes inherit from the `thermo` class, which holds
 the interfaces to most practical calculations, such as computation of thermophysical properties, 
 phase equilibria, etc. Inheriting classes may contain utility methods for specific parameter tuning,
 methods to compute specific Helmholtz energy contributions, or other methods specific to the EoS.
 
 The documentation for the `thermo` class is found [here](thermo_methods.html)
+
+For Documentation of the Fortran side of ThermoPack, refer to the [Doxygen manual.](Doxymanual.pdf)
 
 The available equations of state in ThermoPack are indicated in the table below, with links to the
 documentation for the respective class in the cases where the class implements any specific non-inherited functionality.

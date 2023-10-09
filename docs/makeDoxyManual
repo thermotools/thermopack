@@ -1,4 +1,12 @@
 #!/bin/bash
+# Run `bash makeDoxyManual` to generate the doxygen manual for ThermoPack.
+# Requires
+#   doxygen (brew install doxygen)
+#   graphviz (brew install graphviz)
+#   texlive (brew install texlive)
+#   gnu-sed (brew install gnu-sed) <= See comment below on mac `sed` vs. `gnu-sed`
+
+set -e
 doxygen
 cd doxygen/latex
 
@@ -9,7 +17,7 @@ search_text="End of preamble, now comes the document contents"
 line_number=$(grep -n "$search_text" "$file_path" | cut -d ":" -f 1)
 
 # If the search text is found, insert the new text on the line above
-# Assume gnu sed
+# Assume gnu sed (For mac: `brew install gnu-sed` then change `sed` => `gsed` in the lines below)
 if [ -n "$line_number" ]; then
     sed -i "$((line_number))i\ \\\DeclareUnicodeCharacter{0083}{\\\\\"u}" "$file_path"
     sed -i "$((line_number))i\ \\\DeclareUnicodeCharacter{0085}{\\\r{a}}" "$file_path"
