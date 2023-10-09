@@ -15,7 +15,7 @@ class pets(saft):
     Interface to PETS
     """
     def __init__(self, parameter_reference="Default", minimum_temperature=2.0):
-        """
+        """Constructor
         Initialize pets specific function pointers
 
         Args:
@@ -39,7 +39,8 @@ class pets(saft):
     #################################
 
     def init(self, parameter_reference="Default", minimum_temperature=2.0):
-        """Initialize he PeTS equation of state for the LJ fluid
+        """Constructor
+        Initialize he PeTS equation of state for the LJ fluid
         truncated and shifted at 2.5 sigma. Reference:
         Heier et al. 2018 (10.1080/00268976.2018.1447153)
 
@@ -68,10 +69,12 @@ class pets(saft):
         self.eps_div_kb = np.zeros(self.nc)
         self.sigma[0], self.eps_div_kb[0] = self.get_pure_params()
 
-    def set_pure_params(self, sigma, eps_div_kb):
-        """Set pure fluid PeTS parameters
+    def set_pure_params(self, c, sigma, eps_div_kb):
+        """Utility
+        Set pure fluid PeTS parameters
 
         Args:
+            c (int) : Component index
             sigma (float): Segment diameter (m)
             eps_div_kb (float): Well depth divided by Boltzmann's constant (K)
         """
@@ -91,7 +94,8 @@ class pets(saft):
                                param_c)
 
     def get_pure_params(self):
-        """Get pure fluid PeTS parameters
+        """Utility
+        Get pure fluid PeTS parameters
 
         Returns:
             sigma (float): Segment diameter (m)
