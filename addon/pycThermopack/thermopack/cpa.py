@@ -204,3 +204,17 @@ class cpa(cubic):
         self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
         self.s_use_simplified_cpa.restype = None
         self.s_use_simplified_cpa(byref(simplified_c))
+
+class SRK_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)
+
+class PR_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='PR'`.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)

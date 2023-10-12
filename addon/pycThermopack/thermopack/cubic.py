@@ -651,3 +651,50 @@ class cubic(thermo):
                              corrname_string_c,
                              coeffs_c,
                              corrname_string_len_c)
+
+class VanDerWaals(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='VdW'`.
+        """
+        super().__init__(comps, 'VdW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+
+class SoaveRedlichKwong(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PengRobinson(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PR'`.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class SchmidtWensel(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SW'`.
+        """
+        super().__init__(comps, 'SW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PatelTeja(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PT'`.
+        """
+        super().__init__(comps, 'PT', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
