@@ -134,7 +134,7 @@ def write_platform_specifics_file(pf_specifics, filename):
         "# Module for platform specific stuff. Automatically generated.")
     lines.append("# Timestamp : " +
                  str(datetime.today().isoformat()) + "\n\n")
-
+    lines.append(f"DIFFERENTIAL_RETURN_MODE = '{pf_specifics['diff_return_mode']}'\n\n")
     tab = " "*4
     lines.append("def get_platform_specifics():")
     lines.append(tab + "pf_specifics = {}")

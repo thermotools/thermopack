@@ -6,6 +6,7 @@ import sys
 import copy
 from ctypes import c_int, POINTER, c_double
 import numpy as np
+from platform_specifics import DIFFERENTIAL_RETURN_MODE
 
 def gcc_major_version_greater_than(GCC_version):
     """Returns if GCC major version number is greater than specefied version
@@ -166,3 +167,56 @@ class BinaryTriplePoint:
 
     def __str__(self):
         return self.__repr__()
+
+class Differentials:
+
+    def __init__(self, diffs, variables):
+        self.dT = None
+        self.dp = None
+        self.dV = None
+        self.dn = None
+
+        self.iterable = tuple()
+        if variables == 'tvn':
+            self.dT, self.dV, self.dn = diffs
+            for d in (self.dT, self.dV, self.dn):
+                if d is not None:
+                    self.iterable += (d,)
+
+        elif variables == 'tpn':
+            self.dT, self.dp, self.dn = diffs
+            self.iterable = tuple()
+            for d in (self.dT, self.dp, self.dn):
+                if d is not None:
+                    self.iterable += (d,)
+
+    def __iter__(self):
+        return (_ for _ in self.iterable)
+
+    def __getitem__(self, item):
+        return self.iterable[item]
+
+    def __bool__(self):
+        if len(self.iterable) > 0:
+            return True
+        return False
+
+class Property:
+
+    def __init__(self, val, diffs):
+        self.diffs = diffs
+        self.val = val
+
+        self.iterable = (self.val,)
+        for d in self.diffs:
+            self.iterable += (d,)
+
+    def __iter__(self):
+        if DIFFERENTIAL_RETURN_MODE == 'old':
+            return (_ for _ in self.iterable)
+        return (_ for _ in (self.val, self.diffs))
+
+    def __getitem__(self, item):
+        if DIFFERENTIAL_RETURN_MODE == 'old':
+            return self.iterable[item]
+        return [self.val, self.diffs][item]
