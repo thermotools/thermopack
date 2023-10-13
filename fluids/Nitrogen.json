@@ -2,6 +2,8 @@
   "ident": "N2",
   "formula": "N2",
   "cas_number": "7727-37-9",
+  "InChI": "1S/N2/c1-2",
+  "structure": "N:2",
   "name": "NITROGEN",
   "aliases": [
     "Nitrogen",

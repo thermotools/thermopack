@@ -2,6 +2,8 @@
   "ident": "ClF3Si",
   "formula": "ClF3Si",
   "cas_number": "14049-36-6",
+  "InChI": "1S/ClF3Si/c1-5(2,3)4",
+  "structure": "Cl:1;F:3;Si:1",
   "name": "CHLOROTRIFLUOROSILANE",
   "aliases": [
     "ChloroTriFluoroSilane"
@@ -67,8 +69,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

@@ -2,6 +2,8 @@
   "ident": "R41",
   "formula": "CH3F",
   "cas_number": "593-53-3",
+  "InChI": "1S/CH3F/c1-2/h1H3",
+  "structure": "C:1;H:3;F:1",
   "name": "METHYL FLUORIDE",
   "aliases": [
     "R41",
@@ -68,9 +70,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -237700.0,
+    "gibbs": -213700.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

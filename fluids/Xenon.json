@@ -2,6 +2,8 @@
   "ident": "XE",
   "formula": "XE",
   "cas_number": "7440-63-3",
+  "InChI": "1S/Xe",
+  "structure": "Xe:1",
   "name": "XENON",
   "aliases": [
     "Xenon"

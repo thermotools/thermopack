@@ -2,6 +2,8 @@
   "ident": "3MP",
   "formula": "C6H14",
   "cas_number": "96-14-0",
+  "InChI": "1S/C6H14/c1-4-6(3)5-2/h6H,4-5H2,1-3H3",
+  "structure": "C:6;H:14",
   "name": "3-METHYLPENTANE",
   "aliases": [
     "3-MethylPentane"
@@ -66,9 +68,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -172000.0,
+    "gibbs": -3200.0
   },
   "rackett_factor": {
     "bib_reference": "",

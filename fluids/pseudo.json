@@ -2,6 +2,8 @@
   "ident": "PSEUDO",
   "formula": "XXX",
   "cas_number": "XXX",
+  "InChI": "",
+  "structure": "",
   "name": "PSEUDO",
   "aliases": [
       "PSEUDO"
@@ -67,8 +69,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

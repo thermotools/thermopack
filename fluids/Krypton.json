@@ -2,6 +2,8 @@
   "ident": "KR",
   "formula": "KR",
   "cas_number": "7439-90-9",
+  "InChI": "1S/Kr",
+  "structure": "Kr:1",
   "name": "KRYPTON",
   "aliases": [
     "Krypton"

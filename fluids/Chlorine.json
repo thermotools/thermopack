@@ -2,6 +2,8 @@
   "ident": "CL2",
   "formula": "CL2",
   "cas_number": "7782-50-5",
+  "InChI": "1S/Cl2/c1-2",
+  "structure": "Cl:2",
   "name": "CHLORINE",
   "aliases": [
     "CHLORINE"

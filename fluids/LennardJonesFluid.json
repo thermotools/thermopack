@@ -2,6 +2,8 @@
   "ident": "LJF",
   "formula": "LJF",
   "cas_number": "",
+  "InChI": "",
+  "structure": "",
   "name": "LENNARD-JONES_FLUID",
   "aliases": [
     "LennardJonesFluid",

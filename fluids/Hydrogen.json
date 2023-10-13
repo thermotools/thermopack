@@ -2,6 +2,8 @@
   "ident": "H2",
   "formula": "H2",
   "cas_number": "1333-74-0",
+  "InChI": "1S/H2/h1H",
+  "structure": "H:2",
   "name": "HYDROGEN",
   "aliases": [
     "Hydrogen",

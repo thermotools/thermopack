@@ -2,6 +2,8 @@
   "ident": "AR",
   "formula": "AR",
   "cas_number": "7440-37-1",
+  "InChI": "1S/Ar",
+  "structure": "Ar:1",
   "name": "ARGON",
   "aliases": [
     "Argon"

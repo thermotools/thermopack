@@ -2,6 +2,8 @@
   "ident": "IC5",
   "formula": "C5H12",
   "cas_number": "78-78-4",
+  "InChI": "1S/C5H12/c1-4-5(2)3/h5H,4H2,1-3H3",
+  "structure": "C:5;H:12",
   "name": "ISOPENTANE",
   "aliases": [
     "Iso-Pentane",
@@ -68,9 +70,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -153700.0,
+    "gibbs": -13860.0
   },
   "rackett_factor": {
     "bib_reference": "",

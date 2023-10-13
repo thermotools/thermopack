@@ -2,6 +2,8 @@
   "ident": "D2",
   "formula": "D2",
   "cas_number": "7782-39-0",
+  "InChI": "1S/H2/h1H/i1+1D",
+  "structure": "D:2",
   "name": "DEUTERIUM",
   "aliases": [
     "Deuterium",

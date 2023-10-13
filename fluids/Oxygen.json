@@ -2,6 +2,8 @@
   "ident": "O2",
   "formula": "O2",
   "cas_number": "7782-44-7",
+  "InChI": "1S/O2/c1-2",
+  "structure": "O:2",
   "name": "OXYGEN",
   "aliases": [
     "Oxygen",

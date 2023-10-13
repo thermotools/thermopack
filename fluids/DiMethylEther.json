@@ -2,6 +2,8 @@
   "ident": "DME",
   "formula": "C2H6O",
   "cas_number": "115-10-6",
+  "InChI": "1S/C2H6O/c1-3-2/h1-2H3",
+  "structure": "C:2;H:6;O:1",
   "name": "di-methyl ether",
   "aliases": [
     "MethoxyMethane",
@@ -68,8 +70,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

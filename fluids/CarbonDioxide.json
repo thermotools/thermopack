@@ -2,6 +2,8 @@
   "ident": "CO2",
   "formula": "CO2",
   "cas_number": "124-38-9",
+  "InChI": "1S/CO2/c2-1-3",
+  "structure": "C:1;O:2",
   "name": "CARBON DIOXIDE",
   "aliases": [
     "CarbonDioxide",
@@ -86,9 +88,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -393510.0,
+    "gibbs": -394380.0
   },
   "rackett_factor": {
     "bib_reference": "",

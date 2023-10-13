@@ -2,6 +2,8 @@
   "ident": "NO",
   "formula": "NO",
   "cas_number": "10102-43-9",
+  "InChI": "1S/NO/c1-2",
+  "structure": "N:1;O:1",
   "name": "NITRIC OXIDE",
   "aliases": [
     "NitricOxide",
@@ -68,9 +70,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": 90250.0,
+    "gibbs": 86580.0
   },
   "rackett_factor": {
     "bib_reference": "",

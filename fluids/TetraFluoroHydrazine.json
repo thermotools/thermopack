@@ -2,6 +2,8 @@
   "ident": "F4N2",
   "formula": "F4N2",
   "cas_number": "10036-47-2",
+  "InChI": "1S/F4N2/c1-5(2)6(3)4",
+  "structure": "F:4;N:2",
   "name": "TETRAFLUOROHYDRAZINE",
   "aliases": [
     "TetraFluoroHydrazine"
@@ -66,9 +68,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -8370.0,
+    "gibbs": 79660.0
   },
   "rackett_factor": {
     "bib_reference": "",

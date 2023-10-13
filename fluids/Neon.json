@@ -2,6 +2,8 @@
   "ident": "NE",
   "formula": "NE",
   "cas_number": "7440-01-9",
+  "InChI": "1S/Ne",
+  "structure": "Ne:1",
   "name": "NEON",
   "aliases": [
     "Neon"

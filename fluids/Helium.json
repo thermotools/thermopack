@@ -2,6 +2,8 @@
   "ident": "HE",
   "formula": "HE",
   "cas_number": "7440-59-7",
+  "InChI": "1S/He",
+  "structure": "He:1",
   "name": "HELIUM-4",
   "aliases": [
     "Helium",

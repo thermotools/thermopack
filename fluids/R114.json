@@ -2,6 +2,8 @@
   "ident": "R114",
   "formula": "C2CL2F4",
   "cas_number": "76-14-2",
+  "InChI": "1S/C2Cl2F4/c3-1(5,6)2(4,7)8",
+  "structure": "C:2;Cl:2;F:4",
   "name": "1,2-DICHLOROTETRAFLUOROETHANE",
   "aliases": [
     "R114",
@@ -67,9 +69,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -900400.0,
+    "gibbs": -818100.0
   },
   "rackett_factor": {
     "bib_reference": "",

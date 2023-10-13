@@ -2,6 +2,8 @@
   "ident": "H2O",
   "formula": "H2O",
   "cas_number": "7732-18",
+  "InChI": "1S/H2O/h1H2",
+  "structure": "H:2;O:1",
   "name": "WATER",
   "aliases": [
     "Water"
@@ -66,9 +68,9 @@
     "entropy": 188.84
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -241810.0,
+    "gibbs": -228420.0
   },
   "rackett_factor": {
     "bib_reference": "",

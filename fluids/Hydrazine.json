@@ -2,6 +2,8 @@
   "ident": "N2H4",
   "formula": "N2H4",
   "cas_number": "302-01-2",
+  "InChI": "1S/H4N2/c1-2/h1-2H2",
+  "structure": "H:4;N:2",
   "name": "HYDRAZINE",
   "aliases": [
     "Diazane",
@@ -67,9 +69,9 @@
     "entropy": 238.66
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": 95400.0 ,
+    "gibbs": 159380.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

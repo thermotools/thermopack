@@ -2,6 +2,8 @@
   "ident": "H2S",
   "formula": "H2S",
   "cas_number": "7783-06-4",
+  "InChI": "1S/H2S/h1H2",
+  "structure": "H:2;S:1",
   "name": "HYDROGEN SULFIDE",
   "aliases": [
     "HydrogenSulfide"
@@ -66,9 +68,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -20630.0,
+    "gibbs": -33430.0
   },
   "rackett_factor": {
     "bib_reference": "",

@@ -2,6 +2,8 @@
   "ident": "R124",
   "formula": "C2HCLF4",
   "cas_number": "2837-89-0",
+  "InChI": "1S/C2HClF4/c3-1(4)2(5,6)7/h1H",
+  "structure": "C:2;H:1;Cl:1;F:4",
   "name": "2-CHLORO-1,1,1,2-TETRAFLUOROETHANE",
   "aliases": [
     "R124"
@@ -66,9 +68,9 @@
     "entropy": 0.0
   },
   "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "bib_reference": "ISBN: 978-0070116825",
+    "enthalpy": -924700.0,
+    "gibbs": -851800.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

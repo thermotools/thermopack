@@ -2,6 +2,8 @@
   "ident": "BUTANAL",
   "formula": "C4H8O",
   "cas_number": "123-72-8",
+  "InChI": "1S/C4H8O/c1-2-3-4-5/h4H,2-3H2,1H3",
+  "structure": "C:4;H:8;O:1",
   "name": "BUTANAL",
   "aliases": [
     "Butanal",
@@ -68,8 +70,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "Le Guennec et al. (2016): 10.1016/j.fluid.2016.09.003",

@@ -2,6 +2,8 @@
   "ident": "S434",
   "formula": "C12H26O",
   "cas_number": "112-58-3",
+  "InChI": "1S/C12H26O/c1-3-5-7-9-11-13-12-10-8-6-4-2/h3-12H2,1-2H3",
+  "structure": "C:12;H:26;O:1",
   "name": "DI-n-HEXYL ETHER",
   "aliases": [
     "DiHexylEther",
@@ -68,8 +70,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

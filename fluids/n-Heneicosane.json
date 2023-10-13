@@ -2,6 +2,8 @@
   "ident": "NC21",
   "formula": "C21H44",
   "cas_number": "629-94-7",
+  "InChI": "1S/C21H44/c1-3-5-7-9-11-13-15-17-19-21-20-18-16-14-12-10-8-6-4-2/h3-21H2,1-2H3",
+  "structure": "C:21;H:44",
   "name": "N-HENEICOSANE",
   "aliases": [
     "n-Heneicosane",
@@ -68,8 +70,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

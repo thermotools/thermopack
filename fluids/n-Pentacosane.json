@@ -2,6 +2,8 @@
   "ident": "NC25",
   "formula": "C25H52",
   "cas_number": "629-99-2",
+  "InChI": "1S/C25H52/c1-3-5-7-9-11-13-15-17-19-21-23-25-24-22-20-18-16-14-12-10-8-6-4-2/h3-25H2,1-2H3",
+  "structure": "C:25;H:52",
   "name": "N-PENTACOSANE",
   "aliases": [
     "n-Pentacosane",
@@ -68,8 +70,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

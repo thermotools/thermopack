@@ -2,6 +2,8 @@
   "ident": "MEG",
   "formula": "C2H6O2",
   "cas_number": "107-21-1",
+  "InChI": "1S/C2H6O2/c3-1-2-4/h3-4H,1-2H2",
+  "structure": "C:2;H:6;O:2",
   "name": "ETHYLENE GLYCOL",
   "aliases": [
     "MonoEthyleneGlycol",
@@ -69,8 +71,8 @@
   },
   "standard_formation_energy": {
     "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy": 100000000000.0,
+    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",
