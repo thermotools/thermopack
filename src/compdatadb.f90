@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-09-28T12:56:50.126803
+!! Time stamp: 2023-10-13T20:55:41.409919
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -13,6 +13,7 @@ module compdatadb
       gendatadb(ident = "BUT1OL", &
       formula = "C4H10O", &
       name = "1-BUTANOL", &
+      structure = "C:4;H:10;O:1", &
       mw = 74.1216, &
       Tc = 562.2000, &
       Pc = 4500000.00, &
@@ -23,8 +24,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -274600.0000, &
+      DfG = -150170.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -99,6 +100,7 @@ module compdatadb
       gendatadb(ident = "HEX1OL", &
       formula = "C6H14O", &
       name = "1-HEXANOL", &
+      structure = "C:6;H:14;O:1", &
       mw = 102.1748, &
       Tc = 610.5000, &
       Pc = 3413000.00, &
@@ -109,8 +111,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -316500.0000, &
+      DfG = -134130.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -185,6 +187,7 @@ module compdatadb
       gendatadb(ident = "PENT1OL", &
       formula = "C5H12O", &
       name = "1-PENTANOL", &
+      structure = "C:5;H:12;O:1", &
       mw = 88.1482, &
       Tc = 580.0000, &
       Pc = 3900000.00, &
@@ -195,8 +198,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -295600.0000, &
+      DfG = -142200.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -271,6 +274,7 @@ module compdatadb
       gendatadb(ident = "PROP1OL", &
       formula = "C3H8O", &
       name = "1-PROPANOL", &
+      structure = "C:3;H:8;O:1", &
       mw = 60.0950, &
       Tc = 536.9000, &
       Pc = 5200000.00, &
@@ -281,8 +285,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -255200.0000, &
+      DfG = -159810.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -357,6 +361,7 @@ module compdatadb
       gendatadb(ident = "13BD", &
       formula = "C4H6", &
       name = "1,3-BUTADIENE", &
+      structure = "C:4;H:6", &
       mw = 54.0920, &
       Tc = 425.0000, &
       Pc = 4330000.00, &
@@ -367,8 +372,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 110000.0000, &
+      DfG = 150600.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -429,6 +434,7 @@ module compdatadb
       gendatadb(ident = "2MHX", &
       formula = "C7H16", &
       name = "2-METHYLHEXANE", &
+      structure = "C:7;H:16", &
       mw = 100.2050, &
       Tc = 530.4000, &
       Pc = 2730000.00, &
@@ -439,8 +445,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -194600.0000, &
+      DfG = 3700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -501,6 +507,7 @@ module compdatadb
       gendatadb(ident = "3MP", &
       formula = "C6H14", &
       name = "3-METHYLPENTANE", &
+      structure = "C:6;H:14", &
       mw = 86.1780, &
       Tc = 504.5000, &
       Pc = 3120000.00, &
@@ -511,8 +518,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -172000.0000, &
+      DfG = -3200.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -573,6 +580,7 @@ module compdatadb
       gendatadb(ident = "ACETONE", &
       formula = "C3H6O", &
       name = "ACETONE", &
+      structure = "C:3;H:6;O:1", &
       mw = 58.0800, &
       Tc = 508.1000, &
       Pc = 4700000.00, &
@@ -583,8 +591,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -217100.0000, &
+      DfG = -152600.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -645,6 +653,7 @@ module compdatadb
       gendatadb(ident = "ACETYLENE", &
       formula = "C2H2", &
       name = "ACETYLENE", &
+      structure = "C:2;H:2", &
       mw = 26.0380, &
       Tc = 308.3000, &
       Pc = 6140000.00, &
@@ -655,8 +664,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 190920.0000, &
+      DfG = 201300.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -681,6 +690,7 @@ module compdatadb
       gendatadb(ident = "ALLENE", &
       formula = "C3H4", &
       name = "PROPADIENE", &
+      structure = "C:3;H:4", &
       mw = 40.0650, &
       Tc = 393.8500, &
       Pc = 5248600.00, &
@@ -691,8 +701,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/6.53610000e+00, 1.05472000e+03, -7.70800000e+01/), &
       Tantmin = 174.0000, &
@@ -753,6 +763,7 @@ module compdatadb
       gendatadb(ident = "NH3", &
       formula = "NH3", &
       name = "AMMONIA", &
+      structure = "H:3;N:1", &
       mw = 17.0310, &
       Tc = 405.6000, &
       Pc = 11470000.00, &
@@ -763,8 +774,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 192.7700, &
       href = -45900.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -45940.0000, &
+      DfG = -16410.0000, &
       psatcode = 1, &
       ant = (/1.69481000e+01, 2.13250000e+03, -3.29800000e+01/), &
       Tantmin = 179.0000, &
@@ -853,6 +864,7 @@ module compdatadb
       gendatadb(ident = "AR", &
       formula = "AR", &
       name = "ARGON", &
+      structure = "Ar:1", &
       mw = 39.9480, &
       Tc = 150.8000, &
       Pc = 4873700.00, &
@@ -932,6 +944,7 @@ module compdatadb
       gendatadb(ident = "BENZENE", &
       formula = "C6H6", &
       name = "BENZENE", &
+      structure = "C:6;H:6", &
       mw = 78.1140, &
       Tc = 562.1000, &
       Pc = 4894000.00, &
@@ -942,8 +955,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 82880.0000, &
+      DfG = 129750.0000, &
       psatcode = 1, &
       ant = (/1.59008000e+01, 2.78851000e+03, -5.23600000e+01/), &
       Tantmin = 280.0000, &
@@ -1018,6 +1031,7 @@ module compdatadb
       gendatadb(ident = "BUTANAL", &
       formula = "C4H8O", &
       name = "BUTANAL", &
+      structure = "C:4;H:8;O:1", &
       mw = 72.1070, &
       Tc = 537.2000, &
       Pc = 4410000.00, &
@@ -1028,8 +1042,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1090,6 +1104,7 @@ module compdatadb
       gendatadb(ident = "CO2", &
       formula = "CO2", &
       name = "CARBON DIOXIDE", &
+      structure = "C:1;O:2", &
       mw = 44.0100, &
       Tc = 304.2000, &
       Pc = 7376500.00, &
@@ -1100,8 +1115,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -393510.0000, &
+      DfG = -394380.0000, &
       psatcode = 1, &
       ant = (/2.25898000e+01, 3.10339000e+03, -1.60000000e-01/), &
       Tantmin = 154.0000, &
@@ -1236,6 +1251,7 @@ module compdatadb
       gendatadb(ident = "CO", &
       formula = "CO", &
       name = "CARBON MONOXIDE", &
+      structure = "C:1;O:1", &
       mw = 28.0100, &
       Tc = 132.8500, &
       Pc = 3494000.00, &
@@ -1246,8 +1262,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -110530.0000, &
+      DfG = -137160.0000, &
       psatcode = 1, &
       ant = (/1.54140000e+01, 6.71763100e+02, -5.15400000e+00/), &
       Tantmin = 69.7300, &
@@ -1315,6 +1331,7 @@ module compdatadb
       gendatadb(ident = "CL2", &
       formula = "CL2", &
       name = "CHLORINE", &
+      structure = "Cl:2", &
       mw = 70.9050, &
       Tc = 417.1500, &
       Pc = 7710000.00, &
@@ -1387,6 +1404,7 @@ module compdatadb
       gendatadb(ident = "ClF3Si", &
       formula = "ClF3Si", &
       name = "CHLOROTRIFLUOROSILANE", &
+      structure = "Cl:1;F:3;Si:1", &
       mw = 120.5000, &
       Tc = 307.7000, &
       Pc = 3470000.00, &
@@ -1397,8 +1415,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1423,6 +1441,7 @@ module compdatadb
       gendatadb(ident = "CYCLOHEX", &
       formula = "C6H12", &
       name = "CYCLOHEXANE", &
+      structure = "C:6;H:12", &
       mw = 84.1610, &
       Tc = 553.5000, &
       Pc = 4073000.00, &
@@ -1433,8 +1452,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -123100.0000, &
+      DfG = 32260.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1495,6 +1514,7 @@ module compdatadb
       gendatadb(ident = "C3_1", &
       formula = "C3H6", &
       name = "CYCLOPROPANE", &
+      structure = "C:3;H:6", &
       mw = 42.0810, &
       Tc = 397.8000, &
       Pc = 5490000.00, &
@@ -1505,8 +1525,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 53300.0000, &
+      DfG = 104400.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1567,6 +1587,7 @@ module compdatadb
       gendatadb(ident = "D2", &
       formula = "D2", &
       name = "DEUTERIUM", &
+      structure = "D:2", &
       mw = 4.0282, &
       Tc = 38.3400, &
       Pc = 1679600.00, &
@@ -1657,6 +1678,7 @@ module compdatadb
       gendatadb(ident = "S434", &
       formula = "C12H26O", &
       name = "DI-n-HEXYL ETHER", &
+      structure = "C:12;H:26;O:1", &
       mw = 186.3390, &
       Tc = 657.0000, &
       Pc = 1823900.00, &
@@ -1667,8 +1689,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/1.63372000e+01, 3.98278000e+03, -8.91500000e+01/), &
       Tantmin = 373.0000, &
@@ -1693,6 +1715,7 @@ module compdatadb
       gendatadb(ident = "DME", &
       formula = "C2H6O", &
       name = "di-methyl ether", &
+      structure = "C:2;H:6;O:1", &
       mw = 46.0684, &
       Tc = 400.3780, &
       Pc = 5336800.00, &
@@ -1703,8 +1726,8 @@ module compdatadb
       Ptr = 2.2000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1729,6 +1752,7 @@ module compdatadb
       gendatadb(ident = "N2O4", &
       formula = "N2O4", &
       name = "DINITROGEN TETROXIDE", &
+      structure = "N:2;O:4", &
       mw = 92.0110, &
       Tc = 431.0100, &
       Pc = 10100000.00, &
@@ -1739,8 +1763,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 9160.0000, &
+      DfG = 97850.0000, &
       psatcode = 1, &
       ant = (/1.70046000e+01, 2.73020000e+03, -3.89700000e+01/), &
       Tantmin = 254.1700, &
@@ -1765,6 +1789,7 @@ module compdatadb
       gendatadb(ident = "E-H2", &
       formula = "H2", &
       name = "EQUILIBRIUM-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 32.9380, &
       Pc = 1285800.00, &
@@ -1801,6 +1826,7 @@ module compdatadb
       gendatadb(ident = "C2", &
       formula = "C2H6", &
       name = "ETHANE", &
+      structure = "C:2;H:6", &
       mw = 30.0700, &
       Tc = 305.4000, &
       Pc = 4883900.00, &
@@ -1811,8 +1837,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -83820.0000, &
+      DfG = -31860.0000, &
       psatcode = 1, &
       ant = (/1.56637000e+01, 1.51142000e+03, -1.71600000e+01/), &
       Tantmin = 130.0000, &
@@ -1901,6 +1927,7 @@ module compdatadb
       gendatadb(ident = "ETOH", &
       formula = "ETOH", &
       name = "ETHANOL", &
+      structure = "C:2;H:6;O:1", &
       mw = 46.0684, &
       Tc = 514.7100, &
       Pc = 6268000.00, &
@@ -1911,8 +1938,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -234950.0000, &
+      DfG = -167730.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2001,6 +2028,7 @@ module compdatadb
       gendatadb(ident = "EBZN", &
       formula = "C8H10", &
       name = "ETHYLBENZENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 617.1600, &
       Pc = 3608000.00, &
@@ -2011,8 +2039,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 29920.0000, &
+      DfG = 130730.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2073,6 +2101,7 @@ module compdatadb
       gendatadb(ident = "C2_1", &
       formula = "C2H4", &
       name = "ETHYLENE", &
+      structure = "C:2;H:4", &
       mw = 28.0540, &
       Tc = 282.4000, &
       Pc = 5035900.00, &
@@ -2083,8 +2112,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 52500.0000, &
+      DfG = 68480.0000, &
       psatcode = 1, &
       ant = (/1.55368000e+01, 1.34701000e+03, -1.81500000e+01/), &
       Tantmin = 120.0000, &
@@ -2123,6 +2152,7 @@ module compdatadb
       gendatadb(ident = "HE", &
       formula = "HE", &
       name = "HELIUM-4", &
+      structure = "He:1", &
       mw = 4.0030, &
       Tc = 5.1953, &
       Pc = 227600.00, &
@@ -2213,6 +2243,7 @@ module compdatadb
       gendatadb(ident = "N2H4", &
       formula = "N2H4", &
       name = "HYDRAZINE", &
+      structure = "H:4;N:2", &
       mw = 32.0452, &
       Tc = 653.1500, &
       Pc = 14700000.00, &
@@ -2223,8 +2254,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 238.6600, &
       href = 95353.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 95400.0000, &
+      DfG = 159380.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2285,6 +2316,7 @@ module compdatadb
       gendatadb(ident = "H2", &
       formula = "H2", &
       name = "HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0160, &
       Tc = 33.1450, &
       Pc = 1296400.00, &
@@ -2389,6 +2421,7 @@ module compdatadb
       gendatadb(ident = "H2O2", &
       formula = "H2O2", &
       name = "HYDROGEN PEROXIDE", &
+      structure = "H:2;O:2", &
       mw = 34.0147, &
       Tc = 730.1500, &
       Pc = 21700000.00, &
@@ -2399,8 +2432,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 232.9500, &
       href = -136106.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2472,6 +2505,7 @@ module compdatadb
       gendatadb(ident = "H2S", &
       formula = "H2S", &
       name = "HYDROGEN SULFIDE", &
+      structure = "H:2;S:1", &
       mw = 34.0800, &
       Tc = 373.2000, &
       Pc = 8936900.00, &
@@ -2482,8 +2516,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -20630.0000, &
+      DfG = -33430.0000, &
       psatcode = 1, &
       ant = (/1.61040000e+01, 1.76869000e+03, -2.60600000e+01/), &
       Tantmin = 190.0000, &
@@ -2558,6 +2592,7 @@ module compdatadb
       gendatadb(ident = "IC4", &
       formula = "C4H10", &
       name = "ISOBUTANE", &
+      structure = "C:4;H:10", &
       mw = 58.1240, &
       Tc = 408.1000, &
       Pc = 3647700.00, &
@@ -2568,8 +2603,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -134990.0000, &
+      DfG = -21440.0000, &
       psatcode = 1, &
       ant = (/1.55381000e+01, 2.03273000e+03, -3.31500000e+01/), &
       Tantmin = 187.0000, &
@@ -2658,6 +2693,7 @@ module compdatadb
       gendatadb(ident = "IC5", &
       formula = "C5H12", &
       name = "ISOPENTANE", &
+      structure = "C:5;H:12", &
       mw = 72.1510, &
       Tc = 460.4000, &
       Pc = 3384300.00, &
@@ -2668,8 +2704,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -153700.0000, &
+      DfG = -13860.0000, &
       psatcode = 1, &
       ant = (/1.56338000e+01, 2.34867000e+03, -4.00500000e+01/), &
       Tantmin = 216.0000, &
@@ -2758,6 +2794,7 @@ module compdatadb
       gendatadb(ident = "KR", &
       formula = "KR", &
       name = "KRYPTON", &
+      structure = "Kr:1", &
       mw = 83.7980, &
       Tc = 209.4800, &
       Pc = 5525000.00, &
@@ -2794,6 +2831,7 @@ module compdatadb
       gendatadb(ident = "LJF", &
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
+      structure = "", &
       mw = 1.0000, &
       Tc = 132.0000, &
       Pc = 6650000.00, &
@@ -2830,6 +2868,7 @@ module compdatadb
       gendatadb(ident = "MXYL", &
       formula = "C8H10", &
       name = "M-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 617.0500, &
       Pc = 3536000.00, &
@@ -2840,8 +2879,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 17320.0000, &
+      DfG = 118890.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2902,6 +2941,7 @@ module compdatadb
       gendatadb(ident = "C1", &
       formula = "CH4", &
       name = "METHANE", &
+      structure = "C:1;H:4", &
       mw = 16.0425, &
       Tc = 190.5550, &
       Pc = 4598837.00, &
@@ -2912,8 +2952,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -74520.0000, &
+      DfG = -50450.0000, &
       psatcode = 1, &
       ant = (/1.52243000e+01, 8.97840000e+02, -7.16000000e+00/), &
       Tantmin = 93.0000, &
@@ -3002,6 +3042,7 @@ module compdatadb
       gendatadb(ident = "MEOH", &
       formula = "CH4O", &
       name = "METHANOL", &
+      structure = "C:1;H:4;O:1", &
       mw = 32.0420, &
       Tc = 512.6000, &
       Pc = 8095900.00, &
@@ -3012,8 +3053,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -200940.0000, &
+      DfG = -162240.0000, &
       psatcode = 1, &
       ant = (/1.85875000e+01, 3.62655000e+03, -3.42900000e+01/), &
       Tantmin = 257.0000, &
@@ -3088,6 +3129,7 @@ module compdatadb
       gendatadb(ident = "MTC5", &
       formula = "C6H12", &
       name = "METHYLCYCLOPENTANE", &
+      structure = "C:6;H:12", &
       mw = 84.1620, &
       Tc = 532.7000, &
       Pc = 3789600.00, &
@@ -3098,8 +3140,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -106000.0000, &
+      DfG = 36510.0000, &
       psatcode = 1, &
       ant = (/1.58023000e+01, 2.73100000e+03, -4.71100000e+01/), &
       Tantmin = 250.0000, &
@@ -3160,6 +3202,7 @@ module compdatadb
       gendatadb(ident = "MEG", &
       formula = "C2H6O2", &
       name = "ETHYLENE GLYCOL", &
+      structure = "C:2;H:6;O:2", &
       mw = 62.0700, &
       Tc = 720.0000, &
       Pc = 8200000.00, &
@@ -3170,8 +3213,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/1.89090800e+01, 4.97797500e+03, -6.47210000e+01/), &
       Tantmin = 200.0000, &
@@ -3232,6 +3275,7 @@ module compdatadb
       gendatadb(ident = "NE", &
       formula = "NE", &
       name = "NEON", &
+      structure = "Ne:1", &
       mw = 20.1830, &
       Tc = 44.4000, &
       Pc = 2661630.00, &
@@ -3322,6 +3366,7 @@ module compdatadb
       gendatadb(ident = "NO", &
       formula = "NO", &
       name = "NITRIC OXIDE", &
+      structure = "N:1;O:1", &
       mw = 30.0061, &
       Tc = 180.0000, &
       Pc = 6480000.00, &
@@ -3332,8 +3377,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 90250.0000, &
+      DfG = 86580.0000, &
       psatcode = 1, &
       ant = (/2.01315000e+01, 1.57250000e+03, -4.88000000e+00/), &
       Tantmin = 106.9000, &
@@ -3394,6 +3439,7 @@ module compdatadb
       gendatadb(ident = "N2", &
       formula = "N2", &
       name = "NITROGEN", &
+      structure = "N:2", &
       mw = 28.0130, &
       Tc = 126.1610, &
       Pc = 3394400.00, &
@@ -3494,6 +3540,7 @@ module compdatadb
       gendatadb(ident = "N2O", &
       formula = "N2O", &
       name = "NITROUS OXIDE", &
+      structure = "N:2;O:1", &
       mw = 44.0130, &
       Tc = 309.6000, &
       Pc = 7240000.00, &
@@ -3504,8 +3551,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 82050.0000, &
+      DfG = 104180.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3566,6 +3613,7 @@ module compdatadb
       gendatadb(ident = "N-H2", &
       formula = "H2", &
       name = "N-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 33.1450, &
       Pc = 1296400.00, &
@@ -3602,6 +3650,7 @@ module compdatadb
       gendatadb(ident = "O-H2", &
       formula = "H2", &
       name = "ORTHO-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 33.2200, &
       Pc = 1310650.00, &
@@ -3638,6 +3687,7 @@ module compdatadb
       gendatadb(ident = "OXYL", &
       formula = "C8H10", &
       name = "O-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 630.3300, &
       Pc = 3734000.00, &
@@ -3648,8 +3698,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 19080.0000, &
+      DfG = 122050.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3710,6 +3760,7 @@ module compdatadb
       gendatadb(ident = "O2", &
       formula = "O2", &
       name = "OXYGEN", &
+      structure = "O:2", &
       mw = 31.9990, &
       Tc = 154.6000, &
       Pc = 5045990.00, &
@@ -3796,6 +3847,7 @@ module compdatadb
       gendatadb(ident = "P-H2", &
       formula = "H2", &
       name = "PARA-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 32.9380, &
       Pc = 1285800.00, &
@@ -3832,6 +3884,7 @@ module compdatadb
       gendatadb(ident = "PXYL", &
       formula = "C8H10", &
       name = "P-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 616.2300, &
       Pc = 3511000.00, &
@@ -3842,8 +3895,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 18030.0000, &
+      DfG = 121480.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3904,6 +3957,7 @@ module compdatadb
       gendatadb(ident = "C3", &
       formula = "C3H8", &
       name = "PROPANE", &
+      structure = "C:3;H:8", &
       mw = 44.0970, &
       Tc = 369.8000, &
       Pc = 4245500.00, &
@@ -3914,8 +3968,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -104680.0000, &
+      DfG = -24290.0000, &
       psatcode = 1, &
       ant = (/1.57260000e+01, 1.87246000e+03, -2.51600000e+01/), &
       Tantmin = 164.0000, &
@@ -4018,6 +4072,7 @@ module compdatadb
       gendatadb(ident = "PRLN", &
       formula = "C3H6", &
       name = "PROPYLENE", &
+      structure = "C:3;H:6", &
       mw = 42.0810, &
       Tc = 364.9000, &
       Pc = 4600000.00, &
@@ -4028,8 +4083,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 20000.0000, &
+      DfG = 62500.0000, &
       psatcode = 1, &
       ant = (/1.57027000e+01, 1.80753000e+03, -2.61500000e+01/), &
       Tantmin = 160.0000, &
@@ -4090,6 +4145,7 @@ module compdatadb
       gendatadb(ident = "R11", &
       formula = "CCL3F", &
       name = "TRICHLOROFLUOROMETHANE", &
+      structure = "C:1;Cl:3;F:1", &
       mw = 137.3680, &
       Tc = 471.2000, &
       Pc = 4407600.00, &
@@ -4100,8 +4156,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -283700.0000, &
+      DfG = -244400.0000, &
       psatcode = 1, &
       ant = (/1.58516000e+01, 2.40161000e+03, -3.63000000e+01/), &
       Tantmin = 240.0000, &
@@ -4162,6 +4218,7 @@ module compdatadb
       gendatadb(ident = "R1114", &
       formula = "C2F4", &
       name = "TETRAFLUOROETHYLENE", &
+      structure = "C:2;F:4", &
       mw = 100.0160, &
       Tc = 306.5000, &
       Pc = 3940000.00, &
@@ -4172,8 +4229,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -659000.0000, &
+      DfG = -624100.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4234,6 +4291,7 @@ module compdatadb
       gendatadb(ident = "R1132a", &
       formula = "C2H2F2", &
       name = "1,1-DIFLUOROETHYLENE", &
+      structure = "C:2;H:2;F:2", &
       mw = 64.0350, &
       Tc = 302.9000, &
       Pc = 4460000.00, &
@@ -4244,8 +4302,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -336810.0000, &
+      DfG = -313060.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4306,6 +4364,7 @@ module compdatadb
       gendatadb(ident = "R114", &
       formula = "C2CL2F4", &
       name = "1,2-DICHLOROTETRAFLUOROETHANE", &
+      structure = "C:2;Cl:2;F:4", &
       mw = 170.9220, &
       Tc = 418.9000, &
       Pc = 3262700.00, &
@@ -4316,8 +4375,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -900400.0000, &
+      DfG = -818100.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4378,6 +4437,7 @@ module compdatadb
       gendatadb(ident = "R115", &
       formula = "C2CLF5", &
       name = "CHLOROPENTAFLUOROETHANE", &
+      structure = "C:2;Cl:1;F:5", &
       mw = 154.4670, &
       Tc = 353.2000, &
       Pc = 3161300.00, &
@@ -4388,8 +4448,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -1123000.0000, &
+      DfG = -1042000.0000, &
       psatcode = 1, &
       ant = (/1.57343000e+01, 1.84890000e+03, -3.08800000e+01/), &
       Tantmin = 175.0000, &
@@ -4450,6 +4510,7 @@ module compdatadb
       gendatadb(ident = "R116", &
       formula = "C2F6", &
       name = "HEXAFLUOROETHANE", &
+      structure = "C:2;F:6", &
       mw = 138.0120, &
       Tc = 293.0000, &
       Pc = 3060000.00, &
@@ -4460,8 +4521,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -1343000.0000, &
+      DfG = -1257000.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4522,6 +4583,7 @@ module compdatadb
       gendatadb(ident = "R12", &
       formula = "CCL2F2", &
       name = "DICHLORODIFLUOROMETHANE", &
+      structure = "C:1;Cl:2;F:2", &
       mw = 120.9140, &
       Tc = 385.0000, &
       Pc = 4123900.00, &
@@ -4532,8 +4594,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -490800.0000, &
+      DfG = -451700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4594,6 +4656,7 @@ module compdatadb
       gendatadb(ident = "R1234yf", &
       formula = "CF3CF=CH2", &
       name = "2,3,3,3-TETRAFLUOROPROPENE", &
+      structure = "C:3;H:2;F:4", &
       mw = 114.0416, &
       Tc = 367.8500, &
       Pc = 3382200.00, &
@@ -4604,8 +4667,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/1.67996000e+01, 2.41112000e+03, -6.30281000e+00/), &
       Tantmin = 243.7000, &
@@ -4666,6 +4729,7 @@ module compdatadb
       gendatadb(ident = "R1234ze", &
       formula = "CHF=CHCF3_(t", &
       name = "TRANS-1,3,3,3-TETRAFLUOROPROPENE", &
+      structure = "C:3;H:2;F:4", &
       mw = 114.0416, &
       Tc = 382.5130, &
       Pc = 3634900.00, &
@@ -4676,8 +4740,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/1.69543000e+01, 2.50917000e+03, -1.08418000e+01/), &
       Tantmin = 253.8000, &
@@ -4738,6 +4802,7 @@ module compdatadb
       gendatadb(ident = "R124", &
       formula = "C2HCLF4", &
       name = "2-CHLORO-1,1,1,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:1;Cl:1;F:4", &
       mw = 136.4750, &
       Tc = 395.4000, &
       Pc = 3620000.00, &
@@ -4748,8 +4813,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -924700.0000, &
+      DfG = -851800.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4810,6 +4875,7 @@ module compdatadb
       gendatadb(ident = "R124a", &
       formula = "C2HCLF4", &
       name = "1-CHLORO-1,1,2,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:1;Cl:1;F:4", &
       mw = 136.4750, &
       Tc = 399.9000, &
       Pc = 3720000.00, &
@@ -4820,8 +4886,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -903300.0000, &
+      DfG = -830900.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4846,6 +4912,7 @@ module compdatadb
       gendatadb(ident = "R125", &
       formula = "C2HF5", &
       name = "PENTAFLUOROETHANE", &
+      structure = "C:2;H:1;F:5", &
       mw = 120.0300, &
       Tc = 343.7000, &
       Pc = 3870000.00, &
@@ -4856,8 +4923,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -1105000.0000, &
+      DfG = -1030000.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4918,6 +4985,7 @@ module compdatadb
       gendatadb(ident = "R13", &
       formula = "CCLF3", &
       name = "CHLOROTRIFLUOROMETHANE", &
+      structure = "C:1;Cl:1;F:3", &
       mw = 104.4590, &
       Tc = 302.0000, &
       Pc = 3921300.00, &
@@ -4928,8 +4996,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -704200.0000, &
+      DfG = -663600.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4990,6 +5058,7 @@ module compdatadb
       gendatadb(ident = "R134a", &
       formula = "C2H2F4", &
       name = "1,1,1,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:2;F:4", &
       mw = 102.0300, &
       Tc = 374.1790, &
       Pc = 4056000.00, &
@@ -5000,8 +5069,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -907100.0000, &
+      DfG = -838400.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5062,6 +5131,7 @@ module compdatadb
       gendatadb(ident = "R14", &
       formula = "CF4", &
       name = "CARBON TETRAFLUORIDE", &
+      structure = "C:1;F:4", &
       mw = 88.0050, &
       Tc = 227.6000, &
       Pc = 3738900.00, &
@@ -5072,8 +5142,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -933500.0000, &
+      DfG = -888800.0000, &
       psatcode = 1, &
       ant = (/1.60543000e+01, 1.24455000e+03, -1.30600000e+01/), &
       Tantmin = 93.0000, &
@@ -5134,6 +5204,7 @@ module compdatadb
       gendatadb(ident = "R142b", &
       formula = "C2H3ClF2", &
       name = "1-CHLORO-1,1-DIFLUOROETHANE", &
+      structure = "C:2;H:3;Cl:1;F:2", &
       mw = 100.4960, &
       Tc = 409.6000, &
       Pc = 4218000.00, &
@@ -5144,8 +5215,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -529700.0000, &
+      DfG = -465700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5206,6 +5277,7 @@ module compdatadb
       gendatadb(ident = "R143a", &
       formula = "C2H3F3", &
       name = "1,1,1-TRIFLUOROETHANE", &
+      structure = "C:2;H:3;F:3", &
       mw = 84.0410, &
       Tc = 346.3000, &
       Pc = 3760000.00, &
@@ -5216,8 +5288,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -745600.0000, &
+      DfG = -678700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5278,6 +5350,7 @@ module compdatadb
       gendatadb(ident = "R152a", &
       formula = "C2H4F2", &
       name = "1,1-DIFLUOROETHANE", &
+      structure = "C:2;H:4;F:2", &
       mw = 66.0510, &
       Tc = 386.6000, &
       Pc = 4498800.00, &
@@ -5288,8 +5361,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -500800.0000, &
+      DfG = -443300.0000, &
       psatcode = 1, &
       ant = (/1.61871000e+01, 2.09535000e+03, -2.91600000e+01/), &
       Tantmin = 238.0000, &
@@ -5350,6 +5423,7 @@ module compdatadb
       gendatadb(ident = "R21", &
       formula = "CHCL2F", &
       name = "DICHLOROFLUOROMETHANE", &
+      structure = "C:1;H:1;Cl:2;F:1", &
       mw = 102.9230, &
       Tc = 451.6000, &
       Pc = 5167600.00, &
@@ -5360,8 +5434,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -284900.0000, &
+      DfG = -254400.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5422,6 +5496,7 @@ module compdatadb
       gendatadb(ident = "R218", &
       formula = "C3F8", &
       name = "OCTAFLUOROPROPANE", &
+      structure = "C:3;F:8", &
       mw = 188.0170, &
       Tc = 345.1000, &
       Pc = 2680000.00, &
@@ -5432,8 +5507,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -1737620.0000, &
+      DfG = -1610310.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5494,6 +5569,7 @@ module compdatadb
       gendatadb(ident = "R22", &
       formula = "CHCLF2", &
       name = "CHLORODIFLUOROMETHANE", &
+      structure = "C:1;H:1;Cl:1;F:2", &
       mw = 86.4690, &
       Tc = 369.2000, &
       Pc = 4975100.00, &
@@ -5504,8 +5580,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -482800.0000, &
+      DfG = -451700.0000, &
       psatcode = 1, &
       ant = (/1.55602000e+01, 1.70480000e+03, -4.13000000e+01/), &
       Tantmin = 225.0000, &
@@ -5566,6 +5642,7 @@ module compdatadb
       gendatadb(ident = "R23", &
       formula = "CHF3", &
       name = "TRIFLUOROMETHANE", &
+      structure = "C:1;H:1;F:3", &
       mw = 70.0130, &
       Tc = 299.3000, &
       Pc = 4860000.00, &
@@ -5576,8 +5653,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -693300.0000, &
+      DfG = -658800.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5638,6 +5715,7 @@ module compdatadb
       gendatadb(ident = "R32", &
       formula = "CH2F2", &
       name = "DIFLUOROMETHANE", &
+      structure = "C:1;H:2;F:2", &
       mw = 52.0230, &
       Tc = 351.6000, &
       Pc = 5830000.00, &
@@ -5648,8 +5726,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -452300.0000, &
+      DfG = -424700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5710,6 +5788,7 @@ module compdatadb
       gendatadb(ident = "R41", &
       formula = "CH3F", &
       name = "METHYL FLUORIDE", &
+      structure = "C:1;H:3;F:1", &
       mw = 34.0330, &
       Tc = 315.0000, &
       Pc = 5600000.00, &
@@ -5720,8 +5799,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -237700.0000, &
+      DfG = -213700.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5782,6 +5861,7 @@ module compdatadb
       gendatadb(ident = "F6S", &
       formula = "F6S", &
       name = "SULFUR HEXAFLUORIDE", &
+      structure = "F:6;S:1", &
       mw = 146.0540, &
       Tc = 318.7000, &
       Pc = 3760000.00, &
@@ -5792,8 +5872,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -1220890.0000, &
+      DfG = -1117090.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5854,6 +5934,7 @@ module compdatadb
       gendatadb(ident = "SO2", &
       formula = "SO2", &
       name = "SULFUR DIOXIDE", &
+      structure = "O:2;S:1", &
       mw = 64.0650, &
       Tc = 430.8000, &
       Pc = 7885000.00, &
@@ -5864,8 +5945,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -296810.0000, &
+      DfG = -300140.0000, &
       psatcode = 1, &
       ant = (/1.67681000e+01, 2.30240000e+03, -3.59600000e+01/), &
       Tantmin = 199.7100, &
@@ -5926,6 +6007,7 @@ module compdatadb
       gendatadb(ident = "F4N2", &
       formula = "F4N2", &
       name = "TETRAFLUOROHYDRAZINE", &
+      structure = "F:4;N:2", &
       mw = 104.0160, &
       Tc = 309.3000, &
       Pc = 3750000.00, &
@@ -5936,8 +6018,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -8370.0000, &
+      DfG = 79660.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5998,6 +6080,7 @@ module compdatadb
       gendatadb(ident = "TOLU", &
       formula = "C7H8", &
       name = "TOLUENE", &
+      structure = "C:7;H:8", &
       mw = 92.1410, &
       Tc = 591.7900, &
       Pc = 4108600.00, &
@@ -6008,8 +6091,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 50170.0000, &
+      DfG = 122290.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6083,7 +6166,8 @@ module compdatadb
   type (gendatadb), parameter :: cx84 = &
       gendatadb(ident = "F3NO", &
       formula = "F3N0", &
-      name = "TRIFLUOROAMINEOXIDE", &
+      name = "TRIFLUOROAMINE OXIDE", &
+      structure = "F:3;N:1;O:1", &
       mw = 87.0010, &
       Tc = 303.0000, &
       Pc = 6430000.00, &
@@ -6094,8 +6178,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -163300.0000, &
+      DfG = -96460.0000, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6120,6 +6204,7 @@ module compdatadb
       gendatadb(ident = "H2O", &
       formula = "H2O", &
       name = "WATER", &
+      structure = "H:2;O:1", &
       mw = 18.0150, &
       Tc = 647.3000, &
       Pc = 22048300.00, &
@@ -6130,8 +6215,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 188.8400, &
       href = -241826.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -241810.0000, &
+      DfG = -228420.0000, &
       psatcode = 1, &
       ant = (/1.83036000e+01, 3.81644000e+03, -4.61300000e+01/), &
       Tantmin = 284.0000, &
@@ -6245,6 +6330,7 @@ module compdatadb
       gendatadb(ident = "XE", &
       formula = "XE", &
       name = "XENON", &
+      structure = "Xe:1", &
       mw = 131.3000, &
       Tc = 289.7000, &
       Pc = 5840000.00, &
@@ -6281,6 +6367,7 @@ module compdatadb
       gendatadb(ident = "NC4", &
       formula = "C4H10", &
       name = "N-BUTANE", &
+      structure = "C:4;H:10", &
       mw = 58.1240, &
       Tc = 425.2000, &
       Pc = 3799700.00, &
@@ -6291,8 +6378,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -125790.0000, &
+      DfG = -16570.0000, &
       psatcode = 1, &
       ant = (/1.56782000e+01, 2.15490000e+03, -3.44200000e+01/), &
       Tantmin = 195.0000, &
@@ -6395,6 +6482,7 @@ module compdatadb
       gendatadb(ident = "NC10", &
       formula = "C10H22", &
       name = "N-DECANE", &
+      structure = "C:10;H:22", &
       mw = 142.2860, &
       Tc = 617.6000, &
       Pc = 2107600.00, &
@@ -6405,8 +6493,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -249530.0000, &
+      DfG = 33300.0000, &
       psatcode = 1, &
       ant = (/1.60114000e+01, 3.45680000e+03, -7.86700000e+01/), &
       Tantmin = 330.0000, &
@@ -6481,6 +6569,7 @@ module compdatadb
       gendatadb(ident = "NC22", &
       formula = "C22H46", &
       name = "N-DOCOSANE", &
+      structure = "C:22;H:46", &
       mw = 310.6100, &
       Tc = 787.0000, &
       Pc = 1060000.00, &
@@ -6491,8 +6580,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6553,6 +6642,7 @@ module compdatadb
       gendatadb(ident = "NC12", &
       formula = "C12H26", &
       name = "N-DODECANE", &
+      structure = "C:12;H:26", &
       mw = 170.3400, &
       Tc = 658.1000, &
       Pc = 1817000.00, &
@@ -6563,8 +6653,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -290790.0000, &
+      DfG = 49530.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6625,6 +6715,7 @@ module compdatadb
       gendatadb(ident = "NC20", &
       formula = "C20H42", &
       name = "N-EICOSANE", &
+      structure = "C:20;H:42", &
       mw = 282.5500, &
       Tc = 768.0000, &
       Pc = 1070000.00, &
@@ -6635,8 +6726,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -455830.0000, &
+      DfG = 115770.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6697,6 +6788,7 @@ module compdatadb
       gendatadb(ident = "NC21", &
       formula = "C21H44", &
       name = "N-HENEICOSANE", &
+      structure = "C:21;H:44", &
       mw = 296.5800, &
       Tc = 778.0000, &
       Pc = 1110000.00, &
@@ -6707,8 +6799,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6769,6 +6861,7 @@ module compdatadb
       gendatadb(ident = "NC17", &
       formula = "C17H36", &
       name = "N-HEPTADECANE", &
+      structure = "C:17;H:36", &
       mw = 240.4700, &
       Tc = 736.0000, &
       Pc = 1340000.00, &
@@ -6779,8 +6872,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -393940.0000, &
+      DfG = 90930.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6841,6 +6934,7 @@ module compdatadb
       gendatadb(ident = "NC7", &
       formula = "C7H16", &
       name = "N-HEPTANE", &
+      structure = "C:7;H:16", &
       mw = 100.2050, &
       Tc = 540.2000, &
       Pc = 2735800.00, &
@@ -6851,8 +6945,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -187800.0000, &
+      DfG = 8200.0000, &
       psatcode = 1, &
       ant = (/1.58737000e+01, 2.91132000e+03, -5.65100000e+01/), &
       Tantmin = 270.0000, &
@@ -6955,6 +7049,7 @@ module compdatadb
       gendatadb(ident = "NC16", &
       formula = "C16H34", &
       name = "N-HEXADECANE", &
+      structure = "C:16;H:34", &
       mw = 226.4460, &
       Tc = 717.0000, &
       Pc = 1418600.00, &
@@ -6965,8 +7060,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -373310.0000, &
+      DfG = 82650.0000, &
       psatcode = 1, &
       ant = (/1.61841000e+01, 4.21491000e+03, -1.18700000e+02/), &
       Tantmin = 423.0000, &
@@ -7038,6 +7133,7 @@ module compdatadb
       gendatadb(ident = "NC6", &
       formula = "C6H14", &
       name = "N-HEXANE", &
+      structure = "C:6;H:14", &
       mw = 86.1780, &
       Tc = 507.4000, &
       Pc = 2968800.00, &
@@ -7048,8 +7144,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -166920.0000, &
+      DfG = 150.0000, &
       psatcode = 1, &
       ant = (/1.58366000e+01, 2.69755000e+03, -4.87800000e+01/), &
       Tantmin = 245.0000, &
@@ -7152,6 +7248,7 @@ module compdatadb
       gendatadb(ident = "NC19", &
       formula = "C19H40", &
       name = "N-NONADECANE", &
+      structure = "C:19;H:40", &
       mw = 268.5300, &
       Tc = 755.0000, &
       Pc = 1160000.00, &
@@ -7162,8 +7259,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -435200.0000, &
+      DfG = 107490.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7224,6 +7321,7 @@ module compdatadb
       gendatadb(ident = "NC9", &
       formula = "C9H20", &
       name = "N-NONANE", &
+      structure = "C:9;H:20", &
       mw = 128.2590, &
       Tc = 594.6000, &
       Pc = 2310200.00, &
@@ -7234,8 +7332,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -228860.0000, &
+      DfG = 25000.0000, &
       psatcode = 1, &
       ant = (/1.59671000e+01, 3.29145000e+03, -7.13300000e+01/), &
       Tantmin = 312.0000, &
@@ -7310,6 +7408,7 @@ module compdatadb
       gendatadb(ident = "NC18", &
       formula = "C18H38", &
       name = "N-OCTADECANE", &
+      structure = "C:18;H:38", &
       mw = 254.5000, &
       Tc = 747.0000, &
       Pc = 1290000.00, &
@@ -7320,8 +7419,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -414570.0000, &
+      DfG = 99210.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7382,6 +7481,7 @@ module compdatadb
       gendatadb(ident = "NC8", &
       formula = "C8H18", &
       name = "N-OCTANE", &
+      structure = "C:8;H:18", &
       mw = 114.2320, &
       Tc = 568.8000, &
       Pc = 2482500.00, &
@@ -7392,8 +7492,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -208750.0000, &
+      DfG = 16270.0000, &
       psatcode = 1, &
       ant = (/1.59426000e+01, 3.12029000e+03, -6.36300000e+01/), &
       Tantmin = 292.0000, &
@@ -7496,6 +7596,7 @@ module compdatadb
       gendatadb(ident = "NC25", &
       formula = "C25H52", &
       name = "N-PENTACOSANE", &
+      structure = "C:25;H:52", &
       mw = 352.6900, &
       Tc = 812.0000, &
       Pc = 950000.00, &
@@ -7506,8 +7607,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7568,6 +7669,7 @@ module compdatadb
       gendatadb(ident = "NC15", &
       formula = "C15H32", &
       name = "N-PENTADECANE", &
+      structure = "C:15;H:32", &
       mw = 212.4200, &
       Tc = 708.0000, &
       Pc = 1480000.00, &
@@ -7578,8 +7680,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -352680.0000, &
+      DfG = 74370.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7640,6 +7742,7 @@ module compdatadb
       gendatadb(ident = "NC5", &
       formula = "C5H12", &
       name = "N-PENTAN", &
+      structure = "C:5;H:12", &
       mw = 72.1510, &
       Tc = 469.6000, &
       Pc = 3374100.00, &
@@ -7650,8 +7753,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -146760.0000, &
+      DfG = -8650.0000, &
       psatcode = 1, &
       ant = (/1.58333000e+01, 2.47707000e+03, -3.99400000e+01/), &
       Tantmin = 220.0000, &
@@ -7718,6 +7821,7 @@ module compdatadb
       gendatadb(ident = "NC14", &
       formula = "C14H30", &
       name = "N-TETRADECANE", &
+      structure = "C:14;H:30", &
       mw = 198.3900, &
       Tc = 693.0000, &
       Pc = 1570000.00, &
@@ -7728,8 +7832,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -332050.0000, &
+      DfG = 66090.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7790,6 +7894,7 @@ module compdatadb
       gendatadb(ident = "NC24", &
       formula = "C24H50", &
       name = "N-TETRACOSANE", &
+      structure = "C:24;H:50", &
       mw = 338.6600, &
       Tc = 804.0000, &
       Pc = 980000.00, &
@@ -7800,8 +7905,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7862,6 +7967,7 @@ module compdatadb
       gendatadb(ident = "NC23", &
       formula = "C23H48", &
       name = "N-TRICOSANE", &
+      structure = "C:23;H:48", &
       mw = 324.6300, &
       Tc = 796.0000, &
       Pc = 1020000.00, &
@@ -7872,8 +7978,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7934,6 +8040,7 @@ module compdatadb
       gendatadb(ident = "NC13", &
       formula = "C13H28", &
       name = "N-TRIDECANE", &
+      structure = "C:13;H:28", &
       mw = 184.3700, &
       Tc = 675.0000, &
       Pc = 1680000.00, &
@@ -7944,8 +8051,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -311420.0000, &
+      DfG = 57810.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -8006,6 +8113,7 @@ module compdatadb
       gendatadb(ident = "NC11", &
       formula = "C11H24", &
       name = "N-UNDECANE", &
+      structure = "C:11;H:24", &
       mw = 156.3120, &
       Tc = 639.0000, &
       Pc = 1980000.00, &
@@ -8016,8 +8124,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = -270160.0000, &
+      DfG = 41250.0000, &
       psatcode = 1, &
       ant = (/1.60541000e+01, 3.61407000e+03, -8.54500000e+01/), &
       Tantmin = 348.0000, &
@@ -8078,6 +8186,7 @@ module compdatadb
       gendatadb(ident = "PSEUDO", &
       formula = "XXX", &
       name = "PSEUDO", &
+      structure = "", &
       mw = 100.0000, &
       Tc = 100.0000, &
       Pc = 10000000.00, &
@@ -8088,8 +8197,8 @@ module compdatadb
       Ptr = 0.0000, &
       sref = 0.0000, &
       href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      DfH = 100000000000.0000, &
+      DfG = 100000000000.0000, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &

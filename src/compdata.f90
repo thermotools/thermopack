@@ -4,7 +4,7 @@
 !!
 module compdata
   use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen, &
-       comp_name_len, formula_len
+       comp_name_len, formula_len, structure_len
   implicit none
   save
   public
@@ -91,6 +91,7 @@ module compdata
     character (len=uid_len) :: ident !< The component ID
     character (len=formula_len) :: formula !< Chemical formula
     character (len=comp_name_len) :: name !< The component name
+    character (len=structure_len) :: structure !< Molecular structure
     real :: mw !< Mole weight[g/mol]
     real :: tc !< Critical temperature [K]
     real :: pc !< Critical pressure [Pa]

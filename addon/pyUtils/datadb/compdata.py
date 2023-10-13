@@ -81,6 +81,7 @@ class component(object):
         code_lines.append(3*I+"formula = \"" + self.comp["formula"] + "\", &")
         code_lines.append(3*I+"name = \"" + self.comp["name"] + "\", &")
         #code_lines.append(3*I+"\"ref=" + self.comp["ref"] + "\", &")
+        code_lines.append(3*I+"structure = \"" + self.comp["structure"] + "\", &")
         code_lines.append(3*I + 'mw = {:.4f}'.format(self.comp["mol_weight"]) + ", &")
         code_lines.append(3*I + 'Tc = {:.4f}'.format(self.comp["critical"]["temperature"]) + ", &")
         code_lines.append(3*I + 'Pc = {:.2f}'.format(self.comp["critical"]["pressure"]) + ", &")
