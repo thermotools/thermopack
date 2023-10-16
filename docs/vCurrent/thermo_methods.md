@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T23:11:32.371435
+Generated at: 2023-10-16T09:05:31.796832
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -43,6 +43,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
+    * [tv_meta_ps](#tv_meta_psself-pressure-entropy-n-volume_initial-temp_initial)
   * [Flash interfaces](#flash-interfaces)
     * [guess_phase](#guess_phaseself-temp-press-z)
     * [set_ph_tolerance](#set_ph_toleranceself-tol)
@@ -60,7 +61,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
-    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
     * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
     * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
@@ -85,6 +86,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
     * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperaturenone-dlnvnone-min_temperature_vapornone)
     * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperaturenone)
+    * [tv_meta_ps](#tv_meta_psself-pressure-entropy-n-volume_initial-temp_initial)
   * [Virial interfaces](#virial-interfaces)
     * [binary_third_virial_matrix](#binary_third_virial_matrixself-temp)
     * [second_virial_matrix](#second_virial_matrixself-temp)
@@ -117,6 +119,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
+    * [disable_volume_translation](#disable_volume_translationself)
     * [get_export_name](#get_export_nameself-module-method)
     * [get_model_id](#get_model_idself)
     * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referencedefault)
@@ -1095,6 +1098,7 @@ Property interfaces in other variables than $TV$ or $Tp$, for example computing 
   * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
+    * [tv_meta_ps](#tv_meta_psself-pressure-entropy-n-volume_initial-temp_initial)
 
 
 ### `density_lnf_t(self, temp, lnf, rho_initial)`
@@ -1148,6 +1152,45 @@ Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 &nbsp;&nbsp;&nbsp;&nbsp; **rho (array_like):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Array of component densities (mol/m3).
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **pressure (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **entropy (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Entropy (J/K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume_initial (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Initial guess for volume (m3).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp_initial (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Initial guess for temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3).
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1348,7 +1391,7 @@ Bubble- and dew point calculations and phase envelopes.
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
-    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone)
+    * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
     * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
     * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
@@ -1701,7 +1744,7 @@ Get error description for binary plot error
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_envelope_twophase(self, initial_pressure, z, maximum_pressure=15000000.0, minimum_temperature=None, step_size_factor=1.0, step_size=None, calc_v=False, initial_temperature=None)`
+### `get_envelope_twophase(self, initial_pressure, z, maximum_pressure=15000000.0, minimum_temperature=None, step_size_factor=1.0, step_size=None, calc_v=False, initial_temperature=None, calc_criconden=False)`
 Get the phase-envelope at a given composition
 
 #### Args:
@@ -1734,11 +1777,15 @@ Get the phase-envelope at a given composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
 
-&nbsp;&nbsp;&nbsp;&nbsp; **initial_temperature (bool, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **initial_temperature (float, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Start mapping form dew point at initial temperature.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Overrides initial pressure. Defaults to None (K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **calc_criconden (bool, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate cricondenbar and cricondentherm?
 
 #### Returns:
 
@@ -1753,6 +1800,10 @@ Get the phase-envelope at a given composition
 &nbsp;&nbsp;&nbsp;&nbsp; **ndarray (optional, if `calc_v=True`):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific volume (m3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray (optional, if `calc_criconden=True`):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Cricondenbar followed by cricondentherm (T (K), P (Pa), T (K), P (Pa))
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2232,6 +2283,7 @@ Critical point solver.
     * [map_meta_isotherm](#map_meta_isothermself-temperature-z-phase-n50)
     * [spinodal](#spinodalself-z-initial_pressure1000000-initial_liquid_temperaturenone-dlnvnone-min_temperature_vapornone)
     * [spinodal_point](#spinodal_pointself-z-pressure-phase-temperaturenone)
+    * [tv_meta_ps](#tv_meta_psself-pressure-entropy-n-volume_initial-temp_initial)
 
 
 ### `critical(self, n, temp=0.0, v=0.0, tol=1e-07, v_min=None)`
@@ -2588,6 +2640,45 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **pressure (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **entropy (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Entropy (J/K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume_initial (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Initial guess for volume (m3).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp_initial (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Initial guess for temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3).
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3012,6 +3103,7 @@ Methods for handling communication with the Fortran library.
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
+    * [disable_volume_translation](#disable_volume_translationself)
     * [get_export_name](#get_export_nameself-module-method)
     * [get_model_id](#get_model_idself)
     * [init_peneloux_volume_translation](#init_peneloux_volume_translationself-parameter_referencedefault)
@@ -3041,6 +3133,11 @@ Allocate FORTRAN memory for this class instance
 
 ### `delete_eos(self)`
 de-allocate FORTRAN memory for this class instance 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `disable_volume_translation(self)`
+Disable volume translations
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
