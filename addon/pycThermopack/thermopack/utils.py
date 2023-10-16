@@ -6,7 +6,7 @@ import sys
 import copy
 from ctypes import c_int, POINTER, c_double
 import numpy as np
-from platform_specifics import DIFFERENTIAL_RETURN_MODE
+from .platform_specifics import DIFFERENTIAL_RETURN_MODE
 
 def gcc_major_version_greater_than(GCC_version):
     """Returns if GCC major version number is greater than specefied version
@@ -169,14 +169,24 @@ class BinaryTriplePoint:
         return self.__repr__()
 
 class Differentials:
-
+    """
+    Holder struct for differentials, implements some methods to be as backwards compatible as possible.
+    """
     def __init__(self, diffs, variables):
+        """Constructor
+
+        Args:
+            diffs (tuple) : (all three) differentials
+            variables (str) : Key (either 'tvn' or 'tpn') indicating what variables are held constant, and what
+                            differentials are found in the tuple 'diffs'.
+        """
         self.dT = None
         self.dp = None
         self.dV = None
         self.dn = None
 
         self.iterable = tuple()
+        self.constant = variables
         if variables == 'tvn':
             self.dT, self.dV, self.dn = diffs
             for d in (self.dT, self.dV, self.dn):
@@ -189,6 +199,60 @@ class Differentials:
             for d in (self.dT, self.dp, self.dn):
                 if d is not None:
                     self.iterable += (d,)
+        else:
+            raise KeyError(f'Invalid differential variables key : "{variables}"')
+
+    @staticmethod
+    def from_return_tuple(vals, flags, variables):
+        """Constructor
+        Method to construct a Differentials object from a truncated "old-style" return_tuple. Note: `vals` should be
+        return_tuple[1:], such that it does not contain the property value, only differentials.
+
+        Args:
+            vals (tuple) : A (possibly empty) tuple of differentials.
+            flags (tuple) : The flags passed to the thermopack method (dxdt, dxdv, dxdn) or (dxdt, dxdp, dxdn).
+            variables (str) : Key (either 'tvn' or 'tpn') indicating what differentials are expected in `vals`
+
+        Returns:
+            Differentials : Constructed from the truncated return_tuple.
+        """
+        dT, dV, dp, dn = None, None, None, None
+        diff_idx = 0
+        if flags[0] is not None:
+            dT = vals[diff_idx]
+            diff_idx += 1
+
+        if variables == 'tvn':
+            if flags[1] is not None:
+                dV = vals[diff_idx]
+                diff_idx += 1
+            if flags[2] is not None:
+                dn = vals[diff_idx]
+
+            diffs = (dT, dV, dn)
+        elif variables == 'tpn':
+            if flags[diff_idx] is not None:
+                dp = vals[diff_idx]
+                diff_idx += 1
+            if flags[2] is not None:
+                dn = vals[diff_idx]
+            diffs = (dT, dp, dn)
+        else:
+            raise KeyError(f'Invalid differential variables key : "{variables}"')
+
+        return Differentials(diffs, variables)
+
+    def __repr__(self):
+        ostr = 'Differentials object containing the attributes (description / name / value)\n'
+        ostr += f'\t{"Variables held constant" : <25} constant : {self.constant}\n'
+        ostr += f'\t{"Temperature derivative" : <31} dT : {self.dT}\n'
+        ostr += f'\t{"Pressure derivative" : <31} dp : {self.dp}\n'
+        ostr += f'\t{"Volume derivative" : <31} dV : {self.dV}\n'
+        ostr += f'\t{"Mole number derivative" : <31} dn : {self.dn}\n'
+        return ostr
+
+    def __str__(self):
+        return self.__repr__()
 
     def __iter__(self):
         return (_ for _ in self.iterable)
@@ -196,14 +260,22 @@ class Differentials:
     def __getitem__(self, item):
         return self.iterable[item]
 
-    def __bool__(self):
+    def __bool__(self): # To easily check whether there are any differentials
         if len(self.iterable) > 0:
             return True
         return False
 
 class Property:
-
+    """
+    Holder struct to return a property and its derivatives
+    """
     def __init__(self, val, diffs):
+        """Constructor
+
+        Args:
+            val (float or array_like) : The value of the property
+            diffs (Differentials) : The derivatives
+        """
         self.diffs = diffs
         self.val = val
 
@@ -211,12 +283,59 @@ class Property:
         for d in self.diffs:
             self.iterable += (d,)
 
+    @staticmethod
+    def from_return_tuple(return_tuple, flags, variables):
+        """Constructor
+        Construct a Property object from an "old-style" return_tuple, along with flags
+
+        Args:
+            return_tuple (tuple) : The "old-style" return_tuple
+            flags (tuple) : The flags passed to the function generating the return tuple
+            variables (str) : Key ('tvn' or 'tpn') indicating what differentials to expect in the return tuple
+
+        Returns:
+            Property : Constructed from the return_tuple
+        """
+        diffs = Differentials.from_return_tuple(return_tuple[1:], flags, variables)
+        return Property(return_tuple[0], diffs)
+
+    def __repr__(self):
+        ostr = f'Property struct evaluated at constant ({self.diffs.constant})\n'
+        ostr += 'Containing the attributes \n'
+        ostr += f'Value         : val'
+        ostr += f'Differentials : diffs'
+        return ostr
+
+    def __str__(self):
+        return self.__repr__()
+
     def __iter__(self):
-        if DIFFERENTIAL_RETURN_MODE == 'old':
+        """
+        Make sure the Property object behaves like the old-style return_tuple if we want that.
+        """
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
             return (_ for _ in self.iterable)
-        return (_ for _ in (self.val, self.diffs))
+        if self.diffs:
+            return (_ for _ in (self.val, self.diffs))
+        return (_ for _ in [self.val])
 
     def __getitem__(self, item):
-        if DIFFERENTIAL_RETURN_MODE == 'old':
+        """
+        See: __iter__
+        """
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
             return self.iterable[item]
         return [self.val, self.diffs][item]
+
+    def unpack(self):
+        """
+        Ensure that ThermoPack methods can just `return Property.unpack()`, and then differentiating old-style vs.
+        new-style is done here, rather than in every ThermoPack method.
+        """
+        if self.diffs: # Correct packing for backwards compatibility handled in __iter__
+            return tuple(self.__iter__())
+
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+            return self.iterable
+
+        return self.val

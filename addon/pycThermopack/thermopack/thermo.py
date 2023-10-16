@@ -2403,7 +2403,8 @@ class thermo(object):
                     dmudn[i][j] = dmudn_c[i + j*len(n)]
             return_tuple += (np.array(dmudn), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dmudt, dmudv, dmudn), 'tvn')
+        return prop.unpack()
 
     def fugacity_tv(self, temp, volume, n, dlnphidt=None, dlnphidv=None, dlnphidn=None):
         """TV-property
