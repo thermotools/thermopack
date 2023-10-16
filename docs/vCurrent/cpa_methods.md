@@ -6,7 +6,7 @@ permalink: /vcurrent/cpa_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.070162
+Generated at: 2023-10-16T10:05:10.854792
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cpa class. For instructions on how to use the parser routines, see the
@@ -21,7 +21,9 @@ Cubic Plus Association Equation of State. This class implements utility methods 
     * [init](#initself-comps-eossrk-mixingvdw-alphaclassic-parameter_referencedefault)
   * [Utility methods](#utility-methods)
     * [get_kij](#get_kijself-c1-c2)
+    * [get_pure_params](#get_pure_paramsself-ic)
     * [set_kij](#set_kijself-c1-c2-kij)
+    * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
 
 ## Constructor
@@ -101,7 +103,9 @@ Set- and get methods for interaction parameters, mixing parameters ...
 ### Table of contents
   * [Utility methods](#utility-methods)
     * [get_kij](#get_kijself-c1-c2)
+    * [get_pure_params](#get_pure_paramsself-ic)
     * [set_kij](#set_kijself-c1-c2-kij)
+    * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
 
 
@@ -128,6 +132,25 @@ Get attractive energy interaction parameter
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `get_pure_params(self, ic)`
+Get pure parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **params (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `set_kij(self, c1, c2, kij)`
 Set attractive energy interaction parameter
 
@@ -144,6 +167,21 @@ Set attractive energy interaction parameter
 &nbsp;&nbsp;&nbsp;&nbsp; **kij (array_like):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  i-j interaction parameter (2 parameters)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_pure_params(self, ic, params)`
+Set pure parameters Input a0, b in their conventional (non-SI) units, beta and eps in SI units, c1 dimensionless.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **params (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

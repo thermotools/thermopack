@@ -130,8 +130,8 @@ class cpa(cubic):
         return np.array(kij_c)
 
     def get_pure_params(self, ic):
-        """Get pure parameters
-
+        """Utility
+        Get pure parameters
 
         Args:
             ic (int): Component index
@@ -152,10 +152,11 @@ class cpa(cubic):
         return np.array(params_c)
 
     def set_pure_params(self, ic, params):
-        """Set pure parameters
-
+        """Utility
+            Set pure parameters
            Input a0, b in their conventional (non-SI) units,
            beta and eps in SI units, c1 dimensionless.
+
         Args:
             ic (int): Component index
             params (array_like): a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
