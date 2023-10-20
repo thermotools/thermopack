@@ -66,7 +66,7 @@
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Manion, 2002",
     "enthalpy_ref_state": "1ATM",
-    "enthalpy": -84.e3,
+    "enthalpy": -84.0e3,
     "entropy_bib_reference": "HSC Chemistry 9",
     "entropy_ref_state": "0BAR",
     "entropy": 229.601

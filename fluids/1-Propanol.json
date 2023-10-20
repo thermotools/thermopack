@@ -66,7 +66,7 @@
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov",
     "enthalpy_ref_state": "1ATM",
-    "enthalpy": -256.e3,
+    "enthalpy": -256.0e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Chao J., 1986",
     "entropy_ref_state": "1ATM",
     "entropy": 322.49

@@ -66,7 +66,7 @@
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov",
     "enthalpy_ref_state": "1ATM",
-    "enthalpy": -710.e3,
+    "enthalpy": -710.0e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
     "entropy_ref_state": "1BAR",
     "entropy": 285.35

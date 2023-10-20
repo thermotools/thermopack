@@ -67,7 +67,7 @@
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov",
     "enthalpy_ref_state": "1ATM",
-    "enthalpy": -316.e3,
+    "enthalpy": -316.0e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Green J.H.S., 1961",
     "entropy_ref_state": "1ATM",
     "entropy": 439.7
