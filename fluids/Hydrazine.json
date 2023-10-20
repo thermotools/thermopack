@@ -64,8 +64,11 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "https://webbook.nist.gov",
-    "enthalpy": 95353.40,
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "enthalpy_ref_state": "1ATM",
+    "enthalpy": 95.35e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
     "entropy": 238.66
   },
   "standard_formation_energy": {

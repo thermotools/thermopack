@@ -64,9 +64,12 @@
     "Tmax": 700.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Good, 1972",
+    "enthalpy_ref_state": "1ATM",
+    "enthalpy": -208.7e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Scott D.W., 1974",
+    "entropy_ref_state": "1ATM",
+    "entropy": 467.06
   },
   "standard_formation_energy": {
     "bib_reference": "ISBN: 978-0070116825",

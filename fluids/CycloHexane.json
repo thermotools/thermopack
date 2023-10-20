@@ -63,9 +63,12 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Spitzer and Huffman, 1947",
+    "enthalpy_ref_state": "1ATM",
+    "enthalpy": -124.6e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Beckett C.W., 1947",
+    "entropy_ref_state": "1ATM",
+    "entropy": 298.19
   },
   "standard_formation_energy": {
     "bib_reference": "ISBN: 978-0070116825",

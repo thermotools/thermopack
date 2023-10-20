@@ -64,9 +64,12 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Pilcher, Pell, et al., 1964",
+    "enthalpy_ref_state": "1ATM",
+    "enthalpy": -184.1e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "0BAR",
+    "entropy": 267.553
   },
   "standard_formation_energy": {
     "bib_reference": "",

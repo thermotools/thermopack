@@ -63,8 +63,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Good and Smith, 1969",
+    "enthalpy_ref_state": "1ATM",
+    "enthalpy": -106.0e3,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
   },
   "standard_formation_energy": {
