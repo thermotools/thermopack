@@ -31,7 +31,7 @@
       * [`cpa` - Cubic plus association EoS](/thermopack/vcurrent/cpa_methods.html)
     * [`ext_csp` - Extended Corresponding States EoS](/thermopack/vcurrent/ext_csp_methods.html)
     * [`multiparam` - Multiparameter EoS](/thermopack/vcurrent/multiparam_methods.html)
-    * [Fortran-side manual](/thermopack/vcurrent/Doxymanual.pdf)
+    * [Fortran-side manual](/thermopack/vCurrent/Doxymanual.pdf)
 * [Installation](/thermopack/vcurrent/source_build.html)
 * [Latest version (beta)](/thermopack/)
 * [v2.1.0](/thermopack/v2.1.0/home.html)

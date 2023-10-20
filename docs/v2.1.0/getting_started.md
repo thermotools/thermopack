@@ -84,7 +84,7 @@ Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 Specific volume, given temperature, pressure and composition is computed as 
 ```python
 from thermopack.saftvrmie import saftvrmie
-eos = saftvrmie('NC6,NC12') # Hexane/dodecane mixture
+eos = saftvrmie('NC6,NC10') # Hexane/decane mixture
 T = 300 # Kelvin
 p = 1e5 # Pascal
 x = [0.2, 0.8] # Molar composition
@@ -196,9 +196,10 @@ For a mixture with a Liquid-Liquid equilibrium and two Liquid-Vapour equilibria,
 import matplotlib.pyplot as plt
 from thermopack.cpa import cpa
 
-eos = cpa('NC12,H2O', 'SRK')  # CPA-SRK eos for Dodecane/water mixture
+eos = cpa('NC10,H2O', 'SRK')  # CPA-SRK eos for decane/water mixture
 T = 350  # kelvin
-LLE, L1VE, L2VE = eos.get_binary_pxy(T)  # Returns three tuples containing three arrays each
+LLE, L1VE, L2VE = eos.get_binary_pxy(T, maximum_pressure=1e6,
+                                     minimum_pressure=1e3)  # Returns three tuples containing three arrays each
 
 # Liquid-liquid phase boundaries
 # LLE[2] is the pressure along the liquid-liquid phase boundary
@@ -217,6 +218,7 @@ plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole frac
 
 plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
 plt.xlabel('Molar composition')
+plt.yscale('log')
 ```
 
 If we are unsure whether one or more of the equilibria exists, we need to check whether the corresponding tuple contains `None`, as:

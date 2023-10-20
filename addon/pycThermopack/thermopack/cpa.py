@@ -130,8 +130,8 @@ class cpa(cubic):
         return np.array(kij_c)
 
     def get_pure_params(self, ic):
-        """Get pure parameters
-
+        """Utility
+        Get pure parameters
 
         Args:
             ic (int): Component index
@@ -152,10 +152,11 @@ class cpa(cubic):
         return np.array(params_c)
 
     def set_pure_params(self, ic, params):
-        """Set pure parameters
-
+        """Utility
+            Set pure parameters
            Input a0, b in their conventional (non-SI) units,
            beta and eps in SI units, c1 dimensionless.
+
         Args:
             ic (int): Component index
             params (array_like): a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
@@ -204,3 +205,17 @@ class cpa(cubic):
         self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
         self.s_use_simplified_cpa.restype = None
         self.s_use_simplified_cpa(byref(simplified_c))
+
+class SRK_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)
+
+class PR_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='PR'`.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)

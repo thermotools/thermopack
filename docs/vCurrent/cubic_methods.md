@@ -6,7 +6,7 @@ permalink: /vcurrent/cubic_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T23:11:32.383980
+Generated at: 2023-10-16T10:01:24.430020
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cubic class. For instructions on how to use the parser routines, see the
@@ -15,9 +15,35 @@ file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 The `cubic` class, found in `addon/pycThermopack/thermopack/cubic.py`, is the interface to the 
 Cubic Equation of State. This class implements utility methods to access mixing parameters etc.
 
-The sections [Initialiser keys](#initialiser-keys), [Pure fluid &alpha;](#pure-fluid-&alpha;), [&alpha; mixing rules](#&alpha;-mixing-rules) and [&beta; mixing rules](#&beta;-mixing-rules) summarise the various valid input keys that can be used to modify mixing rules, the &alpha -parameter and the underlying EoS.
+In addition to the `cubic` class, there are several convenience classes to give easy access to specific cubic equations of state. The sections [Initialiser keys](#initialiser-keys), [Pure fluid &alpha;](#pure-fluid-&alpha;), [&alpha; mixing rules](#&alpha;-mixing-rules) and [&beta; mixing rules](#&beta;-mixing-rules) summarise the various valid input keys that can be used to modify mixing rules, the &alpha; -parameter and the underlying EoS.
 
 Documentation for the methods in the cubic class is found in the remaining sections, summarised in the table of contents below.
+
+## Input keys
+* [Initialiser keys](#initialiser-keys)
+* [Pure fluid &alpha;](#pure-fluid-&alpha;)
+* [&alpha; mixing rules](#&alpha;-mixing-rules)
+* [&beta; mixing rules](#&beta;-mixing-rules)
+
+# Specific cubics
+
+## Table of contents
+  * [SoaveRedlichKwong](#soaveredlichkwong)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-parameter_referencedefault-volume_shiftfalse)
+  * [RedlichKwong](#redlichkwong)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-alphark-parameter_referencedefault-volume_shiftfalse)
+  * [VanDerWaals](#vanderwaals)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+  * [PengRobinson](#pengrobinson)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+  * [PengRobinson78](#pengrobinson78)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-parameter_referencedefault-volume_shiftfalse)
+  * [PatelTeja](#patelteja)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+  * [SchmidtWensel](#schmidtwensel)
+    * [\_\_init\_\_](#__init__self-comps-mixingvdw-alphaclassic-parameter_referencedefault-volume_shiftfalse)
+
+# Parent class "cubic"
 
 ## Table of contents
   * [Constructor](#constructor)
@@ -94,6 +120,69 @@ and is not intended to be rendered on its own--->
 ## &beta; mixing rules
 
 * ....
+
+## SoaveRedlichKwong
+
+Interface to the `SoaveRedlichKwong` EoS
+
+### `__init__(self, comps, mixing='vdW', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='SRK'`. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## RedlichKwong
+
+Interface to the `RedlichKwong` EoS
+
+### `__init__(self, comps, mixing='vdW', alpha='RK', parameter_reference='Default', volume_shift=False)`
+Convenience class for Redlich-Kwong, calls the `cubic` constructor. Set `alpha=Soave` in order to get SRK model. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## VanDerWaals
+
+Interface to the `VanDerWaals` EoS
+
+### `__init__(self, comps, mixing='vdW', alpha='Classic', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='VdW'`. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## PengRobinson
+
+Interface to the `PengRobinson` EoS
+
+### `__init__(self, comps, mixing='vdW', alpha='Classic', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Default `alpha` is the original 1976 correlation. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## PengRobinson78
+
+Interface to the `PengRobinson78` EoS
+
+### `__init__(self, comps, mixing='vdW', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Using the 1978 `alpha` correlation. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## PatelTeja
+
+Interface to the `PatelTeja` EoS
+
+### `__init__(self, comps, mixing='vdW', alpha='Classic', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='PT'`. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+## SchmidtWensel
+
+Interface to the `SchmidtWensel` EoS
+
+### `__init__(self, comps, mixing='vdW', alpha='Classic', parameter_reference='Default', volume_shift=False)`
+Basic convenience class, calls the `cubic` constructor with `eos='SW'`. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ## Constructor
 

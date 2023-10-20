@@ -261,7 +261,7 @@ def get_toc(sections, section_headers, method_dict, is_subsection=False):
 
     return toc_text + '\n'
 
-def get_markdown_contents(sections, section_headers, section_intro, method_dict):
+def get_markdown_contents(sections, section_headers, section_intro, method_dict, sub_toc=True):
     """
     Iterate through the sections, generate the markdown documentation for all methods in method_dict, and join them
     while adding section headers and section introductions
@@ -272,6 +272,7 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
         section_intro (dict<str, str>) : Dict mapping the section names to the section introduction text.
         method_dict (dict<str, list<tuple<str, function>>>) : Mapping the section names to the list of (method name,
                                                                 function) tuples that are in the section.
+        sub_toc (bool) : Whether to add ToC at the top of each sub-section.
     Returns:
         str : The markdown text corresponding to the main contents of the file.
     """
@@ -284,7 +285,8 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
-        md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
+        if sub_toc is True:
+            md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
         md_text += to_markdown(method_dict[sec])
 
     return md_text
@@ -498,35 +500,60 @@ def cubic_to_markdown():
     classname = 'cubic'
     eosname = 'Cubic'
 
-    with open(MARKDOWN_DIR + '/cubic_keys.md', 'r') as intro_file:
+    with open(MARKDOWN_DIR + 'cubic_keys.md', 'r') as intro_file:
         intro_text = intro_file.read()
 
-    class_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
-    parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
-    methods = sorted(list(set(class_methods) - set(parent_methods)))
+    from thermopack.cubic import SoaveRedlichKwong, RedlichKwong, VanDerWaals, PengRobinson, PengRobinson78, PatelTeja, SchmidtWensel
+    parent_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
+    child_sections = ['Constructor']
 
-    sections = ['Constructor',
-                'Utility']
-
-    section_headers = {'Constructor': 'Constructor',
-                       'Utility': 'Utility methods'}
-
-    section_intro = {'Constructor': f'Methods to initialise {eosname} model.',
-                     'Utility': 'Set- and get methods for interaction parameters, mixing parameters ...'}
-
-    method_dict = split_methods_by_section(sections, methods)
+    child_section_headers = {'Constructor': 'Constructor'}
+    child_section_intro = {'Constructor': f'Methods to initialise model.'}
+    child_method_dict = {}
+    classes = [SoaveRedlichKwong, RedlichKwong, VanDerWaals, PengRobinson, PengRobinson78, PatelTeja, SchmidtWensel]
+    for cls in classes:
+        child_sections.append(cls.__name__)
+        child_section_headers[cls.__name__] = cls.__name__
+        child_section_intro[cls.__name__] = f'Interface to the `{cls.__name__}` EoS'
+        class_methods = inspect.getmembers(cls, predicate=inspect.isfunction)
+        child_method_dict[cls.__name__] = sorted(list(set(class_methods) - set(parent_methods)))
 
     ofile_text = get_autogen_header(classname)
     ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, is the interface to the \n' \
                     f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
-    ofile_text += f'The sections [Initialiser keys](#initialiser-keys), [Pure fluid &alpha;](#pure-fluid-&alpha;), ' \
+    ofile_text += f'In addition to the `cubic` class, there are several convenience classes to give easy access to ' \
+                  f'specific cubic equations of state. The sections [Initialiser keys](#initialiser-keys), [Pure fluid &alpha;](#pure-fluid-&alpha;), ' \
                   f'[&alpha; mixing rules](#&alpha;-mixing-rules) and [&beta; mixing rules](#&beta;-mixing-rules) ' \
-                  f'summarise the various valid input keys that can be used to modify mixing rules, the &alpha -parameter ' \
+                  f'summarise the various valid input keys that can be used to modify mixing rules, the &alpha; -parameter ' \
                   f'and the underlying EoS.\n\nDocumentation for the methods in the cubic class is found in the remaining ' \
                   f'sections, summarised in the table of contents below.\n\n'
-    ofile_text += get_toc(sections, section_headers, method_dict)
+
+    class_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    cb_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    cb_sections = ['Constructor',
+                'Utility']
+
+    cb_section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    cb_section_intro = {'Constructor': f'Methods to initialise {eosname} model.',
+                     'Utility': 'Set- and get methods for interaction parameters, mixing parameters ...'}
+
+    cb_method_dict = split_methods_by_section(cb_sections, cb_methods)
+    ofile_text += '## Input keys\n' \
+                  '* [Initialiser keys](#initialiser-keys)\n' \
+                  '* [Pure fluid &alpha;](#pure-fluid-&alpha;)\n' \
+                  '* [&alpha; mixing rules](#&alpha;-mixing-rules)\n' \
+                  '* [&beta; mixing rules](#&beta;-mixing-rules)\n\n'
+    ofile_text += '# Specific cubics\n\n'
+    ofile_text += get_toc(child_sections, child_section_headers, child_method_dict)
+    ofile_text += '# Parent class "cubic"\n\n'
+    ofile_text += get_toc(cb_sections, cb_section_headers, cb_method_dict)
     ofile_text += intro_text + '\n\n'
-    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+    ofile_text += get_markdown_contents(child_sections, child_section_headers, child_section_intro, child_method_dict, sub_toc=False)
+    ofile_text += get_markdown_contents(cb_sections, cb_section_headers, cb_section_intro, cb_method_dict)
 
     filename = f'{classname}_methods.md'
     write_file(MARKDOWN_DIR + filename, ofile_text)
