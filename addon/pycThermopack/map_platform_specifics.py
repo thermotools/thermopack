@@ -149,6 +149,36 @@ def write_platform_specifics_file(pf_specifics, filename):
             f.write(line)
             f.write("\n")
 
+def write_setup_file(version):
+    setup_contents = {'name': "'thermopack'",
+                      'version': f"'{version}'",
+                      'description': "'Python interface to thermopack'",
+                      'long_description': "'readme'",
+                      'long_description_content_type': "'text/markdown'",
+                      'author': "'Morten Hammer'",
+                      'author_email': "'morten.hammer@sintef.no'",
+                      'url': "'https://github.com/thermotools/thermopack'",
+                      'packages': "['thermopack']",
+                      'package_data': "{'thermopack':['*thermopack.*']}"}
+
+    with open(os.path.dirname(__file__) + '/setup.py', 'w') as file:
+        file.write(f"# This file was automatically generated using the function 'write_setup_file' in \n"
+                   f"# {__file__} \n"
+                   f"# Likely called from {os.path.dirname(__file__)}/makescript.py\n"
+                   f"# Timestamp : {datetime.today().isoformat()}\n\n")
+        file.write("from distutils.core import setup\n"
+                    "from pathlib import Path\n\n"
+                    "root_dir = Path(__file__).parent # thermopack root directory\n"
+                    "readme = (root_dir / 'README_pypi.md').read_text()\n\n")
+        file.write('setup(')
+
+        for i, (k, v) in enumerate(setup_contents.items()):
+            if i > 0:
+                file.write(',')
+            file.write(f"{k}={v}\n\t")
+
+        file.write(')\n')
+
 
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
