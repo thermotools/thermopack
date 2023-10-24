@@ -241,6 +241,7 @@ append_export("hard_sphere_reference", "saftvrmie_interface")
 append_export("set_temperature_cache_flag", "saftvrmie_interface")
 append_export("calc_saftvrmie_term", "saftvrmie_interface")
 
+append_export("print_cpa_report", "saft_interface")
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("cpa_set_pure_params", "saft_interface")
