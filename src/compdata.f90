@@ -143,8 +143,9 @@ module compdata
   end interface
 
   interface
-    module subroutine comp_name_active(index, comp_name)
+    module subroutine comp_name_active(index, shortname, comp_name)
       integer, intent(in) :: index
+      logical, intent(in) :: shortname
       character(len=*), intent(out) :: comp_name
     end subroutine
   end interface

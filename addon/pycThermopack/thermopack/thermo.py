@@ -766,13 +766,13 @@ class thermo(object):
         idx = self.s_compdata_compindex(comp_c, comp_len)
         return idx
 
-    def get_comp_name(self, index):
+    def get_comp_name(self, index, get_short_name=False):
         """Utility
         Get component name
 
         Args:
             index (int): Component FORTRAN index
-
+            get_short_name (bool): Get short name? Default False.
         Returns:
             comp (str): Component name
         """
@@ -781,10 +781,11 @@ class thermo(object):
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
         index_c = c_int(index)
+        shortname_c = c_int(1) if get_short_name else c_int(0)
         self.s_compdata_compname.argtypes = [
-            POINTER(c_int), c_char_p, c_len_type]
+            POINTER(c_int), POINTER(c_int), c_char_p, c_len_type]
         self.s_compdata_compname.restype = None
-        self.s_compdata_compname(byref(index_c), comp_c, comp_len_c)
+        self.s_compdata_compname(byref(index_c), byref(shortname_c), comp_c, comp_len_c)
         compname = comp_c.value.decode('ascii').strip()
         return compname
 
