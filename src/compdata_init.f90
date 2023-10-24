@@ -203,4 +203,30 @@ submodule (compdata) comp_init
     endif
   end subroutine
 
+  module subroutine set_ideal_cp_correlation(index, correlation, parameters)
+    use thermopack_var, only: get_active_comps
+    implicit none
+    integer, intent(in) :: index
+    integer, intent(in) :: correlation
+    real, intent(in) :: parameters(10)
+    ! Locals
+    type(gendata_pointer), pointer :: p_comps(:)
+    p_comps => get_active_comps()
+    p_comps(index)%p_comp%id_cp%cptype = correlation
+    p_comps(index)%p_comp%id_cp%cp(:) = parameters(:)
+  end subroutine set_ideal_cp_correlation
+
+  module subroutine get_ideal_cp_correlation(index, correlation, parameters)
+    use thermopack_var, only: get_active_comps
+    implicit none
+    integer, intent(in) :: index
+    integer, intent(out) :: correlation
+    real, intent(out) :: parameters(10)
+    ! Locals
+    type(gendata_pointer), pointer :: p_comps(:)
+    p_comps => get_active_comps()
+    correlation = p_comps(index)%p_comp%id_cp%cptype
+    parameters(:) = p_comps(index)%p_comp%id_cp%cp(:)
+  end subroutine get_ideal_cp_correlation
+
 end submodule comp_init

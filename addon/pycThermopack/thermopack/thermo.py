@@ -139,6 +139,10 @@ class thermo(object):
             "ideal", "get_enthalpy_reference_value"))
         self.s_ideal_set_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "set_enthalpy_reference_value"))
+        self.s_get_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "get_ideal_cp_correlation"))
+        self.s_set_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "set_ideal_cp_correlation"))
 
         # Speed of sound
         self.s_sos_sound_velocity_2ph = getattr(
@@ -1598,6 +1602,62 @@ class thermo(object):
                                                   byref(h0_c))
 
         return h0_c.value
+
+    def get_ideal_cp(self, j):
+        """Utility
+        Get correlation parameters for ideal gas Cp
+
+        Args:
+            j (integer): Component index
+        Returns:
+            integer: Ideal Cp correlation identifyer
+            ndarray: Paramaters
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(0)
+        param_c = (c_double * 10)(0.0)
+
+        self.s_get_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_get_ideal_cp_correlation.restype = None
+
+        self.s_get_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
+
+        return corr_c.value, np.array(param_c)
+
+    def set_ideal_cp(self, j, cp_correlation_type, parameters):
+        """Utility
+        Set correlation parameters for ideal gas Cp
+        To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
+        Args:
+            j (integer): Component index
+            cp_correlation_type (integer): Ideal Cp correlation identifyer
+            parameters (array like): Paramaters (Maximum 10 parameters used)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(cp_correlation_type)
+        parameters_full = np.zeros(10)
+        n = min(len(parameters),10)
+        parameters_full[0:n] = parameters[0:n]
+        param_c = (c_double * 10)(*parameters_full)
+
+        self.s_set_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_set_ideal_cp_correlation.restype = None
+
+        self.s_set_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
 
     def speed_of_sound(self, temp, press, x, y, z, betaV, betaL, phase):
         """Tp-property

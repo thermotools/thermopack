@@ -150,6 +150,22 @@ module compdata
     end subroutine
   end interface
 
+  interface
+    module subroutine set_ideal_cp_correlation(index, correlation, parameters)
+      integer, intent(in) :: index
+      integer, intent(in) :: correlation
+      real, intent(in) :: parameters(10)
+    end subroutine set_ideal_cp_correlation
+  end interface
+
+  interface
+    module subroutine get_ideal_cp_correlation(index, correlation, parameters)
+      integer, intent(in) :: index
+      integer, intent(out) :: correlation
+      real, intent(out) :: parameters(10)
+    end subroutine get_ideal_cp_correlation
+  end interface
+
   type gendata_pointer
     class(gendata), pointer :: p_comp => NULL()
   end type gendata_pointer
@@ -157,6 +173,7 @@ module compdata
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
   public :: getComp, compIndex, copy_comp, comp_index_active, comp_name_active
   public :: parseCompVector, initCompList, deallocate_comp
+  public :: get_ideal_cp_correlation, set_ideal_cp_correlation
 
 contains
 
@@ -280,7 +297,7 @@ contains
     integer, intent(out) :: ncomp
     character (len=*), allocatable, dimension(:), intent(inout) :: complist !> List of component names
     !
-    integer :: ipos, err, i, j
+    integer :: ipos, err, i
     character(len=clen) :: comp_string
 
     comp_string = trim(componentString)
