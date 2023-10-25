@@ -19,7 +19,8 @@ class cpa(cubic):
     """
     def __init__(self, comps=None, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
-        """Initialize cubic plus association model in thermopack
+        """Constructor
+        Initialize cubic plus association model in thermopack
 
         If no components are specified, model must be initialized for specific components later by direct call to 'init'
         Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
@@ -56,7 +57,8 @@ class cpa(cubic):
 
     def init(self, comps, eos="SRK", mixing="vdW", alpha="Classic",
              parameter_reference="Default"):
-        """Initialize cubic plus association model in thermopack
+        """Constructor
+        Initialize cubic plus association model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -112,7 +114,8 @@ class cpa(cubic):
         self.s_print_cpa_report()
 
     def get_kij(self, c1, c2):
-        """Get attractive energy interaction parameter
+        """Utility
+        Get attractive energy interaction parameter
 
         Args:
             c1 (int): Component one
@@ -138,8 +141,8 @@ class cpa(cubic):
         return np.array(kij_c)
 
     def get_pure_params(self, ic):
-        """Get pure parameters
-
+        """Utility
+        Get pure parameters
 
         Args:
             ic (int): Component index
@@ -160,10 +163,11 @@ class cpa(cubic):
         return np.array(params_c)
 
     def set_pure_params(self, ic, params):
-        """Set pure parameters
-
+        """Utility
+            Set pure parameters
            Input a0, b in their conventional (non-SI) units,
            beta and eps in SI units, c1 dimensionless.
+
         Args:
             ic (int): Component index
             params (array_like): a0 (Pa*L^2/mol^2), b (L/mol), eps (J/mol), beta (-), c1 (-)
@@ -205,7 +209,9 @@ class cpa(cubic):
                        byref(kij_eps_c))
 
     def use_simplified_cpa(self, simplified):
-        """Use simplified form for rdf in CPA
+        """Utility
+        Use simplified form for rdf in CPA
+
         Args:
             simplified (bool): True if simplified
         """
@@ -213,3 +219,17 @@ class cpa(cubic):
         self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
         self.s_use_simplified_cpa.restype = None
         self.s_use_simplified_cpa(byref(simplified_c))
+
+class SRK_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)
+
+class PR_CPA(cpa):
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):
+        """Constructor
+        Basic convenience class, calls the `cpa` constructor with `eos='PR'`.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference)

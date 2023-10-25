@@ -15,7 +15,8 @@ class multiparam(thermo):
     Interface to multiparameter EOS
     """
     def __init__(self, comps=None, eos=None, reference_state="DEFAULT"):
-        """Initialize multiparameter EOS
+        """Constructor
+        Initialize multiparameter EOS
 
         Unless both parameters are specified, model must be initialized for specific components later by direct call
         to 'init'.  Model can at any time be re-initialized for new components or parameters by direct calls to 'init'
@@ -39,7 +40,8 @@ class multiparam(thermo):
     #################################
 
     def init(self, comps, eos, reference_state="DEFAULT"):
-        """Initialize multiparameter EOS
+        """Constructor
+        Initialize multiparameter EOS
 
         Args:
             comps (str): Comma separated list of component names

@@ -74,7 +74,7 @@
 !!     + \big( x_{13} f'(x_0) + x_1 x_3 f''(x_0) \big) \varepsilon_1 \varepsilon_3
 !!     + \big( x_{23} f'(x_0) + x_2 x_3 f''(x_0) \big) \varepsilon_2 \varepsilon_3
 !!     + \big( x_{123} f'(x_0) + x_1 x_2 x_3 f'''(x_0)
-!!     + \big\[ x_{12}x_3 + x_{13}x_2 + x_{23}x_1 \big\] f''(x_0) \big) \varepsilon_1 \varepsilon_2 \varepsilon_3
+!!     + \big[ x_{12}x_3 + x_{13}x_2 + x_{23}x_1 \big] f''(x_0) \big) \varepsilon_1 \varepsilon_2 \varepsilon_3
 !!  \f]
 !!
 !!  A hyperdual number derived type is provided by: \ref hyperdual.

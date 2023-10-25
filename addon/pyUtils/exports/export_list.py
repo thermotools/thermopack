@@ -280,6 +280,7 @@ append_export("alpha", "saft_interface")
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")
 append_export("map_meta_isentrope", "spinodal")
+append_export("tv_meta_ps", "spinodal")
 
 append_export("safe_bubt", "saturation")
 append_export("safe_bubp", "saturation")
@@ -291,6 +292,9 @@ append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
 
 append_export("solid_init", "solideos")
+append_export("solid_specificvolume", "solideos")
+append_export("solid_enthalpy", "solideos")
+append_export("solid_entropy", "solideos")
 
 append_export("solidenvelopeplot", "solid_saturation")
 append_export("melting_pressure_correlation", "solid_saturation")

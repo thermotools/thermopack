@@ -14,6 +14,16 @@ import matplotlib.pyplot as plt
 cb = cubic("CO2,N2", "PR", "HV", "Classic")
 cb.init_solid("CO2")
 cb.set_pmax(5.0e9)
+
+# Calculate some solid-phase properties
+T = 200.0
+press = 1.0e5
+z = np.array([1.0, 0.0])
+print (f"Enthalpy {cb.solid_enthalpy(T, press, z)[0]:#.5g} J/mol")
+print (f"Entropy {cb.solid_entropy(T, press, z)[0]:#.5g} J/mol.K")
+print (f"Volume {cb.solid_volume(T, press, z)[0]:#.5g} m3/mol")
+
+# Plot solid-gas-liquid phase diagram
 z = np.array([0.98,0.02])
 lines, crits, triples = cb.solid_envelope_plot(1.0e5, z, calc_esv = True, maximum_pressure=1.0e9)
 p_scaling = 1.0e-6
