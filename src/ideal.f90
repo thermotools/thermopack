@@ -1334,17 +1334,25 @@ contains
   !! \author Morten Hammer
   subroutine set_reference_energies(comps)
     use compdata, only: gendata_pointer
+    use stringmod, only: str_eq
     implicit none
     type(gendata_pointer), intent(inout) :: comps(:)
     !
     real :: T0
     integer :: i
-    real :: s_id, h_id
+    real :: s_id, h_id, p_ref
     T0 = 298.15
     do i=1,size(comps)
       ! Test if parameters are given
       if (comps(i)%p_comp%sref /= 0 .or. comps(i)%p_comp%href /= 0) then
-        s_id = Sideal_T(comps(i)%p_comp, i, T0) - comps(i)%p_comp%sref - Rgas*log(1e5)
+        if (str_eq(comps(i)%p_comp%sref_state, "1BAR")) then
+          p_ref = 1e5
+        else if (str_eq(comps(i)%p_comp%sref_state, "1ATM")) then
+          p_ref = 1e5
+        else
+          call stoperror("Unknown entropy reference state")
+        endif
+        s_id = Sideal_T(comps(i)%p_comp, i, T0) - comps(i)%p_comp%sref - Rgas*log(p_ref)
         comps(i)%p_comp%sref = comps(i)%p_comp%sref - s_id
         h_id = Hideal(comps(i)%p_comp, i, T0) - comps(i)%p_comp%href
         comps(i)%p_comp%href = comps(i)%p_comp%href - h_id
