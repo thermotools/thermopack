@@ -70,7 +70,7 @@
     "enthalpy_ref_state": "1BAR",
     "enthalpy": 191.2e3,
     "entropy_bib_reference": "HSC Chemistry 9",
-    "entropy_ref_state": "0BAR",
+    "entropy_ref_state": "1BAR",
     "entropy": 244.198
   },
   "standard_formation_energy": {
