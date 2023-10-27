@@ -351,8 +351,8 @@ class pcsaft(saft):
 
         self.s_calc_assoc_phi.restype = None
 
-        self.s_calc_assoc_phi(byref(temp_c),
-                              n_alpha_c,
+        self.s_calc_assoc_phi(n_alpha_c,
+                              byref(temp_c),
                               phi_c,
                               phi_t_c,
                               phi_n_c,
