@@ -2472,6 +2472,7 @@ contains
     use saft_association, only: numAssocSites, solve_for_X_k, calcFder_assoc, Q_fmt_hd
     use eos_parameters, only: base_eos_param
     use pc_saft_nonassoc, only: PCSAFT_eos
+    use thermopack_constants, only: N_AVOGADRO
     ! Input.
     real, intent(in) :: n_fmt(nce,0:5)
     real, intent(in) :: T
@@ -2513,8 +2514,8 @@ contains
         X_k = 0.2 ! Initial guess.
         call solve_for_X_k(eos,nce,X_k,tol=10**5*machine_prec)
         T_hd = T
-        n_fmt_hd = n_fmt
-
+        n_fmt_hd = eos%assoc%state%n_fmt
+        n_fmt_hd(:,0) = n_fmt_hd(:,0)/N_AVOGADRO
         if (present(F_TT)) then
           T_hd%f1 = 1.0_dp
           T_hd%f2 = 1.0_dp
@@ -2614,6 +2615,12 @@ contains
           F = Q%f0
         endif
       endif
+
+      ! Convert from particle to molar basis
+      if (present(F_n)) F_n(:,1:5) = F_n(:,1:5)*N_AVOGADRO
+      if (present(F_Tn)) F_Tn(:,1:5) = F_Tn(:,1:5)*N_AVOGADRO
+      if (present(F_nn)) F_nn(:,:,:,1:5) = F_nn(:,:,:,1:5)*N_AVOGADRO
+      if (present(F_nn)) F_nn(:,:,1:5,:) = F_nn(:,:,1:5,:)*N_AVOGADRO
     endif
   end subroutine calc_assoc_phi
 
@@ -2639,8 +2646,7 @@ contains
     T = 280.0
     V = 1.0e-4
     n = 1
-    print *,"Evaluating Fres:"
-    call calcSaftFder_res(nce,eos,T,V,n,F,Xk=Xk)
+    print *,"Evaluating calcFder_assoc:"
     call eos%assoc%state%init(nce,T,V,n)
     Xk = 0.2 ! Initial guess.
     call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
@@ -2655,14 +2661,14 @@ contains
     Xk = 0.2 ! Initial guess.
     call solve_for_X_k(eos,nce,Xk,tol=10**5*machine_prec)
     call calcFder_assoc(eos,nc=nce,X_k=Xk,F=F2,F_T=F2_T,F_V=F2_V,F_n=F2_n)
-    print *,"F",F*V, F1*V, F2*V
+    print *,"F",F, F1, F2
     print *,"F_T",F_T, (F2-F1)/(2*eps)
     print *,"F_TT",F_TT, (F2_T-F1_T)/(2*eps)
     !
+    print *,"Evaluating Phi:"
     ! Note that n_fmt = n_fmt(T,V,n)!
     call set_fmt_densities(T, V, n, n_fmt)
     n_fmt(:,5) = n_fmt(:,2)*1e-3
-    !call calc_assoc_phi(n_fmt,T,F,F_T=F_T,F_n=F_n,F_TT=F_TT,F_Tn=F_Tn,F_nn=F_nn)
     call calc_assoc_phi(n_fmt,T,F,F_T=F_T,F_n=F_n,F_TT=F_TT,F_Tn=F_Tn,F_nn=F_nn)
     !
     ! Temperature differentials
@@ -2671,6 +2677,8 @@ contains
     !call set_fmt_densities(T+eps, V, n, n_fmt)
     call calc_assoc_phi(n_fmt,T+eps,F2,F_n=F2_n)
     print *,"F",F*V, F1*V, F2*V
+    ! Note that F_T don't include the effect of d(T) and are therefore slightly different from
+    ! the calcFder_assoc result
     print *,"F_T",F_T*V, (F2-F1)/(2*eps)*V
     print *,"F_TT",F_TT*V, (F2+F1-2*F)/(eps)**2*V
     print *,"F_Tn",F_Tn*V
@@ -2681,7 +2689,7 @@ contains
     do i=1,nce
       do j=0,5
         dn = n_fmt_0(i,j)*1.0e-5
-        if (dn > 1.0e-10) then
+        if (dn > 1.0e-100) then
           n_fmt(i,j) = n_fmt_0(i,j) - dn
           !call set_fmt_densities(T, V, n, n_fmt)
           call calc_assoc_phi(n_fmt,T,F1,F_T=F1_T,F_n=F1_n)
@@ -2721,9 +2729,9 @@ contains
     end select
     !
     n_fmt = 0
-    n_fmt(:,0) = ms(:)/V
-    n_fmt(:,2) = 4*pi*R(:)**2*n_fmt(:,0)*N_AVOGADRO
-    n_fmt(:,3) = 4*pi*R(:)**3*n_fmt(:,0)*N_AVOGADRO/3
+    n_fmt(:,0) = n(:)*ms(:)/V
+    n_fmt(:,2) = 4*pi*R(:)**2*n_fmt(:,0)
+    n_fmt(:,3) = 4*pi*R(:)**3*n_fmt(:,0)/3
   end subroutine set_fmt_densities
 
 end module saft_interface

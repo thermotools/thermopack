@@ -319,7 +319,7 @@ class pcsaft(saft):
 
         Args:
             temp (float): Temperature (K)
-            n_alpha (np.ndarray): Weighted densities
+            n_alpha (np.ndarray): Weighted densities (mol based)
             phi (No type, optional): Flag to activate calculation. Defaults to None.
             phi_T (No type, optional): Flag to activate calculation. Defaults to None.
             phi_n (No type, optional): Flag to activate calculation. Defaults to None.
