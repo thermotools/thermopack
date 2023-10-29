@@ -229,7 +229,6 @@ contains
     iter = 0
     call initializeSearch() ! Set initial rho, p, dpdrho
     if (present(ierr)) ierr = 0
-
     ! Newton iteration loop
     do while (.true.)
       rhoOld = rho
@@ -298,9 +297,17 @@ contains
     !> This routine computes initial rho and dpdrho, as well as setting parameters
     !> for the stability test (pMin, dpdrhoMin, curvatureSign).
     subroutine initializeSearch ()
-      real :: b
+      use thermopack_var, only: get_active_thermo_model, thermo_model, &
+           get_active_alt_eos, base_eos_param
+      use volume_shift, only: eosVolumeFromShiftedVolume
+      !use cubic, only: cbCalcZfac
+      real :: b, c
+      real :: Z, v, rho_max
+      logical, parameter :: solve_cubic_root = .false.
+      type(thermo_model), pointer :: act_mod_ptr
+      class(base_eos_param), pointer :: p_alt_eos
       converged = .false.
-
+      !
       if( currentPhase == VAPPH) then
         curvatureSign = -1
         rho = p_spec/(T_spec*Rgas)
@@ -308,17 +315,24 @@ contains
       else
         curvatureSign = 1
         b = get_b_linear_mix(x)
-        rho = 1.0/(1.01 * b)
-        !p_alt_eos => get_active_alt_eos()
-        !select type ( p_eos => p_alt_eos )
-        !type is ( cb_eos ) ! cubic equations of state
-        !  call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
-        !  rho = p_spec/(z*Rgas*t_spec)
-        !class default ! Saft eos
-        !  call stoperror("Error in initializeSearch")
-        !end select
+
+        p_alt_eos => get_active_alt_eos()
+        act_mod_ptr => get_active_thermo_model()
+        c = eosVolumeFromShiftedVolume(nce,act_mod_ptr%comps,p_alt_eos%volumeShiftId,T_spec,0.0,x)
+        rho = 1.0/(1.01 * (b-c))
+        if (solve_cubic_root) then
+          select type ( p_eos => p_alt_eos )
+          type is ( cb_eos ) ! cubic equations of state
+            rho_max = rho
+            call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
+            v = z*Rgas*t_spec/p_spec
+            rho = 1.0/(v-c)
+            rho = min(rho*1.05,rho_max)
+          class default ! Saft eos
+            call stoperror("Error in initializeSearch")
+          end select
+        endif
         call this%pressure(rho, x, T_spec, p, p_rho=dpdrho)
-        !print *,"p,dpdrho",p,dpdrho
         do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
           rho = 2*rho
           curvatureSign = 0
