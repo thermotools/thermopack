@@ -5068,7 +5068,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_560 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "H2O", &
-      bibref = "#Note:  The TR1 model shows up first below, but the program uses the last set of parameters,", &
+      bibref = "", &
       beta_v = 1.044759, &
       gamma_v = 1.189754, &
       beta_T = 0.933585, &
