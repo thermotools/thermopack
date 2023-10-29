@@ -115,7 +115,7 @@ contains
     type(hyperdual), intent(in) :: x(nce), tau, delta
     type(hyperdual) :: del_alpha_r
     ! Internals
-    integer :: i, j, k, idb, n_poly, n_exp, n_gauss
+    integer :: i, j, k, idb, n_poly, n_exp, n_gauss, sgn
     type(hyperdual) :: del_alpha_r_ij
     del_alpha_r = 0.0_dp
 
@@ -137,10 +137,15 @@ contains
                  exp(-delta**meos_mix_datadb(idb)%l_mix(k))
           enddo
           do k=n_exp+1,n_gauss
+            if (meos_mix_datadb(idb)%eta_mix(k) < 0.0) then
+              sgn = -1
+            else
+              sgn = 1
+            endif
             del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
                  tau**meos_mix_datadb(idb)%t_mix(k)* &
-                 exp(-meos_mix_datadb(idb)%eta_mix(k)*(delta-meos_mix_datadb(idb)%epsilon_mix(k))**2 &
-                 - meos_mix_datadb(idb)%beta_mix(k)*(delta-meos_mix_datadb(idb)%gamma_mix(k)))
+                 exp(-sgn*meos_mix_datadb(idb)%eta_mix(k)*(delta-sgn*meos_mix_datadb(idb)%epsilon_mix(k))**2 &
+                 - meos_mix_datadb(idb)%beta_mix(k)*(tau-meos_mix_datadb(idb)%gamma_mix(k))**2)
           enddo
           del_alpha_r = del_alpha_r + x(i)*x(j)*meos_mix_datadb(idb)%Fij*del_alpha_r_ij
         endif
