@@ -65,20 +65,20 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
-    real :: rhoc_i, rhoc_j, Tc_i, Tc_j
+    real :: rhor_i, rhor_j, Tr_i, Tr_j
 
     call gerg_mix%allocate_and_init(nc, "GERG2008")
     call gerg_mix%allocate_param(nc)
 
     gerg_mix%mix_data_index = -1
     do i=1,nc
-      rhoc_i = gerg_mix%nist(i)%meos%rc
-      Tc_i = gerg_mix%nist(i)%meos%tc
+      rhor_i = gerg_mix%nist(i)%meos%rhor
+      Tr_i = gerg_mix%nist(i)%meos%tr
       do j=1,nc
-        rhoc_j = gerg_mix%nist(j)%meos%rc
-        Tc_j = gerg_mix%nist(j)%meos%tc
-        gerg_mix%inv_rho_pow(i,j) = (1/rhoc_i**(1.0_dp/3.0_dp) + 1/rhoc_j**(1.0_dp/3.0_dp))**3
-        gerg_mix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
+        rhor_j = gerg_mix%nist(j)%meos%rhor
+        Tr_j = gerg_mix%nist(j)%meos%tr
+        gerg_mix%inv_rho_pow(i,j) = (1/rhor_i**(1.0_dp/3.0_dp) + 1/rhor_j**(1.0_dp/3.0_dp))**3
+        gerg_mix%tc_prod_sqrt(i,j) = (Tr_i*Tr_j)**(0.5_dp)
         !
         do k=1,max_gerg_mix_reducing
           if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &

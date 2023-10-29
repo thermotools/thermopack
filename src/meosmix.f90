@@ -37,20 +37,20 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
-    real :: rhoc_i, rhoc_j, Tc_i, Tc_j
+    real :: rhor_i, rhor_j, Tr_i, Tr_j
 
     call mmix%allocate_and_init(nc, "MEOS")
     call mmix%allocate_param(nc)
 
     mmix%mix_data_index = -1
     do i=1,nc
-      rhoc_i = mmix%nist(i)%meos%rc
-      Tc_i = mmix%nist(i)%meos%tc
+      rhor_i = mmix%nist(i)%meos%rhor
+      Tr_i = mmix%nist(i)%meos%tr
       do j=i,nc
-        rhoc_j = mmix%nist(j)%meos%rc
-        Tc_j = mmix%nist(j)%meos%tc
-        mmix%inv_rho_pow(i,j) = (1.0_dp/rhoc_i**(1.0_dp/3.0_dp) + 1.0_dp/rhoc_j**(1.0_dp/3.0_dp))**3
-        mmix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
+        rhor_j = mmix%nist(j)%meos%rhor
+        Tr_j = mmix%nist(j)%meos%tr
+        mmix%inv_rho_pow(i,j) = (1.0_dp/rhor_i**(1.0_dp/3.0_dp) + 1.0_dp/rhor_j**(1.0_dp/3.0_dp))**3
+        mmix%tc_prod_sqrt(i,j) = (Tr_i*Tr_j)**(0.5_dp)
         !
         if (j > i) then
           do k=1,max_meos_mix_reducing
