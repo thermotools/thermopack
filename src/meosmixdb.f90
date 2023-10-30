@@ -1,5 +1,5 @@
 !> Automatically generated file meosmixdb.f90
-!! Time stamp: 2023-03-23T14:50:21.734496
+!! Time stamp: 2023-10-30T09:55:37.354171
 
 module meosmixdb
   use thermopack_constants, only: uid_len, bibref_len
@@ -31,6 +31,7 @@ module meosmixdb
     real :: epsilon_mix(12) !<
     real :: beta_mix(12) !<
     integer :: num_exp !< Number of exponential terms
+    integer :: num_kw !< Number of Kunz-Wagner terms
     integer :: num_gauss !< Number of Gaussian terms
   end type meos_mix_data
 
@@ -5068,7 +5069,7 @@ module meosmixdb
   type(meos_mix_reducing), parameter :: meos_red_560 = &
       meos_mix_reducing(ident1 = "NH3", &
       ident2 = "H2O", &
-      bibref = "#Note:  The TR1 model shows up first below, but the program uses the last set of parameters,", &
+      bibref = "I.H. Bell, K. Gao, J. Wu, and E.W. Lemmon (2018)", &
       beta_v = 1.044759, &
       gamma_v = 1.189754, &
       beta_T = 0.933585, &
@@ -5727,24 +5728,25 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       gamma_mix = (/ &
-      0.0d0,0.0d0,0.8000000000, &
-      1.6200000000,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      epsilon_mix = (/ &
-      0.0d0,0.0d0,-2.0600000000, &
-      -1.7400000000,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      beta_mix = (/ &
       0.0d0,0.0d0,0.7900000000, &
       2.1000000000,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,0.8000000000, &
+      1.6200000000,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      beta_mix = (/ &
+      0.0d0,0.0d0,-2.0600000000, &
+      -1.7400000000,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
       num_exp = 2, &
+      num_kw = 0, &
       num_gauss = 2)
 
   type(meos_mix_data), parameter :: meos_mix2 = &
@@ -5798,6 +5800,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix3 = &
@@ -5833,24 +5836,25 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       gamma_mix = (/ &
-      0.0d0,0.0d0,0.5200000000, &
-      0.1500000000,0.2400000000,0.1500000000, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      epsilon_mix = (/ &
-      0.0d0,0.0d0,-0.4650000000, &
-      -0.8200000000,-0.5200000000,-1.0000000000, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      beta_mix = (/ &
       0.0d0,0.0d0,0.1700000000, &
       2.1100000000,1.4900000000,1.7300000000, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,0.5200000000, &
+      0.1500000000,0.2400000000,0.1500000000, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      beta_mix = (/ &
+      0.0d0,0.0d0,-0.4650000000, &
+      -0.8200000000,-0.5200000000,-1.0000000000, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 4)
 
   type(meos_mix_data), parameter :: meos_mix4 = &
@@ -5904,6 +5908,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix5 = &
@@ -5957,6 +5962,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix6 = &
@@ -6010,6 +6016,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix7 = &
@@ -6063,6 +6070,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix8 = &
@@ -6116,6 +6124,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix9 = &
@@ -6169,6 +6178,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix10 = &
@@ -6222,6 +6232,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix11 = &
@@ -6275,6 +6286,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix12 = &
@@ -6328,6 +6340,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix13 = &
@@ -6381,6 +6394,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix14 = &
@@ -6434,6 +6448,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 5, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix15 = &
@@ -6469,24 +6484,25 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       gamma_mix = (/ &
-      0.0d0,0.0d0,1.3800000000, &
-      0.7730000000,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      epsilon_mix = (/ &
-      0.0d0,0.0d0,-0.7510000000, &
-      -0.6600000000,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      beta_mix = (/ &
       0.0d0,0.0d0,1.8600000000, &
       2.2300000000,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,1.3800000000, &
+      0.7730000000,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      beta_mix = (/ &
+      0.0d0,0.0d0,-0.7510000000, &
+      -0.6600000000,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 2)
 
   type(meos_mix_data), parameter :: meos_mix16 = &
@@ -6540,6 +6556,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix17 = &
@@ -6593,6 +6610,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix18 = &
@@ -6646,7 +6664,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix19 = &
       meos_mix_data(ident1 = "ACETONE", &
@@ -6699,6 +6718,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix20 = &
@@ -6752,6 +6772,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix21 = &
@@ -6805,6 +6826,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 6, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix22 = &
@@ -6858,6 +6880,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix23 = &
@@ -6911,7 +6934,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 7)
+      num_kw = 7, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix24 = &
       meos_mix_data(ident1 = "NC4", &
@@ -6964,6 +6988,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix25 = &
@@ -7017,6 +7042,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix26 = &
@@ -7052,24 +7078,25 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       gamma_mix = (/ &
-      0.0d0,0.31,0.39, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      epsilon_mix = (/ &
-      0.0d0,-0.6,-0.5, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      beta_mix = (/ &
       0.0d0,0.9,1.5, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
+      epsilon_mix = (/ &
+      0.0d0,0.31,0.39, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      beta_mix = (/ &
+      0.0d0,-0.6,-0.5, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
       num_exp = 1, &
+      num_kw = 0, &
       num_gauss = 2)
 
   type(meos_mix_data), parameter :: meos_mix27 = &
@@ -7123,7 +7150,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 3)
+      num_kw = 3, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix28 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
@@ -7176,6 +7204,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix29 = &
@@ -7229,6 +7258,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix30 = &
@@ -7282,7 +7312,8 @@ module meosmixdb
       3.0,3.0,3.0 &
       /), &
       num_exp = 0, &
-      num_gauss = 10)
+      num_kw = 10, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix31 = &
       meos_mix_data(ident1 = "C2", &
@@ -7335,6 +7366,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix32 = &
@@ -7388,6 +7420,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix33 = &
@@ -7441,6 +7474,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix34 = &
@@ -7494,6 +7528,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix35 = &
@@ -7547,6 +7582,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix36 = &
@@ -7600,7 +7636,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 3)
+      num_kw = 3, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix37 = &
       meos_mix_data(ident1 = "CYCLOHEX", &
@@ -7653,6 +7690,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix38 = &
@@ -7706,6 +7744,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix39 = &
@@ -7759,6 +7798,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix40 = &
@@ -7812,7 +7852,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix41 = &
       meos_mix_data(ident1 = "N2", &
@@ -7865,7 +7906,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix42 = &
       meos_mix_data(ident1 = "C1", &
@@ -7918,7 +7960,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix43 = &
       meos_mix_data(ident1 = "BENZENE", &
@@ -7971,6 +8014,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix44 = &
@@ -8024,6 +8068,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix45 = &
@@ -8077,6 +8122,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix46 = &
@@ -8130,6 +8176,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix47 = &
@@ -8183,6 +8230,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix48 = &
@@ -8236,6 +8284,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix49 = &
@@ -8289,6 +8338,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix50 = &
@@ -8342,6 +8392,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix51 = &
@@ -8395,7 +8446,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix52 = &
       meos_mix_data(ident1 = "C3", &
@@ -8448,6 +8500,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix53 = &
@@ -8501,6 +8554,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix54 = &
@@ -8554,6 +8608,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix55 = &
@@ -8607,6 +8662,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix56 = &
@@ -8660,6 +8716,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix57 = &
@@ -8713,6 +8770,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix58 = &
@@ -8766,6 +8824,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix59 = &
@@ -8819,6 +8878,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix60 = &
@@ -8872,6 +8932,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix61 = &
@@ -8925,6 +8986,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix62 = &
@@ -8978,6 +9040,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix63 = &
@@ -9031,6 +9094,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix64 = &
@@ -9084,6 +9148,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix65 = &
@@ -9137,6 +9202,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix66 = &
@@ -9190,6 +9256,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix67 = &
@@ -9243,6 +9310,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix68 = &
@@ -9296,6 +9364,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix69 = &
@@ -9349,6 +9418,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix70 = &
@@ -9402,7 +9472,8 @@ module meosmixdb
       3.0d0,3.0d0,3.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 10)
+      num_kw = 10, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix71 = &
       meos_mix_data(ident1 = "NC9", &
@@ -9455,6 +9526,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix72 = &
@@ -9491,23 +9563,24 @@ module meosmixdb
       /), &
       gamma_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.1090000000,2.5960000000, &
+      0.0d0,5.1000000000,1.6610000000, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       epsilon_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      0.0d0,-0.1440000000,-0.3100000000, &
+      0.0d0,0.1090000000,2.5960000000, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       beta_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      0.0d0,5.1000000000,1.6610000000, &
+      0.0d0,-0.1440000000,-0.3100000000, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 2, &
+      num_kw = 0, &
       num_gauss = 2)
 
   type(meos_mix_data), parameter :: meos_mix73 = &
@@ -9561,6 +9634,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix74 = &
@@ -9614,6 +9688,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix75 = &
@@ -9667,6 +9742,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix76 = &
@@ -9720,6 +9796,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix77 = &
@@ -9773,6 +9850,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix78 = &
@@ -9826,6 +9904,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix79 = &
@@ -9879,6 +9958,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix80 = &
@@ -9932,6 +10012,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix81 = &
@@ -9985,6 +10066,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix82 = &
@@ -10038,6 +10120,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix83 = &
@@ -10091,6 +10174,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix84 = &
@@ -10144,6 +10228,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix85 = &
@@ -10197,7 +10282,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 4)
+      num_kw = 4, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix86 = &
       meos_mix_data(ident1 = "C1", &
@@ -10233,23 +10319,24 @@ module meosmixdb
       /), &
       gamma_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.7700000000,1.7400000000, &
+      0.7900000000,0.4000000000,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,0.0d0, &
       0.0d0,1.3600000000,1.4400000000, &
       1.6900000000,1.5300000000,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      epsilon_mix = (/ &
+      beta_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,-0.9700000000,-0.2000000000, &
       -0.2600000000,-0.1800000000,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_mix = (/ &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,0.7700000000,1.7400000000, &
-      0.7900000000,0.4000000000,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 4)
 
   type(meos_mix_data), parameter :: meos_mix87 = &
@@ -10303,6 +10390,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix88 = &
@@ -10356,6 +10444,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix89 = &
@@ -10409,6 +10498,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix90 = &
@@ -10445,23 +10535,24 @@ module meosmixdb
       /), &
       gamma_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      1.0800,0.7500,1.3400, &
+      1.11000,1.64000,1.64000, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       epsilon_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      -0.1900,-2.1200,-1.2200, &
+      1.0800,0.7500,1.3400, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       beta_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
-      1.11000,1.64000,1.64000, &
+      -0.1900,-2.1200,-1.2200, &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 1, &
+      num_kw = 0, &
       num_gauss = 3)
 
   type(meos_mix_data), parameter :: meos_mix91 = &
@@ -10515,6 +10606,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix92 = &
@@ -10568,7 +10660,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 3)
+      num_kw = 3, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix93 = &
       meos_mix_data(ident1 = "N2", &
@@ -10604,23 +10697,24 @@ module meosmixdb
       /), &
       gamma_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
+      0.0d0,1.3000000000,0.8000000000, &
+      1.5000000000,0.2300000000,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,0.0d0, &
       0.0d0,2.5100000000,0.3900000000, &
       2.5100000000,1.2200000000,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      epsilon_mix = (/ &
+      beta_mix = (/ &
       0.0d0,0.0d0,0.0d0, &
       0.0d0,-0.9300000000,-0.3600000000, &
       -0.9900000000,-0.2400000000,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
-      beta_mix = (/ &
-      0.0d0,0.0d0,0.0d0, &
-      0.0d0,1.3000000000,0.8000000000, &
-      1.5000000000,0.2300000000,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
       num_exp = 4, &
+      num_kw = 0, &
       num_gauss = 4)
 
   type(meos_mix_data), parameter :: meos_mix94 = &
@@ -10674,6 +10768,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix95 = &
@@ -10709,24 +10804,25 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       gamma_mix = (/ &
-      0.0d0,0.0d0,0.0, &
-      2.0,-0.25,1.85, &
-      0.3,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      epsilon_mix = (/ &
-      0.0d0,0.0d0,-0.27, &
-      -0.86,-3.0,-0.5, &
-      -4.0,0.0d0,0.0d0, &
-      0.0d0,0.0d0,0.0d0 &
-      /), &
-      beta_mix = (/ &
       0.0d0,0.0d0,2.8, &
       1.8,1.5,0.8, &
       1.3,0.0d0,0.0d0, &
       0.0d0,0.0d0,0.0d0 &
       /), &
+      epsilon_mix = (/ &
+      0.0d0,0.0d0,0.0, &
+      2.0,-0.25,1.85, &
+      0.3,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
+      beta_mix = (/ &
+      0.0d0,0.0d0,-0.27, &
+      -0.86,-3.0,-0.5, &
+      -4.0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0 &
+      /), &
       num_exp = 2, &
+      num_kw = 0, &
       num_gauss = 5)
 
   type(meos_mix_data), parameter :: meos_mix96 = &
@@ -10780,6 +10876,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix97 = &
@@ -10833,7 +10930,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 3)
+      num_kw = 3, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix98 = &
       meos_mix_data(ident1 = "R32", &
@@ -10886,7 +10984,8 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
-      num_gauss = 3)
+      num_kw = 3, &
+      num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix99 = &
       meos_mix_data(ident1 = "CO2", &
@@ -10939,6 +11038,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix100 = &
@@ -10992,6 +11092,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 5, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix101 = &
@@ -11045,6 +11146,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix102 = &
@@ -11098,6 +11200,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   type(meos_mix_data), parameter :: meos_mix103 = &
@@ -11151,6 +11254,7 @@ module meosmixdb
       0.0d0,0.0d0,0.0d0 &
       /), &
       num_exp = 0, &
+      num_kw = 0, &
       num_gauss = 0)
 
   integer, parameter :: max_meos_mix_data = 103
