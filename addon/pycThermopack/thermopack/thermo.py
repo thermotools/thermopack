@@ -770,22 +770,22 @@ class thermo(object):
         idx = self.s_compdata_compindex(comp_c, comp_len)
         return idx
 
-    def get_comp_name(self, index, get_comp_identifyer=False):
+    def get_comp_name(self, index, get_comp_identifier=False):
         """Utility
-        Get component name/identifyer
+        Get component name/identifier
 
         Args:
             index (int): Component FORTRAN index
-            get_comp_identifyer (bool): Get component identifyer instead of full name? Default False.
+            get_comp_identifier (bool): Get component identifier instead of full name? Default False.
         Returns:
-            comp (str): Component name/identifyer
+            comp (str): Component name/identifier
         """
         self.activate()
         comp_len = 40
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
         index_c = c_int(index)
-        comp_id_c = c_int(1) if get_comp_identifyer else c_int(0)
+        comp_id_c = c_int(1) if get_comp_identifier else c_int(0)
         self.s_compdata_compname.argtypes = [
             POINTER(c_int), POINTER(c_int), c_char_p, c_len_type]
         self.s_compdata_compname.restype = None
@@ -1610,7 +1610,7 @@ class thermo(object):
         Args:
             j (integer): Component index
         Returns:
-            integer: Ideal Cp correlation identifyer
+            integer: Ideal Cp correlation identifier
             ndarray: Paramaters
         """
         self.activate()
@@ -1638,7 +1638,7 @@ class thermo(object):
 
         Args:
             j (int): Component index
-            cp_correlation_type (int): Ideal Cp correlation identifyer
+            cp_correlation_type (int): Ideal Cp correlation identifier
             parameters (array like): Paramaters (Maximum 10 parameters used)
         """
         self.activate()
@@ -3384,7 +3384,7 @@ class thermo(object):
         Get error description for binary plot error
 
         Args:
-            i_term (int): binary plot error identifyer
+            i_term (int): binary plot error identifier
 
         Returns:
             str: Error message
