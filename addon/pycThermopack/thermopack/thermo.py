@@ -1516,7 +1516,7 @@ class thermo(object):
         Set specific ideal entropy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             s0 (float): Ideal entropy reference (J/mol/K)
         """
         self.activate()
@@ -1562,7 +1562,7 @@ class thermo(object):
         Set specific ideal enthalpy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             h0 (float): Ideal enthalpy reference (J/mol)
         """
         self.activate()
@@ -1635,9 +1635,10 @@ class thermo(object):
         """Utility
         Set correlation parameters for ideal gas Cp
         To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
+
         Args:
-            j (integer): Component index
-            cp_correlation_type (integer): Ideal Cp correlation identifyer
+            j (int): Component index
+            cp_correlation_type (int): Ideal Cp correlation identifyer
             parameters (array like): Paramaters (Maximum 10 parameters used)
         """
         self.activate()
