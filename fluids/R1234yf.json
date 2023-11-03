@@ -63,9 +63,9 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "enthalpy_bib_reference": "",
+    "enthalpy_bib_reference": "Non-exsisting. Dummy value.",
     "enthalpy_ref_state": "1ATM",
-    "enthalpy": 0.0,
+    "enthalpy": 1.0e20,
     "entropy_bib_reference": "",
     "entropy_ref_state": "1BAR",
     "entropy": 0.0
