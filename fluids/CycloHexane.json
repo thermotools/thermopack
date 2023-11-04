@@ -64,16 +64,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Spitzer and Huffman, 1947",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -124.6e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Beckett C.W., 1947",
     "entropy_ref_state": "1ATM",
     "entropy": 298.19
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -123100.0,
-    "gibbs": 32260.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

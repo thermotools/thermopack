@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Good, 1969",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -228.3e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Scott D.W., 1974",
     "entropy_ref_state": "1ATM",
     "entropy": 506.5
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -228860.0,
-    "gibbs": 25000.0
   },
   "rackett_factor": {
     "bib_reference": "",

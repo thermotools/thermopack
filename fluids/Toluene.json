@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Roux, Temprado, et al., 2008",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": 50.1e3,
     "entropy_bib_reference": "HSC Chemistry 9",
     "entropy_ref_state": "1BAR",
     "entropy": 320.771
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": 50170.0,
-    "gibbs": 122290.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -256.0e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Chao J., 1986",
     "entropy_ref_state": "1ATM",
     "entropy": 322.49
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -255200.0,
-    "gibbs": -159810.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

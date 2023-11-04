@@ -67,16 +67,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Furuyama, Golden, et al., 1969",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": 20.41e3,
     "entropy_bib_reference": "HSC Chemistry 9",
     "entropy_ref_state": "1BAR",
     "entropy": 266.759
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": 20000.0,
-    "gibbs": 62500.0
   },
   "rackett_factor": {
     "bib_reference": "",

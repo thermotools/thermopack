@@ -64,16 +64,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -1220.47e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
     "entropy_ref_state": "1BAR",
     "entropy": 291.52
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -1220890.0,
-    "gibbs": -1117090.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

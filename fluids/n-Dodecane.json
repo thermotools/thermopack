@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Prosen and Rossini, 1945",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -290.9e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Stull D.R., 1969",
     "entropy_ref_state": "1ATM",
     "entropy": 622.50
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -290790.0,
-    "gibbs": 49530.0
   },
   "rackett_factor": {
     "bib_reference": "",

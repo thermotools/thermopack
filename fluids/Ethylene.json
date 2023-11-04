@@ -66,16 +66,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": 52.47e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
     "entropy_ref_state": "1BAR",
     "entropy": 219.32
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": 52500.0,
-    "gibbs": 68480.0
   },
   "rackett_factor": {
     "bib_reference": "",

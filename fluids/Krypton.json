@@ -64,16 +64,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": 0.0,
     "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
     "entropy_ref_state": "1BAR",
     "entropy": 164.085
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",

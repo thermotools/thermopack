@@ -103,9 +103,7 @@ module compdata
     real :: sref !< Reference entropy [J/mol/K]
     character (len=uid_len) :: sref_state !< Entropy reference state pressure
     real :: href !< Reference enthalpy [J/mol]
-    character (len=uid_len) :: href_state !< Enthalpy reference state pressure
-    real :: DfH !< Enthalpy of formation [J/mol]
-    real :: DfG !< Gibbs energy of formation [J/mol]
+    real :: gref !< Reference Gibbs free energy (1bar reference) [J/mol]
     integer :: psatcode !< Vapour pressure correlation 1: Antoine 2: Wilson (Michelsen) 3: Starling
     real, dimension(3) :: ant !< Vapour pressure correlation parameters
     real :: tantmin !< Vapour pressure correlation lower temperature limit [K]

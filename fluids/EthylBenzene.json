@@ -64,16 +64,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Prosen, Gilmont, et al., 1945",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": 29.8e3,
     "entropy_bib_reference": "https://webbook.nist.gov : Miller A., 1978",
     "entropy_ref_state": "1ATM",
     "entropy": 360.6
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": 29920.0,
-    "gibbs": 130730.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

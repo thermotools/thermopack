@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "HSC Chemistry 9",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -538690.0,
     "entropy_bib_reference": "HSC Chemistry 9",
     "entropy_ref_state": "1BAR",
     "entropy": 1090.860
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 100000000000.0,
-    "gibbs": 100000000000.0
   },
   "rackett_factor": {
     "bib_reference": "",

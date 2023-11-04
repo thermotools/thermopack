@@ -65,16 +65,10 @@
   },
   "reference_state": {
     "enthalpy_bib_reference": "https://webbook.nist.gov : Prosen and Rossini, 1945",
-    "enthalpy_ref_state": "1ATM",
     "enthalpy": -455.8e3,
     "entropy_bib_reference": "HSC Chemistry 9",
     "entropy_ref_state": "1BAR",
     "entropy": 940.180
-  },
-  "standard_formation_energy": {
-    "bib_reference": "ISBN: 978-0070116825",
-    "enthalpy": -455830.0,
-    "gibbs": 115770.0
   },
   "rackett_factor": {
     "bib_reference": "",
