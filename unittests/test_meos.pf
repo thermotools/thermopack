@@ -976,7 +976,7 @@ contains
   @Test
   subroutine test_gaussian_departure_function()
     !> Test the results for model using Gaussian model terms
-    !! for the binary departure function
+    !! for the binary departure function.
     use tp_solver, only: twoPhaseTPflash
     use eos, only: specificvolume
     integer :: i, phase
@@ -987,7 +987,8 @@ contains
     real :: releps
 
     call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
-
+     
+    ! Compare with output from REFPROP v10
     T = 300.0
     P = (/7.7798, 6.9354, 6.036, 5.1102, 4.1999, 3.3474, 2.5862, 1.9363, 1.4044, 0.98639/)*1e5
     y_ammonia = (/0.9997, 0.99954, 0.9993, 0.99893, 0.99834, 0.99737, 0.99576, 0.99305, 0.98844, 0.9805/)
@@ -1026,6 +1027,7 @@ contains
 
     call init_multiparameter("C1,N2", "MEOS", "DEFAULT")
 
+    ! Compare with output from REFPROP v10
     T = 130.0
     z = (/0.4, 0.6/)
     P = (/9.3001, 9.3785, 13.401, 16.206, 18.115, 19.438, 20.385, 21.087, &
