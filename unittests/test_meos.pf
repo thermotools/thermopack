@@ -973,4 +973,83 @@ contains
 
   end subroutine test_densitySolver_C3
 
+  @Test
+  subroutine test_gaussian_departure_function()
+    !> Test the results for model using Gaussian model terms
+    !! for the binary departure function
+    use tp_solver, only: twoPhaseTPflash
+    use eos, only: specificvolume
+    integer :: i, phase
+    integer, parameter :: np = 10
+    real :: T, P(np), rho_l(np), rho_g(np), x_ammonia(np), y_ammonia(np)
+    real :: rho_l_mod, rho_g_mod
+    real :: z(2), x(2), y(2), beta, betaL, v
+    real :: releps
+
+    call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
+
+    T = 300.0
+    P = (/7.7798, 6.9354, 6.036, 5.1102, 4.1999, 3.3474, 2.5862, 1.9363, 1.4044, 0.98639/)*1e5
+    y_ammonia = (/0.9997, 0.99954, 0.9993, 0.99893, 0.99834, 0.99737, 0.99576, 0.99305, 0.98844, 0.9805/)
+    x_ammonia = (/0.78947, 0.73684, 0.68421, 0.63158, 0.57895, 0.52632, 0.47368, 0.42105, 0.36842, 0.31579/)
+    rho_l = (/41017, 42336, 43558, 44687, 45738, 46729, 47675, 48588, 49476, 50342/)
+    rho_g = (/341.04, 300.72, 258.79, 216.66, 176.18, 139.08, 106.56, 79.231, 57.148, 39.966/)
+
+    releps = 5e-5
+    do i=1,np
+      z(1) = 0.5*(x_ammonia(i)+y_ammonia(i))
+      z(2) = 1.0 - z(1)
+      call twoPhaseTPflash(t,p(i),z,beta,betaL,phase,x,y)
+      call specificvolume(t,p(i),x,LIQPH,v)
+      rho_l_mod = 1.0/v
+      call specificvolume(t,p(i),y,VAPPH,v)
+      rho_g_mod = 1.0/v
+      @assertEqual(rho_l(i), rho_l_mod, releps*abs(rho_l(i)))
+      @assertEqual(rho_g(i), rho_g_mod, releps*abs(rho_g(i)))
+      @assertEqual(x_ammonia(i), x(1), releps*abs(x_ammonia(i)))
+      @assertEqual(y_ammonia(i), y(1), releps*abs(y_ammonia(i)))
+    enddo
+  end subroutine test_gaussian_departure_function
+
+  @Test
+  subroutine test_kunz_wagner_departure_function()
+    !> Test the results for model using Kunz-Wagner model terms
+    !! for the binary departure function
+    use tp_solver, only: twoPhaseTPflash
+    use eos, only: specificvolume
+    use eostv, only: pressure
+    integer :: i, phase
+    integer, parameter :: np = 21
+    real :: T, P(np), rho(np)
+    real :: z(2), rho_mod, beta, betaL, x(2), y(2)
+    real :: releps, v_l, v_v
+
+    call init_multiparameter("C1,N2", "MEOS", "DEFAULT")
+
+    T = 130.0
+    z = (/0.4, 0.6/)
+    P = (/9.3001, 9.3785, 13.401, 16.206, 18.115, 19.438, 20.385, 21.087, &
+         21.623, 22.045, 22.384, 22.662, 22.893, 23.089, 23.257, 23.402, &
+         23.529, 23.641, 23.740, 23.829, 23.909/)*1e5
+    rho = (/1000.0, 1010.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0, 7000.0, 8000.0, &
+         9000.0, 10000., 11000., 12000., 13000., 14000., 15000., 16000., 17000., &
+         18000., 19000., 20000./)
+    releps = 5e-4
+    do i=1,np
+      call twoPhaseTPflash(t,p(i),z,beta,betaL,phase,x,y)
+      v_l = 0
+      v_v = 0
+      if (phase == LIQPH .or. phase == TWOPH) then
+        call specificvolume(t,p(i),x,LIQPH,v_l)
+        v_l = v_l * betaL
+      endif
+      if (phase == VAPPH .or. phase == TWOPH) then
+        call specificvolume(t,p(i),y,VAPPH,v_v)
+        v_v = v_v * beta
+      endif
+      rho_mod = 1.0/(v_v + v_l)
+      @assertEqual(rho(i), rho_mod, releps*rho(i))
+    enddo
+  end subroutine test_kunz_wagner_departure_function
+
 end module test_meos
