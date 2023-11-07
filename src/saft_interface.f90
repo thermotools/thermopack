@@ -2349,11 +2349,11 @@ contains
       print *,"Component:", act_mod_ptr%comps(i)%p_comp%ident
       print *,"Scheme:", get_assoc_string(act_mod_ptr%comps(i)%p_comp%assoc_scheme)
       print *,"Parameters:"
-      write(*, '(A,F10.1)') "  a0 = ", pure_params(1) 
-      write(*, '(A,E10.3)') "  b = ", pure_params(2)
-      write(*, '(A,F10.3)') "  eps = ", pure_params(3)
-      write(*, '(A,E10.3)') "  beta = ", pure_params(4)
-      write(*, '(A,E10.3)') "  c1 = ", pure_params(5) 
+      write(*, '(A,F10.1)') "  a0 (Pa*L^2/mol^2) =", pure_params(1)
+      write(*, '(A,E10.3)') "  b (L/mol)         =", pure_params(2)
+      write(*, '(A,F10.3)') "  eps (J/mol)       =", pure_params(3)
+      write(*, '(A,E10.3)') "  beta (-)          =", pure_params(4)
+      write(*, '(A,E10.3)') "  c1 (-)            =", pure_params(5)
       print *," "
     enddo
 
