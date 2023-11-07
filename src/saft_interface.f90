@@ -2102,13 +2102,14 @@ contains
 
 
   !> Routine useful when fitting binary interaction parameters.
-  subroutine cpa_set_kij(i,j,aEps_kij_in)
+  subroutine cpa_set_kij(i,j,kij_a,kij_eps)
     use saft_association, only: compidx_to_sites
     use AssocSchemeUtils
     use cpa_parameters, only: getCpaKijAndCombRules_allComps
     use cubic_eos, only: cb_eos
     integer, intent(in) :: i,j !< Component indices.
-    real, intent(in) :: aEps_kij_in(2) !< Binary interaction parameters.
+    real, intent(in) :: kij_a !< Cubic interaction parameter
+    real, intent(in) :: kij_eps !< Association interaction parameter 
     ! Locals
     real :: eps_i, eps_j, beta_i, beta_j
     integer :: k,l,k_first,k_last,l_first,l_last
@@ -2130,7 +2131,7 @@ contains
     ! Set cubic interaction parameter.
     select type ( p_eos => act_mod_ptr%eos(1)%p_eos )
     class is ( cb_eos )
-      p_eos%kij(i,j) = aEps_kij_in(1)
+      p_eos%kij(i,j) = kij_a
     class default
       call stoperror("Not able to set cubic interaction parameter. Eos not cubic.")
     end select
@@ -2149,7 +2150,7 @@ contains
           if (cross_site_interaction (site1=k-k_first+1,site2=l-l_first+1,&
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
              p_assoc%eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
-                  eps_i, eps_j) * (1-aEps_kij_in(2))
+                  eps_i, eps_j) * (1-kij_eps)
              !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
              !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
           end if
@@ -2322,6 +2323,47 @@ contains
 
   end subroutine setActiveAssocParams
 
+  subroutine print_cpa_report()
+    use cpa_parameters, only: getCPAkij_epsbeta
+    use saft_globals
+    use eosdata, only: get_eos_short_label_from_subidx
+    use thermopack_var, only: nce
+    use AssocSchemeUtils, only: get_assoc_string
+
+    integer :: rules(2), i
+    real :: pure_params(5)
+    real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
+    logical :: found
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: assoc
+    act_mod_ptr => get_active_thermo_model()
+    assoc => act_mod_ptr%eos(1)%p_eos%assoc
+
+    write(*, '(A)') repeat("=", 40)
+    print *, "CPA Parameters"
+    write(*, '(A)') repeat("=", 40)
+    print *, "Model: ", get_eos_short_label_from_subidx(assoc%saft_model)
+    print *, " "
+    do i=1,nce
+      call cpa_get_pure_params(ic=i,params=pure_params)
+      print *,"Component:", act_mod_ptr%comps(i)%p_comp%ident
+      print *,"Scheme:", get_assoc_string(act_mod_ptr%comps(i)%p_comp%assoc_scheme)
+      print *,"Parameters:"
+      write(*, '(A,F10.1)') "  a0 (Pa*L^2/mol^2) =", pure_params(1)
+      write(*, '(A,E10.3)') "  b (L/mol)         =", pure_params(2)
+      write(*, '(A,F10.3)') "  eps (J/mol)       =", pure_params(3)
+      write(*, '(A,E10.3)') "  beta (-)          =", pure_params(4)
+      write(*, '(A,E10.3)') "  c1 (-)            =", pure_params(5)
+      print *," "
+    enddo
+
+    call cpa_get_kij(1,2,cpa_aEps_kij)
+    print *, "Binary parameters:"
+    write(*, '(A,E10.3)') "  kij_a = ", cpa_aEps_kij(1)
+    write(*, '(A,E10.3)') "  kij_eps = ", cpa_aEps_kij(2)
+    write(*, '(A)') repeat("=", 40)
+
+  end subroutine print_cpa_report
 
   subroutine printBinaryMixtureReportSaft()
     use cpa_parameters, only: getCPAkij_epsbeta

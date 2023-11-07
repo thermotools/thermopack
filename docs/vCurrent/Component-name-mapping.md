@@ -1,13 +1,6 @@
----
-version: 2.1.0
-layout: default
-title: Component identifiers
-permalink: /vcurrent/Component-name-mapping.html
----
-
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-09-28T21:36:40.794636
+Generated at : 2023-10-25T13:29:06.514960
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -29,7 +22,7 @@ You may have to scroll right to view the whole table.
 | 1,1-Difluoroethylene | 75-38-7 | R1132a |   |   |   |
 | 1,2-Dichlorotetrafluoroethane | 76-14-2 | R114 |   |   |   |
 | 1,3-Butadiene | 106-99-0 | 13BD |   |   |   |
-| 1-Butanol | 111-27-3 | BUT1OL |   | &#10004; | &#10004; |
+| 1-Butanol | 71-36-3 | BUT1OL |   | &#10004; | &#10004; |
 | 1-Chloro-1,1,2,2-tetrafluoroethane | 354-25-6 | R124a |   |   |   |
 | 1-Chloro-1,1-difluoroethane | 75-68-3 | R142b |   |   |   |
 | 1-Hexanol | 111-27-3 | HEX1OL |   | &#10004; | &#10004; |
@@ -76,7 +69,7 @@ You may have to scroll right to view the whole table.
 | Hydrogen | 1333-74-0 | H2 | &#10004; |   |   |
 | Isobutane | 75-28-5 | IC4 |   | &#10004; |   |
 | Isopentane | 78-78-4 | IC5 |   | &#10004; |   |
-| Krypton | 7439-90-9 | KR | &#10004; |   |   |
+| Krypton | 7439-90-9 | KR | &#10004; | &#10004; |   |
 | Lennard-jones_fluid |  | LJF | &#10004; |   |   |
 | Methane | 74-82-8 | C1 | &#10004; | &#10004; |   |
 | Methanol | 67-56-1 | MEOH | &#10004; | &#10004; | &#10004; |
@@ -94,6 +87,7 @@ You may have to scroll right to view the whole table.
 | Propadiene | 7173-51-5 | ALLENE |   |   |   |
 | Propane | 74-98-6 | C3 | &#10004; | &#10004; | &#10004; |
 | Propylene | 115-07-1 | PRLN |   |   |   |
+| Pseudo | XXX | PSEUDO |   |   |   |
 | Sulfur dioxide | 7446-09-5 | SO2 |   |   |   |
 | Sulfur hexafluoride | 2551-62-4 | F6S |   |   |   |
 | Tetrafluoroethylene | 116-14-3 | R1114 |   |   |   |

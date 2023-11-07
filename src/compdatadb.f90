@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-09-28T12:56:50.126803
+!! Time stamp: 2023-10-25T13:29:06.496209
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -849,6 +849,34 @@ module compdatadb
       assoc_scheme = assoc_scheme_2B &
       )
 
+  type(CPAdata), parameter :: cpa6 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NH3", &
+      ref="3B-SINTEF", &
+      bib_reference="", &
+      a0=3.74306000e+05, &
+      b=2.07830000e-02, &
+      eps=7.81268000e+03, &
+      beta=8.19643000e-04, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/6.91193000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_3B &
+      )
+
+  type(CPAdata), parameter :: cpa7 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NH3", &
+      ref="4B-SINTEF", &
+      bib_reference="", &
+      a0=3.74905000e+05, &
+      b=2.08531000e-02, &
+      eps=7.51955000e+03, &
+      beta=8.71581000e-04, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/6.81681000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_4B &
+      )
+
   type (gendatadb), parameter :: cx12 = &
       gendatadb(ident = "AR", &
       formula = "AR", &
@@ -1190,7 +1218,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa6 = &
+  type(CPAdata), parameter :: cpa8 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -1204,7 +1232,7 @@ module compdatadb
       assoc_scheme = no_assoc &
       )
 
-  type(CPAdata), parameter :: cpa7 = &
+  type(CPAdata), parameter :: cpa9 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF", &
@@ -1218,7 +1246,7 @@ module compdatadb
       assoc_scheme = assoc_scheme_1EA &
       )
 
-  type(CPAdata), parameter :: cpa8 = &
+  type(CPAdata), parameter :: cpa10 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF2", &
@@ -1969,7 +1997,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa9 = &
+  type(CPAdata), parameter :: cpa11 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="SINTEF/Queimada2005", &
@@ -1983,7 +2011,7 @@ module compdatadb
       assoc_scheme = assoc_scheme_2B &
       )
 
-  type(CPAdata), parameter :: cpa10 = &
+  type(CPAdata), parameter :: cpa12 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="Default/Oliveira2008", &
@@ -3070,7 +3098,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa11 = &
+  type(CPAdata), parameter :: cpa13 = &
       CPAdata(eosid="CPA-SRK", &
       compName="MEOH", &
       ref="Default/Kontogeorgis2008", &
@@ -4000,7 +4028,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa12 = &
+  type(CPAdata), parameter :: cpa14 = &
       CPAdata(eosid="CPA-SRK", &
       compName="C3", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6213,7 +6241,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa13 = &
+  type(CPAdata), parameter :: cpa15 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="Default/Queimada2005", &
@@ -6227,7 +6255,7 @@ module compdatadb
       assoc_scheme = assoc_scheme_4C &
       )
 
-  type(CPAdata), parameter :: cpa14 = &
+  type(CPAdata), parameter :: cpa16 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="SINTEF", &
@@ -6377,7 +6405,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa15 = &
+  type(CPAdata), parameter :: cpa17 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC4", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6463,7 +6491,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa16 = &
+  type(CPAdata), parameter :: cpa18 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC10", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6937,7 +6965,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa17 = &
+  type(CPAdata), parameter :: cpa19 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC7", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7134,7 +7162,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa18 = &
+  type(CPAdata), parameter :: cpa20 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC6", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7292,7 +7320,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa19 = &
+  type(CPAdata), parameter :: cpa21 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC9", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7478,7 +7506,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa20 = &
+  type(CPAdata), parameter :: cpa22 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC8", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7700,7 +7728,7 @@ module compdatadb
       coeff=(/9.01000000e-01, -3.05000000e-01, 5.42000000e-01/) &
       )
 
-  type(CPAdata), parameter :: cpa21 = &
+  type(CPAdata), parameter :: cpa23 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC5", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -8265,13 +8293,13 @@ module compdatadb
       c186,c187,c188,c189,c190 &
   /)
 
-  integer, parameter :: nCPAmodels =21
+  integer, parameter :: nCPAmodels =23
   type(CPAdata), dimension(nCPAmodels), parameter :: CPAarray = (/&
       cpa1,cpa2,cpa3,cpa4,cpa5, &
       cpa6,cpa7,cpa8,cpa9,cpa10, &
       cpa11,cpa12,cpa13,cpa14,cpa15, &
       cpa16,cpa17,cpa18,cpa19,cpa20, &
-      cpa21 &
+      cpa21,cpa22,cpa23 &
   /)
 
 end module compdatadb
