@@ -130,6 +130,8 @@ append_export("threephaseline", "binaryplot")
 
 append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")
+append_export("get_ideal_cp_correlation", "compdata")
+append_export("set_ideal_cp_correlation", "compdata")
 
 append_export("calccriticaltv", "critical")
 

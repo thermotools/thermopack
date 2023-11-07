@@ -766,7 +766,7 @@ subroutine thermopack_comp_name_c(i,comp_name) BIND(C)
   ! Locals
   character(len=comp_name_len+1), pointer :: fstring
   character(len=comp_name_len) :: compName
-  call comp_name_active(i, compName)
+  call comp_name_active(i, shortname=.false., comp_name=compName)
   allocate(fstring)
   fstring = trim(compName)
   fstring(len_trim(compName)+1:len_trim(compName)+1) = c_null_char
