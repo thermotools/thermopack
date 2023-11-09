@@ -28,9 +28,10 @@ module spinodal
 
   abstract interface
     function prop_fun_type(Xs,param) result(fun)
+      use thermopack_var, only: nc
       implicit none
       real, intent(in) :: Xs
-      real, intent(inout) :: param(7)
+      real, intent(inout) :: param(6+nc)
       real :: fun
     end function prop_fun_type
   end interface
@@ -1168,10 +1169,10 @@ contains
   !>
   !> \author MH 2020-01
   !-----------------------------------------------------------------------------
-  subroutine bracketSolveForPropertySingleSpinodal(ic,propflag,propspec,&
+  subroutine bracketSolveForPropertySpinodal(z,propflag,propspec,&
        property_function,T1,v1,Ts,vs,ierr)
     implicit none
-    integer, intent(in) :: ic
+    real, intent(in) :: z(nc)
     real, intent(in) :: T1,v1
     real, intent(inout) :: Ts,vs
     integer, intent(in) :: propflag
@@ -1179,24 +1180,21 @@ contains
     procedure(prop_fun_type) :: property_function
     integer, intent(out) :: ierr
     ! Locals
-    real, dimension(7) :: param
-    real :: z(nc)
+    real, dimension(6+nc) :: param
     type(nonlinear_solver) :: solver
     real :: Xs,Xsmax,Xsmin,dvdt1
     !
     if (verbose) then
       print *,'In bracketSolveForPropertySingleSpinodal....'
     endif
-    z = 0
-    z(ic) = 1
     dvdT1 = dvdT_meta_line(T1,V1,z)
     param(1) = propspec
-    param(2) = real(ic)
-    param(3) = dvdT1
-    param(4) = T1
-    param(5) = v1
-    param(6) = real(propflag)
-    param(7) = 0
+    param(2) = dvdT1
+    param(3) = T1
+    param(4) = v1
+    param(5) = real(propflag)
+    param(6) = 0
+    param(7:nc+6) = z
     solver%abs_tol = 1e-8
     solver%isolver = NS_PEGASUS
     Xsmax = max(vs,v1)
@@ -1207,8 +1205,8 @@ contains
          Xs,solver,param)
     ierr = solver%exitflag
     vs = Xs
-    Ts = param(7)
-  end subroutine bracketSolveForPropertySingleSpinodal
+    Ts = param(6)
+  end subroutine bracketSolveForPropertySpinodal
 
   !-----------------------------------------------------------------------------
   !> Function used to solve for point on saturation line having property value
@@ -1216,41 +1214,37 @@ contains
   !>
   !> \author MH 2020-01
   !-----------------------------------------------------------------------------
-  function propertyFunctionWrapperSingleSpinodal(Xs,param) result(fun)
+  function propertyFunctionWrapperSpinodal(Xs,param) result(fun)
     implicit none
     real, intent(in) :: Xs
-    real, dimension(7), intent(inout) :: param
+    real, dimension(6+nc), intent(inout) :: param
     real :: fun
     ! Locals:
     real, dimension(nc) :: n
     real :: t, prop, propspec, v, T0, v0, dvdT
-    integer :: propflag, ic, ierr
+    integer :: propflag, ierr
 
     ! Unpack the param vector
     propspec = param(1)
-    ic = nint(param(2))
-    dvdT = param(3)
-    T0 = param(4)
-    v0 = param(5)
-    propflag = nint(param(6))
-
-    ! Composition
-    n = 0
-    n(ic) = 1
+    dvdT = param(2)
+    T0 = param(3)
+    v0 = param(4)
+    propflag = nint(param(5))
+    n = param(7:nc+6)
 
     ! Extrapolate for better initial values
     v = Xs
     T = T0 + (v-v0)/dvdT
-    call StablimitPointSingleComp(T,n,v,ierr)
+    call solveStabLimitT(T,v,n,ierr)
     ! Update t-slot in param vector with new t value
-    param(7) = t
+    param(6) = t
 
     ! Calculate the property value at the new spinodial point
     prop = genericPropertyTV(t,v,n,propflag)
 
     ! Compute new value of objective function
     fun = (prop - propspec)/max(abs(propspec), 1.0)
-  end function propertyFunctionWrapperSingleSpinodal
+  end function propertyFunctionWrapperSpinodal
 
   function genericPropertyTV_pressure_gradient(t,v,n,propflag) result(prop)
     use eosTV, only: pressure, internal_energy_tv, enthalpy_tv, entropy_tv
@@ -1305,38 +1299,34 @@ contains
   !>
   !> \author MH 2020-02
   !-----------------------------------------------------------------------------
-  function propertyFunctionWrapperSingleSpinodalPressureGradient(Xs,param) result(fun)
+  function propertyFunctionWrapperSpinodalPressureGradient(Xs,param) result(fun)
     implicit none
     real, intent(in) :: Xs
-    real, dimension(7), intent(inout) :: param
+    real, dimension(6+nc), intent(inout) :: param
     real :: fun
     ! Locals:
     real, dimension(nc) :: n
     real :: t, propspec, v, T0, v0, dvdT
-    integer :: propflag, ic, ierr
+    integer :: propflag, ierr
 
     ! Unpack the param vector
     propspec = param(1)
-    ic = nint(param(2))
-    dvdT = param(3)
-    T0 = param(4)
-    v0 = param(5)
-    propflag = nint(param(6))
-
-    ! Composition
-    n = 0
-    n(ic) = 1
+    dvdT = param(2)
+    T0 = param(3)
+    v0 = param(4)
+    propflag = nint(param(5))
+    n = param(7:nc+6)
 
     ! Extrapolate for better initial values
     v = Xs
     T = T0 + (v-v0)/dvdT
-    call StablimitPointSingleComp(T,n,v,ierr)
+    call solveStabLimitT(T,v,n,ierr)
     ! Update t-slot in param vector with new t value
-    param(7) = t
+    param(6) = t
 
     ! Calculate the property value differential to pressure
     fun = genericPropertyTV_pressure_gradient(t,v,n,propflag)
-  end function propertyFunctionWrapperSingleSpinodalPressureGradient
+  end function propertyFunctionWrapperSpinodalPressureGradient
 
   !-----------------------------------------------------------------------------
   !> Locate property - spinodal curve intersect
@@ -1362,9 +1352,8 @@ contains
     real :: PaLiq(nMaxSingle), PaGas(nMaxSingle) !< Pressure [Pa]
     real :: prop_a(nMaxSingle)
     real :: prop_1, prop_n, prop_i, Tx, vx
-    integer :: ic, i, jm
+    integer :: i, jm
     logical :: isMonotonous
-    ic = maxloc(z, dim=1)
 
     ! Calculate entire spinodals
     ! Some room for speed-up........
@@ -1394,8 +1383,9 @@ contains
         ierr = 0
         Tx = TaLiq(min(jm+1,nMaxSingle))
         vx = VaLiq(min(jm+1,nMaxSingle))
-        call bracketSolveForPropertySingleSpinodal(ic,propflag,propspec, &
-             propertyFunctionWrapperSingleSpinodalPressureGradient, &
+
+        call bracketSolveForPropertySpinodal(z,propflag,propspec, &
+             propertyFunctionWrapperSpinodalPressureGradient, &
              TaLiq(jm-1),VaLiq(jm-1),Tx,vx,ierr)
         prop_a(jm) = genericPropertyTV(Tx,Vx,z,propflag)
         prop_1 = prop_a(jm)
@@ -1409,8 +1399,8 @@ contains
             ierr = 0
             Ts = TaLiq(i)
             vs = VaLiq(i)
-            call bracketSolveForPropertySingleSpinodal(ic,propflag,propspec, &
-                 propertyFunctionWrapperSingleSpinodal, &
+            call bracketSolveForPropertySpinodal(z,propflag,propspec, &
+                 propertyFunctionWrapperSpinodal, &
                  TaLiq(i-1),VaLiq(i-1),Ts,vs,ierr)
             found_crossing = .true.
             exit
@@ -1440,8 +1430,8 @@ contains
         ierr = 0
         Tx = TaGas(min(jm+1,nMaxSingle))
         vx = VaGas(min(jm+1,nMaxSingle))
-        call bracketSolveForPropertySingleSpinodal(ic,propflag,propspec, &
-             propertyFunctionWrapperSingleSpinodalPressureGradient, &
+        call bracketSolveForPropertySpinodal(z,propflag,propspec, &
+             propertyFunctionWrapperSpinodalPressureGradient, &
              TaGas(jm-1),VaGas(jm-1),Tx,vx,ierr)
         prop_a(jm) = genericPropertyTV(Tx,Vx,z,propflag)
         prop_1 = prop_a(jm)
@@ -1455,8 +1445,8 @@ contains
             ierr = 0
             Ts = TaGas(i)
             vs = VaGas(i)
-            call bracketSolveForPropertySingleSpinodal(ic,propflag,propspec, &
-                 propertyFunctionWrapperSingleSpinodal, &
+            call bracketSolveForPropertySpinodal(z,propflag,propspec, &
+                 propertyFunctionWrapperSpinodal, &
                  TaGas(i-1),VaGas(i-1),Ts,vs,ierr)
             found_crossing = .true.
             exit
@@ -1471,6 +1461,63 @@ contains
       Ps = 0
     endif
   end subroutine locate_spinodal_prop_pure_fluid
+
+  !-----------------------------------------------------------------------------
+  !> Locate property - spinodal curve intersect
+  !>
+  !> \author MH, 2023-11
+  !-----------------------------------------------------------------------------
+  subroutine locate_spinodal_prop(propflag,z,propspec,&
+       P0,Ts,vs,Ps,found_crossing,ierr,Tliq_start)
+    use thermopack_constants, only: TWOPH
+    use thermopack_var, only: tptmin
+    implicit none
+    integer, intent(in) :: propflag
+    real, intent(in) :: z(nc)
+    real, intent(in) :: P0
+    real, intent(in) :: propspec
+    real, intent(out) :: Ts,Ps,vs
+    logical, intent(out) :: found_crossing
+    integer, intent(out) :: ierr
+    real, optional, intent(in) :: Tliq_start
+    ! Locals
+    real :: Ta(nMax) !< Temperature [K]
+    real :: Va(nMax) !< Specific volume [m3/mol]
+    real :: Pa(nMax) !< Pressure [Pa]
+    real :: prop_a(nMax)
+    integer :: i, jm, na
+
+    ! Calculate entire spinodals
+    call map_stability_limit(P0,z,tptmin,Ta,Pa,va,na,ierr,Tliq_start=Tliq_start)
+    if (ierr /= 0) return
+    found_crossing = .false.
+    jm = 0
+    do i=1,na
+      prop_a(i) = genericPropertyTV(Ta(i),Va(i),z,propflag)
+      if (i > 1) then
+        if ((prop_a(i)-propspec)*(prop_a(i-1)-propspec) < 0) then
+          jm = i-1
+        endif
+      endif
+    enddo
+    if (jm > 0) then
+      Ts = Ta(jm+1)
+      vs = Va(jm+1)
+      call bracketSolveForPropertySpinodal(z,propflag,propspec, &
+           propertyFunctionWrapperSpinodal, &
+           Ta(jm),Va(jm),Ts,vs,ierr)
+      found_crossing = .true.
+    endif
+
+    if (found_crossing) then
+      Ps = pressure(Ts,vs,z)
+    else
+      Ts = 0
+      vs = 0
+      Ps = 0
+      ierr = 1
+    endif
+  end subroutine locate_spinodal_prop
 
   function genericPropertyTV_pressure_gradient_mc(t,v,n,propflag) result(prop)
     use eosTV, only: pressure, internal_energy_tv, enthalpy_tv, entropy_tv
@@ -1548,10 +1595,9 @@ contains
     real :: PaLiq(nMaxSingle), PaGas(nMaxSingle) !< Pressure [Pa]
     real :: prop_a(nMaxSingle)
     real :: Tx, vx
-    integer :: ic, i, jm
+    integer :: i, jm
     logical :: isMonotonous
     real :: extrema_liq(3)
-    ic = maxloc(z, dim=1)
 
     ! Calculate entire spinodals
     ! Some room for speed-up........
@@ -1575,8 +1621,8 @@ contains
       ierr = 0
       Tx = TaLiq(min(jm+1,nMaxSingle))
       vx = VaLiq(min(jm+1,nMaxSingle))
-      call bracketSolveForPropertySingleSpinodal(ic,propflag,0.0, &
-           propertyFunctionWrapperSingleSpinodalPressureGradient, &
+      call bracketSolveForPropertySpinodal(z,propflag,0.0, &
+           propertyFunctionWrapperSpinodalPressureGradient, &
            TaLiq(jm-1),VaLiq(jm-1),Tx,vx,ierr)
       if (ierr /= 0) return
       prop_a(jm) = genericPropertyTV(Tx,Vx,z,propflag)
@@ -1601,8 +1647,8 @@ contains
       ierr = 0
       Tx = TaGas(min(jm+1,nMaxSingle))
       vx = VaGas(min(jm+1,nMaxSingle))
-      call bracketSolveForPropertySingleSpinodal(ic,propflag,0.0, &
-           propertyFunctionWrapperSingleSpinodalPressureGradient, &
+      call bracketSolveForPropertySpinodal(z,propflag,0.0, &
+           propertyFunctionWrapperSpinodalPressureGradient, &
            TaGas(jm-1),VaGas(jm-1),Tx,vx,ierr)
       if (ierr /= 0) return
       prop_a(jm) = genericPropertyTV(Tx,Vx,z,propflag)
@@ -1771,6 +1817,7 @@ contains
   subroutine map_meta_isentrope(p0,s,n,pmin,nmax,T,v,p,ierr)
     use ps_solver, only: twoPhasePSflash
     use thermopack_constants, only: TWOPH
+    use thermo_utils, only: isSingleComp
     implicit none
     real, intent(in) :: n(nc)
     real, intent(in) :: p0, pmin
@@ -1784,8 +1831,13 @@ contains
     real :: beta,betaL,X(nc),Y(nc)
     logical :: found_crossing
 
-    call locate_spinodal_prop_pure_fluid(spin_locate_from_entropy,&
-         n,s,TWOPH,pmin,Ts,vs,Ps,found_crossing,ierr)
+    if (isSingleComp(n)) then
+      call locate_spinodal_prop_pure_fluid(spin_locate_from_entropy,&
+           n,s,TWOPH,pmin,Ts,vs,Ps,found_crossing,ierr)
+    else
+      call locate_spinodal_prop(spin_locate_from_entropy,&
+           n,s,pmin,Ts,vs,Ps,found_crossing,ierr)
+    endif
     if (found_crossing) then
       p(nmax) = Ps
       T(nmax) = Ts
