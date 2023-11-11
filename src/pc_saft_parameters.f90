@@ -6,7 +6,7 @@
 !> this reason you should validate your results before using these parameters.
 !> If you get strange results, try multiplying beta with pi/6=0.5236.
 module pc_saft_parameters
-  use thermopack_constants, only: Rgas => Rgas_default, verbose
+  use thermopack_constants, only: Rgas => Rgas_default, verbose, eosid_len
   use pc_saft_datadb, only: nPCmodels, PCarray, PCmaxkij, PCkijdb
   use eosdata, only: eosPC_SAFT, eosSPC_SAFT, eosOPC_SAFT, &
        eosSPCP_SAFT, eosPCP_SAFT
@@ -113,16 +113,18 @@ contains
       if (.not. found .and. idx_default > 0) then
         found = .true.
         kijvalue = PCkijdb(idx_default)%kijvalue
+        print *, "Using default kij reference for ", trim(uid1), ",", trim(uid2)
       endif
     end subroutine getkij
   end function getPCkij
 
-  subroutine getPcSaftKij_allComps(nc,comp,eosidx,kij)
+  subroutine getPcSaftKij_allComps(nc,comp,eosidx,kij,param_ref)
     use compdata, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
     integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: param_ref
     ! Output
     real, intent(out) :: kij(nc,nc)
     ! Locals
@@ -131,12 +133,84 @@ contains
     kij = 0.0
     do ic=1,nc
       do jc=ic+1,nc
-        kij(ic,jc) = getPCkij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,"DEFAULT")
+        kij(ic,jc) = getPCkij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref)
         kij(jc,ic) = kij(ic,jc)
       end do
     end do
 
   end subroutine getPcSaftKij_allComps
+
+  subroutine getPcSaftCombRules_allComps(nc,comp,eosidx,&
+    epsbeta_combrules, param_ref)
+    use compdata, only: gendata_pointer
+    ! Input
+    integer, intent(in) :: nc
+    type(gendata_pointer), intent(in) :: comp(nc)
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: param_ref
+    ! Output
+    integer, intent(out) :: epsbeta_combrules(2,nc,nc)
+    ! Locals
+    integer :: ic,jc
+    character(len=10) :: ref
+    logical :: found_
+
+    epsbeta_combrules = -1000
+    do ic=1,nc
+        do jc=1,nc
+          if (ic == jc) cycle
+          call getPcSaftCombRules(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref,&
+                found_,epsbeta_combrules(1:2,ic,jc))
+        end do
+    end do
+  end subroutine getPcSaftCombRules_allComps
+
+  !> Retrieve association combining rules for components uid1 and
+  !> uid2. Found is true if and only if the parameters are in the database.
+  subroutine getPcSaftCombRules (eosidx,uid1,uid2,param_ref,found,epsBetaCombRules)
+    use stringmod, only: str_eq, string_match
+    use AssocSchemeUtils, only: defaultComb
+    integer, intent(in) :: eosidx
+    character(len=*), intent(in) :: uid1, uid2
+    logical, intent(out) :: found
+    integer, intent(out) :: epsBetaCombRules(2)
+    character(len=*), intent(in) :: param_ref
+    !
+    integer :: idx, idx_default
+    logical :: correct_eos, correct_comps, correct_ref, default_ref
+
+    idx = 1
+    idx_default = -1
+    found = .false. 
+    do while (idx <= PCmaxkij .and. (.not. found))
+       correct_eos = eosidx == PCkijdb(idx)%eosidx
+       correct_comps = (str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)) &
+            .or. ( str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1))
+       correct_ref = string_match(param_ref,PCkijdb(idx)%ref)
+       default_ref = string_match("Default",PCkijdb(idx)%ref)
+
+       if ( correct_eos .and. correct_comps) then
+         if (correct_ref) then
+           epsBetaCombRules = (/PCkijdb(idx)%eps_comb_rule, PCkijdb(idx)%beta_comb_rule/)
+           return
+         else if (default_ref) then
+           idx_default = idx
+         endif
+        endif
+       idx = idx + 1
+     enddo
+
+     ! Default values.
+     if (.not. found) then
+       if (idx_default > 0) then
+         idx = idx_default
+         epsBetaCombRules = (/PCkijdb(idx)%eps_comb_rule, PCkijdb(idx)%beta_comb_rule/)
+       else
+         epsBetaCombRules = (/defaultComb,defaultComb/)
+       endif
+     end if
+
+  end subroutine getPcSaftCombRules  
 
   subroutine getPcSaftPureParams_allComps(nc,comp,eosidx,param_ref,&
        found,m,sigma,eps_depth_divk,eps,beta,scheme,mu,Q)

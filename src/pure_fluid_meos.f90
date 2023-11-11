@@ -102,6 +102,9 @@ contains
       meos_comp%t_triple = meosdb(i_comp)%ttr
       meos_comp%p_triple = meosdb(i_comp)%ptr*1.0e-3 ! kPa -> Pa
 
+      meos_comp%tr = meosdb(i_comp)%tr
+      meos_comp%rhor = meosdb(i_comp)%rhor*1.0e3 !  -> mol/l -> mol/m3
+
       meos_comp%tc = meosdb(i_comp)%tc
       meos_comp%rc = meosdb(i_comp)%rhoc*1.0e3 !  -> mol/l -> mol/m3
       meos_comp%acf = meosdb(i_comp)%acf !< Acentric factor

@@ -26,7 +26,6 @@ src/*.bck
 *.dat
 *.aux
 *.log
-*.dat
 *.nlo
 *.toc
 *.out

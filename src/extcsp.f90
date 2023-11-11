@@ -65,8 +65,8 @@ module extcsp
     ! Shape differentials etc.
     type(shape_diff) :: sd
     !
-    integer :: refNc = 0                                 !< This is set to 1 in subroutine selectComp.
-    type(gendata_pointer), allocatable, dimension(:) :: refComp  !< Will be made to have length refNc=1 in subroutine selectComp.
+    integer :: refNc = 0                                 !< This is set to 1 in subroutine init_component_data_from_db.
+    type(gendata_pointer), allocatable, dimension(:) :: refComp  !< Will be made to have length refNc=1 in subroutine init_component_data_from_db.
     integer :: refEosType                                !< Is set to either cubic or mbwr.
     real :: Tc0, Pc0                                     !< Critical constants for reference component.
     real :: m0, bc0, ac0                                 !< Parameters for the cubic shape eos.
@@ -96,7 +96,7 @@ contains
     use cbselect, only: SelectCubicEOS, SelectMixingRules
     use mbwr, only: initializeMBWRmodel
     use eosdata
-    use compdata, only: SelectComp
+    use compdata, only: init_component_data_from_db
     use stringmod, only: str_upcase
     !use thermopack_var, only: nce, get_active_thermo_model, thermo_model
     implicit none
@@ -157,7 +157,7 @@ contains
     call eos%allocate_and_init(nce,refEos_upcase//":"//trim(refcomp_str))
     complist_ref = trim(refcomp_str)
     eos%refNc = 1
-    call SelectComp(complist_ref,eos%refNc,param_ref,eos%refComp,err)
+    call init_component_data_from_db(complist_ref,eos%refNc,param_ref,eos%refComp,err)
     !
     call get_eos_index("CSP-"//trim(shEos),eos%eosidx,eos%subeosidx)
     !

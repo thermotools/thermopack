@@ -1,18 +1,18 @@
 <!--- 
-Generated at: 2023-05-15T15:34:26.312011
+Generated at: 2023-10-04T09:51:14.750867
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    thermopack/doc/markdown/
-        header.md
-        pypi_toc.md
-        cite_acknowl_licence.md
-        pypi_structure.md
-        getting_started.md
-        more_advanced.md
-        Component-name-mapping.md
+    /Users/vegardjervell/thermopack/addon/pyUtils/docs/../../../docs/
+        readme_parts/header.md
+        readme_parts/pypi_toc.md
+        metapages/please_cite.md
+        readme_parts/pypi_structure.md
+        v2.1.0/getting_started.md
+        v2.1.0/more_advanced.md
+        v2.1.0/Component-name-mapping.md
 --->
 
-# Thermopack
+# ThermoPack
 
 Thermopack is a thermodynamics library for multi-component and
 multi-phase thermodynamics developed at [SINTEF Energy
@@ -26,7 +26,9 @@ state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
 
-![](https://github.com/thermotools/thermopack/blob/wiki/doc/markdown/figures/readme_intro.gif?raw=true)
+For the full documentation and user guide to ThermoPack, check out the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+
+![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
 Thermopack is available for everybody, free of charge under the
 MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
@@ -38,7 +40,6 @@ building block for the Thermopack graphical user interface, where it
 is possible to plot thermodynamic phase diagrams with the most
 frequently used equations of state. The graphical user interface is
 currently running on the Windows and Linux operating systems.
-
 
 # Table of contents
   * [Program structure](#program-structure)
@@ -57,7 +58,8 @@ currently running on the Windows and Linux operating systems.
     * [Interaction parameters](#Interaction-parameters) 
   * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
 
-## Please cite
+# Please Cite
+
 Thermopack has been developed through many projects, and have produced many
 articles. If you are writing academic publications, please cite one or more of
 the following articles:
@@ -91,12 +93,6 @@ rules:
 [Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid](https://doi.org/10.1063/5.0082690)  
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
-## Authors and contact persons
-Morten Hammer (morten.hammer@sintef.no, morten.hammer@ntnu.no)<br>
-Ailo Aasen (ailo.aasen@sintef.no)<br>
-Øivind Wilhelmsen (oivind.wilhelmsen@sintef.no)<br>
-Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
-
 ## License
 Thermopack is distributed under the [MIT
 license](https://github.com/thermotools/thermopack/blob/main/LICENSE-MIT)
@@ -127,10 +123,25 @@ for information on how to add new fluids, and the [GitHub README](https://github
 on how to compile from source. Please feel free to leave a PR for new parameter sets such that these can be included in 
 future releases of thermopack.
 
+# Getting Started
+
 # Getting started - Python
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
+
+## Contents
+* [Initialising an equation of state](#initialising-an-equation-of-state)
+* [pVT properties](#pvt-properties)
+  * [Differentials](#differentials)
+* [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
+  * [Flash calculations](#flash-calculations)
+  * [Phase envelopes](#phase-envelopes)
+    * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
+    * [pxy- envelopes](#pxy--phase-envelopes)
+  * [Dew- and bubble points](#dew--and-bubble-points)
+* [Isolines](#isolines)
+* [Critical point](#critical-point)
 
 ## Initialising an equation of state
 An EoS is initialized by passing in the [fluid identifiers](https://github.com/thermotools/thermopack/wiki/Component-name-mapping) of the mixture, for example
@@ -254,7 +265,7 @@ As with other calculations, the primary source on how available methods for flas
 ### Flash calculations
 Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`.
 
-See the [Flash interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
+See the [Flash interfaces](/thermopack/v2.1.0/thermo_methods.html#flash-interfaces) in the [documentation of the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy) for the specifics on the different flash routines.
 
 An example calculation using `twophase_tpflash()` may be done as
 ```python
@@ -264,31 +275,11 @@ eos = saftvrqmie('H2,HE,NE', minimum_temperature=20) # NB: Set minimum temperatu
 T = 35 # Kelvin
 p = 3e6 # Pascal (30 bar)
 z = [0.1, 0.25, 0.65] # Molar composition
-flsh = eos.two_phase_tpflash(T, p, x) # flsh is a FlashResult object
-print(flsh)
-### Output: ###
-# FlashResult object for Tp-flash
-# Containing the attributes (description, name, value):
-#   	Flash type                     flash_type : Tp  
-#   	Total composition              z     : [0.1, 0.25, 0.65]  
-#   	Temperature [K]                T     : 35  
-#   	pressure [Pa]                  p     : 3000000.0  
-#   	Liquid phase composition       x     : [0.05407302 0.03859287 0.90733411]  
-#   	Vapour phase composition       y     : [0.14642524 0.46370066 0.3898741 ]  
-#   	Vapour fraction                betaV : 0.497302408174766  
-#   	Liquid fraction                betaL : 0.5026975918252341  
-#   	Phase indentifier index        phase : 0  
+x, y, betaV, betaL, phase = eos.two_phase_tpflash(T, p, z) # Flash returns a tuple 
 ```
-the result of the flash is accessed from the attributes of the `FlashResult` object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
-```
-# Continued
-x = flsh.x # Liquid composition
-y = flsh.y # Vapour composition
-betaL = flsh.betaL # 
-# ... etc
-```
-
-The `FlashResult` object returned by the different flash routines all contain the same attributes. 
+The tuple returned by the different flash routines hold somewhat different content. Look up the specific flash routine 
+you need in the [documentation of the flash interfaces](/thermopack/v2.1.0/thermo_methods.html#flash-interfaces) to see
+what is returned, an in what order.
 
 ### Phase envelopes
 
@@ -307,7 +298,7 @@ T, p, v = eos.get_envelope_twophase(1e5, x, calc_v=True) # Also return the speci
 plt.plot(1 / v, T) # rho-T projection of the phase envelope
 ```
 
-#### pxy-phase envelopes
+#### pxy- phase envelopes
 
 To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method. The pxy-phase diagram trace method assumes that there can be up to three phases present, two liquid and one vapour. The method `get_binary_pxy` therefore returns three tuples, that we call `LLE`, `L1VE` and `L2VE`. Each of these tuples corresponds to a phase boundary: The `LLE` tuple corresponds to the (Liquid 1 - Liquid 2) phase boundary, the `L1VE` tuple corresponds to the (Liquid 1 - Vapour) phase boundary, and the `L2VE` tuple corresponds to the (Liquid 2 - Vapour) phase boundary.
 
@@ -441,7 +432,7 @@ The solver accepts initial guesses for the critical values through the `kwargs` 
 
 
 
-# More advanced usage - Python
+# More advanced usage
 
 ## Interaction parameters
 
@@ -512,9 +503,97 @@ H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
 
 Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
 
+# Adding new fluids
+
+The fluid database consists of a set of
+`.json`-files in the
+`fluids` directory. These files are
+are used to auto-generate the FORTRAN-files
+`compdatadb.f90` and
+`saftvrmie_datadb.f90` by running
+the respective python scripts
+`compdata.py` and
+`saftvrmie.py` found in the
+directory `addon/pyUtils/datadb/`.
+The files are generated in the current working directory and must be
+copied to the `src`-directory
+before recompiling ThermoPack to make the fluids available.
+
+A `<fluid\>.json` file must
+contain a minimal set of data to be valid. This includes the critical
+point, accentric factor, mole weight and ideal gas heat capacity.
+
+## Ideal gas heat capacity
+
+Several different correlations for the heat capacity are available,
+selected by the "correlation"-key in the "ideal-heat-capacity-1" field
+of the fluid files. These are summarized in the table below.
+
+
+```
+Ideal gas heat capacity correlations, and the corresponding keys used in the fluid-database.
+```
+
+| Key | Correlation                         | Equation                                                      | Unit                  |
+|-----|-------------------------------------|---------------------------------------------------------------|-----------------------|
+| 1   | Sherwood, Reid & Prausnitz(a)       | $A + BT + CT^2 + DT^3$                                        | $cal g^-1 mol^-1 K^-1$ |
+| 2   | API-Project                         | 44                                                            | -                     |
+| 3   | Hypothetic components               | -                                                             | -                     |
+| 4   | Sherwood, Reid & Prausnitz(b)       | $A + BT + CT^2 + DT^3$                                        | $J mol^-1 K^-1$       |
+| 5   | Ici (Krister Strøm)                | $A + BT + CT^2 + DT^3 + ET^-2$                                | $J g^-1 K^-1$         |
+| 6   | Chen, Bender (Petter Nekså)         | $A + BT + CT^2 + DT^3 + ET^4$                                 | $J g^-1 K^-1$         |
+| 7   | Aiche, Daubert & Danner(c)          | $A + B [ (C / T) sinh(C/T) ]^2 + D [ (E / T) cosh(E / T) ]^2$ | $J kmol^-1 K^-1$      |
+| 8   | Poling, Prausnitz & O’Connel(d)     | $R ( A + BT + CT^2 + DT^3 + ET^4 )$                           | $J mol^-1 K^-1$       |
+| 9   | Linear function and fraction       | $A + BT + TC + D$                                             | $J mol^-1 K^-1$       |
+| 10  | Leachman & Valenta for H2           | -                                                             | -                     |
+| 11  | Use TREND model                     | -                                                             | -                     |
+| 12  | Shomate equation∗                   | $A + B Ts + C Ts^2 + D Ts^3 + E Ts^-2$                        | $J mol^-1 K^-1$       |
+
+
+(a)3rd ed.(c)DIPPR-database
+
+(b)4th ed.(d)5th ed.
+
+∗Note:Ts= 10− (^3) T
+
+
+## Melting and sublimation curve correlations
+
+$T_{\rm{reducing}} (K), p_{\rm{reducing}} (Pa), \mathbf{a}, \mathbf{c}, n, n_1, n_2$ and $n_3$ are read from the `<fluid\>.json` file, while $n_4 = n-n_1- n_2-n_3$. Currently  a maximum of 6 paramaters can be given, $n \leq 6$. The correlation type is defined by a four character string with the format **XX-X**, where **ML-X** and **SL-X** are the default melting curve ($\sigma_{\rm{melt}}$) and sublimation curve ($\sigma_{\rm{sub}}$) correlations, respectively. See the `Methane.json` file for an working example of both the *melting_curve* and *sublimation_curve* parameters.
+
+The reduced temperature used in the correlations is  defined as
+
+$$ \tau = \frac{T}{T_{\rm{reducing}}}. $$
+
+The last character in the correlation string defines how the reducing pressure combines with $\sigma$ to give the melting/sublimation pressure,
+
+$$
+p(\sigma) = p_{\rm{reducing}} \times
+\begin{cases} 
+\sigma & \text{correlation is XX-1} \\\\
+\exp(\sigma)  & \text{correlation is XX-2}\\\\
+\exp(\frac{\sigma}{\tau})  & \text{correlation is XX-3}
+\end{cases}
+$$
+
+For the melting curve calculation $\sigma$ is calculated from
+
+$$ \sigma_{\rm{melt}} = \sum_{i=1}^{n_1} a_i \tau^{c_i}  + \sum_{j=1}^{n_2} a_j (\tau-1)^{c_j} + \sum_{k=1}^{n_3} a_k (\ln \tau)^{c_k} + \sum_{l=1}^{n_4} a_l (\tau^{c_l} - 1)  $$
+
+For the sublimation curve calculation $\sigma$ is calculated from
+
+$$ \sigma_{\rm{sub}} = \sum_{i=1}^{n_1} a_i \tau^{c_i}  + \sum_{j=1}^{n_2} a_j (1-\tau)^{c_j} + \sum_{k=1}^{n_3} a_k (\ln \tau)^{c_k} + \sum_{l=1}^{n_4} a_l (\tau^{c_l} - 1)  $$
+
+The melting/sublimation curves can be scaled to match the saturation pressure at the triple temperature, $p_{\rm{sat}}(T_{\rm{triple}})$. The scaled pressure, $\tilde{p}(\sigma)$, is then calculated as
+
+$$ \tilde{p}(\sigma) = \frac{p_{\rm{sat}}(T_{\rm{triple}}) }{p(\sigma(T_{\rm{triple}}))} p(\sigma)$$
+
+
+# Component identifiers
+
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-03-13T14:41:54.109210
+Generated at : 2023-08-17T16:32:08.374065
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -535,106 +614,106 @@ In order to specify fluids in Thermopack you need to use fluid identifiers as sh
 | 1,1-Difluoroethylene | R1132a |   |   |   |
 | 1,2-Dichlorotetrafluoroethane | R114 |   |   |   |
 | 1,3-Butadiene | 13BD |   |   |   |
-| 1-Butanol | BUT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Butanol | BUT1OL |   | &#10004; | &#10004; |
 | 1-Chloro-1,1,2,2-tetrafluoroethane | R124a |   |   |   |
 | 1-Chloro-1,1-difluoroethane | R142b |   |   |   |
-| 1-Hexanol | HEX1OL |   | :heavy_check_mark: | :heavy_check_mark: |
-| 1-Pentanol | PENT1OL |   | :heavy_check_mark: | :heavy_check_mark: |
-| 1-Propanol | PROP1OL |   | :heavy_check_mark: | :heavy_check_mark: |
+| 1-Hexanol | HEX1OL |   | &#10004; | &#10004; |
+| 1-Pentanol | PENT1OL |   | &#10004; | &#10004; |
+| 1-Propanol | PROP1OL |   | &#10004; | &#10004; |
 | 2,3,3,3-Tetrafluoropropene | R1234yf |   |   |   |
 | 2-Chloro-1,1,1,2-tetrafluoroethane | R124 |   |   |   |
 | 2-Methylhexane | 2MHX |   |   |   |
 | 3-Methylpentane | 3MP |   |   |   |
-| Acetone | ACETONE |   | :heavy_check_mark: |   |
-| Acetylen | ACETYLEN |   | :heavy_check_mark: |   |
-| Ammonia | NH3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Argon | AR | :heavy_check_mark: | :heavy_check_mark: |   |
-| Benzene | BENZENE |   | :heavy_check_mark: |   |
-| Butanal | BUTANAL |   | :heavy_check_mark: |   |
-| Carbon dioxide | CO2 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Acetone | ACETONE |   | &#10004; |   |
+| Acetylene | ACETYLENE |   | &#10004; |   |
+| Ammonia | NH3 | &#10004; | &#10004; | &#10004; |
+| Argon | AR | &#10004; | &#10004; |   |
+| Benzene | BENZENE |   | &#10004; |   |
+| Butanal | BUTANAL |   | &#10004; |   |
+| Carbon dioxide | CO2 | &#10004; | &#10004; | &#10004; |
 | Carbon monoxide | CO |   |   |   |
 | Carbon tetrafluoride | R14 |   |   |   |
-| Chlorine | CL2 |   | :heavy_check_mark: |   |
+| Chlorine | CL2 |   | &#10004; |   |
 | Chlorodifluoromethane | R22 |   |   |   |
 | Chloropentafluoroethane | R115 |   |   |   |
 | Chlorotrifluoromethane | R13 |   |   |   |
 | Chlorotrifluorosilane | ClF3Si |   |   |   |
-| Cyclohexane | CYCLOHEX |   | :heavy_check_mark: |   |
+| Cyclohexane | CYCLOHEX |   | &#10004; |   |
 | Cyclopropane | C3_1 |   |   |   |
-| Deuterium | D2 | :heavy_check_mark: |   |   |
-| Di-methyl ether | DME |   | :heavy_check_mark: |   |
+| Deuterium | D2 | &#10004; |   |   |
+| Di-methyl ether | DME |   | &#10004; |   |
 | Di-n-hexyl ether | S434 |   |   |   |
 | Dichlorodifluoromethane | R12 |   |   |   |
 | Dichlorofluoromethane | R21 |   |   |   |
 | Difluoromethane | R32 |   |   |   |
 | Dinitrogen tetroxide | N2O4 |   |   |   |
 | Equilibrium-hydrogen | E-H2 |   |   |   |
-| Ethane | C2 | :heavy_check_mark: | :heavy_check_mark: |   |
-| Ethanol | ETOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Ethane | C2 | &#10004; | &#10004; |   |
+| Ethanol | ETOH | &#10004; | &#10004; | &#10004; |
 | Ethylbenzene | EBZN |   |   |   |
 | Ethylene glycol | MEG |   |   |   |
-| Ethylene | C2_1 |   | :heavy_check_mark: |   |
-| Helium-4 | HE | :heavy_check_mark: |   |   |
+| Ethylene | C2_1 |   | &#10004; |   |
+| Helium-4 | HE | &#10004; |   |   |
 | Hexafluoroethane | R116 |   |   |   |
-| Hydrazine | N2H4 | :heavy_check_mark: |   |   |
+| Hydrazine | N2H4 | &#10004; |   |   |
 | Hydrogen peroxide | H2O2 |   |   |   |
-| Hydrogen sulfide | H2S | :heavy_check_mark: | :heavy_check_mark: |   |
-| Hydrogen | H2 | :heavy_check_mark: |   |   |
-| Isobutane | IC4 |   | :heavy_check_mark: |   |
-| Isopentane | IC5 |   | :heavy_check_mark: |   |
-| Krypton | KR | :heavy_check_mark: |   |   |
-| Lennard-jones_fluid | LJF | :heavy_check_mark: |   |   |
-| Methane | C1 | :heavy_check_mark: | :heavy_check_mark: |   |
-| Methanol | MEOH | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Hydrogen sulfide | H2S | &#10004; | &#10004; |   |
+| Hydrogen | H2 | &#10004; |   |   |
+| Isobutane | IC4 |   | &#10004; |   |
+| Isopentane | IC5 |   | &#10004; |   |
+| Krypton | KR | &#10004; |   |   |
+| Lennard-jones_fluid | LJF | &#10004; |   |   |
+| Methane | C1 | &#10004; | &#10004; |   |
+| Methanol | MEOH | &#10004; | &#10004; | &#10004; |
 | Methyl fluoride | R41 |   |   |   |
 | Methylcyclopentane | MTC5 |   |   |   |
-| Neon | NE | :heavy_check_mark: |   |   |
+| Neon | NE | &#10004; |   |   |
 | Nitric oxide | NO |   |   |   |
-| Nitrogen | N2 | :heavy_check_mark: | :heavy_check_mark: |   |
+| Nitrogen | N2 | &#10004; | &#10004; |   |
 | Nitrous oxide | N2O |   |   |   |
 | Octafluoropropane | R218 |   |   |   |
-| Ortho-hydrogen | O-H2 | :heavy_check_mark: |   |   |
-| Oxygen | O2 | :heavy_check_mark: | :heavy_check_mark: |   |
-| Para-hydrogen | P-H2 | :heavy_check_mark: |   |   |
+| Ortho-hydrogen | O-H2 | &#10004; |   |   |
+| Oxygen | O2 | &#10004; | &#10004; |   |
+| Para-hydrogen | P-H2 | &#10004; |   |   |
 | Pentafluoroethane | R125 |   |   |   |
 | Propadiene | ALLENE |   |   |   |
-| Propane | C3 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Propane | C3 | &#10004; | &#10004; | &#10004; |
 | Propylene | PRLN |   |   |   |
 | Sulfur dioxide | SO2 |   |   |   |
 | Sulfur hexafluoride | F6S |   |   |   |
 | Tetrafluoroethylene | R1114 |   |   |   |
 | Tetrafluorohydrazine | F4N2 |   |   |   |
-| Toluene | TOLU |   | :heavy_check_mark: |   |
+| Toluene | TOLU |   | &#10004; |   |
 | Trans-1,3,3,3-tetrafluoropropene | R1234ze |   |   |   |
 | Trichlorofluoromethane | R11 |   |   |   |
 | Trifluoroamineoxide | F3NO |   |   |   |
 | Trifluoromethane | R23 |   |   |   |
-| Water | H2O | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Xenon | XE | :heavy_check_mark: |   |   |
+| Water | H2O | &#10004; | &#10004; | &#10004; |
+| Xenon | XE | &#10004; |   |   |
 | m-Xylene | MXYL |   |   |   |
-| n-Butane | NC4 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Decane | NC10 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Docosane | NC22 | :heavy_check_mark: | :heavy_check_mark: |   |
-| n-Dodecane | NC12 |   | :heavy_check_mark: |   |
-| n-Eicosane | NC20 | :heavy_check_mark: | :heavy_check_mark: |   |
-| n-Heneicosane | NC21 |   | :heavy_check_mark: |   |
-| n-Heptadecane | NC17 |   | :heavy_check_mark: |   |
-| n-Heptane | NC7 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Hexadecane | NC16 |   | :heavy_check_mark: |   |
-| n-Hexane | NC6 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| n-Butane | NC4 | &#10004; | &#10004; | &#10004; |
+| n-Decane | NC10 | &#10004; | &#10004; | &#10004; |
+| n-Docosane | NC22 | &#10004; | &#10004; |   |
+| n-Dodecane | NC12 |   | &#10004; |   |
+| n-Eicosane | NC20 | &#10004; | &#10004; |   |
+| n-Heneicosane | NC21 |   | &#10004; |   |
+| n-Heptadecane | NC17 |   | &#10004; |   |
+| n-Heptane | NC7 | &#10004; | &#10004; | &#10004; |
+| n-Hexadecane | NC16 |   | &#10004; |   |
+| n-Hexane | NC6 | &#10004; | &#10004; | &#10004; |
 | n-Hydrogen | N-H2 |   |   |   |
-| n-Nonadecane | NC19 |   | :heavy_check_mark: |   |
-| n-Nonane | NC9 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Octadecane | NC18 |   | :heavy_check_mark: |   |
-| n-Octane | NC8 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Pentacosane | NC25 |   | :heavy_check_mark: |   |
-| n-Pentadecane | NC15 | :heavy_check_mark: | :heavy_check_mark: |   |
-| n-Pentan | NC5 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| n-Tetracosane | NC24 |   | :heavy_check_mark: |   |
-| n-Tetradecane | NC14 |   | :heavy_check_mark: |   |
-| n-Tricosane | NC23 |   | :heavy_check_mark: |   |
-| n-Tridecane | NC13 |   | :heavy_check_mark: |   |
-| n-Undecane | NC11 |   | :heavy_check_mark: |   |
+| n-Nonadecane | NC19 |   | &#10004; |   |
+| n-Nonane | NC9 | &#10004; | &#10004; | &#10004; |
+| n-Octadecane | NC18 |   | &#10004; |   |
+| n-Octane | NC8 | &#10004; | &#10004; | &#10004; |
+| n-Pentacosane | NC25 |   | &#10004; |   |
+| n-Pentadecane | NC15 | &#10004; | &#10004; |   |
+| n-Pentan | NC5 | &#10004; | &#10004; | &#10004; |
+| n-Tetracosane | NC24 |   | &#10004; |   |
+| n-Tetradecane | NC14 |   | &#10004; |   |
+| n-Tricosane | NC23 |   | &#10004; |   |
+| n-Tridecane | NC13 |   | &#10004; |   |
+| n-Undecane | NC11 |   | &#10004; |   |
 | o-Xylene | OXYL |   |   |   |
 | p-Xylene | PXYL |   |   |   |
 

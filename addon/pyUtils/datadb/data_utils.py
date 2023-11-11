@@ -47,9 +47,12 @@ def get_alpha_index_parameter(alpha_corr):
 
 def get_mix_model_parameter(model):
     """
-        model - ARITHMETIC or GEOMETRIC
+        model - ARITHMETIC, GEOMETRIC or DEFAULT
         Output:
         param - Thermopack parameter defined in assocschemeutils.f90
     """
-    assert model == "GEOMETRIC" or model == "ARITHMETIC"
-    return "ariComb" if model == "ARITHMETIC" else "geoComb"
+    assert model in ["GEOMETRIC", "ARITHMETIC", "DEFAULT"]
+    mapping = {"GEOMETRIC": "geoComb",
+               "ARITHMETIC": "ariComb",
+               "DEFAULT": "defaultComb"}
+    return mapping[model]
