@@ -28,6 +28,8 @@ module spinodal
 
   abstract interface
     function prop_fun_type(Xs,param) result(fun)
+      !> Function fed to root-finding algorithms for finding intersection of
+      !> spinodal and isolines.
       use thermopack_var, only: nc
       implicit none
       real, intent(in) :: Xs
@@ -1163,7 +1165,7 @@ contains
   end function genericPropertyTV
 
   !-----------------------------------------------------------------------------
-  !> Bracket solver for finding the exact point on saturation line
+  !> Bracket solver for finding the intersection of spinodal line and isoline.
   !>
   !> What property is is determined by propflag.
   !>
@@ -1172,9 +1174,9 @@ contains
   subroutine bracketSolveForPropertySpinodal(z,propflag,propspec,&
        property_function,T1,v1,Ts,vs,ierr)
     implicit none
-    real, intent(in) :: z(nc)
-    real, intent(in) :: T1,v1
-    real, intent(inout) :: Ts,vs
+    real, intent(in) :: z(nc) !< Composition (-)
+    real, intent(in) :: T1,v1    !< Temperature (K), molar volume (m3/mol) for one bracket state on the spinodal
+    real, intent(inout) :: Ts,vs !< The other bracket state on the spinodal; calculated state is output
     integer, intent(in) :: propflag
     real, intent(in) :: propspec
     procedure(prop_fun_type) :: property_function
@@ -1209,7 +1211,7 @@ contains
   end subroutine bracketSolveForPropertySpinodal
 
   !-----------------------------------------------------------------------------
-  !> Function used to solve for point on saturation line having property value
+  !> Function used to solve for point on spinodal line having property value
   !> propspec.
   !>
   !> \author MH 2020-01
@@ -1329,7 +1331,7 @@ contains
   end function propertyFunctionWrapperSpinodalPressureGradient
 
   !-----------------------------------------------------------------------------
-  !> Locate property - spinodal curve intersect
+  !> Locate isoline - spinodal curve intersecttion
   !>
   !> \author MH, 2020-01
   !-----------------------------------------------------------------------------
@@ -1463,7 +1465,7 @@ contains
   end subroutine locate_spinodal_prop_pure_fluid
 
   !-----------------------------------------------------------------------------
-  !> Locate property - spinodal curve intersect
+  !> Locate isoline - spinodal curve intersection
   !>
   !> \author MH, 2023-11
   !-----------------------------------------------------------------------------
