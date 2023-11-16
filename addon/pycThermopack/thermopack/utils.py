@@ -279,9 +279,13 @@ class Property:
         self.diffs = diffs
         self.val = val
 
-        self.iterable = (self.val,)
-        for d in self.diffs:
-            self.iterable += (d,)
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+            self.__return_tuple__ = (self.val,)
+            for d in self.diffs:
+                self.__return_tuple__ += (d,)
+        else:
+            self.__return_tuple__ = "There are no return tuples. Build with 'python makescript.py [optim/debug] -diffs=v2.1\n" \
+                                    "to use old style return tuples."
 
     @staticmethod
     def from_return_tuple(return_tuple, flags, variables):
@@ -314,7 +318,7 @@ class Property:
         Make sure the Property object behaves like the old-style return_tuple if we want that.
         """
         if DIFFERENTIAL_RETURN_MODE == 'v2.1':
-            return (_ for _ in self.iterable)
+            return (_ for _ in self.__return_tuple__)
         if self.diffs:
             return (_ for _ in (self.val, self.diffs))
         return (_ for _ in [self.val])
@@ -324,7 +328,7 @@ class Property:
         See: __iter__
         """
         if DIFFERENTIAL_RETURN_MODE == 'v2.1':
-            return self.iterable[item]
+            return self.__return_tuple__[item]
         return [self.val, self.diffs][item]
 
     def unpack(self):
@@ -336,6 +340,154 @@ class Property:
             return tuple(self.__iter__())
 
         if DIFFERENTIAL_RETURN_MODE == 'v2.1':
-            return self.iterable
+            return self.__return_tuple__
 
         return self.val
+
+class XYEquilibrium:
+
+    def __init__(self, eq, key):
+        self.x = None
+        self.y = None
+        self.x1 = None
+        self.x2 = None
+        if key == 'lle':
+            self.x1 = eq[0] if eq[0] is not None else []
+            self.x2 = eq[1] if eq[1] is not None else []
+        elif key == 'lve':
+            self.x = eq[0] if eq[0] is not None else []
+            self.y = eq[1] if eq[1] is not None else []
+        else:
+            raise KeyError(f'Invalid XYEquilibrium key : {key}.')
+
+        self.type = key
+
+    def __iter__(self):
+        if self.type == 'lle':
+            return (_ for _ in (self.x1, self.x2))
+        elif self.type == 'lve':
+            return (_ for _ in (self.x, self.y))
+        else:
+            raise KeyError(f'Invalid XYEquilibrium type : {self.type}.')
+
+    def __getitem__(self, item):
+        return tuple(*self)[item]
+
+    def __repr__(self):
+        ostr = 'XYEquilibrium object with attributes (description, name, value)\n'
+        ostr += f'\t{"Type of equilibrium": <37} type : {self.type}\n'
+        vals = (self.x, self.y, self.x1, self.x2)
+        names = ('x', 'y', 'x1', 'x2')
+        descriptions = ('Liquid mole fraction, species 1', 'Vapour mole fraction, species 1',
+                        'Liquid 1 mole fraction, species 1', 'Liquid 2 mole fraction, species 1')
+        for val, name, desc in zip(vals, names, descriptions):
+            if val is None:
+                continue
+            ostr += f'\t{desc: <37} {name: <4} : '
+            if len(val) == 0:
+                ostr += f'[], len({name}) = 0\n'
+            else:
+                ostr += f'[{val[0]:.3e} ... {val[-1]:.3e}], len({name}) = {len(val)}\n'
+        return ostr
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __bool__(self):
+        for x in (self.x, self.y, self.x1, self.x2):
+            if len(x) > 0:
+                return True
+        return False
+
+class PxyEquilibrium(XYEquilibrium):
+
+    def __init__(self, eq, key):
+        super().__init__(eq, key)
+        self.p = eq[2] if eq[2] is not None else []
+
+    def __iter__(self):
+        vals = [*super().__iter__(), self.p]
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+            for i in range(len(vals)):
+                if len(vals[i]) == 0:
+                    vals[i] = None
+        return (_ for _ in vals)
+
+    def __getitem__(self, item):
+        return tuple(*self)[item]
+
+    def __repr__(self):
+        ostr = super().__repr__()
+        ostr = '\n'.join(ostr.split('\n')[1:])
+        ostr = 'PxyEquilibrium object with attributes (description, name, value)\n' + ostr
+        ostr += f'\t{"Pressure" : <37} p    : '
+        if len(self.p) == 0:
+            ostr += f'[], len(p) = 0'
+        else:
+            ostr += f'[{self.p[0]:.3e} ... {self.p[-1]:.3e}], len(p) = {len(self.p)}'
+        return ostr + '\n'
+
+class TxyEquilibrium(XYEquilibrium):
+
+    def __init__(self, eq, key):
+        super().__init__(eq, key)
+        self.T = eq[2] if eq[2] is not None else []
+
+    def __iter__(self):
+        vals = [*super().__iter__(), self.T]
+        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+            for i in range(len(vals)):
+                if len(vals[i]) == 0:
+                    vals[i] = None
+        return (_ for _ in vals)
+
+    def __getitem__(self, item):
+        return tuple(*self)[item]
+
+    def __repr__(self):
+        ostr = super().__repr__()
+        ostr = '\n'.join(ostr.split('\n')[1:])
+        ostr += f'\t{"Temperature" : <37} T    : '
+        if len(self.T) == 0:
+            ostr += f'[], len(T) = 0\n'
+        else:
+            ostr += f'[{self.T[0]:.3e} ... {self.T[-1]:.3e}], len(T) = {len(self.T)}'
+        return ostr + '\n'
+
+class XYDiagram:
+
+    def __init__(self, lle, l1ve, l2ve, key):
+
+        if key == 'pxy':
+            xyEquilibrium = PxyEquilibrium
+        elif key == 'txy':
+            xyEquilibrium = TxyEquilibrium
+        else:
+            raise KeyError(f'Invalid XYDiagram key : {key}')
+
+        self.type = key
+        self.lle = xyEquilibrium(lle, 'lle')
+        self.l1ve = xyEquilibrium(l1ve, 'lve')
+        self.l2ve = xyEquilibrium(l2ve, 'lve')
+
+    def __iter__(self):
+        return (_ for _ in (self.lle, self.l1ve, self.l2ve))
+
+    def __getitem__(self, item):
+        return tuple(*self)[item]
+
+    def __repr__(self):
+        ostr = 'XYDiagram object with attributes (name : description)\n'
+
+        headers = ('lle  : Liquid 1 - Liquid 2 Equilibrium', 'l1ve : Liquid 1 - Vapour Equilibrium',
+                   'l2ve : Liquid 2 - Vapour Equilibrium ')
+        vals = (self.lle, self.l1ve, self.l2ve)
+        for head, val in zip(headers, vals):
+            ostr += f'{head}\n'
+            lines = str(val).split('\n')
+            for line in lines:
+                ostr += '\t' + line + '\n'
+        return ostr
+
+    def __str__(self):
+        return self.__repr__()

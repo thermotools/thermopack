@@ -3260,7 +3260,7 @@ class thermo(object):
         else:
             L2VE = (None, None, None)
 
-        return LLE, L1VE, L2VE
+        return utils.XYDiagram(LLE, L1VE, L2VE, 'pxy')
 
     def get_binary_txy(self,
                        pressure,
@@ -3393,7 +3393,7 @@ class thermo(object):
         else:
             L2VE = (None, None, None)
 
-        return LLE, L1VE, L2VE
+        return utils.XYDiagram(LLE, L1VE, L2VE, 'txy')
 
     def get_bp_term(self,
                     i_term):

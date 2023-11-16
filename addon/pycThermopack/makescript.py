@@ -45,17 +45,17 @@ if __name__ == "__main__":
         args.diffs = 'v3'
 
     if args.diffs == 'v2.1':
-        warnings.warn('You are building ThermoPack to use the deprecated return pattern using tuples.\n'
-                      'Future versions of ThermoPack will return differentials using the `Differential` struct found in utils.py.\n'
-                      'To build ThermoPack to use the new return pattern, run `python makescript.py [optim/debug]`\n'
-                      'For more information see PR#102 at https://github.com/thermotools/thermopack/pull/102', DeprecationWarning)
+        warnings.warn('\033[93mYou are building ThermoPack to use the deprecated return pattern using tuples.\n'
+                      'Future versions of ThermoPack will return differentials using the `Differential` struct found in utils.py. '
+                      'To build ThermoPack to use the new return pattern, run \n`python makescript.py [optim/debug]`\n'
+                      'For more information see PR#102 at https://github.com/thermotools/thermopack/pull/102\033[0m', DeprecationWarning)
     else:
-        warnings.warn('You are building ThermoPack using the "new" return pattern (i.e. the Differential structs found\n'
-                      "in utils.py.) THIS IS THE RECOMMENDED BUILD but I'm warning you because it is not backwards compatible.\n"
-                      "The old return pattern will probably be discontinued in the future. To build\n"
-                      'ThermoPack with the "old" return pattern (using tuples) run `python makescript.py [optim/debug] -diffs=v2.1`\n'
+        warnings.warn('\033[93mYou are building ThermoPack using the "new" return pattern (i.e. the Differential structs found '
+                      "in utils.py.) \nTHIS IS THE RECOMMENDED BUILD but I'm warning you because it is not backwards compatible.\n"
+                      "The old return pattern will probably be discontinued in the future. To build "
+                      'ThermoPack with the "old" return pattern (using tuples) run \n`python makescript.py [optim/debug] -diffs=v2.1`\n\n'
                       'For information on how to adapt old code to the new return pattern, see '
-                      'PR#102 at https://github.com/thermotools/thermopack/pull/102', Warning)
+                      'PR#102 at https://github.com/thermotools/thermopack/pull/102\033[0m', Warning)
 
     pf_specifics['diff_return_mode'] = args.diffs
     map_platform_specifics.write_platform_specifics_file(
