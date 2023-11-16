@@ -178,6 +178,28 @@
       "eps": 7.60835e+03,
       "beta": 7.93725e-04,
       "assoc_scheme": "2B"
+    },
+    "CPA-3B": {
+      "ref": "3B-SINTEF",
+      "bib_reference": "",
+      "a0": 3.74306e+05,
+      "b": 2.07830e-02,
+      "alphaParams": [6.91193e-01,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 7.81268e+03,
+      "beta": 8.19643e-04,
+      "assoc_scheme": "3B"
+    },
+    "CPA-4B": {
+      "ref": "4B-SINTEF",
+      "bib_reference": "",
+      "a0": 3.74905e+05,
+      "b": 2.08531e-02,
+      "alphaParams": [6.81681e-01,0.0,0.0],
+      "alphaCorr": "Classic",
+      "eps": 7.51955e+03,
+      "beta": 8.71581e-04,
+      "assoc_scheme": "4B"
     }
   },
   "PR": {

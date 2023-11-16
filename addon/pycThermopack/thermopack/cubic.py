@@ -183,8 +183,6 @@ class cubic(thermo):
                                     mixing_len,
                                     alpha_len)
 
- 
-
     def get_kij(self, c1, c2):
         """Utility
         Get attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
@@ -561,7 +559,7 @@ class cubic(thermo):
                       byref(ciF_c),
                       byref(ci_type_c))
 
-        
+
     def get_covolumes(self):
         """Utility
         Get component covolumes (L/mol)
@@ -642,8 +640,6 @@ class cubic(thermo):
                                           POINTER(c_double),
                                           c_len_type]
 
-
-        
         self.s_set_beta_corr.restype = None
 
         self.s_set_beta_corr(numparam_c,
@@ -651,3 +647,66 @@ class cubic(thermo):
                              corrname_string_c,
                              coeffs_c,
                              corrname_string_len_c)
+
+class VanDerWaals(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='VdW'`.
+        """
+        super().__init__(comps, 'VdW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class SoaveRedlichKwong(cubic):
+
+    def __init__(self, comps, mixing="vdW", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha="Classic", parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class RedlichKwong(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="RK", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Convenience class for Redlich-Kwong, calls the `cubic` constructor. Set `alpha=Soave` in order to get SRK model.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PengRobinson(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Default `alpha` is the original 1976 correlation.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PengRobinson78(cubic):
+
+    def __init__(self, comps, mixing="vdW", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Using the 1978 `alpha` correlation.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha="PR78", parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class SchmidtWensel(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SW'`.
+        """
+        super().__init__(comps, 'SW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PatelTeja(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PT'`.
+        """
+        super().__init__(comps, 'PT', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)

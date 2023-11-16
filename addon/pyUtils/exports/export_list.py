@@ -130,6 +130,8 @@ append_export("threephaseline", "binaryplot")
 
 append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")
+append_export("get_ideal_cp_correlation", "compdata")
+append_export("set_ideal_cp_correlation", "compdata")
 
 append_export("calccriticaltv", "critical")
 
@@ -241,10 +243,12 @@ append_export("hard_sphere_reference", "saftvrmie_interface")
 append_export("set_temperature_cache_flag", "saftvrmie_interface")
 append_export("calc_saftvrmie_term", "saftvrmie_interface")
 
+append_export("print_cpa_report", "saft_interface")
 append_export("cpa_get_kij", "saft_interface")
 append_export("cpa_set_kij", "saft_interface")
 append_export("cpa_set_pure_params", "saft_interface")
 append_export("cpa_get_pure_params", "saft_interface")
+append_export("cpa_set_kij", "saft_interface")
 append_export("pc_saft_get_kij", "saft_interface")
 append_export("pc_saft_set_kij_asym", "saft_interface")
 append_export("calc_saft_dispersion", "saft_interface")

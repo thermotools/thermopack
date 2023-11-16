@@ -97,6 +97,9 @@ contains
       gerg_comp%rc = gergdb(i_comp)%rhoc*1.0e3 !  -> mol/l -> mol/m3
       gerg_comp%acf = gergdb(i_comp)%acf !< Acentric factor
 
+      gerg_comp%tr = gergdb(i_comp)%tr
+      gerg_comp%rhor = gergdb(i_comp)%rhor*1.0e3 !  -> mol/l -> mol/m3
+
       ! Set indices
       gerg_comp%n_cosh = 3 + gergdb(i_comp)%n_cosh
       gerg_comp%n_sinh = gerg_comp%n_cosh + gergdb(i_comp)%n_sinh
