@@ -58,3 +58,36 @@ def write_file(ofile_path, ofile_text):
             print('** Wrote', filename, 'to', ofile_path)
     else:
         print('* File at', ofile_path, 'is unchanged.')
+
+def update_docfile_versions(vnew, doc_dir):
+    """
+    Intended for use when you copy the doc directory vCurrent to a new directory with a specific version number
+    This function iterates over all the markdown files in the directory, and changes the version number and the
+    permalink in the header from (blank) and /vcurrent/... to the specified version number.
+
+    Args:
+        vnew (str) : New version number (e.g. '2.2.0')
+        doc_dir (str) : Path to the directory to modify (e.g. {THERMOPACK_ROOT}/docs/v{vnew}/)
+    """
+    files = os.listdir(doc_dir)
+    for file in files:
+        if file[-3:] != '.md':
+            continue
+        with open(f'{doc_dir}/{file}', 'r') as fh:
+            lines = fh.readlines()
+            if '---' not in lines[0]:
+                continue
+            for i in range(1, len(lines)):
+                if '---' in lines[i]:
+                    break
+                if 'version:' in lines[i]:
+                    lines[i] = f'version: {vnew}\n'
+                if '/vcurrent/' in lines[i]:
+                    lines[i] = lines[i].replace('/vcurrent/', f'/v{vnew}/')
+
+        with open(f'{doc_dir}/{file}', 'w') as fh:
+            for line in lines:
+                fh.write(line)
+
+if __name__ == '__main__':
+    update_docfile_versions('2.2.0', f'{THERMOPACK_ROOT}/docs/v2.2.0/')

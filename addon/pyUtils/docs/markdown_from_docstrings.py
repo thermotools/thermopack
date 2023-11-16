@@ -363,7 +363,7 @@ def thermo_to_markdown():
                                       'returned by methods in this section are computed as functions of (T, p, n).',
                        'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
                                         ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
-                                        ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
+                                        ' property interfaces](more_advanced.html) for further explanation.',
                        'Other property' : 'Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
@@ -588,7 +588,7 @@ def multiparam_to_markdown():
                 f'from the `thermo` class, and  is the interface to the \n' \
                 f'{eosname} Equations of State. Selection of different multiparameter equations of state is done by ' \
                  f'passing an identifier string to the constructor. For information on available multiparameter equations ' \
-                 f'of state, see the page on [available equations of state.](/thermopack/vcurrent/method_docs.md)'
+                 f'of state, see the page on [available equations of state.](method_docs.md)'
 
     class_methods = inspect.getmembers(multiparam, predicate=inspect.isfunction)
     parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)

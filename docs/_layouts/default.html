@@ -70,8 +70,13 @@
 
 <div class="main-content">
     <header class="page-header" role="banner">
+        {% if page.version == "2.2.0" %}
+            {% assign version_text = "2.2.0 (beta)" %}
+        {% else %}
+            {% assign version_text = page.version %}
+        {% endif %}
         <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
-        <h2 class="project-tagline">ThermoPack - {{ page.version | default: "Latest (beta)" }}</h2>
+        <h2 class="project-tagline">ThermoPack - {{ version_text | default: "Latest (beta)" }}</h2>
     </header>
 
     <main id="content" class="main-content" role="main">

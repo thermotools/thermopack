@@ -3147,22 +3147,22 @@ class thermo(object):
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
-            tuple of arrays: LLE, L1VE, L2VE
+            (XYDiagram) : Structure with the attributes
 
-            LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Pressure [Pa]
-            L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] -> Bubble line composition (mole fraction of component 1)
-                L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Pressure [Pa]
-            L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] -> Bubble line composition (mole fraction of component 1)
-                L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Pressure [Pa]
+            lle : Liquid 1 - Liquid 2 Equilibrium (PxyEquilibrium) with the attributes
+                x1 -> Liquid 1 composition (mole fraction of component 1)
+                x2 -> Liquid 2 composition (mole fraction of component 1)
+                p -> Pressure [Pa]
+            l1ve : Liquid 1 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                p -> Pressure [Pa]
+            l2ve : Liquid 2 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                p -> Pressure [Pa]
 
-            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+            If one or more of the equilibria are not found the corresponding arrays are empty
         """
         # Redefinition of module parameter:
         self.activate()
@@ -3277,22 +3277,22 @@ class thermo(object):
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
-            tuple of arrays: LLE, L1VE, L2VE
+            (XYDiagram) : Structure with the attributes
 
-            LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Temperature [K]
-            L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] -> Bubble line composition (mole fraction of component 1)
-                L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Temperature [K]
-            L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] -> Bubble line composition (mole fraction of component 1)
-                L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Temperature [K]
+            lle : Liquid 1 - Liquid 2 Equilibrium (TxyEquilibrium) with the attributes
+                x1 -> Liquid 1 composition (mole fraction of component 1)
+                x2 -> Liquid 2 composition (mole fraction of component 1)
+                T -> Temperature [K]
+            l1ve : Liquid 1 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                T -> Temperature [K]
+            l2ve : Liquid 2 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                T -> Temperature [K]
 
-            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+            If one or more of the equilibria are not found the corresponding arrays are empty
         """
         # Redefinition of module parameter:
         self.activate()
