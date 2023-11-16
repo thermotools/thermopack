@@ -279,7 +279,7 @@ class Property:
         self.diffs = diffs
         self.val = val
 
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             self.__return_tuple__ = (self.val,)
             for d in self.diffs:
                 self.__return_tuple__ += (d,)
@@ -317,7 +317,7 @@ class Property:
         """
         Make sure the Property object behaves like the old-style return_tuple if we want that.
         """
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             return (_ for _ in self.__return_tuple__)
         if self.diffs:
             return (_ for _ in (self.val, self.diffs))
@@ -327,7 +327,7 @@ class Property:
         """
         See: __iter__
         """
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             return self.__return_tuple__[item]
         return [self.val, self.diffs][item]
 
@@ -339,7 +339,7 @@ class Property:
         if self.diffs: # Correct packing for backwards compatibility handled in __iter__
             return tuple(self.__iter__())
 
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             return self.__return_tuple__
 
         return self.val
@@ -371,7 +371,7 @@ class XYEquilibrium:
             raise KeyError(f'Invalid XYEquilibrium type : {self.type}.')
 
     def __getitem__(self, item):
-        return tuple(*self)[item]
+        return [*self][item]
 
     def __repr__(self):
         ostr = 'XYEquilibrium object with attributes (description, name, value)\n'
@@ -407,14 +407,14 @@ class PxyEquilibrium(XYEquilibrium):
 
     def __iter__(self):
         vals = [*super().__iter__(), self.p]
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             for i in range(len(vals)):
                 if len(vals[i]) == 0:
                     vals[i] = None
         return (_ for _ in vals)
 
     def __getitem__(self, item):
-        return tuple(*self)[item]
+        return [*self][item]
 
     def __repr__(self):
         ostr = super().__repr__()
@@ -435,14 +435,14 @@ class TxyEquilibrium(XYEquilibrium):
 
     def __iter__(self):
         vals = [*super().__iter__(), self.T]
-        if DIFFERENTIAL_RETURN_MODE == 'v2.1':
+        if DIFFERENTIAL_RETURN_MODE == 'v2':
             for i in range(len(vals)):
                 if len(vals[i]) == 0:
                     vals[i] = None
         return (_ for _ in vals)
 
     def __getitem__(self, item):
-        return tuple(*self)[item]
+        return [*self][item]
 
     def __repr__(self):
         ostr = super().__repr__()
@@ -474,7 +474,7 @@ class XYDiagram:
         return (_ for _ in (self.lle, self.l1ve, self.l2ve))
 
     def __getitem__(self, item):
-        return tuple(*self)[item]
+        return [*self][item]
 
     def __repr__(self):
         ostr = 'XYDiagram object with attributes (name : description)\n'
