@@ -1091,7 +1091,8 @@ class thermo(object):
         if not dvdn is None:
             return_tuple += (np.array(dvdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, dvdn), 'tpn')
+        return prop.unpack()
 
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
         """Tp-property
@@ -1160,7 +1161,8 @@ class thermo(object):
         if not dzdn is None:
             return_tuple += (np.array(dzdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dzdt, dzdp, dzdn), 'tpn')
+        return prop.unpack()
 
     def thermo(self, temp, press, x, phase, dlnfugdt=None, dlnfugdp=None,
                dlnfugdn=None, ophase=None, v=None):
@@ -1256,7 +1258,8 @@ class thermo(object):
         if not v is None:
             return_tuple += (v_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
+        return prop.unpack()
 
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
         """Tp-property
@@ -1334,7 +1337,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
+        return prop.unpack()
 
     def entropy(self, temp, press, x, phase, dsdt=None, dsdp=None, dsdn=None, residual=False):
         """Tp-property
@@ -1411,7 +1415,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, dsdn), 'tpn')
+        return prop.unpack()
 
     def idealenthalpysingle(self, temp, j, dhdt=None):
         """Tp-property
@@ -1454,7 +1459,8 @@ class thermo(object):
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, False, False), 'tpn')
+        return prop.unpack()
 
     def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
         """Tp-property
@@ -1509,7 +1515,8 @@ class thermo(object):
         if not dsdp is None:
             return_tuple += (dsdp_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, False), 'tpn')
+        return prop.unpack()
 
     def set_ideal_entropy_reference_value(self, j, s0):
         """Utility
@@ -2112,7 +2119,8 @@ class thermo(object):
         if not dpdn is None:
             return_tuple += (np.array(dpdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dpdt, dpdv, dpdn), 'tvn')
+        return prop.unpack()
 
     def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None,
                            dedn=None, property_flag="IR"):
@@ -2182,7 +2190,8 @@ class thermo(object):
         if not dedn is None:
             return_tuple += (np.array(dedv_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dedt, dedv, dedn), 'tvn')
+        return prop.unpack()
 
     def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None,
                    dsdn=None, property_flag="IR"):
@@ -2252,7 +2261,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdv, dsdn), 'tvn')
+        return prop.unpack()
 
     def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None,
                     dhdn=None, property_flag="IR"):
@@ -2322,7 +2332,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdv, dhdn), 'tvn')
+        return prop.unpack()
 
     def helmholtz_tv(self, temp, volume, n, dadt=None, dadv=None,
                      dadn=None, property_flag="IR"):
@@ -2391,7 +2402,8 @@ class thermo(object):
         if not dadn is None:
             return_tuple += (np.array(dadn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dadt, dadv, dadn), 'tvn')
+        return prop.unpack()
 
     def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None,
                               dmudn=None, property_flag="IR"):
@@ -2534,7 +2546,8 @@ class thermo(object):
                     dlnphidn[i][j] = dlnphidn_c[i + j*len(n)]
             return_tuple += (dlnphidn, )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnphidt, dlnphidv, dlnphidn), 'tvn')
+        return prop.unpack()
 
     #################################
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
@@ -2608,7 +2621,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, dsdn), 'tpn')
+        return prop.unpack()
 
     def enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag="IR"):
         """TVp-property
@@ -2677,7 +2691,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
+        return prop.unpack()
 
     def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
@@ -2747,7 +2762,8 @@ class thermo(object):
                     dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(n)]
             return_tuple += (dlnfugdn_r, )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
+        return prop.unpack()
 
     #################################
     # Saturation interfaces
