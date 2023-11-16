@@ -89,5 +89,28 @@ def update_docfile_versions(vnew, doc_dir):
             for line in lines:
                 fh.write(line)
 
+def update_v220_method_docs():
+    files = os.listdir(f'{THERMOPACK_ROOT}/docs/vCurrent/')
+    for filename in files:
+        if '_methods.md' not in filename:
+            continue
+        with open(f'{THERMOPACK_ROOT}/docs/vCurrent/{filename}', 'r') as ifile:
+            lines = ifile.readlines()
+
+        for i in range(1, len(lines)):
+            if '---' in lines[i]:
+                break
+            if 'version:' in lines[i]:
+                lines[i] = f'version: 2.2.0\n'
+            if '/vcurrent/' in lines[i]:
+                lines[i] = lines[i].replace('/vcurrent/', f'/v2.2.0/')
+
+        with open(f'{THERMOPACK_ROOT}/docs/v2.2.0/{filename}', 'w') as ofile:
+            for line in lines:
+                ofile.write(line)
+
+    print('Consolidated Method docs for v2.2.0 with current version.')
+
 if __name__ == '__main__':
-    update_docfile_versions('2.2.0', f'{THERMOPACK_ROOT}/docs/v2.2.0/')
+    update_v220_method_docs()
+    # update_docfile_versions('2.2.0', f'{THERMOPACK_ROOT}/docs/v2.2.0/')

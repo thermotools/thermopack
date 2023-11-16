@@ -6,7 +6,7 @@ permalink: /v2.2.0/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2023-10-16T09:05:31.796832
+Generated at: 2023-11-16T19:47:20.974576
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -96,7 +96,8 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
-    * [get_comp_name](#get_comp_nameself-index)
+    * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
+    * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
     * [get_phase_flags](#get_phase_flagsself)
@@ -107,6 +108,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
+    * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_pmax](#set_pmaxself-press)
@@ -1616,45 +1618,45 @@ Calculate binary three phase envelope
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **tuple of arrays:** 
+&nbsp;&nbsp;&nbsp;&nbsp; **(XYDiagram) :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  LLE, L1VE, L2VE
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-&nbsp;&nbsp;&nbsp;&nbsp; **LLE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Liquid 2 Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[2] -> Pressure [Pa]
-
-&nbsp;&nbsp;&nbsp;&nbsp; **L1VE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Vapour Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[0] -> Bubble line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[1] -> Dew line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[2] -> Pressure [Pa]
-
-&nbsp;&nbsp;&nbsp;&nbsp; **L2VE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 2 - Vapour Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[0] -> Bubble line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[1] -> Dew line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[2] -> Pressure [Pa]
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Structure with the attributes
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+&nbsp;&nbsp;&nbsp;&nbsp; **lle :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Liquid 2 Equilibrium (PxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x1 -> Liquid 1 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x2 -> Liquid 2 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; p -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **l1ve :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; y -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; p -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **l2ve :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 2 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; y -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; p -> Pressure [Pa]
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; If one or more of the equilibria are not found the corresponding arrays are empty
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1683,45 +1685,45 @@ Calculate binary isobaric three phase envelope
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **tuple of arrays:** 
+&nbsp;&nbsp;&nbsp;&nbsp; **(XYDiagram) :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  LLE, L1VE, L2VE
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-&nbsp;&nbsp;&nbsp;&nbsp; **LLE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Liquid 2 Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LLE[2] -> Temperature [K]
-
-&nbsp;&nbsp;&nbsp;&nbsp; **L1VE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Vapour Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[0] -> Bubble line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[1] -> Dew line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L1VE[2] -> Temperature [K]
-
-&nbsp;&nbsp;&nbsp;&nbsp; **L2VE :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 2 - Vapour Equilibrium
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[0] -> Bubble line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[1] -> Dew line composition (mole fraction of component 1)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; L2VE[2] -> Temperature [K]
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Structure with the attributes
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+&nbsp;&nbsp;&nbsp;&nbsp; **lle :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Liquid 2 Equilibrium (TxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x1 -> Liquid 1 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x2 -> Liquid 2 composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; T -> Temperature [K]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **l1ve :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 1 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; y -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; T -> Temperature [K]
+
+&nbsp;&nbsp;&nbsp;&nbsp; **l2ve :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid 2 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; x -> Bubble line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; y -> Dew line composition (mole fraction of component 1)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; T -> Temperature [K]
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; If one or more of the equilibria are not found the corresponding arrays are empty
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1732,7 +1734,7 @@ Get error description for binary plot error
 
 &nbsp;&nbsp;&nbsp;&nbsp; **i_term (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  binary plot error identifyer
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  binary plot error identifier
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2806,7 +2808,8 @@ Methods for setting ... and getting ...
   * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
-    * [get_comp_name](#get_comp_nameself-index)
+    * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
+    * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
     * [get_phase_flags](#get_phase_flagsself)
@@ -2817,6 +2820,7 @@ Methods for setting ... and getting ...
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
+    * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_pmax](#set_pmaxself-press)
@@ -2849,8 +2853,8 @@ Get component mole weight (g/mol)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_comp_name(self, index)`
-Get component name
+### `get_comp_name(self, index, get_comp_identifier=False)`
+Get component name/identifier
 
 #### Args:
 
@@ -2858,13 +2862,36 @@ Get component name
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component FORTRAN index
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp; **get_comp_identifier (bool):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Get component identifier instead of full name? Default False.
 
 #### Returns:
 
 &nbsp;&nbsp;&nbsp;&nbsp; **comp (str):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component name
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component name/identifier
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_ideal_cp(self, j)`
+Get correlation parameters for ideal gas Cp
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **integer:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal Cp correlation identifier
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3018,12 +3045,31 @@ Recalculate critical properties of pure fluids
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `set_ideal_cp(self, j, cp_correlation_type, parameters)`
+Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **cp_correlation_type (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal Cp correlation identifier
+
+&nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 10 parameters used)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `set_ideal_enthalpy_reference_value(self, j, h0)`
 Set specific ideal enthalpy reference value
 
 #### Args:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
 
@@ -3038,7 +3084,7 @@ Set specific ideal entropy reference value
 
 #### Args:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
 

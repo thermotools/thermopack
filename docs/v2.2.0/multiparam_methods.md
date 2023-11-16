@@ -6,14 +6,16 @@ permalink: /v2.2.0/multiparam_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.072302
+Generated at: 2023-11-16T19:54:33.676337
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 multiparam class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
 The `multiparam` class, found in `addon/pycThermopack/thermopack/multiparam.py`, inherrits from the `thermo` class, and  is the interface to the 
-Multiparameter Equations of State. Selection of different multiparameter equations of state is done by passing an identifier string to the constructor. For information on available multiparameter equations of state, see the page on [available equations of state.](/thermopack/vcurrent/method_docs.md)## Table of contents
+Multiparameter Equations of State. Selection of different multiparameter equations of state is done by passing an identifier string to the constructor. For information on available multiparameter equations of state, see the page on [available equations of state.](method_docs.md)
+
+## Table of contents
   * [Constructor](#constructor)
     * [\_\_init\_\_](#__init__self-compsnone-eosnone-reference_statedefault)
     * [init](#initself-comps-eos-reference_statedefault)
