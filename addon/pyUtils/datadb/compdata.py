@@ -532,6 +532,12 @@ class comp_list(object):
         filename - path to file
         """
         wiki_header_lines = []
+        wiki_header_lines.append('---\n'
+                                'version: \n'
+                                'layout: default\n'
+                                'title: Component identifiers\n'
+                                'permalink: /vcurrent/Component-name-mapping.html\n'
+                                '---\n\n')
         wiki_header_lines.append('<!---\nThis is an auto-generated file, written by the module at '
                                  'addon/pyUtils/compdatadb.py\n'
                                  'Generated at : ' + datetime.today().isoformat() + '\n'

@@ -1,6 +1,14 @@
+---
+version: 
+layout: default
+title: Component identifiers
+permalink: /vcurrent/Component-name-mapping.html
+---
+
+
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-10-25T13:29:06.514960
+Generated at : 2023-11-16T15:47:19.067693
 This is the same module that is used to generate the Fortran
 component database files.
 --->

@@ -6,7 +6,7 @@ permalink: /vcurrent/getting_started.html
 ---
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class). For more advanced users, a look at the [more advanced page in the wiki](https://github.com/thermotools/thermopack/wiki/Advanced-usage#more-advanced-usage---python) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](/thermopack/vcurrent/thermo_methods.html). For more advanced users, a look at the [more advanced page](/thermopack/vcurrent/more_advanced.html) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
@@ -56,9 +56,9 @@ srk = SoaveRedlichKwong('NH3,C2') # SRK EoS for ammonia/ethane mixture
 rk = RedlichKwong('NC6,CO2,NC12') # Redlich-Kwong EoS
 pr = PengRobinson('IC4,NC10') # PR EoS for isobutane/decane mixture
 pr78 = PengRobinson78('N2,O2,CO2') # # PR-78 EoS for isobutane/decane mixture
-vdw = VanDerWaals('C1,C2,C3,N2,O2', 'VdW') # VdW EoS for methane/ethane/propane/nitrogen/oxygen mixture
-sw = SchmidtWensel('R11,R12', 'SW') # Schmidt-Wensel EoS for FCl3C/F2Cl2C mixture
-pt = PatelTeja('PRLN', 'PT') # Patel-Teja EoS for pure propylene
+vdw = VanDerWaals('C1,C2,C3,N2,O2') # VdW EoS for methane/ethane/propane/nitrogen/oxygen mixture
+sw = SchmidtWensel('R11,R12') # Schmidt-Wensel EoS for FCl3C/F2Cl2C mixture
+pt = PatelTeja('PRLN') # Patel-Teja EoS for pure propylene
 ```
 In addition to these, the Translated-Consisten Peng-Robinson is avaiable as
 ```Python
@@ -91,7 +91,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [wiki](https://github.com/thermotools/thermopack/wiki/Extended_CSP-equations-of-state).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
 
 # Doing calculations
 Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](/thermopack/vcurrent/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
@@ -111,7 +111,7 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB
 ```
 where `eos.VAPPH` and `eos.LIQPH` are [phase flags](/thermopack/vcurrent/phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TV-property-interfaces) and the [Tp-property interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) of the [`thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#methods-in-the-thermo-class-thermopy).
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](/thermopack/vcurrent/thermo_methods.html#TV-property-interfaces) and the [Tp-property interfaces](/thermopack/vcurrent/thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](/thermopack/vcurrent/thermo_methods.html#methods-in-the-thermo-class-thermopy).
 
 ### Differentials
 
@@ -124,7 +124,7 @@ vl, dvdT = eos.specific_volume(T, p, x, eos.LIQPH, dvdt=True) # Liquid phase mol
 _, dvdn = eos.specific_volume(T, p, x, eos.LIQPH, dvdn=True) # Liquid phase partial molar volumes
 ```
 
-Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T, p, n)$. For an overview of the different methods, see [Advanced usage: Different property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-). A short example is given here as:
+Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T, p, n)$. For an overview of the different methods, see [Advanced usage: Different property interfaces](/thermopack/vcurrent/more_advanced.html). A short example is given here as:
 
 ```Python
 # Continued
@@ -215,79 +215,116 @@ T, p, v = eos.get_envelope_twophase(1e5, x, calc_v=True) # Also return the speci
 plt.plot(1 / v, T) # rho-T projection of the phase envelope
 ```
 
-#### pxy- phase envelopes
+#### pxy- and txy- phase envelopes
 
-To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method. The pxy-phase diagram trace method assumes that there can be up to three phases present, two liquid and one vapour. The method `get_binary_pxy` therefore returns three tuples, that we call `LLE`, `L1VE` and `L2VE`. Each of these tuples corresponds to a phase boundary: The `LLE` tuple corresponds to the (Liquid 1 - Liquid 2) phase boundary, the `L1VE` tuple corresponds to the (Liquid 1 - Vapour) phase boundary, and the `L2VE` tuple corresponds to the (Liquid 2 - Vapour) phase boundary.
+To compute pxy-type phase envelopes, we use the `get_binary_pxy()` method. This method returns a `XYDiagram` struct, which
+holds the composition and pressure / temperature of each equilibrium phase.
 
-Each of these tuples contains three arrays `(x, y, p)`: The first array (`x`) is the liquid composition along the phase boundary (Liquid 1 for `LLE`), the second array (`y`) is the vapour composition along the phase boundary (Liquid 2 for `LLE`), the third array (`p`) is the pressure along the phase boundary.
+The `XYDiagram` struct has the attributes `lle`, `l1ve` and `l2ve`, where
+* `lle` holds the composition and pressure / temperature of the Liquid 1 - Liquid 2 equilibria
+  * `lle.x1` is the composition of Liquid 1 (mole fraction of species 1)
+  * `lle.x2` is the composition of Liquid 2 (mole fraction of species 1)
+  * `lle.p` / `lle.T` is the pressure / temperature along the phase boundary
+* `l1ve` holds the composition and pressure / temperature of the Liquid 1 - Vapour equilibria
+  * `l1ve.x` is the composition of Liquid 1 (mole fraction of species 1)
+  * `l1ve.y` is the composition of the vapour (mole fraction of species 1)
+  * `l1ve.p` / `l1ve.T` is the pressure / temperature along the phase boundary
+* `l2ve` holds the composition and pressure / temperature of the Liquid 2 - Vapour equilibria
+  * `l2ve.x` is the composition of Liquid 2 (mole fraction of species 1)
+  * `l2ve.y` is the composition of the vapour (mole fraction of species 1)
+  * `l2ve.p` / `l2ve.T` is the pressure / temperature along the phase boundary
 
-**Note**: If one or more of the phase boundaries does not exist, the corresponding tuple will be `(None, None, None)`.
-
-**Note**: The compositions returned by `get_binary_pxy` refer to the mole fraction of component 1.
-
-**Note**: The minimum and maximum pressure of the phase envelope trace can be set with the kwargs `minimum_pressure` and `maximum_pressure`. For the full details, see the [docs for the `thermo` class](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001).
-
-For a mixture with a Liquid-Liquid equilibrium and two Liquid-Vapour equilibria, we can plot the entire pxy-phase diagram as:
+We get the phase diagram as
 
 ```python
-import matplotlib.pyplot as plt
-from thermopack.cpa import cpa
+from thermopack.cpa import SRK_CPA
 
-eos = cpa('NC12,H2O', 'SRK')  # CPA-SRK eos for Dodecane/water mixture
-T = 350  # kelvin
-LLE, L1VE, L2VE = eos.get_binary_pxy(T)  # Returns three tuples containing three arrays each
+eos = SRK_CPA('NC6,H2O')  # CPA-SRK eos for Hexane/water mixture
+T = 350
+pxy = eos.get_binary_pxy(T)  # Returns a XYDiagram struct
+print(pxy)
+# Result:
+# XYDiagram object with attributes (name : description)
+# lle  : Liquid 1 - Liquid 2 Equilibrium
+# 	PxyEquilibrium object with attributes (description, name, value)
+# 		Type of equilibrium                   type : lle
+# 		Liquid 1 mole fraction, species 1     x1   : [4.278e-07 ... 4.145e-07], len(x1) = 457
+# 		Liquid 2 mole fraction, species 1     x2   : [9.969e-01 ... 9.974e-01], len(x2) = 457
+# 		Pressure                              p    : [1.648e+05 ... 1.500e+07], len(p) = 457
+# 	
+# l1ve : Liquid 1 - Vapour Equilibrium
+# 	PxyEquilibrium object with attributes (description, name, value)
+# 		Type of equilibrium                   type : lve
+# 		Liquid mole fraction, species 1       x    : [4.278e-07 ... 2.197e-07], len(x) = 66
+# 		Vapour mole fraction, species 1       y    : [7.880e-01 ... 6.461e-01], len(y) = 66
+# 		Pressure                              p    : [1.648e+05 ... 1.000e+05], len(p) = 66
+# 	
+# l2ve : Liquid 2 - Vapour Equilibrium 
+# 	PxyEquilibrium object with attributes (description, name, value)
+# 		Type of equilibrium                   type : lve
+# 		Liquid mole fraction, species 1       x    : [9.969e-01 ... 1.000e+00], len(x) = 100
+# 		Vapour mole fraction, species 1       y    : [7.880e-01 ... 1.000e+00], len(y) = 100
+# 		Pressure                              p    : [1.648e+05 ... 1.289e+05], len(p) = 100
+```
+
+For ease of use, the `XYDiagram` struct is iterable, such that we can unpack it efficiently as
+```
+lle, l1ve, l2ve = pxy
+```
+
+Now, we can plot the phase diagram as
+
+```python
+# Continued
+import matplotlib.pyplot as plt
 
 # Liquid-liquid phase boundaries
-# LLE[2] is the pressure along the liquid-liquid phase boundary
-plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the phase boundary
-plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (NC12) in Liquid 2 along the phase boundary
+# pxy.lle holds the composition and pressure of the liquid phases
+plt.plot(pxy.lle.x1, pxy.lle.p, label='Liquid 1 composition') # lle.x1 is the mole fraction of component 1 (NC12) in Liquid 1 along the phase boundary
+plt.plot(pxy.lle.x2, pxy.lle.p, label='Liquid 2 composition') # lle.x2 is the mole fraction of component 1 (NC12) in Liquid 2 along the phase boundary
 
 # Liquid 1-vapour phase boundaries
-# L1VE[2] is the pressure along the Liquid 1 - Vapour phase boundary
-plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (NC12) in Liquid 1 along the Liquid 1 - Vapour phase boundary
-plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 1 - Vapour phase boundary
+# pxy.l2ve holds composition and pressure along the Liquid 1 - Vapour phase boundary
+plt.plot(pxy.l1ve.x, pxy.l1ve.p, label='Liquid 1 bubble line') # l1ve.x is the mole fraction of component 1 (NC12) in Liquid 1 along the Liquid 1 - Vapour phase boundary
+plt.plot(pxy.l1ve.y, pxy.l1ve.p, label='Liquid 1 dew line') # l1ve.y is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 1 - Vapour phase boundary
 
 # Liquid 2-vapour phase boundaries
 # L2VE[2] is the pressure along the Liquid 2 - Vapour phase boundary
-plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (NC12) in Liquid 2 along the Liquid 2 - Vapour phase boundary
-plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 2 - Vapour phase boundary
+plt.plot(pxy.l2ve.x, pxy.l2ve.p, label='Liquid 2 bubble line') # l2ve.x is the mole fraction of component 1 (NC12) in Liquid 2 along the Liquid 2 - Vapour phase boundary
+plt.plot(pxy.l2ve.y, pxy.l2ve.p, label='Liquid 2 dew line') # l2ve.y is the mole fraction of component 1 (NC12) in the Vapour phase along the Liquid 2 - Vapour phase boundary
 
 plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
 plt.xlabel('Molar composition')
 ```
 
-If we are unsure whether one or more of the equilibria exists, we need to check whether the corresponding tuple contains `None`, as:
+The method `get_binary_txy` works in the same way, only replacing the `p` attribute with `T`, such that we can compute
 
-```Python
-import matplotlib.pyplot as plt
-from thermopack.cubic import cubic
+```
+p = 1e5
+lle, l1ve, l2ve = eos.get_binary_txy(p) # Unpacking the XYDiagram 
 
-eos = cubic('C3,NC6', 'PR') # PR EoS for propane/n-hexane mixture
+# Liquid-liquid phase boundaries
+# l1ve holds the composition and pressure of Liquid 1 and Vapour along the phase boundary
+plt.plot(l1ve.x, l1ve.T, label='Liquid 1 composition') # l1ve.x is the mole fraction of component 1 (NC12) in Liquid 1 along the phase boundary
+plt.plot(l1ve.y, l1ve.T, label='Vapour composition') # l1ve.y is the mole fraction of component 1 (NC12) in Vapour along the phase boundary
 
-T = 300 # Kelvin
+# ... etc ...
+```
 
-LLE, L1VE, L2VE = eos.get_binary_pxy(T)
-
-if LLE[0] is None: # If there are fewer than two liquid phases, LLE = (None, None, None)
-    print('There are fewer than two liquid phases at all evaluated pressures!')
-else:
-    plt.plot(LLE[0], LLE[2], label='Liquid 1 composition') # LLE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the phase boundary
-    plt.plot(LLE[1], LLE[2], label='Liquid 2 composition') # LLE[1] is the mole fraction of component 1 (C3) in Liquid 2 along the phase boundary
-
-if L1VE[0] is None: # If no phase boundaries are found, L1VE = (None, None, None)
-    print('There is no Liquid - Vapour equilibria at any of the evaluated pressures!')
-else:
-    plt.plot(L1VE[0], L1VE[2], label='Liquid 1 bubble line') # L1VE[0] is the mole fraction of component 1 (C3) in Liquid 1 along the Liquid 1 - Vapour phase boundary
-    plt.plot(L1VE[1], L1VE[2], label='Liquid 1 dew line') # L1VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 1 - Vapour phase boundary
-
-if L2VE[0] is None: # If LLE = (None, None, None) then L2VE will also be L2VE = (None, None, None), because there is no Liquid 2
-    print('There are fewer than two liquid phases at all evaluated pressures!')
-else:
-    plt.plot(L2VE[0], L2VE[2], label='Liquid 2 bubble line') # L2VE[0] is the mole fraction of component 1 (C3) in Liquid 2 along the Liquid 2 - Vapour phase boundary
-    plt.plot(L2VE[1], L2VE[2], label='Liquid 2 dew line') # L2VE[1] is the mole fraction of component 1 (C3) in the Vapour phase along the Liquid 2 - Vapour phase boundary
-
-plt.ylabel('Pressure [Pa]') # The third element in each tuple is the pressure along the phase boundary
-plt.xlabel('Molar composition')
+If an equilibrium is not found, for example there is only one vapour-liquid equilibria, and no liquid-liquid equilibria,
+the arrays corresponding to the non-existent equilibria are empty, i.e.
+```
+T = 300
+pxy = get_binary_pxy(T) # Some mixture that has only one vapour - liquid equilibria at 300 K
+print(len(pxy.lle.x1) == 0) # True
+print(len(pxy.lle.x2) == 0) # True
+print(len(pxy.lle.p) == 0) # True
+print(len(pxy.l1ve.x) == 0) # False
+print(len(pxy.l1ve.y) == 0) # False
+print(len(pxy.l1ve.p) == 0) # False
+print(len(pxy.l2ve.x) == 0) # True
+print(len(pxy.l2ve.y) == 0) # True
+print(len(pxy.l2ve.p) == 0) # True
 ```
 
 ### Dew- and bubble points
