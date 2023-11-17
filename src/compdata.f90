@@ -249,8 +249,6 @@ contains
       this%ptr = pc%ptr
       this%href = pc%href
       this%sref = pc%sref
-      this%DfH = pc%DfH
-      this%DfG = pc%DfG
     end select
   end subroutine assign_gendatadb
 
