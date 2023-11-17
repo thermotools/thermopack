@@ -189,15 +189,17 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
-  subroutine init_fallback_and_redefine_criticals(silent)
+  subroutine init_fallback_and_redefine_criticals(silent, enable_volume_shift)
     use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     use eos_parameters, only: single_eos
+    use volume_shift, only: InitVolumeShift
     !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
+    logical, optional, intent(in) :: enable_volume_shift !< Initialize volume shift
     ! Locals
     integer             :: i
     real                :: Tci, Pci, oi, rhocrit
@@ -235,6 +237,13 @@ contains
       endif
     end select
 
+    if (present(enable_volume_shift)) then
+      if (enable_volume_shift) then
+        act_mod_ptr%cubic_eos_alternative(1)%p_eos%volumeShiftId = &
+             InitVolumeShift(nce, act_mod_ptr%comps, &
+             'PENELOUX', act_mod_ptr%cubic_eos_alternative(1)%p_eos%eosid)
+      endif
+    endif
     select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
       call SelectCubicEOS(nce, act_mod_ptr%comps, p_eos, &
@@ -1330,7 +1339,7 @@ contains
 
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
+    call init_fallback_and_redefine_criticals(silent=.true., enable_volume_shift=.true.)
 
     ! Calculate reference states
     if (str_eq(meos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then
