@@ -1,5 +1,0 @@
-#!/bin/bash
-doxygen
-cd doxygen/latex
-make all
-cp refman.pdf ../../Doxymanual.pdf

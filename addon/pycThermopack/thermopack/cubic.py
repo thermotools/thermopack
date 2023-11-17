@@ -18,7 +18,8 @@ class cubic(hydrate):
     """
     def __init__(self, comps=None, eos=None, mixing="vdW", alpha="Classic",
              parameter_reference="Default", volume_shift=False):
-        """Initialize cubic model in thermopack
+        """Constructor
+        Initialize cubic model in thermopack
 
         Unless both 'comps' and 'eos' parameters are specified, model must be initialized for specific components
         later by direct call to 'init'.
@@ -78,7 +79,8 @@ class cubic(hydrate):
 
     def init(self, comps, eos, mixing="vdW", alpha="Classic",
              parameter_reference="Default", volume_shift=False):
-        """Initialize cubic model in thermopack
+        """Constructor
+        Initialize cubic model in thermopack
 
         Args:
             comps (str): Comma separated list of component names
@@ -132,7 +134,8 @@ class cubic(hydrate):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def init_pseudo(self, comps, Tclist, Pclist, acflist, Mwlist=None, mixing="vdW", alpha="Classic"):
-        """Initialize pseudocomponents of cubic model in thermopack. The cubic
+        """Constructor
+        Initialize pseudocomponents of cubic model in thermopack. The cubic
         init routine must have been called first.
 
         Args:
@@ -181,10 +184,9 @@ class cubic(hydrate):
                                     mixing_len,
                                     alpha_len)
 
- 
-
     def get_kij(self, c1, c2):
-        """Get attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
+        """Utility
+        Get attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
 
         Args:
             c1 (int): Component one
@@ -210,7 +212,8 @@ class cubic(hydrate):
         return kij_c.value
 
     def set_kij(self, c1, c2, kij):
-        """Set attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
+        """Utility
+        Set attractive energy interaction parameter kij, where aij = sqrt(ai*aj)*(1-kij)
 
         Args:
             c1 (int): Component one
@@ -233,7 +236,8 @@ class cubic(hydrate):
 
 
     def get_lij(self, c1, c2):
-        """Get co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
+        """Utility
+        Get co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
 
         Args:
             c1 (int): Component one
@@ -259,7 +263,8 @@ class cubic(hydrate):
         return lij_c.value
 
     def set_lij(self, c1, c2, lij):
-        """Set co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
+        """Utility
+        Set co-volume interaction parameter lij, where bij = 0.5*(bi+bj)*(1-lij)
 
         Args:
             c1 (int): Component one
@@ -281,7 +286,8 @@ class cubic(hydrate):
                        byref(lij_c))
 
     def get_hv_param(self, c1, c2):
-        """Get Huron-Vidal parameters
+        """Utility
+        Get Huron-Vidal parameters
 
         Args:
             c1 (int): Component one
@@ -335,7 +341,8 @@ class cubic(hydrate):
         return alpha_ij_c.value, alpha_ji_c.value, a_ij_c.value, a_ji_c.value, b_ij_c.value, b_ji_c.value, c_ij_c.value, c_ji_c.value
 
     def set_hv_param(self, c1, c2, alpha_ij, alpha_ji, a_ij, a_ji, b_ij, b_ji, c_ij, c_ji):
-        """Set Huron-Vidal parameters
+        """Utility
+        Set Huron-Vidal parameters
 
         Args:
             c1 (int): Component one
@@ -387,7 +394,8 @@ class cubic(hydrate):
 
 
     def get_ws_param(self, c1, c2):
-        """Get Wong-Sandler parameters
+        """Utility
+        Get Wong-Sandler parameters
 
         Args:
             c1 (int): Component one
@@ -426,7 +434,8 @@ class cubic(hydrate):
         return alpha_ij_c.value, alpha_ji_c.value, k_ij_c.value, k_ji_c.value, tau_ij_c.value, tau_ji_c.value
 
     def set_ws_param(self, c1, c2, alpha_ij, alpha_ji, k_ij, k_ji, tau_ij, tau_ji):
-        """Set Wong-Sandler parameters
+        """Utility
+        Set Wong-Sandler parameters
 
         Args:
             c1 (int): Component one
@@ -470,7 +479,8 @@ class cubic(hydrate):
 
 
     def get_ci(self, cidx):
-        """Get volume correction parameters
+        """Utility
+        Get volume correction parameters
 
         Args:
             cidx (int): Component index
@@ -512,7 +522,8 @@ class cubic(hydrate):
         return ciA_c.value, ciB_c.value, ciC_c.value, ciD_c.value, ciE_c.value, ciF_c.value, ci_type_c.value
 
     def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
-        """Set volume correction parametrs
+        """Utility
+        Set volume correction parametrs
 
         Args:
             cidx (int): Component index
@@ -549,9 +560,10 @@ class cubic(hydrate):
                       byref(ciF_c),
                       byref(ci_type_c))
 
-        
+
     def get_covolumes(self):
-        """Get component covolumes (L/mol)
+        """Utility
+        Get component covolumes (L/mol)
 
         Returns:
             np.ndarray: Component covolumes (L/mol)
@@ -564,7 +576,8 @@ class cubic(hydrate):
         return np.array(b_c)
 
     def get_energy_constants(self):
-        """Get component energy constants in front of alpha. (Pa*L^2/mol^2)
+        """Utility
+        Get component energy constants in front of alpha. (Pa*L^2/mol^2)
 
         Returns:
             np.ndarray: Component energy constants in front of alpha. (Pa*L^2/mol^2)
@@ -578,7 +591,8 @@ class cubic(hydrate):
 
 
     def set_alpha_corr(self, ic, corrname, coeffs):
-        """Set alpha correlation
+        """Utility
+        Set alpha correlation
 
         Args:
             ic (in): Component number
@@ -607,7 +621,8 @@ class cubic(hydrate):
 
 
     def set_beta_corr(self, ic, corrname, coeffs):
-        """Set beta correlation
+        """Utility
+        Set beta correlation
 
         Args:
             ic (in): Component number
@@ -626,8 +641,6 @@ class cubic(hydrate):
                                           POINTER(c_double),
                                           c_len_type]
 
-
-        
         self.s_set_beta_corr.restype = None
 
         self.s_set_beta_corr(numparam_c,
@@ -635,3 +648,66 @@ class cubic(hydrate):
                              corrname_string_c,
                              coeffs_c,
                              corrname_string_len_c)
+
+class VanDerWaals(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='VdW'`.
+        """
+        super().__init__(comps, 'VdW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class SoaveRedlichKwong(cubic):
+
+    def __init__(self, comps, mixing="vdW", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SRK'`.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha="Classic", parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class RedlichKwong(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="RK", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Convenience class for Redlich-Kwong, calls the `cubic` constructor. Set `alpha=Soave` in order to get SRK model.
+        """
+        super().__init__(comps, 'SRK', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PengRobinson(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Default `alpha` is the original 1976 correlation.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PengRobinson78(cubic):
+
+    def __init__(self, comps, mixing="vdW", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PR'`. Using the 1978 `alpha` correlation.
+        """
+        super().__init__(comps, 'PR', mixing=mixing, alpha="PR78", parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class SchmidtWensel(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='SW'`.
+        """
+        super().__init__(comps, 'SW', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)
+
+class PatelTeja(cubic):
+
+    def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default", volume_shift=False):
+        """Constructor
+        Basic convenience class, calls the `cubic` constructor with `eos='PT'`.
+        """
+        super().__init__(comps, 'PT', mixing=mixing, alpha=alpha, parameter_reference=parameter_reference,
+                         volume_shift=volume_shift)

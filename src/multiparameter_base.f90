@@ -28,6 +28,7 @@ module multiparameter_base
     real, public :: t_triple, p_triple, rhoLiq_triple, rhoVap_triple
     real, public :: molarMass !< (kg/mol)
     real, public :: maxT, maxP !< (K), (Pa)
+    real :: tr, rhor !> Reducing temperature and density
 
 
     ! When a MEoS is used with Thermopack, Rgas_meos must have the same value as

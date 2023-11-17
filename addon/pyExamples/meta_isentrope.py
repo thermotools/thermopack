@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 # Instanciate and init tcPR object. Translated and consistent cubic EoS by le Guennec et al. (10.1016/j.fluid.2016.09.003)
 
-tc_pr = tcPR("CO2")
+tc_pr = tcPR("CO2,N2")
 
-z = np.array([1.0])
+z = np.array([0.98, 0.02])
 
 # Initial state
 T0 = 303.15
@@ -40,7 +40,7 @@ T_spin, v_spin, P_spin = tc_pr.spinodal(z,
 # Phase envelope
 T, P, v = tc_pr.get_envelope_twophase(5.0e5, z, maximum_pressure=1.5e7, calc_v=True)
 
-plt.plot(T, P*1.0e-6, label="Saturaton curve")
+plt.plot(T, P*1.0e-6, label="Saturation curve")
 plt.plot(T_iso, P_iso*1.0e-6, label="Isentrope")
 plt.plot(T_spin, P_spin*1.0e-6, label="Spinodals", linestyle=":")
 plt.legend(frameon=False)

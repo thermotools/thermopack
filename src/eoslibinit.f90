@@ -189,15 +189,17 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
-  subroutine init_fallback_and_redefine_criticals(silent)
+  subroutine init_fallback_and_redefine_criticals(silent, enable_volume_shift)
     use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     use eos_parameters, only: single_eos
+    use volume_shift, only: InitVolumeShift
     !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
+    logical, optional, intent(in) :: enable_volume_shift !< Initialize volume shift
     ! Locals
     integer             :: i
     real                :: Tci, Pci, oi, rhocrit
@@ -235,6 +237,13 @@ contains
       endif
     end select
 
+    if (present(enable_volume_shift)) then
+      if (enable_volume_shift) then
+        act_mod_ptr%cubic_eos_alternative(1)%p_eos%volumeShiftId = &
+             InitVolumeShift(nce, act_mod_ptr%comps, &
+             'PENELOUX', act_mod_ptr%cubic_eos_alternative(1)%p_eos%eosid)
+      endif
+    endif
     select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
       call SelectCubicEOS(nce, act_mod_ptr%comps, p_eos, &
@@ -334,6 +343,9 @@ contains
       volshift_loc = .True.
     end if
 
+    ! Initialize components module
+    call init_component_data_from_db(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
+
     ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
     ! et al. (10.1016/j.fluid.2020.112790)
     call string_match_val("QuantumCubic", paramref_loc, found_QuantumCubic, matchval_QuantumCubic)
@@ -341,10 +353,24 @@ contains
       alpha_loc = "TWU"
       volshift_loc = .True.
       beta_loc = "Quantum"
-    end if
+      do i=1,nc
+        ! Set critical parameters according to Aasen et al. (10.1016/j.fluid.2020.112790)
+        if (str_eq(complist(i),"HE")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 5.1953
+          act_mod_ptr%comps(i)%p_comp%pc = 2.276e5
+        else if (str_eq(complist(i),"H2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 33.19
+          act_mod_ptr%comps(i)%p_comp%pc = 12.964e5
+        else if (str_eq(complist(i),"Ne")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 44.492
+          act_mod_ptr%comps(i)%p_comp%pc = 26.79e5
+        else if (str_eq(complist(i),"D2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 38.34
+          act_mod_ptr%comps(i)%p_comp%pc = 16.796e5
+        end if
+      enddo
+    endif
 
-    ! Initialize components module
-    call init_component_data_from_db(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -1313,7 +1339,7 @@ contains
 
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
+    call init_fallback_and_redefine_criticals(silent=.true., enable_volume_shift=.true.)
 
     ! Calculate reference states
     if (str_eq(meos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then

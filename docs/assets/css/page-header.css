@@ -1,0 +1,14 @@
+.page-header {
+    color: #ffffff;
+    text-align: center;
+    background-image: url('/thermopack/assets/graphics/header.pdf');
+    background-position: center;
+    background-size: cover; /* You can adjust this property */
+}
+
+.page-header .project-name {
+    color: #606263;
+}
+.page-header .project-tagline {
+    color: #000000;
+}

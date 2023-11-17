@@ -37,20 +37,20 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
-    real :: rhoc_i, rhoc_j, Tc_i, Tc_j
+    real :: rhor_i, rhor_j, Tr_i, Tr_j
 
     call mmix%allocate_and_init(nc, "MEOS")
     call mmix%allocate_param(nc)
 
     mmix%mix_data_index = -1
     do i=1,nc
-      rhoc_i = mmix%nist(i)%meos%rc
-      Tc_i = mmix%nist(i)%meos%tc
+      rhor_i = mmix%nist(i)%meos%rhor
+      Tr_i = mmix%nist(i)%meos%tr
       do j=i,nc
-        rhoc_j = mmix%nist(j)%meos%rc
-        Tc_j = mmix%nist(j)%meos%tc
-        mmix%inv_rho_pow(i,j) = (1.0_dp/rhoc_i**(1.0_dp/3.0_dp) + 1.0_dp/rhoc_j**(1.0_dp/3.0_dp))**3
-        mmix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
+        rhor_j = mmix%nist(j)%meos%rhor
+        Tr_j = mmix%nist(j)%meos%tr
+        mmix%inv_rho_pow(i,j) = (1.0_dp/rhor_i**(1.0_dp/3.0_dp) + 1.0_dp/rhor_j**(1.0_dp/3.0_dp))**3
+        mmix%tc_prod_sqrt(i,j) = (Tr_i*Tr_j)**(0.5_dp)
         !
         if (j > i) then
           do k=1,max_meos_mix_reducing
@@ -115,7 +115,7 @@ contains
     type(hyperdual), intent(in) :: x(nce), tau, delta
     type(hyperdual) :: del_alpha_r
     ! Internals
-    integer :: i, j, k, idb, n_poly, n_exp, n_gauss
+    integer :: i, j, k, idb, n_poly, n_exp, n_gauss, n_kunz_wagner
     type(hyperdual) :: del_alpha_r_ij
     del_alpha_r = 0.0_dp
 
@@ -124,9 +124,10 @@ contains
         del_alpha_r_ij = 0.0_dp
         if (this%mix_data_index(i,j) > 0) then
           idb = this%mix_data_index(i,j)
-          n_gauss = meos_mix_datadb(idb)%num_mix
-          n_exp = n_gauss - meos_mix_datadb(idb)%num_gauss
+          n_exp = meos_mix_datadb(idb)%num_mix - meos_mix_datadb(idb)%num_gauss - meos_mix_datadb(idb)%num_kw
           n_poly = n_exp - meos_mix_datadb(idb)%num_exp
+          n_kunz_wagner = n_exp + meos_mix_datadb(idb)%num_kw
+          n_gauss = n_kunz_wagner + meos_mix_datadb(idb)%num_gauss
           do k=1,n_poly
             del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
                  tau**meos_mix_datadb(idb)%t_mix(k)
@@ -136,11 +137,17 @@ contains
                  tau**meos_mix_datadb(idb)%t_mix(k)* &
                  exp(-delta**meos_mix_datadb(idb)%l_mix(k))
           enddo
-          do k=n_exp+1,n_gauss
+          do k=n_exp+1,n_kunz_wagner
             del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
                  tau**meos_mix_datadb(idb)%t_mix(k)* &
                  exp(-meos_mix_datadb(idb)%eta_mix(k)*(delta-meos_mix_datadb(idb)%epsilon_mix(k))**2 &
                  - meos_mix_datadb(idb)%beta_mix(k)*(delta-meos_mix_datadb(idb)%gamma_mix(k)))
+          enddo
+          do k=n_kunz_wagner+1,n_gauss
+            del_alpha_r_ij = del_alpha_r_ij + meos_mix_datadb(idb)%n_mix(k)*delta**meos_mix_datadb(idb)%d_mix(k)*&
+                 tau**meos_mix_datadb(idb)%t_mix(k)* &
+                 exp(meos_mix_datadb(idb)%eta_mix(k)*(delta-meos_mix_datadb(idb)%epsilon_mix(k))**2 &
+                 + meos_mix_datadb(idb)%beta_mix(k)*(tau-meos_mix_datadb(idb)%gamma_mix(k))**2)
           enddo
           del_alpha_r = del_alpha_r + x(i)*x(j)*meos_mix_datadb(idb)%Fij*del_alpha_r_ij
         endif

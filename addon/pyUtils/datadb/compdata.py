@@ -541,9 +541,9 @@ class comp_list(object):
         wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
         wiki_header_lines.append("&nbsp;\n")
         wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.\n")
-        wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT-VR | PC-SAFT | CPA |")
-        wiki_header_lines.append("| ------------------------ | ----------- | ---- | ---- | ---- |")
+        wiki_header_lines.append("&nbsp;\nYou may have to scroll right to view the whole table.\n")
+        wiki_header_lines.append("| Fluid name | CAS Number |Fluid identifyer | SAFT-VR | PC-SAFT | CPA |")
+        wiki_header_lines.append("| ------------------------ | ---- | ----------- | ---- | ---- | ---- |")
 
         wiki_lines = []
         for comp in self.comp_list:
@@ -575,15 +575,15 @@ class comp_list(object):
 
             def has_param_txt(has_param):
                 if has_param is True:
-                    return ':heavy_check_mark:'
+                    return '&#10004;'
                 return ' '
 
             has_svrm_params = has_param_txt(has_svrm_params)
             has_pcsaft_params = has_param_txt(has_pcsaft_params)
             has_cpa_params = has_param_txt(has_cpa_params)
 
-            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_svrm_params + " | " + has_pcsaft_params \
-                   + " | " + has_cpa_params + " |"
+            line = f"| {name} | {comp.comp['cas_number']} | {comp.comp['ident']} | {has_svrm_params} | {has_pcsaft_params}" \
+                   f" | {has_cpa_params} |"
             wiki_lines.append(line)
         wiki_lines.sort()
         wiki_lines = wiki_header_lines + wiki_lines

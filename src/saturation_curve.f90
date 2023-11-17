@@ -707,7 +707,7 @@ contains
       Xvar(nc+1) = log(t)
       Xvar(nc+2) = log(p)
 
-      !Exit at thermo limit or defined pressure
+      !Exit at defined pressure
       if (p < Pstart) then
         s = nc+2
         recalculate = .true.
@@ -717,7 +717,6 @@ contains
         recalculate = .true.
         ln_spec = log(epc%Pmax)
       endif
-
       ! Is temperature decreasing? - And below Tmin + safety limit?
       if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tmin + 0.01) then
         ! Exit at temperature

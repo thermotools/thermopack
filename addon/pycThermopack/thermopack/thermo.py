@@ -139,6 +139,10 @@ class thermo(object):
             "ideal", "get_enthalpy_reference_value"))
         self.s_ideal_set_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "set_enthalpy_reference_value"))
+        self.s_get_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "get_ideal_cp_correlation"))
+        self.s_set_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "set_ideal_cp_correlation"))
 
         # Speed of sound
         self.s_sos_sound_velocity_2ph = getattr(
@@ -496,6 +500,30 @@ class thermo(object):
                                                 volume_trans_model_len,
                                                 ref_string_len)
 
+    def disable_volume_translation(self):
+        """Internal
+        Disable volume translations
+
+        """
+        self.activate()
+        volume_trans_model = "NOSHIFT"
+        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
+        volume_trans_model_len = c_len_type(len(volume_trans_model))
+        ref_string = "Default"
+        ref_string_c = c_char_p(ref_string.encode('ascii'))
+        ref_string_len = c_len_type(len(ref_string))
+        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
+                                                            c_char_p,
+                                                            c_len_type,
+                                                            c_len_type]
+
+        self.eoslibinit_init_volume_translation.restype = None
+
+        self.eoslibinit_init_volume_translation(volume_trans_model_c,
+                                                ref_string_c,
+                                                volume_trans_model_len,
+                                                ref_string_len)
+
     def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
         """Utility
         Recalculate critical properties of pure fluids
@@ -584,20 +612,20 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_enthalpy.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double)]
 
         self.solideos_solid_enthalpy.restype = None
 
         self.solideos_solid_enthalpy(byref(temp_c),
-                            byref(press_c),
-                            x_c,
-                            byref(h_c),
-                            dhdt_c,
-                            dhdp_c)
+                                     byref(press_c),
+                                     x_c,
+                                     byref(h_c),
+                                     dhdt_c,
+                                     dhdp_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -642,20 +670,20 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_entropy.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
 
         self.solideos_solid_entropy.restype = None
 
         self.solideos_solid_entropy(byref(temp_c),
-                            byref(press_c),
-                            x_c,
-                            byref(h_c),
-                            dhdt_c,
-                            dhdp_c)
+                                    byref(press_c),
+                                    x_c,
+                                    byref(h_c),
+                                    dhdt_c,
+                                    dhdp_c)
 
         return_tuple = (h_c.value, )
         if not dhdt is None:
@@ -700,11 +728,11 @@ class thermo(object):
             dhdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_volume.argtypes = [POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double),
-                                        POINTER(c_double)]
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double)]
 
         self.solideos_solid_volume.restype = None
 
@@ -746,25 +774,26 @@ class thermo(object):
         idx = self.s_compdata_compindex(comp_c, comp_len)
         return idx
 
-    def get_comp_name(self, index):
+    def get_comp_name(self, index, get_comp_identifier=False):
         """Utility
-        Get component name
+        Get component name/identifier
 
         Args:
             index (int): Component FORTRAN index
-
+            get_comp_identifier (bool): Get component identifier instead of full name? Default False.
         Returns:
-            comp (str): Component name
+            comp (str): Component name/identifier
         """
         self.activate()
         comp_len = 40
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
         index_c = c_int(index)
+        comp_id_c = c_int(1) if get_comp_identifier else c_int(0)
         self.s_compdata_compname.argtypes = [
-            POINTER(c_int), c_char_p, c_len_type]
+            POINTER(c_int), POINTER(c_int), c_char_p, c_len_type]
         self.s_compdata_compname.restype = None
-        self.s_compdata_compname(byref(index_c), comp_c, comp_len_c)
+        self.s_compdata_compname(byref(index_c), byref(comp_id_c), comp_c, comp_len_c)
         compname = comp_c.value.decode('ascii').strip()
         return compname
 
@@ -1491,7 +1520,7 @@ class thermo(object):
         Set specific ideal entropy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             s0 (float): Ideal entropy reference (J/mol/K)
         """
         self.activate()
@@ -1537,7 +1566,7 @@ class thermo(object):
         Set specific ideal enthalpy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             h0 (float): Ideal enthalpy reference (J/mol)
         """
         self.activate()
@@ -1577,6 +1606,63 @@ class thermo(object):
                                                   byref(h0_c))
 
         return h0_c.value
+
+    def get_ideal_cp(self, j):
+        """Utility
+        Get correlation parameters for ideal gas Cp
+
+        Args:
+            j (integer): Component index
+        Returns:
+            integer: Ideal Cp correlation identifier
+            ndarray: Paramaters
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(0)
+        param_c = (c_double * 10)(0.0)
+
+        self.s_get_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_get_ideal_cp_correlation.restype = None
+
+        self.s_get_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
+
+        return corr_c.value, np.array(param_c)
+
+    def set_ideal_cp(self, j, cp_correlation_type, parameters):
+        """Utility
+        Set correlation parameters for ideal gas Cp
+        To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
+
+        Args:
+            j (int): Component index
+            cp_correlation_type (int): Ideal Cp correlation identifier
+            parameters (array like): Paramaters (Maximum 10 parameters used)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(cp_correlation_type)
+        parameters_full = np.zeros(10)
+        n = min(len(parameters),10)
+        parameters_full[0:n] = parameters[0:n]
+        param_c = (c_double * 10)(*parameters_full)
+
+        self.s_set_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_set_ideal_cp_correlation.restype = None
+
+        self.s_set_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
 
     def speed_of_sound(self, temp, press, x, y, z, betaV, betaL, phase):
         """Tp-property
@@ -3302,7 +3388,7 @@ class thermo(object):
         Get error description for binary plot error
 
         Args:
-            i_term (int): binary plot error identifyer
+            i_term (int): binary plot error identifier
 
         Returns:
             str: Error message

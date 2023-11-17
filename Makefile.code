@@ -107,6 +107,7 @@ OBJE = \
        $(ODIR)/meosdatadb.o \
        $(ODIR)/meosmixdb.o \
        $(ODIR)/saturated_densities.o \
+       $(ODIR)/volume_shift.o \
        $(ODIR)/multiparameter_base.o \
        $(ODIR)/multiparameter_c3.o \
        $(ODIR)/multiparameter_para_h2.o \
@@ -159,7 +160,6 @@ OBJE = \
        $(ODIR)/extcsp.o \
        $(ODIR)/leekesler.o \
        $(ODIR)/multiparameter_idealmix.o \
-       $(ODIR)/volume_shift.o \
        $(ODIR)/co2_gibbs.o \
        $(ODIR)/h2o_gibbs.o \
        $(ODIR)/single_component.o \
