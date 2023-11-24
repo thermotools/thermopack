@@ -110,8 +110,8 @@
       "correlation": 1
     },
     "CPA-1": {
-      "ref": "Default/Queimada2005",
-      "bib_reference": "10.1016/j.fluid.2004.08.011",
+      "ref": "Default/Kontogeorgis1999/Queimada2005",
+      "bib_reference": "10.1016/S0378-3812(99)00060-6",
       "a0": 1.2277E+5,
       "b": 1.4515e-02,
       "alphaParams": [0.67359,0.0,0.0],
