@@ -2330,10 +2330,8 @@ contains
     use thermopack_var, only: nce
     use AssocSchemeUtils, only: get_assoc_string
 
-    integer :: rules(2), i
-    real :: pure_params(5)
-    real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
-    logical :: found
+    integer :: i
+    real :: pure_params(5), cpa_aEps_kij(2)
     type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: assoc
     act_mod_ptr => get_active_thermo_model()

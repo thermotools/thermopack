@@ -650,40 +650,27 @@ contains
     ljs%saftvrmie_param%eps_divk_ij(1,1) = eps_depth_divk
   end subroutine ljs_bh_set_sigma_eps
 
+  subroutine get_ljs_db_entry(idx, eosidx, comp_name, ref)
+    use thermopack_constants, only: ref_len, uid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eosidx !< Index of EOS
+    character(len=uid_len), intent(out) :: comp_name !< Component name
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    eosidx = LJSarray(idx)%eosidx
+    comp_name = LJSarray(idx)%compName
+    ref = LJSarray(idx)%ref
+  end subroutine get_ljs_db_entry
+
   !> Get the index in the LJSarray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
-  function getLJSdataIdx(eosidx,compName,ref) result(idx)
-    use stringmod, only: str_eq, string_match
+  function getLJSdataIdx(eosidx,comp_name,ref) result(idx)
+    use parameters, only: get_pure_data_db_idx
     integer, intent(in) :: eosidx
-    character(len=*), intent(in) :: compName, ref
+    character(len=*), intent(in) :: comp_name, ref
+    ! Locals
     integer :: idx, idx_default
-    logical :: found
-
-    found = .false.
-    idx = 1
-    idx_default = -1
-    do while (idx <= nLJS)
-      if ((eosidx == LJSarray(idx)%eosidx) .and. &
-           str_eq(compName, LJSarray(idx)%compName)) then
-        if (string_match(ref,LJSarray(idx)%ref)) then
-          found = .true.
-          exit
-        else if (string_match("DEFAULT",LJSarray(idx)%ref)) then
-          idx_default = idx
-        endif
-      endif
-      idx = idx + 1
-    enddo
-
-    if (.not. found .and. idx_default > 0) then
-      idx = idx_default
-      found = .true.
-    endif
-    if (.not. found) then
-       print *, "ERROR FOR COMPONENT ", compname
-       call stoperror("The LJS parameters don't exist.")
-    end if
-
+    call get_pure_data_db_idx(get_ljs_db_entry,nLJS,"LJS",&
+         eosidx,comp_name,ref,.true.,idx,idx_default)
   end function getLJSdataIdx
 
   !> Calculate hypotetical pure fluid packing fraction

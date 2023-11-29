@@ -6,11 +6,22 @@ program run_thermopack
   use thermopack_constants
   use critical, only: calcCriticalTV
   use eosTV, only: pressure
+  use stringmod
   implicit none
   real, dimension(2) :: z
   real :: pc, Tc, vc
   integer :: ierr
+  logical :: m
 
+  m = exact_substring_match("TCRK/OLIVEIRA2008/DUMMY","DEFAULT/OLIVEIRA2008")
+  print *,m
+  m = exact_substring_match("TCRK/OLIVEIRA200/DEFAULT","DEFAULT/OLIVEIRA2008")
+  print *,m
+  m = exact_substring_match("TCRK/OLIVEIRA2008/TANG_GROSS2010","TANG_GROSS2010")
+  print *,m
+  m = exact_substring_match("tcRK/Oliveira200/Default","Default/Oliveira2008")
+  print *,m
+  stop
   !call init_thermo('PC-SAFT', 'VDW', 'CLASSIC', "CO2,H2O", 2)
   !call init_thermo('PR', 'VDW', 'CLASSIC', "CO2,H2O", 2)
   !call init_thermo('CPA-SRK', 'VDW', 'CLASSIC', "H2O,ETOH", 2)
