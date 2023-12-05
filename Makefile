@@ -84,7 +84,7 @@ unittests_all_openmp:
 # is available. Each real target is defined by specifying the compiler flags in
 # a variable $(mode)_$(compiler)_flags.
 ifeq ($(OSTYPE),Unix)
-  compilers += gfortran
+  compilers += gfortran ifort
 
   # Define gfortran flags
   gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive
@@ -113,7 +113,7 @@ ifeq ($(OSTYPE),Unix)
       compilers += ifort
       omp_ifort = "-openmp"
       ifort_is_bleeding := $(shell expr `ifort --version 2>/dev/null \
-                           | grep -o "[0-9]\.[0-9]\.[0-9]" | tail -1` \
+                           | grep -o "[0-9][0-9]\.[0-9]\.[0-9]" | tail -1` \
                            \>= 18.0.0 2>/dev/null)
       ifeq ($(ifort_is_bleeding),1)
         omp_ifort = "-qopenmp"
