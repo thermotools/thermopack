@@ -26,13 +26,13 @@ contains
     found = .false.
     idx_default = -1
     idx = 1
-    do while (idx <= nCPAmodels .and. .not. found)
+    do while (idx <= nCPAmodels)
        if ((str_eq(eos,CPAarray(idx)%eosid)) .and. &
             trim(compName)==trim(CPAarray(idx)%compName)) then
-         if (string_match(param_ref,CPAarray(idx)%ref)) then
+         if (string_match(CPAarray(idx)%ref, param_ref)) then
            found = .true.
            exit
-         elseif (string_match("DEFAULT", CPAarray(idx)%ref)) then
+         elseif (string_match(CPAarray(idx)%ref, "DEFAULT")) then
            idx_default = idx
          endif
       endif
