@@ -90,7 +90,7 @@ ifeq ($(OSTYPE),Unix)
   gf_common := -cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive
   ifeq ($(PROC),arm64)
     gf_proc = -arch arm64
-    gf_march = -arch arm64
+    gf_march = -arch arm64 -fno-expensive-optimizations
   else
     gf_proc = -mieee-fp
     gf_march = -march=x86-64 -msse2
