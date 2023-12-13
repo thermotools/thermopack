@@ -930,6 +930,7 @@ contains
     match = .false.
 
     if (len_trim(string) > 0) then
+      if (index("/", trim(sub_string)) > 0) call stoperror("Use excact_string_match method")
       ! Upcase strings
       sub_string_up = trim(sub_string)
       call str_upcase(sub_string_up)
@@ -940,7 +941,7 @@ contains
       do
         if(len_trim(string_up) == 0) exit
         call split(string_up,"/",before)
-        if (index(trim(sub_string_up), trim(before)) > 0) then
+        if (index(trim(before), trim(sub_string_up)) > 0) then
           match = .true.
           exit
         endif
@@ -949,6 +950,48 @@ contains
       if (istat /= 0) call stoperror("Not able to deallocate string_up")
     endif
   end function string_match
+
+  !> Look of for exact match between sub-strings of two strings. The sub-strings are separated by "/"
+  !! The string comparison is case incensitive.
+  !! Ex.
+  !!  string0 = "TEST/HV/DEFAULT"
+  !!  string1 = "HV/HV0/HV1/HV2"
+  !! Match for "DEFAULT" will not be considered
+  !----------------------------------------------------------------------
+  function exact_substring_match(string0,string1,substring_index) result(match)
+    character(len=*), intent(in) :: string0 !< String where entries are separated by "/"
+    character(len=*), intent(in) :: string1 !< String where entries are separated by "/"
+    integer, intent(out) :: substring_index !< Index of sub-string that matched
+    logical :: match
+    ! Locals
+    integer :: iter
+    character(len=max(len_trim(string0),1)) :: string0_cpy, before0
+    character(len=max(len_trim(string1),1)) :: string1_cpy, before1
+    match = .false.
+
+    substring_index = 1000
+    if (len_trim(string1) > 0 .and. len_trim(string0) > 0) then
+      string0_cpy = string0
+      iter = 1
+      do ! Outer: loop entries in string0
+        if (len_trim(string0_cpy) == 0) exit
+        call split(string0_cpy,"/",before0)
+        if (str_eq(before0, "DEFAULT")) cycle
+        string1_cpy = string1
+        do ! Inner: loop entries in string0
+          if(len_trim(string1_cpy) == 0) exit
+          call split(string1_cpy,"/",before1)
+          if (str_eq(before0, before1)) then
+            match = .true.
+            substring_index = iter
+            exit
+          endif
+        enddo
+        if (match) exit
+        iter = iter + 1
+      enddo
+    endif
+  end function exact_substring_match
 
   !> Search for matches of sub_string in string, where both of these strings can
   !> have multiple delimiters '/'. Return match=.true. if there is a match, and
