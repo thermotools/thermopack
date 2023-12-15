@@ -32,6 +32,8 @@ module thermopack_var
   integer :: ncsym = 0
   !< Total number of associating sites.
   integer :: numAssocSites = 0
+  !> Robustness level: increase to maximize numerical robustness.
+  integer :: robustness_level = 0
 
   !> List of component names
   character (len=eosid_len), pointer :: complist(:)
@@ -159,6 +161,11 @@ module thermopack_var
   public :: get_rgas
 
 contains
+
+  subroutine set_numerical_robustness_level(level)
+    integer, intent(in) :: level
+    robustness_level = level
+  end subroutine
 
   function get_active_thermo_model() result(p_eos)
     type(thermo_model), pointer :: p_eos
