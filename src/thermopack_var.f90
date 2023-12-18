@@ -159,13 +159,19 @@ module thermopack_var
   public :: set_tmin, get_tmin, set_tmax, get_tmax
   public :: set_pmin, get_pmin, set_pmax, get_pmax
   public :: get_rgas
+  public :: get_numerical_robustness_level, set_numerical_robustness_level
 
 contains
 
   subroutine set_numerical_robustness_level(level)
     integer, intent(in) :: level
     robustness_level = level
-  end subroutine
+  end subroutine set_numerical_robustness_level
+
+  function get_numerical_robustness_level() result(level)
+    integer :: level
+    level = robustness_level
+  end function get_numerical_robustness_level
 
   function get_active_thermo_model() result(p_eos)
     type(thermo_model), pointer :: p_eos
