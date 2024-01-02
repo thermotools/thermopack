@@ -18,7 +18,7 @@ z = np.array([0.98, 0.02])
 # Initial state
 T0 = 303.15
 P0 = 1.0e7
-s0, = tc_pr.entropy(T0,P0,z,tc_pr.LIQPH)
+s0 = tc_pr.entropy(T0, P0, z, tc_pr.LIQPH)
 
 # Isentrope
 T_iso, v_iso, P_iso = tc_pr.map_meta_isentrope(z, P0, s0, 6.0e5, n_max=50)
@@ -40,9 +40,9 @@ T_spin, v_spin, P_spin = tc_pr.spinodal(z,
 # Phase envelope
 T, P, v = tc_pr.get_envelope_twophase(5.0e5, z, maximum_pressure=1.5e7, calc_v=True)
 
-plt.plot(T, P*1.0e-6, label="Saturation curve")
-plt.plot(T_iso, P_iso*1.0e-6, label="Isentrope")
-plt.plot(T_spin, P_spin*1.0e-6, label="Spinodals", linestyle=":")
+plt.plot(T, P * 1.0e-6, label="Saturation curve")
+plt.plot(T_iso, P_iso * 1.0e-6, label="Isentrope")
+plt.plot(T_spin, P_spin * 1.0e-6, label="Spinodals", linestyle=":")
 plt.legend(frameon=False)
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")

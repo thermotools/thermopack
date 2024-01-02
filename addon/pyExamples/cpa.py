@@ -24,22 +24,22 @@ ax2.tick_params(labelright='off')
 
 # Pxy phase envelope
 p_scaling = 1.0e-6
-LLE, L1VE, L2VE = cpa_srk.get_binary_pxy(298.1)
-if LLE[0] is not None:
-    ax.plot(LLE[0], LLE[2]*p_scaling)
-    ax.plot(LLE[1], LLE[2]*p_scaling)
-    ax2.plot(LLE[0], LLE[2]*p_scaling)
-    ax2.plot(LLE[1], LLE[2]*p_scaling)
-if L1VE[0] is not None:
-    ax.plot(L1VE[0], L1VE[2]*p_scaling)
-    ax.plot(L1VE[1], L1VE[2]*p_scaling)
-    ax2.plot(L1VE[0], L1VE[2]*p_scaling)
-    ax2.plot(L1VE[1], L1VE[2]*p_scaling)
-if L2VE[0] is not None:
-    ax.plot(L2VE[0], L2VE[2]*p_scaling)
-    ax.plot(L2VE[1], L2VE[2]*p_scaling)
-    ax2.plot(L2VE[0], L2VE[2]*p_scaling)
-    ax2.plot(L2VE[1], L2VE[2]*p_scaling)
+lle, l1ve, l2ve = cpa_srk.get_binary_pxy(298.1)
+if lle[0] is not None:
+    ax.plot(lle.x1, lle.p * p_scaling)
+    ax.plot(lle.x2, lle.p * p_scaling)
+    ax2.plot(lle.x1, lle.p * p_scaling)
+    ax2.plot(lle.x2, lle.p * p_scaling)
+if l1ve[0] is not None:
+    ax.plot(l1ve.x, l1ve.p * p_scaling)
+    ax.plot(l1ve.y, l1ve.p * p_scaling)
+    ax2.plot(l1ve.x, l1ve.p * p_scaling)
+    ax2.plot(l1ve.y, l1ve.p * p_scaling)
+if l2ve[0] is not None:
+    ax.plot(l2ve.x, l2ve.p * p_scaling)
+    ax.plot(l2ve.y, l2ve.p * p_scaling)
+    ax2.plot(l2ve.x, l2ve.p * p_scaling)
+    ax2.plot(l2ve.y, l2ve.p * p_scaling)
 
 d = .015
 kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
