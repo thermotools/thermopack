@@ -8,13 +8,13 @@ permalink: /vcurrent/Component-name-mapping.html
 
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2023-11-16T15:47:19.067693
+Generated at : 2024-01-02T14:52:39.408470
 This is the same module that is used to generate the Fortran
 component database files.
 --->
 
 
-# Fluid name to fluid identifyer mapping
+# Fluid name to fluid identifier mapping
 &nbsp;
 
 In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.

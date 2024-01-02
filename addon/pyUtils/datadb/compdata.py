@@ -338,10 +338,16 @@ class comp_list(object):
         code_lines.append("")
         code_lines.append("end module compdatadb")
 
-        with open(filename, "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
+        new_filestr = ''
+        for line in code_lines:
+            new_filestr += line + '\n'
+
+        if tools.check_is_changed(f'{tools.THERMOPACK_ROOT}/src/{filename}', new_filestr):
+            with open(filename, 'w') as f:
+                f.write(new_filestr)
+            print(f'Wrote updated datadb to : {filename}')
+        else:
+            print(f'File at {tools.THERMOPACK_ROOT}/src/{filename} is unchanged.')
 
     def get_comp_array_fortran_code(self):
         """Set up component array
@@ -544,7 +550,7 @@ class comp_list(object):
                                  'This is the same module that is used to generate the Fortran\n'
                                  'component database files.\n'
                                  '--->\n\n')
-        wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
+        wiki_header_lines.append("# Fluid name to fluid identifier mapping")
         wiki_header_lines.append("&nbsp;\n")
         wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.\n")
         wiki_header_lines.append("&nbsp;\nYou may have to scroll right to view the whole table.\n")
@@ -593,10 +599,17 @@ class comp_list(object):
             wiki_lines.append(line)
         wiki_lines.sort()
         wiki_lines = wiki_header_lines + wiki_lines
-        with open(filename, "w") as f:
-            for line in wiki_lines:
-                f.write(line)
-                f.write("\n")
+        new_filestr = ''
+        for line in wiki_lines:
+            new_filestr += line + '\n'
+
+        if tools.check_is_changed(filename, new_filestr):
+            with open(filename, "w") as f:
+                f.write(new_filestr)
+            print(f'Updated file : {filename}')
+        else:
+            print(f'File at {filename} is unchanged.')
+
 
 
     def get_CPA_tag(self,i_cpa=None):

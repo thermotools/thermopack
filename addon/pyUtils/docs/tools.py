@@ -31,7 +31,8 @@ def check_is_changed(old_file, new_file_str):
         return True
 
     for old_line, new_line in zip(old_lines, new_lines):
-        if ('Generated at' in old_line) and ('Generated at' in new_line):
+        if (('Generated at' in old_line) and ('Generated at' in new_line)) \
+            or (('Time stamp' in old_line) and ('Time stamp' in new_line)):
             continue
         if old_line != new_line:
             return True
