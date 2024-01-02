@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2023-11-16T19:47:20.974576
+Generated at: 2024-01-02T14:27:28.808796
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -30,8 +30,8 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
     * [solid_enthalpy](#solid_enthalpyself-temp-press-x-dhdtnone-dhdpnone)
-    * [solid_entropy](#solid_entropyself-temp-press-x-dhdtnone-dhdpnone)
-    * [solid_volume](#solid_volumeself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_entropy](#solid_entropyself-temp-press-x-dsdtnone-dsdpnone)
+    * [solid_volume](#solid_volumeself-temp-press-x-dvdtnone-dvdpnone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
@@ -491,8 +491,8 @@ Computing properties as a function of temperature and pressure. Derivatives retu
     * [idealenthalpysingle](#idealenthalpysingleself-temp-j-dhdtnone)
     * [idealentropysingle](#idealentropysingleself-temp-press-j-dsdtnone-dsdpnone)
     * [solid_enthalpy](#solid_enthalpyself-temp-press-x-dhdtnone-dhdpnone)
-    * [solid_entropy](#solid_entropyself-temp-press-x-dhdtnone-dhdpnone)
-    * [solid_volume](#solid_volumeself-temp-press-x-dhdtnone-dhdpnone)
+    * [solid_entropy](#solid_entropyself-temp-press-x-dsdtnone-dsdpnone)
+    * [solid_volume](#solid_volumeself-temp-press-x-dvdtnone-dvdpnone)
     * [specific_volume](#specific_volumeself-temp-press-x-phase-dvdtnone-dvdpnone-dvdnnone)
     * [speed_of_sound](#speed_of_soundself-temp-press-x-y-z-betav-betal-phase)
     * [thermo](#thermoself-temp-press-x-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone-ophasenone-vnone)
@@ -672,10 +672,6 @@ Calculate specific solid-phase enthalpy Note that the order of the output match 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
-
 &nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
@@ -694,8 +690,8 @@ Calculate specific solid-phase enthalpy Note that the order of the output match 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `solid_entropy(self, temp, press, x, dhdt=None, dhdp=None)`
-Calculate specific solid-phase entropy Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp only are flags to enable calculation.
+### `solid_entropy(self, temp, press, x, dsdt=None, dsdp=None)`
+Calculate specific solid-phase entropy Note that the order of the output match the default order of input for the differentials. Note further that dsdt, dsdp only are flags to enable calculation.
 
 #### Args:
 
@@ -711,15 +707,11 @@ Calculate specific solid-phase entropy Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **dsdt (logical, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (logical, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **dsdp (logical, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
@@ -733,8 +725,8 @@ Calculate specific solid-phase entropy Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `solid_volume(self, temp, press, x, dhdt=None, dhdp=None)`
-Calculate specific solid-phase volume Note that the order of the output match the default order of input for the differentials. Note further that dhdt, dhdp only are flags to enable calculation.
+### `solid_volume(self, temp, press, x, dvdt=None, dvdp=None)`
+Calculate specific solid-phase volume Note that the order of the output match the default order of input for the differentials. Note further that dsdt, dsdp only are flags to enable calculation.
 
 #### Args:
 
@@ -750,15 +742,11 @@ Calculate specific solid-phase volume Note that the order of the output match th
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
-
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **dvdt (logical, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **dhdp (logical, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **dvdp (logical, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
