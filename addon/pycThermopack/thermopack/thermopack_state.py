@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import inspect
 from types import MethodType
+from . import utils
 
 class State(object):
     """
@@ -246,7 +247,7 @@ class State(object):
         """ Specific entalpy (J/mol)
         """
         if self._h is None:
-            self._h, = self.eos.enthalpy_tv(self._T, self.specific_volume, self._x)
+            self._h = utils.unpack_property(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x))
         return self._h
 
     @property
@@ -259,7 +260,7 @@ class State(object):
     def enthalpy(self):
         """ Entalpy (J)
         """
-        return self.specific_enthalpy*self._n_tot
+        return self.specific_enthalpy * self._n_tot
 
     @property
     def H(self):
@@ -271,7 +272,7 @@ class State(object):
     def enthalpy_density(self):
         """ Entalpy density (J/m3)
         """
-        return self.specific_enthalpy/self._v
+        return self.specific_enthalpy / self._v
 
     @property
     def h_dens(self):
@@ -284,7 +285,7 @@ class State(object):
         """ Specific residual entalpy (J/mol)
         """
         if self._h_res is None:
-            self._h_res, = self.eos.enthalpy_tv(self._T, self.specific_volume, self._x, property_flag="R")
+            self._h_res = utils.unpack_property(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._h_res
 
     @property
@@ -297,7 +298,7 @@ class State(object):
     def residual_enthalpy_density(self):
         """ Residual entalpy (J/m3)
         """
-        return self.specific_residual_enthalpy/self._v
+        return self.specific_residual_enthalpy / self._v
 
     @property
     def h_res_dens(self):
@@ -309,7 +310,7 @@ class State(object):
     def residual_enthalpy(self):
         """ Residual entalpy (J)
         """
-        return self.specific_residual_enthalpy*self._n_tot
+        return self.specific_residual_enthalpy * self._n_tot
 
     @property
     def H_res(self):
@@ -322,7 +323,7 @@ class State(object):
         """ Specific entropy (J/mol/K)
         """
         if self._s is None:
-            self._s, = self.eos.entropy_tv(self._T, self.specific_volume, self._x)
+            self._s = utils.unpack_property(self.eos.entropy_tv(self._T, self.specific_volume, self._x))
         return self._s
 
     @property
@@ -335,7 +336,7 @@ class State(object):
     def entropy(self):
         """ Entropy (J/K)
         """
-        return self.specific_entropy*self._n_tot
+        return self.specific_entropy * self._n_tot
 
     @property
     def S(self):
@@ -347,7 +348,7 @@ class State(object):
     def entropy_density(self):
         """ Entropy density (J/K/m3)
         """
-        return self.specific_entropy/self._v
+        return self.specific_entropy / self._v
 
     @property
     def s_dens(self):
@@ -360,7 +361,7 @@ class State(object):
         """ Specific residual entropy (J/mol/K)
         """
         if self._s_res is None:
-            self._s_res, = self.eos.entropy_tv(self._T, self.specific_volume, self._x, property_flag="R")
+            self._s_res = utils.unpack_property(self.eos.entropy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._s_res
 
     @property
@@ -373,7 +374,7 @@ class State(object):
     def residual_entropy_density(self):
         """ Residual entropy density (J/K/m3)
         """
-        return self.specific_residual_entropy/self._v
+        return self.specific_residual_entropy / self._v
 
     @property
     def s_res_dens(self):
@@ -385,7 +386,7 @@ class State(object):
     def residual_entropy(self):
         """ Residual entropy (J/K)
         """
-        return self.specific_residual_entropy*self._n_tot
+        return self.specific_residual_entropy * self._n_tot
 
     @property
     def S_res(self):
@@ -398,7 +399,7 @@ class State(object):
         """ Specific Helmholtz energy (J/mol)
         """
         if self._a is None:
-            self._a, = self.eos.helmholtz_tv(self._T, self.specific_volume, self._x)
+            self._a = utils.unpack_property(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x))
         return self._a
 
     @property
@@ -423,7 +424,7 @@ class State(object):
     def helmholtz_energy_density(self):
         """ Helmholtz energy densty (J/m3)
         """
-        return self.specific_helmholtz_energy/self._v
+        return self.specific_helmholtz_energy / self._v
 
     @property
     def a_dens(self):
@@ -436,7 +437,7 @@ class State(object):
         """ Specific residual Helmholtz energy (J/mol)
         """
         if self._a_res is None:
-            self._a_res, = self.eos.helmholtz_tv(self._T, self.specific_volume, self._x, property_flag="R")
+            self._a_res = utils.unpack_property(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._a_res
 
     @property
@@ -449,7 +450,7 @@ class State(object):
     def residual_helmholtz_energy_density(self):
         """ Residual Helmholtz energy density (J/m3)
         """
-        return self.specific_residual_helmholtz_energy/self._v
+        return self.specific_residual_helmholtz_energy / self._v
 
     @property
     def a_res_dens(self):
@@ -461,7 +462,7 @@ class State(object):
     def residual_helmholtz_energy(self):
         """ Residual Helmholtz energy (J/mol)
         """
-        return self.specific_residual_helmholtz_energy*self._n_tot
+        return self.specific_residual_helmholtz_energy * self._n_tot
 
     @property
     def A_res(self):
@@ -474,7 +475,7 @@ class State(object):
         """ Specific energy (J/mol)
         """
         if self._u is None:
-            self._u, = self.eos.internal_energy_tv(self._T, self.specific_volume, self._x)
+            self._u = utils.unpack_property(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x))
         return self._u
 
     @property
@@ -487,7 +488,7 @@ class State(object):
     def energy(self):
         """ Energy (J)
         """
-        return self.specific_energy*self._n_tot
+        return self.specific_energy * self._n_tot
 
     @property
     def U(self):
@@ -499,7 +500,7 @@ class State(object):
     def energy_density(self):
         """ Energy density (J/m3)
         """
-        return self.specific_energy/self._v
+        return self.specific_energy / self._v
 
     @property
     def u_dens(self):
@@ -512,7 +513,7 @@ class State(object):
         """ Specific residual energy (J/mol)
         """
         if self._u_res is None:
-            self._u_res, = self.eos.internal_energy_tv(self._T, self.specific_volume, self._x, property_flag="R")
+            self._u_res = utils.unpack_property(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._u_res
 
     @property
@@ -525,7 +526,7 @@ class State(object):
     def residual_energy(self):
         """ Residual energy (J)
         """
-        return self.specific_residual_energy*self._n_tot
+        return self.specific_residual_energy * self._n_tot
 
     @property
     def U_res(self):
@@ -537,7 +538,7 @@ class State(object):
     def residual_energy_density(self):
         """ Residual energy density (J/m3)
         """
-        return self.specific_residual_energy/self._v
+        return self.specific_residual_energy / self._v
 
     @property
     def u_res_dens(self):
@@ -550,7 +551,7 @@ class State(object):
         """ Chemical potential (J/mol)
         """
         if self._mu is None:
-            self._mu, = self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x)
+            self._mu = utils.unpack_property(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x))
         return self._mu
 
     @property
@@ -564,7 +565,7 @@ class State(object):
         """ Residual chemical potential (J/mol)
         """
         if self._mu_res is None:
-            self._mu_res, = self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x, property_flag="R")
+            self._mu_res = utils.unpack_property(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._mu_res
 
     @property
@@ -625,9 +626,9 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         x, y, betaV, betaL, phase = eos.two_phase_tpflash(temp=T, press=p, z=z)
-        vg, = eos.specific_volume(T, p, y, eos.VAPPH) \
+        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH)) \
             if phase in [eos.VAPPH, eos.TWOPH] else (None,)
-        vl, = eos.specific_volume(T, p, x, eos.LIQPH) \
+        vl = utils.unpack_property(eos.specific_volume(T, p, x, eos.LIQPH)) \
             if phase in [eos.LIQPH, eos.TWOPH] else (None,)
         vapour = State(eos=eos, T=T, v=vg, n=y, p=p,
                       ph=eos.VAPPH, n_tot=betaV,
@@ -652,8 +653,8 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         p, y = eos.bubble_pressure(temp=T, z=z)
-        vg, = eos.specific_volume(T, p, y, eos.VAPPH)
-        vl, = eos.specific_volume(T, p, z, eos.LIQPH)
+        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH))
+        vl = utils.unpack_property(eos.specific_volume(T, p, z, eos.LIQPH))
         vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
@@ -673,8 +674,8 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         T, y = eos.bubble_temperature(press=p, z=z)
-        vg, = eos.specific_volume(T, p, y, eos.VAPPH)
-        vl, = eos.specific_volume(T, p, z, eos.LIQPH)
+        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH))
+        vl = utils.unpack_property(eos.specific_volume(T, p, z, eos.LIQPH))
         vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
@@ -847,9 +848,9 @@ class PhaseDiagram(object):
         x, y, p = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
-            vg, = eos.specific_volume(T, p[i], yy, eos.VAPPH)
+            vg = utils.unpack_property(eos.specific_volume(T, p[i], yy, eos.VAPPH))
             xx = np.array([x[i], 1-x[i]])
-            vl, = eos.specific_volume(T, p[i], xx, eos.LIQPH)
+            vl = utils.unpack_property(eos.specific_volume(T, p[i], xx, eos.LIQPH))
             vapour = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
@@ -877,9 +878,9 @@ class PhaseDiagram(object):
         x, y, T = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
-            vg, = eos.specific_volume(T[i], p, yy, eos.VAPPH)
+            vg = utils.unpack_property(eos.specific_volume(T[i], p, yy, eos.VAPPH))
             xx = np.array([x[i], 1-x[i]])
-            vl, = eos.specific_volume(T[i], p, xx, eos.LIQPH)
+            vl = utils.unpack_property(eos.specific_volume(T[i], p, xx, eos.LIQPH))
             vapour = State(eos=eos, T=T[i], V=vg, n=yy, p=p, n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T[i], V=vl, n=xx, p=p, n_tot=1.0,
@@ -935,12 +936,12 @@ class MetaCurve(object):
         for i in range(len(vz)):
             if phase == eos.LIQPH:
                 vl = vz[i]
-                vg = 1.0/np.sum(rho[i,:])
+                vg = 1.0 / np.sum(rho[i,:])
                 x = z
-                y = rho[i,:]*vg
+                y = rho[i,:] * vg
             else:
                 vg = vz[i]
-                vl = 1.0/np.sum(rho[i,:])
+                vl = 1.0 / np.sum(rho[i,:])
                 y = z
                 x = rho[i,:]*vl
             vapour = State(eos=eos, T=T, V=vg, n=y, n_tot=1.0,
@@ -981,7 +982,7 @@ class SpinodalCurve(object):
             initial_pressure (float): Initial pressure (Pa). Defaults to 1.0e5.
             initial_liquid_temperature (float, optional): Initial temperature on liquid spinodal (K).
         """
-        T,v,P = eos.spinodal(z,
+        T, v, P = eos.spinodal(z,
                              initial_pressure=1.0e5,
                              initial_liquid_temperature=None,
                              dlnv=None,

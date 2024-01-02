@@ -583,7 +583,6 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
             dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
@@ -629,21 +628,21 @@ class thermo(object):
         if not dhdp is None:
             return_tuple += (dhdp_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, None), 'tpn')
+        return prop.unpack()
 
-    def solid_entropy(self, temp, press, x, dhdt=None, dhdp=None):
+    def solid_entropy(self, temp, press, x, dsdt=None, dsdp=None):
         """Tp-property
         Calculate specific solid-phase entropy
         Note that the order of the output match the default order of input for the differentials.
-        Note further that dhdt, dhdp only are flags to enable calculation.
+        Note further that dsdt, dsdp only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
-            dhdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dhdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
         Returns:
             float: Specific entropy (J/mol.K), and optionally differentials
@@ -654,16 +653,16 @@ class thermo(object):
         temp_c = c_double(temp)
         press_c = c_double(press)
         x_c = (c_double * len(x))(*x)
-        h_c = c_double(0.0)
+        s_c = c_double(0.0)
 
-        if dhdt is None:
-            dhdt_c = null_pointer
+        if dsdt is None:
+            dsdt_c = null_pointer
         else:
-            dhdt_c = POINTER(c_double)(c_double(0.0))
-        if dhdp is None:
-            dhdp_c = null_pointer
+            dsdt_c = POINTER(c_double)(c_double(0.0))
+        if dsdp is None:
+            dsdp_c = null_pointer
         else:
-            dhdp_c = POINTER(c_double)(c_double(0.0))
+            dsdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_entropy.argtypes = [POINTER(c_double),
                                                 POINTER(c_double),
@@ -677,31 +676,31 @@ class thermo(object):
         self.solideos_solid_entropy(byref(temp_c),
                                     byref(press_c),
                                     x_c,
-                                    byref(h_c),
-                                    dhdt_c,
-                                    dhdp_c)
+                                    byref(s_c),
+                                    dsdt_c,
+                                    dsdp_c)
 
-        return_tuple = (h_c.value, )
-        if not dhdt is None:
-            return_tuple += (dhdt_c[0], )
-        if not dhdp is None:
-            return_tuple += (dhdp_c[0], )
+        return_tuple = (s_c.value, )
+        if not dsdt is None:
+            return_tuple += (dsdt_c[0], )
+        if not dsdp is None:
+            return_tuple += (dsdp_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, None), 'tpn')
+        return prop.unpack()
 
-    def solid_volume(self, temp, press, x, dhdt=None, dhdp=None):
+    def solid_volume(self, temp, press, x, dvdt=None, dvdp=None):
         """Tp-property
         Calculate specific solid-phase volume
         Note that the order of the output match the default order of input for the differentials.
-        Note further that dhdt, dhdp only are flags to enable calculation.
+        Note further that dsdt, dsdp only are flags to enable calculation.
 
         Args:
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
-            dhdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
-            dhdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
 
         Returns:
             float: Specific volume (m3/mol), and optionally differentials
@@ -714,14 +713,14 @@ class thermo(object):
         x_c = (c_double * len(x))(*x)
         h_c = c_double(0.0)
 
-        if dhdt is None:
-            dhdt_c = null_pointer
+        if dvdt is None:
+            dvdt_c = null_pointer
         else:
-            dhdt_c = POINTER(c_double)(c_double(0.0))
-        if dhdp is None:
-            dhdp_c = null_pointer
+            dvdt_c = POINTER(c_double)(c_double(0.0))
+        if dvdp is None:
+            dvdp_c = null_pointer
         else:
-            dhdp_c = POINTER(c_double)(c_double(0.0))
+            dvdp_c = POINTER(c_double)(c_double(0.0))
 
         self.solideos_solid_volume.argtypes = [POINTER(c_double),
                                                POINTER(c_double),
@@ -736,16 +735,17 @@ class thermo(object):
                             byref(press_c),
                             x_c,
                             byref(h_c),
-                            dhdt_c,
-                            dhdp_c)
+                            dvdt_c,
+                            dvdp_c)
 
         return_tuple = (h_c.value, )
-        if not dhdt is None:
-            return_tuple += (dhdt_c[0], )
-        if not dhdp is None:
-            return_tuple += (dhdp_c[0], )
+        if not dvdt is None:
+            return_tuple += (dvdt_c[0], )
+        if not dvdp is None:
+            return_tuple += (dvdp_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, None), 'tpn')
+        return prop.unpack()
 
 
     #################################
@@ -3023,13 +3023,11 @@ class thermo(object):
                 v_vals_single = np.zeros_like(t_vals_single)
                 for i in range(n_c.value):
                     t_vals_single[i] = t_vals[i]
-                    t_vals_single[-i-1] = t_vals[i]
+                    t_vals_single[-i - 1] = t_vals[i]
                     p_vals_single[i] = p_vals[i]
                     p_vals_single[-i-1] = p_vals[i]
-                    v_vals_single[i], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, self.VAPPH)
-                    v_vals_single[-i-1], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, self.LIQPH)
+                    v_vals_single[i] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH))
+                    v_vals_single[-i - 1] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH))
                 return_tuple = (t_vals_single, p_vals_single, v_vals_single)
             else:
                 v_vals = np.zeros_like(t_vals)
@@ -3038,8 +3036,7 @@ class thermo(object):
                         phase = self.VAPPH
                     else:
                         phase = self.LIQPH
-                    v_vals[i], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, phase)
+                    v_vals[i] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, phase))
                 return_tuple += (v_vals, )
 
         if calc_criconden:

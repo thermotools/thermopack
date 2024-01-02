@@ -344,6 +344,9 @@ class Property:
 
         return self.val
 
+def unpack_property(prop):
+    return prop[0] if DIFFERENTIAL_RETURN_MODE == 'v2' else prop
+
 class XYEquilibrium:
 
     def __init__(self, eq, key):
