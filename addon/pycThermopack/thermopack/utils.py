@@ -144,7 +144,7 @@ class BinaryTriplePoint:
         self.exists, self.T, self.p, self.x1, self.y, self.x2 = exists, T, p, x1, y, x2
         self.iterable = [exists, x1, y, x2, p , T]
         self.contents = ['exists', 'x1', 'y', 'x2', 'p', 'T']
-        self.descriptions = {'exists': 'Binary triple point excists',
+        self.descriptions = {'exists': 'Binary triple point exists',
                              'x1' : 'Liquid 1 phase composition',
                              'y' : 'Vapour phase composition',
                              'x2' : 'Liquid 2 phase composition',
@@ -344,7 +344,11 @@ class Property:
 
         return self.val
 
-def unpack_property(prop):
+def back_compatible_unpack(prop):
+    """
+    Use for backwards compatibility with v2. This is a dead simple one-liner, but thermopack_state.py became a lot
+    cleaner when this was put in a function, rather than cluttering the whole thing with a bunch of ternaries.
+    """
     return prop[0] if DIFFERENTIAL_RETURN_MODE == 'v2' else prop
 
 class XYEquilibrium:

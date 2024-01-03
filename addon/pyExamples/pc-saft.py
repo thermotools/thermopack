@@ -23,14 +23,14 @@ for im, m in enumerate(models):
     plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="b",
              label="$T$=223.71 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="b",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="b",
              ls= "-" if im == 0 else "--")
 
     lle, l1ve, l2ve = m.get_binary_pxy(241.33)
     plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="g",
              label="$T$=241.33 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="g",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="g",
              ls= "-" if im == 0 else "--")
 
     lle, l1ve, l2ve = m.get_binary_pxy(271.48)

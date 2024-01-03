@@ -3026,8 +3026,8 @@ class thermo(object):
                     t_vals_single[-i - 1] = t_vals[i]
                     p_vals_single[i] = p_vals[i]
                     p_vals_single[-i-1] = p_vals[i]
-                    v_vals_single[i] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH))
-                    v_vals_single[-i - 1] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH))
+                    v_vals_single[i] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH))
+                    v_vals_single[-i - 1] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH))
                 return_tuple = (t_vals_single, p_vals_single, v_vals_single)
             else:
                 v_vals = np.zeros_like(t_vals)
@@ -3036,7 +3036,7 @@ class thermo(object):
                         phase = self.VAPPH
                     else:
                         phase = self.LIQPH
-                    v_vals[i] = utils.unpack_property(self.specific_volume(t_vals[i], p_vals[i], z, phase))
+                    v_vals[i] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, phase))
                 return_tuple += (v_vals, )
 
         if calc_criconden:

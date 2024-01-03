@@ -247,7 +247,7 @@ class State(object):
         """ Specific entalpy (J/mol)
         """
         if self._h is None:
-            self._h = utils.unpack_property(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x))
+            self._h = utils.back_compatible_unpack(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x))
         return self._h
 
     @property
@@ -285,7 +285,7 @@ class State(object):
         """ Specific residual entalpy (J/mol)
         """
         if self._h_res is None:
-            self._h_res = utils.unpack_property(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
+            self._h_res = utils.back_compatible_unpack(self.eos.enthalpy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._h_res
 
     @property
@@ -323,7 +323,7 @@ class State(object):
         """ Specific entropy (J/mol/K)
         """
         if self._s is None:
-            self._s = utils.unpack_property(self.eos.entropy_tv(self._T, self.specific_volume, self._x))
+            self._s = utils.back_compatible_unpack(self.eos.entropy_tv(self._T, self.specific_volume, self._x))
         return self._s
 
     @property
@@ -361,7 +361,7 @@ class State(object):
         """ Specific residual entropy (J/mol/K)
         """
         if self._s_res is None:
-            self._s_res = utils.unpack_property(self.eos.entropy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
+            self._s_res = utils.back_compatible_unpack(self.eos.entropy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._s_res
 
     @property
@@ -399,7 +399,7 @@ class State(object):
         """ Specific Helmholtz energy (J/mol)
         """
         if self._a is None:
-            self._a = utils.unpack_property(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x))
+            self._a = utils.back_compatible_unpack(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x))
         return self._a
 
     @property
@@ -437,7 +437,7 @@ class State(object):
         """ Specific residual Helmholtz energy (J/mol)
         """
         if self._a_res is None:
-            self._a_res = utils.unpack_property(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x, property_flag="R"))
+            self._a_res = utils.back_compatible_unpack(self.eos.helmholtz_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._a_res
 
     @property
@@ -475,7 +475,7 @@ class State(object):
         """ Specific energy (J/mol)
         """
         if self._u is None:
-            self._u = utils.unpack_property(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x))
+            self._u = utils.back_compatible_unpack(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x))
         return self._u
 
     @property
@@ -513,7 +513,7 @@ class State(object):
         """ Specific residual energy (J/mol)
         """
         if self._u_res is None:
-            self._u_res = utils.unpack_property(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
+            self._u_res = utils.back_compatible_unpack(self.eos.internal_energy_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._u_res
 
     @property
@@ -551,7 +551,7 @@ class State(object):
         """ Chemical potential (J/mol)
         """
         if self._mu is None:
-            self._mu = utils.unpack_property(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x))
+            self._mu = utils.back_compatible_unpack(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x))
         return self._mu
 
     @property
@@ -565,7 +565,7 @@ class State(object):
         """ Residual chemical potential (J/mol)
         """
         if self._mu_res is None:
-            self._mu_res = utils.unpack_property(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x, property_flag="R"))
+            self._mu_res = utils.back_compatible_unpack(self.eos.chemical_potential_tv(self._T, self.specific_volume, self._x, property_flag="R"))
         return self._mu_res
 
     @property
@@ -626,9 +626,9 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         x, y, betaV, betaL, phase = eos.two_phase_tpflash(temp=T, press=p, z=z)
-        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH)) \
+        vg = utils.back_compatible_unpack(eos.specific_volume(T, p, y, eos.VAPPH)) \
             if phase in [eos.VAPPH, eos.TWOPH] else (None,)
-        vl = utils.unpack_property(eos.specific_volume(T, p, x, eos.LIQPH)) \
+        vl = utils.back_compatible_unpack(eos.specific_volume(T, p, x, eos.LIQPH)) \
             if phase in [eos.LIQPH, eos.TWOPH] else (None,)
         vapour = State(eos=eos, T=T, v=vg, n=y, p=p,
                       ph=eos.VAPPH, n_tot=betaV,
@@ -653,8 +653,8 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         p, y = eos.bubble_pressure(temp=T, z=z)
-        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH))
-        vl = utils.unpack_property(eos.specific_volume(T, p, z, eos.LIQPH))
+        vg = utils.back_compatible_unpack(eos.specific_volume(T, p, y, eos.VAPPH))
+        vl = utils.back_compatible_unpack(eos.specific_volume(T, p, z, eos.LIQPH))
         vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
@@ -674,8 +674,8 @@ class Equilibrium(object):
             equilibrium: Equilibrium state
         """
         T, y = eos.bubble_temperature(press=p, z=z)
-        vg = utils.unpack_property(eos.specific_volume(T, p, y, eos.VAPPH))
-        vl = utils.unpack_property(eos.specific_volume(T, p, z, eos.LIQPH))
+        vg = utils.back_compatible_unpack(eos.specific_volume(T, p, y, eos.VAPPH))
+        vl = utils.back_compatible_unpack(eos.specific_volume(T, p, z, eos.LIQPH))
         vapour = State(eos=eos, T=T, V=vg, n=y, p=p, ph=eos.VAPPH, n_tot=0.0,
                       init_specific=True)
         liquid = State(eos=eos, T=T, V=vl, n=z, p=p, ph=eos.LIQPH, n_tot=1.0,
@@ -848,9 +848,9 @@ class PhaseDiagram(object):
         x, y, p = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
-            vg = utils.unpack_property(eos.specific_volume(T, p[i], yy, eos.VAPPH))
+            vg = utils.back_compatible_unpack(eos.specific_volume(T, p[i], yy, eos.VAPPH))
             xx = np.array([x[i], 1-x[i]])
-            vl = utils.unpack_property(eos.specific_volume(T, p[i], xx, eos.LIQPH))
+            vl = utils.back_compatible_unpack(eos.specific_volume(T, p[i], xx, eos.LIQPH))
             vapour = State(eos=eos, T=T, V=vg, n=yy, p=p[i], n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T, V=vl, n=xx, p=p[i], n_tot=1.0,
@@ -878,9 +878,9 @@ class PhaseDiagram(object):
         x, y, T = L1VE
         for i in range(len(x)):
             yy = np.array([y[i], 1-y[i]])
-            vg = utils.unpack_property(eos.specific_volume(T[i], p, yy, eos.VAPPH))
+            vg = utils.back_compatible_unpack(eos.specific_volume(T[i], p, yy, eos.VAPPH))
             xx = np.array([x[i], 1-x[i]])
-            vl = utils.unpack_property(eos.specific_volume(T[i], p, xx, eos.LIQPH))
+            vl = utils.back_compatible_unpack(eos.specific_volume(T[i], p, xx, eos.LIQPH))
             vapour = State(eos=eos, T=T[i], V=vg, n=yy, p=p, n_tot=1.0,
                           init_specific=True)
             liquid = State(eos=eos, T=T[i], V=vl, n=xx, p=p, n_tot=1.0,
