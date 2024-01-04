@@ -62,7 +62,7 @@ There are a variety of flash interfaces in ThermoPack, which all return equivale
 * `x` (`ndarray[float]`) : Liquid phase molar composition
 * `y` (`ndarray[float]`) : Vapour phase molar composition
 * `betaV` (`float`) : Equilibrium Vapour fraction
-* `betaL` (`float`) : Equilibirum Liquid fraction
+* `betaL` (`float`) : Equilibrium Liquid fraction
 
 # XYDiagram
 
@@ -79,13 +79,13 @@ The `XYDiagram` struct is iterable, and in practice it is often unpacked directl
 ```python
 from cubic import PengRobinson
 eos = PengRobinson('C1,NC6') # PR eos for methane/hexane mixture
-lle, l1ve, l2ve = eos.get_binary_pxy(1e5) # Binary pxy-diagram starting at p = 1 bar
+lle, l1ve, l2ve = eos.get_binary_pxy(300) # Binary pxy-diagram at 300 K
 ```
 
 The above is equivalent to
 
 ```python
-xydiag = eos.get_binary_pxy(1e5) # Binary pxy-diagram starting at p = 1 bar
+xydiag = eos.get_binary_pxy(300) # Binary pxy-diagram at 300 K
 lle = xydiag.lle
 l1ve = xydiag.l1ve
 l2ve = xydiag.l2ve
@@ -106,10 +106,10 @@ The phase boundaries in the binary XY-diagrams are held in `PxyEquilibrium` and 
 Thus, to plot the binary phase diagram we can use
 
 ```python
-lle, l1ve, l2ve = eos.get_binary_pxy(1e5) # Binary pxy-diagram starting at p = 1 bar
+lle, l1ve, l2ve = eos.get_binary_pxy(300) # Binary pxy-diagram at 300 K
 
-plt.plot(lle.x1, lle.p) # Liquid 1 composition
-plt.plot(lle.x2, lle.p) # Liquid 2 composition
+plt.plot(lle.x1, lle.p) # Liquid 1 miscibility composition
+plt.plot(lle.x2, lle.p) # Liquid 2 miscibility composition
 
 plt.plot(l1ve.x, l1ve.p) # Liquid 1 bubble line
 plt.plot(l1ve.y, l1ve.p) # Liquid 1 dew line
