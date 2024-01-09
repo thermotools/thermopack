@@ -72,3 +72,6 @@ class multiparam(thermo):
                                             ref_state_len)
 
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
+
+        if "MEOS" == eos.upper():
+            self.set_numerical_robustness_level(level=1)
