@@ -103,6 +103,8 @@ module thermopack_var
     integer :: eosidx=0
     character(len=label_len) :: label
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME
+    !> Robustness level: increase to maximize numerical robustness.
+    integer :: robustness_level = 0
 
     !< Gas constant usde by current model
     real :: Rgas = Rgas_default !< J/mol/K
@@ -165,12 +167,19 @@ contains
 
   subroutine set_numerical_robustness_level(level)
     integer, intent(in) :: level
+    ! Locals
+    type(thermo_model), pointer :: p_eos
+    p_eos => get_active_thermo_model()
+    p_eos%robustness_level = level
     robustness_level = level
   end subroutine set_numerical_robustness_level
 
   function get_numerical_robustness_level() result(level)
     integer :: level
-    level = robustness_level
+    ! Locals
+    type(thermo_model), pointer :: p_eos
+    p_eos => get_active_thermo_model()
+    level = p_eos%robustness_level
   end function get_numerical_robustness_level
 
   function get_active_thermo_model() result(p_eos)
