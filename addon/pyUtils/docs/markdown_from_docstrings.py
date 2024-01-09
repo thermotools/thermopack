@@ -92,6 +92,7 @@ from thermopack.cpa import cpa
 from thermopack.extended_csp import ext_csp
 from thermopack.multiparameter import multiparam
 from tools import remove_illegal_link_chars, check_is_changed, write_file, THERMOPACK_ROOT, MARKDOWN_DIR
+from tools import update_v220_method_docs
 
 
 def get_autogen_header(classname):
@@ -363,7 +364,7 @@ def thermo_to_markdown():
                                       'returned by methods in this section are computed as functions of (T, p, n).',
                        'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
                                         ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
-                                        ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
+                                        ' property interfaces](more_advanced.html) for further explanation.',
                        'Other property' : 'Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
@@ -588,7 +589,7 @@ def multiparam_to_markdown():
                 f'from the `thermo` class, and  is the interface to the \n' \
                 f'{eosname} Equations of State. Selection of different multiparameter equations of state is done by ' \
                  f'passing an identifier string to the constructor. For information on available multiparameter equations ' \
-                 f'of state, see the page on [available equations of state.](/thermopack/vcurrent/method_docs.md)'
+                 f'of state, see the page on [available equations of state.](method_docs.md)\n\n'
 
     class_methods = inspect.getmembers(multiparam, predicate=inspect.isfunction)
     parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
@@ -608,3 +609,4 @@ if __name__ == '__main__':
     pets_to_markdown()
     extcsp_to_markdown()
     multiparam_to_markdown()
+    update_v220_method_docs()
