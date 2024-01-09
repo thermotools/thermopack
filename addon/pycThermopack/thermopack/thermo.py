@@ -80,6 +80,10 @@ class thermo(object):
         self.s_get_rgas = getattr(
             self.tp, self.get_export_name("thermopack_var", "get_rgas"))
         self.nc = None
+        self.s_get_numerical_robustness_level = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_numerical_robustness_level"))
+        self.s_set_numerical_robustness_level = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_numerical_robustness_level"))
         self.s_get_tmin = getattr(
             self.tp, self.get_export_name("thermopack_var", "get_tmin"))
         self.s_set_tmin = getattr(
@@ -903,6 +907,34 @@ class thermo(object):
         self.s_get_rgas.restype = c_double
         rgas = self.s_get_rgas()
         return rgas
+
+    def set_numerical_robustness_level(self, level):
+        """Utility
+        Set numerical robustness level in Thermopack, where 0 is the default
+        and higher levels increase robustness.
+        
+        Args:
+            level (integer): robustness_level
+        """
+        self.activate()
+        level_c = c_int(level)
+        self.s_set_numerical_robustness_level.argtypes = [POINTER(c_int)]
+        self.s_set_numerical_robustness_level.restype = None
+        self.s_set_numerical_robustness_level(byref(level_c))
+
+    def get_numerical_robustness_level(self):
+        """Utility
+        Get numerical robustness level in Thermopack, where 0 is the default
+        and higher levels increase robustness.
+        
+        Returns:
+            level (integer): robustness_level
+        """
+        self.activate()
+        self.s_get_numerical_robustness_level.argtypes = []
+        self.s_get_numerical_robustness_level.restype = c_int
+        level = self.s_get_numerical_robustness_level()
+        return level
 
     def set_tmin(self, temp):
         """Utility
