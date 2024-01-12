@@ -115,6 +115,7 @@
 	*fres_multipol*
 	*multipol_model_control*
 	*lng_ii_pc_saft_tvn*
+	*calc_saft_chain*
 	*setphtolerance*
 	*twophasephflash*
 	*twophasepsflash*

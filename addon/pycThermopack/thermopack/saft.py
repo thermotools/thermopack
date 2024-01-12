@@ -28,6 +28,8 @@ class saft(thermo):
             self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
         self.s_calc_saft_hard_sphere = getattr(
             self.tp, self.get_export_name("saft_interface", "calc_saft_hard_sphere"))
+        self.s_calc_saft_chain = getattr(
+            self.tp, self.get_export_name("saft_interface", "calc_saft_chain"))
         self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name(
             "saft_interface", "calc_hard_sphere_diameter"))
         self.s_calc_hs_diameter_ij = getattr(self.tp, self.get_export_name(
@@ -353,6 +355,55 @@ class saft(thermo):
 
         return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        return return_tuple
+
+    def a_chain(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
+                     a_tv=None, a_tn=None, a_vn=None, a_nn=None):
+        """Utility
+        Calculate chain contribution given temperature, volume and mol numbers. $a = A_{chain}/(nRT)$
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+            a_t (No type, optional): Flag to activate calculation. Defaults to None.
+            a_v (No type, optional): Flag to activate calculation. Defaults to None.
+            a_n (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tt (No type, optional): Flag to activate calculation. Defaults to None.
+            a_vv (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tv (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tn (No type, optional): Flag to activate calculation. Defaults to None.
+            a_vn (No type, optional): Flag to activate calculation. Defaults to None.
+            a_nn (No type, optional): Flag to activate calculation. Defaults to None.
+
+        Returns:
+            ndarry:
+            Optionally differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        a_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        optional_flags = [a_t, a_v, a_n,
+                          a_tt, a_vv, a_tv,
+                          a_tn, a_vn, a_nn]
+        optional_arrayshapes = [(0,), (0,), (len(n),),
+                               (0,), (0,), (0,),
+                               (len(n),), (len(n),), (len(n), len(n))]
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
+        a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c = optional_ptrs
+
+        self.s_calc_saft_chain.argtypes = [POINTER(c_double) for _ in range(13)]
+        self.s_calc_saft_chain.restype = None
+        self.s_calc_saft_chain(byref(temp_c), byref(v_c), n_c, byref(a_c),
+                                    a_t_c, a_v_c, a_n_c,
+                                    a_tt_c, a_tv_c, a_vv_c, a_tn_c, a_vn_c, a_nn_c)
+
+        return_tuple = (a_c.value, )
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        print(round(temp, 1), round(volume * 1e5, 1), n, return_tuple)
         return return_tuple
 
     def de_broglie_wavelength(self, c, temp):

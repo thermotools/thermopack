@@ -677,6 +677,29 @@ contains
     end select
   end subroutine calc_soft_repulsion
 
+  subroutine calc_saft_chain(T, V, n, a, a_T, &
+       a_V, a_n, a_TT, a_TV, a_VV, a_Tn, a_Vn, a_nn)
+    use pc_saft_nonassoc, only: F_Chain_PC_SAFT_TVn, sPCSAFT_eos, PCSAFT_eos
+    use saftvrmie_chain, only: calcAchain
+    use saftvrmie_containers, only: saftvrmie_eos
+    ! Input.
+    real, intent(in) :: T, V, n(nce)
+    ! Output.
+    real, optional, intent(out) :: a, a_T, a_V, a_n(nce)
+    real, optional, intent(out) :: a_TT, a_TV, a_Tn(nce), a_VV, a_Vn(nce), a_nn(nce, nce)
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    ! Calculate the non-association contribution.
+    select type ( p_eos => eos )
+    class is ( PCSAFT_eos )
+      call F_Chain_PC_SAFT_TVn(p_eos,T,V,n,a,F_V=a_V,F_T=a_T,F_n=a_n, &
+           F_VV=a_VV,F_TV=a_TV,F_Vn=a_Vn,F_TT=a_TT,F_Tn=a_Tn,F_nn=a_nn)
+    class default
+      call stoperror("calc_saft_hard_sphere: Wrong eos...")
+    end select
+  end subroutine calc_saft_chain
+
   !> Calculates Hard-sphere diameter
   subroutine calc_hard_sphere_diameter(T,d,d_T)
     use pc_saft_nonassoc, only: calc_d, sPCSAFT_eos
