@@ -1126,6 +1126,41 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, dvdn), 'tpn')
         return prop.unpack()
 
+    def molar_density(self, temp, press, x, phase, drhodt=None, drhodp=None, drhodn=None):
+        """Tp-property
+        Calculate single-phase molar density
+        Note that the order of the output matches the default order of input for the differentials.
+        Note further that drhodt, drhodp and drhodn only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            drhodt (logical, optional): Calculate molar volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            drhodp (logical, optional): Calculate molar volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            drhodn (logical, optional): Calculate molar volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+
+        Returns:
+            float: Molar density (mol/m3), and optionally differentials
+        """
+        if utils.DIFFERENTIAL_RETURN_MODE == 'v2':
+            v_tuple = self.specific_volume(temp, press, x, phase, dvdt=drhodt, dvdp=drhodp, dvdn=drhodn)
+            v, dv = utils.Property.from_return_tuple(v_tuple, (drhodt, drhodp, drhodn), 'tpn')
+        else:
+            v, dv = self.specific_volume(temp, press, x, phase, dvdt=drhodt, dvdp=drhodp, dvdn=drhodn)
+
+        return_tuple = (1 / v, )
+        if drhodt is not None:
+            return_tuple += (- (1 / v**2) * dv.dT, )
+        if drhodp is not None:
+            return_tuple += (- (1 / v**2) * dv.dp, )
+        if drhodn is not None:
+            return_tuple += (- (1 / v**2) * dv.dn, )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (drhodt, drhodp, drhodn), 'tpn')
+        return prop.unpack()
+
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
         """Tp-property
         Calculate single-phase compressibility
