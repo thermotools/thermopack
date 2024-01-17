@@ -677,9 +677,12 @@ contains
     end select
   end subroutine calc_soft_repulsion
 
+  !> Calculates the reduced (dimensionless) Helmholtz energy chain contribution
+  !> a = A_{chain} / nRT, and derivatives.
   subroutine calc_saft_chain(T, V, n, a, a_T, &
        a_V, a_n, a_TT, a_TV, a_VV, a_Tn, a_Vn, a_nn)
-    use pc_saft_nonassoc, only: F_Chain_PC_SAFT_TVn, sPCSAFT_eos, PCSAFT_eos
+    use pc_saft_nonassoc, only: F_Chain_PC_SAFT_TVn, calc_dhs, sPCSAFT_eos, PCSAFT_eos
+    use hardsphere_bmcsl, only: calc_bmcsl_zeta_and_derivatives
     use saftvrmie_chain, only: calcAchain
     use saftvrmie_containers, only: saftvrmie_eos
     ! Input.
@@ -688,15 +691,49 @@ contains
     real, optional, intent(out) :: a, a_T, a_V, a_n(nce)
     real, optional, intent(out) :: a_TT, a_TV, a_Tn(nce), a_VV, a_Vn(nce), a_nn(nce, nce)
     ! Locals
+    real :: F, F_V, F_T, F_n(nce)
+    real :: n_tot
+    integer :: i, j
     class(base_eos_param), pointer :: eos
+    n_tot = sum(n)
     eos => get_active_eos()
-    ! Calculate the non-association contribution.
+    ! Calculate the chain contribution.
     select type ( p_eos => eos )
     class is ( PCSAFT_eos )
-      call F_Chain_PC_SAFT_TVn(p_eos,T,V,n,a,F_V=a_V,F_T=a_T,F_n=a_n, &
-           F_VV=a_VV,F_TV=a_TV,F_Vn=a_Vn,F_TT=a_TT,F_Tn=a_Tn,F_nn=a_nn)
+      call calc_dhs(p_eos, T)
+      call calc_bmcsl_zeta_and_derivatives(nce, V, n, p_eos%dhs, p_eos%zeta, p_eos%m)
+
+      ! F_Chain_PC_SAFT_TVn computes A / (RT) and derivatives, we need to convert output
+      ! to a = A / nRT and associated derivatives with the product rule. Therefore, we also need to compute
+      ! some extra derivatives in some cases. Note: The following can be sped up a bit by adding an if-else tree
+      ! To ensure that only the neccesary derivatives are computed. Essentially:
+      ! a_Tn => Requires a_T
+      ! a_Vn => Requires a_V
+      ! a_n => Requires a
+      ! a_nn => Requires a and a_n
+      call F_Chain_PC_SAFT_TVn(p_eos,T,V,n,F,F_V=F_V,F_T=F_T,F_n=F_n, &
+          F_VV=a_VV,F_TV=a_TV,F_Vn=a_Vn,F_TT=a_TT,F_Tn=a_Tn,F_nn=a_nn)
+
+      if (present(a)) a = F / n_tot
+      if (present(a_V)) a_V = a_V / n_tot
+      if (present(a_T)) a_T = a_T / n_tot
+      if (present(a_n)) a_n = F_n / n_tot - F / (n_tot**2)
+      if (present(a_VV)) a_VV = a_VV / n_tot
+      if (present(a_TV)) a_TV = a_TV / n_tot
+      if (present(a_Vn)) a_Vn = a_Vn / n_tot - F_V / (n_tot**2)
+      if (present(a_TT)) a_TT = a_TT / n_tot
+      if (present(a_Tn)) a_Tn = a_Tn / n_tot - F_T / (n_tot**2)
+      if (present(a_nn)) then
+        do i = 1, nce
+          do j = i, nce
+            a_nn(i, j) = (a_nn(i, j) - (F_n(i) / n_tot) - (F_n(j) / n_tot)) / n_tot
+            a_nn(j, i) = a_nn(i, j)
+          enddo
+        enddo
+        a_nn = a_nn + 2.0 * F / (n_tot**3)
+      endif
     class default
-      call stoperror("calc_saft_hard_sphere: Wrong eos...")
+      call stoperror("calc_saft_chain: Wrong eos...")
     end select
   end subroutine calc_saft_chain
 

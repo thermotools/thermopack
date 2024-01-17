@@ -20,5 +20,12 @@ for i, p in enumerate(p_lst):
     V, = eos.specific_volume(T, p, [n], eos.VAPPH)
     a_chain[i] = eos.a_chain(T, V, [n])[0]
 
+eos = pcsaft('C2')
+T = 300
+n = [1]
+v1, = eos.specific_volume(T, 0.1e5, n, eos.VAPPH)
+v2, = eos.specific_volume(T, 0.1e5, n, eos.VAPPH)
+print(a_chain(T, v1, n)) # Gir a_chain beregnet ved v2, ikke v1
+
 plt.plot(rho_lst, a_chain)
 plt.show()

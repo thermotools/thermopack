@@ -403,7 +403,6 @@ class saft(thermo):
 
         return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-        print(round(temp, 1), round(volume * 1e5, 1), n, return_tuple)
         return return_tuple
 
     def de_broglie_wavelength(self, c, temp):
