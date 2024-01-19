@@ -2902,7 +2902,6 @@ subroutine test_fres(Ti,Vi,ni)
   real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
   real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(nc,nc) :: Fp_nn
-  logical :: call_init
   type(thermo_model), pointer :: act_mod_ptr
   class(saftvrmie_eos), pointer :: eos
   act_mod_ptr => get_active_thermo_model()
@@ -5068,7 +5067,6 @@ subroutine test_a_dispersion(Ti,Vi,ni)
   real :: Fp,Fp_T,Fp_V,Fp_TT,Fp_VV,Fp_TV
   real, dimension(nc) :: Fp_n,Fp_Tn,Fp_Vn
   real, dimension(nc,nc) :: Fp_nn
-  logical :: call_init
   type(thermo_model), pointer :: act_mod_ptr
   class(saftvrmie_eos), pointer :: eos
   act_mod_ptr => get_active_thermo_model()

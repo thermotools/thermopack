@@ -19,32 +19,32 @@ pcps.set_kij(1,2,-0.12) # No rigorous tuning
 plt.figure()
 models = [pcs, pcps]
 for im, m in enumerate(models):
-    LLE, L1VE, L2VE = m.get_binary_pxy(223.71)
-    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="b",
+    lle, l1ve, l2ve = m.get_binary_pxy(223.71)
+    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="b",
              label="$T$=223.71 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="b",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="b",
              ls= "-" if im == 0 else "--")
 
-    LLE, L1VE, L2VE = m.get_binary_pxy(241.33)
-    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="g",
+    lle, l1ve, l2ve = m.get_binary_pxy(241.33)
+    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="g",
              label="$T$=241.33 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="g",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="g",
              ls= "-" if im == 0 else "--")
 
-    LLE, L1VE, L2VE = m.get_binary_pxy(271.48)
-    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="r",
+    lle, l1ve, l2ve = m.get_binary_pxy(271.48)
+    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="r",
              label="$T$=271.48 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="r",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="r",
              ls= "-" if im == 0 else "--")
 
-    LLE, L1VE, L2VE = m.get_binary_pxy(293.4)
-    plt.plot(L1VE[0], L1VE[2]*1.0e-6, color="k",
+    lle, l1ve, l2ve = m.get_binary_pxy(293.4)
+    plt.plot(l1ve.x, l1ve.p * 1.0e-6, color="k",
              label="$T$=293.4 K" if im == 0 else None,
              ls= "-" if im == 0 else "--")
-    plt.plot(L1VE[1], L1VE[2]*1.0e-6, color="k",
+    plt.plot(l1ve.y, l1ve.p * 1.0e-6, color="k",
              ls= "-" if im == 0 else "--")
 
 # Data: doi: 10.1021/ie50531a036
@@ -72,8 +72,8 @@ T, P, v = pcs.get_envelope_twophase(1.0e5, z, minimum_temperature=180.0,
                                     maximum_pressure=1.5e7, calc_v=True)
 Tc, vc, Pc = pcs.critical(z)
 plt.figure()
-plt.plot(T, P*1.0e-6, color="b", label="PC-SAFT")
-plt.plot([Tc], [Pc*1.0e-6], color="b", marker="o")
+plt.plot(T, P * 1.0e-6, color="b", label="PC-SAFT")
+plt.plot([Tc], [Pc * 1.0e-6], color="b", marker="o")
 
 # Do simplified PC-SAFT (doi: 10.1021/ie020753p)
 pcs.init("C1,CO2", simplified=True)
@@ -82,8 +82,8 @@ pcs.init("C1,CO2", simplified=True)
 T, P, v = pcs.get_envelope_twophase(1.0e5, z, minimum_temperature=180.0,
                                     maximum_pressure=1.5e7, calc_v=True)
 Tc, vc, Pc = pcs.critical(z)
-plt.plot(T, P*1.0e-6, color="g", label="sPC-SAFT")
-plt.plot([Tc], [Pc*1.0e-6], color="g", marker="o")
+plt.plot(T, P * 1.0e-6, color="g", label="sPC-SAFT")
+plt.plot([Tc], [Pc * 1.0e-6], color="g", marker="o")
 
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")

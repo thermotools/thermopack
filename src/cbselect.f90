@@ -36,7 +36,7 @@ contains
 
     idx_db = get_mix_db_idx(mrulestr)
     if (idx_db < 0) then
-      call stoperror('unknown mixing rule')
+      call stoperror('unknown mixing rule: '//trim(mrulestr))
     endif
 
     mruleidx = mix_label_db(idx_db)%mix_idx
@@ -184,12 +184,12 @@ contains
     cbeos%mruleid = trim(mrulestr)
 
     if (isHVmixModel(cbeos%mruleidx) .or. cbeos%mruleidx == cbMixNRTL) then
-       call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
+      call cbeos%mixGE%excess_gibbs_allocate_and_init(nc)
     end if
 
     if (cbeos%mruleidx == cbMixWongSandler .or. cbeos%mruleidx == cbMixWSCPA .or. cbeos%mruleidx == cbMixHVWongSandler) then
-       !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
-       call cbeos%mixWS%WS_allocate_and_init(nc)
+      !print *, cbeos%mruleidx, isHVmixModel(cbeos%mruleidx)
+      call cbeos%mixWS%WS_allocate_and_init(nc)
     endif
 
     if (cbeos%mruleidx == cbMixUNIFAC) then
@@ -379,6 +379,7 @@ contains
           cbeos%kij(i,j) = getkij(cbeos,cbeos%eosid,"Classic",&
                param_reference,comp(i)%p_comp%ident,comp(j)%p_comp%ident) !< First get the kij for vdW
           cbeos%kij(j,i) = cbeos%kij(i,j)
+          cbeos%mixGE%mGE = cbeos%mruleidx
           call getInterDataGEij(cbeos%mixGE,cbeos%eosid,param_reference,&
                comp(i)%p_comp%ident,comp(j)%p_comp%ident,i,j,found_ge) !< get both  the ij- and ji-pair
         case (cbMixVdWCPA,cbMixHVCPA,cbMixHVCPA2)
@@ -436,6 +437,66 @@ contains
     return
   end function getCompindex
 
+  subroutine get_binary_cubic_ge_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    use eosdata, only: get_eos_index
+    use mixdatadb, only: interGEdb
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    ! Locals
+    integer :: eosidx
+    uid1 = interGEdb(idx)%uid1
+    uid2 = interGEdb(idx)%uid2
+    call get_eos_index(interGEdb(idx)%eosid, eosidx, eos_subidx)
+    ref = interGEdb(idx)%ref
+    mrule = interGEdb(idx)%mruleid
+    kijvalue = 0 ! Dummy
+  end subroutine get_binary_cubic_ge_db_entry
+
+  subroutine get_binary_cubic_kij_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    use eosdata, only: get_eos_index
+    use mixdatadb, only: kijdb
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    ! Locals
+    integer :: eosidx
+    uid1 = kijdb(idx)%uid1
+    uid2 = kijdb(idx)%uid2
+    call get_eos_index(kijdb(idx)%eosid, eosidx, eos_subidx)
+    ref = kijdb(idx)%ref
+    mrule = kijdb(idx)%mruleid
+    kijvalue = kijdb(idx)%kijvalue
+  end subroutine get_binary_cubic_kij_db_entry
+
+  subroutine get_binary_cubic_lij_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    use eosdata, only: get_eos_index
+    use mixdatadb, only: lijdb
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    ! Locals
+    integer :: eosidx
+    uid1 = lijdb(idx)%uid1
+    uid2 = lijdb(idx)%uid2
+    call get_eos_index(lijdb(idx)%eosid, eosidx, eos_subidx)
+    ref = lijdb(idx)%ref
+    mrule = lijdb(idx)%mruleid
+    kijvalue = lijdb(idx)%lijvalue
+  end subroutine get_binary_cubic_lij_db_entry
+
   !----------------------------------------------------------------------
   !< Retrive the interaction paramtere for the pair uid1 and uid2
   !! \param eosid String variable for eos
@@ -454,56 +515,31 @@ contains
   !!
   !! \author Geir S
   !!
-
-  function getkij (cbeos, eosid, mruleid, ref, uid1, uid2) result(kijvalue)
+  function getkij(cbeos, eosid, mruleid, ref, uid1, uid2) result(kijvalue)
     use mixdatadb
     use eosdata
-    use stringmod, only: str_eq, string_match_val
     use cubic_eos, only: cb_eos
+    use parameters, only: get_binary_interaction_parameter
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     character(len=*), intent(in) :: eosid, mruleid, uid1, uid2, ref
     real :: kijvalue
     ! Locals
-    integer :: i, idx_lowest, match_val
-    logical :: found, candidate_found, ref_match
-    character(len=max(len(eosid),2)) :: eosid_local
-
-    found = .false.
-    eosid_local = eosid
+    real :: default_kijvalue
+    integer :: idx, idx_default
     if (cbeos%eosidx == eosLK) then
-      eosid_local = 'LK'
-      kijvalue = 1.0 !< Default value - no interaction
+      default_kijvalue = 1.0 !< Default value - no interaction
     else
-      kijvalue = 0.0 !< Default value - no interaction
+      default_kijvalue = 0.0 !< Default value - no interaction
     endif
-
-    found = .false.
-    kijvalue = 0
-    idx_lowest = 100000
-    do i=1,maxkij
-      candidate_found = str_eq (eosid_local,kijdb(i)%eosid) .and. str_eq(mruleid,kijdb(i)%mruleid) &
-           .and. ((str_eq(uid1,kijdb(i)%uid1) .and. str_eq(uid2,kijdb(i)%uid2)) &
-           .or.  ( str_eq(uid1,kijdb(i)%uid2) .and. str_eq(uid2,kijdb(i)%uid1)))
-      if (candidate_found) then
-        if (.not. found) then ! we at least found one match
-          kijvalue = kijdb(i)%kijvalue
-        end if
-        found = .true.
-
-        call string_match_val(ref,kijdb(i)%ref,ref_match,match_val)
-        if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
-          idx_lowest = match_val
-          kijvalue = kijdb(i)%kijvalue
-        end if
-      end if
-    enddo
+    kijvalue = get_binary_interaction_parameter(get_binary_cubic_kij_db_entry,maxkij,"Cubic kij",&
+         mruleid,cbeos%subeosidx,uid1,uid2,ref,default_kijvalue,idx,idx_default)
   end function getkij
 
   function getlij(cbeos, eosid, mruleid, ref, uid1, uid2) result(lijvalue)
-    use mixdatadb, only: lijdb, maxlij
-    use stringmod, only: str_eq, string_match_val, str_upcase
+    use mixdatadb, only: maxlij
     use cubic_eos, only: cb_eos
+    use parameters, only: get_binary_interaction_parameter
     implicit none
     class(cb_eos), intent(inout) :: cbeos
     character(len=*), intent(in) :: eosid
@@ -512,80 +548,47 @@ contains
     character(len=*), intent(in) :: ref
     real :: lijvalue
     ! Locals
-    logical :: ref_match
-    integer :: match_val, i, idx_lowest
-    logical :: candidate_found
-    character(len=len_trim(ref)+8) :: ref_local
+    integer :: idx,idx_default
     !
-    ! Use default value if possible:
-    ref_local = trim(ref)
-    call str_upcase(ref_local)
-    if (index(ref_local,"DEFAULT") == 0) then
-      ref_local = trim(ref_local)//"/DEFAULT"
-    endif
-    lijvalue = 0
-    idx_lowest = 100000
-    do i=1,maxlij
-      candidate_found = str_eq(eosid,lijdb(i)%eosid) &
-            .and. str_eq(mruleid,lijdb(i)%mruleid) &
-            .and. ((str_eq(uid1,lijdb(i)%uid1) .and. str_eq(uid2,lijdb(i)%uid2)) &
-            .or.  ( str_eq(uid1,lijdb(i)%uid2) .and. str_eq(uid2,lijdb(i)%uid1)))
-      if (candidate_found) then
-        call string_match_val(ref_local,lijdb(i)%ref,ref_match,match_val)
-        if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
-          idx_lowest = match_val
-          lijvalue = lijdb(i)%lijvalue
-        end if
-      end if
-    enddo
+    lijvalue = get_binary_interaction_parameter(get_binary_cubic_lij_db_entry,maxlij,"Cubic lij",&
+         mruleid,cbeos%subeosidx,uid1,uid2,ref,0.0,idx,idx_default)
   end function getlij
 
   subroutine getInterDataGEij(mGE, eosid, ref, uid1, uid2, &
        indxi, indxj, found)
+    use thermopack_constants, only: eosid_len
     use mixdatadb
     use eosdata
     use cubic_eos, only: mixExcessGibbs, cbMixHuronVidal, cbMixHuronVidal2,&
          cbMixNRTL
-    use stringmod, only: str_eq
+    use parameters, only: get_binary_db_idx
     implicit none
     type(mixExcessGibbs), intent(inout) ::  mGE
     character(len=*), intent(in) :: eosid, uid1, uid2, ref
     integer, intent(in) :: indxi, indxj
     logical, intent(out) :: found
     ! Locals
-    logical :: isHV, isNRTL, isUidMatch
-    integer :: idx, idx_default, i, j
-
-    idx_default = -1
-    idx = 1
-    found = .false.
+    integer :: i, j
+    integer :: idx, idx_default, eosidx, eos_subidx
+    character(len=eosid_len) :: mrule !< Mixing rule
 
     mGE%correlation(indxi, indxj) = 0
     mGE%correlation(indxj, indxi) = 0
 
-    do idx=1,maxinterGEij
-      isUidMatch = (str_eq(uid1,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid2,interGEdb(idx)%uid2)) .OR. &
-           (str_eq(uid2,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid1,interGEdb(idx)%uid2))
-      isHV = ((str_eq ('HV2',interGEdb(idx)%mruleid) &
-           .and. (mGE%mGE == cbMixHuronVidal2)) .OR. &
-           (str_eq ('HV1',interGEdb(idx)%mruleid) &
-           .and. mGE%mGE == cbMixHuronVidal))
-      isNRTL = (str_eq ('NRTL',interGEdb(idx)%mruleid) &
-           .and. mGE%mGE == cbMixNRTL)
-
-      if ( isUidMatch .AND. &
-           str_eq (eosid,interGEdb(idx)%eosid) .AND.&
-           isHV .OR. isNRTL) then
-        if (string_match(ref,interGEdb(idx)%ref)) then
-          found = .true.
-          exit ! Exit do loop
-        else if (string_match("DEFAULT",interGEdb(idx)%ref)) then
-          idx_default = idx
-        endif
-      endif
-    enddo
+    if (mGE%mGE == cbMixHuronVidal2) then
+      mrule = 'HV2'
+    else if (mGE%mGE == cbMixHuronVidal) then
+      mrule = 'HV1'
+    else if (mGE%mGE == cbMixNRTL) then
+      mrule = 'NRTL'
+    else
+      print *,"Mixing rule", mGE%mGE
+      call stoperror("Wrong GE mixing rule for Cubic EOS")
+    endif
+    call get_eos_index(eosid, eosidx, eos_subidx)
+    call get_binary_db_idx(get_binary_cubic_ge_db_entry,maxinterGEij,&
+       mrule,eos_subidx,uid1,uid2,ref,idx,idx_default)
+    found = (idx > 0)
 
     if (.not. found .AND. idx_default > 0) then
       idx = idx_default

@@ -65,6 +65,10 @@ class saft(thermo):
             self.tp, self.get_export_name("saft_interface", "sigma_eff_ij"))
         self.s_epsilon_eff_ij = getattr(
             self.tp, self.get_export_name("saft_interface", "epsilon_eff_ij"))
+        self.s_get_active_assoc_params = getattr(
+            self.tp, self.get_export_name("saft_interface", "getactiveassocparams"))
+        self.s_set_active_assoc_params = getattr(
+            self.tp, self.get_export_name("saft_interface", "setactiveassocparams"))
         self.s_alpha = getattr(
             self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
@@ -527,6 +531,54 @@ class saft(thermo):
         self.s_de_boer_parameter(byref(c_c),
                                  byref(de_boer_c))
         return de_boer_c.value
+
+    def set_pure_assoc_param(self, ic, eps_assoc, beta_assoc):
+        """Utility
+        Set pure association parameters
+
+        Args:
+            ic (int): Component index
+            eps_assoc (float): Association energy (J/mol).
+            beta_assoc (float): Association volume (-)
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        eps_assoc_c = c_double(eps_assoc)
+        beta_assoc_c = c_double(beta_assoc)
+        self.s_set_active_assoc_params.argtypes = [POINTER(c_int),
+                                                   POINTER(c_double),
+                                                   POINTER(c_double)]
+
+        self.s_set_active_assoc_params.restype = None
+
+        self.s_set_active_assoc_params(byref(ic_c),
+                                              byref(eps_assoc_c),
+                                              byref(beta_assoc_c))
+
+    def get_pure_assoc_param(self, ic):
+        """Utility
+        Set pure association parameters
+
+        Args:
+            ic (int): Component index
+        Results:
+            eps_assoc (float): Association energy (J/mol).
+            beta_assoc (float): Association volume (-)
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        eps_assoc_c = c_double(0.0)
+        beta_assoc_c = c_double(0.0)
+        self.s_set_active_assoc_params.argtypes = [POINTER(c_int),
+                                                   POINTER(c_double),
+                                                   POINTER(c_double)]
+
+        self.s_get_active_assoc_params.restype = None
+
+        self.s_get_active_assoc_params(byref(ic_c),
+                                       byref(eps_assoc_c),
+                                       byref(beta_assoc_c))
+        return eps_assoc_c.value, beta_assoc_c.value
 
     def sigma_ij(self, i, j):
         """Utility

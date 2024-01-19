@@ -840,7 +840,7 @@ contains
   end function isGEmixModel
 
   function get_mix_db_idx(short_label) result(idx)
-    use stringmod, only: str_eq, string_match, string_match_val
+    use stringmod, only: str_eq, string_match
     character(len=*), intent(in) :: short_label
     integer :: idx
     ! Locals

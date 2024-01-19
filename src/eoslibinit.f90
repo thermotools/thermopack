@@ -8,7 +8,7 @@ module eoslibinit
     active_thermo_model_is_associated, numAssocSites, Rgas, tpTmin, &
     kRgas
   use eos_container, only: allocate_eos
-  use stringmod,  only: uppercase, str_eq, string_match, string_match_val
+  use stringmod,  only: uppercase, str_eq, string_match
   implicit none
   save
   !
@@ -189,15 +189,17 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
-  subroutine init_fallback_and_redefine_criticals(silent)
+  subroutine init_fallback_and_redefine_criticals(silent, enable_volume_shift)
     use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     use eos_parameters, only: single_eos
+    use volume_shift, only: InitVolumeShift
     !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
+    logical, optional, intent(in) :: enable_volume_shift !< Initialize volume shift
     ! Locals
     integer             :: i
     real                :: Tci, Pci, oi, rhocrit
@@ -235,6 +237,13 @@ contains
       endif
     end select
 
+    if (present(enable_volume_shift)) then
+      if (enable_volume_shift) then
+        act_mod_ptr%cubic_eos_alternative(1)%p_eos%volumeShiftId = &
+             InitVolumeShift(nce, act_mod_ptr%comps, &
+             'PENELOUX', act_mod_ptr%cubic_eos_alternative(1)%p_eos%eosid)
+      endif
+    endif
     select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
       call SelectCubicEOS(nce, act_mod_ptr%comps, p_eos, &
@@ -281,8 +290,6 @@ contains
     character(len=100)               :: mixing_loc, alpha_loc, paramref_loc, beta_loc
     logical                          :: volshift_loc
     type(thermo_model), pointer      :: act_mod_ptr
-    logical                          :: found_tcPR, found_QuantumCubic
-    integer                          :: matchval_tcPR, matchval_QuantumCubic
     ! Get a pointer to the active thermodynamics model
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model has been allocated
@@ -328,8 +335,7 @@ contains
 
     ! Special handling of translated-consistent Peng--Robinson EoS by le Guennec
     ! et al. (10.1016/j.fluid.2016.09.003)
-    call string_match_val("tcPR", paramref_loc, found_tcPR, matchval_tcPR)
-    if (found_tcPR) then
+    if (string_match("tcPR", paramref_loc)) then
       alpha_loc = "TWU"
       volshift_loc = .True.
     end if
@@ -339,8 +345,7 @@ contains
 
     ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
     ! et al. (10.1016/j.fluid.2020.112790)
-    call string_match_val("QuantumCubic", paramref_loc, found_QuantumCubic, matchval_QuantumCubic)
-    if (found_QuantumCubic) then
+    if (string_match("QuantumCubic", paramref_loc)) then
       alpha_loc = "TWU"
       volshift_loc = .True.
       beta_loc = "Quantum"
@@ -413,7 +418,7 @@ contains
     character(len=*), optional, intent(in) :: mixing !< Mixing rule
     character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
     ! Locals
-    integer                          :: ncomp, i, index, matchval_pseudo
+    integer                          :: ncomp, i, index
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
     logical                          :: is_pseudo_comp(nc)
@@ -432,7 +437,7 @@ contains
 
     ! Iterate through all components. If pseudo, update with corresponding value.
     do i=1,nc
-      call string_match_val("PSEUDO", act_mod_ptr%complist(i), is_pseudo_comp(i), matchval_pseudo)
+      is_pseudo_comp(i) = str_eq("PSEUDO", act_mod_ptr%complist(i))
       if (is_pseudo_comp(i)) then
         act_mod_ptr%comps(i)%p_comp%Tc = Tclist(i)
         act_mod_ptr%comps(i)%p_comp%Pc = Pclist(i)
@@ -454,7 +459,7 @@ contains
       mixing_loc = uppercase(mixing)
       if (str_eq(mixing_loc, "Classic")) mixing_loc = "VDW"
     end if
-  
+
     ! Initialize Thermopack
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     type is (cb_eos)
@@ -484,7 +489,7 @@ contains
     character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     !
     character(len=200) :: parameter_reference
-    parameter_reference = "tcPR"
+    parameter_reference = "tcPR/DEFAULT"
     if (present(parameter_ref)) then
       parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
     endif
@@ -499,7 +504,7 @@ contains
   subroutine init_quantum_cubic(comps, mixing)
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in), optional :: mixing !< Mixing rule
-    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="QuantumCubic/tcPR")
+    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="QuantumCubic/tcPR/DEFAULT")
   end subroutine init_quantum_cubic
 
   !----------------------------------------------------------------------------
@@ -1330,7 +1335,7 @@ contains
 
     ! Initialize fallback eos
     act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
+    call init_fallback_and_redefine_criticals(silent=.true., enable_volume_shift=.true.)
 
     ! Calculate reference states
     if (str_eq(meos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then

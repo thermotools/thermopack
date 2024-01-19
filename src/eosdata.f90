@@ -2,7 +2,7 @@
 !> rule and the interaction parameters.
 
 module eosdata
-  use stringmod, only: string_match, str_eq
+  use stringmod, only: str_eq
   use thermopack_constants, only: short_label_len, label_len
   implicit none
   save

@@ -44,6 +44,8 @@ class cpa(cubic):
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_pure_params"))
         # Options methods
         self.s_use_simplified_cpa = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
+        # Info methods
+        self.s_print_cpa_report = getattr(self.tp, self.get_export_name("saft_interface", "print_cpa_report"))
 
         if comps is not None:
             self.init(comps, eos, mixing, alpha, parameter_reference)
@@ -101,6 +103,16 @@ class cpa(cubic):
                                  alpha_len,
                                  ref_string_len)
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
+
+    def print_cpa_report(self):
+        """Utility
+        Print cpa parameters
+        
+        Parameters printed are the five pure parameters
+        a0, b, epsilon, beta, c1, and the binary parameter
+        for the cubic part, kij_a, and for the association part, kij_eps.
+        """
+        self.s_print_cpa_report()
 
     def get_kij(self, c1, c2):
         """Utility
@@ -171,28 +183,32 @@ class cpa(cubic):
 
         self.s_set_pure_params(byref(ic_c), params_c)
 
-    def set_kij(self, c1, c2, kij):
+    def set_kij(self, c1, c2, kij_a, kij_eps):
         """Utility
         Set attractive energy interaction parameter
 
         Args:
             c1 (int): Component one
             c2 (int): Component two
-            kij (array_like): i-j interaction parameter (2 parameters)
+            kij_a (int): cubic i-j interaction parameter 
+            kij_eps (int): association i-j interaction parameter
         """
         self.activate()
         c1_c = c_int(c1)
         c2_c = c_int(c2)
-        kij_c = (c_double * 2)(*kij)
+        kij_a_c = c_double(kij_a)
+        kij_eps_c = c_double(kij_eps)
         self.s_set_kij.argtypes = [POINTER(c_int),
                                    POINTER(c_int),
+                                   POINTER(c_double),
                                    POINTER(c_double)]
 
         self.s_set_kij.restype = None
 
         self.s_set_kij(byref(c1_c),
                        byref(c2_c),
-                       kij_c)
+                       byref(kij_a_c),
+                       byref(kij_eps_c))
 
     def use_simplified_cpa(self, simplified):
         """Utility
