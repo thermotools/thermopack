@@ -30,9 +30,8 @@ int main() {
     std::cout << "\nInit of SRK\n";
     ISO_C_METHOD(thermopack_init_c)("SRK", "Classic",
 				    "Classic", "CO2,N2,C1",
-				    &nph, NULL, NULL, NULL,
-				    NULL, NULL, NULL, NULL);
-
+				    &nph, NULL,"", "", "",
+				    "", "",NULL);
 
     std::cout << "\nConstants\n";
     TMIN = 100.0;
@@ -77,7 +76,7 @@ int main() {
     double Pg(0.0);
     ISO_C_METHOD(thermopack_pressure_c)(&T, &vg, &y[0], &Pg);
     std::cout << "Pg=" << Pg << std::endl;
-    double Pl = MODULE_METHOD(eostv, pressure)(&T, &vl,&x[0], NULL, NULL, NULL, NULL, NULL);
+    double Pl = MODULE_METHOD(eostv, pressure)(&T, &vl, &x[0], NULL, NULL, NULL, NULL, NULL);
     std::cout << "Pl=" << Pl << std::endl;
 
     std::cout << "\nCompressibillit factor\n";
