@@ -33,7 +33,7 @@ extern "C" {
   void ISO_C_METHOD(thermopack_init_c)(const char* eos, const char* mixing,
 				       const char* alpha, const char* comp_string,
 				       int* nphases,
-				       /*Optionals, set to NULL if not available: */
+				       /*Optionals, set to NULL (int/double) and "" (const char*) if not available: */
 				       int* liq_vap_discr_method_in,
 				       const char* csp_eos, const char* csp_ref_comp,
 				       const char* kij_ref, const char* alpha_ref,
@@ -128,17 +128,16 @@ extern "C" {
 					/*Optionals, set to NULL if undesired: */
 					const double* dpdv,
 					const double* dpdt, const double* d2pdv2,
-					const double dpdn[], const int* recalculate);
+					const double dpdn[], const int* contribution);
 
   //---------------------------------------------------------------------//
   // Module parameters/variables
   //---------------------------------------------------------------------//
-
-#define RGAS MODULE_METHOD(thermopack_constants, rgas)
-  extern double RGAS;
-#define TMAX MODULE_METHOD(thermopack_constants, tptmax)
+  #define RGAS MODULE_METHOD(thermopack_var, rgas)
+    extern double RGAS;
+  #define TMAX MODULE_METHOD(thermopack_var, tptmax)
     extern double TMAX;
-#define TMIN MODULE_METHOD(thermopack_constants, tptmin)
+  #define TMIN MODULE_METHOD(thermopack_var, tptmin)
     extern double TMIN;
 
 #endif ///*thermopack_h_included */
