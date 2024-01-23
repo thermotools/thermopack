@@ -1353,12 +1353,10 @@ contains
   !! \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine initialLLtp(T,P,ispec,ierr)
-    use thermopack_var, only: nc
     use eos, only: thermo, getCriticalParam
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
                                  NS_PEGASUS
     use saturation, only: safe_bubP, safe_bubT
-    use thermopack_var, only: tpTmin, tpTmax
     use puresaturation, only: PureSat
     implicit none
     real, intent(inout) :: T,P
@@ -1367,7 +1365,7 @@ contains
     ! Locals
     real, dimension(nc) :: x, w, y, tci, pci, oi, Tbub, Pbub
     real, dimension(nc, nc) :: z
-    real :: Pmax, Tmin, Tmax, P1, P2
+    real :: Tmin, Tmax, P1, P2
     real, parameter :: safetyDt = 1.0e-4
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat

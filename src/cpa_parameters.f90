@@ -5,43 +5,79 @@ MODULE CPA_parameters
   use compdatadb, only: CPAarray, nCPAmodels
   use mixdatadb, only: CPAmaxkij, CPAkijdb, interGEdb, maxinterGEij
   use AssocSchemeUtils
-  use eosdata, only: get_eos_short_label_from_subidx
+  use eosdata, only: get_eos_short_label_from_subidx, get_eos_index
   use stringmod, only: str_eq
   implicit none
   save
 
 contains
 
+  subroutine get_pure_cpa_db_entry(idx, eos_subidx, comp_name, ref)
+    use thermopack_constants, only: ref_len, uid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=uid_len), intent(out) :: comp_name !< Component name
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    ! Locals
+    integer :: eosidx
+    call get_eos_index(CPAarray(idx)%eosid, eosidx, eos_subidx)
+    comp_name = CPAarray(idx)%compName
+    ref = CPAarray(idx)%ref
+  end subroutine get_pure_cpa_db_entry
+
+  subroutine get_binary_cpa_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    ! Locals
+    integer :: eosidx
+    uid1 = CPAkijdb(idx)%uid1
+    uid2 = CPAkijdb(idx)%uid2
+    call get_eos_index(CPAkijdb(idx)%eosid, eosidx, eos_subidx)
+    ref = CPAkijdb(idx)%ref
+    mrule = "" ! Dummy
+    kijvalue = 0 ! Dummy
+  end subroutine get_binary_cpa_db_entry
+
+  subroutine get_binary_cpa_ge_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    ! Locals
+    integer :: eosidx
+    uid1 = interGEdb(idx)%uid1
+    uid2 = interGEdb(idx)%uid2
+    call get_eos_index(interGEdb(idx)%eosid, eosidx, eos_subidx)
+    ref = interGEdb(idx)%ref
+    mrule = interGEdb(idx)%mruleid
+    kijvalue = 0 ! Dummy
+  end subroutine get_binary_cpa_ge_db_entry
+
   !> Get the index in the CPAarray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
-  function getCPAdataIdx(eos,compName,param_ref) result(idx)
+  function getCPAdataIdx(eos,comp_name,param_ref) result(idx)
+    use eosdata, only: get_eos_index
     use thermopack_constants, only: verbose
-    use stringmod, only: string_match
+    use parameters, only: get_pure_data_db_idx
     character(len=*), intent(in) :: eos
-    character(len=*), intent(in) :: compName
+    character(len=*), intent(in) :: comp_name
     character(len=*), intent(in) :: param_ref
-    integer :: idx, idx_default
-    logical :: found
-
-    found = .false.
-    idx_default = -1
-    idx = 1
-    do while (idx <= nCPAmodels .and. .not. found)
-       if ((str_eq(eos,CPAarray(idx)%eosid)) .and. &
-            trim(compName)==trim(CPAarray(idx)%compName)) then
-         if (string_match(param_ref,CPAarray(idx)%ref)) then
-           found = .true.
-           exit
-         elseif (string_match("DEFAULT", CPAarray(idx)%ref)) then
-           idx_default = idx
-         endif
-      endif
-      idx = idx + 1
-    enddo
-
-    if (.not. found) then
+    ! Locals
+    integer :: idx, idx_default, eos_subidx, eosidx
+    call  get_eos_index(eos, eosidx, eos_subidx)
+    call get_pure_data_db_idx(get_pure_cpa_db_entry,nCPAmodels,"CPA",&
+         eos_subidx,comp_name,param_ref,.false.,idx,idx_default)
+    if (idx < 0) then
       if (verbose) then
-        print *, "No CPA parameters for compName, ref ", compName, trim(param_ref)
+        print *, "No CPA parameters for compName, ref ", comp_name, trim(param_ref)
       endif
       if (idx_default > 0) then
         idx = idx_default
@@ -51,7 +87,7 @@ contains
       else
         idx = 0
       endif
-    end if
+    endif
   end function getCPAdataIdx
 
   !> Get information on if it is safe to initialize CPA
@@ -106,7 +142,6 @@ contains
     end do
   end subroutine getCpaPureParams_allcomps
 
-
   subroutine getCpaPureParams_singleComp(compName,eos,ref,&
        found,a0,b,alphaParams,eps,beta,alphaCorrIdx,scheme)
     ! Input
@@ -133,7 +168,6 @@ contains
     alphaCorrIdx = CPAarray(idx)%alphaCorrIdx
     scheme = CPAarray(idx)%assoc_scheme
   end subroutine getCpaPureParams_singleComp
-
 
   subroutine getCpaKijAndCombRules_allComps(nc,comp,eosidx,&
        aEpsBeta_kij,epsbeta_combrules)
@@ -170,62 +204,35 @@ contains
   !> of now this function sets interaction parameters to 0.0 if epsBetaCombRules
   !> is not exactly what is inputted.
   subroutine getCPAkij_epsbeta (eosidx,uid1,uid2,param_ref,found,epsBetaCombRules,kijepsbeta)
-    use stringmod, only: str_eq, string_match
+    use parameters, only: get_binary_db_idx
     integer, intent(in) :: eosidx
     character(len=*), intent(in) :: uid1, uid2
     logical, intent(out) :: found
     integer, intent(out) :: epsBetaCombRules(2)
     real, intent(out) :: kijepsbeta(2)
     character(len=*), intent(in) :: param_ref
-    !
+    ! Locals
     integer :: idx, idx_default
-    logical :: correct_eos, correct_comps, correct_ref, default_ref
     character(len=eosid_len) :: eos
-
-    eos = get_eos_short_label_from_subidx(eosidx)
-    kijepsbeta = 0.0
-    idx = 1
-    idx_default = -1
-    found = .false.
-    do while (idx <= CPAmaxkij .and. (.not. found))
-       !print *, "idx,uid1,uid2,setno_loc,CPAkijdb(idx)%eosidx",idx,uid1,uid2,setno_loc,CPAkijdb(idx)%eosidx
-       correct_eos = str_eq(eos,CPAkijdb(idx)%eosid)
-       correct_comps = (str_eq(uid1,CPAkijdb(idx)%uid1) .and. str_eq(uid2,CPAkijdb(idx)%uid2)) &
-            .or. ( str_eq(uid1,CPAkijdb(idx)%uid2) .and. str_eq(uid2,CPAkijdb(idx)%uid1))
-       correct_ref = string_match(param_ref,CPAkijdb(idx)%ref)
-       default_ref = string_match("DEFAULT",CPAkijdb(idx)%ref)
-
-       if ( correct_eos .and. correct_comps) then
-         if (correct_ref) then
-           kijepsbeta(1) = CPAkijdb(idx)%kij_eps
-           kijepsbeta(2) = CPAkijdb(idx)%kij_beta
-           epsBetaCombRules = (/CPAkijdb(idx)%eps_comb_rule, CPAkijdb(idx)%beta_comb_rule/)
-           return
-         else if (default_ref) then
-           idx_default = idx
-         endif
-       else
-         idx = idx + 1
-       endif
-     enddo
-
-     ! Default values.
-     if (.not. found) then
-       if (idx_default > 0) then
-         idx = idx_default
-         kijepsbeta(1) = CPAkijdb(idx)%kij_eps
-         kijepsbeta(2) = CPAkijdb(idx)%kij_beta
-         epsBetaCombRules = (/CPAkijdb(idx)%eps_comb_rule, CPAkijdb(idx)%beta_comb_rule/)
-       else
-         kijepsbeta = 0.0
-         if (str_eq(eos,"CPA-SRK")) then
-           epsBetaCombRules = (/aricomb,geocomb/)
-         else if (str_eq(eos,"CPA-PR")) then
-           epsBetaCombRules = (/geocomb,geocomb/)
-         end if
-       endif
-     end if
-
+    call get_binary_db_idx(get_binary_cpa_db_entry,CPAmaxkij,&
+       "",eosidx,uid1,uid2,param_ref,idx,idx_default)
+    if (idx > 0) then
+      kijepsbeta(1) = CPAkijdb(idx)%kij_eps
+      kijepsbeta(2) = CPAkijdb(idx)%kij_beta
+      epsBetaCombRules = (/CPAkijdb(idx)%eps_comb_rule, CPAkijdb(idx)%beta_comb_rule/)
+    else if (idx_default > 0) then
+      kijepsbeta(1) = CPAkijdb(idx_default)%kij_eps
+      kijepsbeta(2) = CPAkijdb(idx_default)%kij_beta
+      epsBetaCombRules = (/CPAkijdb(idx_default)%eps_comb_rule, CPAkijdb(idx_default)%beta_comb_rule/)
+    else
+      kijepsbeta = 0.0
+      eos = get_eos_short_label_from_subidx(eosidx)
+      if (str_eq(eos,"CPA-SRK")) then
+        epsBetaCombRules = (/aricomb,geocomb/)
+      else if (str_eq(eos,"CPA-PR")) then
+        epsBetaCombRules = (/geocomb,geocomb/)
+      end if
+    endif
   end subroutine getCPAkij_epsbeta
 
   !> Retrieve cubic binary interaction parameter for components uid1 and uid2,
@@ -233,78 +240,58 @@ contains
   !> the database.
   function getCpaKij_a(eosidx,uid1,uid2,found) result(kij_a)
     use stringmod, only: str_eq
+    use thermopack_constants, only: ref_len
+    use parameters, only: get_binary_db_idx
     integer, intent(in) :: eosidx
     character(len=*), intent(in) :: uid1, uid2
     logical, intent(out) :: found
     !integer, intent(in), optional :: setno     ! Functionality for using other set numbers, not implemented.
     real :: kij_a
-    integer :: idx
-    character(len=eosid_len) :: eos
-
-    eos = get_eos_short_label_from_subidx(eosidx)
-    idx = 1
-    found = .false.
-    do while (idx <= CPAmaxkij .and. (.not. found))
-       if ( str_eq(eos,CPAkijdb(idx)%eosid) .and. &
-            (str_eq(uid1,CPAkijdb(idx)%uid1) &
-            .and. str_eq(uid2,CPAkijdb(idx)%uid2)) &
-            .or. ( str_eq(uid1,CPAkijdb(idx)%uid2) & ! Symmetrical mixing rule.
-            .and. str_eq(uid2,CPAkijdb(idx)%uid1))) then
-          found = .true.
-          kij_a = CPAkijdb(idx)%kij_a
-       else
-          idx = idx + 1
-       endif
-     enddo
-
-     ! Default kij.
-     if (.not. found) then
-       kij_a = 0.0
-     end if
-
+    ! Locals
+    integer :: idx, idx_default
+    character(len=ref_len) :: param_ref
+    param_ref = ""
+    call get_binary_db_idx(get_binary_cpa_db_entry,CPAmaxkij,&
+         "",eosidx,uid1,uid2,param_ref,idx,idx_default)
+    found = (idx > 0) .or. (idx_default > 0)
+    if (idx > 0) then
+      kij_a = CPAkijdb(idx)%kij_a
+    else if (idx_default > 0) then
+      kij_a = CPAkijdb(idx_default)%kij_a
+    else
+      kij_a = 0
+    endif
   end function getCpaKij_a
 
   subroutine getCpaGEij(mGE, eosid, ref, uid1, uid2, &
        indxi, indxj, found)
-    use stringmod, only: str_eq, string_match
+    use stringmod, only: str_eq
+    use eosdata, only: get_eos_index
+    use parameters, only: get_binary_db_idx
     implicit none
     type (mixExcessGibbs), intent(inout) ::  mGE
     character(len=*), intent(in) :: eosid, uid1, uid2, ref
     integer, intent(in) :: indxi, indxj
     logical, intent(out) :: found
     ! Locals
-    integer :: idx, i, j, idx_default
-    logical :: isUidMatch, isHVCPA
-
-    idx_default = -1
-    idx = 1
-    found = .false.
+    integer :: i, j
+    integer :: idx, idx_default, eosidx, eos_subidx
+    character(len=eosid_len) :: mrule !< Mixing rule
 
     mGE%correlation(indxi, indxj) = 0
     mGE%correlation(indxj, indxi) = 0
 
-    do idx=1,maxinterGEij
-      isUidMatch = (str_eq(uid1,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid2,interGEdb(idx)%uid2)) .OR. &
-           (str_eq(uid2,interGEdb(idx)%uid1) .AND. &
-           str_eq(uid1,interGEdb(idx)%uid2))
-      isHVCPA = ((str_eq ('HV2',interGEdb(idx)%mruleid) &
-           .and. (mGE%mGE == cbMixHVCPA2)) .OR. &
-           (str_eq ('HV1',interGEdb(idx)%mruleid) &
-           .and. mGE%mGE == cbMixHVCPA))
-
-      if ( isUidMatch .AND. &
-           str_eq (eosid,interGEdb(idx)%eosid) .AND.&
-           isHVCPA) then
-        if (string_match(ref,interGEdb(idx)%ref)) then
-          found = .true.
-          exit ! Exit do loop
-        else if (string_match("DEFAULT",interGEdb(idx)%ref)) then
-          idx_default = idx
-        endif
-      endif
-    enddo
-
+    if (mGE%mGE == cbMixHVCPA2) then
+      mrule = "HV2"
+    else if (mGE%mGE == cbMixHVCPA) then
+      mrule = "HV1"
+    else
+      call stoperror("Wrong GE mixing rule for CPA")
+    endif
+    call get_eos_index(eosid, eosidx, eos_subidx)
+    call get_binary_db_idx(get_binary_cpa_ge_db_entry,maxinterGEij,&
+         mrule,eos_subidx,uid1,uid2,ref,idx,idx_default)
+    found = (idx > 0)
     if (.not. found .AND. idx_default > 0) then
       idx = idx_default
       found = .true.

@@ -24,22 +24,20 @@ ax2.tick_params(labelright='off')
 
 # Pxy phase envelope
 p_scaling = 1.0e-6
-LLE, L1VE, L2VE = cpa_srk.get_binary_pxy(298.1)
-if LLE[0] is not None:
-    ax.plot(LLE[0], LLE[2]*p_scaling)
-    ax.plot(LLE[1], LLE[2]*p_scaling)
-    ax2.plot(LLE[0], LLE[2]*p_scaling)
-    ax2.plot(LLE[1], LLE[2]*p_scaling)
-if L1VE[0] is not None:
-    ax.plot(L1VE[0], L1VE[2]*p_scaling)
-    ax.plot(L1VE[1], L1VE[2]*p_scaling)
-    ax2.plot(L1VE[0], L1VE[2]*p_scaling)
-    ax2.plot(L1VE[1], L1VE[2]*p_scaling)
-if L2VE[0] is not None:
-    ax.plot(L2VE[0], L2VE[2]*p_scaling)
-    ax.plot(L2VE[1], L2VE[2]*p_scaling)
-    ax2.plot(L2VE[0], L2VE[2]*p_scaling)
-    ax2.plot(L2VE[1], L2VE[2]*p_scaling)
+lle, l1ve, l2ve = cpa_srk.get_binary_pxy(298.1)
+
+# Plotting Liquid - Liquid equilibria
+ax.plot(lle.x1, lle.p * p_scaling)
+ax.plot(lle.x2, lle.p * p_scaling)
+ax2.plot(lle.x1, lle.p * p_scaling)
+ax2.plot(lle.x2, lle.p * p_scaling)
+
+# Plotting Liquid - Vapour equilibria
+for lve in (l1ve, l2ve):
+    ax.plot(lve.x, lve.p * p_scaling)
+    ax.plot(lve.y, lve.p * p_scaling)
+    ax2.plot(lve.x, lve.p * p_scaling)
+    ax2.plot(lve.y, lve.p * p_scaling)
 
 d = .015
 kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)

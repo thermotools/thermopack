@@ -219,7 +219,7 @@ contains
     logical :: converged
     integer :: currentPhase, nPhaseSwitches
     ! Relative accuracy in density solver.
-    real, parameter :: releps_p = machine_prec*1e8
+    real, parameter :: releps_p = machine_prec*1e10
     real, parameter :: releps_rho = machine_prec*1e6
 
     pMin = 0 ! Minimum allowable pressure during iteration.
@@ -263,7 +263,7 @@ contains
             return
           else
             print *, "iter ", iter
-            print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
+            print *, "T_spec, P_spec, x, phase_spec", T_spec, P_spec, x, phase_spec
             print *, "rho, rhoOld ", rho, rhoOld
             print *, "p, pOld ", p, pOld
             print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld

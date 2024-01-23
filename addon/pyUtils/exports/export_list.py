@@ -285,6 +285,8 @@ append_export("epsilon_ij", "saft_interface")
 append_export("sigma_eff_ij", "saft_interface")
 append_export("epsilon_eff_ij", "saft_interface")
 append_export("alpha", "saft_interface")
+append_export("getactiveassocparams", "saft_interface")
+append_export("setactiveassocparams", "saft_interface")
 
 append_export("map_stability_limit", "spinodal")
 append_export("initial_stab_limit_point", "spinodal")
@@ -316,6 +318,8 @@ append_export("speed_of_sound_tv", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 
+append_export("set_numerical_robustness_level", "thermopack_var")
+append_export("get_numerical_robustness_level", "thermopack_var")
 append_export("get_rgas", "thermopack_var")
 append_export("set_tmin", "thermopack_var")
 append_export("get_tmin", "thermopack_var")

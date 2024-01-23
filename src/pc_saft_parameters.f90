@@ -22,108 +22,86 @@ contains
     Rgas_is_correct = (Rgas == Rgas_default)
   end function Rgas_is_correct
 
+  subroutine get_pure_pc_saft_db_entry(idx, eos_subidx, comp_name, ref)
+    use thermopack_constants, only: ref_len, uid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=uid_len), intent(out) :: comp_name !< Component name
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    eos_subidx = PCarray(idx)%eosidx
+    comp_name = PCarray(idx)%compName
+    ref = PCarray(idx)%ref
+  end subroutine get_pure_pc_saft_db_entry
+
+  subroutine get_binary_pc_saft_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    uid1 = PCkijdb(idx)%uid1
+    uid2 = PCkijdb(idx)%uid2
+    eos_subidx = PCkijdb(idx)%eosidx
+    ref = PCkijdb(idx)%ref
+    mrule = "" ! Dummy
+    kijvalue = PCkijdb(idx)%kijvalue
+  end subroutine get_binary_pc_saft_db_entry
+
   !> Get the index in the PCarray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
-  function getPCdataIdx(eosidx,compName,param_ref) result(idx)
-    use stringmod, only: str_eq, string_match
+  function getPCdataIdx(eosidx,comp_name,param_ref) result(idx)
+    use parameters, only: get_pure_data_db_idx
     integer, intent(in) :: eosidx
-    character(len=*), intent(in) :: compName, param_ref
+    character(len=*), intent(in) :: comp_name, param_ref
     integer :: idx, idx_default
-    logical :: found
 
     if (.not. Rgas_is_correct()) call stoperror("Rgas_default must be default Rgas parameter.")
 
-    found = .false.
-    idx = 1
-    idx_default = -1
-    do while (idx <= nPCmodels)
-      if ((eosidx==PCarray(idx)%eosidx) .and. &
-           str_eq(compName, PCarray(idx)%compName)) then
-        if (string_match(PCarray(idx)%ref, param_ref)) then
-          found = .true.
-          exit
-        elseif (string_match(PCarray(idx)%ref, "DEFAULT")) then
-          idx_default = idx
-        endif
-      endif
-      idx = idx + 1
-    enddo
-
-    if (.not. found) then
-      if (verbose) then
-        print *, "No PC-SAFT parameters for compName, ref ", compName, trim(param_ref)
-      endif
-      if (idx_default > 0) then
-        idx = idx_default
-        print *, "Using default parameter set for "//trim(compName)
-      else
-        print *, "ERROR FOR COMPONENT ", compname
-        call stoperror("The PC-SAFT parameters don't exist.")
-      endif
-    end if
+    call get_pure_data_db_idx(get_pure_pc_saft_db_entry,nPCmodels,"PC-SAFT",&
+         eosidx,comp_name,param_ref,.true.,idx,idx_default)
   end function getPCdataIdx
 
   !> Retrieve binary interaction parameter for components uid1 and uid2.
   !> If no kij is stored in the database PCkijdb, it returns 0.0.
-  function getPCkij(eosidx,uid1,uid2,param_ref) result(kijvalue)
-    use stringmod, only: str_eq, string_match
+  function getPCkij(eos_subidx,uid1,uid2,param_ref) result(kijvalue)
     use eosdata, only: eosPC_SAFT, eosSPC_SAFT, eosOPC_SAFT
-    integer, intent(in) :: eosidx
+    use parameters, only: get_binary_interaction_parameter
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: uid1, uid2, param_ref
     real :: kijvalue
     ! Locals
-    integer :: idx, idx_default, eosidx_local
-    logical :: match_11_22, match_12_21, found
-
-    if (eosidx == eosOPC_SAFT .or. eosidx == eosPCP_SAFT) then
-      eosidx_local = eosPC_SAFT
+    integer :: idx, idx_default, eos_subidx_local
+    logical :: found
+    real :: default_value
+    default_value = 0
+    if (eos_subidx == eosOPC_SAFT .or. eos_subidx == eosPCP_SAFT) then
+      eos_subidx_local = eosPC_SAFT
     else
-      eosidx_local = eosidx
+      eos_subidx_local = eos_subidx
     endif
-    call getkij()
+    kijvalue = get_binary_interaction_parameter(get_binary_pc_saft_db_entry,PCmaxkij,"PC-SAFT",&
+         "",eos_subidx_local,uid1,uid2,param_ref,default_value,idx,idx_default)
+    found = (idx > 0) .or. (idx_default > 0)
 
     ! Use PC-SAFT kij with sPC-SAFT
-    if ((eosidx == eosSPC_SAFT .or. eosidx == eosSPCP_SAFT) &
+    if ((eos_subidx == eosSPC_SAFT .or. eos_subidx == eosSPCP_SAFT) &
          .and. .not. found) then
-      eosidx_local = eosPC_SAFT
-      call getkij()
+      eos_subidx_local = eosPC_SAFT
+      kijvalue = get_binary_interaction_parameter(get_binary_pc_saft_db_entry,PCmaxkij,"PC-SAFT",&
+           "",eos_subidx_local,uid1,uid2,param_ref,default_value,idx,idx_default)
+      found = (idx > 0) .or. (idx_default > 0)
       if (found) print *,"Using PC-SAFT kij with simplified EOS: "//trim(uid1)//"-"//trim(uid2)
     endif
-
-  contains
-    subroutine getkij()
-      kijvalue = 0.0 ! default value if the binary is not in PCkijdb.
-      idx = 1
-      idx_default = -1
-      found = .false.
-      do idx = 1,PCmaxkij
-        match_11_22 = str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)
-        match_12_21 = str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1)
-
-        if (eosidx_local == PCkijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21)) then
-          if (string_match(param_ref,PCkijdb(idx)%ref)) then
-            kijvalue = PCkijdb(idx)%kijvalue
-            found = .true.
-            exit
-          elseif (string_match("DEFAULT", PCkijdb(idx)%ref)) then
-            idx_default = idx
-          endif
-        endif
-      enddo
-      if (.not. found .and. idx_default > 0) then
-        found = .true.
-        kijvalue = PCkijdb(idx_default)%kijvalue
-        print *, "Using default kij reference for ", trim(uid1), ",", trim(uid2)
-      endif
-    end subroutine getkij
   end function getPCkij
 
-  subroutine getPcSaftKij_allComps(nc,comp,eosidx,kij,param_ref)
+  subroutine getPcSaftKij_allComps(nc,comp,eos_subidx,kij,param_ref)
     use compdata, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: param_ref
     ! Output
     real, intent(out) :: kij(nc,nc)
@@ -133,33 +111,32 @@ contains
     kij = 0.0
     do ic=1,nc
       do jc=ic+1,nc
-        kij(ic,jc) = getPCkij(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref)
+        kij(ic,jc) = getPCkij(eos_subidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref)
         kij(jc,ic) = kij(ic,jc)
       end do
     end do
 
   end subroutine getPcSaftKij_allComps
 
-  subroutine getPcSaftCombRules_allComps(nc,comp,eosidx,&
+  subroutine getPcSaftCombRules_allComps(nc,comp,eos_subidx,&
     epsbeta_combrules, param_ref)
     use compdata, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: param_ref
     ! Output
     integer, intent(out) :: epsbeta_combrules(2,nc,nc)
     ! Locals
     integer :: ic,jc
-    character(len=10) :: ref
     logical :: found_
 
     epsbeta_combrules = -1000
     do ic=1,nc
         do jc=1,nc
           if (ic == jc) cycle
-          call getPcSaftCombRules(eosidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref,&
+          call getPcSaftCombRules(eos_subidx,comp(ic)%p_comp%ident,comp(jc)%p_comp%ident,param_ref,&
                 found_,epsbeta_combrules(1:2,ic,jc))
         end do
     end do
@@ -167,59 +144,36 @@ contains
 
   !> Retrieve association combining rules for components uid1 and
   !> uid2. Found is true if and only if the parameters are in the database.
-  subroutine getPcSaftCombRules (eosidx,uid1,uid2,param_ref,found,epsBetaCombRules)
-    use stringmod, only: str_eq, string_match
+  subroutine getPcSaftCombRules (eos_subidx,uid1,uid2,param_ref,found,epsBetaCombRules)
     use AssocSchemeUtils, only: defaultComb
-    integer, intent(in) :: eosidx
+    use parameters, only: get_binary_db_idx
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: uid1, uid2
     logical, intent(out) :: found
     integer, intent(out) :: epsBetaCombRules(2)
     character(len=*), intent(in) :: param_ref
     !
     integer :: idx, idx_default
-    logical :: correct_eos, correct_comps, correct_ref, default_ref
 
-    idx = 1
-    idx_default = -1
-    found = .false. 
-    do while (idx <= PCmaxkij .and. (.not. found))
-       correct_eos = eosidx == PCkijdb(idx)%eosidx
-       correct_comps = (str_eq(uid1,PCkijdb(idx)%uid1) .and. str_eq(uid2,PCkijdb(idx)%uid2)) &
-            .or. ( str_eq(uid1,PCkijdb(idx)%uid2) .and. str_eq(uid2,PCkijdb(idx)%uid1))
-       correct_ref = string_match(param_ref,PCkijdb(idx)%ref)
-       default_ref = string_match("Default",PCkijdb(idx)%ref)
+    call get_binary_db_idx(get_binary_pc_saft_db_entry,PCmaxkij,&
+         "",eos_subidx,uid1,uid2,param_ref,idx,idx_default)
+    if (idx > 0) then
+      epsBetaCombRules = (/PCkijdb(idx)%eps_comb_rule, PCkijdb(idx)%beta_comb_rule/)
+    else if (idx_default > 0) then
+      epsBetaCombRules = (/PCkijdb(idx_default)%eps_comb_rule, PCkijdb(idx_default)%beta_comb_rule/)
+    else
+      epsBetaCombRules = (/defaultComb,defaultComb/)
+    endif
+  end subroutine getPcSaftCombRules
 
-       if ( correct_eos .and. correct_comps) then
-         if (correct_ref) then
-           epsBetaCombRules = (/PCkijdb(idx)%eps_comb_rule, PCkijdb(idx)%beta_comb_rule/)
-           return
-         else if (default_ref) then
-           idx_default = idx
-         endif
-        endif
-       idx = idx + 1
-     enddo
-
-     ! Default values.
-     if (.not. found) then
-       if (idx_default > 0) then
-         idx = idx_default
-         epsBetaCombRules = (/PCkijdb(idx)%eps_comb_rule, PCkijdb(idx)%beta_comb_rule/)
-       else
-         epsBetaCombRules = (/defaultComb,defaultComb/)
-       endif
-     end if
-
-  end subroutine getPcSaftCombRules  
-
-  subroutine getPcSaftPureParams_allComps(nc,comp,eosidx,param_ref,&
+  subroutine getPcSaftPureParams_allComps(nc,comp,eos_subidx,param_ref,&
        found,m,sigma,eps_depth_divk,eps,beta,scheme,mu,Q)
     use compdata, only: gendata_pointer
     use numconstants, only: small
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: param_ref
     ! Output
     logical, intent(out) :: found(nc)
@@ -230,7 +184,7 @@ contains
     integer :: ic
 
     do ic=1,nc
-      call getPcSaftpureParams_singleComp(comp(ic)%p_comp%ident,eosidx,param_ref,&
+      call getPcSaftpureParams_singleComp(comp(ic)%p_comp%ident,eos_subidx,param_ref,&
            found(ic),m(ic),sigma(ic),eps_depth_divk(ic),eps(ic),beta(ic),scheme(ic),&
            mu(ic),Q(ic))
       ! Check if electrical moments where overrided?
@@ -239,11 +193,11 @@ contains
     end do
   end subroutine getPcSaftPureParams_allComps
 
-  subroutine getPcSaftpureParams_singleComp(compName,eosidx,param_ref,&
+  subroutine getPcSaftpureParams_singleComp(compName,eos_subidx,param_ref,&
        found,m,sigma,eps_depth_divk,eps,beta,scheme,mu,Q)
     ! Input
     character(len=*), intent(in) :: compName, param_ref
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     ! Output
     logical, intent(out) :: found
     real, intent(out) :: m, sigma, eps_depth_divk, eps, beta
@@ -252,7 +206,7 @@ contains
     ! Locals
     integer :: idx
 
-    idx = getPCdataIdx(eosidx,compName,param_ref)
+    idx = getPCdataIdx(eos_subidx,compName,param_ref)
     if ( idx == 0 ) then
       found = .false.
       return
@@ -269,6 +223,5 @@ contains
     mu = PCarray(idx)%mu
     Q = PCarray(idx)%Q
   end subroutine getPcSaftpureParams_singleComp
-
 
 end module pc_saft_parameters

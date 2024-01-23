@@ -116,6 +116,7 @@
 		<File RelativePath="..\src\nonlinear_solvers.f90"/>
 		<File RelativePath="..\src\numconstants.f90"/>
 		<File RelativePath="..\src\optimizer.f90"/>
+		<File RelativePath="..\src\parameters.f90"/>
 		<File RelativePath="..\src\pc_saft_datadb.f90"/>
 		<File RelativePath="..\src\pc_saft_nonassoc.f90"/>
 		<File RelativePath="..\src\pc_saft_parameters.f90"/>

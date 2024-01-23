@@ -98,7 +98,8 @@ class cpa(cubic):
         self.nc = max(len(comps.split(" ")),len(comps.split(",")))
 
     def print_cpa_report(self):
-        """Print cpa parameters 
+        """Utility
+        Print cpa parameters
         
         Parameters printed are the five pure parameters
         a0, b, epsilon, beta, c1, and the binary parameter
@@ -176,7 +177,8 @@ class cpa(cubic):
         self.s_set_pure_params(byref(ic_c), params_c)
 
     def set_kij(self, c1, c2, kij_a, kij_eps):
-        """Set attractive energy interaction parameter
+        """Utility
+        Set attractive energy interaction parameter
 
         Args:
             c1 (int): Component one

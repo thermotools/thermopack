@@ -208,7 +208,7 @@ contains
     T0 = 300.0
     components = "CO2,H2O"
 
-    call test_fres_tv_model(ncomp,"PR",trim(components),T0,P0,n0,"HVWS",alpha='Twu')
+    call test_fres_tv_model(ncomp,"PR",trim(components),T0,P0,n0,"HVWongSandler",alpha='Twu', alpha_ref="tcPR")
 
   end subroutine test_fres_tv_HVWS
 
@@ -284,7 +284,7 @@ contains
   ! end subroutine test_fres_tv_EOSCG
 
 
-  subroutine test_fres_tv_model(ncomp,model,components,T0,P0,n0,mixing,saft_ref,alpha)
+  subroutine test_fres_tv_model(ncomp,model,components,T0,P0,n0,mixing,saft_ref,alpha,alpha_ref)
     ! Test residual reduced Helmholtz function differentials
     !
     ! MH, 2017-02
@@ -298,6 +298,7 @@ contains
     character(len=*), optional, intent(in) :: mixing
     character(len=*), optional, intent(in) :: saft_ref
     character(len=*), optional, intent(in) :: alpha
+    character(len=*), optional, intent(in) :: alpha_ref
     real, intent(in) :: T0, P0
     real, dimension(ncomp), intent(in) :: n0
     ! Locals
@@ -338,7 +339,7 @@ contains
     silent_init = .true.
 
     call init_thermo(trim(model), trim(mixing_l), trim(alpha_l),&
-         trim(components), 1, saft_ref=saft_ref_l)
+         trim(components), 1, saft_ref=saft_ref_l, alpha_ref=alpha_ref)
 
     call specificvolume(T0,p0,x,LIQPH,v0)
 
