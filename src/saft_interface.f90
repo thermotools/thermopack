@@ -2565,10 +2565,25 @@ contains
     !Pc =
   end subroutine estimate_critical_parameters
 
+  !> Get number of accociation sites
+  !!
+  function get_n_assoc_sites() result(n_assoc_sites)
+    use eos_parameters, only: base_eos_param
+    integer :: n_assoc_sites
+    ! Locals.
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+    if (associated(eos%assoc)) then
+      n_assoc_sites = eos%assoc%numAssocSites
+    else
+      n_assoc_sites = 0
+    endif
+  end function get_n_assoc_sites
+
   !> Calculates the reduced association Helmholtz energy density
   !! together with its derivatives.
   !! FMT interface
-  subroutine calc_assoc_phi(n_fmt,T,F,F_T,F_n,F_TT,F_Tn,F_nn)
+  subroutine calc_assoc_phi(n_fmt,T,F,F_T,F_n,F_TT,F_Tn,F_nn,Xk_intf)
     use hyperdual_mod
     use thermopack_var, only: nce, base_eos_param, get_active_eos
     use numconstants, only: machine_prec ! Equals 2^{-52} ~ 2.22*e-16 for double precision reals.
@@ -2582,8 +2597,9 @@ contains
     real, intent(in) :: n_fmt(nce,0:5)
     real, intent(in) :: T
     ! Output.
-    real, optional, intent(out) :: F,F_T,F_n(nce,0:5)
-    real, optional, intent(out) :: F_TT,F_Tn(nce,0:5),F_nn(nce,nce,0:5,0:5)
+    real, optional, intent(out)   :: F,F_T,F_n(nce,0:5)
+    real, optional, intent(out)   :: F_TT,F_Tn(nce,0:5),F_nn(nce,nce,0:5,0:5)
+    real, optional, intent(inout) :: Xk_intf(numAssocSites)
     ! Locals.
     class(base_eos_param), pointer :: eos
     real :: ms(nce)
@@ -2616,8 +2632,15 @@ contains
 
         ! Calculate the association contribution.
         call eos%assoc%state%init_fmt(nce, T, n_fmt, ms)
-        X_k = 0.2 ! Initial guess.
+        if (present(Xk_intf)) then
+          X_k = Xk_intf
+        else
+          X_k = 0.2 ! Initial guess.
+        endif
         call solve_for_X_k(eos,nce,X_k,tol=10**5*machine_prec)
+        if (present(Xk_intf)) then
+          Xk_intf = X_k
+        endif
         T_hd = T
         n_fmt_hd = eos%assoc%state%n_fmt
         n_fmt_hd(:,0) = n_fmt_hd(:,0)/N_AVOGADRO

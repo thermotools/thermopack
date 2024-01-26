@@ -69,6 +69,8 @@ class saft(thermo):
             self.tp, self.get_export_name("saft_interface", "getactiveassocparams"))
         self.s_set_active_assoc_params = getattr(
             self.tp, self.get_export_name("saft_interface", "setactiveassocparams"))
+        self.s_get_n_assoc_sites = getattr(
+            self.tp, self.get_export_name("saft_interface", "get_n_assoc_sites"))
         self.s_alpha = getattr(
             self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
@@ -579,6 +581,23 @@ class saft(thermo):
                                        byref(eps_assoc_c),
                                        byref(beta_assoc_c))
         return eps_assoc_c.value, beta_assoc_c.value
+
+    def get_n_assoc_sites(self):
+        """Utility
+        Get number of association sites
+
+        Results:
+            n_assoc_sites (int): Number of association sites.
+        """
+        self.activate()
+
+        self.s_set_active_assoc_params.argtypes = []
+
+        self.s_get_active_assoc_params.restype = c_int
+
+        n_assoc_sites = self.s_get_n_assoc_sites()
+
+        return n_assoc_sites
 
     def sigma_ij(self, i, j):
         """Utility

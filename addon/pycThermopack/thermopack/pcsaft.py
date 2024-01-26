@@ -313,7 +313,7 @@ class pcsaft(saft):
         return return_tuple
 
     def association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None,
-                                   phi_tt=None, phi_tn=None, phi_nn=None):
+                                   phi_tt=None, phi_tn=None, phi_nn=None, Xk=None):
         """Utility
         Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
@@ -326,6 +326,7 @@ class pcsaft(saft):
             phi_TT (No type, optional): Flag to activate calculation. Defaults to None.
             phi_Tn (No type, optional): Flag to activate calculation. Defaults to None.
             phi_nn (No type, optional): Flag to activate calculation. Defaults to None.
+            Xk (np.ndarray): Fraction of non-bounded molecules. Initial value on input, calculated value on output. Set to 0.2 initially.
 
         Returns:
             Optionally energy density and differentials
@@ -335,12 +336,14 @@ class pcsaft(saft):
         dim = self.nc*6
         assert np.shape(n_alpha) == (self.nc, 6,)
         n_alpha_c = (c_double * dim)(*n_alpha.flatten('F'))
-        optional_flags = [phi, phi_t, phi_n, phi_tt, phi_tn, phi_nn]
-        optional_arrayshapes = [(0,), (0,), (self.nc, 6,), (0,), (self.nc, 6,), (self.nc, self.nc, 6, 6,)]
+        n_assoc_siets = self.get_n_assoc_sites()
+        optional_flags = [phi, phi_t, phi_n, phi_tt, phi_tn, phi_nn, Xk]
+        optional_arrayshapes = [(0,), (0,), (self.nc, 6,), (0,), (self.nc, 6,), (self.nc, self.nc, 6, 6,), (n_assoc_siets,)]
         optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
-        phi_c, phi_t_c, phi_n_c, phi_tt_c, phi_tn_c, phi_nn_c = optional_ptrs
+        phi_c, phi_t_c, phi_n_c, phi_tt_c, phi_tn_c, phi_nn_c, Xk_c = optional_ptrs
 
         self.s_calc_assoc_phi.argtypes = [POINTER(c_double),
+                                          POINTER(c_double),
                                           POINTER(c_double),
                                           POINTER(c_double),
                                           POINTER(c_double),
@@ -358,7 +361,8 @@ class pcsaft(saft):
                               phi_n_c,
                               phi_tt_c,
                               phi_tn_c,
-                              phi_nn_c)
+                              phi_nn_c,
+                              Xk_c)
 
         return_tuple = ()
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
