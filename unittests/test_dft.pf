@@ -24,8 +24,8 @@ contains
     integer, parameter :: ncomp = 1
     real :: n(ncomp)
     real :: T, V
-    real :: F
-    real :: phi
+    real :: F, F_n(ncomp)
+    real :: phi, phi_n(ncomp,0:5)
     real :: n_fmt(ncomp,0:5)
     real, allocatable :: Xk(:)
     class(base_eos_param), pointer :: eos
@@ -40,12 +40,16 @@ contains
     allocate(Xk(numAssocSites))
     Xk = 0.2 ! Initial guess.
     call solve_for_X_k(eos,nce,Xk,tol=tol)
-    call calcFder_assoc(eos,nc=ncomp,X_k=Xk,F=F)
+    call calcFder_assoc(eos,nc=ncomp,X_k=Xk,F=F,F_n=F_n)
     deallocate(Xk)
 
     call set_fmt_densities(T, V, n, n_fmt)
-    call calc_assoc_phi(n_fmt=n_fmt,T=T,F=phi)
+    call calc_assoc_phi(n_fmt=n_fmt,T=T,F=phi,F_n=phi_n)
     @assertTrue(abs((phi*V - F)/F) < tol)
+
+    V = 1
+    call set_fmt_densities(T, V, n, n_fmt)
+    @assertTrue(abs((sum(phi_n(1,:)*n_fmt(1,:)) - F_n(1))/F_n(1)) < tol)
 
   end subroutine test_dft_association
 
