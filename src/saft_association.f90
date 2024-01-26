@@ -1421,19 +1421,20 @@ contains
     type(hyperdual) :: Delta(numAssocSites,numAssocSites), J(numAssocSites,numAssocSites)
     type(hyperdual) :: m_mich_k(numAssocSites), K_mich_kl(numAssocSites,numAssocSites)
     type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc)
-    real :: ms(nc)
+    real(dp) :: ms(nc), sigma_cube(nc,nc)
     integer :: k, i, l, ierr
 
     select type ( p_eos => eos )
     class is (sPCSAFT_eos)
       call calc_d_hd(p_eos,T,dhs)
       ms = p_eos%m
+      sigma_cube = p_eos%sigma_cube
     class default
       print *,"Q_fmt_hd: Should not be here"
     end select
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
     rho = xi*n_fmt(:,0)/ms
-    call Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+    call Delta_kl_hd(eos,T,n_fmt,sigma_cube,dhs,Delta)
     m_mich_k = 0.0_dp
     do i=1,nc
       if ( eos%assoc%comp_vs_sites(i,1) /= noSitesFlag ) then
@@ -1484,7 +1485,7 @@ contains
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
   !> e.g. by not calculating the exponential in every loop iteration
-  subroutine Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+  subroutine Delta_kl_hd(eos,T,n_fmt,sigma_cube,dhs,Delta)
     use hyperdual_mod
     use thermopack_var, only: nc
     use thermopack_constants, only: N_AVOGADRO
@@ -1495,6 +1496,7 @@ contains
     class(base_eos_param), intent(inout) :: eos
     type(hyperdual), intent(in) :: T
     type(hyperdual), intent(in) :: n_fmt(6)
+    real(dp), intent(in)        :: sigma_cube(nc,nc)
     type(hyperdual), intent(in) :: dhs(nc)
     ! Output.
     type(hyperdual), dimension(numAssocSites,numAssocSites), intent(out) :: Delta
@@ -1530,7 +1532,7 @@ contains
         jc = site_to_compidx(assoc,l)
         if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
         call calc_bmcsl_gij_FMT_hd(nc,n_fmt,dhs,ic,jc,g)
-        covol = N_AVOGADRO*(0.5_dp*(dhs(ic) + dhs(jc)))**3
+        covol = N_AVOGADRO*sigma_cube(ic,jc)
         expo = boltzmann_fac(k,l)
         h = assoc%beta_kl(k,l)*covol*(expo-1.0_dp)
         Delta(k,l) = g*h
