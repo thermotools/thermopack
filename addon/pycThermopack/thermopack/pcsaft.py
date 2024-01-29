@@ -321,12 +321,12 @@ class pcsaft(saft):
             temp (float): Temperature (K)
             n_alpha (np.ndarray): Weighted densities (mol based)
             phi (No type, optional): Flag to activate calculation. Defaults to None.
-            phi_T (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_t (No type, optional): Flag to activate calculation. Defaults to None.
             phi_n (No type, optional): Flag to activate calculation. Defaults to None.
-            phi_TT (No type, optional): Flag to activate calculation. Defaults to None.
-            phi_Tn (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_tt (No type, optional): Flag to activate calculation. Defaults to None.
+            phi_tn (No type, optional): Flag to activate calculation. Defaults to None.
             phi_nn (No type, optional): Flag to activate calculation. Defaults to None.
-            Xk (np.ndarray): Fraction of non-bounded molecules. Initial value on input, calculated value on output. Set to 0.2 initially.
+            Xk (np.ndarray): Fraction of non-bonded molecules. Initial value on input, calculated value on output. Set to 0.2 initially.
 
         Returns:
             Optionally energy density and differentials
@@ -342,6 +342,10 @@ class pcsaft(saft):
         optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
         phi_c, phi_t_c, phi_n_c, phi_tt_c, phi_tn_c, phi_nn_c, Xk_c = optional_ptrs
 
+        if Xk is not None:
+            Xk_c = (c_double * n_assoc_siets)(*np.array(Xk))
+            optional_ptrs[-1] = Xk_c
+
         self.s_calc_assoc_phi.argtypes = [POINTER(c_double),
                                           POINTER(c_double),
                                           POINTER(c_double),
@@ -353,7 +357,6 @@ class pcsaft(saft):
                                           POINTER(c_double)]
 
         self.s_calc_assoc_phi.restype = None
-
         self.s_calc_assoc_phi(n_alpha_c,
                               byref(temp_c),
                               phi_c,
