@@ -12,7 +12,7 @@ import map_platform_specifics
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", type=str, help="optim or debug")
-    parser.add_argument("-diffs", default="v3", type=str, help="Old (v2.1) or new (not v2.1) return mode for differentials", )
+    parser.add_argument("-diffs", default="v3", type=str, help="Old (v2) or new (> v2) return mode for differentials", )
 
     args = parser.parse_args()
     mode = args.mode
@@ -35,13 +35,13 @@ if __name__ == "__main__":
     pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
 
     if args.diffs == 'v2':
-        version = 'beta-v2.2.0'
+        version = 'v2.2.0'
     elif args.diffs == 'v3':
-        version = 'beta-v3.0.0'
+        version = 'v3.0.0'
     else:
         warnings.warn(f'-diffs={args.diffs} is not a valid value. Valid values are -diffs=[v2.1/v3], treating as -diffs=v3',
                       Warning)
-        version = 'beta-v3.0.0'
+        version = 'v3.0.0'
         args.diffs = 'v3'
 
     if args.diffs == 'v2':
