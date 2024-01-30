@@ -1420,7 +1420,7 @@ contains
     type(hyperdual) :: X_k(numAssocSites), Q_X(numAssocSites)
     type(hyperdual) :: Delta(numAssocSites,numAssocSites), J(numAssocSites,numAssocSites)
     type(hyperdual) :: m_mich_k(numAssocSites), K_mich_kl(numAssocSites,numAssocSites)
-    type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc)
+    type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc), n_fmt_sum(0:5)
     real(dp) :: ms(nc), sigma_cube(nc,nc)
     integer :: k, i, l, ierr
 
@@ -1434,7 +1434,10 @@ contains
     end select
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
     rho = xi*n_fmt(:,0)/ms
-    call Delta_kl_hd(eos,T,n_fmt,sigma_cube,dhs,Delta)
+    do i=0,5
+      n_fmt_sum(i) = sum(n_fmt(:,i))
+    enddo
+    call Delta_kl_hd(eos,T,n_fmt_sum,sigma_cube,dhs,Delta)
     m_mich_k = 0.0_dp
     do i=1,nc
       if ( eos%assoc%comp_vs_sites(i,1) /= noSitesFlag ) then
