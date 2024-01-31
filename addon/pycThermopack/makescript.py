@@ -41,7 +41,7 @@ if __name__ == "__main__":
     else:
         warnings.warn(f'-diffs={args.diffs} is not a valid value. Valid values are -diffs=[v2.1/v3], treating as -diffs=v3',
                       Warning)
-        version = '3.b0.0'
+        version = '3.b0'
         args.diffs = 'v3'
 
     if args.diffs == 'v2':
