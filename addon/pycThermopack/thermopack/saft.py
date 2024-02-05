@@ -23,6 +23,10 @@ class saft(thermo):
         # Load dll/so
         super(saft, self).__init__()
 
+        # Info methods
+        self.s_print_binary_mix_report = getattr(
+            self.tp, self.get_export_name("saft_interface", "printbinarymixturereportsaft"))
+
         # SAFT specific methods
         self.s_calc_saft_dispersion = getattr(
             self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
@@ -400,6 +404,13 @@ class saft(thermo):
         print(f"Segments: {self.m[c-1]}")
         print(f"sigma: {self.sigma[c-1]}")
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
+
+    def print_saft_binary_report(self,):
+        """Utility
+        Print report of SAFT parameters for binary mixture
+        """
+        self.activate()
+        self.s_print_binary_mix_report()
 
     def potential(self, ic, jc, r, temp):
         """Utility

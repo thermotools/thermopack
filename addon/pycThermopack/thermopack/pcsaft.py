@@ -40,6 +40,9 @@ class pcsaft(saft):
             "saft_interface", "pc_saft_get_kij"))
         self.s_set_kij = getattr(self.tp, self.get_export_name(
             "saft_interface", "pc_saft_set_kij_asym"))
+        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
+        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
+
         # SAFT specific methods
         self.s_get_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_get_pure_params"))
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "pc_saft_set_pure_params"))
@@ -101,6 +104,89 @@ class pcsaft(saft):
         self.eps_div_kb = np.zeros(self.nc)
         for i in range(self.nc):
             self.m[i], self.sigma[i], self.eps_div_kb[i], eps, beta = self.get_pure_fluid_param(i+1)
+
+    def get_ci(self, cidx):
+        """Utility
+        Get volume correction parameters
+
+        Args:
+            cidx (int): Component index
+
+        Returns:
+            ciA (float): Volume shift param of component cidx (m3/mol)
+            ciB (float): Volume shift param of component cidx (m3/mol/K)
+            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
+            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
+        """
+        cidx_c = c_int(cidx)
+        ciA_c = c_double(0.0)
+        ciB_c = c_double(0.0)
+        ciC_c = c_double(0.0)
+        ciD_c = c_double(0.0)
+        ciE_c = c_double(0.0)
+        ciF_c = c_double(0.0)
+        ci_type_c = c_int(0)
+        self.s_get_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_int)]
+
+        self.s_get_ci.restype = None
+
+        self.s_get_ci(byref(cidx_c),
+                      byref(ciA_c),
+                      byref(ciB_c),
+                      byref(ciC_c),
+                      byref(ciD_c),
+                      byref(ciE_c),
+                      byref(ciF_c),
+                      byref(ci_type_c))
+
+        return ciA_c.value, ciB_c.value, ciC_c.value, ciD_c.value, ciE_c.value, ciF_c.value, ci_type_c.value
+
+    def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
+        """Utility
+        Set volume correction parametrs
+
+        Args:
+            cidx (int): Component index
+            ciA (float): Volume shift param of component cidx (m3/mol)
+            ciB (float): Volume shift param of component cidx (m3/mol/K)
+            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
+            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3, QUINTIC=6)
+        """
+        cidx_c = c_int(cidx)
+        ciA_c = c_double(ciA)
+        ciB_c = c_double(ciB)
+        ciC_c = c_double(ciC)
+        ciD_c = c_double(ciD)
+        ciE_c = c_double(ciE)
+        ciF_c = c_double(ciF)
+        ci_type_c = c_int(ci_type)
+        self.s_set_ci.argtypes = [POINTER(c_int),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_double),
+                                  POINTER(c_int)]
+
+        self.s_set_ci.restype = None
+
+        self.s_set_ci(byref(cidx_c),
+                      byref(ciA_c),
+                      byref(ciB_c),
+                      byref(ciC_c),
+                      byref(ciD_c),
+                      byref(ciE_c),
+                      byref(ciF_c),
+                      byref(ci_type_c))
+
 
 
     def get_kij(self, c1, c2):

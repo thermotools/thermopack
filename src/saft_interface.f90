@@ -225,14 +225,20 @@ contains
 
 
   !> Sets the fitted parameters in the non-association part of PC-SAFT.
-  subroutine pcsaft_set_nonassoc_params(eos,nc,m_in,sigma_in,eps_depth_divk_in,kij_in)
+  subroutine pcsaft_set_nonassoc_params(eos,nc,m_in,sigma_in,eps_depth_divk_in,kij_in, allocate)
     use pc_saft_nonassoc, only: sPCSAFT_eos
     class(sPCSAFT_eos), intent(inout) :: eos
     integer, intent(in) :: nc                   !< Number of components.
     real, intent(in) :: m_in(nc),sigma_in(nc),eps_depth_divk_in(nc),kij_in(nc,nc)
+    logical, intent(in), optional :: allocate
     integer ::  ic, jc
 
+    ! Allocate by default
+    if (present(allocate)) then
+      if (allocate) call eos%allocate_and_init(nc,"PC-SAFT")
+    else
     call eos%allocate_and_init(nc,"PC-SAFT")
+    end if
 
     do ic = 1,nc
       ! Set pure-component nonassoc parameters, and scheme.
@@ -2199,16 +2205,30 @@ contains
 
   subroutine pc_saft_set_pure_params(ic,params)
     use pc_saft_nonassoc, only: sPCSAFT_eos
+    use thermopack_var, only: nce
+    use saft_association, only: numAssocSites
     integer, intent(in) :: ic
-    real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, beta, eps/(J/mol)
+    real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, eps/(J/mol), beta
+    real :: m(nce),sigma(nce),eps_depth_divk(nce), kij(nce,nce)
+    integer :: j
     class(base_eos_param), pointer :: eos
 
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-        p_eos%m(ic) = params(1) !< Chain length (-)
-        p_eos%sigma(ic,ic) = params(2) !< Monomer diameter (m)
-        p_eos%eps_depth_divk(ic,ic) = params(3) !< Dispersion energy scale (K)
+      do j=1,nce
+        m(j) = p_eos%m(j)
+        sigma(j) = p_eos%sigma(j,j)
+        eps_depth_divk(j) = p_eos%eps_depth_divk(j,j)
+      end do
+      m(ic) = params(1) !< Chain length (-)
+      sigma(ic) = params(2) !< Monomer diameter (m)
+      eps_depth_divk(ic) = params(3) !< Dispersion energy scale (K)
+
+      ! This routine must be called to ensure binary parameters such as
+      ! sigma(i,j) are also updated correctly
+      kij = 0.0
+      call pcsaft_set_nonassoc_params(p_eos,nce,m,sigma,eps_depth_divk,kij_in=kij, allocate=.false.)
     class default
       call stoperror("pc_saft_set_pure_params: Wrong type.")
     end select
@@ -2222,7 +2242,7 @@ contains
   subroutine pc_saft_get_pure_params(ic,params)
     use pc_saft_nonassoc, only: sPCSAFT_eos
     integer, intent(in) :: ic
-    real, intent(out) :: params(5) ! m, sigma/m, eps_depth_divk/K, beta, eps/(J/mol)
+    real, intent(out) :: params(5) ! m, sigma/m, eps_depth_divk/K, eps/(J/mol), beta
     class(base_eos_param), pointer :: eos
 
     eos => get_active_eos()
@@ -2316,17 +2336,50 @@ contains
     if ( firstSiteIdx == noSitesFlag  .and. (eps>0.0 .or. beta>0.0) ) then
        call stoperror("Trying to set association parameters for non-associating component.")
     end if
-
     do k=firstSiteIdx, lastSiteIdx
        do l=firstSiteIdx, lastSiteIdx
           if (abs(assoc%eps_kl(k,l)) > 0.0) then
              assoc%eps_kl(k,l) = eps
              assoc%beta_kl(k,l) = beta
+             !print *, assoc%eps_kl(k,l)
+             !print *, assoc%beta_kl(k,l)
           end if
        end do
     end do
 
   end subroutine setActiveAssocParams
+
+  ! subroutine setActiveAssocParams(ic, eps, beta)
+  !   use saft_association, only: compidx_to_sites, noSitesFlag
+  !   integer, intent(in) :: ic
+  !   real, intent(in) :: eps, beta
+  !   ! Locals
+  !   integer :: k, l, firstSiteIdx, lastSiteIdx
+  !   type(thermo_model), pointer :: act_mod_ptr
+  !   type(association), pointer :: assoc
+
+  !   act_mod_ptr => get_active_thermo_model()
+  !   assoc => act_mod_ptr%eos(1)%p_eos%assoc
+
+  !   call compidx_to_sites(assoc,ic,firstSiteIdx, lastSiteIdx)
+  !   if ( firstSiteIdx == noSitesFlag  .and. (eps>0.0 .or. beta>0.0) ) then
+  !      call stoperror("Trying to set association parameters for non-associating component.")
+  !   end if
+
+  !   do k=firstSiteIdx, lastSiteIdx
+  !      do l=firstSiteIdx, lastSiteIdx
+  !         if (abs(assoc%eps_kl(k,l)) > 1e-100 .and. abs(assoc%beta_kl(k,l)) > 1e-100) then
+  !            assoc%eps_kl(k,l) = eps
+  !            assoc%beta_kl(k,l) = beta
+  !         end if
+  !         if (k<l) then
+  !           print *, "eps_assoc, beta_assoc", k, l, assoc%eps_kl(k,l), assoc%beta_kl(k,l)
+  !         end if
+  !      end do
+  !   end do
+
+  ! end subroutine setActiveAssocParams
+
 
   subroutine print_cpa_report()
     use cpa_parameters, only: getCPAkij_epsbeta
@@ -2372,6 +2425,7 @@ contains
     use cpa_parameters, only: getCPAkij_epsbeta
     use saft_globals
     use thermopack_constants, only: verbose
+    use thermopack_var, only: nce
     integer :: rules(2)
     real :: params1(5), params2(5)
     real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
@@ -2387,10 +2441,10 @@ contains
          assoc%saft_model == eosSPCP_SAFT) then
        print *, "Model: PC-SAFT"
        call pc_saft_get_pure_params(ic=1,params=params1)
-       call pc_saft_get_pure_params(ic=2,params=params2)
+       if (nce==2) call pc_saft_get_pure_params(ic=2,params=params2)
     else
        call cpa_get_pure_params(ic=1,params=params1)
-       call cpa_get_pure_params(ic=2,params=params2)
+       if (nce==2) call cpa_get_pure_params(ic=2,params=params2)
 
        if (assoc%saft_model == cpaSRK) then
           if (verbose) print *, "Model: CPA-SRK"
@@ -2400,28 +2454,25 @@ contains
     end if
 
     if ( nce == 1 ) then
-       if (verbose) then
           print *,"Component:", act_mod_ptr%comps(1)%p_comp%ident
           print *,"Association scheme:",act_mod_ptr%comps(1)%p_comp%assoc_scheme
-       endif
+        write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
     else if ( nce == 2 ) then
-       if (verbose) then
          print *,"Component 1, scheme:", act_mod_ptr%comps(1)%p_comp%ident, &
               act_mod_ptr%comps(1)%p_comp%assoc_scheme
          print *,"Component 2, scheme:", act_mod_ptr%comps(2)%p_comp%ident, &
               act_mod_ptr%comps(2)%p_comp%assoc_scheme
           write(*,'(A, 5ES11.3)') "Component 1 pure params:", params1
           write(*,'(A, 5ES11.3)') "Component 2 pure params:", params2
-       endif
        if ( assoc%saft_model == eosOPC_SAFT .OR. &
             assoc%saft_model == eosSPC_SAFT .OR. &
             assoc%saft_model == eosPCP_SAFT .OR. &
             assoc%saft_model == eosSPCP_SAFT) then
           call pc_saft_get_kij(1,2,pcSaft_kij)
-          if (verbose) write(*,'(A, ES11.3)') "kij", pcSaft_kij
+          write(*,'(A, ES11.3)') "kij", pcSaft_kij
        else
           call cpa_get_kij(1,2,cpa_aEps_kij)
-          if (verbose) write(*,'(A, 2ES11.3)') "kij a_cubic, eps_assoc: ", cpa_aEps_kij
+          write(*,'(A, 2ES11.3)') "kij a_cubic, eps_assoc: ", cpa_aEps_kij
        end if
 
        if ( assoc%saft_model /= eosOPC_SAFT .AND. &
@@ -2433,7 +2484,7 @@ contains
               uid2=act_mod_ptr%comps(2)%p_comp%ident,&
               param_ref="DEFAULT",found=found,epsBetaCombRules=rules,&
               kijepsbeta=cpa_kijepsbeta_db)
-          if (verbose) print *, "Eps/beta combining rules:", rules
+          print *, "Eps/beta combining rules:", rules
        end if
 
     end if
