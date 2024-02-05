@@ -257,7 +257,6 @@ contains
         eos%eps_depth_divk(jc,ic) = eos%eps_depth_divk(ic,jc)
       end do
     end do
-    eos%sigma_cube = eos%sigma**3
   end subroutine pcsaft_set_nonassoc_params
 
   !> Set the molecular parameters in the PeTS equation of state
