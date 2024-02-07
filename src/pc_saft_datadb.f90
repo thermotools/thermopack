@@ -1574,7 +1574,7 @@ module pc_saft_datadb
       bib_ref = "MaritimeNH3", &
       uid1 = "NH3", &
       uid2 = "H2O", &
-      kijvalue = -0.2, &
+      kijvalue = -0.25, &
       eps_comb_rule = ariComb,  &
       beta_comb_rule = geoComb  &
       )
