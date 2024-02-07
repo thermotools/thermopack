@@ -251,10 +251,30 @@
     "eos": "PC-SAFT",
     "uid1": "NH3",
     "uid2": "H2O",
-    "ref": "Default/NguyenHuynh2020",
+    "ref": "NguyenHuynh2020",
     "bib_reference": "Doi: 10.1016/j.fluid.2020.112689",
     "kij": -0.32,
     "eps_comb_rule": "ARITHMETIC",
     "beta_comb_rule": "GEOMETRIC"
-  }
+  },
+    "KIJ-33": {
+      "eos": "PC-SAFT",
+      "uid1": "NH3",
+      "uid2": "H2O",
+      "ref": "Default/Aasen2024",
+      "bib_reference": "MaritimeNH3",
+      "kij": -0.25,
+      "eps_comb_rule": "ARITHMETIC",
+      "beta_comb_rule": "GEOMETRIC"
+    },
+    "KIJ-34": {
+      "eos": "PC-SAFT",
+      "uid1": "NH3",
+      "uid2": "H2O",
+      "ref": "Aasen2024dft",
+      "bib_reference": "MaritimeNH3",
+      "kij": -0.37,
+      "eps_comb_rule": "ARITHMETIC",
+      "beta_comb_rule": "GEOMETRIC"
+    }
 }
