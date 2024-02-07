@@ -1,6 +1,6 @@
 !> Automatically generated to file pc_saft_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-02-07T17:35:51.342893
+!! Time stamp: 2024-02-07T22:49:23.460951
 
 module pc_saft_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -1589,7 +1589,7 @@ module pc_saft_datadb
       bib_ref = "MaritimeNH3", &
       uid1 = "NH3", &
       uid2 = "H2O", &
-      kijvalue = -0.2, &
+      kijvalue = -0.25, &
       eps_comb_rule = ariComb,  &
       beta_comb_rule = geoComb  &
       )
