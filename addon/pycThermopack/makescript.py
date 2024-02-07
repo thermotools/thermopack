@@ -12,7 +12,7 @@ import map_platform_specifics
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", type=str, help="optim or debug")
-    parser.add_argument("-diffs", default="v3", type=str, help="Old (v2.1) or new (not v2.1) return mode for differentials", )
+    parser.add_argument("-diffs", default="v3", type=str, help="Old (v2) or new (> v2) return mode for differentials", )
 
     args = parser.parse_args()
     mode = args.mode
@@ -61,6 +61,7 @@ if __name__ == "__main__":
     map_platform_specifics.write_platform_specifics_file(
         pf_specifics, pf_specifics_path)
 
-    map_platform_specifics.write_setup_file(version)
+    map_platform_specifics.write_setup_file(f'v{version}')
+    map_platform_specifics.write_toml_file(version)
 
     print(f'\033[92mSucessfully configured ThermoPack {version}\033[0m')
