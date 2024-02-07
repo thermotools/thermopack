@@ -273,7 +273,7 @@
       "uid2": "H2O",
       "ref": "Aasen2024dft",
       "bib_reference": "MaritimeNH3",
-      "kij": -0.37,
+      "kij": -0.2,
       "eps_comb_rule": "ARITHMETIC",
       "beta_comb_rule": "GEOMETRIC"
     }
