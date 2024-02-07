@@ -225,14 +225,20 @@ contains
 
 
   !> Sets the fitted parameters in the non-association part of PC-SAFT.
-  subroutine pcsaft_set_nonassoc_params(eos,nc,m_in,sigma_in,eps_depth_divk_in,kij_in)
+  subroutine pcsaft_set_nonassoc_params(eos,nc,m_in,sigma_in,eps_depth_divk_in,kij_in, allocate)
     use pc_saft_nonassoc, only: sPCSAFT_eos
     class(sPCSAFT_eos), intent(inout) :: eos
     integer, intent(in) :: nc                   !< Number of components.
     real, intent(in) :: m_in(nc),sigma_in(nc),eps_depth_divk_in(nc),kij_in(nc,nc)
+    logical, intent(in), optional :: allocate
     integer ::  ic, jc
 
+    ! Allocate by default
+    if (present(allocate)) then
+      if (allocate) call eos%allocate_and_init(nc,"PC-SAFT")
+    else
     call eos%allocate_and_init(nc,"PC-SAFT")
+    end if
 
     do ic = 1,nc
       ! Set pure-component nonassoc parameters, and scheme.
@@ -2259,16 +2265,30 @@ contains
 
   subroutine pc_saft_set_pure_params(ic,params)
     use pc_saft_nonassoc, only: sPCSAFT_eos
+    use thermopack_var, only: nce
+    use saft_association, only: numAssocSites
     integer, intent(in) :: ic
-    real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, beta, eps/(J/mol)
+    real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, eps/(J/mol), beta
+    real :: m(nce),sigma(nce),eps_depth_divk(nce), kij(nce,nce)
+    integer :: j
     class(base_eos_param), pointer :: eos
 
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-        p_eos%m(ic) = params(1) !< Chain length (-)
-        p_eos%sigma(ic,ic) = params(2) !< Monomer diameter (m)
-        p_eos%eps_depth_divk(ic,ic) = params(3) !< Dispersion energy scale (K)
+      do j=1,nce
+        m(j) = p_eos%m(j)
+        sigma(j) = p_eos%sigma(j,j)
+        eps_depth_divk(j) = p_eos%eps_depth_divk(j,j)
+      end do
+      m(ic) = params(1) !< Chain length (-)
+      sigma(ic) = params(2) !< Monomer diameter (m)
+      eps_depth_divk(ic) = params(3) !< Dispersion energy scale (K)
+
+      ! This routine must be called to ensure binary parameters such as
+      ! sigma(i,j) are also updated correctly
+      kij = 0.0
+      call pcsaft_set_nonassoc_params(p_eos,nce,m,sigma,eps_depth_divk,kij_in=kij, allocate=.false.)
     class default
       call stoperror("pc_saft_set_pure_params: Wrong type.")
     end select

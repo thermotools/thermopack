@@ -256,5 +256,15 @@
     "kij": -0.32,
     "eps_comb_rule": "ARITHMETIC",
     "beta_comb_rule": "GEOMETRIC"
+  },
+  "KIJ-33": {
+    "eos": "PC-SAFT",
+    "uid1": "NH3",
+    "uid2": "H2O",
+    "ref": "Aasen2024",
+    "bib_reference": "unpublished",
+    "kij": -0.25,
+    "eps_comb_rule": "ARITHMETIC",
+    "beta_comb_rule": "GEOMETRIC"
   }
 }

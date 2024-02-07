@@ -35,13 +35,13 @@ if __name__ == "__main__":
     pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
 
     if args.diffs == 'v2':
-        version = 'beta-v2.2.0'
+        version = '2.b2'
     elif args.diffs == 'v3':
-        version = 'beta-v3.0.0'
+        version = '3.b0'
     else:
         warnings.warn(f'-diffs={args.diffs} is not a valid value. Valid values are -diffs=[v2.1/v3], treating as -diffs=v3',
                       Warning)
-        version = 'beta-v3.0.0'
+        version = '3.b0'
         args.diffs = 'v3'
 
     if args.diffs == 'v2':
@@ -62,3 +62,5 @@ if __name__ == "__main__":
         pf_specifics, pf_specifics_path)
 
     map_platform_specifics.write_setup_file(version)
+
+    print(f'\033[92mSucessfully configured ThermoPack {version}\033[0m')

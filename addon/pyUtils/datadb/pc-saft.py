@@ -1,6 +1,7 @@
 """Module for automatic generation of FORTRAN code of PC-SAFT component and binary data."""
 import numpy as np
 from sys import exit
+import sys
 import os
 import math
 import json
@@ -11,6 +12,8 @@ from data_utils import I, N_TAGS_PER_LINE, \
     get_assoc_scheme_parameter, get_mix_model_parameter
 from binarydata import binaries, binary_list
 from shutil import copy
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
+from tools import write_file, THERMOPACK_ROOT
 
 
 class pcsaft_component(component):
@@ -355,4 +358,9 @@ if __name__ == "__main__":
     code_lines += bin_code
     code_lines += footer
     save_PCSAFT_fortran_file(code_lines)
-    copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')
+
+    with open('pc_saft_datadb.f90', 'r') as ifile:
+        new_file = ifile.read()
+    write_file(f'{THERMOPACK_ROOT}/src/pc_saft_datadb.f90', new_file)
+
+    # copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')

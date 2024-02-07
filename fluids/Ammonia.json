@@ -250,6 +250,16 @@
     "bib_reference": "10.1016/j.fluid.2020.112689",
     "ref": "NguyenHuynh2020"
   },
+  "PC-SAFT-3": {
+    "m": 2.459,
+    "sigma": 2.3831E-10,
+    "eps_depth_divk": 162.58,
+    "eps": 6780.9,
+    "beta": 0.74316,
+    "assoc_scheme": "2B",
+    "bib_reference": "Unpublished",
+    "ref": "Aasen2024"
+  },
   "SAFTVRMIE-1": {
     "m": 1.0,
     "sigma": 3.3309E-10,
