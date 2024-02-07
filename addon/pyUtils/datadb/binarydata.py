@@ -267,10 +267,9 @@ class binary_list(object):
         code_lines.append("")
         code_lines.append("end module mixdatadb")
 
-        with open(filename, "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
+        new_contents = '\n'.join(code_lines)
+        ofile = f'{THERMOPACK_ROOT}/src/mixdatadb.f90'
+        write_file(ofile, new_contents)
 
     def get_array_fortran_code(self,code_lines,nMax,get_tag):
         """Set up component array
@@ -417,10 +416,3 @@ class binary_list(object):
 if __name__ == "__main__":
     binl = binary_list()
     binl.save_fortran_file("mixdatadb.f90")
-    with open('mixdatadb.f90', 'r') as ifile:
-        new_data = ifile.read()
-
-    ofile = f'{THERMOPACK_ROOT}/src/mixdatadb.f90'
-    write_file(ofile, new_data)
-
-    # copy('mixdatadb.f90', f'{THERMOPACK_ROOT}/src/mixdatadb.f90')

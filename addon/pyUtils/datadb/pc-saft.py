@@ -336,14 +336,6 @@ def PCSAFT_header_and_footer():
 
         return header, footer
 
-def save_PCSAFT_fortran_file(code_lines):
-        """ Save pc_saft_datadb.f90
-        """
-        with open("../../../src/pc_saft_datadb.f90", "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
-
 
 if __name__ == "__main__":
     # Read json files
@@ -357,10 +349,5 @@ if __name__ == "__main__":
     bin_code = binl.get_fortran_code()
     code_lines += bin_code
     code_lines += footer
-    save_PCSAFT_fortran_file(code_lines)
-
-    with open('pc_saft_datadb.f90', 'r') as ifile:
-        new_file = ifile.read()
-    write_file(f'{THERMOPACK_ROOT}/src/pc_saft_datadb.f90', new_file)
-
-    # copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')
+    new_content = '\n'.join(code_lines)
+    write_file(f'{THERMOPACK_ROOT}/src/pc_saft_datadb.f90', new_content)
