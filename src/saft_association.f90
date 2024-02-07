@@ -1428,7 +1428,7 @@ contains
     class is (sPCSAFT_eos)
       call calc_d_hd(p_eos,T,dhs)
       ms = p_eos%m
-      sigma_cube = p_eos%sigma_cube
+      sigma_cube = p_eos%sigma**3
     class default
       print *,"Q_fmt_hd: Should not be here"
     end select
