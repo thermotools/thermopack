@@ -336,7 +336,7 @@ def PCSAFT_header_and_footer():
 def save_PCSAFT_fortran_file(code_lines):
         """ Save pc_saft_datadb.f90
         """
-        with open("pc_saft_datadb.f90", "w") as f:
+        with open("../../../src/pc_saft_datadb.f90", "w") as f:
             for line in code_lines:
                 f.write(line)
                 f.write("\n")
@@ -355,4 +355,3 @@ if __name__ == "__main__":
     code_lines += bin_code
     code_lines += footer
     save_PCSAFT_fortran_file(code_lines)
-    copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')
