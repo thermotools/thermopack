@@ -132,9 +132,9 @@ class thermo(object):
 
         # Ideal property interface
         self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
-            "ideal", "idealenthalpysingle"))
+            "eos", "ideal_enthalpy_single"))
         self.s_eos_idealentropysingle = getattr(self.tp, self.get_export_name(
-            "ideal", "idealentropysingle"))
+            "eos", "ideal_entropy_single"))
         self.s_ideal_get_entropy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "get_entropy_reference_value"))
         self.s_ideal_set_entropy_reference_value = getattr(self.tp, self.get_export_name(
