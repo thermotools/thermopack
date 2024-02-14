@@ -472,7 +472,7 @@ contains
   !> \author MH, 2013-03-01
   !--------------------------------------------------------------------------
   subroutine solidGibbs_fug(T,P,iSolid,lnfug,dlnfugdt,dlnfugdp)
-    use ideal, only: idealGibbsSingle
+    use eos, only: ideal_gibbs_single
     implicit none
     real, intent(in) :: T !< K - Temperature
     real, intent(in) :: P !< Pa - Pressure
@@ -486,7 +486,7 @@ contains
     logical :: limitedFugacity
     !
     ! Find reference Gibbs energy for fluid EoS
-    call idealGibbsSingle(T,P,iSolid,gId,dgIddt,dgIddp)
+    call ideal_gibbs_single(T,P,iSolid,gId,dgIddt,dgIddp)
     !
     if (iSolid == CO2GIBBSMODEL) then
       g = sco2_gibbs(T,P) ! Actual Gibbs energy
@@ -566,7 +566,7 @@ contains
     use compdata, only: compIndex
     implicit none
     ! Locals
-    integer :: iCO2
+    integer :: iCO2, ierr
     real :: sl_tr, gl_tr, T_tr, P_tr, hl_tr
     real, dimension(nc) :: x,y
     type(thermo_model), pointer :: act_mod_ptr
@@ -580,7 +580,8 @@ contains
     y = x
     ! Make pure component sublimation line meet saturation line in triple
     ! point. That is; triple point pressure modified.
-    P_tr = bubP(T_tr,P_tr,x,y)
+    P_tr = bubP(T_tr,P_tr,x,y,ierr)
+    if (ierr /= 0) call stoperror("Error solving for bubble pressure in initDryIce")
     call entropy(T_tr,P_tr,x,LIQPH,sl_tr)
     call enthalpy(T_tr,P_tr,x,LIQPH,hl_tr)
     gl_tr = hl_tr - T_tr*sl_tr

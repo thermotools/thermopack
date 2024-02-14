@@ -15,6 +15,7 @@ module gergmix
   use gergmixdb, only: max_gerg_mix_reducing, gerg_mix_reducingdb, &
        max_gerg_mix_data, gerg_mix_datadb
   use iso_fortran_env, only: dp => REAL64
+  use eosdata, only: meosGERG_mix
   implicit none
   save
   private
@@ -67,6 +68,8 @@ contains
     integer :: i, j, k
     real :: rhor_i, rhor_j, Tr_i, Tr_j
 
+    gerg_mix%eosidx = meosGERG_mix
+    gerg_mix%subeosidx = meosGERG_mix
     call gerg_mix%allocate_and_init(nc, "GERG2008")
     call gerg_mix%allocate_param(nc)
 
