@@ -45,7 +45,7 @@ module compdata
     real :: coeff(3)
   end type alphadatadb
 
-  integer, parameter :: VS_CONSTANT = 1, VS_LINEAR = 2, VS_QUADRATIC = 3
+  integer, parameter :: VS_CONSTANT = 1, VS_LINEAR = 2, VS_QUADRATIC = 3, VS_QUINTIC = 6
   !> Volume shift parameters
   type :: cidatadb
     character (len=uid_len) :: cid !< The component ID
@@ -56,6 +56,9 @@ module compdata
     real :: ciA = 0 !< Volume shift (m3/mol)
     real :: ciB = 0 !< Volume shift (m3/mol/K)
     real :: ciC = 0 !< Volume shift (m3/mol/K/K)
+    real :: ciDD = 0 !< Volume shift (m3/mol/K/K/K)
+    real :: ciE = 0 !< Volume shift (m3/mol/K/K/K/K)
+    real :: ciF = 0 !< Volume shift (m3/mol/K/K/K/K/K)
   contains
     procedure, public :: get_vol_trs_c => cidatadb_get_vol_trs_c
     procedure, public :: set_zero_vol_trs => cidatadb_set_zero_vol_trs
@@ -139,10 +142,27 @@ module compdata
   end interface
 
   interface
-    module subroutine comp_name_active(index, comp_name)
+    module subroutine comp_name_active(index, shortname, comp_name)
       integer, intent(in) :: index
+      logical, intent(in) :: shortname
       character(len=*), intent(out) :: comp_name
     end subroutine
+  end interface
+
+  interface
+    module subroutine set_ideal_cp_correlation(index, correlation, parameters)
+      integer, intent(in) :: index
+      integer, intent(in) :: correlation
+      real, intent(in) :: parameters(10)
+    end subroutine set_ideal_cp_correlation
+  end interface
+
+  interface
+    module subroutine get_ideal_cp_correlation(index, correlation, parameters)
+      integer, intent(in) :: index
+      integer, intent(out) :: correlation
+      real, intent(out) :: parameters(10)
+    end subroutine get_ideal_cp_correlation
   end interface
 
   type gendata_pointer
@@ -152,6 +172,7 @@ module compdata
   public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
   public :: getComp, compIndex, copy_comp, comp_index_active, comp_name_active
   public :: parseCompVector, initCompList, deallocate_comp
+  public :: get_ideal_cp_correlation, set_ideal_cp_correlation
 
 contains
 
@@ -160,7 +181,6 @@ contains
   !!
   function isComponent(cid, cname) result(isComp)
     use stringmod, only: str_eq
-    implicit none
     character(len=*), intent(in) :: cid
     character(len=*), intent(in) :: cname
     logical :: isComp
@@ -173,7 +193,6 @@ contains
   !> Is referance tag in referance list?
   !!
   function isRef(ref, ref_list) result(isR)
-    implicit none
     character(len=*), intent(in) :: ref
     character(len=*), intent(in) :: ref_list
     logical :: isR
@@ -187,7 +206,6 @@ contains
   !!
   function isEOS(eosid, eos) result(isE)
     use stringmod, only: str_eq
-    implicit none
     character(len=*), intent(in) :: eosid
     character(len=*), intent(in) :: eos
     logical :: isE
@@ -200,7 +218,6 @@ contains
   !> Assignment operator for gendatadb
   !!
   subroutine assign_gendatadb(this,cmp)
-    implicit none
     class(gendatadb), intent(inout) :: this
     class(*), intent(in) :: cmp
 
@@ -239,7 +256,6 @@ contains
   !> Assignment operator for gendata
   !!
   subroutine assign_gendata(this,cmp)
-    implicit none
     class(gendata), intent(inout) :: this
     class(*), intent(in) :: cmp
 
@@ -280,7 +296,7 @@ contains
     integer, intent(out) :: ncomp
     character (len=*), allocatable, dimension(:), intent(inout) :: complist !> List of component names
     !
-    integer :: ipos, err, i, j
+    integer :: ipos, err, i
     character(len=clen) :: comp_string
 
     comp_string = trim(componentString)
@@ -303,14 +319,6 @@ contains
       ipos = getComp(trim(comp_string))
       complist(i)=comp_string(1:ipos)
       comp_string = comp_string(ipos+2:clen)
-    enddo
-    ! Check for duplicates
-    do i=1,ncomp
-      do j=1,ncomp
-        if (trim(complist(i)) == trim(complist(j)) .and. j /= i) then
-          Call StopError('Duplicate in component list. Check input!')
-        endif
-      enddo
     enddo
 
     if (verbose) then
@@ -364,21 +372,13 @@ contains
     enddo
   end function getComp
 
-  !> Select all components in the mixture
-  !! The parameters are:
-  !!
-  !!  \param comp_string The compontn string sperated either by "," or by " ".
-  !!
-  !! Example tpSelectComp ('C1 CO2 N2') or tpSelectComp ('C1,CO2,N2')
-  !!
-  !! \author Geir S
-  subroutine SelectComp(complist,nc,ref,comp,ierr)
-    implicit none
-    character(len=*), intent(in) :: complist(:)
-    integer, intent(in) :: nc
-    character(len=*), intent(in) :: ref
-    type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp
-    integer, intent(out) :: ierr
+  !> Initialize component data from compdatadb
+  subroutine init_component_data_from_db(complist,nc,ref,comp,ierr)
+    character(len=*), intent(in) :: complist(:) !< List of component names
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: ref !< Reference for ideal cp correlation
+    type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp !< Pointer to structure for holding data
+    integer, intent(out) :: ierr ! <Error flag (0 means success)
     ! Loclas
     integer :: i, stat
     call deallocate_comp(comp)
@@ -389,10 +389,9 @@ contains
       if (stat /= 0) write (*,*) 'Error allocating p_comp'
       call comp(i)%p_comp%init_from_name(complist(i),ref,ierr)
     enddo
-  end subroutine SelectComp
+  end subroutine init_component_data_from_db
 
   subroutine deallocate_comp(comp)
-    implicit none
     type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp
     ! Loclas
     integer :: stat, i
@@ -408,7 +407,6 @@ contains
   end subroutine deallocate_comp
 
   subroutine copy_comp(comp_cpy, comp)
-    implicit none
     type(gendata_pointer), allocatable, dimension(:), intent(inout) :: comp_cpy
     type(gendata_pointer), allocatable, dimension(:), intent(in) :: comp
     ! Loclas
@@ -437,7 +435,6 @@ contains
   end subroutine copy_comp
 
   subroutine cidatadb_get_vol_trs_c(cid, T, ci, cit, citt, ci_temp_dep)
-    implicit none
     class(cidatadb), intent(in) :: cid
     real, intent(in) :: T !< Temperature (K)
     real, intent(out) :: ci !< Volume translation (m3/mol)
@@ -461,6 +458,11 @@ contains
       cit = cid%ciB + 2*cid%ciC*T
       citt = 2*cid%ciC
       ci_temp_dep = .true.
+    case(VS_QUINTIC)
+      ci = cid%ciA + cid%ciB*T + cid%ciC*T**2 + cid%ciDD*T**3 + cid%ciE*T**4 + cid%ciF*T**5
+      cit = cid%ciB + 2*cid%ciC*T + 3*cid%ciDD*T**2 + 4*cid%ciE*T**3 + 5*cid%ciF*T**4
+      citt = 2*cid%ciC + 6*cid%ciDD*T + 12*cid%ciE*T**2 + 20*cid%ciF*T**3
+      ci_temp_dep = .true.
     case default
       ci = 0
       cit = 0
@@ -475,6 +477,9 @@ contains
     cid%ciA = 0
     cid%ciB = 0
     cid%ciC = 0
+    cid%ciDD = 0
+    cid%ciE = 0
+    cid%ciF = 0
     cid%c_type = VS_CONSTANT
   end subroutine cidatadb_set_zero_vol_trs
 

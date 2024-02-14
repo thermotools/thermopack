@@ -18,7 +18,7 @@ class tcPR(cubic):
     Interface to tc-PR
     """
     def __init__(self, comps=None, mixing="vdW", parameter_reference=None):
-        """
+        """Constructor
         Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
         (10.1016/j.fluid.2016.09.003)
 
@@ -45,7 +45,8 @@ class tcPR(cubic):
     #################################
 
     def init(self, comps, mixing="vdW", parameter_reference=None):
-        """Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
+        """Constructor
+        Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
         (10.1016/j.fluid.2016.09.003)
 
         Args:

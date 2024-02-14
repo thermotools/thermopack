@@ -68,6 +68,8 @@ module pure_fluid_meos
     procedure, public :: satDeltaEstimate => satDeltaEstimate_meos_pure
     procedure, public :: get_ref_state_spec => get_ref_state_spec_meos_pure
     procedure, public :: set_ref_state => set_ref_state_meos_pure
+    procedure, public :: alpha0Derivs_taudelta_optional => alpha0Derivs_taudelta_optional_meos_pure
+    procedure, public :: alphaResDerivs_taudelta_optional => alphaResDerivs_taudelta_optional_meos_pure
     ! Assignment operator
     procedure, pass(This), public :: assign_meos => assign_meos_pure
   end type meos_pure
@@ -98,9 +100,12 @@ contains
       meos_comp%Rgas_meos = meosdb(i_comp)%Rgas
       meos_comp%Rgas_fit = meosdb(i_comp)%Rgas
       meos_comp%compName = comp_name
-      meos_comp%molarMass = meosdb(i_comp)%mw
+      meos_comp%molarMass = meosdb(i_comp)%mw/1000.0
       meos_comp%t_triple = meosdb(i_comp)%ttr
       meos_comp%p_triple = meosdb(i_comp)%ptr*1.0e-3 ! kPa -> Pa
+
+      meos_comp%tr = meosdb(i_comp)%tr
+      meos_comp%rhor = meosdb(i_comp)%rhor*1.0e3 !  -> mol/l -> mol/m3
 
       meos_comp%tc = meosdb(i_comp)%tc
       meos_comp%rc = meosdb(i_comp)%rhoc*1.0e3 !  -> mol/l -> mol/m3
@@ -532,5 +537,41 @@ contains
     end if
 
   end function satDeltaEstimate_meos_pure
+
+  subroutine alphaResDerivs_taudelta_optional_meos_pure(this,delta,tau,alp,alp_tau,&
+         alp_del,alp_tautau,alp_taudel,alp_deldel)
+    class(meos_pure), intent(inout) :: this
+    real, intent(in) :: delta !< Reduced density (-)
+    real, intent(in) :: tau !< Reduced temperature (-)
+    real, optional, intent(out) :: alp !< A/(nRT)
+    real, intent(out), optional :: alp_tau,alp_del
+    real, intent(out), optional :: alp_tautau,alp_taudel,alp_deldel
+    !
+    call this%alpha_hd_wrapper(.false.,tau,delta,alp=alp,alp_tau=alp_tau,&
+         alp_del=alp_del,alp_tautau=alp_tautau,alp_taudel=alp_taudel,alp_deldel=alp_deldel)
+    if (present(alp_tau)) alp_tau = alp_tau*tau
+    if (present(alp_tautau)) alp_tautau = alp_tautau*tau**2
+    if (present(alp_taudel)) alp_taudel = alp_taudel*tau*delta
+    if (present(alp_del)) alp_del = alp_del*delta
+    if (present(alp_deldel)) alp_deldel = alp_deldel*delta**2
+  end subroutine alphaResDerivs_taudelta_optional_meos_pure
+
+  subroutine alpha0Derivs_taudelta_optional_meos_pure(this,delta,tau,alp,alp_tau,&
+         alp_del,alp_tautau,alp_taudel,alp_deldel)
+    class(meos_pure) :: this
+    real, intent(in) :: delta !< Reduced density (-)
+    real, intent(in) :: tau !< Reduced temperature (-)
+    real, optional, intent(out) :: alp !< A/(nRT)
+    real, intent(out), optional :: alp_tau,alp_del
+    real, intent(out), optional :: alp_tautau,alp_taudel,alp_deldel
+    !
+    call this%alpha_hd_wrapper(.true.,tau,delta,alp=alp,alp_tau=alp_tau,&
+         alp_del=alp_del,alp_tautau=alp_tautau,alp_taudel=alp_taudel,alp_deldel=alp_deldel)
+    if (present(alp_tau)) alp_tau = alp_tau*tau
+    if (present(alp_tautau)) alp_tautau = alp_tautau*tau**2
+    if (present(alp_taudel)) alp_taudel = alp_taudel*tau*delta
+    if (present(alp_del)) alp_del = alp_del*delta
+    if (present(alp_deldel)) alp_deldel = alp_deldel*delta**2
+  end subroutine alpha0Derivs_taudelta_optional_meos_pure
 
 end module pure_fluid_meos

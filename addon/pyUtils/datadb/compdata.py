@@ -338,10 +338,16 @@ class comp_list(object):
         code_lines.append("")
         code_lines.append("end module compdatadb")
 
-        with open(filename, "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
+        new_filestr = ''
+        for line in code_lines:
+            new_filestr += line + '\n'
+
+        if tools.check_is_changed(f'{tools.THERMOPACK_ROOT}/src/{filename}', new_filestr):
+            with open(filename, 'w') as f:
+                f.write(new_filestr)
+            print(f'Wrote updated datadb to : {filename}')
+        else:
+            print(f'File at {tools.THERMOPACK_ROOT}/src/{filename} is unchanged.')
 
     def get_comp_array_fortran_code(self):
         """Set up component array
@@ -532,18 +538,24 @@ class comp_list(object):
         filename - path to file
         """
         wiki_header_lines = []
+        wiki_header_lines.append('---\n'
+                                'version: \n'
+                                'layout: default\n'
+                                'title: Component identifiers\n'
+                                'permalink: /vcurrent/Component-name-mapping.html\n'
+                                '---\n\n')
         wiki_header_lines.append('<!---\nThis is an auto-generated file, written by the module at '
                                  'addon/pyUtils/compdatadb.py\n'
                                  'Generated at : ' + datetime.today().isoformat() + '\n'
                                  'This is the same module that is used to generate the Fortran\n'
                                  'component database files.\n'
                                  '--->\n\n')
-        wiki_header_lines.append("# Fluid name to fluid identifyer mapping")
+        wiki_header_lines.append("# Fluid name to fluid identifier mapping")
         wiki_header_lines.append("&nbsp;\n")
         wiki_header_lines.append("In order to specify fluids in Thermopack you need to use fluid identifiers as shown in the table below. The 'SAFT-VR', 'PC-SAFT' and 'CPA' columns indicate which fluids SAFT-EoS and CPA parameters are available for.\n")
-        wiki_header_lines.append("&nbsp;\n")
-        wiki_header_lines.append("| Fluid name | Fluid identifyer | SAFT-VR | PC-SAFT | CPA |")
-        wiki_header_lines.append("| ------------------------ | ----------- | ---- | ---- | ---- |")
+        wiki_header_lines.append("&nbsp;\nYou may have to scroll right to view the whole table.\n")
+        wiki_header_lines.append("| Fluid name | CAS Number |Fluid identifyer | SAFT-VR | PC-SAFT | CPA |")
+        wiki_header_lines.append("| ------------------------ | ---- | ----------- | ---- | ---- | ---- |")
 
         wiki_lines = []
         for comp in self.comp_list:
@@ -575,22 +587,29 @@ class comp_list(object):
 
             def has_param_txt(has_param):
                 if has_param is True:
-                    return ':heavy_check_mark:'
+                    return '&#10004;'
                 return ' '
 
             has_svrm_params = has_param_txt(has_svrm_params)
             has_pcsaft_params = has_param_txt(has_pcsaft_params)
             has_cpa_params = has_param_txt(has_cpa_params)
 
-            line = "| " + name + " | " + comp.comp["ident"] + " | " + has_svrm_params + " | " + has_pcsaft_params \
-                   + " | " + has_cpa_params + " |"
+            line = f"| {name} | {comp.comp['cas_number']} | {comp.comp['ident']} | {has_svrm_params} | {has_pcsaft_params}" \
+                   f" | {has_cpa_params} |"
             wiki_lines.append(line)
         wiki_lines.sort()
         wiki_lines = wiki_header_lines + wiki_lines
-        with open(filename, "w") as f:
-            for line in wiki_lines:
-                f.write(line)
-                f.write("\n")
+        new_filestr = ''
+        for line in wiki_lines:
+            new_filestr += line + '\n'
+
+        if tools.check_is_changed(filename, new_filestr):
+            with open(filename, "w") as f:
+                f.write(new_filestr)
+            print(f'Updated file : {filename}')
+        else:
+            print(f'File at {filename} is unchanged.')
+
 
 
     def get_CPA_tag(self,i_cpa=None):

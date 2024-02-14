@@ -1,6 +1,6 @@
 !> Automatically generated to file pc_saft_datadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-08-17T16:34:47.659827
+!! Time stamp: 2023-11-16T18:05:36.326485
 
 module pc_saft_datadb
   use thermopack_constants, only: uid_len, ref_len, bibref_len
@@ -41,6 +41,8 @@ module pc_saft_datadb
     character(len=ref_len) :: ref ! Parameter set
     character(len=bibref_len) :: bib_ref ! Bibliographic reference
     real :: kijvalue
+    integer :: eps_comb_rule
+    integer :: beta_comb_rule
   end type PCkijdata
 
   type(pc_saft_data), parameter :: PCcx1 = &
@@ -250,7 +252,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx15 = &
@@ -265,7 +267,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx16 = &
@@ -310,7 +312,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx19 = &
@@ -415,7 +417,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx26 = &
@@ -445,7 +447,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx28 = &
@@ -535,7 +537,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx34 = &
@@ -565,7 +567,7 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx36 = &
@@ -580,10 +582,25 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
   type(pc_saft_data), parameter :: PCcx37 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "KR", &
+      m = 1., &
+      sigma = 3.63e-10, &
+      eps_depth_divk = 163.1, &
+      eps = 0., &
+      beta = 0., &
+      assoc_scheme = no_assoc, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "Sauer & Gross (2017). DOI: 10.1021/acs.iecr.6b04551", &
+      ref = "Default/Sauer_Gross_2017" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx38 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "C1", &
       m = 1., &
@@ -595,10 +612,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx38 = &
+  type(pc_saft_data), parameter :: PCcx39 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "MEOH", &
       m = 2.1, &
@@ -613,7 +630,7 @@ module pc_saft_datadb
       ref = "Default/deVilliers2011" &
       )
 
-  type(pc_saft_data), parameter :: PCcx39 = &
+  type(pc_saft_data), parameter :: PCcx40 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "N2", &
       m = 1.2053, &
@@ -625,10 +642,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx40 = &
+  type(pc_saft_data), parameter :: PCcx41 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "N2", &
       m = 1.1504, &
@@ -643,7 +660,7 @@ module pc_saft_datadb
       ref = "Gross2005" &
       )
 
-  type(pc_saft_data), parameter :: PCcx41 = &
+  type(pc_saft_data), parameter :: PCcx42 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "N2", &
       m = 1.1879, &
@@ -658,7 +675,7 @@ module pc_saft_datadb
       ref = "Gross2005ADJQ" &
       )
 
-  type(pc_saft_data), parameter :: PCcx42 = &
+  type(pc_saft_data), parameter :: PCcx43 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "O2", &
       m = 1.1217, &
@@ -670,10 +687,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx43 = &
+  type(pc_saft_data), parameter :: PCcx44 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "C3", &
       m = 2.002, &
@@ -685,10 +702,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx44 = &
+  type(pc_saft_data), parameter :: PCcx45 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "TOLU", &
       m = 2.8149, &
@@ -700,10 +717,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx45 = &
+  type(pc_saft_data), parameter :: PCcx46 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "H2O", &
       m = 1.5, &
@@ -718,7 +735,7 @@ module pc_saft_datadb
       ref = "Default/Grenner2006" &
       )
 
-  type(pc_saft_data), parameter :: PCcx46 = &
+  type(pc_saft_data), parameter :: PCcx47 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "H2O", &
       m = 1.0656, &
@@ -730,10 +747,100 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Kontogeorgis_Folas2001" &
+      ref = "Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx47 = &
+  type(pc_saft_data), parameter :: PCcx48 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.18381, &
+      sigma = 2.87756e-10, &
+      eps_depth_divk = 201.82186, &
+      eps = 15074.120726711822, &
+      beta = 0.07002, &
+      assoc_scheme = assoc_scheme_4C, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "10.1016/j.fluid.2018.06.019", &
+      ref = "NguyenHuynh2020" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx49 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.8668, &
+      sigma = 2.395e-10, &
+      eps_depth_divk = 169.78, &
+      eps = 14733.2277594, &
+      beta = 0.133738, &
+      assoc_scheme = assoc_scheme_4C, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "10.1021/acs.jced.0c00684", &
+      ref = "Rehner2020_4C" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx50 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1., &
+      sigma = 2.9375e-10, &
+      eps_depth_divk = 272.03, &
+      eps = 25985.1900205, &
+      beta = 0.04448, &
+      assoc_scheme = assoc_scheme_2B, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "10.1021/acs.jced.0c00684", &
+      ref = "Rehner2020_2B" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx51 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.0488, &
+      sigma = 2.9896e-10, &
+      eps_depth_divk = 115.19, &
+      eps = 19770.9606597, &
+      beta = 0.038236, &
+      assoc_scheme = assoc_scheme_3B, &
+      mu = 1.9374, &
+      Q = 0., &
+      bib_ref = "10.1021/acs.jced.0c00684", &
+      ref = "Rehner2020_3B_polar" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx52 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.2808, &
+      sigma = 2.8129e-10, &
+      eps_depth_divk = 117.78, &
+      eps = 14833.832757, &
+      beta = 0.082907, &
+      assoc_scheme = assoc_scheme_4C, &
+      mu = 1.505, &
+      Q = 0., &
+      bib_ref = "10.1021/acs.jced.0c00684", &
+      ref = "Rehner2020_4C_polar" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx53 = &
+      pc_saft_data(eosidx = eosPC_SAFT, &
+      compName = "H2O", &
+      m = 1.0656, &
+      sigma = 3.0007e-10, &
+      eps_depth_divk = 366.51, &
+      eps = 20791.9766692, &
+      beta = 0.034868, &
+      assoc_scheme = assoc_scheme_2B, &
+      mu = 0., &
+      Q = 0., &
+      bib_ref = "10.1021/ie010954d", &
+      ref = "Gross2002" &
+      )
+
+  type(pc_saft_data), parameter :: PCcx54 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC4", &
       m = 2.3316, &
@@ -745,10 +852,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx48 = &
+  type(pc_saft_data), parameter :: PCcx55 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC10", &
       m = 4.6627, &
@@ -760,10 +867,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx49 = &
+  type(pc_saft_data), parameter :: PCcx56 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC22", &
       m = 8.7068, &
@@ -775,10 +882,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx50 = &
+  type(pc_saft_data), parameter :: PCcx57 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC12", &
       m = 5.2133, &
@@ -790,10 +897,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx51 = &
+  type(pc_saft_data), parameter :: PCcx58 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC20", &
       m = 8.0081, &
@@ -805,10 +912,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx52 = &
+  type(pc_saft_data), parameter :: PCcx59 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC21", &
       m = 8.3574, &
@@ -820,10 +927,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx53 = &
+  type(pc_saft_data), parameter :: PCcx60 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC17", &
       m = 6.96, &
@@ -835,10 +942,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx54 = &
+  type(pc_saft_data), parameter :: PCcx61 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC7", &
       m = 3.4831, &
@@ -850,10 +957,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx55 = &
+  type(pc_saft_data), parameter :: PCcx62 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC16", &
       m = 6.6107, &
@@ -865,10 +972,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx56 = &
+  type(pc_saft_data), parameter :: PCcx63 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC6", &
       m = 3.0576, &
@@ -880,10 +987,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx57 = &
+  type(pc_saft_data), parameter :: PCcx64 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC19", &
       m = 7.6587, &
@@ -895,10 +1002,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx58 = &
+  type(pc_saft_data), parameter :: PCcx65 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC9", &
       m = 4.2079, &
@@ -910,10 +1017,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx59 = &
+  type(pc_saft_data), parameter :: PCcx66 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC18", &
       m = 7.3094, &
@@ -925,10 +1032,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx60 = &
+  type(pc_saft_data), parameter :: PCcx67 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC8", &
       m = 3.8176, &
@@ -940,10 +1047,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx61 = &
+  type(pc_saft_data), parameter :: PCcx68 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC25", &
       m = 9.7548, &
@@ -955,10 +1062,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx62 = &
+  type(pc_saft_data), parameter :: PCcx69 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC15", &
       m = 6.2614, &
@@ -970,10 +1077,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx63 = &
+  type(pc_saft_data), parameter :: PCcx70 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC5", &
       m = 2.6896, &
@@ -985,10 +1092,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx64 = &
+  type(pc_saft_data), parameter :: PCcx71 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC14", &
       m = 5.912, &
@@ -1000,10 +1107,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx65 = &
+  type(pc_saft_data), parameter :: PCcx72 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC24", &
       m = 9.4055, &
@@ -1015,10 +1122,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx66 = &
+  type(pc_saft_data), parameter :: PCcx73 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC23", &
       m = 9.0561, &
@@ -1030,10 +1137,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx67 = &
+  type(pc_saft_data), parameter :: PCcx74 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC13", &
       m = 5.5627, &
@@ -1045,10 +1152,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  type(pc_saft_data), parameter :: PCcx68 = &
+  type(pc_saft_data), parameter :: PCcx75 = &
       pc_saft_data(eosidx = eosPC_SAFT, &
       compName = "NC11", &
       m = 4.864, &
@@ -1060,10 +1167,10 @@ module pc_saft_datadb
       mu = 0., &
       Q = 0., &
       bib_ref = "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537", &
-      ref = "Default/Kontogeorgis_Folas2001" &
+      ref = "Default/Kontogeorgis_Folas2010" &
       )
 
-  integer, parameter :: nPCmodels = 68
+  integer, parameter :: nPCmodels = 75
   type(pc_saft_data), dimension(nPCmodels), parameter :: PCarray = (/&
       PCcx1,PCcx2,PCcx3,PCcx4,PCcx5, &
       PCcx6,PCcx7,PCcx8,PCcx9,PCcx10, &
@@ -1078,7 +1185,8 @@ module pc_saft_datadb
       PCcx51,PCcx52,PCcx53,PCcx54,PCcx55, &
       PCcx56,PCcx57,PCcx58,PCcx59,PCcx60, &
       PCcx61,PCcx62,PCcx63,PCcx64,PCcx65, &
-      PCcx66,PCcx67,PCcx68 &
+      PCcx66,PCcx67,PCcx68,PCcx69,PCcx70, &
+      PCcx71,PCcx72,PCcx73,PCcx74,PCcx75 &
   /)
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_1 = &
@@ -1087,7 +1195,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C1", &
-      kijvalue = 0.0425  &
+      kijvalue = 0.0425, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_2 = &
@@ -1096,7 +1206,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C2", &
-      kijvalue = 0.072  &
+      kijvalue = 0.072, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_3 = &
@@ -1105,7 +1217,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "C3", &
-      kijvalue = 0.069  &
+      kijvalue = 0.069, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_4 = &
@@ -1114,7 +1228,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC4", &
-      kijvalue = 0.067  &
+      kijvalue = 0.067, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_5 = &
@@ -1123,7 +1239,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC5", &
-      kijvalue = 0.073  &
+      kijvalue = 0.073, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_6 = &
@@ -1132,7 +1250,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC6", &
-      kijvalue = 0.073  &
+      kijvalue = 0.073, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_7 = &
@@ -1141,7 +1261,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC7", &
-      kijvalue = 0.078  &
+      kijvalue = 0.078, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_8 = &
@@ -1150,7 +1272,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC9", &
-      kijvalue = 0.086  &
+      kijvalue = 0.086, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_9 = &
@@ -1159,7 +1283,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC10", &
-      kijvalue = 0.077  &
+      kijvalue = 0.077, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_10 = &
@@ -1168,7 +1294,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "IC4", &
-      kijvalue = 0.06  &
+      kijvalue = 0.06, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_11 = &
@@ -1177,7 +1305,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "IC5", &
-      kijvalue = 0.076  &
+      kijvalue = 0.076, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_12 = &
@@ -1186,7 +1316,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "CYCLOHEX", &
-      kijvalue = 0.082  &
+      kijvalue = 0.082, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_13 = &
@@ -1195,7 +1327,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "H2S", &
       uid2 = "NC8", &
-      kijvalue = 0.  &
+      kijvalue = 0., &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_14 = &
@@ -1204,7 +1338,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "H2S", &
-      kijvalue = 0.0223  &
+      kijvalue = 0.0223, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_15 = &
@@ -1213,7 +1349,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "BENZENE", &
-      kijvalue = 0.025  &
+      kijvalue = 0.025, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_16 = &
@@ -1222,7 +1360,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "TOLU", &
-      kijvalue = 0.026  &
+      kijvalue = 0.026, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_17 = &
@@ -1231,7 +1371,9 @@ module pc_saft_datadb
       bib_ref = "Gross & Sadowski (2001). Doi: 10.1021/ie0003887", &
       uid1 = "CO2", &
       uid2 = "C1", &
-      kijvalue = 0.065  &
+      kijvalue = 0.065, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_18 = &
@@ -1240,7 +1382,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "C2", &
-      kijvalue = 0.102  &
+      kijvalue = 0.102, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_19 = &
@@ -1249,7 +1393,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "C3", &
-      kijvalue = 0.0107  &
+      kijvalue = 0.0107, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_20 = &
@@ -1258,7 +1404,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC4", &
-      kijvalue = 0.109  &
+      kijvalue = 0.109, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_21 = &
@@ -1267,7 +1415,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC5", &
-      kijvalue = 0.12  &
+      kijvalue = 0.12, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_22 = &
@@ -1276,7 +1426,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC6", &
-      kijvalue = 0.123  &
+      kijvalue = 0.123, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_23 = &
@@ -1285,7 +1437,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC7", &
-      kijvalue = 0.115  &
+      kijvalue = 0.115, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_24 = &
@@ -1294,7 +1448,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC8", &
-      kijvalue = 0.132  &
+      kijvalue = 0.132, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_25 = &
@@ -1303,7 +1459,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC9", &
-      kijvalue = 0.122  &
+      kijvalue = 0.122, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_26 = &
@@ -1312,7 +1470,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "NC10", &
-      kijvalue = 0.133  &
+      kijvalue = 0.133, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_27 = &
@@ -1321,7 +1481,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "IC4", &
-      kijvalue = 0.112  &
+      kijvalue = 0.112, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_28 = &
@@ -1330,7 +1492,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "IC5", &
-      kijvalue = 0.116  &
+      kijvalue = 0.116, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_29 = &
@@ -1339,7 +1503,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "CYCLOHEX", &
-      kijvalue = 0.125  &
+      kijvalue = 0.125, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_30 = &
@@ -1348,7 +1514,9 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "BENZENE", &
-      kijvalue = 0.087  &
+      kijvalue = 0.087, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
   type (PCkijdata), parameter :: PCSAFT_KIJ_31 = &
@@ -1357,10 +1525,23 @@ module pc_saft_datadb
       bib_ref = "Tang & Gross (2010). Doi: 10.1016/j.fluid.2010.02.004", &
       uid1 = "CO2", &
       uid2 = "TOLU", &
-      kijvalue = 0.108  &
+      kijvalue = 0.108, &
+      eps_comb_rule = defaultComb,  &
+      beta_comb_rule = defaultComb  &
       )
 
-  integer, parameter :: PCmaxkij = 31
+  type (PCkijdata), parameter :: PCSAFT_KIJ_32 = &
+      PCkijdata(eosidx = eosPC_SAFT, &
+      ref = "Default/NguyenHuynh2020", &
+      bib_ref = "Doi: 10.1016/j.fluid.2020.112689", &
+      uid1 = "NH3", &
+      uid2 = "H2O", &
+      kijvalue = -0.32, &
+      eps_comb_rule = ariComb,  &
+      beta_comb_rule = geoComb  &
+      )
+
+  integer, parameter :: PCmaxkij = 32
   type (PCkijdata), dimension(PCmaxkij), parameter :: PCkijdb = (/&
       PCSAFT_KIJ_1,PCSAFT_KIJ_2,PCSAFT_KIJ_3,PCSAFT_KIJ_4,PCSAFT_KIJ_5, &
       PCSAFT_KIJ_6,PCSAFT_KIJ_7,PCSAFT_KIJ_8,PCSAFT_KIJ_9,PCSAFT_KIJ_10, &
@@ -1368,7 +1549,7 @@ module pc_saft_datadb
       PCSAFT_KIJ_16,PCSAFT_KIJ_17,PCSAFT_KIJ_18,PCSAFT_KIJ_19,PCSAFT_KIJ_20, &
       PCSAFT_KIJ_21,PCSAFT_KIJ_22,PCSAFT_KIJ_23,PCSAFT_KIJ_24,PCSAFT_KIJ_25, &
       PCSAFT_KIJ_26,PCSAFT_KIJ_27,PCSAFT_KIJ_28,PCSAFT_KIJ_29,PCSAFT_KIJ_30, &
-      PCSAFT_KIJ_31 &
+      PCSAFT_KIJ_31,PCSAFT_KIJ_32 &
   /)
 
 end module pc_saft_datadb

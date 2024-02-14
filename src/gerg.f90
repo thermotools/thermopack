@@ -89,13 +89,16 @@ contains
       gerg_comp%Rgas_meos = gergdb(i_comp)%Rgas
       gerg_comp%Rgas_fit = gergdb(i_comp)%Rgas
       gerg_comp%compName = comp_name
-      gerg_comp%molarMass = gergdb(i_comp)%mw
+      gerg_comp%molarMass = gergdb(i_comp)%mw/1000.0
       gerg_comp%t_triple = gergdb(i_comp)%ttr
       gerg_comp%p_triple = gergdb(i_comp)%ptr*1.0e-3 ! kPa -> Pa
 
       gerg_comp%tc = gergdb(i_comp)%tc
       gerg_comp%rc = gergdb(i_comp)%rhoc*1.0e3 !  -> mol/l -> mol/m3
       gerg_comp%acf = gergdb(i_comp)%acf !< Acentric factor
+
+      gerg_comp%tr = gergdb(i_comp)%tr
+      gerg_comp%rhor = gergdb(i_comp)%rhor*1.0e3 !  -> mol/l -> mol/m3
 
       ! Set indices
       gerg_comp%n_cosh = 3 + gergdb(i_comp)%n_cosh

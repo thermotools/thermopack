@@ -21,6 +21,15 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
             Returns:
                 (float) : The colon here is also necessary.
             """
+-----------------------------------------------------------------------------------------------------------------------
+
+NOTE: The procedure described below is the general procedure for generating documentation for large classes
+        with many methods doing different things. For simple classes, consider using the function
+        `basic_class_to_markdown` to do most of the job.
+
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+Now for the generic procedure:
 
     1 :  Use the function get_autogen_header(<classname>) to generate a comment with a timestamp and a description of
          how the markdown file was generated (using this module)
@@ -63,7 +72,10 @@ Usage : Current functionality is designed to parse the docstrings of a given cla
             contents = get_markdown_contents(sections, section_headers, section_intro, method_dict)
         to generate the contents of the file
 
-    9 : Concatenate the strings you have generated and write to file.
+    9 : Concatenate the strings you have generated and use `write_file` to write to file.
+    Note: USE The method `write_file`: It checks for content changes and does not update the file if no
+        other content than the timestamp has changed. This prevents you from needing to push a bunch of changes that
+        are only timestamp changes, and makes our history much more clean.
 '''
 import copy
 import inspect
@@ -74,11 +86,23 @@ from thermopack.saft import saft
 from thermopack.saftvrmie import saftvrmie
 from thermopack.pcsaft import pcsaft
 from thermopack.saftvrqmie import saftvrqmie
+from thermopack.pets import pets
+from thermopack.cubic import cubic
+from thermopack.cpa import cpa
+from thermopack.extended_csp import ext_csp
+from thermopack.multiparameter import multiparam
 from tools import remove_illegal_link_chars, check_is_changed, write_file, THERMOPACK_ROOT, MARKDOWN_DIR
+from tools import update_v220_method_docs
 
 
 def get_autogen_header(classname):
-    header = '<!--- \n'
+    header = f'''---
+layout: default
+version: 
+title: Methods in the {classname} class
+permalink: /vcurrent/{classname}_methods.html
+---\n\n'''
+    header += '<!--- \n'
     header += 'Generated at: ' + datetime.today().isoformat() + '\n'
     header += 'This is an auto-generated file, generated using the script at ' \
               'thermopack/addon/pyUtils/docs/markdown_from_docstrings.py\n'
@@ -238,7 +262,7 @@ def get_toc(sections, section_headers, method_dict, is_subsection=False):
 
     return toc_text + '\n'
 
-def get_markdown_contents(sections, section_headers, section_intro, method_dict):
+def get_markdown_contents(sections, section_headers, section_intro, method_dict, sub_toc=True):
     """
     Iterate through the sections, generate the markdown documentation for all methods in method_dict, and join them
     while adding section headers and section introductions
@@ -249,6 +273,7 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
         section_intro (dict<str, str>) : Dict mapping the section names to the section introduction text.
         method_dict (dict<str, list<tuple<str, function>>>) : Mapping the section names to the list of (method name,
                                                                 function) tuples that are in the section.
+        sub_toc (bool) : Whether to add ToC at the top of each sub-section.
     Returns:
         str : The markdown text corresponding to the main contents of the file.
     """
@@ -261,10 +286,44 @@ def get_markdown_contents(sections, section_headers, section_intro, method_dict)
             continue
         md_text += '## ' + section_headers[sec] + '\n\n'
         md_text += section_intro[sec] + '\n\n'
-        md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
+        if sub_toc is True:
+            md_text +=  '#' + get_toc([sec], section_headers, method_dict, is_subsection=True) + '\n'
         md_text += to_markdown(method_dict[sec])
 
     return md_text
+
+def basic_class_to_markdown(classname, eosname, methods, intro_text=None, inherits=None):
+    """
+    Generate markdown documentation file for a class that implements only Constructor and unility methods.
+    """
+
+    sections = ['Constructor',
+                'Utility']
+
+    section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    section_intro = {'Constructor': f'Methods to initialise {eosname} model.',
+                     'Utility': 'Set- and get methods for interaction parameters, mixing parameters ...'}
+
+    method_dict = split_methods_by_section(sections, methods)
+
+    ofile_text = get_autogen_header(classname)
+    if intro_text is None:
+        if inherits is None:
+            ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, is the interface to the \n' \
+                          f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
+        else:
+            ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherrits ' \
+                          f'from the {inherits} class, and  is the interface to the \n' \
+                          f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
+    else:
+        ofile_text += intro_text
+    ofile_text += get_toc(sections, section_headers, method_dict)
+    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+
+    filename = f'{classname}_methods.md'
+    write_file(MARKDOWN_DIR + filename, ofile_text)
 
 def thermo_to_markdown():
     """
@@ -305,7 +364,7 @@ def thermo_to_markdown():
                                       'returned by methods in this section are computed as functions of (T, p, n).',
                        'TVp-property' : 'Computing properties given Temperature, volume and mole numbers, but evaluate'
                                         ' derivatives as functions of (T, p, n). See [Advanced Usage => The different'
-                                        ' property interfaces](https://github.com/thermotools/thermopack/wiki/Advanced-usage#the-different-property-interfaces-tv--tp--and-tvp-) for further explanation.',
+                                        ' property interfaces](more_advanced.html) for further explanation.',
                        'Other property' : 'Property interfaces in other variables than $TV$ or $Tp$, for example computing density given $\mu - T$.',
                        'Flash interface': 'Methods for flash calculations.',
                        'Saturation interface': 'Bubble- and dew point calculations and phase envelopes.',
@@ -318,7 +377,6 @@ def thermo_to_markdown():
     method_dict = split_methods_by_section(sections, thermo_methods)
 
     ofile_text = get_autogen_header('thermo')
-    ofile_text += '# Methods in the thermo class (`thermo.py`)\n\n'
     ofile_text += 'The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the core of the ThermoPack Python interface. ' \
                   'All equation of state classes inherit from `thermo`. This is the class that contains the interface to all ' \
                   'practical calculations that can be done from the python-side of ThermoPack. Derived classes only implement ' \
@@ -350,7 +408,6 @@ def saft_to_markdown():
     method_dict = split_methods_by_section(sections, saft_specific_methods)
 
     ofile_text = get_autogen_header('saft')
-    ofile_text += '# Methods in the saft class (`saft.py`)\n\n'
     ofile_text += 'The `saft` class, found in `addon/pycThermopack/thermopack/saft.py`, is an "abstract" class, that is inherited\n' \
                   'by the `saftvrmie`, `pcsaft` and `saftvrqmie` classes. It contains some generic utility methods to\n' \
                   'compute quantities of interest when investigating SAFT-type equations of state.\n\n'
@@ -387,7 +444,6 @@ def saftvrmie_to_markdown():
     method_dict = split_methods_by_section(sections, saftvrmie_specific_methods)
 
     ofile_text = get_autogen_header('saftvrmie')
-    ofile_text += '# Methods in the saftvrmie class (`saftvrmie.py`)\n\n'
     ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrmie.py`, is the interface to the \n' \
                   'SAFT-VR Mie Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
                   '`thermo` class. This class implements methods for modifying fluid parameters and which terms\n' \
@@ -403,63 +459,144 @@ def saftvrqmie_to_markdown():
     Generate markdown documentation file for the saftvrqmie class.
     """
 
-    sections = ['Constructor',
-                'Utility']
-
-    section_headers = {'Constructor': 'Constructor',
-                       'Utility': 'Utility methods'}
-
-    section_intro= {'Constructor' : 'Methods to initialise SAFT-VRQ Mie model.',
-                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
-
-    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
-    saftvrqmie_methods = inspect.getmembers(saftvrqmie, predicate=inspect.isfunction)
-    saftvrqmie_specific_methods = sorted(list(set(saftvrqmie_methods) - set(saftvrmie_methods)))
-    method_dict = split_methods_by_section(sections, saftvrqmie_specific_methods)
-
-    ofile_text = get_autogen_header('saftvrqmie')
-    ofile_text += '# Methods in the saftvrqmie class (`saftvrqmie.py`)\n\n'
-    ofile_text += 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrqmie.py`, is the interface to the \n' \
+    classname = 'saftvrqmie'
+    eosname = 'SAFT-VRQ Mie'
+    intro_text = 'The `saftvrmie` class, found in `addon/pycThermopack/thermopack/saftvrqmie.py`, is the interface to the \n' \
                   'SAFT-VRQ Mie Equation of State.\n*NOTE*: This class inherits the `saftvrmie` class, and thereby has\n' \
                   'access to the `model control` and `utility` methods found there. The `saftvrmie` class inherits\n' \
                   'the `saft` class, which in turn inherits the `thermo` class.\n' \
                   'This class implements utility methods specific to the SAFT-VRQ Mie EoS.\n\n'
 
-    ofile_text += get_toc(sections, section_headers, method_dict)
-    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+    saftvrmie_methods = inspect.getmembers(saftvrmie, predicate=inspect.isfunction)
+    saftvrqmie_methods = inspect.getmembers(saftvrqmie, predicate=inspect.isfunction)
+    saftvrqmie_specific_methods = sorted(list(set(saftvrqmie_methods) - set(saftvrmie_methods)))
 
-    filename = 'saftvrqmie_methods.md'
-    write_file(MARKDOWN_DIR + filename, ofile_text)
+    basic_class_to_markdown(classname, eosname, saftvrqmie_specific_methods, intro_text=intro_text)
 
 def pcsaft_to_markdown():
-    """
-    Generate markdown documentation file for the saft class.
-    """
 
-    sections = ['Constructor',
-                'Utility']
-
-    section_headers = {'Constructor': 'Constructor',
-                       'Utility': 'Utility methods'}
-
-    section_intro= {'Constructor' : 'Methods to initialise PC-SAFT model.',
-                        'Utility' : 'Set- and get methods for interaction parameters and pure fluid parameters.'}
+    classname = 'pcsaft'
+    eosname = 'PC-SAFT'
+    inherits = 'saft'
 
     saft_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
     pcsaft_methods = inspect.getmembers(pcsaft, predicate=inspect.isfunction)
     pcsaft_specific_methods = sorted(list(set(pcsaft_methods) - set(saft_methods)))
-    method_dict = split_methods_by_section(sections, pcsaft_specific_methods)
 
-    ofile_text = get_autogen_header('pcsaft')
-    ofile_text += '# Methods in the pcsaft class (`pcsaft.py`)\n\n'
-    ofile_text += 'The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, is the interface to the \n' \
-                  'PC-SAFT Equation of State. This class inherits the `saft` class, which in turn inherits the\n' \
-                  '`thermo` class. This class implements utility methods to access mixing parameters etc.\n\n'
-    ofile_text += get_toc(sections, section_headers, method_dict)
-    ofile_text += get_markdown_contents(sections, section_headers, section_intro, method_dict)
+    basic_class_to_markdown(classname, eosname, pcsaft_specific_methods, inherits=inherits)
 
-    filename = 'pcsaft_methods.md'
+def pets_to_markdown():
+    classname = 'pets'
+    eosname = 'PeTS'
+    inherits = 'saft'
+
+    class_methods = inspect.getmembers(pets, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(saft, predicate=inspect.isfunction)
+    specific_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    basic_class_to_markdown(classname, eosname, specific_methods, inherits=inherits)
+
+def cubic_to_markdown():
+
+    classname = 'cubic'
+    eosname = 'Cubic'
+
+    with open(MARKDOWN_DIR + 'cubic_keys.md', 'r') as intro_file:
+        intro_text = intro_file.read()
+
+    from thermopack.cubic import SoaveRedlichKwong, RedlichKwong, VanDerWaals, PengRobinson, PengRobinson78, PatelTeja, SchmidtWensel
+    parent_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
+    child_sections = ['Constructor']
+
+    child_section_headers = {'Constructor': 'Constructor'}
+    child_section_intro = {'Constructor': f'Methods to initialise model.'}
+    child_method_dict = {}
+    classes = [SoaveRedlichKwong, RedlichKwong, VanDerWaals, PengRobinson, PengRobinson78, PatelTeja, SchmidtWensel]
+    for cls in classes:
+        child_sections.append(cls.__name__)
+        child_section_headers[cls.__name__] = cls.__name__
+        child_section_intro[cls.__name__] = f'Interface to the `{cls.__name__}` EoS'
+        class_methods = inspect.getmembers(cls, predicate=inspect.isfunction)
+        child_method_dict[cls.__name__] = sorted(list(set(class_methods) - set(parent_methods)))
+
+    ofile_text = get_autogen_header(classname)
+    ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, is the interface to the \n' \
+                    f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
+    ofile_text += f'In addition to the `cubic` class, there are several convenience classes to give easy access to ' \
+                  f'specific cubic equations of state. The sections [Initialiser keys](#initialiser-keys), [Pure fluid &alpha;](#pure-fluid-&alpha;), ' \
+                  f'[&alpha; mixing rules](#&alpha;-mixing-rules) and [&beta; mixing rules](#&beta;-mixing-rules) ' \
+                  f'summarise the various valid input keys that can be used to modify mixing rules, the &alpha; -parameter ' \
+                  f'and the underlying EoS.\n\nDocumentation for the methods in the cubic class is found in the remaining ' \
+                  f'sections, summarised in the table of contents below.\n\n'
+
+    class_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    cb_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    cb_sections = ['Constructor',
+                'Utility']
+
+    cb_section_headers = {'Constructor': 'Constructor',
+                       'Utility': 'Utility methods'}
+
+    cb_section_intro = {'Constructor': f'Methods to initialise {eosname} model.',
+                     'Utility': 'Set- and get methods for interaction parameters, mixing parameters ...'}
+
+    cb_method_dict = split_methods_by_section(cb_sections, cb_methods)
+    ofile_text += '## Input keys\n' \
+                  '* [Initialiser keys](#initialiser-keys)\n' \
+                  '* [Pure fluid &alpha;](#pure-fluid-&alpha;)\n' \
+                  '* [&alpha; mixing rules](#&alpha;-mixing-rules)\n' \
+                  '* [&beta; mixing rules](#&beta;-mixing-rules)\n\n'
+    ofile_text += '# Specific cubics\n\n'
+    ofile_text += get_toc(child_sections, child_section_headers, child_method_dict)
+    ofile_text += '# Parent class "cubic"\n\n'
+    ofile_text += get_toc(cb_sections, cb_section_headers, cb_method_dict)
+    ofile_text += intro_text + '\n\n'
+    ofile_text += get_markdown_contents(child_sections, child_section_headers, child_section_intro, child_method_dict, sub_toc=False)
+    ofile_text += get_markdown_contents(cb_sections, cb_section_headers, cb_section_intro, cb_method_dict)
+
+    filename = f'{classname}_methods.md'
     write_file(MARKDOWN_DIR + filename, ofile_text)
+
+def cpa_to_markdown():
+
+    classname = 'cpa'
+    eosname = 'Cubic Plus Association'
+    inherits = 'cubic'
+
+    class_methods = inspect.getmembers(cpa, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(cubic, predicate=inspect.isfunction)
+    specific_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    basic_class_to_markdown(classname, eosname, specific_methods, inherits=inherits)
+
+def extcsp_to_markdown():
+    classname = 'ext_csp'
+    eosname = 'Extended Corresponding states'
+    inherits = 'thermo'
+
+    class_methods = inspect.getmembers(ext_csp, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    specific_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    basic_class_to_markdown(classname, eosname, specific_methods, inherits=inherits)
+
+def multiparam_to_markdown():
+    classname = 'multiparam'
+    eosname = 'Multiparameter'
+    intro_text = f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherrits ' \
+                f'from the `thermo` class, and  is the interface to the \n' \
+                f'{eosname} Equations of State. Selection of different multiparameter equations of state is done by ' \
+                 f'passing an identifier string to the constructor. For information on available multiparameter equations ' \
+                 f'of state, see the page on [available equations of state.](method_docs.md)\n\n'
+
+    class_methods = inspect.getmembers(multiparam, predicate=inspect.isfunction)
+    parent_methods = inspect.getmembers(thermo, predicate=inspect.isfunction)
+    specific_methods = sorted(list(set(class_methods) - set(parent_methods)))
+
+    basic_class_to_markdown(classname, eosname, specific_methods, intro_text=intro_text)
+
 
 if __name__ == '__main__':
     thermo_to_markdown()
@@ -467,3 +604,9 @@ if __name__ == '__main__':
     saftvrmie_to_markdown()
     saftvrqmie_to_markdown()
     pcsaft_to_markdown()
+    cubic_to_markdown()
+    cpa_to_markdown()
+    pets_to_markdown()
+    extcsp_to_markdown()
+    multiparam_to_markdown()
+    update_v220_method_docs()

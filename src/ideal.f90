@@ -45,7 +45,6 @@ module ideal
        CPideal_mix, Hideal_mix, TP_Sideal_mix, TV_Yideal_mix, &
        Sideal_Vn, TV_Sideal_mix, Fideal_mix_SI
   public :: Hideal_apparent, TP_Sideal_apparent, Cpideal_apparent
-  public :: idealGibbsSingle, idealEntropySingle, idealEnthalpySingle
   public :: idealEntropy_ne
   public :: set_entropy_reference_value, get_entropy_reference_value
   public :: set_enthalpy_reference_value, get_enthalpy_reference_value
@@ -1019,97 +1018,6 @@ contains
     end if
 
   end subroutine Fideal_mix_SI
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal Gibbs energy.
-  !> Unit: J/mol
-  !>
-  !> \author MH, 2013-03-06
-  !----------------------------------------------------------------------
-  subroutine idealGibbsSingle(t,p,j,g,dgdt,dgdp)
-    use thermopack_var, only: get_active_thermo_model, thermo_model
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: g                  !< J/mol - Ideal Gibbs energy
-    real, optional, intent(out) :: dgdt     !< J/mol/K - Temperature differential of ideal Gibbs energy
-    real, optional, intent(out) :: dgdp     !< J/mol/Pa - Pressure differential of ideal Gibbs energy
-    ! Locals
-    real :: s, h
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    s = 0.0
-    h = 0.0
-    act_mod_ptr => get_active_thermo_model()
-    h = Hideal_apparent(act_mod_ptr%comps,j,T)
-    call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
-    g = h - T*s
-    if (present(dgdt)) then
-      dgdt = -s
-    end if
-    if (present(dgdp)) then
-      dgdp=T*Rgas/P
-    end if
-  end subroutine idealGibbsSingle
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal entropy.
-  !> Unit: J/mol/K
-  !>
-  !> \author MH, 2014-01
-  !----------------------------------------------------------------------
-  subroutine idealEntropySingle(t,p,j,s,dsdt,dsdp)
-    use thermopack_var, only: get_active_thermo_model, thermo_model, nc
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: s                  !< J/mol/K - Ideal entropy
-    real, optional, intent(out) :: dsdt     !< J/mol/K^2 - Temperature differential of ideal entropy
-    real, optional, intent(out) :: dsdp     !< J/mol/Pa - Pressure differential of ideal entopy
-    ! Locals
-    real :: z(nc)
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    z = 0.0
-    z(j) = 1.0
-    s = 0.0
-    act_mod_ptr => get_active_thermo_model()
-    call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s, dsdt)
-    if (present(dsdp)) then
-      dsdp=-Rgas/P
-    end if
-  end subroutine idealEntropySingle
-
-  !----------------------------------------------------------------------
-  !> Calculate single component ideal enthalpy.
-  !> Unit: J/mol
-  !>
-  !> \author MH, 2014-01
-  !----------------------------------------------------------------------
-  subroutine idealEnthalpySingle(t,j,h,dhdt)
-    use thermopack_var, only: get_active_thermo_model, thermo_model
-    implicit none
-    ! Transferred variables
-    real, intent(in) :: t                   !< K - Temperature
-    integer, intent(in) :: j                !< Component index
-    real, intent(out) :: h                  !< J/mol - Ideal enthalpy
-    real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
-    ! Locals
-    type(thermo_model), pointer :: act_mod_ptr
-    !--------------------------------------------------------------------
-    !
-    act_mod_ptr => get_active_thermo_model()
-    h = Hideal_apparent(act_mod_ptr%comps,j,T)
-    if (present(dhdt)) then
-      dhdt = CPideal_apparent(act_mod_ptr%comps, j, T)
-    endif
-  end subroutine idealEnthalpySingle
 
   !----------------------------------------------------------------------
   !> Calculate ideal entropy.

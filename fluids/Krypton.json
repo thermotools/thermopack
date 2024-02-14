@@ -142,6 +142,16 @@
   },
   "SRK": {},
   "PR": {},
+  "PC-SAFT-1": {
+  "m": 1.0,
+  "sigma": 3.63E-10,
+  "eps_depth_divk": 163.1,
+  "eps": 0.0,
+  "beta": 0.0,
+  "assoc_scheme": "None",
+  "bib_reference": "Sauer & Gross (2017). DOI: 10.1021/acs.iecr.6b04551",
+  "ref": "Default/Sauer_Gross_2017"
+  },
   "SAFTVRMIE-1": {
     "m": 1.000,
     "sigma": 3.6400E-10,

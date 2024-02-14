@@ -28,7 +28,7 @@ module multiparameter_base
     real, public :: t_triple, p_triple, rhoLiq_triple, rhoVap_triple
     real, public :: molarMass !< (kg/mol)
     real, public :: maxT, maxP !< (K), (Pa)
-
+    real :: tr, rhor !> Reducing temperature and density
 
     ! When a MEoS is used with Thermopack, Rgas_meos must have the same value as
     ! in Thermopack. When a MEoS is used on its own, one should set
@@ -48,6 +48,9 @@ module multiparameter_base
     procedure, public :: calc_entropy
     procedure, public :: calc_enthalpy
     procedure, public :: calc_resgibbs
+    procedure, public :: calc_ideal_enthalpy
+    procedure, public :: calc_ideal_entropy
+    procedure, public :: calc_ideal_gibbs
     procedure, public :: densitySolver ! The child class should override this if necessary
     procedure, public :: alphaDerivs_Tv ! d^{i+j}alpha/(d_v)^i(d_T)^j
     procedure, public :: alphaResDerivs_Tv ! d^{i+j}alphaRes/(d_v)^i(d_T)^j
@@ -59,6 +62,9 @@ module multiparameter_base
     procedure, public :: cp ! Isobaric heat capacity[J/(mol*K)]
     procedure, public :: speed_of_sound !< [m/s]
 
+    procedure, public :: alpha0Derivs_taudelta_optional => alpha0Derivs_taudelta_optional_base !< [d^{j}alpha0/(d_tau)^j]*tau^j
+    procedure, public :: alphaResDerivs_taudelta_optional => alphaResDerivs_taudelta_optional_base  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
+
     ! Reference state
     procedure, public :: get_ref_state_spec => get_ref_state_spec_default !< Get specification for the current reference state
     procedure, public :: set_ref_state => set_ref_state_default !< Set reference state
@@ -67,9 +73,11 @@ module multiparameter_base
     procedure(satDeltaEstimate_intf), public, deferred :: satDeltaEstimate !< An estimate delta_sat(tau_sat) for use in density solver.
     procedure(alpha0Derivs_intf), public, deferred :: alpha0Derivs_taudelta  !< [d^{j}alpha0/(d_tau)^j]*tau^j
     procedure(alphaResDerivs_intf), public, deferred :: alphaResDerivs_taudelta  !< [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
+
     ! Hyperdual number interfaces
     procedure(alpha0_hd_intf), public, deferred :: alpha0_hd_taudelta  !< Calculate alpha0 using hyperdual numbers
     procedure(alphaRes_hd_intf), public, deferred :: alphaRes_hd_taudelta  !< Calculate alphaRes using hyperdual numbers
+    procedure, public :: alpha_hd_wrapper !< Calculate differentials from hyperdual numbers
 
     procedure, public :: assign_meos_base
     ! Assignment operator
@@ -161,15 +169,15 @@ contains
     real :: cv !< [J/(mol*K)]
     ! Internals
     real :: delta, tau
-    real :: alpr(0:2,0:2), alp0(0:2,0:2)
+    real :: alpr_tautau, alp0_tautau
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
     ! Calculate [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
-    call this%alphaResDerivs_taudelta(delta, tau, alpr)
-    call this%alpha0Derivs_taudelta(delta, tau, alp0)
+    call this%alphaResDerivs_taudelta_optional(delta, tau, alp_tautau=alpr_tautau)
+    call this%alpha0Derivs_taudelta_optional(delta, tau, alp_tautau=alp0_tautau)
 
-    cv = -this%Rgas_meos * (alp0(0,2) + alpr(0,2))
+    cv = -this%Rgas_meos * (alp0_tautau + alpr_tautau)
 
   end function cv
 
@@ -181,16 +189,20 @@ contains
     real :: cp !< [J/(mol*K)]
     ! Internals
     real :: delta, tau
-    real :: alpr(0:2,0:2), alp0(0:2,0:2)
+    real :: alpr_tau, alpr_del, alpr_taudel, alpr_tautau, alpr_deldel
+    real :: alp0_tautau
+    real :: cv
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
 
     ! Calculate [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
-    call this%alphaResDerivs_taudelta(delta, tau, alpr)
-    call this%alpha0Derivs_taudelta(delta, tau, alp0)
+    call this%alphaResDerivs_taudelta_optional(delta, tau, alp_tau=alpr_tau, alp_del=alpr_del, &
+         alp_tautau=alpr_tautau, alp_taudel=alpr_taudel, alp_deldel=alpr_deldel)
+    call this%alpha0Derivs_taudelta_optional(delta, tau, alp_tautau=alp0_tautau)
 
-    cp = this%cv(T,v) + this%Rgas_meos* ( 1+alpr(1,0)-alpr(1,1) )**2/( 1+2*alpr(1,0)+alpr(2,0) )
+    cv = -this%Rgas_meos * (alp0_tautau + alpr_tautau)
+    cp = cv + this%Rgas_meos* ( 1+alpr_del-alpr_taudel)**2/( 1+2*alpr_del+alpr_deldel )
 
   end function cp
 
@@ -201,17 +213,19 @@ contains
     real :: speed_of_sound !< [m/s]
     ! Internals
     real :: delta, tau
-    real :: alpr(0:2,0:2), alp0(0:2,0:2)
+    real :: alpr_del, alpr_taudel, alpr_tautau, alpr_deldel
+    real :: alp0_tautau
     real :: adim_temp
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
 
     ! Calculate [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
-    call this%alphaResDerivs_taudelta(delta, tau, alpr)
-    call this%alpha0Derivs_taudelta(delta, tau, alp0)
+    call this%alphaResDerivs_taudelta_optional(delta, tau, alp_del=alpr_del, &
+         alp_tautau=alpr_tautau, alp_taudel=alpr_taudel, alp_deldel=alpr_deldel)
+    call this%alpha0Derivs_taudelta_optional(delta, tau, alp_tautau=alp0_tautau)
 
-    adim_temp = 1 + 2*alpr(1,0) + alpr(2,0) - ( 1 + alpr(1,0) - alpr(1,1) )**2/( alp0(0,2) + alpr(0,2))
+    adim_temp = 1 + 2*alpr_del + alpr_deldel - ( 1 + alpr_del - alpr_taudel )**2/( alp0_tautau + alpr_tautau)
 
     speed_of_sound = sqrt(adim_temp*this%Rgas_meos*T/this%molarMass)
 
@@ -405,8 +419,8 @@ contains
     call this%densitySolver(t, p, phase, rho, phase_found)
 
     V = sumn/rho
-
-    call this%alphaDerivs_Tv(t, v/sumn, alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual=residual)
+    call this%alphaDerivs_Tv(t, v/sumn, alp, alp_T, alp_v ,alp_TT, &
+         alp_Tv, alp_vv, residual=residual)
     dPdV = -this%Rgas_meos*T*(alp_vv)/sumn
     if (res_loc) dPdV = dPdV -this%Rgas_meos*T*sumn/V**2
     dPdT = P/T-This%Rgas_Meos*T*alp_TV
@@ -429,6 +443,64 @@ contains
     endif
 
   end subroutine calc_enthalpy
+
+  ! Calculate ideal enthalpy.
+  subroutine calc_ideal_enthalpy(this, T, h, h_T)
+    class(meos), intent(inout) :: this
+    ! input
+    real, intent(in) :: T
+    ! output
+    real, intent(out) :: h ! J/mol
+    real, optional, intent(out) :: h_t
+    ! local
+    real :: alp_T, V
+    V = 1.0e-4
+    call alphaIdDerivs_Tv(this,T,v,alpi_T=alp_T,alpi_TT=h_T)
+    h = -this%Rgas_Meos*T*T*alp_T + this%Rgas_meos*T
+    if (present(h_t)) then
+      h_t = -T*this%Rgas_Meos*(2*alp_T + T*h_T) + this%Rgas_meos
+    endif
+  end subroutine calc_ideal_enthalpy
+
+  ! Calculate ideal entropy.
+  subroutine calc_ideal_entropy(this, T, P, s, s_T)
+    class(meos), intent(inout) :: this
+    ! input
+    real, intent(in) :: T
+    real, intent(in) :: P
+    ! output
+    real, intent(out) :: s ! J/mol/K
+    real, optional, intent(out) :: s_t
+    ! local
+    real :: alp, alp_T, V
+    V = (this%Rgas_meos*T)/P
+    call alphaIdDerivs_Tv(this,T,v,alpi=alp,alpi_T=alp_T,alpi_TT=s_T)
+    S = -this%Rgas_meos*(alp + t*alp_t) - this%Rgas_meos*log(P*V/(this%Rgas_meos*T))
+    if (present(S_t)) then
+      S_t = -this%Rgas_Meos*(2*alp_T + T*s_T) + this%Rgas_meos/T
+    endif
+  end subroutine calc_ideal_entropy
+
+  ! Calculate ideal gibbs free energy.
+  subroutine calc_ideal_gibbs(this, T, P, g, g_T)
+    class(meos), intent(inout) :: this
+    ! input
+    real, intent(in) :: T
+    real, intent(in) :: P
+    ! output
+    real, intent(out) :: g ! J/mol
+    real, optional, intent(out) :: g_t
+    ! local
+    real :: alp, alp_T, V, s, h
+    V = (this%Rgas_meos*T)/P
+    call alphaIdDerivs_Tv(this,T,v,alpi=alp,alpi_T=alp_T)
+    s = -this%Rgas_meos*(alp + t*alp_t) - this%Rgas_meos*log(P*V/(this%Rgas_meos*T))
+    h = -this%Rgas_Meos*T*T*alp_T + this%Rgas_meos*T
+    g = h - T*s
+    if (present(g_t)) then
+      g_t = -s
+    endif
+  end subroutine calc_ideal_gibbs
 
   subroutine alpha_to_F_conversion(this, T, V, n, alp, alp_T, alp_v, alp_TT, alp_Tv, alp_vv, &
        F, F_T, F_V, F_n, F_TT, F_TV, F_tn, F_VV, F_Vn, F_nn)
@@ -557,33 +629,61 @@ contains
     real, intent(out), optional :: alpr_n, alpr_vn, alpr_Tn, alpr_nn
     ! Internals
     real :: delta, tau
-    real :: alpr_deltaTau(0:2,0:2)
+    !real :: alpr_deltaTau(0:2,0:2)
+    real, target :: alp, alp_tau, alp_del
+    real, target :: alp_tautau,alp_taudel,alp_deldel
+    real, pointer :: p_alp, p_alp_tau, p_alp_del
+    real, pointer :: p_alp_tautau, p_alp_taudel, p_alp_deldel
+    ! Set up pointers
+    p_alp => NULL()
+    p_alp_tau => NULL()
+    p_alp_tautau => NULL()
+    p_alp_del => NULL()
+    p_alp_deldel => NULL()
+    p_alp_taudel => NULL()
+    if ( present(alpr) .or. &
+         present(alpr_n)) p_alp => alp
+    if ( present(alpr_T) .or. &
+         present(alpr_TT) .or. &
+         present(alpr_Tn)) p_alp_tau => alp_tau
+    if ( present(alpr_TT)) p_alp_tautau => alp_tautau
+    if ( present(alpr_V) .or. &
+         present(alpr_VV) .or. &
+         present(alpr_n)  .or. &
+         present(alpr_Vn)  .or. &
+         present(alpr_nn)) p_alp_del => alp_del
+    if ( present(alpr_VV)) p_alp_deldel => alp_deldel
+    if ( present(alpr_TV) .or. &
+         present(alpr_Tn)) p_alp_taudel => alp_taudel
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
 
     ! Calculate [d^{i+j}alphaRes/(d_delta)^i(d_tau)^j]*delta^i*tau^j
-    call this%alphaResDerivs_taudelta(delta, tau, alpr_deltaTau)
+    !call this%alphaResDerivs_taudelta(delta, tau, alpr_deltaTau)
+    call this%alphaResDerivs_taudelta_optional(delta, tau, alp=p_alp, &
+         alp_tau=p_alp_tau,alp_del=p_alp_del,alp_tautau=p_alp_tautau, &
+         alp_taudel=p_alp_taudel,alp_deldel=p_alp_deldel)
 
     ! Compute alpr and its derivatives
-    if ( present(alpr)) alpr = alpr_deltaTau(0,0)
-    if ( present(alpr_T) ) alpr_T = -alpr_deltaTau(0,1)/T
-    if ( present(alpr_v) ) alpr_v = -alpr_deltaTau(1,0)/v
-    if ( present(alpr_Tv) ) alpr_Tv = alpr_deltaTau(1,1)/(T*v)
-    if ( present(alpr_TT) ) alpr_TT = (alpr_deltaTau(0,2) + 2*alpr_deltaTau(0,1))/T**2
-    if ( present(alpr_vv) ) alpr_vv = (alpr_deltaTau(2,0) + 2*alpr_deltaTau(1,0))/v**2
+    if ( present(alpr)) alpr = alp
+    if ( present(alpr_T) ) alpr_T = -alp_tau/T
+    if ( present(alpr_v) ) alpr_v = -alp_del/v
+    if ( present(alpr_Tv) ) alpr_Tv = alp_taudel/(T*v)
+    if ( present(alpr_TT) ) alpr_TT = (alp_tautau + 2*alp_tau)/T**2
+    if ( present(alpr_vv) ) alpr_vv = (alp_deldel + 2*alp_del)/v**2
 
     ! Differentiating d(alp*n)/dn, assuming sum(n) = 1
-    if ( present(alpr_n)) alpr_n = alpr_deltaTau(0,0) + alpr_deltaTau(1,0)
-    if ( present(alpr_Tn) ) alpr_Tn = -(alpr_deltaTau(0,1) + alpr_deltaTau(1,1))/T
-    if ( present(alpr_vn) ) alpr_vn = -(2.0*alpr_deltaTau(1,0) + alpr_deltaTau(2,0))/v
-    if ( present(alpr_nn) ) alpr_nn = 2.0*alpr_deltaTau(1,0) + alpr_deltaTau(2,0)
+    if ( present(alpr_n)) alpr_n = alp + alp_del
+    if ( present(alpr_Tn) ) alpr_Tn = -(alp_tau + alp_taudel)/T
+    if ( present(alpr_vn) ) alpr_vn = -(2.0*alp_del + alp_deldel)/v
+    if ( present(alpr_nn) ) alpr_nn = 2.0*alp_del + alp_deldel
 
   end subroutine alphaResDerivs_Tv
 
 
   ! Derivatives of alpha=alpha0+alphaRes wrt. T and v.
-  subroutine alphaDerivs_Tv (this,T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual)
+  subroutine alphaDerivs_Tv(this,T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv,residual)
     class(meos) :: this !< Calling class
     real, intent(in) :: T,v !< Temperature (K) and molar volume (m^3/mol)
     real, optional, intent(out) :: alp !< A/(nRT)
@@ -591,64 +691,119 @@ contains
     logical, optional, intent(in) :: residual
     ! Internals
     real :: delta, tau
-    real :: alp0_deltaTau(0:2,0:2)
-    real :: alpr_deltaTau(0:2,0:2)
-    real :: alp_deltaTau(0:2,0:2)
+    logical :: res_loc
+    !real :: alp0_deltaTau(0:2,0:2)
+    !real :: alpr_deltaTau(0:2,0:2)
+    !real :: alp_deltaTau(0:2,0:2)
+    real, target :: alpx, alpx_tau, alpx_del
+    real, target :: alpx_tautau,alpx_taudel,alpx_deldel
+    real, pointer :: p_alpx, p_alpx_tau, p_alpx_del
+    real, pointer :: p_alpx_tautau, p_alpx_taudel, p_alpx_deldel
+    ! Set up pointers
+    p_alpx => NULL()
+    p_alpx_tau => NULL()
+    p_alpx_tautau => NULL()
+    p_alpx_del => NULL()
+    p_alpx_deldel => NULL()
+    p_alpx_taudel => NULL()
+    if ( present(alp)) p_alpx => alpx
+    if ( present(alp_T) .or. &
+         present(alp_TT)) p_alpx_tau => alpx_tau
+    if ( present(alp_TT)) p_alpx_tautau => alpx_tautau
+    if ( present(alp_V) .or. &
+         present(alp_VV)) p_alpx_del => alpx_del
+    if ( present(alp_VV)) p_alpx_deldel => alpx_deldel
+    if ( present(alp_TV)) p_alpx_taudel => alpx_taudel
+
+    res_loc = .false.
+    if (present(residual)) res_loc = residual
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
 
-    if (present(residual)) then
-      if (residual) then
-        alp0_deltaTau = 0.0
-      else
-        call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
-      end if
-    else
-      call this%alpha0Derivs_taudelta(delta, tau, alp0_deltaTau)
-    end if
-    call this%alphaResDerivs_taudelta(delta, tau, alpr_deltaTau)
-    alp_deltaTau = alpr_deltaTau + alp0_deltaTau
+    call this%alphaResDerivs_taudelta_optional(delta, tau, alp=p_alpx, &
+         alp_tau=p_alpx_tau, alp_del=p_alpx_del,alp_tautau=p_alpx_tautau, &
+         alp_taudel=p_alpx_taudel,alp_deldel=p_alpx_deldel)
 
     ! Compute alpha and its derivatives. Independent of the scale of T and v.
-    if ( present(alp)) alp = alp_deltaTau(0,0)
-    if ( present(alp_T) ) alp_T = -alp_deltaTau(0,1)/T
-    if ( present(alp_v) ) alp_v = -alp_deltaTau(1,0)/v
-    if ( present(alp_Tv) ) alp_Tv = alp_deltaTau(1,1)/(T*v)
-    if ( present(alp_TT) ) alp_TT = (alp_deltaTau(0,2) + 2*alp_deltaTau(0,1))/T**2
-    if ( present(alp_vv) ) alp_vv = (alp_deltaTau(2,0) + 2*alp_deltaTau(1,0))/v**2
+    if ( present(alp)) alp = alpx
+    if ( present(alp_T) ) alp_T = -alpx_tau/T
+    if ( present(alp_v) ) alp_v = -alpx_del/v
+    if ( present(alp_Tv) ) alp_Tv = alpx_taudel/(T*v)
+    if ( present(alp_TT) ) alp_TT = (alpx_tautau + 2*alpx_tau)/T**2
+    if ( present(alp_vv) ) alp_vv = (alpx_deldel + 2*alpx_del)/v**2
+
+    if (.not. res_loc) then
+      call this%alpha0Derivs_taudelta_optional(delta, tau, alp=p_alpx, &
+           alp_tau=p_alpx_tau, alp_del=p_alpx_del,alp_tautau=p_alpx_tautau, &
+           alp_taudel=p_alpx_taudel,alp_deldel=p_alpx_deldel)
+      if ( present(alp)) alp = alp + alpx
+      if ( present(alp_T) ) alp_T = alp_T - alpx_tau/T
+      if ( present(alp_v) ) alp_v = alp_v - alpx_del/v
+      if ( present(alp_Tv) ) alp_Tv = alp_Tv + alpx_taudel/(T*v)
+      if ( present(alp_TT) ) alp_TT = alp_TT + (alpx_tautau + 2*alpx_tau)/T**2
+      if ( present(alp_vv) ) alp_vv = alp_vv + (alpx_deldel + 2*alpx_del)/v**2
+    endif
   end subroutine alphaDerivs_Tv
 
   ! Derivatives of alpha=alpha0 wrt. T and v.
-  subroutine alphaIdDerivs_Tv(this,T,v,alp,alp_T,alp_v,alp_TT,alp_Tv,alp_vv, &
-       alp_n, alp_Tn, alp_vn, alp_nn)
+  subroutine alphaIdDerivs_Tv(this,T,v,alpi,alpi_T,alpi_v,alpi_TT,alpi_Tv,alpi_vv, &
+       alpi_n, alpi_Tn, alpi_vn, alpi_nn)
     class(meos) :: this !< Calling class
     real, intent(in) :: T,v !< Temperature (K) and molar volume (m^3/mol)
-    real, optional, intent(out) :: alp !< A/(nRT)
-    real, intent(out), optional :: alp_T, alp_v, alp_TT, alp_Tv, alp_vv
-    real, intent(out), optional :: alp_n, alp_Tn, alp_vn, alp_nn
+    real, optional, intent(out) :: alpi !< A/(nRT)
+    real, intent(out), optional :: alpi_T, alpi_v, alpi_TT, alpi_Tv, alpi_vv
+    real, intent(out), optional :: alpi_n, alpi_Tn, alpi_vn, alpi_nn
     ! Internals
     real :: delta, tau
-    real :: alp_deltaTau(0:2,0:2)
+    !real :: alp_deltaTau(0:2,0:2)
+    real, target :: alp, alp_tau, alp_del
+    real, target :: alp_tautau,alp_taudel,alp_deldel
+    real, pointer :: p_alp, p_alp_tau, p_alp_del
+    real, pointer :: p_alp_tautau, p_alp_taudel, p_alp_deldel
+    ! Set up pointers
+    p_alp => NULL()
+    p_alp_tau => NULL()
+    p_alp_tautau => NULL()
+    p_alp_del => NULL()
+    p_alp_deldel => NULL()
+    p_alp_taudel => NULL()
+    if ( present(alpi) .or. &
+         present(alpi_n)) p_alp => alp
+    if ( present(alpi_T) .or. &
+         present(alpi_TT) .or. &
+         present(alpi_Tn)) p_alp_tau => alp_tau
+    if ( present(alpi_TT)) p_alp_tautau => alp_tautau
+    if ( present(alpi_V) .or. &
+         present(alpi_VV) .or. &
+         present(alpi_n)  .or. &
+         present(alpi_Vn)  .or. &
+         present(alpi_nn)) p_alp_del => alp_del
+    if ( present(alpi_VV)) p_alp_deldel => alp_deldel
+    if ( present(alpi_TV) .or. &
+         present(alpi_Tn)) p_alp_taudel => alp_taudel
 
     delta = 1/(v*this%rc)
     tau = this%tc/T
 
-    call this%alpha0Derivs_taudelta(delta, tau, alp_deltaTau)
+    !call this%alpha0Derivs_taudelta(delta, tau, alp_deltaTau)
+    call this%alpha0Derivs_taudelta_optional(delta, tau, alp=p_alp, alp_tau=p_alp_tau,&
+         alp_del=p_alp_del,alp_tautau=p_alp_tautau,alp_taudel=p_alp_taudel,&
+         alp_deldel=p_alp_deldel)
 
     ! Compute alpha and its derivatives. Independent of the scale of T and v.
-    if ( present(alp)) alp = alp_deltaTau(0,0)
-    if ( present(alp_T) ) alp_T = -alp_deltaTau(0,1)/T
-    if ( present(alp_v) ) alp_v = -alp_deltaTau(1,0)/v
-    if ( present(alp_Tv) ) alp_Tv = alp_deltaTau(1,1)/(T*v)
-    if ( present(alp_TT) ) alp_TT = (alp_deltaTau(0,2) + 2*alp_deltaTau(0,1))/T**2
-    if ( present(alp_vv) ) alp_vv = (alp_deltaTau(2,0) + 2*alp_deltaTau(1,0))/v**2
+    if ( present(alpi)) alpi = alp
+    if ( present(alpi_T) ) alpi_T = -alp_tau/T
+    if ( present(alpi_v) ) alpi_v = -alp_del/v
+    if ( present(alpi_Tv) ) alpi_Tv = alp_taudel/(T*v)
+    if ( present(alpi_TT) ) alpi_TT = (alp_tautau + 2*alp_tau)/T**2
+    if ( present(alpi_vv) ) alpi_vv = (alp_deldel + 2*alp_del)/v**2
 
     ! Differentiating d(alp*n)/dn, assuming sum(n) = 1
-    if ( present(alp_n)) alp_n = alp_deltaTau(0,0) + alp_deltaTau(1,0)
-    if ( present(alp_Tn) ) alp_Tn = -(alp_deltaTau(0,1) + alp_deltaTau(1,1))/T
-    if ( present(alp_vn) ) alp_vn = -(2.0*alp_deltaTau(1,0) + alp_deltaTau(2,0))/v
-    if ( present(alp_nn) ) alp_nn = 2.0*alp_deltaTau(1,0) + alp_deltaTau(2,0)
+    if ( present(alpi_n)) alpi_n = alp + alp_del
+    if ( present(alpi_Tn) ) alpi_Tn = -(alp_tau + alp_taudel)/T
+    if ( present(alpi_vn) ) alpi_vn = -(2.0*alp_del + alp_deldel)/v
+    if ( present(alpi_nn) ) alpi_nn = 2.0*alp_del + alp_deldel
 
   end subroutine alphaIdDerivs_Tv
 
@@ -852,5 +1007,187 @@ contains
     real, intent(in) :: T, P, v, h, s
     ! Already ddefined properly.....
   end subroutine set_ref_state_default
+
+  subroutine alpha_hd_wrapper(this,ideal,tau,del,alp,alp_tau,&
+         alp_del,alp_tautau,alp_taudel,alp_deldel)
+    use hyperdual_mod
+    implicit none
+    class(meos), intent(in) :: this
+    logical, intent(in) :: ideal
+    real, intent(in) :: tau, del
+    real, optional, intent(out) :: alp !< A/(nRT)
+    real, intent(out), optional :: alp_tau,alp_del
+    real, intent(out), optional :: alp_tautau,alp_taudel,alp_deldel
+    ! Locals
+    type(hyperdual) :: tau_hd
+    type(hyperdual) :: del_hd
+    type(hyperdual) :: alp_hd
+    logical :: alp_tau_calculated, alp_del_calculated
+    tau_hd = tau
+    del_hd = del
+    alp_del_calculated = .false.
+    alp_del_calculated = .false.
+
+    if (present(alp_tautau)) then
+      tau_hd%f1 = 1
+      tau_hd%f2 = 1
+      tau_hd%order = 2
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      tau_hd%f1 = 0
+      tau_hd%f2 = 0
+      tau_hd%order = 0
+      alp_tautau = alp_hd%f12
+      if (present(alp_tau)) then
+        alp_tau = alp_hd%f1
+        alp_tau_calculated = .true.
+      endif
+    endif
+    if (present(alp_deldel)) then
+      del_hd%f1 = 1
+      del_hd%f2 = 1
+      del_hd%order = 2
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      del_hd%f1 = 0
+      del_hd%f2 = 0
+      del_hd%order = 0
+      alp_deldel = alp_hd%f12
+      if (present(alp_del)) then
+        alp_del = alp_hd%f1
+        alp_del_calculated = .true.
+      endif
+    endif
+    if (present(alp_taudel)) then
+      del_hd%f1 = 1
+      tau_hd%f2 = 1
+      tau_hd%order = 2
+      del_hd%order = 2
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      del_hd%f1 = 0
+      tau_hd%f2 = 0
+      tau_hd%order = 0
+      del_hd%order = 0
+      alp_taudel = alp_hd%f12
+      if (present(alp_tau)) then
+        alp_tau = alp_hd%f2
+        alp_tau_calculated = .true.
+      endif
+      if (present(alp_del)) then
+        alp_del = alp_hd%f1
+        alp_del_calculated = .true.
+      endif
+    endif
+    if ( present(alp_tau) .and. .not. alp_tau_calculated .and. &
+         present(alp_del) .and. .not. alp_del_calculated) then
+      del_hd%f1 = 1
+      del_hd%order = 2
+      tau_hd%f2 = 1
+      tau_hd%order = 2
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      del_hd%f1 = 0
+      tau_hd%f2 = 0
+      del_hd%order = 0
+      tau_hd%order = 0
+      alp_tau = alp_hd%f2
+      alp_tau_calculated = .true.
+      alp_del = alp_hd%f1
+      alp_del_calculated = .true.
+    endif
+    if (present(alp_tau) .and. .not. alp_tau_calculated) then
+      tau_hd%f1 = 1
+      tau_hd%order = 1
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      tau_hd%f1 = 0
+      tau_hd%order = 0
+      alp_tau = alp_hd%f1
+      alp_tau_calculated = .true.
+    endif
+    if (present(alp_del) .and. .not. alp_del_calculated) then
+      del_hd%f1 = 1
+      del_hd%order = 1
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+      del_hd%f1 = 0
+      del_hd%order = 0
+      alp_del = alp_hd%f1
+      alp_del_calculated = .true.
+    endif
+
+    if (.not. (present(alp_tautau) .or. &
+         present(alp_deldel) .or. &
+         present(alp_taudel) .or. &
+         present(alp_tau) .or. &
+         present(alp_del))) then
+      if (ideal) then
+        alp_hd = this%alpha0_hd_taudelta(del_hd,tau_hd)
+      else
+        alp_hd = this%alphaRes_hd_taudelta(del_hd,tau_hd)
+      endif
+    endif
+    if (present(alp)) alp = alp_hd%f0
+
+  end subroutine alpha_hd_wrapper
+
+  subroutine alphaResDerivs_taudelta_optional_base(this,delta,tau,alp,alp_tau,&
+         alp_del,alp_tautau,alp_taudel,alp_deldel)
+    class(meos), intent(inout) :: this
+    real, intent(in) :: delta !< Reduced density (-)
+    real, intent(in) :: tau !< Reduced temperature (-)
+    real, optional, intent(out) :: alp !< A/(nRT)
+    real, intent(out), optional :: alp_tau,alp_del
+    real, intent(out), optional :: alp_tautau,alp_taudel,alp_deldel
+    ! Locals
+    real :: alpr(0:2,0:2) !< alpr(i,j) = [(d_delta)^i(d_tau)^j alphaRes]*delta^i*tau^j
+
+    call this%alphaResDerivs_taudelta(delta,tau,alpr)
+    if (present(alp)) alp = alpr(0,0)
+    if (present(alp_tau)) alp_tau = alpr(0,1)
+    if (present(alp_tautau)) alp_tautau = alpr(0,2)
+    if (present(alp_del)) alp_del = alpr(1,0)
+    if (present(alp_deldel)) alp_deldel = alpr(2,0)
+    if (present(alp_taudel)) alp_taudel = alpr(1,1)
+  end subroutine alphaResDerivs_taudelta_optional_base
+
+  subroutine alpha0Derivs_taudelta_optional_base(this,delta,tau,alp,alp_tau,&
+         alp_del,alp_tautau,alp_taudel,alp_deldel)
+    class(meos) :: this
+    real, intent(in) :: delta !< Reduced density (-)
+    real, intent(in) :: tau !< Reduced temperature (-)
+    real, optional, intent(out) :: alp !< A/(nRT)
+    real, intent(out), optional :: alp_tau,alp_del
+    real, intent(out), optional :: alp_tautau,alp_taudel,alp_deldel
+    ! Locals
+    real :: alp0(0:2,0:2) !< alp0(i,j) = [(d_delta)^i(d_tau)^j alpha0]*delta^i*tau^j
+
+    call this%alpha0Derivs_taudelta(delta,tau,alp0)
+    if (present(alp)) alp = alp0(0,0)
+    if (present(alp_tau)) alp_tau = alp0(0,1)
+    if (present(alp_tautau)) alp_tautau = alp0(0,2)
+    if (present(alp_del)) alp_del = alp0(1,0)
+    if (present(alp_deldel)) alp_deldel = alp0(2,0)
+    if (present(alp_taudel)) alp_taudel = alp0(1,1)
+  end subroutine alpha0Derivs_taudelta_optional_base
 
 end module multiparameter_base

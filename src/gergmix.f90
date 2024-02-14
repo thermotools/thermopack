@@ -15,6 +15,7 @@ module gergmix
   use gergmixdb, only: max_gerg_mix_reducing, gerg_mix_reducingdb, &
        max_gerg_mix_data, gerg_mix_datadb
   use iso_fortran_env, only: dp => REAL64
+  use eosdata, only: meosGERG_mix
   implicit none
   save
   private
@@ -65,20 +66,22 @@ contains
     ! Locals
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
-    real :: rhoc_i, rhoc_j, Tc_i, Tc_j
+    real :: rhor_i, rhor_j, Tr_i, Tr_j
 
+    gerg_mix%eosidx = meosGERG_mix
+    gerg_mix%subeosidx = meosGERG_mix
     call gerg_mix%allocate_and_init(nc, "GERG2008")
     call gerg_mix%allocate_param(nc)
 
     gerg_mix%mix_data_index = -1
     do i=1,nc
-      rhoc_i = gerg_mix%nist(i)%meos%rc
-      Tc_i = gerg_mix%nist(i)%meos%tc
+      rhor_i = gerg_mix%nist(i)%meos%rhor
+      Tr_i = gerg_mix%nist(i)%meos%tr
       do j=1,nc
-        rhoc_j = gerg_mix%nist(j)%meos%rc
-        Tc_j = gerg_mix%nist(j)%meos%tc
-        gerg_mix%inv_rho_pow(i,j) = (1/rhoc_i**(1.0_dp/3.0_dp) + 1/rhoc_j**(1.0_dp/3.0_dp))**3
-        gerg_mix%tc_prod_sqrt(i,j) = (Tc_i*Tc_j)**(0.5_dp)
+        rhor_j = gerg_mix%nist(j)%meos%rhor
+        Tr_j = gerg_mix%nist(j)%meos%tr
+        gerg_mix%inv_rho_pow(i,j) = (1/rhor_i**(1.0_dp/3.0_dp) + 1/rhor_j**(1.0_dp/3.0_dp))**3
+        gerg_mix%tc_prod_sqrt(i,j) = (Tr_i*Tr_j)**(0.5_dp)
         !
         do k=1,max_gerg_mix_reducing
           if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &
@@ -219,7 +222,7 @@ contains
     logical :: converged
     integer :: currentPhase, nPhaseSwitches
     ! Relative accuracy in density solver.
-    real, parameter :: releps_p = machine_prec*1e8
+    real, parameter :: releps_p = machine_prec*1e10
     real, parameter :: releps_rho = machine_prec*1e6
 
     pMin = 0 ! Minimum allowable pressure during iteration.
@@ -229,7 +232,6 @@ contains
     iter = 0
     call initializeSearch() ! Set initial rho, p, dpdrho
     if (present(ierr)) ierr = 0
-
     ! Newton iteration loop
     do while (.true.)
       rhoOld = rho
@@ -264,7 +266,7 @@ contains
             return
           else
             print *, "iter ", iter
-            print *, "T_spec, P_spec, phase_spec", T_spec, P_spec, phase_spec
+            print *, "T_spec, P_spec, x, phase_spec", T_spec, P_spec, x, phase_spec
             print *, "rho, rhoOld ", rho, rhoOld
             print *, "p, pOld ", p, pOld
             print *, "dpdrho, dpdrhoOld ", dpdrho, dpdrhoOld
@@ -298,9 +300,17 @@ contains
     !> This routine computes initial rho and dpdrho, as well as setting parameters
     !> for the stability test (pMin, dpdrhoMin, curvatureSign).
     subroutine initializeSearch ()
-      real :: b
+      use thermopack_var, only: get_active_thermo_model, thermo_model, &
+           get_active_alt_eos, base_eos_param
+      use volume_shift, only: eosVolumeFromShiftedVolume
+      !use cubic, only: cbCalcZfac
+      real :: b, c
+      real :: Z, v, rho_max
+      logical, parameter :: solve_cubic_root = .false.
+      type(thermo_model), pointer :: act_mod_ptr
+      class(base_eos_param), pointer :: p_alt_eos
       converged = .false.
-
+      !
       if( currentPhase == VAPPH) then
         curvatureSign = -1
         rho = p_spec/(T_spec*Rgas)
@@ -308,17 +318,24 @@ contains
       else
         curvatureSign = 1
         b = get_b_linear_mix(x)
-        rho = 1.0/(1.01 * b)
-        !p_alt_eos => get_active_alt_eos()
-        !select type ( p_eos => p_alt_eos )
-        !type is ( cb_eos ) ! cubic equations of state
-        !  call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
-        !  rho = p_spec/(z*Rgas*t_spec)
-        !class default ! Saft eos
-        !  call stoperror("Error in initializeSearch")
-        !end select
+
+        p_alt_eos => get_active_alt_eos()
+        act_mod_ptr => get_active_thermo_model()
+        c = eosVolumeFromShiftedVolume(nce,act_mod_ptr%comps,p_alt_eos%volumeShiftId,T_spec,0.0,x)
+        rho = 1.0/(1.01 * (b-c))
+        if (solve_cubic_root) then
+          select type ( p_eos => p_alt_eos )
+          type is ( cb_eos ) ! cubic equations of state
+            rho_max = rho
+            call cbCalcZfac(nce,p_eos,T_spec,p_spec,x,currentPhase,Z,gflag_opt=1)
+            v = z*Rgas*t_spec/p_spec
+            rho = 1.0/(v-c)
+            rho = min(rho*1.05,rho_max)
+          class default ! Saft eos
+            call stoperror("Error in initializeSearch")
+          end select
+        endif
         call this%pressure(rho, x, T_spec, p, p_rho=dpdrho)
-        !print *,"p,dpdrho",p,dpdrho
         do while (p<0 .or. dpdrho<0) ! Should only kick in at extremely low temperatures.
           rho = 2*rho
           curvatureSign = 0
@@ -373,8 +390,10 @@ contains
     do i=1,nce-1
       delta = delta + x(i)*x(i)*this%inv_rho_pow(i,i)/8.0_dp
       do j=i+1,nce
-        delta = delta + 2*x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
-             ((x(i)+x(j))/(this%beta_v(i,j)**2*x(i)+x(j)))*this%inv_rho_pow(i,j)/8.0_dp
+        if (x(i)+x(j) > 0.0) then
+          delta = delta + 2*x(i)*x(j)*this%beta_v(i,j)*this%gamma_v(i,j)*&
+               ((x(i)+x(j))/(this%beta_v(i,j)**2*x(i)+x(j)))*this%inv_rho_pow(i,j)/8.0_dp
+        endif
       enddo
     enddo
     delta = delta + x(nce)*x(nce)*this%inv_rho_pow(nce,nce)/8.0_dp
@@ -393,8 +412,10 @@ contains
     do i=1,nce-1
       tau = tau + x(i)*x(i)*this%tc_prod_sqrt(i,i)
       do j=i+1,nce
-        tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
-             ((x(i)+x(j))/(this%beta_T(i,j)**2*x(i)+x(j)))*this%tc_prod_sqrt(i,j)
+        if (x(i)+x(j) > 0.0) then
+          tau = tau + 2*x(i)*x(j)*this%beta_T(i,j)*this%gamma_T(i,j)*&
+               ((x(i)+x(j))/(this%beta_T(i,j)**2*x(i)+x(j)))*this%tc_prod_sqrt(i,j)
+        endif
       enddo
     enddo
     tau = tau + x(nce)*x(nce)*this%tc_prod_sqrt(nce,nce)

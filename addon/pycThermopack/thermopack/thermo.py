@@ -35,6 +35,7 @@ from os import path
 import copy
 import numpy as np
 from . import plotutils, utils, platform_specifics
+import warnings
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
 
@@ -79,6 +80,10 @@ class thermo(object):
         self.s_get_rgas = getattr(
             self.tp, self.get_export_name("thermopack_var", "get_rgas"))
         self.nc = None
+        self.s_get_numerical_robustness_level = getattr(
+            self.tp, self.get_export_name("thermopack_var", "get_numerical_robustness_level"))
+        self.s_set_numerical_robustness_level = getattr(
+            self.tp, self.get_export_name("thermopack_var", "set_numerical_robustness_level"))
         self.s_get_tmin = getattr(
             self.tp, self.get_export_name("thermopack_var", "get_tmin"))
         self.s_set_tmin = getattr(
@@ -95,8 +100,16 @@ class thermo(object):
             self.tp, self.get_export_name("thermopack_var", "get_pmax"))
         self.s_set_pmax = getattr(
             self.tp, self.get_export_name("thermopack_var", "set_pmax"))
+
         self.solideos_solid_init = getattr(
             self.tp, self.get_export_name("solideos", "solid_init"))
+        self.solideos_solid_volume = getattr(
+            self.tp, self.get_export_name("solideos", "solid_specificvolume"))
+        self.solideos_solid_enthalpy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_enthalpy"))
+        self.solideos_solid_entropy = getattr(
+            self.tp, self.get_export_name("solideos", "solid_entropy"))
+
         self.eoslibinit_init_volume_translation = getattr(
             self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
@@ -119,9 +132,9 @@ class thermo(object):
 
         # Ideal property interface
         self.s_ideal_idealenthalpysingle = getattr(self.tp, self.get_export_name(
-            "ideal", "idealenthalpysingle"))
+            "eos", "ideal_enthalpy_single"))
         self.s_eos_idealentropysingle = getattr(self.tp, self.get_export_name(
-            "ideal", "idealentropysingle"))
+            "eos", "ideal_entropy_single"))
         self.s_ideal_get_entropy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "get_entropy_reference_value"))
         self.s_ideal_set_entropy_reference_value = getattr(self.tp, self.get_export_name(
@@ -130,6 +143,10 @@ class thermo(object):
             "ideal", "get_enthalpy_reference_value"))
         self.s_ideal_set_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
             "ideal", "set_enthalpy_reference_value"))
+        self.s_get_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "get_ideal_cp_correlation"))
+        self.s_set_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
+            "compdata", "set_ideal_cp_correlation"))
 
         # Speed of sound
         self.s_sos_sound_velocity_2ph = getattr(
@@ -231,6 +248,8 @@ class thermo(object):
             self.tp, self.get_export_name("spinodal", "initial_stab_limit_point"))
         self.s_map_meta_isentrope = getattr(
             self.tp, self.get_export_name("spinodal", "map_meta_isentrope"))
+        self.s_tv_meta_ps = getattr(
+            self.tp, self.get_export_name("spinodal", "tv_meta_ps"))
         self.s_solve_mu_t = getattr(self.tp, self.get_export_name(
             "mut_solver", "solve_mu_t"))
         self.s_solve_lnf_t = getattr(self.tp, self.get_export_name(
@@ -471,6 +490,30 @@ class thermo(object):
                                                 volume_trans_model_len,
                                                 ref_string_len)
 
+    def disable_volume_translation(self):
+        """Internal
+        Disable volume translations
+
+        """
+        self.activate()
+        volume_trans_model = "NOSHIFT"
+        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
+        volume_trans_model_len = c_len_type(len(volume_trans_model))
+        ref_string = "Default"
+        ref_string_c = c_char_p(ref_string.encode('ascii'))
+        ref_string_len = c_len_type(len(ref_string))
+        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
+                                                            c_char_p,
+                                                            c_len_type,
+                                                            c_len_type]
+
+        self.eoslibinit_init_volume_translation.restype = None
+
+        self.eoslibinit_init_volume_translation(volume_trans_model_c,
+                                                ref_string_c,
+                                                volume_trans_model_len,
+                                                ref_string_len)
+
     def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
         """Utility
         Recalculate critical properties of pure fluids
@@ -524,6 +567,181 @@ class thermo(object):
         self.solideos_solid_init.restype = None
         self.solideos_solid_init(scomp_c, scomp_len)
 
+    def solid_enthalpy(self, temp, press, x, dhdt=None, dhdp=None):
+        """Tp-property
+        Calculate specific solid-phase enthalpy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dhdt, dhdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific enthalpy (J/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dhdt is None:
+            dhdt_c = null_pointer
+        else:
+            dhdt_c = POINTER(c_double)(c_double(0.0))
+        if dhdp is None:
+            dhdp_c = null_pointer
+        else:
+            dhdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_enthalpy.argtypes = [POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double),
+                                                 POINTER(c_double)]
+
+        self.solideos_solid_enthalpy.restype = None
+
+        self.solideos_solid_enthalpy(byref(temp_c),
+                                     byref(press_c),
+                                     x_c,
+                                     byref(h_c),
+                                     dhdt_c,
+                                     dhdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dhdt is None:
+            return_tuple += (dhdt_c[0], )
+        if not dhdp is None:
+            return_tuple += (dhdp_c[0], )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, None), 'tpn')
+        return prop.unpack()
+
+    def solid_entropy(self, temp, press, x, dsdt=None, dsdp=None):
+        """Tp-property
+        Calculate specific solid-phase entropy
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dsdt, dsdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific entropy (J/mol.K), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        s_c = c_double(0.0)
+
+        if dsdt is None:
+            dsdt_c = null_pointer
+        else:
+            dsdt_c = POINTER(c_double)(c_double(0.0))
+        if dsdp is None:
+            dsdp_c = null_pointer
+        else:
+            dsdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_entropy.argtypes = [POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double),
+                                                POINTER(c_double)]
+
+        self.solideos_solid_entropy.restype = None
+
+        self.solideos_solid_entropy(byref(temp_c),
+                                    byref(press_c),
+                                    x_c,
+                                    byref(s_c),
+                                    dsdt_c,
+                                    dsdp_c)
+
+        return_tuple = (s_c.value, )
+        if not dsdt is None:
+            return_tuple += (dsdt_c[0], )
+        if not dsdp is None:
+            return_tuple += (dsdp_c[0], )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, None), 'tpn')
+        return prop.unpack()
+
+    def solid_volume(self, temp, press, x, dvdt=None, dvdp=None):
+        """Tp-property
+        Calculate specific solid-phase volume
+        Note that the order of the output match the default order of input for the differentials.
+        Note further that dsdt, dsdp only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            dvdt (logical, optional): Calculate volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            dvdp (logical, optional): Calculate volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+
+        Returns:
+            float: Specific volume (m3/mol), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        h_c = c_double(0.0)
+
+        if dvdt is None:
+            dvdt_c = null_pointer
+        else:
+            dvdt_c = POINTER(c_double)(c_double(0.0))
+        if dvdp is None:
+            dvdp_c = null_pointer
+        else:
+            dvdp_c = POINTER(c_double)(c_double(0.0))
+
+        self.solideos_solid_volume.argtypes = [POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double),
+                                               POINTER(c_double)]
+
+        self.solideos_solid_volume.restype = None
+
+        self.solideos_solid_volume(byref(temp_c),
+                            byref(press_c),
+                            x_c,
+                            byref(h_c),
+                            dvdt_c,
+                            dvdp_c)
+
+        return_tuple = (h_c.value, )
+        if not dvdt is None:
+            return_tuple += (dvdt_c[0], )
+        if not dvdp is None:
+            return_tuple += (dvdp_c[0], )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, None), 'tpn')
+        return prop.unpack()
+
+
     #################################
     # Utility
     #################################
@@ -546,25 +764,26 @@ class thermo(object):
         idx = self.s_compdata_compindex(comp_c, comp_len)
         return idx
 
-    def get_comp_name(self, index):
+    def get_comp_name(self, index, get_comp_identifier=False):
         """Utility
-        Get component name
+        Get component name/identifier
 
         Args:
             index (int): Component FORTRAN index
-
+            get_comp_identifier (bool): Get component identifier instead of full name? Default False.
         Returns:
-            comp (str): Component name
+            comp (str): Component name/identifier
         """
         self.activate()
         comp_len = 40
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
         index_c = c_int(index)
+        comp_id_c = c_int(1) if get_comp_identifier else c_int(0)
         self.s_compdata_compname.argtypes = [
-            POINTER(c_int), c_char_p, c_len_type]
+            POINTER(c_int), POINTER(c_int), c_char_p, c_len_type]
         self.s_compdata_compname.restype = None
-        self.s_compdata_compname(byref(index_c), comp_c, comp_len_c)
+        self.s_compdata_compname(byref(index_c), byref(comp_id_c), comp_c, comp_len_c)
         compname = comp_c.value.decode('ascii').strip()
         return compname
 
@@ -678,6 +897,34 @@ class thermo(object):
         self.s_get_rgas.restype = c_double
         rgas = self.s_get_rgas()
         return rgas
+
+    def set_numerical_robustness_level(self, level):
+        """Utility
+        Set numerical robustness level in Thermopack, where 0 is the default
+        and higher levels increase robustness.
+        
+        Args:
+            level (integer): robustness_level
+        """
+        self.activate()
+        level_c = c_int(level)
+        self.s_set_numerical_robustness_level.argtypes = [POINTER(c_int)]
+        self.s_set_numerical_robustness_level.restype = None
+        self.s_set_numerical_robustness_level(byref(level_c))
+
+    def get_numerical_robustness_level(self):
+        """Utility
+        Get numerical robustness level in Thermopack, where 0 is the default
+        and higher levels increase robustness.
+        
+        Returns:
+            level (integer): robustness_level
+        """
+        self.activate()
+        self.s_get_numerical_robustness_level.argtypes = []
+        self.s_get_numerical_robustness_level.restype = c_int
+        level = self.s_get_numerical_robustness_level()
+        return level
 
     def set_tmin(self, temp):
         """Utility
@@ -866,7 +1113,8 @@ class thermo(object):
         if not dvdn is None:
             return_tuple += (np.array(dvdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, dvdn), 'tpn')
+        return prop.unpack()
 
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
         """Tp-property
@@ -935,7 +1183,8 @@ class thermo(object):
         if not dzdn is None:
             return_tuple += (np.array(dzdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dzdt, dzdp, dzdn), 'tpn')
+        return prop.unpack()
 
     def thermo(self, temp, press, x, phase, dlnfugdt=None, dlnfugdp=None,
                dlnfugdn=None, ophase=None, v=None):
@@ -1031,7 +1280,8 @@ class thermo(object):
         if not v is None:
             return_tuple += (v_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
+        return prop.unpack()
 
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
         """Tp-property
@@ -1109,7 +1359,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
+        return prop.unpack()
 
     def entropy(self, temp, press, x, phase, dsdt=None, dsdp=None, dsdn=None, residual=False):
         """Tp-property
@@ -1186,7 +1437,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, dsdn), 'tpn')
+        return prop.unpack()
 
     def idealenthalpysingle(self, temp, j, dhdt=None):
         """Tp-property
@@ -1229,7 +1481,8 @@ class thermo(object):
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, False, False), 'tpn')
+        return prop.unpack()
 
     def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
         """Tp-property
@@ -1284,14 +1537,15 @@ class thermo(object):
         if not dsdp is None:
             return_tuple += (dsdp_c[0], )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, False), 'tpn')
+        return prop.unpack()
 
     def set_ideal_entropy_reference_value(self, j, s0):
         """Utility
         Set specific ideal entropy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             s0 (float): Ideal entropy reference (J/mol/K)
         """
         self.activate()
@@ -1337,7 +1591,7 @@ class thermo(object):
         Set specific ideal enthalpy reference value
 
         Args:
-            j (integer): Component index
+            j (int): Component index
             h0 (float): Ideal enthalpy reference (J/mol)
         """
         self.activate()
@@ -1377,6 +1631,63 @@ class thermo(object):
                                                   byref(h0_c))
 
         return h0_c.value
+
+    def get_ideal_cp(self, j):
+        """Utility
+        Get correlation parameters for ideal gas Cp
+
+        Args:
+            j (integer): Component index
+        Returns:
+            integer: Ideal Cp correlation identifier
+            ndarray: Paramaters
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(0)
+        param_c = (c_double * 10)(0.0)
+
+        self.s_get_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_get_ideal_cp_correlation.restype = None
+
+        self.s_get_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
+
+        return corr_c.value, np.array(param_c)
+
+    def set_ideal_cp(self, j, cp_correlation_type, parameters):
+        """Utility
+        Set correlation parameters for ideal gas Cp
+        To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
+
+        Args:
+            j (int): Component index
+            cp_correlation_type (int): Ideal Cp correlation identifier
+            parameters (array like): Paramaters (Maximum 10 parameters used)
+        """
+        self.activate()
+
+        j_c = c_int(j)
+        corr_c = c_int(cp_correlation_type)
+        parameters_full = np.zeros(10)
+        n = min(len(parameters),10)
+        parameters_full[0:n] = parameters[0:n]
+        param_c = (c_double * 10)(*parameters_full)
+
+        self.s_set_ideal_cp_correlation.argtypes = [POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double)]
+
+        self.s_set_ideal_cp_correlation.restype = None
+
+        self.s_set_ideal_cp_correlation(byref(j_c),
+                                        byref(corr_c),
+                                        param_c)
 
     def speed_of_sound(self, temp, press, x, y, z, betaV, betaL, phase):
         """Tp-property
@@ -1643,7 +1954,10 @@ class thermo(object):
                                 byref(phase_c),
                                 byref(ierr_c))
 
-        if ierr_c.value != 0:
+
+        if ierr_c.value < 0:
+            warnings.warn("PH solver not fully converged")
+        elif ierr_c.value > 0:
             raise Exception("PH flash calclualtion failed")
 
         x = np.array(x_c)
@@ -1827,7 +2141,8 @@ class thermo(object):
         if not dpdn is None:
             return_tuple += (np.array(dpdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dpdt, dpdv, dpdn), 'tvn')
+        return prop.unpack()
 
     def internal_energy_tv(self, temp, volume, n, dedt=None, dedv=None,
                            dedn=None, property_flag="IR"):
@@ -1897,7 +2212,8 @@ class thermo(object):
         if not dedn is None:
             return_tuple += (np.array(dedv_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dedt, dedv, dedn), 'tvn')
+        return prop.unpack()
 
     def entropy_tv(self, temp, volume, n, dsdt=None, dsdv=None,
                    dsdn=None, property_flag="IR"):
@@ -1967,7 +2283,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdv, dsdn), 'tvn')
+        return prop.unpack()
 
     def enthalpy_tv(self, temp, volume, n, dhdt=None, dhdv=None,
                     dhdn=None, property_flag="IR"):
@@ -2037,7 +2354,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdv, dhdn), 'tvn')
+        return prop.unpack()
 
     def helmholtz_tv(self, temp, volume, n, dadt=None, dadv=None,
                      dadn=None, property_flag="IR"):
@@ -2106,7 +2424,8 @@ class thermo(object):
         if not dadn is None:
             return_tuple += (np.array(dadn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dadt, dadv, dadn), 'tvn')
+        return prop.unpack()
 
     def chemical_potential_tv(self, temp, volume, n, dmudt=None, dmudv=None,
                               dmudn=None, property_flag="IR"):
@@ -2180,7 +2499,8 @@ class thermo(object):
                     dmudn[i][j] = dmudn_c[i + j*len(n)]
             return_tuple += (np.array(dmudn), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dmudt, dmudv, dmudn), 'tvn')
+        return prop.unpack()
 
     def fugacity_tv(self, temp, volume, n, dlnphidt=None, dlnphidv=None, dlnphidn=None):
         """TV-property
@@ -2248,7 +2568,8 @@ class thermo(object):
                     dlnphidn[i][j] = dlnphidn_c[i + j*len(n)]
             return_tuple += (dlnphidn, )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnphidt, dlnphidv, dlnphidn), 'tvn')
+        return prop.unpack()
 
     #################################
     # Temperature-volume property interfaces evaluating functions as if temperature-pressure
@@ -2322,7 +2643,8 @@ class thermo(object):
         if not dsdn is None:
             return_tuple += (np.array(dsdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, dsdn), 'tpn')
+        return prop.unpack()
 
     def enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag="IR"):
         """TVp-property
@@ -2391,7 +2713,8 @@ class thermo(object):
         if not dhdn is None:
             return_tuple += (np.array(dhdn_c), )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
+        return prop.unpack()
 
     def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
@@ -2461,7 +2784,8 @@ class thermo(object):
                     dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(n)]
             return_tuple += (dlnfugdn_r, )
 
-        return return_tuple
+        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
+        return prop.unpack()
 
     #################################
     # Saturation interfaces
@@ -2621,7 +2945,8 @@ class thermo(object):
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size_factor=1.0,
-                              step_size=None, calc_v=False, initial_temperature=None):
+                              step_size=None, calc_v=False, initial_temperature=None,
+                              calc_criconden=False):
         """Saturation interface
         Get the phase-envelope at a given composition
 
@@ -2633,12 +2958,14 @@ class thermo(object):
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
             calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start mapping form dew point at initial temperature.
-                                                  Overrides initial pressure. Defaults to None (K).
+            initial_temperature (float, optional): Start mapping form dew point at initial temperature.
+                                                   Overrides initial pressure. Defaults to None (K).
+            calc_criconden (bool, optional): Calculate cricondenbar and cricondentherm?
         Returns:
             ndarray: Temperature values (K)
             ndarray: Pressure values (Pa)
             ndarray (optional, if `calc_v=True`): Specific volume (m3/mol)
+            ndarray (optional, if `calc_criconden=True`): Cricondenbar followed by cricondentherm (T (K), P (Pa), T (K), P (Pa))
         """
         self.activate()
         nmax = 1000
@@ -2655,7 +2982,10 @@ class thermo(object):
         beta_c = (c_double * nmax)(0.0)
         n_c = c_int(0)
         null_pointer = POINTER(c_double)()
-        criconden_c = null_pointer
+        if calc_criconden:
+            criconden_c = (c_double * 4)(*([0.0]*4))
+        else:
+            criconden_c = null_pointer
         crit_c = null_pointer
         ds_c = null_pointer if step_size is None else POINTER(c_double)(c_double(step_size))
         step_size_factor_c = POINTER(c_double)(c_double(step_size_factor))
@@ -2715,13 +3045,11 @@ class thermo(object):
                 v_vals_single = np.zeros_like(t_vals_single)
                 for i in range(n_c.value):
                     t_vals_single[i] = t_vals[i]
-                    t_vals_single[-i-1] = t_vals[i]
+                    t_vals_single[-i - 1] = t_vals[i]
                     p_vals_single[i] = p_vals[i]
                     p_vals_single[-i-1] = p_vals[i]
-                    v_vals_single[i], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, self.VAPPH)
-                    v_vals_single[-i-1], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, self.LIQPH)
+                    v_vals_single[i] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, self.VAPPH))
+                    v_vals_single[-i - 1] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, self.LIQPH))
                 return_tuple = (t_vals_single, p_vals_single, v_vals_single)
             else:
                 v_vals = np.zeros_like(t_vals)
@@ -2730,9 +3058,11 @@ class thermo(object):
                         phase = self.VAPPH
                     else:
                         phase = self.LIQPH
-                    v_vals[i], = self.specific_volume(
-                        t_vals[i], p_vals[i], z, phase)
+                    v_vals[i] = utils.back_compatible_unpack(self.specific_volume(t_vals[i], p_vals[i], z, phase))
                 return_tuple += (v_vals, )
+
+        if calc_criconden:
+            return_tuple += (np.array(criconden_c), )
 
         return return_tuple
 
@@ -2836,22 +3166,22 @@ class thermo(object):
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
-            tuple of arrays: LLE, L1VE, L2VE
+            (XYDiagram) : Structure with the attributes
 
-            LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Pressure [Pa]
-            L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] -> Bubble line composition (mole fraction of component 1)
-                L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Pressure [Pa]
-            L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] -> Bubble line composition (mole fraction of component 1)
-                L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Pressure [Pa]
+            lle : Liquid 1 - Liquid 2 Equilibrium (PxyEquilibrium) with the attributes
+                x1 -> Liquid 1 composition (mole fraction of component 1)
+                x2 -> Liquid 2 composition (mole fraction of component 1)
+                p -> Pressure [Pa]
+            l1ve : Liquid 1 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                p -> Pressure [Pa]
+            l2ve : Liquid 2 - Vapour Equilibrium (PxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                p -> Pressure [Pa]
 
-            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+            If one or more of the equilibria are not found the corresponding arrays are empty
         """
         # Redefinition of module parameter:
         self.activate()
@@ -2949,7 +3279,7 @@ class thermo(object):
         else:
             L2VE = (None, None, None)
 
-        return LLE, L1VE, L2VE
+        return utils.XYDiagram(LLE, L1VE, L2VE, 'pxy')
 
     def get_binary_txy(self,
                        pressure,
@@ -2966,22 +3296,22 @@ class thermo(object):
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
         Returns:
-            tuple of arrays: LLE, L1VE, L2VE
+            (XYDiagram) : Structure with the attributes
 
-            LLE : Liquid 1 - Liquid 2 Equilibrium
-                LLE[0] -> Liquid 1 composition (mole fraction of component 1)
-                LLE[1] -> Liquid 2 composition (mole fraction of component 1)
-                LLE[2] -> Temperature [K]
-            L1VE : Liquid 1 - Vapour Equilibrium
-                L1VE[0] -> Bubble line composition (mole fraction of component 1)
-                L1VE[1] -> Dew line composition (mole fraction of component 1)
-                L1VE[2] -> Temperature [K]
-            L2VE : Liquid 2 - Vapour Equilibrium
-                L2VE[0] -> Bubble line composition (mole fraction of component 1)
-                L2VE[1] -> Dew line composition (mole fraction of component 1)
-                L2VE[2] -> Temperature [K]
+            lle : Liquid 1 - Liquid 2 Equilibrium (TxyEquilibrium) with the attributes
+                x1 -> Liquid 1 composition (mole fraction of component 1)
+                x2 -> Liquid 2 composition (mole fraction of component 1)
+                T -> Temperature [K]
+            l1ve : Liquid 1 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                T -> Temperature [K]
+            l2ve : Liquid 2 - Vapour Equilibrium (TxyEquilibrium) with the attributes
+                x -> Bubble line composition (mole fraction of component 1)
+                y -> Dew line composition (mole fraction of component 1)
+                T -> Temperature [K]
 
-            If one or more of the equilibria are not found the corresponding tuple is (None, None, None)
+            If one or more of the equilibria are not found the corresponding arrays are empty
         """
         # Redefinition of module parameter:
         self.activate()
@@ -3021,6 +3351,8 @@ class thermo(object):
 
         self.s_binary_plot.restype = None
 
+        pmin = self.get_pmin()
+        self.set_pmin(1.0e-20)
         self.s_binary_plot(byref(temp_c),
                            byref(press_c),
                            byref(ispec_c),
@@ -3036,6 +3368,7 @@ class thermo(object):
                            byref(ierr_c),
                            filename_len)
 
+        self.set_pmin(pmin)
         if ierr_c.value > 0 or ierr_c.value < -1:
             raise Exception("binary_plot failed")
 
@@ -3079,7 +3412,7 @@ class thermo(object):
         else:
             L2VE = (None, None, None)
 
-        return LLE, L1VE, L2VE
+        return utils.XYDiagram(LLE, L1VE, L2VE, 'txy')
 
     def get_bp_term(self,
                     i_term):
@@ -3087,7 +3420,7 @@ class thermo(object):
         Get error description for binary plot error
 
         Args:
-            i_term (int): binary plot error identifyer
+            i_term (int): binary plot error identifier
 
         Returns:
             str: Error message
@@ -4269,6 +4602,52 @@ class thermo(object):
                            byref(ierr_c))
 
         return np.array(rho_c)
+
+    def tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial):
+        """Stability interface & Other property
+        Solve for temperature and volume given pressure and entropy.
+        A fair initial guess is required.
+        No phase stabillity is tested, and stable/meta-stable states will be
+        returned depending on input.
+
+        Args:
+            pressure (float): Pressure (Pa).
+            entropy (float): Entropy (J/K).
+            n (array_like): Mol numbers (mol)
+            volume_initial (float): Initial guess for volume (m3).
+            temp_initial (float): Initial guess for temperature (K)
+
+        Returns:
+            float: Temperature (K)
+            float: Volume (m3).
+        """
+        self.activate()
+        p_c = c_double(pressure)
+        s_c = c_double(entropy)
+        n_c = (c_double * len(n))(*n)
+        temp_c = c_double(temp_initial)
+        v_c = c_double(volume_initial)
+        ierr_c = c_int(0)
+        self.s_tv_meta_ps.argtypes = [POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_double),
+                                      POINTER(c_int)]
+
+        self.s_tv_meta_ps.restype = None
+
+        self.s_tv_meta_ps(byref(p_c),
+                          byref(s_c),
+                          n_c,
+                          byref(temp_c),
+                          byref(v_c),
+                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception("Calculating (t,v) state from (p,s) failed")
+
+        return temp_c.value, v_c.value
 
     #################################
     # Virial interfaces
