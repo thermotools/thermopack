@@ -2078,8 +2078,8 @@ contains
     scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
     if ((scheme_i /= no_assoc) .and. (scheme_j /= no_assoc)) then
       ! Get the values of eps and beta for components i and j.
-      call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
-      call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
+      call getActiveAssocParams(i, eps_i, beta_i)
+      call getActiveAssocParams(j, eps_j, beta_j)
 
       call compidx_to_sites(p_assoc,i,k_first,k_last)
       call compidx_to_sites(p_assoc,j,l_first,l_last)
@@ -2140,8 +2140,8 @@ contains
     scheme_j = act_mod_ptr%comps(j)%p_comp%assoc_scheme
     if ((scheme_i /= no_assoc) .and. (scheme_j /= no_assoc)) then
       ! Get the values of eps and beta for components i and j.
-      call getActiveAssocParams(p_assoc, i, eps_i, beta_i)
-      call getActiveAssocParams(p_assoc, j, eps_j, beta_j)
+      call getActiveAssocParams(i, eps_i, beta_i)
+      call getActiveAssocParams(j, eps_j, beta_j)
 
       call compidx_to_sites(p_assoc,i,k_first,k_last)
       call compidx_to_sites(p_assoc,j,l_first,l_last)
@@ -2151,8 +2151,6 @@ contains
                assoc_scheme_I=scheme_i, assoc_scheme_II=scheme_j) ) then
              p_assoc%eps_kl(k,l) = applyCombiningRule(epsbeta_combrules(1,i,j), &
                   eps_i, eps_j) * (1-kij_eps)
-             !beta_kl(k,l) = applyCombiningRule(epsbeta_combrules(2,i,j), &
-             !     beta_i, beta_j) * (1-aEpsBeta_kij_in(3))
           end if
         end do
       end do
@@ -2172,7 +2170,7 @@ contains
     class is ( cb_eos )
       p_eos%single(ic)%a = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
       p_eos%single(ic)%b = params(2) !< Covolume b. [b] = L/mol.
-      call setActiveAssocParams(p_eos%assoc, ic, eps=params(3), beta=params(4))
+      call setActiveAssocParams(ic, eps=params(3), beta=params(4))
       p_eos%single(ic)%alphaParams(1) = params(5)
     class default
       call stoperror("cpa_set_pure_params: Not able to set pure cpa parameters. Eos not cubic.")
@@ -2191,14 +2189,13 @@ contains
     class is ( cb_eos )
       params(1) = p_eos%single(ic)%a !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
       params(2) = p_eos%single(ic)%b !< Covolume b. [b] = L/mol.
-      call getActiveAssocParams(p_eos%assoc, ic, eps=params(3), beta=params(4))
+      call getActiveAssocParams(ic, eps=params(3), beta=params(4))
       params(5) = p_eos%single(ic)%alphaParams(1)
     class default
       call stoperror("cpa_get_pure_params: Not able to set pure cpa parameters. Eos not cubic.")
     end select
 
   end subroutine cpa_get_pure_params
-
 
   subroutine pc_saft_set_pure_params(ic,params)
     use pc_saft_nonassoc, only: sPCSAFT_eos
@@ -2209,16 +2206,16 @@ contains
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-        p_eos%m(ic) = params(1) !< Attraction constant a0. [a0] = Pa*L^2/mol^2.
-        p_eos%sigma(ic,ic) = params(2) !< Covolume b. [b] = L/mol.
-        p_eos%eps_depth_divk(ic,ic) = params(3) !< Constant used instead of m(omega) in classic alpha formulation. [c] = -.
+        p_eos%m(ic) = params(1) !< Chain length (-)
+        p_eos%sigma(ic,ic) = params(2) !< Monomer diameter (m)
+        p_eos%eps_depth_divk(ic,ic) = params(3) !< Dispersion energy scale (K)
     class default
       call stoperror("pc_saft_set_pure_params: Wrong type.")
     end select
 
     if (associated(eos%assoc)) then
       if (eos%assoc%numAssocSites > 0) &
-           call setActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
+           call setActiveAssocParams(ic, eps=params(4), beta=params(5))
     endif
   end subroutine pc_saft_set_pure_params
 
@@ -2238,7 +2235,7 @@ contains
       call stoperror("pc_saft_get_pure_params: Wrong type.")
     end select
 
-    call getActiveAssocParams(eos%assoc, ic, eps=params(4), beta=params(5))
+    call getActiveAssocParams(ic, eps=params(4), beta=params(5))
 
   end subroutine pc_saft_get_pure_params
 
@@ -2271,25 +2268,29 @@ contains
   end subroutine pets_get_pure_params
 
   ! Returns eps=-1.0, beta=-1.0 if component ic is not self-associating.
-  subroutine getActiveAssocParams(assoc, ic, eps, beta)
+  subroutine getActiveAssocParams(ic, eps, beta)
     use saft_association, only: compidx_to_sites, noSitesFlag
-    type(association), intent(in) :: assoc
     integer, intent(in) :: ic
     real, intent(out) :: eps, beta
     ! Locals
     integer :: k, l, firstSiteIdx, lastSiteIdx
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: assoc
 
-    call compidx_to_sites(assoc, ic,firstSiteIdx, lastSiteIdx)
+    act_mod_ptr => get_active_thermo_model()
+    assoc => act_mod_ptr%eos(1)%p_eos%assoc
+
+    call compidx_to_sites(assoc, ic, firstSiteIdx, lastSiteIdx)
 
     if ( firstSiteIdx == noSitesFlag  ) then
        eps = -1.0
        beta = -1.0
        return
     end if
-
+      
     do k=firstSiteIdx, lastSiteIdx
        do l=firstSiteIdx, lastSiteIdx
-          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+          if (abs(assoc%eps_kl(k,l)) > 0.0) then
              eps = assoc%eps_kl(k,l)
              beta = assoc%beta_kl(k,l)
              return
@@ -2299,13 +2300,17 @@ contains
 
   end subroutine getActiveAssocParams
 
-  subroutine setActiveAssocParams(assoc, ic, eps, beta)
+  subroutine setActiveAssocParams(ic, eps, beta)
     use saft_association, only: compidx_to_sites, noSitesFlag
-    type(association), intent(inout) :: assoc
     integer, intent(in) :: ic
     real, intent(in) :: eps, beta
     ! Locals
     integer :: k, l, firstSiteIdx, lastSiteIdx
+    type(thermo_model), pointer :: act_mod_ptr
+    type(association), pointer :: assoc
+    
+    act_mod_ptr => get_active_thermo_model()
+    assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
     call compidx_to_sites(assoc,ic,firstSiteIdx, lastSiteIdx)
     if ( firstSiteIdx == noSitesFlag  .and. (eps>0.0 .or. beta>0.0) ) then
@@ -2314,7 +2319,7 @@ contains
 
     do k=firstSiteIdx, lastSiteIdx
        do l=firstSiteIdx, lastSiteIdx
-          if (abs(assoc%beta_kl(k,l)) > 1e-20) then
+          if (abs(assoc%eps_kl(k,l)) > 0.0) then
              assoc%eps_kl(k,l) = eps
              assoc%beta_kl(k,l) = beta
           end if
@@ -2330,10 +2335,8 @@ contains
     use thermopack_var, only: nce
     use AssocSchemeUtils, only: get_assoc_string
 
-    integer :: rules(2), i
-    real :: pure_params(5)
-    real :: pcSaft_kij, cpa_aEps_kij(2), cpa_kijepsbeta_db(2)
-    logical :: found
+    integer :: i
+    real :: pure_params(5), cpa_aEps_kij(2)
     type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: assoc
     act_mod_ptr => get_active_thermo_model()

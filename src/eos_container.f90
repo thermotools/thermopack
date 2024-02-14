@@ -233,7 +233,8 @@ end module eos_container
 subroutine update_global_variables_form_active_thermo_model()
   use thermopack_var, only: nc, nph, complist, apparent, nce, &
        ncsym, numAssocSites, get_active_thermo_model, &
-       thermo_model, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin
+       thermo_model, Rgas, kRgas, tpTmax, tpTmin, tpPmax, tpPmin, &
+       robustness_level
   use saftvrmie_containers, only: saftvrmie_eos, saftvrmie_param, svrm_opt
   use lj_splined, only: ljs_wca_eos
   implicit none
@@ -249,6 +250,7 @@ subroutine update_global_variables_form_active_thermo_model()
   tpTmin = act_mod_ptr%tpTmin
   tpPmax = act_mod_ptr%tpPmax
   tpPmin = act_mod_ptr%tpPmin
+  robustness_level = act_mod_ptr%robustness_level
   if (associated(apparent)) then
     nce = apparent%nce
     ncsym = apparent%ncsym

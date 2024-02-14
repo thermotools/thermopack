@@ -6,7 +6,7 @@ permalink: /vcurrent/cpa_methods.html
 ---
 
 <!--- 
-Generated at: 2023-10-16T10:05:10.854792
+Generated at: 2023-11-16T19:47:21.000986
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cpa class. For instructions on how to use the parser routines, see the
@@ -22,7 +22,8 @@ Cubic Plus Association Equation of State. This class implements utility methods 
   * [Utility methods](#utility-methods)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-ic)
-    * [set_kij](#set_kijself-c1-c2-kij)
+    * [print_cpa_report](#print_cpa_reportself)
+    * [set_kij](#set_kijself-c1-c2-kij_a-kij_eps)
     * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
 
@@ -104,7 +105,8 @@ Set- and get methods for interaction parameters, mixing parameters ...
   * [Utility methods](#utility-methods)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-ic)
-    * [set_kij](#set_kijself-c1-c2-kij)
+    * [print_cpa_report](#print_cpa_reportself)
+    * [set_kij](#set_kijself-c1-c2-kij_a-kij_eps)
     * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
 
@@ -151,7 +153,12 @@ Get pure parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `set_kij(self, c1, c2, kij)`
+### `print_cpa_report(self)`
+Print cpa parameters  Parameters printed are the five pure parameters a0, b, epsilon, beta, c1, and the binary parameter for the cubic part, kij_a, and for the association part, kij_eps. 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_kij(self, c1, c2, kij_a, kij_eps)`
 Set attractive energy interaction parameter
 
 #### Args:
@@ -164,9 +171,13 @@ Set attractive energy interaction parameter
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component two
 
-&nbsp;&nbsp;&nbsp;&nbsp; **kij (array_like):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **kij_a (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  i-j interaction parameter (2 parameters)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  cubic i-j interaction parameter
+
+&nbsp;&nbsp;&nbsp;&nbsp; **kij_eps (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  association i-j interaction parameter
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

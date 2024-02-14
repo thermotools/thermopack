@@ -6,7 +6,7 @@ permalink: /vcurrent/saft_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.063440
+Generated at: 2024-01-02T13:58:15.150020
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saft class. For instructions on how to use the parser routines, see the
@@ -30,11 +30,13 @@ compute quantities of interest when investigating SAFT-type equations of state.
     * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
     * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
+    * [get_pure_assoc_param](#get_pure_assoc_paramself-ic)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_pure_assoc_param](#set_pure_assoc_paramself-ic-eps_assoc-beta_assoc)
     * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
     * [sigma_ij](#sigma_ijself-i-j)
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
@@ -61,11 +63,13 @@ Helmholtz energy for SAFT-type equations of state
     * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
     * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
+    * [get_pure_assoc_param](#get_pure_assoc_paramself-ic)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_pure_assoc_param](#set_pure_assoc_paramself-ic-eps_assoc-beta_assoc)
     * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
     * [sigma_ij](#sigma_ijself-i-j)
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
@@ -464,6 +468,29 @@ Calculate reduced Helmholtz energy contribution from polar model
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `get_pure_assoc_param(self, ic)`
+Set pure association parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps_assoc (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association energy (J/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **beta_assoc (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association volume (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `hard_sphere_diameter_ij(self, i, j, temp)`
 Calculate non-additive hard-sphere diameter for i-j interaction given temperature.
 
@@ -572,6 +599,25 @@ Print saft parameters for component c
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_pure_assoc_param(self, ic, eps_assoc, beta_assoc)`
+Set pure association parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **eps_assoc (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association energy (J/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **beta_assoc (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Association volume (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

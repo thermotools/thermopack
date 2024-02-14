@@ -134,7 +134,7 @@ def write_platform_specifics_file(pf_specifics, filename):
         "# Module for platform specific stuff. Automatically generated.")
     lines.append("# Timestamp : " +
                  str(datetime.today().isoformat()) + "\n\n")
-
+    lines.append(f"DIFFERENTIAL_RETURN_MODE = '{pf_specifics['diff_return_mode']}'\n\n")
     tab = " "*4
     lines.append("def get_platform_specifics():")
     lines.append(tab + "pf_specifics = {}")
@@ -148,6 +148,75 @@ def write_platform_specifics_file(pf_specifics, filename):
         for line in lines:
             f.write(line)
             f.write("\n")
+
+def write_setup_file(version):
+    setup_contents = {'name': "'thermopack'",
+                      'version': f"'{version}'",
+                      'description': "'Python interface to thermopack'",
+                      'long_description': "'readme'",
+                      'long_description_content_type': "'text/markdown'",
+                      'author': "'Morten Hammer'",
+                      'author_email': "'morten.hammer@sintef.no'",
+                      'url': "'https://github.com/thermotools/thermopack'",
+                      'packages': "['thermopack']",
+                      'package_data': "{'thermopack':['*thermopack.*']}"}
+
+    with open(os.path.dirname(__file__) + '/setup.py', 'w') as file:
+        file.write(f"# This file was automatically generated using the function 'write_setup_file' in \n"
+                   f"# {__file__} \n"
+                   f"# Likely called from {os.path.dirname(__file__)}/makescript.py\n"
+                   f"# Timestamp : {datetime.today().isoformat()}\n\n")
+        file.write("from distutils.core import setup\n"
+                    "from pathlib import Path\n\n"
+                    "root_dir = Path(__file__).parent # thermopack root directory\n"
+                    "readme = (root_dir / 'README_pypi.md').read_text()\n\n")
+        file.write('setup(')
+
+        for i, (k, v) in enumerate(setup_contents.items()):
+            if i > 0:
+                file.write(',')
+            file.write(f"{k}={v}\n\t")
+
+        file.write(')\n')
+
+def write_toml_file(version):
+    contents = """[build-system]
+requires = ["setuptools>=39.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thermopack"
+version = \"""" + version + """\"
+authors = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+]
+maintainers = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+  { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
+]
+description = "Python interface to thermopack"
+readme = "README_pypi.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Fortran",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+]
+keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
+
+[project.urls]
+"Homepage" = "https://github.com/thermotools/thermopack"
+"Bug Tracker" = "https://github.com/thermotools/thermopack/issues"
+
+[dependencies]
+numpy = "^1.1"
+matplotlib = "^2.0"
+"""
+    with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
+        file.write(contents)
 
 
 if __name__ == "__main__":

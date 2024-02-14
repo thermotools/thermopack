@@ -305,7 +305,7 @@ contains
     logical, optional :: paranoid
 
     ! Internal variables
-    integer :: maxPoints, ispecStep, i, j, nStep
+    integer :: maxPoints, ispecStep, i, j, nStep, i_start
     real, dimension(neq) :: XX,dXds,XXold,dXdsOld !,F,B
     !real, dimension(neq,neq) :: JAC
     real :: dlns, PP, TT, dlns_max, dz, vc
@@ -318,6 +318,7 @@ contains
     integer, target :: l_iterm
     logical :: l_paranoid, isStable
     real :: Tmin_sys
+    real, parameter :: x_initial = 1.0e-6 ! Initial increment of component with fraction equal to zero
 
     ! Sould every point be checked for stability
     if (present(paranoid)) then
@@ -357,13 +358,36 @@ contains
     x = x0
     y = y0
     call fillX(XX,TT,PP,x,y,ispec,ph)
-    ispecStep = 7
-    if (present(ispecStep0)) then
-      ispecStep = ispecStep0
-    endif
     ! Store starting point
     call set_bin_res(x,y,TT,PP,ispec,xres,yres,tpres,maxPoints,1,npoints,&
          ph,isStable,l_paranoid)
+
+    i_start = 2
+    if (present(ispecStep0)) then
+      ispecStep = ispecStep0
+    else
+      if (XX(3) == 0.0 .or. XX(3) == 1.0) then
+        if (XX(3) == 0.0) then
+          x = (/x_initial, 1.0-x_initial/)
+          y = (/x_initial, 1.0-x_initial/)
+        else if (XX(3) == 1.0) then
+          x = (/1.0-x_initial,x_initial/)
+          y = (/1.0-x_initial,x_initial/)
+        endif
+        call fillX(XX,TT,PP,x,y,ispec,ph) ! Set K-value based on new composition
+        ispecStep = 3
+        dlns = 0.0
+        XXold = XX
+        nStep = binaryStep(XX,TT,PP,x,y,ispec,ispecStep,dlns,&
+             dzmax,Pmax,Tmin,ph,dXds,ierr,Pmin)
+        if (ierr == 0) then
+          call set_bin_res(x,y,TT,PP,ispec,xres,yres,tpres,maxPoints,2,npoints,&
+               ph,isStable,l_paranoid)
+          i_start = 3
+        endif
+      endif
+      ispecStep = 7
+    endif
 
     ! Start by increasing P/T
     dlns = 0.005
@@ -378,13 +402,17 @@ contains
     if (present(sign0)) then
       dlns = dlns*sign0
     else
+      if (i_start == 3) then
+        dlns = dlns*sign(1.0,XX(ispecStep)-XXold(ispecStep))
+      else
       dlns = dlns*initialStepSign(TT,PP,XX,ispec,ispecStep,ph)
+    endif
     endif
 
     solveForLimit = .false.
     solveForCrit = .false.
     dXds=0.0
-    do i=2,maxPoints
+    do i=i_start,maxPoints
       XXold = XX
       dXdsOld = dXds
       zeroCompCross = .false.
@@ -1353,12 +1381,10 @@ contains
   !! \author MH, 2015-04
   !-------------------------------------------------------------------
   subroutine initialLLtp(T,P,ispec,ierr)
-    use thermopack_var, only: nc
     use eos, only: thermo, getCriticalParam
     use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
                                  NS_PEGASUS
     use saturation, only: safe_bubP, safe_bubT
-    use thermopack_var, only: tpTmin, tpTmax
     use puresaturation, only: PureSat
     implicit none
     real, intent(inout) :: T,P
@@ -1367,7 +1393,7 @@ contains
     ! Locals
     real, dimension(nc) :: x, w, y, tci, pci, oi, Tbub, Pbub
     real, dimension(nc, nc) :: z
-    real :: Pmax, Tmin, Tmax, P1, P2
+    real :: Tmin, Tmax, P1, P2
     real, parameter :: safetyDt = 1.0e-4
     real, dimension(1) :: param
     type(nonlinear_solver) :: solver_psat
@@ -1864,7 +1890,6 @@ contains
     endif
 
     call binaryXYfun(XX,T,P,x,w,ispec,ispecStep,ln_spec,G,Jac,phase)
-
   end subroutine binary_fun_newton
 
   !-------------------------------------------------------------------

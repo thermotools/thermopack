@@ -89,7 +89,7 @@ contains
       gerg_comp%Rgas_meos = gergdb(i_comp)%Rgas
       gerg_comp%Rgas_fit = gergdb(i_comp)%Rgas
       gerg_comp%compName = comp_name
-      gerg_comp%molarMass = gergdb(i_comp)%mw
+      gerg_comp%molarMass = gergdb(i_comp)%mw/1000.0
       gerg_comp%t_triple = gergdb(i_comp)%ttr
       gerg_comp%p_triple = gergdb(i_comp)%ptr*1.0e-3 ! kPa -> Pa
 

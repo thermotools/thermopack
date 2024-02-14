@@ -31,7 +31,8 @@ def check_is_changed(old_file, new_file_str):
         return True
 
     for old_line, new_line in zip(old_lines, new_lines):
-        if ('Generated at' in old_line) and ('Generated at' in new_line):
+        if (('Generated at' in old_line) and ('Generated at' in new_line)) \
+            or (('Time stamp' in old_line) and ('Time stamp' in new_line)):
             continue
         if old_line != new_line:
             return True
@@ -58,3 +59,59 @@ def write_file(ofile_path, ofile_text):
             print('** Wrote', filename, 'to', ofile_path)
     else:
         print('* File at', ofile_path, 'is unchanged.')
+
+def update_docfile_versions(vnew, doc_dir):
+    """
+    Intended for use when you copy the doc directory vCurrent to a new directory with a specific version number
+    This function iterates over all the markdown files in the directory, and changes the version number and the
+    permalink in the header from (blank) and /vcurrent/... to the specified version number.
+
+    Args:
+        vnew (str) : New version number (e.g. '2.2.0')
+        doc_dir (str) : Path to the directory to modify (e.g. {THERMOPACK_ROOT}/docs/v{vnew}/)
+    """
+    files = os.listdir(doc_dir)
+    for file in files:
+        if file[-3:] != '.md':
+            continue
+        with open(f'{doc_dir}/{file}', 'r') as fh:
+            lines = fh.readlines()
+            if '---' not in lines[0]:
+                continue
+            for i in range(1, len(lines)):
+                if '---' in lines[i]:
+                    break
+                if 'version:' in lines[i]:
+                    lines[i] = f'version: {vnew}\n'
+                if '/vcurrent/' in lines[i]:
+                    lines[i] = lines[i].replace('/vcurrent/', f'/v{vnew}/')
+
+        with open(f'{doc_dir}/{file}', 'w') as fh:
+            for line in lines:
+                fh.write(line)
+
+def update_v220_method_docs():
+    files = os.listdir(f'{THERMOPACK_ROOT}/docs/vCurrent/')
+    for filename in files:
+        if '_methods.md' not in filename:
+            continue
+        with open(f'{THERMOPACK_ROOT}/docs/vCurrent/{filename}', 'r') as ifile:
+            lines = ifile.readlines()
+
+        for i in range(1, len(lines)):
+            if '---' in lines[i]:
+                break
+            if 'version:' in lines[i]:
+                lines[i] = f'version: 2.2.0\n'
+            if '/vcurrent/' in lines[i]:
+                lines[i] = lines[i].replace('/vcurrent/', f'/v2.2.0/')
+
+        with open(f'{THERMOPACK_ROOT}/docs/v2.2.0/{filename}', 'w') as ofile:
+            for line in lines:
+                ofile.write(line)
+
+    print('Consolidated Method docs for v2.2.0 with current version.')
+
+if __name__ == '__main__':
+    update_v220_method_docs()
+    # update_docfile_versions('2.2.0', f'{THERMOPACK_ROOT}/docs/v2.2.0/')

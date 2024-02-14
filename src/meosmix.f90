@@ -10,6 +10,7 @@ module meosmix
        max_meos_mix_data, meos_mix_datadb
   use iso_fortran_env, only: dp => REAL64
   use numconstants, only: machine_prec
+  use eosdata, only: meos_helm_mix
   implicit none
   save
   private
@@ -38,6 +39,9 @@ contains
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
     real :: rhor_i, rhor_j, Tr_i, Tr_j
+
+    mmix%eosidx = meos_helm_mix
+    mmix%subeosidx = meos_helm_mix
 
     call mmix%allocate_and_init(nc, "MEOS")
     call mmix%allocate_param(nc)

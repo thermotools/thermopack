@@ -17,12 +17,12 @@ sigma = PeTS.sigma[0]
 eps = PeTS.eps_div_kb[0]
 z = np.array([1.0])
 Tc, vc, Pc = PeTS.critical(z)
-T_triple = 0.56*PeTS.eps_div_kb[0]
+T_triple = 0.56 * PeTS.eps_div_kb[0]
 
 # Plot phase envelope
 Psat = PeTS.bubble_pressure(T_triple, z)
 T, P, v = PeTS.get_envelope_twophase(Psat[0], z, maximum_pressure=1.5e7, calc_v=True)
-T_s,v_s,P_s = PeTS.spinodal(z,
+T_s, v_s, P_s = PeTS.spinodal(z,
                             initial_pressure=1.0e5,
                             initial_liquid_temperature=T_triple,
                             min_temperature_vapor=T_triple)
