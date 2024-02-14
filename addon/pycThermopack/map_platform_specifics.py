@@ -179,6 +179,45 @@ def write_setup_file(version):
 
         file.write(')\n')
 
+def write_toml_file(version):
+    contents = """[build-system]
+requires = ["setuptools>=39.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thermopack"
+version = \"""" + version + """\"
+authors = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+]
+maintainers = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+  { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
+]
+description = "Python interface to thermopack"
+readme = "README_pypi.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Fortran",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+]
+keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
+
+[project.urls]
+"Homepage" = "https://github.com/thermotools/thermopack"
+"Bug Tracker" = "https://github.com/thermotools/thermopack/issues"
+
+[dependencies]
+numpy = "^1.1"
+matplotlib = "^2.0"
+"""
+    with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
+        file.write(contents)
+
 
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
