@@ -71,7 +71,7 @@ def format_no_html(file):
 def gen_file_str(files):
     out_file_str = ''
     for file in files:
-        file_path = MARKDOWN_DIR + file + '.md'
+        file_path = MARKDOWN_DIR + '../' + file + '.md'
 
         with open(file_path, 'r') as in_file:
             out_file_str += format_no_html(in_file) + '\n\n'

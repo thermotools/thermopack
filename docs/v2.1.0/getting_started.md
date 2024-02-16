@@ -42,26 +42,26 @@ lk = lee_kesler.lee_kesler('N2,O2') # Lee-Kesler EoS for nitrogen/oxygen mixture
 The cubic equations of state are all interfaced through the `cubic` class. Available cubic EoS's can are SRK, PR, VdW, SW, PT and tcPR. More information on the individual cubics, mixing rules, etc. can be found on the [cubic page](/thermopack/v2.1.0/cubic_methods.html). The specific cubic EoS to initialize is specified with a string as
 ```Python
 from thermopack.cubic import cubic
+from thermopack.tcPR import tcPR
 srk = cubic('NH3,C2', 'SRK') # SRK EoS for ammonia/ethane mixture
 pr = cubic('IC4,NC10', 'PR') # PR EoS for isobutane/decane mixture
 vdw = cubic('C1,C2,C3,N2,O2', 'VdW') # VdW EoS for methane/ethane/propane/nitrogen/oxygen mixture
 sw = cubic('R11,R12', 'SW') # Schmidt-Wensel EoS for FCl3C/F2Cl2C mixture
 pt = cubic('PRLN', 'PT') # Patel-Teja EoS for pure propylene
-tcpr = cubic('F6S,SO2', 'tcPR') # Translated-Consistent PR EoS for SF6/SO2 mixture
+tcpr = tcPR('F6S,SO2') # Translated-Consistent PR EoS for SF6/SO2 mixture
 ```
 
 Cubic-plus association EoS's are available for the SRK and PR EoS through the `cpa` class as
 ```Python
 from thermopack.cpa import cpa
 srk_cpa = cpa('H2O,ETOH,PROP1OL', 'SRK') # SRK-CPA EoS for water/ethanol/propanol mixture
-pr_cpa = cpa('ACETONE,HEX1OL,CYCLOHEX', 'PR') # PR-CPA EoS for acetone/hexanol/cyclohexane mixture
 ```
 
 Several multiparameter EoS's can interfaced through the `multiparameter.multiparam` class. The available multiparameter EoS's are NIST-MEOS, MBWR16 and MBWR32. These are initialized as
 ```Python
 from thermopack.multiparameter import multiparam
 nist = multiparam('C3', 'NIST_MEOS') # NIST-MEOS EoS for propane
-mbwr16 = multiparam('C1', 'MBWR16') # MBWR16 EoS for methane
+mbwr19 = multiparam('C1', 'MBWR19') # MBWR19 EoS for methane
 mbwr32 = multiparam('C2', 'MBWR32') # MBWR32 EoS for ethane
 ```
 please note that not all fluids are supported for multiparameter equations of state, depending on what parameters are available in the fluid database.
@@ -110,11 +110,12 @@ Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T
 
 ```Python
 # Continued
+n_tot = 15 # Total number of moles
+n = n_tot * x
 H, dHdn_TV = eos.enthalpy_tv(T, vg, n, dhdn=True) # Compute enthalpy and derivative of enthalpy wrt. mole numbers at constant (T, V)
 h_vap, dhvap_dn_Tp = eos.enthalpy(T, p, x, eos.VAPPH, dhdn=True) # Compute molar vapour phase enthalpy and derivative of molar vapour phase enthalpy wrt. mole numbers at constant (T, p)
 h_liq, dliq_dn_Tp = eos.enthalpy(T, p, x, eos.LIQPH, dhdn=True) # Compute molar liquid phase enthalpy and derivative of molar liquid phase enthalpy wrt. mole numbers at constant (T, p)
 H, dHdn_Tp = eos.enthalpy_tvp(T, vg, n, dhdn=True) # Compute enthalpy and derivative of enthalpy wrt. mole numbers at constant (T, p)
-
 ```
 
 
@@ -135,7 +136,6 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Liquid phase specific volume
 
 _, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
 _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
-
 ```
 
 ## Phase diagrams and Equilibria
@@ -260,11 +260,11 @@ plt.xlabel('Molar composition')
 We can also compute the bubble-temperature, pressure etc. directly using the methods `bubble_temperature(p, z)`, `bubble_pressure(T, z)`, `dew_temperature(p, z)` and `dew_pressure(T, z)`, where `z` is the composition of the mixture, as
 
 ```Python
-eos = cubic('CO2,CH4', 'SRK')
+eos = cubic('CO2,C1', 'SRK')
 x = [0.5, 0.5] # Total composition of the mixture
-p_dew, y_dew = eos.dew_pressure(273, x) # Calculates dew pressure and dew composition at 273 K
+p_dew, y_dew = eos.dew_pressure(250, x) # Calculates dew pressure and dew composition at 250 K
 T_dew, y_dew = eos.dew_temperature(1e5, x) # Calculates dew temperature and dew composition at 1 bar
-p_bub, x_bub = eos.bubble_pressure(273, x) # Calculates bubble pressure and bubble composition at 273 K
+p_bub, x_bub = eos.bubble_pressure(230, x) # Calculates bubble pressure and bubble composition at 230 K
 T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature and bubble composition at 1 bar
 ```
 
@@ -273,6 +273,7 @@ T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature an
 Various isolines can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
 
 ```Python
+from thermopack.pcsaft import pcsaft
 eos = pcsaft('NC6,NC12')
 x = [0.2, 0.8]
 
