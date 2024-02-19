@@ -104,7 +104,7 @@ Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 Specific volume, given temperature, pressure and composition is computed as 
 ```python
 from thermopack.saftvrmie import saftvrmie
-eos = saftvrmie('NC6,NC10') # Hexane/dodecane mixture
+eos = saftvrmie('NC6,NC10') # Hexane/decane mixture
 T = 300 # Kelvin
 p = 1e5 # Pascal
 x = [0.2, 0.8] # Molar composition
