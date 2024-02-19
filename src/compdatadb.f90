@@ -6334,8 +6334,8 @@ module compdatadb
   type(CPAdata), parameter :: cpa15 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
-      ref="Default/Queimada2005", &
-      bib_reference="10.1016/j.fluid.2004.08.011", &
+      ref="Default/Kontogeorgis1999/Queimada2005", &
+      bib_reference="10.1016/S0378-3812(99)00060-6", &
       a0=1.22770000e+05, &
       b=1.45150000e-02, &
       eps=1.66550000e+04, &

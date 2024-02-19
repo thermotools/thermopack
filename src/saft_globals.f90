@@ -49,14 +49,6 @@ contains
       select type ( p_eos => eos )
       class is ( cb_eos )
         covol = 0.5*(p_eos%single(ic)%b + p_eos%single(jc)%b)/1000.0
-      class is (PCSAFT_eos)
-        covol = N_AVOGADRO*(0.5*(p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**3
-        covol_T = 3*N_AVOGADRO*0.5**3*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**2*&
-             (p_eos%dhs%d_T(ic) + p_eos%dhs%d_T(jc))
-        covol_TT = N_AVOGADRO*0.5**3 *(6*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))*&
-             (p_eos%dhs%d_T(ic) + p_eos%dhs%d_T(jc))**2 + &
-             3*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**2*&
-             (p_eos%dhs%d_TT(ic) + p_eos%dhs%d_TT(jc)))
       class is (sPCSAFT_eos)
         covol = N_AVOGADRO*p_eos%sigma_cube(ic,jc)
       class default

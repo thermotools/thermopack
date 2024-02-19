@@ -987,7 +987,7 @@ contains
     real :: releps
 
     call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
-     
+
     ! Compare with output from REFPROP v10
     T = 300.0
     P = (/7.7798, 6.9354, 6.036, 5.1102, 4.1999, 3.3474, 2.5862, 1.9363, 1.4044, 0.98639/)*1e5
@@ -1053,5 +1053,47 @@ contains
       @assertEqual(rho(i), rho_mod, releps*rho(i))
     enddo
   end subroutine test_kunz_wagner_departure_function
+
+  @Test
+
+  subroutine test_optimization()
+    !> Test optimization on arm64
+    use eos, only: specificvolume
+    use eostv, only: pressure
+    real :: x(2), T, p, v
+    real :: releps = 1e-7
+    call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
+    x = (/0.0,1.0/)
+    T = 274.28293093093095
+    v = 1.8017835270970957E-005
+    p = pressure(T,v,x)
+    @assertEqual(p, 663.42257887125015, releps*p)
+    call specificvolume(T,663.42257887125015,x,LIQPH,v)
+    @assertEqual(v, 1.8017835270970957E-005, releps*v)
+  end subroutine test_optimization
+
+  subroutine test_nh3h2o_low_temperature()
+    !> Check convergence for NH3,H2O at low temperatures. Can be difficult since the water EoS is evaluated far below T_triple
+    use tp_solver, only: twoPhaseTPflash
+    use eos, only: specificvolume
+    use eostv, only: pressure
+    use saturation, only: safe_dewP
+    integer :: i, ierr
+    real :: T, Pdew, pref
+    real :: z(2), x(2), y(2), xref(2)
+    real :: releps
+    
+    call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
+    T = 240
+    y = (/0.05, 0.95/)
+    Pdew = safe_dewP(T,x,y,ierr)
+    
+    Pref = 39.5411125270537
+    xref = (/0.00147996, 0.99852004/)   
+    
+    releps = 1e-5
+    @assertEqual(Pref, Pdew, releps*Pref)
+    @assertEqual(xref, x, releps*1)
+  end subroutine
 
 end module test_meos

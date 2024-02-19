@@ -109,8 +109,8 @@
       "correlation": 1
     },
     "CPA-1": {
-      "ref": "Default/Queimada2005",
-      "bib_reference": "10.1016/j.fluid.2004.08.011",
+      "ref": "Default/Kontogeorgis1999/Queimada2005",
+      "bib_reference": "10.1016/S0378-3812(99)00060-6",
       "a0": 1.2277E+5,
       "b": 1.4515e-02,
       "alphaParams": [0.67359,0.0,0.0],
@@ -185,7 +185,7 @@
     "beta": 0.034868,
     "assoc_scheme": "2B",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Kontogeorgis_Folas2001"
+    "ref": "Kontogeorgis_Folas2010"
   },
   "PC-SAFT-3": {
     "m": 1.18381,
@@ -196,7 +196,65 @@
     "assoc_scheme": "4C",
     "bib_reference": "10.1016/j.fluid.2018.06.019",
     "ref": "NguyenHuynh2020"
-  },
+  }
+  ,
+  "PC-SAFT-4": {
+    "m": 1.8668,
+    "sigma": 2.3950E-10,
+    "eps_depth_divk": 169.78,
+    "eps": 14733.2277594, 
+    "beta": 0.133738,
+    "assoc_scheme": "4C",
+    "bib_reference": "10.1021/acs.jced.0c00684",
+    "ref": "Rehner2020_4C"
+  }
+  ,
+  "PC-SAFT-5": {
+    "m": 1.0000,
+    "sigma": 2.9375E-10,
+    "eps_depth_divk": 272.03,
+    "eps": 25985.1900205,
+    "beta": 0.044480,
+    "assoc_scheme": "2B",
+    "bib_reference": "10.1021/acs.jced.0c00684",
+    "ref": "Rehner2020_2B"
+  }
+  ,
+  "PC-SAFT-6": {
+    "m": 1.0488,
+    "sigma": 2.9896E-10,
+    "eps_depth_divk": 115.19,
+    "eps": 19770.9606597,
+    "beta": 0.038236,
+    "mu": 1.9374,
+    "assoc_scheme": "3B",
+    "bib_reference": "10.1021/acs.jced.0c00684",
+    "ref": "Rehner2020_3B_polar"
+  }
+  ,
+  "PC-SAFT-7": { 
+    "m": 1.2808,
+    "sigma": 2.8129E-10,
+    "eps_depth_divk": 117.78,
+    "eps": 14833.832757,
+    "beta": 0.082907,
+    "mu": 1.5050,
+    "assoc_scheme": "4C",
+    "bib_reference": "10.1021/acs.jced.0c00684",
+    "ref": "Rehner2020_4C_polar"
+  }
+  ,
+  "PC-SAFT-8": {
+    "m": 1.0656,
+    "sigma": 3.0007E-10,
+    "eps_depth_divk": 366.51,
+    "eps": 20791.9766692,
+    "beta": 0.034868,
+    "assoc_scheme": "2B",
+    "bib_reference": "10.1021/ie010954d",
+    "ref": "Gross2002"
+  }
+  ,
   "SAFTVRMIE-1": {
     "m": 1.0,
     "sigma": 3.0555E-10,

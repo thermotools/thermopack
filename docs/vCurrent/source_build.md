@@ -76,23 +76,10 @@ and `make`. Open a terminal (e.g. the default Terminal.app), and type:
 ```
 brew install gcc make
 ```
-Then follow the Linux instructions above, just replace `make` with `gmake`.
+Then follow the Linux instructions above (you may need to replace `make` with `gmake`).
 Some additional packages like `git` and `python` can also be installed via
 Homebrew before you start, but if you use a recent version of MacOS (e.g.
 Catalina), then the versions installed by default should be sufficient.
-
-#### MacOS with arm64 architecture (M1, M2 etc.)
-
-Use the alternative `Makefile_arm64` and `Makefile_arm64.code` by renaming the files
-```
-Makefile => Makefile_x86
-Makefile.code => Makefile_x86.code
-Makefile_arm64 => Makefile
-Makefile_arm64.code => Makefile.code
-```
-
-
-then follow the steps under MacOS setup. Please feel free to leave an issue if you have build problems, the build system for MacOS on Apple Silicon has not been as thouroughly tested as other build systems, and is still somewhat a work in progress.
 
 ### Windows setup
 Download and compile LAPACK and BLAS libraries (you will need CMake and
