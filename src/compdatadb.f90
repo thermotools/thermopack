@@ -1,13 +1,18 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-11-17T11:20:13.105306
+!! Time stamp: 2024-02-19T15:48:32.002151
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
   use assocschemeutils
   use cubic_eos
+  use thermopack_constants, only: element_len
   implicit none
   public
+
+  integer, parameter :: n_max_elements = 14
+  character(len=element_len), dimension(n_max_elements), parameter :: elements =(/&
+    "AR", "C ", "CL", "D ", "F ", "H ", "HE", "KR", "N ", "NE", "O ", "S ", "SI", "XE"/)
 
   type (gendatadb), parameter :: cx1 = &
       gendatadb(ident = "BUT1OL", &

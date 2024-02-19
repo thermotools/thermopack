@@ -28,12 +28,21 @@ class entropy_references(object):
         self.element_references["AR"] = fluidlist["AR"].fluid["reference_state"]["entropy"]
         self.element_references["XE"] = fluidlist["XE"].fluid["reference_state"]["entropy"]
 
+    def get_element_list(self):
+        """
+        Returns:
+            list: String list of all elements
+        """
+        return sorted(list(self.element_references.keys()))
+
     def calc_gibbs_free_energy_of_formation(self, elements, dHf, S0):
         """
         Arguments:
             elements (dict): Dictionary of elements
             dHf (float): Formation enthalpy
             S0 (float): Fluid entropy reference at 1Bar
+        Returns:
+           float: Gibbs free energy of formation
         """
         if dHf > 10000000000.0: # dHf not available
             return 100000000000.0

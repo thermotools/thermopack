@@ -329,8 +329,19 @@ class comp_list(object):
         code_lines.append(I+"use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata")
         code_lines.append(I+"use assocschemeutils")
         code_lines.append(I+"use cubic_eos")
+        code_lines.append(I+"use thermopack_constants, only: element_len")
         code_lines.append(I+"implicit none")
         code_lines.append(I+"public")
+        code_lines.append("")
+
+        element_list = self.e_ref.get_element_list()
+        code_lines.append(I+f"integer, parameter :: n_max_elements = {str(len(element_list))}")
+        code_lines.append(I+"character(len=element_len), dimension(n_max_elements), parameter :: elements =(/&")
+        elements = ""
+        for ie, e in enumerate(element_list):
+            elements += f"\"{e.ljust(2, ' ')}\", "
+        elements = elements[:-2] + "/)"
+        code_lines.append(2*I+elements)
         code_lines.append("")
 
         self.nComp = 1

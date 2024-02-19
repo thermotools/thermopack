@@ -131,14 +131,14 @@ class thermo(object):
             "ideal", "idealenthalpysingle"))
         self.s_eos_idealentropysingle = getattr(self.tp, self.get_export_name(
             "ideal", "idealentropysingle"))
-        self.s_ideal_get_entropy_reference_value = getattr(self.tp, self.get_export_name(
-            "ideal", "get_entropy_reference_value"))
-        self.s_ideal_set_entropy_reference_value = getattr(self.tp, self.get_export_name(
-            "ideal", "set_entropy_reference_value"))
-        self.s_ideal_get_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
-            "ideal", "get_enthalpy_reference_value"))
-        self.s_ideal_set_enthalpy_reference_value = getattr(self.tp, self.get_export_name(
-            "ideal", "set_enthalpy_reference_value"))
+        self.s_ideal_get_standard_entropy = getattr(self.tp, self.get_export_name(
+            "ideal", "get_standard_entropy"))
+        self.s_ideal_set_standard_entropy = getattr(self.tp, self.get_export_name(
+            "ideal", "set_standard_entropy"))
+        self.s_ideal_get_enthalpy_of_formation = getattr(self.tp, self.get_export_name(
+            "ideal", "get_enthalpy_of_formation"))
+        self.s_ideal_set_enthalpy_of_formation = getattr(self.tp, self.get_export_name(
+            "ideal", "set_enthalpy_of_formation"))
         self.s_get_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
             "compdata", "get_ideal_cp_correlation"))
         self.s_set_ideal_cp_correlation = getattr(self.tp, self.get_export_name(
@@ -155,6 +155,8 @@ class thermo(object):
             self.tp, self.get_export_name("compdata", "comp_index_active"))
         self.s_compdata_compname = getattr(
             self.tp, self.get_export_name("compdata", "comp_name_active"))
+        self.s_compdata_structure = getattr(
+            self.tp, self.get_export_name("compdata", "comp_structure"))
 
         # Flashes
         self.s_set_ph_tolerance = getattr(
@@ -792,6 +794,34 @@ class thermo(object):
         self.s_compdata_compname(byref(index_c), byref(comp_id_c), comp_c, comp_len_c)
         compname = comp_c.value.decode('ascii').strip()
         return compname
+
+    def get_comp_structure(self, comp_name):
+        """Utility
+        Get component atom structure
+
+        Args:
+            comp_name (str): Component name
+        Returns:
+            (dict): Dict with atom as key names and number of atoms as values
+        """
+        self.activate()
+        comp_c = c_char_p(comp_name.encode('ascii'))
+        comp_len = c_len_type(len(comp_name))
+        structure_len = 40
+        structure_c = c_char_p(b" " * structure_len)
+        structure_len_c = c_len_type(structure_len)
+        self.s_compdata_structure.argtypes = [
+            c_char_p, c_char_p, c_len_type, c_len_type]
+        self.s_compdata_structure.restype = None
+        self.s_compdata_structure(comp_c, structure_c, comp_len, structure_len_c)
+        structure = structure_c.value.decode('ascii').strip()
+        if "ERROR" in structure:
+            raise Exception("Fluid not found in database")
+        structure_dict = {}
+        for pair in structure.split(";"):
+            (key, value) = pair.split(":")
+            structure_dict[key] = int(value)
+        return structure_dict
 
     def compmoleweight(self, comp):
         """Utility
@@ -1511,95 +1541,102 @@ class thermo(object):
 
         return return_tuple
 
-    def set_ideal_entropy_reference_value(self, j, s0):
+    def set_standard_entropy(self, j, s0, reference_pressure="1BAR"):
         """Utility
-        Set specific ideal entropy reference value
+        Set standard entropy
 
         Args:
             j (int): Component index
             s0 (float): Ideal entropy reference (J/mol/K)
+            reference_pressure (str): Reference pressure (1BAR or 1ATM)
         """
         self.activate()
 
         j_c = c_int(j)
         s0_c = c_double(s0)
+        reference_pressure_c = c_char_p(reference_pressure.encode('ascii'))
+        reference_pressure_len = c_len_type(len(reference_pressure))
 
-        self.s_ideal_set_entropy_reference_value.argtypes = [POINTER(c_int),
-                                                             POINTER(c_double)]
+        self.s_ideal_set_standard_entropy.argtypes = [POINTER(c_int),
+                                                      POINTER(c_double),
+                                                      c_char_p,
+                                                      c_len_type]
 
-        self.s_ideal_set_entropy_reference_value.restype = None
+        self.s_ideal_set_standard_entropy.restype = None
 
-        self.s_ideal_set_entropy_reference_value(byref(j_c),
-                                                 byref(s0_c))
+        self.s_ideal_set_standard_entropy(byref(j_c),
+                                          byref(s0_c),
+                                          reference_pressure_c,
+                                          reference_pressure_len)
 
-    def get_ideal_entropy_reference_value(self, j):
+    def get_standard_entropy(self, j):
         """Utility
-        Get specific ideal entropy reference value
+        Get standard entropy at 1bar
 
         Args:
             j (integer): Component index
 
         Returns:
-            float: Specific ideal entropy (J/mol/K)
+            float: Specific standard entropy (J/mol/K)
         """
         self.activate()
 
         j_c = c_int(j)
         s0_c = c_double(0.0)
 
-        self.s_ideal_get_entropy_reference_value.argtypes = [POINTER(c_int),
-                                                             POINTER(c_double)]
+        self.s_ideal_get_standard_entropy.argtypes = [POINTER(c_int),
+                                                      POINTER(c_double)]
 
-        self.s_ideal_get_entropy_reference_value.restype = None
+        self.s_ideal_get_standard_entropy.restype = None
 
-        self.s_ideal_get_entropy_reference_value(byref(j_c),
-                                                 byref(s0_c))
+        self.s_ideal_get_standard_entropy(byref(j_c),
+                                          byref(s0_c))
 
         return s0_c.value
 
-    def set_ideal_enthalpy_reference_value(self, j, h0):
+    def set_enthalpy_of_formation(self, j, h0):
         """Utility
-        Set specific ideal enthalpy reference value
+        Set specific enthalpy of formation
 
         Args:
             j (int): Component index
-            h0 (float): Ideal enthalpy reference (J/mol)
+            h0 (float): Enthalpy of formation (J/mol)
         """
         self.activate()
 
         j_c = c_int(j)
         h0_c = c_double(h0)
 
-        self.s_ideal_set_enthalpy_reference_value.argtypes = [POINTER(c_int),
-                                                              POINTER(c_double)]
+        self.s_ideal_set_enthalpy_of_formation.argtypes = [POINTER(c_int),
+                                                           POINTER(c_double)]
 
-        self.s_ideal_set_enthalpy_reference_value.restype = None
+        self.s_ideal_set_enthalpy_of_formation.restype = None
 
-        self.s_ideal_set_enthalpy_reference_value(byref(j_c),
-                                                  byref(h0_c))
+        self.s_ideal_set_enthalpy_of_formation(byref(j_c),
+                                               byref(h0_c))
 
-    def get_ideal_enthalpy_reference_value(self, j):
+    def get_enthalpy_of_formation(self, j):
         """Utility
-        Get specific ideal enthalpy reference value
+        Get specific enthalpy of formation
 
         Args:
             j (integer): Component index
 
         Returns:
-            float: Specific ideal enthalpy (J/mol)
+            float: Specific enthalpy of formation (J/mol)
         """
         self.activate()
 
         j_c = c_int(j)
         h0_c = c_double(0.0)
 
-        self.s_ideal_get_enthalpy_reference_value.argtypes = [POINTER(c_int),
-                                                              POINTER(c_double)]
+        self.s_ideal_get_enthalpy_of_formation.argtypes = [POINTER(c_int),
+                                                           POINTER(c_double)]
 
-        self.s_ideal_get_enthalpy_reference_value.restype = None
+        self.s_ideal_get_enthalpy_of_formation.restype = None
 
-        self.s_ideal_get_enthalpy_reference_value(byref(j_c),
-                                                  byref(h0_c))
+        self.s_ideal_get_enthalpy_of_formation(byref(j_c),
+                                               byref(h0_c))
 
         return h0_c.value
 
