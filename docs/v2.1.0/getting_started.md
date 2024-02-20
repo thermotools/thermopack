@@ -6,7 +6,7 @@ permalink: /v2.1.0/getting_started.html
 ---
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](/thermopack/v2.1.0/thermo_methods.html). For more advanced users, a look at the [more advanced page in the wiki](/thermopack/v2.1.0/more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](/thermopack/v2.1.0/thermo_methods.html). For more advanced users, a look at the [more advanced page in the wiki](/thermopack/v2.1.0/more_advanced.html) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
@@ -73,7 +73,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
 
 # Doing calculations
 Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
@@ -140,7 +140,7 @@ _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capa
 
 ## Phase diagrams and Equilibria
 
-As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
+As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) directory.
 
 ### Flash calculations
 Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`.
@@ -163,7 +163,7 @@ what is returned, an in what order.
 
 ### Phase envelopes
 
-ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
+ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples).
 
 #### Tp- and Tv- phase envelopes
 
