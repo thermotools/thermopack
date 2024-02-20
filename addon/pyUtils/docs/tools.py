@@ -121,7 +121,7 @@ def update_v220_method_docs():
             for line in lines:
                 ofile.write(line)
 
-    print('Consolidated Method docs for v2.2.0 with current version.')
+    print(f'{bcolors.WARNING}Consolidated Method docs for v2.2.0 with current version.{bcolors.ENDC}')
 
 if __name__ == '__main__':
     update_v220_method_docs()
