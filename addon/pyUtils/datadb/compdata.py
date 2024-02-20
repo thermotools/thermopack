@@ -396,16 +396,8 @@ class comp_list(object):
         code_lines.append("")
         code_lines.append("end module compdatadb")
 
-        new_filestr = ''
-        for line in code_lines:
-            new_filestr += line + '\n'
-
-        if tools.check_is_changed(f'{tools.THERMOPACK_ROOT}/src/{filename}', new_filestr):
-            with open(filename, 'w') as f:
-                f.write(new_filestr)
-            print(f'Wrote updated datadb to : {filename}')
-        else:
-            print(f'File at {tools.THERMOPACK_ROOT}/src/{filename} is unchanged.')
+        new_contents = '\n'.join(code_lines)
+        tools.write_file(f'{tools.THERMOPACK_ROOT}/src/{filename}', new_contents)
 
     def get_comp_array_fortran_code(self):
         """Set up component array
@@ -694,4 +686,3 @@ if __name__ == "__main__":
     compl = comp_list()
     compl.save_fortran_file("compdatadb.f90")
     compl.save_wiki_name_mapping(tools.MARKDOWN_DIR + "Component-name-mapping.md")
-    copy('compdatadb.f90', '../../../src/compdatadb.f90')

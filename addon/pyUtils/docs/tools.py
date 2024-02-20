@@ -3,6 +3,17 @@ import os
 THERMOPACK_ROOT = os.path.dirname(__file__) + '/../../..'
 MARKDOWN_DIR = THERMOPACK_ROOT + '/docs/vCurrent/'
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def remove_illegal_link_chars(link_str):
     """
     Remove characters that are illegal in url-links from the string 'link_str', and return the new string.
@@ -56,9 +67,9 @@ def write_file(ofile_path, ofile_text):
     if check_is_changed(ofile_path, ofile_text):
         with open(ofile_path, 'w') as ofile:
             ofile.write(ofile_text)
-            print('** Wrote', filename, 'to', ofile_path)
+            print(f'{bcolors.OKGREEN}** Wrote {filename} to {ofile_path}{bcolors.ENDC}')
     else:
-        print('* File at', ofile_path, 'is unchanged.')
+        print(f'{bcolors.OKCYAN}* File at {ofile_path} is unchanged.{bcolors.ENDC}')
 
 def update_docfile_versions(vnew, doc_dir):
     """
@@ -110,7 +121,7 @@ def update_v220_method_docs():
             for line in lines:
                 ofile.write(line)
 
-    print('Consolidated Method docs for v2.2.0 with current version.')
+    print(f'{bcolors.WARNING}Consolidated Method docs for v2.2.0 with current version.{bcolors.ENDC}')
 
 if __name__ == '__main__':
     update_v220_method_docs()

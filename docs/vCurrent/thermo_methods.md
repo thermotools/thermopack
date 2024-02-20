@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-01-02T14:27:28.808796
+Generated at: 2024-02-20T15:56:08.232915
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -100,6 +100,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
+    * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
@@ -111,6 +112,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
+    * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
     * [set_tmax](#set_tmaxself-temp)
@@ -2800,6 +2802,7 @@ Methods for setting ... and getting ...
     * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
+    * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
@@ -2811,6 +2814,7 @@ Methods for setting ... and getting ...
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
+    * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
     * [set_tmax](#set_tmaxself-temp)
@@ -2918,6 +2922,11 @@ Get specific ideal entropy reference value
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific ideal entropy (J/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_numerical_robustness_level(self)`
+Get numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Returns: level (integer): robustness_level 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3079,6 +3088,11 @@ Set specific ideal entropy reference value
 &nbsp;&nbsp;&nbsp;&nbsp; **s0 (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal entropy reference (J/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_numerical_robustness_level(self, level)`
+Set numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Args: level (integer): robustness_level 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
