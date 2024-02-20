@@ -11,7 +11,7 @@ Usage: To add new documentation, create a new markdown file in thermopoack/doc/m
 """
 import warnings
 from datetime import datetime
-from tools import THERMOPACK_ROOT, MARKDOWN_DIR
+from tools import THERMOPACK_ROOT, MARKDOWN_DIR, write_file
 
 def print_finished_report(header, out_file_path):
     printcolwidth = 100
@@ -71,7 +71,7 @@ def format_no_html(file):
 def gen_file_str(files):
     out_file_str = ''
     for file in files:
-        file_path = MARKDOWN_DIR + file + '.md'
+        file_path = MARKDOWN_DIR + '../' + file + '.md'
 
         with open(file_path, 'r') as in_file:
             out_file_str += format_no_html(in_file) + '\n\n'
@@ -93,28 +93,20 @@ def write_pypi_readme():
     files = ['readme_parts/header', 'readme_parts/pypi_toc', 'metapages/please_cite', 'readme_parts/pypi_structure',
              'v2.1.0/getting_started', 'v2.1.0/more_advanced', 'v2.1.0/Component-name-mapping']
     header = get_header(files)
-
-    out_file_str = gen_file_str(files)
+    contents = gen_file_str(files)
+    out_file_str = header + contents
     out_file_path = THERMOPACK_ROOT + '/addon/pycThermopack/README_pypi.md'
-    with open(out_file_path, 'w') as out_file:
-        out_file.write(header)
-        out_file.write(out_file_str)
-
-    print_finished_report(header, out_file_path)
+    write_file(out_file_path, out_file_str)
 
 def write_github_readme():
     files = ['readme_parts/header', 'readme_parts/github_toc', 'metapages/please_cite', 'readme_parts/structure',
              'vCurrent/source_build', 'vCurrent/getting_started', 'vCurrent/more_advanced', 'vCurrent/new_fluids',
              'vCurrent/Component-name-mapping']
     header = get_header(files)
-
-    out_file_str = gen_file_str(files)
+    content = gen_file_str(files)
+    out_file_str = header + content
     out_file_path = THERMOPACK_ROOT + '/README.md'
-    with open(out_file_path, 'w') as out_file:
-        out_file.write(header)
-        out_file.write(out_file_str)
-
-    print_finished_report(header, out_file_path)
+    write_file(out_file_path, out_file_str)
 
 if __name__ == '__main__':
     write_pypi_readme()

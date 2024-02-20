@@ -6,7 +6,7 @@ permalink: /v2.2.0/pcsaft_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.067480
+Generated at: 2024-02-20T15:56:08.241542
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 pcsaft class. For instructions on how to use the parser routines, see the
@@ -20,10 +20,12 @@ PC-SAFT Equation of State. This class implements utility methods to access mixin
     * [\_\_init\_\_](#__init__self-compsnone-parameter_referencedefault-simplifiedfalse-polarfalse)
     * [init](#initself-comps-parameter_referencedefault-simplifiedfalse-polarfalse)
   * [Utility methods](#utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone-xknone)
+    * [get_ci](#get_ciself-cidx)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tnone-lng_vnone-lng_nnone-lng_ttnone-lng_vvnone-lng_tvnone-lng_tnnone-lng_vnnone-lng_nnnone)
+    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-cid00-cie00-cif00-ci_type1)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
   * [Deprecated methods](#deprecated-methods)
@@ -92,15 +94,17 @@ Set- and get methods for interaction parameters, mixing parameters ...
 
 ### Table of contents
   * [Utility methods](#utility-methods)
-    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone)
+    * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone-xknone)
+    * [get_ci](#get_ciself-cidx)
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tnone-lng_vnone-lng_nnone-lng_ttnone-lng_vvnone-lng_tvnone-lng_tnnone-lng_vnnone-lng_nnnone)
+    * [set_ci](#set_ciself-cidx-cia-cib00-cic00-cid00-cie00-cif00-ci_type1)
     * [set_kij](#set_kijself-c1-c2-kij)
     * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
 
 
-### `association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None, phi_tt=None, phi_tn=None, phi_nn=None)`
+### `association_energy_density(self, temp, n_alpha, phi=None, phi_t=None, phi_n=None, phi_tt=None, phi_tn=None, phi_nn=None, Xk=None)`
 Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
 #### Args:
@@ -111,13 +115,13 @@ Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
 &nbsp;&nbsp;&nbsp;&nbsp; **n_alpha (np.ndarray):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Weighted densities
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Weighted densities (mol based)
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phi (No type, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phi_T (No type, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **phi_t (No type, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
@@ -125,11 +129,11 @@ Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phi_TT (No type, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **phi_tt (No type, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **phi_Tn (No type, optional):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **phi_tn (No type, optional):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
@@ -137,11 +141,46 @@ Calculate association functional of Sauer and Gross https://doi.org/10/f95br5
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
 
+&nbsp;&nbsp;&nbsp;&nbsp; **Xk (np.ndarray):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Fraction of non-bonded molecules. Initial value on input, calculated value on output. Set to 0.2 initially.
+
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 #### Returns:
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally energy density and differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_ci(self, cidx)`
+Get volume correction parameters
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **cidx (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciA (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciB (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciC (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol/K^2)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ci_type (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -267,6 +306,33 @@ Calculate logarithm of the radial distribution function at contact given tempera
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1)`
+Set volume correction parametrs
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **cidx (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciA (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciB (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ciC (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift param of component cidx (m3/mol/K^2)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ci_type (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3, QUINTIC=6)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

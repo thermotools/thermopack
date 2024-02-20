@@ -2,6 +2,9 @@
 
 This folder contains several example Python scripts for running the python interface to thermopack.
 
+For examples that apply to previously released versions (e.g. if you have installed ThermoPack with `pip`) see:
+* [v2.1.0](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples)
+
 * **cpa.py**: Plot binary Pxy for carbon dioxide-water.
 
 * **ext_csp.py**: Extended corrensponding state phase diagram for LNG-like composition.
