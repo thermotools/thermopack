@@ -2550,13 +2550,32 @@ contains
 
   end subroutine printBinaryMixtureReportSaft
 
-  !> Lets the user choose whether to use the simplified or the original
-  !> formulation of CPA.
-  subroutine setCPAformulation(simplified)
+  !> Choose whether to use the simplified or the original formulation of CPA,
+  !> and optionally whether to use the elliot rule for combining association
+  !> Deltas
+  subroutine setCPAformulation(simplified, elliotrule)
     use saft_rdf, only: useSimplifiedCPA
+    use saft_association, only: DELTA_COMBRULE, ELLIOT
     logical, intent(in) :: simplified
+    logical, intent(in), optional :: elliotrule
     useSimplifiedCPA = simplified
+
+    if (present(elliotrule)) then
+      call setDeltaAssocRule(elliotrule)
+    end if
   end subroutine setCPAformulation
+
+  !> Choose whether to use the elliot rule for combining association Deltas
+  subroutine setDeltaAssocRule(useElliot)
+    use saft_association, only: DELTA_COMBRULE, ELLIOT, STANDARD
+    logical, intent(in) :: useElliot
+    if (useElliot) then
+      DELTA_COMBRULE = ELLIOT
+    else
+      DELTA_COMBRULE = STANDARD
+    end if
+  end subroutine setDeltaAssocRule
+
 
   !> Estimate critical parameters based on reduced values
   subroutine estimate_critical_parameters(i, Tc, vc)
