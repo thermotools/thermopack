@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-02-16T11:24:46.706923
+Generated at: 2024-02-20T13:43:40.892001
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -373,7 +373,7 @@ Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 Specific volume, given temperature, pressure and composition is computed as 
 ```python
 from thermopack.saftvrmie import saftvrmie
-eos = saftvrmie('NC6,NC10') # Hexane/dodecane mixture
+eos = saftvrmie('NC6,NC10') # Hexane/decane mixture
 T = 300 # Kelvin
 p = 1e5 # Pascal
 x = [0.2, 0.8] # Molar composition
