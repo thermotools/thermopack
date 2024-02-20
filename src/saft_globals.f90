@@ -11,7 +11,7 @@ contains
     use cubic_eos, only: cb_eos
     use thermopack_constants, only: N_AVOGADRO
     use thermopack_var, only: base_eos_param, get_active_eos
-    real :: assoc_covol
+    real :: assoc_covol !< Association covolume [m3/mol]
     integer, intent(in) :: ic !< Component number
     ! Locals
     class(base_eos_param), pointer :: eos
@@ -23,7 +23,7 @@ contains
       class is ( cb_eos )
         assoc_covol = p_eos%single(ic)%b/1000
       class is ( sPCSAFT_eos )
-        assoc_covol = N_AVOGADRO*p_eos%sigma_cube(ic,ic)
+        assoc_covol = N_AVOGADRO*p_eos%sigma(ic,ic)**3
       class default
         assoc_covol = 0
         print *,"Not able to calculate assoc_covol. Not cubic."
@@ -37,7 +37,7 @@ contains
     use thermopack_var, only: base_eos_param, get_active_eos
     use cubic_eos, only: cb_eos
     integer, intent(in) :: ic, jc !< Component numbers
-    real, intent(out) :: covol, covol_T, covol_TT
+    real, intent(out) :: covol, covol_T, covol_TT !< Association covolume [m3/mol]
     ! Locals
     class(base_eos_param), pointer :: eos
     covol_T = 0
@@ -49,8 +49,16 @@ contains
       select type ( p_eos => eos )
       class is ( cb_eos )
         covol = 0.5*(p_eos%single(ic)%b + p_eos%single(jc)%b)/1000.0
+      ! class is (PCSAFT_eos)
+      !   covol = N_AVOGADRO*(0.5*(p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**3
+      !   covol_T = 3*N_AVOGADRO*0.5**3*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**2*&
+      !        (p_eos%dhs%d_T(ic) + p_eos%dhs%d_T(jc))
+      !   covol_TT = N_AVOGADRO*0.5**3 *(6*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))*&
+      !        (p_eos%dhs%d_T(ic) + p_eos%dhs%d_T(jc))**2 + &
+      !        3*((p_eos%dhs%d(ic) + p_eos%dhs%d(jc)))**2*&
+      !        (p_eos%dhs%d_TT(ic) + p_eos%dhs%d_TT(jc)))
       class is (sPCSAFT_eos)
-        covol = N_AVOGADRO*p_eos%sigma_cube(ic,jc)
+        covol = N_AVOGADRO*p_eos%sigma(ic,jc)**3
       class default
         covol = 0
         print *,"Not able to calculate assoc_covol. Not cubic."

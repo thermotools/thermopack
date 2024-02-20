@@ -138,6 +138,7 @@ libthermopack {
 	*hard_sphere_reference*;
 	*set_temperature_cache_flag*;
 	*calc_saftvrmie_term*;
+	*printbinarymixturereportsaft*;
 	*print_cpa_report*;
 	*cpa_get_kij*;
 	*cpa_set_kij*;
@@ -147,6 +148,7 @@ libthermopack {
 	*pc_saft_get_kij*;
 	*pc_saft_set_kij_asym*;
 	*calc_saft_dispersion*;
+	*calc_saft_chain*;
 	*calc_hard_sphere_diameter*;
 	*calc_hard_sphere_diameter_ij*;
 	*pc_saft_get_pure_params*;
@@ -162,6 +164,7 @@ libthermopack {
 	*calc_saft_hard_sphere*;
 	*test_fmt_compatibility*;
 	*setcpaformulation*;
+	*get_n_assoc_sites*;
 	*calc_assoc_phi*;
 	*calc_saft_dispersion*;
 	*calc_hard_sphere_diameter*;

@@ -231,14 +231,14 @@
     }
   },
   "PC-SAFT-1": {
-    "m": 2.25807,
-    "sigma": 2.37802E-10,
-    "eps_depth_divk": 126.868,
-    "eps": 11032.6000,
-    "beta": 0.20479,
-    "assoc_scheme": "3B",
+    "beta": 1.4196717714333902,
+    "eps": 7473.736440984425,
+    "eps_depth_divk": 134.99236271977904,
+    "m": 3.061027354364304,
+    "sigma": 2.1547300405605618e-10,
+    "assoc_scheme": "2B",
     "bib_reference": "SINTEF Energy Research",
-    "ref": "Default/InHouse"
+    "ref": "Default/Aasen2024/Aasen2024dft"
   },
   "PC-SAFT-2": {
     "m": 1.4302,
@@ -249,6 +249,16 @@
     "assoc_scheme": "2B",
     "bib_reference": "10.1016/j.fluid.2020.112689",
     "ref": "NguyenHuynh2020"
+  },
+  "PC-SAFT-3": {
+    "m": 2.459,
+    "sigma": 2.3831E-10,
+    "eps_depth_divk": 162.58,
+    "eps": 6780.9,
+    "beta": 0.74316,
+    "assoc_scheme": "2B",
+    "bib_reference": "Unpublished",
+    "ref": "Aasen2024"
   },
   "SAFTVRMIE-1": {
     "m": 1.0,

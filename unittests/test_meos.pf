@@ -1078,19 +1078,19 @@ contains
     use eos, only: specificvolume
     use eostv, only: pressure
     use saturation, only: safe_dewP
-    integer :: i, ierr
+    integer :: ierr
     real :: T, Pdew, pref
-    real :: z(2), x(2), y(2), xref(2)
+    real :: x(2), y(2), xref(2)
     real :: releps
-    
+
     call init_multiparameter("NH3,H2O", "MEOS", "DEFAULT")
     T = 240
     y = (/0.05, 0.95/)
     Pdew = safe_dewP(T,x,y,ierr)
-    
+
     Pref = 39.5411125270537
-    xref = (/0.00147996, 0.99852004/)   
-    
+    xref = (/0.00147996, 0.99852004/)
+
     releps = 1e-5
     @assertEqual(Pref, Pdew, releps*Pref)
     @assertEqual(xref, x, releps*1)

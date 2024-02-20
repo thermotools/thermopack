@@ -140,6 +140,7 @@ EXPORTS
 	saftvrmie_interface_mp_hard_sphere_reference_
 	saftvrmie_interface_mp_set_temperature_cache_flag_
 	saftvrmie_interface_mp_calc_saftvrmie_term_
+	saft_interface_mp_printbinarymixturereportsaft_
 	saft_interface_mp_print_cpa_report_
 	saft_interface_mp_cpa_get_kij_
 	saft_interface_mp_cpa_set_kij_
@@ -149,6 +150,7 @@ EXPORTS
 	saft_interface_mp_pc_saft_get_kij_
 	saft_interface_mp_pc_saft_set_kij_asym_
 	saft_interface_mp_calc_saft_dispersion_
+	saft_interface_mp_calc_saft_chain_
 	saft_interface_mp_calc_hard_sphere_diameter_
 	saft_interface_mp_calc_hard_sphere_diameter_ij_
 	saft_interface_mp_pc_saft_get_pure_params_
@@ -164,6 +166,7 @@ EXPORTS
 	saft_interface_mp_calc_saft_hard_sphere_
 	saft_interface_mp_test_fmt_compatibility_
 	saft_interface_mp_setcpaformulation_
+	saft_interface_mp_get_n_assoc_sites_
 	saft_interface_mp_calc_assoc_phi_
 	saft_interface_mp_calc_saft_dispersion_
 	saft_interface_mp_calc_hard_sphere_diameter_

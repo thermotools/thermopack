@@ -63,3 +63,5 @@ if __name__ == "__main__":
 
     map_platform_specifics.write_setup_file(f'v{version}')
     map_platform_specifics.write_toml_file(version)
+
+    print(f'\033[92mSucessfully configured ThermoPack {version}\033[0m')
