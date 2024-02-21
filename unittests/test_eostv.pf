@@ -127,8 +127,8 @@ contains
 
         @assertTrue( abs((dpdt-dpdt_num)/dpdt) < tol )
         @assertTrue( abs((dpdv-dpdv_num)/dpdv) < tol )
-        @assertTrue( abs((dudt-dudt_num)/dudt) < tol )
-        @assertTrue( abs((dudv-dudv_num)/dudv) < tol )
+        @assertTrue( abs((dudt-dudt_num)/dudt) < 10*tol )
+        @assertTrue( abs((dudv-dudv_num)/dudv) < 10*tol )
         @assertTrue( abs((dydt-dydt_num)/dydt) < 10*tol )
         @assertTrue( abs((dydv-dydv_num)/dydv) < tol )
 

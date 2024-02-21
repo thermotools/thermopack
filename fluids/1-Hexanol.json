@@ -2,6 +2,8 @@
   "ident": "HEX1OL",
   "formula": "C6H14O",
   "cas_number": "111-27-3",
+  "InChI": "1S/C6H14O/c1-2-3-4-5-6-7/h7H,2-6H2,1H3",
+  "structure": "C:6;H:14;O:1",
   "name": "1-HEXANOL",
   "aliases": [
     "1-Hexanol",
@@ -63,14 +65,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -316.0e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Green J.H.S., 1961",
+    "entropy_ref_state": "1ATM",
+    "entropy": 439.7
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

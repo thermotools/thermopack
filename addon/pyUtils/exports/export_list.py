@@ -130,6 +130,7 @@ append_export("threephaseline", "binaryplot")
 
 append_export("comp_index_active", "compdata")
 append_export("comp_name_active", "compdata")
+append_export("comp_structure", "compdata")
 append_export("get_ideal_cp_correlation", "compdata")
 append_export("set_ideal_cp_correlation", "compdata")
 
@@ -184,10 +185,10 @@ append_export("fmt_energy_density", "fundamental_measure_theory")
 
 append_export("calc_bmcsl_gij_fmt", "hardsphere_bmcsl")
 
-append_export("set_entropy_reference_value", "ideal")
-append_export("get_entropy_reference_value", "ideal")
-append_export("set_enthalpy_reference_value", "ideal")
-append_export("get_enthalpy_reference_value", "ideal")
+append_export("set_standard_entropy", "ideal")
+append_export("get_standard_entropy", "ideal")
+append_export("set_enthalpy_of_formation", "ideal")
+append_export("get_enthalpy_of_formation", "ideal")
 
 append_export("isobar", "isolines")
 append_export("isotherm", "isolines")

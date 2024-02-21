@@ -44,11 +44,13 @@ module thermopack_constants
   integer, parameter :: comp_name_len = 40
   integer, parameter :: formula_len = 20
   integer, parameter :: bibref_len = 100
+  integer, parameter :: structure_len = 40
   integer, parameter :: eosid_len = 20
   integer, parameter :: mix_len = 20
   integer, parameter :: eos_name_len = 30
   integer, parameter :: short_label_len = 20
   integer, parameter :: label_len = 100
+  integer, parameter :: element_len = 2
 
 contains
 

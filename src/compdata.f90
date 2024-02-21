@@ -4,7 +4,7 @@
 !!
 module compdata
   use thermopack_constants, only: uid_len, ref_len, bibref_len, eosid_len, eos_name_len, clen, &
-       comp_name_len, formula_len
+       comp_name_len, formula_len, structure_len
   implicit none
   save
   public
@@ -91,6 +91,7 @@ module compdata
     character (len=uid_len) :: ident !< The component ID
     character (len=formula_len) :: formula !< Chemical formula
     character (len=comp_name_len) :: name !< The component name
+    character (len=structure_len) :: structure !< Molecular structure
     real :: mw !< Mole weight[g/mol]
     real :: tc !< Critical temperature [K]
     real :: pc !< Critical pressure [Pa]
@@ -100,9 +101,9 @@ module compdata
     real :: ttr !< Triple point temperature [K]
     real :: ptr !< Triple point temperature [K]
     real :: sref !< Reference entropy [J/mol/K]
+    character (len=uid_len) :: sref_state !< Entropy reference state pressure
     real :: href !< Reference enthalpy [J/mol]
-    real :: DfH !< Enthalpy of formation [J/mol]
-    real :: DfG !< Gibbs energy of formation [J/mol]
+    real :: gref !< Reference Gibbs free energy (1bar reference) [J/mol]
     integer :: psatcode !< Vapour pressure correlation 1: Antoine 2: Wilson (Michelsen) 3: Starling
     real, dimension(3) :: ant !< Vapour pressure correlation parameters
     real :: tantmin !< Vapour pressure correlation lower temperature limit [K]
@@ -120,6 +121,8 @@ module compdata
     type(cpdata) :: id_cp          !< Ideal gas Cp correlation
     type(cidatadb) :: cid          !< Volume shift parameters
     integer :: assoc_scheme        !< Association scheme for use in the SAFT model. The various schemes are defined in saft_parameters_db.f90.
+    real :: sref_int !< Entropy integration constant [J/mol/K]
+    real :: href_int !< Enthalpy integration constants [J/mol]
   contains
     procedure, public :: init_from_name => gendata_init_from_name
     ! Assignment operator
@@ -147,7 +150,14 @@ module compdata
       integer, intent(in) :: index
       logical, intent(in) :: shortname
       character(len=*), intent(out) :: comp_name
-    end subroutine
+    end subroutine comp_name_active
+  end interface
+
+  interface
+    module subroutine comp_structure(cname, struct)
+      character(len=*), intent(in) :: cname
+      character(len=*), intent(out) :: struct
+    end subroutine comp_structure
   end interface
 
   interface
@@ -174,6 +184,7 @@ module compdata
   public :: getComp, compIndex, copy_comp, comp_index_active, comp_name_active
   public :: parseCompVector, initCompList, deallocate_comp
   public :: get_ideal_cp_correlation, set_ideal_cp_correlation
+  public :: comp_structure
 
 contains
 
@@ -248,8 +259,8 @@ contains
       this%ptr = pc%ptr
       this%href = pc%href
       this%sref = pc%sref
-      this%DfH = pc%DfH
-      this%DfG = pc%DfG
+      this%sref_state = pc%sref_state
+      this%structure = pc%structure
     end select
   end subroutine assign_gendatadb
 
@@ -266,6 +277,8 @@ contains
       this%cid = pc%cid
       this%id_cp = pc%id_cp
       this%assoc_scheme = pc%assoc_scheme
+      this%href_int = 0
+      this%sref_int = 0
 
     class is (gendatadb)
       call assign_gendatadb(this, pc)

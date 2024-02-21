@@ -13,6 +13,8 @@ from data_utils import I, N_TAGS_PER_LINE, \
 from shutil import copy
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
 import tools
+from fluid_file import fluid_file
+from entropy import entropy_references, RGAS
 
 def get_keys_from_base_name(d,name):
     key_list = []
@@ -21,9 +23,8 @@ def get_keys_from_base_name(d,name):
             key_list.append(key)
     return key_list
 
-class component(object):
-    """Read component data form file, manipulate, save and generate
-    component data file for Thermopack
+class component(fluid_file):
+    """Read component data and generate component data file for Thermopack
     """
 
     def __init__(self, filepath):
@@ -31,18 +32,39 @@ class component(object):
         Arguments:
         filename - path to file
         """
+        super().__init__(filepath)
         self.eos_list = ["PR", "SRK", "CSP-SRK", "CSP-PR",
                          "CPA-SRK", "CPA-SRK", "LK", "PC-SAFT"
                          "SAFT-VR-MIE", "RK", "VDW", "SW", "PT"]
-        self.filepath = filepath
-        with open(filepath) as f:
-            self.comp = json.load(f)
 
-    def save(self):
-        """Save to file
+        self.dgf = None
+        # Make dictionary of elements
+        self.elements = {}
+        elements = self.fluid["structure"].split(";")
+        for elem in elements:
+            e = elem.split(":")[0].upper()
+            if len(e) > 0:
+                self.elements[e] = int(elem.split(":")[1])
+
+    @property
+    def element_list(self):
+        """Get list of elements
         """
-        with open(self.filepath, "w") as f:
-            json.dump(self.comp,f,indent=2)
+        return [k for k in self.elements]
+
+    def convert_entropy_reference_state(self):
+        """ Convert to 1Bar reference
+        """
+        S0 = float(self.fluid["reference_state"]["entropy"])
+        S0_ref = self.fluid["reference_state"]["entropy_ref_state"]
+        if S0_ref == "1BAR":
+            S0_ref_pressure = 1.0e5
+        elif S0_ref == "1ATM":
+            S0_ref_pressure = 101325.0
+        else:
+            raise ValueError("Wrong reference state for entropy")
+        S0 = S0 + RGAS*np.log(S0_ref_pressure/1.0e5)
+        return S0
 
     def get_n_TWU(self):
         """Set Mie potential paramaters
@@ -53,7 +75,7 @@ class component(object):
         """
         n_TWU = 0
         for eos in self.eos_list:
-            d = self.comp[eos]
+            d = self.fluid[eos]
             n_TWU += len(get_keys_from_base_name(d,"TWU"))
         return n_TWU
 
@@ -66,7 +88,7 @@ class component(object):
         """
         n_MC = 0
         for eos in self.eos_list:
-            d = self.comp[eos]
+            d = self.fluid[eos]
             n_MC += len(get_keys_from_base_name(d,"MC"))
         return n_MC
 
@@ -77,29 +99,30 @@ class component(object):
         """
         code_lines = []
         code_lines.append(I+"type (gendatadb), parameter :: COMPTAG = &")
-        code_lines.append(3*I+"gendatadb(ident = \"" + self.comp["ident"] + "\", &")
-        code_lines.append(3*I+"formula = \"" + self.comp["formula"] + "\", &")
-        code_lines.append(3*I+"name = \"" + self.comp["name"] + "\", &")
-        #code_lines.append(3*I+"\"ref=" + self.comp["ref"] + "\", &")
-        code_lines.append(3*I + 'mw = {:.4f}'.format(self.comp["mol_weight"]) + ", &")
-        code_lines.append(3*I + 'Tc = {:.4f}'.format(self.comp["critical"]["temperature"]) + ", &")
-        code_lines.append(3*I + 'Pc = {:.2f}'.format(self.comp["critical"]["pressure"]) + ", &")
-        code_lines.append(3*I + 'Zc = {:.6f}'.format(self.comp["critical"]["compressibility"]) + ", &")
-        code_lines.append(3*I + 'acf = {:.6f}'.format(self.comp["acentric_factor"]["acf"]) + ", &")
-        code_lines.append(3*I + 'Tb = {:.4f}'.format(self.comp["boiling_temperature"]["temperature"]) + ", &")
-        code_lines.append(3*I + 'Ttr = {:.4f}'.format(self.comp["triple"]["temperature"]) + ", &")
-        code_lines.append(3*I + 'Ptr = {:.4f}'.format(self.comp["triple"]["pressure"]) + ", &")
-        code_lines.append(3*I + 'sref = {:.4f}'.format(self.comp["reference_state"]["entropy"]) + ", &")
-        code_lines.append(3*I + 'href = {:.4f}'.format(self.comp["reference_state"]["enthalpy"]) + ", &")
-        code_lines.append(3*I + 'DfH = {:.4f}'.format(self.comp["standard_formation_energy"]["enthalpy"]) + ", &")
-        code_lines.append(3*I + 'DfG = {:.4f}'.format(self.comp["standard_formation_energy"]["gibbs"]) + ", &")
-        code_lines.append(3*I + "psatcode = " + str(self.comp["saturation"]["correlation"]) + ", &")
-        code_lines.append(3*I + 'ant = (/{:.8e}, {:.8e}, {:.8e}/)'.format(self.comp["saturation"]["ant"][0], self.comp["saturation"]["ant"][1], self.comp["saturation"]["ant"][2]) + ", &")
-        code_lines.append(3*I + 'Tantmin = {:.4f}'.format(self.comp["saturation"]["Tmin"]) + ", &")
-        code_lines.append(3*I + 'Tantmax = {:.4f}'.format(self.comp["saturation"]["Tmax"]) + ", &")
-        code_lines.append(3*I + 'Zra = {:.6f}'.format(self.comp["rackett_factor"]["Zra"]) + ", &")
-        code_lines.append(3*I + 'mu_dipole = {:.6f}'.format(self.comp["dipole_moment"]["mu"]) + ", &")
-        code_lines.append(3*I + 'q_quadrupole = {:.6f}'.format(self.comp["quadrupole_moment"]["Q"]) + " &")
+        code_lines.append(3*I+"gendatadb(ident = \"" + self.fluid["ident"] + "\", &")
+        code_lines.append(3*I+"formula = \"" + self.fluid["formula"] + "\", &")
+        code_lines.append(3*I+"name = \"" + self.fluid["name"] + "\", &")
+        #code_lines.append(3*I+"\"ref=" + self.fluid["ref"] + "\", &")
+        code_lines.append(3*I+"structure = \"" + self.fluid["structure"] + "\", &")
+        code_lines.append(3*I + 'mw = {:.4f}'.format(self.fluid["mol_weight"]) + ", &")
+        code_lines.append(3*I + 'Tc = {:.4f}'.format(self.fluid["critical"]["temperature"]) + ", &")
+        code_lines.append(3*I + 'Pc = {:.2f}'.format(self.fluid["critical"]["pressure"]) + ", &")
+        code_lines.append(3*I + 'Zc = {:.6f}'.format(self.fluid["critical"]["compressibility"]) + ", &")
+        code_lines.append(3*I + 'acf = {:.6f}'.format(self.fluid["acentric_factor"]["acf"]) + ", &")
+        code_lines.append(3*I + 'Tb = {:.4f}'.format(self.fluid["boiling_temperature"]["temperature"]) + ", &")
+        code_lines.append(3*I + 'Ttr = {:.4f}'.format(self.fluid["triple"]["temperature"]) + ", &")
+        code_lines.append(3*I + 'Ptr = {:.4f}'.format(self.fluid["triple"]["pressure"]) + ", &")
+        code_lines.append(3*I + 'sref = {:.4f}'.format(self.fluid["reference_state"]["entropy"]) + ", &")
+        code_lines.append(3*I + f'sref_state = \"{self.fluid["reference_state"]["entropy_ref_state"]}\", &')
+        code_lines.append(3*I + 'href = {:.8e}'.format(self.fluid["reference_state"]["enthalpy"]) + ", &")
+        code_lines.append(3*I + 'gref = {:.8e}'.format(self.dGf) + ", &")
+        code_lines.append(3*I + "psatcode = " + str(self.fluid["saturation"]["correlation"]) + ", &")
+        code_lines.append(3*I + 'ant = (/{:.8e}, {:.8e}, {:.8e}/)'.format(self.fluid["saturation"]["ant"][0], self.fluid["saturation"]["ant"][1], self.fluid["saturation"]["ant"][2]) + ", &")
+        code_lines.append(3*I + 'Tantmin = {:.4f}'.format(self.fluid["saturation"]["Tmin"]) + ", &")
+        code_lines.append(3*I + 'Tantmax = {:.4f}'.format(self.fluid["saturation"]["Tmax"]) + ", &")
+        code_lines.append(3*I + 'Zra = {:.6f}'.format(self.fluid["rackett_factor"]["Zra"]) + ", &")
+        code_lines.append(3*I + 'mu_dipole = {:.6f}'.format(self.fluid["dipole_moment"]["mu"]) + ", &")
+        code_lines.append(3*I + 'q_quadrupole = {:.6f}'.format(self.fluid["quadrupole_moment"]["Q"]) + " &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -112,18 +135,18 @@ class component(object):
         """
         code_lines = []
         code_lines.append(I+"type (cpdata), parameter :: CPTAG" + " = &")
-        code_lines.append(3*I+"cpdata(cid = \"" + self.comp["ident"] + "\", &")
-        code_lines.append(3*I+"ref = \"" + self.comp[tag]["ref"] + "\", &")
-        code_lines.append(3*I+"bib_ref = \"" + self.comp[tag]["bib_reference"] + "\", &")
-        code_lines.append(3*I + "cptype = " + str(self.comp[tag]["correlation"]) + ", &")
+        code_lines.append(3*I+"cpdata(cid = \"" + self.fluid["ident"] + "\", &")
+        code_lines.append(3*I+"ref = \"" + self.fluid[tag]["ref"] + "\", &")
+        code_lines.append(3*I+"bib_ref = \"" + self.fluid[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I + "cptype = " + str(self.fluid[tag]["correlation"]) + ", &")
         cp = []
-        for numbers in self.comp[tag]["cp"]:
+        for numbers in self.fluid[tag]["cp"]:
             cpi = '{:.8e}'.format(numbers)
             cp.append(cpi)
         code_lines.append(3*I + "cp = (/" + cp[0] + "," + cp[1] + "," + cp[2] + "," + cp[3] + "," + cp[4] + ", &")
         code_lines.append(3*I + cp[5] + "," + cp[6] + "," + cp[7] + "," + cp[8] + "," + cp[9] + "/), &")
-        code_lines.append(3*I + 'Tcpmin = {:.4f}'.format(self.comp[tag]["Tmin"]) + ", &")
-        code_lines.append(3*I + 'Tcpmax = {:.4f}'.format(self.comp[tag]["Tmax"]) + "  &")
+        code_lines.append(3*I + 'Tcpmin = {:.4f}'.format(self.fluid[tag]["Tmin"]) + ", &")
+        code_lines.append(3*I + 'Tcpmax = {:.4f}'.format(self.fluid[tag]["Tmax"]) + "  &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -134,11 +157,11 @@ class component(object):
         Output:
         code_lines - Code lines
         """
-        d = self.comp[eos][TWUtag]
+        d = self.fluid[eos][TWUtag]
         code_lines = []
         code_lines.append(I+"type (alphadatadb), parameter :: TWUTAG = &")
         code_lines.append(3*I+"alphadatadb(eosid=\"" + eos + "\", &")
-        code_lines.append(3*I+"cid=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I+"cid=\"" + self.fluid["ident"] + "\", &")
         code_lines.append(3*I+"ref=\"" + d["ref"] + "\", &")
         code_lines.append(3*I + 'coeff=(/{:.8e}, {:.8e}, {:.8e}/) &'.format(d["correlation"][0],d["correlation"][1],d["correlation"][2]))
         code_lines.append(3*I + ")")
@@ -151,11 +174,11 @@ class component(object):
         Output:
         code_lines - Code lines
         """
-        d = self.comp[eos][VStag]
+        d = self.fluid[eos][VStag]
         code_lines = []
         code_lines.append(I + "type (cidatadb), parameter :: VSTAG = &")
         code_lines.append(3*I + "cidatadb(eosid=\"" + eos + "\", &")
-        code_lines.append(3*I + "cid=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I + "cid=\"" + self.fluid["ident"] + "\", &")
         code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
         code_lines.append(3*I + "bib_ref=\"" + d["bib_reference"] + "\", &")
         code_lines.append(3*I + 'ciA={:.8e}, &'.format(d["ciA"]))
@@ -172,11 +195,11 @@ class component(object):
         Output:
         code_lines - Code lines
         """
-        d = self.comp[eos][CPAtag]
+        d = self.fluid[eos][CPAtag]
         code_lines = []
         code_lines.append(I + "type(CPAdata), parameter :: CPATAG = &")
         code_lines.append(3*I + "CPAdata(eosid=\"" + "CPA-"+ eos + "\", &")
-        code_lines.append(3*I + "compName=\"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I + "compName=\"" + self.fluid["ident"] + "\", &")
         code_lines.append(3*I + "ref=\"" + d["ref"] + "\", &")
         code_lines.append(3*I + "bib_reference=\"" + d["bib_reference"] + "\", &")
         code_lines.append(3*I + 'a0={:.8e}, &'.format(d["a0"]))
@@ -215,13 +238,13 @@ class component(object):
 
         # Loop eos-list
         code_lines = self.get_comp_fortran_code()
-        for key in self.comp:
+        for key in self.fluid:
             if "ideal_heat_capacity" in key:
                 cp = self.get_cp_fortran_code(key)
                 for line in cp:
                     code_lines.append(line)
         for eos in self.eos_list:
-            eosDict = self.comp.get(eos, None)
+            eosDict = self.fluid.get(eos, None)
             if eosDict is not None:
                 for key in eosDict.keys():
                     if "TWU" in key:
@@ -233,7 +256,7 @@ class component(object):
                     elif "CPA" in key:
                         cl = self.get_CPA_fortran_code(eos,key)
                     else:
-                        "Unknown key ({}) in {} for {}".format(key,self.comp["ident"],eos)
+                        "Unknown key ({}) in {} for {}".format(key,self.fluid["ident"],eos)
                     for line in cl:
                         code_lines.append(line)
 
@@ -262,10 +285,34 @@ class comp_list(object):
         file_list = os.listdir(path)
         file_list.sort()
         self.comp_list = []
+        self.elements = []
         for fl in file_list:
             filepath = os.path.join(path, fl)
             print(fl)
             self.comp_list.append(comp(filepath))
+            self.elements += self.comp_list[-1].elements
+        self.elements = set(self.elements)
+        self.e_ref = entropy_references(self)
+        for comp in self.comp_list:
+            dHf = float(comp.fluid["reference_state"]["enthalpy"])
+            S0 = comp.convert_entropy_reference_state()
+            dGf = self.e_ref.calc_gibbs_free_energy_of_formation(comp.elements,
+                                                                 dHf, S0)
+            comp.dGf = dGf
+
+    def __getitem__(self, fluid):
+        """
+        Arguments:
+        fluid (str): Fluid name
+        """
+        k = None
+        for i in range(len(self.comp_list)):
+            if self.comp_list[i].fluid["ident"] == fluid:
+                k = i
+                break
+        if k is None:
+            raise ValueError("Fluid not in list: " + fluid)
+        return self.comp_list[k]
 
     def save_fortran_file(self,filename):
         """Generate fortran file for Thermopack
@@ -282,8 +329,19 @@ class comp_list(object):
         code_lines.append(I+"use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata")
         code_lines.append(I+"use assocschemeutils")
         code_lines.append(I+"use cubic_eos")
+        code_lines.append(I+"use thermopack_constants, only: element_len")
         code_lines.append(I+"implicit none")
         code_lines.append(I+"public")
+        code_lines.append("")
+
+        element_list = self.e_ref.get_element_list()
+        code_lines.append(I+f"integer, parameter :: n_max_elements = {str(len(element_list))}")
+        code_lines.append(I+"character(len=element_len), dimension(n_max_elements), parameter :: elements =(/&")
+        elements = ""
+        for ie, e in enumerate(element_list):
+            elements += f"\"{e.ljust(2, ' ')}\", "
+        elements = elements[:-2] + "/)"
+        code_lines.append(2*I+elements)
         code_lines.append("")
 
         self.nComp = 1
@@ -551,7 +609,7 @@ class comp_list(object):
 
         wiki_lines = []
         for comp in self.comp_list:
-            name = comp.comp["name"].lower()
+            name = comp.fluid["name"].lower()
             if name[:2] in ("n-", "m-", "o-", "p-"):
                 name = name[:2] + name[2:].capitalize()
             elif name[0].isdigit():
@@ -565,13 +623,13 @@ class comp_list(object):
             has_svrm_params = False
             has_pcsaft_params = False
             has_cpa_params = False
-            for k in comp.comp.keys():
+            for k in comp.fluid.keys():
                 if 'saftvrmie' in k.lower():
                     has_svrm_params = True
                 elif 'pc-saft' in k.lower():
                     has_pcsaft_params = True
                 elif ('srk' in k.lower()) or ('pr' in k.lower()):
-                    for sub_k in comp.comp[k].keys():
+                    for sub_k in comp.fluid[k].keys():
                         if 'cpa' in sub_k.lower():
                             has_cpa_params = True
                 if has_svrm_params and has_cpa_params and has_pcsaft_params:
@@ -586,7 +644,7 @@ class comp_list(object):
             has_pcsaft_params = has_param_txt(has_pcsaft_params)
             has_cpa_params = has_param_txt(has_cpa_params)
 
-            line = f"| {name} | {comp.comp['cas_number']} | {comp.comp['ident']} | {has_svrm_params} | {has_pcsaft_params}" \
+            line = f"| {name} | {comp.fluid['cas_number']} | {comp.fluid['ident']} | {has_svrm_params} | {has_pcsaft_params}" \
                    f" | {has_cpa_params} |"
             wiki_lines.append(line)
         wiki_lines.sort()

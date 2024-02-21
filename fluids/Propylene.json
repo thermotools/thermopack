@@ -2,6 +2,8 @@
   "ident": "PRLN",
   "formula": "C3H6",
   "cas_number": "115-07-1",
+  "InChI": "1S/C3H6/c1-3-2/h3H,1H2,2H3",
+  "structure": "C:3;H:6",
   "name": "PROPYLENE",
   "aliases": [
     "Propylene",
@@ -64,14 +66,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Furuyama, Golden, et al., 1969",
+    "enthalpy": 20.41e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 266.759
   },
   "rackett_factor": {
     "bib_reference": "",

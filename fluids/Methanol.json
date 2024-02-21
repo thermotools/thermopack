@@ -2,6 +2,8 @@
   "ident": "MEOH",
   "formula": "CH4O",
   "cas_number": "67-56-1",
+  "InChI": "1S/CH4O/c1-2/h2H,1H3",
+  "structure": "C:1;H:4;O:1",
   "name": "METHANOL",
   "aliases": [
     "Methanol"
@@ -61,14 +63,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -205.0e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 239.865
   },
   "rackett_factor": {
     "bib_reference": "",

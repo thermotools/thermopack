@@ -2,6 +2,8 @@
   "ident": "NH3",
   "formula": "NH3",
   "cas_number": "7664-41-7",
+  "InChI": "1S/H3N/h1H3",
+  "structure": "H:3;N:1",
   "name": "AMMONIA",
   "aliases": [
     "Ammonia",
@@ -62,14 +64,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "https://webbook.nist.gov",
-    "enthalpy": -45900,
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "enthalpy": -45.94e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
     "entropy": 192.77
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",
