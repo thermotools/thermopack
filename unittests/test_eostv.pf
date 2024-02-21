@@ -665,6 +665,47 @@ contains
     !
   end subroutine test_chemical_potential_tv
 
+  @Test
+  subroutine test_tv_fugacity()
+    use eos, only: specificvolume, thermo
+    use eostv, only: thermo_tv
+    use thermopack_constants, only: LIQPH
+    ! Test TV routines
+    !
+    integer, parameter :: n = 5
+    real :: t, v
+    real :: p
+    real :: Pmin, Pmax, Tmin, Tmax
+    real, dimension(2) :: x, lnf, lnphi
+    integer :: i, j, k
+    real :: tol = 1e-6
+
+    call init_cubic('H2O,CO2', 'SRK')
+
+    x = [1.0e-3,1.0-1.0e-3]
+
+    Tmin = 250 ! K
+    Tmax = 350
+    Pmin = 1e6 ! Pa
+    Pmax = 1e7
+
+    do i=1,n
+      do j=1,n
+        t = Tmin+i*(Tmax-Tmin)/n  ! K
+        P = Pmin+j*(Pmax-Pmin)/n  ! Pa
+
+        call specificvolume(t, P, x, LIQPH, v)
+        call thermo_tv(t, v, x, lnf)
+        call thermo(t, P, x, LIQPH, lnphi)
+
+        do k=1,2
+          @assertTrue(abs((lnphi(k) + log(P) + log(x(k)) - lnf(k))) < tol )
+        enddo
+      enddo
+    enddo
+
+  end subroutine test_tv_fugacity
+
 end module test_eosTV
 ! Local Variables:
 ! mode: f90
