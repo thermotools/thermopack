@@ -2265,7 +2265,6 @@ contains
   subroutine pc_saft_set_pure_params(ic,params)
     use pc_saft_nonassoc, only: sPCSAFT_eos
     use thermopack_var, only: nce
-    use saft_association, only: numAssocSites
     integer, intent(in) :: ic
     real, intent(in) :: params(5) ! m, sigma/m, eps_depth_divk/K, eps/(J/mol), beta
     real :: m(nce),sigma(nce),eps_depth_divk(nce), kij(nce,nce)
@@ -2555,7 +2554,7 @@ contains
   !> Deltas
   subroutine setCPAformulation(simplified, elliotrule)
     use saft_rdf, only: useSimplifiedCPA
-    use saft_association, only: DELTA_COMBRULE, ELLIOT
+    use saft_association, only: ELLIOT
     logical, intent(in) :: simplified
     logical, intent(in), optional :: elliotrule
     useSimplifiedCPA = simplified
