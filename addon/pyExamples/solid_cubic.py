@@ -19,9 +19,9 @@ cb.set_pmax(5.0e9)
 T = 200.0
 press = 1.0e5
 z = np.array([1.0, 0.0])
-print(f"Enthalpy {cb.solid_enthalpy(T, press, z):.5f} J/mol")
-print(f"Entropy {cb.solid_entropy(T, press, z):.5f} J/mol.K")
-print(f"Volume {cb.solid_volume(T, press, z):.5f} m3/mol")
+print(f"Enthalpy {cb.solid_enthalpy(T, press, z)[0]:.5f} J/mol")
+print(f"Entropy {cb.solid_entropy(T, press, z)[0]:.5f} J/mol.K")
+print(f"Volume {cb.solid_volume(T, press, z)[0]:.5f} m3/mol")
 
 # Plot solid-gas-liquid phase diagram
 z = np.array([0.98,0.02])

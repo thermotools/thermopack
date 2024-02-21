@@ -18,7 +18,7 @@ z = np.array([0.98, 0.02])
 # Initial state
 T0 = 303.15
 P0 = 1.0e7
-s0 = tc_pr.entropy(T0, P0, z, tc_pr.LIQPH)
+s0, = tc_pr.entropy(T0, P0, z, tc_pr.LIQPH)
 
 # Isentrope
 T_iso, v_iso, P_iso = tc_pr.map_meta_isentrope(z, P0, s0, 6.0e5, n_max=50)

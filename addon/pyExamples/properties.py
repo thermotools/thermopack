@@ -27,50 +27,50 @@ T, y = srk.bubble_temperature(P, z)
 print(u"Atmospheric bubble temperature: {} (\N{DEGREE SIGN}C)".format(T-273.15))
 
 # Fugacity coefficient
-lnfug_l = srk.thermo(T, P, z, srk.LIQPH)
-lnfug_g = srk.thermo(T, P, y, srk.VAPPH)
+lnfug_l, = srk.thermo(T, P, z, srk.LIQPH)
+lnfug_g, = srk.thermo(T, P, y, srk.VAPPH)
 eq = lnfug_l + np.log(z) - lnfug_g - np.log(y)
 print("Equilibrium condition from fugacity coefficient: {} (-)".format(eq))
 
 # Properties evaluated in temperature, pressure and mol fractions
-v = srk.specific_volume(T, P, z, srk.LIQPH)
+v, = srk.specific_volume(T, P, z, srk.LIQPH)
 print("Saturated liquid density: {} (kg/m3)".format(mw_z/v))
 
-h, dh = srk.enthalpy(T, P, z, srk.LIQPH, dhdt=True)
-print("Saturated liquid isobaric heat capacity: {} (J/kg/K)".format(dh.dT / mw_z))
+h, dhdt = srk.enthalpy(T, P, z, srk.LIQPH, dhdt=True)
+print("Saturated liquid isobaric heat capacity: {} (J/kg/K)".format(dhdt / mw_z))
 
-s, ds = srk.entropy(T, P, z, srk.LIQPH, dsdt=True)
-print("Saturated liquid isobaric heat capacity (form entropy): {} (J/kg/K)".format(T * ds.dT / mw_z))
+s, dsdt = srk.entropy(T, P, z, srk.LIQPH, dsdt=True)
+print("Saturated liquid isobaric heat capacity (form entropy): {} (J/kg/K)".format(T * dsdt / mw_z))
 
-zFac = srk.zfac(T, P, z, srk.LIQPH)
+zFac, = srk.zfac(T, P, z, srk.LIQPH)
 print("Compressibility factor: {}".format(zFac))
 
 sos = srk.speed_of_sound(T, P, x=z, y=z, z=z, betaV=0.0, betaL=1.0, phase=srk.LIQPH)
 print("Saturated liquid speed of sound: {} (m/s)".format(sos))
 
 # Properties evaluated in temperature volume and mol numbers
-p, dp  = srk.pressure_tv(T, v, z, dpdv=True)
-print("Isothermal liquid compressibillity: {} (1/GPa)".format(-1.0e9 / v / dp.dV))
+p, dpdv  = srk.pressure_tv(T, v, z, dpdv=True)
+print("Isothermal liquid compressibillity: {} (1/GPa)".format(-1.0e9 / v / dpdv))
 
-u, du = srk.internal_energy_tv(T, v, z, dedt=True)
-Cv = du.dT
+u, dudt = srk.internal_energy_tv(T, v, z, dedt=True)
+Cv = dudt
 print("Saturated liquid isochoric heat capacity: {} (J/kg/K)".format(Cv / mw_z))
 
-s = srk.entropy_tv(T, v, z)
-a  = srk.helmholtz_tv(T, v, z)
+s, = srk.entropy_tv(T, v, z)
+a,  = srk.helmholtz_tv(T, v, z)
 print("Helmholtz free energy of liquid: {} (J/kg)".format(a / mw_z))
 print("Helmholtz free energy og liquid (e-Ts): {} (J/kg)".format((u - T * s) / mw_z))
 
 print("Internal energy of liquid: {} (J/kg)".format(u / mw_z))
-h = srk.enthalpy_tv(T, v, z)
+h, = srk.enthalpy_tv(T, v, z)
 print("Internal energy og liquid (h-P*V): {} (J/kg)".format((h-p*v)/mw_z))
 
-mu_l = srk.chemical_potential_tv(T, v, z)
-v_g = srk.specific_volume(T, P, y, srk.VAPPH)
-mu_g = srk.chemical_potential_tv(T, v_g, y)
+mu_l, = srk.chemical_potential_tv(T, v, z)
+v_g, = srk.specific_volume(T, P, y, srk.VAPPH)
+mu_g, = srk.chemical_potential_tv(T, v_g, y)
 print("Equilibrium condition from chemical potential: {} (-)".format(mu_l - mu_g))
-lnphi_l = srk.fugacity_tv(T, v, z)
-lnphi_g = srk.fugacity_tv(T, v_g, y)
+lnphi_l, = srk.fugacity_tv(T, v, z)
+lnphi_g, = srk.fugacity_tv(T, v_g, y)
 print("Equilibrium condition from fugacity: {} (-)".format(lnphi_l - lnphi_g))
 
 

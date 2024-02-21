@@ -70,11 +70,11 @@ ush = hsh - vsh * Psh # Internal energy
 res = pr.two_phase_uvflash(z, ush, vsh)
 Peq = res.p
 Teq = res.T
-seq_gas = pr.entropy(Teq,Peq,res.y,pr.VAPPH)
-seq_liq = pr.entropy(Teq,Peq,res.x,pr.LIQPH)
+seq_gas, = pr.entropy(Teq,Peq,res.y,pr.VAPPH)
+seq_liq, = pr.entropy(Teq,Peq,res.x,pr.LIQPH)
 seq = seq_gas * res.betaV + seq_liq * res.betaL # Equilibrated entropy
-heq_gas = pr.enthalpy(Teq, Peq, res.y, pr.VAPPH)
-heq_liq = pr.enthalpy(Teq, Peq, res.x, pr.LIQPH)
+heq_gas, = pr.enthalpy(Teq, Peq, res.y, pr.VAPPH)
+heq_liq, = pr.enthalpy(Teq, Peq, res.x, pr.LIQPH)
 heq = heq_gas * res.betaV + heq_liq * res.betaL # Equilibrated enthalpy
 # Expansion path
 n_exp = 40
@@ -87,8 +87,8 @@ for i in range(n_exp-1):
     res_ps = pr.two_phase_psflash(Pexp[i + 1], z, seq, temp=Texp[i])
     Texp[i + 1] = res_ps.T
 
-hexp_gas = pr.enthalpy(Texp[-1], Pexp[-1], res_ps.y, pr.VAPPH)
-hexp_liq = pr.enthalpy(Texp[-1], Pexp[-1], res_ps.x, pr.LIQPH)
+hexp_gas, = pr.enthalpy(Texp[-1], Pexp[-1], res_ps.y, pr.VAPPH)
+hexp_liq, = pr.enthalpy(Texp[-1], Pexp[-1], res_ps.x, pr.LIQPH)
 hexp = hexp_gas * res_ps.betaV + hexp_liq * res_ps.betaL # Expanded enthalpy
 
 print(f"Peak explosive pressure: {Peq*1e-5:.2f} bar")
