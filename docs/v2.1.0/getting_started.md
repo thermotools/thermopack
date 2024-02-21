@@ -93,7 +93,11 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB
 ```
 where `eos.VAPPH` and `eos.LIQPH` are [phase flags](/thermopack/v2.1.0/phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#TV-property-interfaces) and the [Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods 
+`chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, 
+`entropy_tv(T, V, n)`. For a full overview of the available property calculations see the 
+[TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#TV-property-interfaces) and the 
+[Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
 
 ### Differentials
 
@@ -117,7 +121,6 @@ h_vap, dhvap_dn_Tp = eos.enthalpy(T, p, x, eos.VAPPH, dhdn=True) # Compute molar
 h_liq, dliq_dn_Tp = eos.enthalpy(T, p, x, eos.LIQPH, dhdn=True) # Compute molar liquid phase enthalpy and derivative of molar liquid phase enthalpy wrt. mole numbers at constant (T, p)
 H, dHdn_Tp = eos.enthalpy_tvp(T, vg, n, dhdn=True) # Compute enthalpy and derivative of enthalpy wrt. mole numbers at constant (T, p)
 ```
-
 
 **Please note that heat capacities are not available directly**, but must be computed as derivatives of enthalpy and internal energy, as
 

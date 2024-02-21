@@ -38,7 +38,7 @@
     * [Fortran-side manual](/thermopack/vCurrent/Doxymanual.pdf)
 * [Memos - On The Details](/thermopack/memo/index.html)
 * [Latest version (beta)](/thermopack/)
+* [v2.2.0](/thermopack/v2.2.0/home.html)
 * [v2.1.0](/thermopack/v2.1.0/home.html)
-* [v2.2.0 (beta)](/thermopack/v2.2.0/home.html)
 * [Citation](/thermopack/please_cite.html)
 * [Contact](/thermopack/contact.html)
