@@ -121,8 +121,8 @@ module compdata
     type(cpdata) :: id_cp          !< Ideal gas Cp correlation
     type(cidatadb) :: cid          !< Volume shift parameters
     integer :: assoc_scheme        !< Association scheme for use in the SAFT model. The various schemes are defined in saft_parameters_db.f90.
-    real :: sref_int !< Entropy integration constant [J/mol/K]
-    real :: href_int !< Enthalpy integration constants [J/mol]
+    real :: sref_int = 0 !< Entropy integration constant [J/mol/K]
+    real :: href_int = 0 !< Enthalpy integration constants [J/mol]
   contains
     procedure, public :: init_from_name => gendata_init_from_name
     ! Assignment operator
