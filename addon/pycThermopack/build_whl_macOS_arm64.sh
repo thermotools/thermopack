@@ -6,9 +6,6 @@ tp_version="2.2.0"
 
 cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
 
-rm -r wheelhouse
-mkdir wheelhouse
-
 cd ../..
 
 # make clean
