@@ -298,6 +298,10 @@ append_export("envelopeplot", "saturation_curve")
 append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
 
+append_export("locate_saturation_property", "saturation_point_locators")
+append_export("property_index_from_string", "saturation_point_locators")
+append_export("sat_points_based_on_prop", "saturation_point_locators")
+
 append_export("solid_init", "solideos")
 append_export("solid_specificvolume", "solideos")
 append_export("solid_enthalpy", "solideos")

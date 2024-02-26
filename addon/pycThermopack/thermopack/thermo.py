@@ -240,6 +240,12 @@ class thermo(object):
             self.tp, self.get_export_name("isolines", "isentrope"))
         self.s_envelope_isentrope_cross = getattr(
             self.tp, self.get_export_name("saturation_curve", "envelope_isentrope_cross"))
+        self.s_property_index_from_string = getattr(
+            self.tp, self.get_export_name("saturation_point_locators", "property_index_from_string"))
+        self.s_sat_points_based_on_prop = getattr(
+            self.tp, self.get_export_name("saturation_point_locators", "sat_points_based_on_prop"))
+        self.s_locate_saturation_property = getattr(
+            self.tp, self.get_export_name("saturation_point_locators", "locate_saturation_property"))
 
         # Stability
         self.s_crit_tv = getattr(
@@ -942,7 +948,7 @@ class thermo(object):
         """Utility
         Set numerical robustness level in Thermopack, where 0 is the default
         and higher levels increase robustness.
-        
+
         Args:
             level (integer): robustness_level
         """
@@ -956,7 +962,7 @@ class thermo(object):
         """Utility
         Get numerical robustness level in Thermopack, where 0 is the default
         and higher levels increase robustness.
-        
+
         Returns:
             level (integer): robustness_level
         """
@@ -3761,7 +3767,7 @@ class thermo(object):
     def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None, initial_temperature=None):
         """Saturation interface
-        Get saturated phase having given entropy. Searches the binodal by 
+        Get saturated phase having given entropy. Searches the binodal by
         tracing it upwards in pressure from the dew point at initial_pressure.
         Args:
             entropy (float): Entropy (J/mol/K).
@@ -3846,6 +3852,249 @@ class thermo(object):
             vi = None
 
         return has_crossing, Ti, Pi, vi, wi, phase
+
+    def _property_index_from_string(self, prop: str):
+        """Saturation interface
+        Get integer index corrensponding to property string
+
+        Args:
+            prop (str): Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
+
+        Raises:
+            Exception: Wrong property specified
+
+        Returns:
+           Index of property
+        """
+        self.activate()
+
+        if prop.upper() == "VOLUME":
+            prop_corrected = "LNVOL"
+        else:
+            prop_corrected = prop
+        prop_c = c_char_p(prop_corrected.encode('ascii'))
+        prop_len = c_len_type(len(prop_corrected))
+
+        self.s_property_index_from_string.argtypes = [c_char_p,
+                                                      c_len_type]
+
+        self.s_property_index_from_string.restype = c_int
+
+        idx = self.s_property_index_from_string(prop_c, prop_len)
+        if idx < 0:
+            raise Exception(f"Wrong property: {prop}")
+
+        return idx
+
+    def saturation_points_from_property(self,
+                                        initial_pressure,
+                                        z,
+                                        prop_grid,
+                                        prop,
+                                        maximum_pressure=1.5e7,
+                                        minimum_temperature=None,
+                                        step_size=None):
+        """Saturation interface
+        Get saturated points intersecting with properties given as input.
+        Args:
+            initial_pressure (float): Start search from dew point at initial pressure (Pa).
+            z (array_like): Composition (-)
+            prop_grid (array like): Property values where intersect is needed
+            prop (str): Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
+            maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
+            minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
+            step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
+
+        Returns:
+            float: Temperature values (K)
+            foat: Pressure values (Pa)
+            float: Specific volume (m3/mol)
+            int: Phase flag for main phase
+            ndarray: Incipient composition (mol/mol)
+        """
+        self.activate()
+
+        idx = self._property_index_from_string(prop)
+        propflag_c = c_int(idx)
+        n_grid = len(prop_grid)
+        prop_grid_c = (c_double * n_grid)(*prop_grid)
+        n_grid_c = c_int(n_grid)
+        initial_temperature, x = self.dew_temperature(initial_pressure, z)
+        z_c = (c_double * len(z))(*z)
+        x_c = (c_double * len(x))(*x)
+        y_c = (c_double * len(z))(*z)
+        t0_c = c_double(initial_temperature)
+        p0_c = c_double(initial_pressure)
+        pmax_c = c_double(maximum_pressure)
+        n_grid_found_c = c_int(0)
+        Tgrid_c = (c_double * (2*n_grid))(0.0)
+        Pgrid_c = (c_double * (2*n_grid))(0.0)
+        wi_grid_c = (c_double * (self.nc*2*n_grid))(0.0)
+        phase_grid_c = (c_int * (2*n_grid))(0)
+        ierr_c = c_int(0)
+        tmin_c = POINTER(c_double)() if minimum_temperature is None else POINTER(c_double)(c_double(minimum_temperature))
+        tmax_c = POINTER(c_double)()
+        pmin_c = POINTER(c_double)()
+        ds_c = POINTER(c_double)() if step_size is None else POINTER(c_double)(c_double(step_size))
+        n_grid_found_c = c_int(0)
+        phase_in_c = c_int(self.VAPPH)
+        sgn_in_c = POINTER(c_double)()
+        spec_in_c = POINTER(c_int)()
+        normal_grid_c = POINTER(c_double)()
+        sequential_mode_c = c_int(0)
+
+        self.s_sat_points_based_on_prop.argtypes = [POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int)]
+
+        self.s_sat_points_based_on_prop.restype = None
+
+        self.s_sat_points_based_on_prop(z_c,
+                                        byref(t0_c),
+                                        byref(p0_c),
+                                        x_c,
+                                        y_c,
+                                        byref(n_grid_c),
+                                        byref(propflag_c),
+                                        prop_grid_c,
+                                        Tgrid_c,
+                                        Pgrid_c,
+                                        phase_grid_c,
+                                        wi_grid_c,
+                                        byref(n_grid_found_c),
+                                        ds_c,
+                                        byref(phase_in_c),
+                                        byref(ierr_c),
+                                        sgn_in_c,
+                                        spec_in_c,
+                                        tmin_c,
+                                        tmax_c,
+                                        pmin_c,
+                                        byref(pmax_c),
+                                        normal_grid_c,
+                                        sequential_mode_c)
+
+        n_grid_found = n_grid_found_c.value
+        if n_grid_found == 0:
+            Tgrid = None
+            Pgrid = None
+            wi_grid = None
+            phase_grid = None
+        else:
+            Tgrid = np.array(Tgrid_c[:n_grid_found])
+            Pgrid = np.array(Pgrid_c[:n_grid_found])
+            wi_grid = np.array(wi_grid_c).reshape((self.nc, 2*n_grid), order='F').\
+                ravel(order="C").reshape((self.nc,2*n_grid))[:,:n_grid_found]
+            phase_grid = np.array(phase_grid_c[:n_grid_found])
+
+        return Tgrid, Pgrid, wi_grid, phase_grid
+
+    def saturation_point_from_property_bracket_search(self,
+                                                      z,
+                                                      prop_val,
+                                                      prop,
+                                                      temp_1,
+                                                      press_1,
+                                                      x_1,
+                                                      y_1,
+                                                      temp_2,
+                                                      press_2,
+                                                      x_2,
+                                                      y_2):
+        """Saturation interface
+        Get saturated point intersecting with property given as input. Point 1 and 2 are saturation
+        states bracketing the solution.
+        Args:
+            z (array_like): Composition (-)
+            prop_val (float): Property value where intersect is needed
+            prop (str): Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
+            temp_1 (float): Temperature of point 1 (K).
+            press_1 (float): Pressure of point 1 (Pa).
+            x_1 (float): Liquid compozition of point 1 (mol/mol).
+            y_1 (float): Vapour compozition of point 1 (mol/mol).
+            temp_2 (float): Temperature of point 2 (K).
+            press_2 (float): Pressure of point 2 (Pa).
+            x_2 (float): Liquid compozition of point 2 (mol/mol).
+            y_2 (float): Vapour compozition of point 2 (mol/mol).
+
+        Raises:
+            Exception: Not able to solve for property
+
+        Returns:
+            float: Temperature values (K)
+            float: Pressure values (Pa)
+            ndarray: Liquid composition (mol/mol)
+            ndarray: Vapour composition (mol/mol)
+        """
+        self.activate()
+
+        idx = self._property_index_from_string(prop)
+        propflag_c = c_int(idx)
+        prop_val_c = c_double(prop_val)
+        z_c = (c_double * len(z))(*z)
+        x1_c = (c_double * len(z))(*x_1)
+        y1_c = (c_double * len(z))(*y_1)
+        t1_c = c_double(temp_1)
+        p1_c = c_double(press_1)
+        x2_c = (c_double * len(z))(*x_2)
+        y2_c = (c_double * len(z))(*y_2)
+        t2_c = c_double(temp_2)
+        p2_c = c_double(press_2)
+        ierr_c = c_int(0)
+
+        self.s_locate_saturation_property.argtypes = [POINTER(c_int),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_double),
+                                                      POINTER(c_int)]
+
+        self.s_locate_saturation_property.restype = None
+
+        self.s_locate_saturation_property(byref(propflag_c),
+                                          byref(prop_val_c),
+                                          z_c,
+                                          byref(t1_c),
+                                          byref(p1_c),
+                                          x1_c,
+                                          y1_c,
+                                          byref(t2_c),
+                                          byref(p2_c),
+                                          x2_c,
+                                          y2_c,
+                                          byref(ierr_c))
+
+        if ierr_c.value != 0:
+            raise Exception(f"Error calculating property: {prop}")
+
+        return t2_c.value, p2_c.value, np.array(x2_c), np.array(y2_c)
 
     def get_isotherm(self,
                      temp,
