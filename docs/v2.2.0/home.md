@@ -29,7 +29,7 @@ computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
 Python wrapper to make scripting easy.
 
-Updates included in v2.2.0 are
+## Updates in v2.2.0
 
 * New return patterns for more flexible, less error prone, handling of output
   * New return struct for flash- calculations, making it easier and less error prone to access desired results.
