@@ -159,7 +159,8 @@ def write_setup_file(version):
                       'author_email': "'morten.hammer@sintef.no'",
                       'url': "'https://github.com/thermotools/thermopack'",
                       'packages': "['thermopack']",
-                      'package_data': "{'thermopack':['*thermopack.*']}"}
+                      'package_data': "{'thermopack':['*thermopack.*']}",
+                      'install_requires' : "['numpy~=1.0']"}
 
     with open(os.path.dirname(__file__) + '/setup.py', 'w') as file:
         file.write(f"# This file was automatically generated using the function 'write_setup_file' in \n"
@@ -213,7 +214,6 @@ keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria
 
 [dependencies]
 numpy = "^1.1"
-matplotlib = "^2.0"
 """
     with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
         file.write(contents)
