@@ -34,6 +34,10 @@ module ideal
   !!             -12 : Shomate Equation (Note that: Ts=T/1000)                *
   !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
   !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
+  !!             -13 : Einstein functions                                     *
+  !!                   CP(ideal)/R = CP(1) + CP(2)(CP(3)/T)**2*exp(CP(3)/T)/  *
+  !!                               (exp(CP(3)/T)-1)**2 + CP(4)(CP(5)/T)**2*   *
+  !!                               exp(CP(5)/T)/(exp(CP(5)/T)-1)**2 + ... (-) *
   !! \endverbatim
   use thermopack_var, only: Rgas
   implicit none
@@ -189,7 +193,7 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: cpideal_h2
     implicit none
@@ -197,8 +201,9 @@ contains
     real, intent(in) :: T
     integer, intent(in) :: i
     real :: Cp_id
-    !
-    real :: TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: TminCp, TmaxCp, Ts, x, exp_x
 
     method_Cp: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree poynomial
@@ -277,6 +282,16 @@ contains
       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*Ts+comp%id_cp%cp(3)*Ts**2+comp%id_cp%cp(4)*Ts**3+ &
            comp%id_cp%cp(5)/(Ts**2)
 
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      Cp_id = comp%id_cp%cp(1)
+      do j=1,int((n_max_cp-1)/2)
+        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
+        x = comp%id_cp%cp(j+2)/T
+        exp_x = exp(x)
+        Cp_id = Cp_id + comp%id_cp%cp(j+1)*x**2*exp_x/(exp_x - 1)**2
+      enddo
+      Cp_id = Cp_id*rgas
+
     end select method_Cp
   end function CPideal
 
@@ -324,14 +339,16 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
     integer, intent(in) :: i
-    real :: H_id, TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: H_id, TminCp, TmaxCp, Ts, x, exp_x
 
     method_H: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
@@ -423,6 +440,17 @@ contains
            comp%id_cp%cp(3)*Ts**3/3.0+comp%id_cp%cp(4)*Ts**4/4.0 - &
            comp%id_cp%cp(5)/Ts
       H_id=H_id*1.0e3 + comp%href_int
+
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      H_id = comp%id_cp%cp(1)*T
+      do j=1,int((n_max_cp-1)/2)
+        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
+        x = comp%id_cp%cp(j+2)/T
+        exp_x = exp(x)
+        H_id = H_id + comp%id_cp%cp(j+1)*comp%id_cp%cp(j+2)/(exp_x - 1)
+      enddo
+      H_id=H_id*Rgas + comp%href_int
+
     end select method_H
 
   end function Hideal
@@ -442,15 +470,16 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: sideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
     integer, intent(in) :: i
-    !
-    real :: S_id, TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: S_id, TminCp, TmaxCp, Ts, x, exp_x
 
     method_S: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
@@ -539,6 +568,16 @@ contains
            comp%id_cp%cp(3)*Ts**2/2.0+comp%id_cp%cp(4)*Ts**3/3.0-&
            comp%id_cp%cp(5)/(2.0*Ts**2)
       S_id=S_id + comp%sref_int
+
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      S_id = comp%id_cp%cp(1)*log(T)
+      do j=1,int((n_max_cp-1)/2)
+        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
+        x = comp%id_cp%cp(j+2)/T
+        exp_x = exp(x)
+        S_id = S_id + comp%id_cp%cp(j+1)*(x*(1/(exp_x-1) +1) - log(1 - exp_x))
+      enddo
+      S_id=S_id*Rgas + comp%sref_int
 
     end select method_S
   end function Sideal_T

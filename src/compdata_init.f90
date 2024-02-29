@@ -224,7 +224,7 @@ submodule (compdata) comp_init
     implicit none
     integer, intent(in) :: index
     integer, intent(in) :: correlation
-    real, intent(in) :: parameters(10)
+    real, intent(in) :: parameters(n_max_cp)
     ! Locals
     type(gendata_pointer), pointer :: p_comps(:)
     p_comps => get_active_comps()
@@ -237,7 +237,7 @@ submodule (compdata) comp_init
     implicit none
     integer, intent(in) :: index
     integer, intent(out) :: correlation
-    real, intent(out) :: parameters(10)
+    real, intent(out) :: parameters(n_max_cp)
     ! Locals
     type(gendata_pointer), pointer :: p_comps(:)
     p_comps => get_active_comps()
