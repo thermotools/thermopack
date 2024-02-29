@@ -45,7 +45,7 @@
     "Tmax": 25.0
   },
   "ideal_heat_capacity-1": {
-    "ref": "MEOS",
+    "ref": "MEOS/Default",
     "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
     "correlation": 13,
     "cp": [

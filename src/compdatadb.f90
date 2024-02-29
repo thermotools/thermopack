@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-02-28T20:50:32.277509
+!! Time stamp: 2024-02-29T11:05:33.858187
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -2437,7 +2437,7 @@ module compdatadb
 
   type (cpdata), parameter :: cp33 = &
       cpdata(cid = "H2", &
-      ref = "MEOS", &
+      ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
       cptype = 13, &
       cp = (/2.50000000e+00,1.61600000e+00,5.31000000e+02,-4.11700000e-01,7.51000000e+02, &
@@ -3805,7 +3805,7 @@ module compdatadb
 
   type (cpdata), parameter :: cp50 = &
       cpdata(cid = "O-H2", &
-      ref = "MEOS", &
+      ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
       cptype = 13, &
       cp = (/2.50000000e+00,2.54151000e+00,8.56000000e+02,-2.36610000e+00,1.44400000e+03, &
@@ -4008,7 +4008,7 @@ module compdatadb
 
   type (cpdata), parameter :: cp53 = &
       cpdata(cid = "P-H2", &
-      ref = "MEOS", &
+      ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
       cptype = 13, &
       cp = (/2.50000000e+00,4.30256000e+00,4.99000000e+02,1.30289000e+01,8.26500000e+02, &

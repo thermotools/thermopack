@@ -40,6 +40,7 @@ module ideal
   !!                               exp(CP(5)/T)/(exp(CP(5)/T)-1)**2 + ... (-) *
   !! \endverbatim
   use thermopack_var, only: Rgas
+  use numconstants, only: expMax
   implicit none
   save
   ! Include TREND interface
@@ -284,11 +285,12 @@ contains
 
     case (CP_EINSTEIN_SI) ! Sum of Einstein functions
       Cp_id = comp%id_cp%cp(1)
-      do j=1,int((n_max_cp-1)/2)
-        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
-        x = comp%id_cp%cp(j+2)/T
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
         exp_x = exp(x)
-        Cp_id = Cp_id + comp%id_cp%cp(j+1)*x**2*exp_x/(exp_x - 1)**2
+        Cp_id = Cp_id + comp%id_cp%cp(2*j)*x**2*exp_x/(exp_x - 1)**2
       enddo
       Cp_id = Cp_id*rgas
 
@@ -443,11 +445,12 @@ contains
 
     case (CP_EINSTEIN_SI) ! Sum of Einstein functions
       H_id = comp%id_cp%cp(1)*T
-      do j=1,int((n_max_cp-1)/2)
-        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
-        x = comp%id_cp%cp(j+2)/T
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
         exp_x = exp(x)
-        H_id = H_id + comp%id_cp%cp(j+1)*comp%id_cp%cp(j+2)/(exp_x - 1)
+        H_id = H_id + comp%id_cp%cp(2*j)*comp%id_cp%cp(2*j+1)/(exp_x - 1)
       enddo
       H_id=H_id*Rgas + comp%href_int
 
@@ -571,11 +574,12 @@ contains
 
     case (CP_EINSTEIN_SI) ! Sum of Einstein functions
       S_id = comp%id_cp%cp(1)*log(T)
-      do j=1,int((n_max_cp-1)/2)
-        if (abs(comp%id_cp%cp(j+1)) < 1.0e-12) exit
-        x = comp%id_cp%cp(j+2)/T
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
         exp_x = exp(x)
-        S_id = S_id + comp%id_cp%cp(j+1)*(x*(1/(exp_x-1) +1) - log(1 - exp_x))
+        S_id = S_id + comp%id_cp%cp(2*j)*(x*(1/(exp_x-1) +1) - log(exp_x - 1))
       enddo
       S_id=S_id*Rgas + comp%sref_int
 
