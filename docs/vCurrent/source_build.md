@@ -19,8 +19,8 @@ For documentation on the version available on pypi, refer to the appropriate ver
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
 the Python frontend pycThermopack. When things are properly installed, it may
-be useful to look into the examples provided in the
-[addon/pyExamples](addon/pyExamples/README.md).
+be useful to look into the examples provided in the [getting started guide](getting_started.html), and the 
+[pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
 
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran
@@ -66,7 +66,7 @@ option, i.e.:
 pip3 install -e --user .
 ```
 
-See also [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See also [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 more details on pycThermopack.
 
 ### MacOS setup
@@ -104,7 +104,7 @@ Copy LAPACK and BLAS libraries to the paths:
 
 Open thermopack\MSVStudio\thermopack.sln using Visual Studio, and compile the wanted configuration.
 
-See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 how to install pycThermopack.
 
 #### MSYS2/Mingw-W64 setup
@@ -126,11 +126,11 @@ cd thermopack
 mingw32-make.exe optim
 ```
 
-See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 how to install pycThermopack for the MSYS2 environment.
 
 ### Docker setup
-See [addon/docker/README.md](addon/docker/README.md) for
+See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main/addon/docker) for
 available Dockerfiles to run Thermopack with docker.
 
 ### CMake setup

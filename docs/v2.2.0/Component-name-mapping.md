@@ -1,5 +1,5 @@
 ---
-version: 2.2.0
+version: 2.2
 layout: default
 title: Component identifiers
 permalink: /v2.2.0/Component-name-mapping.html

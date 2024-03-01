@@ -1200,7 +1200,6 @@ Bubble- and dew point calculations and phase envelopes.
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
-    * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone)
     * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)

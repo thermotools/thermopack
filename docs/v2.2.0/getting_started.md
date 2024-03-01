@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Getting Started
 permalink: /v2.2.0/getting_started.html
 ---
@@ -13,7 +13,7 @@ will also work with v2.2.0. This guide primarily aims to demonstrate functionali
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.2.0/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](/thermopack/v2.2.0/thermo_methods.html). For more advanced users, a look at the [more advanced page](/thermopack/v2.2.0/more_advanced.html) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be 
-initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). 
+initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). 
 Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
@@ -24,7 +24,7 @@ Then, a wide variety of thermodynamic computations can be done, as demonstrated 
   * [Flash calculations](#flash-calculations)
   * [Phase envelopes](#phase-envelopes)
     * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
-    * [pxy- and txy- envelopes](#pxy--and-txy--phase-envelopes)
+    * [pxy- and Txy- envelopes](#pxy--and-txy--phase-envelopes)
   * [Dew- and bubble points](#dew--and-bubble-points)
 * [Isolines](#isolines)
 * [Critical point](#critical-point)
@@ -123,8 +123,8 @@ where `eos.VAPPH` and `eos.LIQPH` are [phase flags](/thermopack/v2.1.0/phase_fla
 Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods 
 `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, 
 `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the 
-[TV-property interfaces](/thermopack/v2.2.0/thermo_methods.html#TV-property-interfaces) and the 
-[Tp-property interfaces](/thermopack/v2.2.0/thermo_methods.html#Tp-property-interfaces) of the 
+[TV-property interfaces](/thermopack/v2.2.0/thermo_methods.html#tv-property-interfaces) and the 
+[Tp-property interfaces](/thermopack/v2.2.0/thermo_methods.html#tp-property-interfaces) of the 
 [`thermo` class](/thermopack/v2.2.0/thermo_methods.html).
 
 ### Differentials

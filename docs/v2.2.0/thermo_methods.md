@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the thermo class
 permalink: /v2.2.0/thermo_methods.html
 ---

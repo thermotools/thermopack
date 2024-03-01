@@ -8,7 +8,7 @@ permalink: /v2.1.0/getting_started.html
 # Getting started - Python
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](/thermopack/v2.1.0/thermo_methods.html). For more advanced users, a look at the [more advanced page in the wiki](/thermopack/v2.1.0/more_advanced.html) may also be useful.
 
-Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
+Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
 * [Initialising an equation of state](#initialising-an-equation-of-state)
@@ -96,8 +96,8 @@ where `eos.VAPPH` and `eos.LIQPH` are [phase flags](/thermopack/v2.1.0/phase_fla
 Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods 
 `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, 
 `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the 
-[TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#TV-property-interfaces) and the 
-[Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
+[TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#tv-property-interfaces) and the 
+[Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
 
 ### Differentials
 
@@ -166,7 +166,7 @@ what is returned, an in what order.
 
 ### Phase envelopes
 
-ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples).
+ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples).
 
 #### Tp- and Tv- phase envelopes
 

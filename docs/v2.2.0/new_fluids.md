@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Adding new fluids
 permalink: /v2.2.0/new_fluids.html
 ---

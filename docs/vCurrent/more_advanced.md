@@ -27,9 +27,14 @@ cs.set_lij(1,2,-0.032)
 lij = cs.get_lij(1,2)
 ```
 
+## Tuning Cubics
+Cubic Equations of state implemented in ThermoPack can be accessed through the generic [`cubic` class](cubic_methods.html).
+This class also offers a variety of methods to tune the alpha-function, mixing rules etc. See the [documentation for 
+the `cubic` class](cubic_methods.html) for more information.
+
 ## The different property interfaces (TV-) (Tp-) and (TVp-)
 
-Property calculations in ThermoPack can be done either through the [TV-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#tv-property-interfaces), the [Tp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) or the [TVp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TVp-property-interfaces).
+Property calculations in ThermoPack can be done either through the [TV-interfaces](thermo_methods.html#tv-property-interfaces), the [Tp-interfaces](thermo_methods.html#tp-property-interfaces) or the [TVp-interfaces](thermo_methods.html#tvp-property-interfaces).
 
 The difference between the TV- and Tp- interface is only what variables the properties are computed as functions of, and what variables are held constant in the derivatives. TV-interface methods compute properties as functions of $(T, V, n)$, while Tp-interface methods compute properties as functions of $(T, p, n)$. 
 

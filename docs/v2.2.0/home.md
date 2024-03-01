@@ -1,11 +1,11 @@
 ---
-version: 2.2.0
+version: 2.2
 layout: home
-title: ThermoPack v2.2.0
+title: ThermoPack v2.2
 permalink: /v2.2.0/home.html
 ---
 
-ThermoPack 2.2.0 was released in Febuary 2024, and is available on the [Python Packaging Index (PyPI)](https://pypi.org/project/thermopack/). 
+ThermoPack 2.2 was released in Febuary 2024, and is available on the [Python Packaging Index (PyPI)](https://pypi.org/project/thermopack/). 
 This release contains several new features and interfaces, while remaining completely backwards compatible with [ThermoPack 2.1.0](/thermopack/v2.1.0/home.html).
 
 Thermopack is a thermodynamics library for multi-component and
@@ -29,7 +29,7 @@ computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
 Python wrapper to make scripting easy.
 
-## Updates in v2.2.0
+## Updates in v2.2
 
 * New return patterns for more flexible, less error prone, handling of output
   * New return struct for flash- calculations, making it easier and less error prone to access desired results.
