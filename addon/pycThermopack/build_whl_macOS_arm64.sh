@@ -2,12 +2,12 @@
 
 set -e
 
-tp_version="2.2.0"
+tp_version="2.2.1"
 
 cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
 cd ../..
 
-# make clean
+make clean
 make optim
 cd addon/pycThermopack
 
@@ -25,4 +25,11 @@ mv thermopack-${tp_version}-py3-none-any.whl thermopack-${tp_version}-py3-none-m
 echo "Successfull built and delocated wheel for ThermoPack ${tp_version}"
 exit 0
 
-twine upload -r testpypi wheelhouse/*
+# DANGER ZONE: THIS UPLOADS FILES TO PYPI! ONLY WRITTEN HERE TO REMEMBER THE COMMANDS.
+
+twine upload -r testpypi wheelhouse/thermopack-${tp_version}-py3-none-macosx_11_0_arm64.whl
+
+exit 0
+
+twine upload wheelhouse/thermopack-${tp_version}-py3-none-macosx_11_0_arm64.whl
+

@@ -35,7 +35,7 @@ if __name__ == "__main__":
     pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
 
     if args.diffs == 'v2':
-        version = '2.2.0'
+        version = '2.2.1'
     elif args.diffs == 'v3':
         version = '3.b0'
     else:
