@@ -48,7 +48,7 @@ Ideal gas heat capacity correlations, and the corresponding keys used in the flu
 | 10  | Leachman & Valenta for H2           | -                                                             | -                     |
 | 11  | Use TREND model                     | -                                                             | -                     |
 | 12  | Shomate equation∗                   | $A + B Ts + C Ts^2 + D Ts^3 + E Ts^-2$                        | $J mol^-1 K^-1$       |
-| 13  | Einstein equation                  | $R (A + \sum_i B_i (C_i / T)^2 exp[C_i / T]) / (exp[C_i / T] - 1)^2 |  $J mol^-1 K^-1$  |
+| 13  | Einstein equation sum                | $R (A + \sum_i B_i (C_i / T)^2 exp[C_i / T] / (exp[C_i / T] - 1)^2)$ |  $J mol^-1 K^-1$  |
 
 
 (a)3rd ed.(c)DIPPR-database
