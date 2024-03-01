@@ -34,21 +34,21 @@ of the fluid files. These are summarized in the table below.
 Ideal gas heat capacity correlations, and the corresponding keys used in the fluid-database.
 ```
 
-| Key | Correlation                         | Equation                                                      | Unit                  |
-|-----|-------------------------------------|---------------------------------------------------------------|-----------------------|
-| 1   | Sherwood, Reid & Prausnitz(a)       | $A + BT + CT^2 + DT^3$                                        | $cal g^-1 mol^-1 K^-1$ |
-| 2   | API-Project                         | 44                                                            | -                     |
-| 3   | Hypothetic components               | -                                                             | -                     |
-| 4   | Sherwood, Reid & Prausnitz(b)       | $A + BT + CT^2 + DT^3$                                        | $J mol^-1 K^-1$       |
-| 5   | Ici (Krister Strøm)                | $A + BT + CT^2 + DT^3 + ET^-2$                                | $J g^-1 K^-1$         |
-| 6   | Chen, Bender (Petter Nekså)         | $A + BT + CT^2 + DT^3 + ET^4$                                 | $J g^-1 K^-1$         |
-| 7   | Aiche, Daubert & Danner(c)          | $A + B [ (C / T) sinh(C/T) ]^2 + D [ (E / T) cosh(E / T) ]^2$ | $J kmol^-1 K^-1$      |
-| 8   | Poling, Prausnitz & O’Connel(d)     | $R ( A + BT + CT^2 + DT^3 + ET^4 )$                           | $J mol^-1 K^-1$       |
-| 9   | Linear function and fraction       | $A + BT + TC + D$                                             | $J mol^-1 K^-1$       |
-| 10  | Leachman & Valenta for H2           | -                                                             | -                     |
-| 11  | Use TREND model                     | -                                                             | -                     |
-| 12  | Shomate equation∗                   | $A + B Ts + C Ts^2 + D Ts^3 + E Ts^-2$                        | $J mol^-1 K^-1$       |
-
+| Key | Correlation                         | Equation                                                            | Unit                  |
+|-----|-------------------------------------|---------------------------------------------------------------------|-----------------------|
+| 1   | Sherwood, Reid & Prausnitz(a)       | $A + BT + CT^2 + DT^3$                                              | $cal g^-1 mol^-1 K^-1$ |
+| 2   | API-Project                         | 44                                                                  | -                     |
+| 3   | Hypothetic components               | -                                                                   | -                     |
+| 4   | Sherwood, Reid & Prausnitz(b)       | $A + BT + CT^2 + DT^3$                                              | $J mol^-1 K^-1$       |
+| 5   | Ici (Krister Strøm)                | $A + BT + CT^2 + DT^3 + ET^-2$                                      | $J g^-1 K^-1$         |
+| 6   | Chen, Bender (Petter Nekså)         | $A + BT + CT^2 + DT^3 + ET^4$                                       | $J g^-1 K^-1$         |
+| 7   | Aiche, Daubert & Danner(c)          | $A + B [ (C / T) sinh(C/T) ]^2 + D [ (E / T) cosh(E / T) ]^2$       | $J kmol^-1 K^-1$      |
+| 8   | Poling, Prausnitz & O’Connel(d)     | $R ( A + BT + CT^2 + DT^3 + ET^4 )$                                 | $J mol^-1 K^-1$       |
+| 9   | Linear function and fraction       | $A + BT + TC + D$                                                   | $J mol^-1 K^-1$       |
+| 10  | Leachman & Valenta for H2           | -                                                                   | -                     |
+| 11  | Use TREND model                     | -                                                                   | -                     |
+| 12  | Shomate equation∗                   | $A + B Ts + C Ts^2 + D Ts^3 + E Ts^-2$                              | $J mol^-1 K^-1$       |
+| 13  | Einstein equation sum               | $R (A + \sum_i B_i (C_i / T)^2 exp[C_i / T] / (exp[C_i / T] - 1)^2)$ |  $J mol^-1 K^-1$  |
 
 (a)3rd ed.(c)DIPPR-database
 
