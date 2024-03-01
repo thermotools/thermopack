@@ -143,8 +143,12 @@ class component(fluid_file):
         for numbers in self.fluid[tag]["cp"]:
             cpi = '{:.8e}'.format(numbers)
             cp.append(cpi)
+        if len(cp) < 21: # Pad list
+            cp += ["0.0d0"]*(21-len(cp))
         code_lines.append(3*I + "cp = (/" + cp[0] + "," + cp[1] + "," + cp[2] + "," + cp[3] + "," + cp[4] + ", &")
-        code_lines.append(3*I + cp[5] + "," + cp[6] + "," + cp[7] + "," + cp[8] + "," + cp[9] + "/), &")
+        code_lines.append(3*I + cp[5] + "," + cp[6] + "," + cp[7] + "," + cp[8] + "," + cp[9] + ", &")
+        code_lines.append(3*I + cp[10] + "," + cp[11] + "," + cp[12] + "," + cp[13] + "," + cp[14] + ", &")
+        code_lines.append(3*I + cp[15] + "," + cp[16] + "," + cp[17] + "," + cp[18] + "," + cp[19] + "," + cp[20] + "/), &")
         code_lines.append(3*I + 'Tcpmin = {:.4f}'.format(self.fluid[tag]["Tmin"]) + ", &")
         code_lines.append(3*I + 'Tcpmax = {:.4f}'.format(self.fluid[tag]["Tmax"]) + "  &")
         code_lines.append(3*I + ")")

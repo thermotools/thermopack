@@ -22,7 +22,11 @@ module compdata
        CP_MOGENSEN_SI=9, &
        CP_H2_KMOL=10, &
        CP_TREND_SI=11, &
-       CP_SHOMATE_SI=12
+       CP_SHOMATE_SI=12, &
+       CP_EINSTEIN_SI=13
+
+  ! Maximum number of cp parameters
+  integer, parameter :: n_max_cp=21
 
   !> Ideal heat capacity at constant pressure
   type :: cpdata
@@ -30,7 +34,7 @@ module compdata
     character (len=ref_len) :: ref !< Data group reference
     character (len=bibref_len) :: bib_ref !> Bibliograpich reference
     integer :: cptype                     !> Correlation type (see above)
-    real, dimension(10) :: cp             !> Cp correlation parameters
+    real, dimension(n_max_cp) :: cp       !> Cp correlation parameters
     real :: tcpmin                        !> Correlation lower temperature limit [K]
     real :: tcpmax                        !> Correlation upper temperature limit [K]
   !contains
@@ -164,7 +168,7 @@ module compdata
     module subroutine set_ideal_cp_correlation(index, correlation, parameters)
       integer, intent(in) :: index
       integer, intent(in) :: correlation
-      real, intent(in) :: parameters(10)
+      real, intent(in) :: parameters(n_max_cp)
     end subroutine set_ideal_cp_correlation
   end interface
 
@@ -172,7 +176,7 @@ module compdata
     module subroutine get_ideal_cp_correlation(index, correlation, parameters)
       integer, intent(in) :: index
       integer, intent(out) :: correlation
-      real, intent(out) :: parameters(10)
+      real, intent(out) :: parameters(n_max_cp)
     end subroutine get_ideal_cp_correlation
   end interface
 
@@ -180,7 +184,7 @@ module compdata
     class(gendata), pointer :: p_comp => NULL()
   end type gendata_pointer
 
-  public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb
+  public :: gendatadb, gendata, cpdata, alphadatadb, cidatadb, n_max_cp
   public :: getComp, compIndex, copy_comp, comp_index_active, comp_name_active
   public :: parseCompVector, initCompList, deallocate_comp
   public :: get_ideal_cp_correlation, set_ideal_cp_correlation
