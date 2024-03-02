@@ -218,7 +218,17 @@ numpy = "^1.1"
     with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
         file.write(contents)
 
-
+def get_platform_specifics_windows_ifort_whl():
+    pf_specifics = {}
+    pf_specifics["os_id"] = "win"
+    pf_specifics["prefix"] = ""
+    pf_specifics["module"] = "_mp_"
+    pf_specifics["postfix"] = "_"
+    pf_specifics["postfix_no_module"] = "_"
+    pf_specifics["dyn_lib"] = "thermopack.dll"
+    pf_specifics["diff_return_mode"] = "v2"
+    return pf_specifics
+	
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
         __file__), "thermopack", "platform_specifics.py")

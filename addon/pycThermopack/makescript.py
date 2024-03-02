@@ -9,6 +9,29 @@ import warnings
 from pathlib import Path
 import map_platform_specifics
 
+VERSION_2 = '2.2.1'
+VERSION_3 = '3.b0'
+
+def windows_make(diffs):
+    if diffs == 'v2':
+        version = VERSION_2
+    else:
+        version = VERSION_3
+        diffs = 'v3'
+    pf_specifics = {}
+    pf_specifics["os_id"] = "win"
+    pf_specifics["prefix"] = ""
+    pf_specifics["module"] = "_mp_"
+    pf_specifics["postfix"] = "_"
+    pf_specifics["postfix_no_module"] = "_"
+    pf_specifics["dyn_lib"] = "thermopack.dll"
+    pf_specifics["diff_return_mode"] = diffs
+    pf_specifics_path = os.path.join(os.path.dirname(__file__), "thermopack", "platform_specifics.py")
+    map_platform_specifics.write_platform_specifics_file(pf_specifics, pf_specifics_path)
+    map_platform_specifics.write_setup_file(f'v{version}')
+    map_platform_specifics.write_toml_file(version)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", type=str, help="optim or debug")
@@ -35,13 +58,13 @@ if __name__ == "__main__":
     pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
 
     if args.diffs == 'v2':
-        version = '2.2.1'
+        version = VERSION_2
     elif args.diffs == 'v3':
-        version = '3.b0'
+        version = VERSION_3
     else:
         warnings.warn(f'-diffs={args.diffs} is not a valid value. Valid values are -diffs=[v2.1/v3], treating as -diffs=v3',
                       Warning)
-        version = '3.b0'
+        version = VERSION_3
         args.diffs = 'v3'
 
     if args.diffs == 'v2':
