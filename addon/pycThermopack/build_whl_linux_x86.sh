@@ -16,7 +16,7 @@ make clean
 make optim
 cd addon/pycThermopack
 
-python makescript.py optim -diffs=v2
+python3.9 makescript.py optim -diffs=v2
 
 # Clean out old build stuff
 rm -rf ./thermopack.egg-info/
