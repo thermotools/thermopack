@@ -3201,7 +3201,7 @@ class thermo(object):
     def get_binary_pxy(self,
                        temp,
                        maximum_pressure=1.5e7,
-                       minimum_pressure=1.0e5,
+                       minimum_pressure=1.0,
                        maximum_dz=0.003,
                        maximum_dlns=0.01):
         """Saturation interface
@@ -3210,7 +3210,7 @@ class thermo(object):
         Args:
             temp (float): Temperature (K)
             maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
-            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0.
             maximum_dz (float, optional): Maximum composition step. Defaults to 0.003.
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 
