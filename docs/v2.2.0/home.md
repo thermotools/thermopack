@@ -1,26 +1,12 @@
 ---
-version: 2.2.0
+version: 2.2
 layout: home
-title: ThermoPack beta-v2.2.0
+title: ThermoPack v2.2
 permalink: /v2.2.0/home.html
 ---
 
-ThermoPack 2.2.0 is intended to implement new features from the [Latest version](/thermopack/) while remaining completely 
-backwards compatible with version 2.1.0. Version 2.2.0 is still i beta, and has not yet been released on PyPI, but can 
-be [installed from source](/thermopack/v2.2.0/source_build.html#building-from-source).
-
-Updates included in v2.2.0 are currently
-
-* New return patterns for more flexible, less error prone, handling of output
-  * New return struct for flash- calculations, making it easier and less error prone to access desired results.
-  * New return struct for pxy phase envelopes for easier and less error prone access to results.
-* Interface for computing Txy-phase envelopes
-* Interface for computing the spinodal curve
-* Computation of isolines in the metastable region
-* More solid property calculations
-* Interfaces to extract specific Helmholtz energy contributions to SAFT-type equations of state.
-* More interfaces for tuning `cubic` and `cpa` type equations of state
-* Convenient wrapper classes for specific equations of state derived from `cubic`, `cpa` and `pcsaft`.
+ThermoPack 2.2 was released in Febuary 2024, and is available on the [Python Packaging Index (PyPI)](https://pypi.org/project/thermopack/). 
+This release contains several new features and interfaces, while remaining completely backwards compatible with [ThermoPack 2.1.0](/thermopack/v2.1.0/home.html).
 
 Thermopack is a thermodynamics library for multi-component and
 multi-phase thermodynamics developed at [SINTEF Energy
@@ -42,3 +28,17 @@ to handle heavy numerical computations associated with process and
 computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
 Python wrapper to make scripting easy.
+
+## Updates in v2.2
+
+* New return patterns for more flexible, less error prone, handling of output
+  * New return struct for flash- calculations, making it easier and less error prone to access desired results.
+  * New return struct for pxy phase envelopes for easier and less error prone access to results.
+* Interface for computing Txy-phase envelopes
+* Interface for computing the spinodal curve
+* Computation of isolines in the metastable region
+* More solid property calculations
+* Interfaces to extract specific Helmholtz energy contributions to SAFT-type equations of state.
+* More interfaces for tuning `cubic` and `cpa` type equations of state
+* Convenient wrapper classes for specific equations of state derived from `cubic`, `cpa` and `pcsaft`.
+* Accurate reference values for entropies and enthalpies, allowing for reaction equilibria calculations.

@@ -40,13 +40,19 @@
 <div class="sidebar">
     {% if page.version == "2.1.0" %}
       {% capture sidebar_content %}{% include sidebar_2.1.0.md %}{% endcapture %}
-      {% assign home_link = "/thermopack/v2.1.0/home.html" %}
-    {% elsif page.version == "2.2.0" %}
+      {% assign home_link = site.home_link.v210 %}
+      {% assign github_link = site.github_link.v210 %}
+      {% assign zip_url = site.zip_url.v210 %}
+    {% elsif page.version == 2.2 %}
       {% capture sidebar_content %}{% include sidebar_2.2.0.md %}{% endcapture %}
-      {% assign home_link = "/thermopack/v2.2.0/home.html" %}
+      {% assign home_link = site.home_link.v22 %}
+      {% assign github_link = site.github_link.v22 %}
+      {% assign zip_url = site.zip_url.v22 %}
     {% else %}
       {% capture sidebar_content %}{% include sidebar.md %}{% endcapture %}
-      {% assign home_link = "/thermopack/index.html" %}
+      {% assign home_link = site.home_link.vcurrent %}
+      {% assign github_link = site.github_link.vcurrent %}
+      {% assign zip_url = site.zip_url.vcurrent %}
     {% endif %}
 
     <div>
@@ -57,13 +63,13 @@
 
     <div class="sidebar-buttons">
         <div class="sidebar-button">
-            <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
+            <a href="{{ github_link }}" class="btn">View on GitHub</a>
         </div>
         <div class="sidebar-button">
             <a href="{{ site.pypi_url }}" class="btn">View on PyPi</a>
         </div>
         <div class="sidebar-button">
-            <a href="{{ site.github.zip_url }}" class="btn">Download .zip</a>
+            <a href="{{ zip_url }}" class="btn">Download .zip</a>
         </div>
     </div>
 </div>

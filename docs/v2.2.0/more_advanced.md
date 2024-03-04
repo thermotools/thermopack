@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: More advanced usage
 permalink: /v2.2.0/more_advanced.html
 ---
@@ -26,6 +26,11 @@ cs.set_lij(1,2,-0.032)
 #We want to see what the parameter is which returns that lij = -0.032
 lij = cs.get_lij(1,2)
 ```
+
+## Tuning Cubics
+Cubic Equations of state implemented in ThermoPack can be accessed through the generic [`cubic` class](cubic_methods.html).
+This class also offers a variety of methods to tune the alpha-function, mixing rules etc. See the [documentation for 
+the `cubic` class](cubic_methods.html) for more information.
 
 ## The different property interfaces (TV-) (Tp-) and (TVp-)
 

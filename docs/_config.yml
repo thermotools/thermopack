@@ -17,3 +17,18 @@ data_sources:
 includes_dir: _includes
 
 pypi_url: 'https://pypi.org/project/thermopack/'
+
+zip_url:
+  vcurrent: 'https://github.com/thermotools/thermopack/archive/refs/heads/main.zip'
+  v210: 'https://github.com/thermotools/thermopack/archive/refs/tags/v2.1.0.zip'
+  v22: 'https://github.com/thermotools/thermopack/archive/refs/heads/main.zip'
+
+github_link:
+  vcurrent: 'https://github.com/thermotools/thermopack/tree/main'
+  v210: 'https://github.com/thermotools/thermopack/tree/v2.1.0'
+  v22: 'https://github.com/thermotools/thermopack/tree/main'
+
+home_link:
+  vcurrent: '/thermopack/index.html'
+  v210: '/thermopack/v2.1.0/home.html'
+  v22: '/thermopack/v2.2.0/home.html'

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-02-20T13:43:40.892001
+Generated at: 2024-02-26T08:36:50.921301
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -28,7 +28,9 @@ state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
 
-For the full documentation and user guide to ThermoPack, check out the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
+the version number in the sidebar.
 
 ![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
@@ -821,7 +823,7 @@ $$ \tilde{p}(\sigma) = \frac{p_{\rm{sat}}(T_{\rm{triple}}) }{p(\sigma(T_{\rm{tri
 
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2024-01-02T14:52:39.408470
+Generated at : 2024-02-19T15:48:32.012730
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -905,7 +907,7 @@ You may have to scroll right to view the whole table.
 | Oxygen | 7782-44-7 | O2 | &#10004; | &#10004; |   |
 | Para-hydrogen | 1333-74-0 | P-H2 | &#10004; |   |   |
 | Pentafluoroethane | 354-33-6 | R125 |   |   |   |
-| Propadiene | 7173-51-5 | ALLENE |   |   |   |
+| Propadiene | 463-49-0 | ALLENE |   |   |   |
 | Propane | 74-98-6 | C3 | &#10004; | &#10004; | &#10004; |
 | Propylene | 115-07-1 | PRLN |   |   |   |
 | Pseudo | XXX | PSEUDO |   |   |   |
@@ -916,7 +918,7 @@ You may have to scroll right to view the whole table.
 | Toluene | 108-88-3 | TOLU |   | &#10004; |   |
 | Trans-1,3,3,3-tetrafluoropropene | 29118-24-9 | R1234ze |   |   |   |
 | Trichlorofluoromethane | 75-69-4 | R11 |   |   |   |
-| Trifluoroamineoxide | 13847-65-9 | F3NO |   |   |   |
+| Trifluoroamine oxide | 13847-65-9 | F3NO |   |   |   |
 | Trifluoromethane | 75-46-7 | R23 |   |   |   |
 | Water | 7732-18 | H2O | &#10004; | &#10004; | &#10004; |
 | Xenon | 7440-63-3 | XE | &#10004; |   |   |

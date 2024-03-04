@@ -91,7 +91,7 @@ def get_header(files):
 
 def write_pypi_readme():
     files = ['readme_parts/header', 'readme_parts/pypi_toc', 'metapages/please_cite', 'readme_parts/pypi_structure',
-             'v2.1.0/getting_started', 'v2.1.0/more_advanced', 'v2.1.0/Component-name-mapping']
+             'v2.2.0/getting_started', 'v2.2.0/more_advanced', 'v2.2.0/Component-name-mapping']
     header = get_header(files)
     contents = gen_file_str(files)
     out_file_str = header + contents
