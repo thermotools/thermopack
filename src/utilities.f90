@@ -206,15 +206,16 @@ contains
   !!
   !! \author MH, 2019-05
   !-------------------------------------------------------------------------
-  subroutine isXwithinBounds(n,X,Xmin,Xmax,varlist,errmess,ierr)
+  subroutine isXwithinBounds(n,X,Xmin,Xmax,varlist,errmess,ierr,do_print)
     integer, intent(in) :: n
     real, intent(in) :: X(n),Xmin(n),Xmax(n)
     character(len=*), intent(in) :: errmess
     character(len=*), intent(in) :: varlist
     integer, optional, intent(out) :: ierr
+    logical, optional, intent(in) :: do_print ! Supress printing? Default on.
     ! Locals
     integer :: i
-    logical :: isWithin
+    logical :: isWithin, do_print_local
     isWithin = .true.
     if (present(ierr)) then
       ierr = 0
@@ -223,13 +224,17 @@ contains
       isWithin = (isWithin .and. X(i) >= Xmin(i) .and. X(i) <= Xmax(i))
     enddo
     if (.not. isWithin) then
-      print *,trim(varlist)
-      print *,"Xmin",Xmin
-      print *,"X   ",X
-      print *,"Xmax",Xmax
+      do_print_local = .true.
+      if (present(do_print)) do_print_local = do_print
+      if (do_print_local) then
+        print *,trim(varlist)
+        print *,"Xmin",Xmin
+        print *,"X   ",X
+        print *,"Xmax",Xmax
+      endif
       if (present(ierr)) then
         ierr = 1
-        print *,trim(errmess)
+        if (len_trim(errmess) > 0) print *,trim(errmess)
       else
         call stoperror(errmess)
       endif

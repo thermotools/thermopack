@@ -1756,11 +1756,11 @@ contains
     XXmin(3:6) = 0.0 ! Positive mol number
     if (ispec == TSPEC) then
       if (present(Pmin)) then
-        XXmin(neq) = log(max(tpPmin,Pmin)) !Pmin
+        XXmin(neq) = log(max(tpPmin,Pmin*0.95)) !Pmin
       else
         XXmin(neq) = log(tpPmin) !Pmin
       endif
-      XXmax(neq) = log(min(tpPmax,Pmax)) !Pmax
+      XXmax(neq) = log(min(tpPmax,Pmax*1.05)) !Pmax
     else
       XXmin(neq) = tpTmin
       XXmax(neq) = tpTmax
@@ -1769,7 +1769,7 @@ contains
     endif
     ! Validate initial values
     call isXwithinBounds(neq,XX,XXmin,XXmax,"ln K1, ln K2, x1, x2, y1, y2, ln T/P",&
-         "binaryStep error in initial values",ierr)
+         "",ierr,do_print=.false.)
     if (ierr /= 0) then
       ierr = -1 ! Return and solve for limit value
       return
