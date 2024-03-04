@@ -10,7 +10,7 @@ ThermoPack v2.2.0 is completely backwards compatible with v2.1.0, such that all 
 will also work with v2.2.0. This guide primarily aims to demonstrate functionality that is new in v2.2.0.
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.2.0/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](/thermopack/v2.2.0/thermo_methods.html). For more advanced users, a look at the [more advanced page](/thermopack/v2.2.0/more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.2/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](/thermopack/v2.2.0/thermo_methods.html). For more advanced users, a look at the [more advanced page](/thermopack/v2.2.0/more_advanced.html) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be 
 initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). 
@@ -96,7 +96,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/v2.2.0/addon/pyExamples) 
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/v2.2/addon/pyExamples) 
 and the [memo](/thermopack/memo/index.html).
 
 # Doing calculations
@@ -209,7 +209,7 @@ print(flsh)
 #   	Phase indentifier index        phase : 0  
 ```
 the result of the flash is accessed from the attributes of the `FlashResult` object, found in 
-[`utils.py`](https://github.com/thermotools/thermopack/tree/v2.2.0/addon/pycThermopack/thermopack/utils.py), as
+[`utils.py`](https://github.com/thermotools/thermopack/tree/v2.2/addon/pycThermopack/thermopack/utils.py), as
 ```Python
 # Continued
 x = flsh.x # Liquid composition
@@ -224,7 +224,7 @@ The `FlashResult` object returned by the different flash routines all contain th
 
 ThermoPack has interfaces to trace (T,p)-, (T,v)-, (p,x,y)- and (T, x, y)- phase envelopes. For the full documentation, 
 see the [docs of the `thermo` class](/thermopack/v2.2.0/thermo_methods.html#saturation-interfaces). 
-For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.2.0/addon/pyExamples).
+For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.2/addon/pyExamples).
 
 #### Tp- and Tv- phase envelopes
 
