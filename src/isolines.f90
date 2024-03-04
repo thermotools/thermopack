@@ -68,12 +68,12 @@ contains
           phase(n_vap+1:n) = LIQPH
           call linspace(Pmin,Pbub,n-n_vap,pa(n_vap+1:n))
         endif
-        do i=1,n
-          call specificvolume(T,pa(i),z,phase(i),va(i))
-          call enthalpy_tv(T,va(i),z,ha(i))
-          call entropy_tv(T,va(i),z,sa(i))
-        enddo
       endif
+      do i=1,n
+        call specificvolume(T,pa(i),z,phase(i),va(i))
+        call enthalpy_tv(T,va(i),z,ha(i))
+        call entropy_tv(T,va(i),z,sa(i))
+      enddo
     else
       !if (n > 15) then
       !  na = n - 2
@@ -171,12 +171,12 @@ contains
           phase(n_liq+1:n) = VAPPH
           call linspace(Tmin,Tbub,n-n_liq,ta(n_liq+1:n))
         endif
-        do i=1,n
-          call specificvolume(ta(i),P,z,phase(i),va(i))
-          call enthalpy_tv(ta(i),va(i),z,ha(i))
-          call entropy_tv(ta(i),va(i),z,sa(i))
-        enddo
       endif
+      do i=1,n
+        call specificvolume(ta(i),P,z,phase(i),va(i))
+        call enthalpy_tv(ta(i),va(i),z,ha(i))
+        call entropy_tv(ta(i),va(i),z,sa(i))
+      enddo
     else
       call linspace(Tmin,Tmax,n,ta)
       do i=1,n
