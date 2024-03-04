@@ -34,16 +34,16 @@ print(flsh)
 print()
 print("Gas molar fraction: {} (-)".format(flsh.betaV))
 
-s_l, = tc_pr.entropy(T, P, flsh.x, tc_pr.LIQPH)
-s_g, = tc_pr.entropy(T, P, flsh.y, tc_pr.VAPPH)
+s_l = tc_pr.entropy(T, P, flsh.x, tc_pr.LIQPH)
+s_g = tc_pr.entropy(T, P, flsh.y, tc_pr.VAPPH)
 s = s_g * flsh.betaV + s_l * flsh.betaL
 
-h_l, = tc_pr.enthalpy(T, P, flsh.x, tc_pr.LIQPH)
-h_g, = tc_pr.enthalpy(T, P, flsh.y, tc_pr.VAPPH)
+h_l = tc_pr.enthalpy(T, P, flsh.x, tc_pr.LIQPH)
+h_g = tc_pr.enthalpy(T, P, flsh.y, tc_pr.VAPPH)
 h = h_g * flsh.betaV + h_l * flsh.betaL
 
-v_l, = tc_pr.specific_volume(T, P, flsh.x, tc_pr.LIQPH)
-v_g, = tc_pr.specific_volume(T, P, flsh.y, tc_pr.VAPPH)
+v_l = tc_pr.specific_volume(T, P, flsh.x, tc_pr.LIQPH)
+v_g = tc_pr.specific_volume(T, P, flsh.y, tc_pr.VAPPH)
 v = v_g * flsh.betaV + v_l * flsh.betaL
 
 ps_flsh = tc_pr.two_phase_psflash(P, z, s, temp=None)

@@ -15,7 +15,7 @@ Pclist = np.array([eos.critical_pressure(i) for i in cindices])
 acflist = np.array([eos.acentric_factor(i) for i in cindices])
 Mwlist = np.array([eos.compmoleweight(i) * 1e-3 for i in cindices]) # kg/mol
 kijmat = [[eos.get_kij(i, j) for i in cindices] for j in cindices]
-p1, dp1dt, dp1dv = eos.pressure_tv(temp=150, volume=1e-2, n=[1.0, 2.0], dpdt=True, dpdv=True)
+p1, dp1 = eos.pressure_tv(temp=150, volume=1e-2, n=[1.0, 2.0], dpdt=True, dpdv=True)
 print('pressure : ', p1)
 #print(dp1.dT)
 
@@ -28,6 +28,6 @@ print('pressure : ', p1)
 eos = cubic("C1,PSEUDO", "PR", mixing="HV")
 eos.init_pseudo(comps="C1,ArbitraryName", Tclist=Tclist, Pclist=Pclist, acflist=acflist, Mwlist=Mwlist)
 _ = [[eos.set_kij(i, j, kijmat[i - 1][j - 1]) for i in cindices] for j in cindices]
-p2, dp2dt, dp2dv = eos.pressure_tv(temp=150, volume=1e-2, n=[1.0, 2.0], dpdt=True, dpdv=True)
+p2, dp2 = eos.pressure_tv(temp=150, volume=1e-2, n=[1.0, 2.0], dpdt=True, dpdv=True)
 print('pressure : ', p2)
 #print(dp2.dT)

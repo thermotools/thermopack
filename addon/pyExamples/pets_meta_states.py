@@ -33,7 +33,7 @@ phases["VAP"] = PeTS.VAPPH
 
 # Critical point
 Tc, vc, Pc = PeTS.critical(z)
-muc, = PeTS.chemical_potential_tv(temp=Tc, volume=vc, n=z)
+muc = PeTS.chemical_potential_tv(temp=Tc, volume=vc, n=z)
 critical = {}
 critical["T"] = calc_reduced_T(np.array([Tc]) ,eps)
 critical["rho"] = calc_reduced_rho(np.array([1/vc]), sigma)
@@ -82,9 +82,9 @@ for Tstar in temperatures:
         Prho = np.zeros_like(vz)
         muz = np.zeros_like(vz)
         for i in range(n):
-            Pz[i], = PeTS.pressure_tv(Tiso, vz[i], z)
-            Prho[i], = PeTS.pressure_tv(Tiso, 1.0, rho[i][:])
-            muz[i] = PeTS.chemical_potential_tv(temp=Tiso, volume=vz[i], n=z)[0][0]
+            Pz[i] = PeTS.pressure_tv(Tiso, vz[i], z)
+            Prho[i] = PeTS.pressure_tv(Tiso, 1.0, rho[i][:])
+            muz[i] = PeTS.chemical_potential_tv(temp=Tiso, volume=vz[i], n=z)[0]
         isoterms[Tstar][phase]["mu"] = calc_reduced_energy(muz ,eps)
         isoterms[Tstar][phase]["rho_z"] = calc_reduced_rho(1.0/vz, sigma)
         isoterms[Tstar][phase]["rho"] = calc_reduced_rho(rho, sigma)
@@ -97,8 +97,8 @@ for Tstar in temperatures:
     P_spin = np.zeros_like(rho_spin)
     mu_spin = np.zeros_like(rho_spin)
     for i in range(n):
-        P_spin[i], = PeTS.pressure_tv(Tiso, 1.0 / rho_spin[i], z)
-        mu_spin[i] = PeTS.chemical_potential_tv(temp=Tiso, volume=1.0/rho_spin[i], n=z)[0][0]
+        P_spin[i] = PeTS.pressure_tv(Tiso, 1.0 / rho_spin[i], z)
+        mu_spin[i] = PeTS.chemical_potential_tv(temp=Tiso, volume=1.0/rho_spin[i], n=z)[0]
     isoterms[Tstar]["P_spin"] = calc_reduced_P(P_spin, eps, sigma)
     isoterms[Tstar]["mu_spin"] = calc_reduced_energy(mu_spin ,eps)
 
