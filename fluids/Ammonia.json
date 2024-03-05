@@ -176,7 +176,8 @@
       "alphaCorr": "Classic",
       "eps": 7.60835e+03,
       "beta": 7.93725e-04,
-      "assoc_scheme": "2B"
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     },
     "CPA-3B": {
       "ref": "3B-SINTEF",
@@ -187,7 +188,8 @@
       "alphaCorr": "Classic",
       "eps": 7.81268e+03,
       "beta": 8.19643e-04,
-      "assoc_scheme": "3B"
+      "assoc_scheme": "3B",
+      "simplified_rdf": "True"
     },
     "CPA-4B": {
       "ref": "4B-SINTEF",
@@ -198,7 +200,8 @@
       "alphaCorr": "Classic",
       "eps": 7.51955e+03,
       "beta": 8.71581e-04,
-      "assoc_scheme": "4B"
+      "assoc_scheme": "4B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

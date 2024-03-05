@@ -121,7 +121,7 @@ contains
   end function mixHasSelfAssociatingComp
 
   subroutine getCpaPureParams_allcomps(nc,comp,eosidx,ref,&
-       found,a0,b,alphaParams,eps,beta,alphaCorrIdx,scheme)
+       found,a0,b,alphaParams,eps,beta,alphaCorrIdx,scheme,simplified_rdf)
     use compdata, only: gendata_pointer
     ! Input
     type(gendata_pointer), intent(in) :: comp(nc)
@@ -131,25 +131,32 @@ contains
     logical, intent(out) :: found(nc)
     integer, intent(out) :: alphaCorrIdx(nc), scheme(nc)
     real, intent(out) :: a0(nc), b(nc), alphaParams(3,nc), eps(nc), beta(nc)
+    logical, intent(out) :: simplified_rdf
     ! Locals
     integer :: ic
     character(len=eosid_len) :: eos
+    logical :: simplified_rdf_array(nc)
 
     eos = get_eos_short_label_from_subidx(eosidx)
     do ic=1,nc
-       call getCpaPureParams_singleComp(comp(ic)%p_comp%ident,eos,ref,&
-            found(ic),a0(ic),b(ic),alphaParams(:,ic),eps(ic),beta(ic),alphaCorrIdx(ic),scheme(ic))
+      call getCpaPureParams_singleComp(comp(ic)%p_comp%ident,eos,ref,&
+           found(ic),a0(ic),b(ic),alphaParams(:,ic),eps(ic),beta(ic),&
+           alphaCorrIdx(ic),scheme(ic),simplified_rdf_array(ic))
     end do
+    simplified_rdf = all(simplified_rdf_array)
+    if ( .not. simplified_rdf .and. .not. all(.not. simplified_rdf_array)) &
+         print *,"Detected mix of parameters for simplified RDF and non-simplified RDF"
   end subroutine getCpaPureParams_allcomps
 
   subroutine getCpaPureParams_singleComp(compName,eos,ref,&
-       found,a0,b,alphaParams,eps,beta,alphaCorrIdx,scheme)
+       found,a0,b,alphaParams,eps,beta,alphaCorrIdx,scheme,simplified_rdf)
     ! Input
     character(len=*), intent(in) :: compName, ref, eos
     ! Output
     logical, intent(out) :: found
     integer, intent(out) :: alphaCorrIdx, scheme
     real, intent(out) :: a0, b, alphaParams(3), eps, beta
+    logical, intent(out) :: simplified_rdf
     ! Locals
     integer :: idx
 
@@ -167,6 +174,7 @@ contains
     beta = CPAarray(idx)%beta
     alphaCorrIdx = CPAarray(idx)%alphaCorrIdx
     scheme = CPAarray(idx)%assoc_scheme
+    simplified_rdf = CPAarray(idx)%simplified_rdf
   end subroutine getCpaPureParams_singleComp
 
   subroutine getCpaKijAndCombRules_allComps(nc,comp,eosidx,&

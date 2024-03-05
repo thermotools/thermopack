@@ -9,7 +9,6 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init PeTS object
 cpa_srk = cpa("CO2,H2O")
 
 fig, (ax, ax2) = plt.subplots(1, 2, sharey=True, facecolor='w')

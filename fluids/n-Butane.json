@@ -157,7 +157,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

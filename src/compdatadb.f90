@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-02-29T11:05:33.858187
+!! Time stamp: 2024-03-05T11:21:41.947293
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -100,7 +100,8 @@ module compdatadb
       beta=3.66940000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.87660000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx2 = &
@@ -189,7 +190,8 @@ module compdatadb
       beta=1.67270000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.69590000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx3 = &
@@ -278,7 +280,8 @@ module compdatadb
       beta=2.67240000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.06900000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx4 = &
@@ -367,7 +370,8 @@ module compdatadb
       beta=7.73600000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.01340000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx5 = &
@@ -884,7 +888,8 @@ module compdatadb
       beta=7.93725000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.17324000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa6 = &
@@ -898,7 +903,8 @@ module compdatadb
       beta=8.19643000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.91193000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_3B &
+      assoc_scheme = assoc_scheme_3B ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa7 = &
@@ -912,7 +918,8 @@ module compdatadb
       beta=8.71581000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.81681000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_4B &
+      assoc_scheme = assoc_scheme_4B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx12 = &
@@ -1281,7 +1288,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa9 = &
@@ -1295,7 +1303,8 @@ module compdatadb
       beta=5.00000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_1EA &
+      assoc_scheme = assoc_scheme_1EA ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa10 = &
@@ -1309,7 +1318,8 @@ module compdatadb
       beta=9.08545617e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/4.62138711e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_1 &
+      assoc_scheme = assoc_scheme_1 ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx16 = &
@@ -2096,7 +2106,8 @@ module compdatadb
       beta=8.00000000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.36900000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa12 = &
@@ -2110,7 +2121,8 @@ module compdatadb
       beta=1.92120000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.39230000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx28 = &
@@ -3239,7 +3251,8 @@ module compdatadb
       beta=1.61000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/4.31020000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx42 = &
@@ -4208,7 +4221,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.30700000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx55 = &
@@ -6514,7 +6528,8 @@ module compdatadb
       beta=6.92000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.73590000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_4C &
+      assoc_scheme = assoc_scheme_4C ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa16 = &
@@ -6528,7 +6543,8 @@ module compdatadb
       beta=6.21918000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.76671000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx86 = &
@@ -6684,7 +6700,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.07710000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx88 = &
@@ -6773,7 +6790,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.13243000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx89 = &
@@ -7265,7 +7283,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.13700000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx95 = &
@@ -7470,7 +7489,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/8.31300000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx97 = &
@@ -7634,7 +7654,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.04628000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx99 = &
@@ -7826,7 +7847,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.94150000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx101 = &
@@ -8057,7 +8079,8 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.98580000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx104 = &
