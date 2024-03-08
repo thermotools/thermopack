@@ -609,4 +609,3 @@ if __name__ == '__main__':
     pets_to_markdown()
     extcsp_to_markdown()
     multiparam_to_markdown()
-    update_v220_method_docs()
