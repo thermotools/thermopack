@@ -42,7 +42,7 @@ contains
   !> Called from routine init_thermopack in eoslibinit.f90.
   subroutine saft_type_eos_init(nc,comp,eos,param_ref,silent_init)
     use assocschemeutils, only: no_assoc,assocIndices_bookkeeping
-    use cubic_eos, only: cb_eos
+    use cubic_eos, only: cpa_eos
     use compdata, only: gendata_pointer
     use CPA_parameters, only: getCpaPureParams_allcomps, getCpaKijAndCombRules_allComps
     use PC_SAFT_parameters, only: getPcSaftPureParams_allComps, getPcSaftKij_allComps, getPcSaftCombRules_allComps
@@ -73,7 +73,7 @@ contains
     real :: mu_db_PCSAFT(nc),Q_db_PCSAFT(nc)
     logical :: silent
     type(association), pointer :: assoc => NULL()
-
+    logical :: simplified_rdf
     if (present(silent_init)) then
       silent = silent_init
     else
@@ -100,7 +100,7 @@ contains
       assocSchemes_db = no_assoc
       call getCpaPureParams_allcomps(nc,comp,assoc%saft_model,param_ref,compInDB,&
            a0_db,b_db,alphaParams_db,eps_db,beta_db,alpharCorrIdx_db,&
-           assocSchemes_db)
+           assocSchemes_db,simplified_rdf)
     end if
 
     ! Set association scheme components. Must be done before setting cubic
@@ -135,10 +135,11 @@ contains
 
     ! Set nonassoc parameters
     select type ( p_eos => eos )
-    class is ( cb_eos )
+    class is ( cpa_eos )
       ! Set new b, a0, c1 in the cbeos-struct for self-associating components.
       call cpa_set_cubic_params(nc,comp,p_eos,a0_db,b_db,&
            alphaParams_db,alpharCorrIdx_db,kij_aEpsBeta_CPA(1,:,:))
+      p_eos%useSimplifiedCPA = simplified_rdf
     class is(sPCSAFT_eos)
       call pcsaft_set_nonassoc_params(p_eos,nc,m_db,sigma_db,&
            eps_depth_divk_db,kij_PCSAFT)
@@ -2386,7 +2387,7 @@ contains
     integer :: k, l, firstSiteIdx, lastSiteIdx
     type(thermo_model), pointer :: act_mod_ptr
     type(association), pointer :: assoc
-    
+
     act_mod_ptr => get_active_thermo_model()
     assoc => act_mod_ptr%eos(1)%p_eos%assoc
 
@@ -2553,12 +2554,18 @@ contains
   !> and optionally whether to use the elliot rule for combining association
   !> Deltas
   subroutine setCPAformulation(simplified, elliotrule)
-    use saft_rdf, only: useSimplifiedCPA
-    use saft_association, only: ELLIOT
+    use cubic_eos, only: cpa_eos
+    use association_var, only: ELLIOT
     logical, intent(in) :: simplified
     logical, intent(in), optional :: elliotrule
-    useSimplifiedCPA = simplified
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
 
+    select type ( p_eos => eos )
+    class is(cpa_eos)
+      p_eos%useSimplifiedCPA = simplified
+    end select
     if (present(elliotrule)) then
       call setDeltaAssocRule(elliotrule)
     end if
@@ -2566,12 +2573,18 @@ contains
 
   !> Choose whether to use the elliot rule for combining association Deltas
   subroutine setDeltaAssocRule(useElliot)
-    use saft_association, only: DELTA_COMBRULE, ELLIOT, STANDARD
+    use association_var, only: ELLIOT, STANDARD
     logical, intent(in) :: useElliot
-    if (useElliot) then
-      DELTA_COMBRULE = ELLIOT
-    else
-      DELTA_COMBRULE = STANDARD
+    ! Locals
+    class(base_eos_param), pointer :: eos
+    eos => get_active_eos()
+
+    if (associated(eos%assoc)) then
+      if (useElliot) then
+        eos%assoc%delta_combrule = ELLIOT
+      else
+        eos%assoc%delta_combrule = STANDARD
+      end if
     end if
   end subroutine setDeltaAssocRule
 

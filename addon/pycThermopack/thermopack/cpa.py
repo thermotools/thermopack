@@ -108,7 +108,7 @@ class cpa(cubic):
     def print_cpa_report(self):
         """Utility
         Print cpa parameters
-        
+
         Parameters printed are the five pure parameters
         a0, b, epsilon, beta, c1, and the binary parameter
         for the cubic part, kij_a, and for the association part, kij_eps.

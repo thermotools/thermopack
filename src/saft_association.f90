@@ -3,14 +3,9 @@ module saft_association
   use assocschemeutils, only: noSitesFlag, site_to_compidx, compidx_to_sites
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: base_eos_param, get_active_eos, numAssocSites
-  use association_var, only: association
+  use association_var, only: association, STANDARD, ELLIOT
   implicit none
   save
-
-  ! Choice of combining rule for cross-association Delta
-  integer, parameter :: STANDARD=1
-  integer, parameter :: ELLIOT=2
-  integer :: DELTA_COMBRULE = STANDARD
 
 contains
 
@@ -148,7 +143,7 @@ contains
 
           ic = site_to_compidx(assoc,k)
           jc = site_to_compidx(assoc,l)
-          if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
+          if (assoc%delta_combrule==ELLIOT .and. jc/=ic) cycle
           if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosOPC_SAFT) then
             call master_saft_rdf(eos,nc,ic,jc,g,g_T_p,g_V_p,g_n_p,g_TT_p,g_TV_p,&
                  g_Tn_p,g_VV_p,g_Vn_p,g_nn_p)
@@ -215,7 +210,7 @@ contains
        end do
     end do
 
-    if (DELTA_COMBRULE==ELLIOT) then
+    if (assoc%delta_combrule==ELLIOT) then
        do ic=1,nc
           do jc=ic+1,nc
              call compidx_to_sites(assoc,ic,k1,k2)
@@ -1533,7 +1528,7 @@ contains
       do l = k,numAssocSites
         ic = site_to_compidx(assoc,k)
         jc = site_to_compidx(assoc,l)
-        if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
+        if (assoc%delta_combrule==ELLIOT .and. jc/=ic) cycle
         call calc_bmcsl_gij_FMT_hd(nc,n_fmt,dhs,ic,jc,g)
         covol = N_AVOGADRO*sigma_cube(ic,jc)
         expo = boltzmann_fac(k,l)
@@ -1543,7 +1538,7 @@ contains
       end do
     end do
 
-    if (DELTA_COMBRULE==ELLIOT) then
+    if (assoc%delta_combrule==ELLIOT) then
       do ic=1,nc
         do jc=ic+1,nc
           call compidx_to_sites(assoc,ic,k1,k2)

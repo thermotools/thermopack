@@ -5,6 +5,10 @@ module association_var
   !
   public
 
+  ! Choice of combining rule for cross-association Delta
+  integer, parameter :: STANDARD=1
+  integer, parameter :: ELLIOT=2
+
   !> Current state for eos evaluation
   type association_state
     logical :: fmt_mode = .false.
@@ -31,6 +35,7 @@ module association_var
     real, allocatable, dimension(:,:) :: beta_kl  !< Effective association volume between site Ai and Bj (called \beta^{A_i B_j} in CPA).
     real, allocatable, dimension(:,:) :: eps_kl   !< Association energy.
     type(association_state) :: state
+    integer :: delta_combrule = STANDARD
   contains
     procedure, public :: dealloc
     procedure, public :: print

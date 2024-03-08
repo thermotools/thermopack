@@ -117,7 +117,8 @@
       "alphaCorr": "Classic",
       "eps": 166.55e2,
       "beta": 69.2E-03,
-      "assoc_scheme": "4C"
+      "assoc_scheme": "4C",
+      "simplified_rdf": "True"
     },
     "CPA-2": {
       "ref": "SINTEF",
@@ -128,7 +129,8 @@
       "alphaCorr": "Classic",
       "eps": 4.44953e+03,
       "beta": 6.21918e-03,
-      "assoc_scheme": "2B"
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

@@ -190,6 +190,10 @@ module cubic_eos
   end type lk_eos
 
   type, extends(cb_eos) :: cpa_eos
+    logical :: useSimplifiedCPA = .FALSE.
+  contains
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_cpa_eos
   end type cpa_eos
 
 
@@ -810,6 +814,20 @@ contains
     endif
 
   end subroutine cubic_eos_dealloc
+
+  subroutine assign_cpa_eos(this,other)
+    class(cpa_eos), intent(inout) :: this
+    class(*), intent(in) :: other
+    ! Locals
+    integer :: istat
+    select type (other)
+    class is (cpa_eos)
+      call assign_cubic_eos(this, other)
+      this%useSimplifiedCPA = other%useSimplifiedCPA
+    class default
+      print *,"assign_cpa_eos: Should not be here"
+    end select
+  end subroutine assign_cpa_eos
 
   function isHVmixModel(mix_idx) result(isHV)
     integer, intent(in) :: mix_idx
