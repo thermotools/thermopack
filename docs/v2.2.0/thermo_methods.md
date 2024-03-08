@@ -6,7 +6,7 @@ permalink: /v2.2.0/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-02-20T15:56:08.232915
+Generated at: 2024-03-08T09:40:29.500914
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -52,6 +52,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
     * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempnone-pressnone)
   * [Saturation interfaces](#saturation-interfaces)
+    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
@@ -65,6 +66,8 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
     * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
+    * [saturation_point_from_property_bracket_search](#saturation_point_from_property_bracket_searchself-z-prop_val-prop-temp_1-press_1-x_1-y_1-temp_2-press_2-x_2-y_2)
+    * [saturation_points_from_property](#saturation_points_from_propertyself-initial_pressure-z-prop_grid-prop-maximum_pressure150000000-minimum_temperaturenone-step_sizenone)
     * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvfalse)
     * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperaturenone-nmax100-scale_to_eostrue)
   * [Isolines](#isolines)
@@ -97,24 +100,25 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
     * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
+    * [get_comp_structure](#get_comp_structureself-comp_name)
+    * [get_enthalpy_of_formation](#get_enthalpy_of_formationself-j)
     * [get_ideal_cp](#get_ideal_cpself-j)
-    * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
-    * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
     * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
     * [get_pmin](#get_pminself)
+    * [get_standard_entropy](#get_standard_entropyself-j)
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
+    * [set_enthalpy_of_formation](#set_enthalpy_of_formationself-j-h0)
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
-    * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
-    * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
+    * [set_standard_entropy](#set_standard_entropyself-j-s0-reference_pressure1bar)
     * [set_tmax](#set_tmaxself-temp)
     * [set_tmin](#set_tminself-temp)
   * [Internal methods](#internal-methods)
@@ -1374,6 +1378,7 @@ Bubble- and dew point calculations and phase envelopes.
 
 ### Table of contents
   * [Saturation interfaces](#saturation-interfaces)
+    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
@@ -1387,9 +1392,36 @@ Bubble- and dew point calculations and phase envelopes.
     * [get_pure_fluid_saturation_curve](#get_pure_fluid_saturation_curveself-initial_pressure-initial_temperaturenone-inone-max_delta_press200000-nmax100-log_linear_gridfalse)
     * [global_binary_plot](#global_binary_plotself-maximum_pressure150000000-minimum_pressure1000000-minimum_temperature1500-maximum_temperature5000-include_azeotropesfalse)
     * [melting_pressure_correlation](#melting_pressure_correlationself-i-maximum_temperaturenone-nmax100-scale_to_eostrue)
+    * [saturation_point_from_property_bracket_search](#saturation_point_from_property_bracket_searchself-z-prop_val-prop-temp_1-press_1-x_1-y_1-temp_2-press_2-x_2-y_2)
+    * [saturation_points_from_property](#saturation_points_from_propertyself-initial_pressure-z-prop_grid-prop-maximum_pressure150000000-minimum_temperaturenone-step_sizenone)
     * [solid_envelope_plot](#solid_envelope_plotself-initial_pressure-z-maximum_pressure150000000-minimum_temperature1700-calc_esvfalse)
     * [sublimation_pressure_correlation](#sublimation_pressure_correlationself-i-minimum_temperaturenone-nmax100-scale_to_eostrue)
 
+
+### `_property_index_from_string(self, prop: str)`
+Get integer index corrensponding to property string
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **prop (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Raises:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Exception:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Wrong property specified
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Index of property
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `binary_triple_point_pressure(self, temp, maximum_pressure=15000000.0, minimum_pressure=10000.0)`
 Calculate triple point for binary mixture at specified temperature
@@ -1923,6 +1955,112 @@ Calculate melting line form correlation
 &nbsp;&nbsp;&nbsp;&nbsp; **p_melt (ndarray):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Melting pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `saturation_point_from_property_bracket_search(self, z, prop_val, prop, temp_1, press_1, x_1, y_1, temp_2, press_2, x_2, y_2)`
+Get saturated point intersecting with property given as input. Point 1 and 2 are saturation states bracketing the solution.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **z (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **prop_val (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Property value where intersect is needed
+
+&nbsp;&nbsp;&nbsp;&nbsp; **prop (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp_1 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature of point 1 (K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press_1 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure of point 1 (Pa).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **x_1 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid compozition of point 1 (mol/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **y_1 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Vapour compozition of point 1 (mol/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp_2 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature of point 2 (K).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **press_2 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure of point 2 (Pa).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **x_2 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid compozition of point 2 (mol/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; **y_2 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Vapour compozition of point 2 (mol/mol).
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Raises:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Exception:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Not able to solve for property
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature values (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure values (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Liquid composition (mol/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Vapour composition (mol/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `saturation_points_from_property(self, initial_pressure, z, prop_grid, prop, maximum_pressure=15000000.0, minimum_temperature=None, step_size=None)`
+Get saturated points intersecting with properties given as input. Args: initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) prop_grid (array like): Property values where intersect is needed prop (str): Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature values (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **foat:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure values (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific volume (m3/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **int:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Phase flag for main phase
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Incipient composition (mol/mol)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2799,24 +2937,25 @@ Methods for setting ... and getting ...
     * [acentric_factor](#acentric_factorself-i)
     * [compmoleweight](#compmoleweightself-comp)
     * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
+    * [get_comp_structure](#get_comp_structureself-comp_name)
+    * [get_enthalpy_of_formation](#get_enthalpy_of_formationself-j)
     * [get_ideal_cp](#get_ideal_cpself-j)
-    * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
-    * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
     * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
     * [get_pmin](#get_pminself)
+    * [get_standard_entropy](#get_standard_entropyself-j)
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
+    * [set_enthalpy_of_formation](#set_enthalpy_of_formationself-j-h0)
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
-    * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
-    * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
     * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
+    * [set_standard_entropy](#set_standard_entropyself-j-s0-reference_pressure1bar)
     * [set_tmax](#set_tmaxself-temp)
     * [set_tmin](#set_tminself-temp)
 
@@ -2866,6 +3005,42 @@ Get component name/identifier
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `get_comp_structure(self, comp_name)`
+Get component atom structure
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **comp_name (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component name
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **(dict):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Dict with atom as key names and number of atoms as values
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_enthalpy_of_formation(self, j)`
+Get specific enthalpy of formation
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific enthalpy of formation (J/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `get_ideal_cp(self, j)`
 Get correlation parameters for ideal gas Cp
 
@@ -2887,46 +3062,14 @@ Get correlation parameters for ideal gas Cp
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_ideal_enthalpy_reference_value(self, j)`
-Get specific ideal enthalpy reference value
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-#### Returns:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific ideal enthalpy (J/mol)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-### `get_ideal_entropy_reference_value(self, j)`
-Get specific ideal entropy reference value
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-#### Returns:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific ideal entropy (J/mol/K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
 ### `get_numerical_robustness_level(self)`
-Get numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Returns: level (integer): robustness_level 
+Get numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **level (integer):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  robustness_level
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2979,6 +3122,25 @@ Get minimum pressure in Thermopack. Used to limit search domain for numerical so
 &nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_standard_entropy(self, j)`
+Get standard entropy at 1bar
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (integer):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific standard entropy (J/mol/K)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3042,6 +3204,21 @@ Recalculate critical properties of pure fluids
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `set_enthalpy_of_formation(self, j, h0)`
+Set specific enthalpy of formation
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **h0 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Enthalpy of formation (J/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `set_ideal_cp(self, j, cp_correlation_type, parameters)`
 Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rgas, simply use: set_ideal_cp(j, 8, [2.5])
 
@@ -3061,38 +3238,14 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `set_ideal_enthalpy_reference_value(self, j, h0)`
-Set specific ideal enthalpy reference value
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
-
-&nbsp;&nbsp;&nbsp;&nbsp; **h0 (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal enthalpy reference (J/mol)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
-### `set_ideal_entropy_reference_value(self, j, s0)`
-Set specific ideal entropy reference value
-
-#### Args:
-
-&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
-
-&nbsp;&nbsp;&nbsp;&nbsp; **s0 (float):** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal entropy reference (J/mol/K)
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
-
 ### `set_numerical_robustness_level(self, level)`
-Set numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Args: level (integer): robustness_level 
+Set numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **level (integer):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  robustness_level
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3115,6 +3268,25 @@ Set minimum pressure in Thermopack. Used to limit search domain for numerical so
 &nbsp;&nbsp;&nbsp;&nbsp; **press (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_standard_entropy(self, j, s0, reference_pressure='1BAR')`
+Set standard entropy
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **j (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **s0 (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal entropy reference (J/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **reference_pressure (str):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Reference pressure (1BAR or 1ATM)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
