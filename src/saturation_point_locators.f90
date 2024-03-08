@@ -173,8 +173,10 @@ contains
         call stoperror("bracketSolveForProperty failed.")
       endif
     endif
-    Ps = Xs
-    Ts = param(9)
+    if (solver%exitflag == 0) then
+      Ps = Xs
+      Ts = param(9)
+    endif
   end subroutine bracketSolveForPropertySingle
 
   !-----------------------------------------------------------------------------
@@ -416,7 +418,7 @@ contains
     real, dimension(nc+2) :: Xvar, Xold, Xtemp
     real :: dS, tuning, sgn, Pstart
     integer :: iter,s,n,ophase,ierr,j
-    integer, dimension(1) :: smax,zmax
+    integer, dimension(1) :: smax
     real :: curr_prop_val, old_prop_val, ln_spec, beta
     logical :: have_switched_formulation, seq_mode
     logical :: should_switch_formulation, reset_dS
@@ -450,7 +452,6 @@ contains
     endif
 
     ! Special consideration for pure fluids
-    zmax = maxloc(Z)
     if (isSingleComp(Z)) then
       call sat_points_based_on_prop_single(Z,P0,n_grid,propflag,prop_grid,&
            T_grid,P_grid,phase_grid,n_grid_found,ierr_out)
@@ -973,7 +974,6 @@ contains
     integer, intent(out) :: n_grid_found         !< Number of grid points found
     ! Locals:
     real :: t, p, Ps, Ts
-    integer, dimension(1) :: zmax
     real, dimension(nc) :: X,Y
     real, dimension(4) :: param
     real, dimension(1) :: XX,Xmax,Xmin
@@ -997,8 +997,7 @@ contains
 
     ! Initialize composition
     X = 0.0
-    zmax = maxloc(Z)
-    ic = zmax(1)
+    ic = maxloc(Z,dim=1)
     X(ic) = 1.0
     Y=X
 
@@ -1155,6 +1154,7 @@ contains
   !! \author MH, 2024-02
   !-----------------------------------------------------------------------------
   subroutine locate_saturation_property(propflag,propval,Z,T1,P1,x1,y1,T2,P2,x2,y2,ierr)
+    use thermo_utils, only: isSingleComp
     implicit none
     integer, intent(in) :: propflag
     real, intent(in) :: Z(nc)
@@ -1163,40 +1163,52 @@ contains
     real, intent(inout) :: T2,P2,x2(nc),y2(nc)
     integer, intent(out) :: ierr
     ! Locals
-    integer :: s
+    integer :: s, ic, phase
     real :: Xvar(nc+2),Xold(nc+2),dXds(nc+2)
     real :: lnfugL(nc), lnfugG(nc), K(nc), beta, ln_spec
-    call thermo(t1,p1,y1,VAPPH,lnfugG)
-    call thermo(t1,p1,x1,LIQPH,lnfugL)
-    K = exp(lnfugL-lnfugG)
-    Xold(1:nc) = log(K)
-    Xold(nc+1) = log(T1)
-    Xold(nc+2) = log(P1)
-    s = 1
-    ln_spec = 0.0
-    if (abs(sum(z-x1)) < abs(sum(z-y1))) then
-      beta = 0
+
+    if (isSingleComp(Z)) then
+      ic = maxloc(z, dim=1)
+      ierr = 0
+      call locate_sat_prop_single(propflag,ic,propval,T1,P1,VAPPH,T2,P2,ierr)
+      if (ierr /= 0) call locate_sat_prop_single(propflag,ic,propval,T1,P1,LIQPH,T2,P2,ierr)
+      x2 = 0
+      y2 = 0
+      x2(ic) = 1
+      y2(ic) = 1
     else
-      beta = 1
+      call thermo(t1,p1,y1,VAPPH,lnfugG)
+      call thermo(t1,p1,x1,LIQPH,lnfugL)
+      K = exp(lnfugL-lnfugG)
+      Xold(1:nc) = log(K)
+      Xold(nc+1) = log(T1)
+      Xold(nc+2) = log(P1)
+      s = 1
+      ln_spec = 0.0
+      if (abs(sum(z-x1)) < abs(sum(z-y1))) then
+        beta = 0
+      else
+        beta = 1
+      endif
+      call newton_extrapolate(Z,Xold,dXdS,beta,s,ln_spec)
+      s = maxloc(abs(dXdS), dim=1)
+      dXdS = dXdS / dXdS(s)
+
+      call thermo(t2,p2,y2,VAPPH,lnfugG)
+      call thermo(t2,p2,x2,LIQPH,lnfugL)
+      K = exp(lnfugL-lnfugG)
+      Xvar(1:nc) = log(K)
+      Xvar(nc+1) = log(T2)
+      Xvar(nc+2) = log(P2)
+      call locate_sat_prop(propflag,Z,s,propval,Xvar,Xold,dXds,beta,ierr)
+
+      ! Set solution
+      K = exp(Xvar(1:nc))
+      t2 = exp(Xvar(nc+1))
+      p2 = exp(Xvar(nc+2))
+      X2 = Z/(1-beta+beta*K)
+      Y2 = K*Z/(1-beta+beta*K)
     endif
-    call newton_extrapolate(Z,Xold,dXdS,beta,s,ln_spec)
-    s = maxloc(abs(dXdS), dim=1)
-    dXdS = dXdS / dXdS(s)
-
-    call thermo(t2,p2,y2,VAPPH,lnfugG)
-    call thermo(t2,p2,x2,LIQPH,lnfugL)
-    K = exp(lnfugL-lnfugG)
-    Xvar(1:nc) = log(K)
-    Xvar(nc+1) = log(T2)
-    Xvar(nc+2) = log(P2)
-    call locate_sat_prop(propflag,Z,s,propval,Xvar,Xold,dXds,beta,ierr)
-
-    ! Set solution
-    K = exp(Xvar(1:nc))
-    t2 = exp(Xvar(nc+1))
-    p2 = exp(Xvar(nc+2))
-    X2 = Z/(1-beta+beta*K)
-    Y2 = K*Z/(1-beta+beta*K)
   end subroutine locate_saturation_property
 
   !-----------------------------------------------------------------------------
