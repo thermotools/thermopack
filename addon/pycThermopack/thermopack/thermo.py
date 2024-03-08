@@ -4025,6 +4025,7 @@ class thermo(object):
         """Saturation interface
         Get saturated point intersecting with property given as input. Point 1 and 2 are saturation
         states bracketing the solution.
+
         Args:
             z (array_like): Composition (-)
             prop_val (float): Property value where intersect is needed

@@ -1152,9 +1152,9 @@ contains
   end subroutine locate_sat_prop
 
   !-----------------------------------------------------------------------------
-  !> Locate property - envelope intersect betwwn point 1 and 2 on the saturation curve
-  !>
-  !> \author MH, 2024-02
+  !> Locate property - envelope intersect between point 1 and 2 on the saturation curve.
+  !! The property (propflag) can be obtained from the method property_index_from_string.
+  !! \author MH, 2024-02
   !-----------------------------------------------------------------------------
   subroutine locate_saturation_property(propflag,propval,Z,T1,P1,x1,y1,T2,P2,x2,y2,ierr)
     implicit none
@@ -1833,20 +1833,6 @@ contains
         prop_list(n_found) = prop_grid(i)
       endif
     enddo
-    ! Remove bracketed property specifications
-    ! if (isBracketed) then
-    !   do i=1,n_found
-    !     do j=1,n_grid_not_found
-    !       if (prop_list(i) == prop_grid(j)) then
-    !         do k=j,n_grid_not_found-1
-    !           prop_grid(k) = prop_grid(k+1)
-    !         enddo
-    !         exit
-    !       endif
-    !     enddo
-    !     n_grid_not_found = n_grid_not_found - 1
-    !   enddo
-    ! endif
   end function isAnyPropBracketed
 
   !-----------------------------------------------------------------------------
