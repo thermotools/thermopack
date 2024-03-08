@@ -53,6 +53,11 @@ class saftvrqmie(saftvrmie):
             self.tp, self.get_export_name("saftvrmie_containers",
                                           "set_saftvrmie_mass"))
 
+        self.s_set_saftvrmie_deboer = getattr(
+            self.tp, self.get_export_name("saftvrmie_containers",
+                                          "set_saftvrmie_pure_fluid_deboer"))
+
+
         self.lambda_a = None
         self.lambda_r = None
 
@@ -175,3 +180,24 @@ class saftvrqmie(saftvrmie):
 
         self.s_set_saftvrmie_mass(byref(ic_c),
                                   byref(mass_c))
+
+    def set_deboer(self, ic, deboer):
+        """Utility
+        Set deboer constant Lambda, an adimensional parameter Lambda =
+        h/(sigma_i*sqrt(m_i*epsdivk_i). It is equivalent to setting mass.
+
+        Args:
+            ic (int): Component index
+            Lambda (float): deboer parameter of
+            component ic [-]
+        """
+        self.activate()
+        ic_c = c_int(ic)
+        deboer_c = c_double(deboer)
+        self.s_set_saftvrmie_deboer.argtypes = [POINTER(c_int),
+                                              POINTER(c_double)]
+
+        self.s_set_saftvrmie_deboer.restype = None
+
+        self.s_set_saftvrmie_deboer(byref(ic_c),
+                                  byref(deboer_c))
