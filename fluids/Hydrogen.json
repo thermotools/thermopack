@@ -45,23 +45,24 @@
     "Tmax": 25.0
   },
   "ideal_heat_capacity-1": {
-    "ref": "Default",
-    "bib_reference": "",
-    "correlation": 2,
+    "ref": "MEOS/Default",
+    "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
+    "correlation": 13,
     "cp": [
-      28.671997,
-      13.396156,
-      0.002960131,
-      -3.980744e-06,
-      2.661667e-09,
-      -6.099863e-13,
-      -11.801371,
-      0.0,
-      0.0,
-      0.0
+      2.5,
+      1.616,
+      531.0,
+      -0.4117,
+      751.0,
+      -0.792,
+      1989.0,
+      0.758,
+      2484.0,
+      1.217,
+      6859.0
     ],
-    "Tmin": -175.0,
-    "Tmax": 1200.0
+    "Tmin": 13.957,
+    "Tmax": 1000.0
   },
   "reference_state": {
     "enthalpy_bib_reference": "",

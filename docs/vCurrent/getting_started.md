@@ -11,7 +11,7 @@ This is a short introduction to thermopack. Once you've gotten started, we recom
 *Note:* This guide applies to the most recent version of ThermoPack og GitHub. For guides applicable to versions found on PyPI,
 find the appropriate version in the sidebar on the [ThermoPack homepage.](https://thermotools.github.io/thermopack/index.html)
 
-Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
+Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
 * [Initialising an equation of state](#initialising-an-equation-of-state)
@@ -21,7 +21,7 @@ Equations of State (EoS's) in ThermoPack are classes. To do calculations for a g
   * [Flash calculations](#flash-calculations)
   * [Phase envelopes](#phase-envelopes)
     * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
-    * [pxy- envelopes](#pxy--phase-envelopes)
+    * [pxy- and Txy- envelopes](#pxy--and-txy--phase-envelopes)
   * [Dew- and bubble points](#dew--and-bubble-points)
 * [Isolines](#isolines)
 * [Critical point](#critical-point)
@@ -113,7 +113,7 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB
 ```
 where `eos.VAPPH` and `eos.LIQPH` are [phase flags](phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](thermo_methods.html#TV-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](thermo_methods.html#methods-in-the-thermo-class-thermopy).
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](thermo_methods.html#tv-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#tp-property-interfaces) of the [`thermo` class](thermo_methods.html)
 
 ### Differentials
 

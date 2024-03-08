@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Documentation
 permalink: /v2.2.0/method_docs.html
 ---

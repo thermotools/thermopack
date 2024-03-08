@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the ext_csp class
 permalink: /v2.2.0/ext_csp_methods.html
 ---

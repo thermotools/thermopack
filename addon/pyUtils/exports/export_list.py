@@ -232,6 +232,7 @@ append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("get_feynman_hibbs_order", "saftvrmie_containers")
 append_export("set_saftvrmie_mass", "saftvrmie_containers")
+append_export("set_saftvrmie_pure_fluid_deboer", "saftvrmie_containers")
 
 append_export("model_control_hs", "saftvrmie_interface")
 append_export("model_control_a1", "saftvrmie_interface")

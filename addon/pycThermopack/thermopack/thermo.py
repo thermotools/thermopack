@@ -38,6 +38,8 @@ from . import plotutils, utils, platform_specifics
 import warnings
 
 c_len_type = c_size_t  # c_size_t on GCC > 7 else c_len_type = c_int
+n_max_cp = 21
+
 
 class thermo(object):
     """
@@ -1699,7 +1701,7 @@ class thermo(object):
 
         j_c = c_int(j)
         corr_c = c_int(0)
-        param_c = (c_double * 10)(0.0)
+        param_c = (c_double * n_max_cp)(0.0)
 
         self.s_get_ideal_cp_correlation.argtypes = [POINTER(c_int),
                                                     POINTER(c_int),
@@ -1721,16 +1723,16 @@ class thermo(object):
         Args:
             j (int): Component index
             cp_correlation_type (int): Ideal Cp correlation identifier
-            parameters (array like): Paramaters (Maximum 10 parameters used)
+            parameters (array like): Paramaters (Maximum 21 parameters used)
         """
         self.activate()
 
         j_c = c_int(j)
         corr_c = c_int(cp_correlation_type)
-        parameters_full = np.zeros(10)
-        n = min(len(parameters),10)
+        parameters_full = np.zeros(n_max_cp)
+        n = min(len(parameters),n_max_cp)
         parameters_full[0:n] = parameters[0:n]
-        param_c = (c_double * 10)(*parameters_full)
+        param_c = (c_double * n_max_cp)(*parameters_full)
 
         self.s_set_ideal_cp_correlation.argtypes = [POINTER(c_int),
                                                     POINTER(c_int),
