@@ -964,13 +964,13 @@ contains
     real, intent(in) :: p0                     !< init. point has pressure p0
     integer, intent(in) :: n_grid              !< number of grid points
     integer, intent(in) :: propflag            !< specified property 1:s, 2:lnv
-    real, intent(inout) :: prop_grid(n_grid)   !< property grid (non sequential mode may reorder array)
+    real, intent(in) :: prop_grid(n_grid)      !< property grid
     integer, optional, intent(out) :: ierr_out !< error flag; nonzero if error
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
-    integer, intent(out) :: n_grid_found       !< Number of grid points found
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
+    integer, intent(out) :: n_grid_found         !< Number of grid points found
     ! Locals:
     real :: t, p, Ps, Ts
     integer, dimension(1) :: zmax
@@ -1039,7 +1039,7 @@ contains
     param(1) = specP
     param(2) = ic
     param(4) = 0.0
-    do iter = 2,nmax
+    do iter = 2,nmax-1
       call sat_fun_single(ic,t,p,f,dfdt,dfdp,.false.)
       dpdt = -dfdt/dfdp
       param(3) = p0 + dP*(iter-1)
@@ -1073,7 +1073,6 @@ contains
     grid_idx = 1
     n_grid_found = 0
     do iter = 2,2*nmax
-      if (iter == nmax + 1) cycle
       curr_prop_val = propa(iter)
       old_prop_val = propa(iter-1)
       ! Check to see if some of the specifications are bracketed.
@@ -1098,10 +1097,9 @@ contains
               call stoperror("grid error: Bracket solver failed!")
             endif
           endif
-          prop_grid(grid_idx) = sspec ! Reorder array
           call store_point_single(Z,Ts,Ps,phasea(iter),grid_idx,n_grid,&
                T_grid,P_grid,phase_grid,n_grid_found)
-          if ( n_grid_found == n_grid ) then
+          if ( n_grid_found == 2*n_grid ) then
             return
           end if
         enddo
@@ -1375,9 +1373,9 @@ contains
     integer, intent(inout) :: grid_idx         !< Current index, increased by one before exit
     integer, intent(in) :: n_grid              !< number of grid points
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
     integer, intent(out) :: n_grid_found       !< Number of grid points found
     ! Locals:
 
