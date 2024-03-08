@@ -1025,7 +1025,7 @@ contains
     logical :: alp_tau_calculated, alp_del_calculated
     tau_hd = tau
     del_hd = del
-    alp_del_calculated = .false.
+    alp_tau_calculated = .false.
     alp_del_calculated = .false.
 
     if (present(alp_tautau)) then

@@ -232,6 +232,7 @@ append_export("get_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("set_saftvrmie_pure_fluid_param", "saftvrmie_containers")
 append_export("get_feynman_hibbs_order", "saftvrmie_containers")
 append_export("set_saftvrmie_mass", "saftvrmie_containers")
+append_export("set_saftvrmie_pure_fluid_deboer", "saftvrmie_containers")
 
 append_export("model_control_hs", "saftvrmie_interface")
 append_export("model_control_a1", "saftvrmie_interface")
@@ -297,6 +298,10 @@ append_export("safe_dewp", "saturation")
 append_export("envelopeplot", "saturation_curve")
 append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
+
+append_export("locate_saturation_property", "saturation_point_locators")
+append_export("property_index_from_string", "saturation_point_locators")
+append_export("sat_points_based_on_prop", "saturation_point_locators")
 
 append_export("solid_init", "solideos")
 append_export("solid_specificvolume", "solideos")
