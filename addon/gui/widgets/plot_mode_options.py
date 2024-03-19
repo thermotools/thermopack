@@ -3,7 +3,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtCore import QLocale
 
-from gui.utils import FloatValidator
+from gui.utils import FloatValidator, APP_ROOT
 
 
 class PhaseEnvelopeOptionsWindow(QDialog):
@@ -13,7 +13,7 @@ class PhaseEnvelopeOptionsWindow(QDialog):
 
     def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
-        loadUi("gui/layouts/ph_env_options.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/ph_env_options.ui", self)
         self.setWindowTitle("Phase envelope options")
 
         self.plotting_preferences = plotting_preferences
@@ -198,7 +198,7 @@ class BinaryPXYOptionsWindow(QDialog):
 
     def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
-        loadUi("gui/layouts/bin_pxy_options.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/bin_pxy_options.ui", self)
         self.setWindowTitle("Binary pxy options")
 
         self.calc_settings = plotting_preferences["Binary pxy"]["Calc"]
@@ -287,7 +287,7 @@ class PRhoOptionsWindow(QDialog):
 
     def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
-        loadUi("gui/layouts/pressure_density_options.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/pressure_density_options.ui", self)
         self.setWindowTitle("Pressure density options")
 
         self.new_temp_btn.setStyleSheet("padding: 3px 7px;")
@@ -454,7 +454,7 @@ class GlobalBinaryOptionsWindow(QDialog):
 
     def __init__(self, plotting_preferences, default):
         QDialog.__init__(self)
-        loadUi("gui/layouts/global_binary_options.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/global_binary_options.ui", self)
         self.setWindowTitle("Global binary options")
 
         self.calc_settings = plotting_preferences["Global binary"]["Calc"]

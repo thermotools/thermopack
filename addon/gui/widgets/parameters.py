@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.uic import loadUi
 from PyQt5 import QtCore
 
-from gui.utils import get_thermopack, init_thermopack, get_comp_id, FloatValidator
+from gui.utils import get_thermopack, init_thermopack, get_comp_id, FloatValidator, APP_ROOT
 
 import numpy as np
 
@@ -86,7 +86,7 @@ class VdWParametersWidget(ParametersWidget):
     # Should be reinitiated every time opened, so that coefficients are correct if model is changed
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/vdw_bin_coeff_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/vdw_bin_coeff_widget.ui", self)
 
         self.composition_list.currentItemChanged.connect(self.show_correct_matrix)
 
@@ -210,7 +210,7 @@ class HV1ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -353,7 +353,7 @@ class HV2ParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -496,7 +496,7 @@ class CPAParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/hv_bin_coeff_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/hv_bin_coeff_widget.ui", self)
         self.tab_stack_indices = {}
 
         self.composition_list.currentItemChanged.connect(self.show_correct_tab_widget)
@@ -709,7 +709,7 @@ class SAFTVRMieParametersWidget(ParametersWidget):
 
     def __init__(self, data, settings_name, parent=None):
         super().__init__(data, settings_name, parent)
-        loadUi("gui/layouts/saftvrmie_parameters.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/saftvrmie_parameters.ui", self)
         self.tab_stack_indices = {}
         self.list_name = None
         self.component_id = None

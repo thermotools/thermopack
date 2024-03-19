@@ -10,8 +10,10 @@ import json
 import os
 import re
 
+from pathlib import Path
 import numpy as np
 
+APP_ROOT = Path(os.path.dirname(__file__)).parent
 
 class Component:
     """
@@ -130,7 +132,7 @@ def get_fluids():
     """
     fluids = {}
 
-    fluids_path = os.path.join("..", "..", "fluids")
+    fluids_path = os.path.join(APP_ROOT, "fluids")
 
     for root, dirs, files in os.walk(fluids_path):
         for file_name in files:

@@ -3,7 +3,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
 from gui.widgets.component_info import ComponentInformationWindow
-from gui.utils import get_unique_name, get_fluids, MessageBox
+from gui.utils import get_unique_name, get_fluids, MessageBox, APP_ROOT
 
 
 class ComponentSelectWidget(QWidget):
@@ -16,7 +16,7 @@ class ComponentSelectWidget(QWidget):
     def __init__(self, data, parent=None):
         QWidget.__init__(self, parent)
 
-        loadUi("gui/layouts/component_select_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/component_select_widget.ui", self)
 
         self.data = data
 

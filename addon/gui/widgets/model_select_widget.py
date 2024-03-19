@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 
 from gui.widgets.parameters import *
 
-from gui.utils import get_unique_name
+from gui.utils import get_unique_name, APP_ROOT
 
 
 class ModelSelectWidget(QWidget):
@@ -21,7 +21,7 @@ class ModelSelectWidget(QWidget):
     def __init__(self, data, name=None, parent=None):
         QWidget.__init__(self, parent)
 
-        loadUi("gui/layouts/model_select_widget.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/model_select_widget.ui", self)
 
         self.data = data
         if name:

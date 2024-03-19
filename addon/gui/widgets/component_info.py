@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QTableWidgetItem, QWidget
 from PyQt5.uic import loadUi
 
+from gui.utils import APP_ROOT
+
 
 class ComponentInformationWindow(QWidget):
     """
@@ -9,7 +11,7 @@ class ComponentInformationWindow(QWidget):
 
     def __init__(self, component, parent=None):
         super().__init__(parent=parent)
-        loadUi("gui/layouts/component_info.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/component_info.ui", self)
         self.setWindowTitle(component.name)
 
         row = self.table.rowCount()

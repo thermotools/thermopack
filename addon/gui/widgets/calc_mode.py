@@ -10,7 +10,7 @@ import numpy as np
 import pint
 
 from gui.widgets.units_dialog import UnitsDialog
-from gui.utils import get_thermopack, init_thermopack, FloatValidator, MessageBox
+from gui.utils import get_thermopack, init_thermopack, FloatValidator, MessageBox, APP_ROOT
 
 
 class CalcMode(QMainWindow):
@@ -21,7 +21,7 @@ class CalcMode(QMainWindow):
     def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("gui/layouts/calc_mode.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/calc_mode.ui", self)
         self.setWindowTitle("Thermopack - Calculation Mode")
         self.showMaximized()
 
@@ -86,7 +86,7 @@ class CalcMode(QMainWindow):
         toolbar.addSeparator()
 
         action_group = QActionGroup(self)
-        action_group.addAction(toolbar.addAction(QIcon("gui/icons/settings.png"), "Units"))
+        action_group.addAction(toolbar.addAction(QIcon(f"{APP_ROOT}/icons/settings.png"), "Units"))
 
         self.action_close.triggered.connect(self.close)
         self.action_units.triggered.connect(self.open_units_window)

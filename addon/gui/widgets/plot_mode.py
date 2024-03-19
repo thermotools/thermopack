@@ -8,7 +8,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from gui.widgets.mpl_canvas import MplCanvas
 from gui.widgets.plot_mode_options import PhaseEnvelopeOptionsWindow, BinaryPXYOptionsWindow, PRhoOptionsWindow, \
     GlobalBinaryOptionsWindow
-from gui.utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox
+from gui.utils import get_thermopack, init_thermopack, save_json_data, FloatValidator, MessageBox, APP_ROOT
 
 import numpy as np
 import os
@@ -24,7 +24,7 @@ class PlotMode(QMainWindow):
     def __init__(self, data, json_file, component_list_name, model_settings_name, parent=None):
         super().__init__(parent=parent)
 
-        loadUi("gui/layouts/plot_mode.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/plot_mode.ui", self)
         self.setWindowTitle("Thermopack - Plot Mode")
         self.showMaximized()
 
@@ -101,7 +101,7 @@ class PlotMode(QMainWindow):
 
         action_group = QActionGroup(self)
         if self.json_file:
-            action_group.addAction(toolbar.addAction(QIcon("gui/icons/save.png"), "Save"))
+            action_group.addAction(toolbar.addAction(QIcon(f"{APP_ROOT}/icons/save.png"), "Save"))
             self.action_save = self.file_menu.addAction("Save", self.save_plot_settings, QKeySequence("Ctrl+S"))
             self.action_close = self.file_menu.addAction("Close", self.close, QKeySequence("Ctrl+Q"))
 

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSignal
 
-from gui.utils import get_default_units
+from gui.utils import get_default_units, APP_ROOT
 
 
 class UnitsDialog(QWidget):
@@ -14,7 +14,7 @@ class UnitsDialog(QWidget):
 
     def __init__(self, units_data, parent=None):
         super().__init__(parent=parent)
-        loadUi("gui/layouts/units.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/units.ui", self)
         self.setWindowTitle("Units")
 
         self.units_data = units_data

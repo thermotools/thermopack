@@ -4,6 +4,8 @@ from PyQt5.uic import loadUi
 from gui.widgets.plot_mode import PlotMode
 from gui.widgets.calc_mode import CalcMode
 
+from gui.utils import APP_ROOT
+
 
 class ChangeModePopup(QDialog):
     """
@@ -13,7 +15,7 @@ class ChangeModePopup(QDialog):
 
     def __init__(self, data, json_file, parent=None):
         super().__init__(parent=parent)
-        loadUi("gui/layouts/go_to_plot_mode_popup.ui", self)
+        loadUi(f"{APP_ROOT}/layouts/go_to_plot_mode_popup.ui", self)
         self.setWindowTitle("Thermopack")
 
         self.json_file = json_file
