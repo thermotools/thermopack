@@ -132,8 +132,8 @@ def write_platform_specifics_file(pf_specifics, filename):
     lines = []
     lines.append(
         "# Module for platform specific stuff. Automatically generated.")
-    lines.append("# Timestamp : " +
-                 str(datetime.today().isoformat()) + "\n\n")
+    lines.append("# Timestamp : " + str(datetime.today().isoformat()) + "\n\n")
+    lines.append('import os')
     lines.append(f"DIFFERENTIAL_RETURN_MODE = '{pf_specifics['diff_return_mode']}'\n\n")
     tab = " "*4
     lines.append("def get_platform_specifics():")
@@ -142,6 +142,14 @@ def write_platform_specifics_file(pf_specifics, filename):
     for k, v in pf_specifics.items():
         lines.append(tab + 'pf_specifics["'+k+'"] = "'+v+'"')
 
+    lines.append('''
+    files = os.listdir(os.path.dirname(__file__))
+    if not (pf_specifics['dyn_lib'] in files):
+        if f'{pf_specifics["dyn_lib"]}.icloud' in files:
+            pf_specifics['dyn_lib'] = f'{pf_specifics["dyn_lib"]}.icloud'
+        else:
+            raise FileNotFoundError(f'ThermoPack binary {pf_specifics["dyn_lib"]} not found in directory {os.path.dirname(__file__)}')
+''')
     lines.append(tab + "return pf_specifics")
 
     with open(filename, "w") as f:
