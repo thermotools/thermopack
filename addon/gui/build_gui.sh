@@ -1,6 +1,9 @@
 #!/bin/bash
 # Script to bundle the thermopack gui app
 # Requires pyinstaller : https://pyinstaller.org/en/stable/
+# Note: When bundling the gui, the global APP_ROOT in gui/utils.py must be changed
+#       Path(os.path.dirname(__file__)) => Path(os.path.dirname(__file__)).parent
+# as the root directory of the bundled app is one level above the root directory of the gui when run as a python module.
 # Note: When debugging it may be useful to change the flag `--onefile` to `--onedir`
 set -e
 

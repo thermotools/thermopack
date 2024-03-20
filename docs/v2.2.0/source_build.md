@@ -11,6 +11,13 @@ backwards compatibility with v2.1.0. In order to retain backwards compatibility,
 the return patterns between v2.2.0 and the latest version. The differentiation is handled in the last step of the build process,
 when running `makescript.py`.
 
+## Installing from PyPI
+
+ThermoPack 2.2 can be installed using
+```
+pip install thermopack==2.2
+```
+
 ## Building from source
 
 In order to build ThermoPack v2.2 from source follow the [steps to build the latest version](/thermopack/vcurrent/source_build.html) 

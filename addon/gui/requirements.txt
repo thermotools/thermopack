@@ -1,0 +1,5 @@
+thermopack~=2.2
+PyQt5~=5.15
+numpy~=1.26
+matplotlib~=3.8
+pint~=0.23

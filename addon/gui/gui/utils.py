@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 import numpy as np
 
-APP_ROOT = Path(os.path.dirname(__file__)).parent
+APP_ROOT = Path(os.path.dirname(__file__))
 
 class Component:
     """
