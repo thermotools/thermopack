@@ -2,17 +2,17 @@
 
 set -e
 
-tp_version="2.2.1"
+tp_version="2.2.2"
 
-cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
+# cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
 
-cd ../..
+# cd ../..
 
-make clean
-make optim
-cd addon/pycThermopack
+# make clean
+# make optim
+# cd addon/pycThermopack
 
-python makescript.py optim -diffs=v2
+# python makescript.py optim -diffs=v2
 
 binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
 [[ "${binary_arch}" != "x86_64" ]] &&  echo "Binary file is not arm64, but " && echo "${binary_arch}" && exit 1
