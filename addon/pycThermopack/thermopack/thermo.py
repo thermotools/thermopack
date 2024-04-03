@@ -4159,7 +4159,8 @@ class thermo(object):
         s_vals = np.array(sa_c[0:na_c.value])
         h_vals = np.array(ha_c[0:na_c.value])
 
-        return p_vals, v_vals, s_vals, h_vals
+        iso = utils.Isoline(np.array([temp for _ in range(na_c.value)]), p_vals, v_vals, s_vals, h_vals, z, 'T', 'Isotherm')
+        return iso
 
     def get_isobar(self,
                    press,
@@ -4224,7 +4225,9 @@ class thermo(object):
         s_vals = np.array(sa_c[0:na_c.value])
         h_vals = np.array(ha_c[0:na_c.value])
 
-        return t_vals, v_vals, s_vals, h_vals
+        iso = utils.Isoline(t_vals, np.array([press for _ in range(na_c.value)]), v_vals, s_vals, h_vals, z, 'p',
+                            'Isobar')
+        return iso
 
     def get_isenthalp(self,
                       enthalpy,
@@ -4299,7 +4302,9 @@ class thermo(object):
         s_vals = np.array(sa_c[0:na_c.value])
         p_vals = np.array(pa_c[0:na_c.value])
 
-        return t_vals, p_vals, v_vals, s_vals
+        iso = utils.Isoline(t_vals, p_vals, v_vals, s_vals, np.array([enthalpy for _ in range(na_c.value)]), z, 'h',
+                            'Isenthalp')
+        return iso
 
     def get_isentrope(self,
                       entropy,
@@ -4374,7 +4379,9 @@ class thermo(object):
         h_vals = np.array(ha_c[0:na_c.value])
         p_vals = np.array(pa_c[0:na_c.value])
 
-        return t_vals, p_vals, v_vals, h_vals
+        iso = utils.Isoline(t_vals, p_vals, v_vals, np.array([entropy for _ in range(na_c.value)]), h_vals, z, 's',
+                            'Isentrope')
+        return iso
 
     #################################
     # Stability interfaces

@@ -498,3 +498,35 @@ class XYDiagram:
 
     def __str__(self):
         return self.__repr__()
+
+class Isoline:
+
+    def __init__(self, T, p, v, s, h, z, constant, isotype):
+        self.T, self.p, self.v, self.s, self.h, self.z, self.constant, self.type = T, p, v, s, h, z, constant, isotype
+        self.__iterable__ = (T, p, v, s, h)
+        self.__name_to_idx_map__ = {'T' : 0, 'p' : 1, 'v' : 2, 's' : 3, 'h' : 4}
+        self.descriptions = {'T' : 'Temperature (K)', 'p' : 'Pressure (Pa)', 'v' : 'Specific volume (m3/mol)',
+                             's' : 'Specific entropy (J/mol K)', 'h' : 'Specific enthalpy (J/mol)', 'z' : 'Molar composition (-)'}
+
+    def __iter__(self):
+        return (self.__iterable__[i] for i in range(5) if i != self.__name_to_idx_map__[self.constant])
+
+    def __getitem__(self, item):
+        return [*self][item]
+
+    def __len__(self):
+        return len(self.T)
+
+    def __repr__(self):
+        size = self.__len__()
+        reprstr = 'Isoline struct containing the attributes (description, name, value)\n'
+        reprstr += f'\t{"Type":<26}  {"type"} : {self.type}\n'
+        reprstr += f'\t{"Molar composition (-)":<29}  z : [{", ".join(f"{v:.3f}" for v in self.z)}]\n'
+        for name in ('T', 'p', 'v', 's', 'h'):
+            arr = self.__iterable__[self.__name_to_idx_map__[name]]
+            reprstr += f'\t{self.descriptions[name]:<29}  {name} : [{", ".join(f"{v:10.3e}" for v in arr[:2])} ... {", ".join(f"{v:10.3e}" for v in arr[-2:])}], len = {size}\n'
+
+        return reprstr
+
+    def __str__(self):
+        return self.__repr__()
