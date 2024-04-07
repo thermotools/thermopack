@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-02-26T08:36:50.921301
+Generated at: 2024-04-07T19:48:14.822375
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/vegardjervell/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/morteham/Documents/codes/thermotools/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/github_toc.md
         metapages/please_cite.md
@@ -47,18 +47,18 @@ Python wrapper to make scripting easy.
   * [License](#license)
   * [Acknowledgments](#acknowledgments)
   * [Program structure](#program-structure)
-  * [Building from Source](#Building-from-source)
+  * [Building from Source](#building-from-source)
   * [Getting started - Python](#getting-started---python)
-    * [Initialising an equation of state](#Initialising-an-equation-of-state)
+    * [Initialising an equation of state](#initialising-an-equation-of-state)
   * [Doing calculations](#doing-calculations)
-    * [pVT-properties](#pVT-properties)
+    * [pVT-properties](#pvt-properties)
     * [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
-    * [Isolines](#Isolines)
+    * [Isolines](#isolines)
     * [Critical point](#critical-point)
-  * [Advanced usage - Python](#More-advanced-usage---Python)
-    * [Interaction parameters](#Interaction-parameters) 
-    * [Adding new fluids](#Adding-new-fluids)
-  * [Component identifiers](#Fluid-name-to-fluid-identifyer-mapping) 
+  * [Advanced usage - Python](#more-advanced-usage---Python)
+    * [Interaction parameters](#interaction-parameters) 
+    * [Adding new fluids](#adding-new-fluids)
+  * [Component identifiers](#fluid-name-to-fluid-identifyer-mapping) 
 
 # Please Cite
 
@@ -157,8 +157,8 @@ For documentation on the version available on pypi, refer to the appropriate ver
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
 the Python frontend pycThermopack. When things are properly installed, it may
-be useful to look into the examples provided in the
-[addon/pyExamples](addon/pyExamples/README.md).
+be useful to look into the examples provided in the [getting started guide](getting_started.html), and the 
+[pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
 
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran
@@ -204,7 +204,7 @@ option, i.e.:
 pip3 install -e --user .
 ```
 
-See also [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See also [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 more details on pycThermopack.
 
 ### MacOS setup
@@ -242,7 +242,7 @@ Copy LAPACK and BLAS libraries to the paths:
 
 Open thermopack\MSVStudio\thermopack.sln using Visual Studio, and compile the wanted configuration.
 
-See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 how to install pycThermopack.
 
 #### MSYS2/Mingw-W64 setup
@@ -264,11 +264,11 @@ cd thermopack
 mingw32-make.exe optim
 ```
 
-See [addon/pycThermopack/README.md](addon/pycThermopack/README.md) for
+See [addon/pycThermopack/README.md](https://github.com/thermotools/thermopack/tree/main/addon) for
 how to install pycThermopack for the MSYS2 environment.
 
 ### Docker setup
-See [addon/docker/README.md](addon/docker/README.md) for
+See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main/addon/docker) for
 available Dockerfiles to run Thermopack with docker.
 
 ### CMake setup
@@ -282,7 +282,7 @@ This is a short introduction to thermopack. Once you've gotten started, we recom
 *Note:* This guide applies to the most recent version of ThermoPack og GitHub. For guides applicable to versions found on PyPI,
 find the appropriate version in the sidebar on the [ThermoPack homepage.](https://thermotools.github.io/thermopack/index.html)
 
-Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
+Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
 * [Initialising an equation of state](#initialising-an-equation-of-state)
@@ -292,7 +292,7 @@ Equations of State (EoS's) in ThermoPack are classes. To do calculations for a g
   * [Flash calculations](#flash-calculations)
   * [Phase envelopes](#phase-envelopes)
     * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
-    * [pxy- envelopes](#pxy--phase-envelopes)
+    * [pxy- and Txy- envelopes](#pxy--and-txy--phase-envelopes)
   * [Dew- and bubble points](#dew--and-bubble-points)
 * [Isolines](#isolines)
 * [Critical point](#critical-point)
@@ -384,7 +384,7 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB
 ```
 where `eos.VAPPH` and `eos.LIQPH` are [phase flags](phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](thermo_methods.html#TV-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](thermo_methods.html#methods-in-the-thermo-class-thermopy).
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](thermo_methods.html#tv-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#tp-property-interfaces) of the [`thermo` class](thermo_methods.html)
 
 ### Differentials
 
@@ -685,9 +685,14 @@ cs.set_lij(1,2,-0.032)
 lij = cs.get_lij(1,2)
 ```
 
+## Tuning Cubics
+Cubic Equations of state implemented in ThermoPack can be accessed through the generic [`cubic` class](cubic_methods.html).
+This class also offers a variety of methods to tune the alpha-function, mixing rules etc. See the [documentation for 
+the `cubic` class](cubic_methods.html) for more information.
+
 ## The different property interfaces (TV-) (Tp-) and (TVp-)
 
-Property calculations in ThermoPack can be done either through the [TV-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#tv-property-interfaces), the [Tp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#Tp-property-interfaces) or the [TVp-interfaces](https://github.com/thermotools/thermopack/wiki/Methods-in-the-thermo-class#TVp-property-interfaces).
+Property calculations in ThermoPack can be done either through the [TV-interfaces](thermo_methods.html#tv-property-interfaces), the [Tp-interfaces](thermo_methods.html#tp-property-interfaces) or the [TVp-interfaces](thermo_methods.html#tvp-property-interfaces).
 
 The difference between the TV- and Tp- interface is only what variables the properties are computed as functions of, and what variables are held constant in the derivatives. TV-interface methods compute properties as functions of $(T, V, n)$, while Tp-interface methods compute properties as functions of $(T, p, n)$. 
 
@@ -763,27 +768,28 @@ of the fluid files. These are summarized in the table below.
 Ideal gas heat capacity correlations, and the corresponding keys used in the fluid-database.
 ```
 
-| Key | Correlation                         | Equation                                                      | Unit                  |
+| Key | Correlation                         | Equation                                                            | Unit                  |
 |-----|-------------------------------------|---------------------------------------------------------------|-----------------------|
-| 1   | Sherwood, Reid & Prausnitz(a)       | $A + BT + CT^2 + DT^3$                                        | $cal g^-1 mol^-1 K^-1$ |
-| 2   | API-Project                         | 44                                                            | -                     |
-| 3   | Hypothetic components               | -                                                             | -                     |
-| 4   | Sherwood, Reid & Prausnitz(b)       | $A + BT + CT^2 + DT^3$                                        | $J mol^-1 K^-1$       |
-| 5   | Ici (Krister Strøm)                | $A + BT + CT^2 + DT^3 + ET^-2$                                | $J g^-1 K^-1$         |
-| 6   | Chen, Bender (Petter Nekså)         | $A + BT + CT^2 + DT^3 + ET^4$                                 | $J g^-1 K^-1$         |
-| 7   | Aiche, Daubert & Danner(c)          | $A + B [ (C / T) sinh(C/T) ]^2 + D [ (E / T) cosh(E / T) ]^2$ | $J kmol^-1 K^-1$      |
-| 8   | Poling, Prausnitz & O’Connel(d)     | $R ( A + BT + CT^2 + DT^3 + ET^4 )$                           | $J mol^-1 K^-1$       |
-| 9   | Linear function and fraction       | $A + BT + TC + D$                                             | $J mol^-1 K^-1$       |
-| 10  | Leachman & Valenta for H2           | -                                                             | -                     |
-| 11  | Use TREND model                     | -                                                             | -                     |
-| 12  | Shomate equation∗                   | $A + B Ts + C Ts^2 + D Ts^3 + E Ts^-2$                        | $J mol^-1 K^-1$       |
+| 1   | Sherwood, Reid & Prausnitz(a)       | $A + BT + CT^2 + DT^3$                                        | $\text{cal mol}^{-1} \rm{K}^{-1}$ |
+| 2   | API-Project                         | 44                                                                  | -                     |
+| 3   | Hypothetic components               | -                                                                   | -                     |
+| 4   | Sherwood, Reid & Prausnitz(b)       | $A + BT + CT^2 + DT^3$                                        | $\rm{J mol}^{-1} \rm{K}^{-1}$       |
+| 5   | Ici (Krister Strøm)                | $A + BT + CT^2 + DT^3 + ET^{-2}$                                | $\rm{J g}^{-1} \rm{K}^{-1}$         |
+| 6   | Chen, Bender (Petter Nekså)         | $A + BT + CT^2 + DT^3 + ET^4$                                 | $\rm{J g}^{-1} \rm{K}^{-1}$     |
+| 7   | Aiche, Daubert & Danner(c)          | $A + B [ (C / T) \sinh(C/T) ]^2 + D [ (E / T) \cosh(E / T) ]^2$ |  $\rm{J kmol}^{-1} \rm{K}^{-1}$      |
+| 8   | Poling, Prausnitz & O’Connel(d)     | $R ( A + BT + CT^2 + DT^3 + ET^4 )$                           |  $\rm{J mol}^{-1} \rm{K}^{-1}$       |
+| 9   | Linear function and fraction       | $A + BT + C(T + D)^{-1}$                                             |  $\rm{J mol}^{-1} \rm{K}^{-1}$       |
+| 10  | Leachman & Valenta for H2           | -                                                                   | -                     |
+| 11  | Use TREND model                     | -                                                                   | -                     |
+| 12  | Shomate equation $^{(*)}$                   | $A + B T_{\rm{s}} + C T_{\rm{s}}^2 + D T_{\rm{s}}^3 + E T_{\rm{s}}^{-2}$                        |  $\rm{J mol}^{-1} \rm{K}^{-1}$       |
+| 13  | Einstein equation sum                | $R (A + \sum_i B_i (C_i / T)^2 \exp[C_i / T] / (\exp[C_i / T] - 1)^2)$ | $\rm{J mol}^{-1} \rm{K}^{-1}$  |
 
 
 (a)3rd ed.(c)DIPPR-database
 
 (b)4th ed.(d)5th ed.
 
-∗Note:Ts= 10− (^3) T
+${(*)}$ Note:$T_{\rm{s}}= 10^{-3} T$
 
 
 ## Melting and sublimation curve correlations
