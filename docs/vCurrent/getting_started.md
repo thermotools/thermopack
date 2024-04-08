@@ -347,6 +347,10 @@ T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature an
 
 Various isolines can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
 
+The isoline methods return an `Isoline` struct, with the attributes `T`, `p`, `v`, `s`, and `h`, which are arrays containing
+the temperature, pressure, specific volume, specific entropy and specific enthalpy along the isoline. Additionally, the
+attributes `z` and `type` hold information regarding the total composition and isoline type.
+
 ```Python
 from thermopack.pcsaft import pcsaft
 eos = pcsaft('NC6,NC12')
@@ -354,25 +358,39 @@ x = [0.2, 0.8]
 
 # Calculate pressure, specific volume, specific entropy and specific enthalpy along the isotherm at 300 K
 # from p = minimum_pressure to p = maximum_pressure. Compute at most nmax points.
-p_iso_T, v_iso_T, s_iso_T, h_iso_T = eos.get_isotherm(300, x, minimum_pressure=1e5, maximum_pressure=1.5e7, nmax=100)
+isoT = eos.get_isotherm(300, x, minimum_pressure=1e5, maximum_pressure=1.5e7, nmax=100)
+print(isoT)
+# Output:
+# Isoline struct containing the attributes (description, name, value)
+# 	Type                        type : Isotherm
+# 	Molar composition (-)          z : [0.200, 0.800]
+# 	Temperature (K)                T : [ 3.000e+02,  3.000e+02 ...  3.000e+02,  3.000e+02], len = 100
+# 	Pressure (Pa)                  p : [ 1.000e+05,  2.505e+05 ...  1.485e+07,  1.500e+07], len = 100
+# 	Specific volume (m3/mol)       v : [ 2.112e-04,  2.111e-04 ...  2.069e-04,  2.069e-04], len = 100
+# 	Specific entropy (J/mol K)     s : [ 4.595e+02,  4.595e+02 ...  4.565e+02,  4.564e+02], len = 100
+# 	Specific enthalpy (J/mol)      h : [-3.192e+05, -3.191e+05 ... -3.170e+05, -3.170e+05], len = 100
 
 # Calculate temperature, specific volume, specific entropy and specific enthalpy along the isobar at 1 bar
 # from T = minimum_temperature to T = maximum_temperature. Compute at most nmax points.
-T_iso_p, v_iso_p, s_iso_p, h_iso_p = eos.get_isobar(1e5, x, minimum_temperature=200, maximum_temperature=500, nmax=100)
+iso_p = eos.get_isobar(1e5, x, minimum_temperature=200, maximum_temperature=500, nmax=100)
+T, s, v, h = iso_p.T, iso_p.s, iso_p.v, iso_p.h # Unpacking the values along the isobar.
+print(f'T (K): {T}\ns (J / mol K) : {s}\nv (m3 / mol): {v}\nh (J / mol): {h}')
 
 # Calculate temperature, pressure, specific volume and specific entropy along the isenthalp at 1 kJ / mol
 # Start at the upper of (minimum_pressure, minimum_temperature)
 # End at the lower of (maximum_pressure, maximum_temperature)
-T_iso_h, p_iso_h, v_iso_h, s_iso_h = eos.get_isenthalp(1e3, x, minimum_pressure=1e5, maximum_pressure=1.5e7,
+iso_h = eos.get_isenthalp(1e3, x, minimum_pressure=1e5, maximum_pressure=1.5e7,
                                                             minimum_temperature=200, maximum_temperature=500,
                                                             nmax=100)
+print(iso_h)
 
 # Calculate temperature, pressure, specific volume and specific enthalpy along the isentrope at 5 J / mol K
 # Start at the upper of (minimum_pressure, minimum_temperature)
 # End at the lower of (maximum_pressure, maximum_temperature)
-T_iso_s, p_iso_s, v_iso_s, h_iso_s = eos.get_isentrope(5, x, minimum_pressure=1e5, maximum_pressure=1.5e7,
+iso_s = eos.get_isentrope(5, x, minimum_pressure=1e5, maximum_pressure=1.5e7,
                                                             minimum_temperature=200, maximum_temperature=500,
                                                             nmax=100)
+print(iso_s)
 ```
 
 ## Critical point

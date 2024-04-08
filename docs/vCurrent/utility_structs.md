@@ -12,6 +12,7 @@ easy access of the desired properties. This page is an overview of the different
 * [FlashResult](#flashresult)
 * [XYDiagram](#xydiagram)
   * [XYEquilibrium](#xyequilibrium)
+* [Isoline](#isoline)
 * BinaryTriplePoint
 
 # Differentials
@@ -119,3 +120,13 @@ plt.plot(l2ve.y, l2ve.p) # Liquid 2 dew line
 ```
 
 And the equivalent for `get_binary_txy`, only replacing `p` for `T`.
+
+# Isoline
+Methods to compute different isolines package their output in an isoline struct. All isoline objects have the attributes
+* `T` (`ndarray[float]`) : Temperature along the isoline (K)
+* `p` (`ndarray[float]`) : Pressure along the isoline (Pa)
+* `v` (`ndarray[float]`) : Specific volume along the isoline (m3 / mol)
+* `s` (`ndarray[float]`) : Specific entropy along the isoline (J / mol K)
+* `h` (`ndarray[float]`) : Specific enthalpy along the isoline (J / mol)
+* `z` (`ndarray[float]`) : Mole fraction of each species at the isoline
+* `type` (`str`) : Indicator for the type of isoline (`'Isotherm'`, `'Isobar'`, etc.)
