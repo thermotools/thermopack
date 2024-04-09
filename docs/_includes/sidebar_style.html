@@ -1,0 +1,41 @@
+<style>
+    .submenu {
+        display: none;
+    }
+
+    .submenu.active {
+        display: block;
+        background-color: #f0f0f0;
+    }
+
+    /* Triangle-shaped expand button */
+    .expand-btn {
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent; /* Half the height of the triangle */
+        border-bottom: 5px solid transparent; /* Half the height of the triangle */
+        border-right: 8px solid black; /* Width of the triangle */
+        margin-right: 5px; /* Space between the button and the text */
+        cursor: pointer; /* Change cursor to pointer on hover */
+        transition: transform 0.3s; /* Add transition for smoother animation */
+    }
+
+    /* Rotate the triangle when submenu is active */
+    .submenu.active + .expand-btn {
+        transform: rotate(90deg);
+    }
+</style>
+
+<script>
+    // Get all expand buttons
+    var expandButtons = document.querySelectorAll('.expand-btn');
+
+    // Add click event listener to each expand button
+    expandButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Toggle the submenu visibility by toggling the 'active' class
+            var submenu = this.nextElementSibling;
+            submenu.classList.toggle('active');
+        });
+    });
+</script>

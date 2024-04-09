@@ -28,7 +28,7 @@
       {% assign github_link = site.github_link.v22 %}
       {% assign zip_url = site.zip_url.v22 %}
     {% else %}
-      {% capture sidebar_content %}{% include sidebar.md %}{% endcapture %}
+      {% capture sidebar_content %}{% include sidebar.html %}{% endcapture %}
       {% assign home_link = site.home_link.vcurrent %}
       {% assign github_link = site.github_link.vcurrent %}
       {% assign zip_url = site.zip_url.vcurrent %}
@@ -38,7 +38,7 @@
         <a href="{{ home_link }}"><h2>ThermoPack {{ page.version }}</h2></a>
     </div>
 
-    {{ sidebar_content | markdownify }}
+    {{ sidebar_content }}
 
     <div class="sidebar-buttons">
         <div class="sidebar-button">
@@ -86,22 +86,11 @@
 
     .sidebar ul {
         list-style-type: none;
-        padding-left: 0;
+        padding-left: 0; /* Optional: remove default padding */
     }
 
-    .sidebar li {
-        margin-bottom: 5px;
-        cursor: pointer;
-    }
-
-    .sidebar li ul {
-        display: none;
-        margin-left: 20px;
-        padding-left: 0;
-    }
-
-    .sidebar li:hover ul {
-        display: block;
+    .sidebar ul ul {
+        padding-left: .5em;
     }
 
     /* Styles for the version text in the top right corner */
