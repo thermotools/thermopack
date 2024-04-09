@@ -2858,8 +2858,8 @@ class thermo(object):
             Exception: Faild to calculate
 
         Returns:
-            float: Temperature (K)
-            ndarray: Incipient phase composition
+            FlashResult : Struct which can be unpacked as T, x = result, where T is the bubble temperature, and x is the
+            dew composition.
         """
         self.activate()
         press_c = c_double(press)
@@ -2897,8 +2897,8 @@ class thermo(object):
             Exception: Faild to calculate
 
         Returns:
-            float: Pressure (Pa)
-            ndarray: Incipient phase composition
+            FlashResult : Struct which can be unpacked as p, x = result, where p is the bubble pressure, and x is the
+            dew composition.
         """
         self.activate()
         temp_c = c_double(temp)
@@ -2930,14 +2930,14 @@ class thermo(object):
 
         Args:
             press (float): Pressure (Pa)
-            z (float): Compositon (-)
+            z (list[float]): Compositon (-)
 
         Raises:
             Exception: Not able to solve for dew point
 
         Returns:
-            float : Temperature (K)
-            ndarray : Incipient phase composition (-)
+            FlashResult : Struct which can be unpacked as T, y = result, where T is the dew temperature, and y is the
+            bubble composition.
         """
         self.activate()
         press_c = c_double(press)
@@ -2969,14 +2969,14 @@ class thermo(object):
 
         Args:
             temp (float): Temperature (K)
-            z (float): Compositon (-)
+            z (list[float]): Compositon (-)
 
         Raises:
             Exception: Not able to solve for dew point
 
         Returns:
-            float : Pressure (Pa)
-            ndarray : Incipient phase composition (-)
+            FlashResult : Struct which can be unpacked as p, y = result, where p is the dew pressure, and y is the
+            bubble composition.
         """
         self.activate()
         temp_c = c_double(temp)

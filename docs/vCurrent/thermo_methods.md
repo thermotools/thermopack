@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-03-08T09:40:29.500914
+Generated at: 2024-04-09T10:37:56.241956
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -1491,13 +1491,11 @@ Calculate bubble pressure given temperature and composition
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct which can be unpacked as p, x = result, where p is the bubble pressure, and x is the
 
-&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Incipient phase composition
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; dew composition.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1526,13 +1524,11 @@ Calculate bubble temperature given pressure and composition
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct which can be unpacked as T, x = result, where T is the bubble temperature, and x is the
 
-&nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Incipient phase composition
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; dew composition.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1545,7 +1541,7 @@ Calculate dew pressure given temperature and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
 
-&nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **z (list[float]):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
 
@@ -1561,13 +1557,11 @@ Calculate dew pressure given temperature and composition
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **float :** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct which can be unpacked as p, y = result, where p is the dew pressure, and y is the
 
-&nbsp;&nbsp;&nbsp;&nbsp; **ndarray :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Incipient phase composition (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; bubble composition.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1580,7 +1574,7 @@ Calculate dew temperature given pressure and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Pressure (Pa)
 
-&nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
+&nbsp;&nbsp;&nbsp;&nbsp; **z (list[float]):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
 
@@ -1596,13 +1590,11 @@ Calculate dew temperature given pressure and composition
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **float :** 
+&nbsp;&nbsp;&nbsp;&nbsp; **FlashResult :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct which can be unpacked as T, y = result, where T is the dew temperature, and y is the
 
-&nbsp;&nbsp;&nbsp;&nbsp; **ndarray :** 
-
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Incipient phase composition (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; bubble composition.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3234,7 +3226,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 10 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 21 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
