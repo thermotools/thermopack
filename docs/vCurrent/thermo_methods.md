@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-04-09T10:37:56.241956
+Generated at: 2024-04-09T10:43:41.450362
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -2171,11 +2171,11 @@ Get isenthalpic line at specified enthalpy. Use as `T, p, v, s = get_isenthalp(h
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+&nbsp;&nbsp;&nbsp;&nbsp; **Isoline :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, pressure, specific volume, specific entropy) along the
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; isenthalp.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2216,11 +2216,11 @@ Get isentrope at specified entropy. Use as `T, p, v, h = get_isenthalp(s, z)`, w
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+&nbsp;&nbsp;&nbsp;&nbsp; **Isoline :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, pressure, specific volume, specific enthalpy) along the
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; isentrope.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2253,11 +2253,11 @@ Get isobar at specified pressure. Use as `T, v, s, h = get_isobar(p, z)`, where 
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(tuple of arrays) :** 
+&nbsp;&nbsp;&nbsp;&nbsp; **Isoline :** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding to (temperature, specific volume, specific entropy, specific enthalpy)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; along the isobar.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2290,7 +2290,11 @@ Get iso-therm at specified temperature
 
 #### Returns:
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Multiple numpy arrays.
+&nbsp;&nbsp;&nbsp;&nbsp; **Isoline :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

@@ -4121,7 +4121,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on iso-therm. Defaults to 100.
 
         Returns:
-           Multiple numpy arrays.
+           Isoline : Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
+           entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
         """
         self.activate()
         temp_c = c_double(temp)
@@ -4186,8 +4187,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on iso-bar. Defaults to 100.
 
         Returns:
-            (tuple of arrays) : Corresponding to (temperature, specific volume, specific entropy, specific enthalpy)
-            along the isobar.
+            Isoline : Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
+           entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
         """
         self.activate()
         press_c = c_double(press)
@@ -4257,8 +4258,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on isenthalp. Defaults to 100.
 
         Returns:
-            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific entropy) along the
-            isenthalp.
+            Isoline : Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
+           entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
         """
         self.activate()
         enthalpy_c = c_double(enthalpy)
@@ -4334,8 +4335,8 @@ class thermo(object):
             nmax (int, optional): Maximum number of points on isentrope. Defaults to 100.
 
         Returns:
-            (tuple of arrays) : Corresponding to (temperature, pressure, specific volume, specific enthalpy) along the
-            isentrope.
+            Isoline : Struct containing the attributes T (temperature), p (pressure), v (specific volume), s (specific
+           entropy) and h (specific enthalpy) along the isoline, as well as z (composition) at the isoline.
         """
         self.activate()
         entropy_c = c_double(entropy)
