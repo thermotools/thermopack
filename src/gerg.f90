@@ -63,6 +63,7 @@ module gerg
   end type meos_gerg
 
   public :: meos_gerg, constructor_gerg
+  public :: is_valid_component_GERG
 
 contains
 
@@ -147,6 +148,23 @@ contains
     p_thermo%Rgas = gerg_comp%Rgas_meos
     p_thermo%kRgas = 1000.0*gerg_comp%Rgas_meos !< J/kmol/K
   end function constructor_GERG
+
+  !> Is this a valid gerg component
+  function is_valid_component_GERG(comp_name) result(is_gerg_comp)
+    use stringmod, only: str_eq
+    use gergdatadb, only: maxgerg, gergdb
+    character(len=*), intent(in) :: comp_name
+    logical :: is_gerg_comp
+    ! Locals
+    integer :: i
+    is_gerg_comp = .false.
+    do i=1,maxgerg
+      if (str_eq(comp_name, gergdb(i)%ident)) then
+        is_gerg_comp = .true.
+        exit
+      endif
+    enddo
+  end function is_valid_component_GERG
 
   subroutine init_GERG(this, use_Rgas_fit)
     class(meos_gerg) :: this

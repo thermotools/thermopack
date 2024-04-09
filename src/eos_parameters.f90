@@ -12,7 +12,7 @@ Module eos_parameters
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
   use multiparameter_lj, only: meos_lj, constructor_LJ
-  use gerg, only: meos_gerg, constructor_gerg
+  use gerg, only: meos_gerg, constructor_gerg, is_valid_component_GERG
   use pure_fluid_meos, only: meos_pure, constructor_meos_pure
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
@@ -112,7 +112,12 @@ contains
         call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
       endif
     elseif (str_eq(eos_label,'GERG2008') .or. str_eq(eos_label,'GERG')) then
-      allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
+      if (is_valid_component_GERG(comp)) then
+        allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
+      else
+        print *,trim(comp)//" is not a GERG2008 component. Using MEOS description instead"
+        allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
+      endif
     elseif (str_eq(eos_label,'MEOS')) then
       allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
     else

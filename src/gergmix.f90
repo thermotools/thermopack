@@ -7,7 +7,7 @@ module gergmix
   !!
   !! \author Morten Hammer, 2023
   use eos_parameters, only: single_eos
-  use gerg, only: meos_gerg
+  use gerg, only: meos_gerg, is_valid_component_GERG
   use thermopack_constants, only: N_Avogadro, VAPPH, LIQPH
   use thermopack_var, only: Rgas, nce, complist, base_eos_param, &
        get_active_alt_eos
@@ -60,6 +60,8 @@ contains
   function constructor_GERGMIX(nc) result(gerg_mix)
     use stringmod, only: str_eq
     use thermopack_var, only: get_active_thermo_model, thermo_model
+    use meosmixdb, only: max_meos_mix_reducing, meos_mix_reducingdb, &
+       max_meos_mix_data, meos_mix_datadb
     !character(len=*), intent(in) :: comp_name
     integer, intent(in) :: nc
     type(meos_gergmix) :: gerg_mix
@@ -67,12 +69,17 @@ contains
     type(thermo_model), pointer :: p_thermo
     integer :: i, j, k
     real :: rhor_i, rhor_j, Tr_i, Tr_j
-
+    logical :: is_gerg_component(nc)
     gerg_mix%eosidx = meosGERG_mix
     gerg_mix%subeosidx = meosGERG_mix
     call gerg_mix%allocate_and_init(nc, "GERG2008")
     call gerg_mix%allocate_param(nc)
 
+    ! Are all components valid GERG components?
+    do i=1,nc
+      is_gerg_component(i) = is_valid_component_GERG(complist(i))
+    enddo
+    !
     gerg_mix%mix_data_index = -1
     do i=1,nc
       rhor_i = gerg_mix%nist(i)%meos%rhor
@@ -83,32 +90,61 @@ contains
         gerg_mix%inv_rho_pow(i,j) = (1/rhor_i**(1.0_dp/3.0_dp) + 1/rhor_j**(1.0_dp/3.0_dp))**3
         gerg_mix%tc_prod_sqrt(i,j) = (Tr_i*Tr_j)**(0.5_dp)
         !
-        do k=1,max_gerg_mix_reducing
-          if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &
-               str_eq(gerg_mix_reducingdb(k)%ident2, complist(j))) then
-           gerg_mix%beta_T(i,j) = gerg_mix_reducingdb(k)%beta_T
-           gerg_mix%beta_v(i,j) = gerg_mix_reducingdb(k)%beta_v
-           gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
-           gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
-           exit
-         else if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(j)) .and. &
-               str_eq(gerg_mix_reducingdb(k)%ident2, complist(i))) then
-            gerg_mix%beta_T(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_T
-            gerg_mix%beta_v(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_v
-            gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
-            gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
-            exit
-          endif
-        enddo
-        do k=1,max_gerg_mix_data
-          if ((str_eq(gerg_mix_datadb(k)%ident1, complist(i)) .and. &
-               str_eq(gerg_mix_datadb(k)%ident2, complist(j))) .or. &
-               (str_eq(gerg_mix_datadb(k)%ident1, complist(j)) .and. &
-               str_eq(gerg_mix_datadb(k)%ident2, complist(i)))) then
-            gerg_mix%mix_data_index(i,j) = k
-            exit
-          endif
-        enddo
+        if (is_gerg_component(i) .and. is_gerg_component(j)) then
+          do k=1,max_gerg_mix_reducing
+            if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(i)) .and. &
+                 str_eq(gerg_mix_reducingdb(k)%ident2, complist(j))) then
+              gerg_mix%beta_T(i,j) = gerg_mix_reducingdb(k)%beta_T
+              gerg_mix%beta_v(i,j) = gerg_mix_reducingdb(k)%beta_v
+              gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
+              gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
+              exit
+            else if (str_eq(gerg_mix_reducingdb(k)%ident1, complist(j)) .and. &
+                 str_eq(gerg_mix_reducingdb(k)%ident2, complist(i))) then
+              gerg_mix%beta_T(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_T
+              gerg_mix%beta_v(i,j) = 1.0/gerg_mix_reducingdb(k)%beta_v
+              gerg_mix%gamma_T(i,j) = gerg_mix_reducingdb(k)%gamma_T
+              gerg_mix%gamma_v(i,j) = gerg_mix_reducingdb(k)%gamma_v
+              exit
+            endif
+          enddo
+          do k=1,max_gerg_mix_data
+            if ((str_eq(gerg_mix_datadb(k)%ident1, complist(i)) .and. &
+                 str_eq(gerg_mix_datadb(k)%ident2, complist(j))) .or. &
+                 (str_eq(gerg_mix_datadb(k)%ident1, complist(j)) .and. &
+                 str_eq(gerg_mix_datadb(k)%ident2, complist(i)))) then
+              gerg_mix%mix_data_index(i,j) = k
+              exit
+            endif
+          enddo
+        else
+          do k=1,max_meos_mix_reducing
+            if (str_eq(meos_mix_reducingdb(k)%ident1, complist(i)) .and. &
+                 str_eq(meos_mix_reducingdb(k)%ident2, complist(j))) then
+              gerg_mix%beta_T(i,j) = meos_mix_reducingdb(k)%beta_T
+              gerg_mix%beta_v(i,j) = meos_mix_reducingdb(k)%beta_v
+              gerg_mix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
+              gerg_mix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
+              exit
+            else if (str_eq(meos_mix_reducingdb(k)%ident1, complist(j)) .and. &
+                 str_eq(meos_mix_reducingdb(k)%ident2, complist(i))) then
+              gerg_mix%beta_T(i,j) = 1.0/meos_mix_reducingdb(k)%beta_T
+              gerg_mix%beta_v(i,j) = 1.0/meos_mix_reducingdb(k)%beta_v
+              gerg_mix%gamma_T(i,j) = meos_mix_reducingdb(k)%gamma_T
+              gerg_mix%gamma_v(i,j) = meos_mix_reducingdb(k)%gamma_v
+              exit
+            endif
+          enddo
+          do k=1,max_meos_mix_data
+            if ((str_eq(meos_mix_datadb(k)%ident1, complist(i)) .and. &
+                 str_eq(meos_mix_datadb(k)%ident2, complist(j))) .or. &
+                 (str_eq(meos_mix_datadb(k)%ident1, complist(j)) .and. &
+                 str_eq(meos_mix_datadb(k)%ident2, complist(i)))) then
+              print *,"Departure function for binray mixture "//trim(complist(i))//"-"//trim(complist(j))//" is ignored"
+              exit
+            endif
+          enddo
+        endif
       enddo
     enddo
 
