@@ -2882,7 +2882,8 @@ class thermo(object):
         y = np.array(y_c)
         if ierr_c.value != 0:
             raise Exception("bubble_temperature calclualtion failed")
-        return temp, y
+        res = utils.FlashResult(z, temp, press, z, y, 0.0, 1.0, self.LIQPH, 'bubble_temperature')
+        return res
 
     def bubble_pressure(self, temp, z):
         """Saturation interface
@@ -2920,7 +2921,8 @@ class thermo(object):
         y = np.array(y_c)
         if ierr_c.value != 0:
             raise Exception("bubble_pressure calclualtion failed")
-        return press, y
+        res = utils.FlashResult(z, temp, press, z, y, 0.0, 1.0, self.LIQPH, 'bubble_pressure')
+        return res
 
     def dew_temperature(self, press, z):
         """Saturation interface
@@ -2958,7 +2960,8 @@ class thermo(object):
         x = np.array(x_c)
         if ierr_c.value != 0:
             raise Exception("dew_temperature calclualtion failed")
-        return temp, x
+        res = utils.FlashResult(z, temp, press, x, z, 1.0, 0.0, self.VAPPH, 'dew_temperature')
+        return res
 
     def dew_pressure(self, temp, z):
         """Saturation interface
@@ -2996,7 +2999,9 @@ class thermo(object):
         x = np.array(x_c)
         if ierr_c.value != 0:
             raise Exception("bubble_pressure calclualtion failed")
-        return press, x
+
+        res = utils.FlashResult(z, temp, press, x, z, 1.0, 0.0, self.VAPPH, 'dew_pressure')
+        return res
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size_factor=1.0,

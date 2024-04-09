@@ -117,6 +117,10 @@ class FlashResult:
             return (_ for _ in self.iterable[2:]) # Exclude T and p
         elif self.flash_type in ('pH', 'pS'):
             return (_ for _ in self.iterable[0:1] + self.iterable[2:]) # Exclude p
+        elif '_' in self.flash_type: # [dew/bubble]_[temperature/pressure]
+            val = self.T if ('temperature' in self.flash_type) else self.p
+            comp = self.x if ('dew' in self.flash_type) else self.y
+            return (_ for _ in (val, comp))
         else:
             return (_ for _ in self.iterable)
 
