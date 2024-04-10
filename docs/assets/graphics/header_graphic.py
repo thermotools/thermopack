@@ -193,5 +193,5 @@ if __name__ == '__main__':
 
     plt.xlim(min(xl), max(xl))
     plt.ylim(-2, 3)
-    plt.savefig('header.pdf', bbox_inches='tight', pad_inches=0)
+    plt.savefig('header.png', bbox_inches='tight', pad_inches=0, dpi=96)
     plt.show()
