@@ -22,6 +22,7 @@ module saftvrmie_interface
   public :: calc_saftvrmie_term, calc_alpha_saftvrmie
   public :: update_saftvrmie_hs_diameter, calc_saftvrmie_dispersion
   public :: calc_saftvrmie_hard_sphere
+  public :: calc_saftvrmie_rdf_at_contact
   public :: model_control_a1
   public :: model_control_a2
   public :: model_control_a3
@@ -916,6 +917,36 @@ contains
       enddo
     endif
   end subroutine calc_saftvrmie_hard_sphere
+
+  !> Compute RDF at contact with SAFT-VR Mie
+  !! Forwards call to saftvrmie_chain => rdf_at_contact
+  !! Note: Differentials are implemented in rdf_at_contact, but not in this interface.
+  subroutine calc_saftvrmie_rdf_at_contact(T, V, n, g, order)
+    use saftvrmie_chain, only: rdf_at_contact
+    use thermopack_var, only: nc, get_active_thermo_model, thermo_model
+    use saftvrmie_containers, only: get_saftvrmie_var, saftvrmie_var_container
+    implicit none
+    real, intent(in) :: T, V
+    real, dimension(nc), intent(in) :: n
+    integer, optional, intent(in) :: order !! Expansion order : 0, 1, or 2 (default)
+    ! Output
+    real, dimension(nc), intent(out) :: g
+    ! Locals
+    type(thermo_model), pointer :: act_mod_ptr
+    type(saftvrmie_var_container), pointer :: svrm_var
+    integer :: calc_order = 2
+
+    act_mod_ptr => get_active_thermo_model()
+    svrm_var => get_saftvrmie_var()
+    call preCalcSAFTVRMie(nc, T, V, n, 2, svrm_var)
+
+    if (present(order)) then
+      calc_order = order
+    endif
+
+    call rdf_at_contact(nc, T, V, n, svrm_var, g, order=calc_order)
+
+  end subroutine calc_saftvrmie_rdf_at_contact
 
   !> Enable/disable a1 term
   !!

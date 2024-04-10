@@ -77,6 +77,8 @@ class saftvrmie(saft):
                                                POINTER(c_int)]
         self.s_calc_saftvrmie_term.restype = c_double
 
+        self.s_rdf_at_contact = getattr(self.tp, self.get_export_name("saftvrmie_interface", "calc_saftvrmie_rdf_at_contact"))
+
 
         # Define parameters to be set by init
         self.nc = None
@@ -578,3 +580,20 @@ class saftvrmie(saft):
                                        byref(term_c))
 
         return a
+
+    def rdf_at_contact(self, temp, volume, n, order=2):
+        """Utility
+
+        """
+        self.activate()
+        t_c = c_double(temp)
+        v_c = c_double(volume)
+        n_c = (c_double * self.nc)(*n)
+        g_c = (c_double * self.nc)()
+        order_c = c_int(order)
+
+        self.s_rdf_at_contact.argtypes = [POINTER(c_double), POINTER(c_double), POINTER(c_double),
+                                          POINTER(c_double), POINTER(c_int)]
+        self.s_rdf_at_contact.restype = None
+        self.s_rdf_at_contact(byref(t_c), byref(v_c), n_c, g_c, byref(order_c))
+        return np.array(g_c),

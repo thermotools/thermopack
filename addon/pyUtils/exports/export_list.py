@@ -242,6 +242,7 @@ append_export("model_control_chain", "saftvrmie_interface")
 append_export("hard_sphere_reference", "saftvrmie_interface")
 append_export("set_temperature_cache_flag", "saftvrmie_interface")
 append_export("calc_saftvrmie_term", "saftvrmie_interface")
+append_export("calc_saftvrmie_rdf_at_contact", "saftvrmie_interface")
 
 
 append_export("printbinarymixturereportsaft", "saft_interface")
