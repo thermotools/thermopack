@@ -64,7 +64,7 @@ if __name__ == '__main__':
         if not re.match(sidebar_file_pattern, file):
             continue
 
-        filename = file.split('.')[0]
+        filename = file.strip('.md')
         ifilename = f'{filename}.md'
         ofilename = f'{filename}.html'
 

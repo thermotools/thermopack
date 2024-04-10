@@ -103,19 +103,18 @@
 <li><a href="/thermopack/v2.1.0/home.html">v2.1.0</a></li>
 <li><a href="/thermopack/please_cite.html">Citation</a></li>
 <li><a href="/thermopack/contact.html">Contact</a></li>
-<li>test</li>
 </ul>
 <script>
-    // Get all expand buttons
-    var expandButtons = document.querySelectorAll('.expand-btn');
+	// Get all expand buttons
+	var expandButtons = document.querySelectorAll('.expand-btn');
 
-    // Add click event listener to each expand button
-    expandButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            // Toggle the submenu visibility by toggling the 'active' class
-            var submenu = this.nextElementSibling;
-            submenu.classList.toggle('active');
-            button.classList.toggle('active');
-        });
-    });
+	// Add click event listener to each expand button
+	expandButtons.forEach(function(button) {
+		button.addEventListener('click', function() {
+			// Toggle the submenu visibility by toggling the 'active' class
+			var submenu = this.nextElementSibling;
+			submenu.classList.toggle('active');
+			button.classList.toggle('active');
+		});
+	});
 </script>

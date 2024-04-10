@@ -1,0 +1,91 @@
+.main-content {
+    margin: 0 auto; /* Center the div horizontally */
+    margin-left: 10%; /* Offset the div to the right by 20% of the container width */
+    max-width: 100em; /* Optional: set a maximum width for the div */
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 25%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #f0f0f0;
+    overflow-y: auto;
+    padding-left: 20px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding-left: 0; /* Optional: remove default padding */
+}
+
+.sidebar ul ul {
+    padding-left: .5em;
+}
+
+/* Styles for the version text in the top right corner */
+.sidebar-version {
+    position: absolute;
+    top: 10px; /* Adjust the top position as needed */
+    right: 10px; /* Adjust the right position as needed */
+    background-color: #f0f0f0; /* Background color for the version text box */
+    padding: 5px 10px; /* Padding around the version text */
+    border: 1px solid #ccc; /* Border around the version text box */
+    font-size: 14px; /* Font size for the version text */
+}
+
+.submenu {
+    display: none;
+}
+
+.submenu.active {
+    display: block;
+    background-color: #e3e3e3;
+}
+
+/* Triangle-shaped expand button */
+.expand-btn {
+    width: 1em;
+    height: 1.2em;
+    border-top: 5px solid transparent; /* Half the height of the triangle */
+    border-bottom: 5px solid transparent; /* Half the height of the triangle */
+    border-left: 8px solid black; /* Width of the triangle */
+    margin-right: 5px; /* Space between the button and the text */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    background-color: transparent; /* Hide background color */
+    border: none; /* Hide border */
+    padding: 0; /* Remove padding */
+}
+
+/* Rotate the triangle when submenu is active */
+.expand-btn.active {
+    transform: rotate(270deg);
+}
+
+/* Button styles */
+.btn {
+    background-color: #007bff; /* Button background color (blue) */
+    color: #fff; /* Text color (white) */
+    padding: 10px 20px; /* Padding around the text */
+    border: none; /* Remove button border */
+    text-align: center; /* Center text horizontally */
+    text-decoration: none; /* Remove underlines from links */
+    display: inline-block;
+    font-size: 16px; /* Button font size */
+    margin-bottom: 10px; /* Margin between buttons */
+}
+
+/* Custom button styles (you can adjust these as needed) */
+.btn-primary {
+    background-color: #007bff; /* Blue */
+}
+
+.btn-success {
+    background-color: #28a745; /* Green */
+}
+
+.btn-warning {
+    background-color: #ffc107; /* Yellow */
+}
