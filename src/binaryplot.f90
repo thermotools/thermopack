@@ -405,8 +405,8 @@ contains
       if (i_start == 3) then
         dlns = dlns*sign(1.0,XX(ispecStep)-XXold(ispecStep))
       else
-      dlns = dlns*initialStepSign(TT,PP,XX,ispec,ispecStep,ph)
-    endif
+        dlns = dlns*initialStepSign(TT,PP,XX,ispec,ispecStep,ph)
+      endif
     endif
 
     solveForLimit = .false.
@@ -932,7 +932,6 @@ contains
     real, dimension(maxpoints) :: xL2VE, yL2VE, tpL2VE
     integer :: nLLE, nL1VE, nL2VE
     integer :: ierr, i, iterm
-    real, parameter :: Pmin_default = 1.0e5
     real :: Pmin_actual, xx_tpl(3,2)
     real :: Tmin_sys
     ! Written for nc == 2
@@ -948,9 +947,8 @@ contains
     if (present(Pmin)) then
       Pmin_actual = Pmin
     else
-      Pmin_actual = Pmin_default
+      Pmin_actual = tpPmin
     endif
-
     if (ispec == TSPEC) then
       Tmin_sys = tpTmin
       tpTmin = 0.9*T
@@ -1679,6 +1677,7 @@ contains
     use nonlinear_solvers, only: nonlinear_solver, nonlinear_solve, &
          limit_dx, premReturn, setXv
     use thermopack_var, only: nc
+    use utilities, only: isXwithinBounds
     implicit none
     integer, intent(in) :: ispec
     integer, intent(inout) :: ispecStep
@@ -1757,11 +1756,11 @@ contains
     XXmin(3:6) = 0.0 ! Positive mol number
     if (ispec == TSPEC) then
       if (present(Pmin)) then
-        XXmin(neq) = log(max(tpPmin,Pmin)) !Pmin
+        XXmin(neq) = log(max(tpPmin,Pmin*0.95)) !Pmin
       else
         XXmin(neq) = log(tpPmin) !Pmin
       endif
-      XXmax(neq) = log(min(tpPmax,Pmax)) !Pmax
+      XXmax(neq) = log(min(tpPmax,Pmax*1.05)) !Pmax
     else
       XXmin(neq) = tpTmin
       XXmax(neq) = tpTmax
@@ -1769,7 +1768,9 @@ contains
       XXmax(neq) = log(XXmax(neq)) !Tmax
     endif
     ! Validate initial values
-    if (XX(neq)<=XXmin(neq)+1.0e-5 .or. XX(neq)>=XXmax(neq)-1.0e-5) then
+    call isXwithinBounds(neq,XX,XXmin,XXmax,"ln K1, ln K2, x1, x2, y1, y2, ln T/P",&
+         "",ierr,do_print=.false.)
+    if (ierr /= 0) then
       ierr = -1 ! Return and solve for limit value
       return
     endif

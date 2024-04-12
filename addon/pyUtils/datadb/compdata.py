@@ -218,8 +218,10 @@ class component(fluid_file):
             alpi = '{:.8e}'.format(numbers)
             alp.append(alpi)
         code_lines.append(3*I + "alphaParams = (/" + alp[0] + "," + alp[1] + "," + alp[2] + "/), &")
-        code_lines.append(3*I + 'assoc_scheme = {} &'.format(
+        code_lines.append(3*I + 'assoc_scheme = {} ,&'.format(
             get_assoc_scheme_parameter(d["assoc_scheme"])))
+        code_lines.append(3*I + 'simplified_rdf = {} &'.format(
+            ".true." if d["simplified_rdf"] == "True" else ".false."))
         code_lines.append(3*I + ")")
         code_lines.append("")
 
