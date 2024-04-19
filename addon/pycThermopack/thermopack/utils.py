@@ -231,7 +231,7 @@ class Differentials:
 
             diffs = (dT, dV, dn)
         elif variables == 'tpn':
-            if flags[diff_idx] is not None:
+            if flags[1] is not None:
                 dp = vals[diff_idx]
                 diff_idx += 1
             if flags[2] is not None:
@@ -306,7 +306,7 @@ class Property:
     def __repr__(self):
         ostr = f'Property struct evaluated at constant ({self.diffs.constant})\n'
         ostr += 'Containing the attributes \n'
-        ostr += f'Value         : val'
+        ostr += f'Value         : val\n'
         ostr += f'Differentials : diffs'
         return ostr
 
