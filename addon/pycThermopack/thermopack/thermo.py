@@ -1529,7 +1529,7 @@ class thermo(object):
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, False, False), 'tpn')
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, None, None), 'tpn')
         return prop.unpack()
 
     def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
@@ -1585,7 +1585,7 @@ class thermo(object):
         if not dsdp is None:
             return_tuple += (dsdp_c[0], )
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, False), 'tpn')
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, None), 'tpn')
         return prop.unpack()
 
     def set_standard_entropy(self, j, s0, reference_pressure="1BAR"):
