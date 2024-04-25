@@ -1312,23 +1312,24 @@ class thermo(object):
                           metaExtremum_c,
                           v_c)
 
-        return_tuple = (np.array(lnfug_c), )
+        diffs = utils.Differentials('tpn')
         if not dlnfugdt is None:
-            return_tuple += (np.array(dlnfugdt_c), )
+            diffs.dT = np.array(dlnfugdt_c)
         if not dlnfugdp is None:
-            return_tuple += (np.array(dlnfugdp_c), )
+            diffs.dp = np.array(dlnfugdp_c)
         if not dlnfugdn is None:
             dlnfugdn_r = np.zeros((len(x), len(x)))
             for i in range(len(x)):
                 for j in range(len(x)):
                     dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(x)]
-            return_tuple += (dlnfugdn_r, )
+            diffs.dn = dlnfugdn_r
+        diffs.make_v2_compatible()
+        prop = utils.Property(np.array(lnfug_c), diffs)
         if not ophase is None:
-            return_tuple += (ophase_c[0], )
+            prop.ophase = ophase_c[0]
         if not v is None:
-            return_tuple += (v_c[0], )
+            prop.v = v_c[0]
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
         return prop.unpack()
 
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
@@ -2771,7 +2772,7 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
         return prop.unpack()
 
-    def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
+    def thermo_tvp(self, temp, v, n, phase=None, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
         """TVp-property
         Calculate logarithm of fugacity coefficient given molar numbers,
@@ -2783,6 +2784,7 @@ class thermo(object):
             temp (float): Temperature (K)
             v (float): Volume (m3)
             n (array_like): Molar numbers (mol)
+            phase (Any) : Not in use, may be removed in the future.
             dlnfugdt (logical, optional): Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dlnfugdp (logical, optional): Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dlnfugdn (logical, optional): Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
