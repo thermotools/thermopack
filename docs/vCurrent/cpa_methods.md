@@ -6,7 +6,7 @@ permalink: /vcurrent/cpa_methods.html
 ---
 
 <!--- 
-Generated at: 2024-03-08T09:40:29.544213
+Generated at: 2024-04-25T20:46:11.483090
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cpa class. For instructions on how to use the parser routines, see the
@@ -156,7 +156,13 @@ Get pure parameters
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `print_cpa_report(self)`
-Print cpa parameters  Parameters printed are the five pure parameters a0, b, epsilon, beta, c1, and the binary parameter for the cubic part, kij_a, and for the association part, kij_eps. 
+Print cpa parameters
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Parameters printed are the five pure parameters
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; a0, b, epsilon, beta, c1, and the binary parameter
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; for the cubic part, kij_a, and for the association part, kij_eps.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

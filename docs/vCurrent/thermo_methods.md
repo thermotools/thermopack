@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-03-08T09:40:29.500914
+Generated at: 2024-04-25T20:46:11.470880
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -52,14 +52,14 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
     * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempnone-pressnone)
   * [Saturation interfaces](#saturation-interfaces)
-    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
+    * [_property_index_from_string](#_property_index_from_stringself-prop-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
-    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure10-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
@@ -1378,14 +1378,14 @@ Bubble- and dew point calculations and phase envelopes.
 
 ### Table of contents
   * [Saturation interfaces](#saturation-interfaces)
-    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
+    * [_property_index_from_string](#_property_index_from_stringself-prop-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
-    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure10-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
@@ -1611,7 +1611,7 @@ Get saturated phase having given entropy. Searches the binodal by tracing it upw
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_binary_pxy(self, temp, maximum_pressure=15000000.0, minimum_pressure=100000.0, maximum_dz=0.003, maximum_dlns=0.01)`
+### `get_binary_pxy(self, temp, maximum_pressure=15000000.0, minimum_pressure=1.0, maximum_dz=0.003, maximum_dlns=0.01)`
 Calculate binary three phase envelope
 
 #### Args:
@@ -1626,7 +1626,7 @@ Calculate binary three phase envelope
 
 &nbsp;&nbsp;&nbsp;&nbsp; **minimum_pressure (float, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum pressure (Pa). Defaults to 1.0e5.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum pressure (Pa). Defaults to 1.0.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **maximum_dz (float, optional):** 
 
@@ -3234,7 +3234,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 10 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 21 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
