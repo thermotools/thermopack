@@ -50,7 +50,7 @@ def write_table(file, tab, level):
     for k, v in tab.items():
         if len(v) > 0:
             file.write('\t' * level + '<li>\n')
-            file.write('\t' * (level + 1) + f'{get_list_element(k)}<button class="expand-btn">&#9668;</button>\n')
+            file.write('\t' * (level + 1) + f'{get_list_element(k)} <button class="expand-btn">&#9668;</button>\n')
             file.write('\t' * (level + 1) + '<ul class="submenu">\n')
             write_table(file, v, level + 2)
             file.write('\t' * (level + 1) + '</ul>\n')
