@@ -89,6 +89,7 @@ module compdata
     ! Fitting method used to obtain the parameters.
     character(len=ref_len) :: ref
     character(len=bibref_len) :: bib_reference
+    logical :: simplified_rdf
   end type CPAdata
 
   type :: gendatadb

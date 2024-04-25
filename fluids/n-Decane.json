@@ -109,7 +109,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
@@ -166,7 +167,7 @@
     "beta": 0.0000,
     "assoc_scheme": "None",
     "fh_order": 0,
-    "bib_reference": "Müller's mystery parameters for methane and decane where SAFT-VR Mie fails",
+    "bib_reference": "MÃ¼ller's mystery parameters for methane and decane where SAFT-VR Mie fails",
     "ref": "Muller"
   }
 }

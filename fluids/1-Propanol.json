@@ -109,7 +109,8 @@
       "alphaCorr": "Classic",
       "eps": 21913.0,
       "beta": 7.736E-3,
-      "assoc_scheme": "2B"
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

@@ -1529,7 +1529,7 @@ class thermo(object):
         if not dhdt is None:
             return_tuple += (dhdt_c[0], )
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, False, False), 'tpn')
+        prop = utils.Property.from_return_tuple(return_tuple, (dhdt, None, None), 'tpn')
         return prop.unpack()
 
     def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
@@ -1585,7 +1585,7 @@ class thermo(object):
         if not dsdp is None:
             return_tuple += (dsdp_c[0], )
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, False), 'tpn')
+        prop = utils.Property.from_return_tuple(return_tuple, (dsdt, dsdp, None), 'tpn')
         return prop.unpack()
 
     def set_standard_entropy(self, j, s0, reference_pressure="1BAR"):
@@ -3207,7 +3207,7 @@ class thermo(object):
     def get_binary_pxy(self,
                        temp,
                        maximum_pressure=1.5e7,
-                       minimum_pressure=1.0e5,
+                       minimum_pressure=1.0,
                        maximum_dz=0.003,
                        maximum_dlns=0.01):
         """Saturation interface
@@ -3216,7 +3216,7 @@ class thermo(object):
         Args:
             temp (float): Temperature (K)
             maximum_pressure (float, optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
-            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0e5.
+            minimum_pressure (float, optional): Exit on minimum pressure (Pa). Defaults to 1.0.
             maximum_dz (float, optional): Maximum composition step. Defaults to 0.003.
             maximum_dlns (float, optional): Maximum step in most sensitive envelope variable (the specification variable), see `doc/memo/binaryxy` for details on usage. Defaults to 0.01.
 

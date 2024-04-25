@@ -195,7 +195,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     },
     "CPA-2": {
       "ref": "SINTEF",
@@ -206,7 +207,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.05,
-      "assoc_scheme": "1EA"
+      "assoc_scheme": "1EA",
+      "simplified_rdf": "True"
     },
     "CPA-3": {
       "ref": "SINTEF2",
@@ -217,7 +219,8 @@
       "alphaCorr": "Classic",
       "eps": 1.28604049e+04,
       "beta": 9.08545617e-03,
-      "assoc_scheme": "1"
+      "assoc_scheme": "1",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
