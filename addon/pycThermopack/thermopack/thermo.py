@@ -3847,7 +3847,7 @@ class thermo(object):
             Pi = Pi_c.value
             wi = np.array(wi_c)
             phase = phase_c.value
-            vi, = self.specific_volume(Ti, Pi, z, phase)
+            vi = utils.back_compatible_unpack(self.specific_volume(Ti, Pi, z, phase))
         else:
             Ti = None
             Pi = None
@@ -4869,6 +4869,9 @@ class thermo(object):
                           byref(ierr_c))
 
         if ierr_c.value != 0:
+            print(f"Temperature: {temp}")
+            print(f"Chemical potential: {mu}")
+            print(f"Initial density: {rho_initial}")
             raise Exception("mu-T solver failed")
 
         return np.array(rho_c)
