@@ -133,19 +133,27 @@ contains
     real, intent(out) :: a0(nc), b(nc), alphaParams(3,nc), eps(nc), beta(nc)
     logical, intent(out) :: simplified_rdf
     ! Locals
-    integer :: ic
+    integer :: ic, jc
     character(len=eosid_len) :: eos
     logical :: simplified_rdf_array(nc)
 
     eos = get_eos_short_label_from_subidx(eosidx)
+    jc = 1
     do ic=1,nc
       call getCpaPureParams_singleComp(comp(ic)%p_comp%ident,eos,ref,&
            found(ic),a0(ic),b(ic),alphaParams(:,ic),eps(ic),beta(ic),&
-           alphaCorrIdx(ic),scheme(ic),simplified_rdf_array(ic))
+           alphaCorrIdx(ic),scheme(ic),simplified_rdf_array(jc))
+      if (found(ic)) jc = jc + 1
     end do
-    simplified_rdf = all(simplified_rdf_array)
-    if ( .not. simplified_rdf .and. .not. all(.not. simplified_rdf_array)) &
-         print *,"Detected mix of parameters for simplified RDF and non-simplified RDF"
+    jc = jc - 1
+    if (jc > 0) then
+      ! Ignore components not in database
+      simplified_rdf = all(simplified_rdf_array(1:jc))
+      if ( .not. simplified_rdf .and. .not. all(.not. simplified_rdf_array(1:jc))) &
+           print *,"Detected mix of parameters for simplified RDF and non-simplified RDF"
+    else
+      simplified_rdf = .true.
+    endif
   end subroutine getCpaPureParams_allcomps
 
   subroutine getCpaPureParams_singleComp(compName,eos,ref,&
