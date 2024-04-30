@@ -99,11 +99,7 @@ class cubic(thermo):
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
-
-        if volume_shift:
-            vol_shift_c = c_int(1)
-        else:
-            vol_shift_c = c_int(0)
+        vol_shift_c = c_int(self._true_int_value) if volume_shift else c_int(0)
 
         self.eoslibinit_init_cubic.argtypes = [c_char_p,
                                                c_char_p,

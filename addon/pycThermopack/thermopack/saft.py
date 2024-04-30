@@ -764,8 +764,8 @@ class saft(thermo):
             reduced_radius_cut (float): Reduced length cut-off
         """
         self.activate()
-        enable_truncation_correction_c = c_int(1 if enable_truncation_correction else 0)
-        enable_shift_correction_c = c_int(1 if enable_shift_correction else 0)
+        enable_truncation_correction_c = c_int(self._true_int_value if enable_truncation_correction else 0)
+        enable_shift_correction_c = c_int(self._true_int_value if enable_shift_correction else 0)
         rr_c = c_double(reduced_radius_cut)
 
         self.s_truncation_corrections.argtypes = [POINTER(c_int),
@@ -798,7 +798,7 @@ class saft(thermo):
         self.s_test_fmt_compatibility(byref(is_fmt_consistent_c),
                                       byref(na_enabled_c))
 
-        return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1
+        return  is_fmt_consistent_c.value == self._true_int_value, na_enabled_c.value == self._true_int_value
 
     def calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None):
         """Utility
@@ -923,9 +923,9 @@ class saft(thermo):
         temp_c = c_double(temp)
         volume_c = c_double(volume)
         n_c = (c_double * len(n))(*n)
-        qq_c = c_int(1 if qq else 0)
-        dd_c = c_int(1 if dd else 0)
-        dq_c = c_int(1 if dq else 0)
+        qq_c = c_int(self._true_int_value if qq else 0)
+        dd_c = c_int(self._true_int_value if dd else 0)
+        dq_c = c_int(self._true_int_value if dq else 0)
         f_c = c_double(0.0)
 
         self.s_fres_multipol.argtypes = [POINTER(c_double),
@@ -958,9 +958,9 @@ class saft(thermo):
             dq (bool): Include dipole-quadrupole contribution?
         """
         self.activate()
-        qq_c = c_int(1 if qq else 0)
-        dd_c = c_int(1 if dd else 0)
-        dq_c = c_int(1 if dq else 0)
+        qq_c = c_int(self._true_int_value if qq else 0)
+        dd_c = c_int(self._true_int_value if dd else 0)
+        dq_c = c_int(self._true_int_value if dq else 0)
 
         self.s_multipol_model_control.argtypes = [POINTER(c_int),
                                                   POINTER(c_int),

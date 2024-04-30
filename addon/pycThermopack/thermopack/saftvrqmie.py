@@ -92,7 +92,7 @@ class saftvrqmie(saftvrmie):
         comp_string_c = c_char_p(comps.encode('ascii'))
         comp_string_len = c_len_type(len(comps))
         fh_c = c_int(feynman_hibbs_order)
-        additive_hs_ref_c = c_int(1 if additive_hard_sphere_reference else 0)
+        additive_hs_ref_c = c_int(self._true_int_value if additive_hard_sphere_reference else 0)
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
 
