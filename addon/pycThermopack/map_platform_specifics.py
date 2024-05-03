@@ -39,7 +39,7 @@ def get_platform_specifics_from_platform():
         # Darwin means Mac OS X
         # Assuming GNU FORTRAN
         platform_specifics["os_id"] = "darwin"
-        platform_specifics["dyn_lib"] = "libthermopack.dynlib"
+        platform_specifics["dyn_lib"] = "libthermopack.dylib"
     elif sys.platform == "win32":
         if sysconfig.get_platform() != "mingw":
             # Assuming INTEL FORTRAN
@@ -73,7 +73,7 @@ def get_platform_specifics_by_trial_and_error():
     platform_specifics["postfix_no_module"] = ""
     platform_specifics["dyn_lib"] = ""
 
-    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dynlib"]
+    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dylib"]
     for lib in dynlibs:
         dyn_lib_path = path.join(path.dirname(__file__), "thermopack", lib)
         try:
