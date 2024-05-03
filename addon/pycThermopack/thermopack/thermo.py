@@ -57,7 +57,10 @@ class thermo(object):
         self.postfix_nm = pf_specifics["postfix_no_module"]
         dyn_lib_path = path.join(path.dirname(
             __file__), pf_specifics["dyn_lib"])
-        self.tp = cdll.LoadLibrary(dyn_lib_path)
+        try:
+            self.tp = cdll.LoadLibrary(dyn_lib_path)
+        except:
+            print("Not able to load " + dyn_lib_path)
 
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
