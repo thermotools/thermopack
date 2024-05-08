@@ -12,7 +12,7 @@ The file is created by parsing the docstrings of the methods in the
 pets class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `pets` class, found in `addon/pycThermopack/thermopack/pets.py`, inherrits from the saft class, and  is the interface to the 
+The `pets` class, found in `addon/pycThermopack/thermopack/pets.py`, inherits from the saft class, and  is the interface to the 
 PeTS Equation of State. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents

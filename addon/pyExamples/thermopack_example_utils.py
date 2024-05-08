@@ -55,7 +55,7 @@ def calc_real_P(Pstar, eps_div_kb, sigma):
     return Pa
 
 def calc_reduced_heat_capacity(C):
-    """ Calculate reduced heat capcity
+    """ Calculate reduced heat capacity
     """
     CStar = np.zeros_like(C)
     CStar = C/RGAS
@@ -102,7 +102,7 @@ class EpsilonSigmaUnits:
         return calc_reduced_entropy(s)
         
     def redheat_capacity(self, C):
-        """ Calculate reduced heat capcity"""
+        """ Calculate reduced heat capacity"""
         return calc_reduced_heat_capacity(C)
 
     def redenergy(self, e):

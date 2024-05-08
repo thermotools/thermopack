@@ -7,7 +7,7 @@ from thermopack.saftvrqmie import saftvrqmie
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Instanciate and init SAFT-VRQ Mie object
+# Instantiate and init SAFT-VRQ Mie object
 qSAFT = saftvrqmie("He,H2,Ne")
 qSAFT.set_tmin(temp=2.0)
 

@@ -9,7 +9,7 @@ import numpy as np
 from .platform_specifics import DIFFERENTIAL_RETURN_MODE
 
 def gcc_major_version_greater_than(GCC_version):
-    """Returns if GCC major version number is greater than specefied version
+    """Returns if GCC major version number is greater than specified version
 
     Args:
         GCC_version (int): Major GCC version

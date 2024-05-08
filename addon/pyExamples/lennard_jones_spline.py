@@ -132,7 +132,7 @@ def get_BH_models():
     """Get model objects with order 1-3 for the Barker-Henderson perturbation theory"""
     LJS_BH = []
     for i in range(3):
-        # Instanciate and init LJS-BH object
+        # Instantiate and init LJS-BH object
         ljs = ljs_bh()
         if i == 1:
             ljs.model_control(enable_a3=False)
@@ -150,7 +150,7 @@ def get_WCA_models():
     """Get model objects with order 1-4 for the Weeks–Chandler–Anderson perturbation theory"""
     LJS_WCA = []
     for i in range(4):
-        # Instanciate and init LJS-WCA object
+        # Instantiate and init LJS-WCA object
         ljs = ljs_wca()
         if i > 0:
             if i == 1:
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     # UV perturbation theory
     ####################################################################
 
-    # Instanciate and init LJS-UV object
+    # Instantiate and init LJS-UV object
     ljs = ljs_uv()
 
     plot_phase_envelope([ljs], labels=["UV"], title="LJS-UV phase diagram")

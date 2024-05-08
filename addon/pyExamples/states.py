@@ -10,7 +10,7 @@ from thermopack.thermopack_state import State, PhaseDiagram
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Instanciate and init SAFT-VRQ Mie object
+# Instantiate and init SAFT-VRQ Mie object
 qSAFT = saftvrqmie("H2,Ne", minimum_temperature=2.0)
 
 dia = PhaseDiagram.binary_isotherm_vle(qSAFT, T=35.0, maximum_pressure=0.5e7)

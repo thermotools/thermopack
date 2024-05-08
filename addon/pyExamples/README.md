@@ -10,7 +10,7 @@ Examples in the various files are:
 
 * **cpa.py**: Plot binary Pxy for carbon dioxide-water.
 
-* **ext_csp.py**: Extended corrensponding state phase diagram for LNG-like composition.
+* **ext_csp.py**: Extended corresponding state phase diagram for LNG-like composition.
 
 * **flashes.py**: Flash calculation example.
 

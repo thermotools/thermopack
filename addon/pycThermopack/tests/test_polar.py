@@ -11,7 +11,7 @@ def test_quadrupole():
 
     # Set up PCP-SAFT model
     pcp = pcsaft("CO2", polar=True)
-    # Set a compositon
+    # Set a composition
     n = np.array([1.0])
     temp = 350.0
     volume = 1.0e-27*NA
@@ -23,7 +23,7 @@ def test_quadrupole_mix():
 
     # Set up PCP-SAFT model
     pcp = pcsaft("CO2,CL2,C2_1", polar=True)
-    # Set a compositon
+    # Set a composition
     n = np.array([1.0, 2.0, 3.0])
     temp = 350.0
     volume = 1.0e-27*NA
@@ -35,7 +35,7 @@ def test_dipole():
 
     # Set up PCP-SAFT model
     pcp = pcsaft("DME", polar=True)
-    # Set a compositon
+    # Set a composition
     n = np.array([1.0])
     temp = 350.0
     volume = 1.0e-27*NA
@@ -47,7 +47,7 @@ def test_dipole_mix():
 
     # Set up PCP-SAFT model
     pcp = pcsaft("ACETONE,BUTANAL,DME", polar=True)
-    # Set a compositon
+    # Set a composition
     n = np.array([1.0, 2.0, 3.0])
     temp = 350.0
     volume = 1.0e-27*NA
@@ -59,7 +59,7 @@ def test_dipole_quadrupole():
 
     # Set up PCP-SAFT model
     pcp = pcsaft("DME,CO2", polar=True)
-    # Set a compositon
+    # Set a composition
     n = np.array([1.0, 1.0])
     temp = 350.0
     volume = 1.0e-27*NA

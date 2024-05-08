@@ -39,7 +39,7 @@ The plan for the future is that when a new version is released:
 * The file `index.md` is copied into the directory `vX.Y.Z` and renamed to `home.md`.
  * Remember to change the `permalink` keyword at the top of the file.
 * A link to `/thermopack/vX.Y.Z/home.html` is added to all the sidebars.
-* The file `sidebar.md` is copied into `sidebar_X.Y.Z.md`, and the links are modified by changing every occurence of
+* The file `sidebar.md` is copied into `sidebar_X.Y.Z.md`, and the links are modified by changing every occurrence of
     `vcurrent` to `vX.Y.Z`.
 * The `permalink` property of all the files in the `vX.Y.Z` must be changed from `/vcurrent/<my_page>` to `/vX.Y.Z/<my_page>`
 

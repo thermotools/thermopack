@@ -12,7 +12,7 @@ The file is created by parsing the docstrings of the methods in the
 multiparam class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `multiparam` class, found in `addon/pycThermopack/thermopack/multiparam.py`, inherrits from the `thermo` class, and  is the interface to the 
+The `multiparam` class, found in `addon/pycThermopack/thermopack/multiparam.py`, inherits from the `thermo` class, and  is the interface to the 
 Multiparameter Equations of State. Selection of different multiparameter equations of state is done by passing an identifier string to the constructor. For information on available multiparameter equations of state, see the page on [available equations of state.](/thermopack/v2.1.0/method_docs.html)
 
 ## Table of contents

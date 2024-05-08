@@ -287,7 +287,7 @@ def PCSAFT_class_definition():
     classes.append(2*I+"real :: eps  !< [J/mol].")
     classes.append(2*I+"real :: beta !< [-]. Also known as kappa in SAFT literature.")
     classes.append(2*I+"integer :: assoc_scheme !< Association scheme.")
-    classes.append(2*I+"! Electical moment parameters.")
+    classes.append(2*I+"! Electrical moment parameters.")
     classes.append(2*I+"real :: mu  !< Dipole-moment [D]")
     classes.append(2*I+"real :: Q !< Quadrupol-moment [ÅD]")
     classes.append(2*I+"! Bibliograpic reference")

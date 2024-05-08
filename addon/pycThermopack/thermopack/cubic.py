@@ -522,7 +522,7 @@ class cubic(thermo):
 
     def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
         """Utility
-        Set volume correction parametrs
+        Set volume correction parameters
 
         Args:
             cidx (int): Component index
