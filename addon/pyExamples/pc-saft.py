@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init PC-SAFT (doi: 10/dt7kgb) object
+# Instantiate and init PC-SAFT (doi: 10/dt7kgb) object
 pcs = pcsaft("C1,CO2")
 
 # Use PCP-SAFT instead?

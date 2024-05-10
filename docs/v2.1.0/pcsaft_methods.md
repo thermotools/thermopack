@@ -12,7 +12,7 @@ The file is created by parsing the docstrings of the methods in the
 pcsaft class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, inherrits from the saft class, and  is the interface to the 
+The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, inherits from the saft class, and  is the interface to the 
 PC-SAFT Equation of State. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents

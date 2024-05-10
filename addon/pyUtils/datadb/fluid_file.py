@@ -48,7 +48,7 @@ class fluid_file(object):
         self.fluid_file_write_lines(lines)
 
     def fluid_file_remove_line_containing_word(self, word):
-        """Remove line from fluid file containig specific word
+        """Remove line from fluid file containing specific word
         """
         lines = self.fluid_file_get_lines()
         i = -1

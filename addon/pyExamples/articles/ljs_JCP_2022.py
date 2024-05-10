@@ -672,7 +672,7 @@ def plot_figure_8(LJS, labels):
     plt.subplots_adjust(wspace=0, hspace=0.1)
     ax = ax_all[0]
 
-    # Plot reduced isochoric heat-capcity
+    # Plot reduced isochoric heat-capacity
     for iT, Tsi in enumerate(Ts):
         for i, ljs in enumerate(LJS):
             sigma, eps = ljs.get_sigma_eps()
@@ -711,7 +711,7 @@ def plot_figure_8(LJS, labels):
             np.linspace(1.0e-3, 0.9, n),
             np.linspace(1.0e-3, 1.0, n)]
 
-    # Plot reduced isobaric heat-capcity
+    # Plot reduced isobaric heat-capacity
     for iT, Tsi in enumerate(Ts):
         for i, ljs in enumerate(LJS):
             sigma, eps = ljs.get_sigma_eps()
@@ -842,7 +842,7 @@ if __name__ == '__main__':
     # Perturbation theories for fluids with short-ranged attractive forces: A case study of the Lennard-Jones spline fluid
     # doi: 10.1063/5.0082690
     #
-    # Instanciate and init LJS objects
+    # Instantiate and init LJS objects
     uv = ljs_uv()
     LJS_BH, labels_BH = get_BH_models()
     LJS_WCA, labels_WCA = get_WCA_models()

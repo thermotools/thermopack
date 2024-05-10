@@ -100,7 +100,7 @@ subroutine trend_init(nc,path,comps,mix,Rgas)
   ! Resetting module variables
   call initialize()
 
-  ! Set factor paramaters
+  ! Set factor parameters
   if (trim(comps(1)) == 'LJF') then
     Factor = 1.D0
     factorpress=1.D6
@@ -1294,8 +1294,8 @@ end subroutine trend_init
     ! Locals
     real :: D
     real, dimension(mnc) :: x_trend
-    integer, dimension(nderivs) :: GETDERR   !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
-    integer, dimension(nderivs) :: GETDERI   !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERR   !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERI   !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
     real, dimension(nderivs) :: FNRDER       !Vector gives the values of the calculated derivatives
     real, dimension(nderivs) :: FNIDER       !Vector gives the values of the calculated derivatives
     real :: Rmix
@@ -1422,8 +1422,8 @@ end subroutine trend_init
     ! Locals
     real :: D
     real, dimension(mnc) :: x_trend
-    integer, dimension(nderivs) :: GETDERR   !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
-    integer, dimension(nderivs) :: GETDERI   !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERR   !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERI   !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
     real, dimension(nderivs) :: FNRDER                !Vector gives the values of the calculated derivatives
     real, dimension(nderivs) :: FNIDER                !Vector gives the values of the calculated derivatives
     real :: Rmix,D_ARD,DD_ARDT,P,TT_ARTT,TT_AITT,T_ART,T_AIT,dPdT
@@ -1588,7 +1588,7 @@ end subroutine trend_init
     real :: D
     real, dimension(mnc) :: x_trend, chempot_res, d2nadndT, ndnardnidV
     real, dimension(mnc,mnc) :: DERIVSANINJ
-    integer, dimension(nderivs) :: GETDERR !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERR !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
     real, dimension(nderivs) :: FNRDER                !Vector gives the values of the calculated derivatives
     real :: AR,D_ARD,TD_ARDT,TT_ARTT,T_ART,DD_ARDD,Rmix,sumn,inv_sumn,inv_Rext
     real :: Rscale, Req_Scale(mnc), AR_T, AR_V, Fl_n(mnc)
@@ -1687,7 +1687,7 @@ end subroutine trend_init
     ! Locals
     real :: D
     real, dimension(mnc) :: x_trend
-    integer, dimension(nderivs) :: GETDERI !Vector tells the subroutine which derivative is neccessary to calculate the property (0 or 1)
+    integer, dimension(nderivs) :: GETDERI !Vector tells the subroutine which derivative is necessary to calculate the property (0 or 1)
     real, dimension(nderivs) :: FNIDER ! Vector gives the values of the calculated derivatives
     real :: AI,D_AID,TD_AIDT,TT_AITT,T_AIT,DD_AIDD,sumn,inv_sumn,logni,Rmix
     integer :: i
@@ -1885,7 +1885,7 @@ end subroutine trend_init
   end function trend_rmix
 
   !----------------------------------------------------------------------
-  !> Calculate saturation properties from auxillary equations
+  !> Calculate saturation properties from auxiliary equations
   !>
   !> \author MH, 2016-02
   !----------------------------------------------------------------------

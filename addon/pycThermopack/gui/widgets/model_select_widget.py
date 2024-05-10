@@ -10,7 +10,7 @@ class ModelSelectWidget(QWidget):
     """
     Widget for selecting and setting up models. The user can select the model category, the desired EOS,
     set specific model options and edit interaction (and other) parameters.
-    Depending on the selcted model, different choices for EOS, model options and parameters are displayed.
+    Depending on the selected model, different choices for EOS, model options and parameters are displayed.
     The different choices are stored in QStackWidgets, each with its own index shown below. When the user changes
     the model category, the correct widgets in the different stacks are shown.
     EOS stack:      0: Empty   1: PR + SRK

@@ -67,7 +67,7 @@ class component(fluid_file):
         return S0
 
     def get_n_TWU(self):
-        """Set Mie potential paramaters
+        """Set Mie potential parameters
         Input:
         eos - String defining EOS
         Output:
@@ -80,7 +80,7 @@ class component(fluid_file):
         return n_TWU
 
     def get_n_MC(self):
-        """Set Mie potential paramaters
+        """Set Mie potential parameters
         Input:
         eos - String defining EOS
         Output:
