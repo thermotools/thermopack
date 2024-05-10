@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-03-05T11:21:41.947293
+!! Time stamp: 2024-05-07T11:28:34.807763
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -834,6 +834,13 @@ module compdatadb
       coeff=(/2.27400000e-01, 8.64500000e-01, 2.33200000e+00/) &
       )
 
+  type (alphadatadb), parameter :: twu20 = &
+      alphadatadb(eosid="PR", &
+      cid="NH3", &
+      ref="Aasen2024", &
+      coeff=(/4.17860000e-01, 8.65090000e-01, 1.54140000e+00/) &
+      )
+
   type (alphadatadb), parameter :: mc1 = &
       alphadatadb(eosid="PR", &
       cid="NH3", &
@@ -844,15 +851,15 @@ module compdatadb
   type (cidatadb), parameter :: c19 = &
       cidatadb(eosid="PR", &
       cid="NH3", &
-      ref="tcPR", &
-      bib_ref="10.1016/j.fluid.2016.09.003", &
-      ciA=4.03030000e-06, &
-      ciB=0.00000000e+00, &
+      ref="Aasen2024", &
+      bib_ref="Aasen2024AmmoniaWaterFPE", &
+      ciA=2.11170000e-06, &
+      ciB=2.95070000e-09, &
       ciC=0.00000000e+00, &
-      c_type=1 &
+      c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu20 = &
+  type (alphadatadb), parameter :: twu21 = &
       alphadatadb(eosid="SRK", &
       cid="NH3", &
       ref="tcRK", &
@@ -880,7 +887,7 @@ module compdatadb
   type(CPAdata), parameter :: cpa5 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NH3", &
-      ref="Default/SINTEF", &
+      ref="2B-SINTEF", &
       bib_reference="", &
       a0=3.73160000e+05, &
       b=2.07666000e-02, &
@@ -919,6 +926,21 @@ module compdatadb
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.81681000e-01,0.00000000e+00,0.00000000e+00/), &
       assoc_scheme = assoc_scheme_4B ,&
+      simplified_rdf = .true. &
+      )
+
+  type(CPAdata), parameter :: cpa8 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NH3", &
+      ref="Default/Aasen2024", &
+      bib_reference="Aasen2024AmmoniaWaterFPE", &
+      a0=2.19560000e+05, &
+      b=2.01370000e-02, &
+      eps=5.82300000e+03, &
+      beta=7.19210000e-01, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/1.08990000e+00,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B ,&
       simplified_rdf = .true. &
       )
 
@@ -961,7 +983,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu21 = &
+  type (alphadatadb), parameter :: twu22 = &
       alphadatadb(eosid="PR", &
       cid="AR", &
       ref="tcPR", &
@@ -986,7 +1008,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu22 = &
+  type (alphadatadb), parameter :: twu23 = &
       alphadatadb(eosid="SRK", &
       cid="AR", &
       ref="tcRK", &
@@ -1050,7 +1072,7 @@ module compdatadb
       coeff=(/7.01000000e-01, -2.52000000e-01, 9.76000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu23 = &
+  type (alphadatadb), parameter :: twu24 = &
       alphadatadb(eosid="PR", &
       cid="BENZENE", &
       ref="tcPR", &
@@ -1075,7 +1097,7 @@ module compdatadb
       coeff=(/8.40000000e-01, -3.89000000e-01, 9.17000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu24 = &
+  type (alphadatadb), parameter :: twu25 = &
       alphadatadb(eosid="SRK", &
       cid="BENZENE", &
       ref="tcRK", &
@@ -1132,7 +1154,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu25 = &
+  type (alphadatadb), parameter :: twu26 = &
       alphadatadb(eosid="PR", &
       cid="BUTANAL", &
       ref="tcPR", &
@@ -1150,7 +1172,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu26 = &
+  type (alphadatadb), parameter :: twu27 = &
       alphadatadb(eosid="SRK", &
       cid="BUTANAL", &
       ref="tcRK", &
@@ -1220,7 +1242,7 @@ module compdatadb
       Tcpmax = 5000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu27 = &
+  type (alphadatadb), parameter :: twu28 = &
       alphadatadb(eosid="PR", &
       cid="CO2", &
       ref="tcPR", &
@@ -1252,7 +1274,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu28 = &
+  type (alphadatadb), parameter :: twu29 = &
       alphadatadb(eosid="SRK", &
       cid="CO2", &
       ref="tcRK", &
@@ -1277,7 +1299,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa8 = &
+  type(CPAdata), parameter :: cpa9 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -1292,7 +1314,7 @@ module compdatadb
       simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa9 = &
+  type(CPAdata), parameter :: cpa10 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF", &
@@ -1307,7 +1329,7 @@ module compdatadb
       simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa10 = &
+  type(CPAdata), parameter :: cpa11 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF2", &
@@ -1361,7 +1383,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu29 = &
+  type (alphadatadb), parameter :: twu30 = &
       alphadatadb(eosid="PR", &
       cid="CO", &
       ref="tcPR", &
@@ -1386,7 +1408,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu30 = &
+  type (alphadatadb), parameter :: twu31 = &
       alphadatadb(eosid="SRK", &
       cid="CO", &
       ref="tcRK", &
@@ -1443,7 +1465,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu31 = &
+  type (alphadatadb), parameter :: twu32 = &
       alphadatadb(eosid="PR", &
       cid="CL2", &
       ref="tcPR", &
@@ -1461,7 +1483,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu32 = &
+  type (alphadatadb), parameter :: twu33 = &
       alphadatadb(eosid="SRK", &
       cid="CL2", &
       ref="tcRK", &
@@ -1557,7 +1579,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu33 = &
+  type (alphadatadb), parameter :: twu34 = &
       alphadatadb(eosid="PR", &
       cid="CYCLOHEX", &
       ref="tcPR", &
@@ -1575,7 +1597,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu34 = &
+  type (alphadatadb), parameter :: twu35 = &
       alphadatadb(eosid="SRK", &
       cid="CYCLOHEX", &
       ref="tcRK", &
@@ -1632,7 +1654,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu35 = &
+  type (alphadatadb), parameter :: twu36 = &
       alphadatadb(eosid="PR", &
       cid="C3_1", &
       ref="tcPR", &
@@ -1650,7 +1672,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu36 = &
+  type (alphadatadb), parameter :: twu37 = &
       alphadatadb(eosid="SRK", &
       cid="C3_1", &
       ref="tcRK", &
@@ -1707,14 +1729,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu37 = &
+  type (alphadatadb), parameter :: twu38 = &
       alphadatadb(eosid="PR", &
       cid="D2", &
       ref="tcPR", &
       coeff=(/1.48600000e-01, 9.96800000e-01, 1.05870000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu38 = &
+  type (alphadatadb), parameter :: twu39 = &
       alphadatadb(eosid="PR", &
       cid="D2", &
       ref="QuantumCubic", &
@@ -1743,7 +1765,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu39 = &
+  type (alphadatadb), parameter :: twu40 = &
       alphadatadb(eosid="SRK", &
       cid="D2", &
       ref="tcRK", &
@@ -1956,7 +1978,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu40 = &
+  type (alphadatadb), parameter :: twu41 = &
       alphadatadb(eosid="PR", &
       cid="C2", &
       ref="tcPR", &
@@ -1988,7 +2010,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu41 = &
+  type (alphadatadb), parameter :: twu42 = &
       alphadatadb(eosid="SRK", &
       cid="C2", &
       ref="tcRK", &
@@ -2059,7 +2081,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu42 = &
+  type (alphadatadb), parameter :: twu43 = &
       alphadatadb(eosid="PR", &
       cid="ETOH", &
       ref="tcPR", &
@@ -2077,7 +2099,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu43 = &
+  type (alphadatadb), parameter :: twu44 = &
       alphadatadb(eosid="SRK", &
       cid="ETOH", &
       ref="tcRK", &
@@ -2095,7 +2117,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa11 = &
+  type(CPAdata), parameter :: cpa12 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="SINTEF/Queimada2005", &
@@ -2110,7 +2132,7 @@ module compdatadb
       simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa12 = &
+  type(CPAdata), parameter :: cpa13 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="Default/Oliveira2008", &
@@ -2164,7 +2186,7 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu44 = &
+  type (alphadatadb), parameter :: twu45 = &
       alphadatadb(eosid="PR", &
       cid="EBZN", &
       ref="tcPR", &
@@ -2182,7 +2204,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu45 = &
+  type (alphadatadb), parameter :: twu46 = &
       alphadatadb(eosid="SRK", &
       cid="EBZN", &
       ref="tcRK", &
@@ -2292,14 +2314,14 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu46 = &
+  type (alphadatadb), parameter :: twu47 = &
       alphadatadb(eosid="PR", &
       cid="HE", &
       ref="tcPR", &
       coeff=(/6.30000000e-03, 1.21750000e+00, 1.09090000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu47 = &
+  type (alphadatadb), parameter :: twu48 = &
       alphadatadb(eosid="PR", &
       cid="HE", &
       ref="QuantumCubic", &
@@ -2328,7 +2350,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu48 = &
+  type (alphadatadb), parameter :: twu49 = &
       alphadatadb(eosid="SRK", &
       cid="HE", &
       ref="tcRK", &
@@ -2385,7 +2407,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu49 = &
+  type (alphadatadb), parameter :: twu50 = &
       alphadatadb(eosid="PR", &
       cid="N2H4", &
       ref="tcPR", &
@@ -2403,7 +2425,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu50 = &
+  type (alphadatadb), parameter :: twu51 = &
       alphadatadb(eosid="SRK", &
       cid="N2H4", &
       ref="tcRK", &
@@ -2460,14 +2482,14 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu51 = &
+  type (alphadatadb), parameter :: twu52 = &
       alphadatadb(eosid="PR", &
       cid="H2", &
       ref="tcPR", &
       coeff=(/1.51470000e+00, -3.79590000e+00, -1.37700000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu52 = &
+  type (alphadatadb), parameter :: twu53 = &
       alphadatadb(eosid="PR", &
       cid="H2", &
       ref="QuantumCubic", &
@@ -2503,7 +2525,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu53 = &
+  type (alphadatadb), parameter :: twu54 = &
       alphadatadb(eosid="SRK", &
       cid="H2", &
       ref="tcRK", &
@@ -2567,7 +2589,7 @@ module compdatadb
       Tcpmax = 2000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu54 = &
+  type (alphadatadb), parameter :: twu55 = &
       alphadatadb(eosid="PR", &
       cid="H2O2", &
       ref="tcPR", &
@@ -2596,7 +2618,7 @@ module compdatadb
       c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu55 = &
+  type (alphadatadb), parameter :: twu56 = &
       alphadatadb(eosid="SRK", &
       cid="H2O2", &
       ref="tcRK", &
@@ -2653,7 +2675,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu56 = &
+  type (alphadatadb), parameter :: twu57 = &
       alphadatadb(eosid="PR", &
       cid="H2S", &
       ref="tcPR", &
@@ -2678,7 +2700,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu57 = &
+  type (alphadatadb), parameter :: twu58 = &
       alphadatadb(eosid="SRK", &
       cid="H2S", &
       ref="tcRK", &
@@ -2756,7 +2778,7 @@ module compdatadb
       coeff=(/6.52000000e-01, -1.49000000e-01, 5.99000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu58 = &
+  type (alphadatadb), parameter :: twu59 = &
       alphadatadb(eosid="PR", &
       cid="IC4", &
       ref="tcPR", &
@@ -2788,7 +2810,7 @@ module compdatadb
       coeff=(/8.07000000e-01, -4.32000000e-01, 9.10000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu59 = &
+  type (alphadatadb), parameter :: twu60 = &
       alphadatadb(eosid="SRK", &
       cid="IC4", &
       ref="tcRK", &
@@ -2859,7 +2881,7 @@ module compdatadb
       coeff=(/7.24000000e-01, -1.66000000e-01, 5.15000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu60 = &
+  type (alphadatadb), parameter :: twu61 = &
       alphadatadb(eosid="PR", &
       cid="IC5", &
       ref="tcPR", &
@@ -2891,7 +2913,7 @@ module compdatadb
       coeff=(/8.76000000e-01, -3.86000000e-01, 6.60000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu61 = &
+  type (alphadatadb), parameter :: twu62 = &
       alphadatadb(eosid="SRK", &
       cid="IC5", &
       ref="tcRK", &
@@ -3026,7 +3048,7 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu62 = &
+  type (alphadatadb), parameter :: twu63 = &
       alphadatadb(eosid="PR", &
       cid="MXYL", &
       ref="tcPR", &
@@ -3044,7 +3066,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu63 = &
+  type (alphadatadb), parameter :: twu64 = &
       alphadatadb(eosid="SRK", &
       cid="MXYL", &
       ref="tcRK", &
@@ -3101,7 +3123,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu64 = &
+  type (alphadatadb), parameter :: twu65 = &
       alphadatadb(eosid="PR", &
       cid="C1", &
       ref="tcPR", &
@@ -3133,7 +3155,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu65 = &
+  type (alphadatadb), parameter :: twu66 = &
       alphadatadb(eosid="SRK", &
       cid="C1", &
       ref="tcRK", &
@@ -3204,7 +3226,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu66 = &
+  type (alphadatadb), parameter :: twu67 = &
       alphadatadb(eosid="PR", &
       cid="MEOH", &
       ref="tcPR", &
@@ -3222,7 +3244,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu67 = &
+  type (alphadatadb), parameter :: twu68 = &
       alphadatadb(eosid="SRK", &
       cid="MEOH", &
       ref="tcRK", &
@@ -3240,7 +3262,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa13 = &
+  type(CPAdata), parameter :: cpa14 = &
       CPAdata(eosid="CPA-SRK", &
       compName="MEOH", &
       ref="Default/Kontogeorgis2008", &
@@ -3294,7 +3316,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu68 = &
+  type (alphadatadb), parameter :: twu69 = &
       alphadatadb(eosid="PR", &
       cid="MTC5", &
       ref="tcPR", &
@@ -3312,7 +3334,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu69 = &
+  type (alphadatadb), parameter :: twu70 = &
       alphadatadb(eosid="SRK", &
       cid="MTC5", &
       ref="tcRK", &
@@ -3369,7 +3391,7 @@ module compdatadb
       Tcpmax = 150.0000  &
       )
 
-  type (alphadatadb), parameter :: twu70 = &
+  type (alphadatadb), parameter :: twu71 = &
       alphadatadb(eosid="PR", &
       cid="MEG", &
       ref="tcPR", &
@@ -3387,7 +3409,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu71 = &
+  type (alphadatadb), parameter :: twu72 = &
       alphadatadb(eosid="SRK", &
       cid="MEG", &
       ref="tcRK", &
@@ -3444,14 +3466,14 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu72 = &
+  type (alphadatadb), parameter :: twu73 = &
       alphadatadb(eosid="PR", &
       cid="NE", &
       ref="tcPR", &
       coeff=(/1.88700000e-01, 9.47000000e-01, 1.46980000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu73 = &
+  type (alphadatadb), parameter :: twu74 = &
       alphadatadb(eosid="PR", &
       cid="NE", &
       ref="QuantumCubic", &
@@ -3480,7 +3502,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu74 = &
+  type (alphadatadb), parameter :: twu75 = &
       alphadatadb(eosid="SRK", &
       cid="NE", &
       ref="tcRK", &
@@ -3537,7 +3559,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu75 = &
+  type (alphadatadb), parameter :: twu76 = &
       alphadatadb(eosid="PR", &
       cid="NO", &
       ref="tcPR", &
@@ -3555,7 +3577,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu76 = &
+  type (alphadatadb), parameter :: twu77 = &
       alphadatadb(eosid="SRK", &
       cid="NO", &
       ref="tcRK", &
@@ -3612,7 +3634,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu77 = &
+  type (alphadatadb), parameter :: twu78 = &
       alphadatadb(eosid="PR", &
       cid="N2", &
       ref="tcPR", &
@@ -3644,7 +3666,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu78 = &
+  type (alphadatadb), parameter :: twu79 = &
       alphadatadb(eosid="SRK", &
       cid="N2", &
       ref="tcRK", &
@@ -3715,7 +3737,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu79 = &
+  type (alphadatadb), parameter :: twu80 = &
       alphadatadb(eosid="PR", &
       cid="N2O", &
       ref="tcPR", &
@@ -3733,7 +3755,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu80 = &
+  type (alphadatadb), parameter :: twu81 = &
       alphadatadb(eosid="SRK", &
       cid="N2O", &
       ref="tcRK", &
@@ -3868,7 +3890,7 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu81 = &
+  type (alphadatadb), parameter :: twu82 = &
       alphadatadb(eosid="PR", &
       cid="OXYL", &
       ref="tcPR", &
@@ -3886,7 +3908,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu82 = &
+  type (alphadatadb), parameter :: twu83 = &
       alphadatadb(eosid="SRK", &
       cid="OXYL", &
       ref="tcRK", &
@@ -3943,7 +3965,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu83 = &
+  type (alphadatadb), parameter :: twu84 = &
       alphadatadb(eosid="PR", &
       cid="O2", &
       ref="tcPR", &
@@ -3968,7 +3990,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu84 = &
+  type (alphadatadb), parameter :: twu85 = &
       alphadatadb(eosid="SRK", &
       cid="O2", &
       ref="tcRK", &
@@ -4071,7 +4093,7 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu85 = &
+  type (alphadatadb), parameter :: twu86 = &
       alphadatadb(eosid="PR", &
       cid="PXYL", &
       ref="tcPR", &
@@ -4089,7 +4111,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu86 = &
+  type (alphadatadb), parameter :: twu87 = &
       alphadatadb(eosid="SRK", &
       cid="PXYL", &
       ref="tcRK", &
@@ -4146,7 +4168,7 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu87 = &
+  type (alphadatadb), parameter :: twu88 = &
       alphadatadb(eosid="PR", &
       cid="C3", &
       ref="tcPR", &
@@ -4178,7 +4200,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu88 = &
+  type (alphadatadb), parameter :: twu89 = &
       alphadatadb(eosid="SRK", &
       cid="C3", &
       ref="tcRK", &
@@ -4210,7 +4232,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa14 = &
+  type(CPAdata), parameter :: cpa15 = &
       CPAdata(eosid="CPA-SRK", &
       compName="C3", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -4264,7 +4286,7 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu89 = &
+  type (alphadatadb), parameter :: twu90 = &
       alphadatadb(eosid="PR", &
       cid="PRLN", &
       ref="tcPR", &
@@ -4282,7 +4304,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu90 = &
+  type (alphadatadb), parameter :: twu91 = &
       alphadatadb(eosid="SRK", &
       cid="PRLN", &
       ref="tcRK", &
@@ -4339,7 +4361,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu91 = &
+  type (alphadatadb), parameter :: twu92 = &
       alphadatadb(eosid="PR", &
       cid="R11", &
       ref="tcPR", &
@@ -4357,7 +4379,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu92 = &
+  type (alphadatadb), parameter :: twu93 = &
       alphadatadb(eosid="SRK", &
       cid="R11", &
       ref="tcRK", &
@@ -4414,7 +4436,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu93 = &
+  type (alphadatadb), parameter :: twu94 = &
       alphadatadb(eosid="PR", &
       cid="R1114", &
       ref="tcPR", &
@@ -4432,7 +4454,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu94 = &
+  type (alphadatadb), parameter :: twu95 = &
       alphadatadb(eosid="SRK", &
       cid="R1114", &
       ref="tcRK", &
@@ -4489,7 +4511,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu95 = &
+  type (alphadatadb), parameter :: twu96 = &
       alphadatadb(eosid="PR", &
       cid="R1132a", &
       ref="tcPR", &
@@ -4507,7 +4529,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu96 = &
+  type (alphadatadb), parameter :: twu97 = &
       alphadatadb(eosid="SRK", &
       cid="R1132a", &
       ref="tcRK", &
@@ -4564,7 +4586,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu97 = &
+  type (alphadatadb), parameter :: twu98 = &
       alphadatadb(eosid="PR", &
       cid="R114", &
       ref="tcPR", &
@@ -4582,7 +4604,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu98 = &
+  type (alphadatadb), parameter :: twu99 = &
       alphadatadb(eosid="SRK", &
       cid="R114", &
       ref="tcRK", &
@@ -4639,7 +4661,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu99 = &
+  type (alphadatadb), parameter :: twu100 = &
       alphadatadb(eosid="PR", &
       cid="R115", &
       ref="tcPR", &
@@ -4657,7 +4679,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu100 = &
+  type (alphadatadb), parameter :: twu101 = &
       alphadatadb(eosid="SRK", &
       cid="R115", &
       ref="tcRK", &
@@ -4714,7 +4736,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu101 = &
+  type (alphadatadb), parameter :: twu102 = &
       alphadatadb(eosid="PR", &
       cid="R116", &
       ref="tcPR", &
@@ -4732,7 +4754,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu102 = &
+  type (alphadatadb), parameter :: twu103 = &
       alphadatadb(eosid="SRK", &
       cid="R116", &
       ref="tcRK", &
@@ -4789,7 +4811,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu103 = &
+  type (alphadatadb), parameter :: twu104 = &
       alphadatadb(eosid="PR", &
       cid="R12", &
       ref="tcPR", &
@@ -4807,7 +4829,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu104 = &
+  type (alphadatadb), parameter :: twu105 = &
       alphadatadb(eosid="SRK", &
       cid="R12", &
       ref="tcRK", &
@@ -4864,7 +4886,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu105 = &
+  type (alphadatadb), parameter :: twu106 = &
       alphadatadb(eosid="PR", &
       cid="R1234yf", &
       ref="tcPR", &
@@ -4882,7 +4904,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu106 = &
+  type (alphadatadb), parameter :: twu107 = &
       alphadatadb(eosid="SRK", &
       cid="R1234yf", &
       ref="tcRK", &
@@ -4939,7 +4961,7 @@ module compdatadb
       Tcpmax = 500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu107 = &
+  type (alphadatadb), parameter :: twu108 = &
       alphadatadb(eosid="PR", &
       cid="R1234ze", &
       ref="tcPR", &
@@ -4957,7 +4979,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu108 = &
+  type (alphadatadb), parameter :: twu109 = &
       alphadatadb(eosid="SRK", &
       cid="R1234ze", &
       ref="tcRK", &
@@ -5014,7 +5036,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu109 = &
+  type (alphadatadb), parameter :: twu110 = &
       alphadatadb(eosid="PR", &
       cid="R124", &
       ref="tcPR", &
@@ -5032,7 +5054,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu110 = &
+  type (alphadatadb), parameter :: twu111 = &
       alphadatadb(eosid="SRK", &
       cid="R124", &
       ref="tcRK", &
@@ -5128,7 +5150,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu111 = &
+  type (alphadatadb), parameter :: twu112 = &
       alphadatadb(eosid="PR", &
       cid="R125", &
       ref="tcPR", &
@@ -5146,7 +5168,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu112 = &
+  type (alphadatadb), parameter :: twu113 = &
       alphadatadb(eosid="SRK", &
       cid="R125", &
       ref="tcRK", &
@@ -5203,7 +5225,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu113 = &
+  type (alphadatadb), parameter :: twu114 = &
       alphadatadb(eosid="PR", &
       cid="R13", &
       ref="tcPR", &
@@ -5221,7 +5243,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu114 = &
+  type (alphadatadb), parameter :: twu115 = &
       alphadatadb(eosid="SRK", &
       cid="R13", &
       ref="tcRK", &
@@ -5278,7 +5300,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu115 = &
+  type (alphadatadb), parameter :: twu116 = &
       alphadatadb(eosid="PR", &
       cid="R134a", &
       ref="tcPR", &
@@ -5296,7 +5318,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu116 = &
+  type (alphadatadb), parameter :: twu117 = &
       alphadatadb(eosid="SRK", &
       cid="R134a", &
       ref="tcRK", &
@@ -5353,7 +5375,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu117 = &
+  type (alphadatadb), parameter :: twu118 = &
       alphadatadb(eosid="PR", &
       cid="R14", &
       ref="tcPR", &
@@ -5371,7 +5393,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu118 = &
+  type (alphadatadb), parameter :: twu119 = &
       alphadatadb(eosid="SRK", &
       cid="R14", &
       ref="tcRK", &
@@ -5428,7 +5450,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu119 = &
+  type (alphadatadb), parameter :: twu120 = &
       alphadatadb(eosid="PR", &
       cid="R142b", &
       ref="tcPR", &
@@ -5446,7 +5468,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu120 = &
+  type (alphadatadb), parameter :: twu121 = &
       alphadatadb(eosid="SRK", &
       cid="R142b", &
       ref="tcRK", &
@@ -5503,7 +5525,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu121 = &
+  type (alphadatadb), parameter :: twu122 = &
       alphadatadb(eosid="PR", &
       cid="R143a", &
       ref="tcPR", &
@@ -5521,7 +5543,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu122 = &
+  type (alphadatadb), parameter :: twu123 = &
       alphadatadb(eosid="SRK", &
       cid="R143a", &
       ref="tcRK", &
@@ -5578,7 +5600,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu123 = &
+  type (alphadatadb), parameter :: twu124 = &
       alphadatadb(eosid="PR", &
       cid="R152a", &
       ref="tcPR", &
@@ -5596,7 +5618,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu124 = &
+  type (alphadatadb), parameter :: twu125 = &
       alphadatadb(eosid="SRK", &
       cid="R152a", &
       ref="tcRK", &
@@ -5653,7 +5675,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu125 = &
+  type (alphadatadb), parameter :: twu126 = &
       alphadatadb(eosid="PR", &
       cid="R21", &
       ref="tcPR", &
@@ -5671,7 +5693,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu126 = &
+  type (alphadatadb), parameter :: twu127 = &
       alphadatadb(eosid="SRK", &
       cid="R21", &
       ref="tcRK", &
@@ -5728,7 +5750,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu127 = &
+  type (alphadatadb), parameter :: twu128 = &
       alphadatadb(eosid="PR", &
       cid="R218", &
       ref="tcPR", &
@@ -5746,7 +5768,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu128 = &
+  type (alphadatadb), parameter :: twu129 = &
       alphadatadb(eosid="SRK", &
       cid="R218", &
       ref="tcRK", &
@@ -5803,7 +5825,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu129 = &
+  type (alphadatadb), parameter :: twu130 = &
       alphadatadb(eosid="PR", &
       cid="R22", &
       ref="tcPR", &
@@ -5821,7 +5843,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu130 = &
+  type (alphadatadb), parameter :: twu131 = &
       alphadatadb(eosid="SRK", &
       cid="R22", &
       ref="tcRK", &
@@ -5878,7 +5900,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu131 = &
+  type (alphadatadb), parameter :: twu132 = &
       alphadatadb(eosid="PR", &
       cid="R23", &
       ref="tcPR", &
@@ -5896,7 +5918,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu132 = &
+  type (alphadatadb), parameter :: twu133 = &
       alphadatadb(eosid="SRK", &
       cid="R23", &
       ref="tcRK", &
@@ -5953,7 +5975,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu133 = &
+  type (alphadatadb), parameter :: twu134 = &
       alphadatadb(eosid="PR", &
       cid="R32", &
       ref="tcPR", &
@@ -5971,7 +5993,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu134 = &
+  type (alphadatadb), parameter :: twu135 = &
       alphadatadb(eosid="SRK", &
       cid="R32", &
       ref="tcRK", &
@@ -6028,7 +6050,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu135 = &
+  type (alphadatadb), parameter :: twu136 = &
       alphadatadb(eosid="PR", &
       cid="R41", &
       ref="tcPR", &
@@ -6046,7 +6068,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu136 = &
+  type (alphadatadb), parameter :: twu137 = &
       alphadatadb(eosid="SRK", &
       cid="R41", &
       ref="tcRK", &
@@ -6103,7 +6125,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu137 = &
+  type (alphadatadb), parameter :: twu138 = &
       alphadatadb(eosid="PR", &
       cid="F6S", &
       ref="tcPR", &
@@ -6121,7 +6143,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu138 = &
+  type (alphadatadb), parameter :: twu139 = &
       alphadatadb(eosid="SRK", &
       cid="F6S", &
       ref="tcRK", &
@@ -6178,7 +6200,7 @@ module compdatadb
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu139 = &
+  type (alphadatadb), parameter :: twu140 = &
       alphadatadb(eosid="PR", &
       cid="SO2", &
       ref="tcPR", &
@@ -6196,7 +6218,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu140 = &
+  type (alphadatadb), parameter :: twu141 = &
       alphadatadb(eosid="SRK", &
       cid="SO2", &
       ref="tcRK", &
@@ -6253,7 +6275,7 @@ module compdatadb
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu141 = &
+  type (alphadatadb), parameter :: twu142 = &
       alphadatadb(eosid="PR", &
       cid="F4N2", &
       ref="tcPR", &
@@ -6271,7 +6293,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu142 = &
+  type (alphadatadb), parameter :: twu143 = &
       alphadatadb(eosid="SRK", &
       cid="F4N2", &
       ref="tcRK", &
@@ -6335,7 +6357,7 @@ module compdatadb
       coeff=(/7.62000000e-01, -4.20000000e-02, 2.71000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu143 = &
+  type (alphadatadb), parameter :: twu144 = &
       alphadatadb(eosid="PR", &
       cid="TOLU", &
       ref="tcPR", &
@@ -6360,7 +6382,7 @@ module compdatadb
       coeff=(/9.23000000e-01, -3.01000000e-01, 4.94000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu144 = &
+  type (alphadatadb), parameter :: twu145 = &
       alphadatadb(eosid="SRK", &
       cid="TOLU", &
       ref="tcRK", &
@@ -6456,11 +6478,18 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu145 = &
+  type (alphadatadb), parameter :: twu146 = &
       alphadatadb(eosid="PR", &
       cid="H2O", &
       ref="tcPR", &
       coeff=(/3.86500000e-01, 8.72000000e-01, 1.96930000e+00/) &
+      )
+
+  type (alphadatadb), parameter :: twu147 = &
+      alphadatadb(eosid="PR", &
+      cid="H2O", &
+      ref="Aasen2024", &
+      coeff=(/4.43240000e-01, 8.73510000e-01, 1.75400000e+00/) &
       )
 
   type (alphadatadb), parameter :: mc44 = &
@@ -6492,7 +6521,18 @@ module compdatadb
       c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu146 = &
+  type (cidatadb), parameter :: c148 = &
+      cidatadb(eosid="PR", &
+      cid="H2O", &
+      ref="Aasen2024", &
+      bib_ref="Aasen2024AmmoniaWaterFPE", &
+      ciA=3.55740000e-07, &
+      ciB=9.19900000e-09, &
+      ciC=0.00000000e+00, &
+      c_type=2 &
+      )
+
+  type (alphadatadb), parameter :: twu148 = &
       alphadatadb(eosid="SRK", &
       cid="H2O", &
       ref="tcRK", &
@@ -6506,7 +6546,7 @@ module compdatadb
       coeff=(/1.09500000e+00, -6.78000000e-01, 7.00000000e-01/) &
       )
 
-  type (cidatadb), parameter :: c148 = &
+  type (cidatadb), parameter :: c149 = &
       cidatadb(eosid="SRK", &
       cid="H2O", &
       ref="tcRK", &
@@ -6517,7 +6557,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa15 = &
+  type(CPAdata), parameter :: cpa16 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="Default/Kontogeorgis1999/Queimada2005", &
@@ -6532,7 +6572,7 @@ module compdatadb
       simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa16 = &
+  type(CPAdata), parameter :: cpa17 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="SINTEF", &
@@ -6543,6 +6583,21 @@ module compdatadb
       beta=6.21918000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.76671000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
+      )
+
+  type(CPAdata), parameter :: cpa18 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="H2O", &
+      ref="Aasen2024", &
+      bib_reference="Aasen2024AmmoniaWaterFPE", &
+      a0=1.54080000e+05, &
+      b=1.49770000e-02, &
+      eps=1.39360000e+04, &
+      beta=9.87050000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.99660000e-01,0.00000000e+00,0.00000000e+00/), &
       assoc_scheme = assoc_scheme_2B ,&
       simplified_rdf = .true. &
       )
@@ -6639,14 +6694,14 @@ module compdatadb
       coeff=(/6.77000000e-01, -8.10000000e-02, 2.99000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu147 = &
+  type (alphadatadb), parameter :: twu149 = &
       alphadatadb(eosid="PR", &
       cid="NC4", &
       ref="tcPR", &
       coeff=(/1.86700000e-01, 8.64500000e-01, 2.33270000e+00/) &
       )
 
-  type (cidatadb), parameter :: c149 = &
+  type (cidatadb), parameter :: c150 = &
       cidatadb(eosid="PR", &
       cid="NC4", &
       ref="tcPR", &
@@ -6671,14 +6726,14 @@ module compdatadb
       coeff=(/8.23000000e-01, -2.67000000e-01, 4.02000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu148 = &
+  type (alphadatadb), parameter :: twu150 = &
       alphadatadb(eosid="SRK", &
       cid="NC4", &
       ref="tcRK", &
       coeff=(/2.62100000e-01, 8.66900000e-01, 2.29960000e+00/) &
       )
 
-  type (cidatadb), parameter :: c150 = &
+  type (cidatadb), parameter :: c151 = &
       cidatadb(eosid="SRK", &
       cid="NC4", &
       ref="tcRK", &
@@ -6689,7 +6744,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa17 = &
+  type(CPAdata), parameter :: cpa19 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC4", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6743,14 +6798,14 @@ module compdatadb
       Tcpmax = 700.0000  &
       )
 
-  type (alphadatadb), parameter :: twu149 = &
+  type (alphadatadb), parameter :: twu151 = &
       alphadatadb(eosid="PR", &
       cid="NC10", &
       ref="tcPR", &
       coeff=(/3.67700000e-01, 8.11900000e-01, 2.21880000e+00/) &
       )
 
-  type (cidatadb), parameter :: c151 = &
+  type (cidatadb), parameter :: c152 = &
       cidatadb(eosid="PR", &
       cid="NC10", &
       ref="tcPR", &
@@ -6761,14 +6816,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu150 = &
+  type (alphadatadb), parameter :: twu152 = &
       alphadatadb(eosid="SRK", &
       cid="NC10", &
       ref="tcRK", &
       coeff=(/3.55300000e-01, 8.31000000e-01, 2.72810000e+00/) &
       )
 
-  type (cidatadb), parameter :: c152 = &
+  type (cidatadb), parameter :: c153 = &
       cidatadb(eosid="SRK", &
       cid="NC10", &
       ref="tcRK", &
@@ -6779,7 +6834,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa18 = &
+  type(CPAdata), parameter :: cpa20 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC10", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6833,14 +6888,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu151 = &
+  type (alphadatadb), parameter :: twu153 = &
       alphadatadb(eosid="PR", &
       cid="NC22", &
       ref="tcPR", &
       coeff=(/4.78800000e-01, 7.99000000e-01, 2.84990000e+00/) &
       )
 
-  type (cidatadb), parameter :: c153 = &
+  type (cidatadb), parameter :: c154 = &
       cidatadb(eosid="PR", &
       cid="NC22", &
       ref="tcPR", &
@@ -6851,14 +6906,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu152 = &
+  type (alphadatadb), parameter :: twu154 = &
       alphadatadb(eosid="SRK", &
       cid="NC22", &
       ref="tcRK", &
       coeff=(/5.01600000e-01, 8.08200000e-01, 3.12430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c154 = &
+  type (cidatadb), parameter :: c155 = &
       cidatadb(eosid="SRK", &
       cid="NC22", &
       ref="tcRK", &
@@ -6908,14 +6963,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu153 = &
+  type (alphadatadb), parameter :: twu155 = &
       alphadatadb(eosid="PR", &
       cid="NC12", &
       ref="tcPR", &
       coeff=(/3.95600000e-01, 8.11200000e-01, 2.35490000e+00/) &
       )
 
-  type (cidatadb), parameter :: c155 = &
+  type (cidatadb), parameter :: c156 = &
       cidatadb(eosid="PR", &
       cid="NC12", &
       ref="tcPR", &
@@ -6926,14 +6981,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu154 = &
+  type (alphadatadb), parameter :: twu156 = &
       alphadatadb(eosid="SRK", &
       cid="NC12", &
       ref="tcRK", &
       coeff=(/3.88700000e-01, 8.27500000e-01, 2.82130000e+00/) &
       )
 
-  type (cidatadb), parameter :: c156 = &
+  type (cidatadb), parameter :: c157 = &
       cidatadb(eosid="SRK", &
       cid="NC12", &
       ref="tcRK", &
@@ -6983,14 +7038,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu155 = &
+  type (alphadatadb), parameter :: twu157 = &
       alphadatadb(eosid="PR", &
       cid="NC20", &
       ref="tcPR", &
       coeff=(/4.77100000e-01, 8.16000000e-01, 2.92090000e+00/) &
       )
 
-  type (cidatadb), parameter :: c157 = &
+  type (cidatadb), parameter :: c158 = &
       cidatadb(eosid="PR", &
       cid="NC20", &
       ref="tcPR", &
@@ -7001,14 +7056,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu156 = &
+  type (alphadatadb), parameter :: twu158 = &
       alphadatadb(eosid="SRK", &
       cid="NC20", &
       ref="tcRK", &
       coeff=(/5.21900000e-01, 8.21000000e-01, 3.08880000e+00/) &
       )
 
-  type (cidatadb), parameter :: c158 = &
+  type (cidatadb), parameter :: c159 = &
       cidatadb(eosid="SRK", &
       cid="NC20", &
       ref="tcRK", &
@@ -7058,14 +7113,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu157 = &
+  type (alphadatadb), parameter :: twu159 = &
       alphadatadb(eosid="PR", &
       cid="NC21", &
       ref="tcPR", &
       coeff=(/4.54600000e-01, 8.18600000e-01, 3.14140000e+00/) &
       )
 
-  type (cidatadb), parameter :: c159 = &
+  type (cidatadb), parameter :: c160 = &
       cidatadb(eosid="PR", &
       cid="NC21", &
       ref="tcPR", &
@@ -7076,14 +7131,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu158 = &
+  type (alphadatadb), parameter :: twu160 = &
       alphadatadb(eosid="SRK", &
       cid="NC21", &
       ref="tcRK", &
       coeff=(/5.30200000e-01, 8.18900000e-01, 3.13490000e+00/) &
       )
 
-  type (cidatadb), parameter :: c160 = &
+  type (cidatadb), parameter :: c161 = &
       cidatadb(eosid="SRK", &
       cid="NC21", &
       ref="tcRK", &
@@ -7133,14 +7188,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu159 = &
+  type (alphadatadb), parameter :: twu161 = &
       alphadatadb(eosid="PR", &
       cid="NC17", &
       ref="tcPR", &
       coeff=(/5.25700000e-01, 7.96900000e-01, 2.30920000e+00/) &
       )
 
-  type (cidatadb), parameter :: c161 = &
+  type (cidatadb), parameter :: c162 = &
       cidatadb(eosid="PR", &
       cid="NC17", &
       ref="tcPR", &
@@ -7151,14 +7206,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu160 = &
+  type (alphadatadb), parameter :: twu162 = &
       alphadatadb(eosid="SRK", &
       cid="NC17", &
       ref="tcRK", &
       coeff=(/5.16100000e-01, 8.09800000e-01, 2.69190000e+00/) &
       )
 
-  type (cidatadb), parameter :: c162 = &
+  type (cidatadb), parameter :: c163 = &
       cidatadb(eosid="SRK", &
       cid="NC17", &
       ref="tcRK", &
@@ -7222,14 +7277,14 @@ module compdatadb
       coeff=(/8.78000000e-01, -3.10000000e-02, 3.02000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu161 = &
+  type (alphadatadb), parameter :: twu163 = &
       alphadatadb(eosid="PR", &
       cid="NC7", &
       ref="tcPR", &
       coeff=(/3.29700000e-01, 8.22200000e-01, 1.96150000e+00/) &
       )
 
-  type (cidatadb), parameter :: c163 = &
+  type (cidatadb), parameter :: c164 = &
       cidatadb(eosid="PR", &
       cid="NC7", &
       ref="tcPR", &
@@ -7254,14 +7309,14 @@ module compdatadb
       coeff=(/1.03600000e+00, -2.58000000e-01, 4.88000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu162 = &
+  type (alphadatadb), parameter :: twu164 = &
       alphadatadb(eosid="SRK", &
       cid="NC7", &
       ref="tcRK", &
       coeff=(/3.26900000e-01, 8.38700000e-01, 2.39600000e+00/) &
       )
 
-  type (cidatadb), parameter :: c164 = &
+  type (cidatadb), parameter :: c165 = &
       cidatadb(eosid="SRK", &
       cid="NC7", &
       ref="tcRK", &
@@ -7272,7 +7327,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa19 = &
+  type(CPAdata), parameter :: cpa21 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC7", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7339,14 +7394,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu163 = &
+  type (alphadatadb), parameter :: twu165 = &
       alphadatadb(eosid="PR", &
       cid="NC16", &
       ref="tcPR", &
       coeff=(/5.37200000e-01, 7.92900000e-01, 2.14580000e+00/) &
       )
 
-  type (cidatadb), parameter :: c165 = &
+  type (cidatadb), parameter :: c166 = &
       cidatadb(eosid="PR", &
       cid="NC16", &
       ref="tcPR", &
@@ -7357,14 +7412,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu164 = &
+  type (alphadatadb), parameter :: twu166 = &
       alphadatadb(eosid="SRK", &
       cid="NC16", &
       ref="tcRK", &
       coeff=(/5.26200000e-01, 8.06800000e-01, 2.50800000e+00/) &
       )
 
-  type (cidatadb), parameter :: c166 = &
+  type (cidatadb), parameter :: c167 = &
       cidatadb(eosid="SRK", &
       cid="NC16", &
       ref="tcRK", &
@@ -7428,14 +7483,14 @@ module compdatadb
       coeff=(/8.70000000e-01, -5.88000000e-01, 1.50400000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu165 = &
+  type (alphadatadb), parameter :: twu167 = &
       alphadatadb(eosid="PR", &
       cid="NC6", &
       ref="tcPR", &
       coeff=(/2.55700000e-01, 8.37700000e-01, 2.18710000e+00/) &
       )
 
-  type (cidatadb), parameter :: c167 = &
+  type (cidatadb), parameter :: c168 = &
       cidatadb(eosid="PR", &
       cid="NC6", &
       ref="tcPR", &
@@ -7460,14 +7515,14 @@ module compdatadb
       coeff=(/1.00500000e+00, -5.91000000e-01, 1.20300000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu166 = &
+  type (alphadatadb), parameter :: twu168 = &
       alphadatadb(eosid="SRK", &
       cid="NC6", &
       ref="tcRK", &
       coeff=(/2.77300000e-01, 8.50300000e-01, 2.54390000e+00/) &
       )
 
-  type (cidatadb), parameter :: c168 = &
+  type (cidatadb), parameter :: c169 = &
       cidatadb(eosid="SRK", &
       cid="NC6", &
       ref="tcRK", &
@@ -7478,7 +7533,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa20 = &
+  type(CPAdata), parameter :: cpa22 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC6", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7532,14 +7587,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu167 = &
+  type (alphadatadb), parameter :: twu169 = &
       alphadatadb(eosid="PR", &
       cid="NC19", &
       ref="tcPR", &
       coeff=(/5.94600000e-01, 7.93400000e-01, 2.26540000e+00/) &
       )
 
-  type (cidatadb), parameter :: c169 = &
+  type (cidatadb), parameter :: c170 = &
       cidatadb(eosid="PR", &
       cid="NC19", &
       ref="tcPR", &
@@ -7550,14 +7605,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu168 = &
+  type (alphadatadb), parameter :: twu170 = &
       alphadatadb(eosid="SRK", &
       cid="NC19", &
       ref="tcRK", &
       coeff=(/6.08600000e-01, 8.02400000e-01, 2.52710000e+00/) &
       )
 
-  type (cidatadb), parameter :: c170 = &
+  type (cidatadb), parameter :: c171 = &
       cidatadb(eosid="SRK", &
       cid="NC19", &
       ref="tcRK", &
@@ -7607,14 +7662,14 @@ module compdatadb
       Tcpmax = 700.0000  &
       )
 
-  type (alphadatadb), parameter :: twu169 = &
+  type (alphadatadb), parameter :: twu171 = &
       alphadatadb(eosid="PR", &
       cid="NC9", &
       ref="tcPR", &
       coeff=(/4.05400000e-01, 8.09700000e-01, 1.93430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c171 = &
+  type (cidatadb), parameter :: c172 = &
       cidatadb(eosid="PR", &
       cid="NC9", &
       ref="tcPR", &
@@ -7625,14 +7680,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu170 = &
+  type (alphadatadb), parameter :: twu172 = &
       alphadatadb(eosid="SRK", &
       cid="NC9", &
       ref="tcRK", &
       coeff=(/3.85800000e-01, 8.29400000e-01, 2.40410000e+00/) &
       )
 
-  type (cidatadb), parameter :: c172 = &
+  type (cidatadb), parameter :: c173 = &
       cidatadb(eosid="SRK", &
       cid="NC9", &
       ref="tcRK", &
@@ -7643,7 +7698,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa21 = &
+  type(CPAdata), parameter :: cpa23 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC9", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7697,14 +7752,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu171 = &
+  type (alphadatadb), parameter :: twu173 = &
       alphadatadb(eosid="PR", &
       cid="NC18", &
       ref="tcPR", &
       coeff=(/5.53300000e-01, 7.95500000e-01, 2.30670000e+00/) &
       )
 
-  type (cidatadb), parameter :: c173 = &
+  type (cidatadb), parameter :: c174 = &
       cidatadb(eosid="PR", &
       cid="NC18", &
       ref="tcPR", &
@@ -7715,14 +7770,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu172 = &
+  type (alphadatadb), parameter :: twu174 = &
       alphadatadb(eosid="SRK", &
       cid="NC18", &
       ref="tcRK", &
       coeff=(/5.50000000e-01, 8.07600000e-01, 2.65400000e+00/) &
       )
 
-  type (cidatadb), parameter :: c174 = &
+  type (cidatadb), parameter :: c175 = &
       cidatadb(eosid="SRK", &
       cid="NC18", &
       ref="tcRK", &
@@ -7786,14 +7841,14 @@ module compdatadb
       coeff=(/9.58000000e-01, -1.34000000e-01, 4.87000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu173 = &
+  type (alphadatadb), parameter :: twu175 = &
       alphadatadb(eosid="PR", &
       cid="NC8", &
       ref="tcPR", &
       coeff=(/3.38500000e-01, 8.18500000e-01, 2.07470000e+00/) &
       )
 
-  type (cidatadb), parameter :: c175 = &
+  type (cidatadb), parameter :: c176 = &
       cidatadb(eosid="PR", &
       cid="NC8", &
       ref="tcPR", &
@@ -7818,14 +7873,14 @@ module compdatadb
       coeff=(/1.15000000e+00, -5.87000000e-01, 1.09600000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu174 = &
+  type (alphadatadb), parameter :: twu176 = &
       alphadatadb(eosid="SRK", &
       cid="NC8", &
       ref="tcRK", &
       coeff=(/3.44900000e-01, 8.34100000e-01, 2.46600000e+00/) &
       )
 
-  type (cidatadb), parameter :: c176 = &
+  type (cidatadb), parameter :: c177 = &
       cidatadb(eosid="SRK", &
       cid="NC8", &
       ref="tcRK", &
@@ -7836,7 +7891,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa22 = &
+  type(CPAdata), parameter :: cpa24 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC8", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7890,14 +7945,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu175 = &
+  type (alphadatadb), parameter :: twu177 = &
       alphadatadb(eosid="PR", &
       cid="NC25", &
       ref="tcPR", &
       coeff=(/5.71700000e-01, 7.80300000e-01, 2.46660000e+00/) &
       )
 
-  type (cidatadb), parameter :: c177 = &
+  type (cidatadb), parameter :: c178 = &
       cidatadb(eosid="PR", &
       cid="NC25", &
       ref="tcPR", &
@@ -7908,14 +7963,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu176 = &
+  type (alphadatadb), parameter :: twu178 = &
       alphadatadb(eosid="SRK", &
       cid="NC25", &
       ref="tcRK", &
       coeff=(/6.03400000e-01, 7.79000000e-01, 2.50350000e+00/) &
       )
 
-  type (cidatadb), parameter :: c178 = &
+  type (cidatadb), parameter :: c179 = &
       cidatadb(eosid="SRK", &
       cid="NC25", &
       ref="tcRK", &
@@ -7965,14 +8020,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu177 = &
+  type (alphadatadb), parameter :: twu179 = &
       alphadatadb(eosid="PR", &
       cid="NC15", &
       ref="tcPR", &
       coeff=(/4.77000000e-01, 7.97000000e-01, 2.26360000e+00/) &
       )
 
-  type (cidatadb), parameter :: c179 = &
+  type (cidatadb), parameter :: c180 = &
       cidatadb(eosid="PR", &
       cid="NC15", &
       ref="tcPR", &
@@ -7983,14 +8038,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu178 = &
+  type (alphadatadb), parameter :: twu180 = &
       alphadatadb(eosid="SRK", &
       cid="NC15", &
       ref="tcRK", &
       coeff=(/4.93500000e-01, 8.08700000e-01, 2.55440000e+00/) &
       )
 
-  type (cidatadb), parameter :: c180 = &
+  type (cidatadb), parameter :: c181 = &
       cidatadb(eosid="SRK", &
       cid="NC15", &
       ref="tcRK", &
@@ -8068,7 +8123,7 @@ module compdatadb
       coeff=(/9.01000000e-01, -3.05000000e-01, 5.42000000e-01/) &
       )
 
-  type(CPAdata), parameter :: cpa23 = &
+  type(CPAdata), parameter :: cpa25 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC5", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -8122,14 +8177,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu179 = &
+  type (alphadatadb), parameter :: twu181 = &
       alphadatadb(eosid="PR", &
       cid="NC14", &
       ref="tcPR", &
       coeff=(/4.90200000e-01, 7.97400000e-01, 2.13530000e+00/) &
       )
 
-  type (cidatadb), parameter :: c181 = &
+  type (cidatadb), parameter :: c182 = &
       cidatadb(eosid="PR", &
       cid="NC14", &
       ref="tcPR", &
@@ -8140,14 +8195,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu180 = &
+  type (alphadatadb), parameter :: twu182 = &
       alphadatadb(eosid="SRK", &
       cid="NC14", &
       ref="tcRK", &
       coeff=(/4.84100000e-01, 8.11800000e-01, 2.49950000e+00/) &
       )
 
-  type (cidatadb), parameter :: c182 = &
+  type (cidatadb), parameter :: c183 = &
       cidatadb(eosid="SRK", &
       cid="NC14", &
       ref="tcRK", &
@@ -8197,14 +8252,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu181 = &
+  type (alphadatadb), parameter :: twu183 = &
       alphadatadb(eosid="PR", &
       cid="NC24", &
       ref="tcPR", &
       coeff=(/4.65600000e-01, 8.09700000e-01, 3.35130000e+00/) &
       )
 
-  type (cidatadb), parameter :: c183 = &
+  type (cidatadb), parameter :: c184 = &
       cidatadb(eosid="PR", &
       cid="NC24", &
       ref="tcPR", &
@@ -8215,14 +8270,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu182 = &
+  type (alphadatadb), parameter :: twu184 = &
       alphadatadb(eosid="SRK", &
       cid="NC24", &
       ref="tcRK", &
       coeff=(/5.37300000e-01, 8.09500000e-01, 3.35700000e+00/) &
       )
 
-  type (cidatadb), parameter :: c184 = &
+  type (cidatadb), parameter :: c185 = &
       cidatadb(eosid="SRK", &
       cid="NC24", &
       ref="tcRK", &
@@ -8272,14 +8327,14 @@ module compdatadb
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu183 = &
+  type (alphadatadb), parameter :: twu185 = &
       alphadatadb(eosid="PR", &
       cid="NC23", &
       ref="tcPR", &
       coeff=(/4.69700000e-01, 8.14200000e-01, 3.24260000e+00/) &
       )
 
-  type (cidatadb), parameter :: c185 = &
+  type (cidatadb), parameter :: c186 = &
       cidatadb(eosid="PR", &
       cid="NC23", &
       ref="tcPR", &
@@ -8290,14 +8345,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu184 = &
+  type (alphadatadb), parameter :: twu186 = &
       alphadatadb(eosid="SRK", &
       cid="NC23", &
       ref="tcRK", &
       coeff=(/5.44000000e-01, 8.14300000e-01, 3.24000000e+00/) &
       )
 
-  type (cidatadb), parameter :: c186 = &
+  type (cidatadb), parameter :: c187 = &
       cidatadb(eosid="SRK", &
       cid="NC23", &
       ref="tcRK", &
@@ -8347,14 +8402,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu185 = &
+  type (alphadatadb), parameter :: twu187 = &
       alphadatadb(eosid="PR", &
       cid="NC13", &
       ref="tcPR", &
       coeff=(/4.48200000e-01, 8.03900000e-01, 2.23430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c187 = &
+  type (cidatadb), parameter :: c188 = &
       cidatadb(eosid="PR", &
       cid="NC13", &
       ref="tcPR", &
@@ -8365,14 +8420,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu186 = &
+  type (alphadatadb), parameter :: twu188 = &
       alphadatadb(eosid="SRK", &
       cid="NC13", &
       ref="tcRK", &
       coeff=(/4.47100000e-01, 8.17500000e-01, 2.60970000e+00/) &
       )
 
-  type (cidatadb), parameter :: c188 = &
+  type (cidatadb), parameter :: c189 = &
       cidatadb(eosid="SRK", &
       cid="NC13", &
       ref="tcRK", &
@@ -8422,14 +8477,14 @@ module compdatadb
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu187 = &
+  type (alphadatadb), parameter :: twu189 = &
       alphadatadb(eosid="PR", &
       cid="NC11", &
       ref="tcPR", &
       coeff=(/4.18500000e-01, 8.07100000e-01, 2.12240000e+00/) &
       )
 
-  type (cidatadb), parameter :: c189 = &
+  type (cidatadb), parameter :: c190 = &
       cidatadb(eosid="PR", &
       cid="NC11", &
       ref="tcPR", &
@@ -8440,14 +8495,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu188 = &
+  type (alphadatadb), parameter :: twu190 = &
       alphadatadb(eosid="SRK", &
       cid="NC11", &
       ref="tcRK", &
       coeff=(/4.01800000e-01, 8.24500000e-01, 2.58800000e+00/) &
       )
 
-  type (cidatadb), parameter :: c190 = &
+  type (cidatadb), parameter :: c191 = &
       cidatadb(eosid="SRK", &
       cid="NC11", &
       ref="tcRK", &
@@ -8551,7 +8606,7 @@ module compdatadb
       cp111 &
   /)
 
-  integer, parameter :: maxTWUdb =188
+  integer, parameter :: maxTWUdb =190
   type (alphadatadb), dimension(maxTWUdb), parameter :: alphaTWUdb = (/&
       twu1,twu2,twu3,twu4,twu5, &
       twu6,twu7,twu8,twu9,twu10, &
@@ -8590,7 +8645,7 @@ module compdatadb
       twu171,twu172,twu173,twu174,twu175, &
       twu176,twu177,twu178,twu179,twu180, &
       twu181,twu182,twu183,twu184,twu185, &
-      twu186,twu187,twu188 &
+      twu186,twu187,twu188,twu189,twu190 &
   /)
 
   integer, parameter :: maxMCdb =65
@@ -8610,7 +8665,7 @@ module compdatadb
       mc61,mc62,mc63,mc64,mc65 &
   /)
 
-  integer, parameter :: maxcidb =190
+  integer, parameter :: maxcidb =191
   type (cidatadb), dimension(maxcidb), parameter :: cidb = (/&
       c1,c2,c3,c4,c5, &
       c6,c7,c8,c9,c10, &
@@ -8649,16 +8704,17 @@ module compdatadb
       c171,c172,c173,c174,c175, &
       c176,c177,c178,c179,c180, &
       c181,c182,c183,c184,c185, &
-      c186,c187,c188,c189,c190 &
+      c186,c187,c188,c189,c190, &
+      c191 &
   /)
 
-  integer, parameter :: nCPAmodels =23
+  integer, parameter :: nCPAmodels =25
   type(CPAdata), dimension(nCPAmodels), parameter :: CPAarray = (/&
       cpa1,cpa2,cpa3,cpa4,cpa5, &
       cpa6,cpa7,cpa8,cpa9,cpa10, &
       cpa11,cpa12,cpa13,cpa14,cpa15, &
       cpa16,cpa17,cpa18,cpa19,cpa20, &
-      cpa21,cpa22,cpa23 &
+      cpa21,cpa22,cpa23,cpa24,cpa25 &
   /)
 
 end module compdatadb
