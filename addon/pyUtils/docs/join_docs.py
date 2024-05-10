@@ -12,6 +12,7 @@ Usage: To add new documentation, create a new markdown file in thermopoack/doc/m
 import warnings
 from datetime import datetime
 from tools import THERMOPACK_ROOT, MARKDOWN_DIR, write_file
+import re
 
 def print_finished_report(header, out_file_path):
     printcolwidth = 100
@@ -65,8 +66,17 @@ def format_no_html(file):
         warnings.warn(f'File with metadata : {metadata} \nDid not contain a title or description.', SyntaxWarning, stacklevel=2)
 
     outstr = f'# {main_header}\n'
-    return outstr + line + file.read()
+    return outstr + line + repair_links(file.read())
 
+
+def repair_links(filestr):
+    """
+    Because the markdown files used to generate the GH pages use relative paths, we need to prepend the appropriate
+    url when making the Readme.
+    """
+    pattern = r"\]\((.*?)\.html\)"
+    replacement = r"](https://thermotools.github.io/thermopack/vcurrent/\1.html)"
+    return re.sub(pattern, replacement, filestr)
 
 def gen_file_str(files):
     out_file_str = ''
