@@ -4,17 +4,17 @@ set -e
 
 tp_version="2.2.3"
 
-# cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
-# cd ../..
-#
-# make clean
-# make optim
-# cd addon/pycThermopack
-#
-# python makescript.py optim -diffs=v2
-#
-# binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
-# [[ "${binary_arch}" != "arm64" ]] &&  echo "Binary file is not arm64, but " && echo "${binary_arch}" && exit 1
+cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
+cd ../..
+
+make clean
+make optim
+cd addon/pycThermopack
+
+python makescript.py optim -diffs=v2
+
+binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
+[[ "${binary_arch}" != "arm64" ]] &&  echo "Binary file is not arm64, but " && echo "${binary_arch}" && exit 1
 
 python -m pip wheel --wheel-dir=wheelhouse .
 cd wheelhouse
