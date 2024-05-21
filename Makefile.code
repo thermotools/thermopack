@@ -60,12 +60,12 @@ ifeq ($(UNAME),MINGW)
 else ifeq ($(UNAME),MSYS)
   LIBS += -lopenblas
 else ifeq ($(UNAME),Darwin)
-  LIBS += -L./lapack -llapack -lblas -lgfortran -lm
+  LIBS += -llapack -lblas -lgfortran -lm
   ifeq ($(findstring openmp, $(MODE)), openmp)
     LIBS += -lomp
   endif
 else
-  LIBS += -L./lapack -llapack -lblas
+  LIBS += -llapack -lblas
 endif
 
 #=============================================================================
