@@ -3579,7 +3579,8 @@ class thermo(object):
                                 byref(max_press_c),
                                 byref(min_press_c))
 
-        result = utils.BinaryTriplePoint(has_triple_point_c.value != 0, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value, temp)
+        result = utils.BinaryTriplePoint(has_triple_point_c.value == self._true_int_value, np.array(x_c), np.array(y_c),
+                                         np.array(w_c), press_c.value, temp)
         return result
 
     def global_binary_plot(self,
@@ -3802,8 +3803,8 @@ class thermo(object):
             maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
             step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
-            calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start search from dew point at initial temperature.
+            minimum_temperature (float, optional): Not in use
+            initial_temperature (float, optional): Start search from dew point at initial temperature.
                                                   Overrides initial pressure. Defaults to None (K).
         Returns:
             float: Temperature values (K)
