@@ -1,4 +1,4 @@
-"""Simple script to copy the desired libthermopack.so/libthermopack.dynlib file."""
+"""Simple script to copy the desired libthermopack.so/libthermopack.dylib file."""
 #!/usr/bin/env python
 
 import argparse

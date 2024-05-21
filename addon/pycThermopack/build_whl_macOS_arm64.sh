@@ -13,7 +13,7 @@ cd addon/pycThermopack
 
 python makescript.py optim -diffs=v2
 
-binary_arch="$(lipo -archs thermopack/libthermopack.dynlib)"
+binary_arch="$(lipo -archs thermopack/libthermopack.dylib)"
 [[ "${binary_arch}" != "arm64" ]] &&  echo "Binary file is not arm64, but " && echo "${binary_arch}" && exit 1
 
 python -m pip wheel --wheel-dir=wheelhouse .
