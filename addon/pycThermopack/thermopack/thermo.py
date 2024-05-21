@@ -59,8 +59,8 @@ class thermo(object):
             __file__), pf_specifics["dyn_lib"])
         try:
             self.tp = cdll.LoadLibrary(dyn_lib_path)
-        except:
-            print("Not able to load " + dyn_lib_path)
+        except OSError:
+            raise OSError(f'Unable to load ThermoPack binary at : {dyn_lib_path}')
 
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
