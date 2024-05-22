@@ -46,18 +46,27 @@ class thermo(object):
     Interface to thermopack
     """
 
-    def __init__(self):
+    def __new__(cls, *args, **kwargs):
         """Internal
-        Load libthermopack.(so/dll) and initialize function pointers
+        Get platform specifics and Load libthermopack.(so/dll/dylib)
         """
         pf_specifics = platform_specifics.get_platform_specifics()
-        self.prefix = pf_specifics["prefix"]
-        self.module = pf_specifics["module"]
-        self.postfix = pf_specifics["postfix"]
-        self.postfix_nm = pf_specifics["postfix_no_module"]
-        dyn_lib_path = path.join(path.dirname(
-            __file__), pf_specifics["dyn_lib"])
-        self.tp = cdll.LoadLibrary(dyn_lib_path)
+        dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
+        tp = cdll.LoadLibrary(dyn_lib_path)
+        self = object.__new__(cls)
+        self.pf_specifics = pf_specifics
+        self.dyn_lib_path = dyn_lib_path
+        self.tp = tp
+        return self
+
+    def __init__(self):
+        """Internal
+        Initialize function pointers
+        """
+        self.prefix = self.pf_specifics["prefix"]
+        self.module = self.pf_specifics["module"]
+        self.postfix = self.pf_specifics["postfix"]
+        self.postfix_nm = self.pf_specifics["postfix_no_module"]
 
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
@@ -279,6 +288,13 @@ class thermo(object):
         self.s_joule_thompson_inversion = getattr(
             self.tp, self.get_export_name("joule_thompson_inversion", "map_jt_inversion"))
 
+        # Utility
+        self.s_get_true = getattr(self.tp, self.get_export_name(
+            "thermopack_constants", "get_true"))
+
+        # Get int representation of true value
+        self._true_int_value = self._get_true_int_value()
+  
         self.add_eos()
 
     def __del__(self):
@@ -287,6 +303,18 @@ class thermo(object):
         """
         self.delete_eos()
 
+    def _get_true_int_value(self):
+        """Internal
+        Intel FORTRAN uses True=-1, while gfortran uses True=1
+        Returns:
+            int: Integer representing True of the logical value
+        """
+        int_true_c = c_int(0)
+        self.s_get_true.argtypes = [POINTER(c_int)]
+        self.s_get_true.restype = None
+        self.s_get_true(byref(int_true_c))
+        return int_true_c.value
+  
     def activate(self):
         """Internal
         Activate this instance of thermopack parameters for calculation
@@ -431,7 +459,7 @@ class thermo(object):
             silent_c = null_pointer
         else:
             if silent:
-                silent_int = 1
+                silent_int = self._true_int_value
             else:
                 silent_int = 0
             silent_c = POINTER(c_int)(c_int(silent_int))
@@ -545,7 +573,7 @@ class thermo(object):
         """
         self.activate()
         if silent:
-            silent_c = c_int(1)
+            silent_c = c_int(self._true_int_value)
         else:
             silent_c = c_int(0)
 
@@ -799,7 +827,7 @@ class thermo(object):
         comp_c = c_char_p(b" " * comp_len)
         comp_len_c = c_len_type(comp_len)
         index_c = c_int(index)
-        comp_id_c = c_int(1) if get_comp_identifier else c_int(0)
+        comp_id_c = c_int(self._true_int_value) if get_comp_identifier else c_int(0)
         self.s_compdata_compname.argtypes = [
             POINTER(c_int), POINTER(c_int), c_char_p, c_len_type]
         self.s_compdata_compname.restype = None
@@ -1374,7 +1402,7 @@ class thermo(object):
             dhdn_c = (c_double * len(x))(0.0)
 
         if residual:
-            residual_c = POINTER(c_int)(c_int(1))
+            residual_c = POINTER(c_int)(c_int(self._true_int_value))
         else:
             residual_c = POINTER(c_int)(c_int(0))
 
@@ -1453,7 +1481,7 @@ class thermo(object):
             dsdn_c = (c_double * len(x))(0.0)
 
         if residual:
-            residual_c = POINTER(c_int)(c_int(1))
+            residual_c = POINTER(c_int)(c_int(self._true_int_value))
         else:
             residual_c = POINTER(c_int)(c_int(0))
 
@@ -3388,7 +3416,7 @@ class thermo(object):
         filename_len = c_len_type(len(filename))
         res_c = (c_double * (nmax*9))(0.0)
         nres_c = (c_int * 3)(0)
-        wsf_c = c_int(1)
+        wsf_c = c_int(self._true_int_value)
         ierr_c = c_int(0)
 
         self.s_binary_plot.argtypes = [POINTER(c_double),
@@ -3557,7 +3585,8 @@ class thermo(object):
                                 byref(max_press_c),
                                 byref(min_press_c))
 
-        result = utils.BinaryTriplePoint(has_triple_point_c.value != 0, np.array(x_c), np.array(y_c), np.array(w_c), press_c.value, temp)
+        result = utils.BinaryTriplePoint(has_triple_point_c.value == self._true_int_value, np.array(x_c), np.array(y_c),
+                                         np.array(w_c), press_c.value, temp)
         return result
 
     def global_binary_plot(self,
@@ -3584,7 +3613,7 @@ class thermo(object):
         min_press_c = c_double(minimum_pressure)
         max_temp_c = c_double(maximum_temperature)
         min_temp_c = c_double(minimum_temperature)
-        az_bool_c = c_int(1 if include_azeotropes else 0)
+        az_bool_c = c_int(self._true_int_value if include_azeotropes else 0)
         filename = "global_binary.dat"
         filename_c = c_char_p(filename.encode('ascii'))
         filename_len = c_len_type(len(filename))
@@ -3640,7 +3669,7 @@ class thermo(object):
         filename_c = c_char_p(filename.encode('ascii'))
         filename_len = c_len_type(len(filename))
         i_spec_c = c_int(1)
-        esv_bool_c = c_int(1 if calc_esv else 0)
+        esv_bool_c = c_int(self._true_int_value if calc_esv else 0)
 
         min_t = self.get_tmin()
         self.set_tmin(minimum_temperature)
@@ -3692,7 +3721,7 @@ class thermo(object):
         temp_melt_c = (c_double * nmax)(0.0)
         press_melt_c = (c_double * nmax)(0.0)
         temp_max_c = c_double(1.0e10 if maximum_temperature is None else maximum_temperature)
-        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        scale_to_eos_c = c_int(self._true_int_value if scale_to_eos else 0)
         i_comp_c = c_int(i)
         nmax_c = c_int(nmax)
         ierr_c = c_int(0)
@@ -3739,7 +3768,7 @@ class thermo(object):
         temp_subl_c = (c_double * nmax)(0.0)
         press_subl_c = (c_double * nmax)(0.0)
         temp_min_c = c_double(0.0 if minimum_temperature is None else minimum_temperature)
-        scale_to_eos_c = c_int(1 if scale_to_eos else 0)
+        scale_to_eos_c = c_int(self._true_int_value if scale_to_eos else 0)
         i_comp_c = c_int(i)
         nmax_c = c_int(nmax)
         ierr_c = c_int(0)
@@ -3780,8 +3809,8 @@ class thermo(object):
             maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7.
             minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None.
             step_size (float , optional): Set maximum step size for envelope trace. Defaults to None.
-            calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False
-            initial_temperature (bool, optional): Start search from dew point at initial temperature.
+            minimum_temperature (float, optional): Not in use
+            initial_temperature (float, optional): Start search from dew point at initial temperature.
                                                   Overrides initial pressure. Defaults to None (K).
         Returns:
             float: Temperature values (K)
@@ -3841,7 +3870,7 @@ class thermo(object):
                                                            ds_c,
                                                            byref(ierr_c))
 
-        has_crossing = (has_crossing_int == 1 and ierr_c.value == 0)
+        has_crossing = (has_crossing_int == self._true_int_value and ierr_c.value == 0)
         if has_crossing:
             Ti = Ti_c.value
             Pi = Pi_c.value

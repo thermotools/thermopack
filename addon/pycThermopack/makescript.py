@@ -1,4 +1,4 @@
-"""Simple script to copy the desired libthermopack.so/libthermopack.dynlib file."""
+"""Simple script to copy the desired libthermopack.so/libthermopack.dylib file."""
 #!/usr/bin/env python
 
 import argparse
@@ -81,8 +81,7 @@ if __name__ == "__main__":
                       'PR#102 at https://github.com/thermotools/thermopack/pull/102\033[0m', Warning)
 
     pf_specifics['diff_return_mode'] = args.diffs
-    map_platform_specifics.write_platform_specifics_file(
-        pf_specifics, pf_specifics_path)
+    map_platform_specifics.write_platform_specifics_file(pf_specifics, pf_specifics_path)
 
     map_platform_specifics.write_setup_file(f'v{version}')
     map_platform_specifics.write_toml_file(version)

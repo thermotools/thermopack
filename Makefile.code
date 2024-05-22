@@ -224,9 +224,9 @@ libthermopack_$(TARGET).so: Makefile Makefile.code $(OBJE) $(OBJIF)
 	$(OBJIF) -Wl,--version-script=libthermopack_export.version \
 	-Wl,-Bdynamic $(LIBS)
 
-libthermopack_$(TARGET).dynlib: Makefile Makefile.code $(OBJE) $(OBJIF)
-	@rm -f $(DDIR)/libthermopack_$(TARGET)*.dynlib
-	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dynlib $(OBJE) \
+libthermopack_$(TARGET).dylib: Makefile Makefile.code $(OBJE) $(OBJIF)
+	@rm -f $(DDIR)/libthermopack_$(TARGET)*.dylib
+	$(FC) -shared -o $(DDIR)/libthermopack_$(TARGET).dylib $(OBJE) \
 	$(OBJIF) $(LIBS) -exported_symbols_list libthermopack_export.symbols
 
 thermopack_$(TARGET):: LDFLAGS = $(subst -fdefault-double-8,,$(subst -fdefault-real-8,,$(subst -cpp,,$(FFLAGS))))
@@ -240,7 +240,7 @@ thermopack:
 	$(MAKE) -f Makefile.code -e trend_$(TARGET)
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).a
 	@if [ $(UNAME) = Darwin ]; then \
-	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).dynlib; \
+	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).dylib; \
 	else \
 	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).so; \
 	fi
@@ -286,6 +286,7 @@ endif
 clean:
 	rm -rf ./objects
 	rm -rf $(SRC)/*.mod
+	rm -rf $(DDIR)/*.dynlib
 	make -C unittests PFUNIT=$(PFUNIT) ODIR=$(ODIR) \
 	INCDIR=$(INCDIR) clean
 
