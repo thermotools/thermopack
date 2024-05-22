@@ -24,7 +24,7 @@ def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
 
     # Setting GNU FORTRAN as default
-    platform_specifics = {}
+    platform_specifics = dict()
     platform_specifics["os_id"] = ""
     platform_specifics["prefix"] = G_PREFIX
     platform_specifics["module"] = G_MODULE
@@ -65,7 +65,7 @@ def get_platform_specifics_by_trial_and_error():
     """Get platform specific stuff."""
 
     # Empty as default
-    platform_specifics = {}
+    platform_specifics = dict()
     platform_specifics["os_id"] = ""
     platform_specifics["prefix"] = ""
     platform_specifics["module"] = ""
@@ -84,7 +84,9 @@ def get_platform_specifics_by_trial_and_error():
         if tp is not None:
             platform_specifics["dyn_lib"] = lib
             break
-
+    else:
+        raise FileNotFoundError(f'Could not locate ThermoPack binary! Tried '
+                                f'{[path.join(path.dirname(__file__), "thermopack", lib) for lib in dynlibs]}')
     prefixes = ["__", ""]
     moduletxt = ["_", "_MOD_", "_mp_"]
     postfixes = ["", "_"]
@@ -129,7 +131,7 @@ def get_platform_specifics_by_trial_and_error():
 
 def write_platform_specifics_file(pf_specifics, filename):
     """Write file for platform specifics"""
-    lines = []
+    lines = list()
     lines.append(
         "# Module for platform specific stuff. Automatically generated.")
     lines.append("# Timestamp : " + str(datetime.today().isoformat()) + "\n\n")
@@ -227,7 +229,7 @@ numpy = "^1.1"
         file.write(contents)
 
 def get_platform_specifics_windows_ifort_whl():
-    pf_specifics = {}
+    pf_specifics = dict()
     pf_specifics["os_id"] = "win"
     pf_specifics["prefix"] = ""
     pf_specifics["module"] = "_mp_"
@@ -240,5 +242,5 @@ def get_platform_specifics_windows_ifort_whl():
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
         __file__), "thermopack", "platform_specifics.py")
-    pf_specifics = get_platform_specifics_by_trial_and_error()
-    write_platform_specifics_file(pf_specifics, pf_specifics_path)
+    pf_specifics_ = get_platform_specifics_by_trial_and_error()
+    write_platform_specifics_file(pf_specifics_, pf_specifics_path)

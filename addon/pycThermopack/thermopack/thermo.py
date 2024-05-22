@@ -46,21 +46,27 @@ class thermo(object):
     Interface to thermopack
     """
 
-    def __init__(self):
+    def __new__(cls, *args, **kwargs):
         """Internal
-        Load libthermopack.(so/dll) and initialize function pointers
+        Get platform specifics and Load libthermopack.(so/dll/dylib)
         """
         pf_specifics = platform_specifics.get_platform_specifics()
-        self.prefix = pf_specifics["prefix"]
-        self.module = pf_specifics["module"]
-        self.postfix = pf_specifics["postfix"]
-        self.postfix_nm = pf_specifics["postfix_no_module"]
-        dyn_lib_path = path.join(path.dirname(
-            __file__), pf_specifics["dyn_lib"])
-        try:
-            self.tp = cdll.LoadLibrary(dyn_lib_path)
-        except OSError:
-            raise OSError(f'Unable to load ThermoPack binary at : {dyn_lib_path}')
+        dyn_lib_path = path.join(path.dirname(__file__), pf_specifics["dyn_lib"])
+        tp = cdll.LoadLibrary(dyn_lib_path)
+        self = object.__new__(cls)
+        self.pf_specifics = pf_specifics
+        self.dyn_lib_path = dyn_lib_path
+        self.tp = tp
+        return self
+
+    def __init__(self):
+        """Internal
+        Initialize function pointers
+        """
+        self.prefix = self.pf_specifics["prefix"]
+        self.module = self.pf_specifics["module"]
+        self.postfix = self.pf_specifics["postfix"]
+        self.postfix_nm = self.pf_specifics["postfix_no_module"]
 
         # Set phase flags
         self.s_get_phase_flags = self.tp.get_phase_flags_c
