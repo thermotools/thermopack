@@ -2,7 +2,7 @@
 
 set -e
 
-tp_version="2.2.2"
+tp_version="2.2.3"
 
 cd ../../addon/pycThermopack # Ensure that we are running this script from the correct directory
 cd ../..
