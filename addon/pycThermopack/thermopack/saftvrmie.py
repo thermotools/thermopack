@@ -141,7 +141,7 @@ class saftvrmie(saft):
             active (bool): Enable/disable hard-sphere dispersion term
         """
         self.activate()
-        active_c = c_int(1 if active else 0)
+        active_c = c_int(self._true_int_value if active else 0)
         self.s_enable_hs.argtypes = [POINTER(c_int)]
         self.s_enable_hs.restype = None
         self.s_enable_hs(byref(active_c))
@@ -188,7 +188,7 @@ class saftvrmie(saft):
             active (bool): Enable/disable first dispersion term
         """
         self.activate()
-        active_c = c_int(1 if active else 0)
+        active_c = c_int(self._true_int_value if active else 0)
         self.s_enable_a1.argtypes = [POINTER(c_int)]
         self.s_enable_a1.restype = None
         self.s_enable_a1(byref(active_c))
@@ -201,7 +201,7 @@ class saftvrmie(saft):
             active (bool): Enable/disable second dispersion term
         """
         self.activate()
-        active_c = c_int(1 if active else 0)
+        active_c = c_int(self._true_int_value if active else 0)
         self.s_enable_a2.argtypes = [POINTER(c_int)]
         self.s_enable_a2.restype = None
         self.s_enable_a2(byref(active_c))
@@ -214,7 +214,7 @@ class saftvrmie(saft):
             active (bool): Enable/disable third dispersion term
         """
         self.activate()
-        active_c = c_int(1 if active else 0)
+        active_c = c_int(self._true_int_value if active else 0)
         self.s_enable_a3.argtypes = [POINTER(c_int)]
         self.s_enable_a3.restype = None
         self.s_enable_a3(byref(active_c))
@@ -227,7 +227,7 @@ class saftvrmie(saft):
             active (bool): Enable/disable chain term
         """
         self.activate()
-        active_c = c_int(1 if active else 0)
+        active_c = c_int(self._true_int_value if active else 0)
         self.s_enable_chain.argtypes = [POINTER(c_int)]
         self.s_enable_chain.restype = None
         self.s_enable_chain(byref(active_c))
@@ -240,7 +240,7 @@ class saftvrmie(saft):
             enable (bool): Enable/disable temperature cache
         """
         self.activate()
-        enable_c = c_int(1 if enable else 0)
+        enable_c = c_int(self._true_int_value if enable else 0)
         self.s_set_temperature_cache_flag.argtypes = [POINTER(c_int)]
         self.s_set_temperature_cache_flag.restype = None
         self.s_set_temperature_cache_flag(byref(enable_c))
