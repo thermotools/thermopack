@@ -286,7 +286,7 @@ endif
 clean:
 	rm -rf ./objects
 	rm -rf $(SRC)/*.mod
-	rm -rf ./bin/dynamic/*.dynlib
+	rm -rf $(DDIR)/*.dynlib
 	make -C unittests PFUNIT=$(PFUNIT) ODIR=$(ODIR) \
 	INCDIR=$(INCDIR) clean
 
