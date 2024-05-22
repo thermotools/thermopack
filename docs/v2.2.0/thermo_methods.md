@@ -520,7 +520,7 @@ Calculate specific single-phase enthalpy Note that the order of the output match
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
 
@@ -567,7 +567,7 @@ Calculate specific single-phase entropy Note that the order of the output match 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dsdt (logical, optional):** 
 
@@ -781,7 +781,7 @@ Calculate single-phase specific volume Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dvdt (logical, optional):** 
 
@@ -840,7 +840,7 @@ Calculate speed of sound for single phase or two phase mixture assuming mechanic
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -871,7 +871,7 @@ Calculate logarithm of fugacity coefficient given composition, temperature and p
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
 
@@ -920,7 +920,7 @@ Calculate single-phase compressibility Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dzdt (logical, optional):** 
 
@@ -1148,7 +1148,7 @@ Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -1515,7 +1515,7 @@ Calculate dew pressure given temperature and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1550,7 +1550,7 @@ Calculate dew temperature given pressure and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1767,7 +1767,7 @@ Get the phase-envelope at a given composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_v (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; **initial_temperature (float, optional):** 
 
@@ -1826,7 +1826,7 @@ Get the pure fluid saturation line
 
 &nbsp;&nbsp;&nbsp;&nbsp; **max_delta_press (float , optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure between points (Pa). Defaults to 0.2e5.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **nmax (int, optional):** 
 
@@ -1945,7 +1945,7 @@ Calculate phase envelope including solid lines
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_esv (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2636,7 +2636,7 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -2883,7 +2883,7 @@ Get correlation parameters for ideal gas Cp
 
 &nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3057,7 +3057,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 10 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters (Maximum 10 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3224,7 +3224,7 @@ Get model identification
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `init_peneloux_volume_translation(self, parameter_reference='Default')`
-Initialialize Peneloux volume translations
+Initialize Peneloux volume translations
 
 #### Args:
 
@@ -3276,7 +3276,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_eos (str, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corrensponding state equation. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding state equation. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_ref_comp (str, optional):** 
 
@@ -3308,7 +3308,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **silent (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Supress messages during init?. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Suppress messages during init?. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

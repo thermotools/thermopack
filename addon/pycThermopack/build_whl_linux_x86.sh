@@ -28,7 +28,7 @@ cd wheelhouse
 #auditwheel show thermopack-${tp_version}-py3-none-any.whl
 auditwheel repair thermopack-${tp_version}-py3-none-any.whl -w .
 
-echo "Successfull built and delocated wheel for ThermoPack ${tp_version}"
+echo "Successfully built and delocated wheel for ThermoPack ${tp_version}"
 exit 0
 
 # DANGER ZONE: THIS UPLOADS FILES TO PYPI! ONLY WRITTEN HERE TO REMEMBER THE COMMANDS.

@@ -7,7 +7,7 @@ be [fork based](https://help.github.com/articles/using-pull-requests/).
 
 ## Documentation
 
-When adding a new model or a new numerical solver, please add a memo describing equations with required differentials and main functionallity. Add memo to [thermopack/doc/memo](https://github.com/thermotools/thermopack/tree/main/doc/memo).
+When adding a new model or a new numerical solver, please add a memo describing equations with required differentials and main functionality. Add memo to [thermopack/doc/memo](https://github.com/thermotools/thermopack/tree/main/doc/memo).
 
 ## Code
 
@@ -31,11 +31,11 @@ When submitting code for thermopack, please adhere to the following standards:
     - All variables should be explicit, ie. use *implicit none*
     - All method variables should have explicit intent. Ex. *real, intent(in) :: Temperature*
     - All variables should have a short description and a unit. Ex. *real, intent(in) :: T !> Temperature (K)*
-- Ideally the code comments should be written using syntax recogniced by doxygen
+- Ideally the code comments should be written using syntax recognised by doxygen
 - Add reference to relevant articles in the code. It is sufficient to add author names and digital object identifier (doi). Ex. *Peng and Robinson (10.1021%2Fi160057a011)*
 
 
-New fluids and binary interaction data should be added as new *json* files, or modification to exsisting files, in [thermopack/fluids](https://github.com/thermotools/thermopack/tree/main/fluids) and [thermopack/binaries](https://github.com/thermotools/thermopack/main/tree/binaries), and generate compdatadb.f90 and mixdatadb.f90 from the scripts in [thermopack/addon/pyUtils](https://github.com/thermotools/thermopack/tree/main/pyUtils).
+New fluids and binary interaction data should be added as new *json* files, or modification to existing files, in [thermopack/fluids](https://github.com/thermotools/thermopack/tree/main/fluids) and [thermopack/binaries](https://github.com/thermotools/thermopack/main/tree/binaries), and generate compdatadb.f90 and mixdatadb.f90 from the scripts in [thermopack/addon/pyUtils](https://github.com/thermotools/thermopack/tree/main/pyUtils).
 
 Thermopack requires analytical differentials in temperature, volume and mol numbers to second order for the residual Helmholtz energy. New models should include these differentials.
 
@@ -45,9 +45,9 @@ New functionality should be accompanied by unit tests. The test files should be 
 
 The new code need to compile, in debug, optim and openmp mode, and run using the gfortran (Linux) and the Intel FORTRAN (Linux/Windows) compilers. The existing and new unittests should pass when compiled with both gfortran and Intel FORTRAN compiled in debug, optim and opnemp mode. So if possible, new code should have been tested as extensively as possible.
 
-The python interface pycThermopack functionallity should also not be broken. To ensure a working python plugin, please run all example cases in [thermopack/addon/pyExample](https://github.com/thermotools/thermopack/tree/main/addon/pyExample), and verify that all cases run by running [thermopack/addon/pyExample/run_all_examples.sh](https://github.com/thermotools/thermopack/tree/main/addon/pyExample/run_all_examples.sh). Also run the exsisting python tests using pytest.
+The python interface pycThermopack functionality should also not be broken. To ensure a working python plugin, please run all example cases in [thermopack/addon/pyExample](https://github.com/thermotools/thermopack/tree/main/addon/pyExample), and verify that all cases run by running [thermopack/addon/pyExample/run_all_examples.sh](https://github.com/thermotools/thermopack/tree/main/addon/pyExample/run_all_examples.sh). Also run the existing python tests using pytest.
 
-If new functionallity is added to pycThermopack, please add new test for the [thermopack/addon/pycThermopack/tests](https://github.com/thermotools/thermopack/tree/main/addon/pycThermopack/tests)
+If new functionality is added to pycThermopack, please add new test for the [thermopack/addon/pycThermopack/tests](https://github.com/thermotools/thermopack/tree/main/addon/pycThermopack/tests)
 
 A minimal procedure for testing on Linux would be to execute:
 ```bash

@@ -131,6 +131,22 @@
       "beta": 6.21918e-03,
       "assoc_scheme": "2B",
       "simplified_rdf": "True"
+    },
+    "CPA-3": {
+      "ref": "Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "a0": 154080.0,
+      "b": 0.014977,
+      "alphaParams": [
+        0.99966,
+        0.0,
+        0.0
+      ],
+      "alphaCorr": "Classic",
+      "eps": 13936.0,
+      "beta": 0.098705,
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
@@ -141,6 +157,15 @@
         0.3865,
         0.872,
         1.9693
+      ]
+    },
+    "TWU-2": {
+      "ref": "Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "correlation": [
+        0.44324,
+        0.87351,
+        1.7540
       ]
     },
     "MC-1": {
@@ -165,6 +190,14 @@
       "bib_reference": "",
       "ciA": -8.128038e-8,
       "ciB": 1.044558e-8,
+      "ciC": 0.0,
+      "correlation": 2
+    },
+    "volume_shift-3": {
+      "ref": "Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "ciA": 0.35574e-06,
+      "ciB": 9.1990e-09,
       "ciC": 0.0,
       "correlation": 2
     }

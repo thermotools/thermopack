@@ -108,7 +108,7 @@ ifeq ($(OSTYPE),Unix)
 
   # Define ifort flags
   ifneq ($(shell command -v ifort 2> /dev/null),)
-    # Make script freeze when runnign "ifort --version" without contact to licence server
+    # Make script freeze when running "ifort --version" without contact to licence server
     ifneq ($(shell timeout 0.2 ifort --version 2> /dev/null),)
       compilers += ifort
       omp_ifort = "-openmp"

@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from thermopack_example_utils import calc_reduced_rho, calc_reduced_T, calc_reduced_P
 
-# Instanciate and init PeTS object
+# Instantiate and init PeTS object
 PeTS = pets()
 
 sigma = PeTS.sigma[0]

@@ -618,7 +618,7 @@ class saft(thermo):
             i (int): Component index (FORTRAN)
             j (int): Component index (FORTRAN)
         Results:
-            sigma_ij (float): Size paramater (m)
+            sigma_ij (float): Size parameter (m)
 
         """
         self.activate()
@@ -674,7 +674,7 @@ class saft(thermo):
             j (int): Component index (FORTRAN)
             temperature (float): Temperature (K)
         Results:
-            sigma_ij (float): Size paramater (m)
+            sigma_ij (float): Size parameter (m)
 
         """
         self.activate()
@@ -780,7 +780,7 @@ class saft(thermo):
 
     def test_fmt_compatibility(self):
         """Utility
-        Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
+        Test if model setup is compatible with the Fundamental Measure Theory (FMT)
 
         Returns:
             bool: Is model FMT consistent?

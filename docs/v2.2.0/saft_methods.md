@@ -733,7 +733,7 @@ Get effective size parameter for i-j interaction for Feynman-Hibbs corrected Mie
 
 &nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size parameter (m)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -758,14 +758,14 @@ Get size parameter for i-j interaction
 
 &nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size parameter (m)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `test_fmt_compatibility(self)`
-Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
+Test if model setup is compatible with the Fundamental Measure Theory (FMT)
 
 #### Returns:
 

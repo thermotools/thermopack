@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Exapmle of virial coefficient plot
+# Example of virial coefficient plot
 
 tc_pr = tcPR("CO2,C1")
 

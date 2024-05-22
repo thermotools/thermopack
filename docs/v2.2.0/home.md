@@ -5,7 +5,7 @@ title: ThermoPack v2.2
 permalink: /v2.2.0/home.html
 ---
 
-ThermoPack 2.2 was released in Febuary 2024, and is available on the [Python Packaging Index (PyPI)](https://pypi.org/project/thermopack/). 
+ThermoPack 2.2 was released in February 2024, and is available on the [Python Packaging Index (PyPI)](https://pypi.org/project/thermopack/). 
 This release contains several new features and interfaces, while remaining completely backwards compatible with [ThermoPack 2.1.0](/thermopack/v2.1.0/home.html).
 
 Thermopack is a thermodynamics library for multi-component and

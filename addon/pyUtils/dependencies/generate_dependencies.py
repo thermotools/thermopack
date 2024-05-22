@@ -24,19 +24,19 @@ def get_file_dependencies(filepath, module_list):
     Parse file (filepath) for use statements, and add
     all included modules to dependencies list
     """
-    dependensies = []
+    dependencies = []
     with open(filepath, encoding="ISO-8859-1", mode="r") as f:
         for line in f:
             word_array = line.replace(",", " ").split()
             if len(word_array) > 0:
                 if word_array[0].lower() == "use":
                     if word_array[1].lower() in module_list:
-                        add_to_list_if_new(dependensies, word_array[1].lower())
-    return dependensies
+                        add_to_list_if_new(dependencies, word_array[1].lower())
+    return dependencies
 
 def build_make_string(filepath, deps):
     """
-    Make list containg build nformation for file (filepath)
+    Make list containing build information for file (filepath)
     with dependencies (deps)
     """
     filename_src = filepath.split("/")[-1]

@@ -150,7 +150,7 @@ class pcsaft(saft):
 
     def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
         """Utility
-        Set volume correction parametrs
+        Set volume correction parameters
 
         Args:
             cidx (int): Component index
@@ -278,7 +278,7 @@ class pcsaft(saft):
             eps (float): Association energy (J/mol)
             beta (float): Association volume (-)
         """
-        warnings.warn("The method 'set_pure_params' has been repaced by 'set_pure_fluid_param', and may be removed in"
+        warnings.warn("The method 'set_pure_params' has been replaced by 'set_pure_fluid_param', and may be removed in"
                       "the future.", DeprecationWarning, stacklevel=2)
         self.set_pure_fluid_param(c, m, sigma, eps_div_kb, eps=eps, beta=beta)
 
@@ -321,7 +321,7 @@ class pcsaft(saft):
             eps (float): Association energy (J/mol)
             beta (float): Association volume (-)
         """
-        warnings.warn("The method 'get_pure_params' has been repaced by 'get_pure_fluid_param', and may be removed in"
+        warnings.warn("The method 'get_pure_params' has been replaced by 'get_pure_fluid_param', and may be removed in"
                       "the future.", DeprecationWarning, stacklevel=2)
         return self.get_pure_fluid_param(c)
 
