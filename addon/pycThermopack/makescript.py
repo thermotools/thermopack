@@ -9,7 +9,7 @@ import warnings
 from pathlib import Path
 import map_platform_specifics
 
-VERSION_2 = '2.2.2'
+VERSION_2 = '2.2.3'
 VERSION_3 = '3.b0'
 
 def windows_make(diffs):
