@@ -74,9 +74,12 @@ def repair_links(filestr):
     Because the markdown files used to generate the GH pages use relative paths, we need to prepend the appropriate
     url when making the Readme.
     """
-    pattern = r"\]\((?!http)(.*?\.html)\)"
-    replacement = r"](https://thermotools.github.io/thermopack/vcurrent/\1)"
-    return re.sub(pattern, replacement, filestr)
+    pattern_vcurrent = r"\]\((?!http)(.*?\.html)\)"
+    replacement_vcurrent = r"](https://thermotools.github.io/thermopack/vcurrent/\1)"
+    pattern_abspath = r"\]\(/thermopack(?!http)(.*?\.html)\)"
+    replacement_abspath = r"](https://thermotools.github.io/thermopack\1)"
+    filestr = re.sub(pattern_abspath, replacement_abspath, filestr)
+    return re.sub(pattern_vcurrent, replacement_vcurrent, filestr)
 
 def gen_file_str(files):
     out_file_str = ''

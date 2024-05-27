@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-05-27T09:29:57.395600
+Generated at: 2024-05-27T09:36:44.721921
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -364,7 +364,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](https://thermotools.github.io/thermopack/vcurrent//thermopack/memo/index.html).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](https://thermotools.github.io/thermopack/memo/index.html).
 
 # Doing calculations
 Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
