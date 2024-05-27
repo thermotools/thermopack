@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-05-27T09:19:35.173594
+Generated at: 2024-05-27T09:29:57.394469
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -126,7 +126,7 @@ ThermoPack v2.2.0 is completely backwards compatible with v2.1.0, such that all 
 will also work with v2.2.0. This guide primarily aims to demonstrate functionality that is new in v2.2.0.
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://thermotools.github.io/thermopack/vcurrent/https://github.com/thermotools/thermopack/tree/v2.2/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](/thermopack/v2.2.0/thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent//thermopack/v2.2.0/more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.2/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](https://thermotools.github.io/thermopack/vcurrent//thermopack/v2.2.0/thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent//thermopack/v2.2.0/more_advanced.html) may also be useful.
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be 
 initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). 

@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-05-27T09:19:35.175567
+Generated at: 2024-05-27T09:29:57.395600
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -163,7 +163,7 @@ be useful to look into the examples provided in the [getting started guide](http
 ### Prerequisites
 Thermopack source code can be compiled with the [GNU Fortran
 compiler](https://gcc.gnu.org/wiki/GFortran) or [Intel
-FORTRAN](https://thermotools.github.io/thermopack/vcurrent/https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html)
+FORTRAN](https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html)
 and is dependent on the [LAPACK](http://www.netlib.org/lapack/) and
 [BLAS](http://www.netlib.org/blas/) libraries. On the Windows OS the code can
 be compiled using [Microsoft Visual
@@ -277,10 +277,10 @@ See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototy
 # Getting Started
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://thermotools.github.io/thermopack/vcurrent/https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent/more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent/more_advanced.html) may also be useful.
 
 *Note:* This guide applies to the most recent version of ThermoPack og GitHub. For guides applicable to versions found on PyPI,
-find the appropriate version in the sidebar on the [ThermoPack homepage.](https://thermotools.github.io/thermopack/vcurrent/https://thermotools.github.io/thermopack/index.html)
+find the appropriate version in the sidebar on the [ThermoPack homepage.](https://thermotools.github.io/thermopack/index.html)
 
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
@@ -364,7 +364,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://thermotools.github.io/thermopack/vcurrent/https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](https://thermotools.github.io/thermopack/vcurrent//thermopack/memo/index.html).
 
 # Doing calculations
 Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
