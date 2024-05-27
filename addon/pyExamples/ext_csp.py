@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init extended corrensponding state object
+# Instantiate and init extended corresponding state object
 csp = ext_csp("C1,C2,C3,NC4", "SRK", "Classic", "vdW", "NIST_MEOS", "C3")
 
 # Plot phase envelope
@@ -24,6 +24,6 @@ plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
 plt.ylim(0)
 plt.legend()
-plt.title("Extended corrensponding state phase diagram")
+plt.title("Extended corresponding state phase diagram")
 plt.show()
 plt.clf()

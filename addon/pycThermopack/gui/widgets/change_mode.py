@@ -71,7 +71,7 @@ class ChangeModePopup(QDialog):
 
 class GoToPlotModeWidget(ChangeModePopup):
     """
-    Window popup beofre going to Plot Mode
+    Window popup before going to Plot Mode
     The user selects one component list, and one model setup before proceeding
     """
 
@@ -93,7 +93,7 @@ class GoToPlotModeWidget(ChangeModePopup):
 
 class GoToCalcModeWidget(ChangeModePopup):
     """
-    Window popup beofre going to Calc Mode
+    Window popup before going to Calc Mode
     The user selects one component list, and one model setup before proceeding
     """
 

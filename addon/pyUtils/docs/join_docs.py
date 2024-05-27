@@ -29,7 +29,7 @@ def print_finished_report(header, out_file_path):
 def format_no_html(file):
     """
     Markdown files that are intended to be compiled to html may contain some syntax that is unfriendly to e.g.
-    pages intended to render GitHub flavoured markdown. Specifially, the title is in the page metadata, not as a
+    pages intended to render GitHub flavoured markdown. Specifically, the title is in the page metadata, not as a
     header. This function reads the file, and returns a string formatted to be friendly for "pure" markdown pages
     without html-templates.
 

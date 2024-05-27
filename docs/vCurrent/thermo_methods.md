@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-04-25T20:46:11.470880
+Generated at: 2024-05-27T09:16:01.308118
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -39,7 +39,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [TVp-property interfaces](#tvp-property-interfaces)
     * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
     * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phasenone-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
   * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
@@ -524,7 +524,7 @@ Calculate specific single-phase enthalpy Note that the order of the output match
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
 
@@ -571,7 +571,7 @@ Calculate specific single-phase entropy Note that the order of the output match 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dsdt (logical, optional):** 
 
@@ -785,7 +785,7 @@ Calculate single-phase specific volume Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dvdt (logical, optional):** 
 
@@ -844,7 +844,7 @@ Calculate speed of sound for single phase or two phase mixture assuming mechanic
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -875,7 +875,7 @@ Calculate logarithm of fugacity coefficient given composition, temperature and p
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
 
@@ -924,7 +924,7 @@ Calculate single-phase compressibility Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dzdt (logical, optional):** 
 
@@ -956,7 +956,7 @@ Computing properties given Temperature, volume and mole numbers, but evaluate de
   * [TVp-property interfaces](#tvp-property-interfaces)
     * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
     * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phasenone-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
 
 
 ### `enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag='IR')`
@@ -1049,7 +1049,7 @@ Calculate entropy given temperature, pressure and mol numbers.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
+### `thermo_tvp(self, temp, v, n, phase=None, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
 Calculate logarithm of fugacity coefficient given molar numbers, temperature and pressure. Note that the order of the output match the default order of input for the differentials. Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
 
 #### Args:
@@ -1065,6 +1065,10 @@ Calculate logarithm of fugacity coefficient given molar numbers, temperature and
 &nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (Any) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Not in use, may be removed in the future.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
 
@@ -1152,7 +1156,7 @@ Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -1399,7 +1403,7 @@ Bubble- and dew point calculations and phase envelopes.
 
 
 ### `_property_index_from_string(self, prop: str)`
-Get integer index corrensponding to property string
+Get integer index corresponding to property string
 
 #### Args:
 
@@ -1547,7 +1551,7 @@ Calculate dew pressure given temperature and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1582,7 +1586,7 @@ Calculate dew temperature given pressure and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1799,7 +1803,7 @@ Get the phase-envelope at a given composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_v (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; **initial_temperature (float, optional):** 
 
@@ -1858,7 +1862,7 @@ Get the pure fluid saturation line
 
 &nbsp;&nbsp;&nbsp;&nbsp; **max_delta_press (float , optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure between points (Pa). Defaults to 0.2e5.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **nmax (int, optional):** 
 
@@ -2083,7 +2087,7 @@ Calculate phase envelope including solid lines
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_esv (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2774,7 +2778,7 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -3058,7 +3062,7 @@ Get correlation parameters for ideal gas Cp
 
 &nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3234,7 +3238,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 21 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters (Maximum 21 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3396,7 +3400,7 @@ Get model identification
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `init_peneloux_volume_translation(self, parameter_reference='Default')`
-Initialialize Peneloux volume translations
+Initialize Peneloux volume translations
 
 #### Args:
 
@@ -3448,7 +3452,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_eos (str, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corrensponding state equation. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding state equation. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_ref_comp (str, optional):** 
 
@@ -3480,7 +3484,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **silent (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Supress messages during init?. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Suppress messages during init?. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

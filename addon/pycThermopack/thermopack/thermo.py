@@ -366,7 +366,7 @@ class thermo(object):
             comps (string): Comma separated list of components
             nphases (int): Maximum number of phases considered during multi-phase flash calculations
             liq_vap_discr_method (int, optional): Method to discriminate between liquid and vapor in case of an undefined single phase. Defaults to None.
-            csp_eos (str, optional): Corrensponding state equation. Defaults to None.
+            csp_eos (str, optional): Corresponding state equation. Defaults to None.
             csp_ref_comp (str, optional): CSP reference component. Defaults to None.
             kij_ref (str, optional): Data set identifiers. Defaults to "Default".
             alpha_ref (str, optional): Data set identifiers. Defaults to "Default".
@@ -374,7 +374,7 @@ class thermo(object):
             b_exponent (float, optional): Exponent used in co-volume mixing. Defaults to None.
             TrendEosForCp (str, optional): Option to init trend for ideal gas properties. Defaults to None.
             cptype (int array, optional): Equation type number for Cp. Defaults to None.
-            silent (bool, optional): Supress messages during init?. Defaults to None.
+            silent (bool, optional): Suppress messages during init?. Defaults to None.
         """
         self.activate()
         self.nc = max(len(comps.split(" ")), len(comps.split(",")))
@@ -487,7 +487,7 @@ class thermo(object):
 
     def init_peneloux_volume_translation(self, parameter_reference="Default"):
         """Internal
-        Initialialize Peneloux volume translations
+        Initialize Peneloux volume translations
 
         Args:
             parameter_reference (str): String defining parameter set, Defaults to "Default"
@@ -1104,7 +1104,7 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
             dvdt (logical, optional): Calculate molar volume differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dvdp (logical, optional): Calculate molar volume differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dvdn (logical, optional): Calculate molar volume differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -1174,7 +1174,7 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
             dzdt (logical, optional): Calculate compressibility differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dzdp (logical, optional): Calculate compressibility differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dzdn (logical, optional): Calculate compressibility differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -1246,7 +1246,7 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition (.)
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
             dlnfugdt (logical, optional): Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dlnfugdp (logical, optional): Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dlnfugdn (logical, optional): Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -1312,23 +1312,24 @@ class thermo(object):
                           metaExtremum_c,
                           v_c)
 
-        return_tuple = (np.array(lnfug_c), )
+        diffs = utils.Differentials('tpn')
         if not dlnfugdt is None:
-            return_tuple += (np.array(dlnfugdt_c), )
+            diffs.dT = np.array(dlnfugdt_c)
         if not dlnfugdp is None:
-            return_tuple += (np.array(dlnfugdp_c), )
+            diffs.dp = np.array(dlnfugdp_c)
         if not dlnfugdn is None:
             dlnfugdn_r = np.zeros((len(x), len(x)))
             for i in range(len(x)):
                 for j in range(len(x)):
                     dlnfugdn_r[i][j] = dlnfugdn_c[i+j*len(x)]
-            return_tuple += (dlnfugdn_r, )
+            diffs.dn = dlnfugdn_r
+        diffs.make_v2_compatible()
+        prop = utils.Property(np.array(lnfug_c), diffs)
         if not ophase is None:
-            return_tuple += (ophase_c[0], )
+            prop.ophase = ophase_c[0]
         if not v is None:
-            return_tuple += (v_c[0], )
+            prop.v = v_c[0]
 
-        prop = utils.Property.from_return_tuple(return_tuple, (dlnfugdt, dlnfugdp, dlnfugdn), 'tpn')
         return prop.unpack()
 
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
@@ -1341,7 +1342,7 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
             dhdt (logical, optional): Calculate enthalpy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dhdp (logical, optional): Calculate enthalpy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dhdn (logical, optional): Calculate enthalpy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -1420,7 +1421,7 @@ class thermo(object):
             temp (float): Temperature (K)
             press (float): Pressure (Pa)
             x (array_like): Molar composition
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
             dsdt (logical, optional): Calculate entropy differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dsdp (logical, optional): Calculate entropy differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dsdn (logical, optional): Calculate entropy differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -1695,7 +1696,7 @@ class thermo(object):
             j (integer): Component index
         Returns:
             integer: Ideal Cp correlation identifier
-            ndarray: Paramaters
+            ndarray: Parameters
         """
         self.activate()
 
@@ -1723,7 +1724,7 @@ class thermo(object):
         Args:
             j (int): Component index
             cp_correlation_type (int): Ideal Cp correlation identifier
-            parameters (array like): Paramaters (Maximum 21 parameters used)
+            parameters (array like): Parameters (Maximum 21 parameters used)
         """
         self.activate()
 
@@ -1757,7 +1758,7 @@ class thermo(object):
             z (array_like): Overall molar composition
             betaV (float): Molar gas phase fraction
             betaL (float): Molar liquid phase fraction
-            phase (int): Calcualte root for specified phase
+            phase (int): Calculate root for specified phase
 
         Returns:
             float: Speed of sound (m/s)
@@ -1946,7 +1947,7 @@ class thermo(object):
                                 byref(ierr_c))
 
         if ierr_c.value > 0 or ierr_c.value < -1:
-            raise Exception("PS flash calclualtion failed")
+            raise Exception("PS flash calculation failed")
 
         x = np.array(x_c)
         y = np.array(y_c)
@@ -2013,7 +2014,7 @@ class thermo(object):
         if ierr_c.value < 0:
             warnings.warn("PH solver not fully converged")
         elif ierr_c.value > 0:
-            raise Exception("PH flash calclualtion failed")
+            raise Exception("PH flash calculation failed")
 
         x = np.array(x_c)
         y = np.array(y_c)
@@ -2771,7 +2772,7 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dhdt, dhdp, dhdn), 'tpn')
         return prop.unpack()
 
-    def thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None,
+    def thermo_tvp(self, temp, v, n, phase=None, dlnfugdt=None, dlnfugdp=None,
                    dlnfugdn=None):
         """TVp-property
         Calculate logarithm of fugacity coefficient given molar numbers,
@@ -2783,6 +2784,7 @@ class thermo(object):
             temp (float): Temperature (K)
             v (float): Volume (m3)
             n (array_like): Molar numbers (mol)
+            phase (Any) : Not in use, may be removed in the future.
             dlnfugdt (logical, optional): Calculate fugacity coefficient differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
             dlnfugdp (logical, optional): Calculate fugacity coefficient differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
             dlnfugdn (logical, optional): Calculate fugacity coefficient differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
@@ -2881,7 +2883,7 @@ class thermo(object):
 
         y = np.array(y_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_temperature calclualtion failed")
+            raise Exception("bubble_temperature calculation failed")
         return temp, y
 
     def bubble_pressure(self, temp, z):
@@ -2919,7 +2921,7 @@ class thermo(object):
 
         y = np.array(y_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_pressure calclualtion failed")
+            raise Exception("bubble_pressure calculation failed")
         return press, y
 
     def dew_temperature(self, press, z):
@@ -2928,7 +2930,7 @@ class thermo(object):
 
         Args:
             press (float): Pressure (Pa)
-            z (float): Compositon (-)
+            z (float): Composition (-)
 
         Raises:
             Exception: Not able to solve for dew point
@@ -2957,7 +2959,7 @@ class thermo(object):
 
         x = np.array(x_c)
         if ierr_c.value != 0:
-            raise Exception("dew_temperature calclualtion failed")
+            raise Exception("dew_temperature calculation failed")
         return temp, x
 
     def dew_pressure(self, temp, z):
@@ -2966,7 +2968,7 @@ class thermo(object):
 
         Args:
             temp (float): Temperature (K)
-            z (float): Compositon (-)
+            z (float): Composition (-)
 
         Raises:
             Exception: Not able to solve for dew point
@@ -2995,7 +2997,7 @@ class thermo(object):
 
         x = np.array(x_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_pressure calclualtion failed")
+            raise Exception("bubble_pressure calculation failed")
         return press, x
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
@@ -3012,7 +3014,7 @@ class thermo(object):
             minimum_temperature (float , optional): Exit on minimum temperature (K). Defaults to None.
             step_size_factor (float , optional): Scale default step size for envelope trace. Defaults to 1.0. Reducing step_size_factor will give a denser grid.
             step_size (float , optional): Set maximum step size for envelope trace. Overrides step_size_factor. Defaults to None.
-            calc_v (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False
             initial_temperature (float, optional): Start mapping form dew point at initial temperature.
                                                    Overrides initial pressure. Defaults to None (K).
             calc_criconden (bool, optional): Calculate cricondenbar and cricondentherm?
@@ -3138,7 +3140,7 @@ class thermo(object):
             initial_pressure (float): Start mapping form dew point at initial pressure (Pa).
             initial_temperature (float, optional): Start mapping form dew point at initial temperature (K). Default None.
             i (int, optional): FORTRAN component index. Default None. Must be given if self.nc > 1.
-            max_delta_press (float , optional): Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+            max_delta_press (float , optional): Maximum delta pressure between points (Pa). Defaults to 0.2e5.
             nmax (int, optional): Maximum number of points on envelope. Defaults to 100.
             log_linear_grid (logical, optional): Use log-linear grid?. Defaults to False.
 
@@ -3624,7 +3626,7 @@ class thermo(object):
             initial_pressure (float): Start mapping from initial pressure (Pa).
             z (array_like): Composition (-)
             maximum_pressure (float , optional): Exit on maximum pressure (Pa). Defaults to 1.5e7.
-            calc_esv (bool, optional): Calculate specifc volume of saturated phase? Defaults to False
+            calc_esv (bool, optional): Calculate specific volume of saturated phase? Defaults to False
 
         Returns:
             tuple of arrays
@@ -3845,7 +3847,7 @@ class thermo(object):
             Pi = Pi_c.value
             wi = np.array(wi_c)
             phase = phase_c.value
-            vi, = self.specific_volume(Ti, Pi, z, phase)
+            vi = utils.back_compatible_unpack(self.specific_volume(Ti, Pi, z, phase))
         else:
             Ti = None
             Pi = None
@@ -3857,7 +3859,7 @@ class thermo(object):
 
     def _property_index_from_string(self, prop: str):
         """Saturation interface
-        Get integer index corrensponding to property string
+        Get integer index corresponding to property string
 
         Args:
             prop (str): Property (Entropy, Enthalpy, Volume, Pressure, Temperature, Joule-Thompson)
@@ -4426,7 +4428,7 @@ class thermo(object):
                        byref(P_c))
 
         if ierr_c.value != 0:
-            raise Exception("critical calclualtion failed")
+            raise Exception("critical calculation failed")
 
         return temp_c.value, v_c.value, P_c.value
 
@@ -4648,7 +4650,7 @@ class thermo(object):
                                    t_liq_start_c)
 
         if ierr_c.value != 0:
-            raise Exception("Spinodial calclualtion failed")
+            raise Exception("Spinodial calculation failed")
 
         T = np.array(temp_c[0:n_c.value])
         v = np.array(vol_c[0:n_c.value])
@@ -4712,7 +4714,7 @@ class thermo(object):
                                         t_min_c)
 
         if ierr_c.value != 0:
-            raise Exception("Spinodial point calclualtion failed")
+            raise Exception("Spinodial point calculation failed")
 
         return temp_c.value,vol_c.value
 
@@ -4867,6 +4869,9 @@ class thermo(object):
                           byref(ierr_c))
 
         if ierr_c.value != 0:
+            print(f"Temperature: {temp}")
+            print(f"Chemical potential: {mu}")
+            print(f"Initial density: {rho_initial}")
             raise Exception("mu-T solver failed")
 
         return np.array(rho_c)
@@ -4906,7 +4911,7 @@ class thermo(object):
         """Stability interface & Other property
         Solve for temperature and volume given pressure and entropy.
         A fair initial guess is required.
-        No phase stabillity is tested, and stable/meta-stable states will be
+        No phase stability is tested, and stable/meta-stable states will be
         returned depending on input.
 
         Args:

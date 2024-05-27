@@ -22,7 +22,7 @@ delocate-wheel -w . -v thermopack-${tp_version}-py3-none-any.whl
 [[ -f thermopack-${tp_version}-py3-none-macosx_11_0_arm64.whl ]] && rm thermopack-${tp_version}-py3-none-macosx_11_0_arm64.whl
 mv thermopack-${tp_version}-py3-none-any.whl thermopack-${tp_version}-py3-none-macosx_11_0_arm64.whl
 
-echo "Successfull built and delocated wheel for ThermoPack ${tp_version}"
+echo "Successfully built and delocated wheel for ThermoPack ${tp_version}"
 exit 0
 
 # DANGER ZONE: THIS UPLOADS FILES TO PYPI! ONLY WRITTEN HERE TO REMEMBER THE COMMANDS.

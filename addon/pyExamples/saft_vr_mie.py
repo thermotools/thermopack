@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from thermopack_example_utils import NA, calc_reduced_T, calc_reduced_rho
 
-# Instanciate and init SAFT-VR Mie object
+# Instantiate and init SAFT-VR Mie object
 svrm = saftvrmie("H2")
 svrm.set_tmin(temp=2.0)
 

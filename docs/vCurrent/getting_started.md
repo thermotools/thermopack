@@ -63,7 +63,7 @@ vdw = VanDerWaals('C1,C2,C3,N2,O2') # VdW EoS for methane/ethane/propane/nitroge
 sw = SchmidtWensel('R11,R12') # Schmidt-Wensel EoS for FCl3C/F2Cl2C mixture
 pt = PatelTeja('PRLN') # Patel-Teja EoS for pure propylene
 ```
-In addition to these, the Translated-Consisten Peng-Robinson is avaiable as
+In addition to these, the Translated-Consisten Peng-Robinson is available as
 ```Python
 from thermopack.tcPR import tcPR
 tcpr = tcPR('F6S,SO2') # Translated-Consistent PR EoS for SF6/SO2 mixture

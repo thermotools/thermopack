@@ -417,7 +417,7 @@
       implicit none
       real, intent(in) :: T     !< Temperature (K)
       integer, intent(in) :: i  !< Component index
-      real, optional, intent(out) :: Cp  !< Heat capcity at constant prerssure (J/mol/K)
+      real, optional, intent(out) :: Cp  !< Heat capacity at constant pressure (J/mol/K)
       real, optional, intent(out) :: h   !< Enthalpy (J/mol)
       real, optional, intent(out) :: s   !< Entropy (J/mol/K)
     end subroutine trend_ideal
