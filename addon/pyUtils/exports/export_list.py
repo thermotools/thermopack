@@ -318,6 +318,8 @@ append_export("speed_of_sound_tv", "speed_of_sound")
 
 append_export("guessphase", "thermo_utils")
 
+append_export("get_true", "thermopack_constants")
+
 append_export("set_numerical_robustness_level", "thermopack_var")
 append_export("get_numerical_robustness_level", "thermopack_var")
 append_export("get_rgas", "thermopack_var")

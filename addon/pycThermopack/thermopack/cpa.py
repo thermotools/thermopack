@@ -218,7 +218,7 @@ class cpa(cubic):
         Args:
             simplified (bool): True if simplified
         """
-        simplified_c = c_bool(simplified)
+        simplified_c = c_int(self._true_int_value) if simplified else c_int(0)
         self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
         self.s_use_simplified_cpa.restype = None
         self.s_use_simplified_cpa(byref(simplified_c))
@@ -230,7 +230,7 @@ class cpa(cubic):
             simplified (bool): Use simplified form for rdf in CPA?
             elliot (bool): use Elliot mixing rule for association Deltas?
         """
-        simplified_c = c_bool(simplified)
+        simplified_c = c_int(self._true_int_value) if simplified else c_int(0)
         elliot_c = c_bool(elliot)
         self.s_set_cpa_formulation.argtypes = [POINTER(c_bool), POINTER(c_bool)]
         self.s_set_cpa_formulation.restype = None

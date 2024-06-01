@@ -79,4 +79,10 @@ contains
     endif
   end subroutine phaseIntToName
 
+  !----------------------------------------------------------------------
+  subroutine get_true(true_value)
+    logical, intent(out) :: true_value
+    true_value = .true.
+  end subroutine get_true
+
 end module thermopack_constants

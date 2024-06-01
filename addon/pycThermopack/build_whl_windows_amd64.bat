@@ -1,6 +1,6 @@
 @echo off
 
-set tp_version="2.2.1"
+set tp_version="2.2.3"
 
 python -c "import makescript; makescript.windows_make('v2')"
 

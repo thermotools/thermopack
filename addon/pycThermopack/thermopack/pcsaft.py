@@ -78,8 +78,8 @@ class pcsaft(saft):
         comp_string_len = c_len_type(len(comps))
         ref_string_c = c_char_p(parameter_reference.encode('ascii'))
         ref_string_len = c_len_type(len(parameter_reference))
-        simplified_c = c_int(1 if simplified else 0)
-        polar_c = c_int(1 if polar else 0)
+        simplified_c = c_int(self._true_int_value if simplified else 0)
+        polar_c = c_int(self._true_int_value if polar else 0)
 
         self.eoslibinit_init_pcsaft.argtypes = [c_char_p,
                                                 c_char_p,
