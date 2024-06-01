@@ -261,6 +261,7 @@ contains
     real, parameter :: releps_p = machine_prec*1e10
     real, parameter :: releps_rho = machine_prec*1e6
 
+    if (isnan(x(1))) call stoperror("Input composition contains NaN!")
     pMin = 0 ! Minimum allowable pressure during iteration.
     dpdrhoMin = 0 ! Minimum allowable pressure derivative during iteration.
     currentPhase = phase_spec ! May change during iteration
