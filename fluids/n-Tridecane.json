@@ -2,6 +2,8 @@
   "ident": "NC13",
   "formula": "C13H28",
   "cas_number": "629-50-5",
+  "InChI": "1S/C13H28/c1-3-5-7-9-11-13-12-10-8-6-4-2/h3-13H2,1-2H3",
+  "structure": "C:13;H:28",
   "name": "N-TRIDECANE",
   "aliases": [
     "n-Tridecane",
@@ -62,14 +64,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Prosen and Rossini, 1945",
+    "enthalpy": -311.5e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Stull D.R., 1969",
+    "entropy_ref_state": "1ATM",
+    "entropy": 661.45
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -129,6 +128,6 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   }
 }

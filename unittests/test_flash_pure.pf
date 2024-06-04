@@ -114,10 +114,9 @@ contains
   end subroutine generate_random_numbers
 
   subroutine loop_flash_on_grid(flash,pmin,pmax,ngrid)
-    use thermopack_var, only: nc
+    use thermopack_var, only: nc,tpTmax,tpTmin,tpPmin
     use saturation, only: safe_dewT
-    use thermopack_constants, only: continueOnError,tpTmax,&
-         tpTmin,tpPmin,SINGLEPH,TWOPH
+    use thermopack_constants, only: continueOnError,SINGLEPH,TWOPH
     use tp_solver, only: twoPhaseTPflash
     use eos, only: twoPhaseEntropy, twoPhaseEnthalpy, &
          twoPhaseSpecificVolume

@@ -95,6 +95,7 @@ module saftvrmie_containers
     real, allocatable, dimension(:,:,:) :: am_n,am_Tn,am_Vn,am_VVn,am_VTn
     real, allocatable, dimension(:,:,:,:) :: am_nn,am_Vnn
   contains
+    procedure, public :: mirror => mirror_saftvrmie_aij
     ! Assignment operator
     procedure, public :: assign_saftvrmie_aij
     generic, public :: assignment(=) => assign_saftvrmie_aij
@@ -169,6 +170,9 @@ module saftvrmie_containers
   !> Container for SAFT-VR Mie common variables
   !! To be claculated only once per state
   type :: saftvrmie_var_container
+    !> Temperature of last update
+    real :: temperature_dhs = -1.0 ! Unphysical initial value
+    real :: temperature_eps = -1.0 ! Unphysical initial value
     !> Hard sphere diameter
     type(saftvrmie_dhs) :: dhs
     !> Effective sigma for the quantum corrected potential
@@ -253,6 +257,7 @@ module saftvrmie_containers
   public :: allocate_saftvrmie_param_container
   public :: saftvrmie_eos, get_saftvrmie_eos_pointer, get_saftvrmie_var
   public :: svrm_opt, get_feynman_hibbs_order
+  public :: set_saftvrmie_mass
 
 Contains
 
@@ -332,7 +337,7 @@ Contains
          eos%saftvrmie_param%comp,fh_orders=fh_orders)
     ! Set the correct Feynman--Hibbs order for the quantum corrections
     do i = 1, nc-1
-      if (.not. fh_orders(i)==fh_orders(i+1)) call stoperror("init_saftvrmie_containers::fh_order must be equal for components")
+      if (.not. fh_orders(i)==fh_orders(i+1)) print *,"init_saftvrmie_containers::fh_order not equal for components"
     end do
     svrm_opt%quantum_correction = fh_orders(1)
     svrm_opt%quantum_correction_hs = fh_orders(1)
@@ -417,6 +422,16 @@ Contains
     sigma = saftvrmie_param%comp(ic)%sigma
     Lambda = h_const/(sigma*sqrt(mass*eps))
   end subroutine get_saftvrmie_pure_fluid_deBoer
+
+  !> Set the mass used for quantum corrections
+  !> \author Morten Hammer, May 2023
+  subroutine set_saftvrmie_mass(ic,mass)
+    integer, intent(in) :: ic          !< Component index
+    real, intent(in)    :: mass        !< Mass [kg]
+    ! Locals
+    saftvrmie_param%comp(ic)%mass = mass
+    call calcBinaryMieParmeters(saftvrmie_param,1)
+  end subroutine set_saftvrmie_mass
 
   !> Set the interaction parameter kij for the dispersive combining rule
   !> \author Ailo Aasen, October 2018
@@ -1595,6 +1610,38 @@ Contains
     this%a2ij = this%a2ij
     this%a3ij = this%a3ij
   end subroutine assign_saftvrmie_var_container
+
+  subroutine mirror_saftvrmie_aij(this)
+    class(saftvrmie_aij), intent(inout) :: this
+    ! Locals
+    integer :: i,j, nc
+    if (allocated(this%am)) then
+      nc = size(this%am, dim=1)
+    else
+      nc = 0
+    endif
+    ! Mirror upper left triangle over diagonal
+    do i=1,nc
+      do j=i+1,nc
+        this%am(j,i) = this%am(i,j)
+        this%am_T(j,i) = this%am_T(i,j)
+        this%am_V(j,i) = this%am_V(i,j)
+        this%am_TT(j,i) = this%am_TT(i,j)
+        this%am_VV(j,i) = this%am_VV(i,j)
+        this%am_TV(j,i) = this%am_TV(i,j)
+        this%am_VVV(j,i) = this%am_VVV(i,j)
+        this%am_VVT(j,i) = this%am_VVT(i,j)
+        this%am_VTT(j,i) = this%am_VTT(i,j)
+        this%am_n(:,j,i) = this%am_n(:,i,j)
+        this%am_Tn(:,j,i) = this%am_Tn(:,i,j)
+        this%am_Vn(:,j,i) = this%am_Vn(:,i,j)
+        this%am_VVn(:,j,i) = this%am_VVn(:,i,j)
+        this%am_VTn(:,j,i) = this%am_VTn(:,i,j)
+        this%am_nn(:,:,j,i) = this%am_nn(:,:,i,j)
+        this%am_Vnn(:,:,j,i) = this%am_Vnn(:,:,i,j)
+      enddo
+    enddo
+  end subroutine mirror_saftvrmie_aij
 
   subroutine assign_saftvrmie_aij(this,other)
     class(saftvrmie_aij), intent(inout) :: this

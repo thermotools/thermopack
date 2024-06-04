@@ -2,6 +2,8 @@
   "ident": "N2O",
   "formula": "N2O",
   "cas_number": "10024-97-2",
+  "InChI": "1S/N2O/c1-2-3",
+  "structure": "N:2;O:1",
   "name": "NITROUS OXIDE",
   "aliases": [
     "NitrousOxide",
@@ -62,14 +64,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "enthalpy": 82.05e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
+    "entropy": 219.96
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -82,6 +81,35 @@
   "quadrupole_moment": {
     "Q": 0.0,
     "bib_reference": ""
+  },
+  "sublimation_curve": {
+    "bib_reference": "Bell, I.H. (2018)",
+    "ref": "DEFAULT",
+    "correlation": "SL-2",
+    "triple_temperature": 182.33,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 1.000000E+06,
+    "reducing_temperature": 1.0,
+    "n_coeff": 4,
+    "n_coeff_1": 4,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.37978754e1,
+      -3.18120979e3,
+      6.34515147e4,
+      -4.18996537e6,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      -1.0,
+      -2.0,
+      -3.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {

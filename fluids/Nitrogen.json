@@ -2,6 +2,8 @@
   "ident": "N2",
   "formula": "N2",
   "cas_number": "7727-37-9",
+  "InChI": "1S/N2/c1-2",
+  "structure": "N:2",
   "name": "NITROGEN",
   "aliases": [
     "Nitrogen",
@@ -62,14 +64,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "https://webbook.nist.gov",
+    "enthalpy_bib_reference": "https://webbook.nist.gov",
     "enthalpy": 0.0,
-    "entropy": 191.61
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 191.609
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -82,6 +81,64 @@
   "quadrupole_moment": {
     "Q": 1.43,
     "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.1349047",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 63.151,
+    "maximum_temperature": 2000.0,
+    "reducing_pressure": 1.251980E+04,
+    "reducing_temperature": 63.151,
+    "n_coeff": 2,
+    "n_coeff_1": 1,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      12798.61,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.78963,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (1999)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 63.151,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 1.252300E+04,
+    "reducing_temperature": 63.151,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
+    "coeff": [
+      -13.088692,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {
@@ -165,7 +222,7 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   },
   "PC-SAFT-2": {
     "m": 1.1504,

@@ -47,6 +47,8 @@ module saftvrmie_hardsphere
   public :: calc_hardsphere_extra_helmholtzenergy, calc_gij_boublik
   public :: calc_d_pure
   public :: calc_hardsphere_diameter_reduced_units
+  public :: mie_potential_quantumcorrected_wrapper
+  public :: calc_zero_for_shifted_potential
   ! Exported for testing
   public :: calc_mie_potential_quantumcorrected, epseff_Ux, epseff_Uxx
   public :: calc_hardsphere_virial_Bijk, calc_Santos_eta
@@ -839,6 +841,80 @@ Contains
     d2fdr2 = sigma_eff**2*U_divk_rr/T
   end subroutine zero_integrand
 
+  subroutine calc_zero_for_shifted_potential(j,k,s_vc,sigma_eff,u_shift_divk,r0)
+    !--------------------------------------------------------------------
+    ! Calculate point where u(r) - u_shift = 0.0
+    !
+    !! \author Morten Hammer, June 2023
+    !---------------------------------------------------------------------
+    use nonlinear_solvers, only: nonlinear_solver, newton_secondorder_singlevar
+    use numconstants, only: machine_prec
+    integer, intent(in) :: j, k              !< Current binary
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    real, intent(in) :: sigma_eff            !< Effective sigma [m]
+    real, intent(in) :: u_shift_divk         !< Potential shif value
+    real, intent(out) :: r0                  !< r0 [m]
+    ! Locals
+    type(nonlinear_solver) :: solver
+    real :: param(4)
+    real :: rs, rsmin, rsmax
+    !real :: f,dfdr,d2fdr2,f1,df1dr,d2f1dr2,eps
+    param(1) = real(j)
+    param(2) = real(k)
+    param(3) = u_shift_divk
+    param(4) = sigma_eff
+    rs = 1.0
+    rsmin = 0.99
+    rsmax = 1.5
+    solver%rel_tol = 1.0e-13
+    solver%max_it = 20
+    solver%ls_max_it = 3
+    !call shifted_potential_effective_sigma(rs,f,param,dfdr,d2fdr2)
+    !eps = 1.0e-5
+    !call shifted_potential_effective_sigma(rs+eps,f1,param,df1dr,d2f1dr2)
+    !print *,f, u_shift_divk, sigma_eff
+    !print *,(f1-f)/eps,dfdr
+    !print *,(df1dr-dfdr)/eps,d2fdr2
+    !stop
+    call newton_secondorder_singlevar(shifted_potential_effective_sigma,1.0,rsmin,rsmax,solver,rs,param)
+    if (solver%exitflag /= 0) then
+       call stoperror("Not able to solve for point where shifted potential becomes zero")
+    else
+       r0 = rs*sigma_eff
+    endif
+  end subroutine calc_zero_for_shifted_potential
+
+  subroutine shifted_potential_effective_sigma(rs,f,param,dfdr,d2fdr2)
+    use numconstants, only: machine_prec
+    use saftvrmie_containers, only: saftvrmie_var_container, get_saftvrmie_var
+    real, intent(in) :: rs
+    real, intent(in) :: param(4)
+    real, intent(out) :: f,dfdr,d2fdr2
+    ! Locals
+    integer :: j,k
+    real :: U_divk,U_divk_r,U_divk_rr, u_shift_divk
+    real :: sigma_eff, r
+    type(saftvrmie_var_container), pointer :: svrm_var
+    svrm_var => get_saftvrmie_var()
+    j = nint(param(1))
+    k = nint(param(2))
+    u_shift_divk = param(3)
+    sigma_eff = param(4)
+    r = rs*sigma_eff
+    call calc_mie_potential_quantumcorrected(j,k,svrm_var,&
+         saftvrmie_param%sigma_ij(j,k),saftvrmie_param%eps_divk_ij(j,k),&
+         saftvrmie_param%lambda_a_ij(j,k),saftvrmie_param%lambda_r_ij(j,k),&
+         saftvrmie_param%Cij(j,k),&
+         saftvrmie_param%Quantum_const_1a_ij(j,k),&
+         saftvrmie_param%Quantum_const_1r_ij(j,k),&
+         saftvrmie_param%Quantum_const_2a_ij(j,k),&
+         saftvrmie_param%Quantum_const_2r_ij(j,k),&
+         r,U_divk,U_divk_r=U_divk_r,U_divk_rr=U_divk_rr)
+    f = U_divk - u_shift_divk
+    dfdr = sigma_eff*U_divk_r
+    d2fdr2 = sigma_eff**2*U_divk_rr
+  end subroutine shifted_potential_effective_sigma
+
   subroutine calc_binary_effective_sigma(nc,T,s_vc,sigma_eff,sigma_eff_T,sigma_eff_TT)
     !--------------------------------------------------------------------
     ! This subroutine computes the effective sigma, defined as the position
@@ -1309,6 +1385,35 @@ Contains
        U_divk_TTr=U_divk_TTr*Mie_pref
     endif
   end subroutine calc_mie_potential_quantumcorrected
+
+  function mie_potential_quantumcorrected_wrapper(i, j, s_vc, n, r) result(U_divk)
+    !--------------------------------------------------------------------
+    !  2022 - Morten Hammer
+    !
+    !  This subroutine calulates the magntiude of the quantum corrected
+    !  Mie poential at positions given by the array r [m]
+    !---------------------------------------------------------------------
+    integer, intent(in) :: i, j                       !< Component indices
+    type(saftvrmie_var_container), intent(in) :: s_vc
+    integer, intent(in) :: n                          !< size of r
+    real, intent(in) :: r(n)                          !< particle distances [m]
+    real :: U_divk(n)                                 !< value of interaction div. by kB
+    ! Loals
+    integer :: ir
+    do ir=1,n
+      call calc_mie_potential_quantumcorrected(i,j,s_vc,&
+           saftvrmie_param%sigma_ij(i,j),&
+           saftvrmie_param%eps_divk_ij(i,j),&
+           saftvrmie_param%lambda_a_ij(i,j),&
+           saftvrmie_param%lambda_r_ij(i,j),&
+           saftvrmie_param%Cij(i,j),&
+           saftvrmie_param%Quantum_const_1a_ij(i,j),&
+           saftvrmie_param%Quantum_const_1r_ij(i,j),&
+           saftvrmie_param%Quantum_const_2a_ij(i,j),&
+           saftvrmie_param%Quantum_const_2r_ij(i,j),&
+           r(ir),U_divk(ir))
+    enddo
+  end function mie_potential_quantumcorrected_wrapper
 
   subroutine calc_hardsphere_zeta_and_derivatives(nc,T,V,n,&
        d_mat,d_T_mat,d_TT_mat,zeta,zeta_V,&

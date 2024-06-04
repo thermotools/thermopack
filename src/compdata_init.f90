@@ -187,15 +187,62 @@ submodule (compdata) comp_init
     index = compIndex(complist, compName)
   end function comp_index_active
 
-  module subroutine comp_name_active(index, comp_name)
+  module subroutine comp_name_active(index, shortname, comp_name)
     use thermopack_var, only: get_active_comps
     implicit none
     integer, intent(in) :: index
+    logical, intent(in) :: shortname
     character(len=*), intent(out) :: comp_name
     !
     type(gendata_pointer), pointer :: p_comps(:)
     p_comps => get_active_comps()
-    comp_name = trim(p_comps(index)%p_comp%name)
-  end subroutine
+    if (shortname) then
+      comp_name = trim(p_comps(index)%p_comp%ident)
+    else
+      comp_name = trim(p_comps(index)%p_comp%name)
+    endif
+  end subroutine comp_name_active
+
+  module subroutine comp_structure(cname, struct)
+    character(len=*), intent(in) :: cname
+    character(len=*), intent(out) :: struct
+    ! Locals
+    integer :: cidx
+    cidx = getCompDBindex(cname)
+    if (cidx < 1 .or. cidx > maxncdb) then
+      call stoperror("Component "//trim(cname)//" not found in database")
+    endif
+    if (cidx < 1 .or. cidx > maxncdb) then
+      struct = "ERROR"
+    else
+      struct = trim(compdb(cidx)%structure)
+    endif
+  end subroutine comp_structure
+
+  module subroutine set_ideal_cp_correlation(index, correlation, parameters)
+    use thermopack_var, only: get_active_comps
+    implicit none
+    integer, intent(in) :: index
+    integer, intent(in) :: correlation
+    real, intent(in) :: parameters(n_max_cp)
+    ! Locals
+    type(gendata_pointer), pointer :: p_comps(:)
+    p_comps => get_active_comps()
+    p_comps(index)%p_comp%id_cp%cptype = correlation
+    p_comps(index)%p_comp%id_cp%cp(:) = parameters(:)
+  end subroutine set_ideal_cp_correlation
+
+  module subroutine get_ideal_cp_correlation(index, correlation, parameters)
+    use thermopack_var, only: get_active_comps
+    implicit none
+    integer, intent(in) :: index
+    integer, intent(out) :: correlation
+    real, intent(out) :: parameters(n_max_cp)
+    ! Locals
+    type(gendata_pointer), pointer :: p_comps(:)
+    p_comps => get_active_comps()
+    correlation = p_comps(index)%p_comp%id_cp%cptype
+    parameters(:) = p_comps(index)%p_comp%id_cp%cp(:)
+  end subroutine get_ideal_cp_correlation
 
 end submodule comp_init

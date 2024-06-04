@@ -11,7 +11,8 @@ module sv_solver
   !
   use numconstants, only: machine_prec, small
   use thermopack_constants
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model
+  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
+       tpPmin, tpPmax, tpTmin, tpTmax, Rgas
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions

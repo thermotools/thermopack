@@ -2,6 +2,8 @@
   "ident": "H2",
   "formula": "H2",
   "cas_number": "1333-74-0",
+  "InChI": "1S/H2/h1H",
+  "structure": "H:2",
   "name": "HYDROGEN",
   "aliases": [
     "Hydrogen",
@@ -43,33 +45,31 @@
     "Tmax": 25.0
   },
   "ideal_heat_capacity-1": {
-    "ref": "Default",
-    "bib_reference": "",
-    "correlation": 2,
+    "ref": "MEOS/Default",
+    "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
+    "correlation": 13,
     "cp": [
-      28.671997,
-      13.396156,
-      0.002960131,
-      -3.980744e-06,
-      2.661667e-09,
-      -6.099863e-13,
-      -11.801371,
-      0.0,
-      0.0,
-      0.0
+      2.5,
+      1.616,
+      531.0,
+      -0.4117,
+      751.0,
+      -0.792,
+      1989.0,
+      0.758,
+      2484.0,
+      1.217,
+      6859.0
     ],
-    "Tmin": -175.0,
-    "Tmax": 1200.0
+    "Tmin": 13.957,
+    "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 130.680
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -82,6 +82,64 @@
   "quadrupole_moment": {
     "Q": 0.0,
     "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 13.957,
+    "maximum_temperature": 400.0,
+    "reducing_pressure": 7.357800E+03,
+    "reducing_temperature": 13.957,
+    "n_coeff": 3,
+    "n_coeff_1": 1,
+    "n_coeff_2": 2,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      5626.3,
+      2717.2,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.0,
+      1.83,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "Lemmon, E.W. (2003)",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 13.957,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 7.700000E+03,
+    "reducing_temperature": 13.957,
+    "n_coeff": 1,
+    "n_coeff_1": 0,
+    "n_coeff_2": 1,
+    "n_coeff_3": 0,
+    "coeff": [
+      -8.065,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.93,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {

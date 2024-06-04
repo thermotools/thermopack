@@ -2,6 +2,8 @@
   "ident": "CO2",
   "formula": "CO2",
   "cas_number": "124-38-9",
+  "InChI": "1S/CO2/c2-1-3",
+  "structure": "C:1;O:2",
   "name": "CARBON DIOXIDE",
   "aliases": [
     "CarbonDioxide",
@@ -81,14 +83,11 @@
     "Tmax": 5000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "enthalpy": -393.51e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 213.785
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -101,6 +100,64 @@
   "quadrupole_moment": {
     "Q": 4.4,
     "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.555991",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 216.592,
+    "maximum_temperature": 1100.0,
+    "reducing_pressure": 5.179500E+05,
+    "reducing_temperature": 216.592,
+    "n_coeff": 3,
+    "n_coeff_1": 0,
+    "n_coeff_2": 3,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      1955.539,
+      2055.4593,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.0,
+      2.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "sublimation_curve": {
+    "bib_reference": "DOI: 10.1063/1.555991",
+    "ref": "DEFAULT",
+    "correlation": "SL-3",
+    "triple_temperature": 216.592,
+    "minimum_temperature": 0.0,
+    "reducing_pressure": 5.179500E+05,
+    "reducing_temperature": 216.592,
+    "n_coeff": 3,
+    "n_coeff_1": 0,
+    "n_coeff_2": 3,
+    "n_coeff_3": 0,
+    "coeff": [
+      -14.740846,
+      2.4327015,
+      -5.3061778,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      1.0,
+      1.9,
+      2.9,
+      0.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {
@@ -138,7 +195,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     },
     "CPA-2": {
       "ref": "SINTEF",
@@ -149,7 +207,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.05,
-      "assoc_scheme": "1EA"
+      "assoc_scheme": "1EA",
+      "simplified_rdf": "True"
     },
     "CPA-3": {
       "ref": "SINTEF2",
@@ -160,7 +219,8 @@
       "alphaCorr": "Classic",
       "eps": 1.28604049e+04,
       "beta": 9.08545617e-03,
-      "assoc_scheme": "1"
+      "assoc_scheme": "1",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
@@ -208,7 +268,7 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   },
   "PC-SAFT-2": {
     "m": 2.58239,

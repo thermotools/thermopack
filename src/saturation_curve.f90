@@ -2,7 +2,7 @@ module saturation_curve
   use eos, only: thermo, entropy, specificvolume
   use thermopack_constants, only: clen, LIQPH, VAPPH, MINGIBBSPH, SINGLEPH, verbose
   use thermopack_var, only: nc, get_active_thermo_model, thermo_model, &
-       get_active_eos, base_eos_param
+       get_active_eos, base_eos_param, tpTmax, tpTmin
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
   use saturation
@@ -33,11 +33,12 @@ module saturation_curve
 
   public :: aep,AZ_NONE,AZ_PAEP,AZ_CAEP,AZ_HAEP
   public :: envelopePlot,singleCompSaturation
-  public :: envelopeIsentropeCross, envelopeIsentropeCross_single
+  public :: envelope_isentrope_cross, envelope_isentrope_cross_single
   public :: newton_extrapolate, changeformulation
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
   public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
+  public :: pure_fluid_saturation_wrapper
 
 contains
 
@@ -302,8 +303,7 @@ contains
   !-----------------------------------------------------------------------------
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
        Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
-       exitOnTriplePoint,Tme)
-    use thermopack_constants, only: get_templimits
+       exitOnTriplePoint,Tme,step_size_factor)
     use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
     use thermo_utils, only: isSingleComp
     use eosTV, only: pressure
@@ -329,6 +329,7 @@ contains
     real, optional, intent(in)  :: dS_override ! Override step length
     logical, optional, intent(in) :: exitOnTriplePoint ! Exit if passing triple point
     real, optional, intent(in)  :: Tme ! Exit on temperature
+    real, optional, intent(in)  :: step_size_factor ! Scale the default step size limits, and in effect the step size
     ! Internal:
     real  :: T,p
     real, dimension(nc) :: K, lnfugG, lnfugL
@@ -389,25 +390,42 @@ contains
 
     zmax = maxloc(Z,dim=1)
     if (isSingleComp(Z)) then
-      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n)
+      dS_max = 0.2e5
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
+      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
       Ki = 1.0
       betai = 0.0
+      if (cricon) then
+        criconden(1) = Ta(n)
+        criconden(2) = Pa(n)
+        criconden(3) = Ta(n)
+        criconden(4) = Pa(n)
+      endif
+      if (calcCrit) then
+        crit(1) = Ta(n)
+        crit(2) = Pa(n)
+      endif
       return
     endif
 
     if (present(dS_override)) then
       dS_max = dS_override
-      dS_min = min(0.25*dS_override, 0.05)
     else
       dS_max = 0.25
-      dS_min = 0.05
+      if (present(step_size_factor)) then
+        dS_max = dS_max*step_size_factor
+      endif
     endif
+    dS_min = min(0.25*dS_max, 0.05)
     dS = dS_min
     tuning = 1.2
     sgn = 1.0
 
     ! Temperature limits
-    call get_templimits(Tmin,Tmax)
+    Tmin = tpTmin
+    Tmax = tpTmax
     if (present(Tme)) Tmin = Tme
 
     ! Generate initial K values
@@ -561,7 +579,7 @@ contains
       Xvar(nc+1) = log(t)
       Xvar(nc+2) = log(p)
 
-      !Exit at thermo limit or defined pressure
+      !Exit at defined pressure
       if (p < Pstart) then
         s = nc+2
         recalculate = .true.
@@ -571,16 +589,8 @@ contains
         recalculate = .true.
         ln_spec = log(Pmax)
       endif
-      !Exit at temperature specified temperature
-      if (present(Tme)) then
-        ! Is temperature decreasing? - And below Tme?
-        if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tme) then
-          s = nc+1
-          ln_spec = log(Tme)
-          recalculate = .true.
-        endif
-      else if (T < Tmin) then
-        ! Exit at thermo temperature limit
+      ! Is temperature decreasing? - And below Tme?
+      if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tmin) then
         s = nc+1
         ln_spec = log(Tmin)
         recalculate = .true.
@@ -617,7 +627,7 @@ contains
         endif
       endif
 
-      !Exit at  defined pressure
+      !Exit at defined pressure
       if (p >= Pmax*(1.0 - machine_prec*100)) then
         ! Attempt to solve for Pmax
         ln_spec = log(Pmax)
@@ -625,33 +635,6 @@ contains
         ! Rescaling the sensitivities
         dXdS = dXdS / dXdS(s)
         Xvar = Xold + dXdS*(ln_spec-Xold(s))
-        K = exp(Xvar(1:nc))
-        t = exp(Xvar(nc+1))
-        p = exp(Xvar(nc+2))
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
-        if (ierr == 0) then
-          ! Replace last point
-          Xvar(1:nc) = log(K)
-          Xvar(nc+1) = log(t)
-          Xvar(nc+2) = log(p)
-          call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ki,betai,nmax)
-        endif
-        exit
-      endif
-
-      !Exit at thermo temperature limit, or defined pressure
-      if (p < Pstart .OR. T < Tmin) then
-        call newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_spec)
-        if (p < Pstart) then
-          s = nc + 2
-          ln_spec = log(Pstart)
-        else if (T < Tmin) then
-          s = nc + 1
-          ln_spec = log(Tmin)
-        endif
-        ! Rescaling the sensitivities
-        dXdS = dXdS / dXdS(s)
-        Xvar = Xvar + dXdS*(ln_spec-Xold(s))
         K = exp(Xvar(1:nc))
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
@@ -690,7 +673,7 @@ contains
           dPdTold = dPold/dTold
           if (dPdT*dPdTold < 0.0) then
             XvarCricon = Xvar
-            call criconden_solve(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
+            call criconden_solve_nested_loop(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .false.,ierr)
             if (ierr == 0) then
@@ -713,7 +696,7 @@ contains
           dTdPold = dTold/dPold
           if (dTdP*dTdPold < 0.0) then
             XvarCricon = Xvar
-            call criconden_solve(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
+            call criconden_solve_nested_loop(Z,XvarCricon,beta,max(Pa(n),Pa(n-1)),&
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .true.,ierr)
             if (ierr == 0) then
@@ -1343,10 +1326,102 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Solve cricondenbar/cricondenterm equations.
+  !>
+  !> \author MH, 2023-09
+  !-----------------------------------------------------------------------------
+  subroutine criconden_solve_nested_loop(Z,Xvar,beta,Pmax,Pmin,Tmax,Tmin,cricondentherm,ierr)
+    use numconstants, only: expMax, expMin
+    use utilities, only: isXwithinBounds
+    use nonlinear_solvers, only: nonlinear_solver, bracketing_solver,&
+         NS_PEGASUS
+    implicit none
+    logical, intent(in) :: cricondentherm !< True if cricondenterm is to be calculate
+    !< False if cricondenbar is to be calculated
+    real, dimension(nc), intent(in) :: Z !< Overall composition
+    real, intent(in) :: Pmax,Pmin,Tmax,Tmin !< Pressure and temperature limiting solution space
+    real, intent(in) :: beta !< Specified vapour mole fraction
+    real, dimension(nc+2), intent(inout) :: Xvar !< Variables, ln K, ln T, ln P
+    integer, intent(out) :: ierr !< Error indicator
+    ! Locals
+    real :: x
+    real, dimension(nc+2) :: dXds
+    real, dimension(4*nc+8) :: param
+    type(nonlinear_solver) :: solver
+
+    param(1:nc) = z
+    param(nc+1) = beta
+    param(nc+3:2*nc+4) = Xvar
+    param(3*nc+7:4*nc+8) = 0
+    ! Configure solver
+    solver%rel_tol = machine_prec*1e5
+    solver%max_it = 200
+    solver%isolver = NS_PEGASUS
+    ! Find f=0 inside the bracket.
+    if (cricondentherm) then
+      param(nc+2) = 1
+      call newton_extrapolate(Z,Xvar,dXdS,beta,nc+2,0.0)
+      param(2*nc+5:3*nc+6) = dXds
+      call bracketing_solver(Pmin,Pmax,fun_criconden,x,solver,param)
+    else
+      param(nc+2) = 0
+      call newton_extrapolate(Z,Xvar,dXdS,beta,nc+1,0.0)
+      param(2*nc+5:3*nc+6) = dXds
+      call bracketing_solver(Tmin,Tmax,fun_criconden,x,solver,param)
+    endif
+    ierr = solver%exitflag
+    Xvar = param(3*nc+7:4*nc+8)
+    if (solver%exitflag /= 0) then
+      print *,'saturation::criconden_solve_nested_loop: Not able to solve for criconden'
+    endif
+  end subroutine criconden_solve_nested_loop
+
+  function fun_criconden(x,param) result(f)
+    ! Objective function for crocondenbar/cricondentherm
+    !
+    implicit none
+    ! Input:
+    real,     intent(in)    :: x !< Pressure (Pa) or temperature (K)
+    real,     intent(inout) :: param(4*nc+8) !< Parameters
+    ! Output:
+    real                  :: f
+    ! Internal:
+    integer               :: s, iter, ierr
+    real                  :: K(nc), T, P, ds, beta, z(nc)
+    real                  :: Xold(nc+2), Xvar(nc+2), dXds(nc+2), Fvec(nc+2)
+    logical               :: cricondentherm
+
+    z = param(1:nc)
+    beta = param(nc+1)
+    cricondentherm = (nint(param(nc+2)) == 1)
+    Xold = param(nc+3:2*nc+4)
+    dXds = param(2*nc+5:3*nc+6)
+    if (cricondentherm) then
+      s = nc + 2
+    else
+      s = nc + 1
+    endif
+    ds = log(x) - Xold(s)
+    Xvar = Xold + dXds*ds
+    K = exp(Xvar(1:nc))
+    t = exp(Xvar(nc+1))
+    p = exp(Xvar(nc+2))
+    iter = sat_newton(Z,K,t,p,beta,s,log(x),ierr)
+    Xvar(1:nc) = log(K)
+    Xvar(nc+1) = log(t)
+    Xvar(nc+2) = log(p)
+    param(3*nc+7:4*nc+8) = Xvar
+    call criconden_fun_newton(Fvec,Xvar,param)
+    f = Fvec(nc+2)
+  end function fun_criconden
+
+  !-----------------------------------------------------------------------------
+  !> Solve cricondenbar/cricondenterm equations.
   !> Phase enveloe code should provide good initial guess.
   !> \author MH, 2013-10-07
   !-----------------------------------------------------------------------------
   subroutine criconden_solve(Z,Xvar,beta,Pmax,Pmin,Tmax,Tmin,cricondentherm,ierr)
+    use numconstants, only: expMax, expMin
+    use thermopack_var, only: tptmin, tptmax, tppmax, tppmin
     implicit none
     logical, intent(in) :: cricondentherm !< True if cricondenterm is to be calculate
     !< False if cricondenbar is to be calculated
@@ -1358,9 +1433,9 @@ contains
     ! Locals
     real, dimension(nc+2) :: param,xmax,xmin
     type(nonlinear_solver) :: solver
-    !     real, dimension(nc+2) :: XvarPert,F0,F
-    !     real, dimension(nc+2,nc+2) :: Jac,numJac
-    !     integer :: i
+    ! real, dimension(nc+2) :: XvarPert,F0,F
+    ! real, dimension(nc+2,nc+2) :: Jac,numJac
+    ! integer :: i
 
     param(1:nc) = Z
     param(nc+1) = beta
@@ -1370,28 +1445,28 @@ contains
       param(nc+2) = 0.0 ! Logical flag for cricondenbar
     endif
 
-    xmax(nc+1) = log(Tmax + 10.0)
-    xmin(nc+1) = log(Tmin - 10.0)
-    xmax(nc+2) = log(Pmax + 5.0e5)
-    xmin(nc+2) = log(Pmin - 5.0e5)
+    xmax(nc+1) = log(min(tptmax,Tmax + 10.0))
+    xmin(nc+1) = log(max(tptmin,Tmin - 10.0))
+    xmax(nc+2) = log(min(tppmax,Pmax + 5.0e5))
+    xmin(nc+2) = log(max(tppmin,Pmin - 5.0e5))
 
     ! Test Jacobean numerically
-    !     call criconden_fun_newton(F0,Xvar,param)
-    !     call criconden_diff_newton(Jac,Xvar,param)
-    !     do i=1,nc+2
-    !       XvarPert = Xvar
-    !       XvarPert(i) = XvarPert(i)*(1.0-1.0e-5)
-    !       call criconden_fun_newton(F,XvarPert,param)
-    !       numJac(:,i) = (F-F0)/(XvarPert(i)-Xvar(i))
-    !     enddo
-    !     print *,'Jac1',Jac(1,:)
-    !     print *,'numJac1',numJac(1,:)
-    !     print *,'Jac2',Jac(2,:)
-    !     print *,'numJac2',numJac(2,:)
-    !     print *,'Jac3',Jac(3,:)
-    !     print *,'numJac3',numJac(3,:)
-    !     print *,'Jac4',Jac(4,:)
-    !     print *,'numJac4',numJac(4,:)
+    ! call criconden_fun_newton(F0,Xvar,param)
+    ! call criconden_diff_newton(Jac,Xvar,param)
+    ! do i=1,nc+2
+    !   XvarPert = Xvar
+    !   XvarPert(i) = XvarPert(i)*(1.0-1.0e-5)
+    !   call criconden_fun_newton(F,XvarPert,param)
+    !   numJac(:,i) = (F-F0)/(XvarPert(i)-Xvar(i))
+    ! enddo
+    ! print *,'Jac1',Jac(1,:)
+    ! print *,'numJac1',numJac(1,:)
+    ! print *,'Jac2',Jac(2,:)
+    ! print *,'numJac2',numJac(2,:)
+    ! print *,'Jac3',Jac(3,:)
+    ! print *,'numJac3',numJac(3,:)
+    ! print *,'Jac4',Jac(4,:)
+    ! print *,'numJac4',numJac(4,:)
 
     solver%rel_tol = 1e-20
     solver%abs_tol = 1e-10
@@ -1408,6 +1483,43 @@ contains
       print *,'saturation::criconden_solve: Not able to solve for criconden'
     endif
   end subroutine criconden_solve
+
+  !-----------------------------------------------------------------------------
+  !> Plot saturation line for single component (wrapper for external calls)
+  !>
+  !> \author MH, 2022-07-15
+  !-----------------------------------------------------------------------------
+  subroutine pure_fluid_saturation_wrapper(Z,t_or_p,start_from_temp,max_delta_p,&
+       log_linear,Ta,Pa,val,vag,nmax,n)
+    use eos, only: specificvolume
+    implicit none
+    logical, intent(in) :: start_from_temp
+    real, dimension(nc), intent(in) :: Z
+    real, intent(in) :: t_or_p
+    integer, intent(in) :: nmax
+    real, dimension(nmax), intent(out) :: Ta,Pa,val,vag
+    integer, intent(out) :: n
+    real, intent(in) :: max_delta_p !< Maximum Delta P between points
+    logical, intent(in) :: log_linear !< Distribute values lineary based on natural logarithm
+    ! Locals
+    real :: t, p
+    integer :: i, spec
+    if (start_from_temp) then
+      spec = SPECT
+      t = t_or_p
+      p = 0
+    else
+      spec = SPECP
+      p = t_or_p
+      t = 0
+    endif
+    call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,&
+         maxDeltaP=max_delta_p,log_linear=log_linear)
+    do i=1,n
+      call specificvolume(Ta(i), Pa(i), Z, VAPPH, vag(i))
+      call specificvolume(Ta(i), Pa(i), Z, LIQPH, val(i))
+    enddo
+  end subroutine pure_fluid_saturation_wrapper
 
   !-----------------------------------------------------------------------------
   !> Plot saturation line for single component
@@ -1473,13 +1585,13 @@ contains
       T = safe_bubT(P,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnp = (log(pci)-log(P))/n
+        dlnp = (log(pci)-log(P))/(n-1)
         do iter=1,n
           pa(iter) = exp(log(p0) + dlnp*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dP = (pci-P)/n
+        dP = (pci-P)/(n-1)
         do iter=1,n
           pa(iter) = p0 + dP*(iter-1)
         enddo
@@ -1491,13 +1603,13 @@ contains
       P = safe_bubP(T,X,Y,ierr)
       if (log_linear_loc) then
         n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
-        dlnT = (log(tci)-log(T))/n
+        dlnT = (log(tci)-log(T))/(n-1)
         do iter=1,n
           ta(iter) = exp(log(T0) + dlnT*(iter-1))
         enddo
       else
         n = min(int((pci-P)/maxDelP)+1,nmax)
-        dT = (tci-T)/n
+        dT = (tci-T)/(n-1)
         do iter=1,n
           ta(iter) = T0 + dT*(iter-1)
         enddo
@@ -1707,7 +1819,7 @@ contains
   !>
   !> \author MH, 2014-03
   !-----------------------------------------------------------------------------
-  function envelopeIsentropeCross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
+  function envelope_isentrope_cross(Z,t0,p0,x0,y0,Pmax,sspec,t,p,phase,w,&
        dS_override, ierr_out) result(hasCrossing)
     use thermo_utils, only: isSingleComp
     implicit none
@@ -1737,7 +1849,7 @@ contains
     ! Special routine for pure fluids
     zmax = maxloc(Z)
     if (isSingleComp(Z)) then
-      call envelopeIsentropeCross_single(p0,sspec,z,p0,hasCrossing,&
+      call envelope_isentrope_cross_single(p0,sspec,z,p0,hasCrossing,&
            p,T,phase,ierr)
       w = z
       if (present(ierr_out)) then
@@ -1769,7 +1881,7 @@ contains
         ierr_out = ierr
         return
       else
-        call stoperror('envelopeIsentropeCross: Initial point not found.')
+        call stoperror('envelope_isentrope_cross: Initial point not found.')
       endif
     endif
 
@@ -1850,7 +1962,7 @@ contains
               ierr_out = ierr
               return
             else
-              call stoperror("envelopeIsentropeCross: Neither decreasing nor &
+              call stoperror("envelope_isentrope_cross: Neither decreasing nor &
                    &increasing the step helped")
             endif
           endif
@@ -1949,10 +2061,10 @@ contains
       endif
     enddo
 
-  end function envelopeIsentropeCross
+  end function envelope_isentrope_cross
 
 
-  subroutine envelopeIsentropeCross_single(p0,s_spec,z,p_low,has_crossing,&
+  subroutine envelope_isentrope_cross_single(p0,s_spec,z,p_low,has_crossing,&
        p_crossing,T_crossing,phase_crossing, ierr)
     !> Find if, and if so where, the isentrope from a point p0,s_spec
     !> meets the saturation line before reaching pressure p_low.
@@ -2154,7 +2266,7 @@ contains
 
     endif
 
-  end subroutine envelopeIsentropeCross_single
+  end subroutine envelope_isentrope_cross_single
 
   function fun_ssat_single(p,param) result(f)
     ! Objective function for s_sat(phase) = s_spec

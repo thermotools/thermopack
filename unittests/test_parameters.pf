@@ -1,0 +1,33 @@
+module test_parameters
+  use eoslibinit, only: init_cubic
+  use funit
+  use stringmod, only: exact_substring_match, string_match
+  implicit none
+  save
+
+contains
+
+  @Test
+  subroutine test_string_matching()
+    integer :: idx
+    @assertTrue(exact_substring_match("tcRK/Oliveira2008/Dummy","Default/Oliveira2008",idx))
+    @assertTrue(idx == 2)
+    @assertTrue(.not. exact_substring_match("tcRK/Oliveira200/Default","Default/Oliveira2008",idx))
+    @assertTrue(exact_substring_match("tcRK/Oliveira2008/Tang_Gross2010","Tang_Gross2010",idx))
+    @assertTrue(idx == 3)
+    @assertTrue(string_match("DeFaUlT","Default/Oliveira2008"))
+    @assertTrue(exact_substring_match("QuantumCubic/tcPR/DEFAULT","QuantumCubic",idx))
+    @assertTrue(idx == 1)
+  end subroutine test_string_matching
+
+  @Test
+  subroutine test_kij()
+    use eoslibinit, only: init_quantum_cubic
+    real :: kij
+    call init_quantum_cubic("H2,NE")
+    call thermopack_getkij(1,2,kij)
+    @assertEqual(kij, 0.18, 1e-11)
+  end subroutine test_kij
+
+
+end module test_parameters

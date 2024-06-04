@@ -9,18 +9,16 @@ from sys import platform, exit
 # Import os utils
 from os import path
 # Import thermo
-from . import thermo
-# Import thermo
-from . import cubic
+from .thermo import c_len_type
+from .cubic import cubic
 
-c_len_type = thermo.c_len_type
 
-class tcPR(cubic.cubic):
+class tcPR(cubic):
     """
     Interface to tc-PR
     """
     def __init__(self, comps=None, mixing="vdW", parameter_reference=None):
-        """
+        """Constructor
         Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
         (10.1016/j.fluid.2016.09.003)
 
@@ -47,7 +45,8 @@ class tcPR(cubic.cubic):
     #################################
 
     def init(self, comps, mixing="vdW", parameter_reference=None):
-        """Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
+        """Constructor
+        Initialize tc-PR model. Translated and consistent cubic EoS by le Guennec et al.
         (10.1016/j.fluid.2016.09.003)
 
         Args:

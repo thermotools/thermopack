@@ -2,6 +2,8 @@
   "ident": "MEOH",
   "formula": "CH4O",
   "cas_number": "67-56-1",
+  "InChI": "1S/CH4O/c1-2/h2H,1H3",
+  "structure": "C:1;H:4;O:1",
   "name": "METHANOL",
   "aliases": [
     "Methanol"
@@ -61,14 +63,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -205.0e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 239.865
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -81,6 +80,35 @@
   "quadrupole_moment": {
     "Q": 0.0,
     "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1016/j.fluid.2013.03.024",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 175.61,
+    "maximum_temperature": 620.0,
+    "reducing_pressure": 1.870000E-01,
+    "reducing_temperature": 175.61,
+    "n_coeff": 4,
+    "n_coeff_1": 1,
+    "n_coeff_2": 3,
+    "n_coeff_3": 0,
+    "coeff": [
+      1.0,
+      5320770000.0,
+      4524780000.0,
+      3.888861e+10,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.0,
+      1.5,
+      4.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {
@@ -109,7 +137,8 @@
       "alphaCorr": "Classic",
       "eps": 24591.0,
       "beta": 16.1E-3,
-      "assoc_scheme": "2B"
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

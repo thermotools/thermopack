@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Exapmle of virial coefficient plot
+# Example of virial coefficient plot
 
 tc_pr = tcPR("CO2,C1")
 
@@ -41,9 +41,9 @@ for i in range(len(T)):
     B12[i] = B[0, 1]
 
 scaling = 1.0e6
-plt.plot(T, B1*scaling, label="$B_{11}$")
-plt.plot(T, B2*scaling, label="$B_{22}$")
-plt.plot(T, B12*scaling, label="$B_{12}$")
+plt.plot(T, B1 * scaling, label="$B_{11}$")
+plt.plot(T, B2 * scaling, label="$B_{22}$")
+plt.plot(T, B12 * scaling, label="$B_{12}$")
 plt.ylabel(r"$B$ (cm$^3$/mol)")
 plt.xlabel(r"$T$ (K)")
 leg = plt.legend(loc="best", numpoints=1)

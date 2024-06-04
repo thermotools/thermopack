@@ -10,7 +10,7 @@ module tp_solver
   !
   use numconstants, only: machine_prec, small
   use thermopack_constants
-  use thermopack_var, only: nc
+  use thermopack_var, only: nc, robustness_level
   use eos
   use thermo_utils, only: wilsonK, phase_Is_fake
   use stability, only : stabcalc, stabilityLimit
@@ -150,7 +150,7 @@ contains
         valid_beta = (beta > 0.0 .and. beta < 1.0)
       endif
       do_stability_check = ((((.not. found_smaller_g) .OR. (.not. valid_beta)) .and. iter == dem_acc_freq)&
-                           .or. (.not. rr_has_solution))
+                           .or. (.not. rr_has_solution) .or. robustness_level>=1)
       if (do_stability_check) then
         if (.not. stab_analysis_done) then ! Have we restarted already?
           if (verbose) then

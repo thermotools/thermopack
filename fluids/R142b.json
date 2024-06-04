@@ -2,6 +2,8 @@
   "ident": "R142b",
   "formula": "C2H3ClF2",
   "cas_number": "75-68-3",
+  "InChI": "1S/C2H3ClF2/c1-2(3,4)5/h1H3",
+  "structure": "C:2;H:3;Cl:1;F:2",
   "name": "1-CHLORO-1,1-DIFLUOROETHANE",
   "aliases": [
     "R142b",
@@ -62,14 +64,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

@@ -12,39 +12,10 @@ Module eos_parameters
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
   use multiparameter_lj, only: meos_lj, constructor_LJ
+  use gerg, only: meos_gerg, constructor_gerg, is_valid_component_GERG
+  use pure_fluid_meos, only: meos_pure, constructor_meos_pure
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
-
-  ! type, abstract :: base_eos_param
-  !   ! Base class for holding eos-data
-  !   character (len=eosid_len) :: eosid !< Eos identefyer
-  !   !character (len=eos_name_len) :: label !< Name of EOS
-  !   integer :: eosidx !< Eos group index
-  !   integer :: subeosidx !< Eos sub-index
-  !   integer :: volumeShiftId = 0 !< 0: No volume shift, 1:Peneloux shift
-  !   logical :: isElectrolyteEoS = .false. !< Used to enable electrolytes
-
-  ! contains
-  !   procedure(allocate_and_init_intf), deferred, public :: allocate_and_init
-  !   ! Assignment operator
-  !   !generic,   public, deferred   :: assignment(=)
-
-  ! end type base_eos_param
-
-  ! abstract interface
-  !   subroutine allocate_and_init_intf(eos,nc,eos_label)
-  !     import base_eos_param
-  !     ! Passed object:
-  !     class(base_eos_param), intent(inout) :: eos
-  !     ! Input:
-  !     integer, intent(in) :: nc !< Number of components
-  !     character(len=*), intent(in) :: eos_label !< EOS label
-  !   end subroutine allocate_and_init_intf
-  ! end interface
-
-  ! type :: eos_param_pointer
-  !   class(base_eos_param), pointer :: p_eos
-  ! end type eos_param_pointer
 
   type, extends(base_eos_param) :: single_eos
     ! Multiparameter equations of state for pure components
@@ -60,26 +31,13 @@ Module eos_parameters
 
   end type single_eos
 
-  type, extends(single_eos) :: meos_mix
+  type, extends(single_eos) :: meos_idealmix
 
-  end type meos_mix
+  end type meos_idealmix
 
-  ! type, extends(base_eos_param) :: saftvrmie_eos
-
-  ! !   private
-
-  ! ! contains
-  ! end type saftvrmie_eos
 
 contains
 
-  ! ! Functions for allocate statement:
-  ! function cpaeos_constructor(....) result(cpa_eos)
-  !   ! Input:
-  !   ! Created object:
-  !   type(cpaeos) :: cpa_eos
-  !   ! Locals
-  ! end function cpaeos_constructor
 
   subroutine single_eos_allocate_and_init(eos,nc,eos_label)
     ! Passed object:
@@ -103,8 +61,12 @@ contains
     else if (str_eq(eos_label,'NIST_MEOS') .or. &
          str_eq(eos_label,'LJ_MEOS') .or. &
          str_eq(eos_label,'LJTS_MEOS') .or. &
-         str_eq(eos_label,'NIST_MEOS_MIX')) then
-      if (.not. str_eq(eos_label,'NIST_MEOS_MIX')) then
+         str_eq(eos_label,'GERG2008') .or. &
+         str_eq(eos_label,'NIST_MEOS_MIX') .or. &
+         str_eq(eos_label,'MEOS')) then
+      if (.not. (str_eq(eos_label,'NIST_MEOS_MIX') .or. &
+           str_eq(eos_label,'GERG2008') .or. &
+           str_eq(eos_label,'MEOS'))) then
         if (nc /= 1) call stoperror("MEOS only implemented for pure components.")
       endif
       allocate(eos%nist(nc), STAT=istat)
@@ -135,18 +97,31 @@ contains
       allocate(meos_ptr, &
            source=constructor_lj(comp,shift_and_truncate=.true.), &
            stat=istat)
-    else if (str_eq(comp, "C3")) then
-      allocate(meos_c3 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"N-H2")) then
-      allocate(meos_normal_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"O-H2")) then
-      allocate(meos_ortho_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"P-H2")) then
-      allocate(meos_para_h2 :: meos_ptr, stat=istat)
-    elseif (str_eq(comp,"R134A")) then
-      allocate(meos_r134a :: meos_ptr, stat=istat)
+    else if (str_eq(eos_label,'NIST_MEOS')) then
+      if (str_eq(comp, "C3")) then
+        allocate(meos_c3 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"N-H2")) then
+        allocate(meos_normal_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"O-H2")) then
+        allocate(meos_ortho_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"P-H2")) then
+        allocate(meos_para_h2 :: meos_ptr, stat=istat)
+      elseif (str_eq(comp,"R134A")) then
+        allocate(meos_r134a :: meos_ptr, stat=istat)
+      else
+        call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+      endif
+    elseif (str_eq(eos_label,'GERG2008') .or. str_eq(eos_label,'GERG')) then
+      if (is_valid_component_GERG(comp)) then
+        allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
+      else
+        print *,trim(comp)//" is not a GERG2008 component. Using MEOS description instead"
+        allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
+      endif
+    elseif (str_eq(eos_label,'MEOS')) then
+      allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
     else
-      call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
+      call stoperror("Wrong input for multiparameter EoS.")
     end if
     if (istat /= 0) call stoperror("Not able to allocate meos_ptr")
   end subroutine single_eos_alloc
@@ -191,15 +166,15 @@ contains
   end function single_eos_constructor
 
   !> Allocate memory for single eos
-  function meos_mix_constructor(nc, eos_label) result(meos)
+  function meos_idealmix_constructor(nc, eos_label) result(meos)
     ! Input:
     integer, intent(in) :: nc
     character(len=*), intent(in) :: eos_label
     ! Created object:
-    type(meos_mix) :: meos
+    type(meos_idealmix) :: meos
     !
     call meos%allocate_and_init(nc, eos_label)
-  end function meos_mix_constructor
+  end function meos_idealmix_constructor
 
   ! subroutine assign_single_eos_get(other, this)
   !   integer, intent(inout)       :: other
@@ -254,6 +229,12 @@ contains
               allocate(meos_para_h2 :: this%nist(i)%meos, stat=istat)
             class is (meos_r134a)
               allocate(meos_r134a :: this%nist(i)%meos, stat=istat)
+            class is (meos_lj)
+              allocate(meos_lj :: this%nist(i)%meos, stat=istat)
+            class is (meos_gerg)
+              allocate(meos_gerg :: this%nist(i)%meos, stat=istat)
+            class is (meos_pure)
+              allocate(meos_pure :: this%nist(i)%meos, stat=istat)
             class default
               call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
             end select
@@ -266,5 +247,18 @@ contains
       print *,"assign_single_eos_set: Should not be here"
     end select
   end subroutine assign_single_eos_set
+
+  function get_single_eos_pointer(eos) result(p_single_eos)
+    class(base_eos_param), pointer :: eos
+    class(single_eos), pointer :: p_single_eos
+    p_single_eos => NULL()
+    if (.not. associated(eos)) return
+    select type(p_eos => eos)
+    class is (single_eos)
+      p_single_eos => p_eos
+    class default
+      call stoperror("Error casting to single_eos")
+    end select
+  end function get_single_eos_pointer
 
 end module eos_parameters

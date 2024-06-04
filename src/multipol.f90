@@ -50,16 +50,16 @@ contains
 
   !> Calculate reduced helmholtz energy from quadrupoles and dipoles
   !! \author Morten Hammer, 2022
-  function hyperdual_fres_multipol(p_eos,nce,T,V,n) result(f)
+  function hyperdual_fres_multipol(p_eos,nc,T,V,n) result(f)
     use hyperdual_mod
     use thermopack_var, only: base_eos_param
     implicit none
-    class(base_eos_param), intent(inout), pointer :: p_eos
-    integer, intent(in) :: nce
-    type(hyperdual), intent(in) :: T, V, n(nce)
+    class(base_eos_param), intent(inout) :: p_eos
+    integer, intent(in) :: nc
+    type(hyperdual), intent(in) :: T, V, n(nc)
     type(hyperdual) :: f
     ! Locals
-    type(hyperdual) :: d_hs(nce)
+    type(hyperdual) :: d_hs(nc)
     type(hyperdual) :: eta
     type(hyperdual) :: f_QQ, f_DD, f_DQ
     f = 0.0
@@ -67,28 +67,28 @@ contains
     if (p_eos%mpol_param%num_mu == 0 .and. p_eos%mpol_param%num_Q == 0) return
     select type(eos => p_eos)
     class is(sPCSAFT_eos)
-      d_hs = hyperdual_calc_d_hs_pc_saft(eos,nce,T)
-      eta = hyperdual_packing_fraction_pc_saft(eos,nce,V,n,d_hs)
+      d_hs = hyperdual_calc_d_hs_pc_saft(eos,nc,T)
+      eta = hyperdual_packing_fraction_pc_saft(eos,nc,V,n,d_hs)
     class default
       call stoperror("multipol:: Wrong type!")
     end select
 
     if ( p_eos%mpol_param%num_mu > 0 .and. &
          p_eos%mpol_param%enable_DD) then
-      f_DD = hyperdual_f_dd(nce,T,V,n,eta,p_eos%mpol_param)
+      f_DD = hyperdual_f_dd(nc,T,V,n,eta,p_eos%mpol_param)
     else
       f_DD = 0.0
     endif
     if ( p_eos%mpol_param%num_Q > 0 .and. &
          p_eos%mpol_param%enable_QQ) then
-      f_QQ = hyperdual_f_qq(nce,T,V,n,eta,p_eos%mpol_param)
+      f_QQ = hyperdual_f_qq(nc,T,V,n,eta,p_eos%mpol_param)
     else
       f_QQ = 0.0
     endif
     if ( p_eos%mpol_param%num_mu > 0 .and. &
          p_eos%mpol_param%num_Q > 0  .and. &
          p_eos%mpol_param%enable_DQ) then
-      f_DQ = hyperdual_f_dq(nce,T,V,n,eta,p_eos%mpol_param)
+      f_DQ = hyperdual_f_dq(nc,T,V,n,eta,p_eos%mpol_param)
     else
       f_DQ = 0.0
     endif

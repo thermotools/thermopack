@@ -11,83 +11,110 @@ module saftvrmie_parameters
 
 contains
 
+  subroutine get_pure_saftvrmie_db_entry(idx, eos_subidx, comp_name, ref)
+    use thermopack_constants, only: ref_len, uid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=uid_len), intent(out) :: comp_name !< Component name
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    eos_subidx = Miearray(idx)%eosidx
+    comp_name = Miearray(idx)%compName
+    ref = Miearray(idx)%ref
+  end subroutine get_pure_saftvrmie_db_entry
+
+  subroutine get_binary_saftvrmie_kij_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    uid1 = Miekijdb(idx)%uid1
+    uid2 = Miekijdb(idx)%uid2
+    eos_subidx = Miekijdb(idx)%eosidx
+    ref = Miekijdb(idx)%ref
+    mrule = "" ! Dummy
+    kijvalue = Miekijdb(idx)%kijvalue
+  end subroutine get_binary_saftvrmie_kij_db_entry
+
+  subroutine get_binary_saftvrmie_lij_db_entry(idx, mrule, eos_subidx, uid1, uid2, ref, kijvalue)
+    use thermopack_constants, only: ref_len, uid_len, eosid_len
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=eosid_len), intent(out) :: mrule !< Mixing rule
+    character(len=uid_len), intent(out) :: uid1, uid2 !< Component names
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    real, intent(out) :: kijvalue !< Interaction parameter
+    uid1 = Mielijdb(idx)%uid1
+    uid2 = Mielijdb(idx)%uid2
+    eos_subidx = Mielijdb(idx)%eosidx
+    ref = Mielijdb(idx)%ref
+    mrule = "" ! Dummy
+    kijvalue = Mielijdb(idx)%kijvalue
+  end subroutine get_binary_saftvrmie_lij_db_entry
+
   !> Get the index in the PCarray of the component having uid given by
   !> compName. idx=0 if component isn't in database.
-  function getMiedataIdx(eosidx,compName,ref) result(idx)
-    use stringmod, only: str_eq, string_match
-    integer, intent(in) :: eosidx
-    character(len=*), intent(in) :: compName, ref
-    integer :: idx, idx_default
-    logical :: found
-
-    found = .false.
-    idx = 1
-    idx_default = -1
-    do while (idx <= nMiemodels)
-      if ((eosidx==Miearray(idx)%eosidx) .and. &
-           str_eq(compName, Miearray(idx)%compName)) then
-        if (string_match(ref,MieArray(idx)%ref)) then
-          found = .true.
-          exit
-        else if (string_match("DEFAULT",MieArray(idx)%ref)) then
-          idx_default = idx
-        endif
-      endif
-      idx = idx + 1
-    enddo
-
-    if (.not. found .and. idx_default > 0) then
-      idx = idx_default
-      found = .true.
-    endif
-    if (.not. found) then
-       print *, "ERROR FOR COMPONENT ", compname
-       call stoperror("The SAFT-VR-MIE parameters don't exist.")
-    end if
-
+  function getMiedataIdx(eos_subidx,comp_name,ref) result(idx)
+    use parameters, only: get_pure_data_db_idx
+    integer, intent(in) :: eos_subidx
+    character(len=*), intent(in) :: comp_name, ref
+    integer :: idx
+    ! Locals
+    integer :: idx_default
+    call get_pure_data_db_idx(get_pure_saftvrmie_db_entry,nMiemodels,"SAFT-VR-MIE",&
+         eos_subidx,comp_name,ref,.true.,idx,idx_default)
   end function getMiedataIdx
 
   !> Retrieve binary interaction parameter for components uid1 and uid2.
   !> If no kij is stored in the database, it returns 0.0.
-  function getMie_l_or_k_ij (eosidx,uid1,uid2,nMiemaxij,Mieijdb,ref) result(kijvalue)
-    use stringmod, only: str_eq, string_match
-    integer, intent(in) :: eosidx
+  function getMie_kij(eos_subidx,uid1,uid2,ref) result(kijvalue)
+    use parameters, only: get_binary_interaction_parameter
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: uid1, uid2
-    integer, intent(in) :: nMiemaxij
-    type(Miekijdata), intent(in) :: Mieijdb(:)
     character(len=*), intent(in), optional :: ref
     real :: kijvalue
     ! Locals
-    integer :: idx
-    logical :: match_11_22, match_12_21
+    integer :: idx, idx_default
     character(len=ref_len) :: ref_local
-
     if (present(ref)) then
       ref_local = ref
     else
       ref_local = "DEFAULT"
     endif
+    kijvalue = get_binary_interaction_parameter(get_binary_saftvrmie_kij_db_entry,&
+         Miemaxkij,"SAFT-VR Mie",&
+         "",eos_subidx,uid1,uid2,ref_local,0.0,idx,idx_default)
+  end function getMie_kij
 
-    kijvalue = 0.0 ! default value if the binary is not in Miekijdb.
-    idx = 1
-    do idx = 1,nMiemaxij
-       match_11_22 = str_eq(uid1,Mieijdb(idx)%uid1) .and. str_eq(uid2,Mieijdb(idx)%uid2)
-       match_12_21 = str_eq(uid1,Mieijdb(idx)%uid2) .and. str_eq(uid2,Mieijdb(idx)%uid1)
+  !> Retrieve binary interaction parameter for components uid1 and uid2.
+  !> If no lij is stored in the database, it returns 0.0.
+  function getMie_lij(eos_subidx,uid1,uid2,ref) result(kijvalue)
+    use parameters, only: get_binary_interaction_parameter
+    integer, intent(in) :: eos_subidx
+    character(len=*), intent(in) :: uid1, uid2
+    character(len=*), intent(in), optional :: ref
+    real :: kijvalue
+    ! Locals
+    integer :: idx, idx_default
+    character(len=ref_len) :: ref_local
+    if (present(ref)) then
+      ref_local = ref
+    else
+      ref_local = "DEFAULT"
+    endif
+    kijvalue = get_binary_interaction_parameter(get_binary_saftvrmie_lij_db_entry,&
+         Miemaxlij,"SAFT-VR Mie",&
+         "",eos_subidx,uid1,uid2,ref_local,0.0,idx,idx_default)
+  end function getMie_lij
 
-       if ( eosidx==Mieijdb(idx)%eosidx .and. (match_11_22 .or. match_12_21) &
-            .and. string_match(ref,Mieijdb(idx)%ref)) then
-          kijvalue = Mieijdb(idx)%kijvalue
-          exit ! Exit means "break" in Fortran.
-       endif
-    end do
-  end function getMie_l_or_k_ij
-
-  subroutine getMie_k_or_l_ij_allComps(nc,comp,eosidx,get_kij,ref,kij)
+  subroutine getMie_k_or_l_ij_allComps(nc,comp,eos_subidx,get_kij,ref,kij)
     use thermopack_var, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     logical, intent(in) :: get_kij
     character(len=*), intent(in), optional :: ref
     ! Output
@@ -99,11 +126,11 @@ contains
     do ic=1,nc
        do jc=ic+1,nc
          if (get_kij) then
-           kij(ic,jc) = getMie_l_or_k_ij(eosidx,comp(ic)%p_comp%ident,&
-                comp(jc)%p_comp%ident,Miemaxkij,Miekijdb,ref=ref)
+           kij(ic,jc) = getMie_kij(eos_subidx,comp(ic)%p_comp%ident,&
+                comp(jc)%p_comp%ident,ref=ref)
          else
-           kij(ic,jc) = getMie_l_or_k_ij(eosidx,comp(ic)%p_comp%ident,&
-                comp(jc)%p_comp%ident,Miemaxlij,Mielijdb,ref=ref)
+           kij(ic,jc) = getMie_lij(eos_subidx,comp(ic)%p_comp%ident,&
+                comp(jc)%p_comp%ident,ref=ref)
          endif
          kij(jc,ic) = kij(ic,jc)
        end do
@@ -112,10 +139,10 @@ contains
   end subroutine getMie_k_or_l_ij_allComps
 
   !> Map SAFT-VR Mie paramaters to active component
-  subroutine getSaftVrMiePureFluidParams(compName,eosidx,ref,saftvrmie_comp,fh_order,found)
+  subroutine getSaftVrMiePureFluidParams(compName,eos_subidx,ref,saftvrmie_comp,fh_order,found)
     ! Input
     character(len=*), intent(in) :: compName, ref
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     ! Output
     type(saftvrmie_data), intent(out) :: saftvrmie_comp
     integer, intent(out) :: fh_order
@@ -124,8 +151,8 @@ contains
     integer :: idx
     character(len=100) :: message
 
-    idx = getMiedataIdx(eosidx,compName,ref)
-    if ( idx == 0 ) then
+    idx = getMiedataIdx(eos_subidx,compName,ref)
+    if ( idx <= 0 ) then
        if (present(found)) then
           found = .false.
        else
@@ -159,12 +186,12 @@ contains
   end subroutine getSaftVrMiePureFluidParams
 
   !> Map SAFT-VR Mie paramaters to active components
-  subroutine getSaftVrMieParams(nc,comp,eosidx,ref,saftvrmie_comp,fh_orders,found)
+  subroutine getSaftVrMieParams(nc,comp,eos_subidx,ref,saftvrmie_comp,fh_orders,found)
     use thermopack_var, only: gendata_pointer
     ! Input
     type(gendata_pointer), intent(inout)  :: comp(nc)    !< Component vector.
     character(len=*), intent(in) :: ref   !< Parameter sets to use for components
-    integer, intent(in) :: eosidx,nc
+    integer, intent(in) :: eos_subidx,nc
     ! Output
     type(saftvrmie_data), intent(out) :: saftvrmie_comp(nc)
     integer, intent(out) :: fh_orders(nc)
@@ -173,7 +200,7 @@ contains
     integer :: i
 
     do i=1,nc
-       call getSaftVrMiePureFluidParams(trim(comp(i)%p_comp%ident),eosidx,ref,&
+       call getSaftVrMiePureFluidParams(trim(comp(i)%p_comp%ident),eos_subidx,ref,&
             saftvrmie_comp(i),fh_orders(i), found)
        if (present(found)) then
           if (.not. found) then
@@ -184,13 +211,13 @@ contains
   end subroutine getSaftVrMieParams
 
 
-  subroutine getSaftVrMieAssocParams_allComps(nc,comp,eosidx,ref,found,&
+  subroutine getSaftVrMieAssocParams_allComps(nc,comp,eos_subidx,ref,found,&
        eps,beta,scheme)
     use compdata, only: gendata_pointer
     ! Input
     integer, intent(in) :: nc
     type(gendata_pointer), intent(in) :: comp(nc)
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     character(len=*), intent(in) :: ref
     ! Output
     logical, intent(out) :: found(nc)
@@ -200,18 +227,18 @@ contains
     integer :: ic
 
     do ic=1,nc
-       call getSaftVrMieAssocParams_singleComp(comp(ic)%p_comp%ident,eosidx,&
+       call getSaftVrMieAssocParams_singleComp(comp(ic)%p_comp%ident,eos_subidx,&
             ref,found(ic), eps(ic),beta(ic),scheme(ic))
     end do
 
   end subroutine getSaftVrMieAssocParams_allComps
 
-  subroutine getSaftVrMieAssocParams_singleComp(compName,eosidx,ref,found,&
+  subroutine getSaftVrMieAssocParams_singleComp(compName,eos_subidx,ref,found,&
        eps,beta,scheme)
-    use thermopack_constants, only: Rgas
+    use thermopack_var, only: Rgas
     ! Input
     character(len=*), intent(in) :: compName, ref
-    integer, intent(in) :: eosidx
+    integer, intent(in) :: eos_subidx
     ! Output
     logical, intent(out) :: found
     real, intent(out) :: eps, beta
@@ -219,7 +246,7 @@ contains
     ! Locals
     integer :: idx
 
-    idx = getMiedataIdx(eosidx,compName,ref)
+    idx = getMiedataIdx(eos_subidx,compName,ref)
     if ( idx == 0 ) then
        found = .false.
        return

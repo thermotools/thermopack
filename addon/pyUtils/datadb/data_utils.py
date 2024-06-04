@@ -3,8 +3,14 @@ import numpy as np
 I = "  "
 N_TAGS_PER_LINE = 5
 
-sci_print_float = lambda x, p=None : np.format_float_scientific(x, precision=p, trim=".")
-print_float = lambda x, p=None : np.format_float_positional(x, precision=p, trim=".")
+
+def sci_print_float(x, p=None): return np.format_float_scientific(
+    x, precision=p, trim=".")
+
+
+def print_float(x, p=None): return np.format_float_positional(
+    x, precision=p, trim=".")
+
 
 def saft_eos_to_idx(eos):
     mod_eos = eos.replace(" ", "").replace("-", "").replace("_", "").upper()
@@ -17,6 +23,7 @@ def saft_eos_to_idx(eos):
     else:
         eosidx = "eosUNKNOWN"
     return eosidx
+
 
 def get_assoc_scheme_parameter(assoc_scheme):
     """
@@ -40,9 +47,12 @@ def get_alpha_index_parameter(alpha_corr):
 
 def get_mix_model_parameter(model):
     """
-        model - ARITHMETIC or GEOMETRIC
+        model - ARITHMETIC, GEOMETRIC or DEFAULT
         Output:
         param - Thermopack parameter defined in assocschemeutils.f90
     """
-    assert model == "GEOMETRIC" or model == "ARITHMETIC"
-    return "ariComb" if model == "ARITHMETIC" else "geoComb"
+    assert model in ["GEOMETRIC", "ARITHMETIC", "DEFAULT"]
+    mapping = {"GEOMETRIC": "geoComb",
+               "ARITHMETIC": "ariComb",
+               "DEFAULT": "defaultComb"}
+    return mapping[model]

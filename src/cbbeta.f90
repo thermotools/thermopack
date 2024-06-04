@@ -64,7 +64,7 @@ contains
           stop "Chosen correlation for cubic covolume beta factor is not implemented"
        end if
        call setSingleBetaCorr(i=i, cbeos=cbeos, corrName=corrName, betaParams=params)
-    end do
+     end do
   end subroutine tpInitBetaCorr
 
 

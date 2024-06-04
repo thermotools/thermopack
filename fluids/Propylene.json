@@ -2,6 +2,8 @@
   "ident": "PRLN",
   "formula": "C3H6",
   "cas_number": "115-07-1",
+  "InChI": "1S/C3H6/c1-3-2/h3H,1H2,2H3",
+  "structure": "C:3;H:6",
   "name": "PROPYLENE",
   "aliases": [
     "Propylene",
@@ -64,14 +66,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Furuyama, Golden, et al., 1969",
+    "enthalpy": 20.41e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 266.759
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -84,6 +83,35 @@
   "quadrupole_moment": {
     "Q": 0.0,
     "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.1725068",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 87.953,
+    "maximum_temperature": 2000.0,
+    "reducing_pressure": 7.471000E-04,
+    "reducing_temperature": 87.953,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -6593000000.0,
+      6593000001.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      2.821,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "TWU-1": {

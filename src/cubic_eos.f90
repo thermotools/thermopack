@@ -190,6 +190,10 @@ module cubic_eos
   end type lk_eos
 
   type, extends(cb_eos) :: cpa_eos
+    logical :: useSimplifiedCPA = .FALSE.
+  contains
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_cpa_eos
   end type cpa_eos
 
 
@@ -207,7 +211,7 @@ module cubic_eos
   integer, parameter :: cbMixHVCPA2 = 26 !< Huron Vidal mixing rule (classic, but kij from another db)
   integer, parameter :: cbMixWongSandler = 3 !< Wong Sandler mixing rule
   integer, parameter :: cbMixWSCPA = 31 !< Wong-Sandler mixing rule for CPA
-  integer, parameter :: cbMixHVWS = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
+  integer, parameter :: cbMixHVWongSandler = 32 !< Wong-Sandler mixing rule with HV formulation of NRTL
 
   type mix_label_mapping
     integer :: mix_idx_group
@@ -253,7 +257,7 @@ module cubic_eos
        mix_idx=cbMixWSCPA, short_label="WongSandler", label="WSCPA",&
        alias = ""), &
        mix_label_mapping(mix_idx_group=cbMixWongSandler,&
-       mix_idx=cbMixHVWS, short_label="HVWS", label="HVWS",&
+       mix_idx=cbMixHVWongSandler, short_label="HVWongSandler", label="HVWongSandler",&
        alias = "") &
        /)
 
@@ -264,7 +268,7 @@ module cubic_eos
        cbMixHuronVidal2,&
        cbMixHVCPA,&
        cbMixHVCPA2,&
-       cbMixHVWS/)
+       cbMixHVWongSandler/)
 
   integer, parameter :: nGECorrs = 7
   integer, parameter, dimension(nGECorrs) :: GECorrIndices = (/&
@@ -811,6 +815,20 @@ contains
 
   end subroutine cubic_eos_dealloc
 
+  subroutine assign_cpa_eos(this,other)
+    class(cpa_eos), intent(inout) :: this
+    class(*), intent(in) :: other
+    ! Locals
+    integer :: istat
+    select type (other)
+    class is (cpa_eos)
+      call assign_cubic_eos(this, other)
+      this%useSimplifiedCPA = other%useSimplifiedCPA
+    class default
+      print *,"assign_cpa_eos: Should not be here"
+    end select
+  end subroutine assign_cpa_eos
+
   function isHVmixModel(mix_idx) result(isHV)
     integer, intent(in) :: mix_idx
     logical :: isHV
@@ -840,7 +858,7 @@ contains
   end function isGEmixModel
 
   function get_mix_db_idx(short_label) result(idx)
-    use stringmod, only: str_eq, string_match, string_match_val
+    use stringmod, only: str_eq, string_match
     character(len=*), intent(in) :: short_label
     integer :: idx
     ! Locals
@@ -951,5 +969,50 @@ contains
       print *,"get_energy_constants: Wrong model - not cubic"
     end select
   end subroutine get_energy_constants
+
+    !-----------------------------------------------------------------------------
+  !> Get linear combination of b_i
+  !>
+  !> \author MH, 2020-07
+  !-----------------------------------------------------------------------------
+  function get_b_linear_mix(Z) result(b_mix)
+    use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
+         get_active_thermo_model, get_active_alt_eos
+    use eosdata, only: eosCPA
+    implicit none
+    ! Input:
+    real, intent(in)                :: Z(nc)          !< Molar compozition [-]
+    ! Output:
+    real                            :: b_mix          !< m3/mol
+    ! Locals
+    integer :: i
+    type(thermo_model), pointer :: act_mod_ptr
+    class(base_eos_param), pointer :: act_eos_ptr
+
+    act_mod_ptr => get_active_thermo_model()
+    b_mix = 0
+    if (act_mod_ptr%need_alternative_eos .and. act_mod_ptr%eosidx /= eosCPA) then
+      act_eos_ptr => get_active_alt_eos()
+      select type (p_eos => act_eos_ptr)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix (alt): Should not be here")
+      end select
+    else
+      act_eos_ptr => get_active_eos()
+      select type (p_eos => act_eos_ptr)
+      class is (cb_eos)
+        do i=1,nc
+          b_mix = b_mix + z(i)*p_eos%single(i)%b
+        enddo
+      class default
+        call stoperror("get_b_linear_mix: Should not be here")
+      end select
+    endif
+    b_mix = b_mix*1.0e-3 ! L/mol -> m3/mol
+  end function get_b_linear_mix
 
 end module cubic_eos

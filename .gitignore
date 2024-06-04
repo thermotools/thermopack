@@ -26,7 +26,6 @@ src/*.bck
 *.dat
 *.aux
 *.log
-*.dat
 *.nlo
 *.toc
 *.out
@@ -36,7 +35,7 @@ src/*.bck
 *.pyc
 *.a
 *.so
-*.dynlib
+*.dylib
 *.dll
 *.mod
 *.smod

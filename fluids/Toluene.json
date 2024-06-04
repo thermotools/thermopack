@@ -2,6 +2,8 @@
   "ident": "TOLU",
   "formula": "C7H8",
   "cas_number": "108-88-3",
+  "InChI": "1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3",
+  "structure": "C:7;H:8",
   "name": "TOLUENE",
   "aliases": [
     "Toluene",
@@ -62,14 +64,11 @@
     "Tmax": 1500.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Roux, Temprado, et al., 2008",
+    "enthalpy": 50.1e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 320.771
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",
@@ -147,6 +146,6 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   }
 }

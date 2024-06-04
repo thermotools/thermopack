@@ -1,0 +1,84 @@
+{
+  "ident": "PSEUDO",
+  "formula": "XXX",
+  "cas_number": "XXX",
+  "InChI": "",
+  "structure": "",
+  "name": "PSEUDO",
+  "aliases": [
+      "PSEUDO"
+  ],
+  "mol_weight": 100,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "None",
+    "temperature": 100,
+    "pressure": 100e5,
+    "compressibility": 0.3
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.0
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 0.0
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 1,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "cp": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": -175.0,
+    "Tmax": 1200.0
+  },
+  "reference_state": {
+    "enthalpy_bib_reference": "Non-exsisting. Dummy value.",
+    "enthalpy": 1.0e20,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
+    "entropy": 0.0
+  },
+  "rackett_factor": {
+    "bib_reference": "10.1016/j.fluid.2016.09.003",
+    "Zra": 0.2544
+  },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 0.0,
+    "bib_reference": ""
+  }
+}

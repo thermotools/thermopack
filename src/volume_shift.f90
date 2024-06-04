@@ -4,8 +4,8 @@
 
 module volume_shift
   use compdata, only: gendata_pointer
-  use stringmod, only: str_eq, uppercase, string_match, string_match_val
-  use thermopack_constants, only: Rgas
+  use stringmod, only: str_eq, uppercase
+  use thermopack_var, only: Rgas
   implicit none
   private
   save
@@ -17,7 +17,8 @@ module volume_shift
        volumeShiftZfac, &
        NOSHIFT, PENELOUX, &
        redefine_volume_shift, &
-       vshift_F_terms
+       vshift_F_terms, &
+       vshift_F_differential_dependencies
 
 contains
 
@@ -27,6 +28,7 @@ contains
   !> \author MH, June 2014
   !----------------------------------------------------------------------
   function initVolumeShift(nc,comp,shiftId,eos, param_ref) result (volumeShiftId)
+    use thermopack_constants, only: verbose
     integer, intent(in) :: nc !< Number of components
     type (gendata_pointer), dimension(nc), intent(inout) :: comp !< Component data
     character(len=*), intent(in) :: shiftId !< String volume shif identifyer
@@ -43,7 +45,8 @@ contains
         found = get_database_ci(comp(i)%p_comp%ident,uppercase(eos),&
              comp(i)%p_comp%cid, ref=param_ref)
         if (.not. found) then
-          print *, "Using Rackett-factor correlation for Peneloux volume shift"
+          if (verbose) &
+               print *, "Using Rackett-factor correlation for Peneloux volume shift"
 
           if (comp(i)%p_comp%zra > 0.0) then
             if (trim(eos) == 'SRK') then
@@ -166,6 +169,26 @@ contains
   end subroutine redefine_volume_shift
 
   !----------------------------------------------------------------------
+  !> Wrapper function for locating database entries
+  !>
+  !> \author Morten Hammer, Nov. 2023
+  !----------------------------------------------------------------------
+  subroutine get_ci_db_entry(idx, eos_subidx, comp_name, ref)
+    use thermopack_constants, only: ref_len, uid_len
+    use eosdata, only: get_eos_index
+    use compdatadb, only: cidb, maxcidb
+    integer, intent(in) :: idx !< Database index
+    integer, intent(out) :: eos_subidx !< Index of EOS
+    character(len=uid_len), intent(out) :: comp_name !< Component name
+    character(len=ref_len), intent(out) :: ref !< Reference string
+    ! Locals
+    integer :: eosidx
+    call get_eos_index(cidb(idx)%eosid,eosidx,eos_subidx)
+    comp_name = cidb(idx)%cid
+    ref = cidb(idx)%ref
+  end subroutine get_ci_db_entry
+
+  !----------------------------------------------------------------------
   !> Look for volume-shift parameters in data-base
   !>
   !> \author Ailo, Sep 2020
@@ -173,35 +196,36 @@ contains
   function get_database_ci(cid,eos,cidc,ref) result (found_ci)
     use compdata, only: cidatadb
     use compdatadb, only: cidb, maxcidb
+    use thermopack_constants, only: ref_len
+    use eosdata, only: get_eos_index
+    use parameters, only: get_pure_data_db_idx
     character(len=*), intent(in) :: eos !< Eos string
     character(len=*), intent(in) :: cid !< Component
     type(cidatadb), intent(inout) :: cidc !< Volume shift type
     character(len=*), optional, intent(in) :: ref !< Reference string
     logical :: found_ci
     ! Locals
-    logical :: ref_match
-    integer :: idx_lowest, match_val
-    integer :: i
-    found_ci = .false.
+    integer :: idx, idx_default
+    integer :: eos_subidx, eosidx
+    character(len=ref_len) :: ref_local
     call cidc%set_zero_vol_trs()
-    idx_lowest = 100000
-    do i=1,maxcidb
-      if (str_eq(cidb(i)%eosid, eos) .and. str_eq(cidb(i)%cid, cid)) then
-        if (.not. found_ci) then ! we at least found one match
-          cidc = cidb(i)
-        end if
-        found_ci = .true.
-
-        if (present(ref)) then ! check if there is a match with the ref
-          call string_match_val(ref,cidb(i)%ref,ref_match,match_val)
-          if (ref_match .and. match_val<idx_lowest) then ! the match takes precedence
-            idx_lowest = match_val
-            cidc = cidb(i)
-          end if
-        end if
-
-      endif
-    enddo
+    if (present(ref)) then ! check if there is a match with the ref
+      ref_local = ref
+    else
+      ref_local = "DEFAULT"
+    endif
+    call get_eos_index(eos, eosidx, eos_subidx)
+    call get_pure_data_db_idx(get_ci_db_entry,maxcidb,"Volume translation (ci)",&
+         eos_subidx,cid,ref_local,.false.,idx,idx_default)
+    if (idx > 0) then
+      found_ci = .true.
+      cidc = cidb(idx)
+    else if (idx_default > 0) then
+      found_ci = .true.
+      cidc = cidb(idx_default)
+    else
+      found_ci = .false.
+    endif
   end function get_database_ci
 
   !----------------------------------------------------------------------
@@ -274,5 +298,40 @@ contains
     if (present(F)) F = F + sumn*log(V/Veos)
 
   end subroutine vshift_F_terms
+
+  !----------------------------------------------------------------------
+  !> Which additional differentials are needed for volume shift correction=
+  !>
+  !>
+  !> \author Morten Hammer, April 2023
+  !----------------------------------------------------------------------
+  subroutine vshift_F_differential_dependencies(nc,volumeShiftId,&
+       include_F_V,include_F_TV,include_F_VV,include_F_Vn,&
+       F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
+    integer, intent(in) :: nc
+    integer, intent(in) :: volumeShiftId !< Volume shift identifier
+    real, optional, intent(inout) :: F_T,F_V,F_n(nc)
+    real, optional, intent(inout) :: F_TT,F_TV,F_Tn(nc),F_VV,F_Vn(nc),F_nn(nc,nc)
+    logical, intent(out) :: include_F_V,include_F_TV,include_F_VV,include_F_Vn
+    include_F_V = .false.
+    include_F_TV = .false.
+    include_F_VV = .false.
+    include_F_Vn = .false.
+    if (volumeShiftId == NOSHIFT) return
+
+    if (.not. present(F_V)) include_F_V = present(F_T) .or. &
+         present(F_TT) .or. &
+         present(F_Tn) .or. &
+         present(F_n)
+    if (.not. present(F_VV)) include_F_VV = present(F_TT) .or. &
+         present(F_nn) .or. &
+         present(F_Tn) .or. &
+         present(F_Vn)  .or. &
+         present(F_TV)
+    if (.not. present(F_TV)) include_F_TV = present(F_TT) .or. &
+         present(F_Tn)
+    if (.not. present(F_Vn)) include_F_Vn = present(F_Tn) .or. &
+         present(F_nn)
+  end subroutine vshift_F_differential_dependencies
 
 end module volume_shift

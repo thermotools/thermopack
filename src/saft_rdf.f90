@@ -3,42 +3,57 @@ module saft_rdf
   implicit none
   save
 
-  logical :: useSimplifiedCPA = .FALSE.
-
   public :: master_saft_rdf
-  public :: useSimplifiedCPA
   private
 
 contains
 
   !> Radial distribution function (RDF) interface for association.
-  subroutine master_saft_rdf(eos,nc,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+  subroutine master_saft_rdf(eos,nc,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     !> Depends on component indices i,j only for eosBH_pert
-    use pc_saft_nonassoc, only: g_spc_saft_tvn, g_pc_saft_tvn, PCSAFT_eos, sPCSAFT_eos
+    use pc_saft_nonassoc, only: g_spc_saft_tvn, g_pc_saft_tvn, PCSAFT_eos, sPCSAFT_eos, calc_dhs
     use saftvrmie_hardsphere, only: calc_gij_boublik
     use saftvrmie_containers, only: saftvrmie_eos
     use thermopack_var, only: base_eos_param
     use cubic_eos, only: cpa_eos
     use utilities, only: get_thread_index
+    use hardsphere_bmcsl, only: calc_bmcsl_gij_FMT
     use saftvrmie_association, only: g_rdf_saftvrmie_ij_TVN
     class(base_eos_param), intent(inout) :: eos
     integer, intent(in) :: nc
-    real, intent(in) :: T,V,n(nc)  !< [K], [m^3], [mol]
     integer, intent(in) :: i,j     !< component indices [-]
     real, intent(out) :: g         !< The rdf gij [-]
     real, intent(out), optional :: g_T,g_V,g_n(nc)
     real, intent(out), optional :: g_VV,g_TV,g_Vn(nc)
     real, intent(out), optional :: g_TT,g_Tn(nc),g_nn(nc,nc)
     ! Locals
+    real :: T,V,n(nc)  !< [K], [m^3], [mol]
+    real :: n_alpha(0:5), mu_ij
+    T = eos%assoc%state%T
+    V = eos%assoc%state%V
+    n = eos%assoc%state%n
+    !
     select type ( p_eos => eos )
     class is(cpa_eos)
-      call g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+      call g_rdf_cpa(p_eos,nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
       if (present(g_T)) g_T = 0.0
       if (present(g_TT)) g_TT = 0.0
       if (present(g_TV)) g_TV = 0.0
       if (present(g_Tn)) g_Tn = 0.0
     class is(PCSAFT_eos)
-      call g_pc_saft_TVn(p_eos,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      if (eos%assoc%state%fmt_mode) then
+        if (present(g_T) .or. present(g_V) .or. present(g_n) .or. &
+             present(g_VV) .or. present(g_TV) .or. present(g_Vn) .or. &
+             present(g_TT) .or. present(g_Tn) .or. present(g_nn)) then
+          call stoperror("RDF for fmt_mode does not support differentials")
+        endif
+        n_alpha = sum(eos%assoc%state%n_fmt, dim=1)
+        call calc_dhs(p_eos, T)
+        mu_ij = p_eos%dhs%d(i)*p_eos%dhs%d(j)/(p_eos%dhs%d(i)+p_eos%dhs%d(j))
+        call calc_bmcsl_gij_FMT(n_alpha,mu_ij,0.0,g)
+      else
+        call g_pc_saft_TVn(p_eos,T,V,n,i,j,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
+      endif
     class is(sPCSAFT_eos)
       call g_spc_saft_TVn(p_eos,T,V,n,g,g_T,g_V,g_n,g_TT,g_TV,g_Tn,g_VV,g_Vn,g_nn)
     class is(saftvrmie_eos)
@@ -51,9 +66,11 @@ contains
   end subroutine master_saft_rdf
 
   !> Radial distribution function from hard-sphere fluid.
-  subroutine g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+  subroutine g_rdf_cpa(eos,nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+    use cubic_eos, only: cpa_eos
     use saft_globals, only: assoc_covol
     ! Input.
+    class(cpa_eos), intent(in) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: V                       !< [m^3]
     real, intent(in) :: n(nc)                   !< [mol]
@@ -81,7 +98,7 @@ contains
     sumn = sum(n)
     b_mix = dot_product(n,bi)/sumn
     eta = sumn*b_mix/(4*V)
-    if (useSimplifiedCPA) then ! Simplified CPA.
+    if (eos%useSimplifiedCPA) then ! Simplified CPA.
       g = 1/(1-1.9*eta)
     else           ! Original formulation.
       g = (1-eta/2)/(1-eta)**3
@@ -102,7 +119,7 @@ contains
       eta_VV = bigB*V_3/2
       eta_Vn = -bi*V_2/4
 
-      if (useSimplifiedCPA) then ! Simplified CPA.
+      if (eos%useSimplifiedCPA) then ! Simplified CPA.
         g_eta = 1.9/(1-1.9*eta)**2
         g_etaeta = 2*1.9*1.9/(1-1.9*eta)**3
       else           ! Original formulation.

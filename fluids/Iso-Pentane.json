@@ -2,6 +2,8 @@
   "ident": "IC5",
   "formula": "C5H12",
   "cas_number": "78-78-4",
+  "InChI": "1S/C5H12/c1-4-5(2)3/h5H,4H2,1-3H3",
+  "structure": "C:5;H:12",
   "name": "ISOPENTANE",
   "aliases": [
     "Iso-Pentane",
@@ -63,14 +65,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Good, 1970",
+    "enthalpy": -153.7e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 343.740
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -83,6 +82,35 @@
   "quadrupole_moment": {
     "Q": 0.0,
     "bib_reference": ""
+  },
+  "melting_curve": {
+    "bib_reference": "DOI: 10.1063/1.1725068",
+    "ref": "DEFAULT",
+    "correlation": "ML-1",
+    "triple_temperature": 112.65,
+    "maximum_temperature": 2000.0,
+    "reducing_pressure": 8.952000E-05,
+    "reducing_temperature": 112.65,
+    "n_coeff": 2,
+    "n_coeff_1": 2,
+    "n_coeff_2": 0,
+    "n_coeff_3": 0,
+    "coeff": [
+      -7127700000000.0,
+      7127700000001.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exponents": [
+      0.0,
+      1.563,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
   },
   "SRK": {
     "MC-1": {
@@ -166,6 +194,6 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   }
 }

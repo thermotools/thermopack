@@ -2,6 +2,8 @@
   "ident": "LJF",
   "formula": "LJF",
   "cas_number": "",
+  "InChI": "",
+  "structure": "",
   "name": "LENNARD-JONES_FLUID",
   "aliases": [
     "LennardJonesFluid",
@@ -12,8 +14,8 @@
   "critical": {
     "ref": "Default",
     "bib_reference": "",
-    "temperature": 1.32,
-    "pressure": 0.13,
+    "temperature": 132.0,
+    "pressure": 6.65e6,
     "compressibility": 0.31
   },
   "triple": {
@@ -46,9 +48,9 @@
   "ideal_heat_capacity-1": {
     "ref": "Default",
     "bib_reference": "",
-    "correlation": 7,
+    "correlation": 8,
     "cp": [
-      0.0,
+      2.5,
       0.0,
       0.0,
       0.0,
@@ -59,18 +61,15 @@
       0.0,
       0.0
     ],
-    "Tmin": 300.0,
+    "Tmin": 0.0,
     "Tmax": 1500.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
+    "enthalpy_bib_reference": "Non-exsisting. Dummy value.",
+    "enthalpy": 1.0e20,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -89,7 +88,7 @@
   "SAFTVRMIE-1": {
     "m": 1.000,
     "sigma": 3.0000E-10,
-    "eps_depth_divk": 30.0000,
+    "eps_depth_divk": 100.0000,
     "lambda_a": 6.0000,
     "lambda_r": 12.0000,
     "mass": 0.0000E+00,

@@ -2,6 +2,8 @@
   "ident": "D2",
   "formula": "D2",
   "cas_number": "7782-39-0",
+  "InChI": "1S/H2/h1H/i1+1D",
+  "structure": "D:2",
   "name": "DEUTERIUM",
   "aliases": [
     "Deuterium",
@@ -62,14 +64,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
+    "entropy": 144.96
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",
@@ -207,5 +206,19 @@
     "fh_order": 1,
     "bib_reference": "Aasen 2019, doi: 10.1063/1.5111364",
     "ref": "AASEN2019-FH1-LJ"
+  },
+  "SAFTVRMIE-6": {
+    "m": 1.000,
+    "sigma": 3.009E-10,
+    "eps_depth_divk": 39.239,
+    "lambda_a": 7.0000,
+    "lambda_r": 11.0000,
+    "mass": 6.6890E-27,
+    "eps": 0.0000,
+    "beta": 0.0000,
+    "assoc_scheme": "None",
+    "fh_order": 1,
+    "bib_reference": "Hammer 2022, doi: xxxx",
+    "ref": "HAMMER2022-FH1"
   }
 }

@@ -4,7 +4,7 @@ module test_quantumcubic
   use volume_shift, only: initVolumeShift, vshift_F_terms, PENELOUX
   use eoslibinit
   use critical, only: calcCritical, calcCriticalTV
-  use thermopack_constants, only: RGAS, VAPPH, LIQPH
+  use thermopack_constants, only: VAPPH, LIQPH
   use eos, only: specificVolume
   use eosTV, only: pressure
   use cbAlpha, only: setSingleAlphaCorr
@@ -43,19 +43,19 @@ contains
     ! Test state points
     call init_quantum_cubic("H2,NE")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 2.7652353230309850E-004, 1e-11)
+    @assertEqual(V, 0.27635062506735163E-3, 1e-11)
 
     call init_quantum_cubic("H2,D2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 2.6889954630757618E-004, 1e-11)
+    @assertEqual(V, 0.26869372000726689E-3, 1e-11)
 
     call init_quantum_cubic("NE,D2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 2.7066746131254187E-004, 1e-11)
+    @assertEqual(V, 0.27071144987470875E-3, 1e-11)
 
     call init_quantum_cubic("HE,NE")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 3.2864422122369150E-004, 1e-11)
+    @assertEqual(V, 0.32864553263355610E-3, 1e-11)
 
     call init_quantum_cubic("HE,D2")
     call specificVolume(T,P,n,VAPPH,V)
@@ -63,7 +63,7 @@ contains
 
     call init_quantum_cubic("HE,H2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 3.3377514385725247E-004, 1e-11)
+    @assertEqual(V, 0.33375935042262721E-3, 1e-11)
 
     ! Test numerical derivatives
     cbeos => get_active_eos()

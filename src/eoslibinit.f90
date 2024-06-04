@@ -4,10 +4,11 @@
 module eoslibinit
   !
   use thermopack_var, only: nce, get_active_eos, thermo_model, &
-       get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
-       active_thermo_model_is_associated, numAssocSites
+    get_active_thermo_model, get_active_alt_eos, base_eos_param, add_eos, &
+    active_thermo_model_is_associated, numAssocSites, Rgas, tpTmin, &
+    kRgas
   use eos_container, only: allocate_eos
-  use stringmod,  only: uppercase, str_eq, string_match, string_match_val
+  use stringmod,  only: uppercase, str_eq, string_match
   implicit none
   save
   !
@@ -19,6 +20,7 @@ module eoslibinit
   private
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
+  public :: init_cubic_pseudo
   public :: init_extcsp, init_lee_kesler, init_quantum_saftvrmie
   public :: init_multiparameter, init_pets, init_ljs, init_lj
   public :: silent_init
@@ -57,13 +59,13 @@ contains
     act_mod_ptr => get_active_thermo_model()
 
     act_mod_ptr%eos(1)%p_eos%volumeShiftId = &
-         InitVolumeShift(nce, act_mod_ptr%comps, &
-         volume_trans_model, act_mod_ptr%eos(1)%p_eos%eosid)
+      InitVolumeShift(nce, act_mod_ptr%comps, &
+      volume_trans_model, act_mod_ptr%eos(1)%p_eos%eosid)
 
     ! Distribute volumeShiftId
     do i=2,size(act_mod_ptr%eos)
       act_mod_ptr%eos(i)%p_eos%volumeShiftId = &
-           act_mod_ptr%eos(1)%p_eos%volumeShiftId
+        act_mod_ptr%eos(1)%p_eos%volumeShiftId
     enddo
   end subroutine init_volume_translation
 
@@ -73,11 +75,11 @@ contains
   !> \author MH, 2014-02
   !----------------------------------------------------------------------
   subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
-       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
-       saft_ref,b_exponent,TrendEosForCp,cptype,silent)
+    liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
+    saft_ref,b_exponent,TrendEosForCp,cptype,silent)
     use thermopack_constants, only: clen, TREND, THERMOPACK
     use cbselect,   only: SelectCubicEOS
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     !$ use omp_lib, only: omp_get_max_threads
@@ -135,9 +137,11 @@ contains
     complist => act_mod_ptr%complist
     apparent => NULL()
     numAssocSites = 0
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Initialize components
-    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -149,10 +153,10 @@ contains
     endif
 
     if (str_eq(eos, "EOSCG") .or. &
-         str_eq(eos, "EOS-CG") .or. &
-         str_eq(eos, "GERG2008") .or. &
-         str_eq(eos, "GERG-2008") .or. &
-         str_eq(eos, "EOSCG-GERG")) then
+      str_eq(eos, "EOS-CG") .or. &
+      str_eq(eos, "GERG2008") .or. &
+      str_eq(eos, "GERG-2008") .or. &
+      str_eq(eos, "EOSCG-GERG")) then
       act_mod_ptr%eosLib = TREND
     else
       act_mod_ptr%eosLib = THERMOPACK
@@ -163,10 +167,10 @@ contains
     case (THERMOPACK)
       ! Initialize Thermopack
       call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
-           trim(uppercase(alpha)), &
-           nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
-           kij_ref,Alpha_ref,saft_ref,&
-           b_exponent)
+        trim(uppercase(alpha)), &
+        nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
+        kij_ref,Alpha_ref,saft_ref,&
+        b_exponent)
       if (present(TrendEosForCp)) then
         ! Initialize Trend for ideal properties
         call init_trend(trim(uppercase(TrendEosForCp)),ncomp,nphases,.false.)
@@ -185,15 +189,17 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
-  subroutine init_fallback_and_redefine_criticals(silent)
+  subroutine init_fallback_and_redefine_criticals(silent, enable_volume_shift)
     use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     use eos_parameters, only: single_eos
+    use volume_shift, only: InitVolumeShift
     !$ use omp_lib, only: omp_get_max_threads
     logical, intent(in) :: silent !< Option to disable init messages.
+    logical, optional, intent(in) :: enable_volume_shift !< Initialize volume shift
     ! Locals
     integer             :: i
     real                :: Tci, Pci, oi, rhocrit
@@ -217,7 +223,7 @@ contains
     endif
 
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
-    type is (single_eos)
+    class is (single_eos)
       if (allocated(p_eos%mbwr_meos)) then
         redefine_critical = .true.
       else if (allocated(p_eos%nist)) then
@@ -231,13 +237,20 @@ contains
       endif
     end select
 
+    if (present(enable_volume_shift)) then
+      if (enable_volume_shift) then
+        act_mod_ptr%cubic_eos_alternative(1)%p_eos%volumeShiftId = &
+             InitVolumeShift(nce, act_mod_ptr%comps, &
+             'PENELOUX', act_mod_ptr%cubic_eos_alternative(1)%p_eos%eosid)
+      endif
+    endif
     select type(p_eos => act_mod_ptr%cubic_eos_alternative(1)%p_eos)
     type is (cb_eos)
       call SelectCubicEOS(nce, act_mod_ptr%comps, p_eos, &
-           "CLASSIC", "DEFAULT")
+        "CLASSIC", "DEFAULT")
 
       call SelectMixingRules(nce, act_mod_ptr%comps, p_eos, &
-         "VDW", "DEFAULT")
+        "VDW", "DEFAULT")
     class default
       call stoperror("init_cubic: Should be cubic EOS")
     end select
@@ -245,7 +258,7 @@ contains
     ! Distribute parameters from redefined eos
     do i=2,size(act_mod_ptr%cubic_eos_alternative)
       act_mod_ptr%cubic_eos_alternative(i)%p_eos = &
-           act_mod_ptr%cubic_eos_alternative(1)%p_eos
+        act_mod_ptr%cubic_eos_alternative(1)%p_eos
     enddo
 
     if (act_mod_ptr%EoSLib == THERMOPACK .and. redefine_critical) then
@@ -257,7 +270,7 @@ contains
   !> Initialize cubic EoS. Use: call init_cubic('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
   subroutine init_cubic(comps,eos,mixing,alpha,parameter_reference,vol_shift)
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK
@@ -277,8 +290,6 @@ contains
     character(len=100)               :: mixing_loc, alpha_loc, paramref_loc, beta_loc
     logical                          :: volshift_loc
     type(thermo_model), pointer      :: act_mod_ptr
-    logical                          :: found_tcPR, found_QuantumCubic
-    integer                          :: matchval_tcPR, matchval_QuantumCubic
     ! Get a pointer to the active thermodynamics model
     if (.not. active_thermo_model_is_associated()) then
       ! No thermo_model has been allocated
@@ -302,6 +313,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifier
     act_mod_ptr%eosLib = THERMOPACK
@@ -313,8 +326,8 @@ contains
     volshift_loc = .False.
     beta_loc = "Classic"
     if (present(mixing)) then
-       mixing_loc = uppercase(mixing)
-       if (str_eq(mixing_loc, "Classic")) mixing_loc = "VDW"
+      mixing_loc = uppercase(mixing)
+      if (str_eq(mixing_loc, "Classic")) mixing_loc = "VDW"
     end if
     if (present(alpha)) alpha_loc = uppercase(alpha)
     if (present(parameter_reference)) paramref_loc = parameter_reference
@@ -322,43 +335,58 @@ contains
 
     ! Special handling of translated-consistent Peng--Robinson EoS by le Guennec
     ! et al. (10.1016/j.fluid.2016.09.003)
-    call string_match_val("tcPR", paramref_loc, found_tcPR, matchval_tcPR)
-    if (found_tcPR) then
-       alpha_loc = "TWU"
-       volshift_loc = .True.
-    end if
-
-    ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
-    ! et al. (10.1016/j.fluid.2020.112790)
-    call string_match_val("QuantumCubic", paramref_loc, found_QuantumCubic, matchval_QuantumCubic)
-    if (found_QuantumCubic) then
-       alpha_loc = "TWU"
-       volshift_loc = .True.
-       beta_loc = "Quantum"
+    if (string_match("tcPR", paramref_loc)) then
+      alpha_loc = "TWU"
+      volshift_loc = .True.
     end if
 
     ! Initialize components module
-    call SelectComp(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,paramref_loc,act_mod_ptr%comps,ierr)
+
+    ! Special handling of Quantum Cubic Peng-Robinson equation of state by Aasen
+    ! et al. (10.1016/j.fluid.2020.112790)
+    if (string_match("QuantumCubic", paramref_loc)) then
+      alpha_loc = "TWU"
+      volshift_loc = .True.
+      beta_loc = "Quantum"
+      do i=1,nc
+        ! Set critical parameters according to Aasen et al. (10.1016/j.fluid.2020.112790)
+        if (str_eq(complist(i),"HE")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 5.1953
+          act_mod_ptr%comps(i)%p_comp%pc = 2.276e5
+        else if (str_eq(complist(i),"H2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 33.19
+          act_mod_ptr%comps(i)%p_comp%pc = 12.964e5
+        else if (str_eq(complist(i),"Ne")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 44.492
+          act_mod_ptr%comps(i)%p_comp%pc = 26.79e5
+        else if (str_eq(complist(i),"D2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 38.34
+          act_mod_ptr%comps(i)%p_comp%pc = 16.796e5
+        end if
+      enddo
+    endif
+
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
     ! Initialize volume shift
     if (volshift_loc) then
-       volumeShiftId = InitVolumeShift(nc,act_mod_ptr%comps,'Peneloux',eos, param_ref=paramref_loc)
-       act_mod_ptr%eos(1)%p_eos%volumeShiftId = volumeShiftId
+      volumeShiftId = InitVolumeShift(nc,act_mod_ptr%comps,'Peneloux',eos, param_ref=paramref_loc)
+      act_mod_ptr%eos(1)%p_eos%volumeShiftId = volumeShiftId
     end if
 
     ! Initialize Thermopack
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     type is (cb_eos)
       call SelectCubicEOS(nc, act_mod_ptr%comps, &
-           p_eos, alpha_loc, paramref_loc, betastr=beta_loc)
+        p_eos, alpha_loc, paramref_loc, betastr=beta_loc)
 
       call SelectMixingRules(nc, act_mod_ptr%comps, &
-           p_eos, mixing_loc, paramref_loc)
+        p_eos, mixing_loc, paramref_loc)
     class default
       call stoperror("init_cubic: Should be cubic EOS")
-   end select
+    end select
 
     ! Distribute parameters from redefined eos
     do i=2,size(act_mod_ptr%eos)
@@ -366,6 +394,90 @@ contains
     enddo
 
   end subroutine init_cubic
+
+
+  !----------------------------------------------------------------------------
+  !> Initialize pseudo components of a cubic EoS. Use:
+  !> call init_cubic("CO2,PSEUDO,PSEUDO")
+  !> call init_cubic_pseudo(names=(/"", "C20", "C25"/), Tclist=(\0,300,400\), &
+  !>                               Pclist=(\0,100e5,200e5\), acflist=(\0,0.3,0.5\))
+  !----------------------------------------------------------------------------
+  subroutine init_cubic_pseudo(comps, Tclist, Pclist, acflist, Mwlist, mixing, alpha)
+    use compdata,   only: init_component_data_from_db, initCompList
+    use ideal, only: set_reference_energies
+    use thermopack_var, only: nc
+    use thermopack_constants, only: THERMOPACK
+    use cbselect, only: selectCubicEOS, SelectMixingRules
+    use cubic_eos, only: cb_eos
+    use volume_shift, only: InitVolumeShift
+    character(len=*), intent(in) :: comps          !< Components. Comma or white-space separated
+    real, intent(in)             :: Tclist(nc)     !< List of critical temperatures (K)
+    real, intent(in)             :: Pclist(nc)     !< List of critical pressures (Pa)
+    real, intent(in)             :: acflist(nc)    !< List of acentric factors (-)
+    real, intent(in), optional   :: Mwlist(nc)     !< List of molar masses (kg/mol)
+    character(len=*), optional, intent(in) :: mixing !< Mixing rule
+    character(len=*), optional, intent(in) :: alpha  !< Alpha correlation
+    ! Locals
+    integer                          :: ncomp, i, index
+    character(len=len_trim(comps))   :: comps_upper
+    type(thermo_model), pointer      :: act_mod_ptr
+    logical                          :: is_pseudo_comp(nc)
+    character(len=100)               :: mixing_loc, alpha_loc, paramref_loc
+    logical                          :: volshift_loc
+
+    ! Get a pointer to the active thermodynamics model
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model has been allocated
+      index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+
+    ! Special handling of pseudo components
+    is_pseudo_comp = .false.
+
+    ! Iterate through all components. If pseudo, update with corresponding value.
+    do i=1,nc
+      is_pseudo_comp(i) = str_eq("PSEUDO", act_mod_ptr%complist(i))
+      if (is_pseudo_comp(i)) then
+        act_mod_ptr%comps(i)%p_comp%Tc = Tclist(i)
+        act_mod_ptr%comps(i)%p_comp%Pc = Pclist(i)
+        act_mod_ptr%comps(i)%p_comp%acf = acflist(i)
+        if (present(Mwlist)) act_mod_ptr%comps(i)%p_comp%Mw = Mwlist(i)
+      end if
+    enddo
+
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+
+    mixing_loc = "vdW"
+    alpha_loc = "Classic"
+    paramref_loc = "DEFAULT"
+    volshift_loc = .False.
+    if (present(alpha)) alpha_loc = uppercase(alpha)
+    if (present(mixing)) then
+      mixing_loc = uppercase(mixing)
+      if (str_eq(mixing_loc, "Classic")) mixing_loc = "VDW"
+    end if
+
+    ! Initialize Thermopack
+    select type(p_eos => act_mod_ptr%eos(1)%p_eos)
+    type is (cb_eos)
+      call SelectCubicEOS(nc, act_mod_ptr%comps, &
+        p_eos, alpha_loc, paramref_loc)
+
+      call SelectMixingRules(nc, act_mod_ptr%comps, &
+        p_eos, mixing_loc, paramref_loc)
+    class default
+      call stoperror("init_cubic: Should be cubic EOS")
+    end select
+
+    ! Distribute parameters from redefined eos
+    do i=2,size(act_mod_ptr%eos)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+  end subroutine init_cubic_pseudo
 
   !----------------------------------------------------------------------------
   !> Initialize translated and consistent cubic EoS by le Guennec et al.
@@ -377,12 +489,12 @@ contains
     character(len=*), intent(in), optional :: parameter_ref !< Parameter set reference
     !
     character(len=200) :: parameter_reference
-    parameter_reference = "tcPR"
+    parameter_reference = "tcPR/DEFAULT"
     if (present(parameter_ref)) then
       parameter_reference = trim(parameter_ref) // "/" // trim(parameter_reference)
     endif
     call init_cubic(eos="PR", comps=comps, mixing=mixing, &
-         parameter_reference=parameter_reference)
+      parameter_reference=parameter_reference)
   end subroutine init_tcPR
 
   !----------------------------------------------------------------------------
@@ -392,16 +504,16 @@ contains
   subroutine init_quantum_cubic(comps, mixing)
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), intent(in), optional :: mixing !< Mixing rule
-    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="QuantumCubic/tcPR")
+    call init_cubic(eos="PR", comps=comps, mixing=mixing, parameter_reference="QuantumCubic/tcPR/DEFAULT")
   end subroutine init_quantum_cubic
 
   !----------------------------------------------------------------------------
   !> Initialize extended corresponding state EoS. Use: call init_extcsp
   !----------------------------------------------------------------------------
   subroutine init_extcsp(comps,sh_eos,sh_mixing,sh_alpha,&
-       ref_eos,ref_comp,ref_alpha,&
-       parameter_ref)
-    use compdata,   only: SelectComp, initCompList
+    ref_eos,ref_comp,ref_alpha,&
+    parameter_ref)
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -449,6 +561,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -461,7 +575,7 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -471,24 +585,24 @@ contains
     select type(p_eos => act_eos_ptr)
     type is (extcsp_eos)
       call csp_init(p_eos,nce,act_mod_ptr%comps,&
-           refcomp_str=trim(ref_comp),&
-           shEos=trim(sh_eos),&
-           shMixRule=trim(sh_mixing),shAlpha=trim(sh_alpha),&
-           refEos=trim(ref_eos),refAlpha=ref_alpha,&
-           parameter_ref=parameter_ref)
-   end select
+        refcomp_str=trim(ref_comp),&
+        shEos=trim(sh_eos),&
+        shMixRule=trim(sh_mixing),shAlpha=trim(sh_alpha),&
+        refEos=trim(ref_eos),refAlpha=ref_alpha,&
+        parameter_ref=parameter_ref)
+    end select
 
-   ncbeos = 1
-   !$ ncbeos = omp_get_max_threads()
-   do i=2,ncbeos
-     act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
-   enddo
+    ncbeos = 1
+    !$ ncbeos = omp_get_max_threads()
+    do i=2,ncbeos
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
 
-   ! Set globals
-   call update_global_variables_form_active_thermo_model()
+    ! Set globals
+    call update_global_variables_form_active_thermo_model()
 
-   ! Initialize fallback eos
-   call init_fallback_and_redefine_criticals(silent=.true.)
+    ! Initialize fallback eos
+    call init_fallback_and_redefine_criticals(silent=.true.)
 
   end subroutine init_extcsp
 
@@ -503,7 +617,6 @@ contains
     use eosTV,        only: pressure
     use critical,     only: calcCriticalTV
     use saturation,   only: acentricFactorEos
-    use thermopack_constants,      only: tpTmin, Rgas
     use cbAlpha,      only: getAcentricAlphaParam
     use cubic_eos,    only: cb_eos
     use saft_interface, only: estimate_critical_parameters
@@ -539,11 +652,11 @@ contains
       if (ierr /= 0 .and. isSAFT) then
         ! Maybe sigma and eps are redefined and the initial guess is bad?
         call estimate_critical_parameters(i, Tc, vc)
-        call calcCriticalTV(Tc,Vc,Z,ierr,p=Pc)
+        call calcCriticalTV(Tc,Vc,Z,ierr,v_min=vc*0.25,p=Pc)
       endif
       if (ierr /= 0 .and. .not. silent_init) then
         print *, 'Not able to redefine critical properties for component: ', &
-             trim(act_mod_ptr%comps(i)%p_comp%ident)
+          trim(act_mod_ptr%comps(i)%p_comp%ident)
       else
         select type (p_eos => act_alt_eos_ptr)
         class is (cb_eos)
@@ -557,7 +670,7 @@ contains
           act_mod_ptr%comps(i)%p_comp%acf = Acf
           p_eos%single(i)%Acf = Acf
           call getAcentricAlphaParam(p_eos%single(i)%alphaMethod, Acf, &
-               p_eos%single(i)%alphaParams)
+            p_eos%single(i)%alphaParams)
 
           ! Copy to others
           do j=2,size(act_mod_ptr%cubic_eos_alternative)
@@ -585,8 +698,8 @@ contains
   !> \author MH, 2013-03-06
   !----------------------------------------------------------------------
   subroutine init_thermopack(eos,mixing,alpha,nphase,&
-       csp_eos,csp_ref_comp,kij_ref,alpha_ref,saft_ref,&
-       b_exponent)
+    csp_eos,csp_ref_comp,kij_ref,alpha_ref,saft_ref,&
+    b_exponent)
     use eosdata, only: isSAFTEOS
     use stringmod, only: str_eq
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -646,9 +759,9 @@ contains
     if (len(eos) >= 3) then
       if (eos(1:3) == 'CPA') then
         if ( .not. mixHasSelfAssociatingComp(nc,trim(eosLocal),&
-             complist,saft_ref)) then
+          complist,saft_ref)) then
           print *,'No self associating components. Initializing ',&
-               eos(5:len(eos)),' instead of ',trim(eos)
+            eos(5:len(eos)),' instead of ',trim(eos)
           eosLocal = eos(5:len(eos))
           do i=1,nce
             act_mod_ptr%comps(i)%p_comp%assoc_scheme = no_assoc
@@ -673,14 +786,14 @@ contains
         else
           csp_refEos = "NIST_MEOS"
           if (.not. silent_init) &
-               print *,'init_thermopack: CSP model defaulted to MBWR32'
+            print *,'init_thermopack: CSP model defaulted to MBWR32'
         endif
         if (present(csp_ref_comp)) then
           csp_refcomp_str = csp_ref_comp ! This is case sensitive
         else
           csp_refcomp_str = "C3"
           if (.not. silent_init) &
-               print *,'init_thermopack: CSP reference component defaulted to C3'
+            print *,'init_thermopack: CSP reference component defaulted to C3'
         endif
       end if
     end if
@@ -690,20 +803,20 @@ contains
     select type(p_eos => act_eos_ptr)
     class is (cb_eos)
       call SelectCubicEOS(nce,act_mod_ptr%comps,p_eos,trim(alpha),&
-           alpha_ref_local)
+        alpha_ref_local)
       call SelectMixingRules(nce,act_mod_ptr%comps,p_eos,mixRule,&
-           kij_ref_local,b_exponent)
+        kij_ref_local,b_exponent)
     type is (extcsp_eos)
       call csp_init(p_eos,nce,act_mod_ptr%comps,refcomp_str=trim(csp_refcomp_str),&
-           shEos=trim(eosLocal),&
-           shMixRule=trim(mixRule),shAlpha=trim(alpha),&
-           refEos=trim(csp_refEos),refAlpha=trim(alpha))
-   end select
+        shEos=trim(eosLocal),&
+        shMixRule=trim(mixRule),shAlpha=trim(alpha),&
+        refEos=trim(csp_refEos),refAlpha=trim(alpha))
+    end select
 
     ! SAFT initialization must be done after cbeos initialization.
     if (isSAFTEOS(act_eos_ptr%eosidx)) then
-       call saft_type_eos_init(nce,act_mod_ptr%comps,&
-            act_eos_ptr,saft_ref_local,silent_init)
+      call saft_type_eos_init(nce,act_mod_ptr%comps,&
+        act_eos_ptr,saft_ref_local,silent_init)
     end if
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
@@ -796,7 +909,7 @@ contains
   !> Initialize SAFT-VR-MIE EoS. Use: call init_saftvrmie('CO2,N2')
   !----------------------------------------------------------------------------
   subroutine init_saftvrmie(comps,parameter_reference)
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nce, complist
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -842,7 +955,7 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -853,7 +966,8 @@ contains
 
     ! SAFT initialization must be done after cbeos initialization.
     call saft_type_eos_init(nce,act_mod_ptr%comps,&
-         act_eos_ptr,param_ref,silent_init=.true.)
+      act_eos_ptr,param_ref,silent_init=.true.)
+
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
@@ -872,16 +986,17 @@ contains
   !> Initialize SAFT-VR-MIE with quantum corrections EoS.
   !! Use: call init_quantum_saftvrmie('He,Ne',feynman_hibbs_order=1)
   !----------------------------------------------------------------------------
-  subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,parameter_reference)
-    use saftvrmie_options, only: NON_ADD_HS_REF, saftvrmieaij_model_options
+  subroutine init_quantum_saftvrmie(comps,feynman_hibbs_order,additive_hs_ref,parameter_reference)
+    use saftvrmie_options, only: NON_ADD_HS_REF, ADDITIVE_EXACT_HS_REF, saftvrmieaij_model_options
     use thermopack_constants, only: clen
     use saftvrmie_containers, only: svrm_opt
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     integer, optional, intent(in) :: feynman_hibbs_order
+    logical, optional, intent(in) :: additive_hs_ref
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
     ! Locals
     character(len=clen) :: param_ref !< Data set reference
-    integer :: FH, FH_model
+    integer :: FH, FH_model, hs_ref
     if (present(feynman_hibbs_order)) then
       FH = max(min(feynman_hibbs_order, 2),0)
     else
@@ -905,14 +1020,18 @@ contains
       end select
     endif
     call init_saftvrmie(comps,param_ref)
-    call svrm_opt%saftvrmieaij_model_options(FH_model, NON_ADD_HS_REF)
+    hs_ref = NON_ADD_HS_REF
+    if (present(additive_hs_ref)) then
+      if (additive_hs_ref) hs_ref = ADDITIVE_EXACT_HS_REF
+    endif
+    call svrm_opt%saftvrmieaij_model_options(FH_model, hs_ref)
   end subroutine init_quantum_saftvrmie
 
   !----------------------------------------------------------------------------
   !> Initialize PC-SAFT EoS. Use: call init_pcsaft('CO2,N2')
   !----------------------------------------------------------------------------
   subroutine init_pcsaft(comps,parameter_reference,simplified,polar)
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -964,6 +1083,8 @@ contains
     act_mod_ptr%nc = ncomp
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -979,13 +1100,13 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
     ! Initialize Thermopack
     call init_thermopack("PC-SAFT", "Classic", "Classic", nphase=3,&
-         saft_ref=param_ref)
+      saft_ref=param_ref)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
@@ -999,7 +1120,7 @@ contains
   !> Initialize CPA EoS. Use: call init_cpa('CO2,N2','PR', alpha='TWU')
   !----------------------------------------------------------------------------
   subroutine init_cpa(comps,eos,mixing,alpha,parameter_reference)
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
@@ -1041,6 +1162,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1053,7 +1176,7 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -1063,7 +1186,7 @@ contains
     if (present(alpha)) alpha_loc = uppercase(alpha)
 
     call init_thermopack("CPA-"//trim(eos_loc),trim(uppercase(mixing_loc)), &
-         trim(uppercase(alpha_loc)), nphase=3, saft_ref=param_ref)
+      trim(uppercase(alpha_loc)), nphase=3, saft_ref=param_ref)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
@@ -1077,7 +1200,7 @@ contains
   !> Initialize Lee-Kesler EoS.
   !----------------------------------------------------------------------------
   subroutine init_lee_kesler(comps,parameter_reference)
-    use compdata,   only: SelectComp, initCompList
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -1113,6 +1236,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1125,12 +1250,12 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
     call init_thermopack("LK","CLASSIC", &
-         "CLASSIC", nphase=3, kij_ref=param_ref)
+      "CLASSIC", nphase=3, kij_ref=param_ref)
     ! Set globals
     call update_global_variables_form_active_thermo_model()
 
@@ -1142,19 +1267,31 @@ contains
   !----------------------------------------------------------------------------
   !> Initialize multiparamaters eos
   !----------------------------------------------------------------------------
-  subroutine init_multiparameter(comps, eos)
-    use compdata,   only: SelectComp, initCompList
+  subroutine init_multiparameter(comps, meos, ref_state)
+    use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
+    use eos_parameters, only: single_eos, get_single_eos_pointer
+    use multiparameter_base, only: REF_NO_SOLVE, REF_EVALUATE_ID, &
+      REF_SOLVE_FOR_T, REF_SOLVE_FOR_P
+    use saturation, only: safe_bubT, safe_bubP
+    use eostv, only: entropy_tv, enthalpy_tv, Fideal
+    use eos, only: specificvolume
     !$ use omp_lib, only: omp_get_max_threads
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
-    character(len=*), intent(in) :: eos !< Equation of state
+    character(len=*), intent(in) :: meos !< Equation of state
+    character(len=*), intent(in) :: ref_state !< Reference state ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
     ! Locals
     integer                          :: ncomp, index, ierr, ncbeos, i
     character(len=len_trim(comps))   :: comps_upper
     type(thermo_model), pointer      :: act_mod_ptr
+    character(len=len_trim(meos)+4)  :: eos_local !< Equation of state
+    real :: T_ref, P_ref, v_ref, s_ref, h_ref, tmin, FI, FI_T
+    real, allocatable :: x_ref(:), y_ref(:)
+    integer :: phase_ref, solve_ref
+    type(single_eos), pointer :: p_single_eos
 
     ! Initialize MEOS
     if (.not. active_thermo_model_is_associated()) then
@@ -1166,8 +1303,13 @@ contains
     comps_upper=trim(uppercase(comps))
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
+    eos_local = trim(meos)
+    if (ncomp > 1 .and. str_eq(meos,"GERG2008")) then
+      eos_local = trim(meos)//"_MIX"
+    endif
+    !
     complist => act_mod_ptr%complist
-    call allocate_eos(ncomp, eos)
+    call allocate_eos(ncomp, eos_local)
 
     ! Number of phases
     act_mod_ptr%nph = 3
@@ -1179,35 +1321,69 @@ contains
     act_mod_ptr%nc = ncomp
     nph = act_mod_ptr%nph
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
-    call SelectComp(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
-    ! Set reference entalpies and entropies
-    call set_reference_energies(act_mod_ptr%comps)
+    call init_component_data_from_db(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
 
+    ! Initialize fallback eos
+    act_mod_ptr%need_alternative_eos = .true.
+    call init_fallback_and_redefine_criticals(silent=.true., enable_volume_shift=.true.)
+
+    ! Calculate reference states
+    if (str_eq(meos, "MEOS") .and. .not. str_eq(ref_state, "DEFAULT")) then
+      ! Set reference entalpies and entropies
+      ! call set_reference_energies(act_mod_ptr%comps)
+      allocate(x_ref(nce),y_ref(nce))
+      p_single_eos => get_single_eos_pointer(act_mod_ptr%eos(1)%p_eos)
+      if (allocated(p_single_eos%nist)) then
+        tmin = tptmin
+        tptmin = 2.0
+        do i=1,nce
+          x_ref = 0
+          x_ref(i) = 1
+          call p_single_eos%nist(i)%meos%get_ref_state_spec(ref_state,T_ref,P_ref,phase_ref,solve_ref)
+          if (solve_ref == REF_SOLVE_FOR_P) then
+            P_ref = safe_bubP(T_ref,x_ref,y_ref,ierr)
+          else if (solve_ref == REF_SOLVE_FOR_T) then
+            T_ref = safe_bubT(P_ref,x_ref,y_ref,ierr)
+          endif
+          if (solve_ref == REF_EVALUATE_ID) then
+            v_ref = T_ref*p_single_eos%nist(i)%meos%Rgas_meos/P_ref
+            call Fideal(T_ref,v_ref,x_ref,F=FI,F_T=FI_T)
+            h_ref = (1.d0 - T_ref*FI_T ) * p_single_eos%nist(i)%meos%Rgas_meos * T_ref
+            s_ref = -(T_ref*FI_T + FI) * p_single_eos%nist(i)%meos%Rgas_meos
+            call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+          else if (solve_ref /= REF_NO_SOLVE) then
+            call specificvolume(T_ref,P_ref,x_ref,phase_ref,v_ref)
+            call enthalpy_tv(T_ref,v_ref,x_ref,h_ref)
+            call entropy_tv(T_ref,v_ref,x_ref,s_ref)
+            call p_single_eos%nist(i)%meos%set_ref_state(T_ref,P_ref,v_ref,h_ref,s_ref)
+          endif
+        enddo
+        deallocate(x_ref,y_ref)
+        tptmin = tmin
+      endif
+    endif
     ncbeos = 1
     !$ ncbeos = omp_get_max_threads()
     do i=2,ncbeos
       act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
     enddo
-
-    ! Initialize fallback eos
-    act_mod_ptr%need_alternative_eos = .true.
-    call init_fallback_and_redefine_criticals(silent=.true.)
-
   end subroutine init_multiparameter
 
   !----------------------------------------------------------------------------
   !> Initialize Pets EoS.
   !----------------------------------------------------------------------------
   subroutine init_pets(parameter_reference)
-    use compdata, only: SelectComp, initCompList
+    use compdata, only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
@@ -1246,6 +1422,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1258,7 +1436,7 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -1268,7 +1446,7 @@ contains
     act_eos_ptr%isElectrolyteEoS = .false.
 
     call saft_type_eos_init(nce,act_mod_ptr%comps,&
-         act_eos_ptr,param_ref,silent_init=.true.)
+      act_eos_ptr,param_ref,silent_init=.true.)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()
@@ -1308,7 +1486,7 @@ contains
   !> Initialize Lennard-Jones (spline) equation of state using perturbation theory
   !----------------------------------------------------------------------------
   subroutine init_lj_ljs(potential,model,parameter_reference)
-    use compdata, only: SelectComp, initCompList
+    use compdata, only: init_component_data_from_db, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
     use thermopack_constants, only: THERMOPACK, ref_len
     use stringmod,  only: uppercase
@@ -1356,6 +1534,8 @@ contains
     nph = act_mod_ptr%nph
     complist => act_mod_ptr%complist
     apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
 
     ! Set eos library identifyer
     act_mod_ptr%eosLib = THERMOPACK
@@ -1368,7 +1548,7 @@ contains
     endif
 
     ! Initialize components module
-    call SelectComp(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
     ! Set reference entalpies and entropies
     call set_reference_energies(act_mod_ptr%comps)
 
@@ -1378,7 +1558,7 @@ contains
     act_eos_ptr%isElectrolyteEoS = .false.
 
     call saft_type_eos_init(nce,act_mod_ptr%comps,&
-         act_eos_ptr,param_ref,silent_init=.true.)
+      act_eos_ptr,param_ref,silent_init=.true.)
 
     ! Set globals
     call update_global_variables_form_active_thermo_model()

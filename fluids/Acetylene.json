@@ -1,0 +1,109 @@
+{
+  "ident": "ACETYLENE",
+  "formula": "C2H2",
+  "cas_number": "74-86-2",
+  "name": "ACETYLENE",
+  "InChI": "1S/C2H2/c1-2/h1-2H",
+  "structure": "C:2;H:2",
+  "aliases": [
+    "Acetylene",
+    "Ethyne",
+    "R2130"
+  ],
+  "mol_weight": 26.038,
+  "critical": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 308.3,
+    "pressure": 6140000.0,
+    "compressibility": 0.27
+  },
+  "triple": {
+    "ref": "Default",
+    "bib_reference": "",
+    "temperature": 0.0,
+    "pressure": 0.0
+  },
+  "acentric_factor": {
+    "ref": "Default",
+    "bib_reference": "",
+    "acf": 0.19
+  },
+  "boiling_temperature": {
+    "bib_reference": "",
+    "temperature": 188.4
+  },
+  "saturation": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 2,
+    "ant": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "ideal_heat_capacity-1": {
+    "ref": "Default",
+    "bib_reference": "",
+    "correlation": 4,
+    "cp": [
+      26.82,
+      0.07578,
+      -5.007e-05,
+      1.412e-08,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "Tmin": 0.0,
+    "Tmax": 0.0
+  },
+  "reference_state": {
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "enthalpy": 226.73e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
+    "entropy": 200.93
+  },
+  "rackett_factor": {
+    "bib_reference": "",
+    "Zra": -1.0
+  },
+  "dipole_moment": {
+    "mu": 0.0,
+    "bib_reference": ""
+  },
+  "quadrupole_moment": {
+    "Q": 4.6,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502"
+  },
+  "SRK": {},
+  "PR": {},
+  "PC-SAFT-1": {
+    "m": 1.5477,
+    "sigma": 3.3428E-10,
+    "eps_depth_divk": 174.48,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005"
+  },
+  "PC-SAFT-2": {
+    "m": 1.5587,
+    "sigma": 3.3325E-10,
+    "eps_depth_divk": 174.68,
+    "eps": 0.0,
+    "beta": 0.0,
+    "assoc_scheme": "None",
+    "Q": 4.5415,
+    "bib_reference": "Gross 2005, doi: 10.1002/aic.10502",
+    "ref": "Gross2005ADJQ"
+  }
+}

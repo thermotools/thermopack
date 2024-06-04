@@ -6,6 +6,7 @@
 module isolines
   use saturation_point_locators, only: iso_cross_saturation_line
   use saturation_curve, only: ISO_P, ISO_T, ISO_S, ISO_H, iso_label
+  use thermopack_var, only: tpPmin, tpTmin, tpPmax, tpTmax
   implicit none
   private
   save
@@ -65,14 +66,14 @@ contains
           phase(1:n_vap) = VAPPH
           call linspace(Pmin,Pbub,n_vap,pa(1:n_vap))
           phase(n_vap+1:n) = LIQPH
-          call linspace(Pmin,Pbub,n-n_vap,pa(n_vap+1:n))
+          call linspace(Pbub,Pmax,n-n_vap,pa(n_vap+1:n))
         endif
-        do i=1,n
-          call specificvolume(T,pa(i),z,phase(i),va(i))
-          call enthalpy_tv(T,va(i),z,ha(i))
-          call entropy_tv(T,va(i),z,sa(i))
-        enddo
       endif
+      do i=1,n
+        call specificvolume(T,pa(i),z,phase(i),va(i))
+        call enthalpy_tv(T,va(i),z,ha(i))
+        call entropy_tv(T,va(i),z,sa(i))
+      enddo
     else
       !if (n > 15) then
       !  na = n - 2
@@ -168,14 +169,14 @@ contains
           phase(1:n_liq) = LIQPH
           call linspace(Tmin,Tbub,n_liq,ta(1:n_liq))
           phase(n_liq+1:n) = VAPPH
-          call linspace(Tmin,Tbub,n-n_liq,ta(n_liq+1:n))
+          call linspace(Tbub,Tmax,n-n_liq,ta(n_liq+1:n))
         endif
-        do i=1,n
-          call specificvolume(ta(i),P,z,phase(i),va(i))
-          call enthalpy_tv(ta(i),va(i),z,ha(i))
-          call entropy_tv(ta(i),va(i),z,sa(i))
-        enddo
       endif
+      do i=1,n
+        call specificvolume(ta(i),P,z,phase(i),va(i))
+        call enthalpy_tv(ta(i),va(i),z,ha(i))
+        call entropy_tv(ta(i),va(i),z,sa(i))
+      enddo
     else
       call linspace(Tmin,Tmax,n,ta)
       do i=1,n
@@ -206,8 +207,7 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isenthalp(h,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,sa,ta,na)
-    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
-         tpTmin, tpTmax
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
     use eosTV, only: entropy_tv
     use eos, only: specificvolume
@@ -279,8 +279,7 @@ contains
   !> \author Morten Hammer, 2020-06
   !-----------------------------------------------------------------------------
   subroutine isentrope(s,Pmin,Pmax,Tmin,Tmax,z,n,pa,va,ha,ta,na)
-    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH, &
-         tpTmin, tpTmax
+    use thermopack_constants, only: TWOPH, SINGLEPH, VAPPH, LIQPH
     use thermopack_var, only: nc
     use eosTV, only: enthalpy_tv
     use eos, only: specificvolume

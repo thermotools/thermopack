@@ -2,6 +2,8 @@
   "ident": "NC6",
   "formula": "C6H14",
   "cas_number": "110-54-3",
+  "InChI": "1S/C6H14/c1-3-5-6-4-2/h3-6H2,1-2H3",
+  "structure": "C:6;H:14",
   "name": "N-HEXANE",
   "aliases": [
     "n-Hexane",
@@ -62,14 +64,11 @@
     "Tmax": 700.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Good and Smith, 1969",
+    "enthalpy": -167.1e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Scott D.W., 1974",
+    "entropy_ref_state": "1ATM",
+    "entropy": 388.82
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -128,7 +127,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
@@ -176,7 +176,7 @@
     "beta": 0.0,
     "assoc_scheme": "None",
     "bib_reference": "Kontogeorgis & Folas (2010). Doi: 10.1002/9780470747537",
-    "ref": "Default/Kontogeorgis_Folas2001"
+    "ref": "Default/Kontogeorgis_Folas2010"
   },
   "SAFTVRMIE-1": {
     "m": 2.1097,
