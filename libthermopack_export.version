@@ -58,6 +58,7 @@ libthermopack {
 	*entropy*;
 	*enthalpy*;
 	*compmoleweight*;
+	*moleweight*;
 	*getcriticalparam*;
 	*ideal_enthalpy_single*;
 	*ideal_entropy_single*;

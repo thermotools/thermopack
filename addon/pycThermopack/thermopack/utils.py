@@ -105,6 +105,8 @@ class FlashResult:
         self.T, self.p, self.x, self.y, self.betaV, self.betaL, \
         self.phase, self.flash_type = T, p, x, y, betaV, betaL, phase, flash_type
 
+        self.P, self.beta = p, betaV # aliases
+
         self.iterable = [T, p, x, y, betaV, betaL, phase]
         self.contents = ['T', 'p', 'x', 'y', 'betaV', 'betaL', 'phase']
         self.descriptions = {'T' : 'Temperature [K]', 'p' : 'pressure [Pa]',  'x' : 'Liquid phase composition',

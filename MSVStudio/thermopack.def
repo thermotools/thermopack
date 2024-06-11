@@ -60,6 +60,7 @@ EXPORTS
 	eos_mp_entropy_
 	eos_mp_enthalpy_
 	eos_mp_compmoleweight_
+	eos_mp_moleweight_
 	eos_mp_getcriticalparam_
 	eos_mp_ideal_enthalpy_single_
 	eos_mp_ideal_entropy_single_

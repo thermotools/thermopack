@@ -12,7 +12,7 @@ module uv_solver
        SINGLEPH, SOLIDPH, TWOPH, VAPSOLPH, MINGIBBSPH
   use numconstants, only: machine_prec, small
   use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       tpPmax, tpPmin, Rgas, tpTmin, tpTmax
+       tpPmax, tpPmin, Rgas, tpTmin, tpTmax, robustness_level
   use eos
   use tp_solver, only: twoPhaseTPflash, rr_solve
   use state_functions
@@ -124,7 +124,11 @@ contains
     !
     tryNewPhase = .true.
     converged = .false.
-    call twoPhaseUVflashFull(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase,converged)
+    if (robustness_level > 0) then
+      call twoPhaseUVflashNested(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase,converged)
+    else
+      call twoPhaseUVflashFull(t,p,Z,beta,betaL,X,Y,uspec,vspec,phase,converged)
+    end if
     !
     if (.not. converged) then
       if (phase == TWOPH) then
