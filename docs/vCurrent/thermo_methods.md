@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-05-27T09:16:01.308118
+Generated at: 2024-06-11T11:12:19.233427
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -124,6 +124,8 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
+    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
@@ -1611,7 +1613,7 @@ Calculate dew temperature given pressure and composition
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=15000000.0, minimum_temperature=None, step_size=None, initial_temperature=None)`
-Get saturated phase having given entropy. Searches the binodal by tracing it upwards in pressure from the dew point at initial_pressure. Args: entropy (float): Entropy (J/mol/K). initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None. calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False initial_temperature (bool, optional): Start search from dew point at initial temperature. Overrides initial pressure. Defaults to None (K). Returns: float: Temperature values (K) foat: Pressure values (Pa) float: Specific volume (m3/mol) int: Phase flag for main phase ndarray: Incipient composition (mol/mol) 
+Get saturated phase having given entropy. Searches the binodal by tracing it upwards in pressure from the dew point at initial_pressure. Args: entropy (float): Entropy (J/mol/K). initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None. minimum_temperature (float, optional): Not in use initial_temperature (float, optional): Start search from dew point at initial temperature. Overrides initial pressure. Defaults to None (K). Returns: float: Temperature values (K) foat: Pressure values (Pa) float: Specific volume (m3/mol) int: Phase flag for main phase ndarray: Incipient composition (mol/mol) 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3324,6 +3326,8 @@ Methods for handling communication with the Fortran library.
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
+    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
@@ -3341,7 +3345,17 @@ Delete FORTRAN memory allocated for this instance
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `__init__(self)`
-Load libthermopack.(so/dll) and initialize function pointers 
+Initialize function pointers 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `__new__(cls, *args, **kwargs)`
+Get platform specifics and Load libthermopack.(so/dll/dylib) 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `_get_true_int_value(self)`
+Intel FORTRAN uses True=-1, while gfortran uses True=1 Returns: int: Integer representing True of the logical value 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
