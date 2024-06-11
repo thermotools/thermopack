@@ -19,7 +19,7 @@ def remove_illegal_link_chars(link_str):
     Remove characters that are illegal in url-links from the string 'link_str', and return the new string.
     """
     return (link_str.replace(' ', '-').replace('(', '').replace(')', '').replace('=', '').replace(',', '').replace(
-             "'", '').replace('.','')).lower()
+             "'", '').replace('.','')).replace(':', '').lower()
 
 def check_is_changed(old_file, new_file_str):
     """

@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-03-08T09:40:29.500914
+Generated at: 2024-06-11T11:12:19.233427
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -39,7 +39,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [TVp-property interfaces](#tvp-property-interfaces)
     * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
     * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phasenone-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
   * [Other property interfaces](#other-property-interfaces)
     * [density_lnf_t](#density_lnf_tself-temp-lnf-rho_initial)
     * [density_mu_t](#density_mu_tself-temp-mu-rho_initial)
@@ -52,14 +52,14 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [two_phase_tpflash](#two_phase_tpflashself-temp-press-z)
     * [two_phase_uvflash](#two_phase_uvflashself-z-specific_energy-specific_volume-tempnone-pressnone)
   * [Saturation interfaces](#saturation-interfaces)
-    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
+    * [_property_index_from_string](#_property_index_from_stringself-prop-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
-    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure10-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
@@ -124,6 +124,8 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
+    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
@@ -956,7 +958,7 @@ Computing properties given Temperature, volume and mole numbers, but evaluate de
   * [TVp-property interfaces](#tvp-property-interfaces)
     * [enthalpy_tvp](#enthalpy_tvpself-temp-volume-n-dhdtnone-dhdpnone-dhdnnone-property_flagir)
     * [entropy_tvp](#entropy_tvpself-temp-volume-n-dsdtnone-dsdpnone-dsdnnone-property_flagir)
-    * [thermo_tvp](#thermo_tvpself-temp-v-n-phase-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
+    * [thermo_tvp](#thermo_tvpself-temp-v-n-phasenone-dlnfugdtnone-dlnfugdpnone-dlnfugdnnone)
 
 
 ### `enthalpy_tvp(self, temp, volume, n, dhdt=None, dhdp=None, dhdn=None, property_flag='IR')`
@@ -1049,7 +1051,7 @@ Calculate entropy given temperature, pressure and mol numbers.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `thermo_tvp(self, temp, v, n, phase, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
+### `thermo_tvp(self, temp, v, n, phase=None, dlnfugdt=None, dlnfugdp=None, dlnfugdn=None)`
 Calculate logarithm of fugacity coefficient given molar numbers, temperature and pressure. Note that the order of the output match the default order of input for the differentials. Note further that dlnfugdt, dlnfugdp, dlnfugdn and ophase only are flags to enable calculation.
 
 #### Args:
@@ -1065,6 +1067,10 @@ Calculate logarithm of fugacity coefficient given molar numbers, temperature and
 &nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **phase (Any) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Not in use, may be removed in the future.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
 
@@ -1378,14 +1384,14 @@ Bubble- and dew point calculations and phase envelopes.
 
 ### Table of contents
   * [Saturation interfaces](#saturation-interfaces)
-    * [_property_index_from_string](#_property_index_from_stringself-prop:-str)
+    * [_property_index_from_string](#_property_index_from_stringself-prop-str)
     * [binary_triple_point_pressure](#binary_triple_point_pressureself-temp-maximum_pressure150000000-minimum_pressure100000)
     * [bubble_pressure](#bubble_pressureself-temp-z)
     * [bubble_temperature](#bubble_temperatureself-press-z)
     * [dew_pressure](#dew_pressureself-temp-z)
     * [dew_temperature](#dew_temperatureself-press-z)
     * [envelope_isentrope_cross](#envelope_isentrope_crossself-entropy-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_sizenone-initial_temperaturenone)
-    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure1000000-maximum_dz0003-maximum_dlns001)
+    * [get_binary_pxy](#get_binary_pxyself-temp-maximum_pressure150000000-minimum_pressure10-maximum_dz0003-maximum_dlns001)
     * [get_binary_txy](#get_binary_txyself-pressure-minimum_temperature00-maximum_dz0003-maximum_dlns0005)
     * [get_bp_term](#get_bp_termself-i_term)
     * [get_envelope_twophase](#get_envelope_twophaseself-initial_pressure-z-maximum_pressure150000000-minimum_temperaturenone-step_size_factor10-step_sizenone-calc_vfalse-initial_temperaturenone-calc_cricondenfalse)
@@ -1607,11 +1613,11 @@ Calculate dew temperature given pressure and composition
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=15000000.0, minimum_temperature=None, step_size=None, initial_temperature=None)`
-Get saturated phase having given entropy. Searches the binodal by tracing it upwards in pressure from the dew point at initial_pressure. Args: entropy (float): Entropy (J/mol/K). initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None. calc_v (bool, optional): Calculate specific volume of saturated phase? Defaults to False initial_temperature (bool, optional): Start search from dew point at initial temperature. Overrides initial pressure. Defaults to None (K). Returns: float: Temperature values (K) foat: Pressure values (Pa) float: Specific volume (m3/mol) int: Phase flag for main phase ndarray: Incipient composition (mol/mol) 
+Get saturated phase having given entropy. Searches the binodal by tracing it upwards in pressure from the dew point at initial_pressure. Args: entropy (float): Entropy (J/mol/K). initial_pressure (float): Start search from dew point at initial pressure (Pa). z (array_like): Composition (-) maximum_pressure (float , optional): Stop envelope tracking at maximum pressure (Pa). Defaults to 1.5e7. minimum_temperature (float , optional): Exit envelope tracking minimumtemperature (K). Defaults to None. step_size (float , optional): Set maximum step size for envelope trace. Defaults to None. minimum_temperature (float, optional): Not in use initial_temperature (float, optional): Start search from dew point at initial temperature. Overrides initial pressure. Defaults to None (K). Returns: float: Temperature values (K) foat: Pressure values (Pa) float: Specific volume (m3/mol) int: Phase flag for main phase ndarray: Incipient composition (mol/mol) 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `get_binary_pxy(self, temp, maximum_pressure=15000000.0, minimum_pressure=100000.0, maximum_dz=0.003, maximum_dlns=0.01)`
+### `get_binary_pxy(self, temp, maximum_pressure=15000000.0, minimum_pressure=1.0, maximum_dz=0.003, maximum_dlns=0.01)`
 Calculate binary three phase envelope
 
 #### Args:
@@ -1626,7 +1632,7 @@ Calculate binary three phase envelope
 
 &nbsp;&nbsp;&nbsp;&nbsp; **minimum_pressure (float, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum pressure (Pa). Defaults to 1.0e5.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Exit on minimum pressure (Pa). Defaults to 1.0.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **maximum_dz (float, optional):** 
 
@@ -3234,7 +3240,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters (Maximum 10 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters (Maximum 21 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3320,6 +3326,8 @@ Methods for handling communication with the Fortran library.
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
+    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
     * [delete_eos](#delete_eosself)
@@ -3337,7 +3345,17 @@ Delete FORTRAN memory allocated for this instance
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `__init__(self)`
-Load libthermopack.(so/dll) and initialize function pointers 
+Initialize function pointers 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `__new__(cls, *args, **kwargs)`
+Get platform specifics and Load libthermopack.(so/dll/dylib) 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `_get_true_int_value(self)`
+Intel FORTRAN uses True=-1, while gfortran uses True=1 Returns: int: Integer representing True of the logical value 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
