@@ -1304,10 +1304,6 @@ contains
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     eos_local = trim(meos)
-    if (ncomp > 1 .and. str_eq(meos,"GERG2008")) then
-      eos_local = trim(meos)//"_MIX"
-    endif
-    !
     complist => act_mod_ptr%complist
     call allocate_eos(ncomp, eos_local)
 

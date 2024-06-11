@@ -31,7 +31,6 @@ module eosdata
   integer, parameter :: meosNist = 62       !< Multiparameter EoS on NIST-like form
   integer, parameter :: meosLJ = 63        !< Multiparameter EoS
   integer, parameter :: meosLJTS = 64      !< Multiparameter EoS
-  integer, parameter :: meosGERG = 65      !< Multiparameter EoS
   integer, parameter :: eosPT = 7           !< Perturbation theory model
   integer, parameter :: eosSAFT_VR_MIE = 71 !< SAFT-VR-MIE equation of state
   integer, parameter :: eosLJS_BH = 721     !< Lennard-Jones splined equation of state using Barker-Henderson perturbation theory
@@ -41,8 +40,6 @@ module eosdata
   integer, parameter :: eosLJ_UF = 731      !< Lennard-Jones equation of state using Van Westen UF perturbation theory
   integer, parameter :: eosPeTS = 8         !< PeTS equation of state for LJTS at 2.5*sigma
   integer, parameter :: meosNist_mix  = 9   !< Multiparameter EoS for fluids with ideal mixture
-  integer, parameter :: meosGERG_mix = 10   !< Multicomponent GERG
-  integer, parameter :: meos_helm_mix = 11  !< Multicomponent multiparameter EoS with Helmholtz mixing
 
   type eos_label_mapping
     integer :: eos_idx
@@ -52,7 +49,7 @@ module eosdata
     logical :: need_alternative_eos
   end type eos_label_mapping
 
-  integer, parameter :: max_n_eos = 30
+  integer, parameter :: max_n_eos = 27
   type(eos_label_mapping), dimension(max_n_eos), parameter :: eos_label_db = (/&
        eos_label_mapping(&
        eos_idx = eosCubic, &
@@ -207,14 +204,6 @@ module eosdata
        ),&
        !
        eos_label_mapping(&
-       eos_idx = eos_single, &
-       eos_subidx = meosGERG, &
-       short_label = "GERG2008", &
-       label = "GERG EoS", &
-       need_alternative_eos = .true. &
-       ),&
-       !
-       eos_label_mapping(&
        eos_idx = eosPT, &
        eos_subidx = eosSAFT_VR_MIE, &
        short_label = "SAFT-VR-MIE", &
@@ -275,22 +264,6 @@ module eosdata
        eos_subidx = meosNist_mix, &
        short_label = "NIST_MEOS_MIX", &
        label = "Ideal mixture of NIST multiparameter EOS", &
-       need_alternative_eos = .true. &
-       ), &
-       !
-       eos_label_mapping(&
-       eos_idx = meosGERG_mix, &
-       eos_subidx = meosGERG_mix, &
-       short_label = "GERG2008_MIX", &
-       label = "GERG2008 mixture model", &
-       need_alternative_eos = .true. &
-       ), &
-       !
-       eos_label_mapping(&
-       eos_idx = meos_helm_mix, &
-       eos_subidx = meos_helm_mix, &
-       short_label = "MEOS", &
-       label = "MEOS mixture model", &
        need_alternative_eos = .true. &
        ) &
        /)

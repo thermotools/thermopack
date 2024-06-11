@@ -45,7 +45,7 @@ class multiparam(thermo):
 
         Args:
             comps (str): Comma separated list of component names
-            eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19, MEOS, GERG2008)
+            eos (str): Equation of state. (NIST_MEOS, MBWR32, MBWR19)
             reference_state (str): Reference state. ("DEFAULT", "IIR", "NBP", "ASHRAE", "IDGAS", "TRIPLE_POINT")
         """
         self.activate()
