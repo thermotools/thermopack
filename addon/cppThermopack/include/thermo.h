@@ -31,7 +31,7 @@ enum Phase{
 class Thermo{
     public:
 
-    Thermo() : model_index_c{get_export_name(thermopack_var, add_eos)()}, true_int{1} {}
+    Thermo() : true_int{1}, model_index_c{get_export_name(thermopack_var, add_eos)()} {}
     ~Thermo(){
         get_export_name(thermopack_var, delete_eos)(&model_index_c);
     }
