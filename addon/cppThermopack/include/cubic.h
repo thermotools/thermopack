@@ -15,7 +15,7 @@ class Cubic : public Thermo{
     Cubic(std::string comps, std::string eos,
             std::string mixing="vdW", std::string alpha="Classic", 
             std::string ref="Default", bool volume_shift=false)
-        : Thermo()
+        : Thermo(comps)
     {
         activate();
         int vol_shift_int = volume_shift ? true_int : 0;
