@@ -13,7 +13,7 @@ set(ColourBlue "${Esc}[34m")
 set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../../bin/libthermopack_optim_gfortran_Darwin.a")
 set(libgfortran_path "/opt/homebrew/lib/gcc/13/libgfortran.dylib")
 
-project(cpp_demo)
+project(cppExamples)
 set(CPP_HEADER_DIR ${CMAKE_SOURCE_DIR}/../include)
 file(GLOB CPP_HEADERS ${CPP_HEADER_DIR}/*.h)
 
@@ -24,8 +24,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 
-add_executable(cpp_demo main.cpp)
-target_include_directories(cpp_demo PUBLIC ${CPP_HEADER_DIR})
+add_executable(basic basic.cpp)
+target_include_directories(basic PUBLIC ${CPP_HEADER_DIR})
 
 find_package(LAPACK)
 
@@ -37,4 +37,4 @@ endif()
 message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
 message("${ColourBlue}Using libgfortran at : ${libgfortran_path}")
 
-target_link_libraries(cpp_demo PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})
+target_link_libraries(basic PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})
