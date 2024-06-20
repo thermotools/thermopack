@@ -23,3 +23,7 @@ print(f"Ideal enthalpy (J/mol) {h}, {h_id}")
 c = air.speed_of_sound_tv(T, v, z)
 print(f"Speed of sound (m/s) {c}")
 
+try:
+    T, y = air.bubble_temperature(1e5, [0.1, 0.3, 0.6])
+except NotImplementedError as e:
+    print(e)
