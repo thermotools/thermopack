@@ -9,13 +9,17 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-ide = ideal("CO2,N2")
-z = np.array([0.9,0.1])
-T = 300.0
-P = 1.0e5
-v = ide.specific_volume(T, P, z, ide.VAPPH)
-print(f"Ideal volume (m3/mol) {v}, {sum(z)*ide.Rgas*T/P}")
+air = ideal("N2,O2,AR")
+z = np.array([0.78,0.21,0.01])
+T = 298.15
+P = 1.01235e5
+v = air.specific_volume(T, P, z, air.VAPPH)
+print(f"Ideal volume (m3/mol) {v}, {sum(z)*air.Rgas*T/P}")
 
-h = ide.enthalpy_tv(T, v, z)
-h_id = sum([z[j]*ide.idealenthalpysingle(T, j+1) for j in range(len(z))])
+h = air.enthalpy_tv(T, v, z)
+h_id = sum([z[j]*air.idealenthalpysingle(T, j+1) for j in range(len(z))])
 print(f"Ideal enthalpy (J/mol) {h}, {h_id}")
+
+c = air.speed_of_sound_tv(T, v, z)
+print(f"Speed of sound (m/s) {c}")
+
