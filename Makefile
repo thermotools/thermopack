@@ -9,7 +9,7 @@
 #=============================================================================
 # Set some general variables
 #=============================================================================
-PROC = $(shell arch)
+PROC = $(shell uname -m)
 
 # Detect OS into UNAME
 UNAME := $(shell uname 2>/dev/null || echo Unknown)
