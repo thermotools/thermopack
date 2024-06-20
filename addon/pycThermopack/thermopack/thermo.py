@@ -296,7 +296,7 @@ class thermo(object):
 
         # Get int representation of true value
         self._true_int_value = self._get_true_int_value()
-  
+
         self.add_eos()
 
     def __del__(self):
@@ -316,7 +316,7 @@ class thermo(object):
         self.s_get_true.restype = None
         self.s_get_true(byref(int_true_c))
         return int_true_c.value
-  
+
     def activate(self):
         """Internal
         Activate this instance of thermopack parameters for calculation

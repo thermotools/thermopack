@@ -642,6 +642,7 @@ contains
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
+    use ideal, only: ideal_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -712,6 +713,17 @@ contains
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
+        type is ( ideal_eos ) ! Ideal mixture eos
+          if (present(eF)) eF = 0
+          if (present(eF_T)) eF_T = 0
+          if (present(eF_V)) eF_V = 0
+          if (present(eF_n)) eF_n = 0
+          if (present(eF_TT)) eF_TT = 0
+          if (present(eF_VV)) eF_VV = 0
+          if (present(eF_TV)) eF_TV = 0
+          if (present(eF_Tn)) eF_Tn = 0
+          if (present(eF_Vn)) eF_Vn = 0
+          if (present(eF_nn)) eF_nn = 0
         class default ! Saft eos
           call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
@@ -958,6 +970,7 @@ contains
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
+    use ideal, only: ideal_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -1002,6 +1015,11 @@ contains
     type is ( meos_idealmix )
       call calc_multiparameter_idealmix_zfac(nc, p_eos, T, p, ne, phase, &
            Zfac, dZdt, dZdp, dZdz)
+    type is ( ideal_eos ) ! Ideal mixture
+      Zfac = 1
+      if (present(dZdt)) dZdt = 0
+      if (present(dZdp)) dZdp = 0
+      if (present(dZdz)) dZdz = 0
     class default ! Saft eos
       call saft_zfac(nce,cbeos,phase,T,P,ne,Z=zfac,dZdT=dZdt,dZdP=dZdp,dZdn=dZdz)
     end select
