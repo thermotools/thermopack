@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-05-07T11:28:34.807763
+!! Time stamp: 2024-06-21T11:24:33.132406
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -2961,7 +2961,7 @@ module compdatadb
       cpdata(cid = "KR", &
       ref = "Default", &
       bib_ref = "NIST-Chase1998", &
-      cptype = 5, &
+      cptype = 12, &
       cp = (/2.07860300e+01,4.85063800e-10,-1.58291600e-10,1.52510200e-11,3.19634700e-11, &
       0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
