@@ -33,5 +33,12 @@ int main(){
     V = 1e-3;
     std::cout << "SVRM chemical potential : \n" << svrm.chemical_potential_tv(T, V, n, false, true) << std::endl;
 
+
+    Saftvrmie svrm_c1("C1");
+    p = 1e6;
+    T = 120.;
+    double vl = svrm_c1.specific_volume(T, p, {1}, Phase::liq);
+    double vg = svrm_c1.specific_volume(T, p, {1}, Phase::vap);
+    std::cout << "At T = " << T << " K, p = " << p / 1e5 << " bar, specific volume of methane is : " << vl << " / " << vg << std::endl;
     return 0;
 }

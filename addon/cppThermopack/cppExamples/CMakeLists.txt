@@ -11,7 +11,7 @@ set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
 set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../../bin/libthermopack_optim_gfortran_Darwin.a")
-set(libgfortran_path "/opt/homebrew/lib/gcc/13/libgfortran.dylib")
+set(libgfortran_path "/opt/homebrew/lib/gcc/13/libgfortran.a;/opt/homebrew/lib/gcc/13/libquadmath.a")
 
 project(cppExamples)
 set(CPP_HEADER_DIR ${CMAKE_SOURCE_DIR}/../include)
@@ -36,5 +36,6 @@ endif()
 
 message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
 message("${ColourBlue}Using libgfortran at : ${libgfortran_path}")
+message("${ColourBlue}Using liblapack at : ${LAPACK_LIBRARIES}")
 
 target_link_libraries(basic PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})

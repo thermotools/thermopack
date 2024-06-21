@@ -27,6 +27,7 @@ inline void check_has_diff(bool has_diff, std::string diff){
 class Property{
     public:
     inline operator double() const {return value_;}
+    inline double operator=(double val){value_ = val; return *this;}
     inline double value() const {return value_;}
     inline double dt() const {check_has_diff(dt_ptr, "dt"); return dt_;}
     inline double dv() const {check_has_diff(dv_ptr, "dv"); return dv_;}
