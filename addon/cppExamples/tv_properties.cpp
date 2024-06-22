@@ -37,6 +37,7 @@ int main(){
     std::cout << "Enthalpy : " << pcs.enthalpy_tv(T, V, n) / 1e3 << " kJ\n";
     std::cout << "Helmholtz energy : " << pcs.helmholtz_tv(T, V, n) / 1e3 << " kJ\n";
     std::cout << "Chemical potential : " << pcs.chemical_potential_tv(T, V, n) << " J / mol\n";
+    std::cout << "Logarithm of fugacity coeff. : " << pcs.fugacity_tv(T, V, n) << "\n";
 
     std::cout << "\nComputing derivatives ...\n";
     // Bools mark what derivatives to compute. 
@@ -48,9 +49,11 @@ int main(){
     std::cout << "dAdn : " << A.dn() << "\n";
     VectorProperty mu = pcs.chemical_potential_tv(T, V, n, true, false, true);
     std::cout << "mu   : " << mu.value() << "\n";
-    std::cout << "Chemical potential with derivatives : \n" << mu;
+    std::cout << "Chemical potential with derivatives : \n" << mu << "\n";
 
+    VectorProperty lnphi = pcs.fugacity_tv(T, V, n, false, true, true);
+    std::cout << "Logarithm of fugacity coefficients : \n" << lnphi;
 
-    std::vector<std::vector<double>> dmudn = mu.dn();
+    std::vector<std::vector<double>> dmudn = mu.dn(); // Extracting derivatives
     return 0;
 }

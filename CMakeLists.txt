@@ -1,0 +1,57 @@
+cmake_minimum_required(VERSION 3.2)
+project(ThermoPack LANGUAGES Fortran)
+
+set(CMAKE_Fortran_FLAGS "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive -Wno-unused-function -Wno-unused-variable")
+
+if(APPLE)
+  set(CMAKE_FORTRAN_COMPILER /opt/homebrew/bin/gfortran)
+  set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "The OSX architecture")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -arch arm64 -fno-expensive-optimizations")
+else()
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -march=x86-64 -msse2")
+endif(APPLE)
+
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -O3")
+else()
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -Wno-unused-dummy-argument -Wall")
+endif()
+
+string(ASCII 27 Esc)
+set(ColorRed "${Esc}[31m")
+set(ColorBlue "${Esc}[34m")
+
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.f90)
+list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/thermopack.f90)
+set(TREND_DIR ${CMAKE_CURRENT_SOURCE_DIR}/addon/trend_interface/include)
+set(TREND ${TREND_DIR}/trend_interface.f95)
+
+find_package(LAPACK)
+if (NOT LAPACK_FOUND)
+    message(${ColorRed}"Did not find LAPACK, exiting ...")
+    return()
+endif()
+
+add_library(thermopack SHARED ${SOURCES})
+target_include_directories(thermopack PUBLIC ${TREND_DIR})
+target_link_libraries(thermopack ${LAPACK_LIBRARIES})
+
+add_executable(run_thermopack ${CMAKE_CURRENT_SOURCE_DIR}/src/thermopack.f90)
+target_link_libraries(run_thermopack thermopack)
+
+message(${ColorBlue}"PFUNIT_DIR is : ${PFUNIT_DIR}")
+# set(GFTL_DIR CACHE STRING ${PFUNIT_DIR}/GFTL-1.8/cmake)
+# set(GFTL_SHARED_DIR CACHE STRING ${PFUNIT_DIR}/GFTL_SHARED-1.5/cmake)
+# set(FARGPARSE_DIR CACHE STRING ${PFUNIT_DIR}/FARGPARSE-1.4/cmake)
+message(${ColorBlue}"GFTL_DIR is : ${GFTL_DIR}")
+message(${ColorBlue}"GFTL_SHARED_DIR is : ${GFTL_SHARED_DIR}")
+find_package(PFUNIT)
+if (PFUNIT_FOUND)
+    enable_testing()
+    file(GLOB UNITTEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/unittests/*.pf)
+    add_pfunit_ctest(run_unittests TEST_SOURCES ${UNITTEST_SRC} LINK_LIBRARIES sut thermopack)
+else()
+    message(${ColorRed}"PFUNIT not found! Not creating run_unittests target ...")
+endif()
+
+install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/addon/pycThermopack/thermopack)
