@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <iostream>
 
 using vector1d = std::vector<double>;
 using vector2d = std::vector<vector1d>;

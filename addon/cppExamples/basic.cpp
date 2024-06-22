@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "cubic.h"
-#include "saftvrmie.h"
+#include <cppThermopack/cubic.h>
+#include <cppThermopack/saftvrmie.h>
 
 // Note: The structs `Property` and `VectorProperty` are found in utils.h, which is implicitly included in all headers
 // through thermo.h

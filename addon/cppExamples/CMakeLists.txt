@@ -10,11 +10,11 @@ string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../../bin/libthermopack_optim_gfortran_Darwin.a")
+set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../bin/libthermopack_optim_gfortran_Darwin.a")
 set(libgfortran_path "/opt/homebrew/lib/gcc/13/libgfortran.a;/opt/homebrew/lib/gcc/13/libquadmath.a")
 
 project(cppExamples)
-set(CPP_HEADER_DIR ${CMAKE_SOURCE_DIR}/../include)
+set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermoPack")
 file(GLOB CPP_HEADERS ${CPP_HEADER_DIR}/*.h)
 
 set(CMAKE_BUILD_TYPE "Release")
@@ -25,7 +25,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 
 add_executable(basic basic.cpp)
-target_include_directories(basic PUBLIC ${CPP_HEADER_DIR})
+target_include_directories(basic PUBLIC ${THERMOPACK_HEADERS})
+
+add_executable(tp_properties tp_properties.cpp)
+target_include_directories(tp_properties PUBLIC ${THERMOPACK_HEADERS})
 
 find_package(LAPACK)
 
@@ -35,7 +38,9 @@ if (NOT LAPACK_FOUND)
 endif()
 
 message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
+message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_HEADERS}")
 message("${ColourBlue}Using libgfortran at : ${libgfortran_path}")
 message("${ColourBlue}Using liblapack at : ${LAPACK_LIBRARIES}")
 
 target_link_libraries(basic PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})
+target_link_libraries(tp_properties PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})

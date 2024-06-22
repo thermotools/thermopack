@@ -1561,7 +1561,7 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dhdt, None, None), 'tpn')
         return prop.unpack()
 
-    def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
+    def idealentropysingle(self, temp, press, j, dsdt=None, dsdp=None):
         """Tp-property
         Calculate specific ideal entropy
         Note that the order of the output match the default order of input for the differentials.

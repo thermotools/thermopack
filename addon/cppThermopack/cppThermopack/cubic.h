@@ -33,3 +33,11 @@ class PengRobinson : public Cubic{
         : Cubic(comps, "PR", mixing, alpha, ref, volume_shift)
         {}
 };
+
+class SoaveRedlichKwong : public Cubic{
+    public:
+    SoaveRedlichKwong(std::string comps, std::string mixing="vdW", std::string alpha="Classic", 
+            std::string ref="Default", bool volume_shift=false)
+        : Cubic(comps, "SRK", mixing, alpha, ref, volume_shift)
+        {}
+};
