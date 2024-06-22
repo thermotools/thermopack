@@ -21,7 +21,13 @@ extern "C" {
     void get_export_name(eos, ideal_entropy_single)(double* T, double* p, int* comp_idx, double* s_id, double* dsdt, double* dsdp);
 
     double get_export_name(eostv, pressure)(double* T, double* V, double* n, double* dpdv, double* dpdt, double* d2pdv2, double* dpdn, int* property_flag);
+    void get_export_name(eostv, internal_energy_tv)(double* T, double* V, double* n, double* U, double* dudt, double* dudv, double* dudn, int* property_flag);
     void get_export_name(eostv, chemical_potential_tv)(double* T, double* V, double* n, double* mu, double* dmudt, double* dmudv, double* dmudn, int* property_flag);
+
+    void get_export_name(tp_solver, twophasetpflash)(double* T, double* p, double* z, double* betaV, double* betaL, int* phase, double* x, double* y);
+    void get_export_name(ps_solver, twophasepsflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* s, int* phase, int* ierr);
+    void get_export_name(uv_solver, twophaseuvflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* u, double* v, int* phase);
+    void get_export_name(ph_solver, twophasephflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* h, int* phase, int* ierr);
 }
 
 
@@ -98,12 +104,51 @@ class Thermo{
         return p;
     }
 
+    Property internal_energy_tv(double T, double V, vector1d n, bool dudt=false, bool dudv=false, bool dudn=false, int property_flag=PropertyFlag::total){
+        activate();
+        Property U(nc, dudt, dudv, false, dudn);
+        get_export_name(eostv, internal_energy_tv)(&T, &V, n.data(), &U.value_, U.dt_ptr, U.dv_ptr, U.dn_ptr, &property_flag);
+        return U;
+    }
+
     VectorProperty chemical_potential_tv(double T, double V, vector1d n, bool dmudt=false, bool dmudv=false, bool dmudn=false, 
                                     int property_flag=PropertyFlag::total){
             activate();
             VectorProperty mu(nc, dmudt, dmudv, false, dmudn);
             get_export_name(eostv, chemical_potential_tv)(&T, &V, n.data(), mu.value_.data(), mu.dt_ptr, mu.dv_ptr, mu.dn_ptr, &property_flag);
             return mu;                            
+    }
+
+    FlashResult two_phase_tpflash(double T, double p, vector1d z){
+        activate();
+        FlashResult fr(T, p, z, "TP");
+        get_export_name(tp_solver, twophasetpflash)(&T, &p, z.data(), &fr.betaV, &fr.betaL, &fr.phase, fr.x.data(), fr.y.data());
+        return fr;
+    }
+
+    FlashResult two_phase_psflash(double p, double s, vector1d z, double T=0.){
+        activate();
+        FlashResult fr(T, p, z, "PS");
+        int ierr = 0;
+        get_export_name(ps_solver, twophasepsflash)(&fr.T, &p, z.data(), &fr.betaV, &fr.betaL, fr.x.data(), fr.y.data(), &s, &fr.phase, &ierr);
+        if (ierr) throw std::runtime_error("PS flash failed");
+        return fr;
+    }
+
+    FlashResult two_phase_phflash(double p, double h, vector1d z, double T=0.){
+        activate();
+        FlashResult fr(T, p, z, "PH");
+        int ierr = 0;
+        get_export_name(ph_solver, twophasephflash)(&fr.T, &p, z.data(), &fr.betaV, &fr.betaL, fr.x.data(), fr.y.data(), &h, &fr.phase, &ierr);
+        if (ierr) throw std::runtime_error("PH flash failed");
+        return fr;
+    }
+
+    FlashResult two_phase_uvflash(double u, double v, vector1d z, double T=0., double p=0.){
+        activate();
+        FlashResult fr(T, p, z, "UV");
+        get_export_name(uv_solver, twophaseuvflash)(&fr.T, &fr.p, z.data(), &fr.betaV, &fr.betaL, fr.x.data(), fr.y.data(), &u, &v, &fr.phase);
+        return fr;
     }
 
     protected:

@@ -123,3 +123,40 @@ class VectorProperty{
     double *dt_ptr, *dv_ptr, *dp_ptr, *dn_ptr;
   
 };
+
+class FlashResult{
+    public:
+    int phase;
+    vector1d x, y, z;
+    double T, p, betaV, betaL;
+    std::string flash_type;
+
+    FlashResult(FlashResult&&) = default;
+    FlashResult(const FlashResult&) = default;
+    FlashResult& operator=(FlashResult&&) = default;
+
+    friend class Thermo;
+    friend std::ostream& operator<<(std::ostream& os, const FlashResult& self){
+        os << "FlashResult from " << self.flash_type << "-flash :\n"
+           << "\tT : " << self.T << " K\n"
+           << "\tp : " << self.p << " Pa\n"
+           << "\tz : {";
+        for (const double& zi : self.z) os << zi << ", ";
+        os << "}\n"
+           << "\tbetaV / betaL : " << self.betaV << " / " << self.betaL << "\n"
+           << "\tx : {";
+        for (const double& xi : self.x) os << xi << ", ";
+        os << "}\n\ty : {";
+        for (const double& yi : self.y) os << yi << ", ";
+        os << "}\n";
+        return os;
+    }
+    private:
+    FlashResult(const vector1d& z_, std::string flash_type) 
+        : phase{0}, x(z_.size(), 0.), y(z_.size(), 0.), z{z_}, flash_type{flash_type} 
+        {}
+
+    FlashResult(double T, double p, const vector1d& z_, std::string flash_type)
+        : phase{0}, x(z_.size(), 0.), y(z_.size(), 0.), z{z_}, T{T}, p{p}, flash_type{flash_type}
+        {}
+};

@@ -1,21 +1,26 @@
-# Compile and link minimal C++ wrapper for ThermoPack. Assumes that libthermopack has been built, and that the
-# libthermopack archive is found at ${libthermopack_path}, which is set at the top of this script.
+# Example for Compiling and linking C++ executables using thermopack.
+# This example assumes that libthermopack.dylib has already been built. The path to libthermopack.dylib
+# is set in `libthermopack_path`, you will likely need to modify this.
+# 
+# Note: If you want to build with static linkage, you also need to link libgfortran.a, libquadmath.a, and
+# lapack, as shown in CMakelists_static.txt.
+# 
 # Note: On macOS (arm64), you might need to 
 #   export CC=/opt/homebrew/bin/gcc-13
 #   export CXX=/opt/homebrew/bin/g++-13
 # before running cmake, in order to force compilation for arm64.
+project(cppExamples)
 cmake_minimum_required(VERSION 3.2)
 
 string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../bin/libthermopack_optim_gfortran_Darwin.a")
-set(libgfortran_path "/opt/homebrew/lib/gcc/13/libgfortran.a;/opt/homebrew/lib/gcc/13/libquadmath.a")
-
-project(cppExamples)
+set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../bin/dynamic/libthermopack_optim_gfortran_Darwin.dylib")
 set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermoPack")
-file(GLOB CPP_HEADERS ${CPP_HEADER_DIR}/*.h)
+
+message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
+message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_HEADERS}")
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++17")
@@ -26,21 +31,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 add_executable(basic basic.cpp)
 target_include_directories(basic PUBLIC ${THERMOPACK_HEADERS})
+target_link_libraries(basic PUBLIC ${libthermopack_path})
 
 add_executable(tp_properties tp_properties.cpp)
 target_include_directories(tp_properties PUBLIC ${THERMOPACK_HEADERS})
+target_link_libraries(tp_properties PUBLIC ${libthermopack_path})
 
-find_package(LAPACK)
+add_executable(flashes flashes.cpp)
+target_include_directories(flashes PUBLIC ${THERMOPACK_HEADERS})
+target_link_libraries(flashes PUBLIC ${libthermopack_path})
 
-if (NOT LAPACK_FOUND)
-    message("${ColourRed}Did not find Lapack! exiting ...")
-    return()
-endif()
-
-message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
-message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_HEADERS}")
-message("${ColourBlue}Using libgfortran at : ${libgfortran_path}")
-message("${ColourBlue}Using liblapack at : ${LAPACK_LIBRARIES}")
-
-target_link_libraries(basic PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})
-target_link_libraries(tp_properties PUBLIC ${libthermopack_path} ${libgfortran_path} ${LAPACK_LIBRARIES})
