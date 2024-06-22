@@ -37,6 +37,10 @@ add_executable(tp_properties tp_properties.cpp)
 target_include_directories(tp_properties PUBLIC ${THERMOPACK_HEADERS})
 target_link_libraries(tp_properties PUBLIC ${libthermopack_path})
 
+add_executable(tv_properties tv_properties.cpp)
+target_include_directories(tv_properties PUBLIC ${THERMOPACK_HEADERS})
+target_link_libraries(tv_properties PUBLIC ${libthermopack_path})
+
 add_executable(flashes flashes.cpp)
 target_include_directories(flashes PUBLIC ${THERMOPACK_HEADERS})
 target_link_libraries(flashes PUBLIC ${libthermopack_path})

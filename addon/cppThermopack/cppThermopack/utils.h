@@ -36,7 +36,11 @@ class Property{
     inline vector1d dn() const {check_has_diff(dn_ptr, "dn"); return dn_;}
 
     friend std::ostream& operator<<(std::ostream& strm, const Property& self){
-        strm << "Property with value : " << self.value_ << "\n";
+        bool has_derivs = (self.dt_ptr || self.dv_ptr || self.dp_ptr || self.dn_ptr);
+        if (has_derivs) strm << "Property with value : ";
+        strm << self.value_;
+        if (has_derivs) strm << "\n";
+        
         if (self.dt_ptr) strm << "\tdt : " << self.dt_ << "\n";
         if (self.dv_ptr) strm << "\tdv : " << self.dv_ << "\n";
         if (self.dp_ptr) strm << "\tdp : " << self.dp_ << "\n";
@@ -87,9 +91,11 @@ class VectorProperty{
     }
 
     friend std::ostream& operator<<(std::ostream& strm, const VectorProperty& self){
-        strm << "VectorProperty with value : ";
+        bool has_derivs = (self.dt_ptr || self.dv_ptr || self.dp_ptr || self.dn_ptr);
+        if (has_derivs) strm << "VectorProperty with value : ";
         for (double d : self.value_) strm << d << ", ";
-        strm << "\n";
+        if (has_derivs) strm << "\n";
+        
         if (self.dt_ptr){strm << "\tdt : "; for (double d : self.dt_) strm << d << ", "; strm << "\n";}
         if (self.dv_ptr){strm << "\tdv : "; for (double d : self.dv_) strm << d << ", "; strm << "\n";}
         if (self.dp_ptr){strm << "\tdp : "; for (double d : self.dp_) strm << d << ", "; strm << "\n";}

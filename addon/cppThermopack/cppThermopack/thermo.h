@@ -19,15 +19,22 @@ extern "C" {
     void get_export_name(eos, entropy)(double* T, double* p, double* z, int* phase, double* s, double* dsdt, double* dsdp, double* dsdn, int* property_flag);
     void get_export_name(eos, ideal_enthalpy_single)(double* T, int* comp_idx, double* h_id, double* dhdt);
     void get_export_name(eos, ideal_entropy_single)(double* T, double* p, int* comp_idx, double* s_id, double* dsdt, double* dsdp);
+    // get/set standard enthalpy/entropy/ideal cp
+    // speed_of_sound
 
     double get_export_name(eostv, pressure)(double* T, double* V, double* n, double* dpdv, double* dpdt, double* d2pdv2, double* dpdn, int* property_flag);
     void get_export_name(eostv, internal_energy_tv)(double* T, double* V, double* n, double* U, double* dudt, double* dudv, double* dudn, int* property_flag);
+    void get_export_name(eostv, entropy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
+    void get_export_name(eostv, enthalpy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
+    void get_export_name(eostv, free_energy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
+
     void get_export_name(eostv, chemical_potential_tv)(double* T, double* V, double* n, double* mu, double* dmudt, double* dmudv, double* dmudn, int* property_flag);
 
     void get_export_name(tp_solver, twophasetpflash)(double* T, double* p, double* z, double* betaV, double* betaL, int* phase, double* x, double* y);
     void get_export_name(ps_solver, twophasepsflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* s, int* phase, int* ierr);
     void get_export_name(uv_solver, twophaseuvflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* u, double* v, int* phase);
     void get_export_name(ph_solver, twophasephflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* h, int* phase, int* ierr);
+    // guess_phase
 }
 
 
@@ -45,6 +52,10 @@ class Thermo{
     int TWOPH = Phase::two;
     int LIQPH = Phase::liq;
     int VAPPH = Phase::vap;
+
+/************************************************************************/
+// ------------------------ TP-Property Interfaces -------------------- //
+/************************************************************************/
 
     Property specific_volume(double T, double p, vector1d z, int phase, bool dvdt=false, bool dvdp=false, bool dvdn=false){
         activate();
@@ -96,6 +107,10 @@ class Thermo{
         return s_id;
     }
 
+/************************************************************************/
+// ------------------------ TV-Property Interfaces -------------------- //
+/************************************************************************/
+
     Property pressure_tv(double T, double V, vector1d n, bool dpdt=false, bool dpdv=false, bool dpdn=false, 
                         int property_flag=PropertyFlag::total){
         activate();
@@ -111,6 +126,27 @@ class Thermo{
         return U;
     }
 
+    Property entropy_tv(double T, double V, vector1d n, bool dsdt=false, bool dsdv=false, bool dsdn=false, int property_flag=PropertyFlag::total){
+        activate();
+        Property S(nc, dsdt, dsdv, false, dsdn);
+        get_export_name(eostv, entropy_tv)(&T, &V, n.data(), &S.value_, S.dt_ptr, S.dv_ptr, S.dn_ptr, &property_flag);
+        return S;
+    }
+
+    Property enthalpy_tv(double T, double V, vector1d n, bool dhdt=false, bool dhdv=false, bool dhdn=false, int property_flag=PropertyFlag::total){
+        activate();
+        Property H(nc, dhdt, dhdv, false, dhdn);
+        get_export_name(eostv, enthalpy_tv)(&T, &V, n.data(), &H.value_, H.dt_ptr, H.dv_ptr, H.dn_ptr, &property_flag);
+        return H;
+    }
+
+    Property helmholtz_tv(double T, double V, vector1d n, bool dadt=false, bool dadv=false, bool dadn=false, int property_flag=PropertyFlag::total){
+        activate();
+        Property A(nc, dadt, dadv, false, dadn);
+        get_export_name(eostv, free_energy_tv)(&T, &V, n.data(), &A.value_, A.dt_ptr, A.dv_ptr, A.dn_ptr, &property_flag);
+        return A;
+    }
+
     VectorProperty chemical_potential_tv(double T, double V, vector1d n, bool dmudt=false, bool dmudv=false, bool dmudn=false, 
                                     int property_flag=PropertyFlag::total){
             activate();
@@ -119,6 +155,9 @@ class Thermo{
             return mu;                            
     }
 
+/************************************************************************/
+// --------------------------- Flash interfaces ----------------------- //
+/************************************************************************/
     FlashResult two_phase_tpflash(double T, double p, vector1d z){
         activate();
         FlashResult fr(T, p, z, "TP");
