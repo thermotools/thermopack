@@ -1,12 +1,12 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the saft class
 permalink: /v2.2.0/saft_methods.html
 ---
 
 <!--- 
-Generated at: 2024-01-02T13:58:15.150020
+Generated at: 2024-02-20T15:56:08.238079
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saft class. For instructions on how to use the parser routines, see the
@@ -18,6 +18,7 @@ compute quantities of interest when investigating SAFT-type equations of state.
 
 ## Table of contents
   * [Utility methods](#utility-methods)
+    * [a_chain](#a_chainself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_dispersion](#a_dispersionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
@@ -30,11 +31,13 @@ compute quantities of interest when investigating SAFT-type equations of state.
     * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
     * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
+    * [get_n_assoc_sites](#get_n_assoc_sitesself)
     * [get_pure_assoc_param](#get_pure_assoc_paramself-ic)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
+    * [print_saft_binary_report](#print_saft_binary_reportself)
     * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_pure_assoc_param](#set_pure_assoc_paramself-ic-eps_assoc-beta_assoc)
     * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
@@ -51,6 +54,7 @@ Helmholtz energy for SAFT-type equations of state
 
 ### Table of contents
   * [Utility methods](#utility-methods)
+    * [a_chain](#a_chainself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_dispersion](#a_dispersionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_hard_sphere](#a_hard_sphereself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
     * [a_soft_repulsion](#a_soft_repulsionself-temp-volume-n-a_tnone-a_vnone-a_nnone-a_ttnone-a_vvnone-a_tvnone-a_tnnone-a_vnnone-a_nnnone)
@@ -63,11 +67,13 @@ Helmholtz energy for SAFT-type equations of state
     * [epsilon_ij](#epsilon_ijself-i-j)
     * [fmt_energy_density](#fmt_energy_densityself-n_alpha-phi_nfalse-phi_nnfalse-fmt_modelwb)
     * [fres_polar](#fres_polarself-temp-volume-n-qqtrue-ddtrue-dqtrue)
+    * [get_n_assoc_sites](#get_n_assoc_sitesself)
     * [get_pure_assoc_param](#get_pure_assoc_paramself-ic)
     * [hard_sphere_diameter_ij](#hard_sphere_diameter_ijself-i-j-temp)
     * [hard_sphere_diameters](#hard_sphere_diametersself-temp)
     * [polar_model_control](#polar_model_controlself-qq-dd-dq)
     * [potential](#potentialself-ic-jc-r-temp)
+    * [print_saft_binary_report](#print_saft_binary_reportself)
     * [print_saft_parameters](#print_saft_parametersself-c)
     * [set_pure_assoc_param](#set_pure_assoc_paramself-ic-eps_assoc-beta_assoc)
     * [sigma_eff_ij](#sigma_eff_ijself-i-j-temperature)
@@ -75,6 +81,71 @@ Helmholtz energy for SAFT-type equations of state
     * [test_fmt_compatibility](#test_fmt_compatibilityself)
     * [truncation_correction](#truncation_correctionself-enable_truncation_correction-enable_shift_correction-reduced_radius_cut35)
 
+
+### `a_chain(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None, a_tv=None, a_tn=None, a_vn=None, a_nn=None)`
+Calculate chain contribution given temperature, volume and mol numbers. $a = A_{chain}/(nRT)$
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **temp (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Temperature (K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **volume (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Volume (m3)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Mol numbers (mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_t (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_v (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_n (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_tt (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_vv (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_tv (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_tn (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_vn (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **a_nn (No type, optional):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Flag to activate calculation. Defaults to None.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ndarry:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Optionally differentials
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `a_dispersion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None, a_tv=None, a_tn=None, a_vn=None, a_nn=None)`
 Calculate dispersion contribution given temperature, volume and mol numbers. $a = A_{disp}/(nRT)$
@@ -468,6 +539,19 @@ Calculate reduced Helmholtz energy contribution from polar model
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `get_n_assoc_sites(self)`
+Get number of association sites
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Results:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; **n_assoc_sites (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Number of association sites.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `get_pure_assoc_param(self, ic)`
 Set pure association parameters
 
@@ -589,6 +673,11 @@ Get potential energy divided by Boltzmann constant as a function of r
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `print_saft_binary_report(self)`
+Print report of SAFT parameters for binary mixture 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `print_saft_parameters(self, c)`
 Print saft parameters for component c
 
@@ -644,7 +733,7 @@ Get effective size parameter for i-j interaction for Feynman-Hibbs corrected Mie
 
 &nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size parameter (m)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -669,14 +758,14 @@ Get size parameter for i-j interaction
 
 &nbsp;&nbsp;&nbsp;&nbsp; **sigma_ij (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size paramater (m)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Size parameter (m)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `test_fmt_compatibility(self)`
-Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
+Test if model setup is compatible with the Fundamental Measure Theory (FMT)
 
 #### Returns:
 

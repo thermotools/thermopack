@@ -6,13 +6,13 @@ permalink: /vcurrent/multiparam_methods.html
 ---
 
 <!--- 
-Generated at: 2023-11-16T19:54:33.676337
+Generated at: 2024-06-11T11:12:19.246019
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 multiparam class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `multiparam` class, found in `addon/pycThermopack/thermopack/multiparam.py`, inherrits from the `thermo` class, and  is the interface to the 
+The `multiparam` class, found in `addon/pycThermopack/thermopack/multiparam.py`, inherits from the `thermo` class, and  is the interface to the 
 Multiparameter Equations of State. Selection of different multiparameter equations of state is done by passing an identifier string to the constructor. For information on available multiparameter equations of state, see the page on [available equations of state.](method_docs.md)
 
 ## Table of contents
@@ -66,7 +66,7 @@ Initialize multiparameter EOS
 
 &nbsp;&nbsp;&nbsp;&nbsp; **eos (str):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Equation of state. (NIST_MEOS, MBWR32, MBWR19, MEOS, GERG2008)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Equation of state. (NIST_MEOS, MBWR32, MBWR19)
 
 &nbsp;&nbsp;&nbsp;&nbsp; **reference_state (str):** 
 

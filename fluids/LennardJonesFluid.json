@@ -2,6 +2,8 @@
   "ident": "LJF",
   "formula": "LJF",
   "cas_number": "",
+  "InChI": "",
+  "structure": "",
   "name": "LENNARD-JONES_FLUID",
   "aliases": [
     "LennardJonesFluid",
@@ -63,14 +65,11 @@
     "Tmax": 1500.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
+    "enthalpy_bib_reference": "Non-exsisting. Dummy value.",
+    "enthalpy": 1.0e20,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",

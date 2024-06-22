@@ -1,12 +1,12 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the thermo class
 permalink: /v2.2.0/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-01-02T14:27:28.808796
+Generated at: 2024-02-20T15:56:08.232915
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -100,6 +100,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
+    * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
@@ -111,6 +112,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
+    * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
     * [set_tmax](#set_tmaxself-temp)
@@ -518,7 +520,7 @@ Calculate specific single-phase enthalpy Note that the order of the output match
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dhdt (logical, optional):** 
 
@@ -565,7 +567,7 @@ Calculate specific single-phase entropy Note that the order of the output match 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dsdt (logical, optional):** 
 
@@ -779,7 +781,7 @@ Calculate single-phase specific volume Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dvdt (logical, optional):** 
 
@@ -838,7 +840,7 @@ Calculate speed of sound for single phase or two phase mixture assuming mechanic
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -869,7 +871,7 @@ Calculate logarithm of fugacity coefficient given composition, temperature and p
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dlnfugdt (logical, optional):** 
 
@@ -918,7 +920,7 @@ Calculate single-phase compressibility Note that the order of the output match t
 
 &nbsp;&nbsp;&nbsp;&nbsp; **phase (int):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calcualte root for specified phase
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate root for specified phase
 
 &nbsp;&nbsp;&nbsp;&nbsp; **dzdt (logical, optional):** 
 
@@ -1146,7 +1148,7 @@ Solve for densities (mu=mu(T,rho)) given temperature and chemical potential.
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -1513,7 +1515,7 @@ Calculate dew pressure given temperature and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1548,7 +1550,7 @@ Calculate dew temperature given pressure and composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **z (float):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Compositon (-)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Composition (-)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -1765,7 +1767,7 @@ Get the phase-envelope at a given composition
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_v (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; **initial_temperature (float, optional):** 
 
@@ -1824,7 +1826,7 @@ Get the pure fluid saturation line
 
 &nbsp;&nbsp;&nbsp;&nbsp; **max_delta_press (float , optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure betwween points (Pa). Defaults to 0.2e5.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Maximum delta pressure between points (Pa). Defaults to 0.2e5.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **nmax (int, optional):** 
 
@@ -1943,7 +1945,7 @@ Calculate phase envelope including solid lines
 
 &nbsp;&nbsp;&nbsp;&nbsp; **calc_esv (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specifc volume of saturated phase? Defaults to False
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Calculate specific volume of saturated phase? Defaults to False
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2634,7 +2636,7 @@ Solve for spinodal curve point. Not able to solve for points close to critical p
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `tv_meta_ps(self, pressure, entropy, n, volume_initial, temp_initial)`
-Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stabillity is tested, and stable/meta-stable states will be returned depending on input.
+Solve for temperature and volume given pressure and entropy. A fair initial guess is required. No phase stability is tested, and stable/meta-stable states will be returned depending on input.
 
 #### Args:
 
@@ -2800,6 +2802,7 @@ Methods for setting ... and getting ...
     * [get_ideal_cp](#get_ideal_cpself-j)
     * [get_ideal_enthalpy_reference_value](#get_ideal_enthalpy_reference_valueself-j)
     * [get_ideal_entropy_reference_value](#get_ideal_entropy_reference_valueself-j)
+    * [get_numerical_robustness_level](#get_numerical_robustness_levelself)
     * [get_phase_flags](#get_phase_flagsself)
     * [get_phase_type](#get_phase_typeself-i_phase)
     * [get_pmax](#get_pmaxself)
@@ -2811,6 +2814,7 @@ Methods for setting ... and getting ...
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
     * [set_ideal_enthalpy_reference_value](#set_ideal_enthalpy_reference_valueself-j-h0)
     * [set_ideal_entropy_reference_value](#set_ideal_entropy_reference_valueself-j-s0)
+    * [set_numerical_robustness_level](#set_numerical_robustness_levelself-level)
     * [set_pmax](#set_pmaxself-press)
     * [set_pmin](#set_pminself-press)
     * [set_tmax](#set_tmaxself-temp)
@@ -2879,7 +2883,7 @@ Get correlation parameters for ideal gas Cp
 
 &nbsp;&nbsp;&nbsp;&nbsp; **ndarray:** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -2918,6 +2922,11 @@ Get specific ideal entropy reference value
 &nbsp;&nbsp;&nbsp;&nbsp; **float:** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Specific ideal entropy (J/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `get_numerical_robustness_level(self)`
+Get numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Returns: level (integer): robustness_level 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3048,7 +3057,7 @@ Set correlation parameters for ideal gas Cp To set a constant Cp value of 2.5*Rg
 
 &nbsp;&nbsp;&nbsp;&nbsp; **parameters (array like):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Paramaters (Maximum 10 parameters used)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Parameters (Maximum 10 parameters used)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3079,6 +3088,11 @@ Set specific ideal entropy reference value
 &nbsp;&nbsp;&nbsp;&nbsp; **s0 (float):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Ideal entropy reference (J/mol/K)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_numerical_robustness_level(self, level)`
+Set numerical robustness level in Thermopack, where 0 is the default and higher levels increase robustness.  Args: level (integer): robustness_level 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3210,7 +3224,7 @@ Get model identification
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `init_peneloux_volume_translation(self, parameter_reference='Default')`
-Initialialize Peneloux volume translations
+Initialize Peneloux volume translations
 
 #### Args:
 
@@ -3262,7 +3276,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_eos (str, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corrensponding state equation. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Corresponding state equation. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **csp_ref_comp (str, optional):** 
 
@@ -3294,7 +3308,7 @@ Initialize thermopack
 
 &nbsp;&nbsp;&nbsp;&nbsp; **silent (bool, optional):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Supress messages during init?. Defaults to None.
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Suppress messages during init?. Defaults to None.
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

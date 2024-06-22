@@ -24,9 +24,8 @@ contains
   subroutine test_kij()
     use eoslibinit, only: init_quantum_cubic
     real :: kij
-    real, external :: thermopack_getkij
     call init_quantum_cubic("H2,NE")
-    kij = thermopack_getkij(1,2,kij)
+    call thermopack_getkij(1,2,kij)
     @assertEqual(kij, 0.18, 1e-11)
   end subroutine test_kij
 

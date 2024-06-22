@@ -12,8 +12,6 @@ Module eos_parameters
   use multiparameter_normal_h2, only: meos_normal_h2
   use multiparameter_r134a, only: meos_r134a
   use multiparameter_lj, only: meos_lj, constructor_LJ
-  use gerg, only: meos_gerg, constructor_gerg
-  use pure_fluid_meos, only: meos_pure, constructor_meos_pure
   use mbwr, only: eosmbwr, initializeMBWRmodel
   implicit none
 
@@ -59,12 +57,8 @@ contains
     else if (str_eq(eos_label,'NIST_MEOS') .or. &
          str_eq(eos_label,'LJ_MEOS') .or. &
          str_eq(eos_label,'LJTS_MEOS') .or. &
-         str_eq(eos_label,'GERG2008') .or. &
-         str_eq(eos_label,'NIST_MEOS_MIX') .or. &
-         str_eq(eos_label,'MEOS')) then
-      if (.not. (str_eq(eos_label,'NIST_MEOS_MIX') .or. &
-           str_eq(eos_label,'GERG2008') .or. &
-           str_eq(eos_label,'MEOS'))) then
+         str_eq(eos_label,'NIST_MEOS_MIX')) then
+      if (.not. str_eq(eos_label,'NIST_MEOS_MIX')) then
         if (nc /= 1) call stoperror("MEOS only implemented for pure components.")
       endif
       allocate(eos%nist(nc), STAT=istat)
@@ -109,10 +103,6 @@ contains
       else
         call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
       endif
-    elseif (str_eq(eos_label,'GERG2008') .or. str_eq(eos_label,'GERG')) then
-      allocate(meos_ptr, source=constructor_gerg(comp), stat=istat)
-    elseif (str_eq(eos_label,'MEOS')) then
-      allocate(meos_ptr, source=constructor_meos_pure(comp), stat=istat)
     else
       call stoperror("Wrong input for multiparameter EoS.")
     end if
@@ -224,10 +214,6 @@ contains
               allocate(meos_r134a :: this%nist(i)%meos, stat=istat)
             class is (meos_lj)
               allocate(meos_lj :: this%nist(i)%meos, stat=istat)
-            class is (meos_gerg)
-              allocate(meos_gerg :: this%nist(i)%meos, stat=istat)
-            class is (meos_pure)
-              allocate(meos_pure :: this%nist(i)%meos, stat=istat)
             class default
               call stoperror("Only possible to use NIST MEOS with components: C3 or N/O/P-H2, or R134A")
             end select

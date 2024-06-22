@@ -6,9 +6,9 @@ permalink: /v2.1.0/getting_started.html
 ---
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](/thermopack/v2.1.0/thermo_methods.html). For more advanced users, a look at the [more advanced page in the wiki](/thermopack/v2.1.0/more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [wiki](/thermopack/v2.1.0/thermo_methods.html). For more advanced users, a look at the [more advanced page in the wiki](/thermopack/v2.1.0/more_advanced.html) may also be useful.
 
-Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#Initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
+Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
 * [Initialising an equation of state](#initialising-an-equation-of-state)
@@ -42,26 +42,26 @@ lk = lee_kesler.lee_kesler('N2,O2') # Lee-Kesler EoS for nitrogen/oxygen mixture
 The cubic equations of state are all interfaced through the `cubic` class. Available cubic EoS's can are SRK, PR, VdW, SW, PT and tcPR. More information on the individual cubics, mixing rules, etc. can be found on the [cubic page](/thermopack/v2.1.0/cubic_methods.html). The specific cubic EoS to initialize is specified with a string as
 ```Python
 from thermopack.cubic import cubic
+from thermopack.tcPR import tcPR
 srk = cubic('NH3,C2', 'SRK') # SRK EoS for ammonia/ethane mixture
 pr = cubic('IC4,NC10', 'PR') # PR EoS for isobutane/decane mixture
 vdw = cubic('C1,C2,C3,N2,O2', 'VdW') # VdW EoS for methane/ethane/propane/nitrogen/oxygen mixture
 sw = cubic('R11,R12', 'SW') # Schmidt-Wensel EoS for FCl3C/F2Cl2C mixture
 pt = cubic('PRLN', 'PT') # Patel-Teja EoS for pure propylene
-tcpr = cubic('F6S,SO2', 'tcPR') # Translated-Consistent PR EoS for SF6/SO2 mixture
+tcpr = tcPR('F6S,SO2') # Translated-Consistent PR EoS for SF6/SO2 mixture
 ```
 
 Cubic-plus association EoS's are available for the SRK and PR EoS through the `cpa` class as
 ```Python
 from thermopack.cpa import cpa
 srk_cpa = cpa('H2O,ETOH,PROP1OL', 'SRK') # SRK-CPA EoS for water/ethanol/propanol mixture
-pr_cpa = cpa('ACETONE,HEX1OL,CYCLOHEX', 'PR') # PR-CPA EoS for acetone/hexanol/cyclohexane mixture
 ```
 
 Several multiparameter EoS's can interfaced through the `multiparameter.multiparam` class. The available multiparameter EoS's are NIST-MEOS, MBWR16 and MBWR32. These are initialized as
 ```Python
 from thermopack.multiparameter import multiparam
 nist = multiparam('C3', 'NIST_MEOS') # NIST-MEOS EoS for propane
-mbwr16 = multiparam('C1', 'MBWR16') # MBWR16 EoS for methane
+mbwr19 = multiparam('C1', 'MBWR19') # MBWR19 EoS for methane
 mbwr32 = multiparam('C2', 'MBWR32') # MBWR32 EoS for ethane
 ```
 please note that not all fluids are supported for multiparameter equations of state, depending on what parameters are available in the fluid database.
@@ -73,7 +73,7 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
 
 # Doing calculations
 Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
@@ -93,7 +93,11 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB
 ```
 where `eos.VAPPH` and `eos.LIQPH` are [phase flags](/thermopack/v2.1.0/phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#TV-property-interfaces) and the [Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#Tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods 
+`chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, 
+`entropy_tv(T, V, n)`. For a full overview of the available property calculations see the 
+[TV-property interfaces](/thermopack/v2.1.0/thermo_methods.html#tv-property-interfaces) and the 
+[Tp-property interfaces](/thermopack/v2.1.0/thermo_methods.html#tp-property-interfaces) of the [`thermo` class](/thermopack/v2.1.0/thermo_methods.html).
 
 ### Differentials
 
@@ -110,13 +114,13 @@ Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T
 
 ```Python
 # Continued
+n_tot = 15 # Total number of moles
+n = n_tot * x
 H, dHdn_TV = eos.enthalpy_tv(T, vg, n, dhdn=True) # Compute enthalpy and derivative of enthalpy wrt. mole numbers at constant (T, V)
 h_vap, dhvap_dn_Tp = eos.enthalpy(T, p, x, eos.VAPPH, dhdn=True) # Compute molar vapour phase enthalpy and derivative of molar vapour phase enthalpy wrt. mole numbers at constant (T, p)
 h_liq, dliq_dn_Tp = eos.enthalpy(T, p, x, eos.LIQPH, dhdn=True) # Compute molar liquid phase enthalpy and derivative of molar liquid phase enthalpy wrt. mole numbers at constant (T, p)
 H, dHdn_Tp = eos.enthalpy_tvp(T, vg, n, dhdn=True) # Compute enthalpy and derivative of enthalpy wrt. mole numbers at constant (T, p)
-
 ```
-
 
 **Please note that heat capacities are not available directly**, but must be computed as derivatives of enthalpy and internal energy, as
 
@@ -135,12 +139,11 @@ vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Liquid phase specific volume
 
 _, Cv_vap = eos.internal_energy_tv(T, vg, x, dedt=True) # Vapour phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
 _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capacity at constant volume, computed as (dU/dT)_{V,n}
-
 ```
 
 ## Phase diagrams and Equilibria
 
-As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
+As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them are the [docstrings in `thermo.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/thermo.py). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples) directory.
 
 ### Flash calculations
 Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`.
@@ -163,7 +166,7 @@ what is returned, an in what order.
 
 ### Phase envelopes
 
-ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#Saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
+ThermoPack has interfaces to trace (T,p)-, (T,v)- and (p,x,y)-phase envelopes. For the full documentation, see the [docs of the `thermo` class](/thermopack/v2.1.0/thermo_methods.html#saturation-interfaces). For more comprehensive examples, see the [Examples](https://github.com/thermotools/thermopack/tree/v2.1.0/addon/pyExamples).
 
 #### Tp- and Tv- phase envelopes
 
@@ -260,11 +263,11 @@ plt.xlabel('Molar composition')
 We can also compute the bubble-temperature, pressure etc. directly using the methods `bubble_temperature(p, z)`, `bubble_pressure(T, z)`, `dew_temperature(p, z)` and `dew_pressure(T, z)`, where `z` is the composition of the mixture, as
 
 ```Python
-eos = cubic('CO2,CH4', 'SRK')
+eos = cubic('CO2,C1', 'SRK')
 x = [0.5, 0.5] # Total composition of the mixture
-p_dew, y_dew = eos.dew_pressure(273, x) # Calculates dew pressure and dew composition at 273 K
+p_dew, y_dew = eos.dew_pressure(250, x) # Calculates dew pressure and dew composition at 250 K
 T_dew, y_dew = eos.dew_temperature(1e5, x) # Calculates dew temperature and dew composition at 1 bar
-p_bub, x_bub = eos.bubble_pressure(273, x) # Calculates bubble pressure and bubble composition at 273 K
+p_bub, x_bub = eos.bubble_pressure(230, x) # Calculates bubble pressure and bubble composition at 230 K
 T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature and bubble composition at 1 bar
 ```
 
@@ -273,6 +276,7 @@ T_bub, x_bub = eos.bubble_temperature(1e5, x) # Calculates bubble temperature an
 Various isolines can be computed using the methods `get_isotherm`, `get_isobar`, `get_isentrope` and `get_isenthalp`. In the following code snippet, the default values of the keyword arguments are indicated.
 
 ```Python
+from thermopack.pcsaft import pcsaft
 eos = pcsaft('NC6,NC12')
 x = [0.2, 0.8]
 

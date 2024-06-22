@@ -11,7 +11,8 @@ Usage: To add new documentation, create a new markdown file in thermopoack/doc/m
 """
 import warnings
 from datetime import datetime
-from tools import THERMOPACK_ROOT, MARKDOWN_DIR
+from tools import THERMOPACK_ROOT, MARKDOWN_DIR, write_file
+import re
 
 def print_finished_report(header, out_file_path):
     printcolwidth = 100
@@ -28,7 +29,7 @@ def print_finished_report(header, out_file_path):
 def format_no_html(file):
     """
     Markdown files that are intended to be compiled to html may contain some syntax that is unfriendly to e.g.
-    pages intended to render GitHub flavoured markdown. Specifially, the title is in the page metadata, not as a
+    pages intended to render GitHub flavoured markdown. Specifically, the title is in the page metadata, not as a
     header. This function reads the file, and returns a string formatted to be friendly for "pure" markdown pages
     without html-templates.
 
@@ -65,13 +66,25 @@ def format_no_html(file):
         warnings.warn(f'File with metadata : {metadata} \nDid not contain a title or description.', SyntaxWarning, stacklevel=2)
 
     outstr = f'# {main_header}\n'
-    return outstr + line + file.read()
+    return outstr + line + repair_links(file.read())
 
+
+def repair_links(filestr):
+    """
+    Because the markdown files used to generate the GH pages use relative paths, we need to prepend the appropriate
+    url when making the Readme.
+    """
+    pattern_vcurrent = r"\]\((?!http)(.*?\.html)\)"
+    replacement_vcurrent = r"](https://thermotools.github.io/thermopack/vcurrent/\1)"
+    pattern_abspath = r"\]\(/thermopack(?!http)(.*?\.html)\)"
+    replacement_abspath = r"](https://thermotools.github.io/thermopack\1)"
+    filestr = re.sub(pattern_abspath, replacement_abspath, filestr)
+    return re.sub(pattern_vcurrent, replacement_vcurrent, filestr)
 
 def gen_file_str(files):
     out_file_str = ''
     for file in files:
-        file_path = MARKDOWN_DIR + file + '.md'
+        file_path = MARKDOWN_DIR + '../' + file + '.md'
 
         with open(file_path, 'r') as in_file:
             out_file_str += format_no_html(in_file) + '\n\n'
@@ -91,30 +104,22 @@ def get_header(files):
 
 def write_pypi_readme():
     files = ['readme_parts/header', 'readme_parts/pypi_toc', 'metapages/please_cite', 'readme_parts/pypi_structure',
-             'v2.1.0/getting_started', 'v2.1.0/more_advanced', 'v2.1.0/Component-name-mapping']
+             'v2.2.0/getting_started', 'v2.2.0/more_advanced', 'v2.2.0/Component-name-mapping']
     header = get_header(files)
-
-    out_file_str = gen_file_str(files)
+    contents = gen_file_str(files)
+    out_file_str = header + contents
     out_file_path = THERMOPACK_ROOT + '/addon/pycThermopack/README_pypi.md'
-    with open(out_file_path, 'w') as out_file:
-        out_file.write(header)
-        out_file.write(out_file_str)
-
-    print_finished_report(header, out_file_path)
+    write_file(out_file_path, out_file_str)
 
 def write_github_readme():
     files = ['readme_parts/header', 'readme_parts/github_toc', 'metapages/please_cite', 'readme_parts/structure',
              'vCurrent/source_build', 'vCurrent/getting_started', 'vCurrent/more_advanced', 'vCurrent/new_fluids',
              'vCurrent/Component-name-mapping']
     header = get_header(files)
-
-    out_file_str = gen_file_str(files)
+    content = gen_file_str(files)
+    out_file_str = header + content
     out_file_path = THERMOPACK_ROOT + '/README.md'
-    with open(out_file_path, 'w') as out_file:
-        out_file.write(header)
-        out_file.write(out_file_str)
-
-    print_finished_report(header, out_file_path)
+    write_file(out_file_path, out_file_str)
 
 if __name__ == '__main__':
     write_pypi_readme()

@@ -173,11 +173,11 @@ class ljs_wca(ljs_wca_base):
         """
         self.activate()
         enable_cavity_c = c_int(enable_cavity)
-        enable_hs_c = c_int(enable_hs)
-        enable_a1_c = c_int(enable_a1)
-        enable_a2_c = c_int(enable_a2)
-        enable_a3_c = c_int(enable_a3)
-        enable_a4_c = c_int(enable_a4)
+        enable_hs_c = c_int(self._true_int_value) if enable_hs else c_int(0)
+        enable_a1_c = c_int(self._true_int_value) if enable_a1 else c_int(0)
+        enable_a2_c = c_int(self._true_int_value) if enable_a2 else c_int(0)
+        enable_a3_c = c_int(self._true_int_value) if enable_a3 else c_int(0)
+        enable_a4_c = c_int(self._true_int_value) if enable_a4 else c_int(0)
 
         self.s_ljs_wca_model_control.argtypes = [POINTER(c_int),
                                                  POINTER(c_int),

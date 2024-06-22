@@ -46,7 +46,7 @@ def getBinary(filename, pointLabel):
         pointLabel (str): Searchable string
 
     Returns:
-        str: Last two entries on line containg pointLabel
+        str: Last two entries on line containing pointLabel
     """
     file = open(filename, 'r')
     # Parse header
@@ -70,7 +70,7 @@ def getFloat(filename, pointLabel):
         pointLabel (str): Searchable string
 
     Returns:
-        float: Last entry on line containg pointLabel
+        float: Last entry on line containing pointLabel
     """
     file = open(filename, 'r')
     # Parse header
@@ -92,7 +92,7 @@ def getInteger(filename, pointLabel):
         pointLabel (str): Searchable string
 
     Returns:
-        int: Last entry on line containg pointLabel
+        int: Last entry on line containing pointLabel
     """
     file = open(filename, 'r')
     # Parse header
@@ -114,7 +114,7 @@ def getPoint(filename, pointLabel):
         pointLabel (str): Searchable string
 
     Returns:
-        float: Last two entries on line containg pointLabel
+        float: Last two entries on line containing pointLabel
     """
     file = open(filename, 'r')
     # Parse header
@@ -138,7 +138,7 @@ def getEntries(filename, entry_label):
         entry_label (str): Searchable string
 
     Returns:
-        list: Entries on line containg pointLabel
+        list: Entries on line containing pointLabel
     """
     file = open(filename, 'r')
     # Parse header
@@ -160,7 +160,7 @@ def getNaNindices(data):
         data (ndarray): Data containing NaNs
 
     Returns:
-        array_like: Column indices giving first apperance of NaN
+        array_like: Column indices giving first appearance of NaN
     """
     n = np.shape(data)[0]
     m = np.shape(data)[1]

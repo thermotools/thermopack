@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init Quantum-cubic object
+# Instantiate and init Quantum-cubic object
 qPR = qcubic("He,H2,Ne")
 qPR.set_tmin(temp=2.0)
 

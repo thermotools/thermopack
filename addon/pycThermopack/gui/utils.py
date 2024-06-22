@@ -105,9 +105,9 @@ def get_unique_name(prefix, lst):
     """
     Appending numbers to a prefix until a unique name is obtained, which is not contained in the passed list.
     If the number gets over 100, the function breaks and does not return anything
-    :param prefix: Prefix for the uniqe name
+    :param prefix: Prefix for the unique name
     :param lst: List to which the name is compared
-    :return: Uniqe name
+    :return: Unique name
     """
     i = 1
     while True:

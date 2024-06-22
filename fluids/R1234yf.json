@@ -2,6 +2,8 @@
   "ident": "R1234yf",
   "formula": "CF3CF=CH2",
   "cas_number": " 754-12-1",
+  "InChI": "1S/C3H2F4/c1-2(4)3(5,6)7/h1H2",
+  "structure": "C:3;H:2;F:4",
   "name": "2,3,3,3-TETRAFLUOROPROPENE",
   "aliases": [
     "R1234yf"
@@ -61,14 +63,11 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
+    "enthalpy_bib_reference": "Non-exsisting. Dummy value.",
+    "enthalpy": 1.0e20,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",

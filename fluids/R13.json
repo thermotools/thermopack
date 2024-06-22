@@ -2,6 +2,8 @@
   "ident": "R13",
   "formula": "CCLF3",
   "cas_number": "75-72-9",
+  "InChI": "1S/CClF3/c2-1(3,4)5",
+  "structure": "C:1;Cl:1;F:3",
   "name": "CHLOROTRIFLUOROMETHANE",
   "aliases": [
     "R13",
@@ -62,14 +64,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov",
+    "enthalpy": -710.0e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
+    "entropy": 285.35
   },
   "rackett_factor": {
     "bib_reference": "",

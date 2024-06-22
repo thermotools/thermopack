@@ -3,14 +3,9 @@ module saft_association
   use assocschemeutils, only: noSitesFlag, site_to_compidx, compidx_to_sites
   use thermopack_constants, only: Rgas => Rgas_default
   use thermopack_var, only: base_eos_param, get_active_eos, numAssocSites
-  use association_var, only: association
+  use association_var, only: association, STANDARD, ELLIOT
   implicit none
   save
-
-  ! Choice of combining rule for cross-association Delta
-  integer, parameter :: STANDARD=1
-  integer, parameter :: ELLIOT=2
-  integer :: DELTA_COMBRULE = STANDARD
 
 contains
 
@@ -148,7 +143,7 @@ contains
 
           ic = site_to_compidx(assoc,k)
           jc = site_to_compidx(assoc,l)
-          if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
+          if (assoc%delta_combrule==ELLIOT .and. jc/=ic) cycle
           if (assoc%saft_model == eosSAFT_VR_MIE .or. assoc%saft_model == eosOPC_SAFT) then
             call master_saft_rdf(eos,nc,ic,jc,g,g_T_p,g_V_p,g_n_p,g_TT_p,g_TV_p,&
                  g_Tn_p,g_VV_p,g_Vn_p,g_nn_p)
@@ -215,7 +210,7 @@ contains
        end do
     end do
 
-    if (DELTA_COMBRULE==ELLIOT) then
+    if (assoc%delta_combrule==ELLIOT) then
        do ic=1,nc
           do jc=ic+1,nc
              call compidx_to_sites(assoc,ic,k1,k2)
@@ -1420,20 +1415,24 @@ contains
     type(hyperdual) :: X_k(numAssocSites), Q_X(numAssocSites)
     type(hyperdual) :: Delta(numAssocSites,numAssocSites), J(numAssocSites,numAssocSites)
     type(hyperdual) :: m_mich_k(numAssocSites), K_mich_kl(numAssocSites,numAssocSites)
-    type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc)
-    real :: ms(nc)
+    type(hyperdual) :: dhs(nc), dotprod, rho(nc), xi(nc), n_fmt_sum(0:5)
+    real(dp) :: ms(nc), sigma_cube(nc,nc)
     integer :: k, i, l, ierr
 
     select type ( p_eos => eos )
     class is (sPCSAFT_eos)
       call calc_d_hd(p_eos,T,dhs)
       ms = p_eos%m
+      sigma_cube = p_eos%sigma**3
     class default
       print *,"Q_fmt_hd: Should not be here"
     end select
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
     rho = xi*n_fmt(:,0)/ms
-    call Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+    do i=0,5
+      n_fmt_sum(i) = sum(n_fmt(:,i))
+    enddo
+    call Delta_kl_hd(eos,T,n_fmt_sum,sigma_cube,dhs,Delta)
     m_mich_k = 0.0_dp
     do i=1,nc
       if ( eos%assoc%comp_vs_sites(i,1) /= noSitesFlag ) then
@@ -1484,7 +1483,7 @@ contains
 
   !> Assemble Delta^{kl} matrix, and derivatives if wanted. Can be optimized
   !> e.g. by not calculating the exponential in every loop iteration
-  subroutine Delta_kl_hd(eos,T,n_fmt,dhs,Delta)
+  subroutine Delta_kl_hd(eos,T,n_fmt,sigma_cube,dhs,Delta)
     use hyperdual_mod
     use thermopack_var, only: nc
     use thermopack_constants, only: N_AVOGADRO
@@ -1495,6 +1494,7 @@ contains
     class(base_eos_param), intent(inout) :: eos
     type(hyperdual), intent(in) :: T
     type(hyperdual), intent(in) :: n_fmt(6)
+    real(dp), intent(in)        :: sigma_cube(nc,nc)
     type(hyperdual), intent(in) :: dhs(nc)
     ! Output.
     type(hyperdual), dimension(numAssocSites,numAssocSites), intent(out) :: Delta
@@ -1528,9 +1528,9 @@ contains
       do l = k,numAssocSites
         ic = site_to_compidx(assoc,k)
         jc = site_to_compidx(assoc,l)
-        if (DELTA_COMBRULE==ELLIOT .and. jc/=ic) cycle
+        if (assoc%delta_combrule==ELLIOT .and. jc/=ic) cycle
         call calc_bmcsl_gij_FMT_hd(nc,n_fmt,dhs,ic,jc,g)
-        covol = N_AVOGADRO*(0.5_dp*(dhs(ic) + dhs(jc)))**3
+        covol = N_AVOGADRO*sigma_cube(ic,jc)
         expo = boltzmann_fac(k,l)
         h = assoc%beta_kl(k,l)*covol*(expo-1.0_dp)
         Delta(k,l) = g*h
@@ -1538,7 +1538,7 @@ contains
       end do
     end do
 
-    if (DELTA_COMBRULE==ELLIOT) then
+    if (assoc%delta_combrule==ELLIOT) then
       do ic=1,nc
         do jc=ic+1,nc
           call compidx_to_sites(assoc,ic,k1,k2)

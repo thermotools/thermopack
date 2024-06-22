@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the saftvrqmie class
 permalink: /v2.2.0/saftvrqmie_methods.html
 ---

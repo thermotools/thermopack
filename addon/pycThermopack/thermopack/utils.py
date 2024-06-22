@@ -9,7 +9,7 @@ import numpy as np
 from .platform_specifics import DIFFERENTIAL_RETURN_MODE
 
 def gcc_major_version_greater_than(GCC_version):
-    """Returns if GCC major version number is greater than specefied version
+    """Returns if GCC major version number is greater than specified version
 
     Args:
         GCC_version (int): Major GCC version
@@ -105,6 +105,8 @@ class FlashResult:
         self.T, self.p, self.x, self.y, self.betaV, self.betaL, \
         self.phase, self.flash_type = T, p, x, y, betaV, betaL, phase, flash_type
 
+        self.P, self.beta = p, betaV # aliases
+
         self.iterable = [T, p, x, y, betaV, betaL, phase]
         self.contents = ['T', 'p', 'x', 'y', 'betaV', 'betaL', 'phase']
         self.descriptions = {'T' : 'Temperature [K]', 'p' : 'pressure [Pa]',  'x' : 'Liquid phase composition',
@@ -172,13 +174,15 @@ class Differentials:
     """
     Holder struct for differentials, implements some methods to be as backwards compatible as possible.
     """
-    def __init__(self, diffs, variables):
+    def __init__(self, variables, diffs=None):
         """Constructor
 
         Args:
-            diffs (tuple) : (all three) differentials
             variables (str) : Key (either 'tvn' or 'tpn') indicating what variables are held constant, and what
                             differentials are found in the tuple 'diffs'.
+            diffs (tuple or None) : (all three) differentials, or None. Note: If initialized with None, self.make_v2_compatible()
+                                    must be called after differentials have been set in order for the struct to be
+                                    v2-compatible.
         """
         self.dT = None
         self.dp = None
@@ -187,20 +191,36 @@ class Differentials:
 
         self.iterable = tuple()
         self.constant = variables
-        if variables == 'tvn':
+
+        if (self.constant == 'tvn') and (diffs is not None):
             self.dT, self.dV, self.dn = diffs
+        elif (self.constant == 'tpn') and (diffs is not None):
+            self.dT, self.dp, self.dn = diffs
+        elif diffs is not None:
+            raise KeyError(f'Invalid differential variables key : "{variables}"')
+        self.make_v2_compatible()
+
+    def make_v2_compatible(self):
+        """
+        Needed for backward compatibility, if any differentials are set after init, i.e.
+            diffs = Differentials('tvn')
+            diffs.dT = ...
+            diffs.dn = ...
+        we need to call
+            diffs.init_iterable()
+        after setting all the variables we want, to create the v2-compatible iterables. See thermo.py::thermo for example
+        usage.
+        """
+        if self.constant == 'tvn':
             for d in (self.dT, self.dV, self.dn):
                 if d is not None:
                     self.iterable += (d,)
 
-        elif variables == 'tpn':
-            self.dT, self.dp, self.dn = diffs
+        elif self.constant == 'tpn':
             self.iterable = tuple()
             for d in (self.dT, self.dp, self.dn):
                 if d is not None:
                     self.iterable += (d,)
-        else:
-            raise KeyError(f'Invalid differential variables key : "{variables}"')
 
     @staticmethod
     def from_return_tuple(vals, flags, variables):
@@ -231,7 +251,7 @@ class Differentials:
 
             diffs = (dT, dV, dn)
         elif variables == 'tpn':
-            if flags[diff_idx] is not None:
+            if flags[1] is not None:
                 dp = vals[diff_idx]
                 diff_idx += 1
             if flags[2] is not None:
@@ -240,7 +260,7 @@ class Differentials:
         else:
             raise KeyError(f'Invalid differential variables key : "{variables}"')
 
-        return Differentials(diffs, variables)
+        return Differentials(variables, diffs)
 
     def __repr__(self):
         ostr = 'Differentials object containing the attributes (description / name / value)\n'
@@ -267,28 +287,40 @@ class Differentials:
 
 class Property:
     """
-    Holder struct to return a property and its derivatives
+    Holder struct to return a property and its derivatives. As default, has the attributes val, and diffs. Implements
+    __setattr__ such that setting properties like
+        prop.something = ...
+    will also modify how __iter__ works, such that we can maintain compatibility with v2. This is done by maintaining
+    the self.__return_tuple__ and self.extra_optional_vals attributes, which hold extra values set on the object
+    after initialization. Thus, we can do
+        prop = Property(val, diffs, phase=2, apple='green')
+        value, dvdt, dvdp, phase, apple = prop # Expected from v2 return tuple (val, dvdt, dvdp, phase, apple)
+    or
+        prop = Property(val, diffs)
+        prop.phase = 2
+        prop.apple = 'green'
+        value, dvdt, dvdp, phase, apple = prop # Same behaviour as above
     """
-    def __init__(self, val, diffs):
+    def __init__(self, val, diffs, **kwargs):
         """Constructor
 
         Args:
             val (float or array_like) : The value of the property
             diffs (Differentials) : The derivatives
         """
-        self.diffs = diffs
+        self.__setting_optionals__ = False
         self.val = val
+        self.diffs = diffs
+        self.__return_tuple__ = (self.val, *[d for d in self.diffs])
 
-        if DIFFERENTIAL_RETURN_MODE == 'v2':
-            self.__return_tuple__ = (self.val,)
-            for d in self.diffs:
-                self.__return_tuple__ += (d,)
-        else:
-            self.__return_tuple__ = "There are no return tuples. Build with 'python makescript.py [optim/debug] -diffs=v2.1\n" \
-                                    "to use old style return tuples."
+        self.extra_optional_ids = []
+        self.extra_optional_vals = []
+        self.__dict__['__setting_optionals__'] = True
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @staticmethod
-    def from_return_tuple(return_tuple, flags, variables):
+    def from_return_tuple(return_tuple, flags, variables, **kwargs):
         """Constructor
         Construct a Property object from an "old-style" return_tuple, along with flags
 
@@ -301,12 +333,21 @@ class Property:
             Property : Constructed from the return_tuple
         """
         diffs = Differentials.from_return_tuple(return_tuple[1:], flags, variables)
-        return Property(return_tuple[0], diffs)
+        prop = Property(return_tuple[0], diffs, **kwargs)
+        return prop
+
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
+        if self.__setting_optionals__ is True:
+            self.extra_optional_ids.append(key)
+            self.extra_optional_vals.append(value)
+            self.__dict__['__return_tuple__'] += (value, )
+
 
     def __repr__(self):
         ostr = f'Property struct evaluated at constant ({self.diffs.constant})\n'
         ostr += 'Containing the attributes \n'
-        ostr += f'Value         : val'
+        ostr += f'Value         : val\n'
         ostr += f'Differentials : diffs'
         return ostr
 
@@ -320,8 +361,8 @@ class Property:
         if DIFFERENTIAL_RETURN_MODE == 'v2':
             return (_ for _ in self.__return_tuple__)
         if self.diffs:
-            return (_ for _ in (self.val, self.diffs))
-        return (_ for _ in [self.val])
+            return (_ for _ in (self.val, self.diffs, *self.extra_optional_vals))
+        return (_ for _ in [self.val, *self.extra_optional_vals])
 
     def __getitem__(self, item):
         """
@@ -336,12 +377,9 @@ class Property:
         Ensure that ThermoPack methods can just `return Property.unpack()`, and then differentiating old-style vs.
         new-style is done here, rather than in every ThermoPack method.
         """
-        if self.diffs: # Correct packing for backwards compatibility handled in __iter__
+        # Backwards compatibility handled in __iter__
+        if self.diffs or self.extra_optional_vals or (DIFFERENTIAL_RETURN_MODE == 'v2'):
             return tuple(self.__iter__())
-
-        if DIFFERENTIAL_RETURN_MODE == 'v2':
-            return self.__return_tuple__
-
         return self.val
 
 def back_compatible_unpack(prop):

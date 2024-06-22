@@ -141,7 +141,7 @@ Note, in particular, the in PC-SAFT, the radial distribution function is tempera
 (Note that $\epsilon^{A_i B_j}$ and $\epsilon_{ij}$ are completely different parameters.)
 
 The biggest strength of PC-SAFT compared to CPA, is that the non-association part is theoretically justified. This advantage becomes especially clear when modeling polymers, which PC-SAFT is tailored to be able to handle. For molecules having a chain-like structure, PC-SAFT indeed outperforms CPA. On the other hand, PC-SAFT has a more complicated non-association part, making it harder to implement (especially in ThermoPack, for which everything is built around cubic equations of state), and also more demanding in terms of computation time. Although only CPA will be implemented at this point, significant portions of the code can be recycled if one at one point in the future decides to implement other SAFT variants.
-% Would be nice with a reference stating that PC-SAFT outperfoms CPA when modeling polymers.
+% Would be nice with a reference stating that PC-SAFT outperforms CPA when modeling polymers.
 
 \subsection{The one-strength association schemes}
 Huang and Radosz (1990) were the first to publish a SAFT variant with extensive parameter lists. They also classified association schemes, which has become the standard for later work on SAFT. Ideally, one should have detailed, independent data from spectroscopy for the associating strength for each site-site interaction. The scheme of Huang and Radosz reduces the number of parameters to be fitted for each interaction $A_i B_i$ to just one. To illustrate this one-strength association scheme, let us consider the water molecule, with two positively polarized hydrogen atoms (sites $A$ and $B$), and two free electron pairs (sites $C$ and $D$). Huang and Radosz classifies water according to the so-called 4C scheme:
@@ -568,7 +568,7 @@ Michelsen also offers the following suggestions for a CPA volume solver. First, 
 
 \section{Testing the CPA code}
 \subsection{Mathematical consistency}
-We have implemented unittests for all the derivatives of all the functions occuring in the CPA implementation. Specifically, we have tested the following analytical derivatives against their numerical counterpart using finite differences:
+We have implemented unittests for all the derivatives of all the functions occurring in the CPA implementation. Specifically, we have tested the following analytical derivatives against their numerical counterpart using finite differences:
 \begin{itemize}
   \item \(g(V,\mbf n)\), first and second derivatives;
   \item \(Q(T,V,\mbf n, \mbf X)\), first and second derivatives;

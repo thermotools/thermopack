@@ -2,6 +2,8 @@
   "ident": "H2O2",
   "formula": "H2O2",
   "cas_number": "7722-84-1",
+  "InChI": "1S/H2O2/c1-2/h1-2H",
+  "structure": "H:2;O:2",
   "name": "HYDROGEN PEROXIDE",
   "aliases": [
     "dihydrogen peroxide"
@@ -61,14 +63,11 @@
     "Tmax": 2000.0
   },
   "reference_state": {
-    "bib_reference": "https://webbook.nist.gov",
-    "enthalpy": -136106.4,
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "enthalpy": -136.11e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Chase, 1998",
+    "entropy_ref_state": "1BAR",
     "entropy": 232.95
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",

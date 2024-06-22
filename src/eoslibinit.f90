@@ -23,6 +23,7 @@ module eoslibinit
   public :: silent_init
   public :: redefine_critical_parameters
   public :: init_volume_translation
+  public :: init_ideal_eos
   !
 contains
 
@@ -1163,10 +1164,6 @@ contains
     call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
     !
     eos_local = trim(meos)
-    if (ncomp > 1 .and. str_eq(meos,"GERG2008")) then
-      eos_local = trim(meos)//"_MIX"
-    endif
-    !
     complist => act_mod_ptr%complist
     call allocate_eos(ncomp, eos_local)
 
@@ -1423,5 +1420,68 @@ contains
     act_mod_ptr%need_alternative_eos = .true.
     call init_fallback_and_redefine_criticals(silent=.true.)
   end subroutine init_lj_ljs
+
+  !----------------------------------------------------------------------------
+  !> Initialize ideal EoS. Use: call init_ideal('CO2,N2')
+  !----------------------------------------------------------------------------
+  subroutine init_ideal_eos(comps, ierr, parameter_reference)
+    use compdata,   only: init_component_data_from_db, initCompList
+    use ideal, only: set_reference_energies
+    use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
+    use thermopack_constants, only: ref_len
+    use eos_container, only: allocate_eos
+    character(len=*), intent(in) :: comps !< Component names. Comma separated
+    character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
+    integer, intent(out)         :: ierr
+    ! Locals
+    integer                          :: ncomp, i, index
+    character(len=len_trim(comps))   :: comps_upper
+    type(thermo_model), pointer      :: act_mod_ptr
+    character(len=ref_len)           :: param_ref
+    ! Get a pointer to the active thermodynamics model
+    if (.not. active_thermo_model_is_associated()) then
+      ! No thermo_model has been allocated
+      index = add_eos()
+    endif
+    act_mod_ptr => get_active_thermo_model()
+
+    ! Set local variable for parameter reference
+    if (present(parameter_reference)) then
+      param_ref = parameter_reference
+    else
+      param_ref = "DEFAULT"
+    endif
+
+    ! Set component list
+    comps_upper=trim(uppercase(comps))
+    call initCompList(comps_upper,ncomp,act_mod_ptr%complist)
+    call allocate_eos(ncomp, "IDEAL")
+
+    ! Number of phases
+    act_mod_ptr%nph = 1
+
+    ! Assign active mode variables
+    ncsym = ncomp
+    nce = ncomp
+    nc = ncomp
+    nph = act_mod_ptr%nph
+    act_mod_ptr%nc = ncomp
+    complist => act_mod_ptr%complist
+    apparent => NULL()
+    Rgas = act_mod_ptr%Rgas
+    kRgas = act_mod_ptr%kRgas
+
+    ! Initialize components module
+    call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)
+
+    ! Set reference entalpies and entropies
+    call set_reference_energies(act_mod_ptr%comps)
+
+    ! Distribute parameters from redefined eos
+    do i=2,size(act_mod_ptr%eos)
+      act_mod_ptr%eos(i)%p_eos = act_mod_ptr%eos(1)%p_eos
+    enddo
+
+  end subroutine init_ideal_eos
 
 end module eoslibinit

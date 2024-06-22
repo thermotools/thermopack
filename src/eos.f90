@@ -584,8 +584,10 @@ contains
     h = 0.0
     z = 0.0
     z(j) = 1.0
+    act_mod_ptr => get_active_thermo_model()
     calculated = .false.
     act_eos_ptr => get_active_eos()
+    ! Thermopack
     select type(eos => act_eos_ptr)
     class is (single_eos)
       if (allocated(eos%nist)) then
@@ -595,7 +597,6 @@ contains
       endif
     end select
     if (.not. calculated) then
-      act_mod_ptr => get_active_thermo_model()
       h = Hideal_apparent(act_mod_ptr%comps,j,T)
       call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
       g = h - T*s
@@ -659,13 +660,12 @@ contains
   !>
   !> \author MH, 2014-01
   !----------------------------------------------------------------------
-  subroutine ideal_enthalpy_single(t,p,j,h,dhdt,dhdp)
+  subroutine ideal_enthalpy_single(t,j,h,dhdt,dhdp)
     use ideal, only: Hideal_apparent, Cpideal_apparent
     use eos_parameters, only: single_eos
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
     integer, intent(in) :: j                !< Component index
     real, intent(out) :: h                  !< J/mol - Ideal enthalpy
     real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy

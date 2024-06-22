@@ -23,11 +23,17 @@ class saft(thermo):
         # Load dll/so
         super(saft, self).__init__()
 
+        # Info methods
+        self.s_print_binary_mix_report = getattr(
+            self.tp, self.get_export_name("saft_interface", "printbinarymixturereportsaft"))
+
         # SAFT specific methods
         self.s_calc_saft_dispersion = getattr(
             self.tp, self.get_export_name("saft_interface", "calc_saft_dispersion"))
         self.s_calc_saft_hard_sphere = getattr(
             self.tp, self.get_export_name("saft_interface", "calc_saft_hard_sphere"))
+        self.s_calc_saft_chain = getattr(
+            self.tp, self.get_export_name("saft_interface", "calc_saft_chain"))
         self.s_calc_hs_diameter = getattr(self.tp, self.get_export_name(
             "saft_interface", "calc_hard_sphere_diameter"))
         self.s_calc_hs_diameter_ij = getattr(self.tp, self.get_export_name(
@@ -67,6 +73,8 @@ class saft(thermo):
             self.tp, self.get_export_name("saft_interface", "getactiveassocparams"))
         self.s_set_active_assoc_params = getattr(
             self.tp, self.get_export_name("saft_interface", "setactiveassocparams"))
+        self.s_get_n_assoc_sites = getattr(
+            self.tp, self.get_export_name("saft_interface", "get_n_assoc_sites"))
         self.s_alpha = getattr(
             self.tp, self.get_export_name("saft_interface", "alpha"))
         self.s_fres_multipol = getattr(
@@ -359,6 +367,54 @@ class saft(thermo):
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
         return return_tuple
 
+    def a_chain(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
+                     a_tv=None, a_tn=None, a_vn=None, a_nn=None):
+        """Utility
+        Calculate chain contribution given temperature, volume and mol numbers. $a = A_{chain}/(nRT)$
+
+        Args:
+            temp (float): Temperature (K)
+            volume (float): Volume (m3)
+            n (array_like): Mol numbers (mol)
+            a_t (No type, optional): Flag to activate calculation. Defaults to None.
+            a_v (No type, optional): Flag to activate calculation. Defaults to None.
+            a_n (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tt (No type, optional): Flag to activate calculation. Defaults to None.
+            a_vv (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tv (No type, optional): Flag to activate calculation. Defaults to None.
+            a_tn (No type, optional): Flag to activate calculation. Defaults to None.
+            a_vn (No type, optional): Flag to activate calculation. Defaults to None.
+            a_nn (No type, optional): Flag to activate calculation. Defaults to None.
+
+        Returns:
+            ndarry:
+            Optionally differentials
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        v_c = c_double(volume)
+        a_c = c_double(0.0)
+        n_c = (c_double * len(n))(*n)
+
+        optional_flags = [a_t, a_v, a_n,
+                          a_tt, a_vv, a_tv,
+                          a_tn, a_vn, a_nn]
+        optional_arrayshapes = [(0,), (0,), (len(n),),
+                               (0,), (0,), (0,),
+                               (len(n),), (len(n),), (len(n), len(n))]
+        optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
+        a_t_c, a_v_c, a_n_c, a_tt_c, a_vv_c, a_tv_c, a_tn_c, a_vn_c, a_nn_c = optional_ptrs
+
+        self.s_calc_saft_chain.argtypes = [POINTER(c_double) for _ in range(13)]
+        self.s_calc_saft_chain.restype = None
+        self.s_calc_saft_chain(byref(temp_c), byref(v_c), n_c, byref(a_c),
+                                    a_t_c, a_v_c, a_n_c,
+                                    a_tt_c, a_tv_c, a_vv_c, a_tn_c, a_vn_c, a_nn_c)
+
+        return_tuple = (a_c.value, )
+        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        return return_tuple
+
     def de_broglie_wavelength(self, c, temp):
         """Utility
         Calculate de Broglie wavelength
@@ -400,6 +456,13 @@ class saft(thermo):
         print(f"Segments: {self.m[c-1]}")
         print(f"sigma: {self.sigma[c-1]}")
         print(f"eps div kB: {self.eps_div_kb[c-1]}")
+
+    def print_saft_binary_report(self,):
+        """Utility
+        Print report of SAFT parameters for binary mixture
+        """
+        self.activate()
+        self.s_print_binary_mix_report()
 
     def potential(self, ic, jc, r, temp):
         """Utility
@@ -530,6 +593,23 @@ class saft(thermo):
                                        byref(beta_assoc_c))
         return eps_assoc_c.value, beta_assoc_c.value
 
+    def get_n_assoc_sites(self):
+        """Utility
+        Get number of association sites
+
+        Results:
+            n_assoc_sites (int): Number of association sites.
+        """
+        self.activate()
+
+        self.s_set_active_assoc_params.argtypes = []
+
+        self.s_get_active_assoc_params.restype = c_int
+
+        n_assoc_sites = self.s_get_n_assoc_sites()
+
+        return n_assoc_sites
+
     def sigma_ij(self, i, j):
         """Utility
         Get size parameter for i-j interaction
@@ -538,7 +618,7 @@ class saft(thermo):
             i (int): Component index (FORTRAN)
             j (int): Component index (FORTRAN)
         Results:
-            sigma_ij (float): Size paramater (m)
+            sigma_ij (float): Size parameter (m)
 
         """
         self.activate()
@@ -594,7 +674,7 @@ class saft(thermo):
             j (int): Component index (FORTRAN)
             temperature (float): Temperature (K)
         Results:
-            sigma_ij (float): Size paramater (m)
+            sigma_ij (float): Size parameter (m)
 
         """
         self.activate()
@@ -684,8 +764,8 @@ class saft(thermo):
             reduced_radius_cut (float): Reduced length cut-off
         """
         self.activate()
-        enable_truncation_correction_c = c_int(1 if enable_truncation_correction else 0)
-        enable_shift_correction_c = c_int(1 if enable_shift_correction else 0)
+        enable_truncation_correction_c = c_int(self._true_int_value if enable_truncation_correction else 0)
+        enable_shift_correction_c = c_int(self._true_int_value if enable_shift_correction else 0)
         rr_c = c_double(reduced_radius_cut)
 
         self.s_truncation_corrections.argtypes = [POINTER(c_int),
@@ -700,7 +780,7 @@ class saft(thermo):
 
     def test_fmt_compatibility(self):
         """Utility
-        Test if model setup is comaptible with the Fundamental Measure Theory (FMT)
+        Test if model setup is compatible with the Fundamental Measure Theory (FMT)
 
         Returns:
             bool: Is model FMT consistent?
@@ -718,7 +798,7 @@ class saft(thermo):
         self.s_test_fmt_compatibility(byref(is_fmt_consistent_c),
                                       byref(na_enabled_c))
 
-        return  is_fmt_consistent_c.value == 1, na_enabled_c.value == 1
+        return  is_fmt_consistent_c.value == self._true_int_value, na_enabled_c.value == self._true_int_value
 
     def calc_bmcsl_gij_fmt(self, n_alpha, mu_ij, calc_g_ij_n=False, mu_ij_T=None):
         """Utility
@@ -843,9 +923,9 @@ class saft(thermo):
         temp_c = c_double(temp)
         volume_c = c_double(volume)
         n_c = (c_double * len(n))(*n)
-        qq_c = c_int(1 if qq else 0)
-        dd_c = c_int(1 if dd else 0)
-        dq_c = c_int(1 if dq else 0)
+        qq_c = c_int(self._true_int_value if qq else 0)
+        dd_c = c_int(self._true_int_value if dd else 0)
+        dq_c = c_int(self._true_int_value if dq else 0)
         f_c = c_double(0.0)
 
         self.s_fres_multipol.argtypes = [POINTER(c_double),
@@ -878,9 +958,9 @@ class saft(thermo):
             dq (bool): Include dipole-quadrupole contribution?
         """
         self.activate()
-        qq_c = c_int(1 if qq else 0)
-        dd_c = c_int(1 if dd else 0)
-        dq_c = c_int(1 if dq else 0)
+        qq_c = c_int(self._true_int_value if qq else 0)
+        dd_c = c_int(self._true_int_value if dd else 0)
+        dq_c = c_int(self._true_int_value if dq else 0)
 
         self.s_multipol_model_control.argtypes = [POINTER(c_int),
                                                   POINTER(c_int),

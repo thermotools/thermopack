@@ -19,7 +19,7 @@ from thermopack_example_utils import calc_real_T, \
 # A. Aasen, Ø. Wilhelmsen M. Hammer, D, Reguera
 # doi: 10.1063/5.0142533
 
-# Instanciate and init PeTS object
+# Instantiate and init PeTS object
 PeTS = pets()
 
 sigma = PeTS.sigma[0]

@@ -1,6 +1,7 @@
 """Module for automatic generation of FORTRAN code of SAFT-VR Mie component data."""
 import numpy as np
 from sys import exit
+import sys
 import os
 import math
 import json
@@ -11,6 +12,8 @@ from data_utils import I, N_TAGS_PER_LINE, \
     get_assoc_scheme_parameter
 from binarydata import binaries, binary_list
 from shutil import copy
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
+from tools import write_file, THERMOPACK_ROOT
 
 class svrm_component(component):
     """Read component data from file, manipulate, save and generate
@@ -345,10 +348,8 @@ def SVRM_header_and_footer():
 def save_SVRM_fortran_file(code_lines):
         """ Save saftvrmie_datadb.f90
         """
-        with open("saftvrmie_datadb.f90", "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
+        new_contents = '\n'.join(code_lines)
+        write_file(f'{THERMOPACK_ROOT}/src/saftvrmie_datadb.f90', new_contents)
 
 
 if __name__ == "__main__":
@@ -364,4 +365,3 @@ if __name__ == "__main__":
     code_lines += bin_code
     code_lines += footer
     save_SVRM_fortran_file(code_lines)
-    copy('saftvrmie_datadb.f90', '../../../src/saftvrmie_datadb.f90')

@@ -1,18 +1,24 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-01-02T14:47:03.635317
+!! Time stamp: 2024-05-07T11:28:34.807763
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
   use assocschemeutils
   use cubic_eos
+  use thermopack_constants, only: element_len
   implicit none
   public
+
+  integer, parameter :: n_max_elements = 14
+  character(len=element_len), dimension(n_max_elements), parameter :: elements =(/&
+    "AR", "C ", "CL", "D ", "F ", "H ", "HE", "KR", "N ", "NE", "O ", "S ", "SI", "XE"/)
 
   type (gendatadb), parameter :: cx1 = &
       gendatadb(ident = "BUT1OL", &
       formula = "C4H10O", &
       name = "1-BUTANOL", &
+      structure = "C:4;H:10;O:1", &
       mw = 74.1216, &
       Tc = 562.2000, &
       Pc = 4500000.00, &
@@ -21,10 +27,10 @@ module compdatadb
       Tb = 390.6000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 361.9800, &
+      sref_state = "1ATM", &
+      href = -2.77000000e+05, &
+      gref = -1.52717199e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -40,7 +46,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -92,13 +100,15 @@ module compdatadb
       beta=3.66940000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.87660000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx2 = &
       gendatadb(ident = "HEX1OL", &
       formula = "C6H14O", &
       name = "1-HEXANOL", &
+      structure = "C:6;H:14;O:1", &
       mw = 102.1748, &
       Tc = 610.5000, &
       Pc = 3413000.00, &
@@ -107,10 +117,10 @@ module compdatadb
       Tb = 430.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 439.7000, &
+      sref_state = "1ATM", &
+      href = -3.16000000e+05, &
+      gref = -1.33542171e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -126,7 +136,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -178,13 +190,15 @@ module compdatadb
       beta=1.67270000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.69590000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx3 = &
       gendatadb(ident = "PENT1OL", &
       formula = "C5H12O", &
       name = "1-PENTANOL", &
+      structure = "C:5;H:12;O:1", &
       mw = 88.1482, &
       Tc = 580.0000, &
       Pc = 3900000.00, &
@@ -193,10 +207,10 @@ module compdatadb
       Tb = 411.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 401.3000, &
+      sref_state = "1ATM", &
+      href = -2.98000000e+05, &
+      gref = -1.44766834e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -212,7 +226,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -264,13 +280,15 @@ module compdatadb
       beta=2.67240000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.06900000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx4 = &
       gendatadb(ident = "PROP1OL", &
       formula = "C3H8O", &
       name = "1-PROPANOL", &
+      structure = "C:3;H:8;O:1", &
       mw = 60.0950, &
       Tc = 536.9000, &
       Pc = 5200000.00, &
@@ -279,10 +297,10 @@ module compdatadb
       Tb = 370.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 322.4900, &
+      sref_state = "1ATM", &
+      href = -2.56000000e+05, &
+      gref = -1.60616879e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -298,7 +316,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -350,13 +370,15 @@ module compdatadb
       beta=7.73600000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.01340000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx5 = &
       gendatadb(ident = "13BD", &
       formula = "C4H6", &
       name = "1,3-BUTADIENE", &
+      structure = "C:4;H:6", &
       mw = 54.0920, &
       Tc = 425.0000, &
       Pc = 4330000.00, &
@@ -365,10 +387,10 @@ module compdatadb
       Tb = 268.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 278.7800, &
+      sref_state = "1BAR", &
+      href = 1.08800000e+05, &
+      gref = 1.49413993e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -384,7 +406,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/-1.68700000e+00,3.41900000e-01,-2.34000000e-04,6.33500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -429,6 +453,7 @@ module compdatadb
       gendatadb(ident = "2MHX", &
       formula = "C7H16", &
       name = "2-METHYLHEXANE", &
+      structure = "C:7;H:16", &
       mw = 100.2050, &
       Tc = 530.4000, &
       Pc = 2730000.00, &
@@ -437,10 +462,10 @@ module compdatadb
       Tb = 363.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 419.9900, &
+      sref_state = "1ATM", &
+      href = -1.95000000e+05, &
+      gref = 3.42495402e+03, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -456,7 +481,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/1.78937090e+01,4.04849000e-01,1.33465300e-03,2.87769800e-06,-3.51181800e-09, &
-      1.25400550e-12,1.82345600e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.25400550e-12,1.82345600e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
@@ -501,6 +528,7 @@ module compdatadb
       gendatadb(ident = "3MP", &
       formula = "C6H14", &
       name = "3-METHYLPENTANE", &
+      structure = "C:6;H:14", &
       mw = 86.1780, &
       Tc = 504.5000, &
       Pc = 3120000.00, &
@@ -509,10 +537,10 @@ module compdatadb
       Tb = 336.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 382.8800, &
+      sref_state = "1ATM", &
+      href = -1.71600000e+05, &
+      gref = -2.78432248e+03, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -528,7 +556,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/1.79647680e+01,3.97799000e-01,1.20987000e-03,3.25455600e-06,-3.94266100e-09, &
-      1.43841480e-12,2.14954100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.43841480e-12,2.14954100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
@@ -573,6 +603,7 @@ module compdatadb
       gendatadb(ident = "ACETONE", &
       formula = "C3H6O", &
       name = "ACETONE", &
+      structure = "C:3;H:6;O:1", &
       mw = 58.0800, &
       Tc = 508.1000, &
       Pc = 4700000.00, &
@@ -581,10 +612,10 @@ module compdatadb
       Tb = 329.2200, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 295.5000, &
+      sref_state = "1BAR", &
+      href = -2.18500000e+05, &
+      gref = -1.53999422e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -600,7 +631,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/7.33799960e-01,2.16303500e-04,8.20407250e-06,-1.02740600e-08,3.90520150e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 0.0000  &
       )
@@ -645,6 +678,7 @@ module compdatadb
       gendatadb(ident = "ACETYLENE", &
       formula = "C2H2", &
       name = "ACETYLENE", &
+      structure = "C:2;H:2", &
       mw = 26.0380, &
       Tc = 308.3000, &
       Pc = 6140000.00, &
@@ -653,10 +687,10 @@ module compdatadb
       Tb = 188.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 200.9300, &
+      sref_state = "1BAR", &
+      href = 2.26730000e+05, &
+      gref = 2.09207725e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -672,7 +706,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.68200000e+01,7.57800000e-02,-5.00700000e-05,1.41200000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -681,6 +717,7 @@ module compdatadb
       gendatadb(ident = "ALLENE", &
       formula = "C3H4", &
       name = "PROPADIENE", &
+      structure = "C:3;H:4", &
       mw = 40.0650, &
       Tc = 393.8500, &
       Pc = 5248600.00, &
@@ -689,10 +726,10 @@ module compdatadb
       Tb = 238.6500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 244.1980, &
+      sref_state = "1BAR", &
+      href = 1.91200000e+05, &
+      gref = 2.01450993e+05, &
       psatcode = 1, &
       ant = (/6.53610000e+00, 1.05472000e+03, -7.70800000e+01/), &
       Tantmin = 174.0000, &
@@ -708,7 +745,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/9.90600000e+00,1.97700000e-01,-1.18200000e-04,2.78200000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -753,6 +792,7 @@ module compdatadb
       gendatadb(ident = "NH3", &
       formula = "NH3", &
       name = "AMMONIA", &
+      structure = "H:3;N:1", &
       mw = 17.0310, &
       Tc = 405.6000, &
       Pc = 11470000.00, &
@@ -762,9 +802,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 192.7700, &
-      href = -45900.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -4.59400000e+04, &
+      gref = -1.64069008e+04, &
       psatcode = 1, &
       ant = (/1.69481000e+01, 2.13250000e+03, -3.29800000e+01/), &
       Tantmin = 179.0000, &
@@ -780,7 +820,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-2.20260600e+00,2.01031700e+00,-6.50061000e-04,2.37326400e-06,-1.59759500e-09, &
-      3.76173900e-13,9.90447000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      3.76173900e-13,9.90447000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -790,6 +832,13 @@ module compdatadb
       cid="NH3", &
       ref="tcPR", &
       coeff=(/2.27400000e-01, 8.64500000e-01, 2.33200000e+00/) &
+      )
+
+  type (alphadatadb), parameter :: twu20 = &
+      alphadatadb(eosid="PR", &
+      cid="NH3", &
+      ref="Aasen2024", &
+      coeff=(/4.17860000e-01, 8.65090000e-01, 1.54140000e+00/) &
       )
 
   type (alphadatadb), parameter :: mc1 = &
@@ -802,15 +851,15 @@ module compdatadb
   type (cidatadb), parameter :: c19 = &
       cidatadb(eosid="PR", &
       cid="NH3", &
-      ref="tcPR", &
-      bib_ref="10.1016/j.fluid.2016.09.003", &
-      ciA=4.03030000e-06, &
-      ciB=0.00000000e+00, &
+      ref="Aasen2024", &
+      bib_ref="Aasen2024AmmoniaWaterFPE", &
+      ciA=2.11170000e-06, &
+      ciB=2.95070000e-09, &
       ciC=0.00000000e+00, &
-      c_type=1 &
+      c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu20 = &
+  type (alphadatadb), parameter :: twu21 = &
       alphadatadb(eosid="SRK", &
       cid="NH3", &
       ref="tcRK", &
@@ -838,7 +887,7 @@ module compdatadb
   type(CPAdata), parameter :: cpa5 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NH3", &
-      ref="Default/SINTEF", &
+      ref="2B-SINTEF", &
       bib_reference="", &
       a0=3.73160000e+05, &
       b=2.07666000e-02, &
@@ -846,7 +895,8 @@ module compdatadb
       beta=7.93725000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.17324000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa6 = &
@@ -860,7 +910,8 @@ module compdatadb
       beta=8.19643000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.91193000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_3B &
+      assoc_scheme = assoc_scheme_3B ,&
+      simplified_rdf = .true. &
       )
 
   type(CPAdata), parameter :: cpa7 = &
@@ -874,13 +925,30 @@ module compdatadb
       beta=8.71581000e-04, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.81681000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_4B &
+      assoc_scheme = assoc_scheme_4B ,&
+      simplified_rdf = .true. &
+      )
+
+  type(CPAdata), parameter :: cpa8 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="NH3", &
+      ref="Default/Aasen2024", &
+      bib_reference="Aasen2024AmmoniaWaterFPE", &
+      a0=2.19560000e+05, &
+      b=2.01370000e-02, &
+      eps=5.82300000e+03, &
+      beta=7.19210000e-01, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/1.08990000e+00,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx12 = &
       gendatadb(ident = "AR", &
       formula = "AR", &
       name = "ARGON", &
+      structure = "Ar:1", &
       mw = 39.9480, &
       Tc = 150.8000, &
       Pc = 4873700.00, &
@@ -889,10 +957,10 @@ module compdatadb
       Tb = 87.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 154.8460, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.52330000e+01, 7.00510000e+02, -5.84000000e+00/), &
       Tantmin = 81.0000, &
@@ -908,12 +976,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/4.96900000e+00,-7.67000000e-06,1.23400000e-08,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu21 = &
+  type (alphadatadb), parameter :: twu22 = &
       alphadatadb(eosid="PR", &
       cid="AR", &
       ref="tcPR", &
@@ -938,7 +1008,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu22 = &
+  type (alphadatadb), parameter :: twu23 = &
       alphadatadb(eosid="SRK", &
       cid="AR", &
       ref="tcRK", &
@@ -960,6 +1030,7 @@ module compdatadb
       gendatadb(ident = "BENZENE", &
       formula = "C6H6", &
       name = "BENZENE", &
+      structure = "C:6;H:6", &
       mw = 78.1140, &
       Tc = 562.1000, &
       Pc = 4894000.00, &
@@ -968,10 +1039,10 @@ module compdatadb
       Tb = 353.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 269.3070, &
+      sref_state = "1BAR", &
+      href = 8.29000000e+04, &
+      gref = 1.29761130e+05, &
       psatcode = 1, &
       ant = (/1.59008000e+01, 2.78851000e+03, -5.23600000e+01/), &
       Tantmin = 280.0000, &
@@ -987,7 +1058,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/8.44670620e+01,-5.13560000e-01,3.24874000e-03,-1.54391300e-06,3.65037000e-10, &
-      -2.48222000e-14,5.63104100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -2.48222000e-14,5.63104100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -999,7 +1072,7 @@ module compdatadb
       coeff=(/7.01000000e-01, -2.52000000e-01, 9.76000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu23 = &
+  type (alphadatadb), parameter :: twu24 = &
       alphadatadb(eosid="PR", &
       cid="BENZENE", &
       ref="tcPR", &
@@ -1024,7 +1097,7 @@ module compdatadb
       coeff=(/8.40000000e-01, -3.89000000e-01, 9.17000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu24 = &
+  type (alphadatadb), parameter :: twu25 = &
       alphadatadb(eosid="SRK", &
       cid="BENZENE", &
       ref="tcRK", &
@@ -1046,6 +1119,7 @@ module compdatadb
       gendatadb(ident = "BUTANAL", &
       formula = "C4H8O", &
       name = "BUTANAL", &
+      structure = "C:4;H:8;O:1", &
       mw = 72.1070, &
       Tc = 537.2000, &
       Pc = 4410000.00, &
@@ -1054,10 +1128,10 @@ module compdatadb
       Tb = 348.0000, &
       Ttr = 176.8000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 344.8000, &
+      sref_state = "1ATM", &
+      href = -2.11800000e+05, &
+      gref = -1.21357224e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1073,12 +1147,14 @@ module compdatadb
       bib_ref = "None", &
       cptype = 100, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu25 = &
+  type (alphadatadb), parameter :: twu26 = &
       alphadatadb(eosid="PR", &
       cid="BUTANAL", &
       ref="tcPR", &
@@ -1096,7 +1172,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu26 = &
+  type (alphadatadb), parameter :: twu27 = &
       alphadatadb(eosid="SRK", &
       cid="BUTANAL", &
       ref="tcRK", &
@@ -1118,6 +1194,7 @@ module compdatadb
       gendatadb(ident = "CO2", &
       formula = "CO2", &
       name = "CARBON DIOXIDE", &
+      structure = "C:1;O:2", &
       mw = 44.0100, &
       Tc = 304.2000, &
       Pc = 7376500.00, &
@@ -1126,10 +1203,10 @@ module compdatadb
       Tb = 194.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 213.7850, &
+      sref_state = "1BAR", &
+      href = -3.93510000e+05, &
+      gref = -3.94372548e+05, &
       psatcode = 1, &
       ant = (/2.25898000e+01, 3.10339000e+03, -1.60000000e-01/), &
       Tantmin = 154.0000, &
@@ -1145,7 +1222,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/1.11137440e+01,4.79107000e-01,7.62159000e-04,-3.59392000e-07,8.47440000e-11, &
-      -5.77520000e-15,2.71918000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -5.77520000e-15,2.71918000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -1156,12 +1235,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 5, &
       cp = (/5.67998955e-01,1.25397835e-03,-7.65547666e-07,1.80606165e-10,-3.10473875e+03, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 5000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu27 = &
+  type (alphadatadb), parameter :: twu28 = &
       alphadatadb(eosid="PR", &
       cid="CO2", &
       ref="tcPR", &
@@ -1193,7 +1274,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu28 = &
+  type (alphadatadb), parameter :: twu29 = &
       alphadatadb(eosid="SRK", &
       cid="CO2", &
       ref="tcRK", &
@@ -1218,7 +1299,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa8 = &
+  type(CPAdata), parameter :: cpa9 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -1229,10 +1310,11 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa9 = &
+  type(CPAdata), parameter :: cpa10 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF", &
@@ -1243,10 +1325,11 @@ module compdatadb
       beta=5.00000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.60200000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_1EA &
+      assoc_scheme = assoc_scheme_1EA ,&
+      simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa10 = &
+  type(CPAdata), parameter :: cpa11 = &
       CPAdata(eosid="CPA-SRK", &
       compName="CO2", &
       ref="SINTEF2", &
@@ -1257,13 +1340,15 @@ module compdatadb
       beta=9.08545617e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/4.62138711e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_1 &
+      assoc_scheme = assoc_scheme_1 ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx16 = &
       gendatadb(ident = "CO", &
       formula = "CO", &
       name = "CARBON MONOXIDE", &
+      structure = "C:1;O:1", &
       mw = 28.0100, &
       Tc = 132.8500, &
       Pc = 3494000.00, &
@@ -1272,10 +1357,10 @@ module compdatadb
       Tb = 81.6600, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 197.6600, &
+      sref_state = "1BAR", &
+      href = -1.10530000e+05, &
+      gref = -1.37167914e+05, &
       psatcode = 1, &
       ant = (/1.54140000e+01, 6.71763100e+02, -5.15400000e+00/), &
       Tantmin = 69.7300, &
@@ -1291,12 +1376,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/1.16120000e+00,-1.16150000e-03,3.50860000e-06,-3.86480000e-09,1.52870000e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu29 = &
+  type (alphadatadb), parameter :: twu30 = &
       alphadatadb(eosid="PR", &
       cid="CO", &
       ref="tcPR", &
@@ -1321,7 +1408,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu30 = &
+  type (alphadatadb), parameter :: twu31 = &
       alphadatadb(eosid="SRK", &
       cid="CO", &
       ref="tcRK", &
@@ -1343,6 +1430,7 @@ module compdatadb
       gendatadb(ident = "CL2", &
       formula = "CL2", &
       name = "CHLORINE", &
+      structure = "Cl:2", &
       mw = 70.9050, &
       Tc = 417.1500, &
       Pc = 7710000.00, &
@@ -1351,10 +1439,10 @@ module compdatadb
       Tb = 239.1200, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 223.0810, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/4.06280000e+00, 8.61340000e+02, -2.68200000e+01/), &
       Tantmin = 176.3100, &
@@ -1370,12 +1458,14 @@ module compdatadb
       bib_ref = "Poling et al. (2001): 978-0-07-011682-5", &
       cptype = 8, &
       cp = (/3.05600000e+00,5.37080000e-03,-8.09800000e-06,5.69300000e-09,-1.52560000e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu31 = &
+  type (alphadatadb), parameter :: twu32 = &
       alphadatadb(eosid="PR", &
       cid="CL2", &
       ref="tcPR", &
@@ -1393,7 +1483,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu32 = &
+  type (alphadatadb), parameter :: twu33 = &
       alphadatadb(eosid="SRK", &
       cid="CL2", &
       ref="tcRK", &
@@ -1415,6 +1505,7 @@ module compdatadb
       gendatadb(ident = "ClF3Si", &
       formula = "ClF3Si", &
       name = "CHLOROTRIFLUOROSILANE", &
+      structure = "Cl:1;F:3;Si:1", &
       mw = 120.5000, &
       Tc = 307.7000, &
       Pc = 3470000.00, &
@@ -1423,10 +1514,10 @@ module compdatadb
       Tb = 203.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 308.6700, &
+      sref_state = "1BAR", &
+      href = -1.31796000e+06, &
+      gref = -1.28043067e+06, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1442,7 +1533,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/9.59700000e+01,-6.08380000e+00,1.20890000e-02,-6.90760000e-06,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -1451,6 +1544,7 @@ module compdatadb
       gendatadb(ident = "CYCLOHEX", &
       formula = "C6H12", &
       name = "CYCLOHEXANE", &
+      structure = "C:6;H:12", &
       mw = 84.1610, &
       Tc = 553.5000, &
       Pc = 4073000.00, &
@@ -1459,10 +1553,10 @@ module compdatadb
       Tb = 353.9300, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 298.1900, &
+      sref_state = "1ATM", &
+      href = -1.24600000e+05, &
+      gref = 3.05037590e+04, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1478,12 +1572,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/4.03500000e+00,-4.43300000e-03,1.68340000e-04,-2.07750000e-07,7.74600000e-11, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -100.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu33 = &
+  type (alphadatadb), parameter :: twu34 = &
       alphadatadb(eosid="PR", &
       cid="CYCLOHEX", &
       ref="tcPR", &
@@ -1501,7 +1597,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu34 = &
+  type (alphadatadb), parameter :: twu35 = &
       alphadatadb(eosid="SRK", &
       cid="CYCLOHEX", &
       ref="tcRK", &
@@ -1523,6 +1619,7 @@ module compdatadb
       gendatadb(ident = "C3_1", &
       formula = "C3H6", &
       name = "CYCLOPROPANE", &
+      structure = "C:3;H:6", &
       mw = 42.0810, &
       Tc = 397.8000, &
       Pc = 5490000.00, &
@@ -1531,10 +1628,10 @@ module compdatadb
       Tb = 240.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 237.3780, &
+      sref_state = "1BAR", &
+      href = 5.33000000e+04, &
+      gref = 1.04546618e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1550,12 +1647,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/-3.52400000e+01,3.81300000e-01,-2.88100000e-04,9.03500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu35 = &
+  type (alphadatadb), parameter :: twu36 = &
       alphadatadb(eosid="PR", &
       cid="C3_1", &
       ref="tcPR", &
@@ -1573,7 +1672,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu36 = &
+  type (alphadatadb), parameter :: twu37 = &
       alphadatadb(eosid="SRK", &
       cid="C3_1", &
       ref="tcRK", &
@@ -1595,6 +1694,7 @@ module compdatadb
       gendatadb(ident = "D2", &
       formula = "D2", &
       name = "DEUTERIUM", &
+      structure = "D:2", &
       mw = 4.0282, &
       Tc = 38.3400, &
       Pc = 1679600.00, &
@@ -1603,10 +1703,10 @@ module compdatadb
       Tb = 23.6610, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 144.9600, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1622,19 +1722,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.07860000e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu37 = &
+  type (alphadatadb), parameter :: twu38 = &
       alphadatadb(eosid="PR", &
       cid="D2", &
       ref="tcPR", &
       coeff=(/1.48600000e-01, 9.96800000e-01, 1.05870000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu38 = &
+  type (alphadatadb), parameter :: twu39 = &
       alphadatadb(eosid="PR", &
       cid="D2", &
       ref="QuantumCubic", &
@@ -1663,7 +1765,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu39 = &
+  type (alphadatadb), parameter :: twu40 = &
       alphadatadb(eosid="SRK", &
       cid="D2", &
       ref="tcRK", &
@@ -1685,6 +1787,7 @@ module compdatadb
       gendatadb(ident = "S434", &
       formula = "C12H26O", &
       name = "DI-n-HEXYL ETHER", &
+      structure = "C:12;H:26;O:1", &
       mw = 186.3390, &
       Tc = 657.0000, &
       Pc = 1823900.00, &
@@ -1694,9 +1797,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 5.57628752e+05, &
       psatcode = 1, &
       ant = (/1.63372000e+01, 3.98278000e+03, -8.91500000e+01/), &
       Tantmin = 373.0000, &
@@ -1712,7 +1815,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/8.01000000e+00,2.56400000e-01,-1.32200000e-04,4.00700000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -1721,6 +1826,7 @@ module compdatadb
       gendatadb(ident = "DME", &
       formula = "C2H6O", &
       name = "di-methyl ether", &
+      structure = "C:2;H:6;O:1", &
       mw = 46.0684, &
       Tc = 400.3780, &
       Pc = 5336800.00, &
@@ -1729,10 +1835,10 @@ module compdatadb
       Tb = 248.3680, &
       Ttr = 131.6600, &
       Ptr = 2.2000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 267.5530, &
+      sref_state = "1BAR", &
+      href = -1.84100000e+05, &
+      gref = -1.12978405e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1748,7 +1854,9 @@ module compdatadb
       bib_ref = "The properties of gases and liquids, 5th ed. ISBN: 978-0-07-011682-5", &
       cptype = 8, &
       cp = (/4.36100000e+00,6.07000000e-03,2.89900000e-05,-3.58100000e-08,1.28200000e-11, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 100.0000, &
       Tcpmax = 1000.0000  &
       )
@@ -1757,6 +1865,7 @@ module compdatadb
       gendatadb(ident = "N2O4", &
       formula = "N2O4", &
       name = "DINITROGEN TETROXIDE", &
+      structure = "N:2;O:4", &
       mw = 92.0110, &
       Tc = 431.0100, &
       Pc = 10100000.00, &
@@ -1765,10 +1874,10 @@ module compdatadb
       Tb = 302.2200, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 304.3800, &
+      sref_state = "1BAR", &
+      href = 9.08000000e+03, &
+      gref = 9.77894640e+04, &
       psatcode = 1, &
       ant = (/1.70046000e+01, 2.73020000e+03, -3.89700000e+01/), &
       Tantmin = 254.1700, &
@@ -1784,7 +1893,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/3.04890000e-01,2.46305000e-03,-1.73230000e-06,-5.56640000e-10,7.76230000e-13, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 1000.0000  &
       )
@@ -1793,6 +1904,7 @@ module compdatadb
       gendatadb(ident = "E-H2", &
       formula = "H2", &
       name = "EQUILIBRIUM-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 32.9380, &
       Pc = 1285800.00, &
@@ -1801,10 +1913,10 @@ module compdatadb
       Tb = 20.2710, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 130.6800, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 10, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 15.0000, &
@@ -1820,7 +1932,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 10, &
       cp = (/2.86719970e+01,1.33961560e+01,2.96013100e-03,-3.98074400e-06,2.66166700e-09, &
-      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 5.0000, &
       Tcpmax = 5.0000  &
       )
@@ -1829,6 +1943,7 @@ module compdatadb
       gendatadb(ident = "C2", &
       formula = "C2H6", &
       name = "ETHANE", &
+      structure = "C:2;H:6", &
       mw = 30.0700, &
       Tc = 305.4000, &
       Pc = 4883900.00, &
@@ -1837,10 +1952,10 @@ module compdatadb
       Tb = 184.5000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 229.6010, &
+      sref_state = "1BAR", &
+      href = -8.40000000e+04, &
+      gref = -3.21460502e+04, &
       psatcode = 1, &
       ant = (/1.56637000e+01, 1.51142000e+03, -1.71600000e+01/), &
       Tantmin = 130.0000, &
@@ -1856,12 +1971,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-4.93340000e-02,1.10899200e+00,-1.88512000e-04,3.96558000e-06,-3.14020900e-09, &
-      8.00818700e-13,1.99588900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      8.00818700e-13,1.99588900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu40 = &
+  type (alphadatadb), parameter :: twu41 = &
       alphadatadb(eosid="PR", &
       cid="C2", &
       ref="tcPR", &
@@ -1893,7 +2010,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu41 = &
+  type (alphadatadb), parameter :: twu42 = &
       alphadatadb(eosid="SRK", &
       cid="C2", &
       ref="tcRK", &
@@ -1929,6 +2046,7 @@ module compdatadb
       gendatadb(ident = "ETOH", &
       formula = "ETOH", &
       name = "ETHANOL", &
+      structure = "C:2;H:6;O:1", &
       mw = 46.0684, &
       Tc = 514.7100, &
       Pc = 6268000.00, &
@@ -1937,10 +2055,10 @@ module compdatadb
       Tb = 351.5700, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 279.4080, &
+      sref_state = "1BAR", &
+      href = -2.34000000e+05, &
+      gref = -1.66412973e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -1956,12 +2074,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu42 = &
+  type (alphadatadb), parameter :: twu43 = &
       alphadatadb(eosid="PR", &
       cid="ETOH", &
       ref="tcPR", &
@@ -1979,7 +2099,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu43 = &
+  type (alphadatadb), parameter :: twu44 = &
       alphadatadb(eosid="SRK", &
       cid="ETOH", &
       ref="tcRK", &
@@ -1997,7 +2117,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa11 = &
+  type(CPAdata), parameter :: cpa12 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="SINTEF/Queimada2005", &
@@ -2008,10 +2128,11 @@ module compdatadb
       beta=8.00000000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.36900000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa12 = &
+  type(CPAdata), parameter :: cpa13 = &
       CPAdata(eosid="CPA-SRK", &
       compName="ETOH", &
       ref="Default/Oliveira2008", &
@@ -2022,13 +2143,15 @@ module compdatadb
       beta=1.92120000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.39230000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx28 = &
       gendatadb(ident = "EBZN", &
       formula = "C8H10", &
       name = "ETHYLBENZENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 617.1600, &
       Pc = 3608000.00, &
@@ -2037,10 +2160,10 @@ module compdatadb
       Tb = 409.3600, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 360.6000, &
+      sref_state = "1ATM", &
+      href = 2.98000000e+04, &
+      gref = 1.30756738e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2056,12 +2179,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/7.84400000e+04,3.39900000e+05,1.55900000e+03,2.42600000e+05,-7.02000000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu44 = &
+  type (alphadatadb), parameter :: twu45 = &
       alphadatadb(eosid="PR", &
       cid="EBZN", &
       ref="tcPR", &
@@ -2079,7 +2204,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu45 = &
+  type (alphadatadb), parameter :: twu46 = &
       alphadatadb(eosid="SRK", &
       cid="EBZN", &
       ref="tcRK", &
@@ -2101,6 +2226,7 @@ module compdatadb
       gendatadb(ident = "C2_1", &
       formula = "C2H4", &
       name = "ETHYLENE", &
+      structure = "C:2;H:4", &
       mw = 28.0540, &
       Tc = 282.4000, &
       Pc = 5035900.00, &
@@ -2109,10 +2235,10 @@ module compdatadb
       Tb = 169.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 219.3200, &
+      sref_state = "1BAR", &
+      href = 5.24700000e+04, &
+      gref = 6.84269880e+04, &
       psatcode = 1, &
       ant = (/1.55368000e+01, 1.34701000e+03, -1.81500000e+01/), &
       Tantmin = 120.0000, &
@@ -2128,7 +2254,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.00935360e+01,6.06930000e-01,1.28878800e-03,1.03363600e-06,-1.09953700e-09, &
-      2.92932600e-13,4.48985300e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      2.92932600e-13,4.48985300e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -2151,6 +2279,7 @@ module compdatadb
       gendatadb(ident = "HE", &
       formula = "HE", &
       name = "HELIUM-4", &
+      structure = "He:1", &
       mw = 4.0030, &
       Tc = 5.1953, &
       Pc = 227600.00, &
@@ -2159,10 +2288,10 @@ module compdatadb
       Tb = 4.2100, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 126.1530, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.22514000e+01, 3.37329000e+01, 1.79000000e+00/), &
       Tantmin = 3.7000, &
@@ -2178,19 +2307,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.07860000e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu46 = &
+  type (alphadatadb), parameter :: twu47 = &
       alphadatadb(eosid="PR", &
       cid="HE", &
       ref="tcPR", &
       coeff=(/6.30000000e-03, 1.21750000e+00, 1.09090000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu47 = &
+  type (alphadatadb), parameter :: twu48 = &
       alphadatadb(eosid="PR", &
       cid="HE", &
       ref="QuantumCubic", &
@@ -2219,7 +2350,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu48 = &
+  type (alphadatadb), parameter :: twu49 = &
       alphadatadb(eosid="SRK", &
       cid="HE", &
       ref="tcRK", &
@@ -2241,6 +2372,7 @@ module compdatadb
       gendatadb(ident = "N2H4", &
       formula = "N2H4", &
       name = "HYDRAZINE", &
+      structure = "H:4;N:2", &
       mw = 32.0452, &
       Tc = 653.1500, &
       Pc = 14700000.00, &
@@ -2250,9 +2382,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 238.6600, &
-      href = 95353.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 9.53500000e+04, &
+      gref = 1.59246228e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2268,12 +2400,14 @@ module compdatadb
       bib_ref = "Poling, Prausnitz and O'Connell. ISBN: 978-0-07-011682-5", &
       cptype = 8, &
       cp = (/3.62700000e+00,2.23900000e-03,2.87600000e-05,-4.06000000e-08,1.69000000e-11, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu49 = &
+  type (alphadatadb), parameter :: twu50 = &
       alphadatadb(eosid="PR", &
       cid="N2H4", &
       ref="tcPR", &
@@ -2291,7 +2425,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu50 = &
+  type (alphadatadb), parameter :: twu51 = &
       alphadatadb(eosid="SRK", &
       cid="N2H4", &
       ref="tcRK", &
@@ -2313,6 +2447,7 @@ module compdatadb
       gendatadb(ident = "H2", &
       formula = "H2", &
       name = "HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0160, &
       Tc = 33.1450, &
       Pc = 1296400.00, &
@@ -2321,10 +2456,10 @@ module compdatadb
       Tb = 20.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 130.6800, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.36333000e+01, 1.64900000e+02, 3.19000000e+00/), &
       Tantmin = 14.0000, &
@@ -2336,23 +2471,25 @@ module compdatadb
 
   type (cpdata), parameter :: cp33 = &
       cpdata(cid = "H2", &
-      ref = "Default", &
-      bib_ref = "", &
-      cptype = 2, &
-      cp = (/2.86719970e+01,1.33961560e+01,2.96013100e-03,-3.98074400e-06,2.66166700e-09, &
-      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = -175.0000, &
-      Tcpmax = 1200.0000  &
+      ref = "MEOS/Default", &
+      bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
+      cptype = 13, &
+      cp = (/2.50000000e+00,1.61600000e+00,5.31000000e+02,-4.11700000e-01,7.51000000e+02, &
+      -7.92000000e-01,1.98900000e+03,7.58000000e-01,2.48400000e+03,1.21700000e+00, &
+      6.85900000e+03,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
+      Tcpmin = 13.9570, &
+      Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu51 = &
+  type (alphadatadb), parameter :: twu52 = &
       alphadatadb(eosid="PR", &
       cid="H2", &
       ref="tcPR", &
       coeff=(/1.51470000e+00, -3.79590000e+00, -1.37700000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu52 = &
+  type (alphadatadb), parameter :: twu53 = &
       alphadatadb(eosid="PR", &
       cid="H2", &
       ref="QuantumCubic", &
@@ -2388,7 +2525,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu53 = &
+  type (alphadatadb), parameter :: twu54 = &
       alphadatadb(eosid="SRK", &
       cid="H2", &
       ref="tcRK", &
@@ -2417,6 +2554,7 @@ module compdatadb
       gendatadb(ident = "H2O2", &
       formula = "H2O2", &
       name = "HYDROGEN PEROXIDE", &
+      structure = "H:2;O:2", &
       mw = 34.0147, &
       Tc = 730.1500, &
       Pc = 21700000.00, &
@@ -2426,9 +2564,9 @@ module compdatadb
       Ttr = 272.7403, &
       Ptr = 0.0000, &
       sref = 232.9500, &
-      href = -136106.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -1.36110000e+05, &
+      gref = -1.05435732e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2444,12 +2582,14 @@ module compdatadb
       bib_ref = "https://webbook.nist.gov", &
       cptype = 12, &
       cp = (/3.42566700e+01,5.51844500e+01,-3.51544300e+01,9.08744000e+00,-4.22157000e-01, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 2000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu54 = &
+  type (alphadatadb), parameter :: twu55 = &
       alphadatadb(eosid="PR", &
       cid="H2O2", &
       ref="tcPR", &
@@ -2478,7 +2618,7 @@ module compdatadb
       c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu55 = &
+  type (alphadatadb), parameter :: twu56 = &
       alphadatadb(eosid="SRK", &
       cid="H2O2", &
       ref="tcRK", &
@@ -2500,6 +2640,7 @@ module compdatadb
       gendatadb(ident = "H2S", &
       formula = "H2S", &
       name = "HYDROGEN SULFIDE", &
+      structure = "H:2;S:1", &
       mw = 34.0800, &
       Tc = 373.2000, &
       Pc = 8936900.00, &
@@ -2508,10 +2649,10 @@ module compdatadb
       Tb = 212.8000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 205.8100, &
+      sref_state = "1BAR", &
+      href = -2.06000000e+04, &
+      gref = -3.34383390e+04, &
       psatcode = 1, &
       ant = (/1.61040000e+01, 1.76869000e+03, -2.60600000e+01/), &
       Tantmin = 190.0000, &
@@ -2527,12 +2668,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-1.43704900e+00,9.98865000e-01,-1.84315000e-04,5.57087000e-07,-7.86320000e-11, &
-      6.98500000e-15,1.80540900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      6.98500000e-15,1.80540900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu56 = &
+  type (alphadatadb), parameter :: twu57 = &
       alphadatadb(eosid="PR", &
       cid="H2S", &
       ref="tcPR", &
@@ -2557,7 +2700,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu57 = &
+  type (alphadatadb), parameter :: twu58 = &
       alphadatadb(eosid="SRK", &
       cid="H2S", &
       ref="tcRK", &
@@ -2586,6 +2729,7 @@ module compdatadb
       gendatadb(ident = "IC4", &
       formula = "C4H10", &
       name = "ISOBUTANE", &
+      structure = "C:4;H:10", &
       mw = 58.1240, &
       Tc = 408.1000, &
       Pc = 3647700.00, &
@@ -2594,10 +2738,10 @@ module compdatadb
       Tb = 261.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 295.5000, &
+      sref_state = "1BAR", &
+      href = -1.34200000e+05, &
+      gref = -2.06465910e+04, &
       psatcode = 1, &
       ant = (/1.55381000e+01, 2.03273000e+03, -3.31500000e+01/), &
       Tantmin = 187.0000, &
@@ -2613,7 +2757,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/2.67442080e+01,1.95448000e-01,2.52314300e-03,1.95651000e-07,-7.72615000e-10, &
-      2.38608700e-13,3.46659500e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      2.38608700e-13,3.46659500e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -2632,7 +2778,7 @@ module compdatadb
       coeff=(/6.52000000e-01, -1.49000000e-01, 5.99000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu58 = &
+  type (alphadatadb), parameter :: twu59 = &
       alphadatadb(eosid="PR", &
       cid="IC4", &
       ref="tcPR", &
@@ -2664,7 +2810,7 @@ module compdatadb
       coeff=(/8.07000000e-01, -4.32000000e-01, 9.10000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu59 = &
+  type (alphadatadb), parameter :: twu60 = &
       alphadatadb(eosid="SRK", &
       cid="IC4", &
       ref="tcRK", &
@@ -2686,6 +2832,7 @@ module compdatadb
       gendatadb(ident = "IC5", &
       formula = "C5H12", &
       name = "ISOPENTANE", &
+      structure = "C:5;H:12", &
       mw = 72.1510, &
       Tc = 460.4000, &
       Pc = 3384300.00, &
@@ -2694,10 +2841,10 @@ module compdatadb
       Tb = 301.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 343.7400, &
+      sref_state = "1BAR", &
+      href = -1.53700000e+05, &
+      gref = -1.38557240e+04, &
       psatcode = 1, &
       ant = (/1.56338000e+01, 2.34867000e+03, -4.00500000e+01/), &
       Tantmin = 216.0000, &
@@ -2713,7 +2860,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.42520750e+01,-1.31900000e-01,3.54115600e-03,-1.33322500e-06,2.51463000e-10, &
-      -1.29589000e-14,4.57297600e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -1.29589000e-14,4.57297600e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -2732,7 +2881,7 @@ module compdatadb
       coeff=(/7.24000000e-01, -1.66000000e-01, 5.15000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu60 = &
+  type (alphadatadb), parameter :: twu61 = &
       alphadatadb(eosid="PR", &
       cid="IC5", &
       ref="tcPR", &
@@ -2764,7 +2913,7 @@ module compdatadb
       coeff=(/8.76000000e-01, -3.86000000e-01, 6.60000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu61 = &
+  type (alphadatadb), parameter :: twu62 = &
       alphadatadb(eosid="SRK", &
       cid="IC5", &
       ref="tcRK", &
@@ -2786,6 +2935,7 @@ module compdatadb
       gendatadb(ident = "KR", &
       formula = "KR", &
       name = "KRYPTON", &
+      structure = "Kr:1", &
       mw = 83.7980, &
       Tc = 209.4800, &
       Pc = 5525000.00, &
@@ -2794,10 +2944,10 @@ module compdatadb
       Tb = 119.9300, &
       Ttr = 115.7750, &
       Ptr = 73530.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 164.0850, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.52330000e+01, 7.00510000e+02, -5.84000000e+00/), &
       Tantmin = 81.0000, &
@@ -2813,7 +2963,9 @@ module compdatadb
       bib_ref = "NIST-Chase1998", &
       cptype = 5, &
       cp = (/2.07860300e+01,4.85063800e-10,-1.58291600e-10,1.52510200e-11,3.19634700e-11, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -2822,6 +2974,7 @@ module compdatadb
       gendatadb(ident = "LJF", &
       formula = "LJF", &
       name = "LENNARD-JONES_FLUID", &
+      structure = "", &
       mw = 1.0000, &
       Tc = 132.0000, &
       Pc = 6650000.00, &
@@ -2831,9 +2984,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 1.00000000e+20, &
+      gref = 1.00000000e+11, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2849,7 +3002,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/2.50000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 1500.0000  &
       )
@@ -2858,6 +3013,7 @@ module compdatadb
       gendatadb(ident = "MXYL", &
       formula = "C8H10", &
       name = "M-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 617.0500, &
       Pc = 3536000.00, &
@@ -2866,10 +3022,10 @@ module compdatadb
       Tb = 412.2700, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 358.2000, &
+      sref_state = "1ATM", &
+      href = 1.72000000e+04, &
+      gref = 1.18872298e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -2885,12 +3041,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/7.56800000e+04,3.39240000e+05,1.49600000e+03,2.24700000e+05,-6.75900000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu62 = &
+  type (alphadatadb), parameter :: twu63 = &
       alphadatadb(eosid="PR", &
       cid="MXYL", &
       ref="tcPR", &
@@ -2908,7 +3066,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu63 = &
+  type (alphadatadb), parameter :: twu64 = &
       alphadatadb(eosid="SRK", &
       cid="MXYL", &
       ref="tcRK", &
@@ -2930,6 +3088,7 @@ module compdatadb
       gendatadb(ident = "C1", &
       formula = "CH4", &
       name = "METHANE", &
+      structure = "C:1;H:4", &
       mw = 16.0425, &
       Tc = 190.5550, &
       Pc = 4598837.00, &
@@ -2938,10 +3097,10 @@ module compdatadb
       Tb = 111.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 186.2500, &
+      sref_state = "1BAR", &
+      href = -7.48700000e+04, &
+      gref = -5.07645725e+04, &
       psatcode = 1, &
       ant = (/1.52243000e+01, 8.97840000e+02, -7.16000000e+00/), &
       Tantmin = 93.0000, &
@@ -2957,12 +3116,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-1.62285490e+01,2.39359400e+00,-2.21800700e-03,5.74022000e-06,-3.72790500e-09, &
-      8.54968500e-13,-3.39779000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      8.54968500e-13,-3.39779000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu64 = &
+  type (alphadatadb), parameter :: twu65 = &
       alphadatadb(eosid="PR", &
       cid="C1", &
       ref="tcPR", &
@@ -2994,7 +3155,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu65 = &
+  type (alphadatadb), parameter :: twu66 = &
       alphadatadb(eosid="SRK", &
       cid="C1", &
       ref="tcRK", &
@@ -3030,6 +3191,7 @@ module compdatadb
       gendatadb(ident = "MEOH", &
       formula = "CH4O", &
       name = "METHANOL", &
+      structure = "C:1;H:4;O:1", &
       mw = 32.0420, &
       Tc = 512.6000, &
       Pc = 8095900.00, &
@@ -3038,10 +3200,10 @@ module compdatadb
       Tb = 337.8000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 239.8650, &
+      sref_state = "1BAR", &
+      href = -2.05000000e+05, &
+      gref = -1.66296850e+05, &
       psatcode = 1, &
       ant = (/1.85875000e+01, 3.62655000e+03, -3.42900000e+01/), &
       Tantmin = 257.0000, &
@@ -3057,12 +3219,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/5.05200000e+00,1.69400000e-02,6.17900000e-06,-6.81100000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu66 = &
+  type (alphadatadb), parameter :: twu67 = &
       alphadatadb(eosid="PR", &
       cid="MEOH", &
       ref="tcPR", &
@@ -3080,7 +3244,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu67 = &
+  type (alphadatadb), parameter :: twu68 = &
       alphadatadb(eosid="SRK", &
       cid="MEOH", &
       ref="tcRK", &
@@ -3098,7 +3262,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa13 = &
+  type(CPAdata), parameter :: cpa14 = &
       CPAdata(eosid="CPA-SRK", &
       compName="MEOH", &
       ref="Default/Kontogeorgis2008", &
@@ -3109,13 +3273,15 @@ module compdatadb
       beta=1.61000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/4.31020000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx42 = &
       gendatadb(ident = "MTC5", &
       formula = "C6H12", &
       name = "METHYLCYCLOPENTANE", &
+      structure = "C:6;H:12", &
       mw = 84.1620, &
       Tc = 532.7000, &
       Pc = 3789600.00, &
@@ -3125,9 +3291,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -1.06000000e+05, &
+      gref = 1.38041738e+05, &
       psatcode = 1, &
       ant = (/1.58023000e+01, 2.73100000e+03, -4.71100000e+01/), &
       Tantmin = 250.0000, &
@@ -3143,12 +3309,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/-1.19680000e+01,1.52400000e-01,-8.69900000e-05,1.91400000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu68 = &
+  type (alphadatadb), parameter :: twu69 = &
       alphadatadb(eosid="PR", &
       cid="MTC5", &
       ref="tcPR", &
@@ -3166,7 +3334,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu69 = &
+  type (alphadatadb), parameter :: twu70 = &
       alphadatadb(eosid="SRK", &
       cid="MTC5", &
       ref="tcRK", &
@@ -3188,6 +3356,7 @@ module compdatadb
       gendatadb(ident = "MEG", &
       formula = "C2H6O2", &
       name = "ETHYLENE GLYCOL", &
+      structure = "C:2;H:6;O:2", &
       mw = 62.0700, &
       Tc = 720.0000, &
       Pc = 8200000.00, &
@@ -3196,10 +3365,10 @@ module compdatadb
       Tb = 470.2500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 311.8400, &
+      sref_state = "1ATM", &
+      href = -3.94400000e+05, &
+      gref = -3.05932170e+05, &
       psatcode = 1, &
       ant = (/1.89090800e+01, 4.97797500e+03, -6.47210000e+01/), &
       Tantmin = 200.0000, &
@@ -3215,12 +3384,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/5.44670000e-01,1.18540000e-03,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -22.0000, &
       Tcpmax = 150.0000  &
       )
 
-  type (alphadatadb), parameter :: twu70 = &
+  type (alphadatadb), parameter :: twu71 = &
       alphadatadb(eosid="PR", &
       cid="MEG", &
       ref="tcPR", &
@@ -3238,7 +3409,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu71 = &
+  type (alphadatadb), parameter :: twu72 = &
       alphadatadb(eosid="SRK", &
       cid="MEG", &
       ref="tcRK", &
@@ -3260,6 +3431,7 @@ module compdatadb
       gendatadb(ident = "NE", &
       formula = "NE", &
       name = "NEON", &
+      structure = "Ne:1", &
       mw = 20.1830, &
       Tc = 44.4000, &
       Pc = 2661630.00, &
@@ -3268,10 +3440,10 @@ module compdatadb
       Tb = 27.1000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 146.3280, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/2.56553000e+01, -2.95285000e+02, 4.97548000e+00/), &
       Tantmin = 30.0000, &
@@ -3287,19 +3459,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.07860000e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu72 = &
+  type (alphadatadb), parameter :: twu73 = &
       alphadatadb(eosid="PR", &
       cid="NE", &
       ref="tcPR", &
       coeff=(/1.88700000e-01, 9.47000000e-01, 1.46980000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu73 = &
+  type (alphadatadb), parameter :: twu74 = &
       alphadatadb(eosid="PR", &
       cid="NE", &
       ref="QuantumCubic", &
@@ -3328,7 +3502,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu74 = &
+  type (alphadatadb), parameter :: twu75 = &
       alphadatadb(eosid="SRK", &
       cid="NE", &
       ref="tcRK", &
@@ -3350,6 +3524,7 @@ module compdatadb
       gendatadb(ident = "NO", &
       formula = "NO", &
       name = "NITRIC OXIDE", &
+      structure = "N:1;O:1", &
       mw = 30.0061, &
       Tc = 180.0000, &
       Pc = 6480000.00, &
@@ -3358,10 +3533,10 @@ module compdatadb
       Tb = 121.3800, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 210.7600, &
+      sref_state = "1BAR", &
+      href = 9.02900000e+04, &
+      gref = 8.65990521e+04, &
       psatcode = 1, &
       ant = (/2.01315000e+01, 1.57250000e+03, -4.88000000e+00/), &
       Tantmin = 106.9000, &
@@ -3377,12 +3552,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/8.56500000e-01,-1.44390000e-03,3.90260000e-06,-4.07270000e-09,1.52250000e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu75 = &
+  type (alphadatadb), parameter :: twu76 = &
       alphadatadb(eosid="PR", &
       cid="NO", &
       ref="tcPR", &
@@ -3400,7 +3577,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu76 = &
+  type (alphadatadb), parameter :: twu77 = &
       alphadatadb(eosid="SRK", &
       cid="NO", &
       ref="tcRK", &
@@ -3422,6 +3599,7 @@ module compdatadb
       gendatadb(ident = "N2", &
       formula = "N2", &
       name = "NITROGEN", &
+      structure = "N:2", &
       mw = 28.0130, &
       Tc = 126.1610, &
       Pc = 3394400.00, &
@@ -3430,10 +3608,10 @@ module compdatadb
       Tb = 77.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 191.6100, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 191.6090, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.49542000e+01, 5.88720000e+02, -6.60000000e+00/), &
       Tantmin = 54.0000, &
@@ -3449,12 +3627,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-2.17250700e+00,1.06849000e+00,-1.34096000e-04,2.15569000e-07,-7.86320000e-11, &
-      6.98500000e-15,1.80540900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      6.98500000e-15,1.80540900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu77 = &
+  type (alphadatadb), parameter :: twu78 = &
       alphadatadb(eosid="PR", &
       cid="N2", &
       ref="tcPR", &
@@ -3486,7 +3666,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu78 = &
+  type (alphadatadb), parameter :: twu79 = &
       alphadatadb(eosid="SRK", &
       cid="N2", &
       ref="tcRK", &
@@ -3522,6 +3702,7 @@ module compdatadb
       gendatadb(ident = "N2O", &
       formula = "N2O", &
       name = "NITROUS OXIDE", &
+      structure = "N:2;O:1", &
       mw = 44.0130, &
       Tc = 309.6000, &
       Pc = 7240000.00, &
@@ -3530,10 +3711,10 @@ module compdatadb
       Tb = 184.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 219.9600, &
+      sref_state = "1BAR", &
+      href = 8.20500000e+04, &
+      gref = 1.04180184e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3549,12 +3730,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.16200000e+01,7.28100000e-02,-5.77800000e-05,1.83000000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu79 = &
+  type (alphadatadb), parameter :: twu80 = &
       alphadatadb(eosid="PR", &
       cid="N2O", &
       ref="tcPR", &
@@ -3572,7 +3755,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu80 = &
+  type (alphadatadb), parameter :: twu81 = &
       alphadatadb(eosid="SRK", &
       cid="N2O", &
       ref="tcRK", &
@@ -3594,6 +3777,7 @@ module compdatadb
       gendatadb(ident = "N-H2", &
       formula = "H2", &
       name = "N-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 33.1450, &
       Pc = 1296400.00, &
@@ -3602,10 +3786,10 @@ module compdatadb
       Tb = 20.3690, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 130.6800, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 10, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 15.0989, &
@@ -3621,7 +3805,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 10, &
       cp = (/2.86719970e+01,1.33961560e+01,2.96013100e-03,-3.98074400e-06,2.66166700e-09, &
-      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 5.0000, &
       Tcpmax = 5.0000  &
       )
@@ -3630,6 +3816,7 @@ module compdatadb
       gendatadb(ident = "O-H2", &
       formula = "H2", &
       name = "ORTHO-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 33.2200, &
       Pc = 1310650.00, &
@@ -3638,10 +3825,10 @@ module compdatadb
       Tb = 20.3800, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 130.6800, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 10, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 15.0989, &
@@ -3653,19 +3840,22 @@ module compdatadb
 
   type (cpdata), parameter :: cp50 = &
       cpdata(cid = "O-H2", &
-      ref = "Default", &
-      bib_ref = "", &
-      cptype = 10, &
-      cp = (/2.86719970e+01,1.33961560e+01,2.96013100e-03,-3.98074400e-06,2.66166700e-09, &
-      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = 5.0000, &
-      Tcpmax = 5.0000  &
+      ref = "MEOS/Default", &
+      bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
+      cptype = 13, &
+      cp = (/2.50000000e+00,2.54151000e+00,8.56000000e+02,-2.36610000e+00,1.44400000e+03, &
+      1.00365000e+00,2.19400000e+03,1.22447000e+00,6.96800000e+03,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
+      Tcpmin = 14.0080, &
+      Tcpmax = 1000.0000  &
       )
 
   type (gendatadb), parameter :: cx50 = &
       gendatadb(ident = "OXYL", &
       formula = "C8H10", &
       name = "O-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 630.3300, &
       Pc = 3734000.00, &
@@ -3674,10 +3864,10 @@ module compdatadb
       Tb = 417.5800, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 353.6000, &
+      sref_state = "1ATM", &
+      href = 1.90000000e+04, &
+      gref = 1.22043788e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3693,12 +3883,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/8.52100000e+04,3.29540000e+05,1.49440000e+03,2.11500000e+05,-6.75800000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu81 = &
+  type (alphadatadb), parameter :: twu82 = &
       alphadatadb(eosid="PR", &
       cid="OXYL", &
       ref="tcPR", &
@@ -3716,7 +3908,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu82 = &
+  type (alphadatadb), parameter :: twu83 = &
       alphadatadb(eosid="SRK", &
       cid="OXYL", &
       ref="tcRK", &
@@ -3738,6 +3930,7 @@ module compdatadb
       gendatadb(ident = "O2", &
       formula = "O2", &
       name = "OXYGEN", &
+      structure = "O:2", &
       mw = 31.9990, &
       Tc = 154.6000, &
       Pc = 5045990.00, &
@@ -3746,10 +3939,10 @@ module compdatadb
       Tb = 90.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 205.1500, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 205.1520, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 1, &
       ant = (/1.54075000e+01, 7.34550000e+02, -6.45000000e+00/), &
       Tantmin = 63.0000, &
@@ -3765,12 +3958,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-2.28357400e+00,9.52440000e-01,-2.81140000e-04,6.55223000e-07,-4.52316000e-10, &
-      1.08774400e-13,2.08031000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.08774400e-13,2.08031000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu83 = &
+  type (alphadatadb), parameter :: twu84 = &
       alphadatadb(eosid="PR", &
       cid="O2", &
       ref="tcPR", &
@@ -3795,7 +3990,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu84 = &
+  type (alphadatadb), parameter :: twu85 = &
       alphadatadb(eosid="SRK", &
       cid="O2", &
       ref="tcRK", &
@@ -3824,6 +4019,7 @@ module compdatadb
       gendatadb(ident = "P-H2", &
       formula = "H2", &
       name = "PARA-HYDROGEN", &
+      structure = "H:2", &
       mw = 2.0159, &
       Tc = 32.9380, &
       Pc = 1285800.00, &
@@ -3832,10 +4028,10 @@ module compdatadb
       Tb = 20.2710, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 130.6800, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 10, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 15.0000, &
@@ -3847,19 +4043,22 @@ module compdatadb
 
   type (cpdata), parameter :: cp53 = &
       cpdata(cid = "P-H2", &
-      ref = "Default", &
-      bib_ref = "", &
-      cptype = 10, &
-      cp = (/2.86719970e+01,1.33961560e+01,2.96013100e-03,-3.98074400e-06,2.66166700e-09, &
-      -6.09986300e-13,-1.18013710e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
-      Tcpmin = 5.0000, &
-      Tcpmax = 5.0000  &
+      ref = "MEOS/Default", &
+      bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
+      cptype = 13, &
+      cp = (/2.50000000e+00,4.30256000e+00,4.99000000e+02,1.30289000e+01,8.26500000e+02, &
+      -4.77365000e+01,9.70800000e+02,5.00013000e+01,1.16620000e+03,-1.86261000e+01, &
+      1.34140000e+03,9.93973000e-01,5.39500000e+03,5.36078000e-01,1.01850000e+04, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
+      Tcpmin = 13.8033, &
+      Tcpmax = 1000.0000  &
       )
 
   type (gendatadb), parameter :: cx53 = &
       gendatadb(ident = "PXYL", &
       formula = "C8H10", &
       name = "P-XYLENE", &
+      structure = "C:8;H:10", &
       mw = 106.1670, &
       Tc = 616.2300, &
       Pc = 3511000.00, &
@@ -3868,10 +4067,10 @@ module compdatadb
       Tb = 411.5100, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 352.6320, &
+      sref_state = "1BAR", &
+      href = 1.79000000e+04, &
+      gref = 1.21265027e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -3887,12 +4086,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/7.51200000e+04,3.39700000e+05,1.49280000e+03,2.24700000e+05,-6.75100000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu85 = &
+  type (alphadatadb), parameter :: twu86 = &
       alphadatadb(eosid="PR", &
       cid="PXYL", &
       ref="tcPR", &
@@ -3910,7 +4111,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu86 = &
+  type (alphadatadb), parameter :: twu87 = &
       alphadatadb(eosid="SRK", &
       cid="PXYL", &
       ref="tcRK", &
@@ -3932,6 +4133,7 @@ module compdatadb
       gendatadb(ident = "C3", &
       formula = "C3H8", &
       name = "PROPANE", &
+      structure = "C:3;H:8", &
       mw = 44.0970, &
       Tc = 369.8000, &
       Pc = 4245500.00, &
@@ -3940,10 +4142,10 @@ module compdatadb
       Tb = 231.1000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 270.2800, &
+      sref_state = "1BAR", &
+      href = -1.04700000e+05, &
+      gref = -2.43008710e+04, &
       psatcode = 1, &
       ant = (/1.57260000e+01, 1.87246000e+03, -2.51600000e+01/), &
       Tantmin = 164.0000, &
@@ -3959,12 +4161,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/5.19200000e+04,1.92450000e+05,1.62650000e+03,1.16800000e+05,7.23600000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu87 = &
+  type (alphadatadb), parameter :: twu88 = &
       alphadatadb(eosid="PR", &
       cid="C3", &
       ref="tcPR", &
@@ -3996,7 +4200,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu88 = &
+  type (alphadatadb), parameter :: twu89 = &
       alphadatadb(eosid="SRK", &
       cid="C3", &
       ref="tcRK", &
@@ -4028,7 +4232,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa14 = &
+  type(CPAdata), parameter :: cpa15 = &
       CPAdata(eosid="CPA-SRK", &
       compName="C3", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -4039,13 +4243,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.30700000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx55 = &
       gendatadb(ident = "PRLN", &
       formula = "C3H6", &
       name = "PROPYLENE", &
+      structure = "C:3;H:6", &
       mw = 42.0810, &
       Tc = 364.9000, &
       Pc = 4600000.00, &
@@ -4054,10 +4260,10 @@ module compdatadb
       Tb = 225.5000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 266.7590, &
+      sref_state = "1BAR", &
+      href = 2.04100000e+04, &
+      gref = 6.28966731e+04, &
       psatcode = 1, &
       ant = (/1.57027000e+01, 1.80753000e+03, -2.61500000e+01/), &
       Tantmin = 160.0000, &
@@ -4073,12 +4279,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.63699910e+01,1.28994000e-01,2.64691000e-03,-6.71019000e-07,-5.52250000e-11, &
-      4.94690000e-14,5.11755300e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      4.94690000e-14,5.11755300e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu89 = &
+  type (alphadatadb), parameter :: twu90 = &
       alphadatadb(eosid="PR", &
       cid="PRLN", &
       ref="tcPR", &
@@ -4096,7 +4304,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu90 = &
+  type (alphadatadb), parameter :: twu91 = &
       alphadatadb(eosid="SRK", &
       cid="PRLN", &
       ref="tcRK", &
@@ -4118,6 +4326,7 @@ module compdatadb
       gendatadb(ident = "R11", &
       formula = "CCL3F", &
       name = "TRICHLOROFLUOROMETHANE", &
+      structure = "C:1;Cl:3;F:1", &
       mw = 137.3680, &
       Tc = 471.2000, &
       Pc = 4407600.00, &
@@ -4126,10 +4335,10 @@ module compdatadb
       Tb = 297.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 309.7400, &
+      sref_state = "1BAR", &
+      href = -2.88700000e+05, &
+      gref = -2.49339430e+05, &
       psatcode = 1, &
       ant = (/1.58516000e+01, 2.40161000e+03, -3.63000000e+01/), &
       Tantmin = 240.0000, &
@@ -4145,12 +4354,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/9.78900000e+00,3.89300000e-02,-3.38300000e-05,9.90300000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu91 = &
+  type (alphadatadb), parameter :: twu92 = &
       alphadatadb(eosid="PR", &
       cid="R11", &
       ref="tcPR", &
@@ -4168,7 +4379,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu92 = &
+  type (alphadatadb), parameter :: twu93 = &
       alphadatadb(eosid="SRK", &
       cid="R11", &
       ref="tcRK", &
@@ -4190,6 +4401,7 @@ module compdatadb
       gendatadb(ident = "R1114", &
       formula = "C2F4", &
       name = "TETRAFLUOROETHYLENE", &
+      structure = "C:2;F:4", &
       mw = 100.0160, &
       Tc = 306.5000, &
       Pc = 3940000.00, &
@@ -4198,10 +4410,10 @@ module compdatadb
       Tb = 197.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 300.0100, &
+      sref_state = "1BAR", &
+      href = -6.58560000e+05, &
+      gref = -6.23662139e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4217,12 +4429,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.90100000e+01,2.27700000e-01,-2.03600000e-04,6.77800000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu93 = &
+  type (alphadatadb), parameter :: twu94 = &
       alphadatadb(eosid="PR", &
       cid="R1114", &
       ref="tcPR", &
@@ -4240,7 +4454,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu94 = &
+  type (alphadatadb), parameter :: twu95 = &
       alphadatadb(eosid="SRK", &
       cid="R1114", &
       ref="tcRK", &
@@ -4262,6 +4476,7 @@ module compdatadb
       gendatadb(ident = "R1132a", &
       formula = "C2H2F2", &
       name = "1,1-DIFLUOROETHYLENE", &
+      structure = "C:2;H:2;F:2", &
       mw = 64.0350, &
       Tc = 302.9000, &
       Pc = 4460000.00, &
@@ -4271,9 +4486,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -3.44000000e+05, &
+      gref = -2.41153456e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4289,12 +4504,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/3.07300000e+00,2.44500000e-01,-2.09900000e-04,7.02100000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu95 = &
+  type (alphadatadb), parameter :: twu96 = &
       alphadatadb(eosid="PR", &
       cid="R1132a", &
       ref="tcPR", &
@@ -4312,7 +4529,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu96 = &
+  type (alphadatadb), parameter :: twu97 = &
       alphadatadb(eosid="SRK", &
       cid="R1132a", &
       ref="tcRK", &
@@ -4334,6 +4551,7 @@ module compdatadb
       gendatadb(ident = "R114", &
       formula = "C2CL2F4", &
       name = "1,2-DICHLOROTETRAFLUOROETHANE", &
+      structure = "C:2;Cl:2;F:4", &
       mw = 170.9220, &
       Tc = 418.9000, &
       Pc = 3262700.00, &
@@ -4343,9 +4561,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -9.37000000e+05, &
+      gref = -7.46142557e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4361,12 +4579,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/9.26200000e+00,8.21600000e-02,-7.04700000e-05,2.03200000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu97 = &
+  type (alphadatadb), parameter :: twu98 = &
       alphadatadb(eosid="PR", &
       cid="R114", &
       ref="tcPR", &
@@ -4384,7 +4604,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu98 = &
+  type (alphadatadb), parameter :: twu99 = &
       alphadatadb(eosid="SRK", &
       cid="R114", &
       ref="tcRK", &
@@ -4406,6 +4626,7 @@ module compdatadb
       gendatadb(ident = "R115", &
       formula = "C2CLF5", &
       name = "CHLOROPENTAFLUOROETHANE", &
+      structure = "C:2;Cl:1;F:5", &
       mw = 154.4670, &
       Tc = 353.2000, &
       Pc = 3161300.00, &
@@ -4415,9 +4636,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -1.11400000e+06, &
+      gref = -9.26167587e+05, &
       psatcode = 1, &
       ant = (/1.57343000e+01, 1.84890000e+03, -3.08800000e+01/), &
       Tantmin = 175.0000, &
@@ -4433,12 +4654,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/6.64800000e+00,8.34000000e-02,-6.90400000e-05,1.94400000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu99 = &
+  type (alphadatadb), parameter :: twu100 = &
       alphadatadb(eosid="PR", &
       cid="R115", &
       ref="tcPR", &
@@ -4456,7 +4679,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu100 = &
+  type (alphadatadb), parameter :: twu101 = &
       alphadatadb(eosid="SRK", &
       cid="R115", &
       ref="tcRK", &
@@ -4478,6 +4701,7 @@ module compdatadb
       gendatadb(ident = "R116", &
       formula = "C2F6", &
       name = "HEXAFLUOROETHANE", &
+      structure = "C:2;F:6", &
       mw = 138.0120, &
       Tc = 293.0000, &
       Pc = 3060000.00, &
@@ -4486,10 +4710,10 @@ module compdatadb
       Tb = 194.9000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 332.0900, &
+      sref_state = "1BAR", &
+      href = -1.34390000e+06, &
+      gref = -1.25810525e+06, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4505,12 +4729,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.68200000e+01,3.45800000e-01,-2.86900000e-04,8.13500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu101 = &
+  type (alphadatadb), parameter :: twu102 = &
       alphadatadb(eosid="PR", &
       cid="R116", &
       ref="tcPR", &
@@ -4528,7 +4754,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu102 = &
+  type (alphadatadb), parameter :: twu103 = &
       alphadatadb(eosid="SRK", &
       cid="R116", &
       ref="tcRK", &
@@ -4550,6 +4776,7 @@ module compdatadb
       gendatadb(ident = "R12", &
       formula = "CCL2F2", &
       name = "DICHLORODIFLUOROMETHANE", &
+      structure = "C:1;Cl:2;F:2", &
       mw = 120.9140, &
       Tc = 385.0000, &
       Pc = 4123900.00, &
@@ -4558,10 +4785,10 @@ module compdatadb
       Tb = 243.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 300.8900, &
+      sref_state = "1BAR", &
+      href = -4.91620000e+05, &
+      gref = -4.52645832e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4577,12 +4804,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/7.54700000e+00,4.25700000e-02,-3.60300000e-05,1.03700000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu103 = &
+  type (alphadatadb), parameter :: twu104 = &
       alphadatadb(eosid="PR", &
       cid="R12", &
       ref="tcPR", &
@@ -4600,7 +4829,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu104 = &
+  type (alphadatadb), parameter :: twu105 = &
       alphadatadb(eosid="SRK", &
       cid="R12", &
       ref="tcRK", &
@@ -4622,6 +4851,7 @@ module compdatadb
       gendatadb(ident = "R1234yf", &
       formula = "CF3CF=CH2", &
       name = "2,3,3,3-TETRAFLUOROPROPENE", &
+      structure = "C:3;H:2;F:4", &
       mw = 114.0416, &
       Tc = 367.8500, &
       Pc = 3382200.00, &
@@ -4631,9 +4861,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 1.00000000e+20, &
+      gref = 1.00000000e+11, &
       psatcode = 1, &
       ant = (/1.67996000e+01, 2.41112000e+03, -6.30281000e+00/), &
       Tantmin = 243.7000, &
@@ -4649,12 +4879,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/2.13968000e-01,2.10720000e-03,1.89670000e-06,-6.68177000e-09,4.25854000e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 170.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu105 = &
+  type (alphadatadb), parameter :: twu106 = &
       alphadatadb(eosid="PR", &
       cid="R1234yf", &
       ref="tcPR", &
@@ -4672,7 +4904,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu106 = &
+  type (alphadatadb), parameter :: twu107 = &
       alphadatadb(eosid="SRK", &
       cid="R1234yf", &
       ref="tcRK", &
@@ -4692,8 +4924,9 @@ module compdatadb
 
   type (gendatadb), parameter :: cx64 = &
       gendatadb(ident = "R1234ze", &
-      formula = "CHF=CHCF3_(t", &
+      formula = "CHF=CHCF3 (trans)", &
       name = "TRANS-1,3,3,3-TETRAFLUOROPROPENE", &
+      structure = "C:3;H:2;F:4", &
       mw = 114.0416, &
       Tc = 382.5130, &
       Pc = 3634900.00, &
@@ -4703,9 +4936,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 1.00000000e+20, &
+      gref = 1.00000000e+11, &
       psatcode = 1, &
       ant = (/1.69543000e+01, 2.50917000e+03, -1.08418000e+01/), &
       Tantmin = 253.8000, &
@@ -4721,12 +4954,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/-1.75392000e-01,7.96320000e-03,-2.60047000e-05,4.67071000e-08,-3.17226000e-11, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 170.0000, &
       Tcpmax = 500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu107 = &
+  type (alphadatadb), parameter :: twu108 = &
       alphadatadb(eosid="PR", &
       cid="R1234ze", &
       ref="tcPR", &
@@ -4744,7 +4979,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu108 = &
+  type (alphadatadb), parameter :: twu109 = &
       alphadatadb(eosid="SRK", &
       cid="R1234ze", &
       ref="tcRK", &
@@ -4766,6 +5001,7 @@ module compdatadb
       gendatadb(ident = "R124", &
       formula = "C2HCLF4", &
       name = "2-CHLORO-1,1,1,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:1;Cl:1;F:4", &
       mw = 136.4750, &
       Tc = 395.4000, &
       Pc = 3620000.00, &
@@ -4775,9 +5011,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 1.77082764e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4793,12 +5029,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 5, &
       cp = (/4.56447000e-01,1.78778000e-03,3.17361700e-08,-2.23347000e-11,-3.56841800e+01, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu109 = &
+  type (alphadatadb), parameter :: twu110 = &
       alphadatadb(eosid="PR", &
       cid="R124", &
       ref="tcPR", &
@@ -4816,7 +5054,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu110 = &
+  type (alphadatadb), parameter :: twu111 = &
       alphadatadb(eosid="SRK", &
       cid="R124", &
       ref="tcRK", &
@@ -4838,6 +5076,7 @@ module compdatadb
       gendatadb(ident = "R124a", &
       formula = "C2HCLF4", &
       name = "1-CHLORO-1,1,2,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:1;Cl:1;F:4", &
       mw = 136.4750, &
       Tc = 399.9000, &
       Pc = 3720000.00, &
@@ -4847,9 +5086,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 1.77082764e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4865,7 +5104,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/1.27000000e+01,3.79500000e-01,-3.46000000e-04,1.15400000e-07,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -4874,6 +5115,7 @@ module compdatadb
       gendatadb(ident = "R125", &
       formula = "C2HF5", &
       name = "PENTAFLUOROETHANE", &
+      structure = "C:2;H:1;F:5", &
       mw = 120.0300, &
       Tc = 343.7000, &
       Pc = 3870000.00, &
@@ -4883,9 +5125,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 1.74057734e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4901,12 +5143,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/5.37000000e+00,3.84500000e-01,-3.42000000e-04,1.12000000e-07,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu111 = &
+  type (alphadatadb), parameter :: twu112 = &
       alphadatadb(eosid="PR", &
       cid="R125", &
       ref="tcPR", &
@@ -4924,7 +5168,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu112 = &
+  type (alphadatadb), parameter :: twu113 = &
       alphadatadb(eosid="SRK", &
       cid="R125", &
       ref="tcRK", &
@@ -4946,6 +5190,7 @@ module compdatadb
       gendatadb(ident = "R13", &
       formula = "CCLF3", &
       name = "CHLOROTRIFLUOROMETHANE", &
+      structure = "C:1;Cl:1;F:3", &
       mw = 104.4590, &
       Tc = 302.0000, &
       Pc = 3921300.00, &
@@ -4954,10 +5199,10 @@ module compdatadb
       Tb = 191.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 285.3500, &
+      sref_state = "1BAR", &
+      href = -7.10000000e+05, &
+      gref = -6.69417611e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -4973,12 +5218,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/5.44900000e+00,4.56500000e-02,-3.76500000e-05,1.06500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu113 = &
+  type (alphadatadb), parameter :: twu114 = &
       alphadatadb(eosid="PR", &
       cid="R13", &
       ref="tcPR", &
@@ -4996,7 +5243,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu114 = &
+  type (alphadatadb), parameter :: twu115 = &
       alphadatadb(eosid="SRK", &
       cid="R13", &
       ref="tcRK", &
@@ -5018,6 +5265,7 @@ module compdatadb
       gendatadb(ident = "R134a", &
       formula = "C2H2F4", &
       name = "1,1,1,2-TETRAFLUOROETHANE", &
+      structure = "C:2;H:2;F:4", &
       mw = 102.0300, &
       Tc = 374.1790, &
       Pc = 4056000.00, &
@@ -5027,9 +5275,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 1.63308085e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5045,12 +5293,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 5, &
       cp = (/1.31419000e-01,3.00600000e-03,-2.23892000e-06,5.97826000e-10,4.30007700e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu115 = &
+  type (alphadatadb), parameter :: twu116 = &
       alphadatadb(eosid="PR", &
       cid="R134a", &
       ref="tcPR", &
@@ -5068,7 +5318,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu116 = &
+  type (alphadatadb), parameter :: twu117 = &
       alphadatadb(eosid="SRK", &
       cid="R134a", &
       ref="tcRK", &
@@ -5090,6 +5340,7 @@ module compdatadb
       gendatadb(ident = "R14", &
       formula = "CF4", &
       name = "CARBON TETRAFLUORIDE", &
+      structure = "C:1;F:4", &
       mw = 88.0050, &
       Tc = 227.6000, &
       Pc = 3738900.00, &
@@ -5098,10 +5349,10 @@ module compdatadb
       Tb = 145.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 261.4100, &
+      sref_state = "1BAR", &
+      href = -9.30000000e+05, &
+      gref = -8.85304930e+05, &
       psatcode = 1, &
       ant = (/1.60543000e+01, 1.24455000e+03, -1.30600000e+01/), &
       Tantmin = 93.0000, &
@@ -5117,12 +5368,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/3.33900000e+00,4.83800000e-02,-3.88300000e-05,1.07800000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu117 = &
+  type (alphadatadb), parameter :: twu118 = &
       alphadatadb(eosid="PR", &
       cid="R14", &
       ref="tcPR", &
@@ -5140,7 +5393,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu118 = &
+  type (alphadatadb), parameter :: twu119 = &
       alphadatadb(eosid="SRK", &
       cid="R14", &
       ref="tcRK", &
@@ -5162,6 +5415,7 @@ module compdatadb
       gendatadb(ident = "R142b", &
       formula = "C2H3ClF2", &
       name = "1-CHLORO-1,1-DIFLUOROETHANE", &
+      structure = "C:2;H:3;Cl:1;F:2", &
       mw = 100.4960, &
       Tc = 409.6000, &
       Pc = 4218000.00, &
@@ -5171,9 +5425,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 1.55583465e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5189,12 +5443,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/4.01700000e+00,6.58400000e-02,-4.75800000e-05,1.26700000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu119 = &
+  type (alphadatadb), parameter :: twu120 = &
       alphadatadb(eosid="PR", &
       cid="R142b", &
       ref="tcPR", &
@@ -5212,7 +5468,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu120 = &
+  type (alphadatadb), parameter :: twu121 = &
       alphadatadb(eosid="SRK", &
       cid="R142b", &
       ref="tcRK", &
@@ -5234,6 +5490,7 @@ module compdatadb
       gendatadb(ident = "R143a", &
       formula = "C2H3F3", &
       name = "1,1,1-TRIFLUOROETHANE", &
+      structure = "C:2;H:3;F:3", &
       mw = 84.0410, &
       Tc = 346.3000, &
       Pc = 3760000.00, &
@@ -5243,9 +5500,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -7.48700000e+05, &
+      gref = -5.96141564e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5261,12 +5518,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/5.74400000e+00,3.14100000e-01,-2.59700000e-04,8.41500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu121 = &
+  type (alphadatadb), parameter :: twu122 = &
       alphadatadb(eosid="PR", &
       cid="R143a", &
       ref="tcPR", &
@@ -5284,7 +5543,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu122 = &
+  type (alphadatadb), parameter :: twu123 = &
       alphadatadb(eosid="SRK", &
       cid="R143a", &
       ref="tcRK", &
@@ -5306,6 +5565,7 @@ module compdatadb
       gendatadb(ident = "R152a", &
       formula = "C2H4F2", &
       name = "1,1-DIFLUOROETHANE", &
+      structure = "C:2;H:4;F:2", &
       mw = 66.0510, &
       Tc = 386.6000, &
       Pc = 4498800.00, &
@@ -5315,9 +5575,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -4.97000000e+05, &
+      gref = -3.55191214e+05, &
       psatcode = 1, &
       ant = (/1.61871000e+01, 2.09535000e+03, -2.91600000e+01/), &
       Tantmin = 238.0000, &
@@ -5333,12 +5593,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/2.07200000e+00,5.72200000e-02,-3.48000000e-05,8.10700000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu123 = &
+  type (alphadatadb), parameter :: twu124 = &
       alphadatadb(eosid="PR", &
       cid="R152a", &
       ref="tcPR", &
@@ -5356,7 +5618,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu124 = &
+  type (alphadatadb), parameter :: twu125 = &
       alphadatadb(eosid="SRK", &
       cid="R152a", &
       ref="tcRK", &
@@ -5378,6 +5640,7 @@ module compdatadb
       gendatadb(ident = "R21", &
       formula = "CHCL2F", &
       name = "DICHLOROFLUOROMETHANE", &
+      structure = "C:1;H:1;Cl:2;F:1", &
       mw = 102.9230, &
       Tc = 451.6000, &
       Pc = 5167600.00, &
@@ -5386,10 +5649,10 @@ module compdatadb
       Tb = 282.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 293.2500, &
+      sref_state = "1BAR", &
+      href = -2.83260000e+05, &
+      gref = -2.52757615e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5405,12 +5668,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/5.65200000e+00,3.77700000e-02,-2.86600000e-05,7.79500000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu125 = &
+  type (alphadatadb), parameter :: twu126 = &
       alphadatadb(eosid="PR", &
       cid="R21", &
       ref="tcPR", &
@@ -5428,7 +5693,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu126 = &
+  type (alphadatadb), parameter :: twu127 = &
       alphadatadb(eosid="SRK", &
       cid="R21", &
       ref="tcRK", &
@@ -5450,6 +5715,7 @@ module compdatadb
       gendatadb(ident = "R218", &
       formula = "C3F8", &
       name = "OCTAFLUOROPROPANE", &
+      structure = "C:3;F:8", &
       mw = 188.0170, &
       Tc = 345.1000, &
       Pc = 2680000.00, &
@@ -5459,9 +5725,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -1.78470000e+06, &
+      gref = -1.53771970e+06, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5477,12 +5743,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/1.29400000e+01,6.22000000e-01,-6.40800000e-04,2.39800000e-07,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu127 = &
+  type (alphadatadb), parameter :: twu128 = &
       alphadatadb(eosid="PR", &
       cid="R218", &
       ref="tcPR", &
@@ -5500,7 +5768,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu128 = &
+  type (alphadatadb), parameter :: twu129 = &
       alphadatadb(eosid="SRK", &
       cid="R218", &
       ref="tcRK", &
@@ -5522,6 +5790,7 @@ module compdatadb
       gendatadb(ident = "R22", &
       formula = "CHCLF2", &
       name = "CHLORODIFLUOROMETHANE", &
+      structure = "C:1;H:1;Cl:1;F:2", &
       mw = 86.4690, &
       Tc = 369.2000, &
       Pc = 4975100.00, &
@@ -5530,10 +5799,10 @@ module compdatadb
       Tb = 232.4000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 280.9600, &
+      sref_state = "1BAR", &
+      href = -4.81580000e+05, &
+      gref = -4.50438382e+05, &
       psatcode = 1, &
       ant = (/1.55602000e+01, 1.70480000e+03, -4.13000000e+01/), &
       Tantmin = 225.0000, &
@@ -5549,12 +5818,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 1, &
       cp = (/4.13200000e+00,3.86500000e-02,-2.79400000e-05,7.30500000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu129 = &
+  type (alphadatadb), parameter :: twu130 = &
       alphadatadb(eosid="PR", &
       cid="R22", &
       ref="tcPR", &
@@ -5572,7 +5843,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu130 = &
+  type (alphadatadb), parameter :: twu131 = &
       alphadatadb(eosid="SRK", &
       cid="R22", &
       ref="tcRK", &
@@ -5594,6 +5865,7 @@ module compdatadb
       gendatadb(ident = "R23", &
       formula = "CHF3", &
       name = "TRIFLUOROMETHANE", &
+      structure = "C:1;H:1;F:3", &
       mw = 70.0130, &
       Tc = 299.3000, &
       Pc = 4860000.00, &
@@ -5602,10 +5874,10 @@ module compdatadb
       Tb = 191.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 259.6500, &
+      sref_state = "1BAR", &
+      href = -6.97050000e+05, &
+      gref = -6.62579835e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5621,12 +5893,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/8.15600000e+00,1.81300000e-01,-1.37900000e-04,3.93800000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu131 = &
+  type (alphadatadb), parameter :: twu132 = &
       alphadatadb(eosid="PR", &
       cid="R23", &
       ref="tcPR", &
@@ -5644,7 +5918,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu132 = &
+  type (alphadatadb), parameter :: twu133 = &
       alphadatadb(eosid="SRK", &
       cid="R23", &
       ref="tcRK", &
@@ -5666,6 +5940,7 @@ module compdatadb
       gendatadb(ident = "R32", &
       formula = "CH2F2", &
       name = "DIFLUOROMETHANE", &
+      structure = "C:1;H:2;F:2", &
       mw = 52.0230, &
       Tc = 351.6000, &
       Pc = 5830000.00, &
@@ -5674,10 +5949,10 @@ module compdatadb
       Tb = 221.5000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 246.7000, &
+      sref_state = "1BAR", &
+      href = -4.50660000e+05, &
+      gref = -4.23078442e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5693,12 +5968,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/1.17900000e+01,1.18100000e-01,-4.84300000e-05,2.12500000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu133 = &
+  type (alphadatadb), parameter :: twu134 = &
       alphadatadb(eosid="PR", &
       cid="R32", &
       ref="tcPR", &
@@ -5716,7 +5993,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu134 = &
+  type (alphadatadb), parameter :: twu135 = &
       alphadatadb(eosid="SRK", &
       cid="R32", &
       ref="tcRK", &
@@ -5738,6 +6015,7 @@ module compdatadb
       gendatadb(ident = "R41", &
       formula = "CH3F", &
       name = "METHYL FLUORIDE", &
+      structure = "C:1;H:3;F:1", &
       mw = 34.0330, &
       Tc = 315.0000, &
       Pc = 5600000.00, &
@@ -5746,10 +6024,10 @@ module compdatadb
       Tb = 194.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 222.8400, &
+      sref_state = "1BAR", &
+      href = -2.34300000e+05, &
+      gref = -2.10354232e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5765,12 +6043,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/1.38200000e+01,8.61600000e-02,-2.07100000e-05,-1.98500000e-09,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu135 = &
+  type (alphadatadb), parameter :: twu136 = &
       alphadatadb(eosid="PR", &
       cid="R41", &
       ref="tcPR", &
@@ -5788,7 +6068,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu136 = &
+  type (alphadatadb), parameter :: twu137 = &
       alphadatadb(eosid="SRK", &
       cid="R41", &
       ref="tcRK", &
@@ -5810,6 +6090,7 @@ module compdatadb
       gendatadb(ident = "F6S", &
       formula = "F6S", &
       name = "SULFUR HEXAFLUORIDE", &
+      structure = "F:6;S:1", &
       mw = 146.0540, &
       Tc = 318.7000, &
       Pc = 3760000.00, &
@@ -5818,10 +6099,10 @@ module compdatadb
       Tb = 209.6000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 291.5200, &
+      sref_state = "1BAR", &
+      href = -1.22047000e+06, &
+      gref = -1.11644040e+06, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5837,12 +6118,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/-6.59900000e-01,4.63900000e-01,-5.08900000e-04,1.95300000e-07,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu137 = &
+  type (alphadatadb), parameter :: twu138 = &
       alphadatadb(eosid="PR", &
       cid="F6S", &
       ref="tcPR", &
@@ -5860,7 +6143,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu138 = &
+  type (alphadatadb), parameter :: twu139 = &
       alphadatadb(eosid="SRK", &
       cid="F6S", &
       ref="tcRK", &
@@ -5882,6 +6165,7 @@ module compdatadb
       gendatadb(ident = "SO2", &
       formula = "SO2", &
       name = "SULFUR DIOXIDE", &
+      structure = "O:2;S:1", &
       mw = 64.0650, &
       Tc = 430.8000, &
       Pc = 7885000.00, &
@@ -5890,10 +6174,10 @@ module compdatadb
       Tb = 263.1300, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 248.2230, &
+      sref_state = "1BAR", &
+      href = -2.96810000e+05, &
+      gref = -3.00089948e+05, &
       psatcode = 1, &
       ant = (/1.67681000e+01, 2.30240000e+03, -3.59600000e+01/), &
       Tantmin = 199.7100, &
@@ -5909,12 +6193,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 6, &
       cp = (/5.73200000e-01,-2.89930000e-04,3.04210000e-06,-4.24520000e-09,1.80790000e-12, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 50.0000, &
       Tcpmax = 1000.0000  &
       )
 
-  type (alphadatadb), parameter :: twu139 = &
+  type (alphadatadb), parameter :: twu140 = &
       alphadatadb(eosid="PR", &
       cid="SO2", &
       ref="tcPR", &
@@ -5932,7 +6218,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu140 = &
+  type (alphadatadb), parameter :: twu141 = &
       alphadatadb(eosid="SRK", &
       cid="SO2", &
       ref="tcRK", &
@@ -5954,6 +6240,7 @@ module compdatadb
       gendatadb(ident = "F4N2", &
       formula = "F4N2", &
       name = "TETRAFLUOROHYDRAZINE", &
+      structure = "F:4;N:2", &
       mw = 104.0160, &
       Tc = 309.3000, &
       Pc = 3750000.00, &
@@ -5962,10 +6249,10 @@ module compdatadb
       Tb = 199.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 301.1800, &
+      sref_state = "1BAR", &
+      href = -8.37000000e+03, &
+      gref = 7.98844870e+04, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -5981,12 +6268,14 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/3.55300000e+00,3.50900000e-01,-3.63700000e-04,1.33800000e-07,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
 
-  type (alphadatadb), parameter :: twu141 = &
+  type (alphadatadb), parameter :: twu142 = &
       alphadatadb(eosid="PR", &
       cid="F4N2", &
       ref="tcPR", &
@@ -6004,7 +6293,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu142 = &
+  type (alphadatadb), parameter :: twu143 = &
       alphadatadb(eosid="SRK", &
       cid="F4N2", &
       ref="tcRK", &
@@ -6026,6 +6315,7 @@ module compdatadb
       gendatadb(ident = "TOLU", &
       formula = "C7H8", &
       name = "TOLUENE", &
+      structure = "C:7;H:8", &
       mw = 92.1410, &
       Tc = 591.7900, &
       Pc = 4108600.00, &
@@ -6034,10 +6324,10 @@ module compdatadb
       Tb = 383.7800, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 320.7710, &
+      sref_state = "1BAR", &
+      href = 5.01000000e+04, &
+      gref = 1.22290761e+05, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6053,7 +6343,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/5.81400000e+04,2.86300000e+05,1.44060000e+03,1.89800000e+05,-6.50430000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
@@ -6065,7 +6357,7 @@ module compdatadb
       coeff=(/7.62000000e-01, -4.20000000e-02, 2.71000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu143 = &
+  type (alphadatadb), parameter :: twu144 = &
       alphadatadb(eosid="PR", &
       cid="TOLU", &
       ref="tcPR", &
@@ -6090,7 +6382,7 @@ module compdatadb
       coeff=(/9.23000000e-01, -3.01000000e-01, 4.94000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu144 = &
+  type (alphadatadb), parameter :: twu145 = &
       alphadatadb(eosid="SRK", &
       cid="TOLU", &
       ref="tcRK", &
@@ -6111,7 +6403,8 @@ module compdatadb
   type (gendatadb), parameter :: cx84 = &
       gendatadb(ident = "F3NO", &
       formula = "F3N0", &
-      name = "TRIFLUOROAMINEOXIDE", &
+      name = "TRIFLUOROAMINE OXIDE", &
+      structure = "F:3;N:1;O:1", &
       mw = 87.0010, &
       Tc = 303.0000, &
       Pc = 6430000.00, &
@@ -6120,10 +6413,10 @@ module compdatadb
       Tb = 186.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 278.4800, &
+      sref_state = "1BAR", &
+      href = -1.63180000e+05, &
+      gref = -9.63693554e+04, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6139,7 +6432,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/1.51300000e+01,2.44600000e-01,-2.52800000e-04,9.37500000e-08,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -6148,6 +6443,7 @@ module compdatadb
       gendatadb(ident = "H2O", &
       formula = "H2O", &
       name = "WATER", &
+      structure = "H:2;O:1", &
       mw = 18.0150, &
       Tc = 647.3000, &
       Pc = 22048300.00, &
@@ -6157,9 +6453,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 188.8400, &
-      href = -241826.4000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -2.41826400e+05, &
+      gref = -2.28583770e+05, &
       psatcode = 1, &
       ant = (/1.83036000e+01, 3.81644000e+03, -4.61300000e+01/), &
       Tantmin = 284.0000, &
@@ -6175,16 +6471,25 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-5.72991500e+00,1.91500700e+00,-3.95741000e-04,8.76232000e-07,-4.95086000e-10, &
-      1.03861300e-13,7.02815000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.03861300e-13,7.02815000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu145 = &
+  type (alphadatadb), parameter :: twu146 = &
       alphadatadb(eosid="PR", &
       cid="H2O", &
       ref="tcPR", &
       coeff=(/3.86500000e-01, 8.72000000e-01, 1.96930000e+00/) &
+      )
+
+  type (alphadatadb), parameter :: twu147 = &
+      alphadatadb(eosid="PR", &
+      cid="H2O", &
+      ref="Aasen2024", &
+      coeff=(/4.43240000e-01, 8.73510000e-01, 1.75400000e+00/) &
       )
 
   type (alphadatadb), parameter :: mc44 = &
@@ -6216,7 +6521,18 @@ module compdatadb
       c_type=2 &
       )
 
-  type (alphadatadb), parameter :: twu146 = &
+  type (cidatadb), parameter :: c148 = &
+      cidatadb(eosid="PR", &
+      cid="H2O", &
+      ref="Aasen2024", &
+      bib_ref="Aasen2024AmmoniaWaterFPE", &
+      ciA=3.55740000e-07, &
+      ciB=9.19900000e-09, &
+      ciC=0.00000000e+00, &
+      c_type=2 &
+      )
+
+  type (alphadatadb), parameter :: twu148 = &
       alphadatadb(eosid="SRK", &
       cid="H2O", &
       ref="tcRK", &
@@ -6230,7 +6546,7 @@ module compdatadb
       coeff=(/1.09500000e+00, -6.78000000e-01, 7.00000000e-01/) &
       )
 
-  type (cidatadb), parameter :: c148 = &
+  type (cidatadb), parameter :: c149 = &
       cidatadb(eosid="SRK", &
       cid="H2O", &
       ref="tcRK", &
@@ -6241,7 +6557,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa15 = &
+  type(CPAdata), parameter :: cpa16 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="Default/Kontogeorgis1999/Queimada2005", &
@@ -6252,10 +6568,11 @@ module compdatadb
       beta=6.92000000e-02, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/6.73590000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_4C &
+      assoc_scheme = assoc_scheme_4C ,&
+      simplified_rdf = .true. &
       )
 
-  type(CPAdata), parameter :: cpa16 = &
+  type(CPAdata), parameter :: cpa17 = &
       CPAdata(eosid="CPA-SRK", &
       compName="H2O", &
       ref="SINTEF", &
@@ -6266,13 +6583,30 @@ module compdatadb
       beta=6.21918000e-03, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.76671000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = assoc_scheme_2B &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
+      )
+
+  type(CPAdata), parameter :: cpa18 = &
+      CPAdata(eosid="CPA-SRK", &
+      compName="H2O", &
+      ref="Aasen2024", &
+      bib_reference="Aasen2024AmmoniaWaterFPE", &
+      a0=1.54080000e+05, &
+      b=1.49770000e-02, &
+      eps=1.39360000e+04, &
+      beta=9.87050000e-02, &
+      alphacorridx = cbAlphaClassicIdx, &
+      alphaParams = (/9.99660000e-01,0.00000000e+00,0.00000000e+00/), &
+      assoc_scheme = assoc_scheme_2B ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx86 = &
       gendatadb(ident = "XE", &
       formula = "XE", &
       name = "XENON", &
+      structure = "Xe:1", &
       mw = 131.3000, &
       Tc = 289.7000, &
       Pc = 5840000.00, &
@@ -6281,10 +6615,10 @@ module compdatadb
       Tb = 165.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 169.6850, &
+      sref_state = "1BAR", &
+      href = 0.00000000e+00, &
+      gref = 0.00000000e+00, &
       psatcode = 2, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6300,7 +6634,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 4, &
       cp = (/2.07860000e+01,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 0.0000, &
       Tcpmax = 0.0000  &
       )
@@ -6309,6 +6645,7 @@ module compdatadb
       gendatadb(ident = "NC4", &
       formula = "C4H10", &
       name = "N-BUTANE", &
+      structure = "C:4;H:10", &
       mw = 58.1240, &
       Tc = 425.2000, &
       Pc = 3799700.00, &
@@ -6317,10 +6654,10 @@ module compdatadb
       Tb = 272.7000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 310.2270, &
+      sref_state = "1BAR", &
+      href = -1.25600000e+05, &
+      gref = -1.64374460e+04, &
       psatcode = 1, &
       ant = (/1.56782000e+01, 2.15490000e+03, -3.44200000e+01/), &
       Tantmin = 195.0000, &
@@ -6336,7 +6673,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/1.72831340e+01,4.12696000e-01,2.02860100e-03,7.02953000e-07,-1.02587100e-09, &
-      2.88339400e-13,2.71486100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      2.88339400e-13,2.71486100e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -6355,14 +6694,14 @@ module compdatadb
       coeff=(/6.77000000e-01, -8.10000000e-02, 2.99000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu147 = &
+  type (alphadatadb), parameter :: twu149 = &
       alphadatadb(eosid="PR", &
       cid="NC4", &
       ref="tcPR", &
       coeff=(/1.86700000e-01, 8.64500000e-01, 2.33270000e+00/) &
       )
 
-  type (cidatadb), parameter :: c149 = &
+  type (cidatadb), parameter :: c150 = &
       cidatadb(eosid="PR", &
       cid="NC4", &
       ref="tcPR", &
@@ -6387,14 +6726,14 @@ module compdatadb
       coeff=(/8.23000000e-01, -2.67000000e-01, 4.02000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu148 = &
+  type (alphadatadb), parameter :: twu150 = &
       alphadatadb(eosid="SRK", &
       cid="NC4", &
       ref="tcRK", &
       coeff=(/2.62100000e-01, 8.66900000e-01, 2.29960000e+00/) &
       )
 
-  type (cidatadb), parameter :: c150 = &
+  type (cidatadb), parameter :: c151 = &
       cidatadb(eosid="SRK", &
       cid="NC4", &
       ref="tcRK", &
@@ -6405,7 +6744,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa17 = &
+  type(CPAdata), parameter :: cpa19 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC4", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6416,13 +6755,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.07710000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx88 = &
       gendatadb(ident = "NC10", &
       formula = "C10H22", &
       name = "N-DECANE", &
+      structure = "C:10;H:22", &
       mw = 142.2860, &
       Tc = 617.6000, &
       Pc = 2107600.00, &
@@ -6431,10 +6772,10 @@ module compdatadb
       Tb = 447.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 545.8000, &
+      sref_state = "1ATM", &
+      href = -2.49700000e+05, &
+      gref = 3.32355715e+04, &
       psatcode = 1, &
       ant = (/1.60114000e+01, 3.45680000e+03, -7.86700000e+01/), &
       Tantmin = 330.0000, &
@@ -6450,19 +6791,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-6.96202000e+00,8.51375000e-01,-2.63041000e-04,5.52181600e-06,-5.63173300e-09, &
-      1.88854430e-12,-4.12446000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.88854430e-12,-4.12446000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
 
-  type (alphadatadb), parameter :: twu149 = &
+  type (alphadatadb), parameter :: twu151 = &
       alphadatadb(eosid="PR", &
       cid="NC10", &
       ref="tcPR", &
       coeff=(/3.67700000e-01, 8.11900000e-01, 2.21880000e+00/) &
       )
 
-  type (cidatadb), parameter :: c151 = &
+  type (cidatadb), parameter :: c152 = &
       cidatadb(eosid="PR", &
       cid="NC10", &
       ref="tcPR", &
@@ -6473,14 +6816,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu150 = &
+  type (alphadatadb), parameter :: twu152 = &
       alphadatadb(eosid="SRK", &
       cid="NC10", &
       ref="tcRK", &
       coeff=(/3.55300000e-01, 8.31000000e-01, 2.72810000e+00/) &
       )
 
-  type (cidatadb), parameter :: c152 = &
+  type (cidatadb), parameter :: c153 = &
       cidatadb(eosid="SRK", &
       cid="NC10", &
       ref="tcRK", &
@@ -6491,7 +6834,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa18 = &
+  type(CPAdata), parameter :: cpa20 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC10", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6502,13 +6845,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.13243000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx89 = &
       gendatadb(ident = "NC22", &
       formula = "C22H46", &
       name = "N-DOCOSANE", &
+      structure = "C:22;H:46", &
       mw = 310.6100, &
       Tc = 787.0000, &
       Pc = 1060000.00, &
@@ -6517,10 +6862,10 @@ module compdatadb
       Tb = 641.7500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 1012.9500, &
+      sref_state = "1BAR", &
+      href = -4.97410000e+05, &
+      gref = 1.34360905e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6536,19 +6881,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/3.92560000e+05,1.18200000e+06,1.72340000e+03,8.15780000e+05,7.85130000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 300.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu151 = &
+  type (alphadatadb), parameter :: twu153 = &
       alphadatadb(eosid="PR", &
       cid="NC22", &
       ref="tcPR", &
       coeff=(/4.78800000e-01, 7.99000000e-01, 2.84990000e+00/) &
       )
 
-  type (cidatadb), parameter :: c153 = &
+  type (cidatadb), parameter :: c154 = &
       cidatadb(eosid="PR", &
       cid="NC22", &
       ref="tcPR", &
@@ -6559,14 +6906,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu152 = &
+  type (alphadatadb), parameter :: twu154 = &
       alphadatadb(eosid="SRK", &
       cid="NC22", &
       ref="tcRK", &
       coeff=(/5.01600000e-01, 8.08200000e-01, 3.12430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c154 = &
+  type (cidatadb), parameter :: c155 = &
       cidatadb(eosid="SRK", &
       cid="NC22", &
       ref="tcRK", &
@@ -6581,6 +6928,7 @@ module compdatadb
       gendatadb(ident = "NC12", &
       formula = "C12H26", &
       name = "N-DODECANE", &
+      structure = "C:12;H:26", &
       mw = 170.3400, &
       Tc = 658.1000, &
       Pc = 1817000.00, &
@@ -6589,10 +6937,10 @@ module compdatadb
       Tb = 489.3000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 622.5000, &
+      sref_state = "1ATM", &
+      href = -2.90900000e+05, &
+      gref = 5.05147125e+04, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6608,19 +6956,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/1.72290000e+01,-7.24200000e-03,3.19220000e-04,-4.23220000e-07,1.70220000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu153 = &
+  type (alphadatadb), parameter :: twu155 = &
       alphadatadb(eosid="PR", &
       cid="NC12", &
       ref="tcPR", &
       coeff=(/3.95600000e-01, 8.11200000e-01, 2.35490000e+00/) &
       )
 
-  type (cidatadb), parameter :: c155 = &
+  type (cidatadb), parameter :: c156 = &
       cidatadb(eosid="PR", &
       cid="NC12", &
       ref="tcPR", &
@@ -6631,14 +6981,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu154 = &
+  type (alphadatadb), parameter :: twu156 = &
       alphadatadb(eosid="SRK", &
       cid="NC12", &
       ref="tcRK", &
       coeff=(/3.88700000e-01, 8.27500000e-01, 2.82130000e+00/) &
       )
 
-  type (cidatadb), parameter :: c156 = &
+  type (cidatadb), parameter :: c157 = &
       cidatadb(eosid="SRK", &
       cid="NC12", &
       ref="tcRK", &
@@ -6653,6 +7003,7 @@ module compdatadb
       gendatadb(ident = "NC20", &
       formula = "C20H42", &
       name = "N-EICOSANE", &
+      structure = "C:20;H:42", &
       mw = 282.5500, &
       Tc = 768.0000, &
       Pc = 1070000.00, &
@@ -6661,10 +7012,10 @@ module compdatadb
       Tb = 616.8400, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 940.1800, &
+      sref_state = "1BAR", &
+      href = -4.55800000e+05, &
+      gref = 1.16320035e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6680,19 +7031,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/3.24810000e+05,1.10900000e+06,1.63600000e+03,7.45000000e+05,7.26270000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 200.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu155 = &
+  type (alphadatadb), parameter :: twu157 = &
       alphadatadb(eosid="PR", &
       cid="NC20", &
       ref="tcPR", &
       coeff=(/4.77100000e-01, 8.16000000e-01, 2.92090000e+00/) &
       )
 
-  type (cidatadb), parameter :: c157 = &
+  type (cidatadb), parameter :: c158 = &
       cidatadb(eosid="PR", &
       cid="NC20", &
       ref="tcPR", &
@@ -6703,14 +7056,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu156 = &
+  type (alphadatadb), parameter :: twu158 = &
       alphadatadb(eosid="SRK", &
       cid="NC20", &
       ref="tcRK", &
       coeff=(/5.21900000e-01, 8.21000000e-01, 3.08880000e+00/) &
       )
 
-  type (cidatadb), parameter :: c158 = &
+  type (cidatadb), parameter :: c159 = &
       cidatadb(eosid="SRK", &
       cid="NC20", &
       ref="tcRK", &
@@ -6725,6 +7078,7 @@ module compdatadb
       gendatadb(ident = "NC21", &
       formula = "C21H44", &
       name = "N-HENEICOSANE", &
+      structure = "C:21;H:44", &
       mw = 296.5800, &
       Tc = 778.0000, &
       Pc = 1110000.00, &
@@ -6733,10 +7087,10 @@ module compdatadb
       Tb = 629.6500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 974.0000, &
+      sref_state = "1BAR", &
+      href = -4.76770000e+05, &
+      gref = 1.25940225e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6752,19 +7106,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/3.82820000e+05,7.71070000e+05,8.01080000e+02,4.99080000e+05,2.36160000e+03, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 300.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu157 = &
+  type (alphadatadb), parameter :: twu159 = &
       alphadatadb(eosid="PR", &
       cid="NC21", &
       ref="tcPR", &
       coeff=(/4.54600000e-01, 8.18600000e-01, 3.14140000e+00/) &
       )
 
-  type (cidatadb), parameter :: c159 = &
+  type (cidatadb), parameter :: c160 = &
       cidatadb(eosid="PR", &
       cid="NC21", &
       ref="tcPR", &
@@ -6775,14 +7131,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu158 = &
+  type (alphadatadb), parameter :: twu160 = &
       alphadatadb(eosid="SRK", &
       cid="NC21", &
       ref="tcRK", &
       coeff=(/5.30200000e-01, 8.18900000e-01, 3.13490000e+00/) &
       )
 
-  type (cidatadb), parameter :: c160 = &
+  type (cidatadb), parameter :: c161 = &
       cidatadb(eosid="SRK", &
       cid="NC21", &
       ref="tcRK", &
@@ -6797,6 +7153,7 @@ module compdatadb
       gendatadb(ident = "NC17", &
       formula = "C17H36", &
       name = "N-HEPTADECANE", &
+      structure = "C:17;H:36", &
       mw = 240.4700, &
       Tc = 736.0000, &
       Pc = 1340000.00, &
@@ -6806,9 +7163,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -3.93900000e+05, &
+      gref = 3.36513833e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -6824,19 +7181,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/2.38130000e+01,-9.21000000e-03,4.53330000e-04,-6.06010000e-07,2.44550000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu159 = &
+  type (alphadatadb), parameter :: twu161 = &
       alphadatadb(eosid="PR", &
       cid="NC17", &
       ref="tcPR", &
       coeff=(/5.25700000e-01, 7.96900000e-01, 2.30920000e+00/) &
       )
 
-  type (cidatadb), parameter :: c161 = &
+  type (cidatadb), parameter :: c162 = &
       cidatadb(eosid="PR", &
       cid="NC17", &
       ref="tcPR", &
@@ -6847,14 +7206,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu160 = &
+  type (alphadatadb), parameter :: twu162 = &
       alphadatadb(eosid="SRK", &
       cid="NC17", &
       ref="tcRK", &
       coeff=(/5.16100000e-01, 8.09800000e-01, 2.69190000e+00/) &
       )
 
-  type (cidatadb), parameter :: c162 = &
+  type (cidatadb), parameter :: c163 = &
       cidatadb(eosid="SRK", &
       cid="NC17", &
       ref="tcRK", &
@@ -6869,6 +7228,7 @@ module compdatadb
       gendatadb(ident = "NC7", &
       formula = "C7H16", &
       name = "N-HEPTANE", &
+      structure = "C:7;H:16", &
       mw = 100.2050, &
       Tc = 540.2000, &
       Pc = 2735800.00, &
@@ -6877,10 +7237,10 @@ module compdatadb
       Tb = 371.6000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 428.2300, &
+      sref_state = "1BAR", &
+      href = -1.87800000e+05, &
+      gref = 8.20082850e+03, &
       psatcode = 1, &
       ant = (/1.58737000e+01, 2.91132000e+03, -5.65100000e+01/), &
       Tantmin = 270.0000, &
@@ -6896,7 +7256,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-1.53725000e-01,7.54499000e-01,2.61728000e-04,4.36635800e-06,-4.48451000e-09, &
-      1.48420990e-12,3.80048000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.48420990e-12,3.80048000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
@@ -6915,14 +7277,14 @@ module compdatadb
       coeff=(/8.78000000e-01, -3.10000000e-02, 3.02000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu161 = &
+  type (alphadatadb), parameter :: twu163 = &
       alphadatadb(eosid="PR", &
       cid="NC7", &
       ref="tcPR", &
       coeff=(/3.29700000e-01, 8.22200000e-01, 1.96150000e+00/) &
       )
 
-  type (cidatadb), parameter :: c163 = &
+  type (cidatadb), parameter :: c164 = &
       cidatadb(eosid="PR", &
       cid="NC7", &
       ref="tcPR", &
@@ -6947,14 +7309,14 @@ module compdatadb
       coeff=(/1.03600000e+00, -2.58000000e-01, 4.88000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu162 = &
+  type (alphadatadb), parameter :: twu164 = &
       alphadatadb(eosid="SRK", &
       cid="NC7", &
       ref="tcRK", &
       coeff=(/3.26900000e-01, 8.38700000e-01, 2.39600000e+00/) &
       )
 
-  type (cidatadb), parameter :: c164 = &
+  type (cidatadb), parameter :: c165 = &
       cidatadb(eosid="SRK", &
       cid="NC7", &
       ref="tcRK", &
@@ -6965,7 +7327,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa19 = &
+  type(CPAdata), parameter :: cpa21 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC7", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -6976,13 +7338,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.13700000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx95 = &
       gendatadb(ident = "NC16", &
       formula = "C16H34", &
       name = "N-HEXADECANE", &
+      structure = "C:16;H:34", &
       mw = 226.4460, &
       Tc = 717.0000, &
       Pc = 1418600.00, &
@@ -6991,10 +7355,10 @@ module compdatadb
       Tb = 560.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 778.3100, &
+      sref_state = "1ATM", &
+      href = -3.74900000e+05, &
+      gref = 8.27544530e+04, &
       psatcode = 1, &
       ant = (/1.61841000e+01, 4.21491000e+03, -1.18700000e+02/), &
       Tantmin = 423.0000, &
@@ -7010,7 +7374,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.09270110e+01,-9.55630000e-02,3.45931300e-03,-1.35680700e-06,2.65935000e-10, &
-      -1.46753000e-14,3.09512800e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -1.46753000e-14,3.09512800e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -7021,19 +7387,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/3.97470000e+01,-2.06152000e-01,1.14814000e-03,-1.55548000e-06,6.75340000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu163 = &
+  type (alphadatadb), parameter :: twu165 = &
       alphadatadb(eosid="PR", &
       cid="NC16", &
       ref="tcPR", &
       coeff=(/5.37200000e-01, 7.92900000e-01, 2.14580000e+00/) &
       )
 
-  type (cidatadb), parameter :: c165 = &
+  type (cidatadb), parameter :: c166 = &
       cidatadb(eosid="PR", &
       cid="NC16", &
       ref="tcPR", &
@@ -7044,14 +7412,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu164 = &
+  type (alphadatadb), parameter :: twu166 = &
       alphadatadb(eosid="SRK", &
       cid="NC16", &
       ref="tcRK", &
       coeff=(/5.26200000e-01, 8.06800000e-01, 2.50800000e+00/) &
       )
 
-  type (cidatadb), parameter :: c166 = &
+  type (cidatadb), parameter :: c167 = &
       cidatadb(eosid="SRK", &
       cid="NC16", &
       ref="tcRK", &
@@ -7066,6 +7434,7 @@ module compdatadb
       gendatadb(ident = "NC6", &
       formula = "C6H14", &
       name = "N-HEXANE", &
+      structure = "C:6;H:14", &
       mw = 86.1780, &
       Tc = 507.4000, &
       Pc = 2968800.00, &
@@ -7074,10 +7443,10 @@ module compdatadb
       Tb = 341.9000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 388.8200, &
+      sref_state = "1ATM", &
+      href = -1.67100000e+05, &
+      gref = -5.53334780e+01, &
       psatcode = 1, &
       ant = (/1.58366000e+01, 2.69755000e+03, -4.87800000e+01/), &
       Tantmin = 245.0000, &
@@ -7093,7 +7462,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/-1.71910710e+01,9.59226000e-01,-6.14725000e-04,6.14210100e-06,-6.16095200e-09, &
-      2.08681900e-12,-2.07040000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      2.08681900e-12,-2.07040000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
@@ -7112,14 +7483,14 @@ module compdatadb
       coeff=(/8.70000000e-01, -5.88000000e-01, 1.50400000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu165 = &
+  type (alphadatadb), parameter :: twu167 = &
       alphadatadb(eosid="PR", &
       cid="NC6", &
       ref="tcPR", &
       coeff=(/2.55700000e-01, 8.37700000e-01, 2.18710000e+00/) &
       )
 
-  type (cidatadb), parameter :: c167 = &
+  type (cidatadb), parameter :: c168 = &
       cidatadb(eosid="PR", &
       cid="NC6", &
       ref="tcPR", &
@@ -7144,14 +7515,14 @@ module compdatadb
       coeff=(/1.00500000e+00, -5.91000000e-01, 1.20300000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu166 = &
+  type (alphadatadb), parameter :: twu168 = &
       alphadatadb(eosid="SRK", &
       cid="NC6", &
       ref="tcRK", &
       coeff=(/2.77300000e-01, 8.50300000e-01, 2.54390000e+00/) &
       )
 
-  type (cidatadb), parameter :: c168 = &
+  type (cidatadb), parameter :: c169 = &
       cidatadb(eosid="SRK", &
       cid="NC6", &
       ref="tcRK", &
@@ -7162,7 +7533,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa20 = &
+  type(CPAdata), parameter :: cpa22 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC6", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7173,13 +7544,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/8.31300000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx97 = &
       gendatadb(ident = "NC19", &
       formula = "C19H40", &
       name = "N-NONADECANE", &
+      structure = "C:19;H:40", &
       mw = 268.5300, &
       Tc = 755.0000, &
       Pc = 1160000.00, &
@@ -7189,9 +7562,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -4.35100000e+05, &
+      gref = 3.76661079e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7207,19 +7580,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/2.64470000e+01,-9.99800000e-03,5.06970000e-04,-6.79120000e-07,2.74280000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu167 = &
+  type (alphadatadb), parameter :: twu169 = &
       alphadatadb(eosid="PR", &
       cid="NC19", &
       ref="tcPR", &
       coeff=(/5.94600000e-01, 7.93400000e-01, 2.26540000e+00/) &
       )
 
-  type (cidatadb), parameter :: c169 = &
+  type (cidatadb), parameter :: c170 = &
       cidatadb(eosid="PR", &
       cid="NC19", &
       ref="tcPR", &
@@ -7230,14 +7605,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu168 = &
+  type (alphadatadb), parameter :: twu170 = &
       alphadatadb(eosid="SRK", &
       cid="NC19", &
       ref="tcRK", &
       coeff=(/6.08600000e-01, 8.02400000e-01, 2.52710000e+00/) &
       )
 
-  type (cidatadb), parameter :: c170 = &
+  type (cidatadb), parameter :: c171 = &
       cidatadb(eosid="SRK", &
       cid="NC19", &
       ref="tcRK", &
@@ -7252,6 +7627,7 @@ module compdatadb
       gendatadb(ident = "NC9", &
       formula = "C9H20", &
       name = "N-NONANE", &
+      structure = "C:9;H:20", &
       mw = 128.2590, &
       Tc = 594.6000, &
       Pc = 2310200.00, &
@@ -7260,10 +7636,10 @@ module compdatadb
       Tb = 424.0000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 506.5000, &
+      sref_state = "1ATM", &
+      href = -2.28300000e+05, &
+      gref = 2.56792435e+04, &
       psatcode = 1, &
       ant = (/1.59671000e+01, 3.29145000e+03, -7.13300000e+01/), &
       Tantmin = 312.0000, &
@@ -7279,19 +7655,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/4.00027800e+00,7.07805000e-01,4.38048000e-04,3.96934200e-06,-4.04315800e-09, &
-      1.28760280e-12,2.57265000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.28760280e-12,2.57265000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
 
-  type (alphadatadb), parameter :: twu169 = &
+  type (alphadatadb), parameter :: twu171 = &
       alphadatadb(eosid="PR", &
       cid="NC9", &
       ref="tcPR", &
       coeff=(/4.05400000e-01, 8.09700000e-01, 1.93430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c171 = &
+  type (cidatadb), parameter :: c172 = &
       cidatadb(eosid="PR", &
       cid="NC9", &
       ref="tcPR", &
@@ -7302,14 +7680,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu170 = &
+  type (alphadatadb), parameter :: twu172 = &
       alphadatadb(eosid="SRK", &
       cid="NC9", &
       ref="tcRK", &
       coeff=(/3.85800000e-01, 8.29400000e-01, 2.40410000e+00/) &
       )
 
-  type (cidatadb), parameter :: c172 = &
+  type (cidatadb), parameter :: c173 = &
       cidatadb(eosid="SRK", &
       cid="NC9", &
       ref="tcRK", &
@@ -7320,7 +7698,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa21 = &
+  type(CPAdata), parameter :: cpa23 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC9", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7331,13 +7709,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/1.04628000e+00,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx99 = &
       gendatadb(ident = "NC18", &
       formula = "C18H38", &
       name = "N-OCTADECANE", &
+      structure = "C:18;H:38", &
       mw = 254.5000, &
       Tc = 747.0000, &
       Pc = 1290000.00, &
@@ -7347,9 +7727,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = -4.14600000e+05, &
+      gref = 3.56487456e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7365,19 +7745,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/2.51300000e+01,-9.60300000e-03,4.80150000e-04,-6.42560000e-07,2.59420000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu171 = &
+  type (alphadatadb), parameter :: twu173 = &
       alphadatadb(eosid="PR", &
       cid="NC18", &
       ref="tcPR", &
       coeff=(/5.53300000e-01, 7.95500000e-01, 2.30670000e+00/) &
       )
 
-  type (cidatadb), parameter :: c173 = &
+  type (cidatadb), parameter :: c174 = &
       cidatadb(eosid="PR", &
       cid="NC18", &
       ref="tcPR", &
@@ -7388,14 +7770,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu172 = &
+  type (alphadatadb), parameter :: twu174 = &
       alphadatadb(eosid="SRK", &
       cid="NC18", &
       ref="tcRK", &
       coeff=(/5.50000000e-01, 8.07600000e-01, 2.65400000e+00/) &
       )
 
-  type (cidatadb), parameter :: c174 = &
+  type (cidatadb), parameter :: c175 = &
       cidatadb(eosid="SRK", &
       cid="NC18", &
       ref="tcRK", &
@@ -7410,6 +7792,7 @@ module compdatadb
       gendatadb(ident = "NC8", &
       formula = "C8H18", &
       name = "N-OCTANE", &
+      structure = "C:8;H:18", &
       mw = 114.2320, &
       Tc = 568.8000, &
       Pc = 2482500.00, &
@@ -7418,10 +7801,10 @@ module compdatadb
       Tb = 398.8000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 467.0600, &
+      sref_state = "1ATM", &
+      href = -2.08700000e+05, &
+      gref = 1.63646565e+04, &
       psatcode = 1, &
       ant = (/1.59426000e+01, 3.12029000e+03, -6.36300000e+01/), &
       Tantmin = 292.0000, &
@@ -7437,7 +7820,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/2.60472500e+00,7.24670000e-01,3.67845000e-04,4.14283300e-06,-4.24019900e-09, &
-      1.37340550e-12,3.27588000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      1.37340550e-12,3.27588000e-01,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -75.0000, &
       Tcpmax = 700.0000  &
       )
@@ -7456,14 +7841,14 @@ module compdatadb
       coeff=(/9.58000000e-01, -1.34000000e-01, 4.87000000e-01/) &
       )
 
-  type (alphadatadb), parameter :: twu173 = &
+  type (alphadatadb), parameter :: twu175 = &
       alphadatadb(eosid="PR", &
       cid="NC8", &
       ref="tcPR", &
       coeff=(/3.38500000e-01, 8.18500000e-01, 2.07470000e+00/) &
       )
 
-  type (cidatadb), parameter :: c175 = &
+  type (cidatadb), parameter :: c176 = &
       cidatadb(eosid="PR", &
       cid="NC8", &
       ref="tcPR", &
@@ -7488,14 +7873,14 @@ module compdatadb
       coeff=(/1.15000000e+00, -5.87000000e-01, 1.09600000e+00/) &
       )
 
-  type (alphadatadb), parameter :: twu174 = &
+  type (alphadatadb), parameter :: twu176 = &
       alphadatadb(eosid="SRK", &
       cid="NC8", &
       ref="tcRK", &
       coeff=(/3.44900000e-01, 8.34100000e-01, 2.46600000e+00/) &
       )
 
-  type (cidatadb), parameter :: c176 = &
+  type (cidatadb), parameter :: c177 = &
       cidatadb(eosid="SRK", &
       cid="NC8", &
       ref="tcRK", &
@@ -7506,7 +7891,7 @@ module compdatadb
       c_type=1 &
       )
 
-  type(CPAdata), parameter :: cpa22 = &
+  type(CPAdata), parameter :: cpa24 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC8", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7517,13 +7902,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/9.94150000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx101 = &
       gendatadb(ident = "NC25", &
       formula = "C25H52", &
       name = "N-PENTACOSANE", &
+      structure = "C:25;H:52", &
       mw = 352.6900, &
       Tc = 812.0000, &
       Pc = 950000.00, &
@@ -7532,10 +7919,10 @@ module compdatadb
       Tb = 674.1500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 1129.8100, &
+      sref_state = "1BAR", &
+      href = -5.59330000e+05, &
+      gref = 1.59619966e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7551,19 +7938,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/4.45150000e+05,1.33890000e+06,1.72150000e+03,9.24780000e+05,7.84280000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 300.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu175 = &
+  type (alphadatadb), parameter :: twu177 = &
       alphadatadb(eosid="PR", &
       cid="NC25", &
       ref="tcPR", &
       coeff=(/5.71700000e-01, 7.80300000e-01, 2.46660000e+00/) &
       )
 
-  type (cidatadb), parameter :: c177 = &
+  type (cidatadb), parameter :: c178 = &
       cidatadb(eosid="PR", &
       cid="NC25", &
       ref="tcPR", &
@@ -7574,14 +7963,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu176 = &
+  type (alphadatadb), parameter :: twu178 = &
       alphadatadb(eosid="SRK", &
       cid="NC25", &
       ref="tcRK", &
       coeff=(/6.03400000e-01, 7.79000000e-01, 2.50350000e+00/) &
       )
 
-  type (cidatadb), parameter :: c178 = &
+  type (cidatadb), parameter :: c179 = &
       cidatadb(eosid="SRK", &
       cid="NC25", &
       ref="tcRK", &
@@ -7596,6 +7985,7 @@ module compdatadb
       gendatadb(ident = "NC15", &
       formula = "C15H32", &
       name = "N-PENTADECANE", &
+      structure = "C:15;H:32", &
       mw = 212.4200, &
       Tc = 708.0000, &
       Pc = 1480000.00, &
@@ -7604,10 +7994,10 @@ module compdatadb
       Tb = 543.8300, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 738.9400, &
+      sref_state = "1ATM", &
+      href = -3.54800000e+05, &
+      gref = 7.39189955e+04, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7623,19 +8013,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/2.11800000e+01,-8.42400000e-03,3.99690000e-04,-5.30000029e+01,2.14820000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu177 = &
+  type (alphadatadb), parameter :: twu179 = &
       alphadatadb(eosid="PR", &
       cid="NC15", &
       ref="tcPR", &
       coeff=(/4.77000000e-01, 7.97000000e-01, 2.26360000e+00/) &
       )
 
-  type (cidatadb), parameter :: c179 = &
+  type (cidatadb), parameter :: c180 = &
       cidatadb(eosid="PR", &
       cid="NC15", &
       ref="tcPR", &
@@ -7646,14 +8038,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu178 = &
+  type (alphadatadb), parameter :: twu180 = &
       alphadatadb(eosid="SRK", &
       cid="NC15", &
       ref="tcRK", &
       coeff=(/4.93500000e-01, 8.08700000e-01, 2.55440000e+00/) &
       )
 
-  type (cidatadb), parameter :: c180 = &
+  type (cidatadb), parameter :: c181 = &
       cidatadb(eosid="SRK", &
       cid="NC15", &
       ref="tcRK", &
@@ -7668,6 +8060,7 @@ module compdatadb
       gendatadb(ident = "NC5", &
       formula = "C5H12", &
       name = "N-PENTAN", &
+      structure = "C:5;H:12", &
       mw = 72.1510, &
       Tc = 469.6000, &
       Pc = 3374100.00, &
@@ -7676,10 +8069,10 @@ module compdatadb
       Tb = 309.2000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 347.8200, &
+      sref_state = "1ATM", &
+      href = -1.46800000e+05, &
+      gref = -8.20480648e+03, &
       psatcode = 1, &
       ant = (/1.58333000e+01, 2.47707000e+03, -3.99400000e+01/), &
       Tantmin = 220.0000, &
@@ -7695,7 +8088,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.32016770e+01,-1.17010000e-02,3.31649800e-03,-1.17051000e-06,1.99648000e-10, &
-      -8.66520000e-15,4.07527500e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -8.66520000e-15,4.07527500e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -7728,7 +8123,7 @@ module compdatadb
       coeff=(/9.01000000e-01, -3.05000000e-01, 5.42000000e-01/) &
       )
 
-  type(CPAdata), parameter :: cpa23 = &
+  type(CPAdata), parameter :: cpa25 = &
       CPAdata(eosid="CPA-SRK", &
       compName="NC5", &
       ref="Default/Kontogeorgis-Folas2010", &
@@ -7739,13 +8134,15 @@ module compdatadb
       beta=0.00000000e+00, &
       alphacorridx = cbAlphaClassicIdx, &
       alphaParams = (/7.98580000e-01,0.00000000e+00,0.00000000e+00/), &
-      assoc_scheme = no_assoc &
+      assoc_scheme = no_assoc ,&
+      simplified_rdf = .true. &
       )
 
   type (gendatadb), parameter :: cx104 = &
       gendatadb(ident = "NC14", &
       formula = "C14H30", &
       name = "N-TETRADECANE", &
+      structure = "C:14;H:30", &
       mw = 198.3900, &
       Tc = 693.0000, &
       Pc = 1570000.00, &
@@ -7754,10 +8151,10 @@ module compdatadb
       Tb = 526.7600, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 700.4000, &
+      sref_state = "1ATM", &
+      href = -3.32100000e+05, &
+      gref = 6.74360735e+04, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7773,19 +8170,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/1.83750000e+01,6.58500000e-03,3.23070000e-04,-4.26630000e-07,1.65900000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu179 = &
+  type (alphadatadb), parameter :: twu181 = &
       alphadatadb(eosid="PR", &
       cid="NC14", &
       ref="tcPR", &
       coeff=(/4.90200000e-01, 7.97400000e-01, 2.13530000e+00/) &
       )
 
-  type (cidatadb), parameter :: c181 = &
+  type (cidatadb), parameter :: c182 = &
       cidatadb(eosid="PR", &
       cid="NC14", &
       ref="tcPR", &
@@ -7796,14 +8195,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu180 = &
+  type (alphadatadb), parameter :: twu182 = &
       alphadatadb(eosid="SRK", &
       cid="NC14", &
       ref="tcRK", &
       coeff=(/4.84100000e-01, 8.11800000e-01, 2.49950000e+00/) &
       )
 
-  type (cidatadb), parameter :: c182 = &
+  type (cidatadb), parameter :: c183 = &
       cidatadb(eosid="SRK", &
       cid="NC14", &
       ref="tcRK", &
@@ -7818,6 +8217,7 @@ module compdatadb
       gendatadb(ident = "NC24", &
       formula = "C24H50", &
       name = "N-TETRACOSANE", &
+      structure = "C:24;H:50", &
       mw = 338.6600, &
       Tc = 804.0000, &
       Pc = 980000.00, &
@@ -7826,10 +8226,10 @@ module compdatadb
       Tb = 664.4500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 1090.8600, &
+      sref_state = "1BAR", &
+      href = -5.38690000e+05, &
+      gref = 1.51199285e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7845,19 +8245,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/4.27180000e+05,1.28910000e+06,8.15290000e+02,-5.04180000e+05,9.44980000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 300.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu181 = &
+  type (alphadatadb), parameter :: twu183 = &
       alphadatadb(eosid="PR", &
       cid="NC24", &
       ref="tcPR", &
       coeff=(/4.65600000e-01, 8.09700000e-01, 3.35130000e+00/) &
       )
 
-  type (cidatadb), parameter :: c183 = &
+  type (cidatadb), parameter :: c184 = &
       cidatadb(eosid="PR", &
       cid="NC24", &
       ref="tcPR", &
@@ -7868,14 +8270,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu182 = &
+  type (alphadatadb), parameter :: twu184 = &
       alphadatadb(eosid="SRK", &
       cid="NC24", &
       ref="tcRK", &
       coeff=(/5.37300000e-01, 8.09500000e-01, 3.35700000e+00/) &
       )
 
-  type (cidatadb), parameter :: c184 = &
+  type (cidatadb), parameter :: c185 = &
       cidatadb(eosid="SRK", &
       cid="NC24", &
       ref="tcRK", &
@@ -7890,6 +8292,7 @@ module compdatadb
       gendatadb(ident = "NC23", &
       formula = "C23H48", &
       name = "N-TRICOSANE", &
+      structure = "C:23;H:48", &
       mw = 324.6300, &
       Tc = 796.0000, &
       Pc = 1020000.00, &
@@ -7898,10 +8301,10 @@ module compdatadb
       Tb = 653.3500, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 1051.9100, &
+      sref_state = "1BAR", &
+      href = -5.18050000e+05, &
+      gref = 1.42778605e+05, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7917,19 +8320,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 7, &
       cp = (/4.10150000e+05,1.23420000e+06,1.72310000e+03,8.52280000e+05,7.84970000e+02, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = 300.0000, &
       Tcpmax = 1500.0000  &
       )
 
-  type (alphadatadb), parameter :: twu183 = &
+  type (alphadatadb), parameter :: twu185 = &
       alphadatadb(eosid="PR", &
       cid="NC23", &
       ref="tcPR", &
       coeff=(/4.69700000e-01, 8.14200000e-01, 3.24260000e+00/) &
       )
 
-  type (cidatadb), parameter :: c185 = &
+  type (cidatadb), parameter :: c186 = &
       cidatadb(eosid="PR", &
       cid="NC23", &
       ref="tcPR", &
@@ -7940,14 +8345,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu184 = &
+  type (alphadatadb), parameter :: twu186 = &
       alphadatadb(eosid="SRK", &
       cid="NC23", &
       ref="tcRK", &
       coeff=(/5.44000000e-01, 8.14300000e-01, 3.24000000e+00/) &
       )
 
-  type (cidatadb), parameter :: c186 = &
+  type (cidatadb), parameter :: c187 = &
       cidatadb(eosid="SRK", &
       cid="NC23", &
       ref="tcRK", &
@@ -7962,6 +8367,7 @@ module compdatadb
       gendatadb(ident = "NC13", &
       formula = "C13H28", &
       name = "N-TRIDECANE", &
+      structure = "C:13;H:28", &
       mw = 184.3700, &
       Tc = 675.0000, &
       Pc = 1680000.00, &
@@ -7970,10 +8376,10 @@ module compdatadb
       Tb = 508.6300, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 661.4500, &
+      sref_state = "1ATM", &
+      href = -3.11500000e+05, &
+      gref = 5.89753930e+04, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -7989,19 +8395,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 8, &
       cp = (/1.85460000e+01,-7.63600000e-03,3.46040000e-04,-4.59780000e-07,1.85090000e-10, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu185 = &
+  type (alphadatadb), parameter :: twu187 = &
       alphadatadb(eosid="PR", &
       cid="NC13", &
       ref="tcPR", &
       coeff=(/4.48200000e-01, 8.03900000e-01, 2.23430000e+00/) &
       )
 
-  type (cidatadb), parameter :: c187 = &
+  type (cidatadb), parameter :: c188 = &
       cidatadb(eosid="PR", &
       cid="NC13", &
       ref="tcPR", &
@@ -8012,14 +8420,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu186 = &
+  type (alphadatadb), parameter :: twu188 = &
       alphadatadb(eosid="SRK", &
       cid="NC13", &
       ref="tcRK", &
       coeff=(/4.47100000e-01, 8.17500000e-01, 2.60970000e+00/) &
       )
 
-  type (cidatadb), parameter :: c188 = &
+  type (cidatadb), parameter :: c189 = &
       cidatadb(eosid="SRK", &
       cid="NC13", &
       ref="tcRK", &
@@ -8034,6 +8442,7 @@ module compdatadb
       gendatadb(ident = "NC11", &
       formula = "C11H24", &
       name = "N-UNDECANE", &
+      structure = "C:11;H:24", &
       mw = 156.3120, &
       Tc = 639.0000, &
       Pc = 1980000.00, &
@@ -8042,10 +8451,10 @@ module compdatadb
       Tb = 469.1000, &
       Ttr = 0.0000, &
       Ptr = 0.0000, &
-      sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref = 583.5800, &
+      sref_state = "1ATM", &
+      href = -2.70300000e+05, &
+      gref = 4.20450875e+04, &
       psatcode = 1, &
       ant = (/1.60541000e+01, 3.61407000e+03, -8.54500000e+01/), &
       Tantmin = 348.0000, &
@@ -8061,19 +8470,21 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/6.52905640e+01,-9.98270000e-02,3.47249500e-03,-1.35433600e-06,2.64721000e-10, &
-      -1.45574000e-14,3.40795900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      -1.45574000e-14,3.40795900e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -20.0000, &
       Tcpmax = 1200.0000  &
       )
 
-  type (alphadatadb), parameter :: twu187 = &
+  type (alphadatadb), parameter :: twu189 = &
       alphadatadb(eosid="PR", &
       cid="NC11", &
       ref="tcPR", &
       coeff=(/4.18500000e-01, 8.07100000e-01, 2.12240000e+00/) &
       )
 
-  type (cidatadb), parameter :: c189 = &
+  type (cidatadb), parameter :: c190 = &
       cidatadb(eosid="PR", &
       cid="NC11", &
       ref="tcPR", &
@@ -8084,14 +8495,14 @@ module compdatadb
       c_type=1 &
       )
 
-  type (alphadatadb), parameter :: twu188 = &
+  type (alphadatadb), parameter :: twu190 = &
       alphadatadb(eosid="SRK", &
       cid="NC11", &
       ref="tcRK", &
       coeff=(/4.01800000e-01, 8.24500000e-01, 2.58800000e+00/) &
       )
 
-  type (cidatadb), parameter :: c190 = &
+  type (cidatadb), parameter :: c191 = &
       cidatadb(eosid="SRK", &
       cid="NC11", &
       ref="tcRK", &
@@ -8106,6 +8517,7 @@ module compdatadb
       gendatadb(ident = "PSEUDO", &
       formula = "XXX", &
       name = "PSEUDO", &
+      structure = "", &
       mw = 100.0000, &
       Tc = 100.0000, &
       Pc = 10000000.00, &
@@ -8115,9 +8527,9 @@ module compdatadb
       Ttr = 0.0000, &
       Ptr = 0.0000, &
       sref = 0.0000, &
-      href = 0.0000, &
-      DfH = 0.0000, &
-      DfG = 0.0000, &
+      sref_state = "1BAR", &
+      href = 1.00000000e+20, &
+      gref = 1.00000000e+11, &
       psatcode = 1, &
       ant = (/0.00000000e+00, 0.00000000e+00, 0.00000000e+00/), &
       Tantmin = 0.0000, &
@@ -8133,7 +8545,9 @@ module compdatadb
       bib_ref = "", &
       cptype = 2, &
       cp = (/0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
-      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00/), &
+      0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
+      0.0d0,0.0d0,0.0d0,0.0d0,0.0d0,0.0d0/), &
       Tcpmin = -175.0000, &
       Tcpmax = 1200.0000  &
       )
@@ -8192,7 +8606,7 @@ module compdatadb
       cp111 &
   /)
 
-  integer, parameter :: maxTWUdb =188
+  integer, parameter :: maxTWUdb =190
   type (alphadatadb), dimension(maxTWUdb), parameter :: alphaTWUdb = (/&
       twu1,twu2,twu3,twu4,twu5, &
       twu6,twu7,twu8,twu9,twu10, &
@@ -8231,7 +8645,7 @@ module compdatadb
       twu171,twu172,twu173,twu174,twu175, &
       twu176,twu177,twu178,twu179,twu180, &
       twu181,twu182,twu183,twu184,twu185, &
-      twu186,twu187,twu188 &
+      twu186,twu187,twu188,twu189,twu190 &
   /)
 
   integer, parameter :: maxMCdb =65
@@ -8251,7 +8665,7 @@ module compdatadb
       mc61,mc62,mc63,mc64,mc65 &
   /)
 
-  integer, parameter :: maxcidb =190
+  integer, parameter :: maxcidb =191
   type (cidatadb), dimension(maxcidb), parameter :: cidb = (/&
       c1,c2,c3,c4,c5, &
       c6,c7,c8,c9,c10, &
@@ -8290,16 +8704,17 @@ module compdatadb
       c171,c172,c173,c174,c175, &
       c176,c177,c178,c179,c180, &
       c181,c182,c183,c184,c185, &
-      c186,c187,c188,c189,c190 &
+      c186,c187,c188,c189,c190, &
+      c191 &
   /)
 
-  integer, parameter :: nCPAmodels =23
+  integer, parameter :: nCPAmodels =25
   type(CPAdata), dimension(nCPAmodels), parameter :: CPAarray = (/&
       cpa1,cpa2,cpa3,cpa4,cpa5, &
       cpa6,cpa7,cpa8,cpa9,cpa10, &
       cpa11,cpa12,cpa13,cpa14,cpa15, &
       cpa16,cpa17,cpa18,cpa19,cpa20, &
-      cpa21,cpa22,cpa23 &
+      cpa21,cpa22,cpa23,cpa24,cpa25 &
   /)
 
 end module compdatadb

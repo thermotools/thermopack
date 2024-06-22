@@ -10,8 +10,7 @@ module eos_container
   use lj_splined, only: ljs_bh_eos, ljs_wca_eos, ljx_ux_eos_constructor
   use pc_saft_nonassoc, only: PCSAFT_eos, sPCSAFT_eos
   use extcsp, only: extcsp_eos
-  use gergmix, only: constructor_GERGMIX
-  use meosmix, only: constructor_meos
+  use ideal, only: ideal_eos, ideal_eos_constructor
 
 contains
 
@@ -145,12 +144,9 @@ contains
     case(meosNist_mix)
       allocate(p_eos, &
            source=meos_idealmix_constructor(nc, eosstr), stat=istat)
-    case(meosGERG_mix)
+    case(eos_ideal)
       allocate(p_eos, &
-           source=constructor_GERGMIX(nc), stat=istat)
-    case(meos_helm_mix)
-      allocate(p_eos, &
-           source=constructor_meos(nc), stat=istat)
+           source=ideal_eos_constructor(nc, eosstr), stat=istat)
     case default
       istat = 1
     end select

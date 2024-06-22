@@ -5,6 +5,10 @@ module association_var
   !
   public
 
+  ! Choice of combining rule for cross-association Delta
+  integer, parameter :: STANDARD=1
+  integer, parameter :: ELLIOT=2
+
   !> Current state for eos evaluation
   type association_state
     logical :: fmt_mode = .false.
@@ -31,6 +35,7 @@ module association_var
     real, allocatable, dimension(:,:) :: beta_kl  !< Effective association volume between site Ai and Bj (called \beta^{A_i B_j} in CPA).
     real, allocatable, dimension(:,:) :: eps_kl   !< Association energy.
     type(association_state) :: state
+    integer :: delta_combrule = STANDARD
   contains
     procedure, public :: dealloc
     procedure, public :: print
@@ -68,8 +73,11 @@ contains
   end subroutine init_assoc_state
 
   subroutine init_assoc_state_fmt(assoc_p, nc, T, n_fmt, m)
+    use thermopack_constants, only: N_AVOGADRO
     class(association_state), intent(inout) :: assoc_p
-    real, intent(in) :: T, n_fmt(nc, 0:5), m(nc)
+    real, intent(in) :: T !< Temperature (K)
+    real, intent(in) :: n_fmt(nc, 0:5) !< Mol based FMT weighted densities
+    real, intent(in) :: m(nc) !< Segment numbers
     integer, intent(in) :: nc
     ! Locals
     real :: xi(nc)
@@ -77,9 +85,9 @@ contains
     assoc_p%fmt_mode = .true.
     !assoc_p%fmt_mode = .false.
     assoc_p%T = T
-    assoc_p%n_fmt = n_fmt
+    assoc_p%n_fmt = n_fmt*N_AVOGADRO ! Convert from mole based to molecular based
     xi = 1.0 - n_fmt(:,5)**2/n_fmt(:,2)**2
-    assoc_p%n = xi*n_fmt(:,0)/m
+    assoc_p%n = xi*n_fmt(:,0)/m ! Use mole based numbers
     assoc_p%V = 1.0/sum(assoc_p%n)
     assoc_p%n = assoc_p%n*assoc_p%V
   end subroutine init_assoc_state_fmt

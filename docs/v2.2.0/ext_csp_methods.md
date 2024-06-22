@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the ext_csp class
 permalink: /v2.2.0/ext_csp_methods.html
 ---
@@ -12,7 +12,7 @@ The file is created by parsing the docstrings of the methods in the
 ext_csp class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `ext_csp` class, found in `addon/pycThermopack/thermopack/ext_csp.py`, inherrits from the thermo class, and  is the interface to the 
+The `ext_csp` class, found in `addon/pycThermopack/thermopack/ext_csp.py`, inherits from the thermo class, and  is the interface to the 
 Extended Corresponding states Equation of State. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents
