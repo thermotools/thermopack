@@ -46,7 +46,7 @@
   "ideal_heat_capacity-1": {
     "ref": "Default",
     "bib_reference": "NIST-Chase1998",
-    "correlation": 5,
+    "correlation": 12,
     "cp": [
       20.78603,
       4.850638e-10,
