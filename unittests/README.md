@@ -11,7 +11,7 @@ $ make unittests_debug
 ```
 from the thermopack root directory.
 
-The test suit is run by runnning the executable
+The test suit is run by running the executable
 ```bash
 $ ./run_unittests
 ```

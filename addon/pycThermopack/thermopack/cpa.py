@@ -37,6 +37,7 @@ class cpa(cubic):
         self.s_set_pure_params = getattr(self.tp, self.get_export_name("saft_interface", "cpa_set_pure_params"))
         # Options methods
         self.s_use_simplified_cpa = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
+        self.s_set_cpa_formulation = getattr(self.tp, self.get_export_name("saft_interface", "setcpaformulation"))
         # Info methods
         self.s_print_cpa_report = getattr(self.tp, self.get_export_name("saft_interface", "print_cpa_report"))
 
@@ -100,7 +101,7 @@ class cpa(cubic):
     def print_cpa_report(self):
         """Utility
         Print cpa parameters
-        
+
         Parameters printed are the five pure parameters
         a0, b, epsilon, beta, c1, and the binary parameter
         for the cubic part, kij_a, and for the association part, kij_eps.
@@ -210,10 +211,24 @@ class cpa(cubic):
         Args:
             simplified (bool): True if simplified
         """
-        simplified_c = c_bool(simplified)
+        simplified_c = c_int(self._true_int_value) if simplified else c_int(0)
         self.s_use_simplified_cpa.argtypes = [POINTER(c_bool)]
         self.s_use_simplified_cpa.restype = None
         self.s_use_simplified_cpa(byref(simplified_c))
+
+    def set_cpa_formulation(self, simplified, elliot):
+        """Utility
+        Set CPA formulation
+        Args:
+            simplified (bool): Use simplified form for rdf in CPA?
+            elliot (bool): use Elliot mixing rule for association Deltas?
+        """
+        simplified_c = c_int(self._true_int_value) if simplified else c_int(0)
+        elliot_c = c_bool(elliot)
+        self.s_set_cpa_formulation.argtypes = [POINTER(c_bool), POINTER(c_bool)]
+        self.s_set_cpa_formulation.restype = None
+        self.s_set_cpa_formulation(byref(simplified_c), byref(elliot_c))
+
 
 class SRK_CPA(cpa):
     def __init__(self, comps, mixing="vdW", alpha="Classic", parameter_reference="Default"):

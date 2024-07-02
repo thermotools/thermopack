@@ -314,7 +314,7 @@ def basic_class_to_markdown(classname, eosname, methods, intro_text=None, inheri
             ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, is the interface to the \n' \
                           f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
         else:
-            ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherrits ' \
+            ofile_text += f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherits ' \
                           f'from the {inherits} class, and  is the interface to the \n' \
                           f'{eosname} Equation of State. This class implements utility methods to access mixing parameters etc.\n\n'
     else:
@@ -585,7 +585,7 @@ def extcsp_to_markdown():
 def multiparam_to_markdown():
     classname = 'multiparam'
     eosname = 'Multiparameter'
-    intro_text = f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherrits ' \
+    intro_text = f'The `{classname}` class, found in `addon/pycThermopack/thermopack/{classname}.py`, inherits ' \
                 f'from the `thermo` class, and  is the interface to the \n' \
                 f'{eosname} Equations of State. Selection of different multiparameter equations of state is done by ' \
                  f'passing an identifier string to the constructor. For information on available multiparameter equations ' \
@@ -609,4 +609,3 @@ if __name__ == '__main__':
     pets_to_markdown()
     extcsp_to_markdown()
     multiparam_to_markdown()
-    update_v220_method_docs()

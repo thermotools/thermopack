@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Documentation
 permalink: /v2.2.0/method_docs.html
 ---
@@ -17,7 +17,7 @@ For Documentation of the Fortran side of ThermoPack, refer to the [Doxygen manua
 The available equations of state in ThermoPack are indicated in the table below, with links to the
 documentation for the respective class in the cases where the class implements any specific non-inherited functionality.
 Information about available species can be found on the [Component identifiers](component-name-mapping.html) page, 
-all components are avialable for the cubic equations of state.
+all components are available for the cubic equations of state.
 
 The (Python-side) inheritance structure for the classes is shown in the list below the table.
 

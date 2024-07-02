@@ -2,6 +2,8 @@
   "ident": "NH3",
   "formula": "NH3",
   "cas_number": "7664-41-7",
+  "InChI": "1S/H3N/h1H3",
+  "structure": "H:3;N:1",
   "name": "AMMONIA",
   "aliases": [
     "Ammonia",
@@ -62,14 +64,11 @@
     "Tmax": 1200.0
   },
   "reference_state": {
-    "bib_reference": "https://webbook.nist.gov",
-    "enthalpy": -45900,
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "enthalpy": -45.94e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
     "entropy": 192.77
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -169,7 +168,7 @@
       "correlation": 1
     },
     "CPA-1": {
-      "ref": "Default/SINTEF",
+      "ref": "2B-SINTEF",
       "bib_reference": "",
       "a0": 3.73160e+05,
       "b": 2.07666e-02,
@@ -177,7 +176,8 @@
       "alphaCorr": "Classic",
       "eps": 7.60835e+03,
       "beta": 7.93725e-04,
-      "assoc_scheme": "2B"
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     },
     "CPA-3B": {
       "ref": "3B-SINTEF",
@@ -188,7 +188,8 @@
       "alphaCorr": "Classic",
       "eps": 7.81268e+03,
       "beta": 8.19643e-04,
-      "assoc_scheme": "3B"
+      "assoc_scheme": "3B",
+      "simplified_rdf": "True"
     },
     "CPA-4B": {
       "ref": "4B-SINTEF",
@@ -199,7 +200,24 @@
       "alphaCorr": "Classic",
       "eps": 7.51955e+03,
       "beta": 8.71581e-04,
-      "assoc_scheme": "4B"
+      "assoc_scheme": "4B",
+      "simplified_rdf": "True"
+    },
+    "CPA-5": {
+      "ref": "Default/Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "a0": 219560.0,
+      "b": 0.020137,
+      "alphaParams": [
+        1.0899,
+        0.0,
+        0.0
+      ],
+      "alphaCorr": "Classic",
+      "eps": 5823.0,
+      "beta": 0.71921,
+      "assoc_scheme": "2B",
+      "simplified_rdf": "True"
     }
   },
   "PR": {
@@ -210,6 +228,15 @@
         0.2274,
         0.8645,
         2.332
+      ]
+    },
+    "TWU-2": {
+      "ref": "Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "correlation": [
+        0.41786,
+        0.86509,
+        1.5414
       ]
     },
     "MC-1": {
@@ -228,17 +255,25 @@
       "ciB": 0.0,
       "ciC": 0.0,
       "correlation": 1
+    },
+    "volume_shift": {
+      "ref": "Aasen2024",
+      "bib_reference": "Aasen2024AmmoniaWaterFPE",
+      "ciA": 2.1117e-06,
+      "ciB": 2.9507e-09,
+      "ciC": 0.0,
+      "correlation": 2
     }
   },
   "PC-SAFT-1": {
-    "m": 2.25807,
-    "sigma": 2.37802E-10,
-    "eps_depth_divk": 126.868,
-    "eps": 11032.6000,
-    "beta": 0.20479,
-    "assoc_scheme": "3B",
+    "beta": 1.4196717714333902,
+    "eps": 7473.736440984425,
+    "eps_depth_divk": 134.99236271977904,
+    "m": 3.061027354364304,
+    "sigma": 2.1547300405605618e-10,
+    "assoc_scheme": "2B",
     "bib_reference": "SINTEF Energy Research",
-    "ref": "Default/InHouse"
+    "ref": "Default/Aasen2024/Aasen2024dft"
   },
   "PC-SAFT-2": {
     "m": 1.4302,
@@ -249,6 +284,16 @@
     "assoc_scheme": "2B",
     "bib_reference": "10.1016/j.fluid.2020.112689",
     "ref": "NguyenHuynh2020"
+  },
+  "PC-SAFT-3": {
+    "m": 2.459,
+    "sigma": 2.3831E-10,
+    "eps_depth_divk": 162.58,
+    "eps": 6780.9,
+    "beta": 0.74316,
+    "assoc_scheme": "2B",
+    "bib_reference": "Unpublished",
+    "ref": "Aasen2024"
   },
   "SAFTVRMIE-1": {
     "m": 1.0,

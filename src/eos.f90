@@ -764,16 +764,17 @@ contains
       if (.not. calculated) then
         h = Hideal_apparent(act_mod_ptr%comps,j,T)
         call TP_Sideal_apparent(act_mod_ptr%comps, j, T, P, s)
+        g = h - T*s
       endif
     case (TREND)
       ! TREND
       h = trend_ideal_enthalpy(T,j)
       s = trend_ideal_entropy(T,P,j)
+      g = h - T*s
     case default
       write(*,*) 'EosLib error in eos::idealGibbsSingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-    g = h - T*s
     if (present(dgdt)) then
       dgdt = -s
     end if
@@ -846,13 +847,12 @@ contains
   !>
   !> \author MH, 2014-01
   !----------------------------------------------------------------------
-  subroutine ideal_enthalpy_single(t,p,j,h,dhdt,dhdp)
+  subroutine ideal_enthalpy_single(t,j,h,dhdt,dhdp)
     use ideal, only: Hideal_apparent, Cpideal_apparent
     use eos_parameters, only: single_eos
     implicit none
     ! Transferred variables
     real, intent(in) :: t                   !< K - Temperature
-    real, intent(in) :: p                   !< Pa - Pressure
     integer, intent(in) :: j                !< Component index
     real, intent(out) :: h                  !< J/mol - Ideal enthalpy
     real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy

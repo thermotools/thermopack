@@ -3,10 +3,7 @@ module saft_rdf
   implicit none
   save
 
-  logical :: useSimplifiedCPA = .FALSE.
-
   public :: master_saft_rdf
-  public :: useSimplifiedCPA
   private
 
 contains
@@ -38,7 +35,7 @@ contains
     !
     select type ( p_eos => eos )
     class is(cpa_eos)
-      call g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+      call g_rdf_cpa(p_eos,nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
       if (present(g_T)) g_T = 0.0
       if (present(g_TT)) g_TT = 0.0
       if (present(g_TV)) g_TV = 0.0
@@ -69,9 +66,11 @@ contains
   end subroutine master_saft_rdf
 
   !> Radial distribution function from hard-sphere fluid.
-  subroutine g_rdf_cpa(nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+  subroutine g_rdf_cpa(eos,nc,V,n,g,g_V,g_n,g_VV,g_Vn,g_nn)
+    use cubic_eos, only: cpa_eos
     use saft_globals, only: assoc_covol
     ! Input.
+    class(cpa_eos), intent(in) :: eos
     integer, intent(in) :: nc
     real, intent(in) :: V                       !< [m^3]
     real, intent(in) :: n(nc)                   !< [mol]
@@ -99,7 +98,7 @@ contains
     sumn = sum(n)
     b_mix = dot_product(n,bi)/sumn
     eta = sumn*b_mix/(4*V)
-    if (useSimplifiedCPA) then ! Simplified CPA.
+    if (eos%useSimplifiedCPA) then ! Simplified CPA.
       g = 1/(1-1.9*eta)
     else           ! Original formulation.
       g = (1-eta/2)/(1-eta)**3
@@ -120,7 +119,7 @@ contains
       eta_VV = bigB*V_3/2
       eta_Vn = -bi*V_2/4
 
-      if (useSimplifiedCPA) then ! Simplified CPA.
+      if (eos%useSimplifiedCPA) then ! Simplified CPA.
         g_eta = 1.9/(1-1.9*eta)**2
         g_etaeta = 2*1.9*1.9/(1-1.9*eta)**3
       else           ! Original formulation.

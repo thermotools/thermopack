@@ -19,7 +19,6 @@ module pc_saft_nonassoc
     real, allocatable :: m(:)                 !< [-]
     real, allocatable :: sigma(:,:)           !< [m]
     real, allocatable :: eps_depth_divk(:,:)  !< [K]
-    real, allocatable :: sigma_cube(:,:)      !< [m^3]
   contains
     procedure, public :: dealloc => spcsaft_dealloc
     procedure, public :: allocate_and_init => spcsaft_allocate_and_init
@@ -2082,7 +2081,6 @@ contains
     call eos%dealloc()
     call allocate_nc(eos%m,nc,"eos%m")
     call allocate_nc_x_nc(eos%sigma,nc,"eos%sigma")
-    call allocate_nc_x_nc(eos%sigma_cube,nc,"eos%sigma_cube")
     call allocate_nc_x_nc(eos%eps_depth_divk,nc,"eos%eps_depth_divk")
   end subroutine spcsaft_allocate_and_init
 
@@ -2100,7 +2098,6 @@ contains
         this%m = other%m
         if (allocated(other%sigma)) this%sigma = other%sigma
         if (allocated(other%eps_depth_divk)) this%eps_depth_divk = other%eps_depth_divk
-        if (allocated(other%sigma_cube)) this%sigma_cube = other%sigma_cube
       endif
     class default
       print *,"assign_pcsaft: Should not be here"
@@ -2116,7 +2113,6 @@ contains
     call base_eos_dealloc(eos)
     call deallocate_real(eos%m,"eos%m")
     call deallocate_real_2(eos%sigma,"eos%sigma")
-    call deallocate_real_2(eos%sigma_cube,"eos%sigma_cube")
     call deallocate_real_2(eos%eps_depth_divk,"eos%eps_depth_divk")
   end subroutine spcsaft_dealloc
 

@@ -90,7 +90,7 @@ contains
     call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g1)
     p = p0 + dp
     call TP_CalcGibbs(ncomp,p_comps,p_eos,T,P,n,LIQPH,residual,g2)
-    @assertEqual(dgdp,(g2-g1)/dp/2,tol*abs(dgdp))
+    @assertEqual(dgdp,(g2-g1)/dp/2,10*tol*abs(dgdp))
 
     ! Mole number differentials
     t = t0

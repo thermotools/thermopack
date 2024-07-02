@@ -2,6 +2,8 @@
   "ident": "DME",
   "formula": "C2H6O",
   "cas_number": "115-10-6",
+  "InChI": "1S/C2H6O/c1-3-2/h1-2H3",
+  "structure": "C:2;H:6;O:1",
   "name": "di-methyl ether",
   "aliases": [
     "MethoxyMethane",
@@ -62,14 +64,11 @@
     "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Pilcher, Pell, et al., 1964",
+    "enthalpy": -184.1e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 267.553
   },
   "rackett_factor": {
     "bib_reference": "",

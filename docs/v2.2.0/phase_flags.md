@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Phase flags
 permalink: /v2.2.0/phase_flags.html
 ---

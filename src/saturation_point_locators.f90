@@ -26,11 +26,40 @@ module saturation_point_locators ! Give a more descriptive name..
   integer, parameter, public :: locate_from_pressure = 5
   integer, parameter, public :: locate_from_joule_thompson = 6
 
+  public :: property_index_from_string
   public :: sat_points_based_on_prop
   public :: bracketSolveForPropertySingle
   public :: iso_cross_saturation_line
+  public :: locate_saturation_property
 
 contains
+
+  !-----------------------------------------------------------------------------
+  !> Get integer index base on string
+  !>
+  !> \author MH 2024-02
+  !-----------------------------------------------------------------------------
+  function property_index_from_string(prop_string) result(idx)
+    use stringmod, only: str_eq
+    implicit none
+    character(len=*), intent(in) :: prop_string
+    integer :: idx
+    if (str_eq(prop_string,"ENTROPY")) then
+      idx = locate_from_entropy
+    else if (str_eq(prop_string,"LNVOL")) then
+      idx = locate_from_lnvol
+    else if (str_eq(prop_string,"ENTHALPY")) then
+      idx = locate_from_enthalpy
+    else if (str_eq(prop_string,"TEMPERATURE")) then
+      idx = locate_from_temperature
+    else if (str_eq(prop_string,"PRESSURE")) then
+      idx = locate_from_pressure
+    else if (str_eq(prop_string,"JOULE-THOMPSON")) then
+      idx = locate_from_joule_thompson
+    else
+      idx = -1 ! Signal error
+    endif
+  end function property_index_from_string
 
   !-----------------------------------------------------------------------------
   !> Bracket solver for finding the exact point on the phase envelope
@@ -144,8 +173,10 @@ contains
         call stoperror("bracketSolveForProperty failed.")
       endif
     endif
-    Ps = Xs
-    Ts = param(9)
+    if (solver%exitflag == 0) then
+      Ps = Xs
+      Ts = param(9)
+    endif
   end subroutine bracketSolveForPropertySingle
 
   !-----------------------------------------------------------------------------
@@ -167,6 +198,8 @@ contains
     integer :: propflag, ic
     type(nonlinear_solver) :: solver
     real :: paramSat(4)
+    real :: dP, dfdt, dfdp, f
+    integer :: i
 
     ! Unpack the param vector
     propspec = param(1)
@@ -200,6 +233,31 @@ contains
     solver%max_it = 100
     call nonlinear_solve(solver,sat_fun_single_if,sat_diff_single,&
          sat_diff_single,limit_dx,premReturn,setXv,X,xmin,xmax,paramSat)
+    if (solver%exitflag /= 0) then
+      ! Do smaller steps
+      dP = (P-P0)*0.1
+      T = T0
+      P = P0
+      do i=1,9
+        P = P + dP
+        T = T + dP/dPdT
+        X = log(T)
+        paramSat(3) = P
+        call nonlinear_solve(solver,sat_fun_single_if,sat_diff_single,&
+             sat_diff_single,limit_dx,premReturn,setXv,X,xmin,xmax,paramSat)
+        if (solver%exitflag /= 0) call stoperror("xxxxxx")
+        T = exp(X(1))
+        call sat_fun_single(ic,t,p,f,dfdt,dfdp,.false.)
+        dPdT = -dfdt/dfdp
+      enddo
+      P = Xs
+      T = T + dP/dPdT
+      X = log(T)
+      paramSat(3) = Xs
+      call nonlinear_solve(solver,sat_fun_single_if,sat_diff_single,&
+           sat_diff_single,limit_dx,premReturn,setXv,X,xmin,xmax,paramSat)
+      if (solver%exitflag /= 0) call stoperror("xxxxxx")
+    endif
     t = exp(X(1))
 
     ! Update t-slot in param vector with new t value
@@ -346,12 +404,12 @@ contains
     real, optional, intent(in) :: pMin, pMax   !< Pressure limits (Pa)
     logical, optional, intent(in) :: sequential_mode !< Default sequential
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
-    real, intent(out) :: wi_grid(nc,n_grid)    !< Incipient phase at boundary
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
+    real, intent(out) :: wi_grid(nc,2*n_grid)    !< Incipient phase at boundary
     integer, intent(out) :: n_grid_found       !< Number of grid points found
-    real, optional, intent(out) :: normal_grid(2,n_grid) !< Normal vector (from tangent) pointing into two-phase region
+    real, optional, intent(out) :: normal_grid(2,2*n_grid) !< Normal vector (from tangent) pointing into two-phase region
     ! Locals:
     real :: t, p
     integer :: specification
@@ -360,7 +418,7 @@ contains
     real, dimension(nc+2) :: Xvar, Xold, Xtemp
     real :: dS, tuning, sgn, Pstart
     integer :: iter,s,n,ophase,ierr,j
-    integer, dimension(1) :: smax,zmax
+    integer, dimension(1) :: smax
     real :: curr_prop_val, old_prop_val, ln_spec, beta
     logical :: have_switched_formulation, seq_mode
     logical :: should_switch_formulation, reset_dS
@@ -394,7 +452,6 @@ contains
     endif
 
     ! Special consideration for pure fluids
-    zmax = maxloc(Z)
     if (isSingleComp(Z)) then
       call sat_points_based_on_prop_single(Z,P0,n_grid,propflag,prop_grid,&
            T_grid,P_grid,phase_grid,n_grid_found,ierr_out)
@@ -634,12 +691,11 @@ contains
                  propflag,crit_prop,curr_prop_val,old_prop_val,&
                  Xvar,Xold,dXds,beta,t_c,p_c,Xtemp,ierr)
             if (ierr_demands_return(ierr,ierr_out)) return
-            prop_grid(grid_idx) = sspec ! Reorder array
             call store_point(Z,Xtemp,phase,beta,grid_idx,n_grid,&
                  T_grid,P_grid,phase_grid,wi_grid,n_grid_found,&
                  normal_grid)
           enddo
-          if ( n_grid_found == n_grid ) then
+          if ( n_grid_found == 2*n_grid ) then
             return
           endif
         endif
@@ -909,16 +965,15 @@ contains
     real, intent(in) :: p0                     !< init. point has pressure p0
     integer, intent(in) :: n_grid              !< number of grid points
     integer, intent(in) :: propflag            !< specified property 1:s, 2:lnv
-    real, intent(inout) :: prop_grid(n_grid)   !< property grid (non sequential mode may reorder array)
+    real, intent(in) :: prop_grid(n_grid)      !< property grid
     integer, optional, intent(out) :: ierr_out !< error flag; nonzero if error
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
-    integer, intent(out) :: n_grid_found       !< Number of grid points found
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
+    integer, intent(out) :: n_grid_found         !< Number of grid points found
     ! Locals:
     real :: t, p, Ps, Ts
-    integer, dimension(1) :: zmax
     real, dimension(nc) :: X,Y
     real, dimension(4) :: param
     real, dimension(1) :: XX,Xmax,Xmin
@@ -942,8 +997,7 @@ contains
 
     ! Initialize composition
     X = 0.0
-    zmax = maxloc(Z)
-    ic = zmax(1)
+    ic = maxloc(Z,dim=1)
     X(ic) = 1.0
     Y=X
 
@@ -953,7 +1007,7 @@ contains
     call getCriticalParam(ic,tci,pci,oi)
     ! Find initlal point
     p = p0
-    dP = (pci-P)/nmax
+    dP = (pci-P)/(nmax-1)
     xmax = log(tci)
     xmin = log(t)
 
@@ -971,14 +1025,11 @@ contains
 
     ! Critical point
     call genericProperty(tci,pci,X,LIQPH,propflag,crit_prop_val)
-    Ta(nmax) = tci
-    Pa(nmax) = pci
+    Ta(nmax:nmax+1) = tci
+    Pa(nmax:nmax+1) = pci
+    propa(nmax:nmax+1) = crit_prop_val
     phasea(nmax) = VAPPH
-    propa(nmax) = crit_prop_val
-    Ta(nmax+1) = tci
-    Pa(nmax+1) = pci
     phasea(nmax+1) = LIQPH
-    propa(nmax+1) = crit_prop_val
 
     ! Solver paramaters
     solver%rel_tol = 1.0e-20
@@ -1020,9 +1071,9 @@ contains
     ! Traverse the saturation line and bracket the property grid values.
     grid_idx = 1
     n_grid_found = 0
-    old_prop_val = propa(1)
     do iter = 2,2*nmax
       curr_prop_val = propa(iter)
+      old_prop_val = propa(iter-1)
       ! Check to see if some of the specifications are bracketed.
       if ( isAnyPropBracketed(curr_prop_val,old_prop_val,n_grid,prop_grid_local,&
            n_grid_not_found,prop_grid_list,n_found)) then
@@ -1032,7 +1083,6 @@ contains
           Ps=Pa(iter)
           call locate_sat_prop_single(propflag,ic,sspec,&
                Ta(iter-1),Pa(iter-1),phasea(iter-1),Ts,Ps,ierr)
-          !print *,iter,ierr,Ts,Ps,phasea(iter-1)
           if (ierr /= 0) then
             if (present(ierr_out)) then
               ierr_out = ierr
@@ -1046,15 +1096,13 @@ contains
               call stoperror("grid error: Bracket solver failed!")
             endif
           endif
-          prop_grid(grid_idx) = sspec ! Reorder array
           call store_point_single(Z,Ts,Ps,phasea(iter),grid_idx,n_grid,&
                T_grid,P_grid,phase_grid,n_grid_found)
-          if ( n_grid_found == n_grid ) then
+          if ( n_grid_found == 2*n_grid ) then
             return
           end if
         enddo
       endif
-      old_prop_val = curr_prop_val
     enddo
   end subroutine sat_points_based_on_prop_single
 
@@ -1088,6 +1136,9 @@ contains
       t = exp(Xvar(nc+1))
       p = exp(Xvar(nc+2))
       iter = sat_newton(Z,K,t,p,beta,sl,ln_spec,ierr)
+      Xvar(1:nc) = log(K)
+      Xvar(nc+1) = log(T)
+      Xvar(nc+2) = log(P)
     else
       ! sspec is bracketed, so solve for exact property value and return
       call bracketSolveForProperty(n=nc+2,Z=Z,beta=beta,propflag=propflag,&
@@ -1096,6 +1147,69 @@ contains
       !dS = dSmin
     endif
   end subroutine locate_sat_prop
+
+  !-----------------------------------------------------------------------------
+  !> Locate property - envelope intersect between point 1 and 2 on the saturation curve.
+  !! The property (propflag) can be obtained from the method property_index_from_string.
+  !! \author MH, 2024-02
+  !-----------------------------------------------------------------------------
+  subroutine locate_saturation_property(propflag,propval,Z,T1,P1,x1,y1,T2,P2,x2,y2,ierr)
+    use thermo_utils, only: isSingleComp
+    implicit none
+    integer, intent(in) :: propflag
+    real, intent(in) :: Z(nc)
+    real, intent(in) :: propval
+    real, intent(in) :: T1,P1,x1(nc),y1(nc)
+    real, intent(inout) :: T2,P2,x2(nc),y2(nc)
+    integer, intent(out) :: ierr
+    ! Locals
+    integer :: s, ic, phase
+    real :: Xvar(nc+2),Xold(nc+2),dXds(nc+2)
+    real :: lnfugL(nc), lnfugG(nc), K(nc), beta, ln_spec
+
+    if (isSingleComp(Z)) then
+      ic = maxloc(z, dim=1)
+      ierr = 0
+      call locate_sat_prop_single(propflag,ic,propval,T1,P1,VAPPH,T2,P2,ierr)
+      if (ierr /= 0) call locate_sat_prop_single(propflag,ic,propval,T1,P1,LIQPH,T2,P2,ierr)
+      x2 = 0
+      y2 = 0
+      x2(ic) = 1
+      y2(ic) = 1
+    else
+      call thermo(t1,p1,y1,VAPPH,lnfugG)
+      call thermo(t1,p1,x1,LIQPH,lnfugL)
+      K = exp(lnfugL-lnfugG)
+      Xold(1:nc) = log(K)
+      Xold(nc+1) = log(T1)
+      Xold(nc+2) = log(P1)
+      s = 1
+      ln_spec = 0.0
+      if (abs(sum(z-x1)) < abs(sum(z-y1))) then
+        beta = 0
+      else
+        beta = 1
+      endif
+      call newton_extrapolate(Z,Xold,dXdS,beta,s,ln_spec)
+      s = maxloc(abs(dXdS), dim=1)
+      dXdS = dXdS / dXdS(s)
+
+      call thermo(t2,p2,y2,VAPPH,lnfugG)
+      call thermo(t2,p2,x2,LIQPH,lnfugL)
+      K = exp(lnfugL-lnfugG)
+      Xvar(1:nc) = log(K)
+      Xvar(nc+1) = log(T2)
+      Xvar(nc+2) = log(P2)
+      call locate_sat_prop(propflag,Z,s,propval,Xvar,Xold,dXds,beta,ierr)
+
+      ! Set solution
+      K = exp(Xvar(1:nc))
+      t2 = exp(Xvar(nc+1))
+      p2 = exp(Xvar(nc+2))
+      X2 = Z/(1-beta+beta*K)
+      Y2 = K*Z/(1-beta+beta*K)
+    endif
+  end subroutine locate_saturation_property
 
   !-----------------------------------------------------------------------------
   !> Locate property - saturation line intersect
@@ -1179,12 +1293,12 @@ contains
     integer, intent(inout) :: grid_idx         !< Current index, increased by one before exit
     integer, intent(in) :: n_grid              !< number of grid points
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
-    real, intent(out) :: wi_grid(nc,n_grid)    !< Incipient phase at boundary
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
+    real, intent(out) :: wi_grid(nc,2*n_grid)    !< Incipient phase at boundary
     integer, intent(out) :: n_grid_found       !< Number of grid points found
-    real, optional, intent(out) :: normal_grid(2,n_grid) !< Normal vector (from tangent) pointing into two-phase region
+    real, optional, intent(out) :: normal_grid(2,2*n_grid) !< Normal vector (from tangent) pointing into two-phase region
     ! Locals:
     real :: K(nc), tangent(2), normal(2), dlnTdX(2), dlnPdX(2), dbeta(2)
     real, dimension(nc+3) :: Xvar3ph !< Variable vector
@@ -1271,9 +1385,9 @@ contains
     integer, intent(inout) :: grid_idx         !< Current index, increased by one before exit
     integer, intent(in) :: n_grid              !< number of grid points
     ! Output:
-    real, intent(out) :: T_grid(n_grid)        !< t at the grid points
-    real, intent(out) :: P_grid(n_grid)        !< p at the grid points
-    integer, intent(out) :: phase_grid(n_grid) !< incumbent phase at grid points
+    real, intent(out) :: T_grid(2*n_grid)        !< t at the grid points
+    real, intent(out) :: P_grid(2*n_grid)        !< p at the grid points
+    integer, intent(out) :: phase_grid(2*n_grid) !< incumbent phase at grid points
     integer, intent(out) :: n_grid_found       !< Number of grid points found
     ! Locals:
 
@@ -1386,7 +1500,7 @@ contains
     real :: wi_grid(nc,n_grid)
     integer :: phase_grid(n_grid), n_grid_found
     real, dimension(nc) :: X_cpy, Y_cpy
-    real :: tMax, tMin, pMax, pMin
+    real :: tMax, tMin, pMax, pMin, t0, p0
     ! How to extrapolate?
     if (str_eq(prop_specID,"T")) then
       extrap = ISO_T ! isothermal
@@ -1400,6 +1514,8 @@ contains
       print *,"Wrong extrapolation variable specified"
       return
     endif
+    p0 = p
+    t0 = t
     X_cpy = X
     Y_cpy = Y
     call extrapolate_to_saturation_line(t,p,X_cpy,Y_cpy,Z,beta,&
@@ -1468,10 +1584,10 @@ contains
       endif
       ! Search for property on envelope
       prop_grid = prop_spec
-      tMax = ts + 5.0
-      tMin = ts - 5.0
-      pMax = ps + 5.0e5
-      pMin = max(ps - 5.0e5, 1.0e5)
+      tMax = max(ts,t0) + 5.0
+      tMin = min(ts,t0) - 5.0
+      pMax = max(ps,p0) + 5.0e5
+      pMin = max(min(ps,p0) - 5.0e5, 1.0e5)
       call sat_points_based_on_prop(Z,T,P,X_cpy,Y_cpy,n_grid,&
            propflag,prop_grid,T_grid,P_grid,phase_grid,&
            wi_grid,n_grid_found,&
@@ -1525,13 +1641,17 @@ contains
     else
       is = solidComp(1)
     endif
+    ! Initialize ierr_out
+    if (present(ierr_out)) then
+      ierr_out = 0
+    endif
     ! Initial state
     t = Ttr
     p = Ptr
     phase = VAPPH
 
     ! Compute property value of initial point on sublimation line
-    call genericProperty(t,p,Z,phase,propflag,old_prop_val)
+    call genericProperty(t,p,Z,phase,propflag,curr_prop_val)
     prop_grid_local = prop_grid
     n_grid_found = 0
     n_grid_not_found = n_grid
@@ -1540,6 +1660,7 @@ contains
     s = 2 ! Specify pressure
     nsol = max(int((Ptr-Pmin)/dPmax)+1,50)
     do i=1,nsol
+      old_prop_val = curr_prop_val
       Xold = (/ log(t), log(p)/)
       pn = Ptr - (Ptr-Pmin)*real(i-1)/real(nsol-1)
       ln_spec = log(pn)
@@ -1710,10 +1831,10 @@ contains
     integer, intent(out) :: n_found
     logical :: isBracketed
     ! Locals:
-    integer :: i,j,k
+    integer :: i!,j,k
     isBracketed = .false.
     n_found = 0
-    do i=1,n_grid_not_found
+    do i=1,n_grid
       ! Check to see if specification is bracketed.
       if ( prop_grid(i) >= curr_prop_val .and. prop_grid(i) <= old_prop_val .OR. &
            prop_grid(i) <= curr_prop_val .and. prop_grid(i) >= old_prop_val) then
@@ -1722,20 +1843,6 @@ contains
         prop_list(n_found) = prop_grid(i)
       endif
     enddo
-    ! Remove bracketed property specifications
-    if (isBracketed) then
-      do i=1,n_found
-        do j=1,n_grid_not_found
-          if (prop_list(i) == prop_grid(j)) then
-            do k=j,n_grid_not_found-1
-              prop_grid(k) = prop_grid(k+1)
-            enddo
-            exit
-          endif
-        enddo
-        n_grid_not_found = n_grid_not_found - 1
-      enddo
-    endif
   end function isAnyPropBracketed
 
   !-----------------------------------------------------------------------------

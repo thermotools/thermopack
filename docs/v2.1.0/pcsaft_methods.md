@@ -12,7 +12,7 @@ The file is created by parsing the docstrings of the methods in the
 pcsaft class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, inherrits from the saft class, and  is the interface to the 
+The `pcsaft` class, found in `addon/pycThermopack/thermopack/pcsaft.py`, inherits from the saft class, and  is the interface to the 
 PC-SAFT Equation of State. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents
@@ -22,10 +22,8 @@ PC-SAFT Equation of State. This class implements utility methods to access mixin
   * [Utility methods](#utility-methods)
     * [association_energy_density](#association_energy_densityself-temp-n_alpha-phinone-phi_tnone-phi_nnone-phi_ttnone-phi_tnnone-phi_nnnone)
     * [get_kij](#get_kijself-c1-c2)
-    * [get_pure_fluid_param](#get_pure_fluid_paramself-c)
     * [lng_ii](#lng_iiself-temp-volume-n-i-lng_tnone-lng_vnone-lng_nnone-lng_ttnone-lng_vvnone-lng_tvnone-lng_tnnone-lng_vnnone-lng_nnnone)
     * [set_kij](#set_kijself-c1-c2-kij)
-    * [set_pure_fluid_param](#set_pure_fluid_paramself-c-m-sigma-eps_div_kb-eps00-beta00)
     * [get_pure_params](#get_pure_paramsself-c)
     * [set_pure_params](#set_pure_paramsself-c-m-sigma-eps_div_kb-eps00-beta00)
 

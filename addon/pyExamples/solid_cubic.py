@@ -10,7 +10,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init cubic object
+# Instantiate and init cubic object
 cb = cubic("CO2,N2", "PR", "HV", "Classic")
 cb.init_solid("CO2")
 cb.set_pmax(5.0e9)
@@ -62,7 +62,7 @@ plt.title("CO2,N2 solid-gas-liquid phase diagram")
 leg = plt.legend(loc="best", numpoints=1, frameon=False)
 
 
-# Instanciate and init cubic object
+# Instantiate and init cubic object
 cb = cubic("CO2", "PR", "HV", "Classic")
 cb.init_solid("CO2")
 cb.set_pmax(5.0e9)

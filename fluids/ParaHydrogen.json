@@ -2,6 +2,8 @@
   "ident": "P-H2",
   "formula": "H2",
   "cas_number": "1333-74-0",
+  "InChI": "1S/H2/h1H",
+  "structure": "H:2",
   "name": "PARA-HYDROGEN",
   "aliases": [
     "ParaHydrogen",
@@ -44,33 +46,35 @@
     "Tmax": 32.5
   },
   "ideal_heat_capacity-1": {
-    "ref": "Default",
-    "bib_reference": "",
-    "correlation": 10,
+    "ref": "MEOS/Default",
+    "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
+    "correlation": 13,
     "cp": [
-      28.671997,
-      13.396156,
-      0.002960131,
-      -3.980744e-06,
-      2.661667e-09,
-      -6.099863e-13,
-      -11.801371,
-      0.0,
-      0.0,
-      0.0
+      2.5,
+      4.30256,
+      499.0,
+      13.0289,
+      826.5,
+      -47.7365,
+      970.8,
+      50.0013,
+      1166.2,
+      -18.6261,
+      1341.4,
+      0.993973,
+      5395.0,
+      0.536078,
+      10185.0
     ],
-    "Tmin": 5.0,
-    "Tmax": 5.0
+    "Tmin": 13.8033,
+    "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 130.680
   },
   "rackett_factor": {
     "bib_reference": "",

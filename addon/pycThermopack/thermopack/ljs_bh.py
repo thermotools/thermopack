@@ -143,10 +143,10 @@ class ljs_bh(saft):
         self.activate()
         use_Lafitte_a3_c = c_int(use_Lafitte_a3)
         enable_chi_correction_c = c_int(enable_chi_correction)
-        enable_hs_c = c_int(enable_hs)
-        enable_a1_c = c_int(enable_a1)
-        enable_a2_c = c_int(enable_a2)
-        enable_a3_c = c_int(enable_a3)
+        enable_hs_c = c_int(self._true_int_value) if enable_hs else c_int(0)
+        enable_a1_c = c_int(self._true_int_value) if enable_a1 else c_int(0)
+        enable_a2_c = c_int(self._true_int_value) if enable_a2 else c_int(0)
+        enable_a3_c = c_int(self._true_int_value) if enable_a3 else c_int(0)
 
         self.s_ljs_bh_model_control.argtypes = [POINTER(c_int),
                                                 POINTER(c_int),

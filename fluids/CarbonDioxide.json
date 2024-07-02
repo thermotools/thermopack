@@ -2,6 +2,8 @@
   "ident": "CO2",
   "formula": "CO2",
   "cas_number": "124-38-9",
+  "InChI": "1S/CO2/c2-1-3",
+  "structure": "C:1;O:2",
   "name": "CARBON DIOXIDE",
   "aliases": [
     "CarbonDioxide",
@@ -81,14 +83,11 @@
     "Tmax": 5000.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "enthalpy": -393.51e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 213.785
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -196,7 +195,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     },
     "CPA-2": {
       "ref": "SINTEF",
@@ -207,7 +207,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.05,
-      "assoc_scheme": "1EA"
+      "assoc_scheme": "1EA",
+      "simplified_rdf": "True"
     },
     "CPA-3": {
       "ref": "SINTEF2",
@@ -218,7 +219,8 @@
       "alphaCorr": "Classic",
       "eps": 1.28604049e+04,
       "beta": 9.08545617e-03,
-      "assoc_scheme": "1"
+      "assoc_scheme": "1",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

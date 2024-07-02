@@ -2,6 +2,8 @@
   "ident": "NC8",
   "formula": "C8H18",
   "cas_number": "111-65-9",
+  "InChI": "1S/C8H18/c1-3-5-7-8-6-4-2/h3-8H2,1-2H3",
+  "structure": "C:8;H:18",
   "name": "N-OCTANE",
   "aliases": [
     "n-Octane",
@@ -62,14 +64,11 @@
     "Tmax": 700.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Good, 1972",
+    "enthalpy": -208.7e3,
+    "entropy_bib_reference": "https://webbook.nist.gov : Scott D.W., 1974",
+    "entropy_ref_state": "1ATM",
+    "entropy": 467.06
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -128,7 +127,8 @@
       "alphaCorr": "Classic",
       "eps": 0.0,
       "beta": 0.0,
-      "assoc_scheme": "NONE"
+      "assoc_scheme": "NONE",
+      "simplified_rdf": "True"
     }
   },
   "PR": {

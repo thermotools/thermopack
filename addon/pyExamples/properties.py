@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init SRK object.
+# Instantiate and init SRK object.
 srk = cubic("C1,C2,C3", "SRK")
 srk.set_tmin(50.0)
 

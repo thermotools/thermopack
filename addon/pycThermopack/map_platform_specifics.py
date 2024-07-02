@@ -24,7 +24,7 @@ def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
 
     # Setting GNU FORTRAN as default
-    platform_specifics = {}
+    platform_specifics = dict()
     platform_specifics["os_id"] = ""
     platform_specifics["prefix"] = G_PREFIX
     platform_specifics["module"] = G_MODULE
@@ -39,7 +39,7 @@ def get_platform_specifics_from_platform():
         # Darwin means Mac OS X
         # Assuming GNU FORTRAN
         platform_specifics["os_id"] = "darwin"
-        platform_specifics["dyn_lib"] = "libthermopack.dynlib"
+        platform_specifics["dyn_lib"] = "libthermopack.dylib"
     elif sys.platform == "win32":
         if sysconfig.get_platform() != "mingw":
             # Assuming INTEL FORTRAN
@@ -65,7 +65,7 @@ def get_platform_specifics_by_trial_and_error():
     """Get platform specific stuff."""
 
     # Empty as default
-    platform_specifics = {}
+    platform_specifics = dict()
     platform_specifics["os_id"] = ""
     platform_specifics["prefix"] = ""
     platform_specifics["module"] = ""
@@ -73,7 +73,7 @@ def get_platform_specifics_by_trial_and_error():
     platform_specifics["postfix_no_module"] = ""
     platform_specifics["dyn_lib"] = ""
 
-    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dynlib"]
+    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dylib"]
     for lib in dynlibs:
         dyn_lib_path = path.join(path.dirname(__file__), "thermopack", lib)
         try:
@@ -84,7 +84,9 @@ def get_platform_specifics_by_trial_and_error():
         if tp is not None:
             platform_specifics["dyn_lib"] = lib
             break
-
+    else:
+        raise FileNotFoundError(f'Could not locate ThermoPack binary! Tried '
+                                f'{[path.join(path.dirname(__file__), "thermopack", lib) for lib in dynlibs]}')
     prefixes = ["__", ""]
     moduletxt = ["_", "_MOD_", "_mp_"]
     postfixes = ["", "_"]
@@ -129,11 +131,11 @@ def get_platform_specifics_by_trial_and_error():
 
 def write_platform_specifics_file(pf_specifics, filename):
     """Write file for platform specifics"""
-    lines = []
+    lines = list()
     lines.append(
         "# Module for platform specific stuff. Automatically generated.")
-    lines.append("# Timestamp : " +
-                 str(datetime.today().isoformat()) + "\n\n")
+    lines.append("# Timestamp : " + str(datetime.today().isoformat()) + "\n\n")
+    lines.append('import os')
     lines.append(f"DIFFERENTIAL_RETURN_MODE = '{pf_specifics['diff_return_mode']}'\n\n")
     tab = " "*4
     lines.append("def get_platform_specifics():")
@@ -142,6 +144,14 @@ def write_platform_specifics_file(pf_specifics, filename):
     for k, v in pf_specifics.items():
         lines.append(tab + 'pf_specifics["'+k+'"] = "'+v+'"')
 
+    lines.append('''
+    files = os.listdir(os.path.dirname(__file__))
+    if not (pf_specifics['dyn_lib'] in files):
+        if f'{pf_specifics["dyn_lib"]}.icloud' in files:
+            pf_specifics['dyn_lib'] = f'{pf_specifics["dyn_lib"]}.icloud'
+        else:
+            raise FileNotFoundError(f'ThermoPack binary {pf_specifics["dyn_lib"]} not found in directory {os.path.dirname(__file__)}')
+''')
     lines.append(tab + "return pf_specifics")
 
     with open(filename, "w") as f:
@@ -159,7 +169,8 @@ def write_setup_file(version):
                       'author_email': "'morten.hammer@sintef.no'",
                       'url': "'https://github.com/thermotools/thermopack'",
                       'packages': "['thermopack']",
-                      'package_data': "{'thermopack':['*thermopack.*']}"}
+                      'package_data': "{'thermopack':['*thermopack.*']}",
+                      'install_requires' : "['numpy~=1.0']"}
 
     with open(os.path.dirname(__file__) + '/setup.py', 'w') as file:
         file.write(f"# This file was automatically generated using the function 'write_setup_file' in \n"
@@ -213,14 +224,23 @@ keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria
 
 [dependencies]
 numpy = "^1.1"
-matplotlib = "^2.0"
 """
     with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
         file.write(contents)
 
-
+def get_platform_specifics_windows_ifort_whl():
+    pf_specifics = dict()
+    pf_specifics["os_id"] = "win"
+    pf_specifics["prefix"] = ""
+    pf_specifics["module"] = "_mp_"
+    pf_specifics["postfix"] = "_"
+    pf_specifics["postfix_no_module"] = "_"
+    pf_specifics["dyn_lib"] = "thermopack.dll"
+    pf_specifics["diff_return_mode"] = "v2"
+    return pf_specifics
+	
 if __name__ == "__main__":
     pf_specifics_path = os.path.join(os.path.dirname(
         __file__), "thermopack", "platform_specifics.py")
-    pf_specifics = get_platform_specifics_by_trial_and_error()
-    write_platform_specifics_file(pf_specifics, pf_specifics_path)
+    pf_specifics_ = get_platform_specifics_by_trial_and_error()
+    write_platform_specifics_file(pf_specifics_, pf_specifics_path)

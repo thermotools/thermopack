@@ -1,7 +1,6 @@
 module test_trend
   use eoslibinit, only: init_thermo
-  use eos, only: residualGibbs, enthalpy, entropy
-  use ideal, only: idealGibbsSingle
+  use eos, only: residualGibbs, enthalpy, entropy, ideal_gibbs_single
   use thermopack_var, only: Rgas
   use funit
   implicit none
@@ -28,7 +27,7 @@ contains
     call entropy(t,p,x,2,s)
     g = h - t*s
     do i=1,ncomp
-      call idealGibbsSingle(t,p,i,gid(i))
+      call ideal_gibbs_single(t,p,i,gid(i))
     enddo
     gidmix = Rgas*T*sum(x*log(x))
     gmix = gr + sum(x*gid) + gidmix

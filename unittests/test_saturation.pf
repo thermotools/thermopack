@@ -70,15 +70,15 @@ contains
       pL2VE(i) = res(9,i)
     enddo
 
-    @assertEqual(xLLE(1), 8.3983073148142483E-003, 1e-8)
-    @assertEqual(xLLE(nLLE), 9.3659759851368284E-003, 1e-8)
-    @assertEqual(wLLE(nLLE), 0.99984018618472281, 1e-8)
-    @assertEqual(xL1VE(1), 8.3983073148142483E-003, 1e-8)
-    @assertEqual(yL1VE(1), 0.99969765693143653, 1e-8)
-    @assertEqual(xL2VE(1), 0.99981195241106813, 1e-8)
-    @assertEqual(yL2VE(1), 0.99969765693143653, 1e-8)
-    @assertEqual(pLLE(1), 5103721.7270745458, 1e-8)
-    @assertEqual(pL1VE(nL1VE), 1455.3507414351843, 1e-8)
+    @assertEqual(xLLE(1), 0.85927669469936900E-2, 1e-8)
+    @assertEqual(xLLE(nLLE), 0.95731596591972640E-2, 1e-8)
+    @assertEqual(wLLE(nLLE), 0.99981148414211307, 1e-8)
+    @assertEqual(xL1VE(1), 0.85927669469936900E-2, 1e-8)
+    @assertEqual(yL1VE(1), 0.99964423712955086, 1e-8)
+    @assertEqual(xL2VE(1), 0.99977826834820938, 1e-8)
+    @assertEqual(yL2VE(1), 0.99964423712955086, 1e-8)
+    @assertEqual(pLLE(1), 5103946.1632282631, 1e-8)
+    @assertEqual(pL1VE(nL1VE), 1710.852372172958, 1e-8)
     @assertEqual(pL2VE(nL2VE), 5102431.3866153369, 1e-7)
 
   end subroutine test_vlle_binary

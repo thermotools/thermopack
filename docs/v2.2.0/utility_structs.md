@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Utility structs
 permalink: /v2.2.0/utility_structs.html
 ---

@@ -21,7 +21,7 @@ def phase_name(th, ph):
         phase = "Vapor-Liquid"
     return phase
 
-# Instanciate and init tcPR object.
+# Instantiate and init tcPR object.
 
 tc_pr = tcPR("NH3,N2,H2")
 

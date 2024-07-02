@@ -2,6 +2,8 @@
   "ident": "R125",
   "formula": "C2HF5",
   "cas_number": "354-33-6",
+  "InChI": "1S/C2HF5/c3-1(4)2(5,6)7/h1H",
+  "structure": "C:2;H:1;F:5",
   "name": "PENTAFLUOROETHANE",
   "aliases": [
     "R125",
@@ -62,14 +64,11 @@
     "Tmax": 0.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
+    "entropy_bib_reference": "",
+    "entropy_ref_state": "1BAR",
     "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
   },
   "rackett_factor": {
     "bib_reference": "10.1016/j.fluid.2016.09.003",
