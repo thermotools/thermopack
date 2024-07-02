@@ -23,9 +23,11 @@ z = np.zeros((3))
 for i in range(len(Z_H2O)):
     z[0:2] = (1-Z_H2O[i])*Z_CO2
     z[2] = Z_H2O[i]
-    t_vals, p_vals, tw_vals, pw_vals = cb.get_multi_phase_envelope_tv(initial_pressure, z,
-                                                                      minimum_temperature,
-                                                                      maximum_pressure)
+    fluid, water = cb.get_multi_phase_envelope_tv(initial_pressure, z,
+                                                  minimum_temperature,
+                                                  maximum_pressure)
+    t_vals, p_vals = (fluid.t, fluid.p)
+    tw_vals, pw_vals = (water.t, water.p)
     plt.plot(t_vals, p_vals*p_scaling, linestyle="-", color=colors[i])
     plt.plot(tw_vals, pw_vals*p_scaling, linestyle="--", color=colors[i],
              label="H2O: {} ppm".format(round(z[-1]*1e6)))
@@ -57,9 +59,11 @@ z = np.zeros((2))
 for i in range(len(Z_H2O)):
     z[0] = (1-Z_H2O[i])
     z[1] = Z_H2O[i]
-    t_vals, p_vals, tw_vals, pw_vals = cb.get_multi_phase_envelope_tv(initial_pressure, z,
-                                                                      minimum_temperature,
-                                                                      maximum_pressure)
+    fluid, water = cb.get_multi_phase_envelope_tv(initial_pressure, z,
+                                                  minimum_temperature,
+                                                  maximum_pressure)
+    t_vals, p_vals = (fluid.t, fluid.p)
+    tw_vals, pw_vals = (water.t, water.p)
     arrays += [t_vals, p_vals, tw_vals, pw_vals]
     plt.plot(t_vals, p_vals*p_scaling, linestyle="-", color=colors[i])
     plt.plot(tw_vals, pw_vals*p_scaling, linestyle="--", color=colors[i],

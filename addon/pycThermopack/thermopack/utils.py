@@ -498,3 +498,50 @@ class XYDiagram:
 
     def __str__(self):
         return self.__repr__()
+
+class SaturationCurve:
+
+    def __init__(self, t, p, vy, y, z, vx, x, vw=None, w=None):
+        if vw is None and w is None:
+            self.phases = 3
+        else:
+            self.phases = 2
+        self.t = t
+        self.p = p
+        self.vx = vx
+        self.x = x
+        self.vy = vy
+        self.y = y
+        self.vw = vw
+        self.w = w
+        # Overall composition
+        self.z = z
+
+    def __iter__(self):
+        return (_ for _ in (self.T, self.P, self.vx, self.x, self.vy, self.y, self.vw, self.w ) if _ is not None)
+
+    def __getitem__(self, item):
+        return [*self][item]
+
+    def __repr__(self):
+        ostr = 'SaturationCurve object with attributes (name : description)\n'
+        # Overall composition
+        ostr += f'\t{"z" : <37} t    : '
+        temp = (f', {self.z[i]:.3e}' for i in range(1,len(self.z)))
+        ostr += f'[{self.z[0]:.3e}' + ''.join(temp)  + ']'
+        # Temperature
+        ostr += f'\t{"Temperature" : <37} t    : '
+        if len(self.t) == 0:
+            ostr += f'[], len(t) = 0'
+        else:
+            ostr += f'[{self.t[0]:.3e} ... {self.t[-1]:.3e}], len(t) = {len(self.t)}'
+        # Pressure
+        ostr += f'\t{"Pressure" : <37} p    : '
+        if len(self.p) == 0:
+            ostr += f'[], len(p) = 0'
+        else:
+            ostr += f'[{self.p[0]:.3e} ... {self.p[-1]:.3e}], len(p) = {len(self.p)}'
+        return ostr
+
+    def __str__(self):
+        return self.__repr__()

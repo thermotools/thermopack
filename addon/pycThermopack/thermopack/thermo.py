@@ -3824,10 +3824,8 @@ class thermo(object):
             maximum_pressure (float): Exit on maximum pressure (Pa).
             print_to_file (boolean, optional): Save results to file multi.dat ?.
         Returns:
-            ndarray: Temperature values (K)
-            ndarray: Pressure values (Pa)
-            ndarray: Temperature values with water incipient phase (K)
-            ndarray: Pressure values with water incipient phase (Pa)
+            SaturationCurve: Fluid curve
+            SaturationCurve: Water curve
         """
         self.activate()
         nmax = 50000
@@ -3884,21 +3882,28 @@ class thermo(object):
         n = n_c.value
         nw = nw_c.value
 
+        X = np.array(Y_c).reshape(((self.nc,nmax)), order='F')
+        Y = np.array(Y_c).reshape(((self.nc,nmax)), order='F')
+        W = np.array(Y_c).reshape(((self.nc,nmax)), order='F')
+
+        v_YXW = np.array(v_YXW_c).reshape(((3,nmax)), order='F')
+
+        water = None
+        fluid = None
         if nw > 0:
-            tw_vals = np.array(Ta_c[0:nw])
-            pw_vals = np.array(Pa_c[0:nw])
-        else:
-            tw_vals = None
-            pw_vals = None
+            water = utils.SaturationCurve(np.array(Ta_c[:nw]), np.array(Pa_c[:nw]), z,
+                                          v_YXW[0,:nw], np.array(Y[:,:nw]),
+                                          v_YXW[1,:nw], np.array(X[:,:nw]),
+                                          v_YXW[2,:nw], np.array(W[:,:nw]) )
 
         if n-nw > 0:
-            t_vals = np.array(Ta_c[nw:n])
-            p_vals = np.array(Pa_c[nw:n])
-        else:
-            t_vals = None
-            p_vals = None
+            fluid = utils.SaturationCurve(np.array(Ta_c[nw:n]), np.array(Pa_c[nw:n]), z,
+                                          v_YXW[0,nw:n], np.array(Y[:,nw:n]),
+                                          v_YXW[1,nw:n], np.array(X[:,nw:n]),
+                                          v_YXW[2,nw:n], np.array(W[:,nw:n]) )
 
-        return t_vals, p_vals, tw_vals, pw_vals
+
+        return fluid, water
 
     def envelope_isentrope_cross(self, entropy, initial_pressure, z, maximum_pressure=1.5e7,
                               minimum_temperature=None, step_size=None, initial_temperature=None):
