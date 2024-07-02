@@ -46,7 +46,11 @@ zFac = srk.zfac(T, P, z, srk.LIQPH)
 print("Compressibility factor: {}".format(zFac))
 
 sos = srk.speed_of_sound(T, P, x=z, y=z, z=z, betaV=0.0, betaL=1.0, phase=srk.LIQPH)
+sos_z = srk.speed_of_sound_tv(T, v, n=z)
+sos_n = srk.speed_of_sound_tv(T, v*2, n=z*2)
 print("Saturated liquid speed of sound: {} (m/s)".format(sos))
+print("Saturated liquid speed of sound: {} (m/s)".format(sos_z))
+print("Saturated liquid speed of sound: {} (m/s)".format(sos_n))
 
 # Properties evaluated in temperature volume and mol numbers
 p, dp  = srk.pressure_tv(T, v, z, dpdv=True)
