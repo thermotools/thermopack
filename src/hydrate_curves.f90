@@ -14,7 +14,7 @@ module hydrate_curves
 
   type :: multi_phase_point
     real, allocatable :: X1(:), X2(:), X3(:), K1(:), K2(:)
-    real :: beta1, beta3
+    real :: beta1, beta2, beta3
     real :: v1, v2, v3
     real :: T, P
     real :: nph
@@ -1574,10 +1574,11 @@ contains
     ! Internal
     integer :: s,ierr,iter
     real :: T,P,Pold
-    real :: X(2*nc+6), Xold(2*nc+6), dXds(2*nc+6), dXdsOld(2*nc+6)
-    real :: Z(nc), param(nc+2), sgn, Told, beta_lin, dbeta, dX(2*nc+6)
+    real :: X(2*nc+7), Xold(2*nc+7), dXds(2*nc+7), dXdsOld(2*nc+7)
+    real :: Z(nc), param(nc+2), sgn, Told, beta_lin, dbeta, dX(2*nc+7)
     real :: dS, tuning, dP, dPds, dS_max, dS_min, ln_spec, dT, scaling
-    integer :: smax
+    real :: beta_lin_vec(3)
+    integer :: smax, beta_lin_idx
     logical :: recalculate
     logical :: exit_after_saving
     logical :: set_beta_lin
@@ -1594,12 +1595,13 @@ contains
     param(nc+1) = real(s)
     !
     X(1:2*nc+5) = Xsol_tv_sat
-    X(2*nc+6) = 0.0
+    X(2*nc+6) = 0.0 ! betaW
+    X(2*nc+7) = 1.0 - X(2*nc+2) ! betaL
 
     param(nc+2) = X(s)
     iter = newton_three_phase_fluid_hydrate_curve(X,param,T,P,ierr)
     Xold = X
-    sgn = 1 ! Start by increaseing beta
+    sgn = 1 ! Start by increaseing betaW
     !
     !call print_X_state_threeph(X,Z)
     !call test_hyd_threeph_diff_newton_tv(X,param)
@@ -1641,37 +1643,50 @@ contains
       if (abs(dXdS(2*nc+6)*dS) > maxdbeta) then
         dS = max(min(maxdbeta/abs(dXdS(2*nc+6)),dS_max),dS_min)
       endif
-      beta_lin = X(2*nc+6) + dXdS(2*nc+6)*dS*sgn
-      if (dXdS(2*nc+6)*sgn < 0.0 .and. beta_lin < beta_limit) then
+      ! Beta limit
+      beta_lin_vec(1) = X(2*nc+2) + dXdS(2*nc+2)*dS*sgn
+      beta_lin_vec(2) = X(2*nc+6) + dXdS(2*nc+6)*dS*sgn
+      beta_lin_vec(3) = X(2*nc+7) + dXdS(2*nc+7)*dS*sgn
+      beta_lin_idx = minloc(min(beta_lin_vec,1-beta_lin_vec), dim=1)
+      beta_lin = beta_lin_vec(beta_lin_idx)
+      if (beta_lin_idx == 1) then
+        beta_lin_idx = 2*nc+2
+      else if (beta_lin_idx == 2) then
+        beta_lin_idx = 2*nc+6
+      else
+        beta_lin_idx = 2*nc+7
+      endif
+      if (dXdS(beta_lin_idx)*sgn < 0.0 .and. beta_lin < beta_limit) then
         if (beta_lin <= 0.0) then
           set_beta_lin = .true.
           beta_lin =  0
-          dS = X(2*nc+6)/abs(dXdS(2*nc+6))
+          dS = X(beta_lin_idx)/abs(dXdS(beta_lin_idx))
         endif
-        s = 2*nc+6
+        s = beta_lin_idx
         param(nc+1) = real(s)
-      else if (dXdS(2*nc+6)*sgn > 0.0 .and. beta_lin > 1-beta_limit) then
+      else if (dXdS(beta_lin_idx)*sgn > 0.0 .and. beta_lin > 1-beta_limit) then
         if (beta_lin >= 1.0) then
           set_beta_lin = .true.
           beta_lin = 1
-          dbeta = abs(1 - X(2*nc+6))
-          dS = dbeta/abs(dXdS(2*nc+6))
+          dbeta = abs(1 - X(beta_lin_idx))
+          dS = dbeta/abs(dXdS(beta_lin_idx))
         endif
-        s = 2*nc+6
+        s = beta_lin_idx
         param(nc+1) = real(s)
       endif
 
       Pold = P
       Xold = X
       Told = T
-      dX = dXdS*dS*sgn
+      !dX = dXdS*dS*sgn
       ! Make sure beta is between zero and one
-      call limit_threeph_dx(Xold,dX,Z,scaling)
-      X = Xold + scaling*dX
+      !call limit_threeph_dx(Xold,dX,Z,scaling)
+      X = Xold + dXdS*dS*sgn
       ! Make sure beta is between zero and one
       X(2*nc+2) = min(max(X(2*nc+2),real(0)),real(1))
       X(2*nc+6) = min(max(X(2*nc+6),real(0)),real(1))
-      if (s == 2*nc+7) then
+      X(2*nc+7) = min(max(X(2*nc+7),real(0)),real(1))
+      if (s == 2*nc+8) then
         param(nc+2) = log(p) + dS*sgn
       else if (s == 2*nc+6 .and. set_beta_lin) then
         param(nc+2) = beta_lin
@@ -1684,11 +1699,11 @@ contains
 
       !Exit at thermo limit or defined pressure
       if (p < p_min) then
-        s = 2*nc+7
+        s = 2*nc+8
         recalculate = .true.
         ln_spec = log(p_min)
       else if (p >= p_max) then
-        s = 2*nc+7
+        s = 2*nc+8
         recalculate = .true.
         ln_spec = log(p_max)
       endif
@@ -1702,7 +1717,7 @@ contains
       endif
 
       ! Is beta, betaL or betaW zero
-      if (X(2*nc+2) <= 0.0 .or. 1-X(2*nc+2)-X(2*nc+6) <= 0.0 .or. X(2*nc+6) < 0.0) then
+      if (X(2*nc+2) <= 0.0 .or. X(2*nc+7) <= 0.0 .or. X(2*nc+6) < 0.0) then
         ! Exit
         exit_after_saving = .true.
       endif
@@ -1711,9 +1726,9 @@ contains
         ! Extrapolate from previous point
         param(nc+1) = real(s)
         param(nc+2) = ln_spec
-        if (s <= 2*nc+6) then
+        if (s <= 2*nc+7) then
           dS = ln_spec - Xold(s) ! Sign included
-        else if (s == 2*nc+7) then
+        else if (s == 2*nc+8) then
           if (abs(dpds) > 10.0) ds = (exp(ln_spec) - Pold)/dpds
         endif
         X = Xold + dXdS*dS
@@ -1749,10 +1764,10 @@ contains
     use nonlinear_solvers, only: limit_dx
     implicit none
     real, intent(in) :: Z(nc)
-    real, intent(in) :: X(2*nc+6), dX(2*nc+6)
+    real, intent(in) :: X(2*nc+7), dX(2*nc+7)
     real, intent(out) :: scaling
     ! Locals
-    real :: xxmin(2*nc+6),xxmax(2*nc+6),dxx(2*nc+6),param(2*nc+2)
+    real :: xxmin(2*nc+7),xxmax(2*nc+7),dxx(2*nc+7),param(2*nc+2)
     real :: b(nc)
     integer :: n, np, i
     !
@@ -1760,7 +1775,7 @@ contains
     param(nc+3:2*nc+2) = b
     param(1:nc) = Z
     dxx = dX
-    n = 2*nc + 6
+    n = 2*nc + 7
     np = 2*nc + 2
     call limit_threeph_dx_line(n,X,xxmin,xxmax,dxx,np,param)
     i = maxloc(abs(dX), dim=1)
@@ -1781,8 +1796,8 @@ contains
     use nonlinear_solvers, only: test_differentials
     implicit none
     real, intent(in) :: Pold, dpds
-    real, dimension(2*nc+6), intent(in) :: XXold, dXds
-    real, dimension(2*nc+6), intent(inout) :: XX
+    real, dimension(2*nc+7), intent(in) :: XXold, dXds
+    real, dimension(2*nc+7), intent(inout) :: XX
     real, dimension(nc+2), intent(inout) :: param
     real, intent(in)     :: sgn
     integer, intent(in)  :: s
@@ -1841,7 +1856,7 @@ contains
     subroutine update_step(fac)
       real, intent(in) :: fac
       XX = XXold + dXds*sgn*ds*fac
-      if (s == 2*nc+7) then
+      if (s == 2*nc+8) then
         P = Pold + dpds*sgn*ds*fac
         param(nc+2) = log(P)
       else
@@ -1861,7 +1876,7 @@ contains
     use eosdata, only: eosCPA
     use cubic_eos, only: get_b_linear_mix
     implicit none
-    real, dimension(2*nc+6), intent(out) :: Xmin, Xmax !< Variable vector
+    real, dimension(2*nc+7), intent(out) :: Xmin, Xmax !< Variable vector
     real, dimension(nc), intent(out) :: b
     ! Locals
     real :: Z(nc)
@@ -1889,26 +1904,47 @@ contains
     Xmax(2*nc+3:2*nc+5) = log(100.0) !v max
     Xmin(2*nc+2) = 0 ! beta
     Xmax(2*nc+2) = 1 ! beta
-    Xmin(2*nc+6) = 0 ! betaW
-    Xmax(2*nc+6) = 1 ! betaW
+    Xmin(2*nc+6:2*nc+7) = 0 ! betaW
+    Xmax(2*nc+6:2*nc+7) = 1 ! betaL
   end subroutine hydrate_var_threeph_tv_limits
 
-  subroutine get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,no_press_calc)
-    use multi_phase_envelope_tv, only: read_Xvar_and_param_tv
+  subroutine get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW,no_press_calc)
     ! Input
-    real, intent(in) :: Xvar(2*nc+6)
+    real, intent(in) :: Xvar(2*nc+7)
     real, intent(in) :: Z(nc)
     logical, optional, intent(in) :: no_press_calc
     ! Output
     real, dimension(nc), intent(out) :: Ky, Kx, Y, X, W
-    real, intent(out) :: vY, vX, vW, t, p, beta, betaW
+    real, intent(out) :: vY, vX, vW, t, p, beta, betaL, betaW
     ! Locals
-    real :: param(nc+4)
+    integer :: i
+    logical :: no_press_calc_local
     betaW = Xvar(2*nc+6)
-    param(1:nc) = Z
-    param(nc+1:nc+3) = 0.0
-    param(nc+4) = betaW
-    call read_Xvar_and_param_tv(Xvar,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky,no_press_calc)
+    betaL = Xvar(2*nc+7)
+    t = exp(Xvar(2*nc+1))
+    beta = Xvar(2*nc+2)
+    vY = exp(Xvar(2*nc+3))
+    vX = exp(Xvar(2*nc+4))
+    vW = exp(Xvar(2*nc+5))
+    Kx = exp(Xvar(1:nc))
+    Ky = exp(Xvar(1+nc:2*nc))
+    W = 0.0
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        W(i) = Z(i)/(betaW + beta*Ky(i) + betaL*Kx(i))
+      endif
+    enddo
+    Y = Ky*w
+    X = Kx*w
+    no_press_calc_local = .false.
+    if (present(no_press_calc)) then
+      no_press_calc_local = no_press_calc
+    endif
+    if (no_press_calc_local) then
+      p = 0
+    else
+      p = pressure(t,vY,Y)
+    endif
   end subroutine get_three_phase_variables_tv
 
   !-----------------------------------------------------------------------------
@@ -1918,13 +1954,13 @@ contains
   !-----------------------------------------------------------------------------
   subroutine print_X_state_threeph(Xvar,Z)
     implicit none
-    real, dimension(2*nc+6), intent(in) :: Xvar
+    real, dimension(2*nc+7), intent(in) :: Xvar
     real, dimension(nc), intent(in) :: Z
     ! Locals
     real, dimension(nc) :: Ky, Kx, Y, X, W
-    real :: vY, vX, vW, t, p, beta, betaW
+    real :: vY, vX, vW, t, p, beta, betaL, betaW
     !
-    call get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    call get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW)
     print *,"Ky: ",Ky
     print *,"Kx: ",Kx
     print *,"Temperature: ",T
@@ -1933,6 +1969,7 @@ contains
     print *,"vX: ",vX
     print *,"vW: ",vW
     print *,"betaW: ",betaW
+    print *,"betaL: ",betaL
     print *,"Y: ",Y
     print *,"X: ",X
     print *,"W: ",W
@@ -1947,42 +1984,60 @@ contains
   subroutine hyd_threeph_fun_newton_tv(G,Xvar,param)
     use multi_phase_envelope_tv, only: three_ph_line_fun_newton
     implicit none
-    real, dimension(2*nc+6), intent(out) :: G !< Function values
-    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
+    real, dimension(2*nc+7), intent(out) :: G !< Function values
+    real, dimension(2*nc+7), intent(in) :: Xvar !< Variable vector
     real, dimension(nc+3), intent(inout) :: param !< Parameter vector
     ! Locals
     real, dimension(nc) :: Z
     real, dimension(nc) :: lnfug
-    integer :: s
+    integer :: s, i
     real :: param_sat_tv(nc+4)
-    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
-    real :: ln_s, ps, fug_wh, vS, pW
+    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW,betaL
+    real :: ln_s, ps, fug_wh, vS, pY, pX, pW
+    real, dimension(nc) :: lnFugY, lnFugX, lnFugW
 
     Z = param(1:nc)
     s = nint(param(nc+1))
     ln_s = param(nc+2)
 
-    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
-    param_sat_tv(1:nc) = Z
-    param_sat_tv(nc+1) = ln_s
-    param_sat_tv(nc+2) = 1 ! Set dummy value and handle specification here
-    param_sat_tv(nc+3) = 0.0 ! Partial?
-    param_sat_tv(nc+4) = betaW
-    call three_ph_line_fun_newton(G(1:2*nc+5),Xvar(1:2*nc+5),param_sat_tv)
-    !
-    call thermo_tv(t,vW,W,lnfug)
-    call fugacity_water_in_hydrate_TVn(T,vW,W,fug_wh)
+    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW)
+    ! Volume average for pressure error scaling
+    vS = 3/(1/vW + 1/vX + 1/vY)
+
+    call thermo_tv(t,vY,Y,lnFugY)
+    call thermo_tv(t,vW,W,lnFugW)
+    call thermo_tv(t,vX,X,lnFugX)
+    pY = pressure(t,vY,Y)
+    pW = pressure(t,vW,W)
+    pX = pressure(t,vX,X)
+
     ! Function value
-    G(2*nc+6) = lnfug(water_idx) - log(fug_wh)
-    ! Sepcification
-    if (s <= 2*nc+6) then
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        G(nc+i) = lnFugY(i) - lnFugW(i)
+        G(i) = lnFugX(i) - lnFugW(i)
+      else
+        G(i) = 0.0
+        G(nc+i) = 0.0
+      endif
+    enddo
+    G(2*nc+1) = sum(W) - 1.0
+    G(2*nc+2) = sum(Y-X)
+    !
+    G(2*nc+4) = vS*(Px-Pw)/(Rgas*T)
+    G(2*nc+5) = vS*(Py-Pw)/(Rgas*T)
+
+    call fugacity_water_in_hydrate_TVn(T,vW,W,fug_wh)
+    ! Hydrate function value
+    G(2*nc+6) = lnfugW(water_idx) - log(fug_wh)
+    ! Phase fraction values
+    G(2*nc+7) = beta + betaL + betaW - 1
+    ! Specification
+    if (s <= 2*nc+7) then
       G(2*nc+3) = Xvar(s) - ln_s
-    else if (s == 2*nc+7) then
+    else if (s == 2*nc+8) then
       ! Pressure
       ps = exp(ln_s)
-      ! Volume average for pressure error scaling
-      vS = 3/(1/vY+1/vX+1/vW)
-      pW = pressure(t,vW,W)
       G(2*nc+3) = (pW-ps)*vS/(Rgas*T)
     endif
 
@@ -1999,8 +2054,8 @@ contains
     use thermo_utils, only: isSingleComp
     use multi_phase_envelope_tv, only: three_ph_line_diff_newton
     implicit none
-    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
-    real, dimension(2*nc+6,2*nc+6), intent(out) :: J !< Function differentials
+    real, dimension(2*nc+7), intent(in) :: Xvar !< Variable vector
+    real, dimension(2*nc+7,2*nc+7), intent(out) :: J !< Function differentials
     real, dimension(nc+3) :: param !< Parameter vector
     ! Locals
     real :: Z(nc)
@@ -2014,34 +2069,47 @@ contains
     real :: lnfug_wh_T, lnfug_wh_v, lnfug_wh_n(nc)
     integer :: s, i
     real :: param_sat_tv(nc+4)
-    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaL,betaW
     real :: ln_s, ps, vS, dvSdvY_div_vS, dvSdvX_div_vS, dvSdvW_div_vS
     real :: dYdbetaW(nc), dXdbetaW(nc), dWdbetaW(nc), dWdbeta(nc)
+    real :: dWdbetaL(nc), dYdbetaL(nc), dXdbetaL(nc)
+    real :: dWdlnKX(nc), dWdlnKY(nc), dXdlnKX(nc), dXdlnKY(nc)
+    real :: dYdlnKX(nc), dYdlnKY(nc), dXdbeta(nc), dYdbeta(nc)
     real :: fac, fac_vec(nc)
+    logical, parameter :: partial = .false.
     !
     Z = param(1:nc)
     s = nint(param(nc+1))
     ln_s = param(nc+2)
 
-    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
-    param_sat_tv(1:nc) = Z
-    param_sat_tv(nc+1) = ln_s
-    param_sat_tv(nc+2) = 1 ! Set dummy value and handle specification here
-    param_sat_tv(nc+3) = 0.0 ! Partial?
-    param_sat_tv(nc+4) = betaW
+    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW)
+
     J = 0
-    call three_ph_line_diff_newton(J(1:2*nc+5,1:2*nc+5),Xvar(1:2*nc+5),param_sat_tv)
-    ! Need differentials wrpt. betaW
+    ! Differentials of W
     do i=1,nc
       if (Z(i) > 0.0) then
-        fac_vec(i) = -W(i)/(betaW + beta*Ky(i) + (1.0-beta-betaW)*Kx(i))
-        dWdbetaW(i) = (1 - Kx(i))*fac_vec(i)
-        dWdbeta(i) = (Ky(i)-Kx(i))*fac_vec(i)
+        fac_vec(i) = -W(i)/(betaW + beta*Ky(i) + betaL*Kx(i))
+        dWdbetaW(i) = fac_vec(i)
+        dWdbeta(i) = Ky(i)*fac_vec(i)
+        dWdbetaL(i) = Kx(i)*fac_vec(i)
+        dWdlnKX(i) = Kx(i)*betaL*fac_vec(i)
+        dWdlnKY(i) = Ky(i)*beta*fac_vec(i)
       else
         dWdbetaW(i) = 0
         dWdbeta(i) = 0
+        dWdbetaL(i) = 0
+        dWdlnKX(i) = 0
+        dWdlnKY(i) = 0
       endif
     enddo
+    dXdlnKX = Kx*W + Kx*dWdlnKX
+    dXdlnKY = Kx*dWdlnKY
+    dYdlnKX = Ky*dWdlnKX
+    dYdlnKY = Ky*W + Ky*dWdlnKY
+    dXdbeta = Kx*dWdbeta
+    dYdbeta = Ky*dWdbeta
+    dXdbetaL = Kx*dWdbetaL
+    dYdbetaL = Ky*dWdbetaL
     dYdbetaW = Ky*dWdbetaW
     dXdbetaW = Kx*dWdbetaW
     !
@@ -2063,6 +2131,71 @@ contains
     lnfug_wh_v = fug_wh_v/fug_wh
     lnfug_wh_n = fug_wh_n/fug_wh
 
+    if (.not. partial) then
+      do i=1,nc
+        J(1:nc,i+nc) = lnFugX_n(:,i)*dXdlnKY(i) - lnFugW_n(:,i)*dWdlnKY(i)
+        J(1:nc,i) = lnFugX_n(:,i)*dXdlnKX(i) - lnFugW_n(:,i)*dWdlnKX(i)
+        J(nc+1:2*nc,i) = lnFugY_n(:,i)*dYdlnKX(i) - lnFugW_n(:,i)*dWdlnKX(i)
+        J(nc+1:2*nc,i+nc) = lnFugY_n(:,i)*dYdlnKY(i) - lnFugW_n(:,i)*dWdlnKY(i)
+      enddo
+    else
+      do i=1,nc
+        J(i,i) = 1
+        J(nc+i,nc+i) = 1
+      enddo
+    endif
+    J(2*nc+1,1:nc) = dWdlnKX
+    J(2*nc+1,1+nc:2*nc) = dWdlnKY
+    J(2*nc+2,1:nc) = dYdlnKX - dXdlnKX
+    J(2*nc+2,1+nc:2*nc) = dYdlnKY - dXdlnKY
+
+    ! Temperature differential
+    J(1:nc,2*nc+1) = T*(lnFugX_T-lnFugW_T)
+    J(1+nc:2*nc,2*nc+1) = T*(lnFugY_T-lnFugW_T)
+
+    ! Volume differential
+    J(1:nc,2*nc+4) = vX*lnFugX_v
+    J(1:nc,2*nc+5) = -vW*lnFugW_v
+    J(1+nc:2*nc,2*nc+3) = vY*lnFugY_v
+    J(1+nc:2*nc,2*nc+5) = -vW*lnFugW_v
+
+    ! Beta
+    do i=1,nc
+      J(1:nc,2*nc+2) = J(1:nc,2*nc+2) + &
+           lnFugX_n(:,i)*dXdbeta(i) - lnFugW_n(:,i)*dWdbeta(i)
+      J(1+nc:2*nc,2*nc+2) = J(1+nc:2*nc,2*nc+2) + &
+           lnFugY_n(:,i)*dYdbeta(i) - lnFugW_n(:,i)*dWdbeta(i)
+    enddo
+    J(2*nc+1,2*nc+2) = sum(dWdbeta)
+    J(2*nc+2,2*nc+2) = sum(dYdbeta-dXdbeta)
+
+    ! Pressure differentials
+    J(2*nc+4,1:nc) = (dPXdn*dXdlnKx-dPWdn*dWdlnKx)*fac
+    J(2*nc+4,nc+1:2*nc) = (dPXdn*dXdlnKy-dPWdn*dWdlnKy)*fac
+    J(2*nc+5,1:nc) = (dPYdn*dYdlnKx-dPWdn*dWdlnKx)*fac
+    J(2*nc+5,nc+1:2*nc) = (dPYdn*dYdlnKy-dPWdn*dWdlnKy)*fac
+    !
+    J(2*nc+4,2*nc+2) = sum(dPXdn*dXdbeta-dPWdn*dWdbeta)*fac
+    J(2*nc+5,2*nc+2) = sum(dPYdn*dYdbeta-dPWdn*dWdbeta)*fac
+    !
+    J(2*nc+4,2*nc+7) = sum(dPXdn*dXdbetaL-dPWdn*dWdbetaL)*fac
+    J(2*nc+5,2*nc+7) = sum(dPYdn*dYdbetaL-dPWdn*dWdbetaL)*fac
+    !
+    J(2*nc+4,2*nc+1) = T*(dPxdT-dPwdT)*fac
+    if (debug_hyd) J(2*nc+4,2*nc+1) = J(2*nc+4,2*nc+1) - (Px-Pw)*fac
+    J(2*nc+5,2*nc+1) = T*(dPydT-dPwdT)*fac
+    if (debug_hyd) J(2*nc+5,2*nc+1) = J(2*nc+5,2*nc+1) - (Py-Pw)*fac
+    J(2*nc+4,2*nc+4) = vX*dpXdv*fac
+    J(2*nc+4,2*nc+5) = -vW*dPwdv*fac
+    if (debug_hyd) J(2*nc+4,2*nc+3) = J(2*nc+4,2*nc+3) + vY*dvSdvY_div_vS*(Px-Pw)*fac
+    if (debug_hyd) J(2*nc+4,2*nc+4) = J(2*nc+4,2*nc+4) + vX*dvSdvX_div_vS*(Px-Pw)*fac
+    if (debug_hyd) J(2*nc+4,2*nc+5) = J(2*nc+4,2*nc+5) + vW*dvSdvW_div_vS*(Px-Pw)*fac
+    J(2*nc+5,2*nc+3) = vY*dPydv*fac
+    J(2*nc+5,2*nc+5) = -vW*dPwdv*fac
+    if (debug_hyd) J(2*nc+5,2*nc+3) = J(2*nc+5,2*nc+3) + vY*dvSdvY_div_vS*(Py-Pw)*fac
+    if (debug_hyd) J(2*nc+5,2*nc+4) = J(2*nc+5,2*nc+4) + vX*dvSdvX_div_vS*(Py-Pw)*fac
+    if (debug_hyd) J(2*nc+5,2*nc+5) = J(2*nc+5,2*nc+5) + vW*dvSdvW_div_vS*(Py-Pw)*fac
+
     ! beta differential of three_ph_line_diff_newton equations
     do i=1,nc
       J(i+nc,2*nc+6) = sum(lnfugY_n(i,:)*dYdbetaW) - sum(lnfugW_n(i,:)*dWdbetaW)
@@ -2077,7 +2210,7 @@ contains
     do i=1,nc
       if (Z(i) > 0.0) then
         J(2*nc+6,i+nc) = (lnfugW_n(water_idx,i)-lnfug_wh_n(i))*beta*Ky(i)*fac_vec(i)
-        J(2*nc+6,i) = (lnfugW_n(water_idx,i)-lnfug_wh_n(i))*(1.0-beta-betaW)*Kx(i)*fac_vec(i)
+        J(2*nc+6,i) = (lnfugW_n(water_idx,i)-lnfug_wh_n(i))*betaL*Kx(i)*fac_vec(i)
       endif
     enddo
 
@@ -2093,18 +2226,21 @@ contains
     ! betaW differential
     J(2*nc+6,2*nc+6) = sum(dWdbetaW*lnfugW_n(water_idx,:) - dWdbetaW*lnfug_wh_n)
 
+    ! betaL differential
+    J(2*nc+6,2*nc+7) = sum(dWdbetaL*lnfugW_n(water_idx,:) - dWdbetaL*lnfug_wh_n)
+
     ! Specification row/column
-    if (s <= 2*nc+6) then
+    if (s <= 2*nc+7) then
       J(2*nc+3,:) = 0.0
       J(2*nc+3,s) = 1.0
-    else if (s == 2*nc+7) then
+    else if (s == 2*nc+8) then
       ! Pressure
       ps = exp(ln_s)
       ! Ky and Kx differentials
       do i=1,nc
         if (Z(i) > 0.0) then
           J(2*nc+3,i+nc) = fac*dpWdn(i)*beta*Ky(i)*fac_vec(i)
-          J(2*nc+3,i) = fac*dpWdn(i)*(1.0-beta-betaW)*Kx(i)*fac_vec(i)
+          J(2*nc+3,i) = fac*dpWdn(i)*betaL*Kx(i)*fac_vec(i)
         else
           J(2*nc+3,i) = 0
           J(2*nc+3,i+nc) = 0
@@ -2121,7 +2257,23 @@ contains
       !
       J(2*nc+3,2*nc+2) = sum(dpWdn*dWdbeta)*fac
       J(2*nc+3,2*nc+6) = sum(dpWdn*dWdbetaW)*fac
+      J(2*nc+3,2*nc+7) = sum(dpWdn*dWdbetaL)*fac
     endif
+
+    ! beta differentials
+    J(2*nc+7,2*nc+2) = 1
+    J(2*nc+7,2*nc+6) = 1
+    J(2*nc+7,2*nc+7) = 1
+
+    ! BetaL
+    do i=1,nc
+      J(1:nc,2*nc+7) = J(1:nc,2*nc+7) + &
+           lnFugX_n(:,i)*dXdbetaL(i) - lnFugW_n(:,i)*dWdbetaL(i)
+      J(1+nc:2*nc,2*nc+7) = J(1+nc:2*nc,2*nc+7) + &
+           lnFugY_n(:,i)*dYdbetaL(i) - lnFugW_n(:,i)*dWdbetaL(i)
+    enddo
+    J(2*nc+1,2*nc+7) = sum(dWdbetaL)
+    J(2*nc+2,2*nc+7) = sum(dYdbetaL-dXdbetaL)
 
   end subroutine hyd_threeph_diff_newton_tv
 
@@ -2132,19 +2284,20 @@ contains
   !-----------------------------------------------------------------------------
   subroutine test_hyd_threeph_diff_newton_tv(Xvar,param)
     implicit none
-    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
+    real, dimension(2*nc+7), intent(in) :: Xvar !< Variable vector
     real, dimension(nc+2) :: param !< Parameter vector
     ! Locals
     integer :: i
-    real, dimension(2*nc+6) :: X, F0, F1, F2, dFdx
-    real :: ds, dx, J(2*nc+6,2*nc+6)
+    real, dimension(2*nc+7) :: X, F0, F1, F2, dFdx
+    real :: ds, dx, J(2*nc+7,2*nc+7)
 
     call print_X_state_threeph(Xvar,param(1:nc))
     !call hyd_threeph_fun_newton_tv(F0,Xvar,param)
-    param(nc+1) = 2*nc+7 ! Fixate pressure
+    !param(nc+1) = 2*nc+8 ! Fixate pressure
+    param(nc+1) = 2*nc+7 ! Fixate betaL
     call hyd_threeph_diff_newton_tv(J,Xvar,param)
     ds = 1.0e-5
-    do i=1,2*nc+6 !2*nc+6
+    do i=1,2*nc+7 !2*nc+7
       X = Xvar
       dx = sign(1.0, X(i))*max(ds*abs(X(i)), ds)
       print *,"dx",i,dx
@@ -2154,8 +2307,8 @@ contains
       call hyd_threeph_fun_newton_tv(F1,X,param)
       dFdx = (F2-F1)/(2*dx)
       print *,"i",i
-      !print *,dFdx(2*nc+6)
-      !print *,J(2*nc+6,i)
+      !print *,dFdx(2*nc+7)
+      !print *,J(2*nc+7,i)
       print *,dFdx(:)
       print *,J(:,i)
       !stop
@@ -2170,28 +2323,28 @@ contains
   !-----------------------------------------------------------------------------
   subroutine hyd_threeph_newton_tv_extrapolate(Xvar,param,dXdS,dpds)
     implicit none
-    real, dimension(2*nc+6), intent(in) :: Xvar
+    real, dimension(2*nc+7), intent(in) :: Xvar
     real, dimension(nc+2), intent(inout) :: param
-    real, dimension(2*nc+6), intent(out) :: dXdS
+    real, dimension(2*nc+7), intent(out) :: dXdS
     real, intent(out) :: dPdS
     ! Locals
     real :: Z(nc), vS
-    real :: T,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: T,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaL,betaW
     real :: pW, dpWdv, dpWdt, dpWdn(nc), fac
     real :: dWdlnKy(nc), dWdlnKx(nc), dWdbeta(nc), dWdbetaW(nc)
     integer :: s, i
-    real, dimension(2*nc+6,2*nc+6) :: Jac
-    integer, dimension(2*nc+6) :: INDX
+    real, dimension(2*nc+7,2*nc+7) :: Jac
+    integer, dimension(2*nc+7) :: INDX
     integer :: INFO
 
     call hyd_threeph_diff_newton_tv(Jac,Xvar,param)
     Z = param(1:nc)
-    call get_three_phase_variables_tv(Xvar,Z,T,pW,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    call get_three_phase_variables_tv(Xvar,Z,T,pW,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW)
 
     pW = pressure(T,vW,W,dpdv=dpWdv,dpdt=dpWdt,dpdn=dpWdn)
     s = nint(param(nc+1))
     dXdS = 0
-    if (s <= 2*nc+6) then
+    if (s <= 2*nc+7) then
       dXdS(2*nc+3) = 1
     else
       ! Specified pressure
@@ -2201,7 +2354,7 @@ contains
     endif
 
     ! Solve equation system
-    call DGESV( 2*nc+6, 1, Jac, 2*nc+6, INDX, dXdS, 2*nc+6, INFO )
+    call DGESV( 2*nc+7, 1, Jac, 2*nc+7, INDX, dXdS, 2*nc+7, INFO )
 
     do i=1,nc
       if (Z(i) > 0.0) then
@@ -2231,16 +2384,16 @@ contains
          nonlinear_solve, test_differentials
     use utilities, only: isXwithinBounds
     implicit none
-    real, intent(inout) :: Xsol(2*nc+6)
+    real, intent(inout) :: Xsol(2*nc+7)
     real, intent(inout) :: param(nc+2)
     real, intent(out) :: T, P
     integer, intent(out) :: ierr
     integer :: iter
     ! Internal
     real :: Z(nc), b(nc)
-    real :: Xmax(2*nc+6), Xmin(2*nc+6)
+    real :: Xmax(2*nc+7), Xmin(2*nc+7)
     type(nonlinear_solver) :: solver
-    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaL,betaW
     real :: param_ext(2*nc+2)
     ! Testing
     !call test_differentials(Xsol,param,hyd_twoph_fun_newton_tv,&
@@ -2253,7 +2406,7 @@ contains
 
     Z = param(1:nc)
     call hydrate_var_threeph_tv_limits(Xmin,Xmax,b)
-    call isXwithinBounds(2*nc+6,Xsol,Xmin,Xmax,"",&
+    call isXwithinBounds(2*nc+7,Xsol,Xmin,Xmax,"",&
          "newton_three_phase_fluid_hydrate_curve: Initial values not within bounds!!")
     param_ext(1:nc+2) = param
     param_ext(nc+3:2*nc+2) = b
@@ -2264,7 +2417,7 @@ contains
     ierr = solver%exitflag
 
     if (ierr == 0) then
-      call get_three_phase_variables_tv(Xsol,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+      call get_three_phase_variables_tv(Xsol,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW)
     endif
   end function newton_three_phase_fluid_hydrate_curve
 
@@ -2283,7 +2436,7 @@ contains
     integer, intent(in) :: np
     real, dimension(np),     intent(inout) :: param
     real :: scaling
-    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW,T,P,z(nc)
+    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaL,betaW,T,P,z(nc)
     real :: b(nc),bY,bX,bW
     !
     call limit_dx(n,xx,xxmin,xxmax,dxx,np,param)
@@ -2291,7 +2444,7 @@ contains
     if (minval(abs(Xx(2*nc+3:2*nc+5)+dxx(2*nc+3:2*nc+5)-Xxmin(2*nc+3:2*nc+5))) < 0.05) then
       b = param(nc+3:2*nc+2)
       Z = param(1:nc)
-      call get_three_phase_variables_tv(Xx+dxx,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,&
+      call get_three_phase_variables_tv(Xx+dxx,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW,&
            no_press_calc=.true.)
       bY = sum(Y*b)
       bX = sum(X*b)
@@ -2300,7 +2453,7 @@ contains
       do while (vY < bY .or. vX < bX .or. vW < bW)
         scaling = scaling*0.5
         call get_three_phase_variables_tv(Xx+scaling*dxx,&
-             Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,&
+             Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaL,betaW,&
              no_press_calc=.true.)
         bY = sum(Y*b)
         bX = sum(X*b)
@@ -2321,8 +2474,8 @@ contains
       dxx = dxx * scaling
     endif
     ! Additional test for betaL
-    if (1 - (xx(2*nc+2) + dxx(2*nc+2)) - (xx(2*nc+6) + dxx(2*nc+6)) < 0.0) then
-      scaling = (1.0 - xx(2*nc+2) - xx(2*nc+6))/(dxx(2*nc+2) + dxx(2*nc+6))
+    if (xx(2*nc+7) + dxx(2*nc+7) < 0.0) then
+      scaling =  xx(2*nc+7)/dxx(2*nc+7)
       dxx = dxx * scaling
     endif
   end subroutine limit_threeph_dx_line
@@ -2335,12 +2488,12 @@ contains
   subroutine hyd_threeph_newton_tv_extrapolate_test()
     implicit none
     ! Locals
-    real, dimension(2*nc+6) :: Xvar1, Xvar2, Xvar0
-    real, parameter, dimension(10) :: XvarInit = (/1.0,1.0,1.0,1.0,1.0,&
-         1.0,1.0,1.0,1.0,1.0 /)
-    character(len=15), dimension(11) :: var_names
+    real, dimension(2*nc+7) :: Xvar1, Xvar2, Xvar0
+    real, parameter, dimension(11) :: XvarInit = (/1.0,1.0,1.0,1.0,1.0,&
+         1.0,1.0,1.0,1.0,1.0,1.0 /)
+    character(len=15), dimension(12) :: var_names
     real, dimension(nc+2) :: param
-    real, dimension(2*nc+6) :: dXdS
+    real, dimension(2*nc+7) :: dXdS
     real :: T, ln_s, dpds, p1, p2, ds, p
     integer :: s, ierr, iter
     real :: Z(nc)
@@ -2358,7 +2511,8 @@ contains
     var_names(8) = "ln(v2)"
     var_names(9) = "ln(v2)"
     var_names(10) = "betaW"
-    var_names(11) = "dlnP"
+    var_names(11) = "betaL"
+    var_names(12) = "dlnP"
     !call init_cubic("CO2,H2O","SRK")
     z = (/0.5,0.5/)
     param(1:nc) = Z
@@ -2376,7 +2530,7 @@ contains
     do s=1,nc+5
       param(nc+1) = real(s)
       call hyd_twoph_newton_tv_extrapolate(Xvar0,param,dXdS,dpds)
-      if (s <= 2*nc+6) then
+      if (s <= 2*nc+7) then
         param(nc+2) = Xvar0(s) - ds
       else
         param(nc+2) = log(p) - ds
@@ -2385,7 +2539,7 @@ contains
       iter = newton_three_phase_fluid_hydrate_curve(Xvar1,param,T,P1,ierr)
       !print *,"iter,ierr",iter,ierr
       !call get_two_phase_variables_tv(Xvar1,Z,T,P1,v1,v2,X1,X2,K,beta)
-      if (s <= 2*nc+6) then
+      if (s <= 2*nc+7) then
         param(nc+2) = Xvar0(s) + ds
       else
         param(nc+2) = log(p) + ds
@@ -2501,7 +2655,7 @@ contains
 
   subroutine multi_phase_point_list_add_point_threeph(tppl,Xvar)
     class(multi_phase_point_list), intent(inout) :: tppl
-    real, intent(in) :: Xvar(2*nc+6)
+    real, intent(in) :: Xvar(2*nc+7)
     !
     tppl%n = tppl%n + 1
     call get_three_phase_variables_tv(Xvar,tppl%Z,&
@@ -2516,6 +2670,7 @@ contains
          tppl%list(tppl%n)%K1,&
          tppl%list(tppl%n)%K2,&
          tppl%list(tppl%n)%beta1,&
+         tppl%list(tppl%n)%beta2,&
          tppl%list(tppl%n)%beta3)
     tppl%list(tppl%n)%nph = 3
     if (.false.) then
@@ -2530,6 +2685,7 @@ contains
       print *,"K1",tppl%list(tppl%n)%K1
       print *,"K2",tppl%list(tppl%n)%K2
       print *,"beta1",tppl%list(tppl%n)%beta1
+      print *,"beta2",tppl%list(tppl%n)%beta2
       print *,"beta3",tppl%list(tppl%n)%beta3
     endif
   end subroutine multi_phase_point_list_add_point_threeph
@@ -2633,7 +2789,7 @@ contains
     !
     integer :: i
     do i=1,tppl%n
-      print *,tppl%list(i)%T, tppl%list(i)%P, tppl%list(i)%beta1, tppl%list(i)%beta3
+      print *,tppl%list(i)%T, tppl%list(i)%P, tppl%list(i)%beta1, tppl%list(i)%beta2, tppl%list(i)%beta3
     enddo
   end subroutine multi_phase_point_list_print_arrays
 

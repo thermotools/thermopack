@@ -23,9 +23,11 @@ z = np.zeros((2))
 for i in range(len(Z_H2O)):
     z[0] = (1-Z_H2O[i])
     z[1] = Z_H2O[i]
-    t_vals, p_vals, tw_vals, pw_vals = cb.get_multi_phase_envelope_tv(initial_pressure, z,
-                                                                      minimum_temperature,
-                                                                      maximum_pressure)
+    fluid, water = cb.get_multi_phase_envelope_tv(initial_pressure, z,
+                                                  minimum_temperature,
+                                                  maximum_pressure)
+    t_vals, p_vals = (fluid.t, fluid.p)
+    tw_vals, pw_vals = (water.t, water.p)
     t_hyd_vals, p_hyd_vals = cb.get_hydrate_apperance_curve(initial_pressure, z,
                                                             minimum_temperature,
                                                             maximum_pressure)
@@ -53,9 +55,11 @@ z = np.zeros((3))
 for i in range(len(Z_H2O)):
     z[0:2] = (1-Z_H2O[i])*Z_CO2
     z[2] = Z_H2O[i]
-    t_vals, p_vals, tw_vals, pw_vals = cb.get_multi_phase_envelope_tv(initial_pressure, z,
-                                                                      minimum_temperature,
-                                                                      maximum_pressure)
+    fluid, water = cb.get_multi_phase_envelope_tv(initial_pressure, z,
+                                                  minimum_temperature,
+                                                  maximum_pressure)
+    t_vals, p_vals = (fluid.t, fluid.p)
+    tw_vals, pw_vals = (water.t, water.p)
     t_hyd_vals, p_hyd_vals = cb.get_hydrate_apperance_curve(initial_pressure, z,
                                                             minimum_temperature,
                                                             maximum_pressure)
